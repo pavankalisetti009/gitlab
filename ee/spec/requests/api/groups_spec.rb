@@ -926,7 +926,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       before do
         stub_ee_application_setting(should_check_namespace_plan: true)
         stub_feature_flags(duo_code_review_on_agent_platform: false)
-        stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
         group.add_owner(user)
       end
 
@@ -962,11 +961,12 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
           before do
             stub_feature_flags(duo_code_review_on_agent_platform: true)
             group.namespace_settings.update!(duo_features_enabled: true)
+            allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(false)
           end
 
-          context 'when experiment_features_enabled is false' do
+          context 'when duo_foundational_flows_enabled is false' do
             before do
-              group.namespace_settings.update!(experiment_features_enabled: false)
+              group.namespace_settings.update!(duo_foundational_flows_enabled: false)
             end
 
             context 'with duo_core add-on' do
@@ -980,58 +980,50 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
                 expect(response).to have_gitlab_http_status(:ok)
                 expect(json_response['auto_duo_code_review_enabled']).to be_nil
               end
+            end
+          end
 
-              context 'when GA rollout flag is enabled' do
+          context 'when duo_foundational_flows_enabled is true' do
+            before do
+              group.namespace_settings.update!(duo_foundational_flows_enabled: true)
+            end
+
+            context 'when StageCheck returns false' do
+              before do
+                allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(false)
+              end
+
+              context 'with duo_core add-on' do
                 before do
-                  stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+                  create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group)
                 end
 
-                it 'allows setting auto_duo_code_review_enabled despite experiment_features_enabled being false' do
+                it 'does not allow setting auto_duo_code_review_enabled' do
+                  put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
+
+                  expect(response).to have_gitlab_http_status(:ok)
+                  expect(json_response['auto_duo_code_review_enabled']).to be_nil
+                end
+              end
+            end
+
+            context 'when StageCheck returns true' do
+              where(:add_on_factory) do
+                [[:duo_pro], [:duo_core]]
+              end
+
+              with_them do
+                before do
+                  create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: group)
+                  allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(true)
+                end
+
+                it "allows setting auto_duo_code_review_enabled for #{params[:add_on_factory]}" do
                   put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
 
                   expect(response).to have_gitlab_http_status(:ok)
                   expect(json_response['auto_duo_code_review_enabled']).to eq(true)
                 end
-              end
-            end
-          end
-
-          context 'when experiment_features_enabled is true' do
-            before do
-              group.namespace_settings.update!(experiment_features_enabled: true)
-            end
-
-            context 'with duo_core add-on' do
-              before do
-                create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group)
-              end
-
-              it 'allows setting auto_duo_code_review_enabled' do
-                put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
-
-                expect(response).to have_gitlab_http_status(:ok)
-                expect(json_response['auto_duo_code_review_enabled']).to eq(true)
-              end
-            end
-          end
-
-          context 'when GA rollout flag is enabled' do
-            where(:add_on_factory) do
-              [[:duo_pro], [:duo_core]]
-            end
-
-            with_them do
-              before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
-                group.namespace_settings.update!(experiment_features_enabled: false)
-                create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: group)
-              end
-
-              it "allows setting auto_duo_code_review_enabled for #{params[:add_on_factory]} even when experiment_features_enabled is false" do
-                put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
-
-                expect(response).to have_gitlab_http_status(:ok)
-                expect(json_response['auto_duo_code_review_enabled']).to eq(true)
               end
             end
           end

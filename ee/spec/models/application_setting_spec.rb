@@ -2519,12 +2519,40 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           stub_feature_flags(duo_code_review_on_agent_platform: true)
         end
 
-        context 'with active duo_core add-on' do
+        context 'when duo_foundational_flows_enabled is false' do
           before do
-            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+            application_setting.duo_foundational_flows_enabled = false
           end
 
-          it { is_expected.to be_truthy }
+          context 'with active duo_core add-on' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+            end
+
+            it { is_expected.to be_falsey }
+          end
+        end
+
+        context 'when duo_foundational_flows_enabled is true' do
+          before do
+            application_setting.duo_foundational_flows_enabled = true
+          end
+
+          context 'with active duo_core add-on' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+            end
+
+            it { is_expected.to be_truthy }
+          end
+
+          context 'with expired duo_core add-on' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_core_add_on)
+            end
+
+            it { is_expected.to be_falsey }
+          end
         end
       end
     end

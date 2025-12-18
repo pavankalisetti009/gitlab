@@ -16,7 +16,7 @@ RSpec.describe 'projects/settings/merge_requests/show', feature_category: :code_
     context 'when auto_duo_code_review_settings are available' do
       before do
         allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
-        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+        allow(project).to receive(:auto_duo_code_review_settings_available?).and_return(true)
       end
 
       it 'displays the setting header' do

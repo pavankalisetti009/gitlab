@@ -1323,12 +1323,11 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
     before do
       stub_feature_flags(duo_code_review_on_agent_platform: false)
-      stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
     end
 
     context 'when duo_features_enabled is false' do
       before do
-        allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(false)
+        allow(namespace).to receive(:duo_features_enabled).and_return(false)
       end
 
       it { is_expected.to be_falsey }
@@ -1336,7 +1335,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
     context 'when duo_features_enabled is true' do
       before do
-        allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
+        allow(namespace).to receive(:duo_features_enabled).and_return(true)
       end
 
       context 'when namespace does not have duo_enterprise add-on' do
@@ -1372,7 +1371,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
             subject { subgroup.auto_duo_code_review_settings_available? }
 
             before do
-              allow(subgroup.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
+              allow(subgroup).to receive(:duo_features_enabled).and_return(true)
               create(:gitlab_subscription_add_on_purchase, namespace: parent, add_on: duo_enterprise_add_on)
             end
 
@@ -1407,9 +1406,9 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
           stub_feature_flags(duo_code_review_on_agent_platform: namespace)
         end
 
-        context 'when experiment_features_enabled is false' do
+        context 'when duo_foundational_flows_enabled is false' do
           before do
-            allow(namespace.namespace_settings).to receive(:experiment_features_enabled).and_return(false)
+            namespace.namespace_settings.update!(duo_foundational_flows_enabled: false)
           end
 
           context 'when namespace has duo_core add-on' do
@@ -1418,97 +1417,84 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
             end
 
             it { is_expected.to be_falsey }
-
-            context 'when GA rollout flag is enabled' do
-              before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
-              end
-
-              it 'returns true despite experiment_features_enabled being false' do
-                expect(subject).to be_truthy
-              end
-            end
           end
         end
 
-        context 'when experiment_features_enabled is true' do
-          where(:add_on_type, :add_on_factory, :expected_result) do
-            [
-              ['duo_pro',       :duo_pro,       true],
-              ['duo_core',      :duo_core,      true],
-              ['duo_enterprise', nil,           true]
-            ]
+        context 'when duo_foundational_flows_enabled is true' do
+          before do
+            namespace.namespace_settings.update!(duo_foundational_flows_enabled: true)
           end
 
-          with_them do
+          context 'when StageCheck returns false' do
             before do
-              allow(namespace.namespace_settings).to receive(:experiment_features_enabled).and_return(true)
-
-              if add_on_factory
-                create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: namespace)
-              else
-                create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_enterprise_add_on)
-              end
+              allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(namespace, :duo_workflow).and_return(false)
             end
 
-            it "returns #{params[:expected_result]} for #{params[:add_on_type]}" do
-              expect(subject).to eq(expected_result)
+            context 'when namespace has duo_core add-on' do
+              before do
+                create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: namespace)
+              end
+
+              it { is_expected.to be_falsey }
             end
           end
 
-          context 'for subgroups inheriting add-ons from parent' do
-            let_it_be(:parent) { create(:group) }
-            let_it_be(:subgroup) { create(:group, parent: parent) }
-
-            subject { subgroup.auto_duo_code_review_settings_available? }
-
-            where(:add_on_type, :add_on_factory, :requires_feature_flag) do
+          context 'when StageCheck returns true' do
+            where(:add_on_type, :add_on_factory, :expected_result) do
               [
-                ['duo_core',       :duo_core,      true],
-                ['duo_enterprise', nil,            false]
+                ['duo_pro',       :duo_pro,       true],
+                ['duo_core',      :duo_core,      true],
+                ['duo_enterprise', nil,           true]
               ]
             end
 
             with_them do
               before do
-                allow(subgroup.namespace_settings).to receive(:experiment_features_enabled).and_return(true)
-
-                if requires_feature_flag
-                  stub_feature_flags(duo_code_review_on_agent_platform: subgroup)
-                  subgroup.namespace_settings.update!(duo_features_enabled: true)
-                end
-
                 if add_on_factory
-                  create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: parent)
+                  create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: namespace)
                 else
-                  create(:gitlab_subscription_add_on_purchase, namespace: parent, add_on: duo_enterprise_add_on)
+                  create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_enterprise_add_on)
+                end
+
+                allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(namespace, :duo_workflow).and_return(true)
+              end
+
+              it "returns #{params[:expected_result]} for #{params[:add_on_type]}" do
+                expect(subject).to eq(expected_result)
+              end
+            end
+
+            context 'for subgroups inheriting add-ons from parent' do
+              let_it_be(:parent) { create(:group) }
+              let_it_be(:subgroup) { create(:group, parent: parent) }
+
+              subject { subgroup.auto_duo_code_review_settings_available? }
+
+              where(:add_on_type, :add_on_factory, :requires_feature_flag) do
+                [
+                  ['duo_core',       :duo_core,      true],
+                  ['duo_enterprise', nil,            false]
+                ]
+              end
+
+              with_them do
+                before do
+                  allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(subgroup, :duo_workflow).and_return(true)
+                  subgroup.namespace_settings.update!(duo_foundational_flows_enabled: true, duo_features_enabled: true)
+
+                  stub_feature_flags(duo_code_review_on_agent_platform: subgroup) if requires_feature_flag
+
+                  if add_on_factory
+                    create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: parent)
+                  else
+                    create(:gitlab_subscription_add_on_purchase, namespace: parent, add_on: duo_enterprise_add_on)
+                  end
+                end
+
+                it "inherits #{params[:add_on_type]} from parent namespace" do
+                  expect(subject).to be_truthy
                 end
               end
-
-              it "inherits #{params[:add_on_type]} from parent namespace" do
-                expect(subject).to be_truthy
-              end
-            end
-          end
-        end
-
-        context 'when GA rollout flag is enabled' do
-          where(:add_on_type, :add_on_factory) do
-            [
-              ['duo_pro',  :duo_pro],
-              ['duo_core', :duo_core]
-            ]
-          end
-
-          with_them do
-            before do
-              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
-              allow(namespace.namespace_settings).to receive(:experiment_features_enabled).and_return(false)
-              create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: namespace)
-            end
-
-            it "returns true for #{params[:add_on_type]} even when experiment_features_enabled is false" do
-              expect(subject).to be_truthy
             end
           end
         end
@@ -1519,37 +1505,71 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
           stub_feature_flags(duo_code_review_on_agent_platform: namespace)
         end
 
-        context 'when instance has duo_enterprise add-on' do
+        context 'when duo_foundational_flows_enabled is false' do
           before do
-            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
+            namespace.namespace_settings.update!(duo_foundational_flows_enabled: false)
           end
 
-          it { is_expected.to be_truthy }
-        end
-
-        context 'when instance has expired duo_enterprise add-on' do
-          before do
-            create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
-          end
-
-          it { is_expected.to be_falsey }
-        end
-
-        context 'when GA rollout flag is enabled' do
-          where(:add_on_factory) do
-            [[:duo_pro], [:duo_core]]
-          end
-
-          with_them do
+          context 'when instance has duo_core add-on' do
             before do
-              stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: true)
-              allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
-              stub_application_setting(instance_level_ai_beta_features_enabled: false)
-              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on_factory)
+              create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_core)
             end
 
-            it "returns true for #{params[:add_on_factory]} even when beta features are disabled" do
-              expect(subject).to be_truthy
+            it { is_expected.to be_falsey }
+          end
+        end
+
+        context 'when duo_foundational_flows_enabled is true' do
+          before do
+            namespace.namespace_settings.update!(duo_foundational_flows_enabled: true)
+          end
+
+          context 'when instance has duo_enterprise add-on' do
+            before do
+              allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(namespace, :duo_workflow).and_return(true)
+              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
+            end
+
+            it { is_expected.to be_truthy }
+          end
+
+          context 'when instance has expired duo_enterprise add-on' do
+            before do
+              allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(namespace, :duo_workflow).and_return(true)
+              create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
+            end
+
+            it { is_expected.to be_falsey }
+          end
+
+          context 'when StageCheck returns false' do
+            before do
+              allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(namespace, :duo_workflow).and_return(false)
+            end
+
+            context 'when instance has duo_core add-on' do
+              before do
+                create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_core)
+              end
+
+              it { is_expected.to be_falsey }
+            end
+          end
+
+          context 'when StageCheck returns true' do
+            where(:add_on_factory) do
+              [[:duo_pro], [:duo_core]]
+            end
+
+            with_them do
+              before do
+                create(:gitlab_subscription_add_on_purchase, :self_managed, add_on_factory)
+                allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(namespace, :duo_workflow).and_return(true)
+              end
+
+              it "returns true for #{params[:add_on_factory]}" do
+                expect(subject).to be_truthy
+              end
             end
           end
         end

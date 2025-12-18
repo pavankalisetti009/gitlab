@@ -277,7 +277,7 @@ module EE
     end
 
     def auto_duo_code_review_settings_available?
-      return false unless namespace_settings&.duo_features_enabled?
+      return false unless duo_features_enabled
 
       # Start with Duo Enterprise (classic flow)
       # Duo Enterprise is always available when the add-on is active, regardless of feature flags
@@ -291,16 +291,9 @@ module EE
 
     def duo_code_review_dap_available?
       return false unless ::Feature.enabled?(:duo_code_review_on_agent_platform, self)
+      return false unless duo_foundational_flows_enabled
 
-      maturity = ::Gitlab::Llm::Utils::AiFeaturesCatalogue.effective_maturity(:duo_agent_platform)
-      return true if maturity == :ga
-
-      # For beta maturity, check namespace experiment setting (SaaS) or instance beta setting (Self-Managed)
-      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-        experiment_features_enabled
-      else
-        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
-      end
+      ::Gitlab::Llm::StageCheck.available?(self, :duo_workflow)
     end
 
     def namespace_limit

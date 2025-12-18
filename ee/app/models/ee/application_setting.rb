@@ -487,7 +487,9 @@ module EE
       add_ons = [:duo_enterprise]
 
       # We're already past 18.6 cut-off so we don't need to check for beta features
-      add_ons += [:duo_pro, :duo_core] if ::Feature.enabled?(:duo_code_review_on_agent_platform, :instance)
+      if ::Feature.enabled?(:duo_code_review_on_agent_platform, :instance) && duo_foundational_flows_enabled
+        add_ons += [:duo_pro, :duo_core]
+      end
 
       ::GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_ons, :instance).any?
     end

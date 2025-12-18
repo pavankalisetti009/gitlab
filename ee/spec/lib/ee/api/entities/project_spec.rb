@@ -126,23 +126,88 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
   end
 
   describe 'auto_duo_code_review_enabled' do
-    context 'when namespace has auto_duo_code_review_settings available' do
-      before do
-        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+    let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+    let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project_in_group) { create(:project, group: group) }
+
+    before do
+      stub_feature_flags(duo_code_review_on_agent_platform: false)
+    end
+
+    context 'when project has auto_duo_code_review_settings available' do
+      context 'with duo_enterprise add-on', :saas do
+        let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
+
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
+          allow(project_in_group).to receive(:duo_features_enabled).and_return(true)
+          create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_enterprise_add_on)
+        end
+
+        it 'returns a boolean value' do
+          expect(entity_subject[:auto_duo_code_review_enabled]).to be_in([true, false])
+        end
       end
 
-      it 'returns a boolean value' do
-        expect(subject[:auto_duo_code_review_enabled]).to be_in([true, false])
+      context 'with duo_core add-on and DAP flow available', :saas do
+        let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
+
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
+          stub_feature_flags(duo_code_review_on_agent_platform: project_in_group)
+          allow(project_in_group).to receive_messages(
+            duo_features_enabled: true,
+            duo_foundational_flows_enabled: true
+          )
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+            .with(project_in_group, :duo_workflow).and_return(true)
+          create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_core_add_on)
+        end
+
+        it 'returns a boolean value' do
+          expect(entity_subject[:auto_duo_code_review_enabled]).to be_in([true, false])
+        end
       end
     end
 
-    context 'when namespace does not have auto_duo_code_review_settings available' do
-      before do
-        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(false)
+    context 'when project does not have auto_duo_code_review_settings available' do
+      context 'without any add-on' do
+        before do
+          allow(project).to receive(:duo_features_enabled).and_return(true)
+        end
+
+        it 'returns nil' do
+          expect(subject[:auto_duo_code_review_enabled]).to be_nil
+        end
       end
 
-      it 'returns nil' do
-        expect(subject[:auto_duo_code_review_enabled]).to be_nil
+      context 'when duo_features_enabled is false' do
+        before do
+          allow(project).to receive(:duo_features_enabled).and_return(false)
+        end
+
+        it 'returns nil' do
+          expect(subject[:auto_duo_code_review_enabled]).to be_nil
+        end
+      end
+
+      context 'with duo_core add-on but duo_foundational_flows_enabled is false', :saas do
+        let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
+
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
+          stub_feature_flags(duo_code_review_on_agent_platform: project_in_group)
+          allow(project_in_group).to receive_messages(
+            duo_features_enabled: true,
+            duo_foundational_flows_enabled: false
+          )
+          create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_core_add_on)
+        end
+
+        it 'returns nil because duo_foundational_flows_enabled is false' do
+          expect(entity_subject[:auto_duo_code_review_enabled]).to be_nil
+        end
       end
     end
   end

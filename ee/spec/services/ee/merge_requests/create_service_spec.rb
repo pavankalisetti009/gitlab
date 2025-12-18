@@ -95,9 +95,12 @@ RSpec.describe MergeRequests::CreateService, feature_category: :code_review_work
 
       before do
         stub_feature_flags(duo_code_review_on_agent_platform: false)
-        allow(project).to receive(:auto_duo_code_review_enabled).and_return(auto_duo_code_review)
+        allow(project).to receive_messages(
+          auto_duo_code_review_enabled: auto_duo_code_review,
+          auto_duo_code_review_settings_available?: true
+        )
         allow(project.project_setting).to receive(:duo_features_enabled?).and_return(duo_enabled_project_setting)
-        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+
         allow_next_instance_of(MergeRequest) do |merge_request|
           allow(merge_request).to receive(:ai_review_merge_request_allowed?)
             .with(user)
@@ -149,7 +152,7 @@ RSpec.describe MergeRequests::CreateService, feature_category: :code_review_work
         let(:duo_enabled_project_setting) { false }
 
         before do
-          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
+          allow(project).to receive(:auto_duo_code_review_settings_available?).and_return(false)
         end
 
         it 'does not add Duo as a reviewer' do
