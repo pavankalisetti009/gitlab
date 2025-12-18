@@ -9,6 +9,13 @@ module Types
       value 'GUEST', value: :guest, description: 'Guest.'
       value 'PLANNER', value: :planner, description: 'Planner.'
       value 'REPORTER', value: :reporter, description: 'Reporter.'
+      value 'SECURITY_MANAGER',
+        value: :security_manager,
+        description: 'Security manager access.' do
+        def visible?(_context)
+          Gitlab::Security::SecurityManagerConfig.enabled?
+        end
+      end
       value 'DEVELOPER', value: :developer, description: 'Developer.'
       value 'MAINTAINER', value: :maintainer, description: 'Maintainer.'
       value 'OWNER', value: :owner, description: 'Owner.'
