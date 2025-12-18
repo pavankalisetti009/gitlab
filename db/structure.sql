@@ -21253,6 +21253,7 @@ CREATE TABLE namespace_ai_settings (
     minimum_access_level_enable_on_projects smallint,
     minimum_access_level_execute_async smallint,
     feature_settings jsonb DEFAULT '{}'::jsonb NOT NULL,
+    prompt_injection_protection_level smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_namespace_ai_settings_feature_settings_is_hash CHECK ((jsonb_typeof(feature_settings) = 'object'::text))
 );
 
@@ -39717,6 +39718,8 @@ CREATE INDEX idx_mr_cc_diff_files_on_mr_cc_id_and_sha ON merge_request_context_c
 CREATE INDEX idx_mr_metrics_on_project_closed_at_with_mr_id ON merge_request_metrics USING btree (target_project_id, latest_closed_at, merge_request_id) WHERE (latest_closed_at IS NOT NULL);
 
 CREATE INDEX idx_mrs_on_target_id_and_created_at_and_state_id ON merge_requests USING btree (target_project_id, state_id, created_at, id);
+
+CREATE INDEX idx_namespace_ai_settings_on_prompt_injection_protection_level ON namespace_ai_settings USING btree (prompt_injection_protection_level);
 
 CREATE UNIQUE INDEX idx_namespace_feature_settings_on_namespace_id_and_feature ON ai_namespace_feature_settings USING btree (namespace_id, feature);
 

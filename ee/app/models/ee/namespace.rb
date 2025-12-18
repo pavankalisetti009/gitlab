@@ -190,6 +190,8 @@ module EE
         to: :namespace_settings, allow_nil: true
       delegate :duo_workflow_mcp_enabled, :duo_workflow_mcp_enabled=, to: :ai_settings,
         allow_nil: true
+      delegate :prompt_injection_protection_level, :prompt_injection_protection_level=, to: :ai_settings,
+        allow_nil: true
 
       delegate :foundational_agents_default_enabled, :foundational_agents_default_enabled=, to: :ai_settings,
         allow_nil: true

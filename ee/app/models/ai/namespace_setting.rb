@@ -6,6 +6,12 @@ module Ai
 
     include HasRolePermissions
 
+    enum :prompt_injection_protection_level, {
+      no_checks: 0,
+      log_only: 1,
+      interrupt: 2
+    }
+
     jsonb_accessor :feature_settings,
       duo_agent_platform_enabled: [:boolean, { default: true }]
 
@@ -13,6 +19,7 @@ module Ai
       json_schema: { filename: "ai_namespace_setting_feature_settings", size_limit: 64.kilobytes }
 
     validates :duo_workflow_mcp_enabled, inclusion: { in: [true, false] }
+    validates :prompt_injection_protection_level, presence: true
 
     belongs_to :namespace, inverse_of: :ai_settings
   end

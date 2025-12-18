@@ -64,6 +64,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:enterprise_bypass_expires_at=).to(:namespace_settings).with_arguments(:args) }
   it { is_expected.to delegate_method(:duo_workflow_mcp_enabled).to(:ai_settings).allow_nil }
   it { is_expected.to delegate_method(:duo_workflow_mcp_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
+  it { is_expected.to delegate_method(:prompt_injection_protection_level).to(:ai_settings).allow_nil }
+  it { is_expected.to delegate_method(:prompt_injection_protection_level=).to(:ai_settings).with_arguments(:args).allow_nil }
   it { is_expected.to delegate_method(:foundational_agents_default_enabled).to(:ai_settings).allow_nil }
   it { is_expected.to delegate_method(:foundational_agents_default_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
   it { is_expected.to accept_nested_attributes_for(:ai_settings).update_only(true) }

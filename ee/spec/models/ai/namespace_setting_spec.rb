@@ -21,6 +21,14 @@ RSpec.describe Ai::NamespaceSetting, type: :model, feature_category: :ai_abstrac
 
   describe 'validations' do
     it { is_expected.to validate_inclusion_of(:duo_workflow_mcp_enabled).in_array([true, false]) }
+    it { is_expected.to validate_presence_of(:prompt_injection_protection_level) }
+  end
+
+  describe 'enums' do
+    it 'defines prompt injection protection level enum' do
+      is_expected.to define_enum_for(:prompt_injection_protection_level).with_values(no_checks: 0, log_only: 1,
+        interrupt: 2)
+    end
   end
 
   describe 'factory' do

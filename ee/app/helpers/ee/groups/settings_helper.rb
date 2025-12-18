@@ -88,7 +88,7 @@ module EE
         }
       end
 
-      def duo_feature_settings_data
+      def duo_feature_settings_data # rubocop:disable Metrics/AbcSize -- TODO: refactor this method to contain less fields
         {
           duo_availability: @group.namespace_settings.duo_availability.to_s,
           are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?.to_s,
@@ -103,6 +103,8 @@ module EE
           duo_agent_platform_enabled: @group.duo_agent_platform_enabled.to_s,
           duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
           duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
+          prompt_injection_protection_level: @group.prompt_injection_protection_level.to_s,
+          prompt_injection_protection_available: (::Feature.enabled?(:ai_prompt_scanning, current_user) && current_user.can?(:admin_duo_workflow, @group)).to_s,
           foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
           foundational_agents_statuses: ::Gitlab::Json.generate(@group.foundational_agents_statuses),
           is_saas: saas?.to_s,
