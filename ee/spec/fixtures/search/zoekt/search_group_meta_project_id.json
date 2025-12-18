@@ -74,27 +74,9 @@
                       "or": {
                         "children": [
                           {
-                            "or": {
-                              "children": [
-                                {
-                                  "meta": {
-                                    "key": "project_id",
-                                    "value": "^1$"
-                                  }
-                                },
-                                {
-                                  "meta": {
-                                    "key": "project_id",
-                                    "value": "^56$"
-                                  }
-                                },
-                                {
-                                  "meta": {
-                                    "key": "project_id",
-                                    "value": "^99$"
-                                  }
-                                }
-                              ]
+                            "meta": {
+                              "key": "project_id",
+                              "value": "^(1|56|99)$"
                             }
                           }
                         ]
@@ -134,27 +116,9 @@
                             }
                           },
                           {
-                            "or": {
-                              "children": [
-                                {
-                                  "meta": {
-                                    "key": "project_id",
-                                    "value": "^1$"
-                                  }
-                                },
-                                {
-                                  "meta": {
-                                    "key": "project_id",
-                                    "value": "^56$"
-                                  }
-                                },
-                                {
-                                  "meta": {
-                                    "key": "project_id",
-                                    "value": "^99$"
-                                  }
-                                }
-                              ]
+                            "meta": {
+                              "key": "project_id",
+                              "value": "^(1|56|99)$"
                             }
                           }
                         ]

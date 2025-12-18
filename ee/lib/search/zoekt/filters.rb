@@ -29,17 +29,11 @@ module Search
           raise ArgumentError, "ids must be an Array, got #{ids.class}" unless ids.is_a?(Array)
           raise ArgumentError, 'Project IDs cannot be empty' if ids.empty?
 
-          return with_context(context) { by_project_id(ids.first) } if ids.size == 1
+          regex_pattern = "^(#{ids.map(&:to_i).join('|')})$"
 
           with_context(context) do
-            or_filters(*ids.map { |id| by_project_id(id) })
+            by_meta(key: 'project_id', value: regex_pattern)
           end
-        end
-
-        def by_project_id(id)
-          raise ArgumentError, 'Project ID cannot be nil' if id.nil?
-
-          by_meta(key: 'project_id', value: "^#{id}$")
         end
 
         def by_regexp(regexp:, case_sensitive: nil, file_name: nil, content: nil, context: nil)
