@@ -5,7 +5,7 @@ module API
     class MergeRequestDependency < Grape::Entity
       include RequestAwareEntity
 
-      expose :id, documentation: { type: 'integer', example: 123 }
+      expose :id, documentation: { type: 'Integer', example: 123 }
 
       expose :blocking_merge_request, using: ::API::Entities::MergeRequestBasic, if: ->(block) {
         can?(options[:current_user], :read_merge_request, block.blocking_merge_request)
@@ -15,7 +15,7 @@ module API
         can?(options[:current_user], :read_merge_request, blockee.blocked_merge_request)
       }
 
-      expose :project_id, documentation: { type: 'integer', example: 312 }
+      expose :project_id, documentation: { type: 'Integer', example: 312 }
     end
   end
 end

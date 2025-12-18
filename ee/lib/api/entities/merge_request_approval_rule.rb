@@ -4,12 +4,12 @@ module API
   module Entities
     class MergeRequestApprovalRule < ::API::Entities::ApprovalRule
       class SourceRule < Grape::Entity
-        expose :approvals_required, documentation: { type: 'integer', example: 2 }
+        expose :approvals_required, documentation: { type: 'Integer', example: 2 }
       end
 
       expose :section, documentation: { example: 'Backend' }
       expose :source_rule, using: MergeRequestApprovalRule::SourceRule
-      expose :overridden?, as: :overridden, documentation: { type: 'boolean' }
+      expose :overridden?, as: :overridden, documentation: { type: 'Boolean' }
     end
   end
 end

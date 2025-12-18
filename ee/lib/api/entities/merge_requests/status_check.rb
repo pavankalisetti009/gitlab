@@ -4,10 +4,10 @@ module API
   module Entities
     module MergeRequests
       class StatusCheck < Grape::Entity
-        expose :id, documentation: { type: 'integer', example: 1 }
-        expose :name, documentation: { type: 'string', example: 'QA' }
-        expose :external_url, documentation: { type: 'string', example: 'https://www.example.com' }
-        expose :status, documentation: { type: 'string', example: 'passed' }
+        expose :id, documentation: { type: 'Integer', example: 1 }
+        expose :name, documentation: { type: 'String', example: 'QA' }
+        expose :external_url, documentation: { type: 'String', example: 'https://www.example.com' }
+        expose :status, documentation: { type: 'String', example: 'passed' }
 
         def status
           object.status(options[:merge_request], options[:sha])
