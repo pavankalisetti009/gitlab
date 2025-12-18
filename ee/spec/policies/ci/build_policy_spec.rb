@@ -24,7 +24,7 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
       stub_licensed_features(ai_features: true, troubleshoot_job: true)
       allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(
         :resource, :allowed?).and_return(authorized)
-      allow(user).to receive(:can?).with(:admin_all_resources).and_call_original
+      allow(user).to receive(:can?).and_call_original
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
       allow(user).to receive(:can?).with(:access_duo_chat).and_return(true)
       allow(user).to receive(:can?).with(:access_duo_features, build.project).and_return(true)
