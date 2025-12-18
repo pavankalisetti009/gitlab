@@ -67,6 +67,11 @@ module EE
       has_many :enabled_foundational_flow_records, class_name: 'Ai::Catalog::EnabledFoundationalFlow',
         foreign_key: :namespace_id, inverse_of: :namespace
 
+      # Instance-level accessible entity rules, will only have values on SM
+      has_many :accessible_ai_features_on_instance,
+        class_name: 'Ai::FeatureAccessRule',
+        inverse_of: :through_namespace, foreign_key: 'through_namespace_id'
+
       accepts_nested_attributes_for :gitlab_subscription, update_only: true
       accepts_nested_attributes_for :namespace_limit
       accepts_nested_attributes_for :ai_settings, update_only: true
