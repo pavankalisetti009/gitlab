@@ -38471,10 +38471,16 @@ msgstr[1] ""
 msgid "Job|An error occurred while fetching the job header data."
 msgstr ""
 
+msgid "Job|An error occurred while generating an attestation for build artifacts in this job. Please check the configuration, and try again."
+msgstr ""
+
 msgid "Job|Are you sure you want to erase this job log and artifacts?"
 msgstr ""
 
 msgid "Job|Are you sure you want to force cancel this job? This will immediately mark the job as canceled, even if the job is still running."
+msgstr ""
+
+msgid "Job|Attestation Generation Error"
 msgstr ""
 
 msgid "Job|Browse"
