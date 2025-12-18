@@ -67,6 +67,7 @@ export const DUO_WORKFLOW_WEBSOCKET_PARAM_ROOT_NAMESPACE_ID = 'root_namespace_id
 export const DUO_WORKFLOW_WEBSOCKET_PARAM_NAMESPACE_ID = 'namespace_id';
 export const DUO_WORKFLOW_WEBSOCKET_PARAM_PROJECT_ID = 'project_id';
 export const DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL = 'user_selected_model_identifier';
+export const DUO_WORKFLOW_WEBSOCKET_PARAM_WORKFLOW_DEFINITION = 'workflow_definition';
 
 // Client capabilities is how gitlab-lsp/browser -> workhorse -> Duo Workflow Service communicates
 // capabilities that can be used by Duo Workflow Service without breaking

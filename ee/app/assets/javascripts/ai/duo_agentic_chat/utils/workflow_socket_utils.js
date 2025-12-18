@@ -9,6 +9,7 @@ import {
   DUO_WORKFLOW_WEBSOCKET_PARAM_NAMESPACE_ID,
   DUO_WORKFLOW_WEBSOCKET_PARAM_PROJECT_ID,
   DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL,
+  DUO_WORKFLOW_WEBSOCKET_PARAM_WORKFLOW_DEFINITION,
 } from 'ee/ai/constants';
 import { WorkflowUtils } from './workflow_utils';
 import { getMessagesToProcess } from './messages_utils';
@@ -20,6 +21,7 @@ export function buildWebsocketUrl({
   userModelSelectionEnabled,
   currentModel,
   defaultModel,
+  workflowDefinition,
 }) {
   const params = new URLSearchParams();
 
@@ -46,6 +48,11 @@ export function buildWebsocketUrl({
   ) {
     params.append(DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL, currentModel.value);
   }
+
+  params.append(
+    DUO_WORKFLOW_WEBSOCKET_PARAM_WORKFLOW_DEFINITION,
+    workflowDefinition || DUO_WORKFLOW_CHAT_DEFINITION,
+  );
 
   params.append('client_type', 'browser');
 

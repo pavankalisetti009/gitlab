@@ -5,8 +5,9 @@ require 'spec_helper'
 RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_platform do
   let_it_be(:user) { create(:user) }
   let(:gitlab_token) { 'test_gitlab_token_12345' }
+  let(:workflow_definition) { 'chat' }
 
-  subject(:service) { described_class.new(user, gitlab_token) }
+  subject(:service) { described_class.new(user, gitlab_token, workflow_definition: workflow_definition) }
 
   describe '#execute' do
     it 'returns configuration hash with gitlab server' do
@@ -61,11 +62,30 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
     context 'with different gitlab tokens' do
       it 'uses the provided token in authorization header' do
         custom_token = 'custom_token_xyz'
-        custom_service = described_class.new(user, custom_token)
+        custom_service = described_class.new(user, custom_token, workflow_definition: 'chat')
 
         result = custom_service.execute
 
         expect(result[:gitlab][:Headers][:Authorization]).to eq("Bearer #{custom_token}")
+      end
+    end
+
+    context 'when workflow_definition is for agentic chat' do
+      let(:workflow_definition) { 'chat' }
+
+      it 'returns MCP server configuration' do
+        expect(service.execute).to be_a(Hash)
+        expect(service.execute).to have_key(:gitlab)
+      end
+    end
+
+    context 'when workflow_definition is for a foundational agent' do
+      where(:workflow_definition) { [nil, '', 'software_development', 'analytics_agent/v1', 'code_review/v2'] }
+
+      with_them do
+        it 'returns nil' do
+          expect(service.execute).to be_nil
+        end
       end
     end
   end
@@ -92,6 +112,24 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
         result = service.gitlab_enabled_tools
 
         expect(result).to eq([])
+      end
+    end
+
+    context 'when workflow_definition is for agentic chat' do
+      let(:workflow_definition) { 'chat' }
+
+      it 'returns enabled tools' do
+        expect(service.gitlab_enabled_tools).to eq(described_class::GITLAB_ENABLED_TOOLS)
+      end
+    end
+
+    context 'when workflow_definition is for a foundational agent' do
+      where(:workflow_definition) { [nil, '', 'software_development', 'analytics_agent/v1', 'code_review/v2'] }
+
+      with_them do
+        it 'returns empty array' do
+          expect(service.gitlab_enabled_tools).to eq([])
+        end
       end
     end
   end
