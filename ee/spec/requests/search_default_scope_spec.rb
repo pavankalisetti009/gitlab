@@ -271,31 +271,13 @@ RSpec.describe 'Search with default scope setting', :elastic, :clean_gitlab_redi
     include_examples 'handles code search literals'
   end
 
-  it 'uses issues scope with work_item_scope_frontend feature flag' do
+  it 'uses issues scope for search' do
     stub_application_setting(default_search_scope: 'issues')
 
     get search_path, params: { search: 'Test' }
 
     expect(response).to have_gitlab_http_status(:ok)
-    # Note: The work_item_scope_frontend feature flag only affects frontend UI visibility
-    # The backend still uses the configured default scope (issues) for search
-    # This test verifies the search completes successfully even when the UI tab is nested
     expect(response.body).to include(CGI.escapeHTML("/-/issues/#{issue.iid}"))
-  end
-
-  context 'when work_item_scope_frontend is disabled' do
-    before do
-      stub_feature_flags(work_item_scope_frontend: false)
-    end
-
-    it 'uses issues scope when not hidden' do
-      stub_application_setting(default_search_scope: 'issues')
-
-      get search_path, params: { search: 'Test' }
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(response.body).to include(CGI.escapeHTML("/-/issues/#{issue.iid}"))
-    end
   end
 
   context 'when search_scope_registry feature flag is disabled' do

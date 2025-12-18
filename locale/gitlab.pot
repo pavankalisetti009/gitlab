@@ -31962,9 +31962,6 @@ msgstr ""
 msgid "GlobalSearch|Issues assigned to me"
 msgstr ""
 
-msgid "GlobalSearch|Key results"
-msgstr ""
-
 msgid "GlobalSearch|Labels"
 msgstr ""
 
@@ -32008,9 +32005,6 @@ msgid "GlobalSearch|No results found. Edit your search and try again."
 msgstr ""
 
 msgid "GlobalSearch|Nothing found…"
-msgstr ""
-
-msgid "GlobalSearch|Objectives"
 msgstr ""
 
 msgid "GlobalSearch|Only first %{max_shown} of not indexed projects is shown"
@@ -32143,9 +32137,6 @@ msgstr ""
 msgid "GlobalSearch|Target branch"
 msgstr ""
 
-msgid "GlobalSearch|Tasks"
-msgstr ""
-
 msgid "GlobalSearch|The search term must be at least 3 characters long."
 msgstr ""
 
@@ -32195,9 +32186,6 @@ msgid "GlobalSearch|What are you searching for?"
 msgstr ""
 
 msgid "GlobalSearch|Wiki"
-msgstr ""
-
-msgid "GlobalSearch|Work items"
 msgstr ""
 
 msgid "GlobalSearch|Your work"

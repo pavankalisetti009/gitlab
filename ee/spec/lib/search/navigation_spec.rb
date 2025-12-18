@@ -91,96 +91,6 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
       end
     end
 
-    context 'for epics tab' do
-      context 'when project search' do
-        let(:project) { project_double }
-
-        where(:setting_enabled, :show_epics, :condition) do
-          false | true  | false
-          false | false | false
-          true  | true  | false
-          true  | false | false
-        end
-
-        with_them do
-          let(:options) { { show_epics: show_epics } }
-
-          it 'data item condition is set correctly' do
-            stub_application_setting(global_search_epics_enabled: setting_enabled)
-
-            expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
-          end
-        end
-      end
-
-      context 'when group search' do
-        let(:project) { nil }
-        let(:group) { group_double }
-
-        where(:show_epics, :condition) do
-          false | false
-          true  | true
-          nil   | false
-        end
-
-        with_them do
-          let(:options) { { show_epics: show_epics } }
-
-          it 'data item condition is set correctly' do
-            expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
-          end
-        end
-      end
-
-      context 'when global search' do
-        let(:project) { nil }
-        let(:group) { nil }
-
-        where(:setting_enabled, :show_epics, :show_elasticsearch_tabs, :condition) do
-          false | false | false | false
-          false | false | true  | false
-          false | true  | false | false
-          false | true  | true  | false
-          true  | false | false | false
-          true  | false | true  | false
-          true  | true  | false | false
-          true  | true  | true  | true
-        end
-
-        with_them do
-          let(:options) { { show_epics: show_epics, show_elasticsearch_tabs: show_elasticsearch_tabs } }
-
-          it 'data item condition is set correctly' do
-            stub_application_setting(global_search_epics_enabled: setting_enabled)
-
-            expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
-          end
-        end
-
-        it 'requires elasticsearch for global epics search' do
-          stub_application_setting(global_search_epics_enabled: true)
-
-          # Without elasticsearch, epics tab should not be shown
-          search_navigation_without_es = described_class.new(
-            user: user,
-            project: nil,
-            group: nil,
-            options: { show_epics: true, show_elasticsearch_tabs: false }
-          )
-          expect(search_navigation_without_es.tabs[:issues][:sub_items][:epic][:condition]).to be_falsey
-
-          # With elasticsearch, epics tab should be shown
-          search_navigation_with_es = described_class.new(
-            user: user,
-            project: nil,
-            group: nil,
-            options: { show_epics: true, show_elasticsearch_tabs: true }
-          )
-          expect(search_navigation_with_es.tabs[:issues][:sub_items][:epic][:condition]).to be_truthy
-        end
-      end
-    end
-
     context 'for wiki tab' do
       context 'when project search' do
         let(:project) { project_double }
@@ -359,29 +269,13 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
       let(:group) { group_double }
       let(:options) { { show_epics: true } }
 
-      it 'includes epics as a sub-item under Work items' do
-        expect(tabs[:issues][:sub_items]).to have_key(:epic)
-        expect(tabs[:issues][:sub_items][:epic][:scope]).to eq('epics')
-        expect(tabs[:issues][:sub_items][:epic][:condition]).to be_truthy
+      it 'includes epics from registry as standalone tab' do
+        expect(tabs[:epics]).to be_present
+        expect(tabs[:epics][:condition]).to be_truthy
       end
 
-      it 'does not include epics as a standalone tab' do
-        expect(tabs[:epics]).to be_nil
-      end
-
-      context 'when work_item_scope_frontend FF is disabled' do
-        before do
-          stub_feature_flags(work_item_scope_frontend: false)
-        end
-
-        it 'includes epics from registry as standalone tab' do
-          expect(tabs[:epics]).to be_present
-          expect(tabs[:epics][:condition]).to be_truthy
-        end
-
-        it 'does not have sub_items under issues' do
-          expect(tabs[:issues][:sub_items]).to be_nil
-        end
+      it 'does not have sub_items under issues' do
+        expect(tabs[:issues][:sub_items]).to be_nil
       end
 
       context 'when search_scope_registry FF is disabled' do
@@ -389,32 +283,11 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           stub_feature_flags(search_scope_registry: false)
         end
 
-        it 'includes epics as a sub-item under Work items (legacy behavior)' do
-          expect(tabs[:issues][:sub_items]).to have_key(:epic)
-          expect(tabs[:issues][:sub_items][:epic][:scope]).to eq('epics')
-          expect(tabs[:issues][:sub_items][:epic][:condition]).to be_truthy
-        end
-
-        it 'does not include epics as a standalone tab' do
-          expect(tabs[:epics]).to be_nil
-        end
-
-        context 'when work_item_scope_frontend FF is disabled' do
-          before do
-            stub_feature_flags(work_item_scope_frontend: false)
-          end
-
-          it 'includes epics as a standalone tab (legacy behavior)' do
-            expect(tabs[:epics]).to be_present
-            expect(tabs[:epics][:sort]).to eq(3)
-            expect(tabs[:epics][:label]).to eq('Epics')
-            expect(tabs[:epics][:condition]).to be_truthy
-          end
-
-          it 'does not have issues with sub_items' do
-            expect(tabs[:issues]).to be_present
-            expect(tabs[:issues][:sub_items]).to be_nil
-          end
+        it 'includes epics as a standalone tab (legacy behavior)' do
+          expect(tabs[:epics]).to be_present
+          expect(tabs[:epics][:sort]).to eq(3)
+          expect(tabs[:epics][:label]).to eq('Epics')
+          expect(tabs[:epics][:condition]).to be_truthy
         end
       end
     end
