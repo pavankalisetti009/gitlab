@@ -6,7 +6,7 @@ module Vulnerabilities
 
     StartWorkflowServiceError = Class.new(StandardError)
 
-    feature_category :vulnerability_management
+    feature_category :static_application_security_testing
     data_consistency :delayed
     urgency :throttled
     idempotent!
