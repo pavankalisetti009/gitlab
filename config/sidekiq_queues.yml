@@ -755,6 +755,8 @@
   - 1
 - - pages_deactivate_mr_deployments
   - 1
+- - pages_delete_group_pages_deployments
+  - 1
 - - pages_delete_pages_deployment
   - 1
 - - pages_domain_ssl_renewal
