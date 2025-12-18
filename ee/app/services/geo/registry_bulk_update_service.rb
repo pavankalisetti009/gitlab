@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Geo
-  # Updates all the registries for a given registry_class
+  # Updates all the registries for a given registry_class and action
   class RegistryBulkUpdateService
     include ::Gitlab::Geo::LogHelpers
 
@@ -29,13 +29,13 @@ module Geo
     attr_reader :action, :registry_class, :params
 
     def reverify_all
-      Geo::BulkMarkVerificationPendingBatchWorker.perform_with_capacity(registry_class, params)
+      Geo::BulkRegistryReverificationService.new(registry_class, params).async_execute
 
       success_response(_('Registries enqueued to be reverified'))
     end
 
     def resync_all
-      Geo::BulkMarkPendingBatchWorker.perform_with_capacity(registry_class, params)
+      Geo::BulkRegistryResyncService.new(registry_class, params).async_execute
 
       success_response(_('Registries enqueued to be resynced'))
     end

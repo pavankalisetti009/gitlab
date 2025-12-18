@@ -21,10 +21,10 @@ RSpec.describe Geo::RegistryBulkUpdateService, :geo, feature_category: :geo_repl
     end
 
     describe '#execute' do
-      shared_examples 'a successful bulk action performed' do |success_message, worker_class|
+      shared_examples 'a successful bulk action performed' do |success_message, service_class|
         specify do
           registry = registry_class.name
-          expect(worker_class).to receive(:perform_with_capacity).with(registry, {})
+          expect(service_class).to receive(:new).with(registry, {}).and_call_original
 
           result = service.execute
 
@@ -40,7 +40,7 @@ RSpec.describe Geo::RegistryBulkUpdateService, :geo, feature_category: :geo_repl
         it_behaves_like(
           'a successful bulk action performed',
           'Registries enqueued to be resynced',
-          Geo::BulkMarkPendingBatchWorker
+          Geo::BulkRegistryResyncService
         )
       end
 
@@ -50,7 +50,7 @@ RSpec.describe Geo::RegistryBulkUpdateService, :geo, feature_category: :geo_repl
         it_behaves_like(
           'a successful bulk action performed',
           'Registries enqueued to be reverified',
-          Geo::BulkMarkVerificationPendingBatchWorker
+          Geo::BulkRegistryReverificationService
         )
       end
 
@@ -67,7 +67,7 @@ RSpec.describe Geo::RegistryBulkUpdateService, :geo, feature_category: :geo_repl
         let(:error) { StandardError.new(registry_class.name) }
 
         before do
-          allow(Geo::BulkMarkPendingBatchWorker).to receive(:perform_with_capacity)
+          allow(Geo::BulkRegistryResyncService).to receive(:new)
                                                       .with(registry_class.name, {})
                                                       .and_raise(error)
         end
