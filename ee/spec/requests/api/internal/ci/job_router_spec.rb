@@ -208,4 +208,186 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
       end
     end
   end
+
+  describe 'PUT /internal/ci/job_router/jobs/:id' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+    let_it_be(:job) { create(:ci_build, :running, pipeline: pipeline, project: project) }
+
+    let(:job_headers) { kas_headers.merge(API::Ci::Helpers::Runner::JOB_TOKEN_HEADER => job.token) }
+    let(:params) { { token: job.token, state: 'failed' } }
+
+    subject(:perform_request) do
+      put api("/internal/ci/job_router/jobs/#{job.id}"), params: params, headers: job_headers
+    end
+
+    context 'when authenticated' do
+      let(:params) { { token: job.token } }
+
+      context 'with valid parameters' do
+        context 'when failing with job_router_failure' do
+          let(:params) { super().merge(state: 'failed', failure_reason: 'job_router_failure') }
+
+          it 'updates the job state' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(job.reload).to be_failed
+            expect(job.failure_reason).to eq('job_router_failure')
+            expect(job.job_messages).to be_empty
+          end
+
+          it 'returns job status header' do
+            perform_request
+
+            expect(response.headers['Job-Status']).to eq('failed')
+          end
+
+          it 'returns status code in body' do
+            perform_request
+
+            expect(response.body).to eq('"200"')
+          end
+        end
+
+        context 'when failing with job_router_failure and custom message' do
+          let(:params) do
+            super().merge(
+              state: 'failed',
+              failure_reason: 'job_router_failure',
+              failure_message: 'No available executors'
+            )
+          end
+
+          it 'updates the job state and creates job message' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(job.reload).to be_failed
+            expect(job.failure_reason).to eq('job_router_failure')
+            expect(job.job_messages.count).to eq(1)
+            expect(job.job_messages.first.content).to eq('No available executors')
+          end
+        end
+
+        context 'when failing without failure_reason' do
+          let(:params) { super().merge(state: 'failed') }
+
+          it 'updates the job state with default failure reason' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(job.reload).to be_failed
+            expect(job.job_messages).to be_empty
+          end
+        end
+      end
+
+      context 'with invalid parameters' do
+        context 'when providing failure_message without job_router_failure' do
+          let(:params) do
+            super().merge(
+              state: 'failed',
+              failure_reason: 'script_failure',
+              failure_message: 'This should not be allowed'
+            )
+          end
+
+          it 'returns 400 bad request' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
+        end
+
+        context 'when providing invalid state' do
+          let(:params) { super().merge(state: 'success') }
+
+          it 'returns 400 bad request' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
+        end
+
+        context 'when providing invalid failure_reason' do
+          let(:params) { super().merge(state: 'failed', failure_reason: 'script_failure') }
+
+          it 'returns 400 bad request' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
+        end
+      end
+    end
+
+    context 'when not authenticated' do
+      context 'without KAS authentication' do
+        let(:job_headers) { super().except(Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER) }
+
+        it 'returns 401' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+
+      context 'without job token' do
+        let(:job_headers) { kas_headers }
+        let(:params) { super().except(:token) }
+
+        it 'returns 403' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'with invalid job token' do
+        let(:job_headers) { kas_headers.merge(API::Ci::Helpers::Runner::JOB_TOKEN_HEADER => 'invalid') }
+        let(:params) { super().merge(token: 'invalid') }
+
+        it 'returns 403' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'with mismatched job id and token' do
+        let_it_be(:other_job) { create(:ci_build, :running, pipeline: pipeline, project: project) }
+        let(:job_headers) { kas_headers.merge(API::Ci::Helpers::Runner::JOB_TOKEN_HEADER => other_job.token) }
+        let(:params) { super().merge(token: other_job.token) }
+
+        it 'returns 403' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+
+    context 'when rate limited' do
+      before do
+        allow(Gitlab::ApplicationRateLimiter).to receive(:throttled?).and_return(true)
+      end
+
+      it 'returns 429' do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:too_many_requests)
+      end
+    end
+
+    context 'with metrics and tracking' do
+      let(:params) { super().merge(failure_reason: 'job_router_failure') }
+
+      it 'adds update_build metric event' do
+        expect(Gitlab::Metrics).to receive(:add_event).with(:update_build)
+
+        perform_request
+      end
+    end
+  end
 end

@@ -59,6 +59,53 @@ module API
                   }
                 end
               end
+
+              namespace 'jobs' do
+                helpers ::API::Ci::Helpers::Runner
+
+                before do
+                  authenticate_job!
+                end
+
+                desc 'Update job state from Job Router' do
+                  detail 'Updates the state of a job from the Job Router'
+                  success code: 200
+                  failure [
+                    { code: 400, message: '400 Bad Request' },
+                    { code: 403, message: '403 Forbidden' },
+                    { code: 404, message: '404 Not Found' }
+                  ]
+                  tags %w[jobs job_router]
+                end
+                params do
+                  requires :id, type: Integer, desc: "Job's ID"
+                  requires :token, type: String, desc: "Job's authentication token"
+                  requires :state, type: String, values: %w[failed], desc: "Job's state (only 'failed' is supported)"
+                  optional :failure_reason, type: String, values: %w[job_router_failure],
+                    desc: "Job's failure reason (only 'job_router_failure' is allowed)"
+                  optional :failure_message, type: String,
+                    desc: "Custom failure message (only allowed with failure_reason=job_router_failure)"
+                end
+                put ':id' do
+                  check_rate_limit!(:runner_jobs_api, scope: [Gitlab::CryptoHelper.sha256(job_token)], user: nil)
+
+                  Gitlab::Metrics.add_event(:update_build)
+
+                  # Build service parameters
+                  service_params = params.slice(:state, :failure_reason, :failure_message).compact
+
+                  service = ::Ci::UpdateBuildStateService.new(current_job, service_params)
+
+                  service.execute.then do |result|
+                    track_ci_minutes_usage!(current_job)
+
+                    header 'Job-Status', current_job.status
+                    header 'X-GitLab-Trace-Update-Interval', result.backoff
+                    status result.status
+                    body result.status.to_s
+                  end
+                end
+              end
             end
           end
         end
