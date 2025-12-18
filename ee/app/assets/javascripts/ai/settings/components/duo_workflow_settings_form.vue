@@ -30,12 +30,12 @@ export default {
       @change="checkboxChanged"
     >
       <span id="enable-duo-workflow-mcp-enabled-checkbox-label">{{
-        s__('DuoWorkflowSettings|Turn on Model Context Protocol (MCP) support')
+        s__('DuoWorkflowSettings|Turn on support for Model Context Protocol (MCP)')
       }}</span>
       <template #help>
         {{
           s__(
-            'DuoWorkflowSettings|Turn on MCP support for GitLab Duo Agentic Chat and GitLab Duo Agent Platform',
+            'DuoWorkflowSettings|Turn on MCP support for GitLab Duo Chat (Agentic) and GitLab Duo Agent Platform.',
           )
         }}
       </template>
