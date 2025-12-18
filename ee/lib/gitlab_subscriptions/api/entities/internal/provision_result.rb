@@ -5,8 +5,8 @@ module GitlabSubscriptions
     module Entities
       module Internal
         class ProvisionResult < Grape::Entity
-          expose :status, documentation: { type: 'string', example: 'success' }
-          expose :message, documentation: { type: 'string', example: 'Namespace provisioned successfully' }
+          expose :status, documentation: { type: 'String', example: 'success' }
+          expose :message, documentation: { type: 'String', example: 'Namespace provisioned successfully' }
           expose :payload, documentation: {
             type: 'object',
             properties: {

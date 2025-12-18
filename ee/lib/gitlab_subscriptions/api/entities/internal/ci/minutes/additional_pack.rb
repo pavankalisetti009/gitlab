@@ -7,10 +7,10 @@ module GitlabSubscriptions
         module Ci
           module Minutes
             class AdditionalPack < Grape::Entity
-              expose :namespace_id, documentation: { type: 'string', example: 123 }
-              expose :expires_at, documentation: { type: 'date', example: '2012-05-28' }
-              expose :number_of_minutes, documentation: { type: 'integer', example: 10000 }
-              expose :purchase_xid, documentation: { type: 'string', example: 'C-00123456' }
+              expose :namespace_id, documentation: { type: 'String', example: 123 }
+              expose :expires_at, documentation: { type: 'Date', example: '2012-05-28' }
+              expose :number_of_minutes, documentation: { type: 'Integer', example: 10000 }
+              expose :purchase_xid, documentation: { type: 'String', example: 'C-00123456' }
             end
           end
         end

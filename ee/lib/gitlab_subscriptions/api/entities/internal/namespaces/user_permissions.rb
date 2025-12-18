@@ -6,7 +6,7 @@ module GitlabSubscriptions
       module Internal
         module Namespaces
           class UserPermissions < Grape::Entity
-            expose :edit_billing, documentation: { type: 'boolean' }
+            expose :edit_billing, documentation: { type: 'Boolean' }
           end
         end
       end

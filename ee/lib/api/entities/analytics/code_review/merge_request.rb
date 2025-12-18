@@ -8,7 +8,7 @@ module API
           expose :milestone, using: ::API::Entities::Milestone
           expose :author, using: ::API::Entities::UserBasic
           expose :approved_by_users, as: :approved_by, using: ::API::Entities::UserBasic
-          expose :notes_count, documentation: { type: 'integer', example: 10 } do |mr|
+          expose :notes_count, documentation: { type: 'Integer', example: 10 } do |mr|
             if options[:issuable_metadata]
               # Avoids an N+1 query when metadata is included
               options[:issuable_metadata][mr.id].user_notes_count
@@ -16,7 +16,7 @@ module API
               mr.notes.user.count
             end
           end
-          expose :review_time, documentation: { type: 'integer', example: 6, desc: 'Review time in hours' } do |mr|
+          expose :review_time, documentation: { type: 'Integer', example: 6, desc: 'Review time in hours' } do |mr|
             time = mr.metrics.review_time
 
             next unless time
