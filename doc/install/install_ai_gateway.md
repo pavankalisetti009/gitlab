@@ -62,11 +62,8 @@ If your GitLab version is `vX.Y.*-ee`, use the AI gateway Docker image with the 
 
 Newer features are available from nightly builds, but backwards compatibility is not guaranteed.
 
-{{< alert type="note" >}}
-
-Using the nightly version is **not recommended** because it can cause incompatibility if your GitLab version is behind or ahead of the AI gateway release. Always use an explicit version tag.
-
-{{< /alert >}}
+> [!note]
+> Using the nightly version is **not recommended** because it can cause incompatibility if your GitLab version is behind or ahead of the AI gateway release. Always use an explicit version tag.
 
 ### Start a container from the image
 
