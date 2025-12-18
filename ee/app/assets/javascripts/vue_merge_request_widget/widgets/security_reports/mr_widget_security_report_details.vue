@@ -183,8 +183,14 @@ export default {
     isAiResolvable(vuln) {
       return vuln.ai_resolution_enabled && this.glAbilities.resolveVulnerabilityWithAi;
     },
+    showAutoDismissPolicyBadge(vuln) {
+      return vuln.matches_auto_dismiss_policy && !this.isDismissed(vuln);
+    },
     getAiResolvableBadgeId(uuid) {
       return `ai-resolvable-badge-${uuid}`;
+    },
+    getAutoDismissPolicyBadgeId(uuid) {
+      return `auto-dismiss-policy-badge-${uuid}`;
     },
     tabTitle(scanType) {
       return this.report[scanType]?.numberOfNewFindings ?? '-';
@@ -203,6 +209,13 @@ export default {
     learnMorePath: helpPagePath('user/application_security/vulnerabilities/_index', {
       anchor: 'vulnerability-resolution-in-a-merge-request',
     }),
+  },
+  policyAutoDismissPopover: {
+    text: s__('ciReport|Vulnerability was matched by a policy and will be auto-dismissed.'),
+    learnMorePath: helpPagePath(
+      'user/application_security/policies/vulnerability_management_policy',
+      { anchor: 'auto-dismiss-policies' },
+    ),
   },
   diffBasedScansLearnMorePath: helpPagePath('user/application_security/sast/gitlab_advanced_sast', {
     anchor: 'use-diff-based-scanning-to-improve-performance',
@@ -340,6 +353,28 @@ export default {
                           >
                             {{ $options.aiResolutionHelpPopOver.text }}
                             <gl-link :href="$options.aiResolutionHelpPopOver.learnMorePath"
+                              >{{ __('Learn more') }}
+                            </gl-link>
+                          </gl-popover>
+                        </template>
+                        <template v-if="showAutoDismissPolicyBadge(vuln)">
+                          <gl-badge
+                            :id="getAutoDismissPolicyBadgeId(vuln.uuid)"
+                            variant="info"
+                            class="gl-ml-3"
+                            data-testid="auto-dismiss-policy-badge"
+                          >
+                            <gl-icon :size="12" name="flag" />
+                          </gl-badge>
+                          <gl-popover
+                            trigger="hover focus"
+                            placement="top"
+                            boundary="viewport"
+                            :target="getAutoDismissPolicyBadgeId(vuln.uuid)"
+                            :data-testid="`auto-dismiss-policy-badge-popover-${vuln.uuid}`"
+                          >
+                            {{ $options.policyAutoDismissPopover.text }}
+                            <gl-link :href="$options.policyAutoDismissPopover.learnMorePath"
                               >{{ __('Learn more') }}
                             </gl-link>
                           </gl-popover>
