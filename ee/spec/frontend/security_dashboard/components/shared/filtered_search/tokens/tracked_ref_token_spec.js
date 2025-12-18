@@ -31,13 +31,14 @@ describe('TrackedRefToken', () => {
   const createWrapper = ({
     value = { data: [ALL_ID], operator: '=' },
     active = false,
+    config = {},
     stubs,
     mountFn = shallowMountExtended,
     provide = {},
   } = {}) => {
     wrapper = mountFn(TrackedRefToken, {
       propsData: {
-        config: mockConfig,
+        config: { ...mockConfig, ...config },
         value,
         active,
       },
@@ -59,6 +60,7 @@ describe('TrackedRefToken', () => {
   const findDropdownOptions = () =>
     wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.props('text'));
   const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
+  const findToggleText = () => wrapper.findByTestId('toggle-text');
 
   const clickDropdownItem = async (...ids) => {
     ids.forEach((id) => {
@@ -115,7 +117,7 @@ describe('TrackedRefToken', () => {
         data: [ALL_ID],
         operator: '=',
       });
-      expect(wrapper.text()).toContain('All tracked refs');
+      expect(findToggleText().text()).toBe('All tracked refs');
     });
 
     it('shows the dropdown with correct options', () => {
@@ -264,6 +266,46 @@ describe('TrackedRefToken', () => {
     });
   });
 
+  describe('single-select mode', () => {
+    beforeEach(() => {
+      createWrapper({ config: { multiSelect: false } });
+    });
+
+    it('replaces selection instead of adding to it', async () => {
+      await clickDropdownItem('main');
+      expect(isOptionChecked('main')).toBe(true);
+
+      await clickDropdownItem('v1.0.0');
+
+      expect(isOptionChecked('v1.0.0')).toBe(true);
+      expect(isOptionChecked('main')).toBe(false);
+    });
+
+    it('does not show "All tracked refs" option', () => {
+      expect(findDropdownOptions()).toEqual(mockTrackedRefs.map((ref) => ref.name));
+    });
+
+    it('does not render divider before branches when "All" option is hidden', () => {
+      expect(findDropdownDividers()).toHaveLength(1);
+    });
+
+    it('shows the default ref when nothing is selected', () => {
+      createWrapper({ config: { multiSelect: false }, value: { data: [] } });
+
+      expect(isOptionChecked('main')).toBe(true);
+    });
+
+    it('shows "Select a ref" when nothing is selected and there is no default ref', () => {
+      createWrapper({
+        config: { multiSelect: false },
+        provide: { trackedRefs: [] },
+        value: { data: [] },
+      });
+
+      expect(findToggleText().text()).toBe('Select a ref');
+    });
+  });
+
   describe('toggle text', () => {
     const findViewText = () => wrapper.findByTestId('toggle-text').text();
 
@@ -316,9 +358,9 @@ describe('TrackedRefToken', () => {
       expect(findFilteredSearchToken().props('multiSelectValues')).toEqual(['main', 'develop']);
     });
 
-    it('defaults to ALL_ID when no value data is provided', () => {
+    it('defaults to the default branch when no value data is provided', () => {
       createWrapper({ value: {} });
-      expect(findFilteredSearchToken().props('multiSelectValues')).toEqual([ALL_ID]);
+      expect(findFilteredSearchToken().props('multiSelectValues')).toEqual(['main']);
     });
   });
 });

@@ -12,6 +12,7 @@ import {
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import ProjectSecurityDashboardNew from 'ee/security_dashboard/components/shared/project_security_dashboard_new.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
+import TrackedRefToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/tracked_ref_token.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
 import SecurityDashboardDescription from 'ee/security_dashboard/components/shared/security_dashboard_description.vue';
 
@@ -21,11 +22,18 @@ describe('Project Security Dashboard (new version) - Component', () => {
   let wrapper;
 
   const mockProjectFullPath = 'project-1';
+  const mockTrackedRefs = [
+    { id: 'main', name: 'main', refType: 'branch', isDefault: true },
+    { id: 'v1.0.0', name: 'v1.0.0', refType: 'tag', isDefault: false },
+  ];
 
-  const createComponent = () => {
+  const createComponent = ({ provide = {} } = {}) => {
     wrapper = shallowMountExtended(ProjectSecurityDashboardNew, {
       provide: {
         projectFullPath: mockProjectFullPath,
+        trackedRefs: mockTrackedRefs,
+        glFeatures: { vulnerabilitiesAcrossContexts: true },
+        ...provide,
       },
     });
   };
@@ -89,7 +97,7 @@ describe('Project Security Dashboard (new version) - Component', () => {
   });
 
   describe('filtered search', () => {
-    it('gets passed the correct tokens', () => {
+    it('gets passed the correct tokens including tracked ref token', () => {
       expect(findFilteredSearch().props('tokens')).toMatchObject([
         {
           type: 'reportType',
@@ -97,6 +105,14 @@ describe('Project Security Dashboard (new version) - Component', () => {
           multiSelect: true,
           unique: true,
           token: markRaw(ReportTypeToken),
+          operators: OPERATORS_OR,
+        },
+        {
+          type: 'trackedRefIds',
+          title: 'Tracked ref',
+          multiSelect: false,
+          unique: true,
+          token: markRaw(TrackedRefToken),
           operators: OPERATORS_OR,
         },
       ]);
@@ -114,6 +130,32 @@ describe('Project Security Dashboard (new version) - Component', () => {
       };
 
       expect(reportTypeToken.reportTypes).toEqual(expectedReportTypes);
+    });
+
+    describe('when `trackedRefs` is empty', () => {
+      beforeEach(() => {
+        createComponent({ provide: { trackedRefs: [] } });
+      });
+
+      it('does not include tracked ref token', () => {
+        const tokens = findFilteredSearch().props('tokens');
+
+        expect(tokens).toHaveLength(1);
+        expect(tokens[0].type).toBe('reportType');
+      });
+    });
+
+    describe('when the `vulnerabilitiesAcrossContexts` feature flag is disabled', () => {
+      beforeEach(() => {
+        createComponent({ provide: { glFeatures: { vulnerabilitiesAcrossContexts: false } } });
+      });
+
+      it('does not include tracked ref token', () => {
+        const tokens = findFilteredSearch().props('tokens');
+
+        expect(tokens).toHaveLength(1);
+        expect(tokens[0].type).toBe('reportType');
+      });
     });
 
     it('updates filters when filters-changed event is emitted', async () => {
