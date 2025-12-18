@@ -156,6 +156,33 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
     end
   end
 
+  context 'when source_branch and additional_context are provided' do
+    let(:params) { super().merge(source_branch: 'test-branch', additional_context: [{ key: 'val' }]) }
+    let(:start_workflow_service) { instance_double(::Ai::DuoWorkflows::StartWorkflowService) }
+
+    before do
+      allow(user).to receive(:allowed_to_use?).and_return(true)
+    end
+
+    it_behaves_like 'starts workflow execution'
+
+    it 'passes source_branch and additional_context to StartWorkflowService' do
+      expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new) do |args|
+        params = args[:params]
+
+        expect(params[:source_branch]).to eq('test-branch')
+        expect(params[:additional_context]).to eq([{ key: 'val' }])
+
+        start_workflow_service
+      end
+
+      allow(start_workflow_service).to receive(:execute)
+        .and_return(ServiceResponse.success(payload: { workload_id: 123 }))
+
+      service.execute
+    end
+  end
+
   context 'when validation passes' do
     let(:create_workflow_service) { instance_double(::Ai::DuoWorkflows::CreateWorkflowService) }
     let(:start_workflow_service) { instance_double(::Ai::DuoWorkflows::StartWorkflowService) }

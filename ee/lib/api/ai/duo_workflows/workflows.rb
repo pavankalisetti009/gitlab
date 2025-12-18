@@ -481,7 +481,9 @@ module API
                     service_account: service_account,
                     execute_workflow: params[:start_workflow].present?,
                     event_type: 'api_execution',
-                    user_prompt: params[:goal]
+                    user_prompt: params[:goal],
+                    source_branch: params[:source_branch],
+                    additional_context: params[:additional_context]
                   }
 
                   result = ::Ai::Catalog::Flows::ExecuteService.new(

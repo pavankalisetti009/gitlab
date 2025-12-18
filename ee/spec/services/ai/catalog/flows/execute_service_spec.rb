@@ -372,6 +372,33 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
           expect(service.send(:fetch_flow_definition)).to be_nil
         end
       end
+
+      context 'with source_branch and additional_context params' do
+        let(:service_params) do
+          super().merge({ source_branch: 'test-branch',
+           additional_context: [{
+             Category: "agent_user_environment",
+             Content: "some content",
+             Metadata: "{}"
+           }] })
+        end
+
+        it 'calls ExecuteWorkflowService with source_branch and additional_context params' do
+          expect(::Ai::Catalog::ExecuteWorkflowService)
+            .to receive(:new).with(
+              current_user,
+              hash_including(source_branch: 'test-branch',
+                additional_context: [{
+                  Category: "agent_user_environment",
+                  Content: "some content",
+                  Metadata: "{}"
+                }]
+              )
+            ).and_call_original
+
+          execute
+        end
+      end
     end
   end
 end

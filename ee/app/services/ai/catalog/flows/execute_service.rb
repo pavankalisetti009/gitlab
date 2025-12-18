@@ -13,6 +13,8 @@ module Ai
           @event_type = params[:event_type]
           @user_prompt = params[:user_prompt]
           @service_account = params[:service_account]
+          @source_branch = params[:source_branch]
+          @additional_context = params[:additional_context]
 
           if @item_consumer
             @flow = @item_consumer.item
@@ -76,7 +78,9 @@ module Ai
             goal: flow_goal,
             item_version: flow_version,
             service_account: service_account,
-            flow_definition: fetch_flow_definition
+            flow_definition: fetch_flow_definition,
+            source_branch: @source_branch,
+            additional_context: @additional_context
           }
 
           ::Ai::Catalog::ExecuteWorkflowService.new(current_user, params).execute

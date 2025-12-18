@@ -850,7 +850,13 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
               service_account: consumer_service_account,
               execute_workflow: true,
               event_type: 'api_execution',
-              user_prompt: 'Execute catalog flow'
+              user_prompt: 'Execute catalog flow',
+              source_branch: 'master',
+              additional_context: [{
+                Category: "agent_user_environment",
+                Content: "some content",
+                Metadata: "{}"
+              }]
             )
           ).and_return(
             instance_double(
@@ -865,7 +871,13 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             project_id: execution_project.id,
             ai_catalog_item_consumer_id: project_consumer.id,
             start_workflow: true,
-            goal: 'Execute catalog flow'
+            goal: 'Execute catalog flow',
+            source_branch: 'master',
+            additional_context: [{
+              Category: "agent_user_environment",
+              Content: "some content",
+              Metadata: "{}"
+            }]
           }
 
           expect(response).to have_gitlab_http_status(:created)
