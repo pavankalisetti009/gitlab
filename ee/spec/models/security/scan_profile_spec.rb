@@ -38,6 +38,33 @@ RSpec.describe Security::ScanProfile, feature_category: :security_asset_inventor
     end
   end
 
+  describe 'class methods' do
+    let_it_be(:scan_profile_1) { create(:security_scan_profile, namespace: root_level_group, name: "profile 1") }
+    let_it_be(:scan_profile_2) { create(:security_scan_profile, namespace: root_level_group, name: "profile 2") }
+
+    describe '.scan_profile_ids' do
+      context 'when there are fewer records than MAX_PLUCK' do
+        it 'returns all ids' do
+          result = described_class.scan_profile_ids
+
+          expect(result.count).to eq(2)
+        end
+      end
+
+      context 'when there are more records than MAX_PLUCK' do
+        before do
+          stub_const("#{described_class}::MAX_PLUCK", 1)
+        end
+
+        it 'limits the number of ids returned to MAX_PLUCK' do
+          result = described_class.scan_profile_ids
+
+          expect(result.count).to eq(1)
+        end
+      end
+    end
+  end
+
   describe 'attribute stripping' do
     it 'strips whitespace from name' do
       scan_profile = build(:security_scan_profile, name: '  Test Profile  ')

@@ -27,6 +27,10 @@ module Security
     scope :by_type, ->(type) { where(scan_type: type) }
     scope :by_gitlab_recommended, ->(gitlab_recommended = true) { where(gitlab_recommended: gitlab_recommended) }
 
+    def self.scan_profile_ids(limit = MAX_PLUCK)
+      limit(limit).ids
+    end
+
     private
 
     def root_namespace_validation

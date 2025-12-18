@@ -164,6 +164,8 @@ module EE
 
           store.subscribe ::Security::ScanProfiles::ProcessProjectTransferEventsWorker,
             to: ::Projects::ProjectTransferedEvent
+          store.subscribe ::Security::ScanProfiles::ProcessGroupTransferEventsWorker,
+            to: ::Groups::GroupTransferedEvent
         end
 
         def subscribe_to_external_issue_links_events(store)

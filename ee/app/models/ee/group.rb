@@ -103,6 +103,7 @@ module EE
       has_many :subscription_seat_assignments, class_name: 'GitlabSubscriptions::SeatAssignment', foreign_key: :namespace_id
 
       has_many :analyzer_group_statuses, class_name: 'Security::AnalyzerNamespaceStatus', foreign_key: :namespace_id, inverse_of: :namespace
+      has_many :security_scan_profiles, class_name: 'Security::ScanProfile', foreign_key: :namespace_id, inverse_of: :namespace
       has_many :ai_feature_settings, class_name: 'Ai::ModelSelection::NamespaceFeatureSetting', foreign_key: :namespace_id, inverse_of: :namespace
       has_many :configured_ai_catalog_items, class_name: '::Ai::Catalog::ItemConsumer', inverse_of: :group
 

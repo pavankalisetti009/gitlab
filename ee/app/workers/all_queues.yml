@@ -4166,6 +4166,36 @@
   :idempotent: false
   :tags: []
   :queue_namespace:
+- :name: security_scan_profiles_clean_old_namespace_connections
+  :worker_name: Security::ScanProfiles::CleanOldNamespaceConnectionsWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_scan_profiles_delete_scan_profiles
+  :worker_name: Security::ScanProfiles::DeleteScanProfilesWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_scan_profiles_process_group_transfer_events
+  :worker_name: Security::ScanProfiles::ProcessGroupTransferEventsWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scan_profiles_process_project_transfer_events
   :worker_name: Security::ScanProfiles::ProcessProjectTransferEventsWorker
   :feature_category: :security_asset_inventories

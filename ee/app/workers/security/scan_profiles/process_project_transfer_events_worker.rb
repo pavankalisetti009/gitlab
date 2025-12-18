@@ -10,7 +10,7 @@ module Security
       feature_category :security_asset_inventories
 
       def handle_event(event)
-        return unless event.data[:old_root_namespace_id] != event.data[:new_root_namespace_id]
+        return if event.data[:old_root_namespace_id] == event.data[:new_root_namespace_id]
 
         project = Project.find_by_id(event.data[:project_id])
         return unless project
