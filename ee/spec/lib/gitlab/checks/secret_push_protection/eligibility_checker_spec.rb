@@ -62,11 +62,67 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
         end
 
         context 'when project has Ultimate license' do
+          let(:additional_licensed_features) { {} }
+
           before do
-            stub_licensed_features(secret_push_protection: true)
+            stub_licensed_features({ secret_push_protection: true }.merge(additional_licensed_features))
           end
 
           it_behaves_like 'skips the push check'
+
+          context 'when project has a secret_detection scan profile' do
+            let_it_be(:secret_detection_profile) do
+              create(:security_scan_profile,
+                namespace: project.namespace,
+                scan_type: :secret_detection,
+                name: 'Secret Detection Profile')
+            end
+
+            let_it_be(:profile_project_association) do
+              create(:security_scan_profile_project,
+                scan_profile: secret_detection_profile,
+                project: project)
+            end
+
+            context 'when security_scan_profiles licensed feature is not available' do
+              let(:additional_licensed_features) { { security_scan_profiles: false } }
+
+              it_behaves_like 'skips the push check'
+            end
+
+            context 'when security_scan_profiles licensed feature is available' do
+              let(:additional_licensed_features) { { security_scan_profiles: true } }
+
+              context 'and feature flag is disabled' do
+                before do
+                  stub_feature_flags(security_scan_profiles_feature: false)
+                end
+
+                it_behaves_like 'skips the push check'
+              end
+
+              it_behaves_like 'performs the push check'
+            end
+          end
+
+          context 'when project has a non secret_detection scan profile' do
+            let_it_be(:sast_profile) do
+              create(:security_scan_profile,
+                namespace: project.namespace,
+                scan_type: :sast,
+                name: 'SAST Profile')
+            end
+
+            let_it_be(:profile_project_association) do
+              create(:security_scan_profile_project, scan_profile: sast_profile, project: project)
+            end
+
+            context 'when security_scan_profiles licensed feature' do
+              let(:additional_licensed_features) { { security_scan_profiles: true } }
+
+              it_behaves_like 'skips the push check'
+            end
+          end
         end
 
         context 'when project is public on .com' do
@@ -76,6 +132,66 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
           end
 
           it_behaves_like 'skips the push check'
+
+          context 'when project has a secret_detection scan profile' do
+            let_it_be(:secret_detection_profile) do
+              create(:security_scan_profile,
+                namespace: project.namespace,
+                scan_type: :secret_detection,
+                name: 'Secret Detection Profile')
+            end
+
+            let_it_be(:profile_project_association) do
+              create(:security_scan_profile_project, scan_profile: secret_detection_profile, project: project)
+            end
+
+            before do
+              stub_licensed_features(additional_licensed_features)
+            end
+
+            context 'when security_scan_profiles licensed feature is not available' do
+              let(:additional_licensed_features) { { security_scan_profiles: false } }
+
+              it_behaves_like 'skips the push check'
+            end
+
+            context 'when security_scan_profiles licensed feature is available' do
+              let(:additional_licensed_features) { { security_scan_profiles: true } }
+
+              context 'and feature flag is disabled' do
+                before do
+                  stub_feature_flags(security_scan_profiles_feature: false)
+                end
+
+                it_behaves_like 'skips the push check'
+              end
+
+              it_behaves_like 'performs the push check'
+            end
+          end
+
+          context 'when project has a non secret_detection scan profile' do
+            let_it_be(:sast_profile) do
+              create(:security_scan_profile,
+                namespace: project.namespace,
+                scan_type: :sast,
+                name: 'SAST Profile')
+            end
+
+            let_it_be(:profile_project_association) do
+              create(:security_scan_profile_project, scan_profile: sast_profile, project: project)
+            end
+
+            before do
+              stub_licensed_features(additional_licensed_features)
+            end
+
+            context 'when security_scan_profiles licensed feature and feature flag are enabled' do
+              let(:additional_licensed_features) { { security_scan_profiles: true } }
+
+              it_behaves_like 'skips the push check'
+            end
+          end
         end
       end
 
