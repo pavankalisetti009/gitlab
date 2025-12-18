@@ -89,6 +89,7 @@ module Ai
           name: "convert_to_gl_ci/v1",
           foundational_flow_reference: "convert_to_gl_ci/v1",
           description: "Convert to GitLab CI format",
+          avatar: "convert-ci-flow.png",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
