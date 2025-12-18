@@ -1,0 +1,7 @@
+fragment AutocompleteUserStatus on AutocompletedUser {
+  id
+  status {
+    disabledForDuoUsage
+    disabledForDuoUsageReason
+  }
+}
