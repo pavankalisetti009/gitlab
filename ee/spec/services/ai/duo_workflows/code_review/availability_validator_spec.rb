@@ -27,6 +27,23 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
       end
     end
 
+    shared_examples 'duo_foundational_flows_enabled check' do
+      context 'when duo_foundational_flows_enabled is false' do
+        before do
+          case resource
+          when Project
+            resource.project_setting.update!(duo_foundational_flows_enabled: false)
+          when Group
+            resource.namespace_settings.update!(duo_foundational_flows_enabled: false)
+          end
+        end
+
+        it 'returns false' do
+          expect(available).to be false
+        end
+      end
+    end
+
     shared_examples 'Duo Enterprise behavior' do
       before do
         add_on_purchase_relation = instance_double(ActiveRecord::Relation, exists?: true)
@@ -77,11 +94,20 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
           allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
         end
 
+        it_behaves_like 'duo_foundational_flows_enabled check'
+
         context 'on self-managed instances' do
           before do
             stub_saas_features(gitlab_com_subscriptions: false)
             stub_ee_application_setting(instance_level_ai_beta_features_enabled: beta_enabled)
             stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: false)
+
+            case resource
+            when Project
+              resource.project_setting.update!(duo_foundational_flows_enabled: true)
+            when Group
+              resource.namespace_settings.update!(duo_foundational_flows_enabled: true)
+            end
           end
 
           context 'when instance beta features are disabled' do
@@ -180,6 +206,13 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
           before do
             stub_saas_features(gitlab_com_subscriptions: true)
             stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+
+            case resource
+            when Project
+              resource.project_setting.update!(duo_foundational_flows_enabled: true)
+            when Group
+              resource.namespace_settings.update!(duo_foundational_flows_enabled: true)
+            end
           end
 
           context 'when experiment features are disabled' do

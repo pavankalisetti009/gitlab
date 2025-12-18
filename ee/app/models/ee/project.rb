@@ -702,9 +702,23 @@ module EE
     end
 
     def auto_duo_code_review_settings_available?
-      return false unless project_setting.duo_features_enabled?
+      return false unless duo_features_enabled
 
-      namespace.auto_duo_code_review_settings_available?
+      # Start with Duo Enterprise (classic flow)
+      # Duo Enterprise is always available when the add-on is active, regardless of feature flags
+      add_ons = [:duo_enterprise]
+
+      # Add Duo Pro/Core if DAP flow available
+      add_ons += [:duo_pro, :duo_core] if duo_code_review_dap_available?
+
+      namespace.has_active_add_on_purchase?(add_ons)
+    end
+
+    def duo_code_review_dap_available?
+      return false unless ::Feature.enabled?(:duo_code_review_on_agent_platform, self)
+      return false unless duo_foundational_flows_enabled
+
+      ::Gitlab::Llm::StageCheck.available?(self, :duo_workflow)
     end
 
     def mirror_last_update_failed?

@@ -561,16 +561,39 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
             stub_feature_flags(duo_code_review_on_agent_platform: true)
           end
 
-          context 'with duo_core add-on' do
+          context 'when duo_foundational_flows_enabled is false' do
             before do
-              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+              ApplicationSetting.current.update!(duo_foundational_flows_enabled: false)
             end
 
-            it 'updates the setting and it is available' do
-              put :update, params: { application_setting: settings }
+            context 'with duo_core add-on' do
+              before do
+                create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+              end
 
-              expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_truthy
-              expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
+              it 'does not update the setting when duo_foundational_flows is disabled' do
+                expect { put :update, params: { application_setting: settings } }
+                  .not_to change { ApplicationSetting.current.reload.auto_duo_code_review_enabled }
+                expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_falsey
+              end
+            end
+          end
+
+          context 'when duo_foundational_flows_enabled is true' do
+            before do
+              ApplicationSetting.current.update!(duo_foundational_flows_enabled: true)
+            end
+
+            context 'with duo_core add-on' do
+              before do
+                create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+              end
+
+              it 'updates the setting and it is available' do
+                put :update, params: { application_setting: settings }
+                expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_truthy
+                expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
+              end
             end
           end
         end

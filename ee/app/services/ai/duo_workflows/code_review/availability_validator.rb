@@ -47,6 +47,8 @@ module Ai
         end
 
         def duo_agent_platform_configured?
+          return false unless resource.duo_foundational_flows_enabled
+
           feature_setting = selected_feature_setting
 
           # SaaS customers always have DWS available

@@ -84,8 +84,11 @@ RSpec.describe 'merge requests creations', feature_category: :code_review_workfl
           let(:has_duo_access) { true }
 
           before do
-            stub_ee_application_setting(instance_level_ai_beta_features_enabled: true)
             create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+
+            project.project_setting.update!(duo_foundational_flows_enabled: true)
+            allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+              .with(project, :duo_workflow).and_return(true)
 
             allow_next_instance_of(MergeRequest) do |instance|
               allow(instance).to receive(:ai_review_merge_request_allowed?).with(user).and_return(true)

@@ -744,11 +744,28 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
           create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on)
         end
 
-        it "allows setting auto_duo_code_review_enabled with #{params[:add_on_type]} add-on" do
-          put api('/application/settings', admin, admin_mode: true), params: params
+        context 'when duo_foundational_flows_enabled is false' do
+          before do
+            ApplicationSetting.current.update!(duo_foundational_flows_enabled: false)
+          end
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['auto_duo_code_review_enabled']).to eq(true)
+          it "does not allow setting auto_duo_code_review_enabled with #{params[:add_on_type]} add-on" do
+            put api('/application/settings', admin, admin_mode: true), params: params
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['auto_duo_code_review_enabled']).to be_nil
+          end
+        end
+
+        context 'when duo_foundational_flows_enabled is true' do
+          before do
+            ApplicationSetting.current.update!(duo_foundational_flows_enabled: true)
+          end
+
+          it "allows setting auto_duo_code_review_enabled with #{params[:add_on_type]} add-on" do
+            put api('/application/settings', admin, admin_mode: true), params: params
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['auto_duo_code_review_enabled']).to eq(true)
+          end
         end
       end
     end

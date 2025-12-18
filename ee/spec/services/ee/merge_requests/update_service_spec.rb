@@ -710,10 +710,11 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
       before do
         stub_feature_flags(duo_code_review_on_agent_platform: false)
         allow(project).to receive_messages(
-          auto_duo_code_review_enabled: auto_duo_code_review
+          auto_duo_code_review_enabled: auto_duo_code_review,
+          auto_duo_code_review_settings_available?: true
         )
         allow(project.project_setting).to receive(:duo_features_enabled?).and_return(duo_enabled_project_setting)
-        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+
         allow(merge_request).to receive(:ai_review_merge_request_allowed?)
           .with(user)
           .and_return(ai_review_allowed)
@@ -776,7 +777,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
         let(:duo_enabled_project_setting) { false }
 
         before do
-          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
+          allow(project).to receive(:auto_duo_code_review_settings_available?).and_return(false)
         end
 
         it 'does not add Duo as a reviewer' do
@@ -813,6 +814,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
         before do
           stub_feature_flags(duo_code_review_on_agent_platform: true)
           stub_ee_application_setting(instance_level_ai_beta_features_enabled: true)
+          project.project_setting.update!(duo_foundational_flows_enabled: true)
           create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
 
           allow(merge_request).to receive(:ai_review_merge_request_allowed?).with(user).and_return(true)
