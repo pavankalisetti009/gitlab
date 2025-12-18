@@ -28,7 +28,7 @@ module EE
         private
 
         def quota_check
-          @quota_check ||= ::Ai::UsageQuotaService.new(user: object.user).execute
+          @quota_check ||= ::Ai::UsageQuotaService.new(ai_feature: :duo_agent_platform, user: object.user).execute
         end
       end
     end
