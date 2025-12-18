@@ -142,16 +142,6 @@ module Ai
         Ai::Catalog::Item.with_foundational_flow_reference(foundational_flow_reference).first
       end
       strong_memoize_attr :foundational_flow
-
-      def as_json(_options = {})
-        {
-          workflow_definition: name,
-          agent_privileges: agent_privileges,
-          pre_approved_agent_privileges: pre_approved_agent_privileges,
-          allow_agent_to_request_user: allow_agent_to_request_user,
-          environment: environment
-        }
-      end
     end
   end
 end

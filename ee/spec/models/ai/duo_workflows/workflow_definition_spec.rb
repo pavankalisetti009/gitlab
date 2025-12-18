@@ -47,33 +47,6 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
     end
   end
 
-  describe '#as_json' do
-    subject(:as_json) { definition.as_json }
-
-    let(:definition) do
-      described_class.new(
-        name: 'foo',
-        ai_feature: 'bar',
-        agent_privileges: [1, 2, 3],
-        pre_approved_agent_privileges: [1, 2],
-        allow_agent_to_request_user: true,
-        environment: 'ambient'
-      )
-    end
-
-    let(:expected_hash) do
-      {
-        workflow_definition: 'foo',
-        agent_privileges: [1, 2, 3],
-        pre_approved_agent_privileges: [1, 2],
-        allow_agent_to_request_user: true,
-        environment: 'ambient'
-      }
-    end
-
-    it { is_expected.to eq(expected_hash) }
-  end
-
   describe '#foundational_flow' do
     subject(:foundational_flow) { definition.foundational_flow }
 
