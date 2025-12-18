@@ -12,7 +12,7 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
     sign_in(user)
   end
 
-  describe 'POST #create', :with_current_organization do
+  describe 'POST #create' do
     let_it_be(:group_organization) { current_organization }
 
     before_all do

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupsController, :with_current_organization, feature_category: :groups_and_projects do
+RSpec.describe GroupsController, feature_category: :groups_and_projects do
   include ExternalAuthorizationServiceHelpers
   using RSpec::Parameterized::TableSyntax
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ldap::OmniauthCallbacksController, :with_current_organization, feature_category: :system_access do
+RSpec.describe Ldap::OmniauthCallbacksController, feature_category: :system_access do
   include_context 'Ldap::OmniauthCallbacksController'
 
   it "displays LDAP sync flash on first sign in" do
@@ -42,7 +42,7 @@ RSpec.describe Ldap::OmniauthCallbacksController, :with_current_organization, fe
     end
   end
 
-  context 'for sign up', :with_current_organization, :aggregate_failures do
+  context 'for sign up', :aggregate_failures do
     let(:user) { build_stubbed(:user) }
 
     before do
