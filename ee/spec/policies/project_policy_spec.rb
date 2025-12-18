@@ -5672,7 +5672,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'when admin_security_testing is disabled' do
         before do
-          allow(Ability).to receive(:allowed?).with(current_user, :admin_all_resources, :global)
+          allow(Ability).to receive(:allowed?).and_call_original
           allow(Ability).to receive(:allowed?).with(current_user, :admin_security_testing, project).and_return(false)
         end
 
