@@ -113,7 +113,7 @@ export default {
     <template #body>
       <div v-if="!error" class="-gl-mt-3 gl-flex-col">
         <gl-link :href="link" variant="meta" target="_blank" class="!gl-outline-none">
-          <gl-single-stat title="" :value="count" />
+          <gl-single-stat title="" :value="count" use-delimiters />
         </gl-link>
         <gl-truncate
           v-if="hasMedianAge"

@@ -90,6 +90,10 @@ describe('VulnerabilitiesForSeverityPanel', () => {
         expect(findSingleStat().props('value')).toBe(defaultProps.count);
       });
 
+      it('renders GlSingleStat with delimiter enabled', () => {
+        expect(findSingleStat().props('useDelimiters')).toBe(true);
+      });
+
       it('does not render error message', () => {
         expect(findErrorMessage().exists()).toBe(false);
       });
