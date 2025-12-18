@@ -9,23 +9,16 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
   before do
     project.add_developer(user)
     project.project_setting.update!(duo_remote_flows_enabled: true, duo_features_enabled: true)
-
     sign_in(user)
     allow(Ability).to receive(:allowed?).and_call_original
     allow(Ability).to receive(:allowed?).with(user, anything, anything).and_return(true)
     allow(Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+    allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
+    stub_feature_flags(duo_workflow_in_ci: true)
   end
 
   describe 'GET /:namespace/:project/-/automate' do
-    before do
-      stub_feature_flags(duo_workflow_in_ci: true)
-    end
-
     context 'when ::Ai::DuoWorkflow is enabled' do
-      before do
-        allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
-      end
-
       context 'and the user has access to duo_workflow' do
         it 'renders successfully' do
           get project_automate_agent_sessions_path(project)

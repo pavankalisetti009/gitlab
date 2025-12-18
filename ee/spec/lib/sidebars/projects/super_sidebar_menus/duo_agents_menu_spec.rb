@@ -15,12 +15,12 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
     where(:duo_features_enabled, :duo_workflow_in_ci_ff, :duo_remote_flows_enabled, :can_manage_ai_flow_triggers,
       :ai_catalog, :read_flow_permission, :configure_result, :expected_items) do
       true  | true  | true  | false | false | false | true  | [:agents_runs]
-      true  | true  | true  | true  | false | false | true  | [:agents_runs, :ai_flow_triggers]
-      true  | true  | true  | true  | true  | true  | true  | [:agents_runs, :ai_catalog_agents, :ai_flow_triggers,
-        :ai_flows]
-      true  | true  | true  | true  | true  | false | true  | [:agents_runs, :ai_catalog_agents, :ai_flow_triggers]
+      true  | true  | true  | true  | false | false | true  | [:ai_flow_triggers, :agents_runs]
+      true  | true  | true  | true  | true  | true  | true  | [:ai_catalog_agents, :ai_flows, :ai_flow_triggers,
+        :agents_runs]
+      true  | true  | true  | true  | true  | false | true  | [:ai_catalog_agents, :ai_flow_triggers, :agents_runs]
       true  | true  | false | false | false | false | false | []
-      true  | true  | false | true  | true  | true  | true  | [:ai_catalog_agents, :ai_flow_triggers, :ai_flows]
+      true  | true  | false | true  | true  | true  | true  | [:ai_catalog_agents, :ai_flows, :ai_flow_triggers]
       true  | true  | false | true  | true  | false | true  | [:ai_catalog_agents, :ai_flow_triggers]
       true  | false | true  | false | true  | true  | true  | [:ai_catalog_agents, :ai_flows]
       true  | false | true  | false | true  | false | true  | [:ai_catalog_agents]
@@ -51,6 +51,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(can_manage_ai_flow_triggers)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_return(read_flow_permission)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
+        allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
       end
 
       it "returns correct configure result" do
@@ -97,12 +98,14 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
       allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
       allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
+      allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
+      stub_feature_flags(duo_workflow_in_ci: true)
 
       project.project_setting.update!(duo_remote_flows_enabled: true, duo_features_enabled: true)
       menu.configure_menu_items
     end
 
-    let(:menu_item) { menu.renderable_items.last }
+    let(:menu_item) { menu.renderable_items.find { |item| item.item_id == :agents_runs } }
 
     it 'has correct title' do
       expect(menu_item.title).to eq('Sessions')
@@ -128,6 +131,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(true)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
+        allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
         menu.configure_menu_items
       end
 
@@ -156,6 +160,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
+        allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
         menu.configure_menu_items
       end
 
@@ -172,7 +177,8 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
       allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
       allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_return(true)
-      stub_feature_flags(ai_catalog_third_party_flows: false)
+      allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
+      stub_feature_flags(global_ai_catalog: true)
 
       menu.configure_menu_items
     end
