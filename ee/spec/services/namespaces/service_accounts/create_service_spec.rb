@@ -26,6 +26,44 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
     end
   end
 
+  shared_examples 'skip_owner_check bypasses permission checks' do
+    context 'when skip_owner_check is true' do
+      context 'when composite_identity_enforced is true' do
+        let(:params) do
+          { organization_id: organization.id, namespace_id: namespace_id, skip_owner_check: true,
+            composite_identity_enforced: true }
+        end
+
+        subject(:service) { described_class.new(current_user, params) }
+
+        it 'creates a service account successfully with composite_identity_enforced', :aggregate_failures do
+          result = service.execute
+
+          expect(result.status).to eq(:success)
+          expect(result.payload[:user].confirmed?).to be(true)
+          expect(result.payload[:user].composite_identity_enforced?).to be(true)
+          expect(result.payload[:user].user_type).to eq('service_account')
+          expect(result.payload[:user].external).to be(true)
+        end
+
+        it 'sets provisioned by group' do
+          expect(result.payload[:user].provisioned_by_group_id).to eq(group.id)
+        end
+      end
+
+      context 'when composite_identity_enforced is false' do
+        let(:params) do
+          { organization_id: organization.id, namespace_id: namespace_id, skip_owner_check: true,
+            composite_identity_enforced: false }
+        end
+
+        subject(:service) { described_class.new(current_user, params) }
+
+        it_behaves_like 'service account creation failure'
+      end
+    end
+  end
+
   let_it_be(:organization) { create(:organization) }
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, :private, parent: group) }
@@ -214,6 +252,8 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
         let_it_be(:current_user) { create(:user, maintainer_of: group) }
 
         it_behaves_like 'service account creation failure'
+
+        it_behaves_like 'skip_owner_check bypasses permission checks'
       end
 
       context 'when group owner' do
@@ -428,6 +468,21 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           end
         end
       end
+    end
+
+    context 'when current user is not a group owner' do
+      let_it_be(:group_with_ultimate) { create(:group) }
+      let_it_be(:current_user) { create(:user, maintainer_of: group_with_ultimate) }
+      let_it_be(:group) { group_with_ultimate }
+
+      before do
+        create(:gitlab_subscription, :ultimate, namespace: group_with_ultimate, seats: 10)
+        stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+      end
+
+      it_behaves_like 'service account creation failure'
+
+      it_behaves_like 'skip_owner_check bypasses permission checks'
     end
   end
 
