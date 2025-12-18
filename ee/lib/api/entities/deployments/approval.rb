@@ -5,9 +5,9 @@ module API
     module Deployments
       class Approval < Grape::Entity
         expose :user, using: Entities::UserBasic
-        expose :status, documentation: { type: 'string', example: 'approved' }
-        expose :created_at, documentation: { type: 'dateTime', example: '2022-02-24T20:22:30.097Z' }
-        expose :comment, documentation: { type: 'string', example: 'LGTM' }
+        expose :status, documentation: { type: 'String', example: 'approved' }
+        expose :created_at, documentation: { type: 'DateTime', example: '2022-02-24T20:22:30.097Z' }
+        expose :comment, documentation: { type: 'String', example: 'LGTM' }
       end
     end
   end

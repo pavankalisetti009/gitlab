@@ -7,7 +7,7 @@ module EE
         extend ActiveSupport::Concern
 
         prepended do
-          expose :vulnerability_events, documentation: { type: 'boolean' }
+          expose :vulnerability_events, documentation: { type: 'Boolean' }
         end
       end
     end

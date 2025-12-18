@@ -63367,7 +63367,7 @@ definitions:
         format: int32
         example: 1
       alert_status:
-        type: symbol
+        type: string
         example: executable
       disabled_until:
         type: string
@@ -70871,7 +70871,7 @@ definitions:
         format: int32
         example: 1
       alert_status:
-        type: symbol
+        type: string
         example: executable
       disabled_until:
         type: string
