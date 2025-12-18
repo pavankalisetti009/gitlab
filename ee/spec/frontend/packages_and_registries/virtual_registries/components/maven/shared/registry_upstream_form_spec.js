@@ -1,4 +1,4 @@
-import { GlForm } from '@gitlab/ui';
+import { GlForm, GlFormGroup } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
 import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
@@ -20,12 +20,15 @@ describe('RegistryUpstreamForm', () => {
     mavenCentralUrl: 'https://repo1.maven.org/maven2',
   };
 
-  const createComponent = ({ props = {}, provide = {} } = {}) => {
+  const createComponent = ({ props = {}, provide = {}, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(RegistryUpstreamForm, {
       propsData: props,
       provide: {
         ...defaultProvide,
         ...provide,
+      },
+      stubs: {
+        ...stubs,
       },
     });
   };
@@ -33,6 +36,7 @@ describe('RegistryUpstreamForm', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findNameInput = () => wrapper.findByTestId('name-input');
   const findUpstreamUrlInput = () => wrapper.findByTestId('upstream-url-input');
+  const findUpstreamUrlDescription = () => wrapper.findByTestId('upstream-url-description');
   const findDescriptionInput = () => wrapper.findByTestId('description-input');
   const findUsernameInput = () => wrapper.findByTestId('username-input');
   const findPasswordInput = () => wrapper.findByTestId('password-input');
@@ -154,6 +158,37 @@ describe('RegistryUpstreamForm', () => {
         expect(findCancelButton().props('href')).toBe('upstream_path');
       });
     });
+
+    describe('Upstream URL field description', () => {
+      it('shows default description when creating new upstream', () => {
+        createComponent({
+          stubs: {
+            GlFormGroup,
+          },
+        });
+        expect(findUpstreamUrlDescription().text()).toContain(
+          'You can add GitLab-hosted repositories as upstreams',
+        );
+        expect(findUpstreamUrlDescription().text()).not.toContain(
+          'Changing the URL will clear the username',
+        );
+      });
+
+      it('shows warning description when editing existing upstream', () => {
+        createComponent({
+          props: { upstream },
+          stubs: {
+            GlFormGroup,
+          },
+        });
+        expect(findUpstreamUrlDescription().text()).toContain(
+          'You can add GitLab-hosted repositories as upstreams',
+        );
+        expect(findUpstreamUrlDescription().text()).toContain(
+          'Changing the URL will clear the username and password',
+        );
+      });
+    });
   });
 
   describe('emits events', () => {
@@ -194,7 +229,7 @@ describe('RegistryUpstreamForm', () => {
           name: 'foo',
           url: defaultProvide.mavenCentralUrl,
           description: 'bar',
-          username: 'bax',
+          username: '',
           cacheValidityHours: 0,
           metadataCacheValidityHours: 48,
         }),
@@ -270,6 +305,77 @@ describe('RegistryUpstreamForm', () => {
       });
 
       expect(findTestUpstreamButton().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('URL change behavior when editing upstream', () => {
+    beforeEach(() => {
+      createComponent({
+        props: { upstream },
+      });
+    });
+
+    it('clears username and password when URL is changed', async () => {
+      expect(findUsernameInput().props('value')).toBe('bax');
+      expect(findPasswordInput().props('placeholder')).toBe('*****');
+
+      await findUpstreamUrlInput().vm.$emit('input', 'https://different-url.com');
+
+      expect(findUsernameInput().props('value')).toBe('');
+      expect(findPasswordInput().props('value')).toBe('');
+      expect(findPasswordInput().props('placeholder')).toBe('');
+    });
+
+    it('restores username and password placeholder when URL is changed back to original', async () => {
+      await findUpstreamUrlInput().vm.$emit('input', 'https://different-url.com');
+
+      expect(findUsernameInput().props('value')).toBe('');
+      expect(findPasswordInput().props('placeholder')).toBe('');
+
+      await findUpstreamUrlInput().vm.$emit('input', 'https://example.com');
+
+      expect(findUsernameInput().props('value')).toBe('bax');
+      expect(findPasswordInput().props('placeholder')).toBe('*****');
+    });
+
+    it('does not restore credentials when URL is changed to a different URL', async () => {
+      await findUpstreamUrlInput().vm.$emit('input', 'https://different-url.com');
+
+      expect(findUsernameInput().props('value')).toBe('');
+
+      await findUpstreamUrlInput().vm.$emit('input', 'https://another-url.com');
+
+      expect(findUsernameInput().props('value')).toBe('');
+      expect(findPasswordInput().props('placeholder')).toBe('');
+    });
+
+    it('does not show password placeholder when upstream has no username', async () => {
+      createComponent({
+        props: { upstream: { ...upstream, username: '' } },
+      });
+
+      expect(findPasswordInput().props('placeholder')).toBe('');
+
+      await findUpstreamUrlInput().vm.$emit('input', 'https://different-url.com');
+
+      expect(findPasswordInput().props('placeholder')).toBe('');
+    });
+  });
+
+  describe('URL change behavior when creating new upstream', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('does not clear username when URL is changed on new upstream', async () => {
+      await findUsernameInput().vm.$emit('input', 'testuser');
+      await findUpstreamUrlInput().vm.$emit('input', 'https://example.com');
+
+      expect(findUsernameInput().props('value')).toBe('testuser');
+
+      await findUpstreamUrlInput().vm.$emit('input', 'https://different-url.com');
+
+      expect(findUsernameInput().props('value')).toBe('testuser');
     });
   });
 });

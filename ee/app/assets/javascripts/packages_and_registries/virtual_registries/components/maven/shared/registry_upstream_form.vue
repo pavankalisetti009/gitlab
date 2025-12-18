@@ -44,6 +44,9 @@ export default {
     upstreamUrlDescription: s__(
       'VirtualRegistry|You can add GitLab-hosted repositories as upstreams. Use your GitLab username and a personal access token as the password.',
     ),
+    upstreamUrlWarning: s__(
+      'VirtualRegistry|Changing the URL will clear the username and password.',
+    ),
     descriptionLabel: s__('VirtualRegistry|Description (optional)'),
     usernameLabel: s__('VirtualRegistry|Username (optional)'),
     passwordLabel: s__('VirtualRegistry|Password (optional)'),
@@ -97,6 +100,12 @@ export default {
     metadataCacheValidityHoursInputId: 'metadata-cache-validity-hours-input',
   },
   computed: {
+    hasOriginalPassword() {
+      return Boolean(this.upstream.username);
+    },
+    urlWasChanged() {
+      return this.upstream.id && this.upstream.url !== this.form.url;
+    },
     cacheValidityHoursDescription() {
       if (this.isMavenCentralUrl) {
         return s__(
@@ -116,7 +125,10 @@ export default {
       return this.showValidation ? this.isValidURL : true;
     },
     passwordPlaceholder() {
-      return this.upstream.username ? PASSWORD_PLACEHOLDER : '';
+      if (this.hasOriginalPassword && !this.urlWasChanged) {
+        return PASSWORD_PLACEHOLDER;
+      }
+      return '';
     },
     saveButtonText() {
       return this.upstream.id ? __('Save changes') : this.$options.i18n.createUpstreamButtonLabel;
@@ -126,6 +138,13 @@ export default {
     },
   },
   methods: {
+    handleUrlChange(newUrl) {
+      if (!this.upstream.id) return;
+
+      const urlChanged = this.upstream.url !== newUrl;
+      this.form.username = urlChanged ? '' : this.upstream.username;
+      if (urlChanged) this.form.password = '';
+    },
     submit() {
       this.showValidation = true;
 
@@ -158,7 +177,6 @@ export default {
     </gl-form-group>
     <gl-form-group
       :label="$options.i18n.upstreamUrlLabel"
-      :description="$options.i18n.upstreamUrlDescription"
       :label-for="$options.ids.upstreamUrlInputId"
       :invalid-feedback="$options.i18n.invalidUrl"
       :state="isValidUrlState"
@@ -169,7 +187,14 @@ export default {
         type="url"
         data-testid="upstream-url-input"
         required
+        @input="handleUrlChange"
       />
+      <template #description>
+        <div data-testid="upstream-url-description">
+          <p>{{ $options.i18n.upstreamUrlDescription }}</p>
+          <p v-if="upstream.id">{{ $options.i18n.upstreamUrlWarning }}</p>
+        </div>
+      </template>
     </gl-form-group>
     <gl-form-group
       :label="$options.i18n.descriptionLabel"
