@@ -44158,9 +44158,6 @@ msgstr ""
 msgid "New deploy key"
 msgstr ""
 
-msgid "New directory"
-msgstr ""
-
 msgid "New email address added"
 msgstr ""
 
@@ -44272,9 +44269,6 @@ msgid "New snippet"
 msgstr ""
 
 msgid "New subgroup"
-msgstr ""
-
-msgid "New tag"
 msgstr ""
 
 msgid "New test case"
@@ -68993,9 +68987,6 @@ msgstr ""
 msgid "This diff is collapsed."
 msgstr ""
 
-msgid "This directory"
-msgstr ""
-
 msgid "This directory cannot be locked while %{locker} has a lock on \"%{path}\". %{additionalPhrase}"
 msgstr ""
 
@@ -69473,9 +69464,6 @@ msgid "This project will be restored from scheduled deletion."
 msgstr ""
 
 msgid "This release was created with a date in the past. Evidence collection at the moment of the release is unavailable."
-msgstr ""
-
-msgid "This repository"
 msgstr ""
 
 msgid "This repository has never been checked."
