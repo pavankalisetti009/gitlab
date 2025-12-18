@@ -793,6 +793,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:search_elastic_retry_queue_cron
+  :worker_name: Search::ElasticRetryQueueCronWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:search_zoekt_metrics_update_cron
   :worker_name: Search::Zoekt::MetricsUpdateCronWorker
   :feature_category: :global_search
