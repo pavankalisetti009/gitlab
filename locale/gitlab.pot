@@ -74301,6 +74301,9 @@ msgstr ""
 msgid "VirtualRegistry|Cache: %{size}"
 msgstr ""
 
+msgid "VirtualRegistry|Changing the URL will clear the username and password."
+msgstr ""
+
 msgid "VirtualRegistry|Clear all caches"
 msgstr ""
 
