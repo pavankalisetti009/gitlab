@@ -23,6 +23,8 @@ module Ai
         @item_version = params[:item_version]
         @service_account = params[:service_account]
         @flow_definition = params[:flow_definition] || determine_workflow_definition
+        @source_branch = params[:source_branch]
+        @additional_context = params[:additional_context]
       end
 
       def execute
@@ -106,9 +108,10 @@ module Ai
           workflow_service_token: workflow_token_result.payload[:token],
           use_service_account: workflow_context_service.use_service_account?,
           service_account: service_account,
-          source_branch: nil,
+          source_branch: @source_branch,
           workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
-          duo_agent_platform_feature_setting: workflow_context_service.duo_agent_platform_feature_setting
+          duo_agent_platform_feature_setting: workflow_context_service.duo_agent_platform_feature_setting,
+          additional_context: @additional_context
         }
       end
 

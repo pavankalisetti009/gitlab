@@ -84,6 +84,20 @@ module Ai
           ],
           environment: "web",
           triggers: []
+        },
+        {
+          id: 6,
+          name: "convert_to_gl_ci/v1",
+          foundational_flow_reference: "convert_to_gl_ci/v1",
+          description: "Convert to GitLab CI format",
+          pre_approved_agent_privileges: [
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+          ],
+          environment: "web",
+          triggers: []
         }
       ].freeze
 
