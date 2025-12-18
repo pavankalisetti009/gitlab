@@ -28,7 +28,7 @@ module Mutations
           end
 
           result = ::SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionService
-            .new(project, current_user)
+            .new(project.secrets_manager, current_user)
             .execute
 
           if result.success?

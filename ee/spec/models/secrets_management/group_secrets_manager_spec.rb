@@ -210,4 +210,47 @@ RSpec.describe SecretsManagement::GroupSecretsManager, feature_category: :secret
       expect(ci_jwt).to eq("generated_jwt_id_token_for_group_secrets_manager")
     end
   end
+
+  describe 'path persistence' do
+    context 'on creation' do
+      it 'sets group_path' do
+        expect(secrets_manager.group_path).to eq("group_#{group.id}")
+      end
+
+      context 'for a nested group' do
+        let_it_be(:parent_group) { create(:group) }
+        let_it_be(:nested_group) { create(:group, parent: parent_group) }
+
+        subject(:secrets_manager) { create(:group_secrets_manager, group: nested_group) }
+
+        it 'sets group_path for the nested group' do
+          expect(secrets_manager.group_path).to eq("group_#{nested_group.id}")
+        end
+      end
+    end
+
+    context 'when group is deleted' do
+      let(:deleted_secrets_manager) do
+        secrets_manager.tap do |sm|
+          sm.update_column(:group_id, nil)
+          sm.reload
+        end
+      end
+
+      it 'retains group_path' do
+        expect(deleted_secrets_manager.group_path).to eq("group_#{group.id}")
+      end
+
+      context 'for a nested group' do
+        let_it_be(:parent_group) { create(:group) }
+        let_it_be(:nested_group) { create(:group, parent: parent_group) }
+
+        subject(:secrets_manager) { create(:group_secrets_manager, group: nested_group) }
+
+        it 'retains group_path for nested group' do
+          expect(deleted_secrets_manager.group_path).to eq("group_#{nested_group.id}")
+        end
+      end
+    end
+  end
 end

@@ -214,4 +214,46 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       expect(path).to eq('some/namespace/project_1/auth/ci_auth/login')
     end
   end
+
+  describe 'path persistence' do
+    context 'on creation' do
+      it 'sets namespace_path' do
+        expect(secrets_manager.namespace_path).to eq("user_#{project.namespace.id}")
+      end
+
+      it 'sets project_path' do
+        expect(secrets_manager.project_path).to eq("project_#{project.id}")
+      end
+
+      context 'when project belongs to a group' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project_in_group) { create(:project, group: group) }
+
+        subject(:secrets_manager) { create(:project_secrets_manager, project: project_in_group) }
+
+        it 'sets namespace_path with group type' do
+          expect(secrets_manager.namespace_path).to eq("group_#{group.id}")
+        end
+      end
+    end
+
+    context 'when project is deleted' do
+      before do
+        secrets_manager.update_column(:project_id, nil)
+      end
+
+      it 'retains namespace_path' do
+        expect(secrets_manager.reload.namespace_path).to eq("user_#{project.namespace.id}")
+      end
+
+      it 'retains project_path' do
+        expect(secrets_manager.reload.project_path).to eq("project_#{project.id}")
+      end
+
+      it 'full_project_namespace_path uses persisted paths' do
+        expect(secrets_manager.reload.full_project_namespace_path)
+        .to eq("user_#{project.namespace.id}/project_#{project.id}")
+      end
+    end
+  end
 end
