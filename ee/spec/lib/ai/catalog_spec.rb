@@ -16,23 +16,36 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
       end
 
       # rubocop:disable Layout/LineLength -- multiple lines makes this less readable
-      where(:global_ai_catalog_ff, :ai_duo_agent_platform_ga_rollout_ff, :namespace_experiment_setting_enabled, :is_available) do
-        false | false | false | false
-        true  | false | false | false
-        false | true  | false | false
-        false | false | true  | false
-        true  | true  | false | true
-        false | true  | true  | false
-        true  | false | true  | true
-        true  | true  | true  | true
+      where(:global_ai_catalog_ff, :ai_duo_agent_platform_ga_rollout_ff, :namespace_experiment_setting_enabled, :has_premium_plan, :duo_agent_platform_enabled, :is_available) do
+        false | false | false | false | false | false
+        true  | false | false | false | false | false
+        false | true  | false | false | false | false
+        false | false | true  | false | false | false
+        true  | true  | false | false | false | false
+        false | true  | true  | false | false | false
+        true  | false | true  | false | false | false
+        true  | true  | true  | false | false | false
+        true  | true  | true  | true  | false | false
+        true  | true  | true  | true  | true  | true
       end
       # rubocop:enable Layout/LineLength
 
       with_them do
         let!(:member_group) do
-          create(:group, guests: user, namespace_settings: build(:namespace_settings,
+          group = create(:group, guests: user, namespace_settings: build(:namespace_settings,
             experiment_features_enabled: namespace_experiment_setting_enabled
           ))
+
+          if has_premium_plan
+            create(:gitlab_subscription, namespace: group, hosted_plan: create(:premium_plan))
+            group.reload
+          end
+
+          if duo_agent_platform_enabled
+            create(:namespace_ai_settings, namespace: group, feature_settings: { duo_agent_platform_enabled: true })
+          end
+
+          group
         end
 
         before do
@@ -43,6 +56,47 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
         end
 
         it { is_expected.to eq(is_available) }
+      end
+
+      context 'when caching behavior for duo_agent_platform_available' do
+        let_it_be(:group) { create(:group, guests: user) }
+
+        before do
+          stub_feature_flags(
+            global_ai_catalog: true,
+            ai_duo_agent_platform_ga_rollout: true
+          )
+          create(:gitlab_subscription, namespace: group, hosted_plan: create(:premium_plan))
+          create(:namespace_ai_settings, namespace: group, feature_settings: { duo_agent_platform_enabled: true })
+        end
+
+        context 'when in production' do
+          before do
+            allow(Rails.env).to receive(:production?).and_return(true)
+          end
+
+          it 'caches the result for 30 minutes' do
+            # Verify the method uses Rails.cache.fetch with correct expiration
+            allow(Rails.cache).to receive(:fetch).and_call_original
+            available?
+            expect(Rails.cache).to have_received(:fetch).with(
+              "ai_catalog:duo_agent_platform_available:#{user.id}",
+              expires_in: 30.minutes
+            )
+          end
+        end
+
+        context 'when in development' do
+          before do
+            allow(Rails.env).to receive(:production?).and_return(false)
+          end
+
+          it 'does not use cache' do
+            # Cache should not be called in development
+            expect(Rails.cache).not_to receive(:fetch)
+            available?
+          end
+        end
       end
     end
 
