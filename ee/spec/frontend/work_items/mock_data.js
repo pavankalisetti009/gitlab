@@ -9,6 +9,27 @@ import * as CE from 'jest/work_items/mock_data';
 // eslint-disable-next-line import/export
 export * from 'jest/work_items/mock_data';
 
+// Add EE-specific fields to projectMembersAutocompleteResponseWithCurrentUser - override CE version
+/* eslint-disable import/export */
+export const projectMembersAutocompleteResponseWithCurrentUser = {
+  data: {
+    workspace: {
+      ...CE.projectMembersAutocompleteResponseWithCurrentUser.data.workspace,
+      users: CE.projectMembersAutocompleteResponseWithCurrentUser.data.workspace.users.map(
+        (user) => ({
+          ...user,
+          status: {
+            ...user.status,
+            disabledForDuoUsage: true,
+            disabledForDuoUsageReason: null,
+          },
+        }),
+      ),
+    },
+  },
+};
+/* eslint-enable import/export */
+
 /**
  * Adds a blockedWorkItems property to all userPermissions objects that have
  * __typename set to "WorkItemPermissions" at any level of a nested object.

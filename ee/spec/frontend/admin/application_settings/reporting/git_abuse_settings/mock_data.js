@@ -47,14 +47,22 @@ export const groupMembersResponse = {
             id: 'user-1',
             user: {
               ...mockUser1,
-              status: { availability: 'BUSY' },
+              status: {
+                availability: 'BUSY',
+                disabledForDuoUsage: false,
+                disabledForDuoUsageReason: '',
+              },
             },
           },
           {
             id: 'user-2',
             user: {
               ...mockUser2,
-              status: { availability: 'BUSY' },
+              status: {
+                availability: 'BUSY',
+                disabledForDuoUsage: false,
+                disabledForDuoUsageReason: '',
+              },
             },
           },
         ],
