@@ -3,7 +3,7 @@
 module API
   module Entities
     class MergeRequestApprovalState < Grape::Entity
-      expose :approval_rules_overwritten, documentation: { type: 'boolean' } do |approval_state|
+      expose :approval_rules_overwritten, documentation: { type: 'Boolean' } do |approval_state|
         approval_state.approval_rules_overwritten?
       end
 
