@@ -54,12 +54,22 @@ module Ai
         ServiceResponse.from_legacy_hash(result)
       end
 
-      def duo_agent_platform_available?(_container = nil)
-        # For GitLab.com, return true until logic has been implemented
-        return true if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      def duo_agent_platform_available?(container = nil)
+        if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+          # On SaaS, check if the container's root namespace has:
+          # 1. Premium or Ultimate license (ai_catalog is available in Premium+)
+          # 2. duo_agent_platform_enabled in ai_settings
+          return false unless container
 
-        # For self-managed/dedicated instances, use instance-level settings
-        ai_settings.duo_agent_platform_enabled
+          root_namespace = container.root_ancestor
+
+          return false if root_namespace.ai_settings&.duo_agent_platform_enabled == false
+
+          true
+        else
+          # For self-managed/dedicated instances, use instance-level settings
+          ai_settings.duo_agent_platform_enabled
+        end
       end
 
       private

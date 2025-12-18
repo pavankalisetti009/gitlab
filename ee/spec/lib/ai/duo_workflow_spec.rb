@@ -186,11 +186,55 @@ RSpec.describe Ai::DuoWorkflow, feature_category: :ai_abstraction_layer do
     let(:application_setting) { instance_double(Ai::Setting) }
     let(:duo_agent_platform_enabled) { nil }
     let(:ai_setting) { ::Ai::Setting.instance }
+    let_it_be_with_reload(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
 
     context 'when on GitLab.com (SaaS)', :saas do
-      subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available? }
+      context 'when container is nil' do
+        subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available?(nil) }
 
-      it { is_expected.to be true }
+        it { is_expected.to be false }
+      end
+
+      context 'when container has duo_agent_platform_enabled is false' do
+        before do
+          Ai::NamespaceSetting.create!(namespace: group, feature_settings: { duo_agent_platform_enabled: false })
+        end
+
+        subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available?(group) }
+
+        it { is_expected.to be false }
+      end
+
+      context 'when container has duo_agent_platform_enabled is true' do
+        before do
+          Ai::NamespaceSetting.create!(namespace: group, feature_settings: { duo_agent_platform_enabled: true })
+        end
+
+        subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available?(group) }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when container is a project and parent has duo_agent_platform_enabled is true' do
+        before do
+          Ai::NamespaceSetting.create!(namespace: group, feature_settings: { duo_agent_platform_enabled: true })
+        end
+
+        subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available?(project) }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when container is a project and parent has duo_agent_platform_enabled is false' do
+        before do
+          Ai::NamespaceSetting.create!(namespace: group, feature_settings: { duo_agent_platform_enabled: false })
+        end
+
+        subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available?(project) }
+
+        it { is_expected.to be false }
+      end
     end
 
     context 'when on a self-managed or dedicated instance' do

@@ -2,6 +2,9 @@
 
 module Ai
   module Catalog
+    CACHE_EXPIRATION = 30.minutes
+    private_constant :CACHE_EXPIRATION
+
     class << self
       def available?(user)
         feature_available?(user) && # rubocop:disable Gitlab/FeatureAvailableUsage -- Not a license check
@@ -14,11 +17,31 @@ module Ai
       def duo_agent_platform_available_for_user?(user)
         return false unless user
 
-        # For GitLab.com, return true until logic has been implemented
-        return true if saas?
+        if saas?
+          # On SaaS, check if user belongs to any top-level group with:
+          # 1. Premium or Ultimate license (ai_catalog is available in Premium+)
+          # 2. duo_agent_platform_enabled in ai_settings
+          cached_duo_agent_platform_available?(user)
+        else
+          # On self-managed/dedicated, check instance-level setting
+          ::Ai::Setting.instance.duo_agent_platform_enabled
+        end
+      end
 
-        # On self-managed/dedicated, check instance-level setting
-        ::Ai::Setting.instance.duo_agent_platform_enabled
+      def cached_duo_agent_platform_available?(user)
+        # Skip cache in development for instant feedback
+        return duo_agent_platform_enabled_for_user?(user) unless Rails.env.production?
+
+        cache_key = "ai_catalog:duo_agent_platform_available:#{user.id}"
+        Rails.cache.fetch(cache_key, expires_in: CACHE_EXPIRATION) do
+          duo_agent_platform_enabled_for_user?(user)
+        end
+      end
+
+      def duo_agent_platform_enabled_for_user?(user)
+        user.authorized_groups.top_level.with_ai_supported_plan(:ai_catalog).any? do |group|
+          group.ai_settings&.duo_agent_platform_enabled == true
+        end
       end
 
       def feature_available?(user)
