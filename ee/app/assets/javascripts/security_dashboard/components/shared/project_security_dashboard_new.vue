@@ -10,10 +10,16 @@ import {
   REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY,
   REPORT_TYPES_WITH_CLUSTER_IMAGE,
 } from 'ee/security_dashboard/constants';
+import { TRACKED_REF_TOKEN_DEFINITION } from './filtered_search/tokens/constants';
 import FilteredSearch from './security_dashboard_filtered_search/filtered_search.vue';
 import ReportTypeToken from './filtered_search/tokens/report_type_token.vue';
 import VulnerabilitiesOverTimePanel from './vulnerabilities_over_time_panel.vue';
 import SecurityDashboardDescription from './security_dashboard_description.vue';
+
+const SINGLE_SELECT_TRACKED_REF_TOKEN_DEFINITION = {
+  ...TRACKED_REF_TOKEN_DEFINITION,
+  multiSelect: false,
+};
 
 const REPORT_TYPE_TOKEN_DEFINITION = {
   type: 'reportType',
@@ -36,12 +42,26 @@ export default {
     FilteredSearch,
   },
   mixins: [glFeatureFlagMixin()],
+  inject: {
+    trackedRefs: {
+      default: () => [],
+    },
+  },
   data() {
     return {
       filters: {},
     };
   },
   computed: {
+    filteredSearchTokens() {
+      const tokens = [REPORT_TYPE_TOKEN_DEFINITION];
+
+      if (this.trackedRefs.length > 0 && this.glFeatures?.vulnerabilitiesAcrossContexts) {
+        tokens.push(SINGLE_SELECT_TRACKED_REF_TOKEN_DEFINITION);
+      }
+
+      return tokens;
+    },
     dashboard() {
       return {
         panels: [
@@ -72,7 +92,6 @@ export default {
       this.filters = newFilters;
     },
   },
-  filteredSearchTokens: [REPORT_TYPE_TOKEN_DEFINITION],
 };
 </script>
 
@@ -85,7 +104,7 @@ export default {
       <security-dashboard-description scope="project" />
     </template>
     <template #filters>
-      <filtered-search :tokens="$options.filteredSearchTokens" @filters-changed="updateFilters" />
+      <filtered-search :tokens="filteredSearchTokens" @filters-changed="updateFilters" />
     </template>
     <template #panel="{ panel }">
       <component :is="panel.component" v-bind="panel.componentProps" />

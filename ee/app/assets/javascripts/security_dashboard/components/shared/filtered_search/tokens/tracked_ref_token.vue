@@ -7,8 +7,7 @@ import {
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
-// eslint-disable-next-line no-restricted-imports
-import { ALL_ID } from '../../filters/constants';
+import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 import SearchSuggestion from '../components/search_suggestion.vue';
 
 export default {
@@ -53,11 +52,27 @@ export default {
     },
   },
   data() {
-    return {
-      selectedRefIds: this.value.data || [ALL_ID],
-    };
+    const defaultRefId = this.trackedRefs.find((ref) => ref.isDefault)?.id;
+    const hasData = this.value.data?.length > 0;
+
+    if (hasData) {
+      return { selectedRefIds: this.value.data };
+    }
+
+    if (defaultRefId) {
+      return { selectedRefIds: [defaultRefId] };
+    }
+
+    if (this.config.multiSelect) {
+      return { selectedRefIds: [ALL_ID] };
+    }
+
+    return { selectedRefIds: [] };
   },
   computed: {
+    isMultiSelect() {
+      return this.config.multiSelect;
+    },
     tokenValue() {
       return {
         ...this.value,
@@ -68,8 +83,10 @@ export default {
       const branchOptions = this.getRefByType('branch').map(this.createOption);
       const tagOptions = this.getRefByType('tag').map(this.createOption);
 
-      const groups = [
-        {
+      const groups = [];
+
+      if (this.isMultiSelect) {
+        groups.push({
           text: '',
           options: [
             {
@@ -77,8 +94,8 @@ export default {
               text: s__('SecurityReports|All tracked refs'),
             },
           ],
-        },
-      ];
+        });
+      }
 
       if (branchOptions.length) {
         groups.push({
@@ -99,14 +116,19 @@ export default {
       return groups;
     },
     allRefItems() {
-      const allOption = {
-        value: ALL_ID,
-        text: s__('SecurityReports|All tracked refs'),
-      };
       const refOptions = this.trackedRefs.map((ref) => ({
         value: ref.id,
         text: ref.name,
       }));
+
+      if (!this.isMultiSelect) {
+        return refOptions;
+      }
+
+      const allOption = {
+        value: ALL_ID,
+        text: s__('SecurityReports|All tracked refs'),
+      };
 
       return [allOption, ...refOptions];
     },
@@ -114,7 +136,9 @@ export default {
       return getSelectedOptionsText({
         options: this.allRefItems,
         selected: this.selectedRefIds,
-        placeholder: s__('SecurityReports|All tracked refs'),
+        placeholder: this.isMultiSelect
+          ? s__('SecurityReports|All tracked refs')
+          : s__('SecurityReports|Select a ref'),
         maxOptionsShown: 2,
       });
     },
@@ -136,6 +160,13 @@ export default {
         return;
       }
 
+      // Single-select mode: replace selection
+      if (!this.isMultiSelect) {
+        this.selectedRefIds = [refId];
+        return;
+      }
+
+      // Multi-select mode: toggle selection
       const isSelecting = !this.selectedRefIds.includes(refId);
       if (isSelecting) {
         this.selectedRefIds = this.selectedRefIds.filter((id) => id !== ALL_ID).concat(refId);

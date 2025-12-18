@@ -45,6 +45,7 @@ export default async (el, dashboardType) => {
     groupSecurityVulnerabilitiesPath,
     projectSecurityVulnerabilitiesPath,
     securityPoliciesPath,
+    trackedRefs,
   } = el.dataset;
 
   const hasProjects = parseBoolean(el.dataset.hasProjects);
@@ -107,6 +108,7 @@ export default async (el, dashboardType) => {
     } else if (isProjectSecurityDashboardNewEnabled && hasAccessAdvancedVulnerabilityManagement) {
       provide.securityVulnerabilitiesPath = projectSecurityVulnerabilitiesPath;
       provide.fullPath = projectFullPath;
+      provide.trackedRefs = trackedRefs ? JSON.parse(trackedRefs) : [];
       const { default: ProjectSecurityDashboardNew } = await import(
         './components/shared/project_security_dashboard_new.vue'
       );
