@@ -198,6 +198,9 @@ export default {
           }
         : { isProjectNamespace: this.showEnable };
     },
+    deleteOptions() {
+      return DELETE_OPTIONS(this.itemTypeLabel);
+    },
   },
   methods: {
     onClickEnable() {
@@ -207,8 +210,11 @@ export default {
         page: TRACK_EVENT_PAGE_SHOW,
       });
     },
+    openDeleteModal() {
+      this.forceHardDelete = this.canHardDelete;
+      this.showDeleteModal = true;
+    },
   },
-  DELETE_OPTIONS,
   adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
     anchor: 'admin-mode',
   }),
@@ -308,7 +314,7 @@ export default {
         v-if="canAdmin"
         variant="danger"
         data-testid="delete-button"
-        @action="showDeleteModal = true"
+        @action="openDeleteModal"
       >
         <template #list-item>
           <span class="gl-flex gl-gap-2">
@@ -339,21 +345,17 @@ export default {
           {{ s__('AICatalog|Deletion method') }}
         </label>
         <p class="gl-mb-3 gl-text-subtle">
-          {{ s__('AICatalog|You can also use the GraphQL API to delete items.') }}
+          <gl-sprintf
+            :message="s__('AICatalog|Choose whether to delete or hide this %{itemType}.')"
+          >
+            <template #itemType>{{ itemTypeLabel }}</template>
+          </gl-sprintf>
         </p>
         <gl-form-radio-group id="delete-method" v-model="forceHardDelete">
-          <gl-form-radio
-            v-for="option in $options.DELETE_OPTIONS"
-            :key="option.text"
-            :value="option.value"
-          >
+          <gl-form-radio v-for="option in deleteOptions" :key="option.text" :value="option.value">
             {{ option.text }}
             <template #help>
-              <gl-sprintf :message="option.help">
-                <template #link="{ content }">
-                  <gl-link :href="$options.adminModeDocsLink">{{ content }}</gl-link>
-                </template>
-              </gl-sprintf>
+              {{ option.help }}
             </template>
           </gl-form-radio>
         </gl-form-radio-group>

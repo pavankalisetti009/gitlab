@@ -66,6 +66,11 @@ describe('AiCatalogItemActions', () => {
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
   const findDeleteModal = () => wrapper.findByTestId('delete-item-modal');
 
+  const openDeleteModal = async () => {
+    findDeleteButton().vm.$emit('action');
+    await nextTick();
+  };
+
   describe('when user can report item', () => {
     beforeEach(() => {
       createComponent({
@@ -362,12 +367,47 @@ describe('AiCatalogItemActions', () => {
       });
 
       it('displays deletion method radio buttons', async () => {
-        findDeleteButton().vm.$emit('action');
-
-        await nextTick();
+        await openDeleteModal();
 
         expect(findDeleteModal().exists()).toBe(true);
         expect(findDeleteModal().findComponent(GlFormRadioGroup).exists()).toBe(true);
+      });
+
+      it('displays deletion method radio buttons with hard delete option selected', async () => {
+        await openDeleteModal();
+
+        const radioGroup = findDeleteModal().findComponent(GlFormRadioGroup);
+        expect(radioGroup.attributes('checked')).toBe('true');
+      });
+
+      it('calls deleteFn with forceHardDelete set to true if hard delete is selected', async () => {
+        await openDeleteModal();
+
+        const deleteModal = findDeleteModal();
+        const radioGroup = deleteModal.findComponent(GlFormRadioGroup);
+        radioGroup.vm.$emit('input', true);
+
+        await nextTick();
+
+        const actionFn = deleteModal.props('actionFn');
+        await actionFn();
+
+        expect(defaultProps.deleteFn).toHaveBeenCalledWith(true);
+      });
+
+      it('calls deleteFn with forceHardDelete set to false if soft delete is selected', async () => {
+        await openDeleteModal();
+
+        const deleteModal = findDeleteModal();
+        const radioGroup = deleteModal.findComponent(GlFormRadioGroup);
+        radioGroup.vm.$emit('input', false);
+
+        await nextTick();
+
+        const actionFn = deleteModal.props('actionFn');
+        await actionFn();
+
+        expect(defaultProps.deleteFn).toHaveBeenCalledWith(false);
       });
     });
 
@@ -387,11 +427,19 @@ describe('AiCatalogItemActions', () => {
       });
 
       it('does not display deletion method radio buttons', async () => {
-        findDeleteButton().vm.$emit('action');
-
-        await nextTick();
+        await openDeleteModal();
 
         expect(findDeleteModal().findComponent(GlFormRadioGroup).exists()).toBe(false);
+      });
+
+      it('calls deleteFn with forceHardDelete set to false', async () => {
+        await openDeleteModal();
+
+        const deleteModal = findDeleteModal();
+        const actionFn = deleteModal.props('actionFn');
+        await actionFn();
+
+        expect(defaultProps.deleteFn).toHaveBeenCalledWith(false);
       });
     });
   });

@@ -1,5 +1,4 @@
-import { __, s__ } from '~/locale';
-
+import { __, s__, sprintf } from '~/locale';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -148,19 +147,20 @@ export const AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG = {
   },
 };
 
-export const DELETE_OPTIONS = [
+export const DELETE_OPTIONS = (itemTypeLabel) => [
   {
     value: true,
-    text: s__('AICatalog|Hard delete (Recommended)'),
-    help: s__(
-      'AICatalog|Permanently deletes the item from the catalog. This action cannot be undone. You must be in %{linkStart}Admin Mode%{linkEnd}.',
-    ),
+    text: s__('AICatalog|Delete permanently'),
+    help: s__('AICatalog|This action cannot be undone.'),
   },
   {
     value: false,
-    text: s__('AICatalog|Soft delete'),
-    help: s__(
-      'AICatalog|The item will be hidden from the catalog but remain functional for projects and groups already using it.',
+    text: s__('AICatalog|Hide from the AI Catalog'),
+    help: sprintf(
+      s__(
+        'AICatalog|Users can continue to use the %{itemType} in the groups and projects it is enabled in.',
+      ),
+      { itemType: itemTypeLabel },
     ),
   },
 ];
