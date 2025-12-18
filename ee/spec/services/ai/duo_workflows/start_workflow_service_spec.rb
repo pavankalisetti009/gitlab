@@ -51,8 +51,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         workload_id: workload_id)
 
       workload = Ci::Workloads::Workload.find_by_id([workload_id])
-      expect(workload.branch_name).to start_with('workloads/')
-      expect(workload.branch_name).to start_with('workloads/')
+      expect(workload.branch_name).to start_with('refs/workloads/')
     end
   end
 
@@ -860,7 +859,6 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         %(echo $DUO_WORKFLOW_DEFINITION),
         %(echo $DUO_WORKFLOW_GOAL),
         %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
-        %(git checkout $CI_WORKLOAD_REF),
         %(echo $DUO_WORKFLOW_FLOW_CONFIG),
         %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
         %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
@@ -1065,9 +1063,9 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
           expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
             commands = workload_definition.commands
             expect(commands[0]).to eq('npm install')
-            expect(commands[1..8]).to eq(shared_main_commands)
-            expect(commands[9..12]).to eq(cli_install_commands)
-            expect(commands[13..]).to eq(wrapped_commands)
+            expect(commands[1..7]).to eq(shared_main_commands)
+            expect(commands[8..11]).to eq(cli_install_commands)
+            expect(commands[12..]).to eq(wrapped_commands)
           end
         end
       end
@@ -1123,6 +1121,23 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         end
 
         it_behaves_like 'sandbox is disabled'
+      end
+    end
+
+    context 'when feature flag use_internal_refs_for_workload_pipelines is disabled' do
+      before do
+        stub_feature_flags(use_internal_refs_for_workload_pipelines: false)
+        allow(duo_config).to receive(:setup_script).and_return([])
+      end
+
+      it 'prepends the checkout command' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          commands = workload_definition.commands
+          expect(commands).to include('git checkout $CI_WORKLOAD_REF')
+          expect(commands.size).to eq(8)
+        end.and_call_original
+
+        expect(execute).to be_success
       end
     end
   end

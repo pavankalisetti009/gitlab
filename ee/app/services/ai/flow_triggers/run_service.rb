@@ -189,7 +189,7 @@ module Ai
         branch_response = workload_branch_service.execute
         return branch_response unless branch_response.success?
 
-        ServiceResponse.success(payload: { ref: branch_response.payload[:branch_name] })
+        ServiceResponse.success(payload: { ref: branch_response.payload[:ref] })
       end
 
       def composite_identity_token

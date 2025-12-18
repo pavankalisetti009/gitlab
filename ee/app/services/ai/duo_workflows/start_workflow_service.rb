@@ -46,7 +46,7 @@ module Ai
         branch_response = create_workload_branch
         return branch_response unless branch_response.success?
 
-        @ref = branch_response.payload[:branch_name]
+        @ref = branch_response.payload[:ref]
         service = ::Ci::Workloads::RunWorkloadService.new(
           project: project,
           current_user: @workload_user,
@@ -174,12 +174,17 @@ module Ai
           %(echo $DUO_WORKFLOW_DEFINITION),
           %(echo $DUO_WORKFLOW_GOAL),
           %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
-          %(git checkout $CI_WORKLOAD_REF),
           %(echo $DUO_WORKFLOW_FLOW_CONFIG),
           %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
           %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
           %(echo Starting Workflow #{@workflow.id})
-        ] + set_up_executor_commands
+        ] + branch_checkout_commands + set_up_executor_commands
+      end
+
+      def branch_checkout_commands
+        return [] if Feature.enabled?(:use_internal_refs_for_workload_pipelines, project)
+
+        [%(git checkout $CI_WORKLOAD_REF)]
       end
 
       def set_up_executor_commands
