@@ -63,6 +63,20 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
             expect(triggered_workflow.workflow_name).to eq('sast_fp_detection')
           end
 
+          it 'tracks the internal event' do
+            expect(worker).to receive(:track_internal_event).with(
+              'trigger_sast_vulnerability_fp_detection_workflow',
+              project: project,
+              additional_properties: {
+                label: 'automatic',
+                value: vulnerability_id,
+                property: vulnerability.severity
+              }
+            )
+
+            worker.perform(vulnerability_id)
+          end
+
           it 'does not log any errors' do
             expect(Gitlab::AppLogger).not_to receive(:error)
 
@@ -85,6 +99,12 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
                 vulnerability_id: vulnerability.id,
                 workflow_id: other_workflow.id
               )
+
+              worker.perform(vulnerability_id)
+            end
+
+            it 'does not track the event' do
+              expect(worker).not_to receive(:track_internal_event)
 
               worker.perform(vulnerability_id)
             end
@@ -115,6 +135,13 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
                 Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::StartWorkflowServiceError
               )
             end.not_to change { ::Vulnerabilities::TriggeredWorkflow.count }
+          end
+
+          it 'does not track the event' do
+            expect(worker).not_to receive(:track_internal_event)
+
+            expect { worker.perform(vulnerability_id) }
+              .to raise_error(Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::StartWorkflowServiceError)
           end
         end
       end

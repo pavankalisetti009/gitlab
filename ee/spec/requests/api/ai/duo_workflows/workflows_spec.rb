@@ -530,6 +530,97 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
       it_behaves_like 'starts duo workflow execution in CI'
 
+      context 'when tracking internal events for SAST vulnerability FP detection' do
+        let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: vulnerability.id.to_s,
+            workflow_definition: ::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::WORKFLOW_DEFINITION
+          }
+        end
+
+        it 'tracks the event with correct properties' do
+          allow(Gitlab::InternalEvents).to receive(:track_event).and_call_original
+
+          expect(Gitlab::InternalEvents).to receive(:track_event).with(
+            'trigger_sast_vulnerability_fp_detection_workflow',
+            hash_including(
+              project: project,
+              additional_properties: {
+                label: 'manual',
+                value: vulnerability.id,
+                property: vulnerability.severity
+              }
+            )
+          ).and_call_original
+
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+
+        context 'when vulnerability does not exist' do
+          let(:params) do
+            {
+              project_id: project.id,
+              start_workflow: true,
+              goal: non_existing_record_id.to_s,
+              workflow_definition: ::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::WORKFLOW_DEFINITION
+            }
+          end
+
+          it 'does not track the event' do
+            expect(Gitlab::InternalEvents).not_to receive(:track_event).with(
+              'trigger_sast_vulnerability_fp_detection_workflow',
+              anything
+            )
+
+            post api(path, user), params: params
+          end
+        end
+
+        context 'when workflow_definition is not for SAST FP detection' do
+          let(:params) do
+            {
+              project_id: project.id,
+              start_workflow: true,
+              goal: vulnerability.id.to_s,
+              workflow_definition: 'software_development'
+            }
+          end
+
+          it 'does not track the event' do
+            expect(Gitlab::InternalEvents).not_to receive(:track_event).with(
+              'trigger_sast_vulnerability_fp_detection_workflow',
+              anything
+            )
+
+            post api(path, user), params: params
+          end
+        end
+
+        context 'when start_workflow is not present' do
+          let(:params) do
+            {
+              project_id: project.id,
+              goal: vulnerability.id.to_s,
+              workflow_definition: ::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::WORKFLOW_DEFINITION
+            }
+          end
+
+          it 'does not track the event' do
+            expect(Gitlab::InternalEvents).not_to receive(:track_event).with(
+              'trigger_sast_vulnerability_fp_detection_workflow',
+              anything
+            )
+
+            post api(path, user), params: params
+          end
+        end
+      end
+
       context 'when Feature flag is disabled' do
         before do
           stub_feature_flags(duo_workflow_in_ci: false)
