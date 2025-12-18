@@ -15438,7 +15438,6 @@ ALTER SEQUENCE ci_subscriptions_projects_id_seq OWNED BY ci_subscriptions_projec
 
 CREATE TABLE ci_triggers (
     id bigint NOT NULL,
-    token character varying,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     project_id bigint,
@@ -41168,8 +41167,6 @@ CREATE INDEX index_ci_triggers_on_expires_at ON ci_triggers USING btree (expires
 CREATE INDEX index_ci_triggers_on_owner_id ON ci_triggers USING btree (owner_id);
 
 CREATE INDEX index_ci_triggers_on_project_id_and_id ON ci_triggers USING btree (project_id, id);
-
-CREATE UNIQUE INDEX index_ci_triggers_on_token ON ci_triggers USING btree (token);
 
 CREATE UNIQUE INDEX index_ci_triggers_on_token_encrypted ON ci_triggers USING btree (token_encrypted);
 
