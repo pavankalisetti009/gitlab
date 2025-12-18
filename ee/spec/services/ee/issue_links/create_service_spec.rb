@@ -3,12 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe IssueLinks::CreateService, feature_category: :team_planning do
-  describe '#execute' do
-    let_it_be(:namespace) { create(:group) }
-    let_it_be(:project) { create(:project, namespace: namespace) }
-    let_it_be(:issue) { create(:issue, project: project) }
-    let_it_be(:user) { create(:user) }
+  let_it_be(:namespace) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: namespace) }
+  let_it_be(:issue) { create(:issue, project: project) }
+  let_it_be(:user) { create(:user) }
 
+  describe '#execute' do
     let(:params) { {} }
 
     before_all do
@@ -94,8 +94,8 @@ RSpec.describe IssueLinks::CreateService, feature_category: :team_planning do
     end
 
     context 'when target is a group related work item' do
-      let(:issuable) { create(:work_item, :epic, namespace: namespace) }
-      let(:issuable2) { create(:work_item, :epic, namespace: namespace) }
+      let(:issuable) { create(:work_item, :group_level, :epic, namespace: namespace) }
+      let(:issuable2) { create(:work_item, :group_level, :epic, namespace: namespace) }
 
       let(:params) do
         { issuable_references: [issuable2.to_reference] }
@@ -114,6 +114,28 @@ RSpec.describe IssueLinks::CreateService, feature_category: :team_planning do
       it 'links the group related work items' do
         expect { service.execute }
           .to change { IssueLink.count }.by(1)
+      end
+    end
+  end
+
+  describe '#extractor_context' do
+    before_all do
+      namespace.add_owner(user)
+    end
+
+    context 'when issuable is a group level issue' do
+      let(:group_issue) { create(:work_item, :group_level, :epic, namespace: namespace) }
+
+      it 'returns a hash with the group context' do
+        service = described_class.new(group_issue, user, {})
+        expect(service.send(:extractor_context)).to eq({ group: namespace })
+      end
+    end
+
+    context 'when issuable is a project level issue' do
+      it 'returns an empty hash' do
+        service = described_class.new(issue, user, {})
+        expect(service.send(:extractor_context)).to eq({})
       end
     end
   end
