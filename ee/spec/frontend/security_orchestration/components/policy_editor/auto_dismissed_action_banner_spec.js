@@ -45,7 +45,7 @@ describe('AutoDismissedActionBanner', () => {
 
     it('renders formatted banner content with GlSprintf', () => {
       expect(findAlert().text()).toBe(
-        'Experimental feature: Try out auto-dismissed actions for vulnerability policy. This feature will be fully available in 18.8.',
+        'Experimental feature: Try out auto-dismissed actions for vulnerability policy. This feature is expected to be fully available in 18.8.',
       );
     });
   });

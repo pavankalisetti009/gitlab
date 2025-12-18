@@ -8,7 +8,7 @@ export default {
   BANNER_STORAGE_KEY: AUTO_DISMISSED_ACTION_STORAGE_KEY,
   i18n: {
     bannerContent: s__(
-      'SecurityOrchestration|%{boldStart}Experimental feature:%{boldEnd} Try out auto-dismissed actions for vulnerability policy. This feature will be fully available in %{boldStart}18.8.%{boldEnd}',
+      'SecurityOrchestration|%{boldStart}Experimental feature:%{boldEnd} Try out auto-dismissed actions for vulnerability policy. This feature is expected to be fully available in %{boldStart}18.8.%{boldEnd}',
     ),
     secondaryButtonText: __("Don't show again"),
     title: __('Experimental'),
