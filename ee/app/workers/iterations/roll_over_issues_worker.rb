@@ -55,7 +55,7 @@ module Iterations
 
     def automation_bot(organization_id)
       @automation_bot ||= {}
-      @automation_bot[organization_id] ||= Users::Internal.for_organization(organization_id).automation_bot
+      @automation_bot[organization_id] ||= Users::Internal.in_organization(organization_id).automation_bot
     end
   end
 end

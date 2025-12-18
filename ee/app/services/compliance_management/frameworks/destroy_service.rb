@@ -32,7 +32,7 @@ module ComplianceManagement
       end
 
       def framework_belongs_to_csp_group?
-        ::Security::PolicySetting.for_organization(
+        ::Security::PolicySetting.in_organization(
           framework.namespace.organization
         )&.csp_namespace_id == framework.namespace_id
       end

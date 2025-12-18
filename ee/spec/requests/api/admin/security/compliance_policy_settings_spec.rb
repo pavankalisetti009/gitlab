@@ -53,7 +53,7 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     it_behaves_like 'requires security_orchestration_policies license', :get
 
     context 'when all requirements are met' do
-      let!(:policy_setting) { Security::PolicySetting.for_organization(default_organization) }
+      let!(:policy_setting) { Security::PolicySetting.in_organization(default_organization) }
 
       before do
         policy_setting.update!(csp_namespace_id: group.id)
@@ -97,7 +97,7 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     it_behaves_like 'requires security_orchestration_policies license', :put
 
     context 'when all requirements are met' do
-      let!(:policy_setting) { Security::PolicySetting.for_organization(default_organization) }
+      let!(:policy_setting) { Security::PolicySetting.in_organization(default_organization) }
 
       context 'with valid csp_namespace_id' do
         it 'updates the csp_namespace_id' do

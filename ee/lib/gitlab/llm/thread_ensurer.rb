@@ -6,7 +6,7 @@ module Gitlab
       LEGACY_CONVERSATION_TYPE = :duo_chat_legacy
 
       def initialize(user, organization)
-        @base_thread_relation = user.ai_conversation_threads.for_organization(organization)
+        @base_thread_relation = user.ai_conversation_threads.in_organization(organization)
       end
 
       def execute(thread_id: nil, conversation_type: nil, write_mode: false)

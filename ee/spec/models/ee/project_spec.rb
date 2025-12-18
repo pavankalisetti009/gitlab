@@ -4256,7 +4256,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
         context 'when organization_policy_setting is not available' do
           before do
-            allow(Security::PolicySetting).to receive(:for_organization).and_return(nil)
+            allow(Security::PolicySetting).to receive(:in_organization).and_return(nil)
           end
 
           it 'does not raise NoMethodError' do

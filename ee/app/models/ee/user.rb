@@ -955,7 +955,7 @@ module EE
 
       ::Gitlab::Audit::Auditor.audit(
         name: 'user_access_locked',
-        author: ::Users::Internal.for_organization(organization_id).admin_bot,
+        author: ::Users::Internal.in_organization(organization_id).admin_bot,
         scope: self,
         target: self,
         message: ['User access locked', reason].compact.join(' - ')

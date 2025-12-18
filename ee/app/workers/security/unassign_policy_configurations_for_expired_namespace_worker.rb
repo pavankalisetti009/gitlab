@@ -47,7 +47,7 @@ module Security
 
     def admin_bot_for_container_organization(container)
       @admin_bots ||= {}
-      @admin_bots[container.organization_id] ||= Users::Internal.for_organization(container.organization_id).admin_bot
+      @admin_bots[container.organization_id] ||= Users::Internal.in_organization(container.organization_id).admin_bot
     end
 
     def log_start(namespace_id)

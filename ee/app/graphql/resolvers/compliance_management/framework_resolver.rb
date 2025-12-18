@@ -57,7 +57,7 @@ module Resolvers
 
       def fetch_namespace_ids
         ids = [object.root_ancestor.id]
-        csp_namespace = ::Security::PolicySetting.for_organization(object.root_ancestor.organization)&.csp_namespace
+        csp_namespace = ::Security::PolicySetting.in_organization(object.root_ancestor.organization)&.csp_namespace
         ids << csp_namespace.id if csp_namespace
 
         ids

@@ -383,7 +383,7 @@ module EE
     private
 
     def policy_setting
-      Security::PolicySetting.for_organization(::Organizations::Organization.default_organization)
+      Security::PolicySetting.in_organization(::Organizations::Organization.default_organization)
     end
 
     def identity_verification_attributes

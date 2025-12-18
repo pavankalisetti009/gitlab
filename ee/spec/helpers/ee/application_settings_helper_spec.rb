@@ -539,7 +539,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     subject { helper.compliance_security_policy_group_id }
 
     before do
-      allow(Security::PolicySetting).to receive(:for_organization).and_return(policy_setting)
+      allow(Security::PolicySetting).to receive(:in_organization).and_return(policy_setting)
     end
 
     context 'when CSP group is not set' do
@@ -560,7 +560,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     subject { helper.compliance_security_policy_group_locked? }
 
     before do
-      allow(Security::PolicySetting).to receive(:for_organization).and_return(policy_setting)
+      allow(Security::PolicySetting).to receive(:in_organization).and_return(policy_setting)
     end
 
     context 'without csp_namespace_locked_until' do

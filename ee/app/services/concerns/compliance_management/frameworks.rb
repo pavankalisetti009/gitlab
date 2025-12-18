@@ -20,7 +20,7 @@ module ComplianceManagement
     end
 
     def csp_namespace_id(framework)
-      ::Security::PolicySetting.for_organization(
+      ::Security::PolicySetting.in_organization(
         framework.namespace.organization
       )&.csp_namespace_id
     end

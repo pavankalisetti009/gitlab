@@ -339,7 +339,7 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
       it 'creates a thread' do
         resource.project.add_developer(user)
 
-        expect { subject }.to change { user.ai_conversation_threads.for_organization(current_organization).count }.by(1)
+        expect { subject }.to change { user.ai_conversation_threads.in_organization(current_organization).count }.by(1)
       end
 
       context 'when it fails to create a thread' do
@@ -379,7 +379,7 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
       it 'does not create a thread' do
         resource.project.add_developer(user)
 
-        expect { subject }.not_to change { user.ai_conversation_threads.for_organization(current_organization).count }
+        expect { subject }.not_to change { user.ai_conversation_threads.in_organization(current_organization).count }
       end
 
       context 'when thread is not found' do
