@@ -55,6 +55,8 @@ tags:
   description: Operations about ci_jobs
 - name: secure_files
   description: Operations about secure_files
+- name: pipelines
+  description: Operations about pipelines
 - name: pipeline_schedules
   description: Operations about pipeline_schedules
 - name: cargo_packages
@@ -101,6 +103,8 @@ tags:
   description: Operations about bulk_imports
 - name: agents
   description: Operations about agents
+- name: ci_runners
+  description: Operations about ci_runners
 - name: jobs
   description: Operations about jobs
 - name: events
@@ -12296,7 +12300,7 @@ paths:
         '403':
           description: Forbidden
       tags:
-      - projects
+      - pipelines
       operationId: getApiV4ProjectsIdPipelines
   "/api/v4/projects/{id}/pipeline":
     post:
@@ -12332,7 +12336,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: postApiV4ProjectsIdPipeline
   "/api/v4/projects/{id}/pipelines/latest":
     get:
@@ -12365,7 +12369,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: getApiV4ProjectsIdPipelinesLatest
   "/api/v4/projects/{id}/pipelines/{pipeline_id}":
     get:
@@ -12399,7 +12403,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: getApiV4ProjectsIdPipelinesPipelineId
     delete:
       summary: Deletes a pipeline
@@ -12426,7 +12430,7 @@ paths:
         '403':
           description: Forbidden
       tags:
-      - projects
+      - pipelines
       operationId: deleteApiV4ProjectsIdPipelinesPipelineId
   "/api/v4/projects/{id}/pipelines/{pipeline_id}/jobs":
     get:
@@ -12505,7 +12509,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: getApiV4ProjectsIdPipelinesPipelineIdJobs
   "/api/v4/projects/{id}/pipelines/{pipeline_id}/bridges":
     get:
@@ -12578,7 +12582,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: getApiV4ProjectsIdPipelinesPipelineIdBridges
   "/api/v4/projects/{id}/pipelines/{pipeline_id}/variables":
     get:
@@ -12614,7 +12618,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: getApiV4ProjectsIdPipelinesPipelineIdVariables
   "/api/v4/projects/{id}/pipelines/{pipeline_id}/test_report":
     get:
@@ -12648,7 +12652,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: getApiV4ProjectsIdPipelinesPipelineIdTestReport
   "/api/v4/projects/{id}/pipelines/{pipeline_id}/test_report_summary":
     get:
@@ -12682,7 +12686,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: getApiV4ProjectsIdPipelinesPipelineIdTestReportSummary
   "/api/v4/projects/{id}/pipelines/{pipeline_id}/metadata":
     put:
@@ -12725,7 +12729,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: putApiV4ProjectsIdPipelinesPipelineIdMetadata
   "/api/v4/projects/{id}/pipelines/{pipeline_id}/retry":
     post:
@@ -12761,7 +12765,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: postApiV4ProjectsIdPipelinesPipelineIdRetry
   "/api/v4/projects/{id}/pipelines/{pipeline_id}/cancel":
     post:
@@ -12797,7 +12801,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - pipelines
       operationId: postApiV4ProjectsIdPipelinesPipelineIdCancel
   "/api/v4/projects/{id}/pipeline_schedules":
     get:
@@ -40528,7 +40532,7 @@ paths:
         '410':
           description: Gone
       tags:
-      - runners
+      - ci_runners
       operationId: postApiV4Runners
     delete:
       summary: Delete a runner by authentication token
@@ -40547,7 +40551,7 @@ paths:
         '403':
           description: Forbidden
       tags:
-      - runners
+      - ci_runners
       operationId: deleteApiV4Runners
     get:
       summary: List available runners
@@ -40670,7 +40674,7 @@ paths:
         '404':
           description: Not Found
       tags:
-      - runners
+      - ci_runners
       operationId: deleteApiV4RunnersManagers
   "/api/v4/runners/verify":
     post:
@@ -40694,7 +40698,7 @@ paths:
         '422':
           description: Runner is orphaned
       tags:
-      - runners
+      - ci_runners
       operationId: postApiV4RunnersVerify
   "/api/v4/runners/reset_authentication_token":
     post:
@@ -40717,7 +40721,7 @@ paths:
         '403':
           description: Forbidden
       tags:
-      - runners
+      - ci_runners
       operationId: postApiV4RunnersResetAuthenticationToken
   "/api/v4/runners/router/discovery":
     get:
@@ -40736,7 +40740,7 @@ paths:
         '501':
           description: 501 Not Implemented
       tags:
-      - runners
+      - ci_runners
       operationId: getApiV4RunnersRouterDiscovery
   "/api/v4/runners/all":
     get:
