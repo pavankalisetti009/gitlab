@@ -153,12 +153,9 @@ module Gitlab
         feature_setting: feature_setting)
       enablement_type = auth_response&.enablement_type || ''
       namespace_ids = auth_response&.namespace_ids || []
+      root_namespace_ids = Namespace.root_ids_for(namespace_ids)
 
-      if Feature.enabled?(:root_namespaces_extraction_for_ai_gateway, user)
-        namespace_ids = Namespace.root_ids_for(namespace_ids)
-      end
-
-      ::CloudConnector.ai_headers(user, namespace_ids: namespace_ids).merge(
+      ::CloudConnector.ai_headers(user, namespace_ids: root_namespace_ids).merge(
         'x-gitlab-feature-enablement-type' => enablement_type,
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),
         'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs,
@@ -167,7 +164,7 @@ module Gitlab
         fallback_namespace = user&.user_preference&.duo_default_namespace_with_fallback
         next unless root_namespace_id || fallback_namespace
 
-        add_namespace_headers!(result, namespace_ids, namespace_id, root_namespace_id, fallback_namespace)
+        add_namespace_headers!(result, root_namespace_ids, namespace_id, root_namespace_id, fallback_namespace)
       end
     end
 

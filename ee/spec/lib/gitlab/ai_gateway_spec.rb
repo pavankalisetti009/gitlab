@@ -538,7 +538,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       end
     end
 
-    context 'when root_namespaces_extraction_for_ai_gateway feature flag is enabled' do
+    context 'with root namespace extraction' do
       let_it_be(:root_group) { create(:group) }
       let_it_be(:subgroup) { create(:group, parent: root_group) }
       let(:namespace_ids) { [subgroup.id] }
@@ -573,45 +573,6 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
 
           expect(::CloudConnector).to have_received(:ai_headers)
             .with(user, namespace_ids: [root_group.id])
-        end
-      end
-    end
-
-    context 'when root_namespaces_extraction_for_ai_gateway feature flag is disabled' do
-      let_it_be(:root_group) { create(:group) }
-      let_it_be(:subgroup) { create(:group, parent: root_group) }
-      let(:namespace_ids) { [subgroup.id] }
-
-      before do
-        stub_feature_flags(root_namespaces_extraction_for_ai_gateway: false)
-        allow(::CloudConnector).to receive(:ai_headers)
-          .with(user, namespace_ids: [subgroup.id])
-          .and_return(ai_headers)
-      end
-
-      it 'passes namespace IDs as-is without extracting root IDs' do
-        public_headers
-
-        expect(::CloudConnector).to have_received(:ai_headers)
-          .with(user, namespace_ids: [subgroup.id])
-      end
-
-      context 'with multiple namespaces from same hierarchy' do
-        let_it_be(:subgroup_1) { create(:group, parent: root_group) }
-        let_it_be(:subgroup_2) { create(:group, parent: root_group) }
-        let(:namespace_ids) { [root_group.id, subgroup_1.id, subgroup_2.id] }
-
-        before do
-          allow(::CloudConnector).to receive(:ai_headers)
-            .with(user, namespace_ids: [root_group.id, subgroup_1.id, subgroup_2.id])
-            .and_return(ai_headers)
-        end
-
-        it 'passes all namespace IDs without deduplication' do
-          public_headers
-
-          expect(::CloudConnector).to have_received(:ai_headers)
-            .with(user, namespace_ids: [root_group.id, subgroup_1.id, subgroup_2.id])
         end
       end
     end
