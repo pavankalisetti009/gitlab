@@ -54,17 +54,21 @@ export const Default = Template.bind({});
 Default.args = {
   index: 0,
   upstreamsCount: 2,
-  upstream: {
+  registryUpstream: {
     id: 1,
-    name: 'Upstream title',
-    description: 'Upstream description',
-    url: 'http://maven.org/test',
-    cacheValidityHours: 24,
-    cacheSize: '100 MB',
-    artifactCount: 100,
     position: 1,
-    warning: {
-      text: 'Example warning text',
+    upstream: {
+      id: 1,
+      name: 'Upstream title',
+      description: 'Upstream description',
+      url: 'http://maven.org/test',
+      cacheValidityHours: 24,
+      metadataCacheValidityHours: 48,
+      cacheSize: '100 MB',
+      artifactCount: 100,
+      warning: {
+        text: 'Example warning text',
+      },
     },
   },
   clearCache: (id) => {

@@ -1,15 +1,15 @@
 query getVirtualRegistryUpstreams($id: VirtualRegistriesPackagesMavenRegistryID!) {
   virtualRegistriesPackagesMavenRegistry(id: $id) {
     id
-    upstreams {
+    registryUpstreams {
       id
-      cacheValidityHours
-      metadataCacheValidityHours
-      name
-      url
-      registryUpstreams {
+      position
+      upstream {
         id
-        position
+        cacheValidityHours
+        metadataCacheValidityHours
+        name
+        url
       }
     }
   }
