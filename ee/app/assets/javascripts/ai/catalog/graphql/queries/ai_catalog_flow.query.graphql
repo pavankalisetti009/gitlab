@@ -40,6 +40,13 @@ query aiCatalogFlow(
     configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
       id
       enabled
+      serviceAccount {
+        id
+        name
+        username
+        avatarUrl
+        webPath
+      }
       pinnedItemVersion {
         ...BaseAiCatalogFlowVersion
       }

@@ -3060,6 +3060,9 @@ msgstr ""
 msgid "AICatalog|Selected %{itemType}"
 msgstr ""
 
+msgid "AICatalog|Service account"
+msgstr ""
+
 msgid "AICatalog|Shared resources."
 msgstr ""
 
