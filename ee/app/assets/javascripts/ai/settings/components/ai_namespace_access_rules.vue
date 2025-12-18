@@ -9,12 +9,8 @@ const AVAILABLE_FEATURES = [
     label: s__('AiPowered|GitLab Duo Classic'),
   },
   {
-    key: 'duo_agents',
-    label: s__('AiPowered|GitLab Duo Agents'),
-  },
-  {
-    key: 'duo_flows',
-    label: s__('AiPowered|GitLab Duo Flows and External Agents'),
+    key: 'duo_agent_platform',
+    label: s__('AiPowered|GitLab Duo Agent Platform'),
   },
 ];
 
@@ -94,6 +90,26 @@ export default {
 
       this.$emit('change', this.namespaceAccessRules);
     },
+    toggleFeature(namespaceId, feature, isEnabled) {
+      this.namespaceAccessRules = this.namespaceAccessRules.map((rule) => {
+        if (rule.throughNamespace.id !== namespaceId) return rule;
+
+        const features = new Set(rule.features);
+
+        if (isEnabled) {
+          features.add(feature);
+        } else {
+          features.delete(feature);
+        }
+
+        return {
+          ...rule,
+          features: [...features],
+        };
+      });
+
+      this.$emit('change', this.namespaceAccessRules);
+    },
   },
 };
 </script>
@@ -116,10 +132,10 @@ export default {
         show-empty
         bordered
         fixed
-        thead-class="gl-bg-gray-50"
+        thead-class="gl-bg-subtle"
       >
         <template #empty>
-          <div class="gl-my-5 gl-text-center gl-text-secondary">
+          <div class="gl-my-5 gl-text-center gl-text-subtle">
             {{ s__('AiPowered|No access rules configured') }}
           </div>
         </template>
@@ -138,7 +154,7 @@ export default {
               v-for="feature in $options.AVAILABLE_FEATURES"
               :key="feature.key"
               :checked="isFeatureEnabled(item, feature.key)"
-              disabled
+              @change="toggleFeature(item.throughNamespace.id, feature.key, $event)"
             >
               {{ feature.label }}
             </gl-form-checkbox>
