@@ -396,6 +396,13 @@ module Security
     end
     strong_memoize_attr :vulnerability_management_policy
 
+    def pipeline_execution_schedule_policy
+      return unless type_pipeline_execution_schedule_policy?
+
+      Security::PipelineExecutionSchedulePolicies::PipelineExecutionSchedulePolicy.new(self)
+    end
+    strong_memoize_attr :pipeline_execution_schedule_policy
+
     def supports_policy_rules?
       Security::PolicyRule::SUPPORTED_POLICY_TYPES.include?(type.to_sym)
     end
