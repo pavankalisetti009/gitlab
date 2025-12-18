@@ -967,7 +967,7 @@ Your project can be supported if you use a trigger file to [create a lock file o
 | Python          | `requirements.pip`, `Pipfile`, `requires.txt`, `setup.py` |
 | Scala           | `build.sbt`                                               |
 
-### Using the Dependency Scanning CI/CD component
+### Using the dependency scanning CI/CD component
 
 {{< alert type="warning" >}}
 
