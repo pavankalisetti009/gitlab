@@ -139,5 +139,35 @@ RSpec.describe Organizations::OrganizationPolicy, feature_category: :system_acce
       it { is_expected.to be_disallowed(:read_custom_dashboard) }
       it { is_expected.to be_disallowed(:create_custom_dashboard) }
     end
+
+    describe 'product_analytics_enabled condition coverage' do
+      subject(:policy) { described_class.new(owner, organization) }
+
+      context 'when License.feature_available? returns true' do
+        before do
+          allow(License)
+            .to receive(:feature_available?)
+            .with(:product_analytics)
+            .and_return(true)
+        end
+
+        it 'evaluates condition as true' do
+          expect(policy).to be_allowed(:read_custom_dashboard)
+        end
+      end
+
+      context 'when License.feature_available? returns false' do
+        before do
+          allow(License)
+            .to receive(:feature_available?)
+            .with(:product_analytics)
+            .and_return(false)
+        end
+
+        it 'evaluates condition as false' do
+          expect(policy).to be_disallowed(:read_custom_dashboard)
+        end
+      end
+    end
   end
 end
