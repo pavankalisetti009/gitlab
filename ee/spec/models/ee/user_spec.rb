@@ -2337,8 +2337,8 @@ RSpec.describe User, feature_category: :system_access do
     context 'on self-managed' do
       it { is_expected.to eq(false) }
 
-      context 'when user is assigned to a duo self-hosted seat on instance' do
-        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_self_hosted, :self_managed) }
+      context 'when user is assigned to a self-hosted duo agent platform seat on instance' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :self_hosted_dap, :self_managed) }
 
         it { is_expected.to eq(true) }
       end

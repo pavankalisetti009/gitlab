@@ -7,7 +7,7 @@ module GitlabSubscriptions
         class Duo
           DUO_PROVISION_SERVICES = [
             DuoExclusive,
-            DuoSelfHosted,
+            SelfHostedDap,
             DuoCore
           ].freeze
 

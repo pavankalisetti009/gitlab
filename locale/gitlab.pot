@@ -16210,10 +16210,10 @@ msgstr ""
 msgid "CodeSuggestions|GitLab Duo Pro"
 msgstr ""
 
-msgid "CodeSuggestions|GitLab Duo Self-Hosted"
+msgid "CodeSuggestions|GitLab Duo should be operational."
 msgstr ""
 
-msgid "CodeSuggestions|GitLab Duo should be operational."
+msgid "CodeSuggestions|GitLab Self-Hosted Duo Agent Platform"
 msgstr ""
 
 msgid "CodeSuggestions|Helps you get up to speed quickly by explaining source code"

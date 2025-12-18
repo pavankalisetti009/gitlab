@@ -4,12 +4,12 @@ module GitlabSubscriptions
   module AddOnPurchases
     module SelfManaged
       module LicenseAddOns
-        class DuoSelfHosted < Base
+        class SelfHostedDap < Base
           private
 
           override :name
           def name
-            :duo_self_hosted
+            :self_hosted_dap
           end
         end
       end

@@ -61,8 +61,8 @@ FactoryBot.define do
       add_on { association(:gitlab_subscription_add_on, :duo_amazon_q) }
     end
 
-    trait :duo_self_hosted do
-      add_on { association(:gitlab_subscription_add_on, :duo_self_hosted) }
+    trait :self_hosted_dap do
+      add_on { association(:gitlab_subscription_add_on, :self_hosted_dap) }
     end
 
     trait :self_managed do

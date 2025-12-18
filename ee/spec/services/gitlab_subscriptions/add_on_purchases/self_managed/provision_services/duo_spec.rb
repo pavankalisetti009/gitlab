@@ -8,8 +8,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
     GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive
   end
 
-  let(:duo_self_hosted_class) do
-    GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoSelfHosted
+  let(:self_hosted_dap_class) do
+    GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::SelfHostedDap
   end
 
   let(:duo_core_class) do
@@ -19,7 +19,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
   describe '::DUO_PROVISION_SERVICES' do
     subject { described_class::DUO_PROVISION_SERVICES }
 
-    it { is_expected.to match_array([duo_exclusive_class, duo_self_hosted_class, duo_core_class]) }
+    it { is_expected.to match_array([duo_exclusive_class, self_hosted_dap_class, duo_core_class]) }
   end
 
   describe '#execute' do
@@ -28,7 +28,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
     let(:duo_service_classes) do
       [
         duo_exclusive_class,
-        duo_self_hosted_class,
+        self_hosted_dap_class,
         duo_core_class
       ]
     end
@@ -90,24 +90,24 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       end
 
       let(:duo_exclusive_instance) { instance_double(duo_exclusive_class) }
-      let(:duo_self_hosted_instance) { instance_double(duo_self_hosted_class) }
+      let(:self_hosted_dap_instance) { instance_double(self_hosted_dap_class) }
       let(:duo_core_instance) { instance_double(duo_core_class) }
 
       before do
         allow(duo_exclusive_class).to receive(:new).and_return(duo_exclusive_instance)
-        allow(duo_self_hosted_class).to receive(:new).and_return(duo_self_hosted_instance)
+        allow(self_hosted_dap_class).to receive(:new).and_return(self_hosted_dap_instance)
         allow(duo_core_class).to receive(:new).and_return(duo_core_instance)
       end
 
       context 'when some service responses do not contain an add-on purchase' do
-        let_it_be(:duo_self_hosted_add_on) { nil }
+        let_it_be(:self_hosted_dap_add_on) { nil }
 
         before do
           allow(duo_exclusive_instance).to receive(:execute)
             .and_return(successful_service_response(duo_pro_add_on))
 
-          allow(duo_self_hosted_instance).to receive(:execute)
-            .and_return(successful_service_response(duo_self_hosted_add_on))
+          allow(self_hosted_dap_instance).to receive(:execute)
+            .and_return(successful_service_response(self_hosted_dap_add_on))
 
           allow(duo_core_instance).to receive(:execute)
             .and_return(successful_service_response(duo_core_add_on))
@@ -128,7 +128,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
           allow(duo_exclusive_instance).to receive(:execute)
             .and_return(successful_service_response(duo_pro_add_on))
 
-          allow(duo_self_hosted_instance).to receive(:execute)
+          allow(self_hosted_dap_instance).to receive(:execute)
             .and_return(ServiceResponse.error(message: 'an error message'))
 
           allow(duo_core_instance).to receive(:execute)

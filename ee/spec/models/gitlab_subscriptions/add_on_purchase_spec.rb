@@ -407,22 +407,27 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
 
     describe '.for_duo_self_hosted' do
-      subject(:duo_self_hosted_add_on_purchases) { described_class.for_duo_self_hosted }
+      subject(:self_hosted_dap_add_on_purchases) { described_class.for_duo_self_hosted }
 
-      it { expect(duo_self_hosted_add_on_purchases).to be_empty }
+      it { expect(self_hosted_dap_add_on_purchases).to be_empty }
 
-      context 'with duo_self_hosted purchase' do
-        let!(:duo_self_hosted_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_self_hosted) }
+      context 'with self_hosted_dap purchase' do
+        let!(:self_hosted_dap_add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :self_hosted_dap)
+        end
 
-        it { expect(duo_self_hosted_add_on_purchases).to eq [duo_self_hosted_add_on_purchase] }
+        it { expect(self_hosted_dap_add_on_purchases).to eq [self_hosted_dap_add_on_purchase] }
       end
 
       context 'with other purchases' do
-        let!(:duo_self_hosted_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_self_hosted) }
+        let!(:self_hosted_dap_add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :self_hosted_dap)
+        end
+
         let!(:duo_pro_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
 
-        it 'returns only duo_self_hosted add-on purchases' do
-          expect(duo_self_hosted_add_on_purchases).to eq [duo_self_hosted_add_on_purchase]
+        it 'returns only self_hosted_dap add-on purchases' do
+          expect(self_hosted_dap_add_on_purchases).to eq [self_hosted_dap_add_on_purchase]
         end
       end
     end
@@ -464,7 +469,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       let!(:duo_enterprise_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
       let!(:duo_pro_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
       let!(:duo_core_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
-      let!(:duo_self_hosted_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_self_hosted) }
+      let!(:self_hosted_dap_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_hosted_dap) }
       let!(:product_analytics_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :product_analytics) }
 
       it 'returns Duo Core, Pro and Enterprise' do
@@ -481,7 +486,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
       let!(:duo_core_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
       let!(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
-      let!(:duo_self_hosted_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_self_hosted) }
+      let!(:self_hosted_dap_add_on) { create(:gitlab_subscription_add_on_purchase, :self_hosted_dap) }
       let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on_purchase, :product_analytics) }
 
       it 'returns all duo add-ons' do
@@ -490,7 +495,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
           duo_pro_add_on,
           duo_core_add_on,
           duo_amazon_q_add_on,
-          duo_self_hosted_add_on
+          self_hosted_dap_add_on
         )
       end
     end
@@ -635,7 +640,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
       let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
       let_it_be(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
-      let_it_be(:duo_self_hosted_add_on) { create(:gitlab_subscription_add_on, :duo_self_hosted) }
+      let_it_be(:self_hosted_dap_add_on) { create(:gitlab_subscription_add_on, :self_hosted_dap) }
       let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
 
       let_it_be(:duo_pro_add_on_purchase_fresh) do
@@ -662,10 +667,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         )
       end
 
-      let_it_be(:duo_self_hosted_purchase_fresh) do
+      let_it_be(:self_hosted_dap_purchase_fresh) do
         create(
           :gitlab_subscription_add_on_purchase,
-          add_on: duo_self_hosted_add_on,
+          add_on: self_hosted_dap_add_on,
           last_assigned_users_refreshed_at: 1.hour.ago
         )
       end
@@ -682,8 +687,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         create(:gitlab_subscription_add_on_purchase, add_on: duo_amazon_q_add_on)
       end
 
-      let_it_be(:duo_self_hosted_add_on_purchase_refreshed_nil) do
-        create(:gitlab_subscription_add_on_purchase, add_on: duo_self_hosted_add_on)
+      let_it_be(:self_hosted_dap_add_on_purchase_refreshed_nil) do
+        create(:gitlab_subscription_add_on_purchase, add_on: self_hosted_dap_add_on)
       end
 
       let_it_be(:product_analytics_add_on_purchase_refreshed_nil) do
@@ -722,10 +727,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         )
       end
 
-      let_it_be(:duo_self_hosted_add_on_purchase_stale) do
+      let_it_be(:self_hosted_dap_add_on_purchase_stale) do
         create(
           :gitlab_subscription_add_on_purchase,
-          add_on: duo_self_hosted_add_on,
+          add_on: self_hosted_dap_add_on,
           last_assigned_users_refreshed_at: 21.hours.ago
         )
       end

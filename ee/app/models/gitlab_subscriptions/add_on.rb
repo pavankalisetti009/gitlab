@@ -17,10 +17,10 @@ module GitlabSubscriptions
       duo_enterprise: 3,
       duo_amazon_q: 4,
       duo_core: 5,
-      duo_self_hosted: 6
+      self_hosted_dap: 6
     }
 
-    DUO_ADD_ONS = %i[code_suggestions duo_enterprise duo_amazon_q duo_core duo_self_hosted].freeze
+    DUO_ADD_ONS = %i[code_suggestions duo_enterprise duo_amazon_q duo_core self_hosted_dap].freeze
 
     SEAT_ASSIGNABLE_DUO_ADD_ONS = %w[code_suggestions duo_enterprise].freeze
 
@@ -39,7 +39,7 @@ module GitlabSubscriptions
         duo_enterprise: 'Add-on for GitLab Duo Enterprise.',
         duo_amazon_q: 'Add-on for GitLab Duo with Amazon Q.',
         duo_core: 'Add-on for Gitlab Duo Core.',
-        duo_self_hosted: 'Add-on for GitLab Duo Self-Hosted.'
+        self_hosted_dap: 'Add-on for GitLab Self-Hosted Duo Agent Platform.'
       }
     end
 
