@@ -104,6 +104,7 @@ module EE
         mount ::API::VirtualRegistries::Packages::Maven::Endpoints
 
         mount ::API::Internal::AppSec::Dast::SiteValidations
+        mount ::API::Internal::Ci::JobRouter
         mount ::API::Internal::Search::Zoekt
         mount ::API::Internal::Ai::XRay::Scan
         mount ::API::Internal::Observability

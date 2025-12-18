@@ -3,5 +3,9 @@
 FactoryBot.define do
   factory :ci_runner_controller, class: 'Ci::RunnerController' do
     description { "Controller for managing runner" }
+
+    trait :enabled do
+      enabled { true }
+    end
   end
 end

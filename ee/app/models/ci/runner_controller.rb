@@ -8,5 +8,7 @@ module Ci
     has_many :tokens,
       class_name: 'Ci::RunnerControllerToken',
       inverse_of: :runner_controller
+
+    scope :enabled, -> { where(enabled: true) }
   end
 end
