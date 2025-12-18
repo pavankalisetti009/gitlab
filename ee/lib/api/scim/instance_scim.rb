@@ -72,6 +72,7 @@ module API
 
           desc 'Get SCIM users' do
             success ::API::Entities::Scim::Users
+            tags ['scim_users']
           end
 
           get do
@@ -92,6 +93,7 @@ module API
 
           desc 'Get a SCIM user' do
             success ::API::Entities::Scim::Users
+            tags ['scim_users']
           end
 
           get ':id', requirements: USER_ID_REQUIREMENTS do
@@ -105,6 +107,7 @@ module API
 
           desc 'Create a SCIM user' do
             success ::API::Entities::Scim::Users
+            tags ['scim_users']
           end
 
           post do
@@ -132,7 +135,10 @@ module API
             end
           end
 
-          desc 'Updates a SCIM user'
+          desc 'Updates a SCIM user' do
+            success code: 204
+            tags ['scim_users']
+          end
 
           patch ':id', requirements: USER_ID_REQUIREMENTS do
             identity = find_user_identity(params[:id])
@@ -148,7 +154,10 @@ module API
             end
           end
 
-          desc 'Removes a SCIM user'
+          desc 'Removes a SCIM user' do
+            success code: 204
+            tags ['scim_users']
+          end
 
           delete ':id', requirements: USER_ID_REQUIREMENTS do
             identity = find_user_identity(params[:id])
@@ -177,6 +186,7 @@ module API
           desc 'Create a SCIM group' do
             detail 'Associates SCIM group ID with existing SAML group link'
             success ::API::Entities::Scim::Group
+            tags ['scim_groups']
           end
           params do
             requires :displayName, type: String, desc: 'Name of the group as configured in GitLab'
@@ -200,6 +210,7 @@ module API
           desc 'Get a SCIM group' do
             detail 'Retrieves a SCIM group by its ID'
             success ::API::Entities::Scim::Group
+            tags ['scim_groups']
           end
           params do
             requires :id, type: String, desc: 'The SCIM group ID'
@@ -211,6 +222,7 @@ module API
 
           desc 'Get SCIM groups' do
             success ::API::Entities::Scim::Groups
+            tags ['scim_groups']
           end
           params do
             optional :filter, type: String, desc: 'Filter string (e.g. displayName eq "Engineering")'
@@ -237,7 +249,10 @@ module API
             scim_error!(message: 'Unsupported Filter')
           end
 
-          desc 'Update a SCIM group'
+          desc 'Update a SCIM group' do
+            success code: 204
+            tags ['scim_groups']
+          end
           params do
             requires :id, type: String, desc: 'The SCIM group ID'
             requires :schemas, type: Array, desc: 'SCIM schemas'
@@ -261,7 +276,9 @@ module API
             no_content!
           end
 
-          desc 'Replace a SCIM group'
+          desc 'Replace a SCIM group' do
+            tags ['scim_groups']
+          end
           params do
             requires :id, type: String, desc: 'The SCIM group ID'
             requires :schemas, type: Array, desc: 'SCIM schemas'
@@ -281,7 +298,9 @@ module API
             present saml_group_links.first, with: ::API::Entities::Scim::Group, excluded_attributes: ['members']
           end
 
-          desc 'Delete a SCIM group'
+          desc 'Delete a SCIM group' do
+            tags ['scim_groups']
+          end
           params do
             requires :id, type: String, desc: 'The SCIM group ID'
           end

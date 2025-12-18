@@ -32,6 +32,7 @@ module API
       desc 'Get a list of enterprise users of the group' do
         success ::API::Entities::UserPublic
         is_array true
+        tags ['group_enterprise_users']
       end
       params do
         optional :username, type: String, desc: 'Return single user with a specific username.'
@@ -63,6 +64,7 @@ module API
 
       desc 'Get a single enterprise user of the group' do
         success ::API::Entities::UserPublic
+        tags ['group_enterprise_users']
       end
       params do
         requires :user_id, type: Integer, desc: 'ID of user account.'
@@ -73,7 +75,10 @@ module API
         present user, with: ::API::Entities::UserPublic
       end
 
-      desc 'Disable two factor authentication for an enterprise user'
+      desc 'Disable two factor authentication for an enterprise user' do
+        success code: 204
+        tags ['group_enterprise_users']
+      end
       params do
         requires :user_id, type: Integer, desc: 'ID of user account.'
       end
@@ -91,6 +96,7 @@ module API
 
       desc 'Modify an enterprise user' do
         success ::API::Entities::UserPublic
+        tags ['group_enterprise_users']
       end
       params do
         requires :user_id, type: Integer, desc: 'ID of user account.'
@@ -114,7 +120,9 @@ module API
         end
       end
 
-      desc 'Delete an enterprise user'
+      desc 'Delete an enterprise user' do
+        tags ['group_enterprise_users']
+      end
       params do
         requires :user_id, type: Integer, desc: 'ID of user account.'
         optional :hard_delete,
