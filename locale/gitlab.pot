@@ -42325,9 +42325,6 @@ msgstr ""
 msgid "Merged by"
 msgstr ""
 
-msgid "Merged recently"
-msgstr ""
-
 msgid "Merged this merge request."
 msgstr ""
 
@@ -68826,9 +68823,6 @@ msgid "These guidelines are displayed on the group's or project's members page, 
 msgstr ""
 
 msgid "These guidelines for public avatars are displayed on the user settings page."
-msgstr ""
-
-msgid "These merge requests merged after %{date}. You were an assignee or a reviewer."
 msgstr ""
 
 msgid "These merge requests need a review from you."
