@@ -77,13 +77,13 @@ describe('DuoSastFpDetectionSettings', () => {
 
     it('renders the form group with correct label', () => {
       expect(findFormGroup().exists()).toBe(true);
-      expect(findFormGroup().attributes('label')).toBe('SAST False Positive Detection');
+      expect(findFormGroup().attributes('label')).toBe('SAST false positive detection');
     });
 
     it('renders the checkbox with correct label', () => {
       expect(findAvailabilityCheckbox().exists()).toBe(true);
       expect(wrapper.find('#duo-sast-fp-detection-checkbox-label').text()).toBe(
-        'Turn on GitLab Duo SAST False Positive Detection',
+        'Turn on SAST false positive detection',
       );
     });
 

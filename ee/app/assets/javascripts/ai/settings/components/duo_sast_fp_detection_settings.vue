@@ -7,8 +7,8 @@ import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascad
 export default {
   name: 'DuoSastFpDetectionSettings',
   i18n: {
-    sectionTitle: s__('DuoSAST|SAST False Positive Detection'),
-    checkboxLabel: s__('DuoSAST|Turn on GitLab Duo SAST False Positive Detection'),
+    sectionTitle: s__('DuoSAST|SAST false positive detection'),
+    checkboxLabel: s__('DuoSAST|Turn on SAST false positive detection'),
     checkboxHelpTextGroup: s__(
       'DuoSAST|Use false positive detection for vulnerabilities on the default branch in this group, its subgroups, and its projects.',
     ),
