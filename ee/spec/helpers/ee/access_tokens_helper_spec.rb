@@ -22,6 +22,8 @@ RSpec.describe EE::AccessTokensHelper do
 
     context 'when personal_access_token_max_expiry_date is a date' do
       before do
+        travel_to Date.new(2022, 2, 2)
+
         allow(helper).to receive_messages(
           personal_access_token_expiration_policy_enabled?: true, # The `false` condition is tested in the CE test.
           personal_access_token_max_expiry_date: Time.new(2022, 3, 2, 10, 30, 45, 'UTC')
@@ -30,7 +32,7 @@ RSpec.describe EE::AccessTokensHelper do
 
       it 'returns expected hash' do
         expect(helper.expires_at_field_data).to eq({
-          min_date: 1.day.from_now.iso8601,
+          min_date: '2022-02-03T00:00:00Z',
           max_date: '2022-03-02T10:30:45Z'
         })
       end
