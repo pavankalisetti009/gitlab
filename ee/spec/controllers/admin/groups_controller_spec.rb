@@ -31,7 +31,7 @@ RSpec.describe Admin::GroupsController, feature_category: :continuous_integratio
     end
   end
 
-  describe 'POST #create', :with_current_organization do
+  describe 'POST #create' do
     subject(:post_request) { post :create, params: { group: params } }
 
     context 'when repository size limit is provided' do

@@ -30,7 +30,7 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
     end
   end
 
-  describe 'POST #create', :with_current_organization do
+  describe 'POST #create' do
     context 'when no user is returned' do
       before do
         allow_next_instance_of(Users::CreateService) do |service|

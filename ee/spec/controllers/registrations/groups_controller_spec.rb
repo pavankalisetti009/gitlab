@@ -98,7 +98,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
     end
   end
 
-  describe 'POST #create', :with_current_organization do
+  describe 'POST #create' do
     subject(:post_create) { post :create, params: params }
 
     let(:params) { { group: group_params, project: project_params }.merge(extra_params) }
