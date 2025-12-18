@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :ai_instance_accessible_entity_rules, class: 'Ai::InstanceAccessibleEntityRule' do
+  factory :ai_instance_accessible_entity_rules, class: 'Ai::FeatureAccessRule' do
     association :through_namespace, factory: :namespace
     accessible_entity { 'duo_classic' }
     created_at { Time.zone.now }
