@@ -19,33 +19,136 @@ RSpec.describe Security::ScanProfileProject, feature_category: :security_asset_i
   end
 
   describe 'scopes' do
+    let_it_be(:root_namespace) { create(:group) }
+    let_it_be(:other_namespace) { create(:group) }
+
+    let_it_be(:project_in_root) { create(:project, namespace: root_namespace) }
+    let_it_be(:project_in_other) { create(:project, namespace: other_namespace) }
+    let_it_be(:project_1) { create(:project, namespace: group) }
+    let_it_be(:project_2) { create(:project, namespace: group) }
+    let_it_be(:project_3) { create(:project, namespace: group) }
+
+    let_it_be(:scan_profile_in_root) { create(:security_scan_profile, namespace: root_namespace) }
+    let_it_be(:scan_profile_in_other) { create(:security_scan_profile, namespace: other_namespace) }
+    let_it_be(:scan_profile_1) { create(:security_scan_profile, namespace: group, name: "profile 1") }
+    let_it_be(:scan_profile_2) { create(:security_scan_profile, namespace: group, name: "profile 2") }
+
+    let_it_be(:association_in_root) do
+      create(:security_scan_profile_project, scan_profile: scan_profile_in_root, project: project_in_root)
+    end
+
+    let_it_be(:association_in_other) do
+      create(:security_scan_profile_project, scan_profile: scan_profile_in_other, project: project_in_other)
+    end
+
+    let_it_be(:association_1) do
+      create(:security_scan_profile_project, scan_profile: scan_profile_1, project: project_1)
+    end
+
+    let_it_be(:association_2) do
+      create(:security_scan_profile_project, scan_profile: scan_profile_1, project: project_2)
+    end
+
+    let_it_be(:association_3) do
+      create(:security_scan_profile_project, scan_profile: scan_profile_1, project: project_3)
+    end
+
+    let_it_be(:association_other_profile) do
+      create(:security_scan_profile_project, scan_profile: scan_profile_2, project: project_1)
+    end
+
+    let_it_be(:all_associations) do
+      [
+        association_in_root,
+        association_in_other,
+        association_1,
+        association_2,
+        association_3,
+        association_other_profile
+      ]
+    end
+
     describe '.not_in_root_namespace' do
-      let_it_be(:root_namespace) { create(:group) }
-      let_it_be(:other_namespace) { create(:group) }
-      let_it_be(:project_in_root) { create(:project, namespace: root_namespace) }
-      let_it_be(:project_in_other) { create(:project, namespace: other_namespace) }
-
-      let_it_be(:scan_profile_in_root) { create(:security_scan_profile, namespace: root_namespace) }
-      let_it_be(:scan_profile_in_other) { create(:security_scan_profile, namespace: other_namespace) }
-
-      let_it_be(:association_in_root) do
-        create(:security_scan_profile_project, scan_profile: scan_profile_in_root, project: project_in_root)
-      end
-
-      let_it_be(:association_in_other) do
-        create(:security_scan_profile_project, scan_profile: scan_profile_in_other, project: project_in_other)
-      end
-
       it 'returns associations where scan profile is not in the given root namespace' do
         result = described_class.not_in_root_namespace(root_namespace)
 
-        expect(result).to contain_exactly(association_in_other)
+        expect(result).to match_array(all_associations - [association_in_root])
       end
 
-      it 'returns empty when all associations are in the root namespace' do
+      it 'returns associations in root namespace when querying for other namespace' do
         result = described_class.not_in_root_namespace(other_namespace)
 
-        expect(result).to contain_exactly(association_in_root)
+        expect(result).to match_array(all_associations - [association_in_other])
+      end
+    end
+
+    describe '.by_project_id' do
+      it 'returns associations for the given project' do
+        result = described_class.by_project_id(project_1.id)
+
+        expect(result).to contain_exactly(association_1, association_other_profile)
+        expect(result).not_to include(association_2, association_3)
+      end
+    end
+
+    describe '.for_scan_profile' do
+      it 'returns associations for the given scan profile' do
+        result = described_class.for_scan_profile(scan_profile_1.id)
+
+        expect(result).to contain_exactly(association_1, association_2, association_3)
+        expect(result).not_to include(association_other_profile)
+      end
+    end
+
+    describe '.id_after' do
+      it 'returns associations with id greater than the given id' do
+        min_id = all_associations.map(&:id).min
+        result = described_class.id_after(min_id)
+
+        expect(result.pluck(:id)).not_to include(min_id)
+        expect(result.count).to eq(all_associations.count - 1)
+      end
+    end
+
+    describe '.ordered_by_id' do
+      it 'returns associations ordered by id ascending' do
+        result = described_class.ordered_by_id
+
+        ids = result.pluck(:id)
+        expect(ids).to eq(ids.sort)
+      end
+    end
+  end
+
+  describe 'class methods2' do
+    describe '.scan_profile_project_ids' do
+      let_it_be(:scan_profile2) { create(:security_scan_profile, namespace: group, name: "scan_profile2") }
+      let_it_be(:association1) do
+        create(:security_scan_profile_project, scan_profile: scan_profile, project: project)
+      end
+
+      let_it_be(:association2) do
+        create(:security_scan_profile_project, scan_profile: scan_profile2, project: project)
+      end
+
+      context 'when there are fewer records than MAX_PLUCK' do
+        it 'returns all ids' do
+          result = described_class.scan_profile_project_ids
+
+          expect(result).to match_array([association1.id, association2.id])
+        end
+      end
+
+      context 'when there are more records than MAX_PLUCK' do
+        before do
+          stub_const("#{described_class}::MAX_PLUCK", 1)
+        end
+
+        it 'limits the number of ids returned to MAX_PLUCK' do
+          result = described_class.scan_profile_project_ids
+
+          expect(result.count).to eq(1)
+        end
       end
     end
   end

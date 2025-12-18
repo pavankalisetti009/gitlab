@@ -26,6 +26,10 @@ module Security
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
     scope :by_type, ->(type) { where(scan_type: type) }
 
+    def self.scan_profile_ids(limit = MAX_PLUCK)
+      limit(limit).ids
+    end
+
     private
 
     def root_namespace_validation
