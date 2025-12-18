@@ -98,23 +98,22 @@ RSpec.describe Search::Zoekt::Filters, feature_category: :global_search do
     end
   end
 
-  describe '.by_project_id' do
-    it 'raises error if id is nil' do
-      expect { described_class.by_project_id(nil) }.to raise_error(ArgumentError, 'Project ID cannot be nil')
-    end
-
-    it 'returns a meta filter for project_id with correct regexp' do
-      expect(described_class.by_project_id(123)).to eq({ meta: { key: 'project_id', value: '^123$' } })
-    end
-  end
-
   describe '.by_project_ids' do
-    it 'returns an or filter of project_id meta filters' do
+    it 'returns a meta filter with regex pattern combining all project IDs' do
       expect(described_class.by_project_ids([1, 2])).to eq(
-        described_class.or_filters(
-          described_class.by_project_id(1),
-          described_class.by_project_id(2)
-        )
+        { meta: { key: 'project_id', value: '^(1|2)$' } }
+      )
+    end
+
+    it 'returns correct pattern for single project ID' do
+      expect(described_class.by_project_ids([123])).to eq(
+        { meta: { key: 'project_id', value: '^(123)$' } }
+      )
+    end
+
+    it 'returns correct pattern for multiple project IDs' do
+      expect(described_class.by_project_ids([1, 2, 3])).to eq(
+        { meta: { key: 'project_id', value: '^(1|2|3)$' } }
       )
     end
 

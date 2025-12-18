@@ -128,22 +128,15 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
           forward_to: [
             {
               query: {
-                and: { children: [{ query_string: { query: 'case:no test' } }, { or: { children: [
-                  { meta: { key: 'project_id', value: '^1$' } },
-                  { meta: { key: 'project_id', value: '^2$' } },
-                  { meta: { key: 'project_id', value: '^3$' } }
-                ] } }] }
+                and: { children: [{ query_string: { query: 'case:no test' } },
+                  { meta: { key: 'project_id', value: '^(1|2|3)$' } }] }
               },
               endpoint: node1.search_base_url
             },
             {
               query: {
-                and: { children: [{ query_string: { query: 'case:no test' } }, { or: { children: [
-
-                  { meta: { key: 'project_id', value: '^4$' } },
-                  { meta: { key: 'project_id', value: '^5$' } },
-                  { meta: { key: 'project_id', value: '^6$' } }
-                ] } }] }
+                and: { children: [{ query_string: { query: 'case:no test' } },
+                  { meta: { key: 'project_id', value: '^(4|5|6)$' } }] }
               },
               endpoint: node2.search_base_url
             }

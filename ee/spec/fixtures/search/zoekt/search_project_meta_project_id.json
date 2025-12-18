@@ -19,7 +19,7 @@
           },
           "meta": {
             "key": "project_id",
-            "value": "^1$"
+            "value": "^(1)$"
           }
         },
         {
