@@ -6,7 +6,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionSer
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
 
-  let(:service) { described_class.new(project, user) }
+  let(:service) { described_class.new(project&.secrets_manager, user) }
 
   subject(:result) { service.execute }
 

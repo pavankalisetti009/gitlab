@@ -23,36 +23,62 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
   subject(:result) { service.execute }
 
   describe '#initialize' do
-    let(:custom_namespace_path) { 'custom/namespace/path' }
-    let(:custom_project_path) { 'custom-project-path' }
+    let(:stored_namespace_path) { ['group', group.id.to_s].join('_') }
+    let(:stored_project_path) { "project_#{project.id}" }
 
-    it 'prefers explicitly passed namespace and project paths over secrets_manager paths' do
-      allow(secrets_manager).to receive_messages(
-        namespace_path: 'manager/namespace/path',
-        project_path: 'manager-project-path'
-      )
+    context 'when only namespace_path is nil' do
+      before do
+        secrets_manager.update!(
+          namespace_path: nil,
+          project_path: stored_project_path
+        )
+      end
 
-      service = described_class.new(
-        secrets_manager,
-        user,
-        namespace_path: custom_namespace_path,
-        project_path: custom_project_path
-      )
+      it 'builds namespace_path and keeps stored project_path' do
+        expected_namespace_path = [project.namespace.type.downcase, project.namespace.id].join('_')
 
-      expect(service.send(:namespace_path)).to eq(custom_namespace_path)
-      expect(service.send(:project_path)).to eq(custom_project_path)
+        # trigger initialization
+        service
+
+        expect(service.instance_variable_get(:@namespace_path)).to eq(expected_namespace_path)
+        expect(service.instance_variable_get(:@project_path)).to eq(stored_project_path)
+      end
     end
 
-    it 'falls back to secrets_manager paths when explicit paths are not provided' do
-      allow(secrets_manager).to receive_messages(
-        namespace_path: 'manager/namespace/path',
-        project_path: 'manager-project-path'
-      )
+    context 'when only project_path is nil' do
+      before do
+        secrets_manager.update!(
+          namespace_path: stored_namespace_path,
+          project_path: nil
+        )
+      end
 
-      service = described_class.new(secrets_manager, user)
+      it 'keeps stored namespace_path and builds project_path' do
+        expected_project_path = "project_#{project.id}"
 
-      expect(service.send(:namespace_path)).to eq('manager/namespace/path')
-      expect(service.send(:project_path)).to eq('manager-project-path')
+        # trigger initialization
+        service
+
+        expect(service.instance_variable_get(:@namespace_path)).to eq(stored_namespace_path)
+        expect(service.instance_variable_get(:@project_path)).to eq(expected_project_path)
+      end
+    end
+
+    context 'when both namespace_path and project_path are nil' do
+      before do
+        secrets_manager.update!(namespace_path: nil, project_path: nil)
+      end
+
+      it 'builds both namespace_path and project_path from the project' do
+        expected_namespace_path = [project.namespace.type.downcase, project.namespace.id].join('_')
+        expected_project_path   = "project_#{project.id}"
+
+        # initialize service
+        service
+
+        expect(service.instance_variable_get(:@namespace_path)).to eq(expected_namespace_path)
+        expect(service.instance_variable_get(:@project_path)).to eq(expected_project_path)
+      end
     end
   end
 
@@ -90,6 +116,56 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
         user_claim: "user_id",
         token_type: "service"
       )
+    end
+
+    context 'when project is nil' do
+      let(:secrets_manager) do
+        create(:project_secrets_manager,
+          project: project,
+          namespace_path: "group_#{group.id}",
+          project_path: "project_#{project.id}"
+        )
+      end
+
+      let(:service) do
+        allow(secrets_manager).to receive(:project).and_return(nil)
+        described_class.new(secrets_manager, user)
+      end
+
+      let(:global_client) { instance_double(SecretsManagement::SecretsManagerClient) }
+      let(:namespaced_client) { instance_double(SecretsManagement::SecretsManagerClient) }
+
+      before do
+        # Avoid real OpenBao calls; we just want to verify the right namespace is used.
+        allow(service).to receive(:global_secrets_manager_client).and_return(global_client)
+        allow(global_client).to receive(:with_namespace).with("group_#{group.id}").and_return(namespaced_client)
+
+        # Make deprovision run without touching the rest of the system
+        allow(namespaced_client).to receive(:disable_namespace).and_return({})
+        allow(global_client).to receive(:disable_namespace).and_return({})
+        allow(secrets_manager).to receive(:destroy!).and_return(true)
+
+        # Ensure the nil-project branch doesn't try to acquire a lease
+        allow(service).to receive(:with_exclusive_lease_for).and_call_original
+      end
+
+      it 'does not try to acquire an exclusive lease and still runs deprovision', :aggregate_failures do
+        # ensure we don't try to lock on a nil project
+        expect(service).not_to receive(:with_exclusive_lease_for)
+
+        # Keep this test focused on the nil-project path and not on OpenBao plumbing:
+        allow(service).to receive(:execute_deprovision).and_return(ServiceResponse.success)
+
+        expect(result).to be_success
+      end
+
+      it 'uses global_secrets_manager_client.with_namespace(namespace_path) for the namespace client',
+        :aggregate_failures do
+        expect(global_client).to receive(:with_namespace).with("group_#{group.id}").and_return(namespaced_client)
+        expect(namespaced_client).to receive(:disable_namespace).with("project_#{project.id}").at_least(:once)
+
+        expect(service.execute).to be_success
+      end
     end
 
     it 'deletes all resources related to the project secrets manager' do

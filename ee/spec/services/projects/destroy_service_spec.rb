@@ -520,11 +520,8 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
 
     it 'calls the deprovision service' do
       expect_next_instance_of(
-        SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionByPathService,
-        project,
-        user,
-        namespace_path: secrets_manager.namespace_path,
-        project_path: secrets_manager.project_path
+        SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionService,
+        secrets_manager, user
       ) do |service|
         expect(service).to receive(:execute)
       end

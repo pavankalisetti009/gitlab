@@ -82,9 +82,8 @@ module EE
       def deprovision_secrets_manager(stale_secrets_manager)
         return unless stale_secrets_manager
 
-        ::SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionByPathService.new(project, current_user,
-          namespace_path: stale_secrets_manager.namespace_path,
-          project_path: stale_secrets_manager.project_path).execute
+        ::SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionService
+        .new(stale_secrets_manager, current_user).execute
       end
 
       def log_geo_event(project)
