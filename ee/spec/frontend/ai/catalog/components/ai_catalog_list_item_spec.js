@@ -270,11 +270,19 @@ describe('AiCatalogListItem', () => {
         expect(foundationalIcon.props('resourceId')).toBe(mockItem.id);
         expect(foundationalIcon.props('size')).toBe(16);
       });
+
+      it('does not render the source project tooltip', () => {
+        expect(findSourceProjectTooltip().exists()).toBe(false);
+      });
     });
 
     describe('when item is not foundational', () => {
       it('does not render foundational icon', () => {
         expect(findFoundationalIcon().exists()).toBe(false);
+      });
+
+      it('renders the source project tooltip', () => {
+        expect(findSourceProjectTooltip().exists()).toBe(true);
       });
     });
   });

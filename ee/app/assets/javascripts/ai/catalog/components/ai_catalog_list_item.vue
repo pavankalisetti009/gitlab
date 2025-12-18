@@ -165,6 +165,7 @@ export default {
       </p>
       <div class="gl-z-1 gl-flex gl-shrink gl-gap-4">
         <div
+          v-if="!item.foundational"
           v-gl-tooltip
           :title="sourceProjectTooltip"
           data-testid="ai-catalog-item-source-project"
