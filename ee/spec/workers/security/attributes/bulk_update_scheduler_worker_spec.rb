@@ -37,7 +37,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
     context 'when user exists' do
       it 'processes project IDs and schedules batch workers' do
         expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-          .with(0, [project1.id, project2.id], attribute_ids, mode, user_id)
+          .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id)
 
         worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
       end
@@ -61,7 +61,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
 
         it 'expands groups to include all projects' do
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0, match_array([project1.id, project2.id, subproject.id]), attribute_ids, mode, user_id)
+            .with(0.seconds, match_array([project1.id, project2.id, subproject.id]), attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -74,7 +74,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         it 'expands groups and deduplicates projects' do
           # project1 appears both directly and through group expansion
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0, match_array([project1.id, project2.id, subproject.id]), attribute_ids, mode, user_id)
+            .with(0.seconds, match_array([project1.id, project2.id, subproject.id]), attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -85,7 +85,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
 
         it 'passes correct mode to batch workers' do
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0, [project1.id, project2.id], attribute_ids, mode, user_id)
+            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -96,7 +96,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
 
         it 'passes correct mode to batch workers' do
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0, [project1.id, project2.id], attribute_ids, mode, user_id)
+            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -131,7 +131,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
 
         it 'processes only valid items' do
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0, [project1.id], attribute_ids, mode, user_id)
+            .with(0.seconds, [project1.id], attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -145,7 +145,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
 
         it 'processes only accessible items' do
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0, [project1.id], attribute_ids, mode, user_id)
+            .with(0.seconds, [project1.id], attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -164,9 +164,9 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
             .with(0, anything, attribute_ids, mode, user_id)
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(1, anything, attribute_ids, mode, user_id)
+            .with(1.second, anything, attribute_ids, mode, user_id)
           expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(2, anything, attribute_ids, mode, user_id)
+            .with(2.seconds, anything, attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
