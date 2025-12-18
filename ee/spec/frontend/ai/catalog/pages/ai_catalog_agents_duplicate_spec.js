@@ -8,7 +8,6 @@ import createAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/create_ai_cata
 import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import AiCatalogAgentsDuplicate from 'ee/ai/catalog/pages/ai_catalog_agents_duplicate.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
-import { VERSION_PINNED } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockAgent,
@@ -16,7 +15,7 @@ import {
   mockCreateAiCatalogAgentErrorMutation,
   mockCreateAiCatalogThirdPartyFlowSuccessMutation,
   mockAgentConfigurationForProject,
-  mockVersionProp,
+  mockItemConfigurationForGroup,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -38,10 +37,9 @@ describe('AiCatalogAgentsDuplicate', () => {
   const routeParams = { id: agentId };
   const defaultProps = {
     aiCatalogAgent: mockAgent,
-    version: mockVersionProp, // mock defaults to `latestVersion`
   };
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, provide = {}) => {
     createAiCatalogAgentMock = jest.fn().mockResolvedValue(mockCreateAiCatalogAgentSuccessMutation);
     createAiCatalogThirdPartyFlowMock = jest
       .fn()
@@ -58,6 +56,9 @@ describe('AiCatalogAgentsDuplicate', () => {
         ...defaultProps,
         ...props,
       },
+      provide: {
+        ...provide,
+      },
       mocks: {
         $route: {
           params: routeParams,
@@ -69,50 +70,152 @@ describe('AiCatalogAgentsDuplicate', () => {
   };
 
   const findForm = () => wrapper.findComponent(AiCatalogAgentForm);
+  const findFormInitialValues = () => findForm().props('initialValues');
 
   beforeEach(() => {
     createComponent();
   });
 
   describe('Form Initial Values', () => {
-    it('sets initial values based on the versionKey, but always private and without a project', async () => {
-      const expectedInitialValues = {
-        name: `Copy of ${mockAgent.name}`,
-        description: mockAgent.description,
-        systemPrompt: mockAgentConfigurationForProject.pinnedItemVersion.systemPrompt,
-        tools: mockAgentConfigurationForProject.pinnedItemVersion.tools.nodes.map((t) => t.id),
-        type: 'AGENT',
-        public: false,
-      };
+    const baseExpectedInitialValues = {
+      name: `Copy of ${mockAgent.name}`,
+      description: mockAgent.description,
+      type: 'AGENT',
+      public: false,
+    };
 
-      createComponent({
-        version: { isUpdateAvailable: true, activeVersionKey: VERSION_PINNED },
-        aiCatalogAgent: { ...mockAgent, configurationForProject: mockAgentConfigurationForProject },
-      });
+    const expectedInitialValuesWithProjectPinnedVersion = {
+      ...baseExpectedInitialValues,
+      systemPrompt: mockAgentConfigurationForProject.pinnedItemVersion.systemPrompt,
+      tools: mockAgentConfigurationForProject.pinnedItemVersion.tools.nodes.map((t) => t.id),
+    };
+
+    const expectedInitialValuesWithGroupPinnedVersion = {
+      ...baseExpectedInitialValues,
+      systemPrompt: mockItemConfigurationForGroup.pinnedItemVersion.systemPrompt,
+      tools: mockItemConfigurationForGroup.pinnedItemVersion.tools.nodes.map((t) => t.id),
+    };
+
+    const expectedInitialValuesWithLatestVersion = {
+      ...baseExpectedInitialValues,
+      systemPrompt: mockAgent.latestVersion.systemPrompt,
+      tools: mockAgent.latestVersion.tools.nodes.map((t) => t.id),
+    };
+
+    it('sets initial item public field and removes project field correctly', async () => {
+      createComponent(
+        {
+          aiCatalogAgent: {
+            ...mockAgent,
+            configurationForProject: {
+              ...mockAgentConfigurationForProject,
+              public: true,
+            },
+          },
+        },
+        {
+          isGlobal: false,
+          projectId: '1',
+        },
+      );
       await waitForPromises();
 
-      expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+      const formProps = findFormInitialValues();
+
+      expect(formProps).not.toHaveProperty('project');
+      expect(formProps).toEqual({
+        ...expectedInitialValuesWithProjectPinnedVersion,
+        public: false,
+      });
     });
 
-    it('set initial values from the data of the original agent', async () => {
-      const expectedInitialValues = {
-        name: `Copy of ${mockAgent.name}`,
-        description: mockAgent.description,
-        systemPrompt: mockAgent.latestVersion.systemPrompt,
-        tools: [],
-        type: 'AGENT',
-        public: false,
-      };
+    describe('being set correctly in global context', () => {
+      it('sets initial values to latest version', async () => {
+        createComponent(
+          {
+            aiCatalogAgent: {
+              ...mockAgent,
+              configurationForProject: mockAgentConfigurationForProject, // not expected
+            },
+          },
+          {
+            isGlobal: true,
+          },
+        );
+        await waitForPromises();
 
-      createComponent({
-        aiCatalogAgent: {
-          ...mockAgent,
-          configurationForProject: mockAgentConfigurationForProject,
-        },
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
       });
-      await waitForPromises();
+    });
 
-      expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+    describe('being set correctly in project context', () => {
+      it('sets initial values to latest version when no configurations are present', async () => {
+        createComponent(
+          {
+            aiCatalogAgent: mockAgent,
+          },
+          {
+            isGlobal: false,
+            projectId: '1',
+          },
+        );
+        await waitForPromises();
+
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
+      });
+
+      it('sets initial values to group-pinned version when only group configuration is present', async () => {
+        createComponent(
+          {
+            aiCatalogAgent: { ...mockAgent, configurationForGroup: mockItemConfigurationForGroup },
+          },
+          {
+            isGlobal: false,
+            projectId: '1',
+          },
+        );
+        await waitForPromises();
+
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithGroupPinnedVersion);
+      });
+
+      it('sets initial values to project-pinned version even if group- and project-level configurations are present', async () => {
+        createComponent(
+          {
+            aiCatalogAgent: {
+              ...mockAgent,
+              configurationForGroup: mockItemConfigurationForGroup,
+              configurationForProject: mockAgentConfigurationForProject,
+            },
+          },
+          {
+            isGlobal: false,
+            projectId: '1',
+          },
+        );
+        await waitForPromises();
+
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithProjectPinnedVersion);
+      });
+
+      it('sets initial values to latest version when neither the group- nor project-level configurations are present', async () => {
+        createComponent(
+          {
+            aiCatalogAgent: {
+              ...mockAgent,
+              configurationForGroup: null,
+              configurationForProject: null,
+            },
+          },
+          {
+            isGlobal: false,
+            projectId: '1',
+          },
+        );
+        await waitForPromises();
+
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
+      });
     });
   });
 

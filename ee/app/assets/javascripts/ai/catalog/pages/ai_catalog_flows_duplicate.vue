@@ -4,7 +4,7 @@ import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { prerequisitesError, getByVersionKey } from '../utils';
+import { prerequisitesError, resolveVersion } from '../utils';
 import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_FLOW } from '../constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
@@ -16,12 +16,13 @@ export default {
     GlExperimentBadge,
     PageHeading,
   },
+  inject: {
+    isGlobal: {
+      default: false,
+    },
+  },
   props: {
     aiCatalogFlow: {
-      type: Object,
-      required: true,
-    },
-    version: {
       type: Object,
       required: true,
     },
@@ -33,11 +34,14 @@ export default {
     };
   },
   computed: {
+    activeVersion() {
+      return resolveVersion(this.aiCatalogFlow, this.isGlobal);
+    },
     flowName() {
       return this.aiCatalogFlow.name;
     },
     definition() {
-      return getByVersionKey(this.aiCatalogFlow, this.version.activeVersionKey).definition;
+      return this.activeVersion.definition;
     },
     initialValues() {
       return {
