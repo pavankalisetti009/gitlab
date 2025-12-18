@@ -127,6 +127,29 @@ RSpec.describe Vulnerabilities::FindingEntity, feature_category: :vulnerability_
         end
       end
 
+      describe 'matches_auto_dismiss_policy' do
+        before do
+          occurrence.matches_auto_dismiss_policy = true
+        end
+
+        it 'contains matches_auto_dismiss_policy if licensed feature is available' do
+          stub_licensed_features(security_orchestration_policies: true)
+
+          expect(subject[:matches_auto_dismiss_policy]).to be true
+        end
+
+        it 'does not contain matches_auto_dismiss_policy by default' do
+          expect(subject[:matches_auto_dismiss_policy]).to be_nil
+        end
+
+        it 'does not contain matches_auto_dismiss_policy if licensed feature is available but FF "auto_dismiss_vulnerability_policies" is disabled' do
+          stub_licensed_features(security_orchestration_policies: true)
+          stub_feature_flags(auto_dismiss_vulnerability_policies: false)
+
+          expect(subject[:matches_auto_dismiss_policy]).to be_nil
+        end
+      end
+
       context 'when not allowed to admin vulnerability feedback' do
         before do
           project.add_guest(user)

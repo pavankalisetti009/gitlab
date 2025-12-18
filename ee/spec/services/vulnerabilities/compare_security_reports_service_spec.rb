@@ -594,5 +594,78 @@ RSpec.describe Vulnerabilities::CompareSecurityReportsService, :clean_gitlab_red
         expect(added_findings_ids[1]).to eq(high_finding.id)
       end
     end
+
+    describe 'policy auto-dismissal checks preloading' do
+      let_it_be(:scan_type) { :sast }
+      let_it_be(:base_pipeline) { test_pipelines[:default_base] }
+      let_it_be(:head_pipeline) { test_pipelines[:with_sast_report] }
+
+      before do
+        stub_licensed_features(security_dashboard: true, sast: true, security_orchestration_policies: true)
+      end
+
+      context 'when there are no auto-dismiss policies' do
+        it 'includes attribute matches_auto_dismiss_policy set to false' do
+          expect(comparison.dig(:data, 'added')).to all match a_hash_including('matches_auto_dismiss_policy' => false)
+        end
+      end
+
+      context 'when there are auto-dismiss policies' do
+        let_it_be(:policy) do
+          create(:security_policy, :vulnerability_management_policy, :auto_dismiss, linked_projects: [project])
+        end
+
+        let_it_be(:rule) do
+          create(:vulnerability_management_policy_rule, :detected_file_path,
+            security_policy: policy,
+            file_path: 'test/**/*')
+        end
+
+        let!(:policy_finding) do
+          create_scan_with_findings('sast', head_pipeline, 1).first.tap do |finding|
+            finding.finding_data['location'] = { file: 'test/sample_spec.rb' }
+            finding.save!
+          end
+        end
+
+        it 'includes the attribute matches_auto_dismiss_policy with the correct value' do
+          expect(Security::Findings::PolicyAutoDismissalChecker).to receive(:new).once.and_call_original
+          expect(comparison.dig(:data, 'added')).to all include('matches_auto_dismiss_policy')
+
+          matching_findings, non_matching_findings = comparison.dig(:data, 'added').partition do |finding|
+            finding['matches_auto_dismiss_policy']
+          end
+
+          expect(matching_findings).to all match a_hash_including('matches_auto_dismiss_policy' => true)
+          expect(non_matching_findings).to all match a_hash_including('matches_auto_dismiss_policy' => false)
+        end
+
+        context 'when auto_dismiss_vulnerability_policies feature is disabled' do
+          before do
+            stub_feature_flags(auto_dismiss_vulnerability_policies: false)
+          end
+
+          it 'does not precompute auto dismissal checks' do
+            expect(Security::Findings::PolicyAutoDismissalChecker).not_to receive(:new)
+
+            comparison
+          end
+
+          it 'does not include the attribute matches_auto_dismiss_policy' do
+            expect(comparison.dig(:data, 'added')).to all match hash_excluding('matches_auto_dismiss_policy')
+          end
+        end
+
+        context 'when feature is not licensed' do
+          before do
+            stub_licensed_features(security_dashboard: true, sast: true, security_orchestration_policies: false)
+          end
+
+          it 'does not include the attribute matches_auto_dismiss_policy' do
+            expect(comparison.dig(:data, 'added')).to all match hash_excluding('matches_auto_dismiss_policy')
+          end
+        end
+      end
+    end
   end
 end

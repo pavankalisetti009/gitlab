@@ -73,6 +73,8 @@ class Vulnerabilities::FindingEntity < Grape::Entity
                                                                     finding.respond_to?(:ai_resolution_enabled?)
                                                                   }
 
+  expose :matches_auto_dismiss_policy?, as: :matches_auto_dismiss_policy, if: ->(_, _) { expose_policy_fields? }
+
   alias_method :occurrence, :object
 
   def current_user
@@ -84,6 +86,12 @@ class Vulnerabilities::FindingEntity < Grape::Entity
   def expose_false_positive?
     project = occurrence.project
     project.licensed_feature_available?(:sast_fp_reduction)
+  end
+
+  def expose_policy_fields?
+    project = occurrence.project
+    ::Feature.enabled?(:auto_dismiss_vulnerability_policies,
+      project.group) && project.licensed_feature_available?(:security_orchestration_policies)
   end
 end
 

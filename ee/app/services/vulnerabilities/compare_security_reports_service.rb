@@ -101,7 +101,11 @@ module Vulnerabilities
           limit: Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT
         }
       ).execute.with_api_scopes
-      Gitlab::Ci::Reports::Security::AggregatedFinding.new(pipeline, findings)
+
+      findings_array = findings.to_a
+      Security::Finding.preload_auto_dismissal_checks!(project, findings_array)
+
+      Gitlab::Ci::Reports::Security::AggregatedFinding.new(pipeline, findings_array)
     end
 
     def execute(base_pipeline, head_pipeline)
