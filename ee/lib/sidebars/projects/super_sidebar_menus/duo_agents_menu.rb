@@ -4,6 +4,8 @@ module Sidebars
   module Projects
     module SuperSidebarMenus
       class DuoAgentsMenu < ::Sidebars::Menu
+        include DuoWorkflowConcern
+
         override :configure_menu_items
         def configure_menu_items
           return false unless current_user&.can?(:duo_workflow, context.project) &&
@@ -41,7 +43,7 @@ module Sidebars
         private
 
         def show_agents_runs_menu_items?
-          context.project.duo_remote_flows_enabled && Feature.enabled?(:duo_workflow_in_ci, context.current_user)
+          duo_workflow_enabled?(context.project, context.current_user)
         end
 
         def show_flow_triggers_menu_items?

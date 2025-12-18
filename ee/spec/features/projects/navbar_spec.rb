@@ -127,8 +127,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
             nav_item: _('Automate'),
             nav_sub_items: [
               s_('AICatalog|Agents'),
-              s_('DuoAgentsPlatform|Triggers'),
-              s_('DuoAgentsPlatform|Sessions')
+              s_('DuoAgentsPlatform|Triggers')
             ]
           }
         )
