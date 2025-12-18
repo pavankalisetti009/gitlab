@@ -3,7 +3,7 @@
 module API
   module Entities
     class Experiment < Grape::Entity
-      expose :key, documentation: { type: 'string', example: 'code_quality_walkthrough' } do |definition|
+      expose :key, documentation: { type: 'String', example: 'code_quality_walkthrough' } do |definition|
         definition.attributes[:name].gsub(/_experiment_percentage$/, '')
       end
 

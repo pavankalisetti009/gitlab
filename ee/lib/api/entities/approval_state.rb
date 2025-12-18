@@ -9,13 +9,13 @@ module API
         approval_state.merge_request.public_merge_status
       end
 
-      expose :approved?, as: :approved, documentation: { type: 'boolean' }
+      expose :approved?, as: :approved, documentation: { type: 'Boolean' }
 
-      expose :approvals_required, documentation: { type: 'integer', example: 2 }
+      expose :approvals_required, documentation: { type: 'Integer', example: 2 }
 
-      expose :approvals_left, documentation: { type: 'integer', example: 2 }
+      expose :approvals_left, documentation: { type: 'Integer', example: 2 }
 
-      expose :require_password_to_approve, documentation: { type: 'boolean' } do |approval_state|
+      expose :require_password_to_approve, documentation: { type: 'Boolean' } do |approval_state|
         approval_state.project.require_password_to_approve?
       end
 
@@ -54,27 +54,27 @@ module API
         # rubocop:enable Lint/AssignmentInCondition
       end
 
-      expose :user_has_approved, documentation: { type: 'boolean' } do |approval_state, options|
+      expose :user_has_approved, documentation: { type: 'Boolean' } do |approval_state, options|
         approval_state.merge_request.approved_by?(options[:current_user])
       end
 
-      expose :user_can_approve, documentation: { type: 'boolean' } do |approval_state, options|
+      expose :user_can_approve, documentation: { type: 'Boolean' } do |approval_state, options|
         approval_state.eligible_for_approval_by?(options[:current_user])
       end
 
       expose :approval_rules_left, using: ::API::Entities::ApprovalRuleShort, documentation: { is_array: true }
 
-      expose :has_approval_rules, documentation: { type: 'boolean' } do |approval_state|
+      expose :has_approval_rules, documentation: { type: 'Boolean' } do |approval_state|
         approval_state.user_defined_rules.present?
       end
 
-      expose :merge_request_approvers_available, documentation: { type: 'boolean' } do |approval_state|
+      expose :merge_request_approvers_available, documentation: { type: 'Boolean' } do |approval_state|
         # rubocop:disable Gitlab/FeatureAvailableUsage -- TODO: needs to be fixed
         approval_state.project.feature_available?(:merge_request_approvers)
         # rubocop:enable Gitlab/FeatureAvailableUsage
       end
 
-      expose :multiple_approval_rules_available, documentation: { type: 'boolean' } do |approval_state|
+      expose :multiple_approval_rules_available, documentation: { type: 'Boolean' } do |approval_state|
         approval_state.project.multiple_approval_rules_available?
       end
 
