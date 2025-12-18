@@ -1667,6 +1667,13 @@ module EE
       organization_policy_setting.csp_namespace
     end
 
+    def security_scan_profile_for(type)
+      return unless licensed_feature_available?(:security_scan_profiles) &&
+        ::Feature.enabled?(:security_scan_profiles_feature, root_ancestor)
+
+      security_scan_profiles.by_type(type)
+    end
+
     private
 
     def path_locks_changed_epoch_cache_key

@@ -5740,5 +5740,96 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#security_scan_profile_for' do
+    let_it_be(:project) { create(:project) }
+
+    context 'when security_scan_profiles is not available' do
+      before do
+        stub_licensed_features(security_scan_profiles: false)
+      end
+
+      context 'when project has a secret_detection scan profile' do
+        let_it_be(:secret_detection_profile) do
+          create(:security_scan_profile,
+            namespace: project.namespace,
+            scan_type: :secret_detection,
+            name: 'Secret Detection Profile')
+        end
+
+        let_it_be(:association) do
+          create(:security_scan_profile_project, scan_profile: secret_detection_profile, project: project)
+        end
+
+        it 'returns nil' do
+          expect(project.security_scan_profile_for(:secret_detection)).to be_nil
+        end
+      end
+    end
+
+    context 'when security_scan_profiles license is available' do
+      before do
+        stub_licensed_features(security_scan_profiles: true)
+      end
+
+      context 'when security_scan_profiles_feature is disabled' do
+        before do
+          stub_feature_flags(security_scan_profiles_feature: false)
+        end
+
+        context 'when project has a secret_detection scan profile' do
+          let_it_be(:secret_detection_profile) do
+            create(:security_scan_profile,
+              namespace: project.namespace,
+              scan_type: :secret_detection,
+              name: 'Secret Detection Profile')
+          end
+
+          let_it_be(:association) do
+            create(:security_scan_profile_project, scan_profile: secret_detection_profile, project: project)
+          end
+
+          it 'returns nil' do
+            expect(project.security_scan_profile_for(:secret_detection)).to be_nil
+          end
+        end
+      end
+
+      context 'when project has a secret_detection scan profile' do
+        let_it_be(:secret_detection_profile) do
+          create(:security_scan_profile,
+            namespace: project.namespace,
+            scan_type: :secret_detection,
+            name: 'Secret Detection Profile')
+        end
+
+        let_it_be(:association) do
+          create(:security_scan_profile_project, scan_profile: secret_detection_profile, project: project)
+        end
+
+        it 'returns the relation for existing type' do
+          result = project.security_scan_profile_for(:secret_detection)
+
+          expect(result).to exist
+        end
+
+        it 'returns empty relation for non existing type' do
+          result = project.security_scan_profile_for(:sast)
+
+          expect(result).not_to be_nil
+          expect(result).to be_empty
+        end
+      end
+
+      context 'when project has no scan profiles' do
+        it 'returns empty relation' do
+          result = project.security_scan_profile_for(:secret_detection)
+
+          expect(result).not_to be_nil
+          expect(result).to be_empty
+        end
+      end
+    end
+  end
+
   it_behaves_like 'a resource that has custom roles', :project
 end
