@@ -1809,7 +1809,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         create(:elastic_index_setting, alias_name: 'test-index', number_of_shards: 3, number_of_replicas: 2)
       end
 
-      it 'returns the index setting with correct attributes' do
+      it 'returns the index setting with correct attributes',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20796' do
         expect(elasticsearch_index_settings).to contain_exactly(
           have_attributes(alias_name: 'test-index', number_of_shards: 3, number_of_replicas: 2)
         )
