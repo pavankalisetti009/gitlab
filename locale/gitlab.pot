@@ -13331,6 +13331,12 @@ msgstr ""
 msgid "CICD|No authentication events to display."
 msgstr ""
 
+msgid "CICD|No job data found for the current filter."
+msgstr ""
+
+msgid "CICD|No job data found."
+msgstr ""
+
 msgid "CICD|No resources selected (minimal access only)"
 msgstr ""
 
@@ -13358,6 +13364,9 @@ msgstr ""
 msgid "CICD|Run pipelines triggered by AI agents automatically"
 msgstr ""
 
+msgid "CICD|Search by job name"
+msgstr ""
+
 msgid "CICD|Select the groups and projects authorized to use a CI/CD job token to authenticate requests to this project. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
@@ -13383,6 +13392,9 @@ msgid "CICD|There was a problem fetching authentication logs."
 msgstr ""
 
 msgid "CICD|Turn on incremental logging"
+msgstr ""
+
+msgid "CICD|Unable to load job data. Please try again."
 msgstr ""
 
 msgid "CICD|Unprotected branches will not have access to the cache from protected branches."
@@ -38558,6 +38570,9 @@ msgstr ""
 msgid "Job|Failed"
 msgstr ""
 
+msgid "Job|Failure rate (%{percentSymbol})"
+msgstr ""
+
 msgid "Job|Finished at"
 msgstr ""
 
@@ -38597,10 +38612,16 @@ msgstr ""
 msgid "Job|Manual"
 msgstr ""
 
+msgid "Job|Mean duration (s)"
+msgstr ""
+
 msgid "Job|No job log"
 msgstr ""
 
 msgid "Job|No search results found"
+msgstr ""
+
+msgid "Job|P95 duration (s)"
 msgstr ""
 
 msgid "Job|Passed"
@@ -38664,6 +38685,9 @@ msgid "Job|Source"
 msgstr ""
 
 msgid "Job|Status"
+msgstr ""
+
+msgid "Job|Success rate (%{percentSymbol})"
 msgstr ""
 
 msgid "Job|The artifacts were removed"

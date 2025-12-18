@@ -11,6 +11,10 @@ module EE
 
         before_action :authorize_read_licenses!, only: [:licenses, :license_count]
 
+        before_action only: [:charts] do
+          push_licensed_feature(:ci_job_analytics_for_projects, project)
+        end
+
         before_action only: [:show, :security] do
           if ::Feature.enabled?(:pipeline_security_ai_vr, project)
             push_frontend_ability(
