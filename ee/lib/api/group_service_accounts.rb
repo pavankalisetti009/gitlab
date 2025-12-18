@@ -39,6 +39,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 Group not found' }
           ]
+          tags ['service_accounts']
         end
 
         params do
@@ -71,6 +72,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 Group not found' }
           ]
+          tags ['service_accounts']
         end
 
         params do
@@ -97,6 +99,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 Group not found' }
           ]
+          tags ['service_accounts']
         end
 
         params do
@@ -129,6 +132,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 User not found' }
           ]
+          tags ['service_accounts']
         end
 
         params do
@@ -164,6 +168,7 @@ module API
               { code: 404, message: '404 Group Not Found' },
               { code: 403, message: 'Forbidden' }
             ]
+            tags ['personal_access_tokens']
           end
 
           params do
@@ -182,6 +187,7 @@ module API
           desc 'Create a personal access token. Available only for group owners.' do
             detail 'This feature was introduced in GitLab 16.1'
             success Entities::PersonalAccessTokenWithToken
+            tags ['personal_access_tokens']
           end
 
           params do
@@ -215,6 +221,7 @@ module API
               { code: 403, message: 'Forbidden' },
               { code: 404, message: 'Not Found' }
             ]
+            tags ['personal_access_tokens']
           end
           delete ':token_id' do
             validate_service_account_user
@@ -232,6 +239,7 @@ module API
           desc 'Rotate personal access token' do
             detail 'Rotates a personal access token.'
             success Entities::PersonalAccessTokenWithToken
+            tags ['personal_access_tokens']
           end
           params do
             optional :expires_at,
