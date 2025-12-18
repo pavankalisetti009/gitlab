@@ -333,6 +333,26 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
 
         subject
       end
+
+      context 'with work item instrumentation tracking' do
+        before do
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:cross_reference_disallowed?).and_return(false)
+          end
+        end
+
+        context 'when mentioned_in is an Epic' do
+          let_it_be(:epic) { create(:epic, group: group) }
+          let_it_be(:epic_work_item) { create(:work_item, project: project) }
+          let(:mentioned_in) { epic }
+
+          before do
+            allow(epic).to receive(:issue).and_return(epic_work_item)
+          end
+
+          it_behaves_like 'tracks work item event', :epic_work_item, :author, 'work_item_reference_add', :subject
+        end
+      end
     end
 
     context 'with project and group having the same path name' do
