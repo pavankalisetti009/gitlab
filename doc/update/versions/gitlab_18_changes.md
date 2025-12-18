@@ -65,6 +65,19 @@ required upgrade stops occur at versions:
   Rails.cache.delete_matched("pipeline:*:create_persistent_ref_service")
   ```
 
+## 18.8.0
+
+### Batched background migration for merge request merge data
+
+A [batched background migration](../background_migrations.md) copies merge request merge-related
+data from the `merge_requests` table to a new dedicated `merge_requests_merge_data` table.
+
+This migration is part of a database schema optimization initiative to normalize merge-specific
+attributes into a separate table, improving query performance and maintainability.
+
+For more details about what data is migrated and how to estimate migration duration, see
+[Merge request merge data migration details](#merge-request-merge-data-migration-details).
+
 ## 18.7.0
 
 ### Geo installations 18.7.0
@@ -241,3 +254,64 @@ To fix this issue, you have a few options:
 
 The last option is the recommended one to meet FIPS requirements. For
 legacy installations, the first two options can be used as a stopgap.
+
+## Merge request merge data migration details
+
+### What data is migrated
+
+The migration copies the following columns from `merge_requests` to `merge_requests_merge_data`:
+
+- `merge_commit_sha`
+- `merged_commit_sha`
+- `merge_ref_sha`
+- `squash_commit_sha`
+- `in_progress_merge_commit_sha`
+- `merge_status`
+- `auto_merge_enabled`
+- `squash`
+- `merge_user_id`
+- `merge_params`
+- `merge_error`
+- `merge_jid`
+
+The migration processes the `merge_requests` table, copying data only for merge requests that don't
+already have corresponding entries in `merge_requests_merge_data`.
+
+Since GitLab 18.7, new merge requests write data to both tables through dual-write
+mechanisms at the application level (see [issue](https://gitlab.com/gitlab-org/gitlab/-/issues/560933)).
+This migration only copies existing data that has not been created or touched after the dual-write was implemented.
+
+No data is deleted from the `merge_requests` table during this migration.
+
+The migration is planned to be finalized in GitLab 18.9. For more information, see 
+[issue](https://gitlab.com/gitlab-org/gitlab/-/issues/584459).
+
+### Estimating migration duration
+
+The migration duration is directly proportional to the number of merge requests in your instance.
+
+To estimate the impact:
+
+**PostgreSQL query:**
+
+```sql
+-- Count total merge requests
+SELECT COUNT(*) FROM merge_requests;
+
+-- Estimate table size
+SELECT pg_size_pretty(pg_total_relation_size('merge_requests')) AS table_size;
+```
+
+**Rails console:**
+
+```ruby
+# Count total merge requests
+MergeRequest.count
+
+# Count remaining merge requests to migrate
+MergeRequest.left_joins(:merge_data)
+  .where(merge_requests_merge_data: { merge_request_id: nil })
+  .count
+```
+
+The migration processes merge requests in batches and should complete within hours to days for most instances.
