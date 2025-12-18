@@ -21,7 +21,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
     visit group_epic_boards_path(group)
   end
 
-  it 'shows and closes work item drawer when clicking epic and close button' do
+  it 'shows and closes work item drawer when clicking epic' do
     click_card(card)
 
     expect(page).to have_testid('work-item-drawer')
@@ -30,7 +30,9 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
     click_card(card)
 
     expect(page).not_to have_testid('work-item-drawer')
+  end
 
+  it 'shows and closes work item drawer when clicking close button' do
     click_card(card)
 
     expect(page).to have_testid('work-item-drawer')
