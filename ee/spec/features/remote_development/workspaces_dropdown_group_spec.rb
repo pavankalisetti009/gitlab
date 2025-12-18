@@ -150,21 +150,4 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
 
     it_behaves_like 'views and manages workspaces in workspaces dropdown group'
   end
-
-  describe 'when directory_code_dropdown_updates is disabled and viewing project overview page' do
-    subject { project_path(project) }
-
-    before do
-      stub_feature_flags(directory_code_dropdown_updates: false)
-    end
-
-    # @return [void]
-    def click_code_dropdown
-      click_button 'Edit'
-
-      nil
-    end
-
-    it_behaves_like 'views and manages workspaces in workspaces dropdown group'
-  end
 end

@@ -48,15 +48,12 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
 
     mockApollo = createMockApollo([[userWorkspacesListQuery, userWorkspacesListQueryHandler]]);
   };
-  const createWrapper = ({ propsData = {}, glFeatures = { remoteDevelopment: true } } = {}) => {
+  const createWrapper = ({ propsData = {} } = {}) => {
     updateWorkspaceMutationMock = jest.fn();
 
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     wrapper = shallowMountExtended(WorkspacesDropdownGroup, {
       apolloProvider: mockApollo,
-      provide: {
-        glFeatures,
-      },
       propsData: {
         projectId: PROJECT_ID,
         projectFullPath: PROJECT_FULL_PATH,

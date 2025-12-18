@@ -8,8 +8,6 @@ import HeaderLockIcon from 'ee_component/repository/components/header_area/heade
 import LockDirectoryButton from 'ee_component/repository/components/lock_directory_button.vue';
 import CompactCodeDropdown from 'ee_component/repository/components/code_dropdown/compact_code_dropdown.vue';
 import BlobControls from '~/repository/components/header_area/blob_controls.vue';
-import CodeDropdown from '~/vue_shared/components/code_dropdown/code_dropdown.vue';
-import CloneCodeDropdown from '~/vue_shared/components/code_dropdown/clone_code_dropdown.vue';
 import { headerAppInjected } from 'ee_else_ce_jest/repository/mock_data';
 import { useFileTreeBrowserVisibility } from '~/repository/stores/file_tree_browser_visibility';
 import { useMainContainer } from '~/pinia/global_stores/main_container';
@@ -34,8 +32,6 @@ describe('HeaderArea', () => {
 
   const findHeaderLockIcon = () => wrapper.findComponent(HeaderLockIcon);
   const findLockDirectoryButton = () => wrapper.findComponent(LockDirectoryButton);
-  const findCodeDropdown = () => wrapper.findComponent(CodeDropdown);
-  const findCloneCodeDropdown = () => wrapper.findComponent(CloneCodeDropdown);
   const findCompactCodeDropdown = () => wrapper.findComponent(CompactCodeDropdown);
   const findBlobControls = () => wrapper.findComponent(BlobControls);
 
@@ -119,40 +115,19 @@ describe('HeaderArea', () => {
     });
 
     describe('CodeDropdown', () => {
-      describe('when `directory_code_dropdown_updates` flag is false', () => {
-        it('renders CodeDropdown component with correct props for desktop layout', () => {
-          expect(findCodeDropdown().exists()).toBe(true);
-          expect(findCodeDropdown().props('kerberosUrl')).toBe(headerAppInjected.kerberosUrl);
+      it('renders CompactCodeDropdown component with correct props for desktop layout', () => {
+        wrapper = createComponent({
+          provided: {
+            newWorkspacePath: '/workspaces/new',
+            organizationId: '1',
+          },
+          stubs: {
+            CompactCodeDropdown,
+          },
         });
-      });
 
-      describe('when `directory_code_dropdown_updates` flag is true', () => {
-        it('renders CompactCodeDropdown component with correct props for desktop layout', () => {
-          wrapper = createComponent({
-            provided: {
-              glFeatures: {
-                directoryCodeDropdownUpdates: true,
-              },
-              newWorkspacePath: '/workspaces/new',
-              organizationId: '1',
-            },
-            stubs: {
-              CompactCodeDropdown,
-            },
-          });
-
-          expect(findCompactCodeDropdown().exists()).toBe(true);
-          expect(findCompactCodeDropdown().props('kerberosUrl')).toBe(
-            headerAppInjected.kerberosUrl,
-          );
-        });
-      });
-    });
-
-    describe('SourceCodeDownloadDropdown', () => {
-      it('renders CloneCodeDropdown component with correct props for mobile layout', () => {
-        expect(findCloneCodeDropdown().exists()).toBe(true);
-        expect(findCloneCodeDropdown().props('kerberosUrl')).toBe(headerAppInjected.kerberosUrl);
+        expect(findCompactCodeDropdown().exists()).toBe(true);
+        expect(findCompactCodeDropdown().props('kerberosUrl')).toBe(headerAppInjected.kerberosUrl);
       });
     });
   });
