@@ -38,6 +38,7 @@ module API
 
       desc 'Get a vulnerability' do
         success ::API::Entities::Vulnerability
+        tags ['vulnerabilities']
       end
       get ':id' do
         render_vulnerability(@vulnerability)
@@ -45,6 +46,7 @@ module API
 
       desc 'Resolve a vulnerability' do
         success ::API::Entities::Vulnerability
+        tags ['vulnerabilities']
       end
       params do
         optional :comment,
@@ -60,6 +62,7 @@ module API
 
       desc 'Dismiss a vulnerability' do
         success ::API::Entities::Vulnerability
+        tags ['vulnerabilities']
       end
       post ':id/dismiss' do
         not_modified! if @vulnerability.dismissed?
@@ -70,6 +73,7 @@ module API
 
       desc 'Confirm a vulnerability' do
         success ::API::Entities::Vulnerability
+        tags ['vulnerabilities']
       end
       params do
         optional :comment, type: String, desc: 'Comment related to the vulnerability'
@@ -83,6 +87,7 @@ module API
 
       desc 'Revert a vulnerability to a detected state' do
         success ::API::Entities::Vulnerability
+        tags ['vulnerabilities']
       end
       params do
         optional :comment, type: String, desc: 'Comment related to the vulnerability'
@@ -102,6 +107,7 @@ module API
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'Get a list of project vulnerabilities' do
         success ::API::Entities::Vulnerability
+        tags ['vulnerabilities']
       end
       params do
         use :pagination
@@ -118,6 +124,7 @@ module API
 
       desc 'Create a new Vulnerability (from a confirmed Finding)' do
         success ::API::Entities::Vulnerability
+        tags ['vulnerabilities']
       end
       params do
         requires :finding_id, type: Integer, desc: 'The id of confirmed vulnerability finding'
