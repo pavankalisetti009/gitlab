@@ -406,7 +406,8 @@ RSpec.describe SearchHelper, feature_category: :global_search do
 
       it 'returns items in order' do
         expect(Gitlab::Json.parse(search_navigation_json).keys)
-          .to eq(%w[projects blobs issues merge_requests wiki_blobs commits notes milestones users snippet_titles])
+          .to eq(%w[projects blobs epics issues merge_requests wiki_blobs commits notes milestones users
+            snippet_titles])
       end
     end
   end
