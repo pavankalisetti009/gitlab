@@ -9,7 +9,7 @@ module EE
             extend ::Gitlab::Utils::Override
 
             override :pipeline_execution_policy_build?
-            def pipeline_execution_policy_build?(_build)
+            def pipeline_execution_policy_build?
               command.pipeline_policy_context.pipeline_execution_context.creating_policy_pipeline?
             end
 
