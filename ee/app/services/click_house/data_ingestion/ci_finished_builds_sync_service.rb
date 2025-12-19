@@ -118,7 +118,7 @@ module ClickHouse
         build_ids = events_batch.to_a.pluck(:build_id) # rubocop: disable CodeReuse/ActiveRecord
 
         Ci::Build.id_in(build_ids)
-          .left_outer_joins(:runner_manager, runner: :owner_runner_namespace,
+          .left_outer_joins(:runner_manager, :ci_stage, runner: :owner_runner_namespace,
             project_mirror: :namespace_mirror)
           .select(:finished_at, *finished_build_projections)
           .each { |build| records_yielder << build }
@@ -134,7 +134,8 @@ module ClickHouse
           "#{::Ci::Runner.table_name}.run_untagged AS runner_run_untagged",
           "#{::Ci::Runner.table_name}.runner_type AS runner_type",
           "#{::Ci::RunnerNamespace.table_name}.namespace_id AS runner_owner_namespace_id",
-          *RUNNER_MANAGER_FIELD_NAMES.map { |n| "#{::Ci::RunnerManager.table_name}.#{n} AS runner_manager_#{n}" }
+          *RUNNER_MANAGER_FIELD_NAMES.map { |n| "#{::Ci::RunnerManager.table_name}.#{n} AS runner_manager_#{n}" },
+          *CI_STAGE_NAMES.map { |n| "#{::Ci::Stage.table_name}.#{n} AS ci_stage_#{n}" }
         ]
       end
       strong_memoize_attr :finished_build_projections
@@ -144,13 +145,15 @@ module ClickHouse
       BUILD_COMPUTED_FIELD_NAMES = %i[root_namespace_id runner_owner_namespace_id].freeze
       RUNNER_FIELD_NAMES = %i[run_untagged type].freeze
       RUNNER_MANAGER_FIELD_NAMES = %i[system_xid version revision platform architecture].freeze
+      CI_STAGE_NAMES = %i[name].freeze
 
       CSV_MAPPING = {
         **BUILD_FIELD_NAMES.index_with { |n| n },
         **BUILD_EPOCH_FIELD_NAMES.index_with { |n| :"casted_#{n}" },
         **RUNNER_FIELD_NAMES.map { |n| :"runner_#{n}" }.index_with { |n| n },
         **BUILD_COMPUTED_FIELD_NAMES.index_with { |n| n },
-        **RUNNER_MANAGER_FIELD_NAMES.map { |n| :"runner_manager_#{n}" }.index_with { |n| n }
+        **RUNNER_MANAGER_FIELD_NAMES.map { |n| :"runner_manager_#{n}" }.index_with { |n| n },
+        **CI_STAGE_NAMES.map { |n| :"stage_#{n}" }.index_with { |n| :"ci_#{n}" }
       }.freeze
 
       INSERT_FINISHED_BUILDS_QUERY = <<~SQL.squish

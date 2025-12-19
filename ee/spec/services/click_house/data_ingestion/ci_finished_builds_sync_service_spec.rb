@@ -256,14 +256,9 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
       .map(&:symbolize_keys)
   end
 
-  # -- the method is straightforward, just a lot of ||
-  # rubocop:disable Metrics/CyclomaticComplexity -- section remains readable
   def expected_build_attributes(build)
-    runner = build.runner
-    runner_manager = build.runner_manager
-
     {
-      id: build.id, status: build.status, project_id: build.project_id, pipeline_id: build.pipeline_id,
+      **build.slice(:id, :status, :project_id, :pipeline_id).symbolize_keys,
       created_at: a_value_within(1.second).of(build.created_at),
       started_at: a_value_within(1.second).of(build.started_at),
       queued_at: a_value_within(1.second).of(build.queued_at),
@@ -271,8 +266,14 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
       date: build.finished_at.beginning_of_month,
       name: build.name || '',
       stage_id: build.stage_id || 0,
-      stage_name: '',
+      stage_name: build.stage_name || '',
       root_namespace_id: build.project.root_namespace.id,
+      **runner_attributes(build.runner, build.runner_manager)
+    }
+  end
+
+  def runner_attributes(runner, runner_manager)
+    {
       runner_id: runner&.id || 0,
       runner_type: Ci::Runner.runner_types.fetch(runner&.runner_type, 0),
       runner_owner_namespace_id: runner&.owner_runner_namespace&.namespace_id || 0,
@@ -284,7 +285,6 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
       runner_manager_architecture: runner_manager&.architecture || ''
     }
   end
-  # rubocop:enable Metrics/CyclomaticComplexity
 
   def contain_exactly_builds(*builds)
     expected_builds = builds.map do |build|
