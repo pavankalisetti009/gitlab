@@ -291,6 +291,38 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
     end
   end
 
+  describe 'timing logging' do
+    it 'calls log_duration_data with duration metrics' do
+      expect(service).to receive(:log_duration_data).with(
+        hash_including(
+          notify_about_push_duration_s: be >= 0,
+          system_note_add_commits_duration_s: be >= 0,
+          notification_push_to_merge_request_duration_s: be >= 0
+        )
+      ).and_call_original
+
+      execute
+    end
+
+    context 'when log_refresh_service_duration feature flag is disabled' do
+      before do
+        stub_feature_flags(log_refresh_service_duration: false)
+      end
+
+      it 'does not call log_duration_data' do
+        expect(service).not_to receive(:log_duration_data)
+
+        execute
+      end
+
+      it 'keeps duration_statistics empty' do
+        execute
+
+        expect(service.send(:duration_statistics)).to be_empty
+      end
+    end
+  end
+
   describe '#abort_ff_merge_requests_with_when_pipeline_succeeds' do
     let_it_be(:project) { create(:project, :repository, merge_method: 'ff') }
     let_it_be(:author) { create_user_from_membership(project, :developer) }
