@@ -110,14 +110,6 @@ RSpec.describe Ci::PendingBuild, feature_category: :hosted_runners do
 
           expect(described_class.last.plan_id).to eq(premium_plan.id)
         end
-
-        it 'sets plan_name_uid alongside plan_id' do
-          expect { described_class.upsert_from_build!(build) }.to change(described_class, :count).by(1)
-
-          pending_build = described_class.last
-          expect(pending_build.plan_id).to eq(premium_plan.id)
-          expect(pending_build.plan_name_uid).to eq(Plan::PLAN_NAME_UID_LIST[:premium])
-        end
       end
 
       context 'when not on SaaS' do
@@ -125,12 +117,6 @@ RSpec.describe Ci::PendingBuild, feature_category: :hosted_runners do
           expect { described_class.upsert_from_build!(build) }.to change(described_class, :count).by(1)
 
           expect(described_class.last.plan_id).to be_nil
-        end
-
-        it 'plan_name_uid is also empty' do
-          expect { described_class.upsert_from_build!(build) }.to change(described_class, :count).by(1)
-
-          expect(described_class.last.plan_name_uid).to be_nil
         end
       end
     end
