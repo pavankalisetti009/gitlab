@@ -3,73 +3,32 @@
 module Ai
   module Catalog
     module ThirdPartyFlows
-      class AuditEventMessageService
-        def initialize(event_type, third_party_flow, params = {})
-          @event_type = event_type
-          @third_party_flow = third_party_flow
-          @params = params
-          @old_definition = params[:old_definition]
-        end
-
-        def messages
-          case event_type
-          when 'create_ai_catalog_third_party_flow'
-            create_messages
-          when 'update_ai_catalog_third_party_flow'
-            update_messages
-          when 'delete_ai_catalog_third_party_flow'
-            delete_messages
-          when 'enable_ai_catalog_third_party_flow'
-            enable_messages
-          when 'disable_ai_catalog_third_party_flow'
-            disable_messages
-          else
-            []
-          end
-        end
-
+      class AuditEventMessageService < Items::BaseAuditEventMessageService
         private
 
-        attr_reader :event_type, :third_party_flow, :old_definition, :params
+        def item_type
+          'third_party_flow'
+        end
+
+        def item_type_label
+          'AI external agent'
+        end
+
+        def expected_schema_version
+          # THIRD_PARTY_FLOW_SCHEMA_VERSION
+          # Update this when Ai::Catalog::ItemVersion::THIRD_PARTY_FLOW_SCHEMA_VERSION changes
+          1
+        end
 
         def create_messages
           messages = []
 
-          visibility = third_party_flow.public? ? 'public' : 'private'
+          visibility = item.public? ? 'public' : 'private'
           messages << "Created a new #{visibility} AI external agent"
 
-          messages << version_message(third_party_flow.latest_version)
+          messages << version_message(item.latest_version)
 
           messages
-        end
-
-        def update_messages
-          messages = []
-
-          change_descriptions = build_change_descriptions
-          messages << "Updated AI external agent: #{change_descriptions.join(', ')}" if change_descriptions.any?
-
-          messages << visibility_change_message if visibility_changed?
-
-          messages << version_message(third_party_flow.latest_version) if version_created_or_released?
-
-          messages << 'Updated AI external agent' if messages.empty?
-
-          messages
-        end
-
-        def delete_messages
-          ['Deleted AI external agent']
-        end
-
-        def enable_messages
-          scope = params[:scope] || 'project/group'
-          ["Enabled AI external agent for #{scope}"]
-        end
-
-        def disable_messages
-          scope = params[:scope] || 'project/group'
-          ["Disabled AI external agent for #{scope}"]
         end
 
         def build_change_descriptions
@@ -87,39 +46,6 @@ module Ai
           end
 
           descriptions
-        end
-
-        def get_definition_comparison
-          [old_definition, third_party_flow.latest_version.definition]
-        end
-
-        def visibility_changed?
-          visibility_change.present? && visibility_change[0] != visibility_change[1]
-        end
-
-        def visibility_change_message
-          if visibility_change[1] == true
-            'Made AI external agent public'
-          else
-            'Made AI external agent private'
-          end
-        end
-
-        def visibility_change
-          third_party_flow.previous_changes['public']
-        end
-
-        def version_created_or_released?
-          version_changes = third_party_flow.latest_version.previous_changes
-          version_changes.key?('id') || version_changes.key?('release_date')
-        end
-
-        def version_message(version)
-          if version.draft?
-            "Created new draft version #{version.version} of AI external agent"
-          else
-            "Released version #{version.version} of AI external agent"
-          end
         end
 
         def inject_gateway_token_changed?(old_def, new_def)

@@ -214,6 +214,11 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
             allow(validator).to receive(:validate).and_return(true)
           end
 
+          # Bypass audit event validation to test schema version correction independently
+          allow_next_instance_of(Ai::Catalog::Items::BaseAuditEventMessageService) do |service|
+            allow(service).to receive(:messages).and_return([])
+          end
+
           latest_version.update!(schema_version: 999)
         end
 

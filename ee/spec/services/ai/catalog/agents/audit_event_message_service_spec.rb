@@ -13,6 +13,28 @@ RSpec.describe Ai::Catalog::Agents::AuditEventMessageService, feature_category: 
   describe '#messages' do
     subject(:messages) { service.messages }
 
+    context 'when schema version is other than what is expected in the service' do
+      let(:event_type) { 'create_ai_catalog_agent' }
+
+      before do
+        allow(version).to receive(:schema_version).and_return(Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION + 1)
+      end
+
+      it 'raises an error with schema version mismatch message' do
+        expect { messages }.to raise_error(
+          RuntimeError,
+          /Schema version mismatch for AI agent:/
+        )
+      end
+
+      it 'includes service class name in error message' do
+        expect { messages }.to raise_error(
+          RuntimeError,
+          /Please update Ai::Catalog::Agents::AuditEventMessageService/
+        )
+      end
+    end
+
     context 'when event_type is create_ai_catalog_agent' do
       let(:event_type) { 'create_ai_catalog_agent' }
 
