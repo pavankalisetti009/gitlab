@@ -243,8 +243,17 @@ module API
             Gitlab::InternalEvents.track_event('code_suggestions_direct_access_rate_limit_exceeded', user: current_user)
           end
 
+          push_feature_flag_headers
           token = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
-          service_unavailable!(token[:message]) if token[:status] == :error
+
+          if token[:status] == :error
+            render_structured_api_error!({
+              'message' => token[:message],
+              'error_description' => token.dig(:context, :message),
+              'error_code' => token.dig(:context, :error_code),
+              'error' => token.dig(:context, :error)
+            }, token.dig(:context, :response_code) || 503)
+          end
 
           unauthorized! if completion_model_details.feature_disabled?
 
@@ -258,8 +267,6 @@ module API
               'message' => { error: msg }
             }, 422)
           end
-
-          push_feature_flag_headers
 
           details_hash = completion_model_details.current_model
           project_path = declared_params[:project_path]

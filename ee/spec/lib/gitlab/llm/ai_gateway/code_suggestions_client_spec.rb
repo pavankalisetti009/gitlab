@@ -224,10 +224,24 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
             exception.is_a?(described_class::AiGatewayError) &&
               exception.message == 'Token creation failed'
           },
-          { ai_gateway_response_code: 401, ai_gateway_error_detail: error_message }
+          {
+            response_code: 401,
+            detail: error_message
+          }
         )
 
         result
+      end
+
+      it 'includes error context in the response' do
+        expect(result).to match(
+          status: :error,
+          message: 'Token creation failed',
+          context: {
+            response_code: 401,
+            detail: error_message
+          }
+        )
       end
     end
 
@@ -242,10 +256,22 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
             exception.is_a?(described_class::AiGatewayError) &&
               exception.message == 'Token is missing in response'
           },
-          { ai_gateway_response_code: 200 }
+          {
+            response_code: 200
+          }
         )
 
         result
+      end
+
+      it 'includes error context in the response' do
+        expect(result).to match(
+          status: :error,
+          message: 'Token is missing in response',
+          context: {
+            response_code: 200
+          }
+        )
       end
     end
 
@@ -273,10 +299,105 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
             exception.is_a?(described_class::AiGatewayError) &&
               exception.message == 'Token creation failed'
           },
-          { ai_gateway_response_code: 503, ai_gateway_error_detail: 'Service Unavailable' }
+          {
+            response_code: 503,
+            detail: 'Service Unavailable'
+          }
         )
 
         result
+      end
+
+      it 'includes error context in the response' do
+        expect(result).to match(
+          status: :error,
+          message: 'Token creation failed',
+          context: {
+            response_code: 503,
+            detail: 'Service Unavailable'
+          }
+        )
+      end
+    end
+
+    context 'when response includes structured error fields' do
+      let(:http_status) { 402 }
+      let(:error_code) { 'quota_exceeded' }
+      let(:error_type) { 'usage_limit_error' }
+      let(:error_description) { 'Usage quota has been exceeded' }
+      let(:response_body) do
+        {
+          detail: 'Payment required',
+          error: error_type,
+          error_code: error_code,
+          message: error_description
+        }.to_json
+      end
+
+      it 'includes all error fields in the response context' do
+        expect(result).to match(
+          status: :error,
+          message: 'Token creation failed',
+          context: {
+            response_code: 402,
+            detail: 'Payment required',
+            error: error_type,
+            error_code: error_code,
+            message: error_description
+          }
+        )
+      end
+    end
+
+    context 'when response is nil' do
+      before do
+        allow(Gitlab::HTTP).to receive(:post).and_return(nil)
+        allow_next_instance_of(described_class) do |instance|
+          allow(instance).to receive(:direct_access_token).and_call_original
+        end
+      end
+
+      it 'handles nil response gracefully' do
+        expect { result }.to raise_error(NoMethodError)
+      end
+    end
+
+    context 'when response.parsed_response does not respond to dig' do
+      let(:http_status) { 500 }
+
+      before do
+        stub_request(:post, auth_url)
+          .to_return(
+            status: http_status,
+            body: 'Internal Server Error',
+            headers: { 'Content-Type' => 'text/plain' }
+          )
+      end
+
+      it 'includes only response_code and detail in context' do
+        expect(result).to match(
+          status: :error,
+          message: 'Token creation failed',
+          context: {
+            response_code: 500,
+            detail: 'Internal Server Error'
+          }
+        )
+      end
+    end
+
+    context 'when response.parsed_response.dig returns nil values' do
+      let(:http_status) { 400 }
+      let(:response_body) { {}.to_json }
+
+      it 'includes only response_code in context' do
+        expect(result).to match(
+          status: :error,
+          message: 'Token creation failed',
+          context: {
+            response_code: 400
+          }
+        )
       end
     end
   end

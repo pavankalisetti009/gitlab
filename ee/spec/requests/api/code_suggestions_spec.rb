@@ -1296,10 +1296,73 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             end
           end
 
-          it 'returns an error' do
+          it 'returns an error with default 503 status' do
             post_api
 
             expect(response).to have_gitlab_http_status(:service_unavailable)
+            expect(json_response).to eq({
+              'message' => 'an error',
+              'error_description' => nil,
+              'error_code' => nil,
+              'error' => nil
+            })
+          end
+        end
+
+        context 'when token creation fails with structured error' do
+          before do
+            allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
+              allow(client).to receive(:direct_access_token).and_return({
+                status: :error,
+                message: 'Token creation failed',
+                context: {
+                  response_code: 402,
+                  detail: 'Payment required',
+                  error: 'usage_limit_error',
+                  error_code: 'quota_exceeded',
+                  message: 'Usage quota has been exceeded'
+                }
+              })
+            end
+          end
+
+          it 'returns structured error with correct status code and fields' do
+            post_api
+
+            expect(response).to have_gitlab_http_status(:payment_required)
+            expect(json_response).to eq({
+              'message' => 'Token creation failed',
+              'error_description' => 'Usage quota has been exceeded',
+              'error_code' => 'quota_exceeded',
+              'error' => 'usage_limit_error'
+            })
+          end
+        end
+
+        context 'when token creation fails with partial error context' do
+          before do
+            allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
+              allow(client).to receive(:direct_access_token).and_return({
+                status: :error,
+                message: 'Token creation failed',
+                context: {
+                  response_code: 401,
+                  detail: 'Unauthorized'
+                }
+              })
+            end
+          end
+
+          it 'returns error with available fields and nil for missing fields' do
+            post_api
+
+            expect(response).to have_gitlab_http_status(:unauthorized)
+            expect(json_response).to eq({
+              'message' => 'Token creation failed',
+              'error_description' => nil,
+              'error_code' => nil,
+              'error' => nil
+            })
           end
         end
       end

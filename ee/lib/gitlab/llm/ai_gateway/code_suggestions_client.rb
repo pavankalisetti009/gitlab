@@ -94,15 +94,16 @@ module Gitlab
           error_context = {}.tap do |h|
             next if response.nil?
 
-            h[:ai_gateway_response_code] = response.code
+            h[:response_code] = response.code
             if response.parsed_response.is_a?(String)
-              h[:ai_gateway_error_detail] = response.parsed_response
-            elsif response.respond_to?(:dig) && response.parsed_response&.dig("detail")
-              h[:ai_gateway_error_detail] = response.parsed_response["detail"]
+              h[:detail] = response.parsed_response
+            elsif response.parsed_response.respond_to?(:dig)
+              h.merge!(response.parsed_response.slice('detail', 'error', 'error_code',
+                'message').transform_keys(&:to_sym))
             end
           end
           Gitlab::ErrorTracking.track_exception(err, error_context)
-          error(err.message)
+          error(err.message, error_context)
         end
 
         private
@@ -125,10 +126,11 @@ module Gitlab
           ::Ai::FeatureSetting.find_by_feature(:code_completions)
         end
 
-        def error(message)
+        def error(message, context)
           {
             message: message,
-            status: :error
+            status: :error,
+            context: context
           }
         end
 
