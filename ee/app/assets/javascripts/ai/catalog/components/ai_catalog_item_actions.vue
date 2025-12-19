@@ -26,6 +26,7 @@ import {
   TRACK_EVENT_ORIGIN_PROJECT,
   TRACK_EVENT_PAGE_SHOW,
 } from '../constants';
+import aiCatalogProjectUserPermissionsQuery from '../graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
 
@@ -53,6 +54,9 @@ export default {
   inject: {
     isGlobal: {
       default: false,
+    },
+    projectPath: {
+      default: null,
     },
   },
   props: {
@@ -106,11 +110,29 @@ export default {
       showDeleteModal: false,
       showDisableModal: false,
       forceHardDelete: false,
+      projectUserPermissions: {},
     };
+  },
+  apollo: {
+    projectUserPermissions: {
+      query: aiCatalogProjectUserPermissionsQuery,
+      skip() {
+        return !this.projectPath;
+      },
+      variables() {
+        return {
+          fullPath: this.projectPath,
+        };
+      },
+      update: (data) => data.project?.userPermissions || {},
+    },
   },
   computed: {
     canAdmin() {
       return Boolean(this.item.userPermissions?.adminAiCatalogItem);
+    },
+    canAdminConsumer() {
+      return Boolean(this.projectUserPermissions?.adminAiCatalogItemConsumer);
     },
     canReport() {
       return Boolean(this.item.userPermissions?.reportAiCatalogItem);
@@ -125,16 +147,16 @@ export default {
       return this.item.configurationForProject?.enabled;
     },
     showDisable() {
-      return this.canAdmin && !this.isGlobal && this.isEnabled;
+      return this.canAdminConsumer && !this.isGlobal && this.isEnabled;
     },
     showEnable() {
-      return this.canAdmin && !this.isGlobal && !this.isEnabled;
+      return this.canAdminConsumer && !this.isGlobal && !this.isEnabled;
     },
     showDuplicate() {
       return this.canUse && (this.isGlobal || this.canAdmin);
     },
     showDropdown() {
-      return this.canAdmin || this.showDuplicate || this.canReport;
+      return this.canAdmin || this.canAdminConsumer || this.showDuplicate || this.canReport;
     },
     showAddToProject() {
       return this.canUse && this.isGlobal && !this.item.foundational;

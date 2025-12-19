@@ -16,6 +16,7 @@ import {
   mockFlowPinnedVersion,
   mockFlowVersion,
   mockFlowConfigurationForProject,
+  mockFlowConfigurationForGroup,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -25,7 +26,7 @@ Vue.use(VueApollo);
 const RouterViewStub = Vue.extend({
   name: 'RouterViewStub',
   // eslint-disable-next-line vue/require-prop-types
-  props: ['aiCatalogFlow', 'version'],
+  props: ['aiCatalogFlow', 'version', 'hasParentConsumer'],
   template: '<div />',
 });
 
@@ -321,4 +322,38 @@ describe('AiCatalogFlow', () => {
       });
     });
   });
+
+  describe.each`
+    hasParentConsumer | configurationForGroupEnabled
+    ${true}           | ${true}
+    ${false}          | ${false}
+  `(
+    'when configurationForGroup.enabled is $configurationForGroupEnabled',
+    ({ hasParentConsumer, configurationForGroupEnabled }) => {
+      beforeEach(async () => {
+        const mockFlowGroupConfigQueryHandler = jest.fn().mockResolvedValue({
+          data: {
+            aiCatalogItem: {
+              ...mockFlow,
+              configurationForProject: mockFlowConfigurationForProject,
+              configurationForGroup: {
+                ...mockFlowConfigurationForGroup,
+                enabled: configurationForGroupEnabled,
+              },
+            },
+          },
+        });
+        createComponent({
+          provide: { projectId: 1, rootGroupId: '1' },
+          flowQueryHandler: mockFlowGroupConfigQueryHandler,
+        });
+        await waitForPromises();
+      });
+
+      it(`passes ${hasParentConsumer} hasParentConsumer to router view`, () => {
+        expect(findRouterView().exists()).toBe(true);
+        expect(findRouterView().props('hasParentConsumer')).toBe(hasParentConsumer);
+      });
+    },
+  );
 });

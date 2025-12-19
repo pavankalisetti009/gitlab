@@ -1,9 +1,13 @@
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlModal, GlFormRadioGroup } from '@gitlab/ui';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
+import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import {
   AI_CATALOG_TYPE_FLOW,
   AI_CATALOG_TYPE_AGENT,
@@ -13,12 +17,19 @@ import {
   TRACK_EVENT_ORIGIN_PROJECT,
   TRACK_EVENT_PAGE_SHOW,
 } from 'ee/ai/catalog/constants';
-import { mockAgent } from '../mock_data';
+import {
+  mockAgent,
+  mockProjectUserPermissionsResponse,
+  mockProjectUserPermissionsNotAdminResponse,
+} from '../mock_data';
 
 jest.mock('~/lib/utils/common_utils');
 
+Vue.use(VueApollo);
+
 describe('AiCatalogItemActions', () => {
   let wrapper;
+  let mockApollo;
 
   const defaultProps = {
     item: mockAgent,
@@ -39,8 +50,24 @@ describe('AiCatalogItemActions', () => {
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const createComponent = ({ props = {}, provide = {} } = {}) => {
+  const mockProjectUserPermissionsQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockProjectUserPermissionsResponse);
+  const mockProjectUserPermissionsNotAdminQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockProjectUserPermissionsNotAdminResponse);
+
+  const createComponent = ({
+    props = {},
+    provide = {},
+    projectUserPermissionsHandler = mockProjectUserPermissionsQueryHandler,
+  } = {}) => {
+    mockApollo = createMockApollo([
+      [aiCatalogProjectUserPermissionsQuery, projectUserPermissionsHandler],
+    ]);
+
     wrapper = shallowMountExtended(AiCatalogItemActions, {
+      apolloProvider: mockApollo,
       propsData: {
         ...defaultProps,
         ...props,
@@ -87,6 +114,28 @@ describe('AiCatalogItemActions', () => {
 
     it('renders Report button', () => {
       expect(findReportButton().exists()).toBe(true);
+    });
+  });
+
+  describe('at the Explore level', () => {
+    beforeEach(async () => {
+      createComponent({ provide: { isGlobal: true } });
+      await waitForPromises();
+    });
+
+    it('does not fetch project permissions', () => {
+      expect(mockProjectUserPermissionsQueryHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('at the Project level', () => {
+    beforeEach(async () => {
+      createComponent({ provide: { isGlobal: false, projectPath: 'gitlab-duo/test' } });
+      await waitForPromises();
+    });
+
+    it('fetched project permissions', () => {
+      expect(mockProjectUserPermissionsQueryHandler).toHaveBeenCalled();
     });
   });
 
@@ -211,8 +260,12 @@ describe('AiCatalogItemActions', () => {
       itemType,
       isEnabled,
     }) => {
-      beforeEach(() => {
+      beforeEach(async () => {
+        const permissionsHandler = canAdmin
+          ? mockProjectUserPermissionsQueryHandler
+          : mockProjectUserPermissionsNotAdminQueryHandler;
         createComponent({
+          projectUserPermissionsHandler: permissionsHandler,
           props: {
             item: {
               ...mockAgent,
@@ -231,9 +284,12 @@ describe('AiCatalogItemActions', () => {
           },
           provide: {
             isGlobal: false,
+            projectPath: 'gitlab-duo/test',
           },
         });
         isLoggedIn.mockReturnValue(canUse);
+
+        await waitForPromises();
       });
 
       it(`${editBtn ? 'renders' : 'does not render'} Edit button`, () => {
@@ -314,16 +370,18 @@ describe('AiCatalogItemActions', () => {
 
   describe('at Project level', () => {
     describe('when hasParentConsumer is false', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         isLoggedIn.mockReturnValue(true);
         createComponent({
           provide: {
             isGlobal: false,
+            projectPath: 'gitlab-duo/test',
           },
           props: {
             hasParentConsumer: false,
           },
         });
+        await waitForPromises();
       });
 
       it('disables the "Enable" button', () => {
@@ -332,16 +390,18 @@ describe('AiCatalogItemActions', () => {
     });
 
     describe('when hasParentConsumer is true', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         isLoggedIn.mockReturnValue(true);
         createComponent({
           provide: {
             isGlobal: false,
+            projectPath: 'gitlab-duo/test',
           },
           props: {
             hasParentConsumer: true,
           },
         });
+        await waitForPromises();
       });
 
       it('does not disable the "Enable" button', () => {
@@ -453,7 +513,7 @@ describe('AiCatalogItemActions', () => {
     `(
       'when clicking $scenario',
       ({ itemType, isGlobal, isEnabled, hasParentConsumer, buttonFinder, expectedOrigin }) => {
-        beforeEach(() => {
+        beforeEach(async () => {
           isLoggedIn.mockReturnValue(true);
           createComponent({
             props: {
@@ -472,8 +532,10 @@ describe('AiCatalogItemActions', () => {
             },
             provide: {
               isGlobal,
+              projectPath: 'gitlab-duo/test',
             },
           });
+          await waitForPromises();
         });
 
         it(`tracks event  ${TRACK_EVENT_ENABLE_AI_CATALOG_ITEM} with correct properties`, async () => {

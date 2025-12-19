@@ -831,6 +831,20 @@ export const mockProjectUserPermissionsResponse = {
   },
 };
 
+export const mockProjectUserPermissionsNotAdminResponse = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1000000',
+      userPermissions: {
+        ...mockUserPermissions,
+        adminAiCatalogItemConsumer: false,
+        __typename: TYPENAME_PROJECT_PERMISSIONS,
+      },
+      __typename: TYPENAME_PROJECT,
+    },
+  },
+};
+
 export const mockReportAiCatalogItemSuccessMutation = {
   data: {
     aiCatalogItemReport: {
