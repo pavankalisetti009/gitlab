@@ -35,4 +35,29 @@ RSpec.describe Ci::RunnerControllerToken, feature_category: :continuous_integrat
       token.save!
     end
   end
+
+  describe 'enums' do
+    it { is_expected.to define_enum_for(:status).with_values(active: 0, revoked: 1) }
+  end
+
+  describe 'scopes' do
+    describe '.active' do
+      it 'returns only active tokens' do
+        active_token = create(:ci_runner_controller_token, status: :active)
+        revoked_token = create(:ci_runner_controller_token, status: :revoked)
+
+        expect(described_class.active).to include(active_token)
+        expect(described_class.active).not_to include(revoked_token)
+      end
+    end
+  end
+
+  describe '#revoke' do
+    it 'sets the status to revoked' do
+      token = create(:ci_runner_controller_token, status: :active)
+      token.revoke!
+
+      expect(token.status).to eq('revoked')
+    end
+  end
 end

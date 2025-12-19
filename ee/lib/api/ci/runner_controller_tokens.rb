@@ -32,7 +32,7 @@ module API
           controller = ::Ci::RunnerController.find_by_id(params[:runner_controller_id])
           not_found! unless controller
 
-          tokens = controller.tokens
+          tokens = controller.tokens.active
           present paginate(tokens), with: Entities::Ci::RunnerControllerToken
         end
 
@@ -53,7 +53,7 @@ module API
           controller = ::Ci::RunnerController.find_by_id(params[:runner_controller_id])
           not_found! unless controller
 
-          token = controller.tokens.find_by_id(params[:id])
+          token = controller.tokens.active.find_by_id(params[:id])
           if token
             present token, with: Entities::Ci::RunnerControllerToken
           else
@@ -86,6 +86,36 @@ module API
             present token, with: Entities::Ci::RunnerControllerTokenWithToken
           else
             bad_request!(token.errors.full_messages.to_sentence)
+          end
+        end
+
+        desc 'Revoke a runner controller token' do
+          detail 'Revoke a token for a specific runner controller.'
+          success code: 204
+          failure [
+            { code: 403, message: 'Forbidden' },
+            { code: 400, message: 'Bad Request' },
+            { code: 404, message: 'Not found' }
+          ]
+          tags %w[runner_controller_tokens]
+        end
+        params do
+          requires :runner_controller_id, type: Integer, desc: 'ID of the runner controller'
+          requires :id, type: Integer, desc: 'ID of the runner controller token'
+        end
+        delete ':runner_controller_id/tokens/:id' do
+          controller = ::Ci::RunnerController.find_by_id(params[:runner_controller_id])
+          not_found! unless controller
+
+          token = controller.tokens.active.find_by_id(params[:id])
+          not_found! unless token
+
+          result = ::Ci::RunnerControllers::RevokeTokenService.new(token:, current_user:).execute
+
+          if result.success?
+            no_content!
+          else
+            bad_request!(result.message.to_sentence)
           end
         end
       end

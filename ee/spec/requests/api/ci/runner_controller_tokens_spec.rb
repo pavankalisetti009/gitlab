@@ -31,13 +31,17 @@ RSpec.describe API::Ci::RunnerControllerTokens, feature_category: :continuous_in
 
   describe 'GET /runner_controllers/:runner_controller_id/tokens' do
     context 'when user is admin' do
-      it 'returns a list of runner controller tokens' do
+      it 'returns a list of active runner controller tokens' do
         create_list(:ci_runner_controller_token, 2, runner_controller: runner_controller)
+        revoked_token = create(:ci_runner_controller_token, :revoked, runner_controller: runner_controller)
 
         get api(path, admin, admin_mode: true)
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response.size).to eq(3)
+        json_response.each do |token_response|
+          expect(token_response['id']).not_to eq(revoked_token.id)
+        end
       end
     end
 
@@ -78,6 +82,14 @@ RSpec.describe API::Ci::RunnerControllerTokens, feature_category: :continuous_in
 
       context 'when runner controller token does not exist' do
         subject(:call_endpoint) { get api("#{path}/#{non_existing_record_id}", admin, admin_mode: true) }
+
+        it_behaves_like 'returns status 404 (not found)'
+      end
+
+      context 'when the token is revoked' do
+        let(:revoked_token) { create(:ci_runner_controller_token, :revoked, runner_controller: runner_controller) }
+
+        subject(:call_endpoint) { get api("#{path}/#{revoked_token.id}", admin, admin_mode: true) }
 
         it_behaves_like 'returns status 404 (not found)'
       end
@@ -165,6 +177,64 @@ RSpec.describe API::Ci::RunnerControllerTokens, feature_category: :continuous_in
       subject(:call_endpoint) { post api(path, admin, admin_mode: true) }
 
       it_behaves_like 'returns status 404 (not found)'
+    end
+  end
+
+  describe 'DELETE /runner_controllers/:runner_controller_id/tokens/:id' do
+    context 'when user is admin' do
+      it 'revokes the runner controller token' do
+        delete api("#{path}/#{token.id}", admin, admin_mode: true)
+
+        expect(response).to have_gitlab_http_status(:no_content)
+        expect(token.reload.revoked?).to be true
+      end
+
+      context 'when token revoke fails' do
+        before do
+          allow(Ci::RunnerControllerToken).to receive(:find_by_id).and_return(token)
+          allow(token).to receive(:revoke!).and_return(false)
+          allow(token).to receive_message_chain(:errors, :full_messages).and_return(['Revoke failed'])
+        end
+
+        it 'returns 400 with error message' do
+          delete api("#{path}/#{token.id}", admin, admin_mode: true)
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to eq('400 Bad request - Revoke failed')
+        end
+      end
+
+      context 'when runner controller does not exist' do
+        subject(:call_endpoint) do
+          delete api("/runner_controllers/#{non_existing_record_id}/tokens/#{token.id}", admin, admin_mode: true)
+        end
+
+        it_behaves_like 'returns status 404 (not found)'
+      end
+
+      context 'when runner controller token does not exist' do
+        subject(:call_endpoint) do
+          delete api("#{path}/#{non_existing_record_id}", admin, admin_mode: true)
+        end
+
+        it_behaves_like 'returns status 404 (not found)'
+      end
+
+      context 'when the token is already revoked' do
+        let(:revoked_token) { create(:ci_runner_controller_token, :revoked, runner_controller: runner_controller) }
+
+        subject(:call_endpoint) { delete api("#{path}/#{revoked_token.id}", admin, admin_mode: true) }
+
+        it_behaves_like 'returns status 404 (not found)'
+      end
+    end
+
+    context 'when user is not admin' do
+      it 'returns status 403 (forbidden)' do
+        delete api("#{path}/#{token.id}", non_admin_user)
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
     end
   end
 end

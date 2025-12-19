@@ -18,11 +18,20 @@ module Ci
 
     before_create :ensure_token
 
-    private
+    enum :status, {
+      active: 0,
+      revoked: 1
+    }
 
     def self.token_prefix
       ::Authn::TokenField::PrefixHelper.prepend_instance_prefix(TOKEN_PREFIX)
     end
+
+    def revoke!
+      update(status: :revoked)
+    end
+
+    private
 
     def token_prefix
       self.class.token_prefix

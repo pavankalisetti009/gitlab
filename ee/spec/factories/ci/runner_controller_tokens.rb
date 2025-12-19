@@ -5,5 +5,9 @@ FactoryBot.define do
     association :runner_controller, factory: :ci_runner_controller
 
     description { "Token for runner controller" }
+
+    trait :revoked do
+      status { :revoked }
+    end
   end
 end
