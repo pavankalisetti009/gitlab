@@ -57,7 +57,7 @@ module Types
           description: 'Last time that the virtual registry cleanup policy executed.',
           experiment: { milestone: '18.7' }
 
-        field :last_run_deleted_size, GraphQL::Types::Int, null: true,
+        field :last_run_deleted_size, GraphQL::Types::BigInt, null: true,
           description: 'Size in bytes of data deleted during the last cleanup run.',
           experiment: { milestone: '18.7' }
 

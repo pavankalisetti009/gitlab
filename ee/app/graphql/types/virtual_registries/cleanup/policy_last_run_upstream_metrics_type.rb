@@ -14,7 +14,7 @@ module Types
           description: 'Number of entries deleted.',
           experiment: { milestone: '18.7' }
 
-        field :deleted_size, GraphQL::Types::Int, null: false,
+        field :deleted_size, GraphQL::Types::BigInt, null: false,
           hash_key: 'deleted_size',
           description: 'Size in bytes of data deleted.',
           experiment: { milestone: '18.7' }
