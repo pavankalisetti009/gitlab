@@ -4216,6 +4216,26 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_scan_result_policies_audit_warn_mode_group_protected_branches_overrides
+  :worker_name: Security::ScanResultPolicies::AuditWarnModeGroupProtectedBranchesOverridesWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_scan_result_policies_audit_warn_mode_group_protected_branches_overrides_group
+  :worker_name: Security::ScanResultPolicies::AuditWarnModeGroupProtectedBranchesOverridesGroupWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scan_result_policies_audit_warn_mode_merge_request_approval_settings
   :worker_name: Security::ScanResultPolicies::AuditWarnModeMergeRequestApprovalSettingsWorker
   :feature_category: :security_policy_management

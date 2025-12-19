@@ -3,23 +3,49 @@
 module Security
   module SecurityOrchestrationPolicies
     class GroupProtectedBranchesDeletionCheckService < BaseGroupService
+      BlockingPolicy = Data.define(:policy_configuration_id, :security_policy_name)
+
       def execute
         all_configurations = group.all_security_orchestration_policy_configurations
         preload_security_policy_management_projects!(all_configurations)
 
-        all_configurations.any? do |config|
-          applicable_active_policies(config).any? { |policy| applies?(policy) }
+        all_configurations.each do |config|
+          applicable_active_policies(config).each do |policy|
+            next unless applies?(policy)
+
+            return true unless collect_blocking_policies?
+
+            blocking_policies << BlockingPolicy.new(config.id, policy[:name])
+          end
         end
+
+        blocking_policies.any?
+      end
+
+      def blocking_policies
+        @blocking_policies ||= []
       end
 
       private
 
       def applicable_active_policies(config)
-        config
-          .active_scan_result_policies
-          .reject do |policy|
-          warn_mode_feature_enabled?(config) && policy[:enforcement_type] == ::Security::Policy::ENFORCEMENT_TYPE_WARN
+        policies = config.active_scan_result_policies
+
+        if warn_mode_policies_only?
+          return [] unless warn_mode_feature_enabled?(config)
+
+          policies.select { |policy| warn_mode?(policy) }
+        else
+          policies.reject { |policy| warn_mode?(policy) }
         end
+      end
+
+      def collect_blocking_policies?
+        params[:collect_blocking_policies]
+      end
+
+      def warn_mode_policies_only?
+        params[:policy_enforcement_type] == ::Security::Policy::ENFORCEMENT_TYPE_WARN
       end
 
       def applies?(policy)
@@ -51,6 +77,10 @@ module Security
         strong_memoize_with(:warn_mode_feature_enabled, config) do
           Feature.enabled?(:security_policy_approval_warn_mode, config.security_policy_management_project)
         end
+      end
+
+      def warn_mode?(policy)
+        policy[:enforcement_type] == ::Security::Policy::ENFORCEMENT_TYPE_WARN
       end
 
       # TODO: Remove with `security_policy_approval_warn_mode` feature flag

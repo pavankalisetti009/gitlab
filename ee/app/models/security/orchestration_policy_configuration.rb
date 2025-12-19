@@ -283,6 +283,14 @@ module Security
       end
     end
 
+    def all_top_level_group_ids(&block)
+      if project? || GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
+        yield []
+      else
+        collect_all_top_level_group_ids_in_batches(&block)
+      end
+    end
+
     def self_and_ancestor_configuration_ids
       if project?
         [*group_configurations_ids(project.namespace), id]
@@ -386,6 +394,24 @@ module Security
         collect_csp_project_ids_in_batches(&block)
       else
         collect_namespace_project_ids_in_batches(&block)
+      end
+    end
+
+    def collect_all_top_level_group_ids_in_batches(&block)
+      if namespace.designated_as_csp?
+        collect_csp_top_level_group_ids_in_batches(&block)
+      elsif namespace.root?
+        yield [namespace.id]
+      else
+        yield []
+      end
+    end
+
+    def collect_csp_top_level_group_ids_in_batches
+      Group
+        .where(organization_id: source.organization_id)
+        .each_batch do |batch|
+        yield batch.where(parent_id: nil).pluck_primary_key
       end
     end
 
