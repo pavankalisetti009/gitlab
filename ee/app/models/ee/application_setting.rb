@@ -486,10 +486,10 @@ module EE
       # Duo Enterprise is always available when the add-on is active, regardless of feature flags
       add_ons = [:duo_enterprise]
 
-      # We're already past 18.6 cut-off so we don't need to check for beta features
-      if ::Feature.enabled?(:duo_code_review_on_agent_platform, :instance) && duo_foundational_flows_enabled
-        add_ons += [:duo_pro, :duo_core]
-      end
+      # Auto code review is hidden for Duo Core and Pro until duo_foundational_flows_enabled
+      # and individual flow settings are exposed in the admin UI.
+      # TODO: Re-enable once https://gitlab.com/gitlab-org/gitlab/-/issues/584603 is resolved:
+      # add_ons += [:duo_pro, :duo_core]
 
       ::GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_ons, :instance).any?
     end

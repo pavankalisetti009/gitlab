@@ -715,7 +715,6 @@ module EE
     end
 
     def duo_code_review_dap_available?
-      return false unless ::Feature.enabled?(:duo_code_review_on_agent_platform, self)
       return false unless duo_foundational_flows_enabled
 
       ::Gitlab::Llm::StageCheck.available?(self, :duo_workflow)

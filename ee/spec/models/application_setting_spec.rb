@@ -2518,12 +2518,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     let(:application_setting) { build(:application_setting) }
     let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+    let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
 
-    subject { application_setting.auto_duo_code_review_settings_available? }
+    subject(:settings_available) { application_setting.auto_duo_code_review_settings_available? }
 
     before do
       application_setting.duo_features_enabled = true
-      stub_feature_flags(duo_code_review_on_agent_platform: false)
     end
 
     context 'when duo_features_enabled is false' do
@@ -2544,7 +2544,9 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
         end
 
-        it { is_expected.to be_truthy }
+        it 'returns true' do
+          expect(settings_available).to be_truthy
+        end
       end
 
       context 'with expired duo_enterprise add-on' do
@@ -2552,48 +2554,38 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
         end
 
-        it { is_expected.to be_falsey }
+        it 'returns false' do
+          expect(settings_available).to be_falsey
+        end
       end
 
-      context 'when duo_code_review_on_agent_platform feature flag is enabled' do
+      context 'with duo_core or duo_pro add-ons' do
+        where(:add_on_type, :add_on) do
+          [
+            ['duo_core', ref(:duo_core_add_on)],
+            ['duo_pro',  ref(:duo_pro_add_on)]
+          ]
+        end
+
+        with_them do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on)
+          end
+
+          it "returns false for #{params[:add_on_type]} (not yet supported at application setting level)" do
+            expect(settings_available).to be_falsey
+          end
+        end
+      end
+
+      context 'when duo_foundational_flows_enabled is set' do
         before do
-          stub_feature_flags(duo_code_review_on_agent_platform: true)
+          application_setting.duo_foundational_flows_enabled = true
+          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
         end
 
-        context 'when duo_foundational_flows_enabled is false' do
-          before do
-            application_setting.duo_foundational_flows_enabled = false
-          end
-
-          context 'with active duo_core add-on' do
-            before do
-              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
-            end
-
-            it { is_expected.to be_falsey }
-          end
-        end
-
-        context 'when duo_foundational_flows_enabled is true' do
-          before do
-            application_setting.duo_foundational_flows_enabled = true
-          end
-
-          context 'with active duo_core add-on' do
-            before do
-              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
-            end
-
-            it { is_expected.to be_truthy }
-          end
-
-          context 'with expired duo_core add-on' do
-            before do
-              create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_core_add_on)
-            end
-
-            it { is_expected.to be_falsey }
-          end
+        it 'does not affect duo_core availability (setting not exposed yet)' do
+          expect(settings_available).to be_falsey
         end
       end
     end

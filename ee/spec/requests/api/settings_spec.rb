@@ -703,32 +703,28 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let(:application_setting) { create(:application_setting) }
 
-    where(:duo_features_enabled, :has_duo_enterprise, :param, :value, :result) do
-      false | false | 'auto_duo_code_review_enabled' | false | nil
-      false | true  | 'auto_duo_code_review_enabled' | false | nil
-      true  | false | 'auto_duo_code_review_enabled' | false | nil
-      true  | true  | 'auto_duo_code_review_enabled' | false | false
-      true  | true  | 'auto_duo_code_review_enabled' | true  | true
-    end
-
-    with_them do
-      let(:params) { { param => value } }
+    context 'with duo_enterprise add-on' do
+      let(:params) { { auto_duo_code_review_enabled: true } }
 
       before do
-        stub_feature_flags(duo_code_review_on_agent_platform: false)
-        application_setting.update!(duo_features_enabled: duo_features_enabled)
-        create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on) if has_duo_enterprise
+        stub_ee_application_setting(duo_features_enabled: true)
+        create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
       end
 
-      it 'updates the attribute as expected' do
+      it 'allows setting auto_duo_code_review_enabled' do
         put api('/application/settings', admin, admin_mode: true), params: params
-
         expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response[param]).to eq(result)
+        expect(json_response['auto_duo_code_review_enabled']).to eq(true)
+      end
+
+      it 'allows disabling auto_duo_code_review_enabled' do
+        put api('/application/settings', admin, admin_mode: true), params: { auto_duo_code_review_enabled: false }
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['auto_duo_code_review_enabled']).to eq(false)
       end
     end
 
-    context 'when duo_code_review_on_agent_platform feature flag is enabled' do
+    context 'with duo_core or duo_pro add-ons' do
       let(:params) { { auto_duo_code_review_enabled: true } }
 
       where(:add_on_type, :add_on) do
@@ -744,28 +740,65 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
           create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on)
         end
 
-        context 'when duo_foundational_flows_enabled is false' do
-          before do
-            ApplicationSetting.current.update!(duo_foundational_flows_enabled: false)
-          end
+        it "does not allow setting auto_duo_code_review_enabled with #{params[:add_on_type]} (not supported at application level yet)" do
+          put api('/application/settings', admin, admin_mode: true), params: params
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['auto_duo_code_review_enabled']).to be_nil
+        end
+      end
+    end
 
-          it "does not allow setting auto_duo_code_review_enabled with #{params[:add_on_type]} add-on" do
-            put api('/application/settings', admin, admin_mode: true), params: params
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['auto_duo_code_review_enabled']).to be_nil
+    context 'with duo_foundational_flows_enabled set' do
+      let(:params) { { auto_duo_code_review_enabled: true } }
+
+      where(:add_on_type, :add_on) do
+        [
+          ['duo_core', ref(:duo_core_add_on)],
+          ['duo_pro',  ref(:duo_pro_add_on)]
+        ]
+      end
+
+      with_them do
+        before do
+          stub_ee_application_setting(duo_features_enabled: true)
+          ApplicationSetting.current.update!(duo_foundational_flows_enabled: true)
+          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on)
+        end
+
+        it "does not enable #{params[:add_on_type]} support (setting not exposed in UI yet)" do
+          put api('/application/settings', admin, admin_mode: true), params: params
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['auto_duo_code_review_enabled']).to be_nil
+        end
+      end
+    end
+
+    context 'without proper configuration' do
+      where(:duo_features_enabled, :has_duo_enterprise, :param, :value, :result) do
+        false | false | 'auto_duo_code_review_enabled' | false | nil
+        false | true  | 'auto_duo_code_review_enabled' | false | nil
+        true  | false | 'auto_duo_code_review_enabled' | false | nil
+        true  | false | 'auto_duo_code_review_enabled' | true  | nil
+        true  | true  | 'auto_duo_code_review_enabled' | false | false
+        true  | true  | 'auto_duo_code_review_enabled' | true  | true
+      end
+
+      with_them do
+        let(:params) { { param => value } }
+
+        before do
+          application_setting.update!(duo_features_enabled: duo_features_enabled)
+
+          if has_duo_enterprise
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
           end
         end
 
-        context 'when duo_foundational_flows_enabled is true' do
-          before do
-            ApplicationSetting.current.update!(duo_foundational_flows_enabled: true)
-          end
+        it 'handles the setting correctly based on configuration' do
+          put api('/application/settings', admin, admin_mode: true), params: params
 
-          it "allows setting auto_duo_code_review_enabled with #{params[:add_on_type]} add-on" do
-            put api('/application/settings', admin, admin_mode: true), params: params
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['auto_duo_code_review_enabled']).to eq(true)
-          end
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response[param]).to eq(result)
         end
       end
     end

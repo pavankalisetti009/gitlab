@@ -38,19 +38,18 @@ RSpec.describe 'merge requests creations', feature_category: :code_review_workfl
         let(:project) { create(:project, :repository, group: group) }
         let(:description) { "" }
         let(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+        let(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
 
         before do
           authorization = instance_double(::Ai::CodeReviewAuthorization)
           allow(authorization).to receive(:allowed?).with(user).and_return(has_duo_access)
           allow(::Ai::CodeReviewAuthorization).to receive(:new).and_return(authorization)
-
           project.project_setting.update_attribute(:auto_duo_code_review_enabled, true)
           project.project_setting.update!(duo_features_enabled: true)
         end
 
-        context 'with legacy flow (duo_code_review_on_agent_platform disabled)' do
+        context 'with Duo Enterprise add-on (classic flow)' do
           before do
-            stub_feature_flags(duo_code_review_on_agent_platform: false)
             create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
           end
 
@@ -69,56 +68,53 @@ RSpec.describe 'merge requests creations', feature_category: :code_review_workfl
           context 'when user has Duo access' do
             let(:has_duo_access) { true }
 
-            it 'assigns Duo bot as a reviewer' do
-              send_request
-              expect(response).to redirect_to(project_merge_request_path(project, merge_request))
-              follow_redirect!
-              expect(flash[:alert]).to be_nil
-              expect(merge_request.reload.reviewers).to include(duo_bot)
+            context 'when duo_code_review_dap_internal_users is enabled' do
+              before do
+                stub_feature_flags(duo_code_review_dap_internal_users: true)
+                allow_next_instance_of(MergeRequest) do |instance|
+                  allow(instance).to receive(:ai_review_merge_request_allowed?).with(user).and_return(true)
+                end
+              end
+
+              it 'assigns Duo bot as a reviewer using DAP for internal users' do
+                send_request
+                expect(response).to redirect_to(project_merge_request_path(project, merge_request))
+                follow_redirect!
+                expect(flash[:alert]).to be_nil
+                expect(merge_request.reload.reviewers).to include(duo_bot)
+              end
+            end
+
+            context 'when duo_code_review_dap_internal_users is disabled' do
+              before do
+                stub_feature_flags(duo_code_review_dap_internal_users: false)
+              end
+
+              it 'assigns Duo bot as a reviewer using classic flow' do
+                send_request
+                expect(response).to redirect_to(project_merge_request_path(project, merge_request))
+                follow_redirect!
+                expect(flash[:alert]).to be_nil
+                expect(merge_request.reload.reviewers).to include(duo_bot)
+              end
             end
           end
         end
 
-        context 'with DAP flow (duo_code_review_on_agent_platform enabled)' do
-          let(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+        context 'with DAP flow (Duo Core/Pro add-ons)' do
           let(:has_duo_access) { true }
 
           before do
             create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
-
             project.project_setting.update!(duo_foundational_flows_enabled: true)
             allow(::Gitlab::Llm::StageCheck).to receive(:available?)
               .with(project, :duo_workflow).and_return(true)
-
             allow_next_instance_of(MergeRequest) do |instance|
               allow(instance).to receive(:ai_review_merge_request_allowed?).with(user).and_return(true)
             end
           end
 
           it 'assigns Duo bot as a reviewer' do
-            send_request
-            expect(response).to redirect_to(project_merge_request_path(project, merge_request))
-            follow_redirect!
-            expect(flash[:alert]).to be_nil
-            expect(merge_request.reload.reviewers).to include(duo_bot)
-          end
-        end
-
-        context 'with Duo Enterprise add-on and DAP enabled' do
-          let(:has_duo_access) { true }
-
-          before do
-            stub_feature_flags(duo_code_review_on_agent_platform: true)
-            stub_feature_flags(duo_code_review_dap_internal_users: true)
-            stub_ee_application_setting(instance_level_ai_beta_features_enabled: false)
-            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
-
-            allow_next_instance_of(MergeRequest) do |instance|
-              allow(instance).to receive(:ai_review_merge_request_allowed?).with(user).and_return(true)
-            end
-          end
-
-          it 'still assigns Duo bot because Duo Enterprise is always available' do
             send_request
             expect(response).to redirect_to(project_merge_request_path(project, merge_request))
             follow_redirect!

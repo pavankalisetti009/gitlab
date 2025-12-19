@@ -925,48 +925,45 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
       before do
         stub_ee_application_setting(should_check_namespace_plan: true)
-        stub_feature_flags(duo_code_review_on_agent_platform: false)
         group.add_owner(user)
       end
 
       context 'authenticated as group owner' do
-        context 'with duo_enterprise add-on and duo_features_enabled' do
-          let(:params) { { auto_duo_code_review_enabled: false } }
-
+        context 'with duo_enterprise add-on (classic flow)' do
           before do
             group.namespace_settings.update!(duo_features_enabled: true)
             create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_enterprise_add_on)
           end
 
-          it 'updates the attribute' do
-            put api("/groups/#{group.id}", user), params: params
+          it 'allows enabling the setting' do
+            put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['auto_duo_code_review_enabled']).to eq(true)
+          end
 
+          it 'allows disabling the setting' do
+            put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: false }
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response['auto_duo_code_review_enabled']).to eq(false)
           end
         end
 
-        context 'without duo_enterprise add-on' do
-          let(:params) { { auto_duo_code_review_enabled: false } }
+        context 'without any add-on' do
+          before do
+            group.namespace_settings.update!(duo_features_enabled: true)
+          end
 
           it 'does not update the attribute' do
-            put api("/groups/#{group.id}", user), params: params
-
+            put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: false }
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response['auto_duo_code_review_enabled']).to be_nil
           end
         end
 
-        context 'when duo_code_review_on_agent_platform feature flag is enabled' do
-          before do
-            stub_feature_flags(duo_code_review_on_agent_platform: true)
-            group.namespace_settings.update!(duo_features_enabled: true)
-            allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(false)
-          end
-
+        context 'with DAP flow' do
           context 'when duo_foundational_flows_enabled is false' do
             before do
-              group.namespace_settings.update!(duo_foundational_flows_enabled: false)
+              group.namespace_settings.update!(duo_features_enabled: true, duo_foundational_flows_enabled: false)
             end
 
             context 'with duo_core add-on' do
@@ -985,12 +982,12 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
           context 'when duo_foundational_flows_enabled is true' do
             before do
-              group.namespace_settings.update!(duo_foundational_flows_enabled: true)
+              group.namespace_settings.update!(duo_features_enabled: true, duo_foundational_flows_enabled: true)
             end
 
             context 'when StageCheck returns false' do
               before do
-                allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(false)
+                allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(false)
               end
 
               context 'with duo_core add-on' do
@@ -1009,13 +1006,18 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
             context 'when StageCheck returns true' do
               where(:add_on_factory) do
-                [[:duo_pro], [:duo_core]]
+                [[:duo_pro], [:duo_core], [:duo_enterprise]]
               end
 
               with_them do
                 before do
-                  create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: group)
-                  allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(true)
+                  if add_on_factory == :duo_enterprise
+                    create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_enterprise_add_on)
+                  else
+                    create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: group)
+                  end
+
+                  allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
                 end
 
                 it "allows setting auto_duo_code_review_enabled for #{params[:add_on_factory]}" do
@@ -1023,6 +1025,13 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
                   expect(response).to have_gitlab_http_status(:ok)
                   expect(json_response['auto_duo_code_review_enabled']).to eq(true)
+                end
+
+                it "allows disabling auto_duo_code_review_enabled for #{params[:add_on_factory]}" do
+                  put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: false }
+
+                  expect(response).to have_gitlab_http_status(:ok)
+                  expect(json_response['auto_duo_code_review_enabled']).to eq(false)
                 end
               end
             end

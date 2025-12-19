@@ -128,45 +128,37 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
   describe 'auto_duo_code_review_enabled' do
     let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+    let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let_it_be(:group) { create(:group) }
     let_it_be(:project_in_group) { create(:project, group: group) }
 
-    before do
-      stub_feature_flags(duo_code_review_on_agent_platform: false)
-    end
-
     context 'when project has auto_duo_code_review_settings available' do
-      context 'with duo_enterprise add-on', :saas do
-        let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
-
-        before do
-          stub_ee_application_setting(should_check_namespace_plan: true)
-          allow(project_in_group).to receive(:duo_features_enabled).and_return(true)
-          create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_enterprise_add_on)
+      context 'on SaaS', :saas do
+        where(:add_on_type, :add_on) do
+          [
+            ['duo_enterprise', ref(:duo_enterprise_add_on)],
+            ['duo_core',       ref(:duo_core_add_on)],
+            ['duo_pro',        ref(:duo_pro_add_on)]
+          ]
         end
 
-        it 'returns a boolean value' do
-          expect(entity_subject[:auto_duo_code_review_enabled]).to be_in([true, false])
-        end
-      end
+        with_them do
+          let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
 
-      context 'with duo_core add-on and DAP flow available', :saas do
-        let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
+          before do
+            stub_ee_application_setting(should_check_namespace_plan: true)
+            allow(project_in_group).to receive_messages(
+              duo_features_enabled: true,
+              duo_foundational_flows_enabled: true
+            )
+            allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+              .with(project_in_group, :duo_workflow).and_return(true)
+            create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: add_on)
+          end
 
-        before do
-          stub_ee_application_setting(should_check_namespace_plan: true)
-          stub_feature_flags(duo_code_review_on_agent_platform: project_in_group)
-          allow(project_in_group).to receive_messages(
-            duo_features_enabled: true,
-            duo_foundational_flows_enabled: true
-          )
-          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-            .with(project_in_group, :duo_workflow).and_return(true)
-          create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_core_add_on)
-        end
-
-        it 'returns a boolean value' do
-          expect(entity_subject[:auto_duo_code_review_enabled]).to be_in([true, false])
+          it "returns a boolean value for #{params[:add_on_type]}" do
+            expect(entity_subject[:auto_duo_code_review_enabled]).to be_in([true, false])
+          end
         end
       end
     end
@@ -192,12 +184,11 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
         end
       end
 
-      context 'with duo_core add-on but duo_foundational_flows_enabled is false', :saas do
+      context 'with add-on but duo_foundational_flows_enabled is false', :saas do
         let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
 
         before do
           stub_ee_application_setting(should_check_namespace_plan: true)
-          stub_feature_flags(duo_code_review_on_agent_platform: project_in_group)
           allow(project_in_group).to receive_messages(
             duo_features_enabled: true,
             duo_foundational_flows_enabled: false
@@ -206,6 +197,25 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
         end
 
         it 'returns nil because duo_foundational_flows_enabled is false' do
+          expect(entity_subject[:auto_duo_code_review_enabled]).to be_nil
+        end
+      end
+
+      context 'with add-on but StageCheck returns false', :saas do
+        let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
+
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
+          allow(project_in_group).to receive_messages(
+            duo_features_enabled: true,
+            duo_foundational_flows_enabled: true
+          )
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+            .with(project_in_group, :duo_workflow).and_return(false)
+          create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_core_add_on)
+        end
+
+        it 'returns nil because StageCheck returns false' do
           expect(entity_subject[:auto_duo_code_review_enabled]).to be_nil
         end
       end
