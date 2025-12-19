@@ -17,5 +17,14 @@ FactoryBot.define do
       options { { url: ENV['ELASTIC_URL'] || 'http://localhost:9200' } }
       prefix { ActiveContextHelpers::TEST_INDEX_PREFIX }
     end
+
+    # Uses ELASTIC_URL in CI, localhost:9202 for local development.
+    # To run tests locally, configure OpenSearch on port 9202.
+    # https://gitlab.com/gitlab-org/gitlab-development-kit/-/blob/main/doc/howto/elasticsearch.md#opensearch
+    trait :opensearch do
+      adapter_class { 'ActiveContext::Databases::Opensearch::Adapter' }
+      options { { url: ENV['ELASTIC_URL'] || 'http://localhost:9202' } }
+      prefix { ActiveContextHelpers::TEST_INDEX_PREFIX }
+    end
   end
 end
