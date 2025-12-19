@@ -51,6 +51,10 @@ query aiCatalogAgent(
       serviceAccount {
         ...BaseServiceAccount
       }
+      group {
+        id
+        duoSettingsPath
+      }
       pinnedItemVersion {
         ...BaseAiCatalogAgentVersion
         ...BaseAiCatalogThirdPartyFlowVersion

@@ -2907,7 +2907,13 @@ msgstr ""
 msgid "AICatalog|Foundational agent"
 msgstr ""
 
+msgid "AICatalog|Foundational agents are managed by the %{linkStart}top-level group%{linkEnd}."
+msgstr ""
+
 msgid "AICatalog|Foundational flow"
+msgstr ""
+
+msgid "AICatalog|Foundational flows are managed by the %{linkStart}top-level group%{linkEnd}."
 msgstr ""
 
 msgid "AICatalog|Frequently failing or nuisance activity."

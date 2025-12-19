@@ -1,5 +1,6 @@
 <script>
-import { GlLink } from '@gitlab/ui';
+import { GlLink, GlSprintf } from '@gitlab/ui';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import { getByVersionKey } from '../utils';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
@@ -13,6 +14,7 @@ export default {
   name: 'AiCatalogFlowDetails',
   components: {
     GlLink,
+    GlSprintf,
     AiCatalogItemField,
     AiCatalogItemFieldServiceAccount,
     AiCatalogItemVisibilityField,
@@ -46,6 +48,17 @@ export default {
       }
       return this.item.configurationForGroup?.serviceAccount;
     },
+    hasConfigurationContent() {
+      return Boolean(
+        this.serviceAccount || this.hasProjectConfiguration || !this.item.foundational,
+      );
+    },
+    helpTextSettingsLink() {
+      return (
+        this.item.configurationForGroup?.group?.duoSettingsPath ??
+        helpPagePath('user/duo_agent_platform/flows/foundational_flows/_index')
+      );
+    },
   },
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
 };
@@ -58,15 +71,35 @@ export default {
     </h3>
     <dl class="gl-flex gl-flex-col gl-gap-5">
       <form-section :title="s__('AICatalog|Visibility & access')" is-display>
-        <ai-catalog-item-field v-if="projectName" :title="s__('AICatalog|Managed by')">
-          <gl-link :href="item.project.webUrl">{{ projectName }}</gl-link>
+        <ai-catalog-item-field
+          v-if="projectName || item.foundational"
+          :title="s__('AICatalog|Managed by')"
+          data-testid="managed-by-field"
+        >
+          <gl-link v-if="!item.foundational" :href="item.project.webUrl">{{ projectName }}</gl-link>
+          <gl-sprintf
+            v-else
+            :message="
+              s__(
+                'AICatalog|Foundational flows are managed by the %{linkStart}top-level group%{linkEnd}.',
+              )
+            "
+          >
+            <template #link="{ content }">
+              <gl-link :href="helpTextSettingsLink">{{ content }}</gl-link>
+            </template>
+          </gl-sprintf>
         </ai-catalog-item-field>
         <ai-catalog-item-visibility-field
           :public="item.public"
           :description-texts="$options.FLOW_VISIBILITY_LEVEL_DESCRIPTIONS"
         />
       </form-section>
-      <form-section :title="s__('AICatalog|Configuration')" is-display>
+      <form-section
+        v-if="hasConfigurationContent"
+        :title="s__('AICatalog|Configuration')"
+        is-display
+      >
         <ai-catalog-item-field-service-account
           v-if="serviceAccount"
           :service-account="serviceAccount"
@@ -75,6 +108,7 @@ export default {
         />
         <trigger-field v-if="hasProjectConfiguration" :item="item" />
         <ai-catalog-item-field
+          v-if="!item.foundational"
           :title="s__('AICatalog|YAML configuration')"
           data-testid="configuration-field"
         >

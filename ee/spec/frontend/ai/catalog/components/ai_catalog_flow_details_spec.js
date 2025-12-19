@@ -1,4 +1,4 @@
-import { GlLink } from '@gitlab/ui';
+import { GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
@@ -7,10 +7,21 @@ import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vu
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
 import TriggerField from 'ee/ai/catalog/components/trigger_field.vue';
 import { VERSION_LATEST, VERSION_PINNED } from 'ee/ai/catalog/constants';
-import { mockFlow, mockFlowConfigurationForProject, mockServiceAccount } from '../mock_data';
+import {
+  mockFlow,
+  mockFlowConfigurationForProject,
+  mockServiceAccount,
+  mockItemConfigurationForGroup,
+} from '../mock_data';
 
 describe('AiCatalogFlowDetails', () => {
   let wrapper;
+
+  const mockFoundationalFlow = {
+    ...mockFlow,
+    foundational: true,
+    configurationForGroup: mockItemConfigurationForGroup,
+  };
 
   const defaultProps = {
     item: mockFlow,
@@ -25,6 +36,7 @@ describe('AiCatalogFlowDetails', () => {
       },
       stubs: {
         AiCatalogItemVisibilityField,
+        GlSprintf,
       },
     });
   };
@@ -37,6 +49,7 @@ describe('AiCatalogFlowDetails', () => {
   const findTriggerField = () => wrapper.findComponent(TriggerField);
   const findServiceAccountField = () => wrapper.findByTestId('service-account-field');
   const findConfigurationField = () => wrapper.findByTestId('configuration-field');
+  const findManagedByField = () => wrapper.findByTestId('managed-by-field');
 
   describe('template', () => {
     beforeEach(() => {
@@ -136,6 +149,89 @@ describe('AiCatalogFlowDetails', () => {
           serviceAccount: mockServiceAccount,
           itemType: 'FLOW',
         });
+      });
+    });
+  });
+
+  describe('when the item is foundational', () => {
+    describe('and has configurationForGroup', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: mockFoundationalFlow,
+          },
+        });
+      });
+
+      it('renders "Managed by" field', () => {
+        expect(findManagedByField().props('title')).toBe('Managed by');
+        expect(findManagedByField().text()).toBe(
+          'Foundational flows are managed by the top-level group.',
+        );
+      });
+
+      it('does not render the Configuration field', () => {
+        const configurationSections = findAllSections().filter(
+          (section) => section.attributes('title') === 'Configuration',
+        );
+
+        if (configurationSections.length > 0) {
+          configurationSections.forEach((section) => {
+            const configurationFields = section
+              .findAllComponents(AiCatalogItemField)
+              .filter((field) => field.props('title') === 'Configuration');
+            expect(configurationFields).toHaveLength(0);
+          });
+        } else {
+          // Foundational flows within the Catalog won't have any configuration information to show
+          expect(configurationSections).toHaveLength(0);
+        }
+      });
+
+      it('renders link to correct group settings URL', () => {
+        const managedByLink = findManagedByField().findComponent(GlLink);
+        expect(managedByLink.attributes('href')).toBe(
+          '/groups/mock-group/-/settings/gitlab_duo/configuration',
+        );
+      });
+    });
+
+    describe('and does not have configurationForGroup', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockFoundationalFlow,
+              configurationForGroup: null,
+            },
+          },
+        });
+      });
+
+      it('renders link to help documentation', () => {
+        const managedByLink = findManagedByField().findComponent(GlLink);
+        expect(managedByLink.attributes('href')).toContain('/help/');
+      });
+    });
+
+    describe('and has no content in Configuration section', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockFoundationalFlow,
+              configurationForGroup: null,
+              configurationForProject: null,
+            },
+          },
+        });
+      });
+
+      it('does not render the Configuration section', () => {
+        const configurationSections = findAllSections().filter(
+          (section) => section.attributes('title') === 'Configuration',
+        );
+        expect(configurationSections).toHaveLength(0);
       });
     });
   });
