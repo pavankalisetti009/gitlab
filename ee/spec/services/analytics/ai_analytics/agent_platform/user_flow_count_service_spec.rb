@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, feature_category: :value_stream_management do
+RSpec.describe Analytics::AiAnalytics::AgentPlatform::UserFlowCountService, feature_category: :value_stream_management do
   subject(:service_response) do
     described_class.new(
       current_user,
@@ -50,35 +50,6 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
       let(:from) { 5.days.ago }
       let(:to) { 1.day.ago }
 
-      context 'with only few fields selected' do
-        let(:fields) { %i[sessions_count foo] }
-
-        before do
-          clickhouse_fixture(:ai_usage_events, [
-            # Session 1 - chat flow - created event
-            {
-              user_id: user1.id,
-              namespace_path: project_namespace.traversal_path,
-              event: 8, # created
-              extras: {
-                session_id: 1,
-                flow_type: 'chat',
-                project_id: project.id,
-                environment: 'production'
-              }.to_json,
-              timestamp: to - 1.day
-            }
-          ]
-          )
-        end
-
-        it 'calculates only valid fields' do
-          service_response.payload
-
-          expect(service_response.payload).to match([{ "sessions_count" => 1 }])
-        end
-      end
-
       context 'with no selected fields' do
         let(:fields) { [] }
 
@@ -96,7 +67,7 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
         it 'returns AI usage events counts' do
           expect(service_response).to be_success
 
-          expect(service_response.payload).to match_array(expected_results)
+          expect(service_response.payload).to eq(expected_results)
         end
       end
     end
@@ -110,23 +81,22 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
         {
           'flow_type' => 'chat',
           'sessions_count' => 3,
-          'median_execution_time' => 20,
-          'users_count' => 1,
-          'completion_rate' => 100
-        },
-        {
-          'flow_type' => 'fix_pipeline',
-          'sessions_count' => 2,
-          'median_execution_time' => 86390,
-          'users_count' => 2,
-          'completion_rate' => 50
+          'user_id' => user1.id
         },
         {
           'flow_type' => 'code_review',
+          'sessions_count' => 2,
+          'user_id' => user2.id
+        },
+        {
+          'flow_type' => 'fix_pipeline',
           'sessions_count' => 1,
-          'median_execution_time' => 117,
-          'users_count' => 1,
-          'completion_rate' => 100
+          'user_id' => user1.id
+        },
+        {
+          'flow_type' => 'fix_pipeline',
+          'sessions_count' => 1,
+          'user_id' => user2.id
         }
       ]
     end
@@ -140,18 +110,14 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
     let(:expected_results) do
       [
         {
-          'flow_type' => 'fix_pipeline',
-          'sessions_count' => 1,
-          'median_execution_time' => 86390,
-          'users_count' => 1,
-          'completion_rate' => 100
+          'flow_type' => 'code_review',
+          'sessions_count' => 2,
+          'user_id' => user2.id
         },
         {
-          'flow_type' => 'code_review',
+          'flow_type' => 'fix_pipeline',
           'sessions_count' => 1,
-          'median_execution_time' => 117,
-          'users_count' => 1,
-          'completion_rate' => 100
+          'user_id' => user2.id
         }
       ]
     end
