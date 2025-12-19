@@ -2,10 +2,6 @@
 
 module Sbom
   class SourcePackage < ::SecApplicationRecord
-    include SafelyChangeColumnDefault
-
-    columns_changing_default :organization_id
-
     has_many :occurrences, inverse_of: :source_package
 
     enum :purl_type, ::Enums::Sbom.purl_types

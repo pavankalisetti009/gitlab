@@ -2,10 +2,6 @@
 
 module Sbom
   class Component < ::SecApplicationRecord
-    include SafelyChangeColumnDefault
-
-    columns_changing_default :organization_id
-
     has_many :occurrences, inverse_of: :component
 
     enum :component_type, ::Enums::Sbom.component_types

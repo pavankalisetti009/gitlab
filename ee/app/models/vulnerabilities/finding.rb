@@ -7,10 +7,7 @@ module Vulnerabilities
     include Presentable
     include ::VulnerabilityFindingHelpers
     include EachBatch
-    include SafelyChangeColumnDefault
     include PolicyAutoDismissable
-
-    columns_changing_default :detected_at
 
     # https://gitlab.com/groups/gitlab-org/-/epics/3148
     # https://gitlab.com/gitlab-org/gitlab/-/issues/214563#note_370782508 is why the table names are not renamed
