@@ -3,42 +3,28 @@
 module Ai
   module Catalog
     module Agents
-      class AuditEventMessageService
+      class AuditEventMessageService < Items::BaseAuditEventMessageService
         TOOLS_ID_AND_NAME = Ai::Catalog::BuiltInTool::ITEMS.to_h { |item| [item[:id], item[:name]] }.freeze
-
-        def initialize(event_type, agent, params = {})
-          @event_type = event_type
-          @agent = agent
-          @params = params
-          @old_definition = params[:old_definition]
-        end
-
-        def messages
-          case event_type
-          when 'create_ai_catalog_agent'
-            create_messages
-          when 'update_ai_catalog_agent'
-            update_messages
-          when 'delete_ai_catalog_agent'
-            delete_messages
-          when 'enable_ai_catalog_agent'
-            enable_messages
-          when 'disable_ai_catalog_agent'
-            disable_messages
-          else
-            []
-          end
-        end
 
         private
 
-        attr_reader :event_type, :agent, :old_definition, :params
+        def item_type
+          'agent'
+        end
+
+        def item_type_label
+          'AI agent'
+        end
+
+        def expected_schema_version
+          1 # AGENT_SCHEMA_VERSION - Update this when Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION changes
+        end
 
         def create_messages
           messages = []
 
-          visibility = agent.public? ? 'public' : 'private'
-          tools = agent.latest_version.definition['tools'] || []
+          visibility = item.public? ? 'public' : 'private'
+          tools = item.latest_version.definition['tools'] || []
 
           if tools.present?
             tools_list = format_tools_list(tools)
@@ -47,38 +33,9 @@ module Ai
             messages << "Created a new #{visibility} AI agent with no tools"
           end
 
-          messages << version_message(agent.latest_version)
+          messages << version_message(item.latest_version)
 
           messages
-        end
-
-        def update_messages
-          messages = []
-
-          change_descriptions = build_change_descriptions
-          messages << "Updated AI agent: #{change_descriptions.join(', ')}" if change_descriptions.any?
-
-          messages << visibility_change_message if visibility_changed?
-
-          messages << version_message(agent.latest_version) if version_created_or_released?
-
-          messages << 'Updated AI agent' if messages.empty?
-
-          messages
-        end
-
-        def delete_messages
-          ['Deleted AI agent']
-        end
-
-        def enable_messages
-          scope = params[:scope] || 'project/group'
-          ["Enabled AI agent for #{scope}"]
-        end
-
-        def disable_messages
-          scope = params[:scope] || 'project/group'
-          ["Disabled AI agent for #{scope}"]
         end
 
         def build_change_descriptions
@@ -105,39 +62,6 @@ module Ai
           descriptions << 'Changed system prompt' if old_def['system_prompt']&.strip != new_def['system_prompt']&.strip
 
           descriptions
-        end
-
-        def get_definition_comparison
-          [old_definition, agent.latest_version.definition]
-        end
-
-        def visibility_changed?
-          visibility_change.present? && visibility_change[0] != visibility_change[1]
-        end
-
-        def visibility_change_message
-          if visibility_change[1] == true
-            'Made AI agent public'
-          else
-            'Made AI agent private'
-          end
-        end
-
-        def visibility_change
-          agent.previous_changes['public']
-        end
-
-        def version_created_or_released?
-          version_changes = agent.latest_version.previous_changes
-          version_changes.key?('id') || version_changes.key?('release_date')
-        end
-
-        def version_message(version)
-          if version.draft?
-            "Created new draft version #{version.version} of AI agent"
-          else
-            "Released version #{version.version} of AI agent"
-          end
         end
 
         def format_tools_list(tools)

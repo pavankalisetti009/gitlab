@@ -3,40 +3,26 @@
 module Ai
   module Catalog
     module Flows
-      class AuditEventMessageService
-        def initialize(event_type, flow, params = {})
-          @event_type = event_type
-          @flow = flow
-          @params = params
-          @old_definition = params[:old_definition]
-        end
-
-        def messages
-          case event_type
-          when 'create_ai_catalog_flow'
-            create_messages
-          when 'update_ai_catalog_flow'
-            update_messages
-          when 'delete_ai_catalog_flow'
-            delete_messages
-          when 'enable_ai_catalog_flow'
-            enable_messages
-          when 'disable_ai_catalog_flow'
-            disable_messages
-          else
-            []
-          end
-        end
-
+      class AuditEventMessageService < Items::BaseAuditEventMessageService
         private
 
-        attr_reader :event_type, :flow, :old_definition, :params
+        def item_type
+          'flow'
+        end
+
+        def item_type_label
+          'AI flow'
+        end
+
+        def expected_schema_version
+          2 # FLOW_SCHEMA_VERSION - Update this when Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION changes
+        end
 
         def create_messages
           messages = []
 
-          visibility = flow.public? ? 'public' : 'private'
-          tools = extract_tools_from_definition(flow.latest_version.definition)
+          visibility = item.public? ? 'public' : 'private'
+          tools = extract_tools_from_definition(item.latest_version.definition)
 
           if tools.present?
             tools_list = format_list(tools)
@@ -45,38 +31,9 @@ module Ai
             messages << "Created a new #{visibility} AI flow with no tools"
           end
 
-          messages << version_message(flow.latest_version)
+          messages << version_message(item.latest_version)
 
           messages
-        end
-
-        def update_messages
-          messages = []
-
-          change_descriptions = build_change_descriptions
-          messages << "Updated AI flow: #{change_descriptions.join(', ')}" if change_descriptions.any?
-
-          messages << visibility_change_message if visibility_changed?
-
-          messages << version_message(flow.latest_version) if version_created_or_released?
-
-          messages << 'Updated AI flow' if messages.empty?
-
-          messages
-        end
-
-        def delete_messages
-          ['Deleted AI flow']
-        end
-
-        def enable_messages
-          scope = params[:scope] || 'project/group'
-          ["Enabled AI flow for #{scope}"]
-        end
-
-        def disable_messages
-          scope = params[:scope] || 'project/group'
-          ["Disabled AI flow for #{scope}"]
         end
 
         def build_change_descriptions
@@ -182,39 +139,6 @@ module Ai
           ["Version changed from '#{old_version}' to '#{new_version}'"]
         end
 
-        def get_definition_comparison
-          [old_definition, flow.latest_version.definition]
-        end
-
-        def visibility_changed?
-          visibility_change.present? && visibility_change[0] != visibility_change[1]
-        end
-
-        def visibility_change_message
-          if visibility_change[1] == true
-            'Made AI flow public'
-          else
-            'Made AI flow private'
-          end
-        end
-
-        def visibility_change
-          flow.previous_changes['public']
-        end
-
-        def version_created_or_released?
-          version_changes = flow.latest_version.previous_changes
-          version_changes.key?('id') || version_changes.key?('release_date')
-        end
-
-        def version_message(version)
-          if version.draft?
-            "Created new draft version #{version.version} of AI flow"
-          else
-            "Released version #{version.version} of AI flow"
-          end
-        end
-
         def extract_tools_from_definition(definition)
           return [] unless definition
 
@@ -267,12 +191,6 @@ module Ai
 
           components = definition['components'] || []
           components.filter_map { |component| component['name'] }
-        end
-
-        def format_list(items)
-          return '[]' if items.blank?
-
-          "[#{items.join(', ')}]"
         end
       end
     end
