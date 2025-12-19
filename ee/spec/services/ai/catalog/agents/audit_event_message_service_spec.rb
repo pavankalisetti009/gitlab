@@ -3,303 +3,222 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::Agents::AuditEventMessageService, feature_category: :workflow_catalog do
-  let_it_be(:project) { create(:project) }
-  let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
-  let_it_be(:version) { agent.latest_version }
+  it_behaves_like 'Ai::Catalog::AuditEventMessageService' do
+    let_it_be(:item_name) { 'agent' }
+    let_it_be(:event_name_prefix) { 'ai_catalog_agent' }
+    let_it_be(:schema_version_constant) { Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION }
+    let_it_be(:project) { create(:project) }
+    let_it_be_with_reload(:item) { create(:ai_catalog_agent, project: project) }
 
-  let(:params) { {} }
-  let(:service) { described_class.new(event_type, agent, params) }
+    let(:version) { item.latest_version }
+    let(:params) { {} }
+    let(:service) { described_class.new(event_type, item, params) }
 
-  describe '#messages' do
-    subject(:messages) { service.messages }
+    describe '#messages' do
+      subject(:messages) { service.messages }
 
-    context 'when schema version is other than what is expected in the service' do
-      let(:event_type) { 'create_ai_catalog_agent' }
+      context 'when event_type is create_ai_catalog_agent' do
+        let(:event_type) { 'create_ai_catalog_agent' }
 
-      before do
-        allow(version).to receive(:schema_version).and_return(Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION + 1)
-      end
+        context 'with tools' do
+          before do
+            version.update!(definition: { 'tools' => [1, 2], 'system_prompt' => 'Test prompt' })
+          end
 
-      it 'raises an error with schema version mismatch message' do
-        expect { messages }.to raise_error(
-          RuntimeError,
-          /Schema version mismatch for AI agent:/
-        )
-      end
-
-      it 'includes service class name in error message' do
-        expect { messages }.to raise_error(
-          RuntimeError,
-          /Please update Ai::Catalog::Agents::AuditEventMessageService/
-        )
-      end
-    end
-
-    context 'when event_type is create_ai_catalog_agent' do
-      let(:event_type) { 'create_ai_catalog_agent' }
-
-      context 'with tools' do
-        before do
-          version.update!(definition: { 'tools' => [1, 2], 'system_prompt' => 'Test prompt' })
+          it 'returns create messages with tools' do
+            expect(messages).to contain_exactly(
+              "Created a new private AI agent with tools: [gitlab_blob_search, ci_linter]",
+              "Created new draft version #{version.version} of AI agent"
+            )
+          end
         end
 
-        it 'returns create messages with tools' do
-          expect(messages).to contain_exactly(
-            "Created a new private AI agent with tools: [gitlab_blob_search, ci_linter]",
-            "Created new draft version #{version.version} of AI agent"
-          )
-        end
-      end
+        context 'when agent is public' do
+          before do
+            item.update!(public: true)
+            version.update!(definition: { 'tools' => [1, 2], 'system_prompt' => 'Test prompt' })
+          end
 
-      context 'when agent is public' do
-        before do
-          agent.update!(public: true)
-          version.update!(definition: { 'tools' => [1, 2], 'system_prompt' => 'Test prompt' })
-        end
-
-        it 'returns create messages for public agent' do
-          expect(messages).to contain_exactly(
-            "Created a new public AI agent with tools: [gitlab_blob_search, ci_linter]",
-            "Created new draft version #{version.version} of AI agent"
-          )
-        end
-      end
-
-      context 'when version is released' do
-        let_it_be(:released_agent) { create(:ai_catalog_agent, project: project) }
-        let(:agent) { released_agent }
-        let(:version) { released_agent.latest_version }
-
-        before do
-          version.update!(definition: { 'tools' => [1, 2], 'system_prompt' => 'Test prompt' },
-            release_date: Time.current)
+          it 'returns create messages for public agent' do
+            expect(messages).to contain_exactly(
+              "Created a new public AI agent with tools: [gitlab_blob_search, ci_linter]",
+              "Created new draft version #{version.version} of AI agent"
+            )
+          end
         end
 
-        it 'returns create messages with released version' do
-          expect(messages).to contain_exactly(
-            "Created a new private AI agent with tools: [gitlab_blob_search, ci_linter]",
-            "Released version #{version.version} of AI agent"
-          )
+        context 'when version is released' do
+          let_it_be(:released_agent) { create(:ai_catalog_agent, project: project) }
+          let(:item) { released_agent }
+          let(:version) { released_agent.latest_version }
+
+          before do
+            version.update!(definition: { 'tools' => [1, 2], 'system_prompt' => 'Test prompt' },
+              release_date: Time.current)
+          end
+
+          it 'returns create messages with released version' do
+            expect(messages).to contain_exactly(
+              "Created a new private AI agent with tools: [gitlab_blob_search, ci_linter]",
+              "Released version #{version.version} of AI agent"
+            )
+          end
+        end
+
+        context 'when agent has no tools' do
+          before do
+            version.update!(definition: { 'tools' => [], 'system_prompt' => 'Test prompt' })
+          end
+
+          it 'returns create messages with no tools message' do
+            expect(messages).to contain_exactly(
+              "Created a new private AI agent with no tools",
+              "Created new draft version #{version.version} of AI agent"
+            )
+          end
         end
       end
 
-      context 'when agent has no tools' do
-        before do
-          version.update!(definition: { 'tools' => [], 'system_prompt' => 'Test prompt' })
+      context 'when event_type is update_ai_catalog_agent' do
+        let(:event_type) { 'update_ai_catalog_agent' }
+        let_it_be(:update_agent) { create(:ai_catalog_agent, project: project) }
+
+        context 'when tools are added' do
+          let(:item) { update_agent }
+          let(:version) { update_agent.latest_version }
+          let(:params) { { old_definition: { 'tools' => [1], 'system_prompt' => 'Old prompt' } } }
+
+          before do
+            version.update!(definition: { 'tools' => [1, 2], 'system_prompt' => 'Old prompt' })
+          end
+
+          it 'returns tool addition message' do
+            expect(messages).to contain_exactly(
+              "Updated AI agent: Added tools: [ci_linter]"
+            )
+          end
         end
 
-        it 'returns create messages with no tools message' do
-          expect(messages).to contain_exactly(
-            "Created a new public AI agent with no tools",
-            "Created new draft version #{version.version} of AI agent"
-          )
-        end
-      end
-    end
+        context 'when tools are removed' do
+          let(:item) { update_agent }
+          let(:version) { update_agent.latest_version }
+          let(:params) { { old_definition: { 'tools' => [1, 2], 'system_prompt' => 'Old prompt' } } }
 
-    context 'when event_type is update_ai_catalog_agent' do
-      let(:event_type) { 'update_ai_catalog_agent' }
-      let_it_be(:update_agent) { create(:ai_catalog_agent, project: project) }
+          before do
+            version.update!(definition: { 'tools' => [1], 'system_prompt' => 'Old prompt' })
+          end
 
-      context 'when tools are added' do
-        let(:agent) { update_agent }
-        let(:version) { update_agent.latest_version }
-        let(:params) { { old_definition: { 'tools' => [1], 'system_prompt' => 'Old prompt' } } }
-
-        before do
-          version.update!(definition: { 'tools' => [1, 2], 'system_prompt' => 'Old prompt' })
+          it 'returns tool removal message' do
+            expect(messages).to contain_exactly(
+              "Updated AI agent: Removed tools: [ci_linter]"
+            )
+          end
         end
 
-        it 'returns tool addition message' do
-          expect(messages).to contain_exactly(
-            "Updated AI agent: Added tools: [ci_linter]"
-          )
-        end
-      end
+        context 'when system prompt is changed' do
+          let(:item) { update_agent }
+          let(:version) { update_agent.latest_version }
+          let(:params) { { old_definition: { 'tools' => [1], 'system_prompt' => 'Old prompt' } } }
 
-      context 'when tools are removed' do
-        let(:agent) { update_agent }
-        let(:version) { update_agent.latest_version }
-        let(:params) { { old_definition: { 'tools' => [1, 2], 'system_prompt' => 'Old prompt' } } }
+          before do
+            version.update!(definition: { 'tools' => [1], 'system_prompt' => 'New prompt' })
+          end
 
-        before do
-          version.update!(definition: { 'tools' => [1], 'system_prompt' => 'Old prompt' })
-        end
-
-        it 'returns tool removal message' do
-          expect(messages).to contain_exactly(
-            "Updated AI agent: Removed tools: [ci_linter]"
-          )
-        end
-      end
-
-      context 'when system prompt is changed' do
-        let(:agent) { update_agent }
-        let(:version) { update_agent.latest_version }
-        let(:params) { { old_definition: { 'tools' => [1], 'system_prompt' => 'Old prompt' } } }
-
-        before do
-          version.update!(definition: { 'tools' => [1], 'system_prompt' => 'New prompt' })
+          it 'returns system prompt change message' do
+            expect(messages).to contain_exactly(
+              "Updated AI agent: Changed system prompt"
+            )
+          end
         end
 
-        it 'returns system prompt change message' do
-          expect(messages).to contain_exactly(
-            "Updated AI agent: Changed system prompt"
-          )
-        end
-      end
+        context 'when multiple changes occur' do
+          let(:item) { update_agent }
+          let(:version) { update_agent.latest_version }
+          let(:params) { { old_definition: { 'tools' => [1], 'system_prompt' => 'Old prompt' } } }
 
-      context 'when multiple changes occur' do
-        let(:agent) { update_agent }
-        let(:version) { update_agent.latest_version }
-        let(:params) { { old_definition: { 'tools' => [1], 'system_prompt' => 'Old prompt' } } }
+          before do
+            version.update!(definition: { 'tools' => [1, 2, 3], 'system_prompt' => 'New prompt' })
+          end
 
-        before do
-          version.update!(definition: { 'tools' => [1, 2, 3], 'system_prompt' => 'New prompt' })
-        end
-
-        it 'returns combined update message' do
-          expect(messages).to contain_exactly(
-            "Updated AI agent: Added tools: [ci_linter, run_git_command], Changed system prompt"
-          )
-        end
-      end
-
-      context 'when visibility changes from private to public' do
-        let_it_be(:private_agent) { create(:ai_catalog_agent, project: project, public: false) }
-        let(:agent) { private_agent }
-        let(:version) { private_agent.latest_version }
-
-        before do
-          agent.update!(public: true)
+          it 'returns combined update message' do
+            expect(messages).to contain_exactly(
+              "Updated AI agent: Added tools: [ci_linter, run_git_command], Changed system prompt"
+            )
+          end
         end
 
-        it 'returns visibility change message' do
-          expect(messages).to contain_exactly('Made AI agent public')
-        end
-      end
+        context 'when visibility changes from private to public' do
+          let_it_be(:private_agent) { create(:ai_catalog_agent, project: project, public: false) }
+          let(:item) { private_agent }
+          let(:version) { private_agent.latest_version }
 
-      context 'when visibility changes from public to private' do
-        let_it_be(:public_agent) { create(:ai_catalog_agent, project: project, public: true) }
-        let(:agent) { public_agent }
-        let(:version) { public_agent.latest_version }
+          before do
+            item.update!(public: true)
+          end
 
-        before do
-          agent.update!(public: false)
-        end
-
-        it 'returns visibility change message' do
-          expect(messages).to contain_exactly('Made AI agent private')
-        end
-      end
-
-      context 'when new version is created' do
-        let(:agent) { update_agent }
-        let(:params) { { old_definition: { 'tools' => [1], 'system_prompt' => 'You are issue planner' } } }
-
-        before do
-          new_version = create(
-            :ai_catalog_agent_version,
-            item: agent,
-            version: '2.0.0',
-            definition: { 'tools' => [1, 2], 'system_prompt' => 'You are issue planner' }
-          )
-          agent.update!(latest_version: new_version)
+          it 'returns visibility change message' do
+            expect(messages).to contain_exactly('Made AI agent public')
+          end
         end
 
-        it 'returns version creation message' do
-          expect(messages).to contain_exactly(
-            "Created new draft version 2.0.0 of AI agent",
-            "Updated AI agent: Added tools: [ci_linter]"
-          )
-        end
-      end
+        context 'when visibility changes from public to private' do
+          let_it_be(:public_agent) { create(:ai_catalog_agent, project: project, public: true) }
+          let(:item) { public_agent }
+          let(:version) { public_agent.latest_version }
 
-      context 'when version is released' do
-        let(:agent) { update_agent }
-        let(:version) { update_agent.latest_version }
+          before do
+            item.update!(public: false)
+          end
 
-        before do
-          version.update!(release_date: Time.current)
+          it 'returns visibility change message' do
+            expect(messages).to contain_exactly('Made AI agent private')
+          end
         end
 
-        it 'returns version release message' do
-          expect(messages).to contain_exactly(
-            "Released version #{version.version} of AI agent"
-          )
+        context 'when new version is created' do
+          let(:item) { update_agent }
+          let(:params) { { old_definition: { 'tools' => [1], 'system_prompt' => 'You are issue planner' } } }
+
+          before do
+            new_version = create(
+              :ai_catalog_agent_version,
+              item: item,
+              version: '2.0.0',
+              definition: { 'tools' => [1, 2], 'system_prompt' => 'You are issue planner' }
+            )
+            item.update!(latest_version: new_version)
+          end
+
+          it 'returns version creation message' do
+            expect(messages).to contain_exactly(
+              "Created new draft version 2.0.0 of AI agent",
+              "Updated AI agent: Added tools: [ci_linter]"
+            )
+          end
         end
-      end
 
-      context 'when the agent is updated but the version definition remains unchanged' do
-        let(:agent) { create(:ai_catalog_agent, project: project) }
+        context 'when version is released' do
+          let(:item) { update_agent }
+          let(:version) { update_agent.latest_version }
 
-        it 'returns default update message' do
-          expect(messages).to eq(['Updated AI agent'])
+          before do
+            version.update!(release_date: Time.current)
+          end
+
+          it 'returns version release message' do
+            expect(messages).to contain_exactly(
+              "Released version #{version.version} of AI agent"
+            )
+          end
         end
-      end
-    end
 
-    context 'when event_type is delete_ai_catalog_agent' do
-      let(:event_type) { 'delete_ai_catalog_agent' }
+        context 'when the agent is updated but the version definition remains unchanged' do
+          let(:item) { create(:ai_catalog_agent, project: project) }
 
-      it 'returns delete message' do
-        expect(messages).to eq(['Deleted AI agent'])
-      end
-    end
-
-    context 'when event_type is enable_ai_catalog_agent' do
-      let(:event_type) { 'enable_ai_catalog_agent' }
-
-      it 'returns enable message with default scope' do
-        expect(messages).to eq(['Enabled AI agent for project/group'])
-      end
-
-      context 'when scope is project' do
-        let(:params) { { scope: 'project' } }
-
-        it 'returns enable message with project scope' do
-          expect(messages).to eq(['Enabled AI agent for project'])
+          it 'returns default update message' do
+            expect(messages).to eq(['Updated AI agent'])
+          end
         end
-      end
-
-      context 'when scope is group' do
-        let(:params) { { scope: 'group' } }
-
-        it 'returns enable message with group scope' do
-          expect(messages).to eq(['Enabled AI agent for group'])
-        end
-      end
-    end
-
-    context 'when event_type is disable_ai_catalog_agent' do
-      let(:event_type) { 'disable_ai_catalog_agent' }
-
-      it 'returns disable message with default scope' do
-        expect(messages).to eq(['Disabled AI agent for project/group'])
-      end
-
-      context 'when scope is project' do
-        let(:params) { { scope: 'project' } }
-
-        it 'returns disable message with project scope' do
-          expect(messages).to eq(['Disabled AI agent for project'])
-        end
-      end
-
-      context 'when scope is group' do
-        let(:params) { { scope: 'group' } }
-
-        it 'returns disable message with group scope' do
-          expect(messages).to eq(['Disabled AI agent for group'])
-        end
-      end
-    end
-
-    context 'when event_type is unknown' do
-      let(:event_type) { 'unknown_event' }
-
-      it 'returns empty array' do
-        expect(messages).to eq([])
       end
     end
   end
