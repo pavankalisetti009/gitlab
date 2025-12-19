@@ -26,13 +26,14 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
 
   let(:expected_metadata) do
     {
+      name: 'My policy',
       sha: security_orchestration_policy_configuration.configuration_sha,
       project_id: policies_repository.id
     }
   end
 
   let(:policy) do
-    build(:scan_execution_policy, actions: [
+    build(:scan_execution_policy, name: 'My policy', actions: [
       { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' },
       { scan: 'secret_detection' },
       { scan: 'dependency_scanning' }
@@ -40,7 +41,7 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
   end
 
   let(:policy_duplicated_action) do
-    build(:scan_execution_policy, actions: [{ scan: 'dependency_scanning' }])
+    build(:scan_execution_policy, name: 'My duplicated policy', actions: [{ scan: 'dependency_scanning' }])
   end
 
   let(:disabled_policy) do
@@ -120,20 +121,21 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
         { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile',
           metadata: expected_metadata },
         { scan: 'secret_detection', metadata: expected_metadata },
-        { scan: 'dependency_scanning', metadata: expected_metadata }
+        { scan: 'dependency_scanning', metadata: expected_metadata.merge(name: 'My policy') }
       ])
     end
 
     describe 'action limits' do
       let(:policies) { [policy, other_policy] }
       let(:other_policy) do
-        build(:scan_execution_policy, actions: [
+        build(:scan_execution_policy, name: 'Other policy', actions: [
           { scan: 'sast' },
           { scan: 'sast_iac' },
           { scan: 'container_scanning' }
         ])
       end
 
+      let(:expected_other_metadata) { expected_metadata.merge(name: 'Other policy') }
       let(:action_limit) { 2 }
 
       before do
@@ -145,8 +147,8 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
           { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile',
             metadata: expected_metadata },
           { scan: 'secret_detection', metadata: expected_metadata },
-          { scan: 'sast', metadata: expected_metadata },
-          { scan: 'sast_iac', metadata: expected_metadata }
+          { scan: 'sast', metadata: expected_other_metadata },
+          { scan: 'sast_iac', metadata: expected_other_metadata }
         ])
       end
 
@@ -159,9 +161,9 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
               metadata: expected_metadata },
             { scan: 'secret_detection', metadata: expected_metadata },
             { scan: 'dependency_scanning', metadata: expected_metadata },
-            { scan: 'sast', metadata: expected_metadata },
-            { scan: 'sast_iac', metadata: expected_metadata },
-            { scan: 'container_scanning', metadata: expected_metadata }
+            { scan: 'sast', metadata: expected_other_metadata },
+            { scan: 'sast_iac', metadata: expected_other_metadata },
+            { scan: 'container_scanning', metadata: expected_other_metadata }
           ])
         end
       end
@@ -171,6 +173,7 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
       let(:policies) { [policy] }
       let(:policy) do
         build(:scan_execution_policy,
+          name: 'My policy',
           actions: [
             { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' },
             { scan: 'secret_detection' },

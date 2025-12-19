@@ -8,11 +8,12 @@ module Security
 
       DEFAULT_SKIP_CI_STRATEGY = { allowed: true }.freeze
 
-      attr_reader :actions, :configuration, :skip_ci_strategy
+      attr_reader :actions, :configuration, :skip_ci_strategy, :name
 
       def initialize(policy:, configuration: nil)
         @configuration = configuration
         @skip_ci_strategy = policy[:skip_ci].presence || DEFAULT_SKIP_CI_STRATEGY
+        @name = policy.fetch(:name)
         @actions = policy.fetch(:actions, []).map { |action| action.merge(metadata: action_metadata) }
       end
 
@@ -27,6 +28,7 @@ module Security
       def action_metadata
         # Metadata used for id_tokens. It matches the attributes in `pipeline_execution_context.job_options`.
         {
+          name: name,
           project_id: security_policy_management_project_id,
           sha: configuration_sha
         }.compact

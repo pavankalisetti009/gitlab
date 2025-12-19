@@ -189,11 +189,11 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
       before do
         scan_execution_context_double =
           instance_double(::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext,
-            job_options: { project_id: 123, sha: 'sha' })
+            job_options: { name: 'Policy', project_id: 123, sha: 'sha' })
         allow(context).to receive(:scan_execution_context).with(pipeline.ref).and_return(scan_execution_context_double)
       end
 
-      it { is_expected.to eq(project_id: 123, sha: 'sha') }
+      it { is_expected.to eq(name: 'Policy', project_id: 123, sha: 'sha') }
     end
   end
 end

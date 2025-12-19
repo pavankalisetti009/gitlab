@@ -15,12 +15,13 @@ RSpec.describe Security::ScanExecutionPolicy::Config, feature_category: :securit
   describe '#actions' do
     subject(:actions) { config.actions }
 
-    let(:policy) { build(:scan_execution_policy, actions: [{ scan: 'secret_detection' }]) }
+    let(:policy) { build(:scan_execution_policy, name: 'Policy name', actions: [{ scan: 'secret_detection' }]) }
 
     it 'returns actions with configuration metadata' do
       expect(actions).to eq([{
         scan: 'secret_detection',
         metadata: {
+          name: 'Policy name',
           project_id: security_policy_project.id,
           sha: security_orchestration_policy_configuration.configuration_sha
         }
