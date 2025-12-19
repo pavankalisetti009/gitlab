@@ -5,7 +5,7 @@ module GitlabSubscriptions
     module Entities
       module Internal
         class User < ::API::Entities::UserSafe
-          expose :web_url, documentation: { type: 'string', example: 'https://gitlab.example.com/root' } do |user, _opt|
+          expose :web_url, documentation: { type: 'String', example: 'https://gitlab.example.com/root' } do |user, _opt|
             Gitlab::Routing.url_helpers.user_url(user)
           end
         end

@@ -9,15 +9,15 @@ module API
         expose :record_identifier, documentation: { type: %w[string integer], example: %w[abc123 123] } do |model|
           model.class.primary_key.is_a?(Array) ? expose_composite_key(model) : model.id
         end
-        expose :model_class, documentation: { type: "string", example: 'Project' } do |model|
+        expose :model_class, documentation: { type: 'String', example: 'Project' } do |model|
           model.class.name
         end
-        expose :created_at, documentation: { type: "dateTime", example: "2025-01-31T15:10:45.080Z" } do |model|
+        expose :created_at, documentation: { type: 'DateTime', example: "2025-01-31T15:10:45.080Z" } do |model|
           model.respond_to?(:created_at) ? model.created_at : nil
         end
 
         # File-specific fields
-        expose :file_size, documentation: { type: "integer", example: 123 } do |model|
+        expose :file_size, documentation: { type: 'Integer', example: 123 } do |model|
           model.attributes.has_key?('size') ? model.size : nil
         end
 

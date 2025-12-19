@@ -6,14 +6,14 @@ module GitlabSubscriptions
       module Internal
         module GitlabSubscriptions
           class AddOnPurchase < Grape::Entity
-            expose :namespace_id, documentation: { type: 'integer', example: 123 }
-            expose :namespace_name, documentation: { type: 'string', example: 'GitLab' }
-            expose :add_on, documentation: { type: 'string', example: 'Code Suggestions' }
-            expose :quantity, documentation: { type: 'integer', example: 10 }
-            expose :started_at, as: :started_on, documentation: { type: 'date', example: '2023-05-30' }
-            expose :expires_on, documentation: { type: 'date', example: '2023-05-30' }
-            expose :purchase_xid, documentation: { type: 'string', example: 'A-S00000001' }
-            expose :trial, documentation: { type: 'boolean', example: 'false' }
+            expose :namespace_id, documentation: { type: 'Integer', example: 123 }
+            expose :namespace_name, documentation: { type: 'String', example: 'GitLab' }
+            expose :add_on, documentation: { type: 'String', example: 'Code Suggestions' }
+            expose :quantity, documentation: { type: 'Integer', example: 10 }
+            expose :started_at, as: :started_on, documentation: { type: 'Date', example: '2023-05-30' }
+            expose :expires_on, documentation: { type: 'Date', example: '2023-05-30' }
+            expose :purchase_xid, documentation: { type: 'String', example: 'A-S00000001' }
+            expose :trial, documentation: { type: 'Boolean', example: 'false' }
 
             def namespace_name
               object.namespace.name
