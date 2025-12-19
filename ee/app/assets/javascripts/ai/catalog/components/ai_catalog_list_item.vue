@@ -218,7 +218,7 @@ export default {
           v-gl-tooltip
           :title="softDeletedTooltipText"
           data-testid="ai-catalog-item-unlisted"
-          class="gl-flex gl-items-center gl-gap-2"
+          class="gl-flex"
         >
           <gl-badge variant="warning">{{ s__('AICatalog|Unlisted') }}</gl-badge>
         </div>

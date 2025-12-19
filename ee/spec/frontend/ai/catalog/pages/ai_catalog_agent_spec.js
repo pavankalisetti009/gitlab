@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
@@ -26,7 +26,7 @@ Vue.use(VueApollo);
 const RouterViewStub = Vue.extend({
   name: 'RouterViewStub',
   // eslint-disable-next-line vue/require-prop-types
-  props: ['aiCatalogAgent', 'version'],
+  props: ['aiCatalogAgent', 'version', 'hasParentConsumer'],
   template: '<div />',
 });
 
@@ -332,4 +332,39 @@ describe('AiCatalogAgent', () => {
       });
     });
   });
+
+  describe.each`
+    hasParentConsumer | configurationForGroupEnabled
+    ${true}           | ${true}
+    ${false}          | ${false}
+  `(
+    'when configurationForGroup.enabled is $configurationForGroupEnabled',
+    ({ hasParentConsumer, configurationForGroupEnabled }) => {
+      beforeEach(async () => {
+        const mockAgentGroupConfigQueryHandler = jest.fn().mockResolvedValue({
+          data: {
+            aiCatalogItem: {
+              ...mockAgent,
+              configurationForProject: mockAgentConfigurationForProject,
+              configurationForGroup: {
+                ...mockItemConfigurationForGroup,
+                enabled: configurationForGroupEnabled,
+              },
+            },
+          },
+        });
+        createComponent({
+          provide: { projectId: 1, rootGroupId: '1' },
+          agentQueryHandler: mockAgentGroupConfigQueryHandler,
+        });
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it(`passes ${hasParentConsumer} hasParentConsumer to router view`, () => {
+        expect(findRouterView().exists()).toBe(true);
+        expect(findRouterView().props('hasParentConsumer')).toBe(hasParentConsumer);
+      });
+    },
+  );
 });
