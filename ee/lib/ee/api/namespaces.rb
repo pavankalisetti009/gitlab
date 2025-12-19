@@ -57,6 +57,7 @@ module EE
 
           desc '[DEPRECATED] Update a namespace' do
             success ::API::Entities::Namespace
+            tags %w[namespaces]
           end
           params do
             optional :shared_runners_minutes_limit, type: Integer, desc: "Compute minutes quota for this namespace"
@@ -83,6 +84,7 @@ module EE
 
           desc 'Returns the subscription for the namespace' do
             success ::API::Entities::GitlabSubscription
+            tags %w[namespaces]
           end
           get ":id/gitlab_subscription", urgency: :low, feature_category: :subscription_management do
             if current_user.auditor?
@@ -106,6 +108,7 @@ module EE
               { code: 403, message: 'Forbidden' },
               { code: 404, message: 'Not found' }
             ]
+            tags %w[namespaces]
           end
           params do
             requires :reason, type: String, desc: 'The reason the Namespace is being excluded'
@@ -142,6 +145,7 @@ module EE
               { code: 403, message: 'Forbidden' },
               { code: 422, message: 'Unprocessable entity' }
             ]
+            tags %w[namespaces]
           end
           delete ':id/storage/limit_exclusion' do
             authenticated_as_admin!
@@ -169,6 +173,7 @@ module EE
               { code: 401, message: 'Unauthorized' },
               { code: 403, message: 'Forbidden' }
             ]
+            tags %w[namespaces]
           end
           params do
             use :pagination
