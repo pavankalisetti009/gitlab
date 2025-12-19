@@ -147,7 +147,8 @@ module Ai
         end
 
         def service_account_username
-          "ai-#{item.name}-#{group.name}".parameterize
+          prefix = item.foundational_flow_reference.present? ? "duo" : "ai"
+          "#{prefix}-#{item.name}-#{group.name}".parameterize
         end
 
         def service_account_avatar

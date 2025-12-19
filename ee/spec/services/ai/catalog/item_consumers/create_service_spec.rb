@@ -396,6 +396,26 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       expect(Ai::Catalog::ItemConsumer.last).to have_attributes(service_account:)
     end
 
+    context 'when item is a foundational flow' do
+      let_it_be(:foundational_flow_item) do
+        create(:ai_catalog_flow, public: true, project: item_project, name: 'foundational_flow',
+          foundational_flow_reference: 'code_review/v1')
+      end
+
+      let_it_be(:released_foundational_flow_version) do
+        create(:ai_catalog_flow_version, :released, item: foundational_flow_item, version: '1.0.0')
+      end
+
+      let(:item) { foundational_flow_item }
+
+      it 'creates a service account with duo prefix' do
+        expect { execute }.to change { User.count }.by(1)
+        service_account = User.last
+        expect(service_account).to be_service_account
+        expect(service_account.username).to eq("duo-foundational_flow-group-name")
+      end
+    end
+
     context 'when group is not a top-level group' do
       let_it_be(:child_group) { create(:group, parent: consumer_group, owners: user, maintainers: maintainer_user) }
 
