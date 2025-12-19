@@ -38624,7 +38624,7 @@ msgstr ""
 msgid "Job|Manual"
 msgstr ""
 
-msgid "Job|Mean duration (s)"
+msgid "Job|Mean duration"
 msgstr ""
 
 msgid "Job|No job log"
@@ -38633,7 +38633,7 @@ msgstr ""
 msgid "Job|No search results found"
 msgstr ""
 
-msgid "Job|P95 duration (s)"
+msgid "Job|P95 duration"
 msgstr ""
 
 msgid "Job|Passed"
