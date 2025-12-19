@@ -1,6 +1,8 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
+import getConfiguredFlows from 'ee/ai/graphql/get_configured_flows.query.graphql';
 import { sprintf, s__, __ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
@@ -11,6 +13,7 @@ import { buildApiUrl } from '~/api/api_utils';
 
 const FLOW_WEB_ENVIRONMENT = 'web';
 const TOAST_HIDE_DELAY = 4000;
+const INIT_ERROR_MESSAGE = __('Something went wrong');
 
 export default {
   name: 'DuoWorkflowAction',
@@ -20,6 +23,7 @@ export default {
   components: {
     GlButton,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     currentRef: {
       default: null,
@@ -86,6 +90,7 @@ export default {
     return {
       isStartingFlow: false,
       duoWorkflowData: null,
+      aiCatalogItemConsumerId: null,
     };
   },
   computed: {
@@ -93,10 +98,23 @@ export default {
       return buildApiUrl(`/api/:version/ai/duo_workflows/workflows`);
     },
     isDuoActionEnabled() {
-      return this.duoWorkflowData?.isDuoActionEnabled && this.duoWorkflowData?.projectId;
+      return (
+        this.duoWorkflowData?.isDuoActionEnabled &&
+        this.duoWorkflowData?.projectId &&
+        this.isFlowEnabledInSettings
+      );
     },
     projectId() {
       return this.duoWorkflowData?.projectId || null;
+    },
+    projectGid() {
+      return this.duoWorkflowData?.projectGid || null;
+    },
+    isFlowEnabledInSettings() {
+      if (!this.glFeatures.dapUseFoundationalFlowsSetting) {
+        return true;
+      }
+      return Boolean(this.aiCatalogItemConsumerId);
     },
   },
   apollo: {
@@ -117,13 +135,45 @@ export default {
               Boolean(data.project?.duoWorkflowStatusCheck?.enabled) &&
               Boolean(data.project?.duoWorkflowStatusCheck?.remoteFlowsEnabled),
             projectId: getIdFromGraphQLId(data.project.id),
+            projectGid: data.project.id,
           };
         }
         return null;
       },
       error(error) {
         createAlert({
-          message: error?.message || __('Something went wrong'),
+          message: error?.message || INIT_ERROR_MESSAGE,
+          captureError: true,
+          error,
+        });
+      },
+    },
+    aiCatalogItemConsumerId: {
+      query: getConfiguredFlows,
+      variables() {
+        return {
+          projectId: this.projectGid,
+          foundationalFlowReference: this.workflowDefinition,
+        };
+      },
+      skip() {
+        if (!this.glFeatures.dapUseFoundationalFlowsSetting) {
+          return true;
+        }
+
+        return !this.projectGid || !this.workflowDefinition;
+      },
+      update(data) {
+        const configuredItems = data.aiCatalogConfiguredItems?.nodes || [];
+        if (configuredItems.length > 0) {
+          return data.aiCatalogConfiguredItems.nodes[0].id;
+        }
+
+        return null;
+      },
+      error(error) {
+        createAlert({
+          message: error?.message || INIT_ERROR_MESSAGE,
           captureError: true,
           error,
         });
@@ -167,6 +217,10 @@ export default {
         agent_privileges: this.agentPrivileges,
         additional_context: this.additionalContext,
       };
+
+      if (this.glFeatures.dapUseFoundationalFlowsSetting && this.aiCatalogItemConsumerId) {
+        requestData.ai_catalog_item_consumer_id = getIdFromGraphQLId(this.aiCatalogItemConsumerId);
+      }
 
       if (this.sourceBranch) {
         requestData.source_branch = this.sourceBranch;

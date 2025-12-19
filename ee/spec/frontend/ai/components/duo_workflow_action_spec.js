@@ -5,12 +5,20 @@ import { GlButton } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
+import getConfiguredFlows from 'ee/ai/graphql/get_configured_flows.query.graphql';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import toast from '~/vue_shared/plugins/global_toast';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
-import { mockCreateFlowResponse } from '../mocks';
+import {
+  mockCreateFlowResponse,
+  mockDuoWorkflowStatusCheckEnabled,
+  mockDuoWorkflowStatusCheckDisabled,
+  mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled,
+  mockConfiguredFlowsResponse,
+  mockEmptyConfiguredFlowsResponse,
+} from '../mocks';
 
 jest.mock('~/alert');
 jest.mock('~/vue_shared/plugins/global_toast');
@@ -35,54 +43,27 @@ describe('DuoWorkflowAction component', () => {
   };
 
   let mockGetHealthCheckHandler;
+  let mockGetConfiguredFlowsHandler;
 
-  const mockDuoWorkflowStatusCheckEnabled = {
-    data: {
-      project: {
-        id: 'gid://gitlab/Project/1',
-        duoWorkflowStatusCheck: {
-          enabled: true,
-          remoteFlowsEnabled: true,
-          foundationalFlowsEnabled: true,
-        },
-      },
-    },
-  };
-
-  const mockDuoWorkflowStatusCheckDisabled = {
-    data: {
-      project: {
-        id: 'gid://gitlab/Project/1',
-        duoWorkflowStatusCheck: {
-          enabled: false,
-          remoteFlowsEnabled: false,
-          foundationalFlowsEnabled: false,
-        },
-      },
-    },
-  };
-
-  const mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled = {
-    data: {
-      project: {
-        id: 'gid://gitlab/Project/1',
-        duoWorkflowStatusCheck: {
-          enabled: true,
-          remoteFlowsEnabled: false,
-          foundationalFlowsEnabled: false,
-        },
-      },
-    },
-  };
-
-  const createComponent = ({ props = {}, ...options } = {}) => {
-    const handlers = [[getDuoWorkflowStatusCheck, mockGetHealthCheckHandler]];
-
+  const createComponent = ({
+    props = {},
+    provide = {},
+    glFeatures = { dapUseFoundationalFlowsSetting: true },
+    ...options
+  } = {}) => {
+    const handlers = [
+      [getDuoWorkflowStatusCheck, mockGetHealthCheckHandler],
+      [getConfiguredFlows, mockGetConfiguredFlowsHandler],
+    ];
     wrapper = shallowMount(DuoWorkflowAction, {
       apolloProvider: createMockApollo(handlers),
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      provide: {
+        ...provide,
+        glFeatures,
       },
       ...options,
     });
@@ -101,6 +82,7 @@ describe('DuoWorkflowAction component', () => {
       return [200, mockCreateFlowResponse];
     });
     mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckEnabled);
+    mockGetConfiguredFlowsHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
   });
 
   afterEach(() => {
@@ -246,12 +228,12 @@ describe('DuoWorkflowAction component', () => {
       workflow_definition: defaultProps.workflowDefinition,
       agent_privileges: defaultProps.agentPrivileges,
       additional_context: [],
+      ai_catalog_item_consumer_id: 123,
     };
 
     beforeEach(async () => {
       await createComponent();
     });
-
     describe('when the goal fails to match the promptValidatorRegex', () => {
       const invalidGoal = 'InvalidPath';
 
@@ -613,6 +595,99 @@ describe('DuoWorkflowAction component', () => {
         it('removes loading state after error', () => {
           expect(findButton().props('loading')).toBe(false);
         });
+      });
+    });
+  });
+
+  describe('Flow settings', () => {
+    describe('when flow is configured in settings', () => {
+      beforeEach(async () => {
+        await createComponent();
+      });
+
+      it('renders button', () => {
+        expect(findButton().exists()).toBe(true);
+      });
+
+      it('calls getConfiguredFlows query with correct variables', () => {
+        expect(mockGetConfiguredFlowsHandler).toHaveBeenCalledWith({
+          projectId: 'gid://gitlab/Project/1',
+          foundationalFlowReference: 'convert_to_gitlab_ci',
+        });
+      });
+    });
+
+    describe('when dapUseFoundationalFlowsSetting is set to false', () => {
+      beforeEach(async () => {
+        await createComponent({ glFeatures: { dapUseFoundationalFlowsSetting: false } });
+      });
+
+      it('button is still visible', () => {
+        expect(findButton().exists()).toBe(true);
+      });
+
+      it('does not call getConfiguredFlows query', () => {
+        expect(mockGetConfiguredFlowsHandler).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when flow is not configured in settings', () => {
+      beforeEach(async () => {
+        mockGetConfiguredFlowsHandler = jest
+          .fn()
+          .mockResolvedValue(mockEmptyConfiguredFlowsResponse);
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+
+      it('calls getConfiguredFlows query', () => {
+        expect(mockGetConfiguredFlowsHandler).toHaveBeenCalled();
+      });
+    });
+
+    describe('when getConfiguredFlows query fails', () => {
+      const errorMessage = 'Something went wrong.';
+
+      beforeEach(async () => {
+        mockGetConfiguredFlowsHandler = jest.fn().mockRejectedValue(new Error(errorMessage));
+        await createComponent();
+      });
+
+      it('shows error alert', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message: errorMessage,
+          captureError: true,
+          error: expect.any(Error),
+        });
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+    });
+
+    describe('when projectGid or workflowDefinition is missing', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest.fn().mockResolvedValue({
+          data: {
+            project: {
+              id: null,
+              duoWorkflowStatusCheck: {
+                enabled: true,
+                remoteFlowsEnabled: true,
+                foundationalFlowsEnabled: true,
+              },
+            },
+          },
+        });
+        await createComponent();
+      });
+
+      it('skips getConfiguredFlows query', () => {
+        expect(mockGetConfiguredFlowsHandler).not.toHaveBeenCalled();
       });
     });
   });

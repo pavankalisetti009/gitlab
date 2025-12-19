@@ -1,0 +1,10 @@
+---
+name: dap_use_foundational_flows_setting
+description: Use foundational flows setting to control Duo Workflow Action visibility
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/581689
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/216822
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/581690
+milestone: '18.8'
+group: group::agent foundations
+type: beta
+default_enabled: false
