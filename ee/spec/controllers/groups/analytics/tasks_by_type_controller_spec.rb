@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::Analytics::TasksByTypeController, feature_category: :team_planning do
+RSpec.describe Groups::Analytics::TasksByTypeController, feature_category: :devops_reports do
   let_it_be(:user) { create(:user) }
 
   let(:group) { create(:group) }

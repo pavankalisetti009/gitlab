@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::Analytics::DataExplorerController, feature_category: :team_planning do
+RSpec.describe Projects::Analytics::DataExplorerController, feature_category: :devops_reports do
   let_it_be(:project) { create(:project, :repository, :public, :in_group) }
 
   describe 'GET index' do

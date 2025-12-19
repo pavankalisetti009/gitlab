@@ -12,7 +12,7 @@ class Projects::Analytics::IssuesAnalyticsController < Projects::ApplicationCont
     label: 'redis_hll_counters.analytics.analytics_total_unique_counts_monthly',
     destinations: %i[redis_hll snowplow]
 
-  feature_category :team_planning
+  feature_category :devops_reports
   urgency :low
 
   def show

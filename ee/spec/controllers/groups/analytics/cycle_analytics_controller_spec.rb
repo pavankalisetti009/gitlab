@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::Analytics::CycleAnalyticsController, feature_category: :team_planning do
+RSpec.describe Groups::Analytics::CycleAnalyticsController, feature_category: :value_stream_management do
   let(:group) { create(:group) }
   let(:user) { create(:user) }
 

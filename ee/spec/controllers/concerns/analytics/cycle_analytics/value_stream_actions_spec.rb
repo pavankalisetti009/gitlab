@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: :team_planning do
+RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: :value_stream_management do
   let_it_be(:group) { build(:group) }
   let_it_be(:project) { build(:project, group: group) }
   let_it_be(:current_user) { build(:user) }

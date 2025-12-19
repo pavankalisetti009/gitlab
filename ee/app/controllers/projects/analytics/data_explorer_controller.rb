@@ -3,7 +3,7 @@
 module Projects
   module Analytics
     class DataExplorerController < Projects::ApplicationController
-      feature_category :team_planning
+      feature_category :devops_reports
 
       before_action :validate_feature_flag
 
