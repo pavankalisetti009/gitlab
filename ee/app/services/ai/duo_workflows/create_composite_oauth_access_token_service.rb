@@ -43,10 +43,10 @@ module Ai
       def ensure_onboarding_complete!
         if @service_account.nil? || ai_settings.duo_workflow_oauth_application.nil?
           raise IncompleteOnboardingError,
-            'Duo Agent Platform onboarding is incomplete. Please complete onboarding to proceed further.'
+            'GitLab Duo Agent Platform onboarding is incomplete. Please complete onboarding to proceed further.'
         elsif !@service_account.composite_identity_enforced?
           raise CompositeIdentityEnforcedError,
-            'The Duo Agent Platform service account must have composite identity enabled.'
+            'The GitLab Duo Agent Platform service account must have composite identity enabled.'
         end
       end
 

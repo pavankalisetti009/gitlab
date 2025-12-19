@@ -19,7 +19,7 @@ module Ai
 
         if update_settings
           enable_feature_flags
-          ServiceResponse.success(message: 'Duo Agent Platform onboarding for the instance is complete')
+          ServiceResponse.success(message: 'GitLab Duo Agent Platform onboarding for the instance is complete')
         else
           ServiceResponse.error(message: ai_settings.errors.full_messages.to_sentence)
         end

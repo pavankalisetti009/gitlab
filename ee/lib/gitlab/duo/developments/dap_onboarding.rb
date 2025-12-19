@@ -23,7 +23,7 @@ module Gitlab
             puts "Duo Agent Platform onboarded successfully"
           else
             puts "Onboarding failed: #{result.message}"
-            puts "For manual onboarding instructions, see: https://docs.gitlab.com/user/duo_agent_platform/security/#turn-on-composite-identity"
+            puts "For manual onboarding instructions, see: https://docs.gitlab.com/administration/gitlab_duo/configure/gitlab_self_managed/#turn-on-composite-identity"
           end
         end
       end

@@ -62,7 +62,7 @@ export default {
       return this.displayPageHeading && (this.title || this.subtitle);
     },
     serviceAccountHelpPath() {
-      return helpPagePath('user/duo_agent_platform/security');
+      return helpPagePath('user/duo_agent_platform/composite_identity');
     },
   },
   methods: {

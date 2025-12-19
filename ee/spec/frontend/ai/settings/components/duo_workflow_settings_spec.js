@@ -66,7 +66,7 @@ describe('DuoWorkflowSettings', () => {
 
     axios.post = jest.fn().mockResolvedValue({ status: 200 });
     visitUrlWithAlerts.mockImplementation(() => {});
-    helpPagePath.mockReturnValue('/help/user/duo_agent_platform/security');
+    helpPagePath.mockReturnValue('/help/user/duo_agent_platform/composite_identity');
   });
 
   describe('component rendering', () => {
@@ -106,7 +106,7 @@ describe('DuoWorkflowSettings', () => {
 
       const link = findServiceAccountLink();
       expect(link.exists()).toBe(true);
-      expect(link.attributes('href')).toBe('/help/user/duo_agent_platform/security');
+      expect(link.attributes('href')).toBe('/help/user/duo_agent_platform/composite_identity');
     });
 
     describe('displayPageHeading', () => {
