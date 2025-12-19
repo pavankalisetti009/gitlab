@@ -73,7 +73,7 @@ describe('BoardAddNewColumn', () => {
 
   let allowedStatus = [];
 
-  namespaceWorkItemTypesQueryResponse.data.workspace?.workItemTypes?.nodes?.forEach((type) => {
+  namespaceWorkItemTypesQueryResponse.data.namespace?.workItemTypes?.nodes?.forEach((type) => {
     const statusWidget = type.widgetDefinitions.find(
       (widget) => widget.type === WIDGET_TYPE_STATUS,
     );

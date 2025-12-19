@@ -85,7 +85,7 @@ export default {
   },
   methods: {
     getRelatedVulnerabilities(data) {
-      const workItemVulnerabilities = findVulnerabilitiesWidget(data.workspace?.workItem) || {};
+      const workItemVulnerabilities = findVulnerabilitiesWidget(data.namespace?.workItem) || {};
       return workItemVulnerabilities.relatedVulnerabilities;
     },
     async fetchNextPage() {

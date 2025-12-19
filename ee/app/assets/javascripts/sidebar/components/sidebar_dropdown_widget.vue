@@ -88,7 +88,6 @@ export default {
       query() {
         const { current } = this.issuableAttributeQuery;
         const { query } = current[this.issuableType];
-
         return query;
       },
       variables() {
@@ -98,10 +97,12 @@ export default {
         };
       },
       update(data) {
-        return data.workspace?.issuable || {};
+        return data.workspace?.issuable || data.namespace?.issuable || {};
       },
       result({ data }) {
-        this.hasWorkItemParent = data?.workspace?.issuable?.hasParent && this.showWorkItemEpics;
+        this.hasWorkItemParent =
+          (data?.workspace?.issuable?.hasParent || data?.namespace?.issuable?.hasParent) &&
+          this.showWorkItemEpics;
       },
       error(error) {
         createAlert({

@@ -28,7 +28,7 @@ describe('WorkItemStatus component', () => {
 
   const workItemIid = '1';
   const workItemType = 'Task';
-  const allowedStatus = namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes
+  const allowedStatus = namespaceWorkItemTypesQueryResponse.data.namespace.workItemTypes.nodes
     .find((node) => node.name === workItemType)
     .widgetDefinitions?.find((item) => {
       return item.type === 'STATUS';

@@ -94,7 +94,7 @@ export default {
         };
       },
       update(data) {
-        return data.workspace?.workItem || {};
+        return data.namespace?.workItem || {};
       },
       skip() {
         return !this.workItemIid;

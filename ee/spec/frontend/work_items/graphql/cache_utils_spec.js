@@ -23,7 +23,7 @@ describe('work items graphql cache utils', () => {
       window.gon.current_user_id = 1;
 
       const workItemTypes =
-        namespaceWorkItemTypesQueryResponse.data?.workspace?.workItemTypes?.nodes || [];
+        namespaceWorkItemTypesQueryResponse.data?.namespace?.workItemTypes?.nodes || [];
       const taskWidgetDefinitions =
         workItemTypes?.find((type) => type.name === 'Task')?.widgetDefinitions || [];
       const statusDefinition = taskWidgetDefinitions.find((item) => {
@@ -44,7 +44,7 @@ describe('work items graphql cache utils', () => {
       expect(mockWriteQuery).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            workspace: expect.objectContaining({
+            namespace: expect.objectContaining({
               workItem: expect.objectContaining({
                 widgets: expect.arrayContaining([
                   {

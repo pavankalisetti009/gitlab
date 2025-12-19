@@ -1121,7 +1121,7 @@ export const mockLinkedItems = {
 
 export const workItemLinkedItemsResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Namespace',
       id: 'gid://gitlab/Group/1',
       workItem: {
@@ -1135,7 +1135,7 @@ export const workItemLinkedItemsResponse = {
 
 export const workItemEmptyLinkedItemsResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Namespace',
       id: 'gid://gitlab/Group/1',
       workItem: {
@@ -1160,7 +1160,7 @@ export const workItemEmptyLinkedItemsResponse = {
 
 export const workItemSingleLinkedItemResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Namespace',
       id: 'gid://gitlab/Group/1',
       workItem: {
@@ -1216,7 +1216,7 @@ export const workItemSingleLinkedItemResponse = {
 
 export const workItemNoBlockedByLinkedItemsResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Namespace',
       id: 'gid://gitlab/Group/1',
       workItem: {
@@ -1230,7 +1230,7 @@ export const workItemNoBlockedByLinkedItemsResponse = {
 
 export const workItemBlockedByLinkedItemsResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Namespace',
       id: 'gid://gitlab/Group/1',
       workItem: {
@@ -1244,7 +1244,7 @@ export const workItemBlockedByLinkedItemsResponse = {
 
 export const workItemsClosedAndOpenLinkedItemsResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Namespace',
       id: 'gid://gitlab/Group/1',
       workItem: {
@@ -2171,7 +2171,7 @@ export const workItemByIidResponseFactory = (options) => {
   const response = workItemResponseFactory(options);
   return {
     data: {
-      workspace: {
+      namespace: {
         __typename: 'Project',
         id: 'gid://gitlab/Project/1',
         workItem: response.data.workItem,
@@ -2752,7 +2752,7 @@ export const childrenWorkItemsObjectives = [
 
 export const workItemHierarchyResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Project',
       id: 'gid://gitlab/Project/2',
       workItem: {
@@ -3593,7 +3593,7 @@ export const changeWorkItemParentMutationResponse = {
 
 export const availableWorkItemsResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Project',
       id: 'gid://gitlab/Project/2',
       workItems: {
@@ -3645,7 +3645,7 @@ export const availableWorkItemsResponse = {
 
 export const availableObjectivesResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Project',
       id: 'gid://gitlab/Project/2',
       workItems: {
@@ -3715,7 +3715,7 @@ export const availableObjectivesResponse = {
 
 export const searchedObjectiveResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Project',
       id: 'gid://gitlab/Project/2',
       workItems: {
@@ -3748,7 +3748,7 @@ export const searchedObjectiveResponse = {
 export const searchWorkItemsResponse = ({ workItems = [], workItemsByIid = [] } = {}) => {
   return {
     data: {
-      workspace: {
+      namespace: {
         __typename: 'Project',
         id: 'gid://gitlab/Project/2',
         workItems: {
@@ -3891,7 +3891,7 @@ export const mockIterationWidgetResponse = {
 
 export const groupIterationsResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Group/22',
       attributes: {
         nodes: [
@@ -3948,7 +3948,7 @@ export const groupIterationsResponse = {
 
 export const groupIterationsResponseWithNoIterations = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Group/22',
       attributes: {
         nodes: [],
@@ -4350,7 +4350,7 @@ export const mockWorkItemNotesResponse = {
 };
 export const mockWorkItemNotesByIidResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Project/6',
       workItem: {
         id: 'gid://gitlab/WorkItem/600',
@@ -4553,7 +4553,7 @@ export const mockWorkItemNotesByIidResponse = {
 
 export const mockMoreWorkItemNotesResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Project/6',
       workItem: {
         id: 'gid://gitlab/WorkItem/600',
@@ -4886,7 +4886,7 @@ export const mockWorkItemDiscussion = {
 export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
   return {
     data: {
-      workspace: {
+      namespace: {
         id: 'gid://gitlab/Project/6',
         workItem: {
           id: 'gid://gitlab/WorkItem/600',
@@ -5256,7 +5256,7 @@ export const workItemSystemNoteWithMetadata = {
 
 export const workItemNotesWithSystemNotesWithChangedDescription = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Project/4',
       workItem: {
         id: 'gid://gitlab/WorkItem/733',
@@ -6552,7 +6552,7 @@ export const namespaceGroupsList = {
 
 export const createWorkItemQueryResponse = (widgets = []) => ({
   data: {
-    workspace: {
+    namespace: {
       id: 'full-path-epic-id',
       workItem: {
         id: 'gid://gitlab/WorkItem/new-epic',
@@ -6941,7 +6941,7 @@ export const mockProjectPermissionsQueryResponse = ({
   updateDesign = true,
 } = {}) => ({
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Project/1',
       userPermissions: {
         createDesign,
@@ -6956,7 +6956,7 @@ export const mockProjectPermissionsQueryResponse = ({
 
 export const mockGroupPermissionsQueryResponse = ({ adminWorkItemLifecycle = true } = {}) => ({
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Group/24',
       userPermissions: {
         adminWorkItemLifecycle,
@@ -7124,7 +7124,7 @@ export const workItemHierarchyNoChildrenTreeResponse = {
 
 export const workItemEmailParticipantsResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Namespaces::ProjectNamespace/34',
       workItem: {
         id: 'gid://gitlab/WorkItem/689',
@@ -7153,7 +7153,7 @@ export const workItemEmailParticipantsResponse = {
 
 export const workItemEmailParticipantsEmptyResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Namespaces::ProjectNamespace/34',
       workItem: {
         id: 'gid://gitlab/WorkItem/689',
@@ -7244,7 +7244,7 @@ export const errorTrackingQueryResponseWithStackTrace = getErrorTrackingQueryRes
 export const mockRolledUpHealthStatus = [];
 
 export const mockCreateWorkItemDraftData = {
-  workspace: {
+  namespace: {
     __typename: 'Namespace',
     id: 'gitlab-org-epic-id',
     workItem: {
@@ -7827,7 +7827,7 @@ export const getAllStatusesQueryResponse = [
 
 export const namespaceWorkItemTypesQueryResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Project/8',
       webUrl: 'web/url',
       userPermissions: {
@@ -8939,7 +8939,7 @@ export const namespaceWorkItemTypesQueryResponse = {
 
 export const namespaceWorkItemTypesWithOKRsQueryResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Namespaces::ProjectNamespace/9',
       webUrl: 'http://localhost/group2/project-4',
       userPermissions: {

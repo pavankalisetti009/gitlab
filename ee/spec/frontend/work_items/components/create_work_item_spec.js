@@ -278,7 +278,7 @@ describe('EE Create work item component', () => {
     const customFieldsNamespaceWorkItemTypesResponse = {
       ...namespaceWorkItemsWithoutEpicSupport,
       widgetDefinitions: [
-        ...namespaceWorkItemsWithoutEpicSupport.data.workspace.workItemTypes.nodes[0]
+        ...namespaceWorkItemsWithoutEpicSupport.data.namespace.workItemTypes.nodes[0]
           .widgetDefinitions,
         {
           type: 'CUSTOM_FIELDS',

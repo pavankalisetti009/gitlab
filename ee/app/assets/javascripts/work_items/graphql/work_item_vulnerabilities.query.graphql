@@ -6,7 +6,7 @@ query workItemVulnerabilities(
   $first: Int = 25
   $after: String = ""
 ) {
-  workspace: namespace(fullPath: $fullPath) {
+  namespace(fullPath: $fullPath) {
     id
     workItem(iid: $iid) {
       id

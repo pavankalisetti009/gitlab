@@ -33,15 +33,15 @@ describe('WorkItemChangeTypeModal component', () => {
   let wrapper;
   const graphqlError = 'GraphQL error';
   const keyResultTypeId =
-    namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
+    namespaceWorkItemTypesQueryResponse.data.namespace.workItemTypes.nodes.find(
       (item) => item.name === WORK_ITEM_TYPE_NAME_KEY_RESULT,
     ).id;
 
-  const issueTypeId = namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
+  const issueTypeId = namespaceWorkItemTypesQueryResponse.data.namespace.workItemTypes.nodes.find(
     (item) => item.name === WORK_ITEM_TYPE_NAME_ISSUE,
   ).id;
 
-  const epicTypeId = namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
+  const epicTypeId = namespaceWorkItemTypesQueryResponse.data.namespace.workItemTypes.nodes.find(
     (item) => item.name === WORK_ITEM_TYPE_NAME_EPIC,
   ).id;
 

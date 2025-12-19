@@ -58,7 +58,7 @@ export default {
             fullPath: this.config.fullPath,
           },
         })
-        .then(({ data }) => getStatuses(data?.workspace?.workItemTypes?.nodes));
+        .then(({ data }) => getStatuses(data?.namespace?.workItemTypes?.nodes));
     },
     fetchStatuses(search) {
       this.loading = true;

@@ -88,7 +88,7 @@ export const mockEpic2 = {
 
 export const mockGroupIterationsResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       attributes: {
         nodes: [mockIteration1, mockIteration2],
@@ -141,7 +141,7 @@ export const emptyGroupEpicsResponse = {
 export const mockCurrentIterationResponse1 = {
   data: {
     errors: [],
-    workspace: {
+    namespace: {
       id: '1',
       issuable: {
         id: mockIssueId,
@@ -156,7 +156,7 @@ export const mockCurrentIterationResponse1 = {
 export const mockCurrentIterationResponse2 = {
   data: {
     errors: [],
-    workspace: {
+    namespace: {
       id: '1',
       issuable: {
         id: mockIssueId,

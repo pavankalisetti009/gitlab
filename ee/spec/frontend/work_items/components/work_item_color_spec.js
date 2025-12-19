@@ -27,12 +27,12 @@ describe('WorkItemColor component', () => {
     workItemType: epicType,
     colorWidgetPresent: true,
     color: '#1068bf',
-  }).data.workspace.workItem;
+  }).data.namespace.workItem;
   const mockSelectedColorWorkItem = workItemByIidResponseFactory({
     workItemType: epicType,
     colorWidgetPresent: true,
     color: selectedColor,
-  }).data.workspace.workItem;
+  }).data.namespace.workItem;
   const successUpdateWorkItemMutationHandler = jest
     .fn()
     .mockResolvedValue(
