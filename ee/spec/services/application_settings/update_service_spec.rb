@@ -478,8 +478,8 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
 
       let(:duo_namespace_access_rules) do
         [
-          { namespace_id: namespace_a.id, access_rules: %w[duo_classic duo_agents] },
-          { namespace_id: namespace_b.id, access_rules: %w[duo_flows] }
+          { through_namespace: { id: namespace_a.id }, features: %w[duo_classic duo_agents] },
+          { through_namespace: { id: namespace_b.id }, features: %w[duo_flows] }
         ]
       end
 
@@ -510,8 +510,12 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
           expect { result }.to change { Ai::FeatureAccessRule.count }.from(1).to(3)
         end
 
-        context 'when duo_namespace_access_rules is empty' do
-          let(:duo_namespace_access_rules) { [] }
+        context 'when features is empty' do
+          let(:duo_namespace_access_rules) do
+            [
+              { through_namespace: { id: namespace_a.id }, features: [] }
+            ]
+          end
 
           it 'deletes existing entity rules and does not create new ones' do
             create(:ai_instance_accessible_entity_rules, through_namespace_id: namespace_a.id)
@@ -524,8 +528,7 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
       context 'when rules are invalid' do
         let(:duo_namespace_access_rules) do
           [
-            { namespace_id: namespace_a.id, access_rules: %w[duo_classic duo_agents] },
-            { namespace_id: namespace_b.id, access_rules: %w[invalid_entity] }
+            { through_namespace: { id: namespace_a.id }, features: %w[invalid_entity] }
           ]
         end
 
