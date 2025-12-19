@@ -40,7 +40,7 @@ module Ai
 
       def duo_agent_platform_enabled_for_user?(user)
         user.authorized_groups.top_level.with_ai_supported_plan(:ai_catalog).any? do |group|
-          group.ai_settings&.duo_agent_platform_enabled == true
+          group.ai_settings&.duo_agent_platform_enabled != false
         end
       end
 

@@ -41,7 +41,10 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
             group.reload
           end
 
-          if duo_agent_platform_enabled
+          # Create ai_settings record when we need to test the explicit false case
+          if has_premium_plan && !duo_agent_platform_enabled
+            create(:namespace_ai_settings, namespace: group, feature_settings: { duo_agent_platform_enabled: false })
+          elsif duo_agent_platform_enabled
             create(:namespace_ai_settings, namespace: group, feature_settings: { duo_agent_platform_enabled: true })
           end
 
@@ -96,6 +99,23 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
             expect(Rails.cache).not_to receive(:fetch)
             available?
           end
+        end
+      end
+
+      context 'when group has no ai_settings record' do
+        let_it_be(:group) { create(:group, guests: user) }
+
+        before do
+          stub_feature_flags(
+            global_ai_catalog: true,
+            ai_duo_agent_platform_ga_rollout: true
+          )
+          create(:gitlab_subscription, namespace: group, hosted_plan: create(:premium_plan))
+          # Intentionally not creating ai_settings record
+        end
+
+        it 'defaults duo_agent_platform_enabled to true' do
+          is_expected.to be(true)
         end
       end
     end
