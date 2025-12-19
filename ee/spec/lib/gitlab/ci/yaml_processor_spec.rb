@@ -553,6 +553,7 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
           expect(builds).to match([a_hash_including(options: {
             script: ['rspec'],
             policy: {
+              pipeline_execution_policy_job: true,
               name: 'My policy',
               project_id: policy_project_id,
               sha: 'my_policy_sha',

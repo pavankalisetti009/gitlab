@@ -21,10 +21,14 @@ module Gitlab
           end
 
           def active_scan_execution_actions
-            # If there are multiple SEP policies with the same scanner,
+            limited_actions = policies.flat_map do |policy|
+              limited_actions(policy.actions)
+            end.compact
+
+            # If there are multiple SEP policies with the same actions,
             # we may end up with duplicates due to different metadata.
-            # Remove the duplicates by only taking unique scans.
-            policies.flat_map { |policy| limited_actions(policy.actions) }.compact.uniq { |action| action[:scan] }
+            # Remove the duplicates by comparing all attributes except metadata.
+            limited_actions.uniq { |action| action.except(:metadata) }
           end
           strong_memoize_attr :active_scan_execution_actions
 

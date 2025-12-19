@@ -109,7 +109,8 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :pipeline_compo
 
       context 'when job is marked as a policy job' do
         before do
-          stub_ci_job_definition(job, options: job.options.merge(policy: { name: 'Policy' }))
+          stub_ci_job_definition(job,
+            options: job.options.merge(policy: { pipeline_execution_policy_job: true, name: 'Policy' }))
         end
 
         it 'replaces yaml_variables to apply them with the highest precedence' do
@@ -148,7 +149,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :pipeline_compo
           before do
             stub_ci_job_definition(job, options:
               job.options.merge(
-                policy: { name: 'Policy', variables_override: { allowed: false } }
+                policy: { pipeline_execution_policy_job: true, name: 'Policy', variables_override: { allowed: false } }
               )
             )
           end
@@ -281,7 +282,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :pipeline_compo
         before do
           stub_ci_job_definition(job, options:
             job.options.merge(
-              policy: { name: 'Policy', variables_override: { allowed: false } }
+              policy: { pipeline_execution_policy_job: true, name: 'Policy', variables_override: { allowed: false } }
             )
           )
         end

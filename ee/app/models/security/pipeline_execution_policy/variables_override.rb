@@ -34,7 +34,7 @@ module Security
       def extract_job_options(job_options)
         policy_options = job_options&.dig(:policy)
         if policy_options
-          @policy_job = true
+          @policy_job = policy_options&.dig(:pipeline_execution_policy_job)
           @override_settings = policy_options&.dig(:variables_override)
         else
           # TODO: Remove with https://gitlab.com/gitlab-org/gitlab/-/issues/577272
