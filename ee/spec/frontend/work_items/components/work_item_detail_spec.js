@@ -127,7 +127,7 @@ describe('EE WorkItemDetail component', () => {
 
       it('passes correct props to DuoWorkflowAction', () => {
         const duoWorkflowAction = findDuoWorkflowAction();
-        const { workItem } = workItemByIidQueryResponse.data.workspace;
+        const { workItem } = workItemByIidQueryResponse.data.namespace;
 
         expect(duoWorkflowAction.props()).toMatchObject({
           hoverMessage: 'Generate merge request with Duo',

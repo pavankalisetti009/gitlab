@@ -141,7 +141,7 @@ describe('WorkItemIteration component', () => {
 
       expect(findSidebarDropdownWidget().props('loading')).toBe(false);
       expect(findSidebarDropdownWidget().props('listItems')).toHaveLength(
-        groupIterationsResponse.data.workspace.attributes.nodes.length,
+        groupIterationsResponse.data.namespace.attributes.nodes.length,
       );
     });
 
@@ -157,7 +157,7 @@ describe('WorkItemIteration component', () => {
     });
 
     it('changes the iteration to the selected iteration', async () => {
-      const iterationAtIndex = groupIterationsResponse.data.workspace.attributes.nodes[0];
+      const iterationAtIndex = groupIterationsResponse.data.namespace.attributes.nodes[0];
 
       findSidebarDropdownWidget().vm.$emit('updateValue', iterationAtIndex.id);
       await waitForPromises();

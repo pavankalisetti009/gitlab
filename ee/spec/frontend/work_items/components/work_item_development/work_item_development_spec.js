@@ -36,7 +36,7 @@ describe('WorkItemDevelopment EE', () => {
   const createWorkItemDevelopmentResponse = (config) =>
     workItemDevelopmentResponse({
       widgets: [
-        ...workItemResponse.data.workspace.workItem.widgets,
+        ...workItemResponse.data.namespace.workItem.widgets,
         workItemDevelopmentFragmentResponse(config),
       ],
     });

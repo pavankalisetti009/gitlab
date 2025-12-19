@@ -58,9 +58,9 @@ describe('EE work items graphql resolvers', () => {
         variables: { fullPath: fullPathWithId, iid },
       });
 
-      if (widgetName == null) return queryResult.data.workspace.workItem;
+      if (widgetName == null) return queryResult.data.namespace.workItem;
 
-      return queryResult.data.workspace.workItem.widgets.find(({ type }) => type === widgetName);
+      return queryResult.data.namespace.workItem.widgets.find(({ type }) => type === widgetName);
     };
 
     beforeEach(() => {

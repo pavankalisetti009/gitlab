@@ -233,7 +233,7 @@ export default {
         };
       },
       update(data) {
-        return getStatuses(data.workspace?.workItemTypes?.nodes);
+        return getStatuses(data.namespace?.workItemTypes?.nodes);
       },
       skip() {
         return this.columnType !== ListType.status;

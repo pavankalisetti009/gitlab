@@ -236,7 +236,7 @@ export const getEpicWeightWidgetDefinitions = (editable = false) => {
 
 export const namespaceWorkItemsWithoutEpicSupport = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Group/14',
       webUrl: 'http://127.0.0.1:3000/groups/flightjs',
       userPermissions: {
@@ -621,7 +621,7 @@ export const getVulnerabilitiesWidgetResponse = (
 ) => {
   return {
     data: {
-      workspace: {
+      namespace: {
         __typename: 'Namespace',
         id: 'gid://gitlab/Namespaces::ProjectNamespace/1',
         workItem: {

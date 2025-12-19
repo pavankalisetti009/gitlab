@@ -1,7 +1,7 @@
 #import "ee/sidebar/queries/iteration.fragment.graphql"
 
 query issueIterationsAliasedProject($fullPath: ID!, $title: String, $state: IterationState) {
-  workspace: project(fullPath: $fullPath) {
+  namespace: project(fullPath: $fullPath) {
     id
     attributes: iterations(search: $title, in: [TITLE, CADENCE_TITLE], state: $state) {
       nodes {

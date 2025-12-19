@@ -95,7 +95,7 @@ describe('sortStatuses', () => {
 describe('getStatuses', () => {
   it('merges, sorts, and deduplicates statuses', () => {
     expect(
-      getStatuses(namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes),
+      getStatuses(namespaceWorkItemTypesQueryResponse.data.namespace.workItemTypes.nodes),
     ).toEqual([
       expect.objectContaining({ name: 'To do' }),
       expect.objectContaining({ name: 'In progress' }),

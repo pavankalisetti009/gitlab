@@ -89,7 +89,7 @@ describe('WorkItemNotes component', () => {
   describe('system notes with description changes', () => {
     it('collapses notes with time difference of 10 mins into one', async () => {
       const notesWidget =
-        workItemNotesWithSystemNotesWithChangedDescription.data.workspace.workItem.widgets.find(
+        workItemNotesWithSystemNotesWithChangedDescription.data.namespace.workItem.widgets.find(
           (widget) => widget.type === WIDGET_TYPE_NOTES,
         );
 
@@ -113,7 +113,7 @@ describe('WorkItemNotes component', () => {
         localStorage.setItem(WORK_ITEM_NOTES_SORT_ORDER_KEY, DESC);
 
         const reversedNotes = { ...workItemNotesWithSystemNotesWithChangedDescription };
-        const discussions = reversedNotes.data.workspace.workItem.widgets.find(
+        const discussions = reversedNotes.data.namespace.workItem.widgets.find(
           (widget) => widget.type === WIDGET_TYPE_NOTES,
         ).discussions.nodes;
 

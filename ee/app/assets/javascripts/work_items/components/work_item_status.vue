@@ -137,10 +137,10 @@ export default {
         };
       },
       update(data) {
-        return data?.workspace?.workItem ?? {};
+        return data?.namespace?.workItem ?? {};
       },
       result({ data }) {
-        this.localStatus = findStatusWidget(data?.workspace?.workItem)?.status || {};
+        this.localStatus = findStatusWidget(data?.namespace?.workItem)?.status || {};
       },
       skip() {
         return !this.workItemIid || !this.fullPath;
@@ -157,7 +157,7 @@ export default {
         };
       },
       update(data) {
-        return data.workspace?.workItemTypes?.nodes || [];
+        return data.namespace?.workItemTypes?.nodes || [];
       },
       skip() {
         return !this.shouldFetch;
@@ -181,7 +181,7 @@ export default {
         return this.isLoading || !this.fullPath;
       },
       update(data) {
-        return data.workspace?.userPermissions ?? {};
+        return data.namespace?.userPermissions ?? {};
       },
       error(error) {
         Sentry.captureException(error);

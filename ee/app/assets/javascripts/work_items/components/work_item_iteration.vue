@@ -132,7 +132,7 @@ export default {
         };
       },
       update(data) {
-        return data.workspace?.attributes?.nodes || [];
+        return data.namespace?.attributes?.nodes || [];
       },
       skip() {
         return !this.shouldFetch;

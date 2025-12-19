@@ -37,7 +37,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
   });
   const workItemParticipantsQueryResponse = {
     data: {
-      workspace: {
+      namespace: {
         __typename: 'Namespace',
         id: workItemQueryResponse.data.workItem.namespace.id,
         workItem: {

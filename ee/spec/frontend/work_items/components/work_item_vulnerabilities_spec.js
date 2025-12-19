@@ -18,7 +18,7 @@ import {
 jest.mock('~/alert');
 
 const items =
-  vulnerabilitiesWidgetResponse.data.workspace.workItem.widgets[0].relatedVulnerabilities.nodes;
+  vulnerabilitiesWidgetResponse.data.namespace.workItem.widgets[0].relatedVulnerabilities.nodes;
 
 describe('WorkItemVulnerabilities component', () => {
   Vue.use(VueApollo);
