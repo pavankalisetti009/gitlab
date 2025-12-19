@@ -32,7 +32,9 @@ module Ai
         ServiceResponse.error(message: "Usage quota exceeded", reason: :usage_quota_exceeded)
       end
     rescue StandardError
-      ServiceResponse.error(message: "Error while fetching usage quota", reason: :service_error)
+      # To adhere to GitLab SLA for this specific domain we should process the request as successful
+      # and not block user usage of AI Features
+      ServiceResponse.success
     end
 
     private
