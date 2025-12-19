@@ -8,7 +8,7 @@ module GitlabSubscriptions
           private
 
           def add_on_purchase
-            GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_self_hosted.first
+            GitlabSubscriptions::AddOnPurchase.for_self_managed.for_self_hosted_dap.first
           end
           strong_memoize_attr :add_on_purchase
 

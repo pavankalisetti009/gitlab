@@ -107,19 +107,7 @@ module GitlabSubscriptions
         .limit(limit)
     end
 
-    # TODO: Consolidate this with for_self_hosted_dap scope below
-    scope :for_duo_self_hosted, -> { where(subscription_add_on_id: AddOn.self_hosted_dap.pick(:id)) }
-    # Placeholder scope for Self-hosted DAP SKU
-    # Returns all active self-managed add-ons when feature flag is enabled
-    # TODO: Filter by actual Self-hosted DAP add-on when provisioned by Fulfillment
-    # Tracked in: https://gitlab.com/gitlab-org/gitlab/-/issues/582054
-    scope :for_self_hosted_dap, -> {
-      if Feature.enabled?(:self_hosted_dap_sku, :instance)
-        for_self_managed.active
-      else
-        none
-      end
-    }
+    scope :for_self_hosted_dap, -> { where(subscription_add_on_id: AddOn.self_hosted_dap.pick(:id)) }
 
     delegate :name, :seat_assignable?, to: :add_on, prefix: true
 
