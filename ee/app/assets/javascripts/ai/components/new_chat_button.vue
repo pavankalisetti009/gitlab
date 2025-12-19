@@ -218,7 +218,7 @@ export default {
     v-else
     v-gl-tooltip.left
     icon="pencil-square"
-    class="!gl-rounded-full"
+    size="small"
     :class="[
       'ai-nav-icon',
       { 'ai-nav-icon-active': activeTab === 'new', 'gl-opacity-5': isChatDisabled },
