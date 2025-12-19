@@ -78,8 +78,11 @@ module Ai
 
         def build_no_comments_message
           summary = parsed_body.summary
-          summary_message = summary.presence || ::Ai::CodeReviewMessages.nothing_to_comment
-          exclusion_message_for_excluded_files + summary_message
+          base_message = exclusion_message_for_excluded_files + ::Ai::CodeReviewMessages.nothing_to_comment
+
+          return base_message if summary.blank?
+
+          "#{base_message}\n\n#{summary}"
         end
 
         def ai_reviewable_diff_files

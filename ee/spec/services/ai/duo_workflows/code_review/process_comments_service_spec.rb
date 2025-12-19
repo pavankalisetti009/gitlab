@@ -559,12 +559,12 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
           .to receive(:new).and_return(parsed_body)
       end
 
-      it 'uses the summary from parsed_body' do
+      it 'includes both nothing_to_comment message and summary' do
         result = service.execute
 
         expect(result).to be_success
+        expect(result.message).to include('I finished my review and found nothing to comment on')
         expect(result.message).to include('The code changes look good')
-        expect(result.message).not_to include('I finished my review and found nothing to comment on')
       end
 
       it 'tracks the no issues event' do
@@ -638,12 +638,13 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
           .to receive(:new).and_return(parsed_body)
       end
 
-      it 'includes both exclusion message and summary' do
+      it 'includes exclusion message, nothing_to_comment message, and summary' do
         result = service.execute
 
         expect(result).to be_success
         expect(result.message).to include('I do not have access to the following files')
         expect(result.message).to include('excluded.rb')
+        expect(result.message).to include('I finished my review and found nothing to comment on')
         expect(result.message).to include('Reviewed the accessible files')
       end
     end
