@@ -244,9 +244,9 @@ describe('JobAnalyticsTable', () => {
         expect(fields[0]).toMatchObject({ key: 'name', label: 'Job' });
         expect(fields[1]).toMatchObject({
           key: 'meanDuration',
-          label: 'Mean duration (s)',
+          label: 'Mean duration',
         });
-        expect(fields[2]).toMatchObject({ key: 'p95Duration', label: 'P95 duration (s)' });
+        expect(fields[2]).toMatchObject({ key: 'p95Duration', label: 'P95 duration' });
         expect(fields[3]).toMatchObject({ key: 'failedRate', label: 'Failure rate (%)' });
         expect(fields[4]).toMatchObject({ key: 'successRate', label: 'Success rate (%)' });
       });

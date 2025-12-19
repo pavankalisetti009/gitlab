@@ -170,13 +170,13 @@ export default {
     {
       key: 'meanDuration',
       sortPrefix: 'MEAN_DURATION', // Prefix of CiJobAnalyticsSort
-      label: s__('Job|Mean duration (s)'),
+      label: s__('Job|Mean duration'),
       ...durationField(),
     },
     {
       key: 'p95Duration',
       sortPrefix: 'P95_DURATION', // eslint-disable-line @gitlab/require-i18n-strings -- Prefix of CiJobAnalyticsSort, not translatable
-      label: s__('Job|P95 duration (s)'),
+      label: s__('Job|P95 duration'),
       ...durationField(),
     },
     {
