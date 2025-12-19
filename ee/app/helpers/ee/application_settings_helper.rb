@@ -87,6 +87,7 @@ module EE
         :lock_duo_features_enabled,
         :duo_availability,
         :duo_agent_platform_enabled,
+        :duo_namespace_access_rules,
         :duo_remote_flows_enabled,
         :duo_remote_flows_availability,
         :duo_foundational_flows_enabled,

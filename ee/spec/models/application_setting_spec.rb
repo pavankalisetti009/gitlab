@@ -827,6 +827,46 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe '#duo_namespace_access_rules' do
+      let_it_be(:namespace_a) { create(:group) }
+      let_it_be(:namespace_b) { create(:group) }
+
+      before do
+        stub_feature_flags(duo_access_through_namespaces: true)
+      end
+
+      context 'when rules exist' do
+        before do
+          create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace_id: namespace_a.id)
+          create(:ai_instance_accessible_entity_rules, :duo_agents, through_namespace_id: namespace_a.id)
+          create(:ai_instance_accessible_entity_rules, :duo_flows, through_namespace_id: namespace_b.id)
+        end
+
+        it 'returns rules' do
+          expect(setting.duo_namespace_access_rules).to match_array([
+            {
+              namespace_id: namespace_a.id,
+              namespace_name: namespace_a.name,
+              namespace_path: namespace_a.full_path,
+              access_rules: %w[duo_classic duo_agents]
+            },
+            {
+              namespace_id: namespace_b.id,
+              namespace_name: namespace_b.name,
+              namespace_path: namespace_b.full_path,
+              access_rules: %w[duo_flows]
+            }
+          ])
+        end
+      end
+
+      context 'when no rules exist' do
+        it 'returns empty array' do
+          expect(setting.duo_namespace_access_rules).to eq []
+        end
+      end
+    end
+
     context 'when validating geo_node_allowed_ips', feature_category: :geo_replication do
       where(:allowed_ips, :is_valid) do
         "192.1.1.1"                   | true

@@ -830,6 +830,10 @@ module EE
       default_organization.update!(foundational_agents_statuses: value)
     end
 
+    def duo_namespace_access_rules
+      ::Ai::FeatureAccessRule.duo_namespace_access_rules
+    end
+
     def duo_agent_platform_enabled
       ::Ai::Setting.instance.duo_agent_platform_enabled
     end

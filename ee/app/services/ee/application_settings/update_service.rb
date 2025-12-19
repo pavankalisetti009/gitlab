@@ -29,6 +29,8 @@ module EE
 
         handle_organization_settings
 
+        handle_duo_namespace_access_rules
+
         if result = super
           find_or_create_elasticsearch_index if params.keys.any? { |key| key.to_s.start_with?('elasticsearch') }
           update_elasticsearch_containers(ElasticsearchIndexedNamespace, elasticsearch_namespace_ids)
@@ -56,6 +58,20 @@ module EE
         return unless default_organization.errors.any?
 
         application_setting.errors.add(:foundational_agents_statuses, default_organization.errors.full_messages.join(', '))
+      end
+
+      def handle_duo_namespace_access_rules
+        return unless params.has_key?(:duo_namespace_access_rules)
+
+        duo_namespace_access_rules = params.delete(:duo_namespace_access_rules)
+
+        if ::Feature.disabled?(:duo_access_through_namespaces, :instance)
+          raise ArgumentError, 'duo_access_through_namespaces feature flag is not enabled'
+        end
+
+        ::Ai::FeatureAccessRule.duo_namespace_access_rules = duo_namespace_access_rules
+      rescue ArgumentError, ActiveRecord::RecordInvalid => e
+        application_setting.errors.add(:duo_namespace_access_rules, e.message)
       end
 
       def update_elasticsearch_containers(klass, new_container_ids)

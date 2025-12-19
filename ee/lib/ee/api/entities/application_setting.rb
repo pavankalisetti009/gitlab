@@ -63,6 +63,10 @@ module EE
             using: ::API::Entities::Elastic::IndexSetting,
             documentation: { is_array: true, desc: 'Elasticsearch index settings.' },
             if: ->(_instance, _opts) { ::License.feature_available?(:elastic_search) }
+          expose :duo_namespace_access_rules, if: ->(_instance, _opts) { ::License.ai_features_available? }
+          expose :show_duo_namespace_access_rules, if: ->(_instance, _opts) { ::License.ai_features_available? } do |_instance|
+            ::Feature.enabled?(:duo_access_through_namespaces, :instance)
+          end
         end
       end
     end
