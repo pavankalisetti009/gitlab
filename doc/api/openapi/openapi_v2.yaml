@@ -29638,7 +29638,7 @@ paths:
           schema:
             "$ref": "#/definitions/API_Entities_PagesDomain"
       tags:
-      - projects
+      - pages_domains
       operationId: postApiV4ProjectsIdPagesDomains
   "/api/v4/projects/{id}/pages/domains/{domain}":
     get:
@@ -29663,7 +29663,7 @@ paths:
           schema:
             "$ref": "#/definitions/API_Entities_PagesDomain"
       tags:
-      - projects
+      - pages_domains
       operationId: getApiV4ProjectsIdPagesDomainsDomain
     put:
       description: Updates a pages domain
@@ -29692,7 +29692,7 @@ paths:
         '200':
           description: Updates a pages domain
       tags:
-      - projects
+      - pages_domains
       operationId: putApiV4ProjectsIdPagesDomainsDomain
     delete:
       description: Delete a pages domain
@@ -29714,7 +29714,7 @@ paths:
         '204':
           description: Delete a pages domain
       tags:
-      - projects
+      - pages_domains
       operationId: deleteApiV4ProjectsIdPagesDomainsDomain
   "/api/v4/projects/{id}/pages/domains/{domain}/verify":
     put:
@@ -29741,7 +29741,7 @@ paths:
           schema:
             "$ref": "#/definitions/API_Entities_PagesDomain"
       tags:
-      - projects
+      - pages_domains
       operationId: putApiV4ProjectsIdPagesDomainsDomainVerify
   "/api/v4/projects/{id}/avatar":
     get:
@@ -45313,7 +45313,7 @@ paths:
           schema:
             "$ref": "#/definitions/API_Entities_PagesDomainBasic"
       tags:
-      - pages
+      - pages_domains
       operationId: getApiV4PagesDomains
   "/api/v4/personal_access_tokens/self":
     get:

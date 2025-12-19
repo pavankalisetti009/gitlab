@@ -57,6 +57,7 @@ API/DescriptionSuccessResponse:
     - 'lib/api/ml/mlflow/runs.rb'
     - 'lib/api/ml/mlflow_artifacts/artifacts.rb'
     - 'lib/api/ml/mlflow_artifacts/entrypoint.rb'
+    - 'lib/api/pages_domains.rb'
     - 'lib/api/project_import.rb'
     - 'lib/api/project_milestones.rb'
     - 'lib/api/releases.rb'
