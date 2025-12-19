@@ -10,7 +10,7 @@ export default {
   },
   data() {
     return {
-      docsUrl: helpPagePath('user/duo_agent_platform/security'),
+      docsUrl: helpPagePath('user/duo_agent_platform/composite_identity'),
     };
   },
 };

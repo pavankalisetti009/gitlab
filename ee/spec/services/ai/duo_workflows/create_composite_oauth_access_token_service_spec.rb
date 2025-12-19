@@ -41,7 +41,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, featu
         it 'raises CompositeIdentityEnforcedError' do
           expect { response }.to raise_error(
             ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService::CompositeIdentityEnforcedError,
-            "The Duo Agent Platform service account must have composite identity enabled."
+            "The GitLab Duo Agent Platform service account must have composite identity enabled."
           )
         end
       end
@@ -86,7 +86,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, featu
           it 'raises CompositeIdentityEnforcedError' do
             expect { response }.to raise_error(
               ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService::CompositeIdentityEnforcedError,
-              "The Duo Agent Platform service account must have composite identity enabled."
+              "The GitLab Duo Agent Platform service account must have composite identity enabled."
             )
           end
         end
@@ -111,7 +111,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, featu
       it 'raises exception' do
         expect { response }.to raise_error(
           ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService::IncompleteOnboardingError,
-          'Duo Agent Platform onboarding is incomplete. Please complete onboarding to proceed further.'
+          'GitLab Duo Agent Platform onboarding is incomplete. Please complete onboarding to proceed further.'
         )
       end
     end
