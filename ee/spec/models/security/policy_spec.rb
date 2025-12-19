@@ -140,6 +140,34 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '.for_configuration_id_and_name_tuples' do
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:policy_a) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 1)
+    end
+
+    let_it_be(:policy_b) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 2)
+    end
+
+    subject(:for_configuration_id_and_name_tuples) { described_class.for_configuration_id_and_name_tuples(tuples) }
+
+    context "with tuples" do
+      let(:tuples) do
+        [[policy_configuration.id, policy_a.name],
+          [policy_configuration.id, policy_b.name.reverse]]
+      end
+
+      it { is_expected.to contain_exactly(policy_a) }
+    end
+
+    context "without tuples" do
+      let(:tuples) { [] }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
   describe '.for_custom_role' do
     let_it_be(:custom_role_id) { 123 }
     let_it_be(:policy_with_role) do

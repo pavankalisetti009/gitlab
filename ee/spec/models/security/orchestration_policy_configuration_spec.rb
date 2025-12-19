@@ -4499,6 +4499,75 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '#all_top_level_group_ids' do
+    let_it_be(:organization) { create(:organization) }
+    let_it_be(:top_level_group) { create(:group, organization: organization) }
+    let_it_be(:contained_group) { create(:group, parent: top_level_group, organization: organization) }
+
+    context "when configuration is at project-level" do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:configuration) { create(:security_orchestration_policy_configuration, project: project) }
+
+      specify do
+        expect { |block| configuration.all_top_level_group_ids(&block) }
+          .to yield_with_args([])
+      end
+    end
+
+    context "when configuration is at namespace-level" do
+      shared_examples "excluded from GitLab.com" do
+        context "on GitLab.com" do
+          before do
+            allow(GitlabSubscriptions::SubscriptionHelper).to receive(:gitlab_com_subscription?).and_return(true)
+          end
+
+          specify do
+            expect { |block| configuration.all_top_level_group_ids(&block) }
+              .to yield_with_args(be_empty)
+          end
+        end
+      end
+
+      context "with top-level namespace" do
+        let_it_be(:configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: top_level_group) }
+
+        specify do
+          expect { |block| configuration.all_top_level_group_ids(&block) }
+            .to yield_with_args([top_level_group.id])
+        end
+
+        include_examples "excluded from GitLab.com"
+      end
+
+      context "with contained namespace" do
+        let_it_be(:configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: contained_group) }
+
+        specify do
+          expect { |block| configuration.all_top_level_group_ids(&block) }
+            .to yield_with_args([])
+        end
+      end
+
+      context 'when namespace is CSP group' do
+        let_it_be(:configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: top_level_group) }
+        let_it_be(:other_top_level_group) { create(:group, organization: organization) }
+        let_it_be(:different_organization_top_level_group) { create(:group) }
+
+        before do
+          # Due to memoization the `stub_csp_group` helper doesn't work here
+          allow(configuration.namespace).to receive(:designated_as_csp?).and_return(true)
+        end
+
+        specify do
+          expect { |block| configuration.all_top_level_group_ids(&block) }
+            .to yield_with_args([top_level_group.id, other_top_level_group.id])
+        end
+
+        include_examples "excluded from GitLab.com"
+      end
+    end
+  end
+
   describe '#self_and_ancestor_configuration_ids' do
     subject(:self_and_ancestor_configuration_ids) { configuration.self_and_ancestor_configuration_ids }
 

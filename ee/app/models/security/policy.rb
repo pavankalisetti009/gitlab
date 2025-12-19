@@ -80,6 +80,23 @@ module Security
     scope :for_policy_configuration, ->(policy_configuration) {
       where(security_orchestration_policy_configuration: policy_configuration)
     }
+    scope :for_configuration_id_and_name_tuples, ->(tuples) do
+      break none if tuples.empty?
+
+      composite_key = Arel::Nodes::Grouping.new([
+        arel_table[:security_orchestration_policy_configuration_id],
+        arel_table[:name]
+      ])
+
+      tuple_values = tuples.map do |id, name|
+        Arel::Nodes::Grouping.new([
+          Arel::Nodes.build_quoted(id),
+          Arel::Nodes.build_quoted(name)
+        ])
+      end
+
+      where(composite_key.in(tuple_values))
+    end
 
     scope :for_custom_role, ->(custom_role_id) do
       where("content->'actions' @> ?", [{ role_approvers: [custom_role_id] }].to_json)
