@@ -57,7 +57,7 @@ migrations from:
 
 - [GitLab by direct transfer](../group/import/_index.md)
 - [GitHub](../project/import/github.md)
-- [Bitbucket Server](../project/import/bitbucket_server.md)
+- [Bitbucket Server](bitbucket_server.md)
 - [Gitea](../project/import/gitea.md)
 
 ## Post-migration mapping workflow
