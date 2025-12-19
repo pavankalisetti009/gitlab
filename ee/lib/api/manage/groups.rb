@@ -61,6 +61,7 @@ module API
 
           desc 'Get Personal access tokens' do
             detail 'This feature was introduced in GitLab 17.8.'
+            tags ['group_credentials_inventory']
           end
           get do
             tokens = PersonalAccessTokensFinder.new(
@@ -81,6 +82,7 @@ module API
 
           desc 'Revoke a personal access token for the group' do
             detail 'Revoke a personal access token by using the ID of the personal access token.'
+            tags ['group_credentials_inventory']
             success code: 204
             failure [
               { code: 400, message: 'Bad Request' }
@@ -97,6 +99,7 @@ module API
 
           desc 'Rotate personal access token' do
             detail 'Rotates a personal access token.'
+            tags ['group_credentials_inventory']
             success Entities::PersonalAccessTokenWithToken
           end
           params do
@@ -128,6 +131,7 @@ module API
 
           desc 'Get resource access tokens' do
             detail 'This feature was introduced in GitLab 17.10.'
+            tags ['group_credentials_inventory']
           end
           # rubocop:disable CodeReuse/ActiveRecord -- Specific to this endpoint
           get do
@@ -143,6 +147,7 @@ module API
 
           desc 'Revoke a resource access token for the group' do
             detail 'Revoke a resource access token by using the ID of the resource access token.'
+            tags ['group_credentials_inventory']
             success code: 204
             failure [
               { code: 400, message: 'Bad Request' }
@@ -167,6 +172,7 @@ module API
 
           desc 'Rotate a resource access token for the group' do
             detail 'Rotate a resource access token by using the ID of the resource access token.'
+            tags ['group_credentials_inventory']
             success code: 204
             failure [
               { code: 400, message: 'Bad Request' }
@@ -208,6 +214,7 @@ module API
 
           desc "Get the ssh_keys for the user belonging to group" do
             detail 'This feature was introduced in GitLab 17.9.'
+            tags ['group_credentials_inventory']
             success Entities::SshKeyWithUserId
           end
           get feature_category: :system_access do
@@ -218,6 +225,7 @@ module API
 
           desc 'Delete an existing SSH key' do
             detail 'Delete an existing SSH key by using the ID of the key.'
+            tags ['group_credentials_inventory']
             success code: 204
             failure [
               { code: 400, message: 'Bad Request' }
