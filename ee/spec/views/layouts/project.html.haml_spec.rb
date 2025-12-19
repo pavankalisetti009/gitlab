@@ -20,37 +20,6 @@ RSpec.describe 'layouts/project', feature_category: :groups_and_projects do
     end
   end
 
-  context 'with importing alert' do
-    let(:hide_importing_alert) { nil }
-
-    let_it_be(:project) do
-      create(:project, import_type: 'gitlab_project', import_state: create(:import_state, :started))
-    end
-
-    subject(:rendered_alert) { view.content_for(:page_level_alert) }
-
-    before do
-      assign(:hide_importing_alert, hide_importing_alert)
-      render
-    end
-
-    it 'renders the alert' do
-      expect(rendered_alert).to have_text('Import in progress')
-
-      expect(rendered_alert).to have_text(
-        'This project is being imported. Do not make any changes to the project until the import is complete.'
-      )
-    end
-
-    context 'when hide_importing_alert' do
-      let(:hide_importing_alert) { true }
-
-      it 'does not render the alert' do
-        expect(rendered_alert).to be_nil
-      end
-    end
-  end
-
   describe '_unlimited_members_during_trial_alert' do
     let(:project) { build_stubbed(:project) }
 
