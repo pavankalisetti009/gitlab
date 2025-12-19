@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'DORA Metrics (JavaScript fixtures)' do
+RSpec.describe 'DORA Metrics (JavaScript fixtures)', feature_category: :dora_metrics do
   include ApiHelpers
   include JavaScriptFixturesHelpers
 
