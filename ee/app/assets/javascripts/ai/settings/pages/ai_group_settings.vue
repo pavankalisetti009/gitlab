@@ -26,6 +26,8 @@ export default {
     'onGeneralSettingsPage',
     'duoWorkflowAvailable',
     'duoWorkflowMcpEnabled',
+    'promptInjectionProtectionLevel',
+    'promptInjectionProtectionAvailable',
     'availableFoundationalFlows',
   ],
   props: {
@@ -42,11 +44,18 @@ export default {
   data() {
     return {
       duoWorkflowMcp: this.duoWorkflowMcpEnabled,
+      promptInjectionProtection: this.promptInjectionProtectionLevel,
     };
   },
   computed: {
     hasFormChanged() {
-      return this.duoWorkflowMcpEnabled !== this.duoWorkflowMcp;
+      return (
+        this.duoWorkflowMcpEnabled !== this.duoWorkflowMcp ||
+        this.promptInjectionProtectionLevel !== this.promptInjectionProtection
+      );
+    },
+    showWorkflowSettingsForm() {
+      return this.duoWorkflowAvailable || this.promptInjectionProtectionAvailable;
     },
   },
   methods: {
@@ -81,7 +90,12 @@ export default {
           }),
           ai_settings_attributes: {
             duo_agent_platform_enabled: duoAgentPlatformEnabled,
-            duo_workflow_mcp_enabled: this.duoWorkflowMcp,
+            ...(this.duoWorkflowAvailable && {
+              duo_workflow_mcp_enabled: this.duoWorkflowMcp,
+            }),
+            ...(this.promptInjectionProtectionAvailable && {
+              prompt_injection_protection_level: this.promptInjectionProtection,
+            }),
             foundational_agents_default_enabled: foundationalAgentsEnabled,
           },
         };
@@ -107,8 +121,11 @@ export default {
         });
       }
     },
-    onDuoWorkflowFormChanged(value) {
+    onDuoWorkflowMcpChanged(value) {
       this.duoWorkflowMcp = value;
+    },
+    onPromptInjectionProtectionChanged(value) {
+      this.promptInjectionProtection = value;
     },
   },
 };
@@ -121,9 +138,13 @@ export default {
 
     <template #ai-common-settings-bottom>
       <duo-workflow-settings-form
-        v-if="duoWorkflowAvailable"
+        v-if="showWorkflowSettingsForm"
         :is-mcp-enabled="duoWorkflowMcp"
-        @change="onDuoWorkflowFormChanged"
+        :show-mcp="duoWorkflowAvailable"
+        :prompt-injection-protection-level="promptInjectionProtection"
+        :show-protection="promptInjectionProtectionAvailable"
+        @mcp-change="onDuoWorkflowMcpChanged"
+        @protection-level-change="onPromptInjectionProtectionChanged"
       />
     </template>
   </ai-common-settings>
