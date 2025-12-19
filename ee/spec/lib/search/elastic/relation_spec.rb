@@ -150,16 +150,6 @@ RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :
       expect(cursor).to match([an_instance_of(Integer), record.id])
     end
 
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(search_glql_fix_null_field_pagination: false)
-      end
-
-      it 'returns the raw sort values without sentinel conversion' do
-        expect(cursor).to match([an_instance_of(Integer), record.id])
-      end
-    end
-
     context 'when sort values contain Elasticsearch sentinel values' do
       let(:sentinel_max) { described_class::ELASTICSEARCH_LONG_MAX_VALUE }
       let(:sentinel_min) { described_class::ELASTICSEARCH_LONG_MIN_VALUE }
@@ -206,19 +196,6 @@ RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :
 
         it 'converts both sentinel values to nil' do
           expect(mocked_relation.cursor_for(record)).to eq([nil, nil])
-        end
-      end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(search_glql_fix_null_field_pagination: false)
-          allow(mock_response_mapper).to receive(:results).and_return([
-            { '_id' => record.id.to_s, 'sort' => [sentinel_max, record.id] }
-          ])
-        end
-
-        it 'returns sentinel values unchanged' do
-          expect(mocked_relation.cursor_for(record)).to eq([sentinel_max, record.id])
         end
       end
     end

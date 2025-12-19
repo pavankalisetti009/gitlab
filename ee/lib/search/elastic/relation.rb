@@ -41,7 +41,6 @@ module Search
       def cursor_for(record)
         hit = hit_for(record)
         sort_values = hit['sort']
-        return sort_values unless Feature.enabled?(:search_glql_fix_null_field_pagination, Feature.current_request)
 
         # Elasticsearch uses sentinel values for null fields in sorting:
         # - ASC order: LONG_MAX_VALUE - nulls sort last
