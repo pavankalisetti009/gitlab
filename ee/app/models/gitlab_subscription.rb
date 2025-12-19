@@ -12,8 +12,6 @@ class GitlabSubscription < ApplicationRecord
 
   attribute :start_date, default: -> { Date.today }
 
-  before_validation :set_hosted_plan_name_uid
-
   before_update :set_max_seats_used_changed_at
   before_update :log_previous_state_for_update, if: :tracked_attributes_changed?
   before_update :reset_seat_statistics
@@ -31,7 +29,6 @@ class GitlabSubscription < ApplicationRecord
 
   validates :trial_ends_on, :trial_starts_on, presence: true, if: :trial?
   validates_comparison_of :trial_ends_on, greater_than: :trial_starts_on, if: :trial?
-  validates :hosted_plan_name_uid, presence: true, if: :hosted_plan_id?
 
   delegate :name, :title, to: :hosted_plan, prefix: :plan, allow_nil: true
   delegate :exclude_guests?, to: :namespace
@@ -260,12 +257,6 @@ class GitlabSubscription < ApplicationRecord
     return unless saved_change_to_seats?
 
     Groups::ResetSeatCalloutsWorker.perform_async(namespace_id)
-  end
-
-  def set_hosted_plan_name_uid
-    return if hosted_plan_name_uid.present? && !hosted_plan_id_changed?
-
-    self.hosted_plan_name_uid = hosted_plan&.plan_name_uid_before_type_cast
   end
 end
 

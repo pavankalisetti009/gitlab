@@ -9,10 +9,6 @@ module EE
       MOST_ACTIVE_RUNNERS_BUILDS_LIMIT = 1000
 
       prepended do
-        before_validation :set_allowed_plan_name_uids
-
-        validates :allowed_plan_name_uids, presence: true, if: -> { allowed_plan_ids.present? }
-
         has_one :cost_settings, class_name: 'Ci::Minutes::CostSetting', foreign_key: :runner_id, inverse_of: :runner
         has_many :hosted_runner_monthly_usages,
           class_name: 'Ci::Minutes::GitlabHostedRunnerMonthlyUsage',
@@ -80,12 +76,6 @@ module EE
         strong_memoize(:cost_factor) do
           ::Gitlab::Ci::Minutes::CostFactor.new(runner_matcher)
         end
-      end
-
-      def set_allowed_plan_name_uids
-        return if allowed_plan_name_uids.present? && !allowed_plan_ids_changed?
-
-        self.allowed_plan_name_uids = ::Plan.where(id: allowed_plan_ids).map(&:plan_name_uid_before_type_cast)
       end
 
       class_methods do
