@@ -1258,7 +1258,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
     include_context 'workhorse headers'
 
-    subject(:get_response) { get api(path, user), headers: workhorse_headers }
+    subject(:get_response) { get api(path, user), headers: workhorse_headers, params: { workflow_definition: 'chat' } }
 
     before do
       allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
@@ -1340,6 +1340,26 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             "Tools" => enabled_mcp_tools
           }
         })
+      end
+
+      context 'when workflow_definition is for agentic chat' do
+        it 'includes MCP server configuration' do
+          get api(path, user), headers: workhorse_headers, params: { workflow_definition: 'chat' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['McpServers']).to be_present
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-enabled-mcp-server-tools']).to be_present
+        end
+      end
+
+      context 'when workflow_definition is for a foundational agent' do
+        it 'does not include MCP server configuration' do
+          get api(path, user), headers: workhorse_headers, params: { workflow_definition: 'software_development' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['McpServers']).to be_nil
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-enabled-mcp-server-tools']).to eq('')
+        end
       end
 
       it_behaves_like 'ServiceURI has the right value', false

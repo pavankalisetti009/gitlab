@@ -433,6 +433,7 @@ export default {
         userModelSelectionEnabled: this.userModelSelectionEnabled,
         currentModel: this.currentModel,
         defaultModel: this.defaultModel,
+        workflowDefinition: this.selectedFoundationalAgent?.referenceWithVersion,
       });
     },
     window() {

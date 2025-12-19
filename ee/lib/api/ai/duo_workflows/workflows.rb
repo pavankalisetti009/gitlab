@@ -395,7 +395,11 @@ module API
               model_prompt_cache_enabled = root_namespace&.model_prompt_cache_enabled || false
 
               gitlab_token = gitlab_oauth_token.plaintext_token
-              mcp_config_service = ::Ai::DuoWorkflows::McpConfigService.new(current_user, gitlab_token)
+              mcp_config_service = ::Ai::DuoWorkflows::McpConfigService.new(
+                current_user,
+                gitlab_token,
+                workflow_definition: params[:workflow_definition]
+              )
               grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(
                 user: current_user,
                 namespace_id: params[:namespace_id].presence&.to_i,

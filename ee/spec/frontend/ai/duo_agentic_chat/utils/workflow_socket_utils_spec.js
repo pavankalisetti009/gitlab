@@ -11,10 +11,12 @@ jest.mock('~/lib/utils/websocket_utils');
 describe('workflow_socket_utils', () => {
   describe('buildWebsocketUrl', () => {
     describe('when no parameters are provided', () => {
-      it('builds basic URL', () => {
+      it('builds basic URL with default workflow_definition', () => {
         const url = buildWebsocketUrl({});
 
-        expect(url).toBe('/api/v4/ai/duo_workflows/ws?client_type=browser');
+        expect(url).toBe(
+          '/api/v4/ai/duo_workflows/ws?workflow_definition=chat&client_type=browser',
+        );
       });
     });
 
@@ -24,7 +26,7 @@ describe('workflow_socket_utils', () => {
           rootNamespaceId: 'gid://gitlab/Group/123',
         });
 
-        expect(url).toBe('/api/v4/ai/duo_workflows/ws?root_namespace_id=123&client_type=browser');
+        expect(url).toContain('root_namespace_id=123');
       });
     });
 
@@ -34,7 +36,7 @@ describe('workflow_socket_utils', () => {
           namespaceId: 'gid://gitlab/Group/456',
         });
 
-        expect(url).toBe('/api/v4/ai/duo_workflows/ws?namespace_id=456&client_type=browser');
+        expect(url).toContain('namespace_id=456');
       });
     });
 
@@ -44,7 +46,7 @@ describe('workflow_socket_utils', () => {
           projectId: 'gid://gitlab/Project/789',
         });
 
-        expect(url).toBe('/api/v4/ai/duo_workflows/ws?project_id=789&client_type=browser');
+        expect(url).toContain('project_id=789');
       });
     });
 
@@ -87,6 +89,24 @@ describe('workflow_socket_utils', () => {
         expect(url).toContain('root_namespace_id=123');
         expect(url).toContain('namespace_id=456');
         expect(url).toContain('project_id=789');
+      });
+    });
+
+    describe('when workflowDefinition is provided', () => {
+      it('includes workflow_definition parameter', () => {
+        const url = buildWebsocketUrl({
+          workflowDefinition: 'software_development',
+        });
+
+        expect(url).toContain('workflow_definition=software_development');
+      });
+    });
+
+    describe('when workflowDefinition is not provided', () => {
+      it('defaults to chat workflow_definition', () => {
+        const url = buildWebsocketUrl({});
+
+        expect(url).toContain('workflow_definition=chat');
       });
     });
   });
