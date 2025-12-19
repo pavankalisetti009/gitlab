@@ -213,7 +213,8 @@ RSpec.describe Namespaces::Export::DetailedDataService, feature_category: :syste
                   .not_to exceed_query_limit(count).with_threshold(10)
               end
 
-              it 'when new memberships for a new project is added' do
+              it 'when new memberships for a new project is added',
+                quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/21817' do
                 count = ActiveRecord::QueryRecorder.new { export }
 
                 new_project = create(:project, group: requested_group)
