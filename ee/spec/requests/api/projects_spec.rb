@@ -66,6 +66,14 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     context 'when there are several projects owned by groups' do
       let_it_be(:admin) { create(:admin) }
 
+      before do
+        # Stub to prevent cascading settings queries from auto_duo_code_review_settings_available?
+        # These queries are unrelated to what this N+1 spec is testing.
+        # Added in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/216006
+        # TODO: Remove this workaround once https://gitlab.com/gitlab-org/gitlab/-/issues/442164 is addressed
+        allow_any_instance_of(EE::Project).to receive(:auto_duo_code_review_settings_available?).and_return(false)
+      end
+
       it 'avoids N+1 queries', :use_sql_query_cache do
         create(:project, :public, namespace: create(:group))
 
@@ -75,14 +83,9 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
         create_list(:project, 2, :public, namespace: create(:group))
 
-        # Project-level auto_duo_code_review_settings_available? checks
-        # cascading namespace settings (duo_features_enabled, duo_foundational_flows_enabled),
-        # which triggers ~3 queries per project for lock checks and ancestor traversal.
-        # This is a known limitation of the cascading settings framework.
-        # See https://gitlab.com/gitlab-org/gitlab/-/issues/443015
         expect do
           get api('/projects', admin)
-        end.not_to exceed_all_query_limit(control).with_threshold(3)
+        end.not_to exceed_all_query_limit(control)
       end
     end
 
@@ -134,6 +137,12 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
       before do
         stub_licensed_features(custom_roles: true)
+
+        # Stub to prevent cascading settings queries from auto_duo_code_review_settings_available?
+        # These queries are unrelated to what this N+1 spec is testing.
+        # Added in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/216006
+        # TODO: Remove this workaround once https://gitlab.com/gitlab-org/gitlab/-/issues/442164 is addressed
+        allow_any_instance_of(EE::Project).to receive(:auto_duo_code_review_settings_available?).and_return(false)
       end
 
       it 'avoids N+1 queries', :use_sql_query_cache do
@@ -145,14 +154,9 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
         create_list(:project, 2, :public, namespace: create(:group))
 
-        # Project-level auto_duo_code_review_settings_available? checks
-        # cascading namespace settings (duo_features_enabled, duo_foundational_flows_enabled),
-        # which triggers ~3 queries per project for lock checks and ancestor traversal.
-        # This is a known limitation of the cascading settings framework.
-        # See https://gitlab.com/gitlab-org/gitlab/-/issues/443015
         expect do
           get api('/projects', admin)
-        end.not_to exceed_all_query_limit(control).with_threshold(3)
+        end.not_to exceed_all_query_limit(control)
       end
     end
   end
