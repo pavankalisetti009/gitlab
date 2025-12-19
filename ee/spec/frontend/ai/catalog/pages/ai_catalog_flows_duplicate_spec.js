@@ -9,14 +9,13 @@ import createAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catal
 import AiCatalogFlowsDuplicate from 'ee/ai/catalog/pages/ai_catalog_flows_duplicate.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { VERSION_PINNED, VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockFlow,
-  mockVersionProp,
   mockCreateAiCatalogFlowSuccessMutation,
   mockCreateAiCatalogFlowErrorMutation,
   mockFlowConfigurationForProject,
+  mockItemConfigurationForGroup,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -36,7 +35,6 @@ describe('AiCatalogFlowsDuplicate', () => {
   };
 
   const defaultProps = {
-    version: mockVersionProp, // mock defaults to `latestVersion`
     aiCatalogFlow: mockFlow,
   };
 
@@ -60,6 +58,7 @@ describe('AiCatalogFlowsDuplicate', () => {
   };
 
   const findForm = () => wrapper.findComponent(AiCatalogFlowForm);
+  const findFormInitialValues = () => findForm().props('initialValues');
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
 
@@ -83,76 +82,141 @@ describe('AiCatalogFlowsDuplicate', () => {
   });
 
   describe('Form Initial Values', () => {
-    beforeEach(async () => {
-      await waitForPromises();
-    });
+    const baseExpectedInitialValues = {
+      name: `Copy of ${mockFlow.name}`,
+      description: mockFlow.description,
+      public: false,
+    };
 
-    it('sets initial values based on the versionKey, but always private and without a project', async () => {
-      const definition = 'This is the pinned version value';
-      const expectedInitialValues = {
-        name: `Copy of ${mockFlow.name}`,
-        description: mockFlow.description,
-        definition,
-        public: false,
-      };
+    const expectedInitialValuesWithProjectPinnedVersion = {
+      ...baseExpectedInitialValues,
+      definition: mockFlowConfigurationForProject.pinnedItemVersion.definition,
+    };
 
+    const expectedInitialValuesWithGroupPinnedVersion = {
+      ...baseExpectedInitialValues,
+      definition: mockItemConfigurationForGroup.pinnedItemVersion.definition,
+    };
+
+    const expectedInitialValuesWithLatestVersion = {
+      ...baseExpectedInitialValues,
+      definition: mockFlow.latestVersion.definition,
+    };
+
+    it('sets initial item public field and removes project field correctly', async () => {
       createComponent({
         props: {
-          version: {
-            isUpdateAvailable: true,
-            activeVersionKey: VERSION_PINNED,
-          },
           aiCatalogFlow: {
             ...mockFlow,
             configurationForProject: {
               ...mockFlowConfigurationForProject,
-              pinnedItemVersion: {
-                ...mockFlowConfigurationForProject.pinnedItemVersion,
-                definition,
-              },
+              public: true,
             },
           },
+        },
+        provide: {
+          isGlobal: false,
+          projectId: '1',
         },
       });
       await waitForPromises();
 
-      expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+      const initialValues = findFormInitialValues();
+
+      expect(initialValues).not.toHaveProperty('project');
+      expect(initialValues).toEqual({
+        ...expectedInitialValuesWithProjectPinnedVersion,
+        public: false,
+      });
     });
 
-    it('sets initial values based on the latestVersion versionKey, but always private and without a project', async () => {
-      const definition = 'This is the latest version value';
-      const expectedInitialValues = {
-        name: `Copy of ${mockFlow.name}`,
-        description: mockFlow.description,
-        definition,
-        public: false,
-      };
+    describe('being set correctly in global context', () => {
+      it('sets initial values to latest version', async () => {
+        createComponent({
+          props: {
+            aiCatalogFlow: {
+              ...mockFlow,
+              configurationForProject: mockFlowConfigurationForProject, // not expected
+            },
+          },
+          provide: {
+            isGlobal: true,
+          },
+        });
+        await waitForPromises();
 
-      createComponent({
-        props: {
-          version: {
-            isUpdateAvailable: true,
-            activeVersionKey: VERSION_LATEST,
-          },
-          aiCatalogFlow: {
-            ...mockFlow,
-            latestVersion: {
-              ...mockFlow.latestVersion,
-              definition,
-            },
-            configurationForProject: {
-              ...mockFlowConfigurationForProject,
-              pinnedItemVersion: {
-                ...mockFlowConfigurationForProject.pinnedItemVersion,
-                definition: 'not expected',
-              },
-            },
-          },
-        },
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
       });
-      await waitForPromises();
+    });
 
-      expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+    describe('being set correctly in project context', () => {
+      it('sets initial values to latest version when no configurations are present', async () => {
+        createComponent({
+          props: {
+            aiCatalogFlow: mockFlow,
+          },
+          provide: {
+            isGlobal: false,
+            projectId: '1',
+          },
+        });
+        await waitForPromises();
+
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
+      });
+
+      it('sets initial values to group-pinned version when only group configuration is present', async () => {
+        createComponent({
+          props: {
+            aiCatalogFlow: { ...mockFlow, configurationForGroup: mockItemConfigurationForGroup },
+          },
+          provide: {
+            isGlobal: false,
+            projectId: '1',
+          },
+        });
+        await waitForPromises();
+
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithGroupPinnedVersion);
+      });
+
+      it('sets initial values to project-pinned version even if group- and project-level configurations are present', async () => {
+        createComponent({
+          props: {
+            aiCatalogFlow: {
+              ...mockFlow,
+              configurationForGroup: mockItemConfigurationForGroup,
+              configurationForProject: mockFlowConfigurationForProject,
+            },
+          },
+          provide: {
+            isGlobal: false,
+            projectId: '1',
+          },
+        });
+        await waitForPromises();
+
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithProjectPinnedVersion);
+      });
+
+      it('sets initial values to latest version when neither the group- nor project-level configurations are present', async () => {
+        createComponent({
+          props: {
+            aiCatalogFlow: {
+              ...mockFlow,
+              configurationForGroup: null,
+              configurationForProject: null,
+            },
+          },
+          provide: {
+            isGlobal: false,
+            projectId: '1',
+          },
+        });
+        await waitForPromises();
+
+        expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
+      });
     });
   });
 

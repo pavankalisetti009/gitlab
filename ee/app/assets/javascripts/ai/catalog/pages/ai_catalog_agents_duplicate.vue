@@ -7,7 +7,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
-import { prerequisitesError, getByVersionKey } from '../utils';
+import { prerequisitesError, resolveVersion } from '../utils';
 
 export default {
   name: 'AiCatalogAgentsDuplicate',
@@ -16,12 +16,13 @@ export default {
     PageHeading,
     GlExperimentBadge,
   },
+  inject: {
+    isGlobal: {
+      default: false,
+    },
+  },
   props: {
     aiCatalogAgent: {
-      type: Object,
-      required: true,
-    },
-    version: {
       type: Object,
       required: true,
     },
@@ -38,7 +39,7 @@ export default {
       return this.aiCatalogAgent.name;
     },
     activeVersion() {
-      return getByVersionKey(this.aiCatalogAgent, this.version.activeVersionKey);
+      return resolveVersion(this.aiCatalogAgent, this.isGlobal);
     },
     systemPrompt() {
       return this.activeVersion.systemPrompt;
