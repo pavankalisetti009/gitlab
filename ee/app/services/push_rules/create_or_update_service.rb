@@ -28,7 +28,7 @@ module PushRules
     private
 
     def push_rule
-      if group_container? && Feature.enabled?(:read_and_write_group_push_rules, group)
+      if group_container?
         group_push_rule
       elsif organization_container?
         if Feature.enabled?(:update_organization_push_rules, Feature.current_request)
@@ -46,14 +46,8 @@ module PushRules
     end
 
     def processed_params
-      if organization_container?
+      if organization_container? || group_container?
         filtered_params
-      elsif group_container?
-        if Feature.enabled?(:read_and_write_group_push_rules, group)
-          filtered_params
-        else
-          params.merge(organization_id: group.organization_id)
-        end
       else
         params
       end
@@ -72,7 +66,7 @@ module PushRules
     end
 
     def returned_push_rule
-      return group_push_rule if group_container? && Feature.enabled?(:read_and_write_group_push_rules, group)
+      return group_push_rule if group_container?
       return push_rule unless organization_container?
 
       # load organization push rule and return it when read_organization_push_rules feature flag is on

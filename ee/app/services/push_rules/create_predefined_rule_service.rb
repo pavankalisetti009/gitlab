@@ -8,7 +8,7 @@ module PushRules
 
       log_info(predefined_push_rule)
 
-      if project.group && Feature.enabled?(:read_and_write_group_push_rules, project.group)
+      if project.group
         push_rule = container.build_push_rule(
           predefined_push_rule.dup.attributes.except('id', 'organization_id', 'group_id')
         )

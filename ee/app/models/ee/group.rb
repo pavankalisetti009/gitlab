@@ -708,8 +708,7 @@ module EE
 
     def predefined_push_rule
       strong_memoize(:predefined_push_rule) do
-        next group_push_rule if ::Feature.enabled?(:read_and_write_group_push_rules, self) && group_push_rule
-        next push_rule if push_rule
+        next group_push_rule if group_push_rule
 
         if has_parent?
           parent.predefined_push_rule

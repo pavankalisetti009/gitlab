@@ -15,11 +15,7 @@ class GroupPushRuleFinder # rubocop:disable Gitlab/BoundedContexts -- Will be de
   attr_reader :group
 
   def group_push_rule
-    if Feature.enabled?(:read_and_write_group_push_rules, group)
-      group.group_push_rule
-    else
-      group.push_rule
-    end
+    group.group_push_rule
   end
 end
 # rubocop:enable Gitlab/NamespacedClass -- No relevant product domain exists

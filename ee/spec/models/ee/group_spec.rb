@@ -26,7 +26,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to have_one(:amazon_q_integration) }
     it { is_expected.to have_one(:group_wiki_repository) }
     it { is_expected.to have_one(:group_push_rule).inverse_of(:group).with_foreign_key(:group_id) }
-    it { is_expected.to belong_to(:push_rule).inverse_of(:group) }
     it { is_expected.to have_many(:saml_group_links) }
     it { is_expected.to have_many(:epics) }
     it { is_expected.to have_many(:epic_boards).inverse_of(:group) }
@@ -1059,30 +1058,13 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         end
       end
 
-      context 'with read_and_write_group_push_rules disabled' do
-        before do
-          stub_feature_flags(read_and_write_group_push_rules: false)
-        end
-
-        context 'with its own push_rule' do
-          let(:push_rule) { create(:push_rule) }
-
-          it 'returns its own push rule' do
-            group.update!(push_rule: push_rule)
-
-            expect(group.predefined_push_rule).to eq(push_rule)
-          end
-        end
-      end
-
-      context 'with push rule from ancestor' do
-        let(:group) { create(:group, push_rule: push_rule) }
-        let(:push_rule) { create(:push_rule) }
+      context 'with group push rule from ancestor' do
+        let!(:group_push_rule) { create(:group_push_rule, group: group) }
         let(:subgroup_1) { create(:group, parent: group) }
         let(:subgroup_1_1) { create(:group, parent: subgroup_1) }
 
-        it 'returns push rule from closest ancestor' do
-          expect(subgroup_1_1.predefined_push_rule).to eq(push_rule)
+        it 'returns group push rule from closest ancestor' do
+          expect(subgroup_1_1.predefined_push_rule).to eq(group_push_rule)
         end
       end
     end

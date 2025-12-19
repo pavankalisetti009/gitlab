@@ -1317,13 +1317,14 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       context 'when has group push rule' do
-        let!(:group) { build(:group, push_rule: build(:push_rule)) }
+        let!(:group) { create(:group) }
+        let!(:group_push_rule) { create(:group_push_rule, group: group) }
 
         before do
           project.group = group
         end
 
-        it { is_expected.to eq(group.push_rule) }
+        it { is_expected.to eq(group.group_push_rule) }
       end
 
       context 'when has global push rule' do

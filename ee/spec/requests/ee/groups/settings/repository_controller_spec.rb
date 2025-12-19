@@ -133,33 +133,5 @@ RSpec.describe Groups::Settings::RepositoryController, feature_category: :source
         expect(assigns[:push_rule].group).to eq(group)
       end
     end
-
-    context 'when read_and_write_group_push_rules feature flag is disabled' do
-      before do
-        stub_feature_flags(read_and_write_group_push_rules: false)
-      end
-
-      context 'when group has an existing push rule' do
-        let!(:push_rule) { create(:push_rule, group: group) }
-
-        it 'uses the existing group push rule' do
-          get group_settings_repository_path(group)
-
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(assigns[:push_rule]).to eq(push_rule)
-        end
-      end
-
-      context 'when group does not have a push rule' do
-        it 'builds a new push rule for the group' do
-          get group_settings_repository_path(group)
-
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(assigns[:push_rule]).to be_a(PushRule)
-          expect(assigns[:push_rule]).to be_new_record
-          expect(assigns[:push_rule].group).to eq(group)
-        end
-      end
-    end
   end
 end
