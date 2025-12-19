@@ -430,6 +430,84 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
+  describe '#overridden_pipeline_metadata' do
+    include Ci::PipelineExecutionPolicyHelpers
+
+    subject(:overridden_pipeline_metadata) { context.overridden_pipeline_metadata }
+
+    include_context 'with mocked policy configs'
+    include_context 'with mocked policy_pipelines'
+    include_context 'with mocked current_policy'
+
+    let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
+    let(:policy_configs) { policy_pipelines.map(&:policy_config) }
+
+    context 'without policy pipelines' do
+      let(:policy_pipelines) { [] }
+
+      it { is_expected.to eq({}) }
+    end
+
+    context 'with policy pipelines' do
+      let(:policy_pipeline_with_metadata_1) do
+        build_mock_policy_pipeline({ 'build' => ['docker'] }).tap do |pipeline|
+          pipeline.pipeline_metadata = build(:ci_pipeline_metadata, name: 'Policy 1 name')
+        end
+      end
+
+      let(:policy_pipeline_with_metadata_2) do
+        build_mock_policy_pipeline({ 'test' => ['rspec'] }).tap do |pipeline|
+          pipeline.pipeline_metadata = build(:ci_pipeline_metadata, name: 'Policy 2 name')
+        end
+      end
+
+      let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :override_project_ci) }
+
+      it { is_expected.to eq({}) }
+
+      context 'when at least one contains pipeline_metadata' do
+        let(:policy_pipelines) do
+          [
+            build(:pipeline_execution_policy_pipeline, :override_project_ci, pipeline: policy_pipeline_with_metadata_1),
+            build(:pipeline_execution_policy_pipeline, :override_project_ci)
+          ]
+        end
+
+        it { is_expected.to eq(name: 'Policy 1 name') }
+
+        context 'when creating a policy pipeline' do
+          let(:current_policy) { build(:pipeline_execution_policy_config) }
+
+          it { is_expected.to eq({}) }
+        end
+      end
+
+      context 'when multiple policy pipelines contain pipeline name in metadata' do
+        let(:policy_pipelines) do
+          [
+            build(:pipeline_execution_policy_pipeline, :override_project_ci, pipeline: policy_pipeline_with_metadata_1),
+            build(:pipeline_execution_policy_pipeline, :override_project_ci, pipeline: policy_pipeline_with_metadata_2)
+          ]
+        end
+
+        it 'uses the first one (the lowest in the hierarchy)' do
+          expect(overridden_pipeline_metadata).to eq(name: 'Policy 1 name')
+        end
+      end
+
+      context 'when no pipeline is override_project_ci' do
+        let(:policy_pipelines) do
+          [
+            build(:pipeline_execution_policy_pipeline, pipeline: policy_pipeline_with_metadata_1),
+            build(:pipeline_execution_policy_pipeline, pipeline: policy_pipeline_with_metadata_2)
+          ]
+        end
+
+        it { is_expected.to eq({}) }
+      end
+    end
+  end
+
   describe '#applying_config_override?' do
     using RSpec::Parameterized::TableSyntax
 

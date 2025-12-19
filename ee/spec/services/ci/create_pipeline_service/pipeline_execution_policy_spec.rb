@@ -402,6 +402,43 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       expect(test_stage.builds.map(&:name)).to contain_exactly('project_policy_job')
     end
 
+    context 'when policy declares pipeline name' do
+      let(:project_policy_content) do
+        { workflow: { name: 'project policy pipeline name' },
+          stages: %w[build test policy-test deploy],
+          project_policy_job: { stage: 'policy-test', script: 'project script' } }
+      end
+
+      it 'sets the pipeline name' do
+        pipeline = execute.payload
+
+        expect(pipeline.pipeline_metadata.name).to eq 'project policy pipeline name'
+      end
+
+      context 'and overriding namespace policy also declares a pipeline name' do
+        let(:namespace_policy) do
+          build(:pipeline_execution_policy, :override_project_ci,
+            content: { include: [{
+              project: compliance_project.full_path,
+              file: namespace_policy_file,
+              ref: compliance_project.default_branch_or_main
+            }] })
+        end
+
+        let(:namespace_policy_content) do
+          { workflow: { name: 'namespace policy pipeline name' },
+            stages: %w[test],
+            namespace_policy_job: { stage: 'test', script: 'namespace script' } }
+        end
+
+        it 'sets the pipeline name based on the project policy' do
+          pipeline = execute.payload
+
+          expect(pipeline.pipeline_metadata.name).to eq 'project policy pipeline name'
+        end
+      end
+    end
+
     context 'and override policy uses custom stages' do
       let(:project_policy_content) do
         { stages: %w[build test policy-test deploy],

@@ -121,6 +121,18 @@ module Gitlab
             policies.any?(&:strategy_override_project_ci?)
           end
 
+          def overridden_pipeline_metadata
+            return {} unless applying_config_override?
+
+            metadata = policy_pipelines
+              .select(&:strategy_override_project_ci?)
+              .filter_map { |policy_pipeline| policy_pipeline.pipeline.pipeline_metadata }
+            return {} if metadata.blank?
+
+            # If multiple policies define the name, take the lowest in the hierarchy (project over group)
+            { name: metadata.filter_map(&:name).first }.compact_blank
+          end
+
           def applying_config_override?
             has_overriding_execution_policy_pipelines? && creating_project_pipeline?
           end
