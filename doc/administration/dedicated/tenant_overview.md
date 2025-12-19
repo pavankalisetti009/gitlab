@@ -55,7 +55,7 @@ Status indicators communicate incidents affecting your instance. Switchboard dis
 Switchboard does not display:
 
 - Severity 3 or Severity 4 incidents: These incidents have minimal impact on your instance.
-- Severity 1 or Severity 2 incidents in non-impacting lifecycle stages: Incidents being monitored, reviewed, documented, or canceled do not display.
+- Severity 1 or Severity 2 incidents in non-impacting lifecycle stages: Incidents being reviewed, documented, or canceled do not display.
 - Merged incidents: If multiple alerts are consolidated into a single incident, only the primary incident displays.
 
 > [!note]
