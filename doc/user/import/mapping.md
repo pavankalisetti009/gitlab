@@ -46,7 +46,7 @@ source instance are initially assigned to placeholder users rather than real use
 gives you time to review the import and reassign contributions to the correct users, ensuring accurate attribution while
 maintaining control over the mapping process.
 
-The post-migration mapping process allows you to:
+With post-migration mapping, you can:
 
 - Reassign contributions and memberships from placeholder users to existing users.
 - Create new users for reassignment.
