@@ -11,6 +11,11 @@ module Types
         GraphQL::Types::Boolean,
         null: false,
         description: 'Indicates whether the namespace has MCP enabled.'
+
+      field :prompt_injection_protection_level,
+        ::Types::Ai::PromptInjectionProtectionLevelEnum,
+        null: false,
+        description: 'Level of prompt injection protection for the namespace.'
     end
   end
 end
