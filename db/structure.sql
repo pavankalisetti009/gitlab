@@ -6346,6 +6346,9 @@ CREATE TABLE web_hook_logs_daily (
     updated_at timestamp without time zone NOT NULL,
     created_at timestamp without time zone NOT NULL,
     url_hash text,
+    organization_id bigint,
+    group_id bigint,
+    project_id bigint,
     CONSTRAINT check_df72cb58f5 CHECK ((char_length(url_hash) <= 44))
 )
 PARTITION BY RANGE (created_at);
