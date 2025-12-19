@@ -48,7 +48,8 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
 
         it 'saves the policy data in :options' do
           expect(build.dig(:options, :policy))
-            .to eq(name: 'Policy', sha: policy_config_sha, project_id: policy_project_id)
+            .to eq(pipeline_execution_policy_job: true, name: 'Policy', sha: policy_config_sha,
+              project_id: policy_project_id)
         end
 
         context 'when creating_policy_pipeline? is false' do

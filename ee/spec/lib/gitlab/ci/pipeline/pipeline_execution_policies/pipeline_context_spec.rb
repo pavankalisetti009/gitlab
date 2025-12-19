@@ -1071,6 +1071,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
       it 'includes policy-specific options' do
         expect(job_options).to eq(
+          pipeline_execution_policy_job: true,
           name: 'My policy',
           sha: 'my_policy_sha',
           project_id: current_policy.policy_config.security_policy_management_project_id,

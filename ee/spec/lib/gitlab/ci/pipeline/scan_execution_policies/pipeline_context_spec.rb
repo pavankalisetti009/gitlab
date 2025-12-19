@@ -125,6 +125,26 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
       ])
     end
 
+    context 'when other policy defines the same scan with different parameters' do
+      let(:policies) { [policy, other_policy] }
+      let(:other_policy) do
+        build(:scan_execution_policy, name: 'Other policy', actions: [
+          { scan: 'dependency_scanning', variables: { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } }
+        ])
+      end
+
+      it 'is not deduplicated' do
+        expect(actions).to match_array([
+          { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile',
+            metadata: expected_metadata },
+          { scan: 'secret_detection', metadata: expected_metadata },
+          { scan: 'dependency_scanning', metadata: expected_metadata.merge(name: 'My policy') },
+          { scan: 'dependency_scanning', variables: { DS_ENFORCE_NEW_ANALYZER: 'true' },
+            metadata: expected_metadata.merge(name: 'Other policy') }
+        ])
+      end
+    end
+
     describe 'action limits' do
       let(:policies) { [policy, other_policy] }
       let(:other_policy) do

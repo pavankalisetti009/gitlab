@@ -200,6 +200,7 @@ module Gitlab
             return unless creating_policy_pipeline?
 
             {
+              pipeline_execution_policy_job: true,
               name: current_policy.name,
               variables_override: current_policy.variables_override_strategy,
               pre_succeeds: current_policy.experiment_enabled?(:ensure_pipeline_policy_pre_succeeds),
