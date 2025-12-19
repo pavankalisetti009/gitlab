@@ -21,7 +21,7 @@ module Projects
         global_id = Gitlab::GlobalId.as_global_id(id, model_name: 'DastSiteProfile')
 
         site_profile = DastSiteProfile.find(id)
-        return render_404 unless site_profile.can_edit_profile?(current_user)
+        return render_403 unless site_profile.can_edit_profile?(current_user)
 
         query = %(
           {

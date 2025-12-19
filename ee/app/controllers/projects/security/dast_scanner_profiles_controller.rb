@@ -19,7 +19,7 @@ module Projects
           .dast_scanner_profiles
           .find(params.permit(:id)[:id])
 
-        render_404 unless @scanner_profile&.can_edit_profile?(current_user)
+        render_403 unless @scanner_profile.can_edit_profile?(current_user)
       end
     end
   end

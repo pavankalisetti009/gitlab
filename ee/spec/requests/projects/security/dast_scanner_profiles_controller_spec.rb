@@ -110,10 +110,15 @@ RSpec.describe Projects::Security::DastScannerProfilesController, type: :request
       let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: protected_branch.name) }
       let_it_be(:dast_scanner_profile) { dast_profile.dast_scanner_profile }
 
-      it 'sees a 404 error' do
+      before_all do
+        project.add_developer(user)
+        login_as(user)
+      end
+
+      it 'sees a 403 error' do
         get edit_path
 
-        expect(response).to have_gitlab_http_status(:not_found)
+        expect(response).to have_gitlab_http_status(:forbidden)
       end
     end
   end
