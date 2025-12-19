@@ -97,12 +97,14 @@ module QA
               expand_content('permissions-settings')
               check_element('prevent-forking-outside-group-checkbox', true)
               click_element('save-permissions-changes-button')
+              wait_for_requests
             end
 
             def set_prevent_forking_outside_group_disabled
               expand_content('permissions-settings')
               uncheck_element('prevent-forking-outside-group-checkbox', true)
               click_element('save-permissions-changes-button')
+              wait_for_requests
             end
 
             def set_repository_size_limit(limit)
