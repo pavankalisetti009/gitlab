@@ -60,7 +60,7 @@ export default {
         return !this.isEditing;
       },
       update(data) {
-        return data.workspace?.labels?.nodes;
+        return data.namespace?.labels?.nodes;
       },
       error(error) {
         setError({ error, message: this.$options.i18n.errorSearchingLabels });
