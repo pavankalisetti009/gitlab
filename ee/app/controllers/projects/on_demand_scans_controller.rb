@@ -24,7 +24,7 @@ module Projects
       global_id = Gitlab::GlobalId.as_global_id(params[:id], model_name: 'Dast::Profile')
 
       dast_profile = Dast::Profile.find(params[:id])
-      return render_404 unless dast_profile.can_edit_scan?(current_user)
+      return render_403 unless dast_profile.can_edit_scan?(current_user)
 
       query = %(
           {

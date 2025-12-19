@@ -170,10 +170,10 @@ RSpec.describe Projects::OnDemandScansController,
           let(:user) { create(:user, :auditor) }
           let_it_be(:project) { create(:project, :repository) }
 
-          it 'sees a 404 error' do
+          it 'sees a 403 error' do
             get edit_path
 
-            expect(response).to have_gitlab_http_status(:not_found)
+            expect(response).to have_gitlab_http_status(:forbidden)
           end
         end
       end
@@ -193,10 +193,10 @@ RSpec.describe Projects::OnDemandScansController,
           login_as(user)
         end
 
-        it 'sees a 404 error' do
+        it 'sees a 403 error' do
           get edit_path
 
-          expect(response).to have_gitlab_http_status(:not_found)
+          expect(response).to have_gitlab_http_status(:forbidden)
         end
       end
     end

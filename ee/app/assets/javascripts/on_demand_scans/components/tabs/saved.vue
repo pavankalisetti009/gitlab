@@ -147,30 +147,21 @@ export default {
       this.$refs.verification.openSidebar();
     },
     actionDisclosureItemsConfig(item) {
-      const actionItems = [
-        {
+      const actionItems = [];
+
+      if (item.editPath) {
+        actionItems.push({
           href: item.editPath,
           text: this.$options.i18n.editButtonLabel,
           extraAttrs: {
             'aria-label': this.$options.i18n.editProfile,
             'data-testid': 'edit-scan-button-desktop',
           },
-        },
-        {
-          text: this.$options.i18n.deleteButtonLabel,
-          action: () => this.prepareProfileDeletion(item.id),
-          variant: 'danger',
-          extraAttrs: {
-            'aria-label': this.$options.i18n.deleteProfile,
-            'data-testid': 'delete-scan-button-desktop',
-            boundary: 'viewport',
-            variant: 'danger',
-          },
-        },
-      ];
+        });
+      }
 
       if (this.glFeatures.dastPreScanVerification) {
-        actionItems.splice(1, 0, {
+        actionItems.push({
           text: this.$options.i18n.verifyConfigurationLabel,
           action: () => this.openSidebar(),
           extraAttrs: {
@@ -179,6 +170,18 @@ export default {
           },
         });
       }
+
+      actionItems.push({
+        text: this.$options.i18n.deleteButtonLabel,
+        action: () => this.prepareProfileDeletion(item.id),
+        variant: 'danger',
+        extraAttrs: {
+          'aria-label': this.$options.i18n.deleteProfile,
+          'data-testid': 'delete-scan-button-desktop',
+          boundary: 'viewport',
+          variant: 'danger',
+        },
+      });
 
       return actionItems;
     },
@@ -248,6 +251,7 @@ export default {
 
         <!-- More actions for mobile -->
         <gl-button
+          v-if="item.editPath"
           :href="item.editPath"
           :aria-label="$options.i18n.editProfile"
           category="tertiary"
