@@ -195,3 +195,66 @@ export const expectedFilteredAgentStatuses = [
   { reference: 'security-analyst', name: 'Security Analyst', enabled: true },
   { reference: 'code-reviewer', name: 'Code Reviewer', enabled: false },
 ];
+
+export const mockDuoWorkflowStatusCheckEnabled = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      duoWorkflowStatusCheck: {
+        enabled: true,
+        remoteFlowsEnabled: true,
+        foundationalFlowsEnabled: true,
+      },
+    },
+  },
+};
+
+export const mockDuoWorkflowStatusCheckDisabled = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      duoWorkflowStatusCheck: {
+        enabled: false,
+        remoteFlowsEnabled: false,
+        foundationalFlowsEnabled: false,
+      },
+    },
+  },
+};
+
+export const mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      duoWorkflowStatusCheck: {
+        enabled: true,
+        remoteFlowsEnabled: false,
+        foundationalFlowsEnabled: false,
+      },
+    },
+  },
+};
+
+export const mockConfiguredFlowsResponse = {
+  data: {
+    aiCatalogConfiguredItems: {
+      nodes: [
+        {
+          id: 'gid://gitlab/Ai::CatalogItemConsumer/123',
+          item: {
+            id: 'gid://gitlab/Ai::CatalogItem/456',
+            foundationalFlowReference: 'convert_to_gitlab_ci',
+          },
+        },
+      ],
+    },
+  },
+};
+
+export const mockEmptyConfiguredFlowsResponse = {
+  data: {
+    aiCatalogConfiguredItems: {
+      nodes: [],
+    },
+  },
+};
