@@ -1,0 +1,9 @@
+---
+name: duo_access_through_namespaces
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/20241
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/216776
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/584392
+milestone: '18.8'
+group: group::agent foundations
+type: beta
+default_enabled: false

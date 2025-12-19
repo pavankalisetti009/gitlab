@@ -471,5 +471,80 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
         end
       end
     end
+
+    context 'when updating duo namespace access rules' do
+      let_it_be(:namespace_a) { create(:group) }
+      let_it_be(:namespace_b) { create(:group) }
+
+      let(:duo_namespace_access_rules) do
+        [
+          { namespace_id: namespace_a.id, access_rules: %w[duo_classic duo_agents] },
+          { namespace_id: namespace_b.id, access_rules: %w[duo_flows] }
+        ]
+      end
+
+      let(:params) { { duo_namespace_access_rules: duo_namespace_access_rules } }
+      let(:service) { described_class.new(setting, user, params) }
+
+      subject(:result) { service.execute }
+
+      before do
+        stub_feature_flags(duo_access_through_namespaces: true)
+      end
+
+      context 'when rules are valid' do
+        it 'creates instance accessible entity rules' do
+          expect { result }.to change { Ai::FeatureAccessRule.count }.by(3)
+        end
+
+        it 'creates rules with correct attributes' do
+          result
+
+          expect(namespace_a.accessible_ai_features_on_instance.pluck(:accessible_entity)).to match_array(%w[duo_classic duo_agents])
+          expect(namespace_b.accessible_ai_features_on_instance.pluck(:accessible_entity)).to match_array(%w[duo_flows])
+        end
+
+        it 'deletes existing entity rules and creates new ones' do
+          create(:ai_instance_accessible_entity_rules, through_namespace: namespace_a)
+
+          expect { result }.to change { Ai::FeatureAccessRule.count }.from(1).to(3)
+        end
+
+        context 'when duo_namespace_access_rules is empty' do
+          let(:duo_namespace_access_rules) { [] }
+
+          it 'deletes existing entity rules and does not create new ones' do
+            create(:ai_instance_accessible_entity_rules, through_namespace_id: namespace_a.id)
+
+            expect { result }.to change { Ai::FeatureAccessRule.count }.from(1).to(0)
+          end
+        end
+      end
+
+      context 'when rules are invalid' do
+        let(:duo_namespace_access_rules) do
+          [
+            { namespace_id: namespace_a.id, access_rules: %w[duo_classic duo_agents] },
+            { namespace_id: namespace_b.id, access_rules: %w[invalid_entity] }
+          ]
+        end
+
+        it 'adds errors to the setting' do
+          expect(result).to be false
+          expect(Ai::FeatureAccessRule.count).to eq(0)
+        end
+      end
+
+      context 'when duo_access_through_namespaces feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_access_through_namespaces: false)
+        end
+
+        it 'adds errors to the setting' do
+          expect(result).to be false
+          expect(Ai::FeatureAccessRule.count).to eq(0)
+        end
+      end
+    end
   end
 end

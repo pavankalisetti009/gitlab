@@ -826,4 +826,105 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
       end
     end
   end
+
+  context 'show_duo_namespace_access_rules' do
+    subject(:get_settings) { get api(path, admin, admin_mode: true) }
+
+    before do
+      stub_feature_flags(duo_access_through_namespaces: true)
+      stub_licensed_features(ai_features: true)
+    end
+
+    it 'returns true' do
+      get_settings
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response['show_duo_namespace_access_rules']).to eq(true)
+    end
+
+    context 'when duo_access_through_namespaces feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_access_through_namespaces: false)
+      end
+
+      it 'returns false' do
+        get_settings
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['show_duo_namespace_access_rules']).to eq(false)
+      end
+    end
+  end
+
+  context 'duo_namespace_access_rules' do
+    let_it_be(:namespace_a) { create(:group) }
+    let_it_be(:namespace_b) { create(:group) }
+
+    let(:duo_namespace_access_rules) do
+      [
+        { 'namespace_id' => namespace_a.id, 'access_rules' => %w[duo_classic duo_agents] },
+        { 'namespace_id' => namespace_b.id, 'access_rules' => %w[duo_flows] }
+      ]
+    end
+
+    let(:params) { { duo_namespace_access_rules: duo_namespace_access_rules } }
+
+    before do
+      stub_feature_flags(duo_access_through_namespaces: true)
+    end
+
+    context 'with valid params' do
+      it 'creates instance accessible entity rules' do
+        put api('/application/settings', admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(Ai::FeatureAccessRule.count).to eq(3)
+      end
+
+      context 'when duo_namespace_access_rules is empty' do
+        let(:duo_namespace_access_rules) { [] }
+
+        it 'deletes existing entity rules and does not create new ones' do
+          create(:ai_instance_accessible_entity_rules, through_namespace_id: namespace_a.id)
+
+          put api('/application/settings', admin, admin_mode: true), params: params
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(Ai::FeatureAccessRule.count).to eq(0)
+        end
+      end
+    end
+
+    context 'with an invalid entity' do
+      let(:invalid_entity) { 'invalid_entity' }
+      let(:duo_namespace_access_rules) do
+        [
+          { 'namespace_id' => namespace_a.id, 'access_rules' => %w[duo_classic duo_agents] },
+          { 'namespace_id' => namespace_b.id, 'access_rules' => %w[invalid_entity] }
+        ]
+      end
+
+      it 'is bad request' do
+        put api('/application/settings', admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['message']['duo_namespace_access_rules'].to_s).to include(
+          'Accessible entity is not included in the list'
+        )
+      end
+    end
+
+    context 'when duo_access_through_namespaces feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_access_through_namespaces: false)
+      end
+
+      it 'raises an error' do
+        put api('/application/settings', admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(Ai::FeatureAccessRule.count).to eq 0
+      end
+    end
+  end
 end

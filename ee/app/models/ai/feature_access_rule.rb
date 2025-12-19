@@ -9,5 +9,45 @@ module Ai
     belongs_to :through_namespace,
       class_name: 'Namespace',
       inverse_of: :accessible_ai_features_on_instance
+
+    class << self
+      def duo_namespace_access_rules
+        return [] unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
+
+        all.includes(:through_namespace).group_by(&:through_namespace_id).map do |namespace_id, rules|
+          namespace = rules.first.through_namespace
+          {
+            namespace_id: namespace_id,
+            namespace_name: namespace.name,
+            namespace_path: namespace.full_path,
+            access_rules: rules.map(&:accessible_entity)
+          }
+        end
+      end
+
+      def duo_namespace_access_rules=(values)
+        return unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
+
+        values = values.reject(&:blank?)
+
+        delete_all
+
+        return if values.empty?
+
+        timestamp = Time.current
+        rules = values.flat_map do |rule|
+          rule[:access_rules].map do |access_entity|
+            new(
+              through_namespace_id: rule[:namespace_id],
+              accessible_entity: access_entity,
+              created_at: timestamp,
+              updated_at: timestamp
+            )
+          end
+        end
+
+        bulk_insert!(rules)
+      end
+    end
   end
 end
