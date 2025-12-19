@@ -35,4 +35,21 @@ RSpec.describe 'getting AI catalog built-in tools', feature_category: :workflow_
       expect(nodes).to be_empty
     end
   end
+
+  context 'when use_generic_gitlab_api_tools is disabled' do
+    before do
+      stub_feature_flags(use_generic_gitlab_api_tools: false)
+    end
+
+    it 'returns built-in tools excluding generic GitLab API tools' do
+      post_graphql(query, current_user: nil)
+
+      expect(response).to have_gitlab_http_status(:success)
+      # Should exclude tools with IDs 78 (gitlab_api_get) and 79 (gitlab_graphql)
+      expect(nodes).to have_attributes(size: ::Ai::Catalog::BuiltInTool.count - 2)
+
+      tool_names = nodes.pluck('name')
+      expect(tool_names).not_to include('gitlab_api_get', 'gitlab_graphql')
+    end
+  end
 end
