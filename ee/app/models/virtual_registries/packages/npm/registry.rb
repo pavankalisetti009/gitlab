@@ -3,10 +3,9 @@
 module VirtualRegistries
   module Packages
     module Npm
-      class Registry < ApplicationRecord
-        # TODO: remove after making the class inherit from ::VirtualRegistries::Registry
-        # https://gitlab.com/gitlab-org/gitlab/-/work_items/581343
-        belongs_to :group
+      class Registry < ::VirtualRegistries::Registry
+        MAX_REGISTRY_COUNT = 20
+
         has_many :registry_upstreams,
           -> { order(position: :asc) },
           class_name: 'VirtualRegistries::Packages::Npm::RegistryUpstream',
