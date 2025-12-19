@@ -44525,9 +44525,7 @@ CREATE UNIQUE INDEX index_nfas_on_namespaced_id_on_reference ON namespace_founda
 
 CREATE INDEX index_non_requested_project_members_on_source_id_and_type ON members USING btree (source_id, source_type) WHERE ((requested_at IS NULL) AND ((type)::text = 'ProjectMember'::text));
 
-CREATE INDEX index_non_sql_service_pings_on_organization_id ON non_sql_service_pings USING btree (organization_id);
-
-CREATE UNIQUE INDEX index_non_sql_service_pings_on_recorded_at ON non_sql_service_pings USING btree (recorded_at);
+CREATE UNIQUE INDEX index_non_sql_service_pings_on_org_id_recorded_at ON non_sql_service_pings USING btree (organization_id, recorded_at);
 
 CREATE UNIQUE INDEX index_note_diff_files_on_diff_note_id ON note_diff_files USING btree (diff_note_id);
 
