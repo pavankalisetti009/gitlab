@@ -359,5 +359,111 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
         it { is_expected.to include(premium_plan.name) }
       end
     end
+
+    describe '#set_allowed_plan_name_uids' do
+      let_it_be(:free_plan) { create(:free_plan) }
+      let_it_be(:premium_plan) { create(:premium_plan) }
+      let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+
+      context 'on create' do
+        it 'sets allowed_plan_name_uids from allowed_plan_ids' do
+          runner = build(:ci_runner, :instance, allowed_plan_ids: [premium_plan.id, ultimate_plan.id])
+
+          expect { runner.save! }
+            .to change { runner.allowed_plan_name_uids }
+            .from([])
+
+          expect(runner.allowed_plan_name_uids).to match_array([
+            Plan::PLAN_NAME_UID_LIST[:premium],
+            Plan::PLAN_NAME_UID_LIST[:ultimate]
+          ])
+        end
+
+        it 'sets UIDs for multiple plans' do
+          runner = create(:ci_runner, :instance, allowed_plan_ids: [ultimate_plan.id, free_plan.id, premium_plan.id])
+
+          expect(runner.allowed_plan_name_uids).to match_array([
+            Plan::PLAN_NAME_UID_LIST[:ultimate],
+            Plan::PLAN_NAME_UID_LIST[:free],
+            Plan::PLAN_NAME_UID_LIST[:premium]
+          ])
+        end
+      end
+
+      context 'on update' do
+        it 'updates allowed_plan_name_uids when allowed_plan_ids changes' do
+          runner = create(:ci_runner, :instance, allowed_plan_ids: [premium_plan.id])
+
+          expect { runner.update!(allowed_plan_ids: [ultimate_plan.id]) }
+            .to change { runner.reload.allowed_plan_name_uids }
+            .from([Plan::PLAN_NAME_UID_LIST[:premium]])
+            .to([Plan::PLAN_NAME_UID_LIST[:ultimate]])
+        end
+
+        it 'does not change allowed_plan_name_uids when allowed_plan_ids stays the same' do
+          runner = create(:ci_runner, :instance, allowed_plan_ids: [premium_plan.id])
+          original_uids = runner.allowed_plan_name_uids
+
+          runner.update!(description: 'Updated description')
+
+          expect(runner.reload.allowed_plan_name_uids).to eq(original_uids)
+          expect(original_uids).to match_array([Plan::PLAN_NAME_UID_LIST[:premium]])
+        end
+      end
+
+      context 'when using allowed_plans= setter' do
+        it 'sets both allowed_plan_ids and allowed_plan_name_uids' do
+          runner = build(:ci_runner, :instance)
+          runner.allowed_plans = %w[premium ultimate]
+
+          runner.save!
+
+          expect(runner.allowed_plan_ids).to match_array([premium_plan.id, ultimate_plan.id])
+          expect(runner.allowed_plan_name_uids).to match_array([
+            Plan::PLAN_NAME_UID_LIST[:premium],
+            Plan::PLAN_NAME_UID_LIST[:ultimate]
+          ])
+        end
+      end
+
+      context 'when allowed_plan_ids is empty' do
+        it 'keeps allowed_plan_name_uids empty' do
+          runner = create(:ci_runner, :instance, allowed_plan_ids: [])
+
+          expect(runner.allowed_plan_name_uids).to eq([])
+        end
+      end
+
+      context 'when allowed_plan_ids is cleared' do
+        it 'clears allowed_plan_name_uids' do
+          runner = create(:ci_runner, :instance, allowed_plan_ids: [premium_plan.id])
+
+          expect { runner.update!(allowed_plan_ids: []) }
+            .to change { runner.reload.allowed_plan_name_uids }
+            .from([Plan::PLAN_NAME_UID_LIST[:premium]])
+            .to([])
+        end
+      end
+
+      context 'when a plan ID does not exist' do
+        it 'only includes UIDs for existing plans' do
+          non_existent_id = Plan.maximum(:id).to_i + 1
+          runner = create(:ci_runner, :instance, allowed_plan_ids: [premium_plan.id, non_existent_id])
+
+          expect(runner.allowed_plan_name_uids).to match_array([Plan::PLAN_NAME_UID_LIST[:premium]])
+        end
+      end
+
+      context 'when allowed_plan_name_uids is missing' do
+        it 'populates allowed_plan_name_uids on save' do
+          runner = create(:ci_runner, :instance, allowed_plan_ids: [premium_plan.id])
+          runner.update_column(:allowed_plan_name_uids, [])
+
+          runner.reload.update!(description: 'Updated')
+
+          expect(runner.reload.allowed_plan_name_uids).to match_array([Plan::PLAN_NAME_UID_LIST[:premium]])
+        end
+      end
+    end
   end
 end

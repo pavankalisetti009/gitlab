@@ -17,8 +17,12 @@ module EE
         override :args_from_build
         def args_from_build(build)
           fields = { minutes_exceeded: minutes_exceeded?(build.project) }
-          fields[:plan_id] = build.project.actual_plan.id if
-            ::Gitlab::Saas.feature_available?(:ci_runners_allowed_plans)
+
+          if ::Gitlab::Saas.feature_available?(:ci_runners_allowed_plans)
+            plan = build.project.actual_plan
+            fields[:plan_id] = plan.id
+            fields[:plan_name_uid] = plan.plan_name_uid_before_type_cast
+          end
 
           super.merge(fields)
         end

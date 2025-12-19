@@ -1126,6 +1126,76 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
     end
   end
 
+  describe '#set_hosted_plan_name_uid' do
+    let_it_be(:namespace) { create(:namespace) }
+    let(:premium_plan) { create(:premium_plan) }
+    let(:ultimate_plan) { create(:ultimate_plan) }
+
+    context 'on create' do
+      it 'sets hosted_plan_name_uid from the associated hosted_plan' do
+        subscription = build(:gitlab_subscription, namespace: namespace, hosted_plan: premium_plan)
+
+        expect { subscription.save! }
+          .to change { subscription.hosted_plan_name_uid }
+          .from(nil).to(Plan::PLAN_NAME_UID_LIST[:premium])
+      end
+    end
+
+    context 'on update' do
+      it 'updates hosted_plan_name_uid when hosted_plan changes' do
+        subscription = create(:gitlab_subscription, namespace: namespace, hosted_plan: premium_plan)
+
+        expect { subscription.update!(hosted_plan: ultimate_plan) }
+          .to change { subscription.reload.hosted_plan_name_uid }
+          .from(Plan::PLAN_NAME_UID_LIST[:premium])
+          .to(Plan::PLAN_NAME_UID_LIST[:ultimate])
+      end
+
+      it 'does not change hosted_plan_name_uid when hosted_plan stays the same' do
+        subscription = create(:gitlab_subscription, namespace: namespace, hosted_plan: premium_plan)
+        original_uid = subscription.hosted_plan_name_uid
+
+        subscription.update!(seats: 50)
+
+        expect(subscription.reload.hosted_plan_name_uid).to eq(original_uid)
+        expect(original_uid).to eq(Plan::PLAN_NAME_UID_LIST[:premium])
+      end
+    end
+
+    context 'when using plan_code= setter' do
+      it 'sets hosted_plan_name_uid via the setter' do
+        subscription = build(:gitlab_subscription, namespace: namespace)
+        subscription.plan_code = 'premium'
+
+        expect { subscription.save! }
+          .to change { subscription.hosted_plan_name_uid }
+          .from(nil).to(Plan::PLAN_NAME_UID_LIST[:premium])
+      end
+    end
+
+    context 'when hosted_plan is set to nil' do
+      it 'clears hosted_plan_name_uid' do
+        subscription = create(:gitlab_subscription, namespace: namespace, hosted_plan: premium_plan)
+
+        expect { subscription.update!(hosted_plan: nil) }
+          .to change { subscription.reload.hosted_plan_name_uid }
+          .from(Plan::PLAN_NAME_UID_LIST[:premium])
+          .to(nil)
+      end
+    end
+
+    context 'when hosted_plan_name_uid is missing' do
+      it 'populates hosted_plan_name_uid on save' do
+        subscription = create(:gitlab_subscription, namespace: namespace, hosted_plan: premium_plan)
+        subscription.update_column(:hosted_plan_name_uid, nil)
+
+        subscription.reload.update!(seats: 100)
+
+        expect(subscription.reload.hosted_plan_name_uid).to eq(Plan::PLAN_NAME_UID_LIST[:premium])
+      end
+    end
+  end
+
   describe 'constants' do
     it 'defines SERVICE_ACCOUNT_LIMIT_FOR_TRIAL' do
       expect(described_class::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL).to eq(100)
