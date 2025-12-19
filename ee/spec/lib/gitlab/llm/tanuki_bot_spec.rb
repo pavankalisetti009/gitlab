@@ -254,6 +254,34 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
         expect(described_class.credits_available?(user: user, project: project)).to be_truthy
       end
     end
+
+    context 'when service returns an error' do
+      context 'when no default namespace exists' do
+        before do
+          allow_next_instance_of(::Ai::UsageQuotaService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.error(reason: :namespace_missing,
+              message: "No namespace"))
+          end
+        end
+
+        it 'returns false' do
+          expect(described_class.credits_available?(user: user, project: project)).to be_falsey
+        end
+      end
+
+      context 'when billing error returned' do
+        before do
+          allow_next_instance_of(::Ai::UsageQuotaService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.error(reason: :usage_quota_exceeded,
+              message: "Billing error"))
+          end
+        end
+
+        it 'returns false' do
+          expect(described_class.credits_available?(user: user, project: project)).to be_falsey
+        end
+      end
+    end
   end
 
   describe '.resource_id' do

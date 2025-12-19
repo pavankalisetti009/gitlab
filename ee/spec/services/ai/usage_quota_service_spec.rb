@@ -132,16 +132,15 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
       it { is_expected.to be_success }
     end
 
-    context 'when wrong params are used' do
+    context 'when subscription portal call results in error' do
       subject(:service_call) { described_class.new(ai_feature: ai_feature, user: create(:project)).execute }
 
       before do
-        stub_saas_features(gitlab_com_subscriptions: true)
+        allow(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).and_raise(StandardError.new)
       end
 
-      it "returns general error" do
-        expect(service_call).to be_error
-        expect(service_call[:reason]).to eq(:service_error)
+      it "does not block user access" do
+        is_expected.to be_success
       end
     end
   end
