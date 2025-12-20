@@ -15,6 +15,15 @@ module EE
               container.lfs_http_url_to_repo(params[:operation])
             end
 
+            override :validate_actor
+            def validate_actor(actor)
+              error_message = super
+
+              return error_message if error_message
+
+              'SSH keys are disabled for this user' if actor.user.ssh_keys_disabled?
+            end
+
             override :check_allowed
             def check_allowed(params)
               ip = params.fetch(:check_ip, nil)

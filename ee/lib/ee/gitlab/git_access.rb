@@ -101,6 +101,15 @@ module EE
         super
       end
 
+      override :check_valid_actor!
+      def check_valid_actor!
+        super
+
+        if key? && actor.user.ssh_keys_disabled?
+          raise ::Gitlab::GitAccess::ForbiddenError, 'SSH keys are disabled for this user.'
+        end
+      end
+
       override :check_change_access!
       def check_change_access!
         check_free_user_cap_over_limit! # order matters here, this needs to come before size check for storage limits
@@ -148,7 +157,7 @@ module EE
         return unless ::License.feature_available?(:git_two_factor_enforcement)
         return unless ::Feature.enabled?(:two_factor_for_cli)
         return unless ssh?
-        return if !key? || deploy_key?
+        return unless key?
         return unless user.two_factor_enabled?
 
         if ::Gitlab::Auth::Otp::SessionEnforcer.new(actor).access_restricted?

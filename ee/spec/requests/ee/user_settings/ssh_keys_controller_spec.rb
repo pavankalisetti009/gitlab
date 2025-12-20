@@ -3,46 +3,140 @@
 require 'spec_helper'
 
 RSpec.describe UserSettings::SshKeysController, feature_category: :source_code_management do
-  let_it_be(:group) { create(:group) }
-  let_it_be(:enterprise_user) { create(:user, enterprise_group_id: group.id) }
-  let_it_be(:regular_user) { create(:user, :with_namespace) }
+  context 'for enterprise users', :saas do
+    before do
+      stub_licensed_features(disable_ssh_keys: true)
+      stub_saas_features(disable_ssh_keys: true)
 
-  before do
-    stub_licensed_features(disable_ssh_keys: true)
-    stub_saas_features(disable_ssh_keys: true)
-    stub_feature_flags(enterprise_disable_ssh_keys: true)
-  end
+      login_as(user)
+    end
 
-  describe 'SSH key disabling for enterprise users' do
-    context 'when group has SSH keys disabled' do
-      before do
-        group.namespace_settings.update!(disable_ssh_keys: true)
+    let_it_be_with_reload(:group) { create(:group) }
+    let_it_be_with_reload(:user) { create(:enterprise_user, :with_namespace, enterprise_group: group) }
+
+    let_it_be(:ssh_key) { create(:key, user: user) }
+
+    describe 'GET #index' do
+      subject(:request_index) { get user_settings_ssh_keys_path }
+
+      it 'renders page' do
+        request_index
+
+        expect(response).to have_gitlab_http_status(:success)
       end
 
-      it 'blocks access to SSH key management for enterprise users' do
-        login_as(enterprise_user)
+      context 'when SSH Keys are disabled by the group' do
+        before do
+          group.namespace_settings.update!(disable_ssh_keys: true)
+        end
 
-        get user_settings_ssh_keys_path
-        expect(response).to have_gitlab_http_status(:not_found)
+        it 'renders 404' do
+          request_index
 
-        post user_settings_ssh_keys_path, params: { key: build(:key).attributes }
-        expect(response).to have_gitlab_http_status(:not_found)
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
+    describe 'GET #show' do
+      subject(:request_show) { get user_settings_ssh_key_path(ssh_key) }
+
+      it 'renders page' do
+        request_show
+
+        expect(response).to have_gitlab_http_status(:success)
       end
 
-      it 'does not block non-enterprise users' do
-        login_as(regular_user)
+      context 'when SSH Keys are disabled by the group' do
+        before do
+          group.namespace_settings.update!(disable_ssh_keys: true)
+        end
 
-        component_double = instance_double(Namespaces::Storage::NamespaceLimit::PreEnforcementAlertComponent,
-          render?: false,
-          render_in: nil)
-        allow(Namespaces::Storage::NamespaceLimit::PreEnforcementAlertComponent)
-          .to receive(:new).and_return(component_double)
+        it 'renders 404' do
+          request_show
 
-        get user_settings_ssh_keys_path
-        expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
 
-        post user_settings_ssh_keys_path, params: { key: build(:key).attributes }
+    describe 'POST #create' do
+      subject(:request_create) do
+        post user_settings_ssh_keys_path, params: { key: { title: 'SSH Key', key: build(:key).key } }
+      end
+
+      it 'creates the key' do
+        expect do
+          request_create
+        end.to change { user.reload.keys.count }.by(1)
+
         expect(response).to have_gitlab_http_status(:found)
+      end
+
+      context 'when SSH Keys are disabled by the group' do
+        before do
+          group.namespace_settings.update!(disable_ssh_keys: true)
+        end
+
+        it 'does not create the key' do
+          expect do
+            request_create
+          end.not_to change { user.reload.keys.count }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
+    describe 'DELETE #destroy' do
+      subject(:request_destroy) { delete user_settings_ssh_key_path(ssh_key) }
+
+      it 'destroys the key' do
+        expect do
+          request_destroy
+        end.to change { user.reload.keys.count }.by(-1)
+
+        expect(response).to have_gitlab_http_status(:found)
+      end
+
+      context 'when SSH Keys are disabled by the group' do
+        before do
+          group.namespace_settings.update!(disable_ssh_keys: true)
+        end
+
+        it 'does not destroy the key' do
+          expect do
+            request_destroy
+          end.not_to change { user.reload.keys.count }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
+    describe 'DELETE #revoke' do
+      subject(:request_revoke) { delete revoke_user_settings_ssh_key_path(ssh_key) }
+
+      it 'revokes the key' do
+        expect do
+          request_revoke
+        end.to change { user.reload.keys.count }.by(-1)
+
+        expect(response).to have_gitlab_http_status(:found)
+      end
+
+      context 'when SSH Keys are disabled by the group' do
+        before do
+          group.namespace_settings.update!(disable_ssh_keys: true)
+        end
+
+        it 'does not revoke the key' do
+          expect do
+            request_revoke
+          end.not_to change { user.reload.keys.count }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
       end
     end
   end

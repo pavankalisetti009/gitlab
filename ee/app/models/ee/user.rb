@@ -741,6 +741,17 @@ module EE
       @skip_enterprise_user_email_change_restrictions
     end
 
+    def ssh_keys_disabled?
+      enterprise_user? && enterprise_group.disable_ssh_keys?
+    end
+
+    override :require_ssh_key?
+    def require_ssh_key?
+      return false if ssh_keys_disabled?
+
+      super
+    end
+
     def contributed_epic_groups
       contributed_group_ids = ::Event.select(:group_id)
         .epic_contributions

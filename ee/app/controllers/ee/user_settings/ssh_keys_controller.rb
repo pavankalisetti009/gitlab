@@ -6,15 +6,13 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
-        before_action :check_ssh_keys_enabled, only: [:index, :show, :create, :destroy]
+        before_action :check_ssh_keys_enabled
       end
 
       private
 
       def check_ssh_keys_enabled
-        return unless current_user.enterprise_user? && current_user.enterprise_group.disable_ssh_keys?
-
-        render_404
+        render_404 if current_user.ssh_keys_disabled?
       end
     end
   end

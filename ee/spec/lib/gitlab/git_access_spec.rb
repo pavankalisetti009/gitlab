@@ -668,7 +668,7 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
         end
 
         # This case should be fully tested elsewhere. It's only here as a point of comparison with :geo actor.
-        context 'when the actor is a key' do
+        context 'when the actor is a DeployKey' do
           let_it_be(:deploy_key) { create(:deploy_key, user: user) }
           let(:actor) { deploy_key }
 
@@ -1148,7 +1148,7 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
         end
       end
 
-      context 'when actor is not an SSH key' do
+      context 'when actor is a DeployKey' do
         let(:deploy_key) { create(:deploy_key, user: user) }
         let(:actor) { deploy_key }
 
@@ -1350,12 +1350,109 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
   end
 
   describe '#check_valid_actor!' do
-    context 'key expiration is enforced' do
-      let(:actor) { build(:key, expires_at: 2.days.ago) }
+    before do
+      project.add_maintainer(user)
+    end
 
-      it 'does not allow expired keys', :aggregate_failures do
-        expect { push_changes }.to raise_forbidden('Your SSH key has expired.')
-        expect { pull_changes }.to raise_forbidden('Your SSH key has expired.')
+    context 'for LDAPKey' do
+      let(:actor) { build(:ldap_key, user: user) }
+
+      context 'key is valid' do
+        it 'allows pull and push access', :aggregate_failures do
+          expect { pull_changes }.not_to raise_error
+          expect { push_changes }.not_to raise_error
+        end
+      end
+
+      context 'key is expired' do
+        before do
+          actor.expires_at = 2.days.ago
+        end
+
+        it 'does not allow pull and push access', :aggregate_failures do
+          expect { pull_changes }.to raise_forbidden('Your SSH key has expired.')
+          expect { push_changes }.to raise_forbidden('Your SSH key has expired.')
+        end
+      end
+
+      context 'key is too small' do
+        before do
+          stub_application_setting(rsa_key_restriction: 4096)
+        end
+
+        it 'does not allow pull and push access', :aggregate_failures do
+          expect(actor).not_to be_valid
+          expect { pull_changes }.to raise_forbidden('Your SSH key must be at least 4096 bits.')
+          expect { push_changes }.to raise_forbidden('Your SSH key must be at least 4096 bits.')
+        end
+      end
+
+      context 'key type is not allowed' do
+        before do
+          stub_application_setting(rsa_key_restriction: ApplicationSetting::FORBIDDEN_KEY_VALUE)
+        end
+
+        it 'does not allow pull and push access', :aggregate_failures do
+          expect(actor).not_to be_valid
+          expect { pull_changes }.to raise_forbidden(/Your SSH key type is forbidden/)
+          expect { push_changes }.to raise_forbidden(/Your SSH key type is forbidden/)
+        end
+      end
+    end
+
+    context 'for enterprise users', :saas do
+      before do
+        stub_licensed_features(disable_ssh_keys: true)
+        stub_saas_features(disable_ssh_keys: true)
+      end
+
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, :repository, group: group) }
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: group) }
+
+      context "when actor is the enterprise user's SSH key" do
+        let_it_be(:actor) { create(:key, user: user) }
+
+        it 'allows pull and push access', :aggregate_failures do
+          expect { pull_changes }.not_to raise_error
+          expect { push_changes }.not_to raise_error
+        end
+
+        context 'when SSH Keys are disabled by the group' do
+          before do
+            group.namespace_settings.update!(disable_ssh_keys: true)
+          end
+
+          it 'does not allow pull and push access', :aggregate_failures do
+            expect { pull_changes }.to raise_forbidden('SSH keys are disabled for this user.')
+            expect { push_changes }.to raise_forbidden('SSH keys are disabled for this user.')
+          end
+        end
+      end
+
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/30343#note_2940146057
+      context 'when actor is a DeployKey tied to the enterprise user' do
+        let_it_be(:actor) { create(:deploy_key, user: user) }
+
+        before_all do
+          actor.deploy_keys_projects.create!(project: project, can_push: true)
+        end
+
+        it 'allows pull and push access', :aggregate_failures do
+          expect { pull_changes }.not_to raise_error
+          expect { push_changes }.not_to raise_error
+        end
+
+        context 'when SSH Keys are disabled by the group' do
+          before do
+            group.namespace_settings.update!(disable_ssh_keys: true)
+          end
+
+          it 'allows pull and push access', :aggregate_failures do
+            expect { pull_changes }.not_to raise_error
+            expect { push_changes }.not_to raise_error
+          end
+        end
       end
     end
   end

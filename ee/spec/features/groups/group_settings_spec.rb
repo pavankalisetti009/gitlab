@@ -613,6 +613,39 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       end
     end
 
+    context 'for disable SSH Keys setting' do
+      before do
+        stub_licensed_features(disable_ssh_keys: true)
+      end
+
+      context 'when on self-managed' do
+        it 'does not render disable SSH Keys setting' do
+          visit edit_group_path(group)
+          wait_for_all_requests
+
+          within(permissions_selector) do
+            expect(page).not_to have_content(s_('GroupSettings|Disable SSH Keys'))
+          end
+        end
+      end
+
+      context 'for SaaS', :saas do
+        before do
+          stub_licensed_features(domain_verification: true, disable_ssh_keys: true)
+          stub_saas_features(disable_ssh_keys: true)
+        end
+
+        it 'renders disable SSH Keys setting' do
+          visit edit_group_path(group)
+          wait_for_all_requests
+
+          within(permissions_selector) do
+            expect(page).to have_content(s_('GroupSettings|Disable SSH Keys'))
+          end
+        end
+      end
+    end
+
     context 'for disable_invite_members setting' do
       before do
         stub_licensed_features(disable_invite_members: true)

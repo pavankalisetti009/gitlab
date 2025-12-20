@@ -126,6 +126,90 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
     end
   end
 
+  describe 'SSH Keys' do
+    describe 'POST /user/keys' do
+      let(:path) { '/user/keys' }
+
+      context 'for enterprise users', :saas do
+        before do
+          stub_licensed_features(disable_ssh_keys: true)
+          stub_saas_features(disable_ssh_keys: true)
+        end
+
+        let_it_be_with_reload(:group) { create(:group) }
+        let_it_be_with_reload(:user) { create(:enterprise_user, enterprise_group: group) }
+
+        it 'creates ssh key' do
+          key_attrs = attributes_for(:key)
+
+          expect do
+            post api(path, user), params: key_attrs
+          end.to change { user.keys.count }.by(1)
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+
+        context 'when SSH Keys are disabled by the group' do
+          before do
+            group.namespace_settings.update!(disable_ssh_keys: true)
+          end
+
+          it 'does create ssh key' do
+            key_attrs = attributes_for(:key)
+
+            expect do
+              post api(path, user), params: key_attrs
+            end.not_to change { user.keys.count }
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['base']).to include('SSH keys are disabled for this user')
+          end
+        end
+      end
+    end
+
+    describe 'POST /users/:id/keys' do
+      let(:path) { "/users/#{user.id}/keys" }
+
+      context 'for enterprise users', :saas do
+        before do
+          stub_licensed_features(disable_ssh_keys: true)
+          stub_saas_features(disable_ssh_keys: true)
+        end
+
+        let_it_be_with_reload(:group) { create(:group) }
+        let_it_be_with_reload(:user) { create(:enterprise_user, enterprise_group: group) }
+
+        it 'creates ssh key' do
+          key_attrs = attributes_for(:key)
+
+          expect do
+            post api(path, admin, admin_mode: true), params: key_attrs
+          end.to change { user.keys.count }.by(1)
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+
+        context 'when SSH Keys are disabled by the group' do
+          before do
+            group.namespace_settings.update!(disable_ssh_keys: true)
+          end
+
+          it 'does create ssh key' do
+            key_attrs = attributes_for(:key)
+
+            expect do
+              post api(path, admin, admin_mode: true), params: key_attrs
+            end.not_to change { user.keys.count }
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['base']).to include('SSH keys are disabled for this user')
+          end
+        end
+      end
+    end
+  end
+
   context 'shared_runners_minutes_limit' do
     describe "PUT /users/:id" do
       context 'when user is an admin' do

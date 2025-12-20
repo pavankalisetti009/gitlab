@@ -9,7 +9,7 @@ module EE
 
           override :render?
           def render?
-            return false if context.current_user&.enterprise_group&.disable_ssh_keys?
+            return false if context.current_user&.ssh_keys_disabled?
 
             super
           end
