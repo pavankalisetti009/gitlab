@@ -914,6 +914,88 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
     end
   end
 
+  describe 'POST /internal/two_factor_recovery_codes' do
+    subject(:request_two_factor_recovery_codes) do
+      post api('/internal/two_factor_recovery_codes'),
+        params: { key_id: key.id },
+        headers: gitlab_shell_internal_api_request_header
+    end
+
+    context 'for enterprise users', :saas do
+      before do
+        stub_licensed_features(disable_ssh_keys: true)
+        stub_saas_features(disable_ssh_keys: true)
+      end
+
+      let_it_be_with_reload(:group) { create(:group) }
+
+      context 'when two-factor is enabled' do
+        let_it_be(:user) { create(:enterprise_user, :two_factor, enterprise_group: group) }
+        let_it_be(:key) { create(:key, user: user) }
+
+        it 'returns new recovery codes' do
+          request_two_factor_recovery_codes
+
+          expect(json_response['success']).to be_truthy
+        end
+
+        context 'when SSH Keys are disabled by the group' do
+          before do
+            group.namespace_settings.update!(disable_ssh_keys: true)
+          end
+
+          it 'returns an error message', :aggregate_failures do
+            request_two_factor_recovery_codes
+
+            expect(json_response['success']).to be_falsey
+            expect(json_response['message']).to eq('SSH keys are disabled for this user')
+          end
+        end
+      end
+    end
+  end
+
+  describe 'POST /internal/two_factor_config' do
+    subject(:request_two_factor_config) do
+      post api('/internal/two_factor_config'),
+        params: { key_id: key.id },
+        headers: gitlab_shell_internal_api_request_header
+    end
+
+    context 'for enterprise users', :saas do
+      before do
+        stub_licensed_features(disable_ssh_keys: true)
+        stub_saas_features(disable_ssh_keys: true)
+      end
+
+      let_it_be_with_reload(:group) { create(:group) }
+
+      context 'when two-factor is enabled' do
+        let_it_be(:user) { create(:enterprise_user, :two_factor, enterprise_group: group) }
+        let_it_be(:key) { create(:key, user: user) }
+
+        it 'returns user two factor config' do
+          request_two_factor_config
+
+          expect(json_response['success']).to be_truthy
+        end
+
+        context 'when SSH Keys are disabled by the group' do
+          before do
+            group.namespace_settings.update!(disable_ssh_keys: true)
+          end
+
+          it 'returns an error message', :aggregate_failures do
+            request_two_factor_config
+
+            expect(json_response['success']).to be_falsey
+            expect(json_response['message']).to eq('SSH keys are disabled for this user')
+          end
+        end
+      end
+    end
+  end
+
   describe 'POST /internal/personal_access_token', :system_access, :with_current_organization do
     let_it_be(:key) { create(:key, user: user) }
 
@@ -964,10 +1046,55 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
         end
       end
     end
+
+    context 'for enterprise users', :saas do
+      before do
+        stub_licensed_features(disable_ssh_keys: true)
+        stub_saas_features(disable_ssh_keys: true)
+      end
+
+      let_it_be_with_reload(:group) { create(:group) }
+
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: group) }
+      let_it_be(:key) { create(:key, user: user) }
+
+      it 'returns new token' do
+        post api('/internal/personal_access_token'),
+          params: {
+            key_id: key.id,
+            name: 'newtoken',
+            scopes: %w[read_api read_repository],
+            expires_at: Date.tomorrow
+          },
+          headers: gitlab_shell_internal_api_request_header
+
+        expect(json_response['success']).to be_truthy
+      end
+
+      context 'when SSH Keys are disabled by the group' do
+        before do
+          group.namespace_settings.update!(disable_ssh_keys: true)
+        end
+
+        it 'returns an error message', :aggregate_failures do
+          post api('/internal/personal_access_token'),
+            params: {
+              key_id: key.id,
+              name: 'newtoken',
+              scopes: %w[read_api read_repository],
+              expires_at: Date.tomorrow
+            },
+            headers: gitlab_shell_internal_api_request_header
+
+          expect(json_response['success']).to be_falsey
+          expect(json_response['message']).to eq('SSH keys are disabled for this user')
+        end
+      end
+    end
   end
 
   describe 'POST /internal/two_factor_manual_otp_check' do
-    let_it_be(:key) { create(:key, user: user) }
+    let(:key) { create(:key, user: user) }
 
     let(:key_id) { key.id }
     let(:otp) { '123456' }
@@ -1014,6 +1141,47 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
           subject
 
           expect(json_response['success']).to be_truthy
+        end
+
+        context 'for enterprise users', :saas do
+          before do
+            stub_licensed_features(git_two_factor_enforcement: true, disable_ssh_keys: true)
+            stub_saas_features(disable_ssh_keys: true)
+          end
+
+          let_it_be_with_reload(:group) { create(:group) }
+
+          let_it_be(:user) { create(:enterprise_user, :two_factor, enterprise_group: group) }
+          let_it_be(:key) { create(:key, user: user) }
+
+          it 'registers a new OTP session and returns success' do
+            allow_next_instance_of(Users::ValidateManualOtpService) do |service|
+              allow(service).to receive(:execute).with(otp).and_return(status: :success)
+            end
+
+            expect_next_instance_of(::Gitlab::Auth::Otp::SessionEnforcer) do |session_enforcer|
+              expect(session_enforcer).to receive(:update_session).once
+            end
+
+            subject
+
+            expect(json_response['success']).to be_truthy
+          end
+
+          context 'when SSH Keys are disabled by the group' do
+            before do
+              group.namespace_settings.update!(disable_ssh_keys: true)
+            end
+
+            it 'does not register a new OTP session and return an error message', :aggregate_failures do
+              expect(Users::ValidateManualOtpService).not_to receive(:new)
+
+              subject
+
+              expect(json_response['success']).to be_falsey
+              expect(json_response['message']).to eq('SSH keys are disabled for this user')
+            end
+          end
         end
       end
 
@@ -1118,7 +1286,7 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
   end
 
   describe 'POST /internal/two_factor_push_otp_check' do
-    let_it_be(:key) { create(:key, user: user) }
+    let(:key) { create(:key, user: user) }
 
     let(:key_id) { key.id }
     let(:otp) { '123456' }
@@ -1165,6 +1333,47 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
           subject
 
           expect(json_response['success']).to be_truthy
+        end
+
+        context 'for enterprise users', :saas do
+          before do
+            stub_licensed_features(git_two_factor_enforcement: true, disable_ssh_keys: true)
+            stub_saas_features(disable_ssh_keys: true)
+          end
+
+          let_it_be_with_reload(:group) { create(:group) }
+
+          let_it_be(:user) { create(:enterprise_user, :two_factor, enterprise_group: group) }
+          let_it_be(:key) { create(:key, user: user) }
+
+          it 'registers a new OTP session and returns success' do
+            allow_next_instance_of(Users::ValidatePushOtpService) do |service|
+              allow(service).to receive(:execute).and_return(status: :success)
+            end
+
+            expect_next_instance_of(::Gitlab::Auth::Otp::SessionEnforcer) do |session_enforcer|
+              expect(session_enforcer).to receive(:update_session).once
+            end
+
+            subject
+
+            expect(json_response['success']).to be_truthy
+          end
+
+          context 'when SSH Keys are disabled by the group' do
+            before do
+              group.namespace_settings.update!(disable_ssh_keys: true)
+            end
+
+            it 'does not register a new OTP session and return an error message', :aggregate_failures do
+              expect(Users::ValidatePushOtpService).not_to receive(:new)
+
+              subject
+
+              expect(json_response['success']).to be_falsey
+              expect(json_response['message']).to eq('SSH keys are disabled for this user')
+            end
+          end
         end
       end
 

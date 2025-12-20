@@ -3160,11 +3160,20 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         context 'on SaaS', :saas do
           before do
             stub_saas_features(disable_ssh_keys: true)
-            stub_feature_flags(enterprise_disable_ssh_keys: true)
           end
 
           it 'returns true' do
             expect(group.disable_ssh_keys?).to be_truthy
+          end
+
+          context 'when :enterprise_disable_ssh_keys FF is disabled' do
+            before do
+              stub_feature_flags(enterprise_disable_ssh_keys: false)
+            end
+
+            it 'returns false' do
+              expect(group.disable_ssh_keys?).to be_falsey
+            end
           end
 
           context 'for a subgroup' do
@@ -3181,39 +3190,47 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
 
     describe '#disable_ssh_keys_available?' do
-      context 'when all requirements met (licensed, SaaS, root group)', :saas do
-        before do
-          stub_licensed_features(disable_ssh_keys: true)
-          stub_saas_features(disable_ssh_keys: true)
-          stub_feature_flags(enterprise_disable_ssh_keys: true)
-        end
-
-        it 'returns true for root group' do
-          expect(group.disable_ssh_keys_available?).to be_truthy
-        end
-
-        it 'returns false for subgroup' do
-          subgroup = create(:group, parent: group)
-          expect(subgroup.disable_ssh_keys_available?).to be_falsey
+      context 'when not licensed' do
+        it 'returns false' do
+          expect(group.disable_ssh_keys_available?).to be_falsey
         end
       end
 
-      context 'when requirements not met' do
-        it 'returns false when not licensed' do
+      context 'when licensed' do
+        before do
+          stub_licensed_features(disable_ssh_keys: true)
+        end
+
+        it 'returns false' do
           expect(group.disable_ssh_keys_available?).to be_falsey
         end
 
-        it 'returns false when licensed but not SaaS' do
-          stub_licensed_features(disable_ssh_keys: true)
-          expect(group.disable_ssh_keys_available?).to be_falsey
-        end
+        context 'on SaaS', :saas do
+          before do
+            stub_saas_features(disable_ssh_keys: true)
+          end
 
-        it 'returns false when feature flag is disabled', :saas do
-          stub_licensed_features(disable_ssh_keys: true)
-          stub_saas_features(disable_ssh_keys: true)
-          stub_feature_flags(enterprise_disable_ssh_keys: false)
+          it 'returns true' do
+            expect(group.disable_ssh_keys_available?).to be_truthy
+          end
 
-          expect(group.disable_ssh_keys_available?).to be_falsey
+          context 'when :enterprise_disable_ssh_keys FF is disabled' do
+            before do
+              stub_feature_flags(enterprise_disable_ssh_keys: false)
+            end
+
+            it 'returns false' do
+              expect(group.disable_ssh_keys_available?).to be_falsey
+            end
+          end
+
+          context 'for a subgroup' do
+            let(:subgroup) { create(:group, parent: group) }
+
+            it 'returns false' do
+              expect(subgroup.disable_ssh_keys_available?).to be_falsey
+            end
+          end
         end
       end
     end

@@ -69,6 +69,7 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         :service_access_tokens_expiration_enforced | false | true
         :enforce_ssh_certificates | false | true
         :disable_personal_access_tokens | false | true
+        :disable_ssh_keys | false | true
         :remove_dormant_members | false | true
         :remove_dormant_members_period | 90 | 100
         :prevent_sharing_groups_outside_hierarchy | false | true

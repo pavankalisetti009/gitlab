@@ -4320,4 +4320,78 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
   end
+
+  describe '#ssh_keys_disabled?' do
+    let_it_be(:enterprise_group) { create(:group) }
+
+    context 'when user is not associated with an enterprise group' do
+      let(:user) { build(:user) }
+
+      it 'returns false' do
+        expect(user.ssh_keys_disabled?).to be(false)
+      end
+    end
+
+    context 'when user is associated with an enterprise group' do
+      let(:user) { build(:enterprise_user, enterprise_group: enterprise_group) }
+
+      context 'when group does not disable SSH keys' do
+        before do
+          allow(enterprise_group).to receive(:disable_ssh_keys?).and_return(false)
+        end
+
+        it 'returns false' do
+          expect(user.ssh_keys_disabled?).to be(false)
+        end
+      end
+
+      context 'when group disables SSH keys' do
+        before do
+          allow(enterprise_group).to receive(:disable_ssh_keys?).and_return(true)
+        end
+
+        it 'returns true' do
+          expect(user.ssh_keys_disabled?).to be(true)
+        end
+      end
+    end
+  end
+
+  describe '#require_ssh_key?' do
+    let_it_be(:enterprise_group) { create(:group) }
+
+    context 'when user does not have SSH keys' do
+      context 'when user is not associated with an enterprise group' do
+        let(:user) { build(:user) }
+
+        it 'returns true' do
+          expect(user.require_ssh_key?).to be(true)
+        end
+      end
+
+      context 'when user is associated with an enterprise group' do
+        let(:user) { build(:enterprise_user, enterprise_group: enterprise_group) }
+
+        context 'when group does not disable SSH keys' do
+          before do
+            allow(enterprise_group).to receive(:disable_ssh_keys?).and_return(false)
+          end
+
+          it 'returns true' do
+            expect(user.require_ssh_key?).to be(true)
+          end
+        end
+
+        context 'when group disables SSH keys' do
+          before do
+            allow(enterprise_group).to receive(:disable_ssh_keys?).and_return(true)
+          end
+
+          it 'returns false' do
+            expect(user.require_ssh_key?).to be(false)
+          end
+        end
+      end
+    end
+  end
 end

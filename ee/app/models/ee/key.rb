@@ -16,6 +16,10 @@ module EE
         validate :validate_expires_at_before_max_expiry_date
       end
 
+      validate :ensure_ssh_keys_enabled, on: :create
+
+      private
+
       def validate_expires_at_before_max_expiry_date
         return errors.add(:key, message: 'has no expiration date but an expiration date is required for SSH keys on this instance. Contact the instance administrator.') if expires_at.blank?
 
@@ -23,11 +27,15 @@ module EE
         max_expiry_date = (created_at.presence || Time.current) + ::Gitlab::CurrentSettings.max_ssh_key_lifetime.days
         errors.add(:key, message: 'has an invalid expiration date. Set a shorter lifetime for the key or contact the instance administrator.') if expires_at > max_expiry_date
       end
+
+      def ensure_ssh_keys_enabled
+        errors.add(:base, 'SSH keys are disabled for this user') if regular_key? && user && user.ssh_keys_disabled?
+      end
     end
 
     class_methods do
-      def regular_keys
-        where(type: ['LDAPKey', 'Key', nil])
+      def regular_key_types
+        super.push('LDAPKey')
       end
     end
 
