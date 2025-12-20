@@ -3,9 +3,9 @@
   testid: 'semantic-search-settings',
   expanded: expanded_by_default?) do |c|
   - c.with_description do
-    = _('Use Advanced Search cluster for semantic search.')
+    = _('Use the advanced search cluster for semantic search.')
   - c.with_body do
     %div
       - using_advanced_search = Ai::ActiveContext::Connection.active&.use_advanced_search_config_option
       = render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_elasticsearch_use_advanced_search_cluster_for_semantic_search_path, method: :post, disabled: using_advanced_search) do
-        = _('Connect to Advanced Search cluster')
+        = _('Connect to the advanced search cluster')
