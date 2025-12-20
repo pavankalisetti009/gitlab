@@ -58,16 +58,6 @@ class SamlProvider < ApplicationRecord
     enforced_group_managed_accounts? && super
   end
 
-  def last_linked_owner?(user)
-    return false unless group.owned_by?(user)
-    return false unless identities.for_user(user).exists?
-
-    identities
-      .for_user_ids(group.non_invite_owner_members.pluck_user_ids)
-      .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/436659")
-      .count == 1
-  end
-
   class DefaultOptions
     include Gitlab::Routing
 
