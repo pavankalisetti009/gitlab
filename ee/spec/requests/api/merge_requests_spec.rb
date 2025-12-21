@@ -163,6 +163,46 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
       put api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", user), params: params
     end
 
+    context 'with composite identity' do
+      let(:service_account) do
+        create(:user, :service_account, composite_identity_enforced: true, organization: organization, organizations: [organization, project.organization])
+      end
+
+      let(:organization) { create(:organization) }
+      let(:oauth_app) { create(:doorkeeper_application) }
+      let(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
+
+      let(:token) do
+        create(:oauth_access_token, {
+          organization: organization,
+          application: oauth_app,
+          resource_owner: service_account,
+          expires_in: 1.hour,
+          scopes: scopes
+        })
+      end
+
+      let(:params) do
+        { description: "test" }
+      end
+
+      before do
+        project.add_developer(service_account)
+      end
+
+      it 'attributes the MR description update to the service account' do
+        put api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", user, oauth_access_token: token), params: params
+
+        expect(response).to have_gitlab_http_status(:ok)
+        mr = MergeRequest.find(json_response['id'])
+        expect(mr.description).to eq("test")
+        expect(mr.notes.size).to eq(1)
+        update_note = mr.notes.first
+        expect(update_note.note).to eq("changed the description")
+        expect(update_note.author).to eq(service_account)
+      end
+    end
+
     context 'multiple assignees' do
       let(:other_user) { create(:user) }
       let(:params) do
