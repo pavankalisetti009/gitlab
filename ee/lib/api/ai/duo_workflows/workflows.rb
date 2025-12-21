@@ -429,7 +429,7 @@ module API
                   ServiceURI: Gitlab::DuoWorkflow::Client.url_for(feature_setting: feature_setting, user: current_user),
                   Secure: Gitlab::DuoWorkflow::Client.secure?,
                   McpServers: mcp_config_service.execute,
-                  LockConcurrentFlow: Feature.enabled?(:duo_workflow_lock_concurrent_flows, current_user)
+                  LockConcurrentFlow: true
                 }
               }
             end
