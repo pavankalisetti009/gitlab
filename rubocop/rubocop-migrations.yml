@@ -49,6 +49,8 @@ Migration/UpdateLargeTable:
   - :ci_pipeline_messages
   - :deployment_merge_requests
   - :import_source_user_placeholder_references
+  - :job_environments
+  - :lfs_objects
   - :lfs_objects_projects
   - :namespaces
   - :oauth_access_token_archived_records
@@ -56,7 +58,6 @@ Migration/UpdateLargeTable:
   - :personal_access_tokens
   - :project_authorizations_for_migration
   - :project_daily_statistics
-  - :project_uploads
   - :projects
   - :resource_state_events
   - :sbom_occurrence_refs
