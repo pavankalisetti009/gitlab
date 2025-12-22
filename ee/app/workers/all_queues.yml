@@ -1043,6 +1043,17 @@
   :idempotent: false
   :tags: []
   :queue_namespace: :cronjob
+- :name: dependency_proxy_blob:virtual_registries_cache_destroy_orphan_entries
+  :worker_name: VirtualRegistries::Cache::DestroyOrphanEntriesWorker
+  :feature_category: :virtual_registry
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags:
+  - :cronjob_child
+  :queue_namespace: :dependency_proxy_blob
 - :name: dependency_proxy_blob:virtual_registries_cache_mark_entries_for_destruction
   :worker_name: VirtualRegistries::Cache::MarkEntriesForDestructionWorker
   :feature_category: :virtual_registry
