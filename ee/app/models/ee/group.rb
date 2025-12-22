@@ -1062,6 +1062,12 @@ module EE
         licensed_feature_available?(:disable_personal_access_tokens)
     end
 
+    # Disable personal access tokens for enterprise users of this group
+    def disable_personal_access_tokens?
+      disable_personal_access_tokens_available? &&
+        namespace_settings.disable_personal_access_tokens?
+    end
+
     def allow_personal_snippets_available?(user = nil)
       root? &&
         enterprise_user_settings_available?(user) &&
@@ -1069,10 +1075,12 @@ module EE
         licensed_feature_available?(:allow_personal_snippets)
     end
 
-    # Disable personal access tokens for enterprise users of this group
-    def disable_personal_access_tokens?
-      disable_personal_access_tokens_available? &&
-        namespace_settings.disable_personal_access_tokens?
+    def disallow_personal_snippets?
+      root? &&
+        ::Feature.enabled?(:allow_personal_snippets_setting, self) &&
+        ::Gitlab::Saas.feature_available?(:allow_personal_snippets) &&
+        licensed_feature_available?(:allow_personal_snippets) &&
+        !namespace_settings.allow_personal_snippets?
     end
 
     def disable_ssh_keys_available?
