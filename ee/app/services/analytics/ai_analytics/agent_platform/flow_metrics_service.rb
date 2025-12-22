@@ -10,7 +10,25 @@ module Analytics
         FIELDS =
           %i[flow_type sessions_count median_execution_time users_count completion_rate].freeze
 
+        SORTING_FIELDS_MAP = {
+          sessions_count_asc: ['sessions_count', :asc],
+          sessions_count_desc: ['sessions_count', :desc],
+          users_count_asc: ['users_count', :asc],
+          users_count_desc: ['users_count', :desc],
+          median_time_asc: ['median_execution_time', :asc],
+          median_time_desc: ['median_execution_time', :desc]
+        }.freeze
+
+        def initialize(current_user, namespace:, from:, to:, fields: nil, **optional_parameters)
+          @optional_params = optional_parameters || {}
+          @sort = @optional_params[:sort]
+
+          super(current_user, namespace: namespace, from: from, to: to, fields: fields)
+        end
+
         private
+
+        attr_reader :sort
 
         def success_payload
           usage_data
@@ -49,7 +67,7 @@ module Analytics
         #        divide(countIf(`session_stats`.`finished_at` IS NOT NULL), COUNT(*)) * 100 AS completion_rate_percent
         # FROM `session_stats`
         # GROUP BY flow_type
-        # ORDER BY avg_execution_time_seconds ASC
+        # ORDER BY flow_type ASC
 
         def query
           cte_query = build_cte_query
@@ -109,15 +127,25 @@ module Analytics
 
         # Builds the query that selects from CTE table
         def outer_query_for(cte_table)
-          available_expressions = field_expressions_for(cte_table)
-          selected_fields = available_expressions.values_at(*fields).compact
+          # All the fields of the query are calculated with the exception of
+          # flow_type. If we are sorting by a calculated field we also need
+          # to include it in the SELECT statement.
+          sort_field, sort_direction = SORTING_FIELDS_MAP[sort]
+          fields << sort_field.to_sym if sort_field
 
-          ClickHouse::Client::QueryBuilder.new(cte_table.name)
-            .select(*selected_fields)
-            .group(:flow_type)
+          available_projections = projections_for(cte_table)
+          projections = available_projections.values_at(*fields).compact
+
+          builder =
+            ClickHouse::Client::QueryBuilder.new(cte_table.name)
+              .select(*projections)
+              .group(:flow_type)
+
+          builder = builder.order(Arel.sql(sort_field), sort_direction) if sort_field
+          builder.order(Arel.sql('flow_type'), :asc) # default order
         end
 
-        def field_expressions_for(cte_table)
+        def projections_for(cte_table)
           field_expressions = {}
 
           field_expressions[:flow_type] = :flow_type
