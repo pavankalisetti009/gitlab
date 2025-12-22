@@ -731,6 +731,8 @@
   - 2
 - - new_note
   - 2
+- - notifications_targeted_messages_destroy
+  - 1
 - - object_pool
   - 1
 - - object_storage

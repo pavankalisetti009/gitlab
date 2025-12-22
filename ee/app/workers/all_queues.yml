@@ -3126,6 +3126,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: notifications_targeted_messages_destroy
+  :worker_name: Notifications::TargetedMessages::DestroyWorker
+  :feature_category: :acquisition
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: onboarding_add_on_seat_assignment_iterable_trigger
   :worker_name: Onboarding::AddOnSeatAssignmentIterableTriggerWorker
   :feature_category: :onboarding
