@@ -51,6 +51,7 @@ module API
               { code: 401, message: '401 Unauthorized' },
               { code: 403, message: '403 Forbidden' }
             ]
+            tags %w[active_context]
           end
           get do
             present ::Ai::ActiveContext::Connection.all, with: ::API::Entities::Ai::ActiveContext::Connection
@@ -63,6 +64,7 @@ module API
               { code: 403, message: '403 Forbidden' },
               { code: 404, message: '404 Not found' }
             ]
+            tags %w[active_context]
           end
           params do
             requires :connection_id, type: Integer, desc: 'Connection ID'
@@ -82,6 +84,7 @@ module API
               { code: 403, message: '403 Forbidden' },
               { code: 404, message: '404 Not found' }
             ]
+            tags %w[active_context]
           end
           params do
             optional :connection_id, type: Integer, desc: 'Connection ID (defaults to active connection)'
@@ -103,6 +106,7 @@ module API
               { code: 403, message: '403 Forbidden' },
               { code: 404, message: '404 Not found' }
             ]
+            tags %w[active_context]
           end
           params do
             requires :id, types: [String, Integer], desc: 'Collection name or ID'
@@ -134,6 +138,7 @@ module API
               { code: 403, message: '403 Forbidden' },
               { code: 404, message: '404 Not found' }
             ]
+            tags %w[active_context]
           end
           params do
             requires :namespace_id, types: [String, Integer], desc: 'Namespace path or ID'
