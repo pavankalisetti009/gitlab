@@ -36,6 +36,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_many(:converted_statuses).class_name('WorkItems::Statuses::Custom::Status') }
   it { is_expected.to have_many(:enabled_foundational_flow_records).class_name('Ai::Catalog::EnabledFoundationalFlow') }
   it { is_expected.to have_many(:accessible_ai_features_on_instance).class_name('Ai::FeatureAccessRule') }
+  it { is_expected.to have_many(:ai_feature_rules_through_namespace).class_name('Ai::NamespaceFeatureAccessRule') }
+  it { is_expected.to have_many(:ai_feature_rules).class_name('Ai::NamespaceFeatureAccessRule') }
 
   it { is_expected.to delegate_method(:trial?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_ends_on).to(:gitlab_subscription) }
