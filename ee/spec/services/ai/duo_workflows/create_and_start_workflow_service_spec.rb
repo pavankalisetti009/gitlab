@@ -15,7 +15,8 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
   let(:source_branch) { 'feature/add-workflow' }
   let(:workflow_definition) do
     ::Ai::DuoWorkflows::WorkflowDefinition.new(
-      name: 'flow_name/experimental'
+      name: 'flow_name/experimental',
+      workflow_definition: 'flow_name/experimental'
     )
   end
 
@@ -83,6 +84,60 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     ::Ai::Setting.instance.update!(duo_workflow_service_account_user: instance_wide_duo_developer)
   end
 
+  describe '#workflow_definition_reference' do
+    it 'returns foundational_flow_reference for foundational workflows' do
+      workflow_def = ::Ai::DuoWorkflows::WorkflowDefinition.new(
+        name: 'code_review/v1',
+        foundational_flow_reference: 'code_review/v1'
+      )
+
+      service = described_class.new(
+        container: project,
+        current_user: current_user,
+        goal: goal,
+        source_branch: source_branch,
+        workflow_definition: workflow_def
+      )
+
+      expect(service.send(:workflow_definition_reference)).to eq('code_review/v1')
+    end
+
+    it 'returns workflow_definition for non-foundational workflows' do
+      workflow_def = ::Ai::DuoWorkflows::WorkflowDefinition.new(
+        name: 'resolve_sast_vulnerability/v1',
+        workflow_definition: 'resolve_sast_vulnerability/v1'
+      )
+
+      service = described_class.new(
+        container: project,
+        current_user: current_user,
+        goal: goal,
+        source_branch: source_branch,
+        workflow_definition: workflow_def
+      )
+
+      expect(service.send(:workflow_definition_reference)).to eq('resolve_sast_vulnerability/v1')
+    end
+
+    it 'prioritizes foundational_flow_reference when both are present' do
+      workflow_def = ::Ai::DuoWorkflows::WorkflowDefinition.new(
+        name: 'code_review/v1',
+        foundational_flow_reference: 'code_review/v1',
+        workflow_definition: 'code_review/v1'
+      )
+
+      service = described_class.new(
+        container: project,
+        current_user: current_user,
+        goal: goal,
+        source_branch: source_branch,
+        workflow_definition: workflow_def
+      )
+
+      expect(service.send(:workflow_definition_reference)).to eq('code_review/v1')
+    end
+  end
+
   context 'when workflow definition is not provided' do
     let(:workflow_definition) { nil }
 
@@ -122,6 +177,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
 
       workflow = Ai::DuoWorkflows::Workflow.find_by(id: workflow_id)
       expect(workflow).to be_a(Ai::DuoWorkflows::Workflow)
+      expect(workflow.workflow_definition).to eq('flow_name/experimental')
 
       expect(workload_id).not_to be_nil
       expect(workflow.workflows_workloads.first).to have_attributes(project_id: project.id, workload_id: workload_id)
@@ -166,6 +222,15 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
         workload = Ci::Workloads::Workload.find_by(id: [workload_id])
 
         expect(workload.pipeline.user).to eq(group_level_duo_developer)
+      end
+
+      it 'creates workflow with foundational_flow_reference as workflow_definition' do
+        expect(result).to be_success
+
+        workflow_id = result.payload[:workflow_id]
+        workflow = Ai::DuoWorkflows::Workflow.find_by(id: workflow_id)
+
+        expect(workflow.workflow_definition).to eq(foundational_flow_reference)
       end
     end
 

@@ -67,7 +67,7 @@ module Ai
           current_user: current_user,
           organization: container.organization,
           container: container,
-          workflow_definition: workflow_definition.name,
+          workflow_definition: workflow_definition_reference,
           service_account: service_account
         )
       end
@@ -76,12 +76,16 @@ module Ai
       def create_workflow_params
         {
           goal: goal,
-          workflow_definition: workflow_definition.name,
+          workflow_definition: workflow_definition_reference,
           agent_privileges: workflow_definition.agent_privileges,
           pre_approved_agent_privileges: workflow_definition.pre_approved_agent_privileges,
           allow_agent_to_request_user: workflow_definition.allow_agent_to_request_user,
           environment: workflow_definition.environment
         }
+      end
+
+      def workflow_definition_reference
+        workflow_definition.foundational_flow_reference || workflow_definition.workflow_definition
       end
 
       def start_workflow_params(workflow)

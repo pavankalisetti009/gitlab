@@ -45,7 +45,7 @@ module Ai
           is_new_record = item.new_record?
 
           item.assign_attributes(
-            name: humanize_workflow_name(workflow_name),
+            name: workflow_def[:display_name] || humanize_workflow_name(workflow_name),
             description: workflow_def[:description] || workflow_name,
             item_type: ::Ai::Catalog::Item::FLOW_TYPE,
             organization_id: default_organization.id,
