@@ -20,7 +20,7 @@ module Security
 
     after_commit :trigger_security_policies_updates, if: :saved_change_to_csp_namespace_id?
 
-    def self.for_organization(organization)
+    def self.in_organization(organization)
       safe_find_or_create_by(organization: organization) # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- only uses a subtransaction if creating a record, which should only happen once per organization
     end
 

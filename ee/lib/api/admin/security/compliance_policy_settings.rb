@@ -17,7 +17,7 @@ module API
           end
 
           def policy_setting
-            @policy_setting ||= ::Security::PolicySetting.for_organization(
+            @policy_setting ||= ::Security::PolicySetting.in_organization(
               ::Organizations::Organization.default_organization
             )
           end

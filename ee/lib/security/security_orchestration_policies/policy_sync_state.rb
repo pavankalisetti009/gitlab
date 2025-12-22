@@ -318,7 +318,7 @@ module Security
 
         def csp_namespace_id
           Security::PolicySetting
-            .for_organization(::Organizations::Organization.default_organization)
+            .in_organization(::Organizations::Organization.default_organization)
             .csp_namespace_id
         end
 

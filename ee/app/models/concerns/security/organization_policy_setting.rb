@@ -8,7 +8,7 @@ module Security
     private
 
     def organization_policy_setting
-      ::Security::PolicySetting.for_organization(organization)
+      ::Security::PolicySetting.in_organization(organization)
     end
     strong_memoize_attr :organization_policy_setting
 

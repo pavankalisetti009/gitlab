@@ -18,7 +18,7 @@ module Vulnerabilities
       project = Project.find_by_id(project_id)
       return unless project
 
-      bot_user = Users::Internal.for_organization(project.organization).security_bot
+      bot_user = Users::Internal.in_organization(project.organization).security_bot
       resolvable_vulnerabilities(dropped_identifier_ids) do |vulnerabilities|
         next unless vulnerabilities.present?
 

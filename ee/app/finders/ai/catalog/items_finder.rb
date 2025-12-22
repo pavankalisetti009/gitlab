@@ -32,7 +32,7 @@ module Ai
       def by_organization(items)
         return items unless params[:organization]
 
-        items.for_organization(params[:organization])
+        items.in_organization(params[:organization])
       end
 
       def by_project(items)

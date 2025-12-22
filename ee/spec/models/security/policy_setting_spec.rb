@@ -72,16 +72,16 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
     end
   end
 
-  describe '.for_organization' do
-    subject(:for_organization) { described_class.for_organization(organization) }
+  describe '.in_organization' do
+    subject(:in_organization) { described_class.in_organization(organization) }
 
     context 'when an entry does not exist' do
       it 'creates an entry' do
-        expect { for_organization }.to change { described_class.count }.by(1)
+        expect { in_organization }.to change { described_class.count }.by(1)
       end
 
       it 'sets default attributes' do
-        expect(for_organization).to have_attributes(csp_namespace_id: nil)
+        expect(in_organization).to have_attributes(csp_namespace_id: nil)
       end
     end
 
@@ -91,11 +91,11 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
       end
 
       it 'does not create a new entry' do
-        expect { for_organization }.not_to change { described_class.count }
+        expect { in_organization }.not_to change { described_class.count }
       end
 
       it 'returns the existing entry' do
-        expect(for_organization).to eq(settings)
+        expect(in_organization).to eq(settings)
       end
     end
   end

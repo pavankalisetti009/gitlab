@@ -2553,7 +2553,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           :note,
           project: merge_request.project,
           noteable: merge_request,
-          author: Users::Internal.for_organization(merge_request.project.organization).security_bot,
+          author: Users::Internal.in_organization(merge_request.project.organization).security_bot,
           note: 'Other note'
         )
       end

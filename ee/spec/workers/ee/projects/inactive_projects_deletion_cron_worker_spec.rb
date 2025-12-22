@@ -32,7 +32,7 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
         .tap { |project| project.update!(last_activity_at: 1.month.ago) }
     end
 
-    let_it_be(:admin_bot) { ::Users::Internal.for_organization(new_blank_project.organization).admin_bot }
+    let_it_be(:admin_bot) { ::Users::Internal.in_organization(new_blank_project.organization).admin_bot }
 
     let_it_be(:delay) { anything }
 
