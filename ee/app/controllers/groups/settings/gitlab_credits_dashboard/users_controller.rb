@@ -2,23 +2,25 @@
 
 module Groups
   module Settings
-    module GitlabDuo
-      class UsageController < Groups::ApplicationController
+    module GitlabCreditsDashboard
+      class UsersController < Groups::ApplicationController
         before_action :authorize_read_usage_quotas!
         before_action :ensure_feature_available!
-        before_action do
-          push_namespace_setting(:display_gitlab_credits_user_data, @group)
-        end
 
         feature_category :consumables_cost_management
+
+        def show
+          @username = params.permit(:username)[:username]
+        end
 
         private
 
         def ensure_feature_available!
           return render_404 unless Feature.enabled?(:usage_billing_dev, @group)
           return render_404 unless Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+          return render_404 unless @group.licensed_feature_available?(:group_usage_billing)
 
-          render_404 unless @group.licensed_feature_available?(:group_usage_billing)
+          render_404 unless @group.namespace_settings.display_gitlab_credits_user_data
         end
       end
     end

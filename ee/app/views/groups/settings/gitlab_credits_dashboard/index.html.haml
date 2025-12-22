@@ -1,9 +1,8 @@
 - title_text = s_('UsageBilling|GitLab Credits dashboard')
 - page_title title_text
 - breadcrumb_title title_text
-- add_to_breadcrumbs(_('GitLab Duo'), group_settings_gitlab_duo_path(@group))
 
 #js-group-usage-billing-dashboard{ data: {
-  user_usage_path: group_settings_gitlab_duo_usage_user_path(@group, ':username'),
+  user_usage_path: group_settings_gitlab_credits_dashboard_user_path(@group, ':username'),
   namespace_path: @group.full_path
  } }

@@ -30,7 +30,7 @@ export default {
     isAdminInstanceDuoHome: { default: false },
     modelSwitchingEnabled: { default: false },
     modelSwitchingPath: { default: '' },
-    usageDashboardPath: { default: '' },
+    gitlabCreditsDashboardPath: { default: '' },
   },
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
@@ -149,8 +149,8 @@ export default {
               :duo-models-configuration-props="duoModelsConfigurationProps"
             />
             <duo-usage-analytics-card
-              v-if="usageDashboardPath"
-              :dashboard-path="usageDashboardPath"
+              v-if="gitlabCreditsDashboardPath"
+              :dashboard-path="gitlabCreditsDashboardPath"
             />
           </section>
         </div>

@@ -178,20 +178,22 @@ RSpec.describe 'Group routing', "routing" do
     end
   end
 
-  describe Groups::Settings::GitlabDuo::UsageController, 'routing', feature_category: :consumables_cost_management do
+  describe Groups::Settings::GitlabCreditsDashboardController, 'routing',
+    feature_category: :consumables_cost_management do
     it 'routes / to #index' do
-      expect(get('/groups/gitlabhq/-/settings/gitlab_duo/usage')).to route_to(
-        controller: 'groups/settings/gitlab_duo/usage',
+      expect(get('/groups/gitlabhq/-/settings/gitlab_credits_dashboard')).to route_to(
+        controller: 'groups/settings/gitlab_credits_dashboard',
         action: 'index',
         group_id: 'gitlabhq'
       )
     end
   end
 
-  describe Groups::Settings::GitlabDuo::Usage::UsersController, 'routing', feature_category: :consumables_cost_management do
+  describe Groups::Settings::GitlabCreditsDashboard::UsersController, 'routing',
+    feature_category: :consumables_cost_management do
     it 'routes / to #show' do
-      expect(get('/groups/gitlabhq/-/settings/gitlab_duo/usage/users/john_doe')).to route_to(
-        controller: 'groups/settings/gitlab_duo/usage/users',
+      expect(get('/groups/gitlabhq/-/settings/gitlab_credits_dashboard/users/john_doe')).to route_to(
+        controller: 'groups/settings/gitlab_credits_dashboard/users',
         action: 'show',
         group_id: 'gitlabhq',
         username: 'john_doe'

@@ -29,7 +29,7 @@ export function initGitLabDuoHome() {
         arePromptCacheSettingsAllowed: parseBoolean(data.arePromptCacheSettingsAllowed),
         areDuoCoreFeaturesEnabled: parseBoolean(data.areDuoCoreFeaturesEnabled),
         initialDuoRemoteFlowsAvailability: parseBoolean(data.duoRemoteFlowsAvailability),
-        usageDashboardPath: data.usageDashboardPath,
+        gitlabCreditsDashboardPath: data.gitlabCreditsDashboardPath,
       };
     },
     render(createElement) {

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_category: :consumables_cost_management do
+RSpec.describe Groups::Settings::GitlabCreditsDashboard::UsersController, feature_category: :consumables_cost_management do
   let_it_be(:user) { create(:user) }
   let_it_be_with_reload(:group) { create(:group) }
 
@@ -14,8 +14,8 @@ RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_cate
     stub_feature_flags(usage_billing_dev: usage_billing_dev_enabled)
   end
 
-  describe 'GET /groups/*group_id/-/settings/gitlab_duo/usage/users/:username' do
-    subject(:request) { get group_settings_gitlab_duo_usage_user_path(group, username: user) }
+  describe 'GET /groups/*group_id/-/settings/gitlab_credits_dashboard/users/:username' do
+    subject(:request) { get group_settings_gitlab_credits_dashboard_user_path(group, username: user) }
 
     context 'when user is an owner' do
       before_all do
@@ -34,7 +34,7 @@ RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_cate
         end
 
         context 'when group is paid' do
-          subject(:request) { get group_settings_gitlab_duo_usage_user_path(paid_group, username: user) }
+          subject(:request) { get group_settings_gitlab_credits_dashboard_user_path(paid_group, username: user) }
 
           let_it_be(:paid_group) { create(:group_with_plan, plan: :premium_plan) }
 
@@ -84,7 +84,7 @@ RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_cate
     end
 
     context 'when user is not an owner', :saas do
-      subject(:request) { get group_settings_gitlab_duo_usage_user_path(paid_group, username: user) }
+      subject(:request) { get group_settings_gitlab_credits_dashboard_user_path(paid_group, username: user) }
 
       let_it_be(:paid_group) { create(:group_with_plan, plan: :premium_plan) }
 
