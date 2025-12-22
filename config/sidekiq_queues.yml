@@ -1151,6 +1151,8 @@
   - 1
 - - terraform
   - 1
+- - timed_out_builds
+  - 1
 - - todos_destroyer
   - 1
 - - unassign_issuables
