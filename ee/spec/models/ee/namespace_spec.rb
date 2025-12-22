@@ -67,9 +67,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:duo_workflow_mcp_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
   it { is_expected.to delegate_method(:prompt_injection_protection_level).to(:ai_settings).allow_nil }
   it { is_expected.to delegate_method(:prompt_injection_protection_level=).to(:ai_settings).with_arguments(:args).allow_nil }
-  it { is_expected.to delegate_method(:foundational_agents_default_enabled).to(:ai_settings).allow_nil }
-  it { is_expected.to delegate_method(:foundational_agents_default_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
-  it { is_expected.to accept_nested_attributes_for(:ai_settings).update_only(true) }
   it { is_expected.to delegate_method(:duo_remote_flows_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:lock_duo_remote_flows_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:duo_foundational_flows_enabled).to(:namespace_settings) }
@@ -3218,6 +3215,42 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
           expect(sub_group.duo_core_features_enabled?).to eq(false)
         end
       end
+    end
+  end
+
+  describe '#foundational_agents_default_enabled' do
+    it 'provides safe defaults when there is no ai_settings record exists' do
+      expect(namespace.ai_settings).to be_nil
+      expect(namespace.foundational_agents_default_enabled).to be true
+    end
+  end
+
+  describe '#foundational_agents_default_enabled=' do
+    it 'persists ai_settings record via nested attributes' do
+      expect(namespace.ai_settings).to be_nil
+
+      namespace.update!(ai_settings_attributes: { foundational_agents_default_enabled: false })
+
+      expect(namespace.ai_settings).to be_persisted
+      expect(namespace.ai_settings.reload.foundational_agents_default_enabled).to be false
+    end
+  end
+
+  describe '#duo_agent_platform_enabled' do
+    it 'provides safe defaults when there is no ai_settings record exists' do
+      expect(namespace.ai_settings).to be_nil
+      expect(namespace.duo_agent_platform_enabled).to be true
+    end
+  end
+
+  describe '#duo_agent_platform_enabled=' do
+    it 'persists ai_settings record via nested attributes' do
+      expect(namespace.ai_settings).to be_nil
+
+      namespace.update!(ai_settings_attributes: { duo_agent_platform_enabled: false })
+
+      expect(namespace.ai_settings).to be_persisted
+      expect(namespace.ai_settings.reload.duo_agent_platform_enabled).to be false
     end
   end
 

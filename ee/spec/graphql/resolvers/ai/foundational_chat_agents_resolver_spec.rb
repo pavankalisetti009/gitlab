@@ -16,6 +16,12 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
   let_it_be(:subgroup1) { create(:group, parent: root_namespace_foundational_agents_enabled) }
   let_it_be(:project1) { create(:project, namespace: subgroup1) }
   let_it_be(:root_namespace_foundational_agents_disabled) { create(:group) }
+  let_it_be(:namespace_ai_settings_disabled) do
+    create(:namespace_ai_settings,
+      foundational_agents_default_enabled: false,
+      namespace: root_namespace_foundational_agents_disabled)
+  end
+
   let_it_be(:subgroup2) { create(:group, parent: root_namespace_foundational_agents_disabled) }
   let_it_be(:project2) { create(:project, namespace: subgroup2) }
 

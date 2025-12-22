@@ -63,9 +63,7 @@ module Ai
 
           root_namespace = container.root_ancestor
 
-          return false if root_namespace.ai_settings&.duo_agent_platform_enabled == false
-
-          true
+          root_namespace.duo_agent_platform_enabled
         else
           # For self-managed/dedicated instances, use instance-level settings
           ai_settings.duo_agent_platform_enabled
