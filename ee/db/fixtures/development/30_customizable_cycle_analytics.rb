@@ -27,9 +27,9 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
   MERGE_REQUEST_COUNT = 10
   GROUP_LABEL_COUNT = 10
 
-  def initialize(organization:, project: nil)
+  def initialize(project: nil)
     @user = User.admins.first
-    @organization = organization
+    @organization = @user.organization
     @project = project || create_vsm_project!
     @group = @project.group.root_ancestor
   end
@@ -261,7 +261,7 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
           confirmed_at: DateTime.now,
           password: ::User.random_password
         ) do |user|
-          user.assign_personal_namespace(Organizations::Organization.default_organization)
+          user.assign_personal_namespace(organization)
         end
 
       project.group&.add_developer(developer)
@@ -292,10 +292,7 @@ Gitlab::Seeder.quiet do
   project = Project.find(project_id) if project_id
 
   if ENV[flag]
-    seeder = Gitlab::Seeder::CustomizableCycleAnalytics.new(
-      project: project,
-      organization: Organizations::Organization.default_organization
-    )
+    seeder = Gitlab::Seeder::CustomizableCycleAnalytics.new(project: project)
     seeder.seed!
   else
     puts "Skipped. Use the `#{flag}` environment variable to enable."

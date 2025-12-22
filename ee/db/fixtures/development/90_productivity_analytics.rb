@@ -16,10 +16,11 @@ require 'active_support/testing/time_helpers'
 class Gitlab::Seeder::ProductivityAnalytics
   include ActiveSupport::Testing::TimeHelpers
 
-  attr_reader :project, :maintainers, :admin, :default_branch
+  attr_reader :project, :maintainers, :admin, :default_branch, :organization
 
   def initialize(project)
     @admin = User.admins.first
+    @organization = @admin.organization
     @project = project || create_project_with_group
     @issue_count = 10
     @maintainers = []
@@ -95,7 +96,7 @@ class Gitlab::Seeder::ProductivityAnalytics
         name: "Productivity Group #{suffix}",
         path: "p-analytics-group-#{suffix}",
         description: FFaker::Lorem.sentence,
-        organization: Organizations::Organization.default_organization
+        organization: organization
       )
 
       group.save!
