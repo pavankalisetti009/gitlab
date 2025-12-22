@@ -79,7 +79,7 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
         service.execute
 
         existing_item.reload
-        expect(existing_item.name).to eq('Code review/v1')
+        expect(existing_item.name).to eq('Code Review')
         expect(existing_item.versions.count).to eq(1)
       end
     end
@@ -111,6 +111,91 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
         service.execute
 
         expect(Ai::Catalog::Item.foundational_flows.count).to eq(workflows_with_reference)
+      end
+
+      it 'does not seed non-foundational workflows' do
+        service.execute
+
+        non_foundational_item = Ai::Catalog::Item.find_by(
+          foundational_flow_reference: 'resolve_sast_vulnerability/v1'
+        )
+
+        expect(non_foundational_item).to be_nil
+      end
+    end
+
+    context 'with display_name usage' do
+      it 'uses display_name from workflow definition instead of humanized name' do
+        service.execute
+
+        code_review_item = Ai::Catalog::Item.find_by(foundational_flow_reference: 'code_review/v1')
+
+        expect(code_review_item.name).to eq('Code Review')
+        expect(code_review_item.name).not_to eq('Code review/v1')
+      end
+    end
+
+    context 'with workflow attributes mapping' do
+      it 'correctly maps all workflow attributes for Code Review flow' do
+        service.execute
+
+        code_review_item = Ai::Catalog::Item.find_by(foundational_flow_reference: 'code_review/v1')
+
+        expect(code_review_item).to have_attributes(
+          name: 'Code Review',
+          description: 'The Code Review Flow helps you streamline code reviews with agentic AI.',
+          foundational_flow_reference: 'code_review/v1',
+          item_type: 'flow',
+          verification_level: 'gitlab_maintained',
+          public: true
+        )
+      end
+
+      it 'correctly maps all workflow attributes for SAST FP Detection flow' do
+        service.execute
+
+        sast_item = Ai::Catalog::Item.find_by(foundational_flow_reference: 'sast_fp_detection/v1')
+
+        expect(sast_item).to have_attributes(
+          name: 'SAST False Positive Detection',
+          description: 'SAST false positive detection automatically analyzes critical SAST vulnerabilities.',
+          foundational_flow_reference: 'sast_fp_detection/v1',
+          item_type: 'flow',
+          verification_level: 'gitlab_maintained',
+          public: true
+        )
+      end
+
+      it 'correctly maps all workflow attributes for Developer flow' do
+        service.execute
+
+        developer_item = Ai::Catalog::Item.find_by(foundational_flow_reference: 'developer/v1')
+
+        expect(developer_item).to have_attributes(
+          name: 'Developer',
+          description:
+            'The Developer Flow streamlines the process of converting issues into actionable merge requests.',
+          foundational_flow_reference: 'developer/v1',
+          item_type: 'flow',
+          verification_level: 'gitlab_maintained',
+          public: true
+        )
+      end
+
+      it 'seeds exactly 5 foundational workflows' do
+        service.execute
+
+        # We have 5 foundational workflows and 1 non-foundational
+        expect(Ai::Catalog::Item.foundational_flows.count).to eq(5)
+      end
+
+      it 'ensures all seeded items have descriptions' do
+        service.execute
+
+        Ai::Catalog::Item.foundational_flows.each do |item|
+          expect(item.description).to be_present
+          expect(item.description).not_to include('/v1')
+        end
       end
     end
   end

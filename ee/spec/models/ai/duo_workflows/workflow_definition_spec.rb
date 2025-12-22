@@ -4,16 +4,22 @@ require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agent_platform do
   describe '.[]' do
-    subject(:definition) { described_class[name] }
+    subject(:definition) { described_class[key] }
 
     context 'with a valid name' do
-      let(:name) { 'code_review/v1' }
+      let(:key) { 'code_review/v1' }
 
-      it { is_expected.to eq(described_class.find_by(name: name)) }
+      it { is_expected.to eq(described_class.find_by(name: key)) }
     end
 
-    context 'with a invalid name' do
-      let(:name) { 'foo' }
+    context 'with a valid display_name (for backward compatibility)' do
+      let(:key) { 'Code Review' }
+
+      it { is_expected.to eq(described_class.find_by(display_name: key)) }
+    end
+
+    context 'with a invalid key' do
+      let(:key) { 'foo' }
 
       it { is_expected.to be_nil }
     end
@@ -83,7 +89,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
       let(:definition) { described_class.find_by(name: 'code_review/v1') }
 
       it 'returns the description' do
-        expect(description).to eq('GitLab Code Review')
+        expect(description).to eq('The Code Review Flow helps you streamline code reviews with agentic AI.')
       end
     end
 
@@ -92,6 +98,26 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
 
       it 'returns nil' do
         expect(description).to be_nil
+      end
+    end
+  end
+
+  describe '#display_name' do
+    subject(:display_name) { definition.display_name }
+
+    context 'when display_name is set' do
+      let(:definition) { described_class.find_by(name: 'code_review/v1') }
+
+      it 'returns the display_name without /v1' do
+        expect(display_name).to eq('Code Review')
+      end
+    end
+
+    context 'when display_name is not set' do
+      let(:definition) { described_class.new(workflow_definition: 'test/v1', name: 'test/v1', ai_feature: 'test') }
+
+      it 'returns nil' do
+        expect(display_name).to be_nil
       end
     end
   end
@@ -131,12 +157,28 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
       end
     end
 
+    it 'includes non-foundational workflow with workflow_definition' do
+      non_foundational_workflow = described_class::ITEMS.find do |item|
+        item[:foundational_flow_reference].blank?
+      end
+
+      expect(non_foundational_workflow).to be_present
+      expect(non_foundational_workflow[:workflow_definition]).to eq('resolve_sast_vulnerability/v1')
+    end
+
     it 'allows workflows without foundational_flow_reference' do
       all_items = described_class::ITEMS
       foundational_items = all_items.select { |item| item[:foundational_flow_reference].present? }
 
       # It's ok if there are more items than foundational ones
       expect(all_items.size).to be >= foundational_items.size
+    end
+
+    it 'has name with /v1 suffix and display_name without' do
+      described_class::ITEMS.each do |workflow|
+        expect(workflow[:name]).to include('/v1')
+        expect(workflow[:display_name]).not_to include('/v1')
+      end
     end
   end
 end
