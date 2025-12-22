@@ -4,6 +4,8 @@ import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
 import { getNewStatusOptionsFromTheSameState, getDefaultStatusMapping } from '../utils';
 
+const FALLBACK_ICON_NAME = 'status-waiting';
+
 export default {
   name: 'StatusMapping',
   components: {
@@ -117,7 +119,7 @@ export default {
       return this.statusConfigs[status.id]?.selectedStatusId;
     },
     getSelectedStatusIcon(status) {
-      return this.statusConfigs[status.id]?.iconName;
+      return this.statusConfigs[status.id]?.iconName || FALLBACK_ICON_NAME;
     },
     getEligibleItemsForStatus(status) {
       return this.statusConfigs[status.id]?.eligibleItems || [];

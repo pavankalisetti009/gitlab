@@ -77,7 +77,7 @@ export default {
         wrapper-component="button"
         wrapper-component-class="issuable-weight gl-text-subtle gl-bg-transparent gl-border-0 gl-p-0 focus-visible:gl-focus-inset"
         icon-name="weight"
-        icon-size="12"
+        :icon-size="12"
         :title="`${weight}`"
         :tooltip-text="__('Weight')"
         tooltip-placement="top"
