@@ -4,6 +4,7 @@ module Vulnerabilities
   module Flags
     class DismissFalsePositiveService
       include Gitlab::Allowable
+      include Gitlab::InternalEventsTracking
 
       MANUAL_ORIGIN_PREFIX = 'manual'
 
@@ -48,6 +49,8 @@ module Vulnerabilities
           send_audit_event
           ::Vulnerabilities::EsHelper.sync_elasticsearch([vulnerability.id])
 
+          track_event(flag)
+
           ServiceResponse.success(payload: { flag: flag, is_new_flag: true })
         else
           ServiceResponse.error(message: flag.errors.full_messages.join(', '))
@@ -78,6 +81,19 @@ module Vulnerabilities
         return false unless latest_flag&.confidence_score
 
         latest_flag.confidence_score > 0.0
+      end
+
+      def track_event(flag)
+        track_internal_event(
+          'dismiss_sast_vulnerability_false_positive_analysis',
+          user: user,
+          project: project,
+          additional_properties: {
+            label: flag.origin,
+            value: vulnerability.id,
+            property: vulnerability.severity
+          }
+        )
       end
     end
   end
