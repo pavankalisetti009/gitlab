@@ -18,7 +18,7 @@ RSpec.describe 'Admin mode', :js, feature_category: :permissions do
         it 'can enter admin mode via admin button' do
           visit root_dashboard_path
 
-          find_by_testid('user-avatar-content').click if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
+          find_by_testid('user-avatar-content').click
           click_link 'Admin'
 
           wait_for_requests
@@ -38,6 +38,7 @@ RSpec.describe 'Admin mode', :js, feature_category: :permissions do
           it 'can access admin dashboard without entering admin mode' do
             visit root_dashboard_path
 
+            expect(page).to have_link('Admin')
             click_link 'Admin'
 
             expect(page).to have_current_path(admin_root_path)
@@ -53,6 +54,7 @@ RSpec.describe 'Admin mode', :js, feature_category: :permissions do
         it 'can access admin dashboard without entering admin mode' do
           visit root_dashboard_path
 
+          expect(page).to have_link('Admin')
           click_link 'Admin'
 
           expect(page).to have_current_path(admin_root_path)
