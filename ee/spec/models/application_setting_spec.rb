@@ -845,16 +845,20 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         it 'returns rules' do
           expect(setting.duo_namespace_access_rules).to match_array([
             {
-              namespace_id: namespace_a.id,
-              namespace_name: namespace_a.name,
-              namespace_path: namespace_a.full_path,
-              access_rules: %w[duo_classic duo_agents]
+              through_namespace: {
+                id: namespace_a.id,
+                name: namespace_a.name,
+                full_path: namespace_a.full_path
+              },
+              features: %w[duo_classic duo_agents]
             },
             {
-              namespace_id: namespace_b.id,
-              namespace_name: namespace_b.name,
-              namespace_path: namespace_b.full_path,
-              access_rules: %w[duo_flows]
+              through_namespace: {
+                id: namespace_b.id,
+                name: namespace_b.name,
+                full_path: namespace_b.full_path
+              },
+              features: %w[duo_flows]
             }
           ])
         end

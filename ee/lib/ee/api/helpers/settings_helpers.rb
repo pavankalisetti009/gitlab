@@ -70,6 +70,14 @@ module EE
             optional :auto_duo_code_review_enabled, type: ::Grape::API::Boolean, desc: "Enable automatic reviews by GitLab Duo on merge requests"
             optional :duo_remote_flows_enabled, type: ::Grape::API::Boolean, desc: "Indicates whether GitLab Duo remote flows are enabled for the instance"
             optional :lock_duo_remote_flows_enabled, type: ::Grape::API::Boolean, desc: "Indicates if the GitLab Duo remote flows enabled setting is enforced for all subgroups"
+            optional :duo_namespace_access_rules, type: Array, desc: 'AI entity access rules for controlling Duo feature access' do
+              requires :through_namespace, type: Hash, desc: 'Object containing through namespace information' do
+                requires :id, type: Integer, desc: 'ID of the through namespace'
+                optional :name, type: String, desc: 'Name of the through namespace'
+                optional :full_path, type: String, desc: 'Full path of the through namespace'
+              end
+              requires :features, type: Array[String], desc: 'List of accessible features', allow_blank: true
+            end
           end
         end
 

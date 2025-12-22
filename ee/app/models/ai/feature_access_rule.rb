@@ -14,13 +14,15 @@ module Ai
       def duo_namespace_access_rules
         return [] unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
 
-        all.includes(:through_namespace).group_by(&:through_namespace_id).map do |namespace_id, rules|
-          namespace = rules.first.through_namespace
+        all.includes(:through_namespace).group_by(&:through_namespace_id).map do |_, rules|
+          through_namespace = rules.first.through_namespace
           {
-            namespace_id: namespace_id,
-            namespace_name: namespace.name,
-            namespace_path: namespace.full_path,
-            access_rules: rules.map(&:accessible_entity)
+            through_namespace: {
+              id: through_namespace.id,
+              name: through_namespace.name,
+              full_path: through_namespace.full_path
+            },
+            features: rules.map(&:accessible_entity)
           }
         end
       end
@@ -36,9 +38,12 @@ module Ai
 
         timestamp = Time.current
         rules = values.flat_map do |rule|
-          rule[:access_rules].map do |access_entity|
+          features = rule[:features].reject(&:blank?)
+          next [] if features.blank?
+
+          features.map do |access_entity|
             new(
-              through_namespace_id: rule[:namespace_id],
+              through_namespace_id: rule.dig(:through_namespace, :id),
               accessible_entity: access_entity,
               created_at: timestamp,
               updated_at: timestamp
@@ -46,7 +51,7 @@ module Ai
           end
         end
 
-        bulk_insert!(rules)
+        bulk_insert!(rules) if rules.any?
       end
     end
   end
