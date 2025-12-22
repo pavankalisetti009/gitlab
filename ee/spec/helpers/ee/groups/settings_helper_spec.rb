@@ -154,14 +154,15 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
       )
     end
 
-    context 'without an ai_settings' do
+    context 'without an ai_settings record' do
       let(:group) { build(:group, namespace_settings: namespace_settings, id: 7) }
 
       it 'returns the expected data' do
         is_expected.to include(
           is_saas: 'true',
           duo_workflow_mcp_enabled: '',
-          foundational_agents_default_enabled: '',
+          foundational_agents_default_enabled: 'true',
+          duo_agent_platform_enabled: 'true',
           ai_settings_minimum_access_level_execute: nil,
           ai_settings_minimum_access_level_execute_async: nil,
           ai_settings_minimum_access_level_manage: nil,

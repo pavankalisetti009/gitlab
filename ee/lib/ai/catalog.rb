@@ -39,9 +39,7 @@ module Ai
       end
 
       def duo_agent_platform_enabled_for_user?(user)
-        user.authorized_groups.top_level.with_ai_supported_plan(:ai_catalog).any? do |group|
-          group.ai_settings&.duo_agent_platform_enabled != false
-        end
+        user.authorized_groups.top_level.with_ai_supported_plan(:ai_catalog).any?(&:duo_agent_platform_enabled)
       end
 
       def feature_available?(user)

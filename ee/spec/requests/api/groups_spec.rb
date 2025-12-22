@@ -1078,18 +1078,18 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
     context 'foundational_agents_default_enabled' do
       it_behaves_like 'updates a group setting correctly' do
-        let(:params) { { ai_settings_attributes: { foundational_agents_default_enabled: true } } }
-        let(:from) { nil }
-        let(:to) { true }
+        let(:params) { { ai_settings_attributes: { foundational_agents_default_enabled: false } } }
+        let(:from) { true }
+        let(:to) { false }
         let(:changed_property) { :foundational_agents_default_enabled }
       end
     end
 
     context 'duo_agent_platform_enabled' do
       it_behaves_like 'updates a group setting correctly' do
-        let(:params) { { ai_settings_attributes: { duo_agent_platform_enabled: true } } }
-        let(:from) { nil }
-        let(:to) { true }
+        let(:params) { { ai_settings_attributes: { duo_agent_platform_enabled: false } } }
+        let(:from) { true }
+        let(:to) { false }
         let(:changed_property) { :duo_agent_platform_enabled }
       end
     end
