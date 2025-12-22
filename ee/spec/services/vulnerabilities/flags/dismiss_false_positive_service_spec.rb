@@ -20,6 +20,63 @@ RSpec.describe Vulnerabilities::Flags::DismissFalsePositiveService, feature_cate
         project.add_maintainer(user)
       end
 
+      describe '#track_event' do
+        let!(:existing_ai_flag) do
+          create(
+            :vulnerabilities_flag,
+            finding: finding,
+            flag_type: :false_positive,
+            origin: 'ai_sast_fp_detection',
+            confidence_score: 0.8,
+            description: 'AI detected as false positive'
+          )
+        end
+
+        it 'tracks the internal event with correct properties' do
+          expect(service).to receive(:track_internal_event).with(
+            'dismiss_sast_vulnerability_false_positive_analysis',
+            user: user,
+            project: project,
+            additional_properties: hash_including(
+              value: vulnerability.id,
+              property: vulnerability.severity
+            )
+          ).and_call_original
+
+          result = service.execute
+          expect(result).to be_success
+        end
+
+        it 'includes the manual origin in the label property' do
+          allow(service).to receive(:track_internal_event) do |event_name, options|
+            expect(event_name).to eq('dismiss_sast_vulnerability_false_positive_analysis')
+            expect(options[:user]).to eq(user)
+            expect(options[:additional_properties][:label]).to start_with('manual_')
+          end
+
+          result = service.execute
+          expect(result).to be_success
+        end
+
+        context 'when flag fails to save' do
+          before do
+            allow_next_instance_of(Vulnerabilities::Flag) do |flag|
+              allow(flag).to receive_messages(
+                save: false,
+                errors: instance_double(ActiveModel::Errors, full_messages: ['Validation failed'])
+              )
+            end
+          end
+
+          it 'does not track the event' do
+            expect(service).not_to receive(:track_internal_event)
+
+            result = service.execute
+            expect(result).to be_error
+          end
+        end
+      end
+
       describe 'audit events' do
         let!(:existing_ai_flag) do
           create(
