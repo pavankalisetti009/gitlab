@@ -53,6 +53,7 @@ module API
           { code: 403, message: 'Forbidden' },
           { code: 404, message: 'Not found' }
         ]
+        tags ['epics']
       end
       get ':id/(-/)epics/:epic_iid/epics' do
         authorize_epics_feature!
@@ -69,6 +70,7 @@ module API
           { code: 404, message: 'Not found' },
           { code: 409, message: 'Conflict' }
         ]
+        tags ['epics']
       end
       params do
         use :child_epic_id
@@ -97,6 +99,7 @@ module API
           { code: 404, message: 'Not found' },
           { code: 409, message: 'Conflict' }
         ]
+        tags ['epics']
       end
       params do
         requires :title, type: String, desc: 'The title of a child epic', documentation: { example: "Epic title" }
@@ -127,6 +130,7 @@ module API
           { code: 401, message: 'Unauthorized' },
           { code: 404, message: 'Not found' }
         ]
+        tags ['epics']
       end
       params do
         use :child_epic_id
@@ -149,6 +153,7 @@ module API
           { code: 401, message: 'Unauthorized' },
           { code: 404, message: 'Not found' }
         ]
+        tags ['epics']
       end
       params do
         use :child_epic_id

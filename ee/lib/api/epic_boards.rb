@@ -42,6 +42,7 @@ module API
             { code: 403, message: 'Forbidden' },
             { code: 404, message: 'Not found' }
           ]
+          tags ['epic_boards']
         end
         params do
           use :pagination
@@ -60,6 +61,7 @@ module API
             { code: 403, message: 'Forbidden' },
             { code: 404, message: 'Not found' }
           ]
+          tags ['epic_boards']
         end
         params do
           requires :board_id, type: Integer, desc: 'The ID of an epic board', documentation: { example: 1 }
@@ -84,6 +86,7 @@ module API
             { code: 403, message: 'Forbidden' },
             { code: 404, message: 'Not found' }
           ]
+          tags ['epic_boards']
         end
         params do
           use :pagination
@@ -102,6 +105,7 @@ module API
             { code: 403, message: 'Forbidden' },
             { code: 404, message: 'Not found' }
           ]
+          tags ['epic_boards']
         end
         params do
           requires :list_id, type: Integer, desc: 'The ID of a list', documentation: { example: 1 }

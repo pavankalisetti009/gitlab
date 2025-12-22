@@ -62,6 +62,7 @@ module API
           { code: 403, message: 'Forbidden' }
         ]
         is_array true
+        tags ['epics']
       end
       get ':id/related_epic_links' do
         accessible_epics = EpicsFinder.new(current_user, group_id: user_group.id).execute
@@ -100,6 +101,7 @@ module API
           { code: 403, message: 'Forbidden' }
         ]
         is_array true
+        tags ['epics']
       end
 
       params do
@@ -129,6 +131,7 @@ module API
           { code: 409, message: 'Conflict' },
           { code: 422, message: 'Unprocessable entity' }
         ]
+        tags ['epics']
       end
       params do
         requires :target_group_id,
@@ -175,6 +178,7 @@ module API
           { code: 403, message: 'Forbidden' },
           { code: 404, message: 'Not found' }
         ]
+        tags ['epics']
       end
       params do
         requires :related_epic_link_id,
