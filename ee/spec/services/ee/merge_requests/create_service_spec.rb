@@ -94,13 +94,11 @@ RSpec.describe MergeRequests::CreateService, feature_category: :code_review_work
       let(:created_merge_request) { service.execute }
 
       before do
-        stub_feature_flags(duo_code_review_on_agent_platform: false)
         allow(project).to receive_messages(
           auto_duo_code_review_enabled: auto_duo_code_review,
           auto_duo_code_review_settings_available?: true
         )
         allow(project.project_setting).to receive(:duo_features_enabled?).and_return(duo_enabled_project_setting)
-
         allow_next_instance_of(MergeRequest) do |merge_request|
           allow(merge_request).to receive(:ai_review_merge_request_allowed?)
             .with(user)
@@ -148,7 +146,7 @@ RSpec.describe MergeRequests::CreateService, feature_category: :code_review_work
         end
       end
 
-      context 'when project setting disable duo' do
+      context 'when project setting disables duo' do
         let(:duo_enabled_project_setting) { false }
 
         before do

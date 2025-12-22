@@ -505,10 +505,10 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
       let(:settings) { { auto_duo_code_review_enabled: true } }
       let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
       let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+      let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
 
       before do
         ApplicationSetting.current.update!(duo_features_enabled: true)
-        stub_feature_flags(duo_code_review_on_agent_platform: false)
       end
 
       context 'when duo features are disabled' do
@@ -534,14 +534,13 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
           end
         end
 
-        context 'with duo enterprise add-on' do
+        context 'with duo_enterprise add-on' do
           before do
             create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
           end
 
           it 'updates the setting and it is available' do
             put :update, params: { application_setting: settings }
-
             expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_truthy
             expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
           end
@@ -556,45 +555,39 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
           end
         end
 
-        context 'when duo_code_review_on_agent_platform feature flag is enabled' do
+        context 'with duo_core or duo_pro add-ons' do
+          where(:add_on_type, :add_on) do
+            [
+              ['duo_core', ref(:duo_core_add_on)],
+              ['duo_pro',  ref(:duo_pro_add_on)]
+            ]
+          end
+
+          with_them do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on)
+            end
+
+            it "does not update the setting with #{params[:add_on_type]} (not supported at application level yet)" do
+              expect { put :update, params: { application_setting: settings } }
+                .not_to change { ApplicationSetting.current.reload.auto_duo_code_review_enabled }
+
+              expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_falsey
+            end
+          end
+        end
+
+        context 'with duo_foundational_flows_enabled set' do
           before do
-            stub_feature_flags(duo_code_review_on_agent_platform: true)
+            ApplicationSetting.current.update!(duo_foundational_flows_enabled: true)
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
           end
 
-          context 'when duo_foundational_flows_enabled is false' do
-            before do
-              ApplicationSetting.current.update!(duo_foundational_flows_enabled: false)
-            end
+          it 'does not enable duo_core support (setting not exposed in UI yet)' do
+            expect { put :update, params: { application_setting: settings } }
+              .not_to change { ApplicationSetting.current.reload.auto_duo_code_review_enabled }
 
-            context 'with duo_core add-on' do
-              before do
-                create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
-              end
-
-              it 'does not update the setting when duo_foundational_flows is disabled' do
-                expect { put :update, params: { application_setting: settings } }
-                  .not_to change { ApplicationSetting.current.reload.auto_duo_code_review_enabled }
-                expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_falsey
-              end
-            end
-          end
-
-          context 'when duo_foundational_flows_enabled is true' do
-            before do
-              ApplicationSetting.current.update!(duo_foundational_flows_enabled: true)
-            end
-
-            context 'with duo_core add-on' do
-              before do
-                create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
-              end
-
-              it 'updates the setting and it is available' do
-                put :update, params: { application_setting: settings }
-                expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_truthy
-                expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
-              end
-            end
+            expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_falsey
           end
         end
       end

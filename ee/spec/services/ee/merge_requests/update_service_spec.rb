@@ -708,7 +708,6 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
       end
 
       before do
-        stub_feature_flags(duo_code_review_on_agent_platform: false)
         allow(project).to receive_messages(
           auto_duo_code_review_enabled: auto_duo_code_review,
           auto_duo_code_review_settings_available?: true
@@ -773,7 +772,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
         end
       end
 
-      context 'when project setting disable duo' do
+      context 'when project setting disables duo' do
         let(:duo_enabled_project_setting) { false }
 
         before do
@@ -805,28 +804,6 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
           update_merge_request(opts)
 
           expect(merge_request.reviewers).to be_empty
-        end
-      end
-
-      context 'with DAP flow enabled' do
-        let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
-
-        before do
-          stub_feature_flags(duo_code_review_on_agent_platform: true)
-          stub_ee_application_setting(instance_level_ai_beta_features_enabled: true)
-          project.project_setting.update!(duo_foundational_flows_enabled: true)
-          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
-
-          allow(merge_request).to receive(:ai_review_merge_request_allowed?).with(user).and_return(true)
-        end
-
-        context 'when it becomes ready by title change' do
-          let(:opts) { { title: 'Awesome merge_request' } }
-
-          it 'adds Duo as a reviewer' do
-            update_merge_request(opts)
-            expect(merge_request.reviewers).to eq [duo]
-          end
         end
       end
     end

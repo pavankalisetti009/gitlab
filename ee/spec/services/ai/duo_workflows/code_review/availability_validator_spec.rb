@@ -96,11 +96,10 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
 
         it_behaves_like 'duo_foundational_flows_enabled check'
 
-        context 'on self-managed instances' do
+        context 'when StageCheck returns false' do
           before do
-            stub_saas_features(gitlab_com_subscriptions: false)
-            stub_ee_application_setting(instance_level_ai_beta_features_enabled: beta_enabled)
-            stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: false)
+            allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+              .with(resource, :duo_workflow).and_return(false)
 
             case resource
             when Project
@@ -110,164 +109,118 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
             end
           end
 
-          context 'when instance beta features are disabled' do
-            let(:beta_enabled) { false }
+          it 'returns false' do
+            expect(available).to be_falsey
+          end
+        end
 
-            it 'returns false' do
-              expect(available).to be_falsey
+        context 'when StageCheck returns true' do
+          before do
+            allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+              .with(resource, :duo_workflow).and_return(true)
+
+            case resource
+            when Project
+              resource.project_setting.update!(duo_foundational_flows_enabled: true)
+            when Group
+              resource.namespace_settings.update!(duo_foundational_flows_enabled: true)
+            end
+          end
+
+          context 'on self-managed instances' do
+            before do
+              stub_saas_features(gitlab_com_subscriptions: false)
             end
 
-            context 'when GA rollout flag is enabled' do
-              let(:feature_setting) { instance_double(::Ai::FeatureSetting, self_hosted?: true) }
+            context 'with cloud-connected model (feature_setting is nil or not self_hosted)' do
+              let(:feature_setting) { nil }
               let(:service_result) { ServiceResponse.success(payload: feature_setting) }
-              let(:self_hosted_model) { create(:ai_self_hosted_model, model: :claude_3) }
 
               before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: true)
                 allow(::Ai::FeatureSettingSelectionService).to receive(:new)
                   .with(user, :duo_agent_platform, resource.root_ancestor)
                   .and_return(instance_double(::Ai::FeatureSettingSelectionService, execute: service_result))
-                allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
-                allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
               end
 
-              it 'returns true despite beta features being disabled' do
+              it 'returns true (DWS check not required for cloud-connected)' do
                 expect(available).to be true
               end
             end
-          end
 
-          context 'when instance beta features are enabled' do
-            let(:beta_enabled) { true }
-            let(:feature_setting) { instance_double(::Ai::FeatureSetting, self_hosted?: true) }
-            let(:service_result) { ServiceResponse.success(payload: feature_setting) }
-
-            before do
-              allow(::Ai::FeatureSettingSelectionService).to receive(:new)
-                .with(user, :duo_agent_platform, resource.root_ancestor)
-                .and_return(instance_double(::Ai::FeatureSettingSelectionService, execute: service_result))
-            end
-
-            context 'when using supported model family' do
-              let(:self_hosted_model) { create(:ai_self_hosted_model, model: :claude_3) }
+            context 'with self-hosted model' do
+              let(:feature_setting) { instance_double(::Ai::FeatureSetting, self_hosted?: true) }
+              let(:service_result) { ServiceResponse.success(payload: feature_setting) }
 
               before do
-                allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
+                allow(::Ai::FeatureSettingSelectionService).to receive(:new)
+                  .with(user, :duo_agent_platform, resource.root_ancestor)
+                  .and_return(instance_double(::Ai::FeatureSettingSelectionService, execute: service_result))
               end
 
-              context 'when DWS URL is configured' do
+              context 'when using supported model family' do
+                let(:self_hosted_model) { create(:ai_self_hosted_model, model: :claude_3) }
+
                 before do
+                  allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
+                end
+
+                context 'when DWS URL is configured' do
+                  before do
+                    allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
+                  end
+
+                  it 'returns true' do
+                    expect(available).to be true
+                  end
+                end
+
+                context 'when DWS URL is not configured' do
+                  before do
+                    allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return(nil)
+                  end
+
+                  it 'returns false' do
+                    expect(available).to be_falsey
+                  end
+                end
+              end
+
+              context 'when using unsupported model family' do
+                let(:self_hosted_model) { create(:ai_self_hosted_model, model: :llama3) }
+
+                before do
+                  allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
                   allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
                 end
 
-                it 'returns true' do
-                  expect(available).to be true
-                end
-              end
-
-              context 'when DWS URL is not configured' do
-                before do
-                  allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return(nil)
-                end
-
-                it 'returns false' do
+                it 'returns false even with DWS configured' do
                   expect(available).to be_falsey
                 end
               end
-            end
 
-            context 'when using unsupported model family' do
-              let(:self_hosted_model) { create(:ai_self_hosted_model, model: :llama3) }
+              context 'when self_hosted_model is nil' do
+                before do
+                  allow(feature_setting).to receive(:self_hosted_model).and_return(nil)
+                  allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
+                end
 
-              before do
-                allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
-                allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
-              end
-
-              it 'returns false even with DWS configured' do
-                expect(available).to be_falsey
-              end
-            end
-
-            context 'when self_hosted_model is nil' do
-              before do
-                allow(feature_setting).to receive(:self_hosted_model).and_return(nil)
-                allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
-              end
-
-              it 'returns true when DWS is configured' do
-                expect(available).to be true
+                it 'returns true when DWS is configured' do
+                  expect(available).to be true
+                end
               end
             end
           end
-        end
 
-        context 'on SaaS', :saas do
-          before do
-            stub_saas_features(gitlab_com_subscriptions: true)
-            stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
-
-            case resource
-            when Project
-              resource.project_setting.update!(duo_foundational_flows_enabled: true)
-            when Group
-              resource.namespace_settings.update!(duo_foundational_flows_enabled: true)
-            end
-          end
-
-          context 'when experiment features are disabled' do
+          context 'on SaaS', :saas do
             before do
-              allow(resource.root_ancestor).to receive(:experiment_features_enabled).and_return(false)
+              stub_saas_features(gitlab_com_subscriptions: true)
             end
 
-            it 'returns false' do
-              expect(available).to be_falsey
-            end
-
-            context 'when GA rollout flag is enabled' do
-              before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
-              end
-
-              it 'returns true despite experiment features being disabled' do
-                expect(available).to be true
-              end
-            end
-          end
-
-          context 'when experiment features are enabled' do
-            before do
-              allow(resource.root_ancestor).to receive(:experiment_features_enabled).and_return(true)
-            end
-
-            it 'returns true' do
-              expect(available).to be true
-            end
-          end
-
-          context 'when GA rollout flag is enabled' do
-            before do
-              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
-              allow(resource.root_ancestor).to receive(:experiment_features_enabled).and_return(false)
-            end
-
-            it 'returns true even when experiment features are disabled' do
+            it 'returns true (DWS always available on SaaS)' do
               expect(available).to be true
             end
           end
         end
-      end
-    end
-
-    context 'when feature flag is disabled' do
-      let(:validator) { described_class.new(user: user, resource: project) }
-
-      before do
-        stub_feature_flags(duo_code_review_on_agent_platform: false)
-      end
-
-      it 'returns false' do
-        expect(available).to be false
       end
     end
 

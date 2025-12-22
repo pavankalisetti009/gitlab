@@ -205,16 +205,15 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
 
         context 'when Duo Code Review bot is assigned as a reviewer' do
           before do
-            stub_feature_flags(duo_code_review_on_agent_platform: false)
-
             merge_request.reviewers = [::Users::Internal.duo_code_review_bot]
           end
 
           context 'when AI review feature is not allowed' do
             let(:ai_review_allowed) { false }
 
-            it 'does not call ::Llm::ReviewMergeRequestService' do
+            it 'does not call any review service' do
               expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+              expect(Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService).not_to receive(:new)
 
               subject
             end
@@ -223,49 +222,69 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
           context 'when AI review feature is allowed' do
             let(:ai_review_allowed) { true }
 
-            it 'calls ::Llm::ReviewMergeRequestService' do
-              expect_next_instance_of(Llm::ReviewMergeRequestService, current_user, merge_request) do |svc|
-                expect(svc).to receive(:execute)
+            context 'with Duo Enterprise using classic flow' do
+              let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
+              before do
+                stub_feature_flags(duo_code_review_dap_internal_users: false)
+                create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
+                project.project_setting.update!(duo_features_enabled: true)
               end
 
-              subject
-            end
-          end
-        end
+              it 'calls legacy ::Llm::ReviewMergeRequestService' do
+                expect_next_instance_of(Llm::ReviewMergeRequestService, current_user, merge_request) do |svc|
+                  expect(svc).to receive(:execute)
+                end
 
-        context 'when Duo Code Review bot is assigned as a reviewer with DAP flow enabled' do
-          let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+                subject
+              end
 
-          before do
-            stub_ee_application_setting(instance_level_ai_beta_features_enabled: true)
-            project.project_setting.update!(duo_features_enabled: true)
-            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
-            merge_request.reviewers = [::Users::Internal.duo_code_review_bot]
-            allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
-            allow(Ability).to receive(:allowed?).and_call_original
-            allow(Ability).to receive(:allowed?).with(current_user, :create_note, merge_request).and_return(true)
-          end
+              it 'does not call DAP service' do
+                allow_next_instance_of(Llm::ReviewMergeRequestService) do |svc|
+                  allow(svc).to receive(:execute)
+                end
 
-          it 'calls Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService' do
-            expect_next_instance_of(
-              Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService,
-              user: current_user,
-              merge_request: merge_request
-            ) do |svc|
-              expect(svc).to receive(:execute)
+                expect(Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService).not_to receive(:new)
+
+                subject
+              end
             end
 
-            subject
-          end
+            context 'with DAP flow (Duo Core/Pro or Duo Enterprise with internal flag)' do
+              let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
 
-          it 'does not call legacy Llm::ReviewMergeRequestService' do
-            allow_next_instance_of(Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService) do |svc|
-              allow(svc).to receive(:execute)
+              before do
+                project.project_setting.update!(duo_features_enabled: true, duo_foundational_flows_enabled: true)
+                create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+                allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+                allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                  .with(merge_request.project, :duo_workflow).and_return(true)
+                allow(Ability).to receive(:allowed?).and_call_original
+                allow(Ability).to receive(:allowed?).with(current_user, :create_note, merge_request).and_return(true)
+              end
+
+              it 'calls Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService' do
+                expect_next_instance_of(
+                  Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService,
+                  user: current_user,
+                  merge_request: merge_request
+                ) do |svc|
+                  expect(svc).to receive(:execute)
+                end
+
+                subject
+              end
+
+              it 'does not call legacy Llm::ReviewMergeRequestService' do
+                allow_next_instance_of(Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService) do |svc|
+                  allow(svc).to receive(:execute)
+                end
+
+                expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+                subject
+              end
             end
-
-            expect(Llm::ReviewMergeRequestService).not_to receive(:new)
-
-            subject
           end
         end
       end
