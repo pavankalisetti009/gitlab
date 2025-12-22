@@ -29,7 +29,7 @@ describe('GitLab Duo Home', () => {
     duoSelfHostedPath = '/admin/gitlab_duo/self_hosted',
     modelSwitchingEnabled = false,
     modelSwitchingPath = 'groups/test/-/settings/gitlab_duo/model_selection',
-    usageDashboardPath = '',
+    gitlabCreditsDashboardPath = '',
   } = {}) => {
     wrapper = shallowMount(GitlabDuoHome, {
       provide: {
@@ -40,7 +40,7 @@ describe('GitLab Duo Home', () => {
         modelSwitchingEnabled,
         modelSwitchingPath,
         canManageInstanceModelSelection,
-        usageDashboardPath,
+        gitlabCreditsDashboardPath,
       },
       stubs: {
         CodeSuggestionsUsage: stubComponent(CodeSuggestionsUsage, {
@@ -243,13 +243,13 @@ describe('GitLab Duo Home', () => {
   describe('duo usage analytics card', () => {
     const findDuoUsageAnalyticsCard = () => wrapper.findComponent(DuoUsageAnalyticsCard);
 
-    it('is rendered when usageDashboardPath is provided', () => {
-      createComponent({ usageDashboardPath: '/due-usage-url' });
+    it('is rendered when gitlabCreditsDashboardPath is provided', () => {
+      createComponent({ gitlabCreditsDashboardPath: '/due-usage-url' });
       expect(findDuoUsageAnalyticsCard().exists()).toBe(true);
     });
 
-    it('is not rendered when usageDashboardPath is absent', () => {
-      createComponent({ usageDashboardPath: null });
+    it('is not rendered when gitlabCreditsDashboardPath is absent', () => {
+      createComponent({ gitlabCreditsDashboardPath: null });
       expect(wrapper.findComponent(DuoUsageAnalyticsCard).exists()).toBe(false);
     });
   });

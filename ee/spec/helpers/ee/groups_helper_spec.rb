@@ -321,7 +321,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         are_duo_core_features_enabled: 'true',
         model_switching_enabled: 'true',
         model_switching_path: '/groups/test_group/-/settings/gitlab_duo/model_selection',
-        usage_dashboard_path: '/groups/test_group/-/settings/gitlab_duo/usage'
+        gitlab_credits_dashboard_path: '/groups/test_group/-/settings/gitlab_credits_dashboard'
       })
     end
 
@@ -341,7 +341,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       end
 
       it 'sets duo_page_path to nil' do
-        expect(helper.duo_home_app_data(group)).to include(usage_dashboard_path: nil)
+        expect(helper.duo_home_app_data(group)).to include(gitlab_credits_dashboard_path: nil)
       end
     end
   end

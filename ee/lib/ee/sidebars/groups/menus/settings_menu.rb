@@ -24,6 +24,7 @@ module EE
               insert_item_after(:group_projects, group_work_items_menu_item)
               insert_item_after(:ci_cd, analytics_menu_item)
               insert_item_after(:usage_quotas, gitlab_duo_settings_menu_item)
+              insert_item_after(:gitlab_duo_settings, gitlab_credits_dashboard_menu)
               add_item(ldap_sync_menu_item)
               add_item(saml_sso_menu_item)
               add_item(saml_group_links_menu_item)
@@ -227,12 +228,28 @@ module EE
                 path: [
                   'gitlab_duo#show',
                   'configuration#index',
-                  'seat_utilization#index',
-                  'usage#index',
-                  'users#show'
+                  'seat_utilization#index'
                 ]
               },
               item_id: :gitlab_duo_settings
+            )
+          end
+
+          def gitlab_credits_dashboard_menu
+            unless gitlab_credits_dashboard_available?
+              return ::Sidebars::NilMenuItem.new(item_id: :gitlab_credits_dashboard)
+            end
+
+            ::Sidebars::MenuItem.new(
+              title: _('GitLab Credits'),
+              link: group_settings_gitlab_credits_dashboard_index_path(context.group),
+              active_routes: {
+                path: [
+                  'groups/settings/gitlab_credits_dashboard#index',
+                  'groups/settings/gitlab_credits_dashboard/users#show'
+                ]
+              },
+              item_id: :gitlab_credits_dashboard
             )
           end
 
@@ -272,6 +289,14 @@ module EE
           def can_admin_work_item_statuses?
             context.group.licensed_feature_available?(:work_item_status) &&
               can?(context.current_user, :admin_work_item_lifecycle, context.group)
+          end
+
+          def gitlab_credits_dashboard_available?
+            return false unless ::Feature.enabled?(:usage_billing_dev, context.group)
+            return false unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+            return false unless context.group.licensed_feature_available?(:group_usage_billing)
+
+            context.group.root?
           end
 
           override :packages_and_registries_controllers

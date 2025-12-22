@@ -27,11 +27,12 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
         resources :seat_utilization, only: [:index]
         resources :configuration, only: [:index]
         resources :model_selection, only: [:index]
+      end
 
-        scope :usage do
-          get '/', action: :index, controller: 'usage', as: :usage
-          resources :users, only: [:show], controller: 'usage/users', param: :username, as: :usage_users
-        end
+      resources :gitlab_credits_dashboard, only: [:index]
+      scope '/gitlab_credits_dashboard' do
+        resources :users, only: [:show], controller: 'gitlab_credits_dashboard/users', param: :username,
+          as: :gitlab_credits_dashboard_users
       end
 
       get '/gitlab_duo_usage', to: redirect('groups/%{group_id}/-/settings/gitlab_duo/seat_utilization')

@@ -249,7 +249,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
         end
       end
 
-      describe 'GitLab Duo menu' do
+      describe 'GitLab Duo menu', :saas_gitlab_com_subscriptions do
         let(:item_id) { :gitlab_duo_settings }
 
         before do
@@ -266,6 +266,52 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
           let(:container) { subgroup }
 
           it { is_expected.not_to be_present }
+        end
+      end
+
+      describe 'GitLab Credits menu', feature_category: :consumables_cost_management do
+        let(:item_id) { :gitlab_credits_dashboard }
+
+        context 'when in self-managed' do
+          it { is_expected.not_to be_present }
+        end
+
+        context 'when in saas', :saas_gitlab_com_subscriptions do
+          context 'for top-level group' do
+            context 'when free group' do
+              before do
+                stub_licensed_features(group_usage_billing: false)
+              end
+
+              it { is_expected.not_to be_present }
+            end
+
+            context 'when paid group' do
+              before do
+                stub_licensed_features(group_usage_billing: true)
+              end
+
+              it { is_expected.to be_present }
+
+              context 'when usage_billing_dev is disabled' do
+                before do
+                  stub_feature_flags(usage_billing_dev: false)
+                end
+
+                it { is_expected.not_to be_present }
+              end
+            end
+          end
+
+          context 'when subgroup' do
+            before do
+              stub_licensed_features(group_usage_billing: true)
+            end
+
+            let(:container) { subgroup }
+
+            it { is_expected.not_to be_present }
+          end
         end
       end
 

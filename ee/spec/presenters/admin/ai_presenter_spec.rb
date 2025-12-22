@@ -159,7 +159,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
         subscription_end_date: subscription_end_date,
         subscription_name: 'A-S0000001',
         subscription_start_date: subscription_start_date,
-        usage_dashboard_path: ''
+        gitlab_credits_dashboard_path: ''
       )
     end
 
@@ -278,7 +278,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     end
 
     context 'for usage billing' do
-      where(:feature_enabled, :setting_enabled, :usage_dashboard_path) do
+      where(:feature_enabled, :setting_enabled, :gitlab_credits_dashboard_path) do
         true | true | ''
         false | true  | ''
         true  | false | ''
@@ -292,7 +292,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
           stub_saas_features(gitlab_com_subscriptions: true)
         end
 
-        it { expect(settings).to include(usage_dashboard_path: usage_dashboard_path) }
+        it { expect(settings).to include(gitlab_credits_dashboard_path: gitlab_credits_dashboard_path) }
       end
     end
 
@@ -302,7 +302,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
       it { expect(settings).to include(is_saas: 'false') }
 
       context 'for usage billing' do
-        where(:feature_enabled, :setting_enabled, :usage_dashboard_path) do
+        where(:feature_enabled, :setting_enabled, :gitlab_credits_dashboard_path) do
           true | true | '/admin/gitlab_credits_dashboard'
           false | true  | ''
           true  | false | ''
@@ -317,7 +317,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
             stub_saas_features(gitlab_com_subscriptions: false)
           end
 
-          it { expect(settings).to include(usage_dashboard_path: usage_dashboard_path) }
+          it { expect(settings).to include(gitlab_credits_dashboard_path: gitlab_credits_dashboard_path) }
         end
       end
     end
