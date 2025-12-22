@@ -23,15 +23,19 @@ module Types
           description: 'Unique tracking number of sequence of events for one suggestion.'
 
         def language
-          object.extras['language']
+          extras && extras['language']
         end
 
         def suggestion_size
-          object.extras['suggestion_size']
+          extras && extras['suggestion_size']
         end
 
         def unique_tracking_id
-          object.extras['unique_tracking_id']
+          extras && extras['unique_tracking_id']
+        end
+
+        def extras
+          object['extras']
         end
       end
       # rubocop: enable Graphql/AuthorizeTypes
