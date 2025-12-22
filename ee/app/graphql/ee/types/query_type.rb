@@ -548,7 +548,19 @@ module EE
       def ai_catalog_built_in_tools
         return [] unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
-        ::Ai::Catalog::BuiltInTool.all.sort_by(&:name)
+        tools = ::Ai::Catalog::BuiltInTool.all.sort_by(&:name)
+
+        # This is temporary until we have a proper solution for feature flagging tools.
+        # Tool 78 is the gitlab_api_get tool
+        # Tool 79 is the gitlab_graphql tool
+        # Issue link: https://gitlab.com/gitlab-org/gitlab/-/issues/584050
+        unless ::Feature.enabled?(:use_generic_gitlab_api_tools, current_user)
+          tools.reject! do |t|
+            [78, 79].include?(t.id)
+          end
+        end
+
+        tools
       end
 
       def virtual_registries_container_registry(id:)
