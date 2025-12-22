@@ -12,6 +12,7 @@ module EE
         resource :groups, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
           desc 'Overrides the access level of an LDAP group member.' do
             success ::API::Entities::Member
+            tags ['members']
           end
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
@@ -35,6 +36,7 @@ module EE
 
           desc 'Remove an LDAP group member access level override.' do
             success ::API::Entities::Member
+            tags ['members']
           end
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
@@ -56,7 +58,9 @@ module EE
             end
           end
 
-          desc 'Approves a pending member'
+          desc 'Approves a pending member' do
+            tags ['members']
+          end
           params do
             requires :member_id, type: Integer, desc: 'The ID of the member requiring approval'
           end
@@ -82,7 +86,9 @@ module EE
             end
           end
 
-          desc 'Approves all pending members'
+          desc 'Approves all pending members' do
+            tags ['members']
+          end
           post ':id/members/approve_all', feature_category: :groups_and_projects do
             group = find_group!(params[:id])
 
@@ -98,7 +104,9 @@ module EE
             end
           end
 
-          desc 'Lists all pending members for a group including invited users'
+          desc 'Lists all pending members for a group including invited users' do
+            tags ['members']
+          end
           params do
             use :pagination
           end
@@ -115,6 +123,7 @@ module EE
 
           desc 'Gets a list of billable users of top-level group.' do
             success ::API::Entities::Member
+            tags ['groups']
           end
           params do
             use :pagination
@@ -145,7 +154,9 @@ module EE
               shared_project_user_ids: result[:shared_project_user_ids]
           end
 
-          desc 'Changes the state of the memberships of a user in the group'
+          desc 'Changes the state of the memberships of a user in the group' do
+            tags %w[members]
+          end
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the user'
             requires :state, type: String, values: %w[awaiting active], desc: 'The new state for the memberships of the user'
@@ -175,6 +186,7 @@ module EE
 
           desc 'Get the direct memberships of a billable user of a top-level group.' do
             success ::API::Entities::BillableMembership
+            tags %w[members]
           end
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
@@ -197,6 +209,7 @@ module EE
 
           desc 'Get the indirect memberships of a billable user of a top-level group.' do
             success ::API::Entities::BillableMembership
+            tags %w[members]
           end
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
@@ -224,7 +237,9 @@ module EE
             present paginate(invited_memberships), with: ::API::Entities::BillableMembership
           end
 
-          desc 'Removes a billable member from a group or project.'
+          desc 'Removes a billable member from a group or project.' do
+            tags %w[members]
+          end
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
           end

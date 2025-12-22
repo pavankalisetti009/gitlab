@@ -162,7 +162,9 @@ module EE
         end
 
         resource :groups, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
-          desc 'Sync a group with LDAP.'
+          desc 'Sync a group with LDAP.' do
+            tags ['ldap']
+          end
           post ":id/ldap_sync", feature_category: :system_access do
             not_found! unless ::Gitlab::Auth::Ldap::Config.group_sync_enabled?
 
@@ -198,6 +200,7 @@ module EE
             desc 'Get a list of audit events in this group.' do
               success ::API::Entities::AuditEvent
               is_array true
+              tags ['audit_events']
             end
             params do
               optional :created_after,
@@ -239,6 +242,7 @@ module EE
 
             desc 'Get a specific audit event in this group.' do
               success ::API::Entities::AuditEvent
+              tags %w[groups]
             end
             params do
               requires :audit_event_id, type: Integer, desc: 'The ID of the audit event'
@@ -264,6 +268,7 @@ module EE
           desc 'Get a list of SAML users of the group' do
             success ::API::Entities::UserPublic
             is_array true
+            tags %w[group]
           end
           params do
             optional :username, type: String, desc: 'Return single user with a specific username.'
@@ -290,6 +295,7 @@ module EE
 
           desc 'Get a list of users provisioned by the group' do
             success ::API::Entities::UserPublic
+            tags %w[groups]
           end
           params do
             optional :username, type: String, desc: 'Return a single user with a specific username'
@@ -324,7 +330,7 @@ module EE
               { code: 404, message: '404 Not Found' }
             ]
             is_array true
-            tags %w[groups]
+            tags %w[group_ssh_certificates]
           end
           params do
             use :pagination
@@ -347,7 +353,7 @@ module EE
               { code: 403, message: 'Forbidden' },
               { code: 404, message: 'Not found' }
             ]
-            tags %w[groups]
+            tags %w[group_ssh_certificates]
           end
           params do
             requires :title, type: String, desc: 'The title of the ssh certificate'
@@ -376,6 +382,7 @@ module EE
               { code: 403, message: 'Forbidden' },
               { code: 422, message: 'Unprocessable entity' }
             ]
+            tags %w[group_ssh_certificates]
           end
           delete ":id/ssh_certificates/:ssh_certificates_id", feature_category: :groups_and_projects do
             group = find_group!(params[:id])
