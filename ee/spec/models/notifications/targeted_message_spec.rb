@@ -12,6 +12,7 @@ RSpec.describe Notifications::TargetedMessage, feature_category: :acquisition do
 
   describe 'associations' do
     it { is_expected.to have_many(:targeted_message_namespaces) }
+    it { is_expected.to have_many(:targeted_message_dismissals) }
     it { is_expected.to have_many(:namespaces).through(:targeted_message_namespaces) }
 
     describe 'dependent destroy' do

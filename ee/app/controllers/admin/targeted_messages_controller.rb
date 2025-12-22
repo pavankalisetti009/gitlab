@@ -54,13 +54,11 @@ module Admin
     end
 
     def destroy
-      if @targeted_message.destroy
-        redirect_to admin_targeted_messages_path,
-          notice: s_('TargetedMessages|Targeted message was successfully deleted.')
-      else
-        redirect_to admin_targeted_messages_path,
-          alert: s_('TargetedMessages|Targeted message failed to delete. Please try again.')
-      end
+      Notifications::TargetedMessages::DestroyWorker.perform_async(@targeted_message.id) # rubocop:disable CodeReuse/Worker -- Extra service layer is not needed here
+
+      redirect_to admin_targeted_messages_path,
+        notice: format(s_('TargetedMessages|Scheduled deletion of targeted message with id: %{id}.'),
+          id: @targeted_message.id)
     end
 
     private

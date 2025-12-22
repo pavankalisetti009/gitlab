@@ -172,29 +172,27 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
       targeted_message.save!
     end
 
-    it 'deletes the targeted message' do
-      expect do
-        delete admin_targeted_message_path(targeted_message)
-      end.to change { Notifications::TargetedMessage.count }.by(-1)
+    it 'schedules the targeted message for deletion' do
+      expect(Notifications::TargetedMessages::DestroyWorker).to receive(:perform_async).with(targeted_message.id)
+
+      delete admin_targeted_message_path(targeted_message)
 
       expect(response).to redirect_to(admin_targeted_messages_path)
-      expect(flash[:notice]).to eq(s_('TargetedMessages|Targeted message was successfully deleted.'))
+      expect(flash[:notice]).to eq(format(
+        s_('TargetedMessages|Scheduled deletion of targeted message with id: %{id}.'), id: targeted_message.id))
     end
 
-    context 'when on failure' do
-      before do
-        allow_next_found_instance_of(Notifications::TargetedMessage) do |message|
-          allow(message).to receive(:destroy).and_return(false)
-        end
-      end
+    it 'does not delete the targeted message immediately' do
+      expect do
+        delete admin_targeted_message_path(targeted_message)
+      end.not_to change { Notifications::TargetedMessage.count }
+    end
 
-      it 'redirects to index with alert message' do
-        expect do
-          delete admin_targeted_message_path(targeted_message)
-        end.not_to change { Notifications::TargetedMessage.count }
+    context 'when targeted message does not exist' do
+      it 'returns 404' do
+        delete admin_targeted_message_path(non_existing_record_id)
 
-        expect(response).to redirect_to(admin_targeted_messages_path)
-        expect(flash[:alert]).to eq(s_('TargetedMessages|Targeted message failed to delete. Please try again.'))
+        expect(response).to have_gitlab_http_status(:not_found)
       end
     end
   end
