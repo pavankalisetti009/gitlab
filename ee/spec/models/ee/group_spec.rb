@@ -3217,6 +3217,69 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
 
+    describe '#disallow_personal_snippets?' do
+      before do
+        group.namespace_settings.update!(allow_personal_snippets: false)
+      end
+
+      context 'when not licensed' do
+        it 'returns false' do
+          expect(group.disallow_personal_snippets?).to be false
+        end
+      end
+
+      context 'when licensed' do
+        before do
+          stub_licensed_features(allow_personal_snippets: true)
+        end
+
+        it 'returns false' do
+          expect(group.disallow_personal_snippets?).to be false
+        end
+
+        context 'on SaaS', :saas do
+          before do
+            stub_saas_features(allow_personal_snippets: true)
+            stub_feature_flags(allow_personal_snippets_setting: true)
+          end
+
+          it 'returns true' do
+            expect(group.disallow_personal_snippets?).to be true
+          end
+
+          context 'for a subgroup' do
+            let(:subgroup) { create(:group, parent: group) }
+
+            it 'returns false' do
+              subgroup.namespace_settings.update!(allow_personal_snippets: false)
+
+              expect(subgroup.disallow_personal_snippets?).to be false
+            end
+          end
+
+          context 'with the feature flag disabled' do
+            before do
+              stub_feature_flags(allow_personal_snippets_setting: false)
+            end
+
+            it 'returns false' do
+              expect(group.disallow_personal_snippets?).to be false
+            end
+          end
+
+          context 'when allow_personal_snippets is true' do
+            before do
+              group.namespace_settings.update!(allow_personal_snippets: true)
+            end
+
+            it 'returns false' do
+              expect(group.disallow_personal_snippets?).to be false
+            end
+          end
+        end
+      end
+    end
+
     describe '#hide_email_on_profile?' do
       it 'returns false by default' do
         expect(group.hide_email_on_profile?).to be_falsey

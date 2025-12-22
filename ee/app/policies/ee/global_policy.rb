@@ -163,6 +163,8 @@ module EE
         License.feature_available?(:data_management) && ::Feature.enabled?(:geo_primary_verification_view, @user)
       end
 
+      condition(:enterprise_user_disallowed_personal_snippets) { @user.enterprise_group&.disallow_personal_snippets? }
+
       rule { ~anonymous & remote_development_feature_licensed }.policy do
         enable :access_workspaces_feature
       end
@@ -315,6 +317,8 @@ module EE
       end
 
       rule { designated_account_beneficiaries_available }.enable :create_designated_account_beneficiaries
+
+      rule { enterprise_user_disallowed_personal_snippets }.prevent :create_snippet
     end
 
     # Check whether a user is allowed to use Duo Chat powered by self-hosted models

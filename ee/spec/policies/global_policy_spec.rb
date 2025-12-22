@@ -1055,4 +1055,29 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       it { is_expected.to check_policy }
     end
   end
+
+  describe 'enterprise user disallowed personal snippets' do
+    where(:is_enterprise_user, :allow_personal_snippets, :check_policy) do
+      true   | false  | be_disallowed(:create_snippet)
+      true   | true   | be_allowed(:create_snippet)
+      false  | false  | be_allowed(:create_snippet)
+      false  | true   | be_allowed(:create_snippet)
+    end
+
+    before do
+      stub_licensed_features(allow_personal_snippets: true)
+      stub_saas_features(allow_personal_snippets: true)
+    end
+
+    with_them do
+      let(:enterprise_group) do
+        create(:group).tap { |group| group.update!(allow_personal_snippets: allow_personal_snippets) }
+      end
+
+      let(:enterprise_user) { create(:user, enterprise_group: enterprise_group) }
+      let(:current_user) { is_enterprise_user ? enterprise_user : user }
+
+      it { is_expected.to check_policy }
+    end
+  end
 end
