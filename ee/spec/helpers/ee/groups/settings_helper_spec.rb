@@ -209,16 +209,6 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
     end
 
     describe 'show_foundational_agents_availability' do
-      context 'with duo_foundational_agents_availability feature flag is disabled' do
-        before do
-          stub_feature_flags(duo_foundational_agents_availability: false)
-        end
-
-        it 'is false' do
-          is_expected.to include({ show_foundational_agents_availability: "false" })
-        end
-      end
-
       context 'when group is not root' do
         before do
           allow(group).to receive(:root?).and_return(false)

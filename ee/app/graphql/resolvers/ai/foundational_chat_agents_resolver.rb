@@ -49,9 +49,7 @@ module Resolvers
       end
 
       def enabled_foundational_agents_in_namespace(namespace, current_user)
-        unless namespace &&
-            ::Feature.enabled?(:duo_foundational_agents_availability, namespace) &&
-            Ability.allowed?(current_user, :read_namespace, namespace)
+        unless namespace && Ability.allowed?(current_user, :read_namespace, namespace)
           return ::Ai::FoundationalChatAgent.only_duo_chat_agent
         end
 
@@ -59,10 +57,6 @@ module Resolvers
       end
 
       def enabled_foundational_agents_in_organization(organization)
-        unless ::Feature.enabled?(:duo_foundational_agents_availability, :instance)
-          return ::Ai::FoundationalChatAgent.only_duo_chat_agent
-        end
-
         organization.enabled_foundational_agents
       end
 

@@ -45,20 +45,6 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
     end
   end
 
-  shared_examples 'returns full list if feature flag is enabled for namespace' do
-    context 'when duo_foundational_agents_availability is enabled for root namespace' do
-      it_behaves_like 'returns all foundational agents'
-    end
-
-    context 'when duo_foundational_agents_availability is disabled for root_namespace' do
-      before do
-        stub_feature_flags(duo_foundational_agents_availability: [root_namespace_foundational_agents_disabled])
-      end
-
-      it_behaves_like 'returns only duo chat'
-    end
-  end
-
   describe '#resolve' do
     let(:project) { nil }
     let(:namespace) { nil }
@@ -107,9 +93,6 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
             .to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
           stub_saas_features(gitlab_com_subscriptions: true)
 
-          stub_feature_flags(duo_foundational_agents_availability: [root_namespace_foundational_agents_enabled,
-            root_namespace_foundational_agents_disabled])
-
           allow(::Ability).to receive(:allowed?).and_call_original
           allow(::Ability).to receive(:allowed?).with(current_user, :read_namespace,
             root_namespace_foundational_agents_enabled).and_return(true)
@@ -121,7 +104,7 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
 
         context 'when user has default namespace' do
           context 'with access to foundational chat agents' do
-            it_behaves_like 'returns full list if feature flag is enabled for namespace'
+            it_behaves_like 'returns all foundational agents'
           end
 
           context 'without access to foundational chat agents' do
@@ -148,7 +131,7 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
             let(:project) { project1 }
 
             context 'and user can read project' do
-              it_behaves_like 'returns full list if feature flag is enabled for namespace'
+              it_behaves_like 'returns all foundational agents'
             end
 
             context 'and user cannot read project' do
@@ -165,7 +148,7 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
             let(:namespace) { subgroup1 }
 
             context 'and user can read namespace' do
-              it_behaves_like 'returns full list if feature flag is enabled for namespace'
+              it_behaves_like 'returns all foundational agents'
             end
 
             context 'and user cannot read namespace' do
@@ -223,14 +206,6 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
               expect(resolved[1].reference).to eq foundational_chat_agent_2_ref
             end
           end
-        end
-
-        context 'when duo_foundational_agents_availability is off' do
-          before do
-            stub_feature_flags(duo_foundational_agents_availability: false)
-          end
-
-          it_behaves_like 'returns only duo chat'
         end
       end
     end
