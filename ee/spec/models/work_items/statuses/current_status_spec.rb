@@ -572,6 +572,7 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
           let_it_be(:other_work_item_type) { create(:work_item_type, :non_default) }
 
           before do
+            stub_feature_flags(work_item_system_defined_type: false)
             # Create mapping for different combination
             create(:work_item_custom_status_mapping,
               namespace: other_group,

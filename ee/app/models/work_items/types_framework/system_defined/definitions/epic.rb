@@ -30,7 +30,11 @@ module WorkItems
             end
 
             def widget_options
-              { weight: { editable: false, rollup: true } }
+              {
+                weight: { editable: false, rollup: true },
+                hierarchy: { propagates_milestone: true, auto_expand_tree_on_move: true },
+                start_and_due_date: { can_roll_up: true }
+              }
             end
 
             def configuration
@@ -56,6 +60,18 @@ module WorkItems
             # It should be a Hash with the format of: { child.base_type.to_s: license_name.to_sym }
             def licenses_for_child
               { 'epic' => :subepics, 'issue' => :epics }
+            end
+
+            def support_roadmap_view?
+              true
+            end
+
+            def show_project_selector?
+              false
+            end
+
+            def configurable
+              false
             end
           end
         end
