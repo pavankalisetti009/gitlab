@@ -210,6 +210,7 @@ export default {
           </gl-button>
         </div>
         <lifecycle-detail
+          v-if="selectedLifecycle"
           :lifecycle="selectedLifecycle"
           :full-path="fullPath"
           :show-usage-section="false"
@@ -220,6 +221,7 @@ export default {
       </template>
       <template #step-1>
         <status-mapping
+          v-if="selectedLifecycle"
           :current-lifecycle="currentLifecycle"
           :selected-lifecycle="selectedLifecycle"
           :step-error="errorText"

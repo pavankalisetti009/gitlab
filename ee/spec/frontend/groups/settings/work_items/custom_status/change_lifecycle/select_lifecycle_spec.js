@@ -91,7 +91,7 @@ describe('SelectLifecycle', () => {
   describe('Default', () => {
     beforeEach(async () => {
       createWrapper();
-      await waitForPromises;
+      await waitForPromises();
     });
 
     it('renders current lifecycle container', () => {

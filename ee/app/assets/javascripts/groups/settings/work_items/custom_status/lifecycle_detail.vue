@@ -219,6 +219,7 @@ export default {
       >
     </div>
     <remove-lifecycle-confirmation-modal
+      v-if="lifecycle.name"
       :is-visible="showConfirmationModal"
       :lifecycle-name="lifecycle.name"
       @continue="removeLifecycle"
