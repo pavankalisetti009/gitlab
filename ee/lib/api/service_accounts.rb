@@ -13,6 +13,7 @@ module API
 
     resource :service_accounts do
       desc 'Create a service account user. Available only for instance admins.' do
+        tags ['service_accounts']
         success Entities::ServiceAccount
         failure [
           { code: 400, message: '400 Bad request' },
@@ -42,6 +43,7 @@ module API
       end
 
       desc 'Get list of service account users. Available only for instance admins' do
+        tags ['service_accounts']
         detail 'Get list of service account users'
         success Entities::ServiceAccount
         failure [
@@ -71,6 +73,7 @@ module API
       # rubocop: enable CodeReuse/ActiveRecord
 
       desc 'Update a service account user. Available only for instance admins.' do
+        tags ['service_accounts']
         detail 'Update a service account user'
         success Entities::ServiceAccount
         failure [
