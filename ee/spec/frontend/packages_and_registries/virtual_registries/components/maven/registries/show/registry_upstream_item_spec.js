@@ -1,16 +1,26 @@
+import mavenRegistryUpstreamsFixture from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registry_upstreams.query.graphql.json';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/registry_upstream_item.vue';
-import { mavenVirtualRegistry } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
+
+const { registryUpstreams } =
+  mavenRegistryUpstreamsFixture.data.virtualRegistriesPackagesMavenRegistry;
+
+const [registryUpstream] = registryUpstreams;
+const { upstream } = registryUpstream;
 
 const defaultProps = {
   index: 1,
   upstreamsCount: 3,
-  upstream: {
-    ...mavenVirtualRegistry.upstreams[0],
-    cacheSize: '100 MB',
-    artifactCount: 100,
-    warning: {
-      text: 'Example warning text',
+  registryUpstream: {
+    ...registryUpstream,
+    upstream: {
+      ...upstream,
+      cacheSize: '100 MB',
+      artifactCount: 100,
+      warning: {
+        text: 'Example warning text',
+      },
     },
   },
 };
@@ -97,15 +107,15 @@ describe('RegistryUpstreamItem', () => {
     });
 
     it('renders the upstream name', () => {
-      expect(findUpstreamName().text()).toBe(defaultProps.upstream.name);
+      expect(findUpstreamName().text()).toBe(upstream.name);
     });
 
     it('renders the upstream url', () => {
-      expect(findUpstreamUrl().text()).toBe(defaultProps.upstream.url);
+      expect(findUpstreamUrl().text()).toBe(upstream.url);
     });
 
     it('renders the cache size', () => {
-      expect(findCacheSize().text()).toContain(defaultProps.upstream.cacheSize);
+      expect(findCacheSize().text()).toContain(defaultProps.registryUpstream.upstream.cacheSize);
     });
 
     it('renders artifact cache validity hours', () => {
@@ -118,24 +128,26 @@ describe('RegistryUpstreamItem', () => {
 
     it('renders the artifact count', () => {
       expect(findArtifactCount().text()).toContain(
-        defaultProps.upstream.artifactCount.toLocaleString(),
+        defaultProps.registryUpstream.upstream.artifactCount.toLocaleString(),
       );
     });
 
     it('renders the warning badge if upstream has a warning', () => {
       expect(findWarningBadge().exists()).toBe(true);
-      expect(findWarningText()).toBe(defaultProps.upstream.warning.text);
+      expect(findWarningText()).toBe(defaultProps.registryUpstream.upstream.warning.text);
     });
 
     it('renders the warning badge with default text if upstream has a warning but no text', () => {
       createComponent({
-        props: { upstream: { ...defaultProps.upstream, warning: { text: null } } },
+        props: { registryUpstream: { upstream: { ...upstream, warning: { text: null } } } },
       });
       expect(findWarningText()).toBe('There is a problem with this cached upstream');
     });
 
     it('does not render the warning badge if upstream does not have a warning', () => {
-      createComponent({ props: { upstream: { ...defaultProps.upstream, warning: null } } });
+      createComponent({
+        props: { registryUpstream: { upstream: { ...upstream, warning: null } } },
+      });
       expect(findWarningBadge().exists()).toBe(false);
     });
 
@@ -150,7 +162,9 @@ describe('RegistryUpstreamItem', () => {
 
     it('renders the edit button if `glAbilities.updateVirtualRegistry` is true and editPath is provided', () => {
       expect(findEditButton().exists()).toBe(true);
-      expect(findEditButton().attributes('href')).toBe('path/2/edit');
+      expect(findEditButton().attributes('href')).toBe(
+        `path/${getIdFromGraphQLId(upstream.id)}/edit`,
+      );
     });
 
     it('does not render the edit button if `glAbilities.updateVirtualRegistry` is false', () => {
@@ -160,7 +174,7 @@ describe('RegistryUpstreamItem', () => {
 
     it('renders the remove button if `glAbilities.destroyVirtualRegistry` is true', () => {
       expect(findRemoveButton().props('icon')).toBe('remove');
-      expect(findRemoveButton().attributes('aria-label')).toBe('Remove upstream Maven upstream');
+      expect(findRemoveButton().attributes('aria-label')).toBe('Remove upstream name');
     });
 
     it('does not render the remove button if `glAbilities.destroyVirtualRegistry` is false', () => {
@@ -176,28 +190,29 @@ describe('RegistryUpstreamItem', () => {
 
     it('emits reorderUp when reorder up button is clicked', () => {
       findReorderUpButton().vm.$emit('click');
-      expect(Boolean(wrapper.emitted('reorderUpstream'))).toBe(true);
-      expect(wrapper.emitted('reorderUpstream')[0]).toEqual(['up', defaultProps.upstream]);
+
+      expect(wrapper.emitted('reorderUpstream')[0]).toEqual(['up', defaultProps.registryUpstream]);
     });
 
     it('emits reorderDown when reorder down button is clicked', () => {
       findReorderDownButton().vm.$emit('click');
-      expect(Boolean(wrapper.emitted('reorderUpstream'))).toBe(true);
-      expect(wrapper.emitted('reorderUpstream')[0]).toEqual(['down', defaultProps.upstream]);
+
+      expect(wrapper.emitted('reorderUpstream')[0]).toEqual([
+        'down',
+        defaultProps.registryUpstream,
+      ]);
     });
 
     it('emits clearCache when clear cache button is clicked', () => {
       findClearCacheButton().vm.$emit('click');
-      expect(Boolean(wrapper.emitted('clearCache'))).toBe(true);
-      expect(wrapper.emitted('clearCache')[0]).toEqual([defaultProps.upstream]);
+
+      expect(wrapper.emitted('clearCache')[0]).toEqual([defaultProps.registryUpstream.upstream]);
     });
 
     it('emits removeUpstream when delete button is clicked', () => {
       findRemoveButton().vm.$emit('click');
-      expect(Boolean(wrapper.emitted('removeUpstream'))).toBe(true);
-      expect(wrapper.emitted('removeUpstream')[0]).toEqual([
-        defaultProps.upstream.registryUpstreams[0].id,
-      ]);
+
+      expect(wrapper.emitted('removeUpstream')[0]).toEqual([defaultProps.registryUpstream.id]);
     });
   });
 });

@@ -26,7 +26,7 @@ export default {
   mixins: [glAbilitiesMixin()],
   inject: ['editUpstreamPathTemplate', 'showUpstreamPathTemplate'],
   props: {
-    upstream: {
+    registryUpstream: {
       type: Object,
       required: false,
       default: () => ({}),
@@ -44,7 +44,7 @@ export default {
    * Emitted when an upstream is reordered
    * @event reorderUpstream
    * @property {string} direction - The direction to move the upstream ('up' or 'down')
-   * @property {string} upstream - The upstream to reorder
+   * @property {string} registryUpstream - The registryUpstream item to reorder
    */
   /**
    * Emitted when the cache is cleared
@@ -58,6 +58,9 @@ export default {
    */
   emits: ['reorderUpstream', 'clearCache', 'removeUpstream'],
   computed: {
+    upstream() {
+      return this.registryUpstream.upstream;
+    },
     name() {
       return this.upstream.name;
     },
@@ -149,13 +152,13 @@ export default {
   },
   methods: {
     reorderUpstream(direction) {
-      this.$emit('reorderUpstream', direction, this.upstream);
+      this.$emit('reorderUpstream', direction, this.registryUpstream);
     },
     clearCache() {
       this.$emit('clearCache', this.upstream);
     },
     removeUpstream() {
-      const { id } = this.upstream.registryUpstreams[0];
+      const { id } = this.registryUpstream;
       this.$emit('removeUpstream', id);
     },
   },

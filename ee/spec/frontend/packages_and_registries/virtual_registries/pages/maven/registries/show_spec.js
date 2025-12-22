@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import mavenRegistryUpstreamsFixture from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registry_upstreams.query.graphql.json';
 import getMavenVirtualRegistryUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registry_upstreams.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
@@ -9,19 +10,10 @@ import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_regis
 import MavenRegistryDetailsUpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstreams_list.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/registry_upstream_item.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import { mavenVirtualRegistry } from '../../../mock_data';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
 Vue.use(VueApollo);
-
-const mockMavenRegistryUpstreams = {
-  data: {
-    virtualRegistriesPackagesMavenRegistry: {
-      ...mavenVirtualRegistry,
-    },
-  },
-};
 
 const defaultProvide = {
   groupPath: 'flightjs',
@@ -44,7 +36,7 @@ describe('MavenRegistryDetailsApp', () => {
   const findMavenRegistryDetailsHeader = () => wrapper.findComponent(MavenRegistryDetailsHeader);
   const findUpstreamRegistryItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
 
-  const mavenRegistryUpstreamsHandler = jest.fn().mockResolvedValue(mockMavenRegistryUpstreams);
+  const mavenRegistryUpstreamsHandler = jest.fn().mockResolvedValue(mavenRegistryUpstreamsFixture);
   const errorHandler = jest.fn().mockRejectedValue(mockError);
 
   const createComponent = ({ handlers = [] } = {}) => {
@@ -87,7 +79,8 @@ describe('MavenRegistryDetailsApp', () => {
   describe('upstreams list', () => {
     it('displays the upstream registries currently available', async () => {
       const upstreamsLength =
-        mockMavenRegistryUpstreams.data.virtualRegistriesPackagesMavenRegistry.upstreams.length;
+        mavenRegistryUpstreamsFixture.data.virtualRegistriesPackagesMavenRegistry.registryUpstreams
+          .length;
 
       createComponent({
         handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],

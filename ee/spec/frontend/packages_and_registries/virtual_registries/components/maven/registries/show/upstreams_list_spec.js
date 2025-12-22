@@ -1,11 +1,13 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlBadge } from '@gitlab/ui';
+import mavenRegistryUpstreamsFixture from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registry_upstreams.query.graphql.json';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenRegistryDetailsUpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstreams_list.vue';
-import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import AddUpstream from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/add_upstream.vue';
 import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/link_upstream_form.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/registry_upstream_item.vue';
@@ -22,7 +24,6 @@ import {
   updateMavenRegistryUpstreamPosition,
 } from 'ee/api/virtual_registries_api';
 import {
-  mavenVirtualRegistry,
   upstreamsResponse,
   multipleUpstreamsResponse,
 } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
@@ -32,14 +33,16 @@ jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
 Vue.use(VueApollo);
 
-describe('MavenRegistryDetailsApp', () => {
+describe('MavenRegistryDetailsUpstreamsList', () => {
   let wrapper;
 
-  const { upstreams } = mavenVirtualRegistry;
+  const { virtualRegistriesPackagesMavenRegistry } = mavenRegistryUpstreamsFixture.data;
+  const { registryUpstreams } = virtualRegistriesPackagesMavenRegistry;
+  const [registryUpstream] = registryUpstreams;
 
   const defaultProps = {
     registryId: 1,
-    upstreams,
+    registryUpstreams,
   };
 
   const defaultProvide = {
@@ -47,16 +50,6 @@ describe('MavenRegistryDetailsApp', () => {
       createVirtualRegistry: true,
       updateVirtualRegistry: true,
     },
-  };
-
-  const upstream = {
-    name: 'Maven upstream 7',
-    url: 'https://repo.maven.apache.org/maven2',
-    description: '',
-    username: '',
-    password: '',
-    cacheValidityHours: 24,
-    metadataCacheValidityHours: 24,
   };
 
   const expectedCapture = (error) => {
@@ -71,7 +64,8 @@ describe('MavenRegistryDetailsApp', () => {
       mavenUpstreamCreate: {
         upstream: {
           id: 7,
-          ...upstream,
+          description: '',
+          ...registryUpstream.upstream,
         },
         errors: [],
       },
@@ -177,9 +171,9 @@ describe('MavenRegistryDetailsApp', () => {
     it('renders the upstreams and passes correct props to each', () => {
       const upstreamItems = findUpstreamItems();
 
-      expect(upstreamItems).toHaveLength(defaultProps.upstreams.length);
+      expect(upstreamItems).toHaveLength(registryUpstreams.length);
       expect(upstreamItems.at(0).props()).toMatchObject({
-        upstream: defaultProps.upstreams[0],
+        registryUpstream,
       });
     });
 
@@ -247,7 +241,7 @@ describe('MavenRegistryDetailsApp', () => {
     beforeEach(() => {
       createComponent({
         props: {
-          upstreams: [],
+          registryUpstreams: [],
         },
       });
     });
@@ -285,14 +279,12 @@ describe('MavenRegistryDetailsApp', () => {
   });
 
   describe('when there are group level upstreams & registry has upstreams', () => {
-    const registryUpstreams = [upstreams[0]];
-
     const response = multipleUpstreamsResponse;
     beforeEach(() => {
       getMavenUpstreamRegistriesList.mockResolvedValue(response);
       createComponent({
         props: {
-          upstreams: registryUpstreams,
+          registryUpstreams,
         },
       });
     });
@@ -301,12 +293,24 @@ describe('MavenRegistryDetailsApp', () => {
       await findAddUpstream().vm.$emit('link');
 
       expect(findLinkUpstreamForm().props('initialUpstreams')).toStrictEqual(response.data);
-      expect(findLinkUpstreamForm().props('linkedUpstreams')).toStrictEqual(registryUpstreams);
+      expect(findLinkUpstreamForm().props('linkedUpstreams')).toStrictEqual(
+        registryUpstreams.map(({ upstream }) => upstream),
+      );
       expect(findLinkUpstreamForm().props('upstreamsCount')).toBe(2);
     });
   });
 
   describe('create upstream action', () => {
+    const upstream = {
+      name: 'Maven upstream 7',
+      url: 'https://repo.maven.apache.org/maven2',
+      description: '',
+      username: '',
+      password: '',
+      cacheValidityHours: 24,
+      metadataCacheValidityHours: 24,
+    };
+
     it('emits createUpstream on successful form submission', async () => {
       createComponent({
         handlers: [[createUpstreamRegistryMutation, createUpstreamSuccessHandler]],
@@ -438,10 +442,10 @@ describe('MavenRegistryDetailsApp', () => {
       it('when direction is `down` calculates the right position', () => {
         const upstreamItems = findUpstreamItems();
 
-        upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', upstreams[0]);
+        upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', registryUpstream);
 
         expect(updateMavenRegistryUpstreamPosition).toHaveBeenCalledWith({
-          id: 2,
+          id: getIdFromGraphQLId(registryUpstream.id),
           position: 2,
         });
       });
@@ -449,10 +453,10 @@ describe('MavenRegistryDetailsApp', () => {
       it('when direction is `up`, calculates the right position', () => {
         const upstreamItems = findUpstreamItems();
 
-        upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', upstreams[1]);
+        upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', registryUpstreams[1]);
 
         expect(updateMavenRegistryUpstreamPosition).toHaveBeenCalledWith({
-          id: 3,
+          id: getIdFromGraphQLId(registryUpstreams[1].id),
           position: 1,
         });
       });
@@ -460,7 +464,7 @@ describe('MavenRegistryDetailsApp', () => {
       it('emits upstreamReordered when successful', async () => {
         const upstreamItems = findUpstreamItems();
 
-        upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', upstreams[1]);
+        upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', registryUpstreams[1]);
 
         await waitForPromises();
 
@@ -481,7 +485,7 @@ describe('MavenRegistryDetailsApp', () => {
 
         const upstreamItems = findUpstreamItems();
 
-        upstreamItems.at(0).vm.$emit('reorderUpstream', 'up', upstreams[0]);
+        upstreamItems.at(0).vm.$emit('reorderUpstream', 'up', registryUpstream);
 
         await waitForPromises();
 
@@ -497,7 +501,7 @@ describe('MavenRegistryDetailsApp', () => {
 
         const upstreamItems = findUpstreamItems();
 
-        upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', upstreams[0]);
+        upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', registryUpstream);
 
         await waitForPromises();
 
@@ -511,7 +515,7 @@ describe('MavenRegistryDetailsApp', () => {
   });
 
   describe('remove upstream action', () => {
-    const registryUpstreamAssociationId = upstreams[0].registryUpstreams[0].id;
+    const registryUpstreamAssociationId = registryUpstream.id;
     beforeEach(() => {
       removeMavenUpstreamRegistryAssociation.mockReset();
     });
@@ -527,7 +531,7 @@ describe('MavenRegistryDetailsApp', () => {
 
       it('calls the right arguments', () => {
         expect(removeMavenUpstreamRegistryAssociation).toHaveBeenCalledWith({
-          id: 2,
+          id: getIdFromGraphQLId(registryUpstreamAssociationId),
         });
       });
 
@@ -597,7 +601,7 @@ describe('MavenRegistryDetailsApp', () => {
 
       it('calls the right arguments', () => {
         expect(deleteMavenRegistryCache).toHaveBeenCalledWith({
-          id: 1,
+          id: defaultProps.registryId,
         });
       });
 
@@ -638,11 +642,11 @@ describe('MavenRegistryDetailsApp', () => {
       createComponent();
 
       const upstreamItems = findUpstreamItems();
-      await upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
+      await upstreamItems.at(0).vm.$emit('clearCache', registryUpstream.upstream);
 
       expect(findUpstreamClearCacheModal().props()).toStrictEqual({
         visible: true,
-        upstreamName: 'Maven upstream',
+        upstreamName: 'name',
       });
     });
 
@@ -650,7 +654,7 @@ describe('MavenRegistryDetailsApp', () => {
       createComponent();
 
       const upstreamItems = findUpstreamItems();
-      upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
+      upstreamItems.at(0).vm.$emit('clearCache', registryUpstream.upstream);
 
       findUpstreamClearCacheModal().vm.$emit('canceled');
 
@@ -663,13 +667,13 @@ describe('MavenRegistryDetailsApp', () => {
         createComponent();
         const upstreamItems = findUpstreamItems();
 
-        upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
+        upstreamItems.at(0).vm.$emit('clearCache', registryUpstream.upstream);
         findUpstreamClearCacheModal().vm.$emit('primary');
       });
 
       it('calls the right arguments', () => {
         expect(deleteMavenUpstreamCache).toHaveBeenCalledWith({
-          id: 2,
+          id: getIdFromGraphQLId(registryUpstream.upstream.id),
         });
       });
 
@@ -689,7 +693,7 @@ describe('MavenRegistryDetailsApp', () => {
 
         const upstreamItems = findUpstreamItems();
 
-        upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
+        upstreamItems.at(0).vm.$emit('clearCache', registryUpstream.upstream);
         findUpstreamClearCacheModal().vm.$emit('primary');
 
         await waitForPromises();
@@ -705,16 +709,15 @@ describe('MavenRegistryDetailsApp', () => {
 
   describe('when maximum upstreams limit is reached', () => {
     const maxUpstreams = Array.from({ length: 20 }, (_, i) => ({
-      id: `upstream-${i}`,
-      name: `Upstream ${i}`,
+      id: `registry-upstream-${i}`,
       position: i + 1,
-      registryUpstreams: [{ id: `registry-upstream-${i}`, position: i + 1 }],
+      upstream: [{ ...registryUpstream.upstream, id: `upstream-${i}`, name: `Upstream ${i}` }],
     }));
 
     beforeEach(() => {
       createComponent({
         props: {
-          upstreams: maxUpstreams,
+          registryUpstreams: maxUpstreams,
         },
       });
     });
@@ -733,7 +736,7 @@ describe('MavenRegistryDetailsApp', () => {
     it('shows correct count for single upstream', () => {
       createComponent({
         props: {
-          upstreams: [upstreams[0]],
+          registryUpstreams: [registryUpstream],
         },
       });
 
@@ -743,7 +746,7 @@ describe('MavenRegistryDetailsApp', () => {
     it('shows correct count for no upstreams', () => {
       createComponent({
         props: {
-          upstreams: [],
+          registryUpstreams: [],
         },
       });
 

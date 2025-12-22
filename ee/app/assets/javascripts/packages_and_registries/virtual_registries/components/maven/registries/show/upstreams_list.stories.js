@@ -74,31 +74,39 @@ const Template = (_, { argTypes }) => ({
 export const Default = Template.bind({});
 Default.args = {
   registryId: 1,
-  upstreams: [
+  registryUpstreams: [
     {
       id: 1,
-      name: 'Upstream title',
-      description: 'Upstream description',
-      url: 'http://maven.org/test',
-      cacheValidityHours: 24,
-      cacheSize: '100 MB',
-      canClearCache: true,
-      artifactCount: 100,
       position: 1,
-      warning: {
-        text: 'There is a problem with this cached upstream',
+      upstream: {
+        id: 1,
+        name: 'Upstream title',
+        description: 'Upstream description',
+        url: 'http://maven.org/test',
+        cacheValidityHours: 24,
+        metadataCacheValidityHours: 48,
+        cacheSize: '100 MB',
+        canClearCache: true,
+        artifactCount: 100,
+        warning: {
+          text: 'There is a problem with this cached upstream',
+        },
       },
     },
     {
       id: 2,
-      name: 'Upstream title 2',
-      description: 'Upstream description 2',
-      url: 'http://maven.org/test2',
-      cacheValidityHours: 1,
-      cacheSize: '11.2 GB',
-      canClearCache: false,
-      artifactCount: 1,
       position: 2,
+      upstream: {
+        id: 2,
+        name: 'Upstream title 2',
+        description: 'Upstream description 2',
+        url: 'http://maven.org/test2',
+        cacheValidityHours: 1,
+        metadataCacheValidityHours: 2,
+        cacheSize: '11.2 GB',
+        canClearCache: false,
+        artifactCount: 1,
+      },
     },
   ],
   canTestUpstream: true,

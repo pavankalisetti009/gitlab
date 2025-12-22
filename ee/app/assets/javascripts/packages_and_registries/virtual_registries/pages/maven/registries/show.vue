@@ -1,9 +1,9 @@
 <script>
 import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/header.vue';
 import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstreams_list.vue';
-import getMavenVirtualRegistryUpstreams from '../../../graphql/queries/get_maven_virtual_registry_upstreams.query.graphql';
-import { convertToMavenRegistryGraphQLId } from '../../../utils';
-import { captureException } from '../../../sentry_utils';
+import getMavenVirtualRegistryUpstreams from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registry_upstreams.query.graphql';
+import { convertToMavenRegistryGraphQLId } from 'ee/packages_and_registries/virtual_registries/utils';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 export default {
   name: 'MavenRegistryDetailsApp',
@@ -46,8 +46,8 @@ export default {
     isFirstTimeLoading() {
       return this.$apollo.queries.mavenVirtualRegistry.loading && !this.hasLoadedOnce;
     },
-    upstreams() {
-      return this.mavenVirtualRegistry?.upstreams ?? [];
+    registryUpstreams() {
+      return this.mavenVirtualRegistry?.registryUpstreams ?? [];
     },
   },
   methods: {
@@ -63,7 +63,7 @@ export default {
     <upstreams-list
       :loading="isFirstTimeLoading"
       :registry-id="registry.id"
-      :upstreams="upstreams"
+      :registry-upstreams="registryUpstreams"
       @upstreamCreated="refetchMavenVirtualRegistryQuery"
       @upstreamLinked="refetchMavenVirtualRegistryQuery"
       @upstreamReordered="refetchMavenVirtualRegistryQuery"

@@ -62,9 +62,9 @@ export default {
       required: true,
     },
     /**
-     * The upstreams object
+     * The registryUpstreams object
      */
-    upstreams: {
+    registryUpstreams: {
       type: Array,
       required: false,
       default: () => [],
@@ -95,7 +95,6 @@ export default {
       topLevelUpstreamsQueryInProgress: false,
       upstreamClearCacheModalIsShown: false,
       upstreamToBeCleared: null,
-      upstreamItems: this.upstreams,
       updateActionErrorMessage: '',
     };
   },
@@ -106,8 +105,8 @@ export default {
     canClearRegistryCache() {
       return this.canEdit && this.upstreamsCount;
     },
-    sortedUpstreamItems() {
-      return [...this.upstreamItems].sort((a, b) => a.position - b.position);
+    linkedUpstreams() {
+      return this.registryUpstreams.map(({ upstream }) => upstream);
     },
     canCreate() {
       return this.glAbilities.createVirtualRegistry;
@@ -122,7 +121,7 @@ export default {
       return this.currentFormType === FORM_TYPES.LINK;
     },
     upstreamsCount() {
-      return this.upstreams.length;
+      return this.registryUpstreams.length;
     },
     mavenVirtualRegistryID() {
       return convertToMavenRegistryGraphQLId(this.registryId);
@@ -143,11 +142,6 @@ export default {
       return this.upstreamsCount === MAX_UPSTREAMS_PER_REGISTRY;
     },
   },
-  watch: {
-    upstreams(val) {
-      this.upstreamItems = val || [];
-    },
-  },
   async created() {
     if (!this.canEdit) return;
 
@@ -164,8 +158,7 @@ export default {
     }
   },
   methods: {
-    async reorderUpstream(direction, upstream) {
-      const [registryUpstream] = upstream.registryUpstreams;
+    async reorderUpstream(direction, registryUpstream) {
       const position = registryUpstream.position + (direction === 'up' ? -1 : 1);
 
       const id = getIdFromGraphQLId(registryUpstream.id);
@@ -388,9 +381,9 @@ export default {
           {{ updateActionErrorMessage }}
         </gl-alert>
         <registry-upstream-item
-          v-for="(upstream, index) in sortedUpstreamItems"
-          :key="upstream.id"
-          :upstream="upstream"
+          v-for="(registryUpstream, index) in registryUpstreams"
+          :key="registryUpstream.id"
+          :registry-upstream="registryUpstream"
           :upstreams-count="upstreamsCount"
           :index="index"
           @reorderUpstream="reorderUpstream"
@@ -439,7 +432,7 @@ export default {
         v-if="isLinkUpstreamForm"
         :loading="linkUpstreamInProgress"
         :upstreams-count="topLevelUpstreamsTotalCount"
-        :linked-upstreams="upstreamItems"
+        :linked-upstreams="linkedUpstreams"
         :initial-upstreams="topLevelUpstreams"
         @submit="linkUpstream"
         @cancel="hideForm"
