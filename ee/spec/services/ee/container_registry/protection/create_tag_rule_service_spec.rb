@@ -86,5 +86,39 @@ RSpec.describe ContainerRegistry::Protection::CreateTagRuleService, feature_cate
 
       it_behaves_like 'an erroneous immutable rule creation', message: 'Immutable tag rules require an Ultimate license'
     end
+
+    context 'when tracking internal events' do
+      before do
+        stub_licensed_features(container_registry_immutable_tag_rules: true)
+      end
+
+      it 'tracks the create_container_registry_protected_tag_rule event' do
+        expect { service_execute }
+          .to trigger_internal_events('create_container_registry_protected_tag_rule')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            user: current_user,
+            additional_properties: { rule_type: 'immutable' }
+          )
+          .once
+      end
+
+      context 'when rule creation fails' do
+        before do
+          allow_next_instance_of(ContainerRegistry::Protection::TagRule) do |instance|
+            allow(instance).to receive_messages(
+              save: false,
+              persisted?: false,
+              errors: instance_double(ActiveModel::Errors, full_messages: ['Validation error'])
+            )
+          end
+        end
+
+        it 'does not track the event' do
+          expect { service_execute }.not_to trigger_internal_events('create_container_registry_protected_tag_rule')
+        end
+      end
+    end
   end
 end
