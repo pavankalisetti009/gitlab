@@ -72,6 +72,19 @@ module EE
         class_name: 'Ai::FeatureAccessRule',
         inverse_of: :through_namespace, foreign_key: 'through_namespace_id'
 
+      # If this is a root namespace, this will contain the different rules applied will only have a value on SaaS
+      has_many :ai_feature_rules,
+        class_name: 'Ai::NamespaceFeatureAccessRule',
+        inverse_of: :root_namespace,
+        foreign_key: 'root_namespace_id'
+
+      # These are the rules that are set to the root namespace, and uses this namespace as the container, will only
+      # have a value on SaaS
+      has_many :ai_feature_rules_through_namespace,
+        class_name: 'Ai::NamespaceFeatureAccessRule',
+        inverse_of: :through_namespace,
+        foreign_key: 'through_namespace_id'
+
       accepts_nested_attributes_for :gitlab_subscription, update_only: true
       accepts_nested_attributes_for :namespace_limit
       accepts_nested_attributes_for :ai_settings, update_only: true
