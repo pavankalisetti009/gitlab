@@ -70,7 +70,8 @@ module Security
           end
 
           def create_detection_transitions(vulnerability_ids)
-            return unless Feature.enabled?(:new_security_dashboard_exclude_no_longer_detected, pipeline.project)
+            actor = pipeline.nil? ? :instance : pipeline.project
+            return unless Feature.enabled?(:new_security_dashboard_exclude_no_longer_detected, actor)
 
             findings = Vulnerabilities::Finding.by_vulnerability(vulnerability_ids)
             ::Vulnerabilities::DetectionTransitions::InsertService.new(findings, detected: true).execute
