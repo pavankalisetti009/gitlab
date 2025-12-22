@@ -66,7 +66,6 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       allow(GitlabSubscriptions::DuoEnterprise).to receive_messages(
         active_add_on_purchase_for_self_managed?: active_add_on_purchase_for_self_managed?
       )
-      stub_feature_flags(duo_foundational_agents_availability: false)
       stub_feature_flags(duo_foundational_agents_per_agent_availability: false)
     end
 
@@ -97,17 +96,9 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         redirect_path: '/admin/gitlab_duo',
         toggle_beta_models_path: '/admin/ai/duo_self_hosted/toggle_beta_models',
         foundational_agents_default_enabled: 'true',
-        show_foundational_agents_availability: 'false',
+        show_foundational_agents_availability: 'true',
         show_foundational_agents_per_agent_availability: 'false'
       )
-    end
-
-    context 'with duo_foundational_agents_availability flag enabled' do
-      before do
-        stub_feature_flags(duo_foundational_agents_availability: true)
-      end
-
-      it { expect(settings).to include(show_foundational_agents_availability: 'true') }
     end
 
     context 'with duo_foundational_agents_per_agent_availability flag enabled' do

@@ -152,7 +152,7 @@ module EE
       end
 
       def show_foundational_agents_availability?
-        ::Feature.enabled?(:duo_foundational_agents_availability, @group) && saas? && @group.root?
+        saas? && @group.root?
       end
 
       def show_foundational_agents_per_agent_availability?
