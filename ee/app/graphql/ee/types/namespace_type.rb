@@ -209,6 +209,14 @@ module EE
           experiment: { milestone: '18.8' },
           description: 'AI settings for the namespace.'
 
+        field :targeted_messages,
+          [::Types::Notifications::TargetedMessageType],
+          null: true,
+          description: 'Targeted messages for the namespace.',
+          resolver: ::Resolvers::Notifications::TargetedMessageResolver,
+          skip_type_authorization: :read_namespace,
+          experiment: { milestone: '18.7' }
+
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end
