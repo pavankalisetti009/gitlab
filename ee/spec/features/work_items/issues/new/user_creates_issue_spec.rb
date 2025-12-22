@@ -57,8 +57,7 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
       end
 
       it 'has disabled GitLab Duo button' do
-        skip 'https://gitlab.com/gitlab-org/gitlab/-/issues/578218' if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-        expect(page).to have_button('GitLab Duo', disabled: true)
+        expect(find_by_testid('ai-chat-toggle')['aria-disabled']).to eq('true')
       end
     end
   end

@@ -52,14 +52,8 @@ module QA
           end
 
           def close
-            if QA::Runtime::Env.project_studio_enabled?
-              within('.ai-panel-header') do
-                click_element('dash-icon')
-              end
-            else
-              within_element('chat-header') do
-                click_element('close-icon')
-              end
+            within('.ai-panel-header') do
+              click_element('dash-icon')
             end
           end
 

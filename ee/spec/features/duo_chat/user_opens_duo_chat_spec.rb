@@ -23,9 +23,6 @@ RSpec.describe 'Duo Chat > User opens Duo Chat', :js, :saas, feature_category: :
   describe 'opening Duo Chat' do
     before do
       visit project_path(project)
-
-      # close button for the popover
-      find_by_testid('close-button').click unless Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
     end
 
     it 'shows the Duo Chat button' do
@@ -36,37 +33,23 @@ RSpec.describe 'Duo Chat > User opens Duo Chat', :js, :saas, feature_category: :
       find('button.js-tanuki-bot-chat-toggle').click
       wait_for_requests
 
-      if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-        expect(page).to have_css('.ai-panel')
-      else
-        expect(page).to have_css('.duo-chat-container')
-      end
+      expect(page).to have_css('.ai-panel')
     end
   end
 
   describe 'closing Duo Chat' do
     before do
       visit project_path(project)
-      find_by_testid('close-button').click unless Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-
       find('button.js-tanuki-bot-chat-toggle').click
       wait_for_requests
     end
 
     it 'closes Duo Chat drawer when close button is clicked' do
-      if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-        if has_testid?('duo-chat-promo-callout-popover', wait: 1) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-          within_testid('duo-chat-promo-callout-popover') { find_by_testid('close-icon').click }
-        end
+      within_testid('duo-chat-promo-callout-popover') { find_by_testid('close-icon').click }
 
-        find_by_testid('content-container-collapse-button').click
+      find_by_testid('content-container-collapse-button').click
 
-        expect(page).not_to have_css('.ai-panel')
-      else
-        find_by_testid('chat-close-button').click
-
-        expect(page).not_to have_css('.duo-chat-container')
-      end
+      expect(page).not_to have_css('.ai-panel')
     end
   end
 
@@ -95,12 +78,7 @@ RSpec.describe 'Duo Chat > User opens Duo Chat', :js, :saas, feature_category: :
       find_by_testid('rca-duo-button').click
       wait_for_requests
 
-      if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-        expect(page).to have_css('.ai-panel')
-      else
-        expect(page).to have_css('.duo-chat-container')
-      end
-
+      expect(page).to have_css('.ai-panel')
       expect(page).to have_content(/troubleshoot/i)
     end
   end

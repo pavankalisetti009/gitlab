@@ -7,8 +7,6 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
     it 'dismisses the banner when clicking the close button' do
       expect(page).to have_content(banner_content)
 
-      close_promotion_popover unless Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-
       page.within('.explore-duo-core-banner') do
         find('.gl-banner-close').click
         # Need to wait for requests or else the queries from this request will get
@@ -21,8 +19,6 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
 
     it 'dismisses the banner when clicking the CTA' do
       expect(page).to have_content(banner_content)
-
-      close_promotion_popover unless Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
 
       page.within('.explore-duo-core-banner') do
         click_link 'Explore GitLab Duo Core'

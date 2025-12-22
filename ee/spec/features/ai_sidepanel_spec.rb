@@ -32,141 +32,120 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
     allow(::Gitlab::Llm::TanukiBot).to receive_messages(chat_disabled_reason: nil, credits_available?: true)
   end
 
-  context 'when Project Studio IS NOT enabled' do
-    before do
-      # NOTE: We will stub all existing methods on Users::ProjectStudio to return false, to ensure that
-      #       it always is disabled, regardless of how it may be refactored in the future.
-      project_studio_instance = instance_double(Users::ProjectStudio, enabled?: false)
-      allow(Users::ProjectStudio).to receive_messages(new: project_studio_instance, enabled_for_user?: false)
-    end
+  describe 'sidepanel visibility' do
+    it 'shows the AI sidepanel toggle and can expand' do
+      # Enable Agentic mode so sessions toggle appears
+      set_cookie('duo_agentic_mode_on', 'true')
 
-    it 'does not show AI sidepanel' do
       visit project_path(project)
 
-      expect(page).not_to have_css(ai_sidepanel_selector)
+      expect(page).to have_css(ai_sidepanel_selector)
+
+      expect(page).not_to have_content("Sessions")
+
+      within(ai_sidepanel_selector) do
+        find_by_testid(sessions_toggle_selector).click
+      end
+
+      # Verify we're now in the agent sessions view
+      expect(page).to have_content("Sessions")
     end
   end
 
-  context 'when Project Studio IS enabled' do
+  describe 'agent sessions in sidepanel' do
+    let_it_be(:workflow1) do
+      create(:duo_workflows_workflow,
+        project: project,
+        user: user,
+        goal: 'Fix pipeline issues',
+        workflow_definition: 'issue_to_mr',
+        environment: :web)
+    end
+
+    let_it_be(:workflow2) do
+      create(:duo_workflows_workflow,
+        project: project,
+        user: user,
+        goal: 'Review code changes',
+        workflow_definition: 'code_review',
+        environment: :web)
+    end
+
     before do
-      skip 'Test not applicable in classic UI' unless Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-    end
+      # Enable Agentic mode so sessions toggle appears
+      set_cookie('duo_agentic_mode_on', 'true')
 
-    describe 'sidepanel visibility' do
-      it 'shows the AI sidepanel toggle and can expand' do
-        # Enable Agentic mode so sessions toggle appears
-        set_cookie('duo_agentic_mode_on', 'true')
+      visit project_path(project)
 
-        visit project_path(project)
-
-        expect(page).to have_css(ai_sidepanel_selector)
-
-        expect(page).not_to have_content("Sessions")
-
-        within(ai_sidepanel_selector) do
-          find_by_testid(sessions_toggle_selector).click
-        end
-
-        # Verify we're now in the agent sessions view
-        expect(page).to have_content("Sessions")
+      within(ai_sidepanel_selector) do
+        find_by_testid(sessions_toggle_selector).click
       end
     end
 
-    describe 'agent sessions in sidepanel' do
-      let_it_be(:workflow1) do
-        create(:duo_workflows_workflow,
-          project: project,
-          user: user,
-          goal: 'Fix pipeline issues',
-          workflow_definition: 'issue_to_mr',
-          environment: :web)
+    it 'displays the sessions list' do
+      expect(page).to have_content("Issue to mr ##{workflow1.id}")
+      expect(page).to have_content("Code review ##{workflow2.id}")
+    end
+
+    it 'navigates to session details when clicked' do
+      expect(page).not_to have_content('Activity')
+      expect(page).not_to have_content('Details')
+
+      expect(page).to have_selector('a[href*="/agent-sessions/"]')
+      find('a[href*="/agent-sessions/"]', match: :first).click
+
+      expect(page).to have_content('Activity')
+      expect(page).to have_content('Details')
+
+      expect(page).to have_selector('.gl-tab-nav-item.active', text: 'Activity')
+      expect(page).to have_no_content('GraphQL error:')
+    end
+
+    it 'can view session details tab' do
+      find('a[href*="/agent-sessions/"]', match: :first).click
+
+      click_link 'Details'
+
+      expect(page).to have_content('Details')
+      expect(page).to have_content(project.name)
+      expect(page).to have_no_content('GraphQL error:')
+    end
+  end
+
+  describe 'agent sessions empty state in sidepanel' do
+    before do
+      Ai::DuoWorkflows::Workflow.where(project: project, user: user).delete_all
+
+      # Enable Agentic mode so sessions toggle appears
+      set_cookie('duo_agentic_mode_on', 'true')
+
+      visit project_path(project)
+    end
+
+    it 'shows empty state when no sessions exist' do
+      within(ai_sidepanel_selector) do
+        find_by_testid(sessions_toggle_selector).click
       end
 
-      let_it_be(:workflow2) do
-        create(:duo_workflows_workflow,
-          project: project,
-          user: user,
-          goal: 'Review code changes',
-          workflow_definition: 'code_review',
-          environment: :web)
-      end
+      expect(page).to have_content('No agent sessions yet', wait: 10)
+    end
 
+    context 'when duo features are disabled' do
       before do
-        # Enable Agentic mode so sessions toggle appears
-        set_cookie('duo_agentic_mode_on', 'true')
-
-        visit project_path(project)
-
-        within(ai_sidepanel_selector) do
-          find_by_testid(sessions_toggle_selector).click
-        end
-      end
-
-      it 'displays the sessions list' do
-        expect(page).to have_content("Issue to mr ##{workflow1.id}")
-        expect(page).to have_content("Code review ##{workflow2.id}")
-      end
-
-      it 'navigates to session details when clicked' do
-        expect(page).not_to have_content('Activity')
-        expect(page).not_to have_content('Details')
-
-        expect(page).to have_selector('a[href*="/agent-sessions/"]')
-        find('a[href*="/agent-sessions/"]', match: :first).click
-
-        expect(page).to have_content('Activity')
-        expect(page).to have_content('Details')
-
-        expect(page).to have_selector('.gl-tab-nav-item.active', text: 'Activity')
-        expect(page).to have_no_content('GraphQL error:')
-      end
-
-      it 'can view session details tab' do
-        find('a[href*="/agent-sessions/"]', match: :first).click
-
-        click_link 'Details'
-
-        expect(page).to have_content('Details')
-        expect(page).to have_content(project.name)
-        expect(page).to have_no_content('GraphQL error:')
-      end
-    end
-
-    describe 'agent sessions empty state in sidepanel' do
-      before do
-        Ai::DuoWorkflows::Workflow.where(project: project, user: user).delete_all
-
-        # Enable Agentic mode so sessions toggle appears
-        set_cookie('duo_agentic_mode_on', 'true')
-
+        project.project_setting.update!(duo_features_enabled: false)
+        allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(:project)
         visit project_path(project)
       end
 
-      it 'shows empty state when no sessions exist' do
+      it 'prevents access to sessions tab' do
         within(ai_sidepanel_selector) do
-          find_by_testid(sessions_toggle_selector).click
-        end
+          sessions_button = find_by_testid(sessions_toggle_selector)
 
-        expect(page).to have_content('No agent sessions yet', wait: 10)
-      end
+          expect(sessions_button['aria-disabled']).to eq('true')
 
-      context 'when duo features are disabled' do
-        before do
-          project.project_setting.update!(duo_features_enabled: false)
-          allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(:project)
-          visit project_path(project)
-        end
+          sessions_button.click
 
-        it 'prevents access to sessions tab' do
-          within(ai_sidepanel_selector) do
-            sessions_button = find_by_testid(sessions_toggle_selector)
-
-            expect(sessions_button['aria-disabled']).to eq('true')
-
-            sessions_button.click
-
-            expect(page).not_to have_content('No agent sessions yet')
-          end
+          expect(page).not_to have_content('No agent sessions yet')
         end
       end
     end
