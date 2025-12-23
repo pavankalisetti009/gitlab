@@ -147,6 +147,8 @@ tags:
   description: Operations about users
 - name: application
   description: Operations about applications
+- name: application_statistics
+  description: Operations about application_statistics
 - name: imports
   description: Operations about imports
 - name: slack
@@ -46864,7 +46866,7 @@ paths:
           schema:
             "$ref": "#/definitions/API_Entities_ApplicationStatistics"
       tags:
-      - application
+      - application_statistics
       operationId: getApiV4ApplicationStatistics
   "/api/v4/discover-cert-based-clusters":
     get:
