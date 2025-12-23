@@ -100,6 +100,7 @@ module API
           { code: 403, message: 'Mirroring for the project is on pause' },
           { code: 422, message: 'The pull request event is not processable' }
         ]
+        tags ['project_mirrors']
       end
       params do
         optional :action, type: String, desc: 'Pull Request action'
@@ -132,6 +133,7 @@ module API
         failure [
           { code: 400, message: 'Url is blocked: Only allowed schemes are http, https, ssh, git' }
         ]
+        tags ['project_mirrors']
       end
       params do
         optional :enabled, type: Grape::API::Boolean, desc: 'Enables pull mirroring in a project'
@@ -168,6 +170,7 @@ module API
         failure [
           { code: 400, message: 'The project is not mirrored' }
         ]
+        tags ['project_mirrors']
       end
       get ':id/mirror/pull' do
         authenticate!

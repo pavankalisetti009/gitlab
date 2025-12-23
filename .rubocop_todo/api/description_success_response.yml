@@ -60,6 +60,7 @@ API/DescriptionSuccessResponse:
     - 'lib/api/project_import.rb'
     - 'lib/api/project_milestones.rb'
     - 'lib/api/releases.rb'
+    - 'lib/api/repositories.rb'
     - 'lib/api/rpm_project_packages.rb'
     - 'lib/api/rubygem_packages.rb'
     - 'lib/api/snippets.rb'
