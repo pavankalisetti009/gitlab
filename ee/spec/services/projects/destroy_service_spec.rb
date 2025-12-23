@@ -571,8 +571,11 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
     end
 
     it 'does not cause N+1 queries when checking for external consumers' do
+      # Warm up user-related queries that are executed once per user session
+      user.namespace_bans.load
+
       # Baseline: project with 1 catalog item
-      baseline_project = create(:project, namespace: user.namespace)
+      baseline_project = create(:project, :empty_repo, namespace: user.namespace)
       baseline_item = create(:ai_catalog_item, :public, project: baseline_project)
       create(:ai_catalog_item_consumer, item: baseline_item, project: baseline_project)
       create(:ai_catalog_item_consumer, item: baseline_item, project: project2)
@@ -581,9 +584,9 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
         described_class.new(baseline_project, user, {}).execute
       end
 
-      # Test: project with 3 catalog items (should not cause N+1)
-      test_project = create(:project, namespace: user.namespace)
-      3.times do
+      # Test: project with 2 catalog items (should not cause N+1)
+      test_project = create(:project, :empty_repo, namespace: user.namespace)
+      2.times do
         item = create(:ai_catalog_item, :public, project: test_project)
         create(:ai_catalog_item_consumer, item: item, project: test_project)
         create(:ai_catalog_item_consumer, item: item, project: project2)
@@ -591,7 +594,7 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
 
       expect do
         described_class.new(test_project, user, {}).execute
-      end.not_to exceed_query_limit(baseline)
+      end.to issue_same_number_of_queries_as(baseline)
     end
   end
 end
