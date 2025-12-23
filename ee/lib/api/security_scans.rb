@@ -38,6 +38,7 @@ module API
           { code: 400, message: 'Bad request' },
           { code: 401, message: 'Unauthorized' }
         ]
+        tags %w[security_scans]
       end
       params do
         requires :file_path, type: String, desc: 'The project relative path of the file to scan'
