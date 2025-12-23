@@ -9,6 +9,14 @@ scope '-/users', module: :users do
   resources :targeted_message_dismissals, only: [:create]
 end
 
+# Sign up
+scope path: '/users/sign_up', module: :registrations, as: :users_sign_up do
+  resource :welcome, only: [:show, :update], controller: 'welcome'
+  resource :trial_welcome, only: [:new, :create], controller: 'trial_welcome'
+  resource :company, only: [:new, :create], controller: 'company'
+  resources :groups, only: [:new, :create]
+end
+
 scope(constraints: { username: Gitlab::PathRegex.root_namespace_route_regex }) do
   scope(path: 'users/:username', as: :user, controller: :users) do
     get :available_project_templates
