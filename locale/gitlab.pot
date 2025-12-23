@@ -64967,6 +64967,12 @@ msgstr ""
 msgid "SlackIntegration|Slack app not enabled on GitLab instance"
 msgstr ""
 
+msgid "SlackIntegration|Slack slash commands integration is deprecated"
+msgstr ""
+
+msgid "SlackIntegration|Slack slash commands integration will be removed in GitLab 19.0. To run common GitLab operations from Slack, use the GitLab for Slack app instead."
+msgstr ""
+
 msgid "SlackIntegration|Step 1: Create your GitLab for Slack app"
 msgstr ""
 
