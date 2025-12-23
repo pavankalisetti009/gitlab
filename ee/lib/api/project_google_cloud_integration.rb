@@ -19,6 +19,7 @@ module API
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       namespace ':id/google_cloud/setup' do
         desc 'Get shell script to setup an integration in Google Cloud' do
+          tags ['project_google_cloud_integration']
           detail 'This feature is experimental.'
         end
         params do
@@ -60,6 +61,7 @@ module API
         end
 
         desc 'Get shell script to set up Google Cloud project for runner deployment' do
+          tags ['project_google_cloud_integration']
           detail 'This feature is experimental.'
         end
         params do
