@@ -57,6 +57,10 @@ module Ai
 
       scope :for_catalog_items, ->(item_ids) { where(ai_catalog_item_id: item_ids) }
 
+      def pinned_version
+        item.resolve_version(pinned_version_prefix)
+      end
+
       private
 
       def sharding_keys
