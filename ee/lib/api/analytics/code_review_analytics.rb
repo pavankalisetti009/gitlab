@@ -42,6 +42,7 @@ module API
       resource :analytics do
         desc 'List code review information about project' do
           success code: 200, model: ::API::Entities::Analytics::CodeReview::MergeRequest
+          tags %w[code_review_analytics]
         end
         params do
           requires :project_id, type: Integer, desc: 'Project ID'
