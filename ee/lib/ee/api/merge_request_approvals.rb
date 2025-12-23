@@ -34,7 +34,8 @@ module EE
             desc 'List approval rules for merge request', {
               is_array: true,
               success: ::API::Entities::MergeRequestApprovalSettings,
-              hidden: true
+              hidden: true,
+              tags: ['merge_request_approvals']
             }
             params do
               optional :target_branch, type: String,
@@ -50,6 +51,7 @@ module EE
 
             desc 'Get approval state of merge request' do
               success ::API::Entities::MergeRequestApprovalState
+              tags ['merge_request_approvals']
             end
             get 'approval_state' do
               present_merge_request_approval_state(presenter: ::API::Entities::MergeRequestApprovalState)
@@ -60,6 +62,7 @@ module EE
               detail 'This feature was introduced in 10.6 and deprecated in 16.0'
               success ::API::Entities::ApprovalState
               deprecated true
+              tags ['merge_request_approvals']
             end
             params do
               requires :approvals_required, type: Integer,
