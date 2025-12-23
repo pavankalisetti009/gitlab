@@ -19,6 +19,7 @@ module API
       segment ':id/approval_rules' do
         desc 'Get all group approval rules' do
           success ::API::Entities::GroupApprovalRule
+          tags ['group_approval_rules']
         end
         params do
           use :pagination
@@ -33,6 +34,7 @@ module API
 
         desc 'Create new group approval rule' do
           success ::API::Entities::GroupApprovalRule
+          tags ['group_approval_rules']
         end
         params do
           requires :name, type: String, desc: 'The name of the approval rule'
@@ -49,6 +51,10 @@ module API
           use :group_approval_rule
         end
 
+        desc 'Update group approval rule' do
+          success ::API::Entities::GroupApprovalRule
+          tags ['group_approval_rules']
+        end
         put ':approval_rule_id' do
           update_group_approval_rule(present_with: ::API::Entities::GroupApprovalRule)
         end
