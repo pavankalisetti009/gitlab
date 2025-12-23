@@ -37,10 +37,6 @@ module Admin
         ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
       end
 
-      def show_self_hosted_vendored_model_option?
-        false
-      end
-
       def can_manage_instance_model_selection?
         ::Ability.allowed?(current_user, :manage_instance_model_selection)
       end

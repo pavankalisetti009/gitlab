@@ -3,14 +3,14 @@ import { GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
+import getSelfHostedModelsQuery from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import { getTypeFromGraphQLId } from '~/graphql_shared/utils';
 import { formatDefaultModelData } from 'ee/ai/shared/model_selection/utils';
+import { RELEASE_STATES, SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 import { TYPENAME_AI_SELF_HOSTED_MODEL } from 'ee_else_ce/graphql_shared/constants';
-import { RELEASE_STATES, SELF_HOSTED_ROUTE_NAMES } from '../../constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
-import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
-import { PROVIDERS, DUO_AGENT_PLATFORM_FEATURE, GITLAB_DEFAULT_MODEL } from '../constants';
+import { PROVIDERS, GITLAB_DEFAULT_MODEL } from '../constants';
 import GitlabManagedModelsDisclaimerModal from './gitlab_managed_models_disclaimer_modal.vue';
 
 export default {
@@ -20,7 +20,7 @@ export default {
     ModelSelectDropdown,
     GitlabManagedModelsDisclaimerModal,
   },
-  inject: ['showVendoredModelOption', 'canManageSelfHostedModels'],
+  inject: ['canManageSelfHostedModels'],
   props: {
     aiFeatureSetting: {
       type: Object,
@@ -77,14 +77,6 @@ export default {
         .flatMap((item) => item.options ?? item)
         .find((item) => item.value === selected);
     },
-    showVendoredModel() {
-      const { feature = '' } = this.aiFeatureSetting;
-      const isDuoAgentPlatform = feature === DUO_AGENT_PLATFORM_FEATURE;
-
-      if (isDuoAgentPlatform) return false;
-
-      return this.showVendoredModelOption;
-    },
     listItems() {
       const { selfHostedModels, gitlabManagedModels } = this;
 
@@ -92,20 +84,13 @@ export default {
         value: PROVIDERS.DISABLED,
         text: s__('AdminAIPoweredFeatures|Disabled'),
       };
-      const vendoredOption = {
-        value: PROVIDERS.VENDORED,
-        text: s__('AdminAIPoweredFeatures|GitLab AI vendor model'),
-      };
+
       const items = [];
 
       if (selfHostedModels.length) {
-        const otherOptions = this.showVendoredModel
-          ? [vendoredOption, disabledOption]
-          : [disabledOption];
-
         items.push({
           text: s__('AdminSelfHostedModels|Self-hosted models'),
-          options: [...selfHostedModels, ...otherOptions],
+          options: [...selfHostedModels, disabledOption],
         });
       }
 
@@ -157,16 +142,10 @@ export default {
   },
 
   methods: {
-    isLegacyVendorOption(selectedOption) {
-      // We need to keep old implementation of AI vendor model option
-      // until the instance-level model selection feature flag is fully rolled out.
-      // Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/570683
-      return selectedOption === PROVIDERS.VENDORED;
-    },
     async onSelect(selectedOptionValue) {
       const provider = this.getProvider(selectedOptionValue);
 
-      if (provider === PROVIDERS.VENDORED && !this.isLegacyVendorOption(selectedOptionValue)) {
+      if (provider === PROVIDERS.VENDORED) {
         const selectedOption = this.gitlabManagedModels.find(
           ({ value }) => value === selectedOptionValue,
         );
@@ -181,10 +160,7 @@ export default {
 
       const provider = this.getProvider(selectedOption);
 
-      const offeredModelRef =
-        provider === PROVIDERS.VENDORED && !this.isLegacyVendorOption(selectedOption)
-          ? selectedOption
-          : null;
+      const offeredModelRef = provider === PROVIDERS.VENDORED ? selectedOption : null;
       const selfHostedModelId = provider === PROVIDERS.SELF_HOSTED ? selectedOption : null;
 
       try {

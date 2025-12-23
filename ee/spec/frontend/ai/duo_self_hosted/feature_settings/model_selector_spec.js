@@ -18,7 +18,6 @@ import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import {
   mockSelfHostedModels,
   mockAiFeatureSettings,
-  mockDuoAgentPlatformFeatureSettings,
   mockGitlabManagedModels,
   mockDefaultGitlabModel,
 } from './mock_data';
@@ -77,21 +76,6 @@ const EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS = {
   text: 'Self-hosted models',
   options: [
     ...EXPECTED_SELF_HOSTED_MODELS_OPTIONS,
-    {
-      text: 'Disabled',
-      value: PROVIDERS.DISABLED,
-    },
-  ],
-};
-
-const EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS_WITH_VENDORED_OPTION = {
-  text: 'Self-hosted models',
-  options: [
-    ...EXPECTED_SELF_HOSTED_MODELS_OPTIONS,
-    {
-      text: 'GitLab AI vendor model',
-      value: PROVIDERS.VENDORED,
-    },
     {
       text: 'Disabled',
       value: PROVIDERS.DISABLED,
@@ -163,7 +147,6 @@ describe('ModelSelector', () => {
       shallowMount(ModelSelector, {
         apolloProvider: mockApollo,
         provide: {
-          showVendoredModelOption: true,
           canManageSelfHostedModels: true,
           ...injectedProps,
         },
@@ -190,10 +173,6 @@ describe('ModelSelector', () => {
 
   const findModelSelector = () => wrapper.findComponent(ModelSelector);
   const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
-  const findVendoredModelOption = () => {
-    const modelOptions = findModelSelectDropdown().props('items');
-    return modelOptions.find((option) => option.value === PROVIDERS.VENDORED);
-  };
   const findAddModelButton = () => wrapper.findByTestId('add-self-hosted-model-button');
   const findDisclaimerModal = () => wrapper.findComponent(GitlabManagedModelsDisclaimerModal);
 
@@ -250,45 +229,29 @@ describe('ModelSelector', () => {
         ['Model 5 (Claude)', 'GA'],
         ['Model 2 (Code Llama)', 'BETA'],
         ['Model 3 (CodeGemma)', 'BETA'],
-        ['GitLab AI vendor model'],
         ['Disabled'],
       ]);
     });
 
-    describe('when showVendoredModelOption is false', () => {
-      it('does not include vendored option in options list', () => {
-        createComponent({
-          injectedProps: {
-            showVendoredModelOption: false,
+    it('does not render self-hosted models if there are none returned', () => {
+      createComponent({
+        props: {
+          aiFeatureSetting: {
+            ...mockAiFeatureSetting,
+            validModels: { nodes: [] },
+            validGitlabModels: { nodes: mockGitlabManagedModels },
           },
-        });
-
-        expect(findVendoredModelOption()).toBeUndefined();
+        },
       });
-    });
 
-    describe('when feature is Duo Agent Platform', () => {
-      it('does not include vendored option in options list', () => {
-        createComponent({
-          injectedProps: {
-            showVendoredModelOption: true,
-          },
-          props: {
-            aiFeatureSetting: mockDuoAgentPlatformFeatureSettings[0],
-          },
-        });
-
-        expect(findVendoredModelOption()).toBeUndefined();
-      });
+      const modelOptions = findModelSelectDropdown().props('items');
+      expect(modelOptions).toStrictEqual([EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS]);
     });
   });
 
   describe('with GitLab managed models', () => {
     it('renders two groups of options: self-hosted models and GitLab managed models', () => {
       createComponent({
-        injectedProps: {
-          showVendoredModelOption: false,
-        },
         props: {
           aiFeatureSetting: {
             ...mockAiFeatureSetting,
@@ -304,29 +267,8 @@ describe('ModelSelector', () => {
       ]);
     });
 
-    it('does not render self-hosted models if there are none returned', () => {
-      createComponent({
-        injectedProps: {
-          showVendoredModelOption: false,
-        },
-        props: {
-          aiFeatureSetting: {
-            ...mockAiFeatureSetting,
-            validModels: { nodes: [] },
-            validGitlabModels: { nodes: mockGitlabManagedModels },
-          },
-        },
-      });
-
-      const modelOptions = findModelSelectDropdown().props('items');
-      expect(modelOptions).toStrictEqual([EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS]);
-    });
-
     it('renders default GitLab model under GitLab managed models group if it exists', () => {
       createComponent({
-        injectedProps: {
-          showVendoredModelOption: false,
-        },
         props: {
           aiFeatureSetting: {
             ...mockAiFeatureSetting,
@@ -340,19 +282,6 @@ describe('ModelSelector', () => {
       const modelOptions = findModelSelectDropdown().props('items');
       expect(modelOptions).toStrictEqual([
         EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS_WITH_DEFAULT_MODEL_OPTION,
-      ]);
-    });
-
-    it('does not render GitLab managed models group if there are none returned', () => {
-      createComponent({
-        injectedProps: {
-          showVendoredModelOption: true,
-        },
-      });
-
-      const modelOptions = findModelSelectDropdown().props('items');
-      expect(modelOptions).toStrictEqual([
-        EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS_WITH_VENDORED_OPTION,
       ]);
     });
   });
@@ -384,7 +313,6 @@ describe('ModelSelector', () => {
       testCase               | selectedOption                          | provider                 | selfHostedModelId                       | offeredModelRef
       ${'self-hosted model'} | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${PROVIDERS.SELF_HOSTED} | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${null}
       ${'disabled'}          | ${'disabled'}                           | ${PROVIDERS.DISABLED}    | ${null}                                 | ${null}
-      ${'vendored'}          | ${'vendored'}                           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${null}
     `(
       'with $testCase as selected option: calls the update mutation with the correct input',
       ({ selectedOption, provider, selfHostedModelId, offeredModelRef }) => {
@@ -523,10 +451,7 @@ describe('ModelSelector', () => {
       it('updates the selected option', async () => {
         const modelSelectDropdown = findModelSelectDropdown();
 
-        expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
-          text: 'GitLab AI vendor model',
-          value: PROVIDERS.VENDORED,
-        });
+        expect(modelSelectDropdown.props('selectedOption')).toBe(null);
 
         modelSelectDropdown.vm.$emit('select', 'disabled');
         await waitForPromises();
@@ -621,7 +546,7 @@ describe('ModelSelector', () => {
     });
 
     it('does not update the selected option', () => {
-      expect(findModelSelectDropdown().props('selectedOption').value).toBe(PROVIDERS.VENDORED);
+      expect(findModelSelectDropdown().props('selectedOption')).toBe(null);
     });
 
     it('triggers an error message', () => {
