@@ -17,11 +17,14 @@ module Security
     has_many :scan_profile_triggers, class_name: 'Security::ScanProfileTrigger',
       foreign_key: :security_scan_profile_id, inverse_of: :scan_profile
 
+    accepts_nested_attributes_for :scan_profile_triggers
+
     validates :scan_type, presence: true
     validates :gitlab_recommended, inclusion: { in: [true, false] }
     validates :name, uniqueness: { scope: [:namespace_id, :scan_type] }, length: { maximum: 255 }, presence: true
     validates :description, length: { maximum: 2047 }, allow_blank: true
     validate :root_namespace_validation
+    before_validation :set_triggers_namespace
 
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
     scope :by_type, ->(type) { where(scan_type: type) }
@@ -35,6 +38,12 @@ module Security
 
     def root_namespace_validation
       errors.add(:namespace, 'must be a root namespace.') unless namespace&.root?
+    end
+
+    def set_triggers_namespace
+      scan_profile_triggers.each do |trigger|
+        trigger.namespace ||= namespace
+      end
     end
   end
 end

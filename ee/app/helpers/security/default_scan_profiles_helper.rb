@@ -15,7 +15,10 @@ module Security
         description: "GitLab's recommended baseline protection using industry-standard detection rules. " \
           "Blocks common secrets like API keys, tokens, and passwords from being committed " \
           "to your repository, with detection optimized to minimize false positives",
-        gitlab_recommended: true
+        gitlab_recommended: true,
+        scan_profile_triggers_attributes: [
+          trigger_type: :git_push_event
+        ]
       )
     end
   end
