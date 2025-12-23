@@ -4238,6 +4238,9 @@ msgstr ""
 msgid "AccessTokens|Limit scope to specific groups and projects and fine-grained permissions to resources."
 msgstr ""
 
+msgid "AccessTokens|Make sure you copy your token - you won't be able to access it again."
+msgstr ""
+
 msgid "AccessTokens|Make sure you save it - you won't be able to access it again."
 msgstr ""
 
@@ -4425,6 +4428,12 @@ msgid "AccessTokens|Your feed token authenticates you when your RSS reader loads
 msgstr ""
 
 msgid "AccessTokens|Your incoming email token authenticates you when you create a new issue by email, and is included in your personal project-specific email addresses."
+msgstr ""
+
+msgid "AccessTokens|Your new token has been created"
+msgstr ""
+
+msgid "AccessTokens|Your personal access token"
 msgstr ""
 
 msgid "AccessTokens|Your static object token authenticates you when repository static objects (such as archives or blobs) are served from an external storage."
