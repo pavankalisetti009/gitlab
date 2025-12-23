@@ -11206,6 +11206,77 @@ paths:
       tags:
       - job_artifacts
       operationId: deleteApiV4ProjectsIdJobsJobIdArtifacts
+  "/api/v4/projects/{id}/jobs/{job_id}/artifacts/tree":
+    get:
+      summary: List all files in the artifacts archive
+      description: Lists all files and directories in the artifacts archive without
+        extracting them
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        description: The ID or URL-encoded path of the project
+        type: string
+        required: true
+      - in: path
+        name: job_id
+        description: ID of a job
+        type: integer
+        format: int32
+        required: true
+        example: 42
+      - in: query
+        name: path
+        description: Path to browse in the artifacts archive. Defaults to root directory.
+        type: string
+        default: ''
+        required: false
+        example: coverage/reports
+      - in: query
+        name: recursive
+        description: If `true`, return all entries recursively.
+        type: boolean
+        default: false
+        required: false
+      - in: query
+        name: job_token
+        description: CI/CD job token for multi-project pipelines. Premium and Ultimate
+          only.
+        type: string
+        required: false
+      - in: query
+        name: page
+        description: Current page number
+        type: integer
+        format: int32
+        default: 1
+        required: false
+        example: 1
+      - in: query
+        name: per_page
+        description: Number of items per page
+        type: integer
+        format: int32
+        default: 20
+        required: false
+        example: 20
+      responses:
+        '200':
+          description: List all files in the artifacts archive
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/API_Entities_Ci_JobArtifactEntry"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+      tags:
+      - job_artifacts
+      operationId: getApiV4ProjectsIdJobsJobIdArtifactsTree
   "/api/v4/projects/{id}/jobs/{job_id}/artifacts/*artifact_path":
     get:
       summary: Download a specific file from artifacts archive
@@ -54061,6 +54132,29 @@ definitions:
         type: string
         example: https://gitlab.example.com/explore/catalog/my-namespace/my-component-project
     description: API_Entities_Ci_Catalog_Resources_Version model
+  API_Entities_Ci_JobArtifactEntry:
+    type: object
+    properties:
+      name:
+        type: string
+        example: index.html
+      path:
+        type: string
+        example: coverage/index.html
+      type:
+        type: string
+        enum:
+        - file
+        - directory
+        example: file
+      size:
+        type: integer
+        format: int32
+        example: 12345
+      mode:
+        type: string
+        example: '100644'
+    description: API_Entities_Ci_JobArtifactEntry model
   API_Entities_Ci_Job:
     type: object
     properties:
