@@ -49,6 +49,8 @@ module Ai
       scope :with_ids, ->(ids) { where(id: ids) }
       scope :with_item_type, ->(item_type) { where(item_type: item_type) }
 
+      scope :without_consumers, -> { left_joins(:consumers).where(ai_catalog_item_consumers: { id: nil }) }
+
       scope :order_by_id_desc, -> do
         return reorder(id: :desc) unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
 

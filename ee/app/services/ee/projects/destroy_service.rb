@@ -40,6 +40,7 @@ module EE
       override :destroy_project_related_records
       def destroy_project_related_records(project)
         destroy_compliance_requirement_statuses!
+        destroy_ai_catalog_items!
 
         with_scheduling_epic_cache_update do
           super && log_destroy_events
@@ -123,6 +124,19 @@ module EE
       def destroy_compliance_requirement_statuses!
         ::ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus
           .delete_all_project_statuses(project.id)
+      end
+
+      def destroy_ai_catalog_items!
+        project_owned_items = ::Ai::Catalog::Item.for_project(project)
+
+        # Hard delete items that have no remaining consumers
+        project_owned_items.without_consumers.delete_all
+
+        # Soft delete all items owned by the project
+        project_owned_items.update_all(
+          project_id: nil,
+          deleted_at: Time.zone.now
+        )
       end
     end
   end
