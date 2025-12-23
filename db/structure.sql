@@ -27763,6 +27763,18 @@ CREATE TABLE slack_integrations_scopes (
     organization_id bigint
 );
 
+CREATE TABLE slack_integrations_scopes_archived (
+    id bigint NOT NULL,
+    slack_api_scope_id bigint NOT NULL,
+    slack_integration_id bigint NOT NULL,
+    project_id bigint,
+    group_id bigint,
+    organization_id bigint,
+    archived_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+COMMENT ON TABLE slack_integrations_scopes_archived IS 'Temporary table for storing duplicate slack_integrations_scopes records during sharding key backfill. Stores duplicate/conflicting records with archival timestamp. TODO: Drop after BBM completion and verification.';
+
 CREATE SEQUENCE slack_integrations_scopes_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -37372,6 +37384,9 @@ ALTER TABLE ONLY slack_api_scopes
 
 ALTER TABLE ONLY slack_integrations
     ADD CONSTRAINT slack_integrations_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY slack_integrations_scopes_archived
+    ADD CONSTRAINT slack_integrations_scopes_archived_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY slack_integrations_scopes
     ADD CONSTRAINT slack_integrations_scopes_pkey PRIMARY KEY (id);
