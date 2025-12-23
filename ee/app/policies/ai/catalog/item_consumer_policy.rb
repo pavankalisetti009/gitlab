@@ -14,7 +14,15 @@ module Ai
         ::Gitlab::Llm::StageCheck.available?(@subject.project, :ai_catalog_flows)
       end
 
-      rule { flow & ~flows_available }.policy do
+      condition(:pinned_version_available, scope: :subject) do
+        @subject.pinned_version.present?
+      end
+
+      condition(:pinned_version_draft, scope: :subject) do
+        @subject.pinned_version.present? && @subject.pinned_version.draft?
+      end
+
+      rule { ~pinned_version_available | pinned_version_draft | (flow & ~flows_available) }.policy do
         prevent :execute_ai_catalog_item
       end
     end

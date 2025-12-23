@@ -110,7 +110,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
         ai_catalog_item_consumer.update!(pinned_version_prefix: non_existing_record_id)
       end
 
-      it_behaves_like 'returns error response', 'Flow version could not be resolved from pinned version'
+      it_behaves_like 'returns error response', 'You have insufficient permissions'
     end
 
     context 'when flow version is in draft state' do
@@ -118,7 +118,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
         allow(flow_version).to receive(:release_date).and_return(nil)
       end
 
-      it_behaves_like 'returns error response', 'Flow version is in draft state and cannot be executed'
+      it_behaves_like 'returns error response', 'You have insufficient permissions'
     end
 
     context 'when event_type is nil' do

@@ -364,6 +364,30 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
     end
   end
 
+  describe '#pinned_version' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:item) { create(:ai_catalog_flow, project: project) }
+    let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, item: item, project: project) }
+
+    context 'when pinned_version_prefix is nil' do
+      it 'returns the latest version' do
+        expect(item_consumer.pinned_version).to eq(item.latest_version)
+      end
+    end
+
+    context 'when pinned_version_prefix is set' do
+      let_it_be(:version) { create(:ai_catalog_flow_version, item: item, version: '2.5.0') }
+
+      before do
+        item_consumer.update!(pinned_version_prefix: '2')
+      end
+
+      it 'returns the resolved version' do
+        expect(item_consumer.pinned_version).to eq(version)
+      end
+    end
+  end
+
   describe 'scopes' do
     describe '.for_projects' do
       it 'includes records that belong to the given projects' do

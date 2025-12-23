@@ -22,15 +22,19 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_cata
   describe 'execute_ai_catalog_item' do
     let_it_be(:user) { create(:user) }
     let_it_be(:project) { create(:project, developers: user) }
+    let_it_be(:item) { create(:ai_catalog_flow, project: project) }
+    let_it_be(:item_version) do
+      item.latest_version.update!(release_date: Time.now)
+    end
 
-    let(:flows_available) { false }
-
-    let(:item_consumer) do
-      build_stubbed(:ai_catalog_item_consumer,
+    let_it_be(:item_consumer) do
+      create(:ai_catalog_item_consumer,
         project: project,
         item: item
       )
     end
+
+    let(:flows_available) { false }
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(true)
@@ -39,8 +43,6 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_cata
     end
 
     context 'when item is flow' do
-      let(:item) { build_stubbed(:ai_catalog_flow) }
-
       context 'when StageCheck :ai_catalog_flows is false' do
         it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
       end
@@ -53,9 +55,43 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_cata
     end
 
     context 'when item is third party flow' do
-      let(:item) { build_stubbed(:ai_catalog_third_party_flow) }
+      let(:item) { create(:ai_catalog_third_party_flow) }
+      let(:item_consumer) do
+        create(:ai_catalog_item_consumer,
+          project: project,
+          item: item
+        )
+      end
+
+      before do
+        item.latest_version.update!(release_date: Time.now)
+      end
 
       it { is_expected.to be_allowed(:execute_ai_catalog_item) }
+    end
+
+    context 'when pinned_version is not executable' do
+      let(:flows_available) { true }
+
+      context 'when pinned_version cannot be resolved' do
+        before do
+          item_consumer.update!(pinned_version_prefix: non_existing_record_id)
+        end
+
+        it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      end
+
+      context 'when pinned_version is in draft state' do
+        let(:item_version) do
+          create(:ai_catalog_flow_version, :draft, item: item)
+        end
+
+        before do
+          item_consumer.update!(pinned_version_prefix: item_version.version)
+        end
+
+        it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      end
     end
   end
 end

@@ -63,8 +63,6 @@ module Ai
           return error('Item consumer is required') unless item_consumer
           return error('Item consumer must be associated with a flow') unless flow
           return error('Item must be a flow type') unless flow.flow?
-          return error('Flow version could not be resolved from pinned version') unless flow_version
-          return error('Flow version is in draft state and cannot be executed') if flow_version.draft?
           return error('Trigger event type is required') if event_type.blank?
 
           ServiceResponse.success
