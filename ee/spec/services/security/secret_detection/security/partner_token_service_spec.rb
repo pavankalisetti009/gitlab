@@ -91,5 +91,34 @@ RSpec.describe Security::SecretDetection::Security::PartnerTokenService, feature
         )
       end
     end
+
+    context 'with tracking' do
+      let(:finding_with_token) do
+        create(:security_finding,
+          scan: scan,
+          finding_data: {
+            'identifiers' => [
+              {
+                'external_type' => 'gitleaks_rule_id',
+                'external_id' => 'AWS'
+              }
+            ]
+          }
+        )
+      end
+
+      it 'tracks secret_detection_token_verified event' do
+        expect { described_class.save_result(finding_with_token, result) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: finding_with_token.project,
+            namespace: finding_with_token.project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'active'
+            }
+          )
+      end
+    end
   end
 end

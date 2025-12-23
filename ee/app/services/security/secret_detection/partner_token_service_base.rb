@@ -3,6 +3,8 @@
 module Security
   module SecretDetection
     class PartnerTokenServiceBase
+      extend Gitlab::InternalEventsTracking
+
       class << self
         def process_finding_async(findings, project)
           return unless enabled_for_project?(project)
@@ -69,6 +71,8 @@ module Security
             unique_by: unique_by_column,
             update_only: [:status, :last_verified_at]
           )
+
+          track_token_verifications(findings, status)
         end
 
         def build_attributes(finding, status, verified_at)
@@ -78,6 +82,20 @@ module Security
             status: status,
             last_verified_at: verified_at
           }
+        end
+
+        def track_token_verifications(findings, status)
+          findings.each do |finding|
+            track_internal_event(
+              'secret_detection_token_verified',
+              project: finding.project,
+              namespace: finding.project&.namespace,
+              additional_properties: {
+                label: finding.token_type,
+                property: status
+              }
+            )
+          end
         end
       end
     end

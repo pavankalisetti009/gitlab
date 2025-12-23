@@ -24,29 +24,10 @@ module Security
     scope :with_security_finding_ids, ->(ids) { where(security_finding_id: ids) }
     scope :stale, -> { where(created_at: ...Security::Scan.stale_after) }
 
-    after_create :track_token_verification
-    after_update :track_token_verification, if: :saved_change_to_status?
-
     private
 
     def set_project_id
       self.project_id = security_finding.project.id
-    end
-
-    def track_token_verification
-      return unless security_finding&.token_type
-
-      track_internal_event(
-        'secret_detection_token_verified',
-        project: security_finding.project,
-        namespace: security_finding.project&.namespace,
-        additional_properties: {
-          label: security_finding.token_type,
-          property: status
-        }
-      )
-    rescue StandardError => e
-      Gitlab::ErrorTracking.track_exception(e, finding_id: security_finding&.id)
     end
   end
 end
