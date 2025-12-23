@@ -69,7 +69,8 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
 
         let(:new_project) { 'Project 4' }
 
-        it 'applies default compliance framework' do
+        it 'applies default compliance framework',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2210' do
           create_project(new_project, sub_group)
           visit group_security_compliance_dashboard_path(group, vueroute: :frameworks)
           wait_for_requests
