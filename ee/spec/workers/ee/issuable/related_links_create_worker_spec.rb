@@ -84,5 +84,42 @@ RSpec.describe Issuable::RelatedLinksCreateWorker, feature_category: :portfolio_
         expect(blocking2.notes.last.note).to eq("marked this task as blocking #{issuable.to_reference}")
       end
     end
+
+    context 'with tracking work item events' do
+      let_it_be(:blocking_target) { create(:work_item, :task, project: project) }
+      let_it_be(:blocked_source) { create(:work_item, :task, project: project) }
+      let_it_be(:blocking_link) do
+        create(:work_item_link, source: issuable, target: blocking_target, link_type: 'blocks')
+      end
+
+      let_it_be(:blocked_link) do
+        create(:work_item_link, source: blocked_source, target: issuable, link_type: 'blocks')
+      end
+
+      let(:work_item) { issuable }
+      let(:current_user) { user }
+
+      def execute_service
+        described_class.new.perform(params)
+      end
+
+      context 'with blocks link_type' do
+        before do
+          params.merge!(link_ids: [blocking_link.id], link_type: 'blocks')
+        end
+
+        it_behaves_like 'tracks work item event', :work_item, :current_user,
+          Gitlab::WorkItems::Instrumentation::EventActions::BLOCKING_ITEM_ADD, :execute_service
+      end
+
+      context 'with blocked_by link type' do
+        before do
+          params.merge!(link_ids: [blocked_link.id], link_type: 'blocks')
+        end
+
+        it_behaves_like 'tracks work item event', :work_item, :current_user,
+          Gitlab::WorkItems::Instrumentation::EventActions::BLOCKED_BY_ITEM_ADD, :execute_service
+      end
+    end
   end
 end
