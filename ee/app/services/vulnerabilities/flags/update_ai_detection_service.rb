@@ -4,6 +4,7 @@ module Vulnerabilities
   module Flags
     class UpdateAiDetectionService
       include Gitlab::Allowable
+      include Gitlab::InternalEventsTracking
 
       AI_SAST_FP_DETECTION_ORIGIN = 'ai_sast_fp_detection'
       DESCRIPTION_MAX_LENGTH = 100_000
@@ -59,6 +60,8 @@ module Vulnerabilities
         if flag.save
           ::Vulnerabilities::EsHelper.sync_elasticsearch([vulnerability.id])
 
+          track_event if params[:confidence_score].present?
+
           ServiceResponse.success(payload: { flag: flag, is_new_flag: flag.saved_change_to_id? })
         else
           ServiceResponse.error(message: flag.errors.full_messages.join(', '))
@@ -74,6 +77,20 @@ module Vulnerabilities
         return description if description.blank?
 
         description.to_s.truncate(DESCRIPTION_MAX_LENGTH, omission: '')
+      end
+
+      def track_event
+        track_internal_event(
+          'reported_sast_vulnerability_false_positive_analysis',
+          user: user,
+          project: project,
+          additional_properties: {
+            label: flag.origin,
+            value: vulnerability.id,
+            property: vulnerability.severity,
+            confidence_score: params[:confidence_score].to_i
+          }
+        )
       end
     end
   end
