@@ -174,10 +174,10 @@ module Ci
 
         # If refreshed_build is nil, that means the primary no longer has the
         # record of the build ID. We have a foreign key constraint that ensures
-        # this entry has been removed, so let's just return here.
+        # the queue entry has been removed, so let's just return here.
         return ResultFactory.invalid unless build.present?
 
-        # Recheck the status to ensure that the build is pending in case we refreshed
+        # Recheck the status to ensure that the build is pending because we refreshed
         # from the primary. Otherwise remove it from the pending list.
         return remove_from_queue!(build) unless build.pending?
       end
