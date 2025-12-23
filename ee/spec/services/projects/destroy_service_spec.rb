@@ -537,4 +537,61 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
       project_destroy_service.execute
     end
   end
+
+  context 'when project has AI catalog items with consumers' do
+    let_it_be(:project2) { create(:project) }
+
+    let!(:ai_catalog_item) { create(:ai_catalog_item, :public, project: project) }
+    let!(:project_consumer) { create(:ai_catalog_item_consumer, item: ai_catalog_item, project: project) }
+    let!(:another_project_consumer) { create(:ai_catalog_item_consumer, item: ai_catalog_item, project: project2) }
+
+    context 'when the item has consumers from other projects' do
+      it 'deletes project consumers, soft deletes catalog item and unsets the project association' do
+        expect { project_destroy_service.execute }
+          .to change { Ai::Catalog::ItemConsumer.where(id: project_consumer.id).count }.by(-1)
+          .and change { ai_catalog_item.reload.project_id }.from(project.id).to(nil)
+          .and change { ai_catalog_item.reload.deleted_at }.from(nil)
+
+        expect(another_project_consumer.reload).to be_present
+
+        expect(Project.unscoped.all).not_to include(project)
+      end
+    end
+
+    context 'when the item has no consumers' do
+      let(:project_consumer) { nil }
+      let(:another_project_consumer) { nil }
+
+      it 'deletes the item along with the project' do
+        expect { project_destroy_service.execute }
+          .to change { Ai::Catalog::Item.where(id: ai_catalog_item.id).count }.by(-1)
+
+        expect(Project.unscoped.all).not_to include(project)
+      end
+    end
+
+    it 'does not cause N+1 queries when checking for external consumers' do
+      # Baseline: project with 1 catalog item
+      baseline_project = create(:project, namespace: user.namespace)
+      baseline_item = create(:ai_catalog_item, :public, project: baseline_project)
+      create(:ai_catalog_item_consumer, item: baseline_item, project: baseline_project)
+      create(:ai_catalog_item_consumer, item: baseline_item, project: project2)
+
+      baseline = ActiveRecord::QueryRecorder.new do
+        described_class.new(baseline_project, user, {}).execute
+      end
+
+      # Test: project with 3 catalog items (should not cause N+1)
+      test_project = create(:project, namespace: user.namespace)
+      3.times do
+        item = create(:ai_catalog_item, :public, project: test_project)
+        create(:ai_catalog_item_consumer, item: item, project: test_project)
+        create(:ai_catalog_item_consumer, item: item, project: project2)
+      end
+
+      expect do
+        described_class.new(test_project, user, {}).execute
+      end.not_to exceed_query_limit(baseline)
+    end
+  end
 end

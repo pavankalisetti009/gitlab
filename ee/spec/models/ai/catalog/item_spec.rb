@@ -425,6 +425,37 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         expect(result).not_to include(item_without_reference)
       end
     end
+
+    describe '.without_consumers' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:item_with_consumers) { create(:ai_catalog_item, :public, project: project) }
+      let_it_be(:item_without_consumers) { create(:ai_catalog_item, :public, project: project) }
+      let_it_be(:consumer) { create(:ai_catalog_item_consumer, project: project, item: item_with_consumers) }
+
+      it 'returns only items without any consumers' do
+        expect(described_class.without_consumers).to contain_exactly(item_without_consumers)
+      end
+
+      context 'when an item has multiple consumers' do
+        let_it_be(:another_consumer) do
+          create(:ai_catalog_item_consumer, project: create(:project), item: item_with_consumers)
+        end
+
+        it 'still excludes the item' do
+          expect(described_class.without_consumers).to contain_exactly(item_without_consumers)
+        end
+      end
+
+      context 'when all items have consumers' do
+        before do
+          create(:ai_catalog_item_consumer, project: project, item: item_without_consumers)
+        end
+
+        it 'returns an empty collection' do
+          expect(described_class.without_consumers).to be_empty
+        end
+      end
+    end
   end
 
   describe 'callbacks' do
