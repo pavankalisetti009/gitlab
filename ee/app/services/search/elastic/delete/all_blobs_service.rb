@@ -11,7 +11,7 @@ module Search
         end
 
         def build_query
-          return {} if Gitlab::CurrentSettings.elasticsearch_code_scope?
+          return {} if ApplicationSetting.current_without_cache&.elasticsearch_code_scope?
 
           {
             query: {
