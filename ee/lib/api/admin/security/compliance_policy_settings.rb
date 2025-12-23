@@ -34,6 +34,7 @@ module API
                   { code: 403, message: '403 Forbidden' },
                   { code: 400, message: '400 Bad Request' }
                 ]
+                tags ['compliance_policy_settings']
               end
               get do
                 ensure_licensed!
@@ -50,6 +51,7 @@ module API
                   { code: 400, message: '400 Bad Request' },
                   { code: 422, message: '422 Unprocessable Entity' }
                 ]
+                tags ['compliance_policy_settings']
               end
               params do
                 requires :csp_namespace_id,
