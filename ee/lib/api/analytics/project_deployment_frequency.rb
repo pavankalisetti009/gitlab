@@ -103,6 +103,7 @@ module API
           desc 'List deployment frequencies for the project' do
             is_array true
             success ::API::Entities::Analytics::DeploymentFrequency
+            tags %w[project_analytics]
           end
           params do
             requires :environment, type: String, desc: 'Name of the environment to filter by'
