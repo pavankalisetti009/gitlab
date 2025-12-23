@@ -74,5 +74,37 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
           .and not_change { epic_b.own_notes.count }
       end
     end
+
+    context 'with tracking work item events' do
+      let_it_be(:blocking_target) { create(:work_item, project: project) }
+      let_it_be(:blocked_source) { create(:work_item, project: project) }
+      let_it_be(:blocking_link) do
+        create(:work_item_link, source: source, target: blocking_target, link_type: 'blocks')
+      end
+
+      let_it_be(:blocked_link) { create(:work_item_link, source: blocked_source, target: source, link_type: 'blocks') }
+
+      let(:work_item) { source }
+      let(:current_user) { user }
+
+      def execute_service
+        described_class.new(source, user, { item_ids: ids_to_remove }).execute
+      end
+      context 'with blocks link_type' do
+        let(:ids_to_remove) { [blocking_target.id] }
+
+        it_behaves_like 'tracks work item event', :work_item, :current_user,
+          Gitlab::WorkItems::Instrumentation::EventActions::BLOCKING_ITEM_REMOVE,
+          :execute_service
+      end
+
+      context 'with blocked_by link type' do
+        let(:ids_to_remove) { [blocked_source.id] }
+
+        it_behaves_like 'tracks work item event', :work_item, :current_user,
+          Gitlab::WorkItems::Instrumentation::EventActions::BLOCKED_BY_ITEM_REMOVE,
+          :execute_service
+      end
+    end
   end
 end
