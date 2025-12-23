@@ -15,6 +15,7 @@ module API
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
         desc '[DEPRECATED] Create a subscription for the namespace' do
           success ::API::Entities::GitlabSubscription
+          tags ['gitlab_subscriptions']
         end
         params do
           requires :start_date, type: Date, desc: 'The date when subscription was started'
@@ -46,6 +47,7 @@ module API
 
         desc '[DEPRECATED] Update the subscription for the namespace' do
           success ::API::Entities::GitlabSubscription
+          tags ['gitlab_subscriptions']
         end
         params do
           optional :start_date, type: Date, desc: 'Start date of subscription'
