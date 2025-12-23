@@ -27,6 +27,56 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
         project.add_developer(user)
       end
 
+      describe '#track_event' do
+        context 'when confidence score is provided' do
+          it 'tracks the internal event with correct properties' do
+            expect(service).to receive(:track_internal_event).with(
+              'reported_sast_vulnerability_false_positive_analysis',
+              user: user,
+              project: project,
+              additional_properties: {
+                label: 'ai_sast_fp_detection',
+                value: vulnerability.id,
+                property: vulnerability.severity,
+                confidence_score: 85
+              }
+            ).and_call_original
+
+            result = service.execute
+            expect(result).to be_success
+          end
+        end
+
+        context 'when confidence score is not provided' do
+          let(:params) { { description: 'Test description' } }
+
+          it 'does not track the event' do
+            expect(service).not_to receive(:track_internal_event)
+
+            result = service.execute
+            expect(result).to be_success
+          end
+        end
+
+        context 'when flag fails to save' do
+          before do
+            allow_next_instance_of(Vulnerabilities::Flag) do |flag|
+              allow(flag).to receive_messages(
+                save: false,
+                errors: instance_double(ActiveModel::Errors, full_messages: ['Validation failed'])
+              )
+            end
+          end
+
+          it 'does not track the event' do
+            expect(service).not_to receive(:track_internal_event)
+
+            result = service.execute
+            expect(result).to be_error
+          end
+        end
+      end
+
       describe '#sync_elasticsearch' do
         context 'when flag saves successfully' do
           it 'calls Vulnerabilities::EsHelper.sync_elasticsearch with vulnerability id' do
