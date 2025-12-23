@@ -107,8 +107,8 @@ tags:
   description: Operations about tags
 - name: batched_background_migrations
   description: Operations about batched_background_migrations
-- name: admin
-  description: Operations about admins
+- name: database_dictionary
+  description: Operations about database_dictionaries
 - name: migrations
   description: Operations about migrations
 - name: broadcast_messages
@@ -39695,7 +39695,7 @@ paths:
         '404':
           description: 404 Not found
       tags:
-      - admin
+      - database_dictionary
       operationId: getApiV4AdminDatabasesDatabaseNameDictionaryTablesTableName
   "/api/v4/admin/clusters":
     get:
