@@ -30,6 +30,7 @@ module EE
             desc 'Get a list of audit events in this project.' do
               success ::API::Entities::AuditEvent
               is_array true
+              tags %w[projects]
             end
             params do
               optional :created_after,
@@ -71,6 +72,7 @@ module EE
 
             desc 'Get a specific audit event in this project.' do
               success ::API::Entities::AuditEvent
+              tags %w[projects]
             end
             params do
               requires :audit_event_id, type: Integer, desc: 'The ID of the audit event'
