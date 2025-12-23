@@ -30,10 +30,10 @@ RSpec.describe Security::ScanProfile, feature_category: :security_asset_inventor
       end
 
       it 'is invalid for non-root namespaces' do
-        profile = build(:security_category, namespace: subgroup)
+        profile = build(:security_scan_profile, namespace: subgroup)
 
         expect(profile).not_to be_valid
-        expect(profile.errors[:namespace]).to include('must be a root group.')
+        expect(profile.errors[:namespace]).to include('must be a root namespace.')
       end
     end
   end
@@ -76,6 +76,71 @@ RSpec.describe Security::ScanProfile, feature_category: :security_asset_inventor
       scan_profile = build(:security_scan_profile, description: '  Test Description  ')
       scan_profile.valid?
       expect(scan_profile.description).to eq('Test Description')
+    end
+  end
+
+  describe 'nested attributes' do
+    describe 'scan_profile_triggers' do
+      let(:triggers_attributes) { [] }
+      let(:base_attributes) do
+        {
+          namespace: root_level_group,
+          scan_type: :secret_detection,
+          name: 'Test Profile'
+        }
+      end
+
+      let(:profile) do
+        described_class.new(base_attributes.merge(scan_profile_triggers_attributes: triggers_attributes))
+      end
+
+      context 'with single trigger' do
+        let(:triggers_attributes) { [{ trigger_type: :git_push_event }] }
+
+        it 'sets namespace on scan_profile_trigger before validation' do
+          profile.valid?
+          expect(profile.scan_profile_triggers.first.namespace).to eq(root_level_group)
+        end
+
+        it 'persists scan_profile_trigger on save' do
+          expect { profile.save! }.to change { Security::ScanProfileTrigger.count }.by(1)
+          expect(profile.scan_profile_triggers.first).to have_attributes(
+            trigger_type: 'git_push_event',
+            namespace: root_level_group
+          )
+        end
+      end
+
+      context 'with multiple triggers' do
+        let(:triggers_attributes) do
+          [
+            { trigger_type: :git_push_event },
+            { trigger_type: :default_branch_pipeline }
+          ]
+        end
+
+        it 'sets namespace on multiple triggers before validation' do
+          profile.valid?
+          expect(profile.scan_profile_triggers).to all(have_attributes(namespace: root_level_group))
+        end
+
+        it 'persists multiple triggers on save' do
+          expect { profile.save! }.to change { Security::ScanProfileTrigger.count }.by(2)
+          expect(profile.scan_profile_triggers).to all(have_attributes(namespace: root_level_group))
+          expect(profile.scan_profile_triggers.pluck(:trigger_type))
+            .to match_array(%w[git_push_event default_branch_pipeline])
+        end
+      end
+
+      context 'when trigger already has a namespace' do
+        let_it_be(:another_group) { create(:group) }
+        let(:triggers_attributes) { [{ trigger_type: :git_push_event, namespace: another_group }] }
+
+        it 'does not override existing namespace' do
+          profile.valid?
+          expect(profile.scan_profile_triggers.first.namespace).to eq(another_group)
+        end
+      end
     end
   end
 
