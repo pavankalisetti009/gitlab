@@ -8,6 +8,7 @@ RSpec.describe Search::Elastic::Delete::AllBlobsService, feature_category: :glob
   describe 'integration', :elastic_delete_by_query, :elasticsearch_settings_enabled do
     context 'when blobs are present in index', :sidekiq_inline do
       let_it_be(:project) { create(:project, :small_repo) }
+      let_it_be_with_reload(:setting) { create(:application_setting) }
 
       before do
         project.repository.index_commits_and_blobs
@@ -17,7 +18,7 @@ RSpec.describe Search::Elastic::Delete::AllBlobsService, feature_category: :glob
 
       context 'when setting elasticsearch_code_scope is disabled' do
         before do
-          stub_ee_application_setting(elasticsearch_code_scope: false)
+          setting.update!(elasticsearch_code_scope: false)
         end
 
         it 'only deletes all blob documents from the main index' do
@@ -40,7 +41,7 @@ RSpec.describe Search::Elastic::Delete::AllBlobsService, feature_category: :glob
 
       context 'when setting elasticsearch_code_scope is enabled' do
         before do
-          stub_ee_application_setting(elasticsearch_code_scope: true)
+          setting.update!(elasticsearch_code_scope: true)
         end
 
         it 'does not delete any document' do
