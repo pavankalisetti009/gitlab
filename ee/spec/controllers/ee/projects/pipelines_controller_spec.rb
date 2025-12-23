@@ -30,15 +30,6 @@ RSpec.describe Projects::PipelinesController do
         request
       end
 
-      it 'pushes finding_create_jira_issue_form_url feature flag to the frontend' do
-        allow(controller).to receive(:push_frontend_feature_flag).and_call_original
-
-        request
-
-        expect(Gon.features).to include('findingCreateJiraIssueFormUrl')
-        expect(controller).to have_received(:push_frontend_feature_flag).with(:finding_create_jira_issue_form_url, project)
-      end
-
       context 'when pipeline_security_ai_vr feature flag is disabled' do
         before do
           stub_feature_flags(pipeline_security_ai_vr: false)
