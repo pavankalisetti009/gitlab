@@ -155,6 +155,12 @@ module Security
           )
 
           sync_elasticsearch_for(findings, finding_type)
+
+          status_by_finding_id = attributes_to_upsert.each_with_object({}) do |attr, hash|
+            hash[attr[unique_by]] = attr[:status]
+          end
+
+          track_token_verifications(findings, status_by_finding_id)
         rescue StandardError => e
           handle_upsert_error(e, attributes_to_upsert, error_message)
         end
@@ -175,6 +181,23 @@ module Security
             finding_token_status_attr[:updated_at] = now
             finding_token_status_attr[:last_verified_at] = now
           end
+        end
+      end
+
+      def track_token_verifications(findings, status_by_finding_id)
+        findings.each do |finding|
+          status = status_by_finding_id[finding.id]
+          next unless status
+
+          track_internal_event(
+            'secret_detection_token_verified',
+            project: @project,
+            namespace: @project&.namespace,
+            additional_properties: {
+              label: finding.token_type,
+              property: status
+            }
+          )
         end
       end
 

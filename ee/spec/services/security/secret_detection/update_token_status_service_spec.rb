@@ -72,6 +72,19 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
           )
       end
 
+      it 'tracks secret_detection_token_verified event for each finding' do
+        expect { execute }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'gitlab_personal_access_token',
+              property: 'unknown'
+            }
+          )
+      end
+
       context 'when there are no findings' do
         let(:empty_pipeline) { create(:ci_pipeline, :success, project: project) }
 
