@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Filter work items by status', :js, feature_category: :team_planning do
   include FilteredSearchHelpers
   include ListboxHelpers
+  include WorkItemFeedbackHelpers
 
   let_it_be(:to_do_status_id) { WorkItems::Statuses::SystemDefined::Status.find_by_name('To do').id }
   let_it_be(:in_progress_status_id) { WorkItems::Statuses::SystemDefined::Status.find_by_name('In progress').id }
@@ -41,6 +42,7 @@ RSpec.describe 'Filter work items by status', :js, feature_category: :team_plann
         stub_licensed_features(work_item_status: true)
         sign_in(user)
         visit issues_page_path
+        close_work_item_feedback_popover_if_present
       end
 
       it 'allows filtering by status', :aggregate_failures do
@@ -80,6 +82,7 @@ RSpec.describe 'Filter work items by status', :js, feature_category: :team_plann
         stub_licensed_features(work_item_status: false)
         sign_in(user)
         visit issues_page_path
+        close_work_item_feedback_popover_if_present
       end
 
       it 'does not show "Status" token in filtered search' do
