@@ -483,6 +483,10 @@ module EE
         enable :read_path_locks
       end
 
+      rule { can?(:security_manager_access) }.policy do
+        # TODO: Add security manager permissions
+      end
+
       rule { can?(:developer_access) }.policy do
         enable :admin_issue_board
         enable :admin_feature_flags_issue_links
