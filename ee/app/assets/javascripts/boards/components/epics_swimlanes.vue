@@ -13,7 +13,6 @@ import {
   EPIC_LANE_BASE_HEIGHT,
   DraggableItemTypes,
 } from 'ee/boards/constants';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { calculateSwimlanesBufferSize } from '../boards_util';
 import epicsSwimlanesQuery from '../graphql/epics_swimlanes.query.graphql';
 import EpicLane from './epic_lane.vue';
@@ -36,7 +35,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: ['boardType', 'disabled', 'fullPath'],
   props: {
     lists: {
@@ -230,7 +228,6 @@ export default {
     ref="scrollableContainer"
     class="board-swimlanes gl-flex gl-grow gl-whitespace-nowrap @xl/panel:gl-pl-3 @xl/panel:gl-pr-6"
     data-testid="board-swimlanes"
-    :class="{ 'gl-pb-5 gl-pr-5': !glFeatures.projectStudioEnabled }"
   >
     <swimlanes-loading-skeleton v-if="isLoading" />
     <div v-else class="board-swimlanes-content">
@@ -238,7 +235,6 @@ export default {
         :is="treeRootWrapper"
         v-bind="treeRootOptions"
         class="board-swimlanes-headers gl-sticky gl-top-0 gl-z-3 gl-table"
-        :class="{ 'gl-pt-5': !glFeatures.projectStudioEnabled }"
         data-testid="board-swimlanes-headers"
         @end="$emit('move-list', $event)"
       >
@@ -260,7 +256,7 @@ export default {
             :filter-params="filters"
             :is-swimlanes-header="true"
             :board-id="boardId"
-            :class="{ 'gl-rounded-base': glFeatures.projectStudioEnabled }"
+            class="gl-rounded-base"
             @toggleNewForm="toggleNewForm(list.id)"
             @setActiveList="$emit('setActiveList', $event)"
             @openUnassignedLane="openUnassignedLane"
@@ -327,10 +323,7 @@ export default {
             }"
             data-testid="board-lane-unassigned-issues-title"
           >
-            <div
-              class="gl-flex gl-items-center gl-px-3 gl-py-3"
-              :class="{ 'gl-mt-5': !glFeatures.projectStudioEnabled }"
-            >
+            <div class="gl-flex gl-items-center gl-px-3 gl-py-3">
               <div class="gl-sticky gl-left-4">
                 <gl-button
                   v-gl-tooltip.hover.right
