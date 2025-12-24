@@ -88,6 +88,13 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_approval_configuration do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api(url, personal_access_token: pat)
+      end
+    end
   end
 
   describe 'POST /projects/:id/approvals' do
@@ -255,6 +262,13 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
         post api(url, auditor), params: { approvals_before_merge: 4 }
 
         expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :update_approval_configuration do
+      let(:boundary_object) { project }
+      let(:request) do
+        post api(url, personal_access_token: pat), params: { approvals_before_merge: 3 }
       end
     end
   end

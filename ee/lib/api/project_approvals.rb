@@ -36,6 +36,7 @@ module API
           success ::API::Entities::ApprovalSettings
           tags %w[project_approvals]
         end
+        route_setting :authorization, permissions: :read_approval_configuration, boundary_type: :project
         get '/', urgency: :low do
           # If the project is archived, the project admin should still be able to read the approvers
           authorize!(:read_approvers, user_project) unless can?(current_user, :admin_project, user_project)
@@ -59,6 +60,7 @@ module API
           optional :require_reauthentication_to_approve, type: Boolean, desc: 'Should approvers authenticate via password or SAML before adding approval'
           at_least_one_of :approvals_before_merge, :reset_approvals_on_push, :selective_code_owner_removals, :disable_overriding_approvers_per_merge_request, :merge_requests_author_approval, :merge_requests_disable_committers_approval, :require_password_to_approve, :require_reauthentication_to_approve
         end
+        route_setting :authorization, permissions: :update_approval_configuration, boundary_type: :project
         post '/' do
           authorize! :update_approvers, user_project
 
