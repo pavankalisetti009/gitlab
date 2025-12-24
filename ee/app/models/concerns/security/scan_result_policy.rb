@@ -21,6 +21,7 @@ module Security
     SEND_BOT_MESSAGE = 'send_bot_message'
 
     ALLOWED_ROLES = %w[developer maintainer owner].freeze
+    VALID_EPSS_SCORE_OPERATORS = %i[greater_than_or_equal_to greater_than less_than_or_equal_to less_than].freeze
 
     included do
       has_many :scan_result_policy_reads,

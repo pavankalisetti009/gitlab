@@ -73,8 +73,6 @@ class ApprovalProjectRule < ApplicationRecord
   validates :severity_levels, inclusion: { in: ::Enums::Vulnerability.severity_levels.keys }
   validates :vulnerability_states, inclusion: { in: APPROVAL_VULNERABILITY_STATES.keys }
 
-  delegate :vulnerability_attributes, to: :scan_result_policy_read, allow_nil: true
-
   override :vulnerability_attribute_false_positive
   def vulnerability_attribute_false_positive
     vulnerability_attributes&.dig('false_positive')

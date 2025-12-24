@@ -1918,6 +1918,158 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
             end
           end
         end
+
+        describe "vulnerability_attributes" do
+          before do
+            rule[:vulnerability_attributes] = vulnerability_attributes
+          end
+
+          describe 'known_exploited' do
+            where(:known_exploited_value, :is_valid, :expected_error) do
+              true       | true  | nil
+              false      | true  | nil
+              'unknown'  | true  | nil
+              'invalid'  | false | "property '/approval_policy/0/rules/0/vulnerability_attributes/known_exploited' is not of type: boolean"
+              'true'     | false | "property '/approval_policy/0/rules/0/vulnerability_attributes/known_exploited' is not of type: boolean"
+              1          | false | "property '/approval_policy/0/rules/0/vulnerability_attributes/known_exploited' is not of type: boolean"
+              nil        | false | "property '/approval_policy/0/rules/0/vulnerability_attributes/known_exploited' is not of type: boolean"
+            end
+
+            with_them do
+              let(:vulnerability_attributes) { { known_exploited: known_exploited_value } }
+
+              if params[:is_valid]
+                it 'does not return validation errors' do
+                  expect(errors).to be_none
+                end
+              else
+                it 'returns validation error for invalid type' do
+                  expect(errors).to include(expected_error)
+                end
+              end
+            end
+          end
+
+          describe 'epss_score' do
+            context 'when epss_score is "unknown"' do
+              let(:vulnerability_attributes) do
+                {
+                  epss_score: 'unknown'
+                }
+              end
+
+              it 'does not return validation errors' do
+                expect(errors).to be_none
+              end
+            end
+
+            context 'when epss_score is an invalid string' do
+              let(:vulnerability_attributes) do
+                {
+                  epss_score: 'invalid'
+                }
+              end
+
+              it 'returns validation error', :aggregate_failures do
+                expect(errors.count).to eq(2)
+                expect(errors).to  include("property '/approval_policy/0/rules/0/vulnerability_attributes/epss_score' is not of type: object")
+                expect(errors).to  include("property '/approval_policy/0/rules/0/vulnerability_attributes/epss_score' is not one of: [\"unknown\"]")
+              end
+            end
+
+            context 'when epss_score has valid operators' do
+              Security::ScanResultPolicy::VALID_EPSS_SCORE_OPERATORS.each do |operator|
+                context "with operator #{operator}" do
+                  let(:vulnerability_attributes) do
+                    {
+                      epss_score: {
+                        operator: operator.to_s,
+                        value: 0.5
+                      }
+                    }
+                  end
+
+                  it 'does not return validation errors' do
+                    expect(errors).to be_none
+                  end
+                end
+              end
+            end
+
+            context 'when epss_score has invalid operator' do
+              let(:vulnerability_attributes) do
+                {
+                  epss_score: {
+                    operator: 'invalid_operator',
+                    value: 0.5
+                  }
+                }
+              end
+
+              it 'returns validation error for invalid operator' do
+                expect(errors).to include("property '/approval_policy/0/rules/0/vulnerability_attributes/epss_score/operator' is not one of: [\"greater_than_or_equal_to\", \"greater_than\", \"less_than_or_equal_to\", \"less_than\"]")
+              end
+            end
+
+            context 'when epss_score is missing operator' do
+              let(:vulnerability_attributes) do
+                {
+                  epss_score: {
+                    value: 0.5
+                  }
+                }
+              end
+
+              it 'returns validation error for missing operator' do
+                expect(errors).to include("property '/approval_policy/0/rules/0/vulnerability_attributes/epss_score' is missing required keys: operator")
+              end
+            end
+
+            context 'when epss_score is missing value' do
+              let(:vulnerability_attributes) do
+                {
+                  epss_score: {
+                    operator: 'greater_than'
+                  }
+                }
+              end
+
+              it 'returns validation error for missing value' do
+                expect(errors).to include("property '/approval_policy/0/rules/0/vulnerability_attributes/epss_score' is missing required keys: value")
+              end
+            end
+
+            context 'with epss_score value boundaries' do
+              where(:operator, :value, :expected_message) do
+                'greater_than'              | -0.1 | "error_type=minimum"
+                'less_than'                 | 1.1  | "error_type=maximum"
+                'greater_than_or_equal_to'  | 0.0  | nil
+                'less_than_or_equal_to'     | 1.0  | nil
+              end
+
+              with_them do
+                let(:vulnerability_attributes) do
+                  {
+                    epss_score: {
+                      operator: operator,
+                      value: value
+                    }
+                  }
+                end
+
+                it 'validates epss_score boundaries correctly' do
+                  if expected_message
+                    expect(errors).to include(
+                      "property '/approval_policy/0/rules/0/vulnerability_attributes/epss_score/value' is invalid: #{expected_message}"
+                    )
+                  else
+                    expect(errors).to be_none
+                  end
+                end
+              end
+            end
+          end
+        end
       end
 
       context "with license_finding type" do
