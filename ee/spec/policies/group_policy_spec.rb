@@ -25,14 +25,28 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
   let(:auditor_permissions) do
     %i[
-      read_group
-      read_group_security_dashboard
-      read_cluster
-      read_runners
       read_billing
-      read_container_image
+      read_cluster
       read_confidential_issues
+      read_container_image
       read_cycle_analytics
+      read_group
+      read_group_activity
+      read_group_boards
+      read_group_issues
+      read_group_labels
+      read_group_merge_requests
+      read_group_metadata
+      read_group_milestones
+      read_group_security_dashboard
+      read_issue
+      read_issue_board
+      read_issue_board_list
+      read_label
+      read_milestone
+      read_namespace
+      read_runners
+      upload_file
     ]
   end
 
@@ -2125,18 +2139,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context 'auditor' do
       let(:current_user) { create(:user, :auditor) }
+      let(:permissions) { auditor_permissions }
 
       before do
         stub_licensed_features(security_dashboard: true)
       end
 
-      specify do
-        expect_allowed(*auditor_permissions)
-        expect_disallowed(*(reporter_permissions - auditor_permissions))
-        expect_disallowed(*(developer_permissions - auditor_permissions))
-        expect_disallowed(*(maintainer_permissions - auditor_permissions))
-        expect_disallowed(*(owner_permissions - auditor_permissions))
-      end
+      it_behaves_like 'valid permissions'
     end
   end
 
@@ -3187,6 +3196,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context 'with a public group' do
       let_it_be(:public_group) { create(:group, :public) }
+      let(:permissions) { public_permissions }
 
       subject { described_class.new(user, public_group) }
 
@@ -3195,17 +3205,11 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
 
       with_them do
-        it 'has permission identical to a public group in which the user is not a member' do
+        before do
           create(:group_member, :awaiting, role, source: public_group, user: user)
-
-          expect_allowed(*public_permissions)
-          expect_allowed(:upload_file)
-          expect_disallowed(*reporter_permissions)
-          expect_disallowed(*developer_permissions)
-          expect_disallowed(*maintainer_permissions)
-          expect_disallowed(*owner_permissions)
-          expect_disallowed(:read_namespace_via_membership)
         end
+
+        it_behaves_like 'valid permissions'
       end
     end
 

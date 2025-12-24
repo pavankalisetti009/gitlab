@@ -401,6 +401,10 @@ module EE
         enable :read_security_attribute
       end
 
+      rule { security_manager }.policy do
+        # TODO: Add security manager permissions
+      end
+
       rule { maintainer }.policy do
         enable :maintainer_access
         enable :admin_wiki
