@@ -55,4 +55,20 @@ RSpec.describe Notifications::TargetedMessageNamespace, feature_category: :acqui
       end
     end
   end
+
+  describe ".for_namespaces" do
+    let_it_be(:targeted_message_namespace_1) { create(:targeted_message_namespace) }
+    let_it_be(:targeted_message_namespace_2) { create(:targeted_message_namespace) }
+    let_it_be(:targeted_message_namespace_3) { create(:targeted_message_namespace) }
+
+    it "returns records for the given namespace ids" do
+      namespace_ids = [targeted_message_namespace_1.namespace_id, targeted_message_namespace_2.namespace_id]
+      expect(described_class.for_namespaces(namespace_ids))
+        .to contain_exactly(targeted_message_namespace_1, targeted_message_namespace_2)
+    end
+
+    it "returns empty result when no matching namespace ids" do
+      expect(described_class.for_namespaces([-1, -2])).to be_empty
+    end
+  end
 end

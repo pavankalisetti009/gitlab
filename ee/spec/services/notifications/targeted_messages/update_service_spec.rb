@@ -45,6 +45,16 @@ RSpec.describe Notifications::TargetedMessages::UpdateService, feature_category:
         end
       end
 
+      context 'with no valid namespace ids' do
+        let(:csv_content) { non_existing_record_id.to_s }
+
+        it 'returns an error service response' do
+          expect(execute).to be_error
+          expect(execute.payload.errors.full_messages)
+            .to include(s_('TargetedMessages|Must have at least one targeted namespace'))
+        end
+      end
+
       context 'with new set of targeted message namespace ids' do
         it 'replaces targeted namespaces with new set' do
           execute

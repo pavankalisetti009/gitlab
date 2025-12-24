@@ -12,31 +12,19 @@ module Notifications
       def execute
         parse_namespaces
 
-        success = Notifications::TargetedMessage.transaction do
-          @targeted_message.assign_attributes(params)
-          raise ActiveRecord::Rollback unless @targeted_message.valid?
+        begin
+          Notifications::TargetedMessage.transaction do
+            @targeted_message.assign_attributes(params)
+            @targeted_message.validate!
 
-          existing_namespace_ids = @targeted_message.namespace_ids
-          namespace_to_delete = existing_namespace_ids - parsed_namespaces[:valid_namespace_ids]
-          namespace_to_create = parsed_namespaces[:valid_namespace_ids] - existing_namespace_ids
+            update_namespaces
 
-          @targeted_message.targeted_message_namespaces.where(namespace_id: namespace_to_delete).delete_all # rubocop:disable CodeReuse/ActiveRecord -- necessary for this service
-
-          namespace_to_create.each_slice(1000) do |namespace_ids|
-            namespace_data = namespace_ids.map do |namespace_id|
-              {
-                targeted_message_id: @targeted_message.id,
-                namespace_id: namespace_id
-              }
-            end
-
-            Notifications::TargetedMessageNamespace.insert_all(namespace_data)
+            @targeted_message.association(:targeted_message_namespaces).reset
+            @targeted_message.save!
           end
-        end
 
-        if success
           handle_success
-        else
+        rescue ActiveRecord::RecordInvalid
           handle_failure
         end
       end
@@ -55,6 +43,25 @@ module Notifications
           )
         else
           success
+        end
+      end
+
+      def update_namespaces
+        existing_namespace_ids = @targeted_message.namespace_ids
+        namespaces_to_delete = existing_namespace_ids - parsed_namespaces[:valid_namespace_ids]
+        namespaces_to_create = parsed_namespaces[:valid_namespace_ids] - existing_namespace_ids
+
+        @targeted_message.targeted_message_namespaces.for_namespaces(namespaces_to_delete).delete_all
+
+        namespaces_to_create.each_slice(1000) do |namespace_ids|
+          namespace_data = namespace_ids.map do |namespace_id|
+            {
+              targeted_message_id: @targeted_message.id,
+              namespace_id: namespace_id
+            }
+          end
+
+          Notifications::TargetedMessageNamespace.insert_all(namespace_data)
         end
       end
     end
