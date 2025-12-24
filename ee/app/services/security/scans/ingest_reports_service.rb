@@ -16,9 +16,10 @@ module Security
       end
 
       def execute
-        return unless pipeline.all_security_jobs_complete?
-
+        return unless all_security_jobs_complete?
         return if already_ingested?
+
+        ::Vulnerabilities::CompareSecurityReportsService.set_security_mr_widget_to_polling(pipeline_id: pipeline.id)
 
         if pipeline.project.can_store_security_reports?
           ::Security::StoreScansWorker.perform_async(pipeline.id)
@@ -45,6 +46,18 @@ module Security
         ::Gitlab::Redis::SharedState.with do |redis|
           !redis.set(scans_cache_key, 'OK', nx: true, ex: TTL_REPORT_INGESTION)
         end
+      end
+
+      def all_security_jobs_complete?
+        if Feature.enabled?(:show_child_security_reports_in_mr_widget, pipeline.project)
+          root_pipeline.self_and_project_descendants.all?(&:all_security_jobs_complete?)
+        else
+          pipeline.all_security_jobs_complete?
+        end
+      end
+
+      def root_pipeline
+        @root_pipeline ||= pipeline.root_ancestor
       end
     end
   end

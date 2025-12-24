@@ -223,12 +223,22 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
           stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: true)
         end
 
-        it "sets the polling redis key for mr security widget when transitioning to: #{transition}" do
-          expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:once)
-
+        it "does not set the polling redis key for mr security widget when transitioning to: #{transition}" do
+          expect(Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_polling)
           transition_pipeline
+        end
 
-          expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer))
+        context 'when the security scans can not be stored for the pipeline' do
+          before do
+            allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+          end
+
+          it 'does not deletes the polling cache key' do
+            expect(::Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_polling)
+            transition_pipeline
+
+            expect(::Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_ready)
+          end
         end
       end
 

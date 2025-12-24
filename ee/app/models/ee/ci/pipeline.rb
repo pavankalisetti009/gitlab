@@ -71,7 +71,9 @@ module EE
 
         state_machine :status do
           before_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
-            ::Vulnerabilities::CompareSecurityReportsService.set_security_mr_widget_to_polling(pipeline_id: pipeline.id)
+            if ::Feature.disabled?(:ingest_sec_reports_when_sec_jobs_completed, pipeline.project)
+              ::Vulnerabilities::CompareSecurityReportsService.set_security_mr_widget_to_polling(pipeline_id: pipeline.id)
+            end
           end
 
           after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
