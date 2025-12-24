@@ -415,6 +415,124 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
       end
     end
 
+    describe '#vulnerability_attribute_known_exploited' do
+      context 'when scan_result_policy_read is nil' do
+        before do
+          subject.scan_result_policy_read = nil
+        end
+
+        it 'returns nil' do
+          expect(subject.vulnerability_attribute_known_exploited).to be_nil
+        end
+      end
+
+      context 'when scan_result_policy_read exists' do
+        let(:scan_result_policy_read) do
+          build(:scan_result_policy_read, vulnerability_attributes: vulnerability_attributes)
+        end
+
+        before do
+          subject.scan_result_policy_read = scan_result_policy_read
+        end
+
+        context 'when vulnerability_attributes is nil' do
+          let(:vulnerability_attributes) { nil }
+
+          it 'returns nil' do
+            expect(subject.vulnerability_attribute_known_exploited).to be_nil
+          end
+        end
+
+        context 'when vulnerability_attributes contains known_exploited as true' do
+          let(:vulnerability_attributes) { { 'known_exploited' => true } }
+
+          it 'returns true' do
+            expect(subject.vulnerability_attribute_known_exploited).to eq(true)
+          end
+        end
+
+        context 'when vulnerability_attributes contains known_exploited as false' do
+          let(:vulnerability_attributes) { { 'known_exploited' => false } }
+
+          it 'returns false' do
+            expect(subject.vulnerability_attribute_known_exploited).to eq(false)
+          end
+        end
+
+        context 'when vulnerability_attributes contains known_exploited as "unknown"' do
+          let(:vulnerability_attributes) { { 'known_exploited' => 'unknown' } }
+
+          it 'returns "unknown"' do
+            expect(subject.vulnerability_attribute_known_exploited).to eq('unknown')
+          end
+        end
+      end
+    end
+
+    describe '#vulnerability_attribute_epss_score' do
+      context 'when scan_result_policy_read is nil' do
+        before do
+          subject.scan_result_policy_read = nil
+        end
+
+        it 'returns nil' do
+          expect(subject.vulnerability_attribute_epss_score).to be_nil
+        end
+      end
+
+      context 'when scan_result_policy_read exists' do
+        let(:scan_result_policy_read) do
+          build(:scan_result_policy_read, vulnerability_attributes: vulnerability_attributes)
+        end
+
+        before do
+          subject.scan_result_policy_read = scan_result_policy_read
+        end
+
+        context 'when vulnerability_attributes is nil' do
+          let(:vulnerability_attributes) { nil }
+
+          it 'returns nil' do
+            expect(subject.vulnerability_attribute_epss_score).to be_nil
+          end
+        end
+
+        context 'when vulnerability_attributes does not contain epss_score' do
+          let(:vulnerability_attributes) { { 'other_attribute' => 'value' } }
+
+          it 'returns nil' do
+            expect(subject.vulnerability_attribute_epss_score).to be_nil
+          end
+        end
+
+        context 'when vulnerability_attributes contains epss_score' do
+          let(:vulnerability_attributes) do
+            {
+              'epss_score' => {
+                'operator' => 'greater_than',
+                'value' => 0.8
+              }
+            }
+          end
+
+          it 'returns the epss_score hash with symbolized keys' do
+            expect(subject.vulnerability_attribute_epss_score).to eq({
+              operator: 'greater_than',
+              value: 0.8
+            })
+          end
+        end
+
+        context 'when vulnerability_attributes contains epss_score as "unknown"' do
+          let(:vulnerability_attributes) { { 'epss_score' => 'unknown' } }
+
+          it 'returns "unknown"' do
+            expect(subject.vulnerability_attribute_epss_score).to eq('unknown')
+          end
+        end
+      end
+    end
+
     describe 'validation' do
       context 'when value is too big' do
         it 'is invalid' do
@@ -529,6 +647,10 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
           end
         end
       end
+    end
+
+    describe 'delegations' do
+      it { is_expected.to delegate_method(:vulnerability_attributes).to(:scan_result_policy_read).allow_nil }
     end
   end
 

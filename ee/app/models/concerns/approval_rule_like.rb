@@ -83,6 +83,8 @@ module ApprovalRuleLike
     scope :by_report_types, ->(report_types) { where(report_type: report_types) }
   end
 
+  delegate :vulnerability_attributes, to: :scan_result_policy_read, allow_nil: true
+
   def security_report_time_window
     return unless approval_policy_rule
 
@@ -95,6 +97,17 @@ module ApprovalRuleLike
 
   def vulnerability_attribute_fix_available
     nil
+  end
+
+  def vulnerability_attribute_known_exploited
+    vulnerability_attributes&.dig('known_exploited')
+  end
+
+  def vulnerability_attribute_epss_score
+    epss_score = vulnerability_attributes&.dig('epss_score')
+    return epss_score if epss_score.is_a?(String)
+
+    epss_score&.symbolize_keys
   end
 
   def audit_add(_model)
