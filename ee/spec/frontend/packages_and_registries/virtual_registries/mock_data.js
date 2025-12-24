@@ -47,31 +47,6 @@ export const mavenUpstreamRegistry = {
   __typename: 'MavenUpstream',
 };
 
-export const groupVirtualRegistries = {
-  group: {
-    id: 'gid://gitlab/Group/33',
-    __typename: 'Group',
-    virtualRegistriesPackagesMavenRegistries: {
-      __typename: 'MavenVirtualRegistryConnection',
-      nodes: [
-        {
-          __typename: 'MavenVirtualRegistry',
-          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Registry/2',
-          name: 'Maven Registry 1',
-          updatedAt: '2023-05-17T08:00:00Z',
-        },
-      ],
-      pageInfo: {
-        hasPreviousPage: false,
-        hasNextPage: false,
-        startCursor: 'start',
-        endCursor: 'end',
-        __typename: 'PageInfo',
-      },
-    },
-  },
-};
-
 export const groupMavenUpstreamsCountResponse = {
   data: {
     group: {

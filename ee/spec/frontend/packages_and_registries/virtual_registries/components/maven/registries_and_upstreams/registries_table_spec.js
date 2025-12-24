@@ -1,15 +1,19 @@
 import { GlTableLite } from '@gitlab/ui';
+import mavenRegistriesPayload from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registries.query.graphql.json';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import RegistriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_table.vue';
-import { groupVirtualRegistries } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
 describe('RegistriesTable', () => {
   let wrapper;
 
   const defaultProps = {
-    registries: groupVirtualRegistries.group.virtualRegistriesPackagesMavenRegistries.nodes,
+    registries: mavenRegistriesPayload.data.group.virtualRegistriesPackagesMavenRegistries.nodes,
   };
+
+  const [registry] = defaultProps.registries;
+  const registryId = getIdFromGraphQLId(registry.id);
 
   const defaultProvide = {
     editRegistryPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/registries/:id/edit',
@@ -71,16 +75,16 @@ describe('RegistriesTable', () => {
 
       expect(links).toHaveLength(1);
       expect(links.at(0).attributes('href')).toBe(
-        '/groups/gitlab-org/-/virtual_registries/maven/registries/2',
+        `/groups/gitlab-org/-/virtual_registries/maven/registries/${registryId}`,
       );
-      expect(links.at(0).text()).toBe('Maven Registry 1');
+      expect(links.at(0).text()).toBe('registry 1');
     });
 
     it('displays updated date with TimeAgoTooltip', () => {
       const tooltips = findTimeAgoTooltips();
 
       expect(tooltips).toHaveLength(1);
-      expect(tooltips.at(0).props('time')).toBe('2023-05-17T08:00:00Z');
+      expect(tooltips.at(0).props('time')).toBe(registry.updatedAt);
     });
 
     it('renders edit button when user has permission', () => {
@@ -91,9 +95,9 @@ describe('RegistriesTable', () => {
         size: 'small',
         category: 'tertiary',
         icon: 'pencil',
-        href: '/groups/gitlab-org/-/virtual_registries/maven/registries/2/edit',
+        href: `/groups/gitlab-org/-/virtual_registries/maven/registries/${registryId}/edit`,
       });
-      expect(editButtons.at(0).attributes('aria-label')).toBe('Edit registry Maven Registry 1');
+      expect(editButtons.at(0).attributes('aria-label')).toBe('Edit registry registry 1');
     });
 
     describe('when user lacks permissions', () => {
@@ -135,8 +139,8 @@ describe('RegistriesTable', () => {
       ...defaultProps.registries,
       {
         __typename: 'MavenVirtualRegistry',
-        id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Registry/3',
-        name: 'Maven Registry 2',
+        id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Registry/9999',
+        name: 'Maven Registry 9999',
         updatedAt: '2023-05-18T10:00:00Z',
       },
     ];
@@ -160,17 +164,17 @@ describe('RegistriesTable', () => {
       const editButtons = findEditButtons();
 
       expect(links.at(0).attributes('href')).toBe(
-        '/groups/gitlab-org/-/virtual_registries/maven/registries/2',
+        `/groups/gitlab-org/-/virtual_registries/maven/registries/${registryId}`,
       );
       expect(links.at(1).attributes('href')).toBe(
-        '/groups/gitlab-org/-/virtual_registries/maven/registries/3',
+        '/groups/gitlab-org/-/virtual_registries/maven/registries/9999',
       );
 
       expect(editButtons.at(0).attributes('href')).toBe(
-        '/groups/gitlab-org/-/virtual_registries/maven/registries/2/edit',
+        `/groups/gitlab-org/-/virtual_registries/maven/registries/${registryId}/edit`,
       );
       expect(editButtons.at(1).attributes('href')).toBe(
-        '/groups/gitlab-org/-/virtual_registries/maven/registries/3/edit',
+        '/groups/gitlab-org/-/virtual_registries/maven/registries/9999/edit',
       );
     });
   });

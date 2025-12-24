@@ -17,6 +17,7 @@ RSpec.describe 'Maven Virtual Registries (JavaScript fixtures)', feature_categor
     base_path = 'packages_and_registries/virtual_registries/graphql/queries'
     get_maven_upstream_summary_query_path = "#{base_path}/get_maven_upstream_summary.query.graphql"
     get_maven_virtual_registry_upstreams_path = "#{base_path}/get_maven_virtual_registry_upstreams.query.graphql"
+    get_maven_registries_query_path = "#{base_path}/get_maven_virtual_registries.query.graphql"
 
     before_all do
       group.add_guest(user)
@@ -25,6 +26,22 @@ RSpec.describe 'Maven Virtual Registries (JavaScript fixtures)', feature_categor
     before do
       stub_config(dependency_proxy: { enabled: true })
       stub_licensed_features(packages_virtual_registry: true)
+    end
+
+    context 'when user requests registries list' do
+      let(:query) { get_graphql_query_as_string(get_maven_registries_query_path, ee: true) }
+      let(:variables) do
+        {
+          groupPath: group.full_path,
+          first: 5
+        }
+      end
+
+      it "ee/graphql/#{get_maven_registries_query_path}.json" do
+        post_graphql(query, current_user: user, variables: variables)
+
+        expect_graphql_errors_to_be_empty
+      end
     end
 
     context 'when user requests upstream summary' do
