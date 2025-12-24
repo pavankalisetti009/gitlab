@@ -82,12 +82,24 @@ export default {
       return Boolean(this.chatDisabledReason);
     },
     isAgenticMode() {
-      return this.duoChatGlobalState.chatMode === CHAT_MODES.AGENTIC;
+      return (
+        this.chatConfiguration.defaultProps.isAgenticAvailable &&
+        this.duoChatGlobalState.chatMode === CHAT_MODES.AGENTIC
+      );
     },
     currentChatComponent() {
-      return this.isAgenticMode
-        ? this.chatConfiguration.agenticComponent
-        : this.chatConfiguration.classicComponent;
+      const { agenticComponent, classicComponent, defaultProps } = this.chatConfiguration;
+      const { agenticUnavailableMessage, isClassicAvailable } = defaultProps;
+      if (this.isAgenticMode) {
+        return agenticComponent;
+      }
+      if (agenticUnavailableMessage) {
+        return agenticUnavailableMessage;
+      }
+      if (isClassicAvailable) {
+        return classicComponent;
+      }
+      return __('Chat is not available.');
     },
     currentChatTitle() {
       return this.isAgenticMode
