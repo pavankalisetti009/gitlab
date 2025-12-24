@@ -6,10 +6,12 @@ module VirtualRegistries
       include ApplicationWorker
 
       BATCH_SIZE = 500
-      ALLOWED_UPSTREAM_CLASSES = [
-        ::VirtualRegistries::Packages::Maven::Upstream,
-        ::VirtualRegistries::Container::Upstream
-      ].freeze
+      GLOBAL_ID_LOCATE_OPTIONS = {
+        only: [
+          ::VirtualRegistries::Packages::Maven::Upstream,
+          ::VirtualRegistries::Container::Upstream
+        ]
+      }.freeze
 
       data_consistency :sticky
       queue_namespace :dependency_proxy_blob
@@ -37,10 +39,11 @@ module VirtualRegistries
       private
 
       def safe_locate(gid)
-        GlobalID::Locator.locate(gid, only: ALLOWED_UPSTREAM_CLASSES)
-      rescue StandardError => e
-        Gitlab::ErrorTracking.track_exception(e, gid: gid, worker: self.class.name)
-        nil
+        Gitlab::GlobalId.safe_locate(
+          gid,
+          on_error: ->(e) { Gitlab::ErrorTracking.track_exception(e, gid: gid, worker: self.class.name) },
+          options: GLOBAL_ID_LOCATE_OPTIONS
+        )
       end
     end
   end
