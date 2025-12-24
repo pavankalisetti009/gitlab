@@ -3,7 +3,7 @@
 module Notifications
   class TargetedMessage < ApplicationRecord
     validates :target_type, presence: true
-    validates :targeted_message_namespaces, presence: true
+    validate :must_have_targeted_message_namespaces
 
     has_many :targeted_message_namespaces
     has_many :targeted_message_dismissals
@@ -13,5 +13,14 @@ module Notifications
     enum :target_type, {
       banner_page_level: 0
     }
+
+    private
+
+    def must_have_targeted_message_namespaces
+      return unless targeted_message_namespaces.empty?
+
+      errors.add(:base,
+        s_('TargetedMessages|Must have at least one targeted namespace'))
+    end
   end
 end

@@ -4,10 +4,20 @@ require 'spec_helper'
 
 RSpec.describe Notifications::TargetedMessage, feature_category: :acquisition do
   describe 'validations' do
-    subject { build(:targeted_message) }
+    subject(:targeted_message) { build(:targeted_message) }
 
     it { is_expected.to validate_presence_of(:target_type) }
-    it { is_expected.to validate_presence_of(:targeted_message_namespaces) }
+
+    context 'with targeted_message_namespaces validation' do
+      it 'is invalid without any namespaces' do
+        targeted_message.targeted_message_namespaces.clear
+        expect(targeted_message).not_to be_valid
+      end
+
+      it 'is valid with at least one namespace' do
+        expect(targeted_message).to be_valid
+      end
+    end
   end
 
   describe 'associations' do

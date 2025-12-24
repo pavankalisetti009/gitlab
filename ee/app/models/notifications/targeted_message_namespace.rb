@@ -18,5 +18,7 @@ module Notifications
         .joins(join_sql)
         .where(targeted_message_dismissals: { id: nil })
     end
+
+    scope :for_namespaces, ->(namespace_ids) { where(namespace_id: namespace_ids) }
   end
 end
