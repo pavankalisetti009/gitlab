@@ -13,7 +13,7 @@ FactoryBot.define do
 
     initialize_with do
       chunks.map { |chunk| create(:final_answer_chunk, chunk: chunk) }
-            .join("\n")
+            .join("")
     end
   end
 
@@ -26,7 +26,8 @@ FactoryBot.define do
     end
 
     initialize_with do
-      { type: "final_answer_delta", data: { text: chunk } }.to_json
+      d = { type: "final_answer_delta", data: { text: chunk } }.to_json
+      "#{d}\n"
     end
   end
 
