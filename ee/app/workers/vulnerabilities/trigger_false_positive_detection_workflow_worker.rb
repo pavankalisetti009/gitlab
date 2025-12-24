@@ -3,8 +3,10 @@
 module Vulnerabilities
   class TriggerFalsePositiveDetectionWorkflowWorker
     include ApplicationWorker
+    include Gitlab::InternalEventsTracking
 
     StartWorkflowServiceError = Class.new(StandardError)
+    WORKFLOW_DEFINITION = 'sast_fp_detection/v1'
 
     feature_category :static_application_security_testing
     data_consistency :delayed
@@ -21,7 +23,7 @@ module Vulnerabilities
       result = trigger_workflow(vulnerability)
 
       if result.success?
-        create_triggered_workflow_record(vulnerability, result)
+        track_event(vulnerability) if create_triggered_workflow_record(vulnerability, result)
       else
         handle_error(result, vulnerability)
       end
@@ -41,7 +43,7 @@ module Vulnerabilities
       ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
         container: project,
         current_user: project.first_owner || vulnerability.author,
-        workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition['sast_fp_detection/v1'],
+        workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition[WORKFLOW_DEFINITION],
         goal: vulnerability.id.to_s,
         source_branch: project.default_branch
       ).execute
@@ -77,6 +79,20 @@ module Vulnerabilities
         error,
         vulnerability_id: vulnerability.id,
         workflow_id: response.payload[:workflow_id]
+      )
+
+      nil
+    end
+
+    def track_event(vulnerability)
+      track_internal_event(
+        'trigger_sast_vulnerability_fp_detection_workflow',
+        project: vulnerability.project,
+        additional_properties: {
+          label: 'automatic',
+          value: vulnerability.id,
+          property: vulnerability.severity
+        }
       )
     end
   end

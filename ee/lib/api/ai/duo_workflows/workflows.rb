@@ -10,6 +10,7 @@ module API
         HEADERS_TO_FORWARD_AS_GRPC_METADATA = %w[X-Gitlab-Language-Server-Version X-Gitlab-Client-Type].freeze
 
         helpers ::API::Helpers::DuoWorkflowHelpers
+        helpers Gitlab::InternalEventsTracking
 
         feature_category :duo_agent_platform
 
@@ -221,6 +222,24 @@ module API
             else
               current_user.can?(:read_group, container)
             end
+          end
+
+          def track_event(params)
+            return unless params[:workflow_definition] ==
+              ::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::WORKFLOW_DEFINITION
+
+            vulnerability = Vulnerability.find_by_id(params[:goal])
+            return unless vulnerability
+
+            track_internal_event(
+              'trigger_sast_vulnerability_fp_detection_workflow',
+              project: vulnerability.project,
+              additional_properties: {
+                label: 'manual',
+                value: vulnerability.id,
+                property: vulnerability.severity
+              }
+            )
           end
 
           params :workflow_params do
@@ -450,7 +469,7 @@ module API
               end
               post do
                 ::Gitlab::QueryLimiting.disable!(
-                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 117
+                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 120
                 )
 
                 container = if params[:project_id]
@@ -542,6 +561,8 @@ module API
                     else
                       workload_id = response.payload && response.payload[:workload_id]
                       message = response.message
+
+                      track_event(params)
                     end
                   end
 
