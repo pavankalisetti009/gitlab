@@ -20,6 +20,7 @@ module Types
         field :id, GraphQL::Types::ID, null: false, description: 'ID of the item version.'
         field :updated_at, Types::TimeType, null: false, description: 'Timestamp of when the item version was updated.'
         field :created_at, Types::TimeType, null: false, description: 'Timestamp of when the item version was created.'
+        field :created_by, Types::UserType, null: true, description: 'User that created the item version.'
         field :released_at, Types::TimeType, null: true, method: :release_date,
           description: 'Timestamp of when the item version was released.'
         field :released, GraphQL::Types::Boolean, null: false, method: :released?,
@@ -37,6 +38,12 @@ module Types
           item_type = version.item.item_type.to_sym
 
           RESOLVE_TYPES[item_type] or raise "Unknown catalog item type: #{item_type}" # rubocop:disable Style/AndOr -- Syntax error when || is used
+        end
+
+        def created_by
+          return unless object.created_by_id
+
+          Gitlab::Graphql::Loaders::BatchModelLoader.new(User, object.created_by_id).find
         end
       end
     end

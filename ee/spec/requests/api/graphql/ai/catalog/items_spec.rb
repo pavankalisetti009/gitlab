@@ -72,26 +72,48 @@ RSpec.describe 'getting AI catalog items', :with_current_organization, feature_c
     end
   end
 
-  it 'returns catalog item versions without N+1 database queries' do
-    catalog_item_1, catalog_item_2 = create_list(:ai_catalog_item, 2, project: project, public: true)
-
-    post_graphql(query, current_user: nil) # Warm up
-
-    expect(graphql_data_at(:ai_catalog_items, :nodes, :versions, :nodes).size).to eq(2)
-
-    control_count = ActiveRecord::QueryRecorder.new do
-      post_graphql(query, current_user: nil)
+  context 'when selecting versions and their created by users' do
+    let(:query) do
+      <<~GRAPHQL
+        {
+          aiCatalogItems {
+            nodes {
+              versions {
+                nodes {
+                  createdBy { username }
+                }
+              }
+              latestVersion {
+                createdBy { username }
+              }
+            }
+          }
+        }
+      GRAPHQL
     end
 
-    create(:ai_catalog_item_version, item: catalog_item_1, version: '1.0.1')
-    create(:ai_catalog_item_version, item: catalog_item_2, version: '1.0.1')
+    it 'avoids N+1 database queries' do
+      catalog_item_1, catalog_item_2 = create_list(:ai_catalog_item, 2, project: project, public: true)
+      catalog_item_1.latest_version.update!(created_by: create(:user))
 
-    expect do
-      post_graphql(query, current_user: nil)
-    end.not_to exceed_query_limit(control_count)
+      post_graphql(query, current_user: nil) # Warm up
 
-    expect(graphql_data_at(:ai_catalog_items, :nodes, :versions, :nodes).size).to eq(4)
-    expect(graphql_data_at(:ai_catalog_items, :nodes, :latest_version).compact.size).to eq(2)
+      expect(graphql_data_at(:ai_catalog_items, :nodes, :versions, :nodes).size).to eq(2)
+
+      control_count = ActiveRecord::QueryRecorder.new do
+        post_graphql(query, current_user: nil)
+      end
+
+      create(:ai_catalog_item_version, item: catalog_item_1, version: '1.0.1', created_by: create(:user))
+      create(:ai_catalog_item_version, item: catalog_item_2, version: '1.0.1', created_by: create(:user))
+
+      expect do
+        post_graphql(query, current_user: nil)
+      end.not_to exceed_query_limit(control_count)
+
+      expect(graphql_data_at(:ai_catalog_items, :nodes, :versions, :nodes).size).to eq(4)
+      expect(graphql_data_at(:ai_catalog_items, :nodes, :latest_version).compact.size).to eq(2)
+    end
   end
 
   describe 'item_type argument' do
