@@ -1,6 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlEmptyState, GlKeysetPagination, GlSkeletonLoader } from '@gitlab/ui';
+import mavenRegistriesPayload from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registries.query.graphql.json';
 import getMavenVirtualRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registries.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import setWindowLocation from 'helpers/set_window_location_helper';
@@ -11,7 +12,6 @@ import RegistriesTable from 'ee/packages_and_registries/virtual_registries/compo
 import * as urlUtils from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import { groupVirtualRegistries } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
@@ -26,20 +26,17 @@ describe('MavenRegistriesList', () => {
     fullPath: 'gitlab-org',
   };
 
-  const mockMavenRegistries = {
-    data: {
-      ...groupVirtualRegistries,
-    },
-  };
-
   const mockEmptyMavenRegistries = {
     data: {
       group: {
-        ...groupVirtualRegistries.group,
+        ...mavenRegistriesPayload.data.group,
         virtualRegistriesPackagesMavenRegistries: { nodes: [], pageInfo: {} },
       },
     },
   };
+
+  const { pageInfo, nodes: registries } =
+    mavenRegistriesPayload.data.group.virtualRegistriesPackagesMavenRegistries;
 
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findAlert = () => wrapper.findComponent(GlAlert);
@@ -47,7 +44,7 @@ describe('MavenRegistriesList', () => {
   const findRegistriesTable = () => wrapper.findComponent(RegistriesTable);
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
 
-  const mavenRegistriesHandler = jest.fn().mockResolvedValue(mockMavenRegistries);
+  const mavenRegistriesHandler = jest.fn().mockResolvedValue(mavenRegistriesPayload);
   const emptyMavenRegistriesHandler = jest.fn().mockResolvedValue(mockEmptyMavenRegistries);
   const mockError = new Error('GraphQL error');
   const errorHandler = jest.fn().mockRejectedValue(mockError);
@@ -88,14 +85,11 @@ describe('MavenRegistriesList', () => {
         expect(findAlert().exists()).toBe(false);
         expect(findEmptyState().exists()).toBe(false);
 
-        expect(findRegistriesTable().props('registries')).toEqual(
-          groupVirtualRegistries.group.virtualRegistriesPackagesMavenRegistries.nodes,
-        );
+        expect(findRegistriesTable().props('registries')).toEqual(registries);
 
-        const { __typename, ...pageInfo } =
-          groupVirtualRegistries.group.virtualRegistriesPackagesMavenRegistries.pageInfo;
+        const { __typename, ...rest } = pageInfo;
 
-        expect(findPagination().props()).toMatchObject(pageInfo);
+        expect(findPagination().props()).toMatchObject(rest);
       });
 
       it('emits `updateCount` event', async () => {
@@ -175,17 +169,19 @@ describe('MavenRegistriesList', () => {
       await waitForPromises();
     });
 
+    const { startCursor, endCursor } = pageInfo;
+
     it('emits `prev` event, GraphQL query is called with right parameters & URL is updated', async () => {
       await findPagination().vm.$emit('prev');
 
       expect(mavenRegistriesHandler).toHaveBeenLastCalledWith({
         groupPath: defaultProvide.fullPath,
         last: PAGE_SIZE,
-        before: 'start',
+        before: startCursor,
       });
 
       expect(urlUtils.updateHistory).toHaveBeenCalledWith({
-        url: `${TEST_HOST}/?before=start`,
+        url: `${TEST_HOST}/?before=${startCursor}`,
       });
     });
 
@@ -195,11 +191,11 @@ describe('MavenRegistriesList', () => {
       expect(mavenRegistriesHandler).toHaveBeenLastCalledWith({
         groupPath: defaultProvide.fullPath,
         first: PAGE_SIZE,
-        after: 'end',
+        after: endCursor,
       });
 
       expect(urlUtils.updateHistory).toHaveBeenCalledWith({
-        url: `${TEST_HOST}/?after=end`,
+        url: `${TEST_HOST}/?after=${endCursor}`,
       });
     });
   });
