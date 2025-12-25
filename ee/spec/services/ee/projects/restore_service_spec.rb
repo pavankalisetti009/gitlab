@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Projects::RestoreService, feature_category: :groups_and_projects do
-  let(:user) { create(:user, :with_namespace) }
-  let(:project) do
+  let_it_be(:user) { create(:user, :with_namespace) }
+  let_it_be_with_reload(:project) do
     create(:project,
       :repository,
       path: 'project-1-deleted-177483',
