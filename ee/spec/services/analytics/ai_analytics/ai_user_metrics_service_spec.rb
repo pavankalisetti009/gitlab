@@ -241,7 +241,7 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
 
         context 'when namespace filtering is disabled' do
           before do
-            stub_feature_flags(use_ai_events_namespace_path_filter: false)
+            stub_feature_flags(use_duo_chat_namespace_path_filter: false)
           end
 
           it 'returns chat metrics across all namespaces' do
@@ -259,6 +259,59 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
             expect(service_response.payload).to match({
               user1.id => { total_events_count: 2, request_duo_chat_response_event_count: 2 },
               user2.id => { total_events_count: 1, request_duo_chat_response_event_count: 1 }
+            })
+          end
+        end
+      end
+
+      context 'with non-chat data' do
+        let(:feature) { :code_review }
+        let_it_be(:other_namespace) { create(:project).reload.project_namespace }
+
+        before do
+          clickhouse_fixture(:ai_usage_events_daily, [
+            { user_id: user1.id, namespace_path: container.traversal_path, event: 10,
+              date: (to - 3.days).to_date, occurrences: 2 }, # encounter_duo_code_review_error_during_review
+            { user_id: user1.id, namespace_path: other_namespace.traversal_path, event: 11,
+              date: (to - 3.days).to_date, occurrences: 1 }, # find_no_issues_duo_code_review_after_review
+            { user_id: user2.id, namespace_path: container.traversal_path, event: 12,
+              date: (to - 2.days).to_date, occurrences: 1 } # find_nothing_to_review_duo_code_review_on_mr
+          ])
+        end
+
+        context 'when namespace filtering is disabled' do
+          before do
+            stub_feature_flags(use_ai_events_namespace_path_filter: false)
+          end
+
+          it 'returns code review metrics across all namespaces' do
+            expect(service_response).to be_success
+            expect(service_response.payload).to match({
+              user1.id => a_hash_including(
+                total_events_count: 3,
+                encounter_duo_code_review_error_during_review_event_count: 2,
+                find_no_issues_duo_code_review_after_review_event_count: 1
+              ),
+              user2.id => a_hash_including(
+                total_events_count: 1,
+                find_nothing_to_review_duo_code_review_on_mr_event_count: 1
+              )
+            })
+          end
+        end
+
+        context 'when namespace filtering is enabled' do
+          it 'returns code review metrics only within the specified namespace' do
+            expect(service_response).to be_success
+            expect(service_response.payload).to match({
+              user1.id => a_hash_including(
+                total_events_count: 2,
+                encounter_duo_code_review_error_during_review_event_count: 2
+              ),
+              user2.id => a_hash_including(
+                total_events_count: 1,
+                find_nothing_to_review_duo_code_review_on_mr_event_count: 1
+              )
             })
           end
         end
