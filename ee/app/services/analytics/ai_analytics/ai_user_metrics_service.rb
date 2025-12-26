@@ -138,7 +138,8 @@ module Analytics
       end
 
       def namespace_filtering_enabled?
-        # for old Duo Chat we don't use namespace filtering for now. See https://gitlab.com/gitlab-org/gitlab/-/issues/578538
+        return Feature.enabled?(:use_duo_chat_namespace_path_filter, namespace) if feature.to_sym == :chat
+
         Feature.enabled?(:use_ai_events_namespace_path_filter, namespace)
       end
 

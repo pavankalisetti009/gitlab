@@ -14,7 +14,8 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
   let_it_be(:user1) { create(:user, developer_of: group) }
   let_it_be(:user2) { create(:user, developer_of: subgroup) }
   let_it_be(:user3) { create(:user, developer_of: group) }
-  let_it_be(:stranger_user) { create(:user) }
+  let_it_be(:not_contributor_1) { create(:user) }
+  let_it_be(:not_contributor_2) { create(:user) }
 
   let(:current_user) { user1 }
   let(:from) { Time.current }
@@ -90,9 +91,12 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
             { user_id: user1.id, namespace_path: group.traversal_path, event: 6, timestamp: to - 4.days },
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to - 2.days },
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to - 2.days },
-            # Matches namespace path filter but shouldn't be included since it's duo chat
-            { user_id: stranger_user.id, namespace_path: project_namespace.traversal_path, event: 6,
+            # User is not contributor, included only when use_duo_chat_namespace_path_filter flag is enabled
+            { user_id: not_contributor_1.id, namespace_path: project_namespace.traversal_path, event: 6,
               timestamp: to - 2.days },
+            { user_id: not_contributor_2.id, namespace_path: group.traversal_path, event: 6,
+              timestamp: to - 1.day },
+            # Not Duo Chat event
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 1, timestamp: to - 2.days },
             # out of timeframe
             { user_id: user3.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to + 2.days },
@@ -117,7 +121,7 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
     end
   end
 
-  context 'when use_ai_events_namespace_path_filter feature flag is disabled' do
+  context 'when use_duo_chat_namespace_path_filter feature flag is disabled' do
     let(:expected_results) do
       {
         contributors_count: 3,
@@ -126,7 +130,7 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
     end
 
     before do
-      stub_feature_flags(use_ai_events_namespace_path_filter: false)
+      stub_feature_flags(use_duo_chat_namespace_path_filter: false)
     end
 
     context 'for group' do
@@ -150,14 +154,18 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
     end
   end
 
-  context 'when use_ai_events_namespace_path_filter feature flag is enabled' do
+  context 'when use_duo_chat_namespace_path_filter feature flag is enabled' do
+    before do
+      stub_feature_flags(use_duo_chat_namespace_path_filter: true)
+    end
+
     context 'for group' do
       let_it_be(:container) { group }
 
       let(:expected_results) do
         {
           contributors_count: 3,
-          duo_chat_contributors_count: 2
+          duo_chat_contributors_count: 4
         }
       end
 

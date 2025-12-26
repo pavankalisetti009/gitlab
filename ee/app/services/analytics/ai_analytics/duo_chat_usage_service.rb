@@ -60,7 +60,7 @@ module Analytics
 
       def filter_by_namespace_path_enabled?
         # for Duo Chat we don't want to use the namespace filter. See https://gitlab.com/gitlab-org/gitlab/-/issues/578538
-        false
+        Feature.enabled?(:use_duo_chat_namespace_path_filter, namespace)
       end
     end
   end
