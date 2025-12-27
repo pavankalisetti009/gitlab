@@ -129,6 +129,10 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
       let(:expected_audit_message) { 'Secure ci_job_token was disabled for inbound' }
       let(:event_name) { 'secure_ci_job_token_inbound_disabled' }
 
+      before do
+        allow(::Gitlab::CurrentSettings).to receive(:enforce_ci_inbound_job_token_scope_enabled?).and_return(false)
+      end
+
       it 'logs an audit event' do
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
 
@@ -157,6 +161,29 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
         expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
         resolve_mutation
+      end
+    end
+
+    context 'when instance-level enforcement is enabled' do
+      before do
+        allow(::Gitlab::CurrentSettings).to receive(:enforce_ci_inbound_job_token_scope_enabled?).and_return(true)
+      end
+
+      context 'when trying to disable inbound_job_token_scope_enabled' do
+        let(:inbound_job_token_scope_enabled_origin) { true }
+        let(:inbound_job_token_scope_enabled_target) { false }
+
+        it 'does not log an audit event because the update is blocked' do
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+          resolve_mutation
+        end
+
+        it 'returns an error' do
+          result = resolve_mutation
+
+          expect(result[:errors]).to include(include('enforced for the instance'))
+        end
       end
     end
   end
