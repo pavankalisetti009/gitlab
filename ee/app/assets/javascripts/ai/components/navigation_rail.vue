@@ -66,9 +66,6 @@ export default {
     isAgenticMode() {
       return this.duoChatGlobalState.chatMode === CHAT_MODES.AGENTIC;
     },
-    showSessionsButton() {
-      return this.isAgenticMode;
-    },
     duoShortcutKey() {
       return shouldDisableShortcuts() || this.isChatDisabled ? null : keysFor(DUO_CHAT);
     },
@@ -180,28 +177,26 @@ export default {
       @mouseout="hideTooltips"
       @click="toggleTab('history')"
     />
-    <template v-if="showSessionsButton">
-      <gl-button
-        v-gl-tooltip.left
-        icon="session-ai"
-        size="small"
-        class="!gl-rounded-lg"
-        :class="[
-          'ai-nav-icon',
-          { 'ai-nav-icon-active': activeTab === 'sessions', 'gl-opacity-5': isChatDisabled },
-        ]"
-        category="tertiary"
-        :aria-selected="activeTab === 'sessions'"
-        :aria-expanded="isExpanded"
-        :aria-label="$options.i18n.sessionsLabel"
-        :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.sessionsLabel"
-        role="tab"
-        :aria-disabled="isChatDisabled"
-        data-testid="ai-sessions-toggle"
-        @mouseout="hideTooltips"
-        @click="toggleTab('sessions')"
-      />
-    </template>
+    <gl-button
+      v-gl-tooltip.left
+      icon="session-ai"
+      size="small"
+      class="!gl-rounded-lg"
+      :class="[
+        'ai-nav-icon',
+        { 'ai-nav-icon-active': activeTab === 'sessions', 'gl-opacity-5': isChatDisabled },
+      ]"
+      category="tertiary"
+      :aria-selected="activeTab === 'sessions'"
+      :aria-expanded="isExpanded"
+      :aria-label="$options.i18n.sessionsLabel"
+      :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.sessionsLabel"
+      role="tab"
+      :aria-disabled="isChatDisabled"
+      data-testid="ai-sessions-toggle"
+      @mouseout="hideTooltips"
+      @click="toggleTab('sessions')"
+    />
     <gl-button
       v-if="showSuggestionsTab"
       v-gl-tooltip.left
