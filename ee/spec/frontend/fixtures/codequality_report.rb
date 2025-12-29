@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Code Quality Report (GraphQL fixtures)' do
+RSpec.describe 'Code Quality Report (GraphQL fixtures)', feature_category: :code_quality do
   describe GraphQL::Query, type: :request do
     include ApiHelpers
     include GraphqlHelpers
