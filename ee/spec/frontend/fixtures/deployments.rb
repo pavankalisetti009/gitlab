@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Deployments (JavaScript fixtures)' do
+RSpec.describe 'Deployments (JavaScript fixtures)', feature_category: :deployment_management do
   include ApiHelpers
   include JavaScriptFixturesHelpers
 
