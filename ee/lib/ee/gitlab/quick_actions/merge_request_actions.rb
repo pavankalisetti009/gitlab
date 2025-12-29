@@ -48,6 +48,26 @@ module EE
 
           ::Ai::CodeReviewMessages.manual_error
         end
+
+        override :auto_merge_strategy_copy
+        def auto_merge_strategy_copy(strategy, type)
+          case strategy
+          when ::EE::AutoMergeService::STRATEGY_MERGE_TRAIN
+            case type
+            when :desc then _('Add to merge train')
+            when :explanation then _('Adds this merge request to merge train.')
+            when :feedback then _('Added to merge train.')
+            end
+          when ::AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
+            case type
+            when :desc then _('Add to merge train when ready')
+            when :explanation then _('Adds this merge request to merge train when ready.')
+            when :feedback then _('Set to add to merge train when ready.')
+            end
+          else
+            super
+          end
+        end
       end
     end
   end
