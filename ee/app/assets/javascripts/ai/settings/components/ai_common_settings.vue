@@ -36,6 +36,7 @@ export default {
     'initialFoundationalAgentsStatuses',
     'initialSelectedFoundationalFlowIds',
     'initialDuoAgentPlatformEnabled',
+    'initialNamespaceAccessRules',
   ],
   props: {
     hasParentFormChanged: {
@@ -192,6 +193,7 @@ export default {
         :duo-agent-platform-enabled="initialDuoAgentPlatformEnabled"
         :foundational-agents-enabled="foundationalAgentsDefaultEnabled"
         :foundational-agents-statuses="foundationalAgentsStatuses"
+        :initial-namespace-access-rules="initialNamespaceAccessRules"
         @submit="submitForm"
         @radio-changed="onRadioChanged"
         @experiment-checkbox-changed="experimentCheckboxChanged"

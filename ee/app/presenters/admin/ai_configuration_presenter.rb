@@ -26,7 +26,7 @@ module Admin
       to: :ai_settings
 
     def settings
-      {
+      settings_hash = {
         ai_gateway_url: ai_gateway_url,
         ai_gateway_timeout_seconds: ai_gateway_timeout_seconds,
         duo_agent_platform_service_url: duo_agent_platform_service_url,
@@ -55,10 +55,20 @@ module Admin
         show_foundational_agents_availability: true,
         show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?,
         foundational_agents_statuses: Gitlab::Json.dump(foundational_agents_statuses)
-      }.transform_values(&:to_s)
+      }
+
+      settings_hash[:namespace_access_rules] = Gitlab::Json.dump(namespace_access_rule) if Feature.enabled?(
+        :duo_access_through_namespaces, :instance)
+
+      settings_hash.transform_values(&:to_s)
     end
 
     private
+
+    # TODO see also https://gitlab.com/groups/gitlab-org/-/epics/20332
+    def namespace_access_rule
+      []
+    end
 
     def show_foundational_agents_per_agent_availability?
       ::Feature.enabled?(:duo_foundational_agents_per_agent_availability, :instance)
