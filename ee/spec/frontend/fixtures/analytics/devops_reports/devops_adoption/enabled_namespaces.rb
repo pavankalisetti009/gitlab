@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'DevOps Adoption (GraphQL fixtures)' do
+RSpec.describe 'DevOps Adoption (GraphQL fixtures)', feature_category: :devops_reports do
   describe GraphQL::Query, type: :request do
     include ApiHelpers
     include GraphqlHelpers

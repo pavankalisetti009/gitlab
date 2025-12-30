@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe 'Analytics (JavaScript fixtures)', :sidekiq_inline do
+RSpec.describe 'Analytics (JavaScript fixtures)', :sidekiq_inline, feature_category: :value_stream_management do
   describe Groups::Analytics::CycleAnalytics::StagesController, type: :controller do
     include_context '[EE] Analytics fixtures shared context'
 
