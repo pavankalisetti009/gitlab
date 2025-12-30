@@ -46,6 +46,25 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     let(:beta_self_hosted_models_enabled) { true }
     let(:self_hosted_models) { true }
     let(:active_duo_add_ons_exist?) { true }
+    let(:namespace_access_rules) do
+      [
+        {
+          through_namespace: {
+            id: 1,
+            name: 'Group A',
+            path: 'group-a'
+          },
+          features: ["duo_classic"]
+        }, {
+          through_namespace: {
+            id: 2,
+            name: 'Group B',
+            path: 'group-b'
+          },
+          features: %w[duo_agents duo_flow]
+        }
+      ]
+    end
 
     before do
       allow(GitlabSubscriptions::AddOnPurchase)
@@ -62,6 +81,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       allow(License).to receive(:feature_available?).with(:self_hosted_models).and_return self_hosted_models
 
       allow(Gitlab::CurrentSettings).to receive(:current_application_settings).and_return application_settings
+      allow(Ai::FeatureSetting).to receive(:duo_root_namespace_access_rules).and_return namespace_access_rules
 
       allow(GitlabSubscriptions::DuoEnterprise).to receive_messages(
         active_add_on_purchase_for_self_managed?: active_add_on_purchase_for_self_managed?
@@ -97,7 +117,8 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         toggle_beta_models_path: '/admin/ai/duo_self_hosted/toggle_beta_models',
         foundational_agents_default_enabled: 'true',
         show_foundational_agents_availability: 'true',
-        show_foundational_agents_per_agent_availability: 'false'
+        show_foundational_agents_per_agent_availability: 'false',
+        namespace_access_rules: '[]'
       )
     end
 
@@ -107,6 +128,14 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       end
 
       it { expect(settings).to include(show_foundational_agents_per_agent_availability: 'true') }
+    end
+
+    context 'with duo_access_through_namespaces enabled' do
+      before do
+        stub_feature_flags(duo_access_through_namespaces: false)
+      end
+
+      it { expect(settings).not_to have_key('namespace_access_rules') }
     end
 
     context 'with foundational_agents_default_enabled false' do

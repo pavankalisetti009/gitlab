@@ -62,12 +62,23 @@ export const initAiSettings = (id, component, options = {}) => {
     availableFoundationalFlows,
     selectedFoundationalFlowReferences,
     duoAgentPlatformEnabled,
+    namespaceAccessRules,
   } = el.dataset;
 
   let duoAvailabilityCascadingSettingsParsed;
   let duoRemoteFlowsCascadingSettingsParsed;
   let duoFoundationalFlowsCascadingSettingsParsed;
   let duoSastFpDetectionCascadingSettingsParsed;
+  let namespaceAccessRulesParsed;
+
+  if (el.dataset.namespaceAccessRules) {
+    namespaceAccessRulesParsed = convertObjectPropsToCamelCase(
+      JSON.parse(namespaceAccessRules || '[]'),
+      {
+        deep: true,
+      },
+    );
+  }
 
   try {
     duoAvailabilityCascadingSettingsParsed = convertObjectPropsToCamelCase(
@@ -167,6 +178,7 @@ export const initAiSettings = (id, component, options = {}) => {
           : [];
         return selected;
       })(),
+      initialNamespaceAccessRules: namespaceAccessRulesParsed,
     },
     render: (createElement) =>
       createElement(component, {

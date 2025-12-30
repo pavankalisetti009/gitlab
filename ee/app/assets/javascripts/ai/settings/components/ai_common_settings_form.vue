@@ -11,6 +11,7 @@ import DuoFlowSettings from './duo_flow_settings.vue';
 import DuoSastFpDetectionSettings from './duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from './duo_foundational_agents_settings.vue';
 import DuoAgentPlatformSettingsForm from './duo_agent_platform_settings_form.vue';
+import AiNamespaceAccessRules from './ai_namespace_access_rules.vue';
 
 export default {
   name: 'AiCommonSettingsForm',
@@ -26,6 +27,7 @@ export default {
     DuoSastFpDetectionSettings,
     DuoFoundationalAgentsSettings,
     DuoAgentPlatformSettingsForm,
+    AiNamespaceAccessRules,
   },
   mixins: [glFeatureFlagMixin()],
   i18n: {
@@ -88,6 +90,11 @@ export default {
       type: Array,
       required: false,
       default: () => [],
+    },
+    initialNamespaceAccessRules: {
+      type: Array,
+      required: false,
+      default: null,
     },
   },
   data() {
@@ -235,6 +242,8 @@ export default {
   <gl-form @submit.prevent="submitForm">
     <slot name="ai-common-settings-top"></slot>
     <duo-availability :duo-availability="availability" @change="onRadioChanged" />
+
+    <ai-namespace-access-rules :initial-namespace-access-rules="initialNamespaceAccessRules" />
 
     <duo-core-features-form
       v-if="!onGeneralSettingsPage"

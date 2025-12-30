@@ -27,6 +27,7 @@ describe('AiCommonSettings', () => {
         initialDuoFoundationalFlowsAvailability: false,
         initialSelectedFoundationalFlowIds: [],
         initialDuoAgentPlatformEnabled: true,
+        initialNamespaceAccessRules: [],
         onGeneralSettingsPage: false,
         glFeatures: {
           aiExperimentSastFpDetection: true,
