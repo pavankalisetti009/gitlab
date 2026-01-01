@@ -10,9 +10,12 @@ RSpec.describe DependencyProxy::CleanupDependencyProxyWorker, type: :worker, fea
       it_behaves_like 'an idempotent worker' do
         it 'queues the cleanup jobs', :aggregate_failures do
           create(:virtual_registries_packages_maven_cache_entry, :pending_destruction)
+          create(:virtual_registries_container_cache_entry, :pending_destruction)
 
-          expect(::VirtualRegistries::Cache::DestroyOrphanEntriesWorker)
-            .to receive(:perform_with_capacity).once
+          described_class::VREG_CACHE_ENTRY_CLASSES.each do |klass|
+            expect(::VirtualRegistries::Cache::DestroyOrphanEntriesWorker)
+              .to receive(:perform_with_capacity).with(klass.name)
+          end
 
           worker_perform
         end
