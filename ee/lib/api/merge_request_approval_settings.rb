@@ -63,6 +63,7 @@ module API
           ]
           tags %w[merge_request_approval_setting]
         end
+        route_setting :authorization, permissions: :read_merge_request_approval_setting, boundary_type: :project
         get '/', urgency: :medium do
           group = user_project.group.present? ? user_project.root_ancestor : nil
           setting = ComplianceManagement::MergeRequestApprovalSettings::Resolver.new(group, project: user_project).execute
@@ -80,6 +81,7 @@ module API
         params do
           use :merge_request_approval_settings
         end
+        route_setting :authorization, permissions: :update_merge_request_approval_setting, boundary_type: :project
         put do
           response = ::MergeRequestApprovalSettings::UpdateService
                        .new(container: user_project, current_user: current_user, params: setting_params).execute
@@ -112,6 +114,7 @@ module API
           ]
           tags %w[merge_request_approval_setting]
         end
+        route_setting :authorization, permissions: :read_merge_request_approval_setting, boundary_type: :group
         get do
           setting = ComplianceManagement::MergeRequestApprovalSettings::Resolver.new(user_group).execute
 
@@ -129,6 +132,7 @@ module API
         params do
           use :merge_request_approval_settings
         end
+        route_setting :authorization, permissions: :update_merge_request_approval_setting, boundary_type: :group
         put do
           response = ::MergeRequestApprovalSettings::UpdateService
             .new(container: user_group, current_user: current_user, params: setting_params).execute
