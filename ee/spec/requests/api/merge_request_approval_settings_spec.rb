@@ -80,6 +80,19 @@ RSpec.describe API::MergeRequestApprovalSettings, feature_category: :source_code
         expect(response).to match_response_schema('public_api/v4/group_merge_request_approval_settings', dir: 'ee')
       end
 
+      context "granular token permissions" do
+        before do
+          group.add_owner(user)
+        end
+
+        it_behaves_like "authorizing granular token permissions", :read_merge_request_approval_setting do
+          let(:boundary_object) { group }
+          let(:request) do
+            get api(url, personal_access_token: pat)
+          end
+        end
+      end
+
       context 'when the group does not have existing settings' do
         before do
           group.group_merge_request_approval_setting.delete
@@ -142,6 +155,19 @@ RSpec.describe API::MergeRequestApprovalSettings, feature_category: :source_code
         put api(url, user), params: params
 
         expect(response).to match_response_schema('public_api/v4/group_merge_request_approval_settings', dir: 'ee')
+      end
+
+      context "granular token permissions" do
+        before do
+          group.add_owner(user)
+        end
+
+        it_behaves_like "authorizing granular token permissions", :update_merge_request_approval_setting do
+          let(:boundary_object) { group }
+          let(:request) do
+            put api(url, personal_access_token: pat), params: params
+          end
+        end
       end
 
       context 'when password and reauthentication are set' do
@@ -229,6 +255,13 @@ RSpec.describe API::MergeRequestApprovalSettings, feature_category: :source_code
       expect(response).to match_response_schema('public_api/v4/group_merge_request_approval_settings', dir: 'ee')
     end
 
+    it_behaves_like "authorizing granular token permissions", :read_merge_request_approval_setting do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api(url, personal_access_token: pat)
+      end
+    end
+
     context 'when the project does not have existing settings' do
       before do
         project.update!(
@@ -276,6 +309,13 @@ RSpec.describe API::MergeRequestApprovalSettings, feature_category: :source_code
       expect(project.reset_approvals_on_push).to be true
 
       expect(response).to match_response_schema('public_api/v4/group_merge_request_approval_settings', dir: 'ee')
+    end
+
+    it_behaves_like "authorizing granular token permissions", :update_merge_request_approval_setting do
+      let(:boundary_object) { project }
+      let(:request) do
+        put api(url, personal_access_token: pat), params: params
+      end
     end
 
     context 'when enabling selective_code_owner_removals and retain_approvals_on_push' do
