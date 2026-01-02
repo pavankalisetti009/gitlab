@@ -62,6 +62,7 @@ module Vulnerabilities
     # in the full scan tab, since they're already handled in the partial scan comparison.
     def partial_scan_scanner_ids
       return [] unless params[:scan_mode] == 'full'
+      return [] if head_pipeline.nil?
 
       partial_scans = head_pipeline.security_scans.partial.to_a
       return Set.new if partial_scans.empty?
