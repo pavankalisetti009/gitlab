@@ -27,6 +27,7 @@ module API
         params do
           use :pagination
         end
+        route_setting :authorization, permissions: :read_merge_request_approval_rule, boundary_type: :project
         get '/', urgency: :low do
           merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
@@ -49,6 +50,7 @@ module API
           optional :group_ids, type: Array[Integer], coerce_with: ::API::Validations::Types::CommaSeparatedToIntegerArray.coerce, desc: 'The group ids for this rule'
           optional :usernames, type: Array[String], coerce_with: ::API::Validations::Types::CommaSeparatedToArray.coerce, desc: 'The usernames for this rule'
         end
+        route_setting :authorization, permissions: :create_merge_request_approval_rule, boundary_type: :project
         post do
           merge_request = find_merge_request_with_access(params[:merge_request_iid], :update_approvers)
           result = ::ApprovalRules::CreateService.new(merge_request, current_user, declared_params(include_missing: false)).execute
@@ -68,6 +70,7 @@ module API
           params do
             requires :approval_rule_id, type: Integer, desc: 'The ID of a merge request approval rule'
           end
+          route_setting :authorization, permissions: :read_merge_request_approval_rule, boundary_type: :project
           get do
             merge_request = find_merge_request_with_access(params[:merge_request_iid])
             approval_rule = find_merge_request_approval_rule(merge_request, params[:approval_rule_id])
@@ -88,6 +91,7 @@ module API
             optional :usernames, type: Array[String], coerce_with: ::API::Validations::Types::CommaSeparatedToArray.coerce, desc: 'The group ids for this rule'
             optional :remove_hidden_groups, type: Boolean, desc: 'Whether hidden groups should be removed'
           end
+          route_setting :authorization, permissions: :update_merge_request_approval_rule, boundary_type: :project
           put do
             merge_request = find_merge_request_with_access(params[:merge_request_iid], :update_approvers)
             params = declared_params(include_missing: false)
@@ -108,6 +112,7 @@ module API
           params do
             requires :approval_rule_id, type: Integer, desc: 'The ID of a merge request approval rule'
           end
+          route_setting :authorization, permissions: :delete_merge_request_approval_rule, boundary_type: :project
           delete do
             merge_request = find_merge_request_with_access(params[:merge_request_iid], :update_approvers)
             approval_rule = find_merge_request_approval_rule(merge_request, params[:approval_rule_id])

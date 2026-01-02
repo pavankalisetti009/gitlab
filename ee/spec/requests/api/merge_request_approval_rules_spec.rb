@@ -204,6 +204,13 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
     let(:get_rule) { ->(response) { response } }
 
     it_behaves_like 'getting approval rule/s'
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api(url, personal_access_token: pat)
+      end
+    end
   end
 
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/approval_rules' do
@@ -228,6 +235,13 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
 
         expect(response).to include_pagination_headers
         expect(rules.size).to eq(1)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api(url, personal_access_token: pat)
       end
     end
   end
@@ -388,6 +402,13 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
         expect(json_response['message']).to match_array(['Prohibited'])
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :create_merge_request_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) do
+        post api(url, personal_access_token: pat), params: { name: 'Test', approvals_required: 1 }
+      end
+    end
   end
 
   describe 'PUT /projects/:id/merge_requests/:merge_request_iid/approval_rules/:approval_rule_id' do
@@ -515,6 +536,13 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :update_merge_request_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) do
+        put api(url, personal_access_token: pat), params: { name: 'Test', approvals_required: 1 }
+      end
+    end
   end
 
   describe 'DELETE /projects/:id/merge_requests/:merge_request_iid/approval_rules/:approval_rule_id' do
@@ -536,6 +564,13 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
 
       it 'responds with 204' do
         expect(response).to have_gitlab_http_status(:no_content)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_merge_request_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) do
+        delete api(url, personal_access_token: pat)
       end
     end
   end
