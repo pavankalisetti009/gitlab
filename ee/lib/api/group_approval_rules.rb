@@ -24,6 +24,7 @@ module API
         params do
           use :pagination
         end
+        route_setting :authorization, permissions: :read_approval_rule, boundary_type: :group
         get do
           authorize_group_approval_rule!
 
@@ -41,6 +42,7 @@ module API
           requires :approvals_required, type: Integer, desc: 'The number of required approvals for this rule'
           use :group_approval_rule
         end
+        route_setting :authorization, permissions: :create_approval_rule, boundary_type: :group
         post do
           create_group_approval_rule(present_with: ::API::Entities::GroupApprovalRule)
         end
@@ -55,6 +57,7 @@ module API
           success ::API::Entities::GroupApprovalRule
           tags ['group_approval_rules']
         end
+        route_setting :authorization, permissions: :update_approval_rule, boundary_type: :group
         put ':approval_rule_id' do
           update_group_approval_rule(present_with: ::API::Entities::GroupApprovalRule)
         end

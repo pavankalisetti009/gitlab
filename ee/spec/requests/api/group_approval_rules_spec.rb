@@ -67,6 +67,12 @@ RSpec.describe API::GroupApprovalRules, :aggregate_failures, feature_category: :
         expect(json_response.dig(0, 'id')).to eq(approval_rules.last.id)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_approval_rule do
+      let(:boundary_object) { group }
+      let(:user) { current_user }
+      let(:request) { get api(url, personal_access_token: pat) }
+    end
   end
 
   describe 'POST /groups/:id/approval_rules' do
@@ -161,6 +167,15 @@ RSpec.describe API::GroupApprovalRules, :aggregate_failures, feature_category: :
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :create_approval_rule do
+      let(:boundary_object) { group }
+      let(:user) { current_user }
+      let(:request) do
+        post api(url, personal_access_token: pat),
+          params: { name: 'security', approvals_required: 10 }
+      end
+    end
   end
 
   describe 'PUT /groups/:id/approval_rules/:approval_rule_id' do
@@ -241,6 +256,14 @@ RSpec.describe API::GroupApprovalRules, :aggregate_failures, feature_category: :
           expect(json_response['groups'].size).to be 1
           expect(json_response.dig('groups', 0, 'id')).to eq(group.id)
         end
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :update_approval_rule do
+      let(:boundary_object) { group }
+      let(:user) { current_user }
+      let(:request) do
+        put api(url, personal_access_token: pat), params: { name: 'updated_name' }
       end
     end
   end

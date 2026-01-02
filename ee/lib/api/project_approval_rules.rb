@@ -23,6 +23,7 @@ module API
         params do
           use :pagination
         end
+        route_setting :authorization, permissions: :read_approval_rule, boundary_type: :project
         get do
           authorize_read_project_approval_rule!
 
@@ -36,6 +37,7 @@ module API
         params do
           use :create_project_approval_rule
         end
+        route_setting :authorization, permissions: :create_approval_rule, boundary_type: :project
         post do
           create_project_approval_rule(present_with: ::API::Entities::ProjectApprovalRule)
         end
@@ -45,6 +47,7 @@ module API
             success ::API::Entities::ProjectApprovalRule
             tags %w[project_approval_rules]
           end
+          route_setting :authorization, permissions: :read_approval_rule, boundary_type: :project
           get do
             authorize_read_project_approval_rule!
 
@@ -60,6 +63,7 @@ module API
           params do
             use :update_project_approval_rule
           end
+          route_setting :authorization, permissions: :update_approval_rule, boundary_type: :project
           put do
             update_project_approval_rule(present_with: ::API::Entities::ProjectApprovalRule)
           end
@@ -71,6 +75,7 @@ module API
           params do
             use :delete_project_approval_rule
           end
+          route_setting :authorization, permissions: :delete_approval_rule, boundary_type: :project
           delete do
             destroy_project_approval_rule
           end
