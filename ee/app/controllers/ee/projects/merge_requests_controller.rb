@@ -15,7 +15,6 @@ module EE
           push_frontend_feature_flag(:allow_merge_train_retry_merge, @project)
           push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @project, user: current_user)
           push_frontend_ability(ability: :measure_comment_temperature, resource: merge_request, user: current_user)
-          push_frontend_feature_flag(:finding_create_jira_issue_form_url, project)
         end
 
         before_action do
