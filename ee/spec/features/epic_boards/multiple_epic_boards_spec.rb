@@ -34,7 +34,8 @@ RSpec.describe 'epic boards', :js, feature_category: :portfolio_management do
       end
     end
 
-    it 'switches current epic board' do
+    it 'switches current epic board',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/18806' do
       in_boards_switcher_dropdown do
         select_listbox_item(epic_board2.name)
       end
