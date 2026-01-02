@@ -620,6 +620,12 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
         it { is_expected.to duo_chat_enabled_for_user }
       end
+
+      context 'when user is nil' do
+        let(:current_user) { nil }
+
+        it { is_expected.to be_disallowed(policy) }
+      end
     end
 
     context 'when not on .org or .com' do
@@ -680,6 +686,12 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         end
 
         it { is_expected.to duo_agentic_chat_enabled_for_user }
+      end
+
+      context 'when user is nil' do
+        let(:current_user) { nil }
+
+        it { is_expected.to be_disallowed(policy) }
       end
     end
 
@@ -795,6 +807,12 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       end
 
       it { is_expected.to enabled_for_user }
+    end
+
+    context 'when user is nil' do
+      let(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(policy) }
     end
   end
 
