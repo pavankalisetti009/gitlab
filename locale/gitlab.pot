@@ -30187,9 +30187,6 @@ msgstr ""
 msgid "GPG Key ID:"
 msgstr ""
 
-msgid "GPG key mismatch"
-msgstr ""
-
 msgid "GPG key was added to your account"
 msgstr ""
 
@@ -64841,6 +64838,9 @@ msgstr ""
 msgid "SignUp|Username is too short (minimum is %{min_length} characters)."
 msgstr ""
 
+msgid "Signature key mismatch"
+msgstr ""
+
 msgid "Signed in"
 msgstr ""
 
@@ -69050,7 +69050,7 @@ msgstr ""
 msgid "This commit was signed with a verified signature and the committer email was verified to belong to the same user."
 msgstr ""
 
-msgid "This commit was signed with a verified signature, but the committer email is not associated with the GPG Key."
+msgid "This commit was signed with a verified signature, but the committer email is not verified."
 msgstr ""
 
 msgid "This commit was signed with an %{strong_open}unverified%{strong_close} signature."
