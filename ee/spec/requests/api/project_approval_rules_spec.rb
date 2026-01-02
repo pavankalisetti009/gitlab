@@ -56,6 +56,11 @@ RSpec.describe API::ProjectApprovalRules, :aggregate_failures, feature_category:
         expect(response).to have_gitlab_http_status(:forbidden)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_approval_rule do
+      let(:boundary_object) { private_project }
+      let(:request) { get api(url, personal_access_token: pat) }
+    end
   end
 
   describe 'GET /projects/:id/approval_rules' do
@@ -188,6 +193,11 @@ RSpec.describe API::ProjectApprovalRules, :aggregate_failures, feature_category:
         expect(response).to have_gitlab_http_status(:forbidden)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) { get api(url, personal_access_token: pat) }
+    end
   end
 
   describe 'POST /projects/:id/approval_rules' do
@@ -195,6 +205,14 @@ RSpec.describe API::ProjectApprovalRules, :aggregate_failures, feature_category:
     let(:url) { "/projects/#{project.id}/approval_rules" }
 
     it_behaves_like 'an API endpoint for creating project approval rule'
+
+    it_behaves_like 'authorizing granular token permissions', :create_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) do
+        post api(url, personal_access_token: pat),
+          params: { name: 'security', approvals_required: 10 }
+      end
+    end
   end
 
   describe 'PUT /projects/:id/approval_rules/:approval_rule_id' do
@@ -203,6 +221,14 @@ RSpec.describe API::ProjectApprovalRules, :aggregate_failures, feature_category:
     let(:url) { "/projects/#{project.id}/approval_rules/#{approval_rule.id}" }
 
     it_behaves_like 'an API endpoint for updating project approval rule'
+
+    it_behaves_like 'authorizing granular token permissions', :update_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) do
+        put api(url, personal_access_token: pat),
+          params: { name: 'updated_name' }
+      end
+    end
   end
 
   describe 'DELETE /projects/:id/approval_rules/:approval_rule_id' do
@@ -210,5 +236,10 @@ RSpec.describe API::ProjectApprovalRules, :aggregate_failures, feature_category:
     let(:url) { "/projects/#{project.id}/approval_rules/#{approval_rule.id}" }
 
     it_behaves_like 'an API endpoint for deleting project approval rule'
+
+    it_behaves_like 'authorizing granular token permissions', :delete_approval_rule do
+      let(:boundary_object) { project }
+      let(:request) { delete api(url, personal_access_token: pat) }
+    end
   end
 end
