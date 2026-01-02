@@ -94,7 +94,7 @@ export default {
         <component
           :is="locationComponent"
           v-if="hasPaths"
-          class="@md/panel:gl-whitespace-nowrap"
+          class="gl-inline-flex gl-items-center gl-gap-2 @md/panel:gl-whitespace-nowrap"
           data-testid="dependency-path"
           :href="location.blobPath"
         >
@@ -128,7 +128,7 @@ export default {
     </gl-intersperse>
     <gl-button
       v-if="glFeatures.dependencyPaths && hasDependencyPaths"
-      class="gl-mt-2 gl-block"
+      class="gl-mt-2 gl-block gl-justify-self-end @md/panel:gl-justify-self-start"
       size="small"
       @click="$emit('click-dependency-path')"
       >{{ $options.i18n.dependencyPathButtonText }}</gl-button

@@ -124,7 +124,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-items-center">
+  <div class="gl-flex gl-items-center gl-justify-self-end @md/panel:gl-justify-self-start">
     <gl-intersperse :last-separator="lastSeparator" data-testid="license-list">
       <span
         v-for="license in visibleLicenses"
