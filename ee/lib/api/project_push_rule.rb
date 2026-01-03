@@ -64,6 +64,7 @@ module API
         failure [{ code: 404, message: 'Not found' }]
         tags %w[projects push_rules]
       end
+      route_setting :authorization, permissions: :read_push_rule, boundary_type: :project
       get ":id/push_rule" do
         push_rule = user_project.push_rule
         present push_rule, with: ::API::Entities::ProjectPushRule, user: current_user
@@ -81,6 +82,7 @@ module API
       params do
         use :push_rule_params
       end
+      route_setting :authorization, permissions: :create_push_rule, boundary_type: :project
       post ":id/push_rule" do
         unprocessable_entity!('Project push rule exists') if user_project.push_rule
         create_or_update_push_rule
@@ -98,6 +100,7 @@ module API
       params do
         use :push_rule_params
       end
+      route_setting :authorization, permissions: :update_push_rule, boundary_type: :project
       put ":id/push_rule" do
         not_found!('Push rule') unless user_project.push_rule
         create_or_update_push_rule
@@ -108,6 +111,7 @@ module API
         failure [{ code: 404, message: 'Not found' }]
         tags %w[projects push_rules]
       end
+      route_setting :authorization, permissions: :delete_push_rule, boundary_type: :project
       delete ":id/push_rule" do
         push_rule = user_project.push_rule
         not_found!('Push rule') unless push_rule
