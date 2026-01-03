@@ -335,6 +335,7 @@ module EE
           params do
             use :pagination
           end
+          route_setting :authorization, permissions: :read_ssh_certificate, boundary_type: :group
           get ":id/ssh_certificates", feature_category: :groups_and_projects, urgency: :low do
             group = find_group!(params[:id])
             authorize! :admin_group, group
@@ -359,6 +360,7 @@ module EE
             requires :title, type: String, desc: 'The title of the ssh certificate'
             requires :key, type: String, desc: 'The key of the ssh certificate'
           end
+          route_setting :authorization, permissions: :create_ssh_certificate, boundary_type: :group
           post ":id/ssh_certificates", feature_category: :groups_and_projects do
             group = find_group!(params[:id])
             authorize! :admin_group, group
@@ -384,6 +386,7 @@ module EE
             ]
             tags %w[group_ssh_certificates]
           end
+          route_setting :authorization, permissions: :delete_ssh_certificate, boundary_type: :group
           delete ":id/ssh_certificates/:ssh_certificates_id", feature_category: :groups_and_projects do
             group = find_group!(params[:id])
             authorize! :admin_group, group
