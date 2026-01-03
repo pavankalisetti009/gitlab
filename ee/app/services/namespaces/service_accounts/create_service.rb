@@ -80,27 +80,17 @@ module Namespaces
         params[:skip_owner_check] == true && params[:composite_identity_enforced] == true
       end
 
-      override :ultimate?
-      def ultimate?
+      override :active_subscription?
+      def active_subscription?
         return super unless saas?
-        return false if namespace.trial? # hosted plan can be ultimate even if a group is on trial
 
-        plan_name = namespace.actual_plan_name
-        [::Plan::GOLD, ::Plan::ULTIMATE].include?(plan_name)
-      end
+        group_subscription = namespace.root_ancestor.gitlab_subscription
 
-      override :seats_available?
-      def seats_available?
-        return super unless saas?
-        return true if ultimate?
+        return false unless group_subscription
+        return false if group_subscription.expired?
+        return false unless group_subscription.plan_name
 
-        limit = if namespace.trial_active?
-                  GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL
-                else
-                  namespace.gitlab_subscription.seats
-                end
-
-        limit > namespace.provisioned_users.service_accounts_without_composite_identity.count
+        Plan::PAID_HOSTED_PLANS.include?(group_subscription.plan_name) || namespace.trial_active?
       end
 
       def username_unavailable?(username)

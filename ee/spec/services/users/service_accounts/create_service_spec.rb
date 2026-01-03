@@ -88,58 +88,20 @@ RSpec.describe Users::ServiceAccounts::CreateService, feature_category: :user_ma
 
       context 'when subscription is of premium tier' do
         let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
-        let!(:service_account_without_composite) { create(:user, :service_account, composite_identity_enforced: false) }
-        let!(:service_account_without_composite2) do
-          create(:user, :service_account, composite_identity_enforced: false)
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account" }
         end
 
-        let!(:service_account_with_composite) { create(:user, :service_account, composite_identity_enforced: true) }
+        it_behaves_like 'service account creation with customized params'
 
-        context 'when premium seats are not available' do
-          before do
-            allow(license).to receive(:seats).and_return(1)
-          end
+        it 'correctly returns active model errors' do
+          service.execute
 
-          it 'raises error' do
-            result = service.execute
+          result = service.execute
 
-            expect(result.status).to eq(:error)
-            expect(result.message).to include('No more seats are available to create Service Account User')
-          end
-        end
-
-        context 'when premium seats are available' do
-          before do
-            allow(license).to receive(:seats).and_return(User.service_accounts_without_composite_identity.count + 2)
-          end
-
-          it_behaves_like 'service account creation success' do
-            let(:username_prefix) { "service_account" }
-          end
-
-          it_behaves_like 'service account creation with customized params'
-
-          it 'correctly returns active model errors' do
-            service.execute
-
-            result = service.execute
-
-            expect(result.status).to eq(:error)
-            expect(result.message).to eq('Email has already been taken and Username has already been taken')
-          end
-        end
-
-        context 'when service accounts with composite_identity_enforced exist' do
-          it 'does not count them toward the seat limit' do
-            # We have 2 service accounts with composite_identity_enforced: false
-            # and 1 service account with composite_identity_enforced: true (AI Agent)
-            # If we set seats to 3, we should be able to create 1 more (since only 2 without composite count)
-            allow(license).to receive(:seats).and_return(3)
-
-            result = service.execute
-
-            expect(result.status).to eq(:success)
-          end
+          expect(result.status).to eq(:error)
+          expect(result.message).to eq('Email has already been taken and Username has already been taken')
         end
       end
     end
