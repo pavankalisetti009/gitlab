@@ -18,12 +18,6 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
       it_behaves_like 'service account creation failure'
     end
-
-    context 'when the group is subgroup' do
-      let(:namespace_id) { subgroup.id }
-
-      it_behaves_like 'service account creation failure'
-    end
   end
 
   shared_examples 'skip_owner_check bypasses permission checks' do
@@ -191,57 +185,16 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
       context 'when subscription is of premium tier' do
         let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
-        let_it_be(:service_account_without_composite) do
-          create(:user, :service_account, provisioned_by_group_id: group.id, composite_identity_enforced: false)
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_group_#{group.id}" }
         end
 
-        let_it_be(:service_account_without_composite2) do
-          create(:user, :service_account, provisioned_by_group_id: group.id, composite_identity_enforced: false)
+        it 'sets provisioned by group' do
+          expect(result.payload[:user].provisioned_by_group_id).to eq(group.id)
         end
 
-        let_it_be(:service_account_with_composite) do
-          create(:user, :service_account, provisioned_by_group_id: group.id, composite_identity_enforced: true)
-        end
-
-        context 'when premium seats are not available' do
-          before do
-            allow(license).to receive(:seats).and_return(1)
-          end
-
-          it 'raises error' do
-            expect(result.status).to eq(:error)
-            expect(result.message).to include('No more seats are available to create Service Account User')
-          end
-        end
-
-        context 'when premium seats are available' do
-          before do
-            allow(license).to receive(:seats).and_return(User.service_accounts_without_composite_identity.count + 2)
-          end
-
-          it_behaves_like 'service account creation success' do
-            let(:username_prefix) { "service_account_group_#{group.id}" }
-          end
-
-          it 'sets provisioned by group' do
-            expect(result.payload[:user].provisioned_by_group_id).to eq(group.id)
-          end
-
-          it_behaves_like 'invalid namespace scenarios'
-        end
-
-        context 'when service accounts with composite_identity_enforced exist' do
-          it 'does not count them toward the seat limit' do
-            # We have 2 service accounts with composite_identity_enforced: false
-            # and 1 service account with composite_identity_enforced: true (AI Agent)
-            # If we set seats to 3, we should be able to create 1 more (since only 2 without composite count)
-            allow(license).to receive(:seats).and_return(3)
-
-            result = service.execute
-
-            expect(result.status).to eq(:success)
-          end
-        end
+        it_behaves_like 'invalid namespace scenarios'
       end
     end
 
@@ -285,7 +238,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           end
 
           context 'when gitlab_com_subscriptions saas feature is available', :saas do
-            let_it_be(:group) { create(:group_with_plan, owners: current_user) }
+            let_it_be(:group) { create(:group_with_plan, plan: :premium_plan, owners: current_user) }
 
             before do
               stub_saas_features(gitlab_com_subscriptions: true)
@@ -296,19 +249,10 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
             end
           end
 
-          # setting is only applicable for top level group
           context 'when the group is subgroup' do
             let(:namespace_id) { subgroup.id }
 
             it_behaves_like 'service account creation failure'
-
-            context 'when gitlab_com_subscriptions saas feature is available' do
-              before do
-                stub_saas_features(gitlab_com_subscriptions: true)
-              end
-
-              it_behaves_like 'service account creation failure'
-            end
           end
         end
       end
@@ -329,7 +273,6 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
         let(:namespace_id) { group_with_gold.id }
 
         before do
-          # Reflecting real production data: Gold subscriptions have 0 seats
           create(:gitlab_subscription, :gold, namespace: group_with_gold, seats: 0)
         end
 
@@ -362,6 +305,67 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
         it_behaves_like 'invalid namespace scenarios'
       end
+
+      context 'when subscription is of premium tier' do
+        let_it_be(:group_with_premium) { create(:group) }
+        let(:namespace_id) { group_with_premium.id }
+
+        before do
+          create(:gitlab_subscription, :premium, namespace: group_with_premium)
+        end
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_group_#{group_with_premium.id}" }
+        end
+
+        it 'sets provisioned by group' do
+          expect(result.payload[:user].provisioned_by_group_id).to eq(group_with_premium.id)
+        end
+
+        it_behaves_like 'invalid namespace scenarios'
+      end
+
+      context 'when subscription has expired' do
+        let_it_be(:group_with_expired) { create(:group) }
+        let(:namespace_id) { group_with_expired.id }
+
+        before do
+          create(:gitlab_subscription, :ultimate, :expired, namespace: group_with_expired)
+        end
+
+        it 'produces an error' do
+          expect(result.status).to eq(:error)
+          expect(result.message).to include('No more seats are available to create Service Account User')
+        end
+      end
+
+      context 'when subscription has no plan_name' do
+        let_it_be(:group_without_plan_name) { create(:group) }
+        let(:namespace_id) { group_without_plan_name.id }
+
+        before do
+          create(:gitlab_subscription, namespace: group_without_plan_name, hosted_plan: nil)
+        end
+
+        it 'produces an error' do
+          expect(result.status).to eq(:error)
+          expect(result.message).to include('No more seats are available to create Service Account User')
+        end
+      end
+
+      context 'when namespace has free plan' do
+        let_it_be(:group_with_free) { create(:group) }
+        let(:namespace_id) { group_with_free.id }
+
+        before do
+          create(:gitlab_subscription, :free, namespace: group_with_free)
+        end
+
+        it 'produces an error' do
+          expect(result.status).to eq(:error)
+          expect(result.message).to include('No more seats are available to create Service Account User')
+        end
+      end
     end
 
     context 'when current user is a group owner' do
@@ -378,94 +382,53 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           create(:gitlab_subscription, :active_trial, namespace: group_with_trial, hosted_plan: create(:ultimate_plan))
         end
 
-        context 'when trial service account limit is not reached' do
-          before do
-            create_list(:user, 5, :service_account, provisioned_by_group_id: group_with_trial.id,
-              composite_identity_enforced: false)
-            create_list(:user, 5, :service_account, provisioned_by_group_id: group_with_trial.id,
-              composite_identity_enforced: true)
-          end
-
-          it_behaves_like 'service account creation success' do
-            let(:username_prefix) { "service_account_group_#{group_with_trial.id}" }
-          end
-
-          it 'sets provisioned by group' do
-            expect(result.payload[:user].provisioned_by_group_id).to eq(group_with_trial.id)
-          end
-
-          it 'does not count service accounts with composite_identity_enforced toward limit' do
-            # We have 5 service accounts without composite and 5 with composite
-            # Only the 5 without composite should count toward the limit of 100
-            expect(group_with_trial.provisioned_users.service_accounts_without_composite_identity.count).to eq(5)
-          end
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_group_#{group_with_trial.id}" }
         end
 
-        context 'when trial service account limit is reached' do
-          before do
-            stub_const('GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL', 3)
+        it 'sets provisioned by group' do
+          expect(result.payload[:user].provisioned_by_group_id).to eq(group_with_trial.id)
+        end
+      end
 
-            create_list(:user, GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL, :service_account,
-              provisioned_by_group_id: group_with_trial.id, composite_identity_enforced: false)
-            create_list(:user, 5, :service_account,
-              provisioned_by_group_id: group_with_trial.id, composite_identity_enforced: true)
-          end
+      context 'when namespace does not have a gitlab_subscription' do
+        let_it_be(:group_without_subscription) { create(:group, owners: current_user) }
+        let(:namespace_id) { group_without_subscription.id }
 
-          it 'produces an error' do
-            expect(result.status).to eq(:error)
-            expect(result.message).to include('No more seats are available to create Service Account User')
-          end
+        it 'produces an error' do
+          expect(result.status).to eq(:error)
+          expect(result.message).to include('No more seats are available to create Service Account User')
+        end
+      end
 
-          it 'does not count service accounts with composite_identity_enforced toward limit' do
-            # We have 3 service accounts without composite (at limit) and 5 with composite
-            # Only the 3 without composite should count toward the limit
-            expect(group_with_trial.provisioned_users.service_accounts_without_composite_identity.count).to eq(3)
-          end
+      context 'when subscription has expired' do
+        let_it_be(:group_with_expired_subscription) { create(:group, owners: current_user) }
+        let(:namespace_id) { group_with_expired_subscription.id }
+
+        before do
+          create(:gitlab_subscription,
+            namespace: group_with_expired_subscription,
+            hosted_plan: create(:premium_plan),
+            trial: false,
+            end_date: 1.day.ago)
         end
 
-        context 'when subscription trial has expired' do
-          let_it_be(:group_with_expired_trial) { create(:group, owners: current_user) }
-          let(:namespace_id) { group_with_expired_trial.id }
+        it 'produces an error' do
+          expect(result.status).to eq(:error)
+          expect(result.message).to include('No more seats are available to create Service Account User')
+        end
+      end
 
-          before do
-            create(:gitlab_subscription,
-              namespace: group_with_expired_trial,
-              hosted_plan: create(:premium_plan),
-              trial: true,
-              trial_starts_on: 2.weeks.ago,
-              trial_ends_on: 1.day.ago,
-              seats: 5)
+      context 'when namespace has an active paid subscription' do
+        let_it_be(:group_with_paid) { create(:group, owners: current_user) }
+        let(:namespace_id) { group_with_paid.id }
 
-            create_list(:user, 2, :service_account, provisioned_by_group_id: group_with_expired_trial.id,
-              composite_identity_enforced: false)
-            create_list(:user, 1, :service_account, provisioned_by_group_id: group_with_expired_trial.id,
-              composite_identity_enforced: true)
-          end
+        before do
+          create(:gitlab_subscription, :premium, namespace: group_with_paid)
+        end
 
-          context 'when regular subscription seats are available' do
-            it_behaves_like 'service account creation success' do
-              let(:username_prefix) { "service_account_group_#{group_with_expired_trial.id}" }
-            end
-
-            it 'does not count service accounts with composite_identity_enforced toward limit' do
-              # We have 2 service accounts without composite and 1 with composite
-              # Only the 2 without composite should count toward the limit
-              expect(
-                group_with_expired_trial.provisioned_users.service_accounts_without_composite_identity.count
-              ).to eq(2)
-            end
-          end
-
-          context 'when regular subscription seats are not available' do
-            before do
-              group_with_expired_trial.gitlab_subscription.update!(seats: 2)
-            end
-
-            it 'produces an error' do
-              expect(result.status).to eq(:error)
-              expect(result.message).to include('No more seats are available to create Service Account User')
-            end
-          end
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_group_#{group_with_paid.id}" }
         end
       end
     end

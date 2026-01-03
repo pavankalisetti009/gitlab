@@ -15,7 +15,7 @@ module Users
       def execute
         return error(error_messages[:no_permission], :forbidden) unless can_create_service_account?
 
-        return error(error_messages[:no_seats], :forbidden) unless ultimate? || seats_available?
+        return error(error_messages[:no_seats], :forbidden) unless active_subscription?
 
         create_user
       end
@@ -98,14 +98,8 @@ module Users
         ServiceResponse.error(message: message, reason: reason)
       end
 
-      def ultimate?
-        License.current.ultimate?
-      end
-
-      def seats_available?
-        return true if ultimate?
-
-        User.service_accounts_without_composite_identity.count < License.current.seats.to_i
+      def active_subscription?
+        License.current.ultimate? || License.current.premium?
       end
     end
   end
