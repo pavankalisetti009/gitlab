@@ -2721,6 +2721,11 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         expect(json_response.first['title']).to include('My title')
         expect(json_response.first['key']).to include('ssh-rsa ')
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_ssh_certificate do
+        let(:boundary_object) { group }
+        let(:request) { get api(route, personal_access_token: pat) }
+      end
     end
   end
 
@@ -2793,6 +2798,13 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['title']).to eq('ssh cert from post request')
         expect(json_response['key']).to include('ssh-rsa ')
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_ssh_certificate do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api(route, personal_access_token: pat), params: params
+        end
       end
     end
   end
@@ -2958,6 +2970,13 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         request
         expect(response).to have_gitlab_http_status(:no_content)
         expect(group.ssh_certificates.reload.size).to eq(1)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :delete_ssh_certificate do
+        let(:boundary_object) { group }
+        let(:request) do
+          delete api(route, personal_access_token: pat)
+        end
       end
     end
   end
