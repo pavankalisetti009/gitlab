@@ -69,6 +69,7 @@ module API
         ]
         tags %w[push_rules]
       end
+      route_setting :authorization, permissions: :read_push_rule, boundary_type: :group
       get ":id/push_rule" do
         not_found! unless push_rule
 
@@ -88,6 +89,7 @@ module API
       params do
         use :push_rule_params
       end
+      route_setting :authorization, permissions: :create_push_rule, boundary_type: :group
       post ":id/push_rule" do
         unprocessable_entity!('Group push rule exists, try updating') if push_rule
         create_or_update_push_rule
@@ -106,6 +108,7 @@ module API
       params do
         use :push_rule_params
       end
+      route_setting :authorization, permissions: :update_push_rule, boundary_type: :group
       put ":id/push_rule" do
         not_found!('Push rule') unless push_rule
         create_or_update_push_rule
@@ -120,6 +123,7 @@ module API
         ]
         tags %w[push_rules]
       end
+      route_setting :authorization, permissions: :delete_push_rule, boundary_type: :group
       delete ":id/push_rule" do
         not_found! unless push_rule
 

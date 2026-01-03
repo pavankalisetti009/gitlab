@@ -129,6 +129,14 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
         expect(response).to match_response_schema('entities/group_push_rules')
       end
 
+      it_behaves_like 'authorizing granular token permissions', :read_push_rule do
+        let(:boundary_object) { group }
+        let(:user) { maintainer }
+        let(:request) do
+          get api("/groups/#{group.id}/push_rule", personal_access_token: pat)
+        end
+      end
+
       context 'when group name contains a dot' do
         before do
           group.update!(path: 'group.path')
@@ -231,6 +239,14 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
         expect(push_rule.reject_non_dco_commits).to eq(attributes[:reject_non_dco_commits])
       end
 
+      it_behaves_like 'authorizing granular token permissions', :create_push_rule do
+        let(:boundary_object) { group }
+        let(:user) { maintainer }
+        let(:request) do
+          post api("/groups/#{group.id}/push_rule", personal_access_token: pat), params: attributes
+        end
+      end
+
       context 'when a push rule already exists' do
         before do
           create(:group_push_rule, group: group)
@@ -327,6 +343,15 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
           .to(attributes_for_update[:author_email_regex])
       end
 
+      it_behaves_like 'authorizing granular token permissions', :update_push_rule do
+        let(:boundary_object) { group }
+        let(:user) { maintainer }
+        let(:request) do
+          put api("/groups/#{group.id}/push_rule", personal_access_token: pat),
+            params: { author_email_regex: '^[A-Za-z0-9.]+@disney.com$' }
+        end
+      end
+
       context 'when push rule does not exist for group' do
         let(:group_without_push_rule) { create(:group) }
 
@@ -409,6 +434,14 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
 
           expect(response).to have_gitlab_http_status(:no_content)
           expect(push_rule).to be_nil
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :delete_push_rule do
+          let(:boundary_object) { group }
+          let(:user) { maintainer }
+          let(:request) do
+            delete api("/groups/#{group.id}/push_rule", personal_access_token: pat)
+          end
         end
       end
 

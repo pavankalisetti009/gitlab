@@ -130,6 +130,14 @@ RSpec.describe API::ProjectPushRule, 'ProjectPushRule', :api, feature_category: 
         )
       end
 
+      it_behaves_like 'authorizing granular token permissions', :read_push_rule do
+        let(:boundary_object) { project }
+        let(:user) { maintainer }
+        let(:request) do
+          get api("/projects/#{project.id}/push_rule", personal_access_token: pat)
+        end
+      end
+
       context 'when the commit_committer_check feature is unavailable' do
         let(:ccc_enabled) { false }
         let(:key) { :commit_committer_check }
@@ -159,16 +167,19 @@ RSpec.describe API::ProjectPushRule, 'ProjectPushRule', :api, feature_category: 
       end
 
       context 'when project name contains a dot' do
-        before do
-          project.update!(path: 'project.path')
+        let_it_be(:dot_project) { create(:project, path: 'project.path') }
+
+        before_all do
+          dot_project.add_maintainer(maintainer)
+          create(:push_rule, project: dot_project)
         end
 
         it 'returns project push rule', :aggregate_failures do
-          get api("/projects/#{CGI.escape(project.full_path)}/push_rule", user)
+          get api("/projects/#{CGI.escape(dot_project.full_path)}/push_rule", maintainer)
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response).to be_an Hash
-          expect(json_response['project_id']).to eq(project.id)
+          expect(json_response).to be_a(Hash)
+          expect(json_response['project_id']).to eq(dot_project.id)
         end
       end
     end
@@ -233,6 +244,14 @@ RSpec.describe API::ProjectPushRule, 'ProjectPushRule', :api, feature_category: 
 
         expect(json_response['project_id']).to eq(project.id)
         expect(json_response).to include(expected_response)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_push_rule do
+        let(:boundary_object) { project }
+        let(:user) { maintainer }
+        let(:request) do
+          post api("/projects/#{project.id}/push_rule", personal_access_token: pat), params: attributes
+        end
       end
 
       context 'when invalid params are provided', :aggregate_failures do
@@ -353,6 +372,14 @@ RSpec.describe API::ProjectPushRule, 'ProjectPushRule', :api, feature_category: 
           end
         end
 
+        it_behaves_like 'authorizing granular token permissions', :update_push_rule do
+          let(:boundary_object) { project }
+          let(:user) { maintainer }
+          let(:request) do
+            put api("/projects/#{project.id}/push_rule", personal_access_token: pat), params: params
+          end
+        end
+
         context 'when commit_committer_check feature is unavailable' do
           it_behaves_like 'authorizes change param' do
             let(:ccc_enabled) { false }
@@ -440,6 +467,14 @@ RSpec.describe API::ProjectPushRule, 'ProjectPushRule', :api, feature_category: 
           delete_push_rule
 
           expect(response).to have_gitlab_http_status(:no_content)
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :delete_push_rule do
+          let(:boundary_object) { project }
+          let(:user) { maintainer }
+          let(:request) do
+            delete api("/projects/#{project.id}/push_rule", personal_access_token: pat)
+          end
         end
       end
 
