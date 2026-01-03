@@ -65,7 +65,8 @@ Here's a step-by-step summary:
    - 16 GB RAM. If you have less, consider [using Gitpod](#using-gitpod-instead-of-running-the-gdk-locally)
    - Ensure that Git is installed on your machine.
    - Install a code editor, such as Visual Studio Code.
-   - [Create an account](https://gitlab.com/users/sign_up) or [sign in](https://gitlab.com/users/sign_in) on GitLab.com and join the [community members group](https://gitlab.com/gitlab-community/meta#request-access-to-community-forks).
+   - [Create an account](https://gitlab.com/users/sign_up) or [sign in](https://gitlab.com/users/sign_in) on GitLab.com and start your
+     [contributor onboarding](https://contributors.gitlab.com/start).
 1. Installation:
    - Choose a directory to install the GitLab Development Kit (GDK).
    - Open your terminal and go to the chosen directory.
