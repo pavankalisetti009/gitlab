@@ -109,21 +109,53 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
       end
 
       context 'with a cache entry' do
-        let_it_be(:cache_entry) do
+        # We use `let` instead of `let_it_be` for cache_entry fixtures for several reasons:
+        #
+        # 1. Path uniqueness constraint: Cache entries have a database uniqueness constraint on
+        #    `relative_path`. Using `let_it_be` with different fixture variants (fresh, stale,
+        #    stale_without_etag) would require different paths, but the service looks up entries
+        #    by path, so all variants must use the same path to test the same code paths.
+        #
+        # 2. Some contexts call `Cache::Entry.delete_all`: The "when the cache entry does not
+        #    exist" contexts (for sha1/md5 digests) delete all cache entries in a `before` block.
+        #    With `let_it_be`, records are created once outside the per-example transaction, so
+        #    deleting them would break all subsequent tests in the file.
+        #
+        # 3. Limited reuse benefit: Only 2-3 examples share each fixture variant, so the
+        #    performance cost of `let` (creating a new record per example) is minimal.
+        #
+        # Each context defines a descriptively-named fixture (e.g., `fresh_cache_entry`,
+        # `stale_cache_entry`) and aliases it to `cache_entry` for compatibility with shared
+        # examples that reference `cache_entry`.
+        let(:fresh_cache_entry) do
           create(:virtual_registries_packages_maven_cache_entry,
             :upstream_checked,
             upstream: upstream,
-            relative_path: "/#{request_path}",
+            relative_path: "/#{path}",
             group: registry.group
           )
+        end
+
+        let(:cache_entry) { fresh_cache_entry }
+
+        before do
+          cache_entry # ensure cache_entry is created before test runs
         end
 
         it_behaves_like 'returning a service response success response', action: :download_file
 
         context 'and is too old' do
-          before do
-            cache_entry.update!(upstream_checked_at: 1.year.ago)
+          let(:stale_cache_entry) do
+            create(:virtual_registries_packages_maven_cache_entry,
+              :upstream_checked,
+              upstream: upstream,
+              relative_path: "/#{path}",
+              upstream_checked_at: 1.year.ago,
+              group: registry.group
+            )
           end
+
+          let(:cache_entry) { stale_cache_entry }
 
           context 'with the same etag as upstream' do
             let(:etag_returned_by_upstream) { cache_entry.upstream_etag }
@@ -144,9 +176,18 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
           end
 
           context 'with a stored blank etag' do
-            before do
-              cache_entry.update!(upstream_etag: nil)
+            let(:stale_cache_entry_without_etag) do
+              create(:virtual_registries_packages_maven_cache_entry,
+                :upstream_checked,
+                upstream: upstream,
+                relative_path: "/#{path}",
+                upstream_checked_at: 1.year.ago,
+                upstream_etag: nil,
+                group: registry.group
+              )
             end
+
+            let(:cache_entry) { stale_cache_entry_without_etag }
 
             it_behaves_like 'returning a service response success response', action: :workhorse_upload_url
           end
@@ -252,8 +293,12 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
     end
 
     context 'with registry with no upstreams' do
-      before do
-        registry.upstreams = []
+      let_it_be(:registry_without_upstreams) do
+        create(:virtual_registries_packages_maven_registry, group: registry.group)
+      end
+
+      let(:service) do
+        described_class.new(registry: registry_without_upstreams, current_user: user, params: { path: request_path })
       end
 
       it { is_expected.to eq(described_class::ERRORS[:no_upstreams]) }
