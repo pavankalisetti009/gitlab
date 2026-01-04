@@ -24,7 +24,11 @@ import ResolutionAlert from 'ee/vulnerabilities/components/resolution_alert.vue'
 import StatusDescription from 'ee/vulnerabilities/components/status_description.vue';
 import StateModal from 'ee/vulnerabilities/components/state_modal.vue';
 import SeverityModal from 'ee/vulnerabilities/components/severity_modal.vue';
-import { FEEDBACK_TYPES, VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/constants';
+import {
+  FEEDBACK_TYPES,
+  VULNERABILITY_STATE_OBJECTS,
+  CONFIDENCE_SCORES,
+} from 'ee/vulnerabilities/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsersMockHelper from 'helpers/user_mock_data_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -563,6 +567,7 @@ describe('Vulnerability Header', () => {
           canResolveWithAi: actionsEnabled,
           canExplainWithAi: actionsEnabled,
           aiResolutionEnabled: actionsEnabled,
+          latestFlag: actionsEnabled ? null : { confidenceScore: 0.95 },
         }),
         glAbilities: {
           resolveVulnerabilityWithAi: actionsEnabled,
@@ -808,6 +813,9 @@ describe('Vulnerability Header', () => {
               id: 456,
               fullPath: 'gitlab-org/gitlab',
             },
+            latestFlag: {
+              confidenceScore: CONFIDENCE_SCORES.MINIMAL - 0.1,
+            },
           },
         });
       });
@@ -850,6 +858,28 @@ describe('Vulnerability Header', () => {
           captureError: true,
           error,
           message: 'Something went wrong, could not start Duo agent session.',
+        });
+      });
+
+      describe('when vulnerability is a false positive', () => {
+        beforeEach(() => {
+          window.gon = { relative_url_root: '/gitlab' };
+          createWrapper({
+            vulnerability: {
+              ...defaultVulnerability,
+              project: {
+                id: 456,
+                fullPath: 'gitlab-org/gitlab',
+              },
+              latestFlag: {
+                confidenceScore: CONFIDENCE_SCORES.MINIMAL,
+              },
+            },
+          });
+        });
+
+        it('does not render resolve vulnerability button', () => {
+          expect(findActionsDropdown().props('showResolveWithAi')).toBe(false);
         });
       });
     });
