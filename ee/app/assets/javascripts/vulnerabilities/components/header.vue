@@ -106,7 +106,9 @@ export default {
     },
     canResolveWithAi() {
       return (
-        this.glAbilities.resolveVulnerabilityWithAi && this.vulnerability.aiResolutionAvailable
+        this.glAbilities.resolveVulnerabilityWithAi &&
+        this.vulnerability.aiResolutionAvailable &&
+        !this.detectedAsFalsePositive
       );
     },
     showSeverityModal() {
@@ -118,14 +120,12 @@ export default {
       );
     },
     canRunAiFalsePositiveDetection() {
-      const alreadyDetectedAsFalsePositive =
-        this.vulnerability.latestFlag?.confidenceScore > CONFIDENCE_SCORES.MINIMAL;
       return (
         this.canAdminVulnerability &&
         this.glAbilities.explainVulnerabilityWithAi &&
         this.glFeatures.aiExperimentSastFpDetection &&
         this.vulnerability.reportType === 'sast' &&
-        !alreadyDetectedAsFalsePositive
+        !this.detectedAsFalsePositive
       );
     },
     showResolutionAlert() {
@@ -133,6 +133,9 @@ export default {
         this.vulnerability.resolvedOnDefaultBranch &&
         this.vulnerability.state !== VULNERABILITY_STATE_OBJECTS.resolved.state
       );
+    },
+    detectedAsFalsePositive() {
+      return this.vulnerability.latestFlag?.confidenceScore > CONFIDENCE_SCORES.MINIMAL;
     },
     dismissalReason() {
       return this.vulnerability.stateTransitions?.at(-1)?.dismissalReason;
