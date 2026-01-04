@@ -15,7 +15,7 @@ module Mutations
         argument :user_id, ::Types::GlobalIDType[::User],
           prepare: ->(global_id, _ctx) { global_id.model_id.to_i },
           required: false,
-          description: 'Owner of the AI flow trigger.'
+          description: 'Service account for the AI flow trigger.'
 
         argument :description, GraphQL::Types::String,
           required: false,
