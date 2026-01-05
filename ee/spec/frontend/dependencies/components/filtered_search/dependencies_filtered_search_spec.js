@@ -1,9 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlFilteredSearch } from '@gitlab/ui';
+import { markRaw } from 'vue';
 import DependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/dependencies_filtered_search.vue';
 import ComponentToken from 'ee/dependencies/components/filtered_search/tokens/component_token.vue';
 import createStore from 'ee/dependencies/store';
-import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 
 describe('DependenciesFilteredSearch', () => {
   let wrapper;
