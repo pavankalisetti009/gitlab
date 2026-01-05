@@ -289,6 +289,63 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           active_gitlab_purchase.update!(namespace: nil)
           ::Ai::Setting.instance.update!(duo_core_features_enabled: duo_core_features_enabled)
         end
+
+        context 'when namespace access rules are in place' do
+          let_it_be(:user) { create(:user) }
+          let_it_be(:ns) { create(:group) }
+
+          let(:ai_feature) { :explain_vulnerability }
+
+          before do
+            create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace: ns)
+            create(
+              :gitlab_subscription_user_add_on_assignment,
+              user: user,
+              add_on_purchase: active_gitlab_purchase
+            )
+          end
+
+          context 'when user has no group that would grant them access' do
+            let(:expected_allowed) { false }
+
+            it 'is not allowed and does not perform seat checks' do
+              is_expected.to eq expected_response
+            end
+
+            context 'and the feature flag is disabled' do
+              let(:expected_allowed) { true }
+              let(:expected_namespace_ids) { allowed_by_namespace_ids }
+              let(:expected_enablement_type) { 'duo_pro' }
+
+              before do
+                stub_feature_flags(duo_access_through_namespaces: false)
+              end
+
+              it 'still performs seat checks' do
+                is_expected.to eq expected_response
+              end
+            end
+          end
+
+          context 'when user has a namespace that would grant them access' do
+            let_it_be(:group_member) do
+              create(:group_member,
+                :guest,
+                user: user,
+                group: ns,
+                member_role: create(:member_role, :guest, namespace: ns)
+              )
+            end
+
+            let(:expected_allowed) { true }
+            let(:expected_namespace_ids) { allowed_by_namespace_ids }
+            let(:expected_enablement_type) { 'duo_pro' }
+
+            it 'still performs seat checks' do
+              is_expected.to eq expected_response
+            end
+          end
+        end
       end
 
       context "when the user doesn't have a seat but the unit_primitive has free access" do
@@ -1065,6 +1122,75 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       expected_cache_key = 'user-123-code-suggestions-add-on-cache'
 
       expect(formatted_cache_key).to eq(expected_cache_key)
+    end
+  end
+
+  describe '#check_access_through_namespace_at_instance' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:user) }
+    let_it_be(:ns) { create(:group) }
+
+    let_it_be(:group_member) do
+      create(:group_member,
+        :guest,
+        user: user,
+        group: ns,
+        member_role: create(:member_role, :guest, namespace: ns)
+      )
+    end
+
+    let(:feature_flag_enabled) { true }
+    let(:is_saas) { false }
+    let(:feature_name) { :explain_vulnerability }
+
+    before do
+      stub_feature_flags(duo_access_through_namespaces: feature_flag_enabled)
+      stub_saas_features(gitlab_com_subscriptions: is_saas)
+    end
+
+    subject(:check) { user.check_access_through_namespace_at_instance(feature_name) }
+
+    context 'when no rules exist' do
+      it { is_expected.to be_nil }
+    end
+
+    context 'with existing rules' do
+      let_it_be(:rule) do
+        create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace: ns)
+      end
+
+      context 'when feature flag disabled' do
+        let(:feature_flag_enabled) { false }
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when on .com' do
+        let(:is_saas) { true }
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when ai_feature does not exist' do
+        let(:feature_name) { :invalid_feature }
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when ai feature rules exist' do
+        subject(:is_allowed) { check.allowed? }
+
+        context 'when allowed by an existing rule' do
+          it { is_expected.to be true }
+        end
+
+        context 'when no existing rules allow the user' do
+          let(:feature_name) { :duo_workflow }
+
+          it { is_expected.to be false }
+        end
+      end
     end
   end
 end
