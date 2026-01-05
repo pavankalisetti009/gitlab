@@ -170,6 +170,8 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
     extra_params: {},
     last_name: user.last_name
   )
+    stub_ai_cloud_connector
+
     # lead
     expect_lead_submission(lead_result, last_name: last_name, glm: glm)
 
