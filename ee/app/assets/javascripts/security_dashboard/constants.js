@@ -70,7 +70,7 @@ export const DOC_PATH_VULNERABILITY_DETAILS = helpPagePath(
   'user/application_security/vulnerabilities/_index',
 );
 export const DOC_PATH_VULNERABILITY_REPORT = helpPagePath(
-  'user/application_security/vulnerability_report/_index',
+  'user/application_security/vulnerabilities/false_positive_detection',
 );
 export const DOC_PATH_SECURITY_CONFIGURATION = helpPagePath(
   'user/application_security/detect/security_configuration',
