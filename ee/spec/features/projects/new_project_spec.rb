@@ -34,6 +34,8 @@ RSpec.describe 'New project', :js, feature_category: :importers do
         click_button('Create project')
       end
 
+      wait_for_requests
+
       project = Project.last
 
       expect(page).to have_current_path(project_path(project))
@@ -223,6 +225,8 @@ RSpec.describe 'New project', :js, feature_category: :importers do
           select_listbox_item user.username
           choose 'project_visibility_level_20'
           click_button 'Create project'
+
+          wait_for_requests
 
           created_project = Project.last
           expect(page).to have_current_path(project_path(created_project), ignore_query: true)
