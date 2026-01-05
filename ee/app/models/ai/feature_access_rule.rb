@@ -14,7 +14,21 @@ module Ai
       def duo_namespace_access_rules
         return [] unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
 
-        all.includes(:through_namespace).group_by(&:through_namespace_id).map do |_, rules|
+        group_by_namespace all
+      end
+
+      def duo_root_namespace_access_rules
+        return [] unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
+
+        group_by_namespace where(namespaces: { parent_id: nil, type: 'Group' })
+      end
+
+      def group_by_namespace(scope)
+        scope
+          .includes(:through_namespace)
+          .order(:through_namespace_id, :accessible_entity)
+          .group_by(&:through_namespace_id)
+          .map do |_, rules|
           through_namespace = rules.first.through_namespace
           {
             through_namespace: {

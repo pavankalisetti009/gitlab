@@ -243,7 +243,10 @@ export default {
     <slot name="ai-common-settings-top"></slot>
     <duo-availability :duo-availability="availability" @change="onRadioChanged" />
 
-    <ai-namespace-access-rules :initial-namespace-access-rules="initialNamespaceAccessRules" />
+    <ai-namespace-access-rules
+      v-if="initialNamespaceAccessRules"
+      :initial-namespace-access-rules="initialNamespaceAccessRules"
+    />
 
     <duo-core-features-form
       v-if="!onGeneralSettingsPage"
