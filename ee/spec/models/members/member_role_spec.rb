@@ -767,7 +767,11 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
   end
 
   shared_examples 'ability with the correct `available_from_access_level` attribute' do |policy_class|
-    where(:role, :level) { Gitlab::Access.sym_options_with_owner.to_a }
+    # Exclude security_manager since it has direct policy grants that bypass available_from_access_level
+    # Need to be resolved with this issue https://gitlab.com/gitlab-org/gitlab/-/issues/584911
+    where(:role, :level) do
+      Gitlab::Access.sym_options_with_owner.except(:security_manager).to_a
+    end
 
     with_them do
       before do

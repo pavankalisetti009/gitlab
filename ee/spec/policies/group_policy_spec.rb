@@ -1775,71 +1775,38 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'security orchestration policies' do
-    before do
-      stub_licensed_features(security_orchestration_policies: true)
-    end
-
-    context 'with developer or maintainer role' do
-      where(role: %w[maintainer developer])
-
-      with_them do
-        let(:current_user) { public_send(role) }
-
-        it { is_expected.to be_allowed(:read_security_orchestration_policies) }
-      end
-    end
-
-    context 'with owner role' do
-      where(role: %w[owner])
-
-      with_them do
-        let(:current_user) { public_send(role) }
-
-        it { is_expected.to be_allowed(:read_security_orchestration_policies) }
-      end
-    end
-
-    context 'with auditor role' do
-      where(role: %w[auditor])
-
-      with_them do
-        let(:current_user) { public_send(role) }
-
-        it { is_expected.to be_allowed(:read_security_orchestration_policies) }
-      end
-    end
-  end
-
   describe "security dashboard policies" do
     where(:policy, :role, :admin_mode, :allowed) do
-      :admin_vulnerability           | :admin      | false | false
-      :admin_vulnerability           | :admin      | true  | true
-      :admin_vulnerability           | :auditor    | nil   | false
-      :admin_vulnerability           | :developer  | nil   | false
-      :admin_vulnerability           | :guest      | nil   | false
-      :admin_vulnerability           | :planner    | nil   | false
-      :admin_vulnerability           | :maintainer | nil   | true
-      :admin_vulnerability           | :owner      | nil   | true
-      :admin_vulnerability           | :reporter   | nil   | false
-      :read_group_security_dashboard | :admin      | false | false
-      :read_group_security_dashboard | :admin      | true  | true
-      :read_group_security_dashboard | :auditor    | nil   | true
-      :read_group_security_dashboard | :developer  | nil   | true
-      :read_group_security_dashboard | :guest      | nil   | false
-      :read_group_security_dashboard | :planner    | nil   | false
-      :read_group_security_dashboard | :maintainer | nil   | true
-      :read_group_security_dashboard | :owner      | nil   | true
-      :read_group_security_dashboard | :reporter   | nil   | false
-      :read_vulnerability            | :admin      | false | false
-      :read_vulnerability            | :admin      | true  | true
-      :read_vulnerability            | :auditor    | nil   | true
-      :read_vulnerability            | :developer  | nil   | true
-      :read_vulnerability            | :guest      | nil   | false
-      :read_vulnerability            | :planner    | nil   | false
-      :read_vulnerability            | :maintainer | nil   | true
-      :read_vulnerability            | :owner      | nil   | true
-      :read_vulnerability            | :reporter   | nil   | false
+      :admin_vulnerability           | :admin              | false | false
+      :admin_vulnerability           | :admin              | true  | true
+      :admin_vulnerability           | :auditor            | nil   | false
+      :admin_vulnerability           | :developer          | nil   | false
+      :admin_vulnerability           | :guest              | nil   | false
+      :admin_vulnerability           | :planner            | nil   | false
+      :admin_vulnerability           | :maintainer         | nil   | true
+      :admin_vulnerability           | :owner              | nil   | true
+      :admin_vulnerability           | :reporter           | nil   | false
+      :admin_vulnerability           | :security_manager   | nil   | true
+      :read_group_security_dashboard | :admin              | false | false
+      :read_group_security_dashboard | :admin              | true  | true
+      :read_group_security_dashboard | :auditor            | nil   | true
+      :read_group_security_dashboard | :developer          | nil   | true
+      :read_group_security_dashboard | :guest              | nil   | false
+      :read_group_security_dashboard | :planner            | nil   | false
+      :read_group_security_dashboard | :maintainer         | nil   | true
+      :read_group_security_dashboard | :owner              | nil   | true
+      :read_group_security_dashboard | :reporter           | nil   | false
+      :read_group_security_dashboard | :security_manager   | nil   | true
+      :read_vulnerability            | :admin              | false | false
+      :read_vulnerability            | :admin              | true  | true
+      :read_vulnerability            | :auditor            | nil   | true
+      :read_vulnerability            | :developer          | nil   | true
+      :read_vulnerability            | :guest              | nil   | false
+      :read_vulnerability            | :planner            | nil   | false
+      :read_vulnerability            | :maintainer         | nil   | true
+      :read_vulnerability            | :owner              | nil   | true
+      :read_vulnerability            | :reporter           | nil   | false
+      :read_vulnerability            | :security_manager   | nil   | true
     end
 
     with_them do
@@ -1940,15 +1907,16 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     let(:policy) { :read_dependency }
 
     where(:role, :admin_mode, :allowed) do
-      :guest      | nil   | false
-      :planner    | nil   | false
-      :reporter   | nil   | false
-      :developer  | nil   | true
-      :maintainer | nil   | true
-      :owner      | nil   | true
-      :auditor    | nil   | true
-      :admin      | true  | true
-      :admin      | false | false
+      :guest            | nil   | false
+      :planner          | nil   | false
+      :reporter         | nil   | false
+      :security_manager | nil   | true
+      :developer        | nil   | true
+      :maintainer       | nil   | true
+      :owner            | nil   | true
+      :auditor          | nil   | true
+      :admin            | true  | true
+      :admin            | false | false
     end
 
     with_them do
@@ -2006,15 +1974,16 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     let(:policy) { :read_licenses }
 
     where(:role, :admin_mode, :allowed) do
-      :guest      | nil   | false
-      :planner    | nil   | false
-      :reporter   | nil   | false
-      :developer  | nil   | true
-      :maintainer | nil   | true
-      :owner      | nil   | true
-      :auditor    | nil   | true
-      :admin      | true  | true
-      :admin      | false | false
+      :guest            | nil   | false
+      :planner          | nil   | false
+      :reporter         | nil   | false
+      :security_manager | nil   | true
+      :developer        | nil   | true
+      :maintainer       | nil   | true
+      :owner            | nil   | true
+      :auditor          | nil   | true
+      :admin            | true  | true
+      :admin            | false | false
     end
 
     with_them do
@@ -2572,14 +2541,15 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     let(:policy) { :read_group_audit_events }
 
     where(:role, :admin_mode, :allowed) do
-      :guest      | nil   | false
-      :planner    | nil   | false
-      :reporter   | nil   | false
-      :developer  | nil   | true
-      :maintainer | nil   | true
-      :owner      | nil   | true
-      :admin      | true  | true
-      :admin      | false | false
+      :guest            | nil   | false
+      :planner          | nil   | false
+      :reporter         | nil   | false
+      :security_manager | nil   | true
+      :developer        | nil   | true
+      :maintainer       | nil   | true
+      :owner            | nil   | true
+      :admin            | true  | true
+      :admin            | false | false
     end
 
     with_them do
@@ -2986,15 +2956,17 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   describe 'compliance framework permissions' do
     shared_examples 'compliance framework permissions' do
       where(:role, :licensed, :admin_mode, :allowed) do
-        :owner      | true  | nil   | true
-        :owner      | false | nil   | false
-        :admin      | true  | true  | true
-        :admin      | true  | false | false
-        :maintainer | true  | nil   | false
-        :developer  | true  | nil   | false
-        :reporter   | true  | nil   | false
-        :planner    | true  | nil   | false
-        :guest      | true  | nil   | false
+        :owner            | true  | nil   | true
+        :owner            | false | nil   | false
+        :admin            | true  | true  | true
+        :admin            | true  | false | false
+        :maintainer       | true  | nil   | false
+        :developer        | true  | nil   | false
+        :security_manager | true  | nil   | true
+        :security_manager | false | nil   | false
+        :reporter         | true  | nil   | false
+        :planner          | true  | nil   | false
+        :guest            | true  | nil   | false
       end
 
       with_them do
@@ -3150,6 +3122,16 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to(be_allowed(:admin_external_audit_events)) }
     end
 
+    context 'when user is security manager' do
+      before do
+        stub_licensed_features(external_audit_events: true)
+      end
+
+      let(:current_user) { security_manager }
+
+      it { is_expected.to(be_allowed(:admin_external_audit_events)) }
+    end
+
     context 'when user is not an owner' do
       let(:current_user) { build_stubbed(:user, :auditor) }
 
@@ -3246,33 +3228,16 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'security complience policy' do
-    context 'when licensed feature is available' do
-      before do
-        stub_licensed_features(security_orchestration_policies: false)
-      end
+  describe 'security compliance policy' do
+    context 'for developer and above (including auditor and security_manager)' do
+      where(role: %w[maintainer developer auditor owner security_manager])
 
-      context 'with developer or maintainer role' do
-        where(role: %w[maintainer developer])
+      with_them do
+        let(:current_user) { public_send(role) }
 
-        with_them do
-          let(:current_user) { public_send(role) }
-
-          it { is_expected.to be_disallowed(:read_security_orchestration_policies) }
-          it { is_expected.to be_disallowed(:update_security_orchestration_policy_project) }
-        end
-      end
-
-      context 'with owner role' do
-        where(role: %w[owner])
-
-        with_them do
-          let(:current_user) { public_send(role) }
-
-          it { is_expected.to be_disallowed(:read_security_orchestration_policies) }
-          it { is_expected.to be_disallowed(:update_security_orchestration_policy_project) }
-          it { is_expected.to be_disallowed(:modify_security_policy) }
-        end
+        it { is_expected.to be_disallowed(:read_security_orchestration_policies) }
+        it { is_expected.to be_disallowed(:update_security_orchestration_policy_project) }
+        it { is_expected.to be_disallowed(:modify_security_policy) }
       end
     end
 
@@ -3282,8 +3247,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
 
       context 'when security_orchestration_policy_configuration is not present' do
-        context 'with developer or maintainer role' do
-          where(role: %w[maintainer developer])
+        context 'with developer or maintainer or auditor role' do
+          where(role: %w[maintainer developer auditor])
 
           with_them do
             let(:current_user) { public_send(role) }
@@ -3293,8 +3258,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           end
         end
 
-        context 'with owner role' do
-          where(role: %w[owner])
+        context 'with owner or security manager role' do
+          where(role: %w[owner security_manager])
 
           with_them do
             let(:current_user) { public_send(role) }
@@ -3417,7 +3382,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         end
 
         context 'when user is eligible for access' do
-          where(role: %w[owner auditor])
+          where(role: %w[owner auditor security_manager])
 
           with_them do
             let(:current_user) { public_send(role) }
@@ -3439,7 +3404,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         end
 
         context 'when user is eligible for access' do
-          where(role: %w[owner auditor])
+          where(role: %w[owner auditor security_manager])
 
           with_them do
             let(:current_user) { public_send(role) }
@@ -4468,7 +4433,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it_behaves_like 'custom roles abilities'
 
-      it_behaves_like 'does not call custom role query', [:maintainer, :owner]
+      it_behaves_like 'does not call custom role query', [:maintainer, :owner, :security_manager]
     end
 
     context 'scan profile abilities' do
@@ -4480,7 +4445,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
           it_behaves_like 'custom roles abilities'
 
-          it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner]
+          it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner, :security_manager]
         end
       end
     end
@@ -4758,12 +4723,14 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     using RSpec::Parameterized::TableSyntax
 
     where(:current_user, :licensed, :match_expected_result) do
-      ref(:owner)      | true  | be_allowed(:enable_secret_push_protection)
-      ref(:maintainer) | true  | be_allowed(:enable_secret_push_protection)
-      ref(:developer)  | true  | be_disallowed(:enable_secret_push_protection)
-      ref(:owner)      | false | be_disallowed(:enable_secret_push_protection)
-      ref(:maintainer) | false | be_disallowed(:enable_secret_push_protection)
-      ref(:developer)  | false | be_disallowed(:enable_secret_push_protection)
+      ref(:owner)            | true  | be_allowed(:enable_secret_push_protection)
+      ref(:maintainer)       | true  | be_allowed(:enable_secret_push_protection)
+      ref(:security_manager) | true  | be_allowed(:enable_secret_push_protection)
+      ref(:developer)        | true  | be_disallowed(:enable_secret_push_protection)
+      ref(:owner)            | false | be_disallowed(:enable_secret_push_protection)
+      ref(:maintainer)       | false | be_disallowed(:enable_secret_push_protection)
+      ref(:developer)        | false | be_disallowed(:enable_secret_push_protection)
+      ref(:security_manager) | false | be_disallowed(:enable_secret_push_protection)
     end
 
     with_them do
@@ -5214,6 +5181,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         stub_licensed_features(security_inventory: true)
       end
 
+      context 'when user is security manager' do
+        let(:current_user) { security_manager }
+
+        it { is_expected.to be_allowed(:read_security_inventory) }
+      end
+
       context 'when user is developer' do
         let(:current_user) { developer }
 
@@ -5260,6 +5233,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         it { is_expected.to be_allowed(:read_security_attribute) }
       end
 
+      context 'when user is security manager' do
+        let(:current_user) { security_manager }
+
+        it { is_expected.to be_allowed(:admin_security_attributes) }
+        it { is_expected.to be_allowed(:read_security_attribute) }
+      end
+
       context 'when user is reporter' do
         let(:current_user) { reporter }
 
@@ -5279,6 +5259,39 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
         it { is_expected.to be_disallowed(:admin_security_attributes) }
         it { is_expected.to be_disallowed(:read_security_attribute) }
+      end
+    end
+  end
+
+  describe 'security scan profiles' do
+    context 'when security scan profiles are available' do
+      let(:policy) { :read_security_scan_profiles }
+
+      where(:role, :licensed, :allowed) do
+        :owner            | true   | true
+        :maintainer       | true   | true
+        :developer        | true   | true
+        :security_manager | true   | true
+        :reporter         | true   | false
+        :planner          | true   | false
+        :guest            | true   | false
+        :owner            | false  | false
+        :maintainer       | false  | false
+        :developer        | false  | false
+        :security_manager | false  | false
+        :reporter         | false  | false
+        :planner          | false  | false
+        :guest            | false  | false
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        before do
+          stub_licensed_features(security_scan_profiles: licensed)
+        end
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
       end
     end
   end

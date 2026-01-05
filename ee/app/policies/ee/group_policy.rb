@@ -406,7 +406,20 @@ module EE
       end
 
       rule { security_manager }.policy do
-        # TODO: Add security manager permissions
+        enable :admin_compliance_framework
+        enable :admin_compliance_pipeline_configuration
+        enable :admin_external_audit_events
+        enable :admin_security_attributes
+        enable :admin_vulnerability
+        enable :enable_secret_push_protection
+        enable :read_compliance_dashboard
+        enable :read_compliance_adherence_report
+        enable :read_compliance_violations_report
+        enable :read_dependency
+        enable :read_group_audit_events
+        enable :read_licenses
+        enable :read_security_inventory
+        enable :read_security_scan_profiles
       end
 
       rule { maintainer }.policy do
@@ -419,6 +432,7 @@ module EE
         enable :admin_security_testing
         enable :admin_ai_catalog_item_consumer
         enable :create_ai_catalog_flow_item_consumer
+        enable :enable_secret_push_protection
       end
 
       rule { (admin | maintainer) & group_analytics_dashboards_available & ~has_parent }.policy do
@@ -436,6 +450,9 @@ module EE
         enable :read_dependency_proxy
         enable :read_wiki
         enable :read_billable_member
+        enable :read_compliance_dashboard
+        enable :read_compliance_adherence_report
+        enable :read_compliance_violations_report
 
         enable :read_group_all_available_runners
         enable :read_runners
@@ -454,6 +471,7 @@ module EE
         enable :read_service_account
         enable :admin_service_account_member
         enable :admin_service_accounts
+        enable :admin_external_audit_events
       end
 
       rule { can?(:owner_access) }.policy do
@@ -673,19 +691,15 @@ module EE
         enable :read_ai_catalog_item_consumer
       end
 
-      rule { security_orchestration_policies_enabled & can?(:developer_access) }.policy do
+      rule { security_orchestration_policies_enabled & (auditor | developer | security_manager) }.policy do
         enable :read_security_orchestration_policies
       end
 
-      rule { security_orchestration_policies_enabled & auditor }.policy do
-        enable :read_security_orchestration_policies
-      end
-
-      rule { security_orchestration_policies_enabled & can?(:owner_access) }.policy do
+      rule { security_orchestration_policies_enabled & (owner | security_manager) }.policy do
         enable :update_security_orchestration_policy_project
       end
 
-      rule { security_orchestration_policies_enabled & can?(:owner_access) & ~security_policy_project_available }.policy do
+      rule { security_orchestration_policies_enabled & (owner | security_manager) & ~security_policy_project_available }.policy do
         enable :modify_security_policy
       end
 
@@ -923,25 +937,16 @@ module EE
       rule { admin | owner }.policy do
         enable :owner_access
         enable :read_billable_member
-        enable :read_subscription_usage
         enable :admin_ci_minutes
+        enable :read_subscription_usage
+        enable :read_compliance_dashboard
+        enable :read_compliance_adherence_report
+        enable :read_compliance_violations_report
       end
 
       rule { (admin | owner) & group_credentials_inventory_available & ~has_parent }.policy do
         enable :read_group_credentials_inventory
         enable :admin_group_credentials_inventory
-      end
-
-      rule { (admin | owner | auditor) & group_level_compliance_dashboard_enabled }.policy do
-        enable :read_compliance_dashboard
-      end
-
-      rule { (admin | owner | auditor) & group_level_compliance_adherence_report_enabled }.policy do
-        enable :read_compliance_adherence_report
-      end
-
-      rule { (admin | owner | auditor) & group_level_compliance_violations_report_enabled }.policy do
-        enable :read_compliance_violations_report
       end
 
       rule { (admin | owner) & group_merge_request_approval_settings_enabled }.policy do
@@ -1035,9 +1040,8 @@ module EE
 
       rule { can?(:owner_access) & group_membership_export_available }.enable :export_group_memberships
       rule { can?(:owner_access) & group_level_compliance_pipeline_available }.enable :admin_compliance_pipeline_configuration
-      rule { can?(:owner_access) & external_audit_events_available }.policy do
-        enable :admin_external_audit_events
-      end
+
+      rule { ~external_audit_events_available }.prevent :admin_external_audit_events
 
       # Special case to allow support bot assigning service desk
       # issues to epics in private groups using quick actions
@@ -1091,9 +1095,7 @@ module EE
         @subject.licensed_feature_available?(:secret_push_protection)
       end
 
-      rule { secret_push_protection_available & can?(:maintainer_access) }.policy do
-        enable :enable_secret_push_protection
-      end
+      rule { ~secret_push_protection_available }.prevent :enable_secret_push_protection
 
       rule { can?(:admin_group) }.policy do
         enable :read_web_hook
