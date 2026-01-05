@@ -4,13 +4,13 @@ import { GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import RecentlyViewedWidget from '~/homepage/components/recently_viewed_widget.vue';
+import RecentlyViewedItems from '~/homepage/components/recently_viewed_items.vue';
 import TooltipOnTruncate from '~/vue_shared/components/tooltip_on_truncate/tooltip_on_truncate.vue';
 import RecentlyViewedItemsQuery from 'ee_else_ce/homepage/graphql/queries/recently_viewed_items.query.graphql';
 
 Vue.use(VueApollo);
 
-describe('RecentlyViewedWidget EE', () => {
+describe('RecentlyViewedItems EE', () => {
   let wrapper;
 
   const mockRecentlyViewedResponse = {
@@ -20,7 +20,7 @@ describe('RecentlyViewedWidget EE', () => {
         recentlyViewedItems: [
           {
             viewedAt: '2025-06-19T15:30:00Z',
-            itemType: 'Issue',
+            itemType: 'Epic',
             item: {
               __typename: 'Epic',
               id: 'epic-1',
@@ -35,10 +35,10 @@ describe('RecentlyViewedWidget EE', () => {
 
   const recentlyViewedQuerySuccessHandler = jest.fn().mockResolvedValue(mockRecentlyViewedResponse);
 
-  const createComponent = ({ queryHandler = recentlyViewedQuerySuccessHandler } = {}) => {
-    const mockApollo = createMockApollo([[RecentlyViewedItemsQuery, queryHandler]]);
+  const createComponent = ({ recentlyViewedHandler = recentlyViewedQuerySuccessHandler } = {}) => {
+    const mockApollo = createMockApollo([[RecentlyViewedItemsQuery, recentlyViewedHandler]]);
 
-    wrapper = shallowMountExtended(RecentlyViewedWidget, {
+    wrapper = shallowMountExtended(RecentlyViewedItems, {
       apolloProvider: mockApollo,
     });
   };
