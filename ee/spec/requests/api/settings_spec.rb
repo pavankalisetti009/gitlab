@@ -895,8 +895,8 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
 
     let(:duo_namespace_access_rules) do
       [
-        { 'through_namespace' => { 'id' => namespace_a.id }, 'features' => %w[duo_classic duo_agents] },
-        { 'through_namespace' => { 'id' => namespace_b.id }, 'features' => %w[duo_flows] }
+        { 'through_namespace' => { 'id' => namespace_a.id }, 'features' => %w[duo_classic duo_agent_platform] },
+        { 'through_namespace' => { 'id' => namespace_b.id }, 'features' => %w[duo_agent_platform] }
       ]
     end
 
@@ -935,7 +935,7 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     context 'with an invalid entity' do
       let(:duo_namespace_access_rules) do
         [
-          { 'through_namespace' => { 'id' => namespace_a.id }, 'features' => %w[duo_classic duo_agents] },
+          { 'through_namespace' => { 'id' => namespace_a.id }, 'features' => %w[duo_classic duo_agent_platform] },
           { 'through_namespace' => { 'id' => namespace_b.id }, 'features' => %w[invalid_entity] }
         ]
       end

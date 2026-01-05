@@ -478,8 +478,8 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
 
       let(:duo_namespace_access_rules) do
         [
-          { through_namespace: { id: namespace_a.id }, features: %w[duo_classic duo_agents] },
-          { through_namespace: { id: namespace_b.id }, features: %w[duo_flows] }
+          { through_namespace: { id: namespace_a.id }, features: %w[duo_classic duo_agent_platform] },
+          { through_namespace: { id: namespace_b.id }, features: %w[duo_agent_platform] }
         ]
       end
 
@@ -500,8 +500,8 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
         it 'creates rules with correct attributes' do
           result
 
-          expect(namespace_a.accessible_ai_features_on_instance.pluck(:accessible_entity)).to match_array(%w[duo_classic duo_agents])
-          expect(namespace_b.accessible_ai_features_on_instance.pluck(:accessible_entity)).to match_array(%w[duo_flows])
+          expect(namespace_a.accessible_ai_features_on_instance.pluck(:accessible_entity)).to match_array(%w[duo_classic duo_agent_platform])
+          expect(namespace_b.accessible_ai_features_on_instance.pluck(:accessible_entity)).to match_array(%w[duo_agent_platform])
         end
 
         it 'deletes existing entity rules and creates new ones' do
