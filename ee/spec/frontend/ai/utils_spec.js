@@ -9,6 +9,7 @@ import {
 } from 'ee/ai/utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { setCookie } from '~/lib/utils/common_utils';
+import { saveStorageValue } from '~/lib/utils/local_storage';
 import {
   DUO_AGENTIC_MODE_COOKIE,
   DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
@@ -18,6 +19,11 @@ import {
 jest.mock('~/lib/utils/common_utils', () => ({
   setCookie: jest.fn(),
   getCookie: jest.fn(),
+}));
+
+jest.mock('~/lib/utils/local_storage', () => ({
+  getStorageValue: jest.fn(() => ({ exists: false })),
+  saveStorageValue: jest.fn(),
 }));
 
 describe('AI Utils', () => {
@@ -332,16 +338,34 @@ describe('AI Utils', () => {
 
   describe('saveDuoAgenticModePreference', () => {
     it.each`
-      isAgenticMode | description
-      ${true}       | ${'true'}
-      ${false}      | ${'false'}
-    `('calls setCookie with $description value', ({ isAgenticMode }) => {
+      isAgenticMode
+      ${true}
+      ${false}
+    `('calls setCookie with $isAgenticMode value', ({ isAgenticMode }) => {
       saveDuoAgenticModePreference(isAgenticMode);
 
       expect(setCookie).toHaveBeenCalledWith(DUO_AGENTIC_MODE_COOKIE, isAgenticMode, {
         expires: DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
       });
       expect(setCookie).toHaveBeenCalledTimes(1);
+    });
+
+    it.each`
+      isAgenticMode
+      ${true}
+      ${false}
+    `('calls saveStorageValue with $isAgenticMode value', ({ isAgenticMode }) => {
+      saveDuoAgenticModePreference(isAgenticMode);
+
+      expect(saveStorageValue).toHaveBeenCalledWith(DUO_AGENTIC_MODE_COOKIE, isAgenticMode);
+      expect(saveStorageValue).toHaveBeenCalledTimes(1);
+    });
+
+    it('saves to both cookie and localStorage', () => {
+      saveDuoAgenticModePreference(true);
+
+      expect(setCookie).toHaveBeenCalled();
+      expect(saveStorageValue).toHaveBeenCalled();
     });
   });
 
