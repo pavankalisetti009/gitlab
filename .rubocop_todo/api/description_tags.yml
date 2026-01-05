@@ -54,7 +54,6 @@ API/DescriptionTags:
     - 'lib/api/ci/catalog.rb'
     - 'lib/api/ci/runners.rb'
     - 'lib/api/commit_statuses.rb'
-    - 'lib/api/custom_attributes_endpoints.rb'
     - 'lib/api/draft_notes.rb'
     - 'lib/api/files.rb'
     - 'lib/api/group_boards.rb'
