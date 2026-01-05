@@ -252,7 +252,9 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           context 'when the group is subgroup' do
             let(:namespace_id) { subgroup.id }
 
-            it_behaves_like 'service account creation failure'
+            it_behaves_like 'service account creation success' do
+              let(:username_prefix) { "service_account_group_#{namespace_id}" }
+            end
           end
         end
       end

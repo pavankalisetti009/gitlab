@@ -214,6 +214,10 @@ module EE
         end
       end
 
+      condition(:service_accounts_enabled_for_subgroups) do
+        ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, @subject)
+      end
+
       condition(:service_accounts_available) do
         if @subject.root_ancestor.trial_active?
           @subject.feature_available?(:service_accounts)
@@ -635,7 +639,7 @@ module EE
         prevent :read_service_account
       end
 
-      rule { has_parent }.policy do
+      rule { has_parent & ~service_accounts_enabled_for_subgroups }.policy do
         prevent :read_service_account
         prevent :create_service_account
         prevent :delete_service_account

@@ -44,13 +44,29 @@ RSpec.describe Groups::Settings::ServiceAccountsController, feature_category: :u
           stub_saas_features(gitlab_com_subscriptions: true)
         end
 
+        context 'when feature flag allow_subgroups_to_create_service_accounts is false' do
+          before do
+            stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
+          end
+
+          it_behaves_like 'page is found'
+        end
+
         it_behaves_like 'page is found'
       end
 
       context 'when accessing a subgroup' do
         let_it_be(:group) { create(:group, parent: group) }
 
-        it_behaves_like 'page is not found'
+        it_behaves_like 'page is found'
+
+        context 'when feature flag allow_subgroups_to_create_service_accounts is false' do
+          before do
+            stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
+          end
+
+          it_behaves_like 'page is not found'
+        end
       end
 
       context 'when license is disabled' do
