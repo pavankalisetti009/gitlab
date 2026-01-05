@@ -1387,6 +1387,19 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '.without_warn_mode' do
+    let_it_be(:policy_with_warn_mode) { create(:security_policy, :enforcement_type_warn) }
+    let_it_be(:policy_without_warn_mode) { create(:security_policy, :require_approval) }
+    let_it_be(:policy_with_enforce_type) do
+      create(:security_policy, content: { enforcement_type: described_class::DEFAULT_ENFORCEMENT_TYPE })
+    end
+
+    it 'returns only policies without warn_mode enforcement_type' do
+      result = described_class.without_warn_mode
+      expect(result).to contain_exactly(policy_without_warn_mode, policy_with_enforce_type)
+    end
+  end
+
   describe '.auto_dismiss_policies' do
     let_it_be(:policy_with_auto_resolve) { create(:security_policy, :vulnerability_management_policy, :auto_resolve) }
     let_it_be(:policy_with_auto_dismiss) { create(:security_policy, :vulnerability_management_policy, :auto_dismiss) }
@@ -1395,6 +1408,40 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       result = described_class.auto_dismiss_policies
       expect(result).to contain_exactly(policy_with_auto_dismiss)
     end
+  end
+
+  describe '.prevent_pushing_and_force_pushing' do
+    let_it_be(:policy_a) { create(:security_policy, :prevent_pushing_and_force_pushing) }
+    let_it_be(:policy_b) do
+      create(:security_policy, content: { approval_settings: { prevent_pushing_and_force_pushing: false } })
+    end
+
+    let_it_be(:policy_c) do
+      create(:security_policy, :block_branch_modification)
+    end
+
+    let_it_be(:policy_d) { create(:security_policy, content: {}) }
+
+    subject(:prevent_pushing_and_force_pushing) { described_class.prevent_pushing_and_force_pushing }
+
+    it { is_expected.to contain_exactly(policy_a) }
+  end
+
+  describe '.blocking_branch_modification' do
+    let_it_be(:policy_a) { create(:security_policy, :block_branch_modification) }
+    let_it_be(:policy_b) do
+      create(:security_policy, content: { approval_settings: { blocking_branch_modification: false } })
+    end
+
+    let_it_be(:policy_c) do
+      create(:security_policy, :prevent_pushing_and_force_pushing)
+    end
+
+    let_it_be(:policy_d) { create(:security_policy, content: {}) }
+
+    subject(:block_branch_modification) { described_class.block_branch_modification }
+
+    it { is_expected.to contain_exactly(policy_a) }
   end
 
   describe '#bypass_settings' do
