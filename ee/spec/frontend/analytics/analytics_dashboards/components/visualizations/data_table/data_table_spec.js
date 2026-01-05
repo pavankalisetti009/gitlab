@@ -416,7 +416,10 @@ describe('DataTable Visualization', () => {
         expect(wrapper.findComponent(DiffLineChanges).props()).toMatchObject(customData);
       });
 
-      it('applies any relevant `componentProps` to the custom component', () => {
+      it('applies static `componentProps` to the custom component', () => {
+        const numerator = 50;
+        const denominator = 100;
+
         createWrapper(mount, {
           data: { nodes: [{ additions: 5, deletions: 10 }] },
           options: {
@@ -425,8 +428,31 @@ describe('DataTable Visualization', () => {
                 key: 'customData',
                 component: 'CalculatePercent',
                 componentProps: {
-                  numerator: 'additions',
-                  denominator: 'deletions',
+                  numerator,
+                  denominator,
+                },
+              },
+            ],
+          },
+        });
+
+        expect(wrapper.findComponent(CalculatePercent).props()).toMatchObject({
+          numerator,
+          denominator,
+        });
+      });
+
+      it('applies mapped `componentProps` to the custom component', () => {
+        createWrapper(mount, {
+          data: { nodes: [{ additions: 5, deletions: 10 }] },
+          options: {
+            fields: [
+              {
+                key: 'customData',
+                component: 'CalculatePercent',
+                componentProps: {
+                  numerator: '$map(additions)',
+                  denominator: '$map(deletions)',
                 },
               },
             ],

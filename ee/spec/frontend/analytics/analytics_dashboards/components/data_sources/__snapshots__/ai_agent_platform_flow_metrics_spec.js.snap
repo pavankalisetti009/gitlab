@@ -3,6 +3,13 @@
 exports[`AI Agent platform flow metrics data source applies correct sorting for (sortBy: medianExecutionTime, sortDesc: false) 1`] = `
 [
   {
+    "completionRate": 95.1,
+    "flowType": "CUSTOM_FLOW",
+    "medianExecutionTime": 0,
+    "sessionsCount": 87,
+    "usersCount": 19,
+  },
+  {
     "completionRate": 88.3,
     "flowType": "TOOL_FLOW",
     "medianExecutionTime": 14.166666666666666,
@@ -18,15 +25,8 @@ exports[`AI Agent platform flow metrics data source applies correct sorting for 
   },
   {
     "completionRate": 95.1,
-    "flowType": "CUSTOM_FLOW",
-    "medianExecutionTime": 35,
-    "sessionsCount": 87,
-    "usersCount": 19,
-  },
-  {
-    "completionRate": 95.1,
     "flowType": "BONUS_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": null,
     "sessionsCount": 87,
     "usersCount": 19,
   },
@@ -36,20 +36,6 @@ exports[`AI Agent platform flow metrics data source applies correct sorting for 
 exports[`AI Agent platform flow metrics data source applies correct sorting for (sortBy: medianExecutionTime, sortDesc: true) 1`] = `
 [
   {
-    "completionRate": 95.1,
-    "flowType": "CUSTOM_FLOW",
-    "medianExecutionTime": 35,
-    "sessionsCount": 87,
-    "usersCount": 19,
-  },
-  {
-    "completionRate": 95.1,
-    "flowType": "BONUS_FLOW",
-    "medianExecutionTime": 35,
-    "sessionsCount": 87,
-    "usersCount": 19,
-  },
-  {
     "completionRate": 92.5,
     "flowType": "AGENT_FLOW",
     "medianExecutionTime": 20.833333333333332,
@@ -63,6 +49,20 @@ exports[`AI Agent platform flow metrics data source applies correct sorting for 
     "sessionsCount": 203,
     "usersCount": 48,
   },
+  {
+    "completionRate": 95.1,
+    "flowType": "CUSTOM_FLOW",
+    "medianExecutionTime": 0,
+    "sessionsCount": 87,
+    "usersCount": 19,
+  },
+  {
+    "completionRate": 95.1,
+    "flowType": "BONUS_FLOW",
+    "medianExecutionTime": null,
+    "sessionsCount": 87,
+    "usersCount": 19,
+  },
 ]
 `;
 
@@ -71,14 +71,14 @@ exports[`AI Agent platform flow metrics data source applies correct sorting for 
   {
     "completionRate": 95.1,
     "flowType": "CUSTOM_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": 0,
     "sessionsCount": 87,
     "usersCount": 19,
   },
   {
     "completionRate": 95.1,
     "flowType": "BONUS_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": null,
     "sessionsCount": 87,
     "usersCount": 19,
   },
@@ -118,14 +118,14 @@ exports[`AI Agent platform flow metrics data source applies correct sorting for 
   {
     "completionRate": 95.1,
     "flowType": "CUSTOM_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": 0,
     "sessionsCount": 87,
     "usersCount": 19,
   },
   {
     "completionRate": 95.1,
     "flowType": "BONUS_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": null,
     "sessionsCount": 87,
     "usersCount": 19,
   },
@@ -137,14 +137,14 @@ exports[`AI Agent platform flow metrics data source applies correct sorting for 
   {
     "completionRate": 95.1,
     "flowType": "CUSTOM_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": 0,
     "sessionsCount": 87,
     "usersCount": 19,
   },
   {
     "completionRate": 95.1,
     "flowType": "BONUS_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": null,
     "sessionsCount": 87,
     "usersCount": 19,
   },
@@ -184,14 +184,14 @@ exports[`AI Agent platform flow metrics data source applies correct sorting for 
   {
     "completionRate": 95.1,
     "flowType": "CUSTOM_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": 0,
     "sessionsCount": 87,
     "usersCount": 19,
   },
   {
     "completionRate": 95.1,
     "flowType": "BONUS_FLOW",
-    "medianExecutionTime": 35,
+    "medianExecutionTime": null,
     "sessionsCount": 87,
     "usersCount": 19,
   },
@@ -218,14 +218,14 @@ exports[`AI Agent platform flow metrics data source returns the flow metrics as 
     {
       "completionRate": 95.1,
       "flowType": "CUSTOM_FLOW",
-      "medianExecutionTime": 35,
+      "medianExecutionTime": 0,
       "sessionsCount": 87,
       "usersCount": 19,
     },
     {
       "completionRate": 95.1,
       "flowType": "BONUS_FLOW",
-      "medianExecutionTime": 35,
+      "medianExecutionTime": null,
       "sessionsCount": 87,
       "usersCount": 19,
     },

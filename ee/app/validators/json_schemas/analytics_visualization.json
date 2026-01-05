@@ -160,6 +160,7 @@
                   "CalculateSum",
                   "DiffLineChanges",
                   "CalculatePercent",
+                  "FormatNumber",
                   "FormatTime",
                   "FormatTimeRange",
                   "MergeRequestLink",

@@ -20,7 +20,7 @@ options:
       label: 'Acceptance rate (%)'
       component: 'CalculatePercent'
       componentProps:
-        numerator: 'codeSuggestionAcceptedInIdeEventCount'
-        denominator: 'codeSuggestionShownInIdeEventCount'
+        numerator: '$map(codeSuggestionAcceptedInIdeEventCount)'
+        denominator: '$map(codeSuggestionShownInIdeEventCount)'
       thClass: "gl-text-right"
       tdClass: "gl-text-right"

@@ -27,9 +27,19 @@ const requestFlowMetrics = async ({ namespace, startDate, endDate, sortBy, sortD
     resultKey: 'aiMetrics',
   });
 
-  const nodes = sortBy ? orderBy(flowMetrics, sortBy, sortDesc ? 'desc' : 'asc') : flowMetrics;
+  // By default null values are sorted last in ASC order, but for better
+  // usability we want them to be sorted last for both ASC or DESC.
+  const nullSortValue = sortDesc ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+  const nodes = sortBy
+    ? orderBy(
+        flowMetrics,
+        (metric) => (metric[sortBy] !== null ? metric[sortBy] : nullSortValue),
+        sortDesc ? 'desc' : 'asc',
+      )
+    : flowMetrics;
   return nodes.slice(0, MAX_VISIBLE_NODES).map(({ medianExecutionTime, ...rest }) => ({
-    medianExecutionTime: secondsToMinutes(medianExecutionTime),
+    medianExecutionTime:
+      medianExecutionTime !== null ? secondsToMinutes(medianExecutionTime) : null,
     ...rest,
   }));
 };
