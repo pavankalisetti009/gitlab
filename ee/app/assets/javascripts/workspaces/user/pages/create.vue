@@ -13,16 +13,18 @@ import {
 } from '@gitlab/ui';
 import { omit } from 'lodash';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
-import { s__, __ } from '~/locale';
+import { s__, n__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { logError } from '~/lib/logger';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import RefSelector from '~/ref/components/ref_selector.vue';
+import blobContentQuery from '~/ci/pipeline_editor/graphql/queries/blob_content.query.graphql';
 import GetProjectDetailsQuery from '../../common/components/get_project_details_query.vue';
 import WorkspaceVariables from '../components/workspace_variables.vue';
 import SearchProjectsListbox from '../components/search_projects_listbox.vue';
+import devfileValidateMutation from '../graphql/mutations/devfile_validate.mutation.graphql';
 import workspaceCreateMutation from '../graphql/mutations/workspace_create.mutation.graphql';
 import DevfileListbox from '../components/devfile_listbox.vue';
 import DevfileHelpDrawer from '../components/devfile_help_drawer.vue';
@@ -42,32 +44,12 @@ export const i18n = {
     devfileProject: s__('Workspaces|Project'),
     projectReference: s__('Workspaces|Project reference'),
     devfile: s__('Workspaces|Devfile'),
-    devfileLocation: {
-      label: s__('Workspaces|Devfile location'),
-      title: s__('Workspaces|What is a devfile?'),
-      contentParagraph1: s__(
-        'Workspaces|A devfile defines the development environment for a GitLab project. A workspace must have a valid devfile in the Git reference you use.',
-      ),
-      contentParagraph2: s__(
-        'Workspaces|If your devfile is not in the root directory of your project, specify a relative path.',
-      ),
-      descriptionContent: s__(
-        "Workspaces|Provide a relative path if the devfile is not in the project's root directory.",
-      ),
-      labelDescriptionContent: s__("Workspaces|Defines the workspace's development environment."),
-      linkText: s__('Workspaces|Learn more.'),
-    },
-    pathToDevfile: s__('Workspaces|Path to devfile'),
     agentId: s__('Workspaces|Cluster agent'),
-    maxHoursSuffix: __('hours'),
   },
   invalidProjectAlert: {
     title: s__("Workspaces|You can't create a workspace for this project"),
     noAgentsContent: s__(
       'Workspaces|No agents available to create workspaces. Please consult %{linkStart}Workspaces documentation%{linkEnd} for troubleshooting.',
-    ),
-    noDevFileContent: s__(
-      'Workspaces|To create a workspace, add a devfile to this project. A devfile is a configuration file for your workspace.',
     ),
   },
   submitButton: {
@@ -81,6 +63,13 @@ export const i18n = {
 };
 
 export const devfileHelpPath = helpPagePath('user/workspace/_index.md#devfile');
+export const devfileValidationRulesHelpPath = helpPagePath(
+  'user/workspace/_index.md#validation-rules',
+  {
+    anchor: 'validation-rules',
+  },
+);
+
 export const workspacesTroubleshootingDocsPath = helpPagePath(
   'user/workspace/workspaces_troubleshooting.html',
 );
@@ -120,6 +109,7 @@ export default {
       projectDetailsLoaded: false,
       error: '',
       selectedDevfilePath: null,
+      devfileValidateErrors: [],
     };
   },
   computed: {
@@ -130,7 +120,12 @@ export default {
       return this.projectDetailsLoaded && this.emptyAgents;
     },
     saveWorkspaceEnabled() {
-      return this.selectedProject && this.selectedAgent && this.selectedDevfilePath;
+      return (
+        this.selectedProject &&
+        this.selectedAgent &&
+        this.selectedDevfilePath &&
+        this.devfileValidateErrors.length === 0
+      );
     },
     selectedProjectFullPath() {
       return this.selectedProject?.fullPath || this.$router.currentRoute.query?.project;
@@ -143,6 +138,24 @@ export default {
         return '';
       }
       return String(getIdFromGraphQLId(this.projectId));
+    },
+    hasDevfileValidateErrors() {
+      return this.devfileValidateErrors.length > 0;
+    },
+    hasExactlyOneDevfileValidateError() {
+      return this.devfileValidateErrors.length === 1;
+    },
+    devfilePopoverErrorMessage() {
+      return sprintf(
+        n__(
+          'Workspaces|Error processing the Devfile.',
+          'Workspaces|%{count} errors processing the Devfile.',
+          this.devfileValidateErrors.length,
+        ),
+        {
+          count: this.devfileValidateErrors.length,
+        },
+      );
     },
   },
   watch: {
@@ -198,6 +211,43 @@ export default {
       return this.workspaceVariables.every((variable) => {
         return variable.valid === true;
       });
+    },
+    async onDevfileSelected(path) {
+      this.devfileValidateErrors = [];
+      if (path === null || path === DEFAULT_DEVFILE_OPTION) {
+        return;
+      }
+
+      try {
+        const yaml = await this.fetchBlobContent(
+          this.selectedProjectFullPath,
+          path,
+          this.devfileRef,
+        );
+        const result = await this.$apollo.mutate({
+          mutation: devfileValidateMutation,
+          variables: {
+            input: {
+              devfileYaml: yaml,
+            },
+          },
+        });
+        this.devfileValidateErrors = result.data.devfileValidate.errors;
+      } catch (error) {
+        logError(error);
+        this.error = s__('Workspaces|Encountered error while attempting to validate the Devfile.');
+      }
+    },
+    async fetchBlobContent(projectPath, devfilePath, devfileRef) {
+      const { data } = await this.$apollo.query({
+        query: blobContentQuery,
+        variables: {
+          projectPath,
+          path: devfilePath,
+          ref: devfileRef,
+        },
+      });
+      return data?.project?.repository?.blobs?.nodes?.[0]?.rawBlob || null;
     },
     async createWorkspace() {
       if (!this.validateWorkspaceVariables()) {
@@ -262,6 +312,7 @@ export default {
   ROUTES,
   PROJECT_VISIBILITY,
   devfileHelpPath,
+  devfileValidationRulesHelpPath,
   workspacesTroubleshootingDocsPath,
   DRAWER_Z_INDEX,
   DEFAULT_DEVFILE_OPTION,
@@ -350,7 +401,7 @@ export default {
             <template #label>
               <span id="devfile-selector-label" class="gl-flex gl-items-center gl-gap-3">
                 {{ $options.i18n.form.devfile }}
-                <help-icon id="devfile-location-popover" />
+                <help-icon id="devfile-help-popover" />
               </span>
             </template>
             <devfile-listbox
@@ -358,22 +409,77 @@ export default {
               :project-path="selectedProject.fullPath"
               :devfile-ref="devfileRef"
               toggle-aria-labelled-by="devfile-selector-label"
+              :icon="hasDevfileValidateErrors ? 'warning' : ''"
+              :variant="hasDevfileValidateErrors ? 'danger' : 'default'"
+              category="secondary"
+              @input="onDevfileSelected"
             />
             <devfile-help-drawer v-if="selectedDevfilePath === $options.DEFAULT_DEVFILE_OPTION" />
             <gl-popover
+              data-testid="gl-devfile-help-popover"
               triggers="hover focus"
-              :title="$options.i18n.form.devfileLocation.title"
+              :title="s__('Workspaces|What is a devfile?')"
               placement="top"
-              target="devfile-location-popover"
+              target="devfile-help-popover"
             >
               <div class="gl-flex gl-flex-col">
-                <p>{{ $options.i18n.form.devfileLocation.contentParagraph1 }}</p>
-                <p>{{ $options.i18n.form.devfileLocation.contentParagraph2 }}</p>
+                <p>
+                  {{
+                    s__(
+                      'Workspaces|A devfile defines the development environment for a GitLab project. A workspace must have a valid devfile in the Git reference you use.',
+                    )
+                  }}
+                </p>
+                <p>
+                  {{
+                    s__(
+                      'Workspaces|If your devfile is not in the root directory of your project, specify a relative path.',
+                    )
+                  }}
+                </p>
               </div>
               <gl-link :href="$options.devfileHelpPath" target="_blank">
-                {{ $options.i18n.form.devfileLocation.linkText }}
+                {{ s__('Workspaces|Learn more.') }}
               </gl-link>
             </gl-popover>
+            <div v-if="hasDevfileValidateErrors">
+              <div class="gl-text-control-error">
+                {{ s__('Workspaces|Devfile is invalid.') }}
+                <gl-link
+                  :href="$options.devfileValidationRulesHelpPath"
+                  data-testid="validation-docs"
+                  target="_blank"
+                >
+                  {{ s__('Workspaces|Devfile Validation Rules.') }}
+                </gl-link>
+              </div>
+
+              <gl-button id="devfile-error-information-link" variant="link">
+                {{ s__('Workspaces|More Information.') }}
+              </gl-button>
+
+              <gl-popover
+                data-testid="gl-error-popover"
+                triggers="click blur"
+                :title="devfilePopoverErrorMessage"
+                placement="bottom"
+                target="devfile-error-information-link"
+                show-close-button
+              >
+                <template v-if="hasExactlyOneDevfileValidateError">
+                  <p class="gl-mb-2">
+                    {{ devfileValidateErrors[0] }}
+                  </p>
+                </template>
+                <template v-else>
+                  <ul class="gl-mb-2">
+                    <li v-for="err in devfileValidateErrors" :key="err" class="gl-mb-1">
+                      {{ err }}
+                    </li>
+                  </ul>
+                </template>
+              </gl-popover>
+            </div>
           </gl-form-group>
           <workspace-variables
             v-model="workspaceVariables"
