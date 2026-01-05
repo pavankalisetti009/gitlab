@@ -247,13 +247,14 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     let_it_be(:user1) { create(:user, reporter_of: group) }
     let_it_be(:user2) { create(:user, reporter_of: group) }
     let_it_be(:user3) { create(:user, reporter_of: group) }
+    let_it_be(:user4) { create(:user, reporter_of: group) }
 
     let(:fields) { ['user { id }', 'totalEventCount'] }
     let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_user_metrics_fields) }
     let(:ai_user_metrics) { graphql_data['group']['aiUserMetrics'] }
 
     before_all do
-      [user1, user2, user3].each do |user|
+      [user1, user2, user3, user4].each do |user|
         create(:gitlab_subscription_user_add_on_assignment, user: user, add_on_purchase: add_on_purchase)
       end
 
@@ -261,17 +262,41 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     end
 
     before do
-      # user3: 100 code suggestions, 10 chat events
-      # user1: 50 code suggestions, 75 chat events
-      # user2: 10 code suggestions, 200 chat events
+      # user1: 100 shown, 50 accepted, 25 rejected | 30 chat requests
+      # user2: 60 shown, 80 accepted, 40 rejected | 100 chat requests
+      # user3: 40 shown, 30 accepted, 60 rejected | 50 chat requests
+      # user4: 20 shown, 10 accepted, 5 rejected | 80 chat requests
       clickhouse_fixture(:ai_usage_events_daily, [
+        # Code suggestions - shown events
         {
-          user_id: user3.id,
+          user_id: user1.id,
           namespace_path: group.traversal_path,
-          event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
+          event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
           date: Date.new(2025, 12, 15).to_s,
           occurrences: 100
         },
+        {
+          user_id: user2.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 60
+        },
+        {
+          user_id: user3.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 40
+        },
+        {
+          user_id: user4.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 20
+        },
+        # Code suggestions - accepted events
         {
           user_id: user1.id,
           namespace_path: group.traversal_path,
@@ -284,28 +309,79 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
           date: Date.new(2025, 12, 15).to_s,
+          occurrences: 80
+        },
+        {
+          user_id: user3.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 30
+        },
+        {
+          user_id: user4.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
           occurrences: 10
+        },
+        # Code suggestions - rejected events
+        {
+          user_id: user1.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 25
+        },
+        {
+          user_id: user2.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 40
+        },
+        {
+          user_id: user3.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 60
+        },
+        {
+          user_id: user4.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 5
+        },
+        # Chat events
+        {
+          user_id: user1.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:request_duo_chat_response],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 30
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
           date: Date.new(2025, 12, 15).to_s,
-          occurrences: 200
-        },
-        {
-          user_id: user1.id,
-          namespace_path: group.traversal_path,
-          event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.new(2025, 12, 15).to_s,
-          occurrences: 75
+          occurrences: 100
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
           date: Date.new(2025, 12, 15).to_s,
-          occurrences: 10
+          occurrences: 50
+        },
+        {
+          user_id: user4.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:request_duo_chat_response],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 80
         }
       ])
 
@@ -317,24 +393,96 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
         .and_return(true)
     end
 
-    it 'sorts by code suggestions descending' do
+    it 'sorts by code suggestions total count descending' do
       filter_params[:sort] = :CODE_SUGGESTIONS_TOTAL_COUNT_DESC
 
       post_graphql(query, current_user: current_user)
 
       user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
-
-      expect(user_ids).to eq([user3, user1, user2].map { |u| u.to_global_id.to_s })
+      # user2: 180 total, user1: 175 total, user3: 130 total, user4: 35 total
+      expect(user_ids).to eq([user2, user1, user3, user4].map { |u| u.to_global_id.to_s })
     end
 
-    it 'sorts by chat descending' do
+    it 'sorts by code suggestions total count ascending' do
+      filter_params[:sort] = :CODE_SUGGESTIONS_TOTAL_COUNT_ASC
+
+      post_graphql(query, current_user: current_user)
+
+      user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+      # user4: 35 total, user3: 130 total, user1: 175 total, user2: 180 total
+      expect(user_ids).to eq([user4, user3, user1, user2].map { |u| u.to_global_id.to_s })
+    end
+
+    it 'sorts by chat total count descending' do
       filter_params[:sort] = :CHAT_TOTAL_COUNT_DESC
 
       post_graphql(query, current_user: current_user)
 
       user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+      # user2: 100, user4: 80, user3: 50, user1: 30
+      expect(user_ids).to eq([user2, user4, user3, user1].map { |u| u.to_global_id.to_s })
+    end
 
-      expect(user_ids).to eq([user2, user1, user3].map { |u| u.to_global_id.to_s })
+    context 'with event-level sorting' do
+      it 'sorts by code_suggestion_shown_in_ide descending' do
+        filter_params[:sort] = :CODE_SUGGESTION_SHOWN_IN_IDE_DESC
+
+        post_graphql(query, current_user: current_user)
+
+        user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+        # user1: 100, user2: 60, user3: 40, user4: 20
+        expect(user_ids).to eq([user1, user2, user3, user4].map { |u| u.to_global_id.to_s })
+      end
+
+      it 'sorts by code_suggestion_shown_in_ide ascending' do
+        filter_params[:sort] = :CODE_SUGGESTION_SHOWN_IN_IDE_ASC
+
+        post_graphql(query, current_user: current_user)
+
+        user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+        # user4: 20, user3: 40, user2: 60, user1: 100
+        expect(user_ids).to eq([user4, user3, user2, user1].map { |u| u.to_global_id.to_s })
+      end
+
+      it 'sorts by code_suggestion_accepted_in_ide descending' do
+        filter_params[:sort] = :CODE_SUGGESTION_ACCEPTED_IN_IDE_DESC
+
+        post_graphql(query, current_user: current_user)
+
+        user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+        # user2: 80, user1: 50, user3: 30, user4: 10
+        expect(user_ids).to eq([user2, user1, user3, user4].map { |u| u.to_global_id.to_s })
+      end
+
+      it 'sorts by code_suggestion_rejected_in_ide descending' do
+        filter_params[:sort] = :CODE_SUGGESTION_REJECTED_IN_IDE_DESC
+
+        post_graphql(query, current_user: current_user)
+
+        user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+        # user3: 60, user2: 40, user1: 25, user4: 5
+        expect(user_ids).to eq([user3, user2, user1, user4].map { |u| u.to_global_id.to_s })
+      end
+
+      it 'sorts by request_duo_chat_response descending' do
+        filter_params[:sort] = :REQUEST_DUO_CHAT_RESPONSE_DESC
+
+        post_graphql(query, current_user: current_user)
+
+        user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+        # user2: 100, user4: 80, user3: 50, user1: 30
+        expect(user_ids).to eq([user2, user4, user3, user1].map { |u| u.to_global_id.to_s })
+      end
+
+      it 'sorts by request_duo_chat_response ascending' do
+        filter_params[:sort] = :REQUEST_DUO_CHAT_RESPONSE_ASC
+
+        post_graphql(query, current_user: current_user)
+
+        user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+        # user1: 30, user3: 50, user4: 80, user2: 100
+        expect(user_ids).to eq([user1, user3, user4, user2].map { |u| u.to_global_id.to_s })
+      end
     end
 
     context 'when AiUserMetricsService returns an error' do

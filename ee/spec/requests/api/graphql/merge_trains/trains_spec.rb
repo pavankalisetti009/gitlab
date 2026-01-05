@@ -107,15 +107,11 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
   context 'when the user does not have the permissions' do
     let(:user) { guest }
 
-    it 'returns a resource not available error' do
+    it 'returns an empty array without errors' do
       post_query
 
-      expect_graphql_errors_to_include(
-        "The resource that you are attempting to access does not exist " \
-          "or you don't have permission to perform this action"
-      )
-
-      expect(result).to be_nil
+      expect(graphql_errors).to be_blank
+      expect(result).to eq([])
     end
   end
 
@@ -156,17 +152,13 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
       end
 
       context 'when merge request access level is PRIVATE' do
-        it 'returns a resource not available error' do
+        it 'returns an empty array without errors' do
           public_project.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
 
           post_query
 
-          expect_graphql_errors_to_include(
-            "The resource that you are attempting to access does not exist " \
-              "or you don't have permission to perform this action"
-          )
-
-          expect(result).to be_nil
+          expect(graphql_errors).to be_blank
+          expect(result).to eq([])
         end
       end
     end

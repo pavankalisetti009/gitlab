@@ -496,6 +496,17 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           end
         end
 
+        context 'when sorting with specific event' do
+          let(:sort) { { field: :code_suggestion_accepted_in_ide_event_count, direction: :desc } }
+
+          it 'returns users sorted by code suggestion accepted in IDE event count in descending order' do
+            expect(service_response).to be_success
+            payload = service_response.payload
+
+            expect(payload.keys).to match_array([user3.id, user1.id, user2.id, user4.id])
+          end
+        end
+
         context 'when sorting with user_ids filter' do
           let(:user_ids) { [user1.id, user3.id] }
           let(:sort) { { field: :total_events_count, direction: :desc } }
