@@ -1,5 +1,6 @@
 <script>
 export default {
+  name: 'FormSection',
   props: {
     title: {
       type: String,

@@ -1,7 +1,7 @@
 <script>
 import { GlCollapsibleListbox, GlFormTextarea, GlFormGroup } from '@gitlab/ui';
 import { createAlert } from '~/alert';
-import DuoWorkflowAction from '../../../components/duo_workflow_action.vue';
+import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
 import AiLegalDisclaimer from './ai_legal_disclaimer.vue';
 
 export default {

@@ -3,11 +3,11 @@ import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import emptySearchSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-search-md.svg';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import { TYPENAME_AI_FLOW_TRIGGER } from 'ee/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import updateAiFlowTriggerMutation from '../../graphql/mutations/update_ai_flow_trigger.mutation.graphql';
-import getAiFlowTriggersQuery from '../../graphql/queries/get_ai_flow_triggers.query.graphql';
+import { TYPENAME_AI_FLOW_TRIGGER } from 'ee/graphql_shared/constants';
+import updateAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/update_ai_flow_trigger.mutation.graphql';
+import getAiFlowTriggersQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import FlowTriggerForm from './components/flow_trigger_form.vue';
 
 export default {

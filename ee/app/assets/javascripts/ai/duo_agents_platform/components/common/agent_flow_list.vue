@@ -2,7 +2,7 @@
 import { GlEmptyState, GlKeysetPagination } from '@gitlab/ui';
 import emptyStateIllustrationPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-pipeline-md.svg';
 import EmptyResult from '~/vue_shared/components/empty_result.vue';
-import { AGENTS_PLATFORM_SHOW_ROUTE } from '../../router/constants';
+import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import AgentFlowListItem from './agent_flow_list_item.vue';
 
 export default {

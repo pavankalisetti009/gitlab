@@ -1,6 +1,6 @@
 <script>
 import { GlIcon } from '@gitlab/ui';
-import { getAgentStatusIcon } from '../../utils';
+import { getAgentStatusIcon } from 'ee/ai/duo_agents_platform/utils';
 
 export default {
   name: 'AgentStatusIcon',

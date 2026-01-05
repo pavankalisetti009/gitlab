@@ -3,7 +3,6 @@ import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
 import NestedRouteApp from '../nested_route_app.vue';
 import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
-
 import {
   getStorageKey,
   restoreLastRoute,

@@ -1,9 +1,9 @@
 <script>
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import getUserAgentFlows from '../../graphql/queries/get_user_agent_flow.query.graphql';
-import DuoAgentsPlatformIndex from '../../pages/index/duo_agents_platform_index.vue';
-import { DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES } from '../../constants';
+import getUserAgentFlows from 'ee/ai/duo_agents_platform/graphql/queries/get_user_agent_flow.query.graphql';
+import DuoAgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/duo_agents_platform_index.vue';
+import { DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES } from 'ee/ai/duo_agents_platform/constants';
 
 export default {
   components: { DuoAgentsPlatformIndex },

@@ -11,11 +11,11 @@ import {
   GlTooltipDirective,
   GlSprintf,
 } from '@gitlab/ui';
-import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
+import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import {
   AI_CATALOG_ITEM_LABELS,

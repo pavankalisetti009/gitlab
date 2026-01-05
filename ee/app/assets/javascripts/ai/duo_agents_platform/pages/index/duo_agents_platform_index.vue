@@ -9,11 +9,11 @@ import {
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import { __, s__ } from '~/locale';
 import { useAiBetaBadge } from 'ee/ai/duo_agents_platform/composables/use_ai_beta_badge';
-import AgentFlowList from '../../components/common/agent_flow_list.vue';
+import AgentFlowList from 'ee/ai/duo_agents_platform/components/common/agent_flow_list.vue';
 import {
   AGENT_PLATFORM_INDEX_COMPONENT_NAME,
   DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES,
-} from '../../constants';
+} from 'ee/ai/duo_agents_platform/constants';
 
 export default {
   name: AGENT_PLATFORM_INDEX_COMPONENT_NAME,

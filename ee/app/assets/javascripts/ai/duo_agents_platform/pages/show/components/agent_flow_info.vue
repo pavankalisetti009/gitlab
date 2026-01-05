@@ -3,8 +3,8 @@ import { GlBadge, GlButton, GlLink, GlSkeletonLoader, GlTooltipDirective } from 
 import { __, s__ } from '~/locale';
 import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 import { joinPaths } from '~/lib/utils/url_utility';
-import { getAgentStatusBadge } from '../../../utils';
-import { AGENT_PLATFORM_CANCELABLE_STATUSES } from '../../../constants';
+import { getAgentStatusBadge } from 'ee/ai/duo_agents_platform/utils';
+import { AGENT_PLATFORM_CANCELABLE_STATUSES } from 'ee/ai/duo_agents_platform/constants';
 
 const AGENT_SESSIONS_PATH = '/-/automate/agent-sessions';
 

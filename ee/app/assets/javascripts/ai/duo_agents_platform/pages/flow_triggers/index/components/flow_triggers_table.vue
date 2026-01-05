@@ -12,7 +12,7 @@ import {
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { FLOW_TRIGGERS_EDIT_ROUTE } from '../../../../router/constants';
+import { FLOW_TRIGGERS_EDIT_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 
 const thClass = 'gl-whitespace-nowrap';
 const truncateClasses = '@md/panel:gl-truncate @md/panel:gl-max-w-0 @md/panel:gl-whitespace-nowrap';
