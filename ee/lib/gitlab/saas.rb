@@ -35,6 +35,7 @@ module Gitlab
         secret_detection_service
         ci_component_usages_in_projects
         disable_ropc_for_all_applications
+        redirect_sign_in_when_login_not_found
         disable_ropc_for_new_applications
         deduplicate_ci_tags
         targeted_messages
