@@ -63,7 +63,7 @@ RSpec.describe ::Ai::NamespaceFeatureAccessRule, feature_category: :ai_abstracti
           root_namespace: root_namespace
         ),
         build(:ai_namespace_feature_access_rules,
-          :duo_agents,
+          :duo_agent_platform,
           through_namespace: through_namespace2,
           root_namespace: root_namespace
         )

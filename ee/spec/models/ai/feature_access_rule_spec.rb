@@ -22,7 +22,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
           through_namespace: namespace1
         ),
         build(:ai_instance_accessible_entity_rules,
-          :duo_agents,
+          :duo_agent_platform,
           through_namespace: namespace2
         )
       ]
@@ -42,8 +42,8 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
     context 'when rules exist' do
       before do
         create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace_id: namespace_a.id)
-        create(:ai_instance_accessible_entity_rules, :duo_agents, through_namespace_id: namespace_a.id)
-        create(:ai_instance_accessible_entity_rules, :duo_flows, through_namespace_id: namespace_b.id)
+        create(:ai_instance_accessible_entity_rules, :duo_agent_platform, through_namespace_id: namespace_a.id)
+        create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace_id: namespace_b.id)
       end
 
       it 'returns rules' do
@@ -54,7 +54,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
               name: namespace_a.name,
               full_path: namespace_a.full_path
             },
-            features: %w[duo_agents duo_classic]
+            features: %w[duo_agent_platform duo_classic]
           },
           {
             through_namespace: {
@@ -62,7 +62,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
               name: namespace_b.name,
               full_path: namespace_b.full_path
             },
-            features: %w[duo_flows]
+            features: %w[duo_classic]
           }
         ])
       end
@@ -99,8 +99,8 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
     context 'when rules exist for root namespaces' do
       before do
         create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace: root_namespace_a)
-        create(:ai_instance_accessible_entity_rules, :duo_agents, through_namespace: root_namespace_a)
-        create(:ai_instance_accessible_entity_rules, :duo_flows, through_namespace: root_namespace_b)
+        create(:ai_instance_accessible_entity_rules, :duo_agent_platform, through_namespace: root_namespace_a)
+        create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace: root_namespace_b)
       end
 
       it 'returns only root namespace rules' do
@@ -111,7 +111,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
               name: root_namespace_a.name,
               full_path: root_namespace_a.full_path
             },
-            features: %w[duo_agents duo_classic]
+            features: %w[duo_agent_platform duo_classic]
           },
           {
             through_namespace: {
@@ -119,7 +119,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
               name: root_namespace_b.name,
               full_path: root_namespace_b.full_path
             },
-            features: %w[duo_flows]
+            features: %w[duo_classic]
           }
         ])
       end
@@ -128,7 +128,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
     context 'when rules exist for both root and nested namespaces' do
       before do
         create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace: root_namespace_a)
-        create(:ai_instance_accessible_entity_rules, :duo_agents, through_namespace: subgroup)
+        create(:ai_instance_accessible_entity_rules, :duo_agent_platform, through_namespace: subgroup)
       end
 
       it 'returns only root namespace rules' do
@@ -169,13 +169,14 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
 
     it 'creates instance accessible entity rules' do
       described_class.duo_namespace_access_rules = [
-        { through_namespace: { id: namespace_a.id }, features: %w[duo_agents duo_classic] },
-        { through_namespace: { id: namespace_b.id }, features: %w[duo_flows] }
+        { through_namespace: { id: namespace_a.id }, features: %w[duo_classic duo_agent_platform] },
+        { through_namespace: { id: namespace_b.id }, features: %w[duo_agent_platform] }
       ]
 
       expect(namespace_a.accessible_ai_features_on_instance.pluck(:accessible_entity))
-        .to match_array(%w[duo_classic duo_agents])
-      expect(namespace_b.accessible_ai_features_on_instance.pluck(:accessible_entity)).to match_array(%w[duo_flows])
+        .to match_array(%w[duo_classic duo_agent_platform])
+      expect(namespace_b.accessible_ai_features_on_instance.pluck(:accessible_entity))
+        .to match_array(%w[duo_agent_platform])
     end
 
     context 'with empty array' do
@@ -197,7 +198,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
 
       it 'does not create entity rules' do
         described_class.duo_namespace_access_rules = [
-          { namespace_id: namespace_a.id, access_rules: %w[duo_agents duo_classic] }
+          { namespace_id: namespace_a.id, access_rules: %w[duo_classic duo_agent_platform] }
         ]
 
         expect(Ai::FeatureAccessRule.count).to eq(0)

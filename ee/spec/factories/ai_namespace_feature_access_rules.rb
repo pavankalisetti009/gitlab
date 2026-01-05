@@ -8,12 +8,8 @@ FactoryBot.define do
     created_at { Time.zone.now }
     updated_at { Time.zone.now }
 
-    trait :duo_agents do
-      accessible_entity { 'duo_agents' }
-    end
-
-    trait :duo_flows do
-      accessible_entity { 'duo_flows' }
+    trait :duo_agent_platform do
+      accessible_entity { 'duo_agent_platform' }
     end
 
     trait :duo_classic do

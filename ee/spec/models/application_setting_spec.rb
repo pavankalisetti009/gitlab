@@ -838,8 +838,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       context 'when rules exist' do
         before do
           create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace_id: namespace_a.id)
-          create(:ai_instance_accessible_entity_rules, :duo_agents, through_namespace_id: namespace_a.id)
-          create(:ai_instance_accessible_entity_rules, :duo_flows, through_namespace_id: namespace_b.id)
+          create(:ai_instance_accessible_entity_rules, :duo_agent_platform, through_namespace_id: namespace_a.id)
+          create(:ai_instance_accessible_entity_rules, :duo_agent_platform, through_namespace_id: namespace_b.id)
         end
 
         it 'returns rules' do
@@ -850,7 +850,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                 name: namespace_a.name,
                 full_path: namespace_a.full_path
               },
-              features: %w[duo_agents duo_classic]
+              features: %w[duo_agent_platform duo_classic]
             },
             {
               through_namespace: {
@@ -858,7 +858,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                 name: namespace_b.name,
                 full_path: namespace_b.full_path
               },
-              features: %w[duo_flows]
+              features: %w[duo_agent_platform]
             }
           ])
         end
