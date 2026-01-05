@@ -17,6 +17,7 @@ module API
         resource ":id/#{provider_type}", requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
           desc 'Get user identities for the provider' do
             success ::API::Entities::IdentityDetail
+            tags ['provider_identities']
           end
 
           get "/identities" do
@@ -33,6 +34,7 @@ module API
 
           desc 'Get a single identity for a user' do
             success ::API::Entities::IdentityDetail
+            tags ['provider_identities']
           end
           params do
             requires :uid, type: String, desc: 'External UID of the user'
@@ -48,6 +50,7 @@ module API
 
           desc 'Update extern_uid for the user' do
             success ::API::Entities::IdentityDetail
+            tags ['provider_identities']
           end
 
           params do
@@ -70,6 +73,7 @@ module API
 
           desc 'Delete the Provider identity' do
             success ::API::Entities::IdentityDetail
+            tags ['provider_identities']
           end
 
           params do

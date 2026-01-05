@@ -15,7 +15,8 @@ module VirtualRegistries
 
       queue_namespace :dependency_proxy_blob
       feature_category :virtual_registry
-      defer_on_database_health_signal :gitlab_main, [:virtual_registries_packages_maven_cache_entries], 5.minutes
+      defer_on_database_health_signal :gitlab_main,
+        [:virtual_registries_packages_maven_cache_entries, :virtual_registries_container_cache_entries], 5.minutes
 
       def perform_work(model)
         next_item = next_item(model.constantize)
