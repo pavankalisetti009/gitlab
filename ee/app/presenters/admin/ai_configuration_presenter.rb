@@ -57,7 +57,7 @@ module Admin
         foundational_agents_statuses: Gitlab::Json.dump(foundational_agents_statuses)
       }
 
-      settings_hash[:namespace_access_rules] = Gitlab::Json.dump(namespace_access_rule) if Feature.enabled?(
+      settings_hash[:namespace_access_rules] = Gitlab::Json.dump(namespace_access_rules) if Feature.enabled?(
         :duo_access_through_namespaces, :instance)
 
       settings_hash.transform_values(&:to_s)
@@ -65,9 +65,8 @@ module Admin
 
     private
 
-    # TODO see also https://gitlab.com/groups/gitlab-org/-/epics/20332
-    def namespace_access_rule
-      []
+    def namespace_access_rules
+      ::Ai::FeatureAccessRule.duo_root_namespace_access_rules
     end
 
     def show_foundational_agents_per_agent_availability?

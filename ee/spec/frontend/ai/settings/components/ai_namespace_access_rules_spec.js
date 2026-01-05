@@ -1,5 +1,6 @@
 import { GlTable, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
-import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { mount } from '@vue/test-utils';
+import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import AiNamespaceAccessRules from 'ee/ai/settings/components/ai_namespace_access_rules.vue';
 
 describe('AiNamespaceAccessRules', () => {
@@ -7,28 +8,32 @@ describe('AiNamespaceAccessRules', () => {
 
   const mockAccessRules = [
     {
-      namespaceName: 'Group A',
-      namespacePath: 'group-a',
-      enabledFeatures: ['duo_classic', 'duo_agents'],
+      throughNamespace: {
+        id: 1,
+        name: 'Group A',
+        fullPath: 'group-a',
+      },
+      features: ['duo_classic', 'duo_agents'],
     },
     {
-      namespaceName: 'Group B',
-      namespacePath: 'group-b',
-      enabledFeatures: ['duo_flows'],
+      throughNamespace: {
+        id: 2,
+        name: 'Group B',
+        fullPath: 'group-b',
+      },
+      features: ['duo_flows'],
     },
   ];
 
-  const createComponent = ({ props = {}, mountFn = shallowMountExtended } = {}) => {
-    wrapper = mountFn(AiNamespaceAccessRules, {
-      propsData: {
-        initialNamespaceAccessRules: mockAccessRules,
-        ...props,
-      },
-      stubs: {
-        GlTable,
-        GlFormGroup,
-      },
-    });
+  const createComponent = ({ props = {} } = {}) => {
+    wrapper = extendedWrapper(
+      mount(AiNamespaceAccessRules, {
+        propsData: {
+          initialNamespaceAccessRules: mockAccessRules,
+          ...props,
+        },
+      }),
+    );
   };
 
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
@@ -38,20 +43,9 @@ describe('AiNamespaceAccessRules', () => {
     wrapper.findAllComponents(GlLink).filter((link) => link.attributes('target') === '_blank');
   const findCheckboxes = () => wrapper.findAllComponents(GlFormCheckbox);
 
-  describe('when initialNamespaceAccessRules is null', () => {
-    beforeEach(() => {
-      createComponent({ props: { initialNamespaceAccessRules: null } });
-    });
-
-    it('does not render the component', () => {
-      expect(findFormGroup().exists()).toBe(false);
-      expect(findTable().exists()).toBe(false);
-    });
-  });
-
   describe('when access rules array is empty', () => {
     beforeEach(() => {
-      createComponent({ props: { initialNamespaceAccessRules: [] }, mountFn: mountExtended });
+      createComponent({ props: { initialNamespaceAccessRules: [] } });
     });
 
     it('renders the table', () => {
@@ -59,17 +53,17 @@ describe('AiNamespaceAccessRules', () => {
     });
 
     it('displays the empty state message', () => {
-      expect(wrapper.text()).toContain('No access rules configured.');
+      expect(wrapper.text()).toContain('No access rules configured');
     });
   });
 
   describe('when initialNamespaceAccessRules is provided', () => {
     beforeEach(() => {
-      createComponent({ mountFn: mountExtended });
+      createComponent();
     });
 
     it('renders the form group with correct label', () => {
-      expect(findFormGroup().text()).toContain('Member Access');
+      expect(findFormGroup().text()).toContain('Member access');
     });
 
     it('renders the help text', () => {
@@ -91,7 +85,7 @@ describe('AiNamespaceAccessRules', () => {
     it('renders the table with correct fields', () => {
       expect(findTable().props('fields')).toEqual([
         { key: 'namespaceName', label: 'Group' },
-        { key: 'enabledFeatures', label: 'Membership grants access to' },
+        { key: 'features', label: 'Membership grants access to' },
         { key: 'actions', label: null },
       ]);
     });
@@ -108,20 +102,21 @@ describe('AiNamespaceAccessRules', () => {
       });
     });
 
-    describe('enabled features checkboxes', () => {
-      it('renders checkboxes for each entity per rule', () => {
+    describe('access rules checkboxes', () => {
+      it('renders checkboxes for each feature for each rule', () => {
         const checkboxes = findCheckboxes();
         expect(checkboxes).toHaveLength(6);
       });
 
-      it('renders checkbox labels for all available entities', () => {
+      it('renders checkbox labels for all available features', () => {
         const checkboxes = findCheckboxes();
+
         expect(checkboxes.at(0).text()).toBe('GitLab Duo Classic');
         expect(checkboxes.at(1).text()).toBe('GitLab Duo Agents');
         expect(checkboxes.at(2).text()).toBe('GitLab Duo Flows and External Agents');
       });
 
-      it('checks the correct checkboxes based on enabledFeatures', () => {
+      it('checks the correct checkboxes based on configuration', () => {
         const checkboxes = findCheckboxes();
 
         expect(checkboxes.at(0).props('checked')).toBe(true);

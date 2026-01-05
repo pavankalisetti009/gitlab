@@ -850,7 +850,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                 name: namespace_a.name,
                 full_path: namespace_a.full_path
               },
-              features: %w[duo_classic duo_agents]
+              features: %w[duo_agents duo_classic]
             },
             {
               through_namespace: {

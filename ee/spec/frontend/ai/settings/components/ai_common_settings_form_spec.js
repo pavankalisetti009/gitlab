@@ -10,6 +10,7 @@ import DuoFlowSettings from 'ee/ai/settings/components/duo_flow_settings.vue';
 import DuoSastFpDetectionSettings from 'ee/ai/settings/components/duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from 'ee/ai/settings/components/duo_foundational_agents_settings.vue';
 import DuoAgentPlatformSettingsForm from 'ee/ai/settings/components/duo_agent_platform_settings_form.vue';
+import AiNamespaceAccessRules from 'ee/ai/settings/components/ai_namespace_access_rules.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import { mockAgentStatuses } from '../../mocks';
 
@@ -31,6 +32,7 @@ describe('AiCommonSettingsForm', () => {
         selectedFoundationalFlowIds: [],
         foundationalAgentsStatuses: mockAgentStatuses,
         duoAgentPlatformEnabled: true,
+        initialNamespaceAccessRules: [],
         ...props,
       },
       provide: {
@@ -57,6 +59,7 @@ describe('AiCommonSettingsForm', () => {
   const findDuoAgentPlatformSettingsForm = () =>
     wrapper.findComponent(DuoAgentPlatformSettingsForm);
   const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
+  const findAiNamespaceAccessRules = () => wrapper.findComponent(AiNamespaceAccessRules);
   const findSaveButton = () => wrapper.findComponent(GlButton);
 
   beforeEach(() => {
@@ -64,6 +67,20 @@ describe('AiCommonSettingsForm', () => {
   });
 
   describe('component rendering', () => {
+    it('renders AI Namespace Access Rules component', () => {
+      expect(findAiNamespaceAccessRules().exists()).toBe(true);
+    });
+
+    describe('when initialNamespaceAccessRules is null', () => {
+      beforeEach(() => {
+        createComponent({ props: { initialNamespaceAccessRules: null } });
+      });
+
+      it('does not render the component', () => {
+        expect(findAiNamespaceAccessRules().exists()).toBe(false);
+      });
+    });
+
     it('renders GlForm component', () => {
       expect(findForm().exists()).toBe(true);
     });

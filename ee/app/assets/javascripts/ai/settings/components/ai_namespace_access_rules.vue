@@ -2,7 +2,7 @@
 import { GlTable, GlButton, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 
-const AVAILABLE_ENTITIES = [
+const AVAILABLE_FEATURES = [
   {
     key: 'duo_classic',
     label: s__('AiPowered|GitLab Duo Classic'),
@@ -26,14 +26,14 @@ export default {
     GlFormCheckbox,
     GlLink,
   },
-  AVAILABLE_ENTITIES,
+  AVAILABLE_FEATURES,
   fields: [
     {
       key: 'namespaceName',
       label: s__('AiPowered|Group'),
     },
     {
-      key: 'enabledFeatures',
+      key: 'features',
       label: s__('AiPowered|Membership grants access to'),
     },
     {
@@ -55,17 +55,17 @@ export default {
     };
   },
   methods: {
-    isEntityEnabled(namespaceAccessRule, entityKey) {
-      return namespaceAccessRule?.enabledFeatures?.includes(entityKey) || false;
+    isFeatureEnabled(namespaceAccessRule, feature) {
+      return namespaceAccessRule.features.includes(feature) || false;
     },
   },
 };
 </script>
 
 <template>
-  <div v-if="initialNamespaceAccessRules" class="mb-4 gl-max-w-3xl">
-    <gl-form-group :label="s__('AiPowered|Member Access')">
-      <p class="gl-mb-5 gl-text-secondary">
+  <div class="gl-mb-4 gl-max-w-3xl">
+    <gl-form-group :label="s__('AiPowered|Member access')">
+      <p class="gl-mb-5 gl-text-subtle">
         {{
           s__('AiPowered|Only members of these groups will have access to selected AI features.')
         }}
@@ -83,25 +83,25 @@ export default {
       >
         <template #empty>
           <div class="gl-my-5 gl-text-center gl-text-secondary">
-            {{ s__('AiPowered|No access rules configured.') }}
+            {{ s__('AiPowered|No access rules configured') }}
           </div>
         </template>
 
         <template #cell(namespaceName)="{ item }">
-          <gl-link :href="`/${item.namespacePath}`" target="_blank">
-            {{ item.namespaceName }}
+          <gl-link :href="`/${item.throughNamespace.fullPath}`" target="_blank">
+            {{ item.throughNamespace.name }}
           </gl-link>
         </template>
 
-        <template #cell(enabledFeatures)="{ item }">
+        <template #cell(features)="{ item }">
           <div class="gl-display-flex gl-flex-direction-column gl-gap-3">
             <gl-form-checkbox
-              v-for="entity in $options.AVAILABLE_ENTITIES"
-              :key="entity.key"
-              :checked="isEntityEnabled(item, entity.key)"
+              v-for="feature in $options.AVAILABLE_FEATURES"
+              :key="feature.key"
+              :checked="isFeatureEnabled(item, feature.key)"
               disabled
             >
-              {{ entity.label }}
+              {{ feature.label }}
             </gl-form-checkbox>
           </div>
         </template>

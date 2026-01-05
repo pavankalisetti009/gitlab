@@ -71,16 +71,13 @@ export const initAiSettings = (id, component, options = {}) => {
   let duoSastFpDetectionCascadingSettingsParsed;
   let namespaceAccessRulesParsed;
 
-  if (el.dataset.namespaceAccessRules) {
-    namespaceAccessRulesParsed = convertObjectPropsToCamelCase(
-      JSON.parse(namespaceAccessRules || '[]'),
-      {
-        deep: true,
-      },
-    );
-  }
-
   try {
+    if (namespaceAccessRules) {
+      namespaceAccessRulesParsed = convertObjectPropsToCamelCase(JSON.parse(namespaceAccessRules), {
+        deep: true,
+      });
+    }
+
     duoAvailabilityCascadingSettingsParsed = convertObjectPropsToCamelCase(
       JSON.parse(duoAvailabilityCascadingSettings),
       {

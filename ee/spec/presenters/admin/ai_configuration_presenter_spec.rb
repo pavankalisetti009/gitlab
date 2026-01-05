@@ -81,7 +81,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       allow(License).to receive(:feature_available?).with(:self_hosted_models).and_return self_hosted_models
 
       allow(Gitlab::CurrentSettings).to receive(:current_application_settings).and_return application_settings
-      allow(Ai::FeatureSetting).to receive(:duo_root_namespace_access_rules).and_return namespace_access_rules
+      allow(Ai::FeatureAccessRule).to receive(:duo_root_namespace_access_rules).and_return namespace_access_rules
 
       allow(GitlabSubscriptions::DuoEnterprise).to receive_messages(
         active_add_on_purchase_for_self_managed?: active_add_on_purchase_for_self_managed?
@@ -118,7 +118,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         foundational_agents_default_enabled: 'true',
         show_foundational_agents_availability: 'true',
         show_foundational_agents_per_agent_availability: 'false',
-        namespace_access_rules: '[]'
+        namespace_access_rules: Gitlab::Json.dump(namespace_access_rules)
       )
     end
 
