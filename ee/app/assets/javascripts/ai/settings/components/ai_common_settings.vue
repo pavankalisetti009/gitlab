@@ -116,7 +116,11 @@ export default {
 <template>
   <div>
     <template v-if="onGeneralSettingsPage">
-      <settings-block class="gl-mb-5 !gl-pt-5" :title="$options.i18n.settingsBlockTitle">
+      <settings-block
+        id="js-gitlab-duo-settings"
+        class="gl-mb-5 !gl-pt-5"
+        :title="$options.i18n.settingsBlockTitle"
+      >
         <template #description>
           <gl-sprintf
             data-testid="general-settings-subtitle"
