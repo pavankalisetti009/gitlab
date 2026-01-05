@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTable, GlProgressBar, GlAlert, GlKeysetPagination } from '@gitlab/ui';
+import { GlTableLite, GlProgressBar, GlAlert, GlKeysetPagination } from '@gitlab/ui';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
@@ -41,7 +41,7 @@ describe('UsageByUserTab', () => {
     });
   };
 
-  const findTable = () => wrapper.findComponent(GlTable);
+  const findTable = () => wrapper.findComponent(GlTableLite);
   const findProgressBars = () => wrapper.findAllComponents(GlProgressBar);
   const findAlert = () => wrapper.findComponent(GlAlert);
 

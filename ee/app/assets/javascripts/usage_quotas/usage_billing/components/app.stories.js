@@ -56,6 +56,8 @@ const createTemplate = (config = {}) => {
     defaultClient,
   });
 
+  window.gon.display_gitlab_credits_user_data = true;
+
   return (args, { argTypes }) => ({
     apolloProvider,
     components: {

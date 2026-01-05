@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlKeysetPagination, GlTable, GlProgressBar } from '@gitlab/ui';
+import { GlAlert, GlKeysetPagination, GlTableLite, GlProgressBar } from '@gitlab/ui';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { s__, __ } from '~/locale';
 import { logError } from '~/lib/logger';
@@ -22,7 +22,7 @@ export default {
   components: {
     UserAvatarLink,
     GlAlert,
-    GlTable,
+    GlTableLite,
     GlProgressBar,
     GlKeysetPagination,
   },
@@ -167,7 +167,7 @@ export default {
   </gl-alert>
 
   <section v-else>
-    <gl-table
+    <gl-table-lite
       :items="usersList"
       :fields="$options.tableFields"
       :busy="false"
@@ -175,6 +175,9 @@ export default {
       stacked="md"
       class="gl-w-full [&_th]:!gl-border-none"
     >
+      <template #head(totalCreditsUsed)="{ label }">
+        <div class="gl-flex gl-justify-end">{{ label }}</div>
+      </template>
       <template #cell(user)="{ item: user }">
         <div class="gl-flex gl-items-center">
           <user-avatar-link
@@ -214,7 +217,7 @@ export default {
           <p class="gl-mb-0 gl-text-subtle">{{ s__('UsageBilling|No user data available') }}</p>
         </div>
       </template>
-    </gl-table>
+    </gl-table-lite>
 
     <div class="gl-mt-5 gl-flex gl-justify-center">
       <gl-keyset-pagination
