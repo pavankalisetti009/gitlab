@@ -220,13 +220,30 @@ RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate
       context 'for subgroup' do
         let(:group_id) { subgroup.id }
 
-        it 'returns error' do
+        context 'when feature flag allow_subgroups_to_create_service_accounts is false' do
+          before do
+            stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
+          end
+
+          it 'returns error' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include(
+              s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
+            )
+          end
+        end
+
+        it 'creates the user with the correct attributes' do
           perform_request
 
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response['message']).to include(
-            s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
-          )
+          user = User.find(json_response['id'])
+
+          expect(user.namespace.organization).to eq(current_organization)
+          expect(user.user_type).to eq('service_account')
+          expect(user.provisioned_by_group_id).to eq(group_id)
+          expect(user).to be_confirmed
         end
       end
     end

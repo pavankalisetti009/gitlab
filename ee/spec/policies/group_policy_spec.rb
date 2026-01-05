@@ -3699,50 +3699,53 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
             it { is_expected.to be_allowed(:admin_service_accounts) }
             it { is_expected.to be_allowed(:admin_service_account_member) }
-            it { is_expected.to be_disallowed(:create_service_account) }
-            it { is_expected.to be_disallowed(:delete_service_account) }
-            it { is_expected.to be_disallowed(:read_service_account) }
-          end
-        end
+            it { is_expected.to be_allowed(:create_service_account) }
+            it { is_expected.to be_allowed(:delete_service_account) }
+            it { is_expected.to be_allowed(:read_service_account) }
 
-        context 'for subgroup' do
-          subject { described_class.new(current_user, subgroup) }
+            context 'when a trial is active in GitLab.com', :saas do
+              let(:current_user) { owner }
 
-          it { is_expected.to be_allowed(:admin_service_accounts) }
-          it { is_expected.to be_allowed(:admin_service_account_member) }
-          it { is_expected.to be_disallowed(:create_service_account) }
-          it { is_expected.to be_disallowed(:delete_service_account) }
-          it { is_expected.to be_disallowed(:read_service_account) }
-
-          context 'when a trial is active in GitLab.com', :saas do
-            let(:current_user) { owner }
-
-            before do
-              allow(subgroup.root_ancestor).to receive_messages(trial_active?: true)
-            end
-
-            context 'for owner with verified identity' do
               before do
-                allow(owner).to receive(:identity_verified?).and_return(true)
+                allow(subgroup.root_ancestor).to receive_messages(trial_active?: true)
               end
 
-              it { is_expected.to be_allowed(:admin_service_accounts) }
-              it { is_expected.to be_allowed(:admin_service_account_member) }
-              it { is_expected.to be_disallowed(:create_service_account) }
-              it { is_expected.to be_disallowed(:delete_service_account) }
-              it { is_expected.to be_disallowed(:read_service_account) }
-            end
+              context 'for owner with verified identity' do
+                before do
+                  allow(owner).to receive(:identity_verified?).and_return(true)
+                end
 
-            context 'for owner without verified identity' do
-              before do
-                allow(owner).to receive(:identity_verified?).and_return(false)
+                it { is_expected.to be_allowed(:admin_service_accounts) }
+                it { is_expected.to be_allowed(:admin_service_account_member) }
+                it { is_expected.to be_allowed(:create_service_account) }
+                it { is_expected.to be_allowed(:delete_service_account) }
+                it { is_expected.to be_allowed(:read_service_account) }
               end
 
-              it { is_expected.to be_disallowed(:admin_service_accounts) }
-              it { is_expected.to be_disallowed(:admin_service_account_member) }
-              it { is_expected.to be_disallowed(:create_service_account) }
-              it { is_expected.to be_disallowed(:delete_service_account) }
-              it { is_expected.to be_disallowed(:read_service_account) }
+              context 'for owner without verified identity' do
+                before do
+                  allow(owner).to receive(:identity_verified?).and_return(false)
+                end
+
+                it { is_expected.to be_disallowed(:admin_service_accounts) }
+                it { is_expected.to be_disallowed(:admin_service_account_member) }
+                it { is_expected.to be_disallowed(:create_service_account) }
+                it { is_expected.to be_disallowed(:delete_service_account) }
+                it { is_expected.to be_allowed(:read_service_account) }
+              end
+
+              context 'when feature flag allow_subgroups_to_create_service_accounts is false' do
+                before do
+                  allow(owner).to receive(:identity_verified?).and_return(true)
+                  stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
+                end
+
+                it { is_expected.to be_allowed(:admin_service_accounts) }
+                it { is_expected.to be_allowed(:admin_service_account_member) }
+                it { is_expected.to be_disallowed(:create_service_account) }
+                it { is_expected.to be_disallowed(:delete_service_account) }
+                it { is_expected.to be_disallowed(:read_service_account) }
+              end
             end
           end
         end
@@ -3775,9 +3778,9 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
             it { is_expected.to be_allowed(:admin_service_accounts) }
             it { is_expected.to be_allowed(:admin_service_account_member) }
-            it { is_expected.to be_disallowed(:create_service_account) }
-            it { is_expected.to be_disallowed(:delete_service_account) }
-            it { is_expected.to be_disallowed(:read_service_account) }
+            it { is_expected.to be_allowed(:create_service_account) }
+            it { is_expected.to be_allowed(:delete_service_account) }
+            it { is_expected.to be_allowed(:read_service_account) }
           end
         end
 
