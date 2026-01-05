@@ -1,13 +1,16 @@
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { setCookie, getCookie } from '~/lib/utils/common_utils';
+import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import {
   DUO_AGENTIC_MODE_COOKIE,
   DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
   CHAT_MODES,
 } from 'ee/ai/tanuki_bot/constants';
 
-// Initialize chatMode from cookie on module load
-const savedMode = getCookie(DUO_AGENTIC_MODE_COOKIE);
+// Initialize chatMode from cookie or localStorage on module load
+const savedModeCookie = getCookie(DUO_AGENTIC_MODE_COOKIE);
+const savedModeStorage = getStorageValue(DUO_AGENTIC_MODE_COOKIE);
+const savedMode = savedModeCookie || (savedModeStorage.exists ? savedModeStorage.value : null);
 
 // When agenticChatGa FF is enabled, default to agentic unless explicitly disabled
 // When FF is disabled, default to classic unless explicitly enabled
@@ -31,7 +34,8 @@ export const concatStreamedChunks = (arr) => {
 };
 
 /**
- * setCookie wrapper with duo agentic mode constances.
+ * Save duo agentic mode preference to both cookie and localStorage.
+ * localStorage is used as fallback for mobile/private browsing where cookies may not work.
  *
  * @param {isAgenticMode} Boolean - Value to save
  * @returns {void}
@@ -40,6 +44,7 @@ export const saveDuoAgenticModePreference = (isAgenticMode) => {
   setCookie(DUO_AGENTIC_MODE_COOKIE, isAgenticMode, {
     expires: DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
   });
+  saveStorageValue(DUO_AGENTIC_MODE_COOKIE, isAgenticMode);
 };
 
 /**
