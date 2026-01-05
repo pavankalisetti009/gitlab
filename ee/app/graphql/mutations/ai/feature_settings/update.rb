@@ -25,6 +25,8 @@ module Mutations
           description: 'Identifier of the selected model for the feature.'
 
         def resolve(**args)
+          check_feature_access!
+
           raise_argument_not_available_if!(args, :ai_self_hosted_model_id) { !self_hosted_models? }
           raise_argument_not_available_if!(args, :offered_model_ref) { !gitlab_models? }
 
