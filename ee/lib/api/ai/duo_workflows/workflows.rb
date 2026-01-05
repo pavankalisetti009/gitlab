@@ -33,8 +33,36 @@ module API
               headers['X-Gitlab-Namespace-Id'].presence
             return unless namespace_id
 
+            # First find the namespace (returns nil if not found)
             namespace = find_namespace(namespace_id)
-            namespace&.root_ancestor
+            return unless namespace
+
+            # Then enforce authorization (raises 404 if no access)
+            check_namespace_access(namespace)
+
+            root_namespace = namespace.root_ancestor
+
+            # Validate namespace is contextually relevant to prevent
+            # unauthorized access to model settings from unrelated namespaces
+            validate_namespace_context!(root_namespace)
+
+            root_namespace
+          end
+
+          def validate_namespace_context!(namespace)
+            # If working in a project context, namespace must be the project's root namespace
+            if params[:project_id].presence
+              project = find_project!(params[:project_id])
+              forbidden!("Namespace does not match project context") unless namespace.id == project.root_namespace.id
+            end
+
+            # If working in a namespace context (without project), must match or be ancestor
+            return unless params[:namespace_id].presence
+
+            context_namespace = find_namespace!(params[:namespace_id])
+            return if namespace.id == context_namespace.root_ancestor.id
+
+            forbidden!("Namespace does not match workflow context")
           end
 
           def find_feature_setting_name

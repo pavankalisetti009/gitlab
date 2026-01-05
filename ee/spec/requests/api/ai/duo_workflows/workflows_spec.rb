@@ -1536,6 +1536,289 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
+      # rubocop:disable RSpec/MultipleMemoizedHelpers -- Complex authorization test requires multiple groups, projects, and namespaces to validate security boundaries
+      context 'with namespace authorization and context validation' do
+        let_it_be(:other_group) { create(:group) }
+        let_it_be(:other_project) { create(:project, :repository, group: other_group) }
+        let_it_be(:unauthorized_group) { create(:group) }
+        let_it_be(:parent_group_2) { create(:group) }
+        let_it_be(:child_group_2) { create(:group, parent: parent_group_2) }
+        let_it_be(:nested_project_2) { create(:project, :repository, group: child_group_2) }
+        let_it_be(:parent_group_3) { create(:group) }
+        let_it_be(:child_group_3) { create(:group, parent: parent_group_3) }
+        let_it_be(:premium_group) { create(:group) }
+        let_it_be(:basic_project) { create(:project, :repository, group: group) }
+
+        before_all do
+          other_group.add_developer(user)
+          parent_group_2.add_developer(user)
+          parent_group_3.add_developer(user)
+          premium_group.add_guest(user)
+        end
+
+        context 'when namespace authorization is enforced' do
+          context 'when user has no access to the namespace' do
+            it 'returns 404 when namespace is provided via root_namespace_id' do
+              get api(path, user), headers: workhorse_headers, params: {
+                root_namespace_id: unauthorized_group.id
+              }
+
+              expect(response).to have_gitlab_http_status(:not_found)
+              expect(json_response['message']).to eq('404 Namespace Not Found')
+            end
+
+            it 'returns 404 when namespace is provided via namespace_id' do
+              get api(path, user), headers: workhorse_headers, params: {
+                namespace_id: unauthorized_group.id
+              }
+
+              expect(response).to have_gitlab_http_status(:not_found)
+              expect(json_response['message']).to eq('404 Namespace Not Found')
+            end
+
+            it 'returns 404 when namespace is provided via header' do
+              get api(path, user), headers: workhorse_headers.merge(
+                'X-Gitlab-Namespace-Id' => unauthorized_group.id
+              )
+
+              expect(response).to have_gitlab_http_status(:not_found)
+              expect(json_response['message']).to eq('404 Namespace Not Found')
+            end
+          end
+
+          context 'when user has access to the namespace' do
+            it 'succeeds when accessing authorized namespace' do
+              get api(path, user), headers: workhorse_headers, params: {
+                root_namespace_id: group.id
+              }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['DuoWorkflow']['Headers']).to include(
+                'x-gitlab-root-namespace-id' => group.id.to_s
+              )
+            end
+          end
+        end
+
+        context 'when context validation is required' do
+          context 'with project context' do
+            context 'when namespace does not match project context' do
+              it 'returns 403 forbidden when using mismatched namespace via root_namespace_id' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  project_id: project.id,
+                  root_namespace_id: other_group.id
+                }
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+                expect(json_response['message']).to eq('403 Forbidden - Namespace does not match project context')
+              end
+
+              it 'returns 403 forbidden when using mismatched namespace via header' do
+                get api(path, user), headers: workhorse_headers.merge(
+                  'X-Gitlab-Namespace-Id' => other_group.id
+                ), params: {
+                  project_id: project.id
+                }
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+                expect(json_response['message']).to eq('403 Forbidden - Namespace does not match project context')
+              end
+
+              it 'returns 403 forbidden when namespace_id does not match project' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  project_id: project.id,
+                  namespace_id: other_group.id
+                }
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+                expect(json_response['message']).to eq('403 Forbidden - Namespace does not match project context')
+              end
+            end
+
+            context 'when namespace matches project context' do
+              it 'succeeds when namespace matches project root namespace' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  project_id: project.id,
+                  root_namespace_id: group.id
+                }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['DuoWorkflow']['Headers']).to include(
+                  'x-gitlab-project-id' => project.id.to_s,
+                  'x-gitlab-root-namespace-id' => group.id.to_s
+                )
+              end
+            end
+
+            context 'with nested groups and projects' do
+              before do
+                allow_any_instance_of(User).to receive(:allowed_to_use).and_return( # rubocop:disable RSpec/AnyInstanceOf -- overriding top-level mock
+                  Ai::UserAuthorizable::Response.new(
+                    allowed?: true,
+                    namespace_ids: [group.id, other_group.id, parent_group_2.id, child_group_2.id]
+                  )
+                )
+              end
+
+              it 'succeeds when using child group namespace with nested project' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  project_id: nested_project_2.id,
+                  namespace_id: child_group_2.id
+                }
+
+                expect(response).to have_gitlab_http_status(:ok)
+              end
+
+              it 'succeeds when using root namespace with nested project' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  project_id: nested_project_2.id,
+                  root_namespace_id: parent_group_2.id
+                }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['DuoWorkflow']['Headers']).to include(
+                  'x-gitlab-project-id' => nested_project_2.id.to_s,
+                  'x-gitlab-root-namespace-id' => parent_group_2.id.to_s
+                )
+              end
+
+              it 'returns 403 when using wrong root namespace with nested project' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  project_id: nested_project_2.id,
+                  root_namespace_id: other_group.id
+                }
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+                expect(json_response['message']).to eq('403 Forbidden - Namespace does not match project context')
+              end
+            end
+          end
+
+          context 'with namespace context (no project)' do
+            context 'when namespace does not match workflow context' do
+              it 'returns 403 forbidden when root namespace does not match namespace context' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  namespace_id: group.id,
+                  root_namespace_id: other_group.id
+                }
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+                expect(json_response['message']).to eq('403 Forbidden - Namespace does not match workflow context')
+              end
+            end
+
+            context 'when namespace matches workflow context' do
+              it 'succeeds when namespace matches' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  namespace_id: group.id,
+                  root_namespace_id: group.id
+                }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['DuoWorkflow']['Headers']).to include(
+                  'x-gitlab-namespace-id' => group.id.to_s,
+                  'x-gitlab-root-namespace-id' => group.id.to_s
+                )
+              end
+            end
+
+            context 'with nested groups' do
+              before do
+                allow_any_instance_of(User).to receive(:allowed_to_use).and_return( # rubocop:disable RSpec/AnyInstanceOf -- overriding top-level mock
+                  Ai::UserAuthorizable::Response.new(
+                    allowed?: true,
+                    namespace_ids: [group.id, other_group.id, parent_group_3.id, child_group_3.id]
+                  )
+                )
+              end
+
+              it 'succeeds when namespace matches child group root ancestor' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  namespace_id: child_group_3.id,
+                  root_namespace_id: parent_group_3.id
+                }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['DuoWorkflow']['Headers']).to include(
+                  'x-gitlab-namespace-id' => child_group_3.id.to_s,
+                  'x-gitlab-root-namespace-id' => parent_group_3.id.to_s
+                )
+              end
+
+              it 'returns 403 when root namespace does not match child group ancestor' do
+                get api(path, user), headers: workhorse_headers, params: {
+                  namespace_id: child_group_3.id,
+                  root_namespace_id: other_group.id
+                }
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+                expect(json_response['message']).to eq('403 Forbidden - Namespace does not match workflow context')
+              end
+            end
+          end
+        end
+
+        context 'when context validation is NOT required (no project or namespace params)' do
+          it 'succeeds with no namespace params at all' do
+            get api(path, user), headers: workhorse_headers
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['Headers']['x-gitlab-root-namespace-id']).to be_nil
+          end
+        end
+
+        context 'with security edge cases' do
+          context 'when attempting to escalate privileges' do
+            it 'blocks attempt to use premium namespace with basic project' do
+              get api(path, user), headers: workhorse_headers, params: {
+                project_id: basic_project.id,
+                root_namespace_id: premium_group.id
+              }
+
+              expect(response).to have_gitlab_http_status(:forbidden)
+              expect(json_response['message']).to eq('403 Forbidden - Namespace does not match project context')
+            end
+
+            it 'blocks attempt to inject namespace via header with project context' do
+              get api(path, user), headers: workhorse_headers.merge(
+                'X-Gitlab-Namespace-Id' => premium_group.id
+              ), params: {
+                project_id: basic_project.id
+              }
+
+              expect(response).to have_gitlab_http_status(:forbidden)
+              expect(json_response['message']).to eq('403 Forbidden - Namespace does not match project context')
+            end
+          end
+
+          context 'with multiple conflicting namespace sources' do
+            it 'validates against the effective namespace when namespace_id conflicts with header' do
+              get api(path, user), headers: workhorse_headers.merge(
+                'X-Gitlab-Namespace-Id' => group.id
+              ), params: {
+                project_id: project.id,
+                namespace_id: other_group.id
+              }
+
+              expect(response).to have_gitlab_http_status(:forbidden)
+              expect(json_response['message']).to eq('403 Forbidden - Namespace does not match project context')
+            end
+
+            it 'validates root_namespace_id against project context when both root and namespace_id provided' do
+              get api(path, user), headers: workhorse_headers, params: {
+                project_id: project.id,
+                root_namespace_id: other_group.id,
+                namespace_id: group.id
+              }
+
+              expect(response).to have_gitlab_http_status(:forbidden)
+              expect(json_response['message']).to eq('403 Forbidden - Namespace does not match project context')
+            end
+          end
+        end
+      end
+      # rubocop:enable RSpec/MultipleMemoizedHelpers
+
       context 'when duo_agent_platform_enable_direct_http is enabled' do
         subject(:get_response) do
           stub_feature_flags(duo_agent_platform_enable_direct_http: true)
@@ -1864,6 +2147,13 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       context 'for model selection at namespace level', :saas do
         include_context 'with model selections fetch definition service side-effect context'
 
+        # CRITICAL FIX: Use a different variable name and add user access
+        let_it_be(:model_selection_group) { create(:group) }
+
+        before_all do
+          model_selection_group.add_developer(user)
+        end
+
         before do
           stub_feature_flags(duo_agent_platform_model_selection: true)
           stub_saas_features(gitlab_com_subscriptions: true)
@@ -1894,19 +2184,17 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         it_behaves_like 'ServiceURI has the right value', false
 
         context 'when namespace params are provided' do
-          let_it_be(:group) { create(:group) }
-
           context 'when a model selection setting exists' do
             let_it_be(:namespace_setting) do
               create(:ai_namespace_feature_setting,
-                namespace: group,
+                namespace: model_selection_group,
                 feature: :duo_agent_platform_agentic_chat,
                 offered_model_ref: 'claude_sonnet_3_7_20250219')
             end
 
             context 'when provided as param[:root_namespace_id]' do
               subject(:get_response) do
-                get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+                get api(path, user), headers: workhorse_headers, params: { root_namespace_id: model_selection_group.id }
               end
 
               it 'includes model metadata headers' do
@@ -1933,7 +2221,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                   subject(:get_response) do
                     get api(path, user), headers: workhorse_headers, params: {
-                      root_namespace_id: group.id,
+                      root_namespace_id: model_selection_group.id,
                       user_selected_model_identifier: user_selected_model_identifier
                     }
                   end
@@ -1959,7 +2247,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
             context 'when provided as header[X-Gitlab-Namespace-Id]' do
               subject(:get_response) do
-                get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id)
+                get api(path, user),
+                  headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => model_selection_group.id)
               end
 
               it 'includes model metadata headers' do
@@ -1983,7 +2272,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           context 'when a model selection setting does not exist' do
             context 'when provided as param[:root_namespace_id]' do
               subject(:get_response) do
-                get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+                get api(path, user), headers: workhorse_headers, params: { root_namespace_id: model_selection_group.id }
               end
 
               it 'includes model metadata headers with default model' do
@@ -2007,7 +2296,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             context 'when a user_selected_model_identifier is provided' do
               subject(:get_response) do
                 get api(path, user), headers: workhorse_headers, params: {
-                  root_namespace_id: group.id,
+                  root_namespace_id: model_selection_group.id,
                   user_selected_model_identifier: user_selected_model_identifier
                 }
               end
