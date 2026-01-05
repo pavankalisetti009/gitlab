@@ -3,8 +3,8 @@
 module MergeRequests
   module Mergeability
     class CheckSecurityPolicyViolationsService < CheckBaseService
-      identifier :security_policy_violations
-      description 'Checks whether the security policies are satisfied'
+      set_identifier :security_policy_violations
+      set_description 'Checks whether the security policies are satisfied'
 
       def execute
         if !merge_request.project.licensed_feature_available?(:security_orchestration_policies) ||

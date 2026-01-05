@@ -3,8 +3,8 @@
 module MergeRequests
   module Mergeability
     class CheckBlockedByOtherMrsService < CheckBaseService
-      identifier :merge_request_blocked
-      description 'Checks whether the merge request is blocked'
+      set_identifier :merge_request_blocked
+      set_description 'Checks whether the merge request is blocked'
 
       def execute
         return inactive unless merge_request.blocking_merge_requests_feature_available?
