@@ -129,8 +129,8 @@ tags:
   description: Operations about events
 - name: glql
   description: Operations about glqls
-- name: keys
-  description: Operations about keys
+- name: ssh_keys
+  description: Operations about ssh_keys
 - name: markdown
   description: Operations about markdowns
 - name: namespaces
@@ -44558,7 +44558,7 @@ paths:
           schema:
             "$ref": "#/definitions/API_Entities_SSHKeyWithUser"
       tags:
-      - keys
+      - ssh_keys
       operationId: getApiV4KeysId
   "/api/v4/keys":
     get:
@@ -44581,7 +44581,7 @@ paths:
           schema:
             "$ref": "#/definitions/API_Entities_UserWithAdmin"
       tags:
-      - keys
+      - ssh_keys
       operationId: getApiV4Keys
   "/api/v4/markdown":
     post:
