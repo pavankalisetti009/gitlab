@@ -3,8 +3,8 @@
 module MergeRequests
   module Mergeability
     class CheckJiraStatusService < CheckBaseService
-      identifier :jira_association_missing
-      description 'Checks whether the title or description references a Jira issue.'
+      set_identifier :jira_association_missing
+      set_description 'Checks whether the title or description references a Jira issue.'
 
       def execute
         return inactive unless merge_request.project.prevent_merge_without_jira_issue?
