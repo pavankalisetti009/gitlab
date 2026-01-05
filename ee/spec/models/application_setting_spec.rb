@@ -1841,16 +1841,19 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
-  describe '#elasticsearch_index_settings', feature_category: :global_search,
-    quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20796' do
+  describe '#elasticsearch_index_settings', feature_category: :global_search do
     subject(:elasticsearch_index_settings) { setting.elasticsearch_index_settings }
+
+    before do
+      Elastic::IndexSetting.delete_all
+    end
 
     context 'when no index settings exist' do
       it { is_expected.to be_empty }
     end
 
     context 'when one index setting exists' do
-      let_it_be(:_index_setting) do
+      let!(:_index_setting) do
         create(:elastic_index_setting, alias_name: 'test-index', number_of_shards: 3, number_of_replicas: 2)
       end
 
@@ -1862,9 +1865,9 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     context 'when multiple index settings exist' do
-      let_it_be(:index_alpha) { create(:elastic_index_setting, alias_name: 'index-alpha') }
-      let_it_be(:index_beta) { create(:elastic_index_setting, alias_name: 'index-beta') }
-      let_it_be(:index_gamma) { create(:elastic_index_setting, alias_name: 'index-gamma') }
+      let!(:index_alpha) { create(:elastic_index_setting, alias_name: 'index-alpha') }
+      let!(:index_beta) { create(:elastic_index_setting, alias_name: 'index-beta') }
+      let!(:index_gamma) { create(:elastic_index_setting, alias_name: 'index-gamma') }
 
       it { is_expected.to eq [index_alpha, index_beta, index_gamma] }
     end
