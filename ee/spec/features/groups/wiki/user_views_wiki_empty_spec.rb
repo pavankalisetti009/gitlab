@@ -10,6 +10,7 @@ RSpec.describe 'Group > User views empty wiki', feature_category: :wiki do
   let(:wiki) { create(:group_wiki, group: group) }
 
   before do
+    stub_feature_flags(wiki_immersive_editor: false)
     stub_group_wikis(true)
   end
 

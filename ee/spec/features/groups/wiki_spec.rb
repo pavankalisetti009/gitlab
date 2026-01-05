@@ -11,6 +11,7 @@ RSpec.describe 'Group wikis', :js, feature_category: :wiki do
   let(:wiki) { create(:group_wiki, user: user, group: group) }
 
   before do
+    stub_feature_flags(wiki_immersive_editor: false)
     stub_group_wikis(true)
     wiki.container.add_owner(user)
   end
