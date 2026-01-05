@@ -18,6 +18,7 @@ export default {
     CalculateSum: () => import('./calculate_sum.vue'),
     DiffLineChanges: () => import('./diff_line_changes.vue'),
     CalculatePercent: () => import('./calculate_percent.vue'),
+    FormatNumber: () => import('./format_number.vue'),
     FormatTime: () => import('./format_time.vue'),
     FormatTimeRange: () => import('./format_time_range.vue'),
     MergeRequestLink: () => import('./merge_request_link.vue'),
@@ -85,7 +86,14 @@ export default {
     mapComponentProps(item, props) {
       if (!props) return {};
       return Object.entries(props).reduce(
-        (acc, [newKey, oldKey]) => ({ ...acc, [newKey]: item[oldKey] }),
+        (acc, [key, value]) => ({
+          ...acc,
+          // Allow mapping a value from another key. For example: `$map(oldKeyName)`
+          [key]:
+            typeof value === 'string' && value.startsWith('$map(') && value.endsWith(')')
+              ? item[value.slice(5, -1)]
+              : value,
+        }),
         {},
       );
     },
