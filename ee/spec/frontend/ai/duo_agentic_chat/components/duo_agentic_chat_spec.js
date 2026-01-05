@@ -257,7 +257,7 @@ jest.mock('~/lib/utils/common_utils', () => ({
 }));
 
 jest.mock('~/lib/utils/local_storage', () => ({
-  getStorageValue: jest.fn(),
+  getStorageValue: jest.fn(() => ({ exists: false })),
   saveStorageValue: jest.fn(),
 }));
 

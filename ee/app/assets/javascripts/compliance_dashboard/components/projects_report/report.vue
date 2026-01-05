@@ -169,9 +169,10 @@ export default {
 
       if (projectStatus === 'archived') {
         filters.archivedOnly = true;
-      }
-
-      if (projectStatus === 'non-archived') {
+      } else if (projectStatus === 'non-archived') {
+        filters.includeArchived = false;
+      } else {
+        // Default to excluding archived projects when no project_status filter is applied
         filters.includeArchived = false;
       }
 

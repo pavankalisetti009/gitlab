@@ -16,7 +16,7 @@ module Resolvers
         authorizes_object!
 
         def resolve(**_args)
-          project_ids = group.all_project_ids
+          project_ids = group.all_active_project_ids
 
           return { total_projects: 0, covered_count: 0 } unless project_ids.any?
 
