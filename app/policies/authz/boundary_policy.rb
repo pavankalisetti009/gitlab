@@ -9,7 +9,7 @@ module Authz
       token.is_a?(::PersonalAccessToken) && token.granular?
     end
 
-    ::Authz::Permission.all.each_key do |permission|
+    ::Authz::PermissionGroups::Assignable.all_permissions.each do |permission|
       desc "Token permission that enables #{permission} for boundary"
       condition(permission) do
         token.permitted_for_boundary?(boundary, permission)
