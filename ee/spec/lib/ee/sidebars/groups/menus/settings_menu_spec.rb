@@ -46,7 +46,16 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
 
           let(:container) { subgroup }
 
-          it { is_expected.not_to be_present }
+          it { is_expected.to be_present }
+
+          context 'when feature flag allow_subgroups_to_create_service_accounts is false' do
+            before do
+              stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
+              allow(::Feature).to receive(:enabled?).and_call_original
+            end
+
+            it { is_expected.not_to be_present }
+          end
         end
 
         context 'when service accounts feature is not included in the license' do

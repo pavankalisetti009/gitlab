@@ -12,6 +12,9 @@ module Security
 
     feature_category :security_policy_management
 
+    BATCH_DELAY_INTERVAL = 1.second
+    BATCH_SIZE = 100
+
     def handle_event(event)
       security_policy_id = event.data[:security_policy_id]
       policy = Security::Policy.find_by_id(security_policy_id) || return
@@ -72,16 +75,35 @@ module Security
 
       clear_policy_sync_state(policy.security_orchestration_policy_configuration_id)
 
+      batch_index = 0
+      feature_enabled = Feature.enabled?(:security_policies_batched_sync_delay,
+        policy.security_policy_management_project)
+
       policy.security_orchestration_policy_configuration.all_project_ids do |project_ids|
         append_projects_to_sync(policy.security_orchestration_policy_configuration_id, project_ids)
 
-        ::Security::SyncProjectPolicyWorker.bulk_perform_async_with_contexts(
-          project_ids,
-          arguments_proc: ->(project_id) do
-            [project_id, policy.id, event_data, event_payload.deep_stringify_keys]
-          end,
-          context_proc: ->(_) { config_context }
-        )
+        if feature_enabled
+          project_ids.each_slice(BATCH_SIZE).with_index do |batch, slice_index|
+            delay = [BATCH_DELAY_INTERVAL, (batch_index + slice_index) * BATCH_DELAY_INTERVAL].max
+
+            ::Security::SyncProjectPolicyWorker.bulk_perform_in_with_contexts(delay, batch,
+              arguments_proc: ->(project_id) do
+                [project_id, policy.id, event_data, event_payload.deep_stringify_keys]
+              end,
+              context_proc: ->(_) { config_context }
+            )
+          end
+        else
+          ::Security::SyncProjectPolicyWorker.bulk_perform_async_with_contexts(
+            project_ids,
+            arguments_proc: ->(project_id) do
+              [project_id, policy.id, event_data, event_payload.deep_stringify_keys]
+            end,
+            context_proc: ->(_) { config_context }
+          )
+        end
+
+        batch_index += (project_ids.size.to_f / BATCH_SIZE).ceil
       end
     end
 

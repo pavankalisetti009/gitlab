@@ -75,8 +75,12 @@ module EE
           end
 
           def service_accounts_available?
-            context.group.root? &&
+            if ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, context.group)
               can?(context.current_user, :read_service_account, context.group)
+            else
+              context.group.root? &&
+                can?(context.current_user, :read_service_account, context.group)
+            end
           end
 
           def custom_roles_enabled?

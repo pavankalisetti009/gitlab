@@ -8,6 +8,7 @@ module Groups
       feature_category :user_management
 
       before_action :ensure_root_group!
+
       before_action :authorize_admin_service_accounts!, except: [:index, :show]
       before_action :authorize_read_service_accounts!, only: [:index, :show]
 
@@ -17,6 +18,14 @@ module Groups
 
       private
 
+      def ensure_root_group!
+        return if ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, group)
+
+        return if group.root?
+
+        render_404
+      end
+
       def authorize_read_service_accounts!
         render_404 unless can?(current_user, :read_service_account, group)
       end
@@ -24,10 +33,6 @@ module Groups
       def authorize_admin_service_accounts!
         render_404 unless can?(current_user, :create_service_account, group) &&
           can?(current_user, :delete_service_account, group)
-      end
-
-      def ensure_root_group!
-        render_404 unless group.root?
       end
     end
   end
