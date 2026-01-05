@@ -5,6 +5,11 @@ module EE
     module CleanupDependencyProxyWorker
       extend ::Gitlab::Utils::Override
 
+      VREG_CACHE_ENTRY_CLASSES = [
+        ::VirtualRegistries::Packages::Maven::Cache::Entry,
+        ::VirtualRegistries::Container::Cache::Entry
+      ].freeze
+
       override :perform
       def perform
         super
@@ -14,7 +19,7 @@ module EE
       private
 
       def enqueue_vreg_packages_cache_entry_cleanup_job
-        [::VirtualRegistries::Packages::Maven::Cache::Entry].each do |klass|
+        VREG_CACHE_ENTRY_CLASSES.each do |klass|
           if klass.pending_destruction.any?
             ::VirtualRegistries::Cache::DestroyOrphanEntriesWorker.perform_with_capacity(klass.name)
           end
