@@ -15,7 +15,7 @@ module QA
           end
 
           def click_workspace_action(workspace, action)
-            within_element("#{workspace}-action".to_sym) do
+            within_element(:"#{workspace}-action") do
               click_element("base-dropdown-toggle")
 
               click_element("workspace-#{action}-button")
