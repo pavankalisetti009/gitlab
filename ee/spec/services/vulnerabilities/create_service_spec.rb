@@ -16,6 +16,7 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
   let(:finding_name) { 'New title' }
   let(:solution) { 'solution' }
   let(:vulnerability) { project.vulnerabilities.last }
+  let(:vulnerability_read) { Vulnerabilities::Read.last }
 
   subject { described_class.new(project, user, finding_id: finding_id, solution: solution).execute }
 
@@ -84,7 +85,6 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
     it 'creates vulnerability read record when present_on_default_branch is true' do
       expect { subject }.to change { Vulnerabilities::Read.count }.by(1)
 
-      vulnerability_read = Vulnerabilities::Read.last
       expect(vulnerability_read).to have_attributes(
         vulnerability_id: vulnerability.id,
         project_id: project.id,
@@ -92,6 +92,43 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
         state: finding.state,
         report_type: finding.report_type
       )
+    end
+
+    context 'with vulnerabilities_across_contexts feature flag enabled' do
+      before do
+        stub_feature_flags(vulnerabilities_across_contexts: true)
+      end
+
+      it 'does not set security tracked context when there is not an existing tracked context' do
+        subject
+
+        expect(vulnerability_read.security_project_tracked_context_id).to be_nil
+      end
+
+      context 'when finding has tracked context' do
+        let(:tracked_context) { create(:security_project_tracked_context, :tracked, project: project) }
+        let(:finding) do
+          create(:vulnerabilities_finding, project: project, security_project_tracked_context_id: tracked_context.id)
+        end
+
+        it 'sets the tracked context id' do
+          subject
+
+          expect(vulnerability_read.security_project_tracked_context_id).to eq(tracked_context.id)
+        end
+      end
+    end
+
+    context 'with vulnerabilities_across_contexts feature flag disabled' do
+      before do
+        stub_feature_flags(vulnerabilities_across_contexts: false)
+      end
+
+      it 'does not set tracked context id' do
+        subject
+
+        expect(vulnerability_read.security_project_tracked_context_id).to be_nil
+      end
     end
 
     it_behaves_like 'creates a vulnerability state transition record with note'

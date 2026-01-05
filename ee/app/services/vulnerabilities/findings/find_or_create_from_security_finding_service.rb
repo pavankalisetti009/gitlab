@@ -3,12 +3,15 @@
 module Vulnerabilities
   module Findings
     class FindOrCreateFromSecurityFindingService < ::BaseProjectService
+      include ::Gitlab::Utils::StrongMemoize
       include ::VulnerabilityFindingHelpers
 
       def execute
         return ServiceResponse.error(message: _('Security Finding not found')) unless security_finding
 
         return ServiceResponse.error(message: _('Report Finding not found')) unless report_finding
+
+        return tracked_context_result if tracked_contexts_enabled? && !tracked_context_result.success?
 
         unless vulnerability_finding.persisted?
           return ServiceResponse.error(message: vulnerability_finding_creation_error_msg)
@@ -32,6 +35,7 @@ module Vulnerabilities
         return vulnerability_finding if vulnerability_finding.present?
 
         vulnerability_finding = build_vulnerability_finding(security_finding)
+        vulnerability_finding.security_project_tracked_context_id = tracked_context.id if tracked_contexts_enabled?
 
         Vulnerabilities::Finding.transaction do
           save_identifiers(vulnerability_finding.identifiers)
@@ -91,6 +95,21 @@ module Vulnerabilities
       def vulnerability_for(security_finding_uuid)
         project.vulnerabilities.with_findings_by_uuid(security_finding_uuid)&.first
       end
+
+      def tracked_context_result
+        ::Security::ProjectTrackedContexts::FindOrCreateService.from_pipeline(security_finding.pipeline,
+          allow_untracked: true).execute
+      end
+      strong_memoize_attr :tracked_context_result
+
+      def tracked_context
+        tracked_context_result.payload[:tracked_context]
+      end
+
+      def tracked_contexts_enabled?
+        Feature.enabled?(:vulnerabilities_across_contexts, project)
+      end
+      strong_memoize_attr :tracked_contexts_enabled?
     end
   end
 end
