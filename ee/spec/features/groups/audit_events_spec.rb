@@ -13,7 +13,6 @@ RSpec.describe 'Groups > Audit events', :js, feature_category: :audit_events do
   before do
     group.add_owner(user)
     group.add_developer(alex)
-    stub_feature_flags(show_role_details_in_drawer: false)
     sign_in(user)
   end
 
@@ -50,7 +49,13 @@ RSpec.describe 'Groups > Audit events', :js, feature_category: :audit_events do
       wait_for_requests
 
       page.within first_row do
+        click_button('Developer')
+      end
+
+      within_testid('role-details-drawer') do
         select_from_listbox 'Maintainer', from: 'Developer'
+        click_button('Update role')
+        wait_for_requests
       end
 
       within_testid('super-sidebar') do
