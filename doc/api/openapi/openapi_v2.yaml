@@ -31551,7 +31551,7 @@ paths:
         '429':
           description: Too many requests
       tags:
-      - projects
+      - webhooks
       operationId: postApiV4ProjectsIdHooksHookIdEventsHookLogIdResend
   "/api/v4/projects/import/authorize":
     post:
