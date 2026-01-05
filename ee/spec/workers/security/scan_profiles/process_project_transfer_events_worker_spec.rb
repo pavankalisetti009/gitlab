@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanProfiles::ProcessProjectTransferEventsWorker, feature_category: :security_asset_inventories do
+  include ExclusiveLeaseHelpers
+
   let_it_be(:old_namespace) { create(:group) }
   let_it_be(:new_namespace) { create(:group) }
 
@@ -39,6 +41,26 @@ RSpec.describe Security::ScanProfiles::ProcessProjectTransferEventsWorker, featu
   subject(:handle_event) { worker.handle_event(project_event) }
 
   describe '#handle_event' do
+    it 'uses in_lock for processing' do
+      project.update!(namespace: new_namespace)
+      lease_key = Security::ScanProfiles.update_lease_key(old_namespace.id)
+      expect_to_obtain_exclusive_lease(lease_key)
+
+      handle_event
+    end
+
+    context 'when exclusive lease cannot be obtained' do
+      before do
+        project.update!(namespace: new_namespace)
+        lease_key = Security::ScanProfiles.update_lease_key(old_namespace.id)
+        stub_exclusive_lease_taken(lease_key)
+      end
+
+      it 'raises FailedToObtainLockError' do
+        expect { handle_event }.to raise_error(Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError)
+      end
+    end
+
     context 'when there is no project associated with the event' do
       let(:project_id) { non_existing_record_id }
 

@@ -4187,6 +4187,16 @@
   :idempotent: false
   :tags: []
   :queue_namespace:
+- :name: security_scan_profiles_attach
+  :worker_name: Security::ScanProfiles::AttachWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scan_profiles_clean_old_namespace_connections
   :worker_name: Security::ScanProfiles::CleanOldNamespaceConnectionsWorker
   :feature_category: :security_asset_inventories
