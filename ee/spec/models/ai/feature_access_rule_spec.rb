@@ -31,6 +31,43 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
     end
   end
 
+  describe '.accessible_for_user' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:user) }
+    let_it_be(:other_user) { create(:user) }
+    let_it_be(:ns_no_access) { create(:group) }
+
+    let_it_be(:rule_classic) do
+      create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace: through_namespace)
+    end
+
+    let_it_be(:rule_agents) do
+      create(:ai_instance_accessible_entity_rules, :duo_agent_platform, through_namespace: ns_no_access)
+    end
+
+    before_all do
+      create(:group_member,
+        :guest,
+        user: user,
+        group: through_namespace,
+        member_role: create(:member_role, :guest, namespace: through_namespace)
+      )
+    end
+
+    where(:test_user, :entity, :expected_rules) do
+      ref(:user) | 'duo_classic' | [ref(:rule_classic)]
+      ref(:user) | 'duo_agent_platform' | []
+      ref(:other_user) | 'duo_classic' | []
+    end
+
+    with_them do
+      it 'filters by user access and entity' do
+        expect(described_class.accessible_for_user(test_user, entity)).to match_array(expected_rules)
+      end
+    end
+  end
+
   describe '.duo_namespace_access_rules' do
     let_it_be(:namespace_a) { create(:group) }
     let_it_be(:namespace_b) { create(:group) }

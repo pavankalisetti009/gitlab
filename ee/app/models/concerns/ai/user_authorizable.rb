@@ -7,6 +7,9 @@ module Ai
     GROUP_WITH_AI_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_AI_ENABLED_CACHE_KEY = 'group_with_ai_enabled'
 
+    DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_PERIOD = 1.hour
+    DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY = 'duo_feature_enabled_through_namespace'
+
     GROUP_WITH_MCP_SERVER_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_MCP_SERVER_ENABLED_CACHE_KEY = 'group_with_mcp_server_enabled'
 
@@ -31,7 +34,41 @@ module Ai
       :summarize_new_merge_request
     ].freeze
 
-    Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, :authorized_by_duo_core, keyword_init: true)
+    THROUGH_NAMESPACE_ACCESS_FEATURE_MAP = {
+      explain_vulnerability: :duo_classic,
+      resolve_vulnerability: :duo_classic,
+      summarize_review: :duo_classic,
+      measure_comment_temperature: :duo_classic,
+      generate_description: :duo_classic,
+      generate_commit_message: :duo_classic,
+      description_composer: :duo_classic,
+      chat: :duo_classic,
+      summarize_new_merge_request: :duo_classic,
+      categorize_question: :duo_classic,
+      review_merge_request: :duo_classic,
+      glab_ask_git_command: :duo_classic,
+      code_suggestions: :duo_classic,
+      troubleshoot_job: :duo_classic,
+      ask_build: :duo_classic,
+      ask_issue: :duo_classic,
+      ask_epic: :duo_classic,
+      ask_merge_request: :duo_classic,
+      ask_commit: :duo_classic,
+      summarize_comments: :duo_classic,
+      duo_workflow: :duo_agent_platform,
+      duo_agent_platform: :duo_agent_platform,
+      agentic_chat: :duo_agent_platform,
+      ai_catalog: :duo_agent_platform,
+      ai_catalog_flows: :duo_agent_platform
+    }.freeze
+
+    Response = Struct.new(
+      :allowed?,
+      :namespace_ids,
+      :enablement_type,
+      :authorized_by_duo_core,
+      keyword_init: true
+    )
 
     included do
       def duo_available_namespace_ids
@@ -129,6 +166,10 @@ module Ai
         amazon_q_response = check_amazon_q_feature(ai_feature)
         return amazon_q_response if amazon_q_response
 
+        # Check if it is available through namespace membership on self-managed
+        through_namespace_response = check_access_through_namespace_at_instance(ai_feature)
+        return through_namespace_response if through_namespace_response&.allowed? == false
+
         # Check if feature and unit primitive are valid and available
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
         return denied_response unless feature_data
@@ -149,6 +190,30 @@ module Ai
         return denied_response unless unit_primitive_free_access?(unit_primitive)
 
         check_free_access(ai_feature, licensed_feature)
+      end
+
+      def check_access_through_namespace_at_instance(ai_feature)
+        return if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        return unless Feature.enabled?(:duo_access_through_namespaces, :instance)
+
+        return unless ::Ai::FeatureAccessRule.exists?
+
+        accessible_feature = THROUGH_NAMESPACE_ACCESS_FEATURE_MAP[ai_feature]
+
+        return unless accessible_feature
+
+        has_access = Rails.cache.fetch(
+          ['users', id, DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY, accessible_feature],
+          expires_in: DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_PERIOD
+        ) do
+          ::Ai::FeatureAccessRule.accessible_for_user(self, accessible_feature).exists?
+        end
+
+        Response.new(
+          allowed?: has_access,
+          namespace_ids: [],
+          authorized_by_duo_core: false
+        )
       end
 
       private

@@ -10,6 +10,13 @@ module Ai
       class_name: 'Namespace',
       inverse_of: :accessible_ai_features_on_instance
 
+    scope :accessible_for_user, ->(user, accessible_entity) {
+      joins(
+        "INNER JOIN user_group_member_roles " \
+          "ON user_group_member_roles.group_id = ai_instance_accessible_entity_rules.through_namespace_id "
+      ).where(accessible_entity: accessible_entity, user_group_member_roles: { user_id: user.id })
+    }
+
     class << self
       def duo_namespace_access_rules
         return [] unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
