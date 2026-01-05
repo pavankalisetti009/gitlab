@@ -38,6 +38,6 @@ class ScimOauthAccessToken < ApplicationRecord
   end
 
   def prefix_for_token
-    TOKEN_PREFIX
+    ::Authn::TokenField::PrefixHelper.prepend_instance_prefix(TOKEN_PREFIX)
   end
 end
