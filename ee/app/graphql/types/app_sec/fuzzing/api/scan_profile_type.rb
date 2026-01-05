@@ -7,7 +7,7 @@ module Types
         # rubocop: disable Graphql/AuthorizeTypes
         class ScanProfileType < BaseObject
           graphql_name 'ApiFuzzingScanProfile'
-          description 'An API Fuzzing scan profile.'
+          description 'An API fuzzing scan profile.'
 
           field :name, GraphQL::Types::String,
             null: true, description: 'Unique name of the profile.'

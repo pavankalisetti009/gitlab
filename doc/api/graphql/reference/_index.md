@@ -26401,7 +26401,7 @@ Data associated with configuring API fuzzing scans in GitLab CI.
 
 ### `ApiFuzzingScanProfile`
 
-An API Fuzzing scan profile.
+An API fuzzing scan profile.
 
 #### Fields
 
