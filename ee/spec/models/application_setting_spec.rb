@@ -133,6 +133,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         max_http_decompressed_size: 100,
         max_http_response_json_depth: 32,
         max_http_response_json_structural_chars: 1_000_000,
+        max_http_response_xml_structural_chars: 250_000,
+        max_http_response_csv_structural_chars: 250_000,
         max_http_response_size_limit: 100,
         max_number_of_repository_downloads_within_time_period: 0,
         max_number_of_repository_downloads: 0,
