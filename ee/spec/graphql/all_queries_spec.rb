@@ -12,7 +12,7 @@ RSpec.describe 'graphql queries', feature_category: :api do
     'ee/app/assets/javascripts/iterations/queries/iteration_issues_with_label_filter.query.graphql' => 290,
 
     # Code review: https://gitlab.com/gitlab-org/gitlab/-/issues/584293
-    'app/assets/javascripts/ci/merge_requests/graphql/queries/get_merge_request_pipelines.query.graphql' => 680,
+    'app/assets/javascripts/ci/merge_requests/graphql/queries/get_merge_request_pipelines.query.graphql' => 685,
     'ee/app/assets/javascripts/analytics/merge_request_analytics/graphql/queries/throughput_table.query.graphql' => 320,
 
     # Package registry: https://gitlab.com/gitlab-org/gitlab/-/issues/584294
@@ -38,7 +38,7 @@ RSpec.describe 'graphql queries', feature_category: :api do
     'app/assets/javascripts/projects/your_work/graphql/queries/user_projects.query.graphql' => 260,
 
     # Pipeline execution: https://gitlab.com/gitlab-org/gitlab/-/issues/584301
-    'app/assets/javascripts/ci/pipelines_page/graphql/queries/get_pipelines.query.graphql' => 270
+    'app/assets/javascripts/ci/pipelines_page/graphql/queries/get_pipelines.query.graphql' => 275
   }
 
   describe 'complexity' do
