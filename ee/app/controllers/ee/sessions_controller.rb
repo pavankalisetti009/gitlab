@@ -30,6 +30,24 @@ module EE
 
     private
 
+    def safe_login_param
+      login = params.permit(:login)[:login].to_s
+      login.truncate(::User::MAX_USERNAME_LENGTH, omission: '')
+    end
+
+    override :determine_sign_in_path
+    def determine_sign_in_path
+      return super unless ::Gitlab::Saas.feature_available?(:redirect_sign_in_when_login_not_found)
+
+      login = safe_login_param
+      return if login.blank?
+
+      user = ::User.find_by_login(login)
+      return if user.present?
+
+      new_user_session_path(login: login)
+    end
+
     def gitlab_geo_logout
       return unless ::Gitlab::Geo.secondary?
 
