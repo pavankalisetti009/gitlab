@@ -3,8 +3,7 @@ import { GlSkeletonLoader, GlAvatarLink, GlAvatar, GlTooltipDirective } from '@g
 import { isGid, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { getUser } from '~/api/user_api';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-// eslint-disable-next-line no-restricted-imports
-import { formatDate } from '../../../utils';
+import { formatDate } from 'ee/ai/duo_agents_platform/utils';
 
 export default {
   name: 'AgentFlowSubHeader',

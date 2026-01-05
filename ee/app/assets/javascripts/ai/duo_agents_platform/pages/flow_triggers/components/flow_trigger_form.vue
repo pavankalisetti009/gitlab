@@ -19,8 +19,8 @@ import UserSelect from '~/vue_shared/components/user_select/user_select.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from 'ee/ai/catalog/constants';
 import getCatalogConsumerItemsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_catalog_consumer_items.query.graphql';
-import projectServiceAccountsQuery from '../../../graphql/queries/get_project_service_accounts.query.graphql';
-import AiLegalDisclaimer from '../../../components/common/ai_legal_disclaimer.vue';
+import projectServiceAccountsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_project_service_accounts.query.graphql';
+import AiLegalDisclaimer from 'ee/ai/duo_agents_platform/components/common/ai_legal_disclaimer.vue';
 
 const MODE_CREATE = 'create';
 const MODE_EDIT = 'edit';

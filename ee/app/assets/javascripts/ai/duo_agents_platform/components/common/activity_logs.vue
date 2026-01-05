@@ -3,8 +3,7 @@ import { GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
-
-import { getMessageData } from '../../utils';
+import { getMessageData } from 'ee/ai/duo_agents_platform/utils';
 import ActivityConnectorSvg from './activity_connector_svg.vue';
 
 export default {

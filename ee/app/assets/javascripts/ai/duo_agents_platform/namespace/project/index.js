@@ -1,5 +1,5 @@
-import { initDuoAgentsPlatformPage } from '../../index';
-import { AGENT_PLATFORM_PROJECT_PAGE } from '../../constants';
+import { initDuoAgentsPlatformPage } from 'ee/ai/duo_agents_platform/index';
+import { AGENT_PLATFORM_PROJECT_PAGE } from 'ee/ai/duo_agents_platform/constants';
 
 export const initDuoAgentsPlatformProjectPage = () => {
   initDuoAgentsPlatformPage({

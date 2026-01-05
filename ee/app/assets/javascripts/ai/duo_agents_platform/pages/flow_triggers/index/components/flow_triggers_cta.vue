@@ -1,6 +1,6 @@
 <script>
 import { GlButton } from '@gitlab/ui';
-import { FLOW_TRIGGERS_NEW_ROUTE } from '../../../../router/constants';
+import { FLOW_TRIGGERS_NEW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 
 export default {
   name: 'FlowTriggersCta',

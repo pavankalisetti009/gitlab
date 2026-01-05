@@ -1,6 +1,6 @@
 <script>
 import { GlSkeletonLoader } from '@gitlab/ui';
-import { formatAgentFlowName } from '../../../utils';
+import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
 
 export default {
   components: {

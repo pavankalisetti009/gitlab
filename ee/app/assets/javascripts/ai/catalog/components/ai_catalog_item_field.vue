@@ -1,5 +1,6 @@
 <script>
 export default {
+  name: 'AiCatalogItemField',
   props: {
     title: {
       type: String,

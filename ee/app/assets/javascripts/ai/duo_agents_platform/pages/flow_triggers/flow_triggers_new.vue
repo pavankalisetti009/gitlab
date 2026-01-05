@@ -1,8 +1,8 @@
 <script>
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import createAiFlowTriggerMutation from '../../graphql/mutations/create_ai_flow_trigger.mutation.graphql';
-import { FLOW_TRIGGERS_INDEX_ROUTE } from '../../router/constants';
+import createAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/create_ai_flow_trigger.mutation.graphql';
+import { FLOW_TRIGGERS_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import FlowTriggerForm from './components/flow_trigger_form.vue';
 
 export default {

@@ -7,15 +7,16 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
+import HelpPopover from '~/vue_shared/components/help_popover.vue';
 import {
   AI_CATALOG_ITEM_LABELS,
   AI_CATALOG_ITEM_PLURAL_LABELS,
   VISIBILITY_LEVEL_PRIVATE,
   VISIBILITY_LEVEL_PUBLIC,
 } from 'ee/ai/catalog/constants';
-import HelpPopover from '~/vue_shared/components/help_popover.vue';
 
 export default {
+  name: 'VisibilityLevelRadioGroup',
   components: {
     GlFormRadioGroup,
     GlFormRadio,

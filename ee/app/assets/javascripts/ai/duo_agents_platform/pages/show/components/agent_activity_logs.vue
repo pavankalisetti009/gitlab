@@ -2,8 +2,8 @@
 import { GlCollapsibleListbox, GlEmptyState, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 import emptyJobPendingSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-job-pending-md.svg?url';
 import { s__ } from '~/locale';
-import { getMessageData } from '../../../utils';
-import ActivityLogs from '../../../components/common/activity_logs.vue';
+import { getMessageData } from 'ee/ai/duo_agents_platform/utils';
+import ActivityLogs from 'ee/ai/duo_agents_platform/components/common/activity_logs.vue';
 
 export default {
   components: {

@@ -3,7 +3,6 @@ import { GlFilteredSearch } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
-
 import AiCatalogList from './ai_catalog_list.vue';
 
 export default {

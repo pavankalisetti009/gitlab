@@ -3,8 +3,8 @@ import { GlLink } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { getTimeago } from '~/lib/utils/datetime/timeago_utility';
 import { joinPaths } from '~/lib/utils/url_utility';
-import { AGENTS_PLATFORM_SHOW_ROUTE } from '../../router/constants';
-import { formatAgentFlowName, formatAgentStatus } from '../../utils';
+import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
+import { formatAgentFlowName, formatAgentStatus } from 'ee/ai/duo_agents_platform/utils';
 import AgentStatusIcon from './agent_status_icon.vue';
 
 export default {

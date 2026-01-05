@@ -5,6 +5,7 @@ import { InternalEvents } from '~/tracking';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
@@ -19,7 +20,7 @@ import {
   ENABLE_AGENT_MODAL_TEXTS,
   VERSION_PINNED_GROUP,
 } from 'ee/ai/catalog/constants';
-import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
@@ -33,7 +34,6 @@ import {
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
 } from '../router/constants';
-import FoundationalIcon from '../../components/foundational_icon.vue';
 
 export default {
   name: 'AiCatalogAgentsShow',

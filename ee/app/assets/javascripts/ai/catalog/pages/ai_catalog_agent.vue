@@ -5,8 +5,8 @@ import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
-import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import {
   AI_CATALOG_TYPE_AGENT,

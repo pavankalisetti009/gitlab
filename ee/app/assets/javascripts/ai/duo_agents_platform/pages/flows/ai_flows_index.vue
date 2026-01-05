@@ -7,6 +7,11 @@ import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import {
+  VISIBILITY_LEVEL_PUBLIC_STRING,
+  VISIBILITY_LEVEL_PRIVATE_STRING,
+} from '~/visibility_level/constants';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogListWrapper from 'ee/ai/catalog/components/ai_catalog_list_wrapper.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
@@ -28,18 +33,13 @@ import {
   TRACK_EVENT_PAGE_LIST,
 } from 'ee/ai/catalog/constants';
 import { prerequisitesError } from 'ee/ai/catalog/utils';
-import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
-import {
-  VISIBILITY_LEVEL_PUBLIC_STRING,
-  VISIBILITY_LEVEL_PRIVATE_STRING,
-} from '~/visibility_level/constants';
 import {
   AI_CATALOG_FLOWS_SHOW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
 } from 'ee/ai/catalog/router/constants';
-import projectAiCatalogFlowsQuery from '../../graphql/queries/get_project_flows.query.graphql';
-import AddProjectItemConsumerModal from '../../components/catalog/add_project_item_consumer_modal.vue';
-import AiCatalogConfiguredItemsWrapper from '../../components/catalog/ai_catalog_configured_items_wrapper.vue';
+import projectAiCatalogFlowsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_project_flows.query.graphql';
+import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
+import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
 
 export default {
   name: 'AiFlowsIndex',

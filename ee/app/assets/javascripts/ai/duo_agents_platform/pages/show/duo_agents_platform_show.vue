@@ -4,9 +4,13 @@ import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { getAgentFlow } from '../../graphql/queries/get_agent_flow.query.graphql';
-import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from '../../constants';
-import { formatAgentDefinition, formatAgentStatus, agentSessionStatusVar } from '../../utils';
+import { getAgentFlow } from 'ee/ai/duo_agents_platform/graphql/queries/get_agent_flow.query.graphql';
+import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from 'ee/ai/duo_agents_platform/constants';
+import {
+  formatAgentDefinition,
+  formatAgentStatus,
+  agentSessionStatusVar,
+} from 'ee/ai/duo_agents_platform/utils';
 import AgentFlowDetails from './components/agent_flow_details.vue';
 import AgentFlowCancelationModal from './components/agent_flow_cancelation_modal.vue';
 

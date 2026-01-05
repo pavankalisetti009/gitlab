@@ -1,6 +1,6 @@
 <script>
 import { GlTabs, GlTab } from '@gitlab/ui';
-import { AGENTS_PLATFORM_INDEX_ROUTE } from '../../../router/constants';
+import { AGENTS_PLATFORM_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import AgentFlowHeader from './agent_flow_header.vue';
 import AgentFlowInfo from './agent_flow_info.vue';
 import AgentFlowSubHeader from './agent_flow_sub_header.vue';
