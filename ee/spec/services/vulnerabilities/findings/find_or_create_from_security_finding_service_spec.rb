@@ -13,8 +13,8 @@ RSpec.describe Vulnerabilities::Findings::FindOrCreateFromSecurityFindingService
   let(:security_finding_uuid) { security_finding.uuid }
   let(:params) { { security_finding_uuid: security_finding_uuid } }
 
-  let_it_be(:project) { create(:project) }
-  let_it_be(:pipeline) { create(:ci_pipeline, :success) }
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be_with_reload(:pipeline) { create(:ci_pipeline, :success, project: project, ref: 'feature-branch') }
 
   let_it_be(:build_sast) { create(:ci_build, :success, name: 'sast', pipeline: pipeline) }
   let_it_be(:artifact_sast) do
@@ -25,7 +25,7 @@ RSpec.describe Vulnerabilities::Findings::FindOrCreateFromSecurityFindingService
   let_it_be(:report_sast) { create(:ci_reports_security_report, pipeline: pipeline, type: :sast) }
   let_it_be(:scan_sast) { create(:security_scan, :latest_successful, scan_type: :sast, build: artifact_sast.job) }
 
-  let_it_be(:pipeline_dast) { create(:ci_pipeline) }
+  let_it_be(:pipeline_dast) { create(:ci_pipeline, project: project) }
   let_it_be(:build_dast) { create(:ci_build, :success, name: 'dast', pipeline: pipeline_dast) }
   let_it_be(:artifact_dast) { create(:ee_ci_job_artifact, :dast_with_evidence, job: build_dast) }
   let_it_be(:report_dast) { create(:ci_reports_security_report, pipeline: pipeline_dast, type: :dast) }
@@ -182,6 +182,75 @@ RSpec.describe Vulnerabilities::Findings::FindOrCreateFromSecurityFindingService
 
     it 'associates the correct identifier with the new finding' do
       expect(persisted_identifier.fingerprint).to eq(report_identifier.fingerprint)
+    end
+  end
+
+  context 'with vulnerabilities_across_contexts feature flag disabled' do
+    before do
+      stub_feature_flags(vulnerabilities_across_contexts: false)
+    end
+
+    it 'does not associates the finding with the tracked context' do
+      expect(subject).to be_success
+      expect(subject.payload[:vulnerability_finding].security_project_tracked_context_id).to be_nil
+    end
+  end
+
+  context 'with vulnerabilities_across_contexts feature flag enabled' do
+    before do
+      stub_feature_flags(vulnerabilities_across_contexts: true)
+    end
+
+    context 'when tracked context exists' do
+      let_it_be(:tracked_context) do
+        create(:security_project_tracked_context, :tracked, context_name: pipeline.ref, project: project)
+      end
+
+      it 'associates the finding with the tracked context' do
+        expect(subject).to be_success
+        expect(subject.payload[:vulnerability_finding].security_project_tracked_context_id).to eq(tracked_context.id)
+      end
+    end
+
+    context 'when tracked context does not exist' do
+      it 'creates untracked context' do
+        expect { subject }.to change { Security::ProjectTrackedContext.count }.by(1)
+        expect(subject).to be_success
+        context = Security::ProjectTrackedContext.last
+        expect(context).to have_attributes(
+          is_default: false,
+          state: Security::ProjectTrackedContext::STATES[:untracked])
+      end
+
+      context 'when creating vulnerability for default branch' do
+        before do
+          pipeline.update!(ref: project.default_branch)
+        end
+
+        it 'create context for default branch' do
+          expect { subject }.to change { Security::ProjectTrackedContext.count }.by(1)
+          expect(subject).to be_success
+          context = Security::ProjectTrackedContext.last
+          expect(context).to have_attributes(
+            is_default: true,
+            state: Security::ProjectTrackedContext::STATES[:tracked])
+        end
+      end
+    end
+
+    context 'when tracked_context_result returns an error' do
+      before do
+        allow_next_instance_of(Security::ProjectTrackedContexts::FindOrCreateService) do |instance|
+          allow(instance).to receive(:create_context).and_return(
+            ServiceResponse.error(message: 'Failed to create tracked context')
+          )
+        end
+      end
+
+      it 'returns the error from tracked_context_result' do
+        expect(subject).to be_error
+        expect(subject[:message]).to eq('Failed to create tracked context')
+      end
     end
   end
 

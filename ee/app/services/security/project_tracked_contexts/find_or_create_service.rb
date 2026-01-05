@@ -8,12 +8,13 @@ module Security
     class FindOrCreateService
       include Gitlab::Utils::StrongMemoize
 
-      def self.from_pipeline(pipeline)
+      def self.from_pipeline(pipeline, allow_untracked: false)
         new(
           project: pipeline.project,
           context_name: pipeline.ref,
           context_type: pipeline.tag? ? :tag : :branch,
-          is_default: pipeline.default_branch?
+          is_default: pipeline.default_branch?,
+          allow_untracked: allow_untracked
         )
       end
 
@@ -31,18 +32,19 @@ module Security
         @context_name = params[:context_name]
         @context_type = params[:context_type]
         @is_default = params[:is_default]
+        @allow_untracked = params[:allow_untracked] || false
       end
 
-      attr_reader :project, :context_name, :context_type, :is_default
+      attr_reader :project, :context_name, :context_type, :is_default, :allow_untracked
 
       def execute
         if existing_context.present?
-          return success(existing_context) if existing_context.tracked?
+          return success(existing_context) if existing_context.tracked? || allow_untracked
 
           return ServiceResponse.error(message: 'Context is not tracked')
         end
 
-        return cant_create_non_default_error unless is_default
+        return cant_create_non_default_error unless is_default || allow_untracked
 
         create_context
       end
@@ -57,14 +59,18 @@ module Security
       strong_memoize_attr :existing_context
 
       def create_context
+        state = if !is_default && @allow_untracked
+                  Security::ProjectTrackedContext::STATES[:untracked]
+                else
+                  Security::ProjectTrackedContext::STATES[:tracked]
+                end
+
         tracked_context = Security::ProjectTrackedContext.create(
           project: project,
           context_name: context_name,
           context_type: context_type,
-
-          # We only create contexts for the default branch and it must be tracked.
-          is_default: true,
-          state: Security::ProjectTrackedContext::STATES[:tracked]
+          is_default: is_default,
+          state: state
         )
 
         return error(tracked_context) unless tracked_context.persisted?
