@@ -230,5 +230,49 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
         end
       end
     end
+
+    context 'with a non-admin user' do
+      let(:service) { described_class.new(nil, ActionController::Parameters.new(params).permit!) }
+
+      before do
+        allow(Gitlab::CurrentSettings).to receive(:allow_signup?).and_return(true)
+      end
+
+      context 'with service account user type' do
+        before do
+          params.merge!(user_type: 'service_account')
+        end
+
+        context 'with avatar param' do
+          let(:avatar_file) { fixture_file_upload('spec/fixtures/avatars/avatar1.png') }
+
+          before do
+            params.merge!(avatar: avatar_file)
+          end
+
+          it 'accepts avatar param for service account' do
+            user = service.execute
+
+            expect(user.avatar_url).to include('avatar1.png')
+          end
+        end
+      end
+
+      context 'without service account user type' do
+        context 'with avatar param' do
+          let(:avatar_file) { fixture_file_upload('spec/fixtures/avatars/avatar1.png') }
+
+          before do
+            params.merge!(avatar: avatar_file)
+          end
+
+          it 'does not accept avatar param for non-service account' do
+            user = service.execute
+
+            expect(user.avatar_url).not_to include('avatar1.png')
+          end
+        end
+      end
+    end
   end
 end

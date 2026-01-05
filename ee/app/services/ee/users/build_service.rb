@@ -50,6 +50,13 @@ module EE
       end
       # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
+      override :build_user_params_for_non_admin
+      def build_user_params_for_non_admin
+        super
+
+        @user_params[:avatar] = params[:avatar] if service_account? # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Using existing instance variable
+      end
+
       override :allowed_user_type?
       def allowed_user_type?
         super || service_account?
