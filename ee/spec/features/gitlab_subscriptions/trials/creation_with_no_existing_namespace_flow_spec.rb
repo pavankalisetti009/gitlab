@@ -64,7 +64,8 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
   end
 
   context 'when applying lead fails' do
-    it 'fills out form, submits and sent back to information form with errors and is then resolved' do
+    it 'fills out form, submits and sent back to information form with errors and is then resolved',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/22545' do
       # setup
       sign_in(user)
 
