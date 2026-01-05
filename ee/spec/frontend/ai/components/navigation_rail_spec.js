@@ -104,20 +104,10 @@ describe('NavigationRail', () => {
     expect(findSuggestionsToggle().exists()).toBe(false);
   });
 
-  describe('sessions button visibility', () => {
-    it('shows sessions button when in agentic mode', () => {
-      duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
-      createComponent();
+  it('shows sessions button', () => {
+    createComponent();
 
-      expect(findSessionsToggle().exists()).toBe(true);
-    });
-
-    it('hides sessions button when in classic mode', () => {
-      duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
-      createComponent();
-
-      expect(findSessionsToggle().exists()).toBe(false);
-    });
+    expect(findSessionsToggle().exists()).toBe(true);
   });
 
   describe('when chat is disabled', () => {
