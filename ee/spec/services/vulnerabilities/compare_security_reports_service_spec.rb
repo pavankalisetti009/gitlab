@@ -531,6 +531,17 @@ RSpec.describe Vulnerabilities::CompareSecurityReportsService, :clean_gitlab_red
       it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
     end
 
+    context 'when head_pipeline is nil and scan_mode is full' do
+      let_it_be(:scan_type) { :sast }
+      let_it_be(:base_pipeline) { test_pipelines[:with_sast_report] }
+      let(:head_pipeline) { nil }
+      let(:params) { { report_type: 'sast', scan_mode: 'full' } }
+
+      it 'reports status as parsed' do
+        expect(comparison[:status]).to eq(:parsed)
+      end
+    end
+
     describe 'order of findings' do
       let(:head_pipeline) { create(:ee_ci_pipeline, :with_sast_report, project: project) }
       let(:base_pipeline) { test_pipelines[:default_base] }

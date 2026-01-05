@@ -3,8 +3,8 @@
 module MergeRequests
   module Mergeability
     class CheckRequestedChangesService < CheckBaseService
-      identifier :requested_changes
-      description 'Checks whether the merge request has changes requested'
+      set_identifier :requested_changes
+      set_description 'Checks whether the merge request has changes requested'
 
       def execute
         return inactive unless merge_request.reviewer_requests_changes_feature

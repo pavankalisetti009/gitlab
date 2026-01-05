@@ -5,8 +5,8 @@ module MergeRequests
     class CheckPathLocksService < CheckBaseService
       include ::Gitlab::Utils::StrongMemoize
 
-      identifier :locked_paths
-      description 'Checks whether the merge request contains locked paths'
+      set_identifier :locked_paths
+      set_description 'Checks whether the merge request contains locked paths'
 
       CACHE_KEY = 'merge_request:%{id}:%{sha}:path_locks_mergeability:%{epoch}'
 
