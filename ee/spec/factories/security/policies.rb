@@ -117,6 +117,14 @@ FactoryBot.define do
       content { { approval_settings: { prevent_approval_by_author: true } } }
     end
 
+    trait :prevent_pushing_and_force_pushing do
+      content { { approval_settings: { prevent_pushing_and_force_pushing: true } } }
+    end
+
+    trait :block_branch_modification do
+      content { { approval_settings: { block_branch_modification: true } } }
+    end
+
     trait :approval_policy do
       transient do
         approval_policy_rules_data do

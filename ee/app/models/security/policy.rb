@@ -108,8 +108,16 @@ module Security
     end
 
     scope :with_warn_mode, -> { where("content->>'enforcement_type' = ?", ENFORCEMENT_TYPE_WARN) }
+    scope :without_warn_mode, -> { where("content->>'enforcement_type' IS DISTINCT FROM ?", ENFORCEMENT_TYPE_WARN) }
 
     scope :including_security_policy_management_project, -> { includes(:security_policy_management_project) }
+
+    scope :including_approval_policy_rules, -> { includes(:approval_policy_rules) }
+
+    scope :block_branch_modification,
+      -> { where("content -> 'approval_settings' ->> 'block_branch_modification' = 'true'") }
+    scope :prevent_pushing_and_force_pushing,
+      -> { where("content -> 'approval_settings' ->> 'prevent_pushing_and_force_pushing' = 'true'") }
 
     delegate :namespace?, :namespace, :project?, :project, to: :security_orchestration_policy_configuration
 
