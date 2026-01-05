@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe API::ProtectedBranches, feature_category: :source_code_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
 
   let(:protected_name) { 'feature' }
   let(:branch_name) { protected_name }
@@ -307,7 +308,9 @@ RSpec.describe API::ProtectedBranches, feature_category: :source_code_management
       end
 
       context "with approval policy that sets 'prevent_pushing_and_force_pushing'" do
-        let!(:read) { create(:scan_result_policy_read, :prevent_pushing_and_force_pushing, project: project) }
+        include_context 'with approval security policy preventing force pushing' do
+          let(:branch_name) { protected_branch.name }
+        end
 
         subject(:update_branch) { patch api(route, user), params: params }
 

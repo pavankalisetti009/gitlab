@@ -47,24 +47,19 @@ RSpec.describe ProtectedBranches::UpdateService, feature_category: :compliance_m
         create(:security_orchestration_policy_configuration, project: project)
       end
 
-      let!(:policy_read) do
-        create(:scan_result_policy_read, :blocking_protected_branches, project: project,
-          security_orchestration_policy_configuration: policy_configuration)
-      end
-
-      include_context 'with approval policy blocking protected branches'
+      include_context 'with approval security policy blocking protected branches'
 
       it 'raises' do
         expect { service.execute(protected_branch) }.to raise_error(::Gitlab::Access::AccessDeniedError)
       end
 
       context 'when policy is in warn mode' do
-        let!(:security_policy) { create(:security_policy, :enforcement_type_warn) }
-        let!(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
-        let!(:policy_read) do
-          create(:scan_result_policy_read, :blocking_protected_branches, project: project,
-            security_orchestration_policy_configuration: policy_configuration,
-            approval_policy_rule: approval_policy_rule)
+        before do
+          updated_content = approval_policy_blocking_protected_branches.content.merge(
+            enforcement_type: Security::Policy::ENFORCEMENT_TYPE_WARN
+          )
+
+          approval_policy_blocking_protected_branches.update!(content: updated_content)
         end
 
         it 'does not raise' do
@@ -84,10 +79,16 @@ RSpec.describe ProtectedBranches::UpdateService, feature_category: :compliance_m
         context 'when attempting to toggle force-pushing' do
           let(:params) { { name: branch_name, allow_force_push: true } }
 
-          let!(:policy_read) do
-            create(:scan_result_policy_read, :prevent_pushing_and_force_pushing, project: project,
-              security_orchestration_policy_configuration: policy_configuration,
-              approval_policy_rule: approval_policy_rule)
+          include_context 'with approval security policy preventing force pushing' do
+            let(:approval_policy_preventing_force_pushing_policy_index) { 1 }
+          end
+
+          before do
+            updated_content = approval_policy_preventing_force_pushing.content.merge(
+              enforcement_type: Security::Policy::ENFORCEMENT_TYPE_WARN
+            )
+
+            approval_policy_preventing_force_pushing.update!(content: updated_content)
           end
 
           it 'does not raise' do
@@ -129,7 +130,7 @@ RSpec.describe ProtectedBranches::UpdateService, feature_category: :compliance_m
           end
         end
 
-        include_context 'with approval policy blocking protected branches' do
+        include_context 'with approval security policy blocking protected branches' do
           include_examples 'prevents update of protected branch'
         end
 

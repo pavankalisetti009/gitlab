@@ -67,12 +67,7 @@ RSpec.describe 'BranchRuleUpdate', feature_category: :source_code_management do
       create(:security_orchestration_policy_configuration, project: project)
     end
 
-    include_context 'with approval policy blocking protected branches'
-
-    before do
-      create(:scan_result_policy_read, :blocking_protected_branches, project: project,
-        security_orchestration_policy_configuration: policy_configuration)
-    end
+    include_context 'with approval security policy blocking protected branches'
 
     it_behaves_like 'a mutation that returns top-level errors',
       errors: ["Internal server error: Gitlab::Access::AccessDeniedError"]
