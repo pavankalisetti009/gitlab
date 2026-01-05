@@ -9,6 +9,7 @@ options:
   fields:
     - key: 'flowType'
       label: 'Flow'
+      sortable: true
     - key: 'sessionsCount'
       label: 'Number of sessions'
       sortable: true
@@ -19,6 +20,10 @@ options:
       sortable: true
       thAlignRight: true
       tdClass: "gl-text-right"
+      component: FormatNumber
+      componentProps:
+        value: '$map(medianExecutionTime)'
+        fractionDigits: 1
     - key: 'usersCount'
       label: 'Unique users'
       sortable: true
@@ -27,4 +32,5 @@ options:
     - key: 'completionRate'
       label: 'Completion rate (%)'
       thAlignRight: true
+      sortable: true
       tdClass: "gl-text-right"

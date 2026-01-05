@@ -19,14 +19,14 @@ const mockFlowMetrics = [
   },
   {
     flowType: 'CUSTOM_FLOW',
-    medianExecutionTime: 2100,
+    medianExecutionTime: 0,
     sessionsCount: 87,
     usersCount: 19,
     completionRate: 95.1,
   },
   {
     flowType: 'BONUS_FLOW',
-    medianExecutionTime: 2100,
+    medianExecutionTime: null,
     sessionsCount: 87,
     usersCount: 19,
     completionRate: 95.1,
