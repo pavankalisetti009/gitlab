@@ -16,6 +16,8 @@ module Authz
       end
 
       condition(:member) do
+        next true if token.user.can_read_all_resources?
+
         boundary.member?(token.user)
       end
 
