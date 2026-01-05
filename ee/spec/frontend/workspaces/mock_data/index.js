@@ -648,6 +648,22 @@ export const GET_AGENTS_WITH_MAPPING_STATUS_QUERY_RESULT = {
   },
 };
 
+export const BLOB_CONTENT_QUERY_RESULT = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      repository: { blobs: { nodes: [{ id: 'blob-1', rawBlob: 'some: yaml' }] } },
+    },
+  },
+};
+export const DEVFILE_VALIDATE_MUTATION_RESULT = {
+  data: {
+    devfileValidate: {
+      errors: [],
+      valid: true,
+    },
+  },
+};
 export const WORKSPACE_CREATE_MUTATION_RESULT = {
   data: {
     workspaceCreate: {

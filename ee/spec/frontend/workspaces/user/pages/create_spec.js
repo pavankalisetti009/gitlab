@@ -1,7 +1,7 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { cloneDeep } from 'lodash';
-import { GlForm, GlFormSelect, GlLink, GlSprintf, GlPopover, GlFormGroup } from '@gitlab/ui';
+import { GlForm, GlFormSelect, GlLink, GlSprintf, GlFormGroup } from '@gitlab/ui';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import SearchProjectsListbox from 'ee/workspaces/user/components/search_projects_listbox.vue';
@@ -25,7 +25,11 @@ import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import userWorkspacesTabListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_tab_list.query.graphql';
 import workspaceCreateMutation from 'ee/workspaces/user/graphql/mutations/workspace_create.mutation.graphql';
+import devfileValidateMutation from 'ee/workspaces/user/graphql/mutations/devfile_validate.mutation.graphql';
+import blobContentQuery from '~/ci/pipeline_editor/graphql/queries/blob_content.query.graphql';
 import {
+  DEVFILE_VALIDATE_MUTATION_RESULT,
+  BLOB_CONTENT_QUERY_RESULT,
   GET_PROJECT_DETAILS_QUERY_RESULT,
   USER_WORKSPACES_TAB_LIST_QUERY_RESULT,
   WORKSPACE_CREATE_MUTATION_RESULT,
@@ -65,12 +69,20 @@ describe('workspaces/user/pages/create.vue', () => {
   };
   let wrapper;
   let workspaceCreateMutationHandler;
+  let devfileValidateMutationHandler;
+  let fetchBlobContentQueryHandler;
   let mockApollo;
 
   const buildMockApollo = () => {
-    workspaceCreateMutationHandler = jest.fn();
-    workspaceCreateMutationHandler.mockResolvedValue(WORKSPACE_CREATE_MUTATION_RESULT);
-    mockApollo = createMockApollo([[workspaceCreateMutation, workspaceCreateMutationHandler]]);
+    workspaceCreateMutationHandler = jest.fn().mockResolvedValue(WORKSPACE_CREATE_MUTATION_RESULT);
+    devfileValidateMutationHandler = jest.fn().mockResolvedValue(DEVFILE_VALIDATE_MUTATION_RESULT);
+    fetchBlobContentQueryHandler = jest.fn().mockResolvedValue(BLOB_CONTENT_QUERY_RESULT);
+
+    mockApollo = createMockApollo([
+      [workspaceCreateMutation, workspaceCreateMutationHandler],
+      [devfileValidateMutation, devfileValidateMutationHandler],
+      [blobContentQuery, fetchBlobContentQueryHandler],
+    ]);
   };
 
   const readCachedWorkspaces = () => {
@@ -156,10 +168,11 @@ describe('workspaces/user/pages/create.vue', () => {
   const findDevfileField = () => wrapper.findByTestId('devfile');
   const findDevfileTitleText = () => findDevfileField().find('#devfile-selector-label').text();
   const findDevfileHelpIcon = () => findDevfileField().findComponent(HelpIcon);
-  const findDevfilePopover = () => {
-    const field = findDevfileField();
-    const popover = field.findComponent(GlPopover);
-    const popoverContent = popover.find('div.gl-flex.gl-flex-col').findAll('p');
+  const findDevfileValidationDocsLink = () => wrapper.findByTestId('validation-docs');
+  const findErrorPopover = () => wrapper.findByTestId('gl-error-popover');
+  const findDevfileHelpPopover = () => {
+    const popover = wrapper.findByTestId('gl-devfile-help-popover');
+    const popoverContent = popover.findAll('p');
 
     return {
       popoverTextParagraph1: popoverContent.at(0).text(),
@@ -170,6 +183,9 @@ describe('workspaces/user/pages/create.vue', () => {
   };
   const findDevfileDropDown = () => findDevfileField().findComponent(DevfileListbox);
   const findDevfileHelpDrawer = () => findDevfileField().findComponent(DevfileHelpDrawer);
+  const selectDevfile = (devfilePath = '.devfile.yaml') => {
+    findDevfileDropDown().vm.$emit('input', devfilePath);
+  };
 
   const emitGetProjectDetailsQueryResult = ({
     clusterAgents = [],
@@ -344,7 +360,7 @@ describe('workspaces/user/pages/create.vue', () => {
     });
 
     it('renders popover', () => {
-      expect(findDevfilePopover()).toEqual({
+      expect(findDevfileHelpPopover()).toEqual({
         popoverTextParagraph1:
           'A devfile defines the development environment for a GitLab project. A workspace must have a valid devfile in the Git reference you use.',
         popoverTextParagraph2:
@@ -369,6 +385,72 @@ describe('workspaces/user/pages/create.vue', () => {
       expect(findWorkspaceVariables().props()).toMatchObject({
         variables: [],
         showValidations: false,
+      });
+    });
+
+    describe('when devfile validation is invalid', () => {
+      it('displays error popover with single error in devfile', async () => {
+        devfileValidateMutationHandler.mockReset();
+        devfileValidateMutationHandler.mockResolvedValueOnce({
+          data: {
+            devfileValidate: {
+              valid: false,
+              errors: ['Some devfile error message'],
+            },
+          },
+        });
+        selectDevfile();
+        await waitForPromises();
+
+        expect(findErrorPopover().attributes('title')).toBe('Error processing the Devfile.');
+        expect(findErrorPopover().text()).toBe('Some devfile error message');
+        expect(findCreateWorkspaceButton().props().loading).toBe(false);
+      });
+
+      it('displays error popover with multiple errors in devfile', async () => {
+        devfileValidateMutationHandler.mockReset();
+        devfileValidateMutationHandler.mockResolvedValueOnce({
+          data: {
+            devfileValidate: {
+              valid: false,
+              errors: ['Some devfile error message', 'A different devfile error message'],
+            },
+          },
+        });
+        selectDevfile();
+        await waitForPromises();
+
+        expect(findErrorPopover().attributes('title')).toBe('2 errors processing the Devfile.');
+        expect(findErrorPopover().text()).toContain('Some devfile error message');
+        expect(findErrorPopover().text()).toContain('A different devfile error message');
+        expect(findCreateWorkspaceButton().props().loading).toBe(false);
+      });
+
+      it('displays a link to the validation docs', async () => {
+        devfileValidateMutationHandler.mockResolvedValueOnce({
+          data: {
+            devfileValidate: {
+              valid: false,
+              errors: ['Some devfile error message'],
+            },
+          },
+        });
+        selectDevfile();
+        await waitForPromises();
+        expect(findDevfileValidationDocsLink().attributes('href')).toBe(
+          '/help/user/workspace/_index.md#validation-rules',
+        );
+      });
+
+      it('alerts indicating system error while attempting to validate a devfile', async () => {
+        devfileValidateMutationHandler.mockReset();
+        devfileValidateMutationHandler.mockRejectedValueOnce(new Error());
+        selectDevfile();
+        await waitForPromises();
+
+        expect(findCreateWorkspaceErrorGlAlert().text()).toContain(
+          'Encountered error while attempting to validate the Devfile.',
+        );
       });
     });
 
