@@ -87,6 +87,8 @@ tags:
   description: Operations about pages_domains
 - name: project_avatar
   description: Operations about project_avatars
+- name: webhooks
+  description: Operations about webhooks
 - name: projects_job_token_scope
   description: Operations about projects_job_token_scopes
 - name: project_snippets
@@ -31374,7 +31376,7 @@ paths:
         '403':
           description: Forbidden
       tags:
-      - projects
+      - webhooks
       operationId: getApiV4ProjectsIdHooksHookIdEvents
   "/api/v4/projects/{id}/hooks/{hook_id}/test/{trigger}":
     post:
