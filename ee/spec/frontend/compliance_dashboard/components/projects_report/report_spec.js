@@ -125,6 +125,7 @@ describe('ComplianceProjectsReport component', () => {
         first: 20,
         frameworks: [],
         frameworksNot: [],
+        includeArchived: false,
       });
     });
 
@@ -142,6 +143,7 @@ describe('ComplianceProjectsReport component', () => {
         first: 99,
         frameworks: [],
         frameworksNot: [],
+        includeArchived: false,
       });
     });
 
@@ -417,6 +419,28 @@ describe('ComplianceProjectsReport component', () => {
       expect(mockGraphQlSuccess).toHaveBeenCalledWith(
         expect.objectContaining({
           includeArchived: false,
+        }),
+      );
+    });
+
+    it('should exclude archived projects by default when no project_status filter is applied', async () => {
+      createComponent(mount, {}, mockGraphQlSuccess, {});
+      await waitForPromises();
+
+      expect(mockGraphQlSuccess).toHaveBeenCalledWith(
+        expect.objectContaining({
+          includeArchived: false,
+        }),
+      );
+    });
+
+    it('should not include archivedOnly when no project_status filter is applied', async () => {
+      createComponent(mount, {}, mockGraphQlSuccess, {});
+      await waitForPromises();
+
+      expect(mockGraphQlSuccess).toHaveBeenCalledWith(
+        expect.not.objectContaining({
+          archivedOnly: true,
         }),
       );
     });
