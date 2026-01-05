@@ -43,7 +43,7 @@ module Types
 
       field :user, ::Types::UserType,
         null: true,
-        description: 'User who created the flow trigger.'
+        description: 'Service account of the flow trigger.'
 
       field :created_at, Types::TimeType,
         null: false,
