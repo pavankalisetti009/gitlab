@@ -99,28 +99,6 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     it { expect(feature_setting.provider_title).to eq('Disabled') }
   end
 
-  describe '.code_suggestions_self_hosted?' do
-    where(:feature, :provider, :code_suggestions_self_hosted) do
-      [
-        [:code_generations, :self_hosted, true],
-        [:code_generations, :vendored, false],
-        [:code_completions, :self_hosted, true],
-        [:code_generations, :vendored, false],
-        [:duo_chat, :self_hosted, false]
-      ]
-    end
-
-    with_them do
-      it 'returns whether code generations or completions are self hosted' do
-        feature_setting = build(:ai_feature_setting, feature: feature, provider: provider)
-        allow(feature_setting).to receive(:compatible_llms).and_return(%w[mistral]) # skip model compatibility check
-        feature_setting.save!
-
-        expect(described_class.code_suggestions_self_hosted?).to eq(code_suggestions_self_hosted)
-      end
-    end
-  end
-
   describe '.for_self_hosted_model' do
     let_it_be(:self_hosted_model) do
       create(:ai_self_hosted_model, name: 'model', model: :mistral)
