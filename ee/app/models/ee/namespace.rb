@@ -206,21 +206,18 @@ module EE
         :approval_policies_per_configuration_limit=, :vulnerability_management_policies_per_configuration_limit,
         :vulnerability_management_policies_per_configuration_limit=,
         to: :namespace_settings, allow_nil: true
-      delegate :duo_workflow_mcp_enabled, :duo_workflow_mcp_enabled=, to: :ai_settings, allow_nil: true
-      delegate :prompt_injection_protection_level, :prompt_injection_protection_level=, to: :ai_settings,
-        allow_nil: true
 
-      delegate :foundational_agents_default_enabled, to: :ai_settings_or_null_object
-      delegate :foundational_agents_default_enabled=, to: :ai_settings, allow_nil: true
+      delegate :foundational_agents_default_enabled, :foundational_agents_default_enabled=,
+        :prompt_injection_protection_level, :prompt_injection_protection_level=,
+        :duo_workflow_mcp_enabled, :duo_workflow_mcp_enabled=,
+        :duo_agent_platform_enabled, :duo_agent_platform_enabled=,
+        to: :ai_settings
 
       delegate :minimum_access_level_execute, :minimum_access_level_execute_async,
         :minimum_access_level_manage, :minimum_access_level_enable_on_projects,
         to: :ai_settings,
         allow_nil: true,
         prefix: :ai
-
-      delegate :duo_agent_platform_enabled, to: :ai_settings_or_null_object
-      delegate :duo_agent_platform_enabled=, to: :ai_settings, allow_nil: true
 
       # `eligible_additional_purchased_storage_size` uses a FF to start checking `additional_purchased_storage_ends_on`
       # if the FF is enabled before returning `additional_purchased_storage_size`
@@ -855,8 +852,8 @@ module EE
       custom_statuses.exists? ? custom_statuses : ::WorkItems::Statuses::SystemDefined::Status.all
     end
 
-    def ai_settings_or_null_object
-      ai_settings || ::Ai::NamespaceSettingNullObject.new
+    def ai_settings
+      super || build_ai_settings
     end
 
     private

@@ -7,8 +7,8 @@ module Ai
     include HasRolePermissions
 
     enum :prompt_injection_protection_level, {
-      no_checks: 0,
-      log_only: 1,
+      log_only: 0,
+      no_checks: 1,
       interrupt: 2
     }
 

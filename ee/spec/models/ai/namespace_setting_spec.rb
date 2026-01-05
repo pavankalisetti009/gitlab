@@ -26,7 +26,7 @@ RSpec.describe Ai::NamespaceSetting, type: :model, feature_category: :ai_abstrac
 
   describe 'enums' do
     it 'defines prompt injection protection level enum' do
-      is_expected.to define_enum_for(:prompt_injection_protection_level).with_values(no_checks: 0, log_only: 1,
+      is_expected.to define_enum_for(:prompt_injection_protection_level).with_values(log_only: 0, no_checks: 1,
         interrupt: 2)
     end
   end
