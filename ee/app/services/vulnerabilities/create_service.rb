@@ -39,6 +39,10 @@ module Vulnerabilities
       if vulnerability.persisted?
         attributes = {}
         attributes[:dismissal_reason] = @dismissal_reason if @dismissal_reason
+        if Feature.enabled?(:vulnerabilities_across_contexts, @project) && finding.security_project_tracked_context_id
+          attributes[:security_project_tracked_context_id] =
+            finding.security_project_tracked_context_id
+        end
 
         Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
         Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(vulnerability)

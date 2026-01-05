@@ -8,17 +8,70 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
   let(:context_name) { 'main' }
   let(:context_type) { :branch }
   let(:is_default) { true }
+  let(:allow_untracked) { false }
 
   let(:params) do
     {
       project: project,
       context_name: context_name,
       context_type: context_type,
-      is_default: is_default
+      is_default: is_default,
+      allow_untracked: allow_untracked
     }
   end
 
   subject(:service) { described_class.new(**params) }
+
+  RSpec.shared_examples 'context creation' do
+    it 'creates a new tracked context' do
+      expect { service.execute }.to change { Security::ProjectTrackedContext.count }.by(1)
+    end
+
+    it 'returns success with the created context' do
+      expected_state = if allow_untracked
+                         Security::ProjectTrackedContext::STATES[:untracked]
+                       else
+                         Security::ProjectTrackedContext::STATES[:tracked]
+                       end
+
+      expect(result).to be_success
+      tracked_context = result.payload[:tracked_context]
+      expect(tracked_context).to be_persisted
+      expect(tracked_context.project).to eq(project)
+      expect(tracked_context.context_name).to eq(context_name)
+      expect(tracked_context.context_type).to eq(context_type.to_s)
+      expect(tracked_context.state).to eq(expected_state)
+      expect(tracked_context.is_default).to be(is_default)
+    end
+
+    context 'when creation fails due to validation errors' do
+      let(:context_name) { nil }
+
+      it 'returns an error' do
+        expect(result).to be_error
+        expect(result.message).to include("Context name can't be blank")
+      end
+
+      it 'does not create a tracked context' do
+        expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
+      end
+    end
+  end
+
+  RSpec.shared_examples 'existing tracked context' do
+    it 'returns success with the existing context' do
+      expect(result).to be_success
+      expect(result.payload[:tracked_context]).to eq(existing_context)
+    end
+
+    it 'does not create a new tracked context' do
+      expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
+    end
+
+    it 'does not update the existing context' do
+      expect { service.execute }.not_to change { existing_context.reload.state }
+    end
+  end
 
   describe '.from_pipeline' do
     let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: 'feature-branch') }
@@ -77,31 +130,26 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
           context_type: :branch)
       end
 
-      it 'returns success with the existing context' do
-        expect(result).to be_success
-        expect(result.payload[:tracked_context]).to eq(existing_context)
-      end
-
-      it 'does not create a new tracked context' do
-        expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
-      end
-
-      it 'does not update the existing context' do
-        original_state = existing_context.state
-
-        service.execute
-
-        expect(existing_context.reload.state).to eq(original_state)
+      context 'when context is tracked' do
+        it_behaves_like 'existing tracked context'
       end
 
       context 'when context is not tracked' do
-        before do
+        before_all do
           existing_context.untrack!
         end
 
-        it 'returns an error' do
-          expect(result).to be_error
-          expect(result.message).to eq('Context is not tracked')
+        context 'when allow_untracked is false' do
+          it 'returns an error' do
+            expect(result).to be_error
+            expect(result.message).to eq('Context is not tracked')
+          end
+        end
+
+        context 'when allow_untracked is true' do
+          let(:allow_untracked) { true }
+
+          it_behaves_like 'existing tracked context'
         end
       end
     end
@@ -110,33 +158,7 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
       context 'when is_default is true' do
         let(:is_default) { true }
 
-        it 'creates a new tracked context' do
-          expect { service.execute }.to change { Security::ProjectTrackedContext.count }.by(1)
-        end
-
-        it 'returns success with the created context' do
-          expect(result).to be_success
-          tracked_context = result.payload[:tracked_context]
-          expect(tracked_context).to be_persisted
-          expect(tracked_context.project).to eq(project)
-          expect(tracked_context.context_name).to eq(context_name)
-          expect(tracked_context.context_type).to eq(context_type.to_s)
-          expect(tracked_context.state).to eq(Security::ProjectTrackedContext::STATES[:tracked])
-          expect(tracked_context.is_default).to be true
-        end
-
-        context 'when creation fails due to validation errors' do
-          let(:context_name) { nil }
-
-          it 'returns an error' do
-            expect(result).to be_error
-            expect(result.message).to include("Context name can't be blank")
-          end
-
-          it 'does not create a tracked context' do
-            expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
-          end
-        end
+        it_behaves_like 'context creation'
 
         context 'when tracked refs limit is exceeded' do
           let(:max_refs) { 1 }
@@ -160,13 +182,21 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
       context 'when is_default is false' do
         let(:is_default) { false }
 
-        it 'returns an error' do
-          expect(result).to be_error
-          expect(result.message).to eq('Expected context to already exist for non-default branches')
+        context 'when allow_untracked is false' do
+          it 'returns an error' do
+            expect(result).to be_error
+            expect(result.message).to eq('Expected context to already exist for non-default branches')
+          end
+
+          it 'does not create a tracked context' do
+            expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
+          end
         end
 
-        it 'does not create a tracked context' do
-          expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
+        context 'when allow_untracked is true' do
+          let(:allow_untracked) { true }
+
+          it_behaves_like 'context creation'
         end
       end
 

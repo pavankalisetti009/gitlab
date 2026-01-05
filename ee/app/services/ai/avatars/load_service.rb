@@ -10,7 +10,7 @@ module Ai
       def execute
         return unless avatar_filename
 
-        Rails.root.join('lib', 'assets', 'images', 'bot_avatars', avatar_filename).open
+        Users::Internal.bot_avatar(image: avatar_filename)
       rescue Errno::ENOENT => e
         Gitlab::ErrorTracking.track_and_raise_for_dev_exception(e)
         nil

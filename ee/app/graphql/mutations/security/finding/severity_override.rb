@@ -23,6 +23,7 @@ module Mutations
           description: 'New severity value for the finding.'
 
         def resolve(uuid:, severity:)
+          Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/584029')
           security_finding = authorized_find!(uuid: uuid)
           unless Feature.disabled?(:hide_vulnerability_severity_override, security_finding.project&.root_ancestor)
             raise Gitlab::Access::AccessDeniedError
