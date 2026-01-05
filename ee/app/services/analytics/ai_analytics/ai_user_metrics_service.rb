@@ -80,8 +80,19 @@ module Analytics
         direction = sort[:direction]
 
         if sort_field == :total_events_count
+          # Sort by total events across the entire feature
           query.order(Arel.sql('total_events_count'), direction)
+        elsif ::Ai::UsageEvent.events[sort_field].present?
+          # Sort by a specific event within the feature
+          event_id = ::Ai::UsageEvent.events[sort_field]
+
+          sort_expression = Arel::Nodes::NamedFunction.new('sumIf', [
+            Arel.sql('occurrences'),
+            builder.table[:event].eq(event_id)
+          ])
+          query.order(sort_expression, direction)
         else
+          # Sort by all events of a different feature
           sort_event_ids = event_ids_for_feature(sort_field)
           sort_expression = Arel::Nodes::NamedFunction.new('sumIf', [
             Arel.sql('occurrences'),
