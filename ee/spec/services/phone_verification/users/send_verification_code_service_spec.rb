@@ -456,7 +456,7 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
           it_behaves_like 'it returns a success response'
 
           it 'increments sms_send_count and sets sms_sent_at', :aggregate_failures,
-            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/439548' do
+            quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17090' do
             expect(record.sms_send_count).to eq 1
             expect(record.sms_sent_at).to be_within(1.second).of(old_sms_sent_at)
 

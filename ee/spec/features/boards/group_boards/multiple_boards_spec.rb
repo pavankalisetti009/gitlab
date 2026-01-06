@@ -31,7 +31,7 @@ RSpec.describe 'Multiple Issue Boards', :js, feature_category: :portfolio_manage
     end
 
     it 'does not show license warning when there is one board created',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/409987' do
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17071' do
       visit boards_path
       wait_for_requests
 

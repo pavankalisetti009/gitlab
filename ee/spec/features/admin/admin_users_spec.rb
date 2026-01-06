@@ -160,7 +160,7 @@ RSpec.describe "Admin::Users", :js, feature_category: :user_management do
           create(:project, namespace: user.namespace, shared_runners_enabled: true)
         end
 
-        it 'shows quota', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460040' do
+        it 'shows quota', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17068' do
           visit admin_users_path
 
           click_link user.name

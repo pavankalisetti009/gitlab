@@ -12,7 +12,8 @@ RSpec.describe Quality::Seeders::Insights::Issues, feature_category: :quality_ma
       described_class.new(project: project).seed(backfill_weeks: 2, average_issues_per_week: 2)
     end
 
-    it 'creates issues with iteration and weight', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/488613' do
+    it 'creates issues with iteration and weight',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/18779' do
       # The seed creates a random number of issues,
       # so we test if all of them has values present.
       iteration_ids = project.issues.pluck(:sprint_id).compact
@@ -23,7 +24,8 @@ RSpec.describe Quality::Seeders::Insights::Issues, feature_category: :quality_ma
       expect(weights.size).to eq(issues_count)
     end
 
-    it 'generates DORA metrics', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/488614' do
+    it 'generates DORA metrics',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/18780' do
       dora_metrics = project.environments.last.dora_daily_metrics
 
       expect(dora_metrics).not_to be_empty

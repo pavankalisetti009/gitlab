@@ -133,7 +133,7 @@ RSpec.describe BulkImports::Projects::Pipelines::VulnerabilitiesPipeline, featur
 
   describe '#run' do
     it 'imports vulnerability with its findings into destination project',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/554250' do
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/5341' do
       expect { pipeline.run }.to change { Vulnerability.count }.by_at_least(1)
         .and change { Vulnerabilities::Finding.count }.by_at_least(1)
 

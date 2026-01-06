@@ -26,7 +26,7 @@ module QA
         'finds blob that matches file content',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347632',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/928',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/928',
           type: :investigating,
           only: { pipeline: %w[staging-canary staging] }
         }

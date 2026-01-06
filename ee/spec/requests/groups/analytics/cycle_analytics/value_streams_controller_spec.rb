@@ -41,7 +41,8 @@ RSpec.describe Groups::Analytics::CycleAnalytics::ValueStreamsController, featur
 
       subject(:request) { put path_for(value_stream), params: { value_stream: value_stream_params } }
 
-      it 'updates project ids filter array', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446041' do
+      it 'updates project ids filter array',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17094' do
         value_stream.update!(setting_attributes: { project_ids_filter: [project_1.id] })
 
         expect { request }
@@ -55,7 +56,8 @@ RSpec.describe Groups::Analytics::CycleAnalytics::ValueStreamsController, featur
           { name: 'renamed', setting: { project_ids_filter: [] } }
         end
 
-        it 'clears the filter', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446042' do
+        it 'clears the filter',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17095' do
           value_stream.update!(setting_attributes: { project_ids_filter: [project_1.id, project_2.id] })
 
           expect { request }

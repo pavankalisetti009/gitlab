@@ -69,7 +69,8 @@ RSpec.describe PackageMetadata::Ingestion::CompressedPackage::PackageIngestionTa
       let(:package2) { build(:pm_compressed_data_object, purl_type: 'pypi', name: 'PyPatchMatch') }
       let(:import_data) { [package1, package2] }
 
-      it "creates only unique valid packages", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/452322' do
+      it "creates only unique valid packages",
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17089' do
         expect { execute }
           .to change { PackageMetadata::Package.all.pluck(:purl_type, :name) }
           .from([%w[gem rails]])

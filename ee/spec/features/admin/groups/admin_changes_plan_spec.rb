@@ -23,7 +23,7 @@ RSpec.describe 'Changes GL.com plan for group', :js, :saas, feature_category: :p
       click_link 'Edit'
     end
 
-    it 'changes the plan', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446286' do
+    it 'changes the plan', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17069' do
       find('#group_gitlab_subscription_attributes_hosted_plan_id').find(:xpath, 'option[2]').select_option
 
       click_button('Save changes')

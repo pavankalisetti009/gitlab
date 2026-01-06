@@ -94,7 +94,8 @@ RSpec.describe ClickHouse::EventPathsConsistencyCronWorker, feature_category: :v
       end
 
       context 'when processing stops due to the record clean up limit' do
-        it 'stores the last processed id value', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482083' do
+        it 'stores the last processed id value',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/18787' do
           stub_const("#{described_class}::MAX_RECORD_MODIFICATIONS", 1)
           stub_const("#{ClickHouse::Concerns::ConsistencyWorker}::POSTGRESQL_BATCH_SIZE", 1)
 

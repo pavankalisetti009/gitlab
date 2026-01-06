@@ -75,7 +75,7 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
           let(:license_states) { %w[newly_detected] }
 
           it 'requires approval', :aggregate_failures,
-            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570722' do
+            quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9359' do
             visit(ee_merge_request_path)
             wait_for_requests
 

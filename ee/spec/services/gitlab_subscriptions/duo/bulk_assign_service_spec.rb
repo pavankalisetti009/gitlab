@@ -399,7 +399,8 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
             create(:gitlab_subscription_add_on_purchase, quantity: 50, add_on: add_on)
           end
 
-          it 'assigns users with log', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/477823' do
+          it 'assigns users with log',
+            quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17088' do
             expect(Gitlab::AppLogger).to receive(:info).with(expected_success_log)
 
             response = bulk_assign

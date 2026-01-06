@@ -166,7 +166,8 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
           let(:start_time) { ::Gitlab::Metrics::System.monotonic_time - 60 }
           let(:options) { { start_time: start_time } }
 
-          it 'sets the Apdex success as false', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/546456' do
+          it 'sets the Apdex success as false',
+            quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/5541' do
             expect(Gitlab::Metrics::Sli::Apdex[:llm_completion])
               .to receive(:increment)
               .with(labels: { feature_category: anything, service_class: an_instance_of(String) }, success: false)

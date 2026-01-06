@@ -26,7 +26,8 @@ RSpec.describe Auth::ProvisionedUsersFinder, feature_category: :system_access do
       context 'when provisioning_group param is not passed' do
         let(:params) { { provisioning_group: nil } }
 
-        it 'raises provisioning group error', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484416' do
+        it 'raises provisioning group error',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/17084' do
           expect { finder }.to raise_error ArgumentError, 'Provisioning group is required for ProvisionedUsersFinder'
         end
       end
@@ -34,7 +35,8 @@ RSpec.describe Auth::ProvisionedUsersFinder, feature_category: :system_access do
       context 'when provisioning_group param is passed' do
         let(:params) { { provisioning_group: group } }
 
-        it 'returns provisioned_user', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484417' do
+        it 'returns provisioned_user',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17085' do
           users = finder
           expect(users).to eq([blocked_provisioned_user, provisioned_user])
         end
@@ -44,7 +46,7 @@ RSpec.describe Auth::ProvisionedUsersFinder, feature_category: :system_access do
     describe '#by_search' do
       let(:params) { { provisioning_group: group, search: provisioned_user.email } }
 
-      it 'filters by search', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484418' do
+      it 'filters by search', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17086' do
         users = finder
 
         expect(users).to eq([provisioned_user])
