@@ -15,7 +15,7 @@ module Ai
         def execute
           return ServiceResponse.error(message: 'Feature not available') unless feature_available?
 
-          foundational_workflows = ::Ai::DuoWorkflows::WorkflowDefinition::ITEMS.select do |workflow_def|
+          foundational_workflows = ::Ai::Catalog::FoundationalFlow::ITEMS.select do |workflow_def|
             workflow_def[:foundational_flow_reference].present?
           end
 

@@ -51,10 +51,10 @@ module API
             instance_wide_duo_developer = ::Ai::Setting.instance.duo_workflow_service_account_user
             return true if service_account.id == instance_wide_duo_developer.id
 
-            workflow_definition = ::Ai::DuoWorkflows::WorkflowDefinition['code_review/v1']
+            workflow_definition = ::Ai::Catalog::FoundationalFlow['code_review/v1']
             resolved_service_account_result = ::Ai::Catalog::ItemConsumers::ResolveServiceAccountService.new(
               container: project_from_params,
-              item: workflow_definition.foundational_flow
+              item: workflow_definition.catalog_item
             ).execute
 
             return false if resolved_service_account_result.error?

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agent_platform do
+RSpec.describe Ai::Catalog::FoundationalFlow, feature_category: :duo_agent_platform do
   describe '.[]' do
     subject(:definition) { described_class[key] }
 
@@ -53,15 +53,15 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
     end
   end
 
-  describe '#foundational_flow' do
-    subject(:foundational_flow) { definition.foundational_flow }
+  describe '#catalog_item' do
+    subject(:catalog_item) { definition.catalog_item }
 
     context 'with foundational_flow_reference' do
       let_it_be(:definition) { described_class.new(foundational_flow_reference: 'code_review') }
       let_it_be(:duo_code_review) { create(:ai_catalog_item, foundational_flow_reference: 'code_review') }
 
       it 'returns the corresponding foundational workflow catalog item' do
-        expect(foundational_flow).to eq(duo_code_review)
+        expect(catalog_item).to eq(duo_code_review)
       end
     end
 
@@ -69,7 +69,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
       let_it_be(:definition) { described_class.new(foundational_flow_reference: nil) }
 
       it 'returns nil' do
-        expect(foundational_flow).to be_nil
+        expect(catalog_item).to be_nil
       end
     end
 
@@ -77,7 +77,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
       let_it_be(:definition) { described_class.new(foundational_flow_reference: 'code_review') }
 
       it 'returns nil' do
-        expect(foundational_flow).to be_nil
+        expect(catalog_item).to be_nil
       end
     end
   end

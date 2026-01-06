@@ -104,7 +104,7 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
 
     context 'with workflow filtering' do
       it 'only seeds workflows with foundational_flow_reference' do
-        workflows_with_reference = Ai::DuoWorkflows::WorkflowDefinition::ITEMS.count do |item|
+        workflows_with_reference = Ai::Catalog::FoundationalFlow::ITEMS.count do |item|
           item[:foundational_flow_reference].present?
         end
 
