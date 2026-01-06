@@ -54911,6 +54911,7 @@ Name of the feature that the callout is for.
 | <a id="usergroupcalloutfeaturenameexpired_duo_enterprise_trial_widget"></a>`EXPIRED_DUO_ENTERPRISE_TRIAL_WIDGET` | Callout feature name for expired_duo_enterprise_trial_widget. |
 | <a id="usergroupcalloutfeaturenameexpired_duo_pro_trial_widget"></a>`EXPIRED_DUO_PRO_TRIAL_WIDGET` | Callout feature name for expired_duo_pro_trial_widget. |
 | <a id="usergroupcalloutfeaturenameexpired_trial_status_widget"></a>`EXPIRED_TRIAL_STATUS_WIDGET` | Callout feature name for expired_trial_status_widget. |
+| <a id="usergroupcalloutfeaturenamefoundational_items_available"></a>`FOUNDATIONAL_ITEMS_AVAILABLE` | Callout feature name for foundational_items_available. |
 | <a id="usergroupcalloutfeaturenamefree_group_limited_alert"></a>`FREE_GROUP_LIMITED_ALERT` | Callout feature name for free_group_limited_alert. |
 | <a id="usergroupcalloutfeaturenameinvite_members_banner"></a>`INVITE_MEMBERS_BANNER` | Callout feature name for invite_members_banner. |
 | <a id="usergroupcalloutfeaturenamemrs_premium_message_callout"></a>`MRS_PREMIUM_MESSAGE_CALLOUT` | Callout feature name for mrs_premium_message_callout. |
