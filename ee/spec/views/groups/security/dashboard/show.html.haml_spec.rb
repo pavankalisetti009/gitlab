@@ -19,27 +19,27 @@ RSpec.describe 'groups/security/dashboard/show.html.haml', feature_category: :vu
     expect(rendered).to have_selector('#js-group-security-dashboard')
   end
 
-  context 'when rendering the current security dashboard' do
+  context 'when user has access_advanced_vulnerability_management ability' do
     before do
-      stub_feature_flags(group_security_dashboard_new: false)
-    end
-
-    it 'does not set the page to fluid layout' do
-      render
-
-      expect(force_fluid_layout).to be(false)
-    end
-  end
-
-  context 'when rendering the new security dashboard' do
-    before do
-      stub_feature_flags(group_security_dashboard_new: true)
+      allow(view).to receive(:can?).with(anything, :access_advanced_vulnerability_management, group).and_return(true)
     end
 
     it 'sets the page to fluid layout' do
       render
 
       expect(force_fluid_layout).to be(true)
+    end
+  end
+
+  context 'when user does not have access_advanced_vulnerability_management ability' do
+    before do
+      allow(view).to receive(:can?).with(anything, :access_advanced_vulnerability_management, group).and_return(false)
+    end
+
+    it 'does not set the page to fluid layout' do
+      render
+
+      expect(force_fluid_layout).to be(false)
     end
   end
 end

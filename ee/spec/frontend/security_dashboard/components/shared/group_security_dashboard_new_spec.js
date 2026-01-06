@@ -24,19 +24,13 @@ describe('Group Security Dashboard (new version) - Component', () => {
 
   const mockGroupFullPath = 'group/subgroup';
 
-  const createComponent = ({
-    props = {},
-    glFeatures = {
-      newSecurityDashboardTotalRiskScore: true,
-    },
-  } = {}) => {
+  const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(GroupSecurityDashboardNew, {
       propsData: {
         ...props,
       },
       provide: {
         groupFullPath: mockGroupFullPath,
-        glFeatures,
       },
     });
   };
@@ -178,24 +172,6 @@ describe('Group Security Dashboard (new version) - Component', () => {
       await nextTick();
 
       expect(getVulnerabilitiesOverTimePanel().componentProps.filters).toEqual({ projectId });
-    });
-  });
-
-  describe('with total risk score feature flag disabled', () => {
-    beforeEach(() => {
-      createComponent({ glFeatures: { newSecurityDashboardTotalRiskScore: false } });
-    });
-
-    it('does not render the risk score panel', () => {
-      expect(findPanelWithId('risk-score')).toBeUndefined();
-    });
-
-    it('renders the vulnerabilities over time panel on the left side', () => {
-      const vulnerabilitiesOverTimePanel = getVulnerabilitiesOverTimePanel();
-
-      expect(vulnerabilitiesOverTimePanel.gridAttributes).toMatchObject({
-        xPos: 0,
-      });
     });
   });
 });

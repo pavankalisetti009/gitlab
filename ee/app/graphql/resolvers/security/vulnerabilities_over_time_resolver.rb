@@ -30,8 +30,6 @@ module Resolvers
         validate_advanced_vuln_management!
         validate_date_range!(start_date, end_date)
 
-        return [] if !vulnerable || !feature_enabled?(vulnerable)
-
         base_params = build_base_params(start_date, end_date, args)
 
         # Check which fields are requested
@@ -57,14 +55,6 @@ module Resolvers
 
       def field_requested?(field_name)
         lookahead.selection(:nodes).selects?(field_name)
-      end
-
-      def feature_enabled?(vulnerable)
-        if vulnerable.is_a?(Project)
-          Feature.enabled?(:project_security_dashboard_new, vulnerable)
-        elsif vulnerable.is_a?(Group)
-          Feature.enabled?(:group_security_dashboard_new, vulnerable)
-        end
       end
 
       def build_base_params(start_date, end_date, args)

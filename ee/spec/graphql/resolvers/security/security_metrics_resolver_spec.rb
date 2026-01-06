@@ -66,16 +66,6 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
         end
 
         it_behaves_like 'returns the object when authorized'
-
-        context 'when group level feature flag is disabled' do
-          before do
-            stub_feature_flags(group_security_dashboard_new: false)
-          end
-
-          it 'returns nil' do
-            expect(resolved_metrics).to be_nil
-          end
-        end
       end
 
       context 'when the current user does not have access' do
@@ -98,16 +88,6 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
         end
 
         it_behaves_like 'returns the object when authorized'
-
-        context 'when group level feature flag is disabled' do
-          before do
-            stub_feature_flags(project_security_dashboard_new: false)
-          end
-
-          it 'returns nil' do
-            expect(resolved_metrics).to be_nil
-          end
-        end
       end
 
       context 'when the current user does not have access' do

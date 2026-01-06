@@ -22,13 +22,7 @@ module Resolvers
       def resolve(**args)
         return unless Ability.allowed?(current_user, :read_security_resource, object)
 
-        if object.is_a?(Project)
-          return if Feature.disabled?(:project_security_dashboard_new, object)
-        elsif object.is_a?(Group)
-          return if Feature.disabled?(:group_security_dashboard_new, object)
-        else
-          return
-        end
+        return unless object.is_a?(Project) || object.is_a?(Group)
 
         context[:project_id] = args[:project_id] if args[:project_id].present? && object.is_a?(Group)
         context[:report_type] = args[:report_type] if args[:report_type].present?

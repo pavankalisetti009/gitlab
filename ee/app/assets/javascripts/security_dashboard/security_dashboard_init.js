@@ -74,11 +74,9 @@ export default async (el, dashboardType) => {
     gon.abilities?.accessAdvancedVulnerabilityManagement;
 
   if (dashboardType === DASHBOARD_TYPE_GROUP) {
-    const isGroupSecurityDashboardNewEnabled = gon.features.groupSecurityDashboardNew;
-
     if (!hasProjects) {
       component = ReportNotConfiguredGroup;
-    } else if (isGroupSecurityDashboardNewEnabled && hasAccessAdvancedVulnerabilityManagement) {
+    } else if (hasAccessAdvancedVulnerabilityManagement) {
       const { default: GroupSecurityDashboardNew } = await import(
         './components/shared/group_security_dashboard_new.vue'
       );
@@ -101,11 +99,9 @@ export default async (el, dashboardType) => {
       gradesQuery: instanceVulnerabilityGradesQuery,
     };
   } else if (dashboardType === DASHBOARD_TYPE_PROJECT) {
-    const isProjectSecurityDashboardNewEnabled = gon.features.projectSecurityDashboardNew;
-
     if (!hasVulnerabilities) {
       component = ReportNotConfiguredProject;
-    } else if (isProjectSecurityDashboardNewEnabled && hasAccessAdvancedVulnerabilityManagement) {
+    } else if (hasAccessAdvancedVulnerabilityManagement) {
       provide.securityVulnerabilitiesPath = projectSecurityVulnerabilitiesPath;
       provide.fullPath = projectFullPath;
       provide.trackedRefs = trackedRefs ? JSON.parse(trackedRefs) : [];
