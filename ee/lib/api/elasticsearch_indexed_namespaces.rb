@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# NOTE: These endpoints are deprecated and for GitLab.com use only.
+# They were originally used to control rollout for advanced search but are no longer in use.
 module API
   class ElasticsearchIndexedNamespaces < ::API::Base
     before { authenticated_as_admin! }
@@ -11,6 +13,8 @@ module API
       desc 'Rollout namespaces to be indexed up to n%' do
         detail <<~END
           This feature was introduced in GitLab 12.7.
+
+          **DEPRECATED**: This endpoint is deprecated and for GitLab.com use only.
 
           This will only ever increase the number of indexed namespaces. Providing a value lower than the current rolled out percentage will have no effect.
 
@@ -32,6 +36,8 @@ module API
       desc 'Rollback namespaces to be indexed down to n%' do
         detail <<~END
           This feature was introduced in GitLab 12.7.
+
+          **DEPRECATED**: This endpoint is deprecated and for GitLab.com use only.
 
           This will only ever decrease the number of indexed namespaces. Providing a value higher than the current rolled out percentage will have no effect.
 
