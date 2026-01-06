@@ -625,7 +625,16 @@ module EE
     end
 
     def elasticsearch_url=(values)
-      cleaned = values.split(',').map { |url| url.strip.gsub(%r{/*\z}, '') }
+      urls = case values
+             when String
+               values.split(',')
+             when Array
+               values.flat_map { |v| v.to_s.split(',') }
+             else
+               []
+             end
+
+      cleaned = urls.map { |url| url.strip.gsub(%r{/*\z}, '') }.reject(&:blank?)
 
       write_attribute(:elasticsearch_url, cleaned.join(','))
     end
