@@ -89,7 +89,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
       let(:definition) { described_class.find_by(name: 'code_review/v1') }
 
       it 'returns the description' do
-        expect(description).to eq('The Code Review Flow helps you streamline code reviews with agentic AI.')
+        expect(description).to eq('Streamline code reviews by analyzing code changes, comments, and linked issues.')
       end
     end
 

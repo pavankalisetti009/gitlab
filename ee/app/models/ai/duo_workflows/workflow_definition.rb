@@ -12,7 +12,7 @@ module Ai
           id: 1,
           name: "code_review/v1",
           display_name: "Code Review",
-          description: "The Code Review Flow helps you streamline code reviews with agentic AI.",
+          description: "Streamline code reviews by analyzing code changes, comments, and linked issues.",
           avatar: "code-review-flow.png",
           foundational_flow_reference: "code_review/v1",
           ai_feature: "review_merge_request",
@@ -27,7 +27,7 @@ module Ai
           id: 2,
           name: "sast_fp_detection/v1",
           display_name: "SAST False Positive Detection",
-          description: "SAST false positive detection automatically analyzes critical SAST vulnerabilities.",
+          description: "Analyze critical SAST vulnerabilities.",
           avatar: "security-flow.png",
           foundational_flow_reference: "sast_fp_detection/v1",
           pre_approved_agent_privileges: [
@@ -62,8 +62,7 @@ module Ai
           name: "developer/v1",
           display_name: "Developer",
           foundational_flow_reference: "developer/v1",
-          description:
-            "The Developer Flow streamlines the process of converting issues into actionable merge requests.",
+          description: "Convert issues into actionable merge requests.",
           avatar: "gitlab-duo-flow.png",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
@@ -77,10 +76,9 @@ module Ai
         {
           id: 5,
           name: "fix_pipeline/v1",
-          display_name: "Fix CI/CD pipeline",
+          display_name: "Fix CI/CD Pipeline",
           foundational_flow_reference: "fix_pipeline/v1",
-          description: "The Fix CI/CD Pipeline Flow helps you automatically diagnose and fix issues in your GitLab
-CI/CD pipeline.",
+          description: "Diagnose and fix issues in your GitLab CI/CD pipeline.",
           avatar: "fix-pipeline-flow.png",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
@@ -97,7 +95,7 @@ CI/CD pipeline.",
           name: "convert_to_gl_ci/v1",
           display_name: "Convert to GitLab CI/CD",
           foundational_flow_reference: "convert_to_gl_ci/v1",
-          description: "The Convert to GitLab CI/CD Flow helps you migrate your Jenkins pipelines to GitLab CI/CD.",
+          description: "Migrate your Jenkins pipelines to GitLab CI/CD.",
           avatar: "convert-ci-flow.png",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
