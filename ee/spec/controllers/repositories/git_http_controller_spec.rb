@@ -92,10 +92,7 @@ RSpec.describe Repositories::GitHttpController, feature_category: :source_code_m
     let_it_be(:admin) { create(:user, :admin) }
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, :private, :repository, namespace: group) }
-    let_it_be(:geo_node) do
-      create(:geo_node_with_selective_sync_for, :primary, model: project, namespaces: :model_parent)
-    end
-
+    let_it_be(:geo_node) { create(:geo_node, :primary) }
     let_it_be(:repository_path) { "#{project.full_path}.git" }
 
     let_it_be_with_reload(:deploy_key) { create(:deploy_key, public: true, user: admin) }

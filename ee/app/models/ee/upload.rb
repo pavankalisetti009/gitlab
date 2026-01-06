@@ -21,6 +21,23 @@ module EE
       scope :with_verification_state, ->(state) { joins(:upload_state).where(upload_states: { verification_state: verification_state_value(state) }) }
       scope :by_checksum, ->(value) { where(checksum: value) }
 
+      # On primary, `verifiables` are records that can be checksummed and/or are replicable.
+      # On secondary, `verifiables` are records that have already been replicated
+      # and (ideally) have been checksummed on the primary
+      scope :verifiables, ->(primary_key_in = nil) do
+        node = ::GeoNode.current_node
+
+        replicables =
+          available_replicables
+            .merge(object_storage_scope(node))
+
+        if ::Gitlab::Geo.org_mover_extend_selective_sync_to_primary_checksumming?
+          replicables.merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
+        else
+          primary_key_in ? replicables.primary_key_in(primary_key_in) : replicables
+        end
+      end
+
       has_one :upload_state,
         autosave: false,
         inverse_of: :upload,
@@ -36,15 +53,14 @@ module EE
       def verification_state_object
         upload_state
       end
+
+      def upload_state
+        super || build_upload_state
+      end
     end
 
     class_methods do
       extend ::Gitlab::Utils::Override
-
-      override :verification_state_table_class
-      def verification_state_table_class
-        ::Geo::UploadState
-      end
 
       # Search for a list of uploads based on the query given in `query`.
       #
@@ -57,37 +73,87 @@ module EE
         by_checksum(query)
       end
 
-      override :selective_sync_scope
-      def selective_sync_scope(node, **_params)
-        if node.selective_sync?
-          # TODO: Implement selective sync by organizations
-          # https://gitlab.com/gitlab-org/gitlab/-/issues/534193
-          return none if node.selective_sync_by_organizations?
+      override :pluck_verifiable_ids_in_range
+      def pluck_verifiable_ids_in_range(range)
+        verifiables(range).pluck_primary_key
+      end
 
-          group_attachments(node).or(project_attachments(node)).or(other_attachments)
+      # @param primary_key_in [Range, Upload] arg to pass to primary_key_in scope
+      # @return [ActiveRecord::Relation<Upload>] everything that should be synced to this
+      #         node, restricted by primary key
+      override :replicables_for_current_secondary
+      def replicables_for_current_secondary(primary_key_in)
+        node = ::Gitlab::Geo.current_node
+
+        replicables = available_replicables.merge(object_storage_scope(node))
+        replicables = replicables.primary_key_in(primary_key_in) if primary_key_in.present?
+
+        replicables
+          .merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
+      end
+
+      # @return [ActiveRecord::Relation<Upload>] scope observing selective sync
+      #          settings of the given node
+      override :selective_sync_scope
+      def selective_sync_scope(node, **params)
+        replicables    = params.fetch(:replicables, all)
+        primary_key_in = params[:primary_key_in].presence
+        replicables    = replicables.primary_key_in(primary_key_in) if primary_key_in
+
+        return replicables unless node.selective_sync?
+
+        if node.selective_sync_by_namespaces? || node.selective_sync_by_shards?
+          uploads_for_selected_namespaces(node, replicables)
+        elsif node.selective_sync_by_organizations?
+          uploads_for_selected_organizations(node, replicables)
         else
-          all
+          raise ::Geo::Errors::UnknownSelectiveSyncType.new(selective_sync_type: node.selective_sync_type)
         end
       end
 
+      def uploads_for_selected_namespaces(node, replicables)
+        namespace_ids = node.namespaces_for_group_owned_replicables.select(:id)
+        project_ids = ::Project.selective_sync_scope(node).select(:id)
+
+        group_attachments(replicables, namespace_ids)
+          .or(project_attachments(replicables, project_ids))
+          .or(other_attachments(replicables))
+      end
+
+      def uploads_for_selected_organizations(node, replicables)
+        organization_ids = node.organizations.pluck_primary_key
+        return none if organization_ids.empty?
+
+        user_ids = ::Organizations::OrganizationUser.in_organization(organization_ids).select(:user_id)
+        namespace_ids = node.namespaces_for_group_owned_replicables.select(:id)
+        project_ids = ::Project.selective_sync_scope(node).select(:id)
+
+        replicables
+            .where(organization_id: organization_ids)
+            .or(replicables.where(namespace_id: namespace_ids))
+            .or(replicables.where(project_id: project_ids))
+            .or(replicables.where(uploaded_by_user_id: user_ids))
+      end
+
       # @return [ActiveRecord::Relation<Upload>] scope of Namespace-associated uploads observing selective sync settings of the given node
-      def group_attachments(node)
-        where(model_type: 'Namespace', model_id: node.namespaces_for_group_owned_replicables.select(:id))
+      def group_attachments(replicables, namespace_ids)
+        replicables.where(model_type: 'Namespace', model_id: namespace_ids)
       end
 
       # @return [ActiveRecord::Relation<Upload>] scope of Project-associated uploads observing selective sync settings of the given node
-      def project_attachments(node)
-        where(model_type: 'Project', model_id: ::Project.selective_sync_scope(node).select(:id))
+      def project_attachments(replicables, project_ids)
+        replicables.where(model_type: 'Project', model_id: project_ids)
       end
 
       # @return [ActiveRecord::Relation<Upload>] scope of uploads which are not associated with Namespace or Project
-      def other_attachments
-        where.not(model_type: %w[Namespace Project])
+      def other_attachments(replicables)
+        replicables.where.not(model_type: %w[Namespace Project])
       end
-    end
 
-    def upload_state
-      super || build_upload_state
+      override :verification_state_table_class
+      def verification_state_table_class
+        ::Geo::UploadState
+      end
     end
   end
 end

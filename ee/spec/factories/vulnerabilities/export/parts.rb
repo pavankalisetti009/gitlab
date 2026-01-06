@@ -6,5 +6,9 @@ FactoryBot.define do
     organization
     start_id { 1 }
     end_id { 1 }
+
+    trait :with_csv_file do
+      file { fixture_file_upload('ee/spec/fixtures/vulnerabilities/archive_export.csv') }
+    end
   end
 end
