@@ -62,6 +62,13 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
     end
   end
 
+  describe 'fields with :ai_workflows scope' do
+    it 'includes :ai_workflows scope for the aiSettings field' do
+      field = described_class.fields['aiSettings']
+      expect(field.instance_variable_get(:@scopes)).to include(:ai_workflows)
+    end
+  end
+
   describe 'Security Policies', feature_category: :security_policy_management do
     let_it_be(:security_policy_management_project) { create(:project) }
     let_it_be(:group) { create(:group) }

@@ -7,14 +7,20 @@ module Types
 
       authorize :read_namespace
 
+      def self.authorization_scopes
+        [:api, :read_api, :ai_workflows]
+      end
+
       field :duo_workflow_mcp_enabled,
         GraphQL::Types::Boolean,
         null: false,
+        scopes: [:api, :read_api, :ai_workflows],
         description: 'Indicates whether the namespace has MCP enabled.'
 
       field :prompt_injection_protection_level,
         ::Types::Ai::PromptInjectionProtectionLevelEnum,
         null: false,
+        scopes: [:api, :read_api, :ai_workflows],
         description: 'Level of prompt injection protection for the namespace.'
     end
   end
