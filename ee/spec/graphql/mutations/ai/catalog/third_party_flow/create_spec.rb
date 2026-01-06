@@ -9,7 +9,7 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category:
 
   it { is_expected.to have_graphql_name('AiCatalogThirdPartyFlowCreate') }
 
-  it { expect(described_class).to require_graphql_authorizations(:admin_ai_catalog_item) }
+  it { expect(described_class).to require_graphql_authorizations(:create_ai_catalog_third_party_flow) }
 
   it { is_expected.to have_graphql_fields(:item, :errors, :client_mutation_id) }
 

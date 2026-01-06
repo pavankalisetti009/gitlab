@@ -188,6 +188,11 @@ module Ai
             return false
           end
 
+          if item.third_party_flow? &&
+              !Ability.allowed?(current_user, :create_ai_catalog_third_party_flow_item_consumer, container)
+            return false
+          end
+
           Ability.allowed?(current_user, :admin_ai_catalog_item_consumer, container) &&
             Ability.allowed?(current_user, :read_ai_catalog_item, item)
         end

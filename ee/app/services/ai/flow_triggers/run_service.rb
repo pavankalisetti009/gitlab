@@ -12,7 +12,7 @@ module Ai
         @resource = resource
         @flow_trigger = flow_trigger
         @flow_trigger_user = flow_trigger.user
-        catalog_consumer = flow_trigger.ai_catalog_item_consumer
+        @catalog_consumer = flow_trigger.ai_catalog_item_consumer
         @catalog_item = catalog_consumer&.item
         @catalog_item_pinned_version = catalog_consumer&.pinned_version_prefix
 
@@ -42,13 +42,14 @@ module Ai
       strong_memoize_attr def validation_error
         return ServiceResponse.error(message: 'cannot be triggered by non-human users') unless current_user.human?
 
-        return unless catalog_item&.third_party_flow? && Feature.disabled?(:ai_catalog_third_party_flows, current_user)
+        return unless catalog_item&.third_party_flow? &&
+          !Ability.allowed?(current_user, :execute_ai_catalog_item, catalog_consumer)
 
-        ServiceResponse.error(message: 'ai_catalog_third_party_flows feature flag is not enabled')
+        ServiceResponse.error(message: 'current user not permitted to execute external agent')
       end
 
       attr_reader :project, :current_user, :resource, :flow_trigger, :flow_trigger_user,
-        :catalog_item, :catalog_item_pinned_version
+        :catalog_item, :catalog_consumer, :catalog_item_pinned_version
 
       def run_workload(params)
         flow_definition = fetch_flow_definition
@@ -120,7 +121,7 @@ module Ai
           project: project,
           current_user: current_user,
           params: {
-            item_consumer: flow_trigger.ai_catalog_item_consumer,
+            item_consumer: catalog_consumer,
             flow: catalog_item,
             service_account: flow_trigger_user,
             flow_version: catalog_item.resolve_version(catalog_item_pinned_version),

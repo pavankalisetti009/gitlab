@@ -19,6 +19,7 @@ import {
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
@@ -47,7 +48,7 @@ export default {
     GlTokenSelector,
     VisibilityLevelRadioGroup,
   },
-  mixins: [glFeatureFlagsMixin()],
+  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   inject: {
     projectId: {
       default: null,
@@ -115,7 +116,9 @@ export default {
       return uniqueId('ai-catalog-agent-form-');
     },
     isThirdPartyFlowsAvailable() {
-      return this.glFeatures.aiCatalogThirdPartyFlows;
+      return (
+        this.glAbilities.createAiCatalogThirdPartyFlow ?? this.glFeatures.aiCatalogThirdPartyFlows
+      );
     },
     isThirdPartyFlow() {
       return (

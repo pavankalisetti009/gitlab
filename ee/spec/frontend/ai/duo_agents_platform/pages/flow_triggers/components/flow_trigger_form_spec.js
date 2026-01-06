@@ -48,9 +48,7 @@ describe('FlowTriggerForm', () => {
       provide: {
         glAbilities: {
           readAiCatalogFlow: true,
-        },
-        glFeatures: {
-          aiCatalogThirdPartyFlows: true,
+          readAiCatalogThirdPartyFlow: true,
         },
         ...provide,
       },
@@ -179,13 +177,12 @@ describe('FlowTriggerForm', () => {
         });
       });
 
-      describe('when both readAiCatalogFlow and aiCatalogThirdPartyFlows are false', () => {
+      describe('when both readAiCatalogFlow and readAiCatalogThirdPartyFlow are false', () => {
         beforeEach(async () => {
           await createWrapper(
             {},
             {
-              glAbilities: { readAiCatalogFlow: false },
-              glFeatures: { aiCatalogThirdPartyFlows: false },
+              glAbilities: { readAiCatalogFlow: false, readAiCatalogThirdPartyFlow: false },
             },
           );
         });
@@ -486,8 +483,7 @@ describe('FlowTriggerForm', () => {
         await createWrapper(
           {},
           {
-            glAbilities: { readAiCatalogFlow: true },
-            glFeatures: { aiCatalogThirdPartyFlows: false },
+            glAbilities: { readAiCatalogFlow: true, readAiCatalogThirdPartyFlow: false },
           },
         );
       });
@@ -508,13 +504,12 @@ describe('FlowTriggerForm', () => {
       });
     });
 
-    describe('when only aiCatalogThirdPartyFlows is enabled', () => {
+    describe('when only readAiCatalogThirdPartyFlow is enabled', () => {
       beforeEach(async () => {
         await createWrapper(
           {},
           {
-            glAbilities: { readAiCatalogFlow: false },
-            glFeatures: { aiCatalogThirdPartyFlows: true },
+            glAbilities: { readAiCatalogFlow: false, readAiCatalogThirdPartyFlow: true },
           },
         );
       });

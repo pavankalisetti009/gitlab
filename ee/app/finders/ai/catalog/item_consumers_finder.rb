@@ -108,11 +108,13 @@ module Ai
       def get_filtered_item_types
         types = (item_types.presence || all_types).map(&:to_sym)
 
-        if Ability.allowed?(current_user, :read_ai_catalog_flow, container)
-          types
-        else
-          types - [Ai::Catalog::Item::FLOW_TYPE]
+        types -= [Ai::Catalog::Item::FLOW_TYPE] unless Ability.allowed?(current_user, :read_ai_catalog_flow, container)
+
+        unless Ability.allowed?(current_user, :read_ai_catalog_third_party_flow, container)
+          types -= [Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE]
         end
+
+        types
       end
 
       def all_types

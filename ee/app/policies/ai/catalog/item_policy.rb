@@ -23,6 +23,10 @@ module Ai
         @subject.project && ::Gitlab::Llm::StageCheck.available?(@subject.project, :ai_catalog_flows)
       end
 
+      condition(:third_party_flows_available, scope: :subject) do
+        @subject.project && ::Gitlab::Llm::StageCheck.available?(@subject.project, :ai_catalog_third_party_flows)
+      end
+
       condition(:is_project_member) do
         @user && @subject.project&.member?(@user)
       end
@@ -116,6 +120,16 @@ module Ai
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
+        prevent :report_ai_catalog_item
+      end
+
+      rule { third_party_flow & ~third_party_flows_available & ~can_admin_organization }.policy do
+        prevent :admin_ai_catalog_item
+        prevent :delete_ai_catalog_item
+      end
+
+      rule { third_party_flow & ~public_item & ~third_party_flows_available & ~can_admin_organization }.policy do
+        prevent :read_ai_catalog_item
         prevent :report_ai_catalog_item
       end
     end

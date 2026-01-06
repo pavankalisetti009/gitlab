@@ -11,7 +11,6 @@ import {
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { scrollTo } from '~/lib/utils/scroll_utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
@@ -43,7 +42,7 @@ export default {
     ErrorsAlert,
     AiLegalDisclaimer,
   },
-  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
+  mixins: [glAbilitiesMixin()],
   props: {
     mode: {
       type: String,
@@ -120,7 +119,7 @@ export default {
   },
   data() {
     const isCatalogAvailable =
-      this.glAbilities.readAiCatalogFlow || this.glFeatures.aiCatalogThirdPartyFlows;
+      this.glAbilities.readAiCatalogFlow || this.glAbilities.readAiCatalogThirdPartyFlow;
     const hasConsumerId = Boolean(this.initialValues.aiCatalogItemConsumer.id);
     const hasConfigPath = Boolean(this.initialValues.configPath);
     const useCatalogMode = isCatalogAvailable && (hasConsumerId || !hasConfigPath);
@@ -144,7 +143,7 @@ export default {
         types.push(AI_CATALOG_TYPE_FLOW);
       }
 
-      if (this.glFeatures.aiCatalogThirdPartyFlows) {
+      if (this.glAbilities.readAiCatalogThirdPartyFlow) {
         types.push(AI_CATALOG_TYPE_THIRD_PARTY_FLOW);
       }
 
@@ -157,7 +156,7 @@ export default {
       return this.configMode === CONFIG_MODE_CATALOG;
     },
     catalogConfigModeTexts() {
-      if (this.glAbilities.readAiCatalogFlow && this.glFeatures.aiCatalogThirdPartyFlows) {
+      if (this.glAbilities.readAiCatalogFlow && this.glAbilities.readAiCatalogThirdPartyFlow) {
         return {
           label: s__('AICatalog|Agent or flow'),
           labelDescription: s__(
@@ -177,7 +176,7 @@ export default {
         };
       }
 
-      if (this.glFeatures.aiCatalogThirdPartyFlows) {
+      if (this.glAbilities.readAiCatalogThirdPartyFlow) {
         return {
           label: s__('AICatalog|Agent'),
           labelDescription: s__(

@@ -253,6 +253,15 @@ module Gitlab
             maturity: :beta,
             self_managed: true,
             internal: true
+          },
+          ai_catalog_third_party_flows: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :workflow_catalog,
+            execute_method: nil,
+            maturity: :experimental,
+            self_managed: true,
+            internal: true
           }
         }.freeze
 

@@ -40,7 +40,7 @@ module Mutations
             required: true,
             description: 'YAML definition for the Flow.'
 
-          authorize :admin_ai_catalog_item
+          authorize :create_ai_catalog_third_party_flow
 
           def resolve(args)
             project = authorized_find!(id: args[:project_id])

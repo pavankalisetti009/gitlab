@@ -93,6 +93,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           [
             :read_ai_agents,
             :read_ai_catalog_flow,
+            :read_ai_catalog_third_party_flow,
             :read_ai_catalog_item_consumer,
             :read_all_organization_resources,
             :read_ci_pipeline_schedules_plan_limit,
@@ -5485,6 +5486,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   describe 'AI catalog abilities' do
     let(:ai_catalog_available) { true }
     let(:flows_available) { true }
+    let(:third_party_flows_available) { true }
     let(:duo_features_enabled) { true }
 
     shared_examples 'no permissions when StageCheck :ai_catalog is false' do
@@ -5492,6 +5494,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
       it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
@@ -5505,11 +5509,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
     end
 
+    shared_examples 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false' do
+      let(:third_party_flows_available) { false }
+
+      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
+    end
+
     shared_examples 'no permissions when Duo features are not available' do
       let(:duo_features_enabled) { false }
 
       it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
       it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
@@ -5523,6 +5536,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
       it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
@@ -5533,6 +5548,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
         .with(project, :ai_catalog).and_return(ai_catalog_available)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog_flows).and_return(flows_available)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(project, :ai_catalog_third_party_flows).and_return(third_party_flows_available)
       project.duo_features_enabled = duo_features_enabled
     end
 
@@ -5541,6 +5558,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_allowed(:read_ai_catalog_flow) }
       it { is_expected.to be_allowed(:create_ai_catalog_flow) }
+      it { is_expected.to be_allowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_allowed(:create_ai_catalog_third_party_flow) }
       it { is_expected.to be_allowed(:admin_ai_catalog_item) }
       it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
@@ -5548,6 +5567,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
+      it_behaves_like 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
@@ -5556,14 +5576,17 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:current_user) { developer }
 
       it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_flow) }
+      it { is_expected.to be_allowed(:read_ai_catalog_third_party_flow) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:execute_ai_catalog_item) }
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
+      it_behaves_like 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
@@ -5573,6 +5596,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
       it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
@@ -5584,6 +5609,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
       it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
@@ -5593,6 +5620,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'when anonymous' do
       let(:current_user) { anonymous }
 
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }

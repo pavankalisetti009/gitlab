@@ -51,7 +51,7 @@ module Gitlab
             :ai_chat
           when :agentic_chat
             :agentic_chat
-          when :ai_catalog, :ai_catalog_flows
+          when :ai_catalog, :ai_catalog_flows, :ai_catalog_third_party_flows
             :ai_catalog
           when :duo_workflow
             :ai_workflows

@@ -71,6 +71,9 @@ describe('AiCatalogAgentForm', () => {
       provide: {
         projectId,
         isGlobal,
+        glAbilities: {
+          createAiCatalogThirdPartyFlow: true,
+        },
         glFeatures: {
           aiCatalogThirdPartyFlows: true,
         },
@@ -186,17 +189,93 @@ describe('AiCatalogAgentForm', () => {
   });
 
   describe('Agent Type Field', () => {
-    describe('when aiCatalogThirdPartyFlows is disabled', () => {
-      it('does not render the agent type field', () => {
+    describe('when createAiCatalogThirdPartyFlow is null and aiCatalogThirdPartyFlows is false', () => {
+      beforeEach(() => {
         createWrapper({
           provide: {
-            glFeatures: {
-              aiCatalogThirdPartyFlows: false,
-            },
+            glAbilities: { createAiCatalogThirdPartyFlow: null },
+            glFeatures: { aiCatalogThirdPartyFlows: false },
           },
         });
+      });
 
+      it('does not render the agent type field', () => {
         expect(findAgentType().exists()).toBe(false);
+      });
+    });
+
+    describe('when createAiCatalogThirdPartyFlow is null and aiCatalogThirdPartyFlows is true', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: {
+            glAbilities: { createAiCatalogThirdPartyFlow: null },
+            glFeatures: { aiCatalogThirdPartyFlows: true },
+          },
+        });
+      });
+
+      it('renders the agent type field', () => {
+        expect(findAgentType().exists()).toBe(true);
+      });
+    });
+
+    describe('when createAiCatalogThirdPartyFlow is false and aiCatalogThirdPartyFlows is false', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: {
+            glAbilities: { createAiCatalogThirdPartyFlow: false },
+            glFeatures: { aiCatalogThirdPartyFlows: false },
+          },
+        });
+      });
+
+      it('does not render the agent type field', () => {
+        expect(findAgentType().exists()).toBe(false);
+      });
+    });
+
+    describe('when createAiCatalogThirdPartyFlow is false and aiCatalogThirdPartyFlows is true', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: {
+            glAbilities: { createAiCatalogThirdPartyFlow: false },
+            glFeatures: { aiCatalogThirdPartyFlows: true },
+          },
+        });
+      });
+
+      it('does not render the agent type field', () => {
+        expect(findAgentType().exists()).toBe(false);
+      });
+    });
+
+    describe('when createAiCatalogThirdPartyFlow is true and aiCatalogThirdPartyFlows is false', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: {
+            glAbilities: { createAiCatalogThirdPartyFlow: true },
+            glFeatures: { aiCatalogThirdPartyFlows: false },
+          },
+        });
+      });
+
+      it('renders the agent type field', () => {
+        expect(findAgentType().exists()).toBe(true);
+      });
+    });
+
+    describe('when createAiCatalogThirdPartyFlow is true and aiCatalogThirdPartyFlows is true', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: {
+            glAbilities: { createAiCatalogThirdPartyFlow: true },
+            glFeatures: { aiCatalogThirdPartyFlows: true },
+          },
+        });
+      });
+
+      it('renders the agent type field', () => {
+        expect(findAgentType().exists()).toBe(true);
       });
     });
   });

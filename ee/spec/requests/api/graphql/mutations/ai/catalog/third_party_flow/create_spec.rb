@@ -82,6 +82,31 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category:
     it_behaves_like 'an authorization failure'
   end
 
+  context 'when just the ai_catalog StageCheck passes' do
+    let(:third_party_flows_available) { false }
+
+    before do
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+      allow(Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(project, :ai_catalog).and_return(true)
+      allow(Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(project, :ai_catalog_third_party_flows).and_return(third_party_flows_available)
+    end
+
+    it_behaves_like 'an authorization failure'
+
+    context 'and the ai_catalog_third_party_flows StageCheck also passes' do
+      let(:third_party_flows_available) { true }
+
+      it 'is successful' do
+        execute
+
+        expect(graphql_data_at(:ai_catalog_third_party_flow_create, :item)).to be_present
+        expect(graphql_errors).to be_nil
+      end
+    end
+  end
+
   context 'when graphql params are invalid' do
     let(:name) { nil }
     let(:description) { nil }
