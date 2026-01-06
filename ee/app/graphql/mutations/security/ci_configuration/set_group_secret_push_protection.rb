@@ -8,7 +8,7 @@ module Mutations
 
         include Mutations::ResolvesGroup
 
-        description 'Enable or disable Secret Push Protection for a group.'
+        description 'Enable or disable secret push protection for a group.'
 
         argument :secret_push_protection_enabled, GraphQL::Types::Boolean, required: true,
           description: 'Whether to enable the feature.'
