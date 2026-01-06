@@ -16,6 +16,7 @@ module EE
       PIPL_COMPLIANCE_ALERT = 'pipl_compliance_alert'
       DUO_CORE_RELEASE_DATE = Date.new(2025, 5, 15)
       EXPLORE_DUO_CORE_BANNER = 'explore_duo_core_banner'
+      FOUNDATIONAL_ITEMS_AVAILABLE = 'foundational_items_available'
 
       override :render_product_usage_data_collection_changes
       def render_product_usage_data_collection_changes(current_user)
@@ -97,6 +98,13 @@ module EE
         return false unless current_user
 
         Ai::ModelSelection::DefaultDuoNamespaceService.new(current_user).default_duo_namespace_required?
+      end
+
+      def show_foundational_items_available?(group:)
+        return false unless current_user
+        return false unless Ability.allowed?(current_user, :owner_access, group)
+
+        ::Feature.enabled?(:dap_use_foundational_flows_setting, current_user)
       end
 
       private

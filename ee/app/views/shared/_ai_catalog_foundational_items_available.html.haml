@@ -1,0 +1,13 @@
+- return unless group && show_foundational_items_available?(group: group)
+
+- content_for :after_flash_content do
+  = render Users::GroupDismissibleAlertComponent.new(variant: :info,
+    title: s_('AICatalog|New foundational agents and flows now available'),
+    alert_options: { class: 'gl-my-4' },
+    dismiss_options: { user: current_user,
+                       group: group,
+                       feature_id: ::EE::Users::CalloutsHelper::FOUNDATIONAL_ITEMS_AVAILABLE }) do |c|
+    - c.with_body do
+      = s_("AICatalog|Foundational agents and flows are built, tested, and supported by GitLab, and can help accelerate your productivity. Get started by configuring them now.")
+    - c.with_actions do
+      = link_button_to s_('AICatalog|Configure'), group_settings_gitlab_duo_configuration_index_path(group), class: 'gl-alert-action'
