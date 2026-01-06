@@ -29,6 +29,7 @@ module EE
 
         handle_organization_settings
 
+        duo_namespace_access_rules = params[:duo_namespace_access_rules]
         handle_duo_namespace_access_rules
 
         if result = super
@@ -38,6 +39,8 @@ module EE
           update_elasticsearch_index_settings(number_of_replicas: elasticsearch_replicas, number_of_shards: elasticsearch_shards)
 
           cascade_duo_features_settings
+
+          audit_duo_namespace_access_rules_update(duo_namespace_access_rules) if duo_namespace_access_rules
 
           # There are cases when current user is passed as nil like in elastic.rake
           # we should not log audit events in such cases
@@ -193,6 +196,28 @@ module EE
       def pending_member_approvals?
         ::GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLevelMemberApprovalsFinder
           .new(current_user).execute.any?
+      end
+
+      def audit_duo_namespace_access_rules_update(rules)
+        audit_context = {
+          name: 'feature_access_rules_updated',
+          author: current_user,
+          scope: ::Gitlab::Audit::InstanceScope.new,
+          target: ::Gitlab::Audit::NullTarget.new,
+          message: access_rules_audit_message(rules)
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def access_rules_audit_message(rules)
+        return 'Cleared feature access rules' if rules.empty?
+
+        updated_rules = rules.map do |rule|
+          "Group id: #{rule.dig(:through_namespace, :id)}, features: #{rule[:features]}"
+        end.join('; ')
+
+        "Updated feature access rules #{updated_rules}"
       end
     end
   end
