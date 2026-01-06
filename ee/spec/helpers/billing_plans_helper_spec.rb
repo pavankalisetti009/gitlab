@@ -214,7 +214,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
     end
 
     it 'returns duoChat empty string and can permission when duo chat is enabled' do
-      allow(user).to receive(:can?).with(:access_duo_chat, namespace).and_return(true)
+      allow(user).to receive(:can?).with(:access_duo_classic_chat, namespace).and_return(true)
 
       attributes = helper.free_trial_plan_billing_attributes(namespace, plans_data)
 
@@ -616,8 +616,8 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
 
     before do
       allow(helper).to receive(:current_user).and_return(current_user)
-      allow(current_user).to receive(:can?).with(:access_duo_chat, free_group).and_return(false)
-      allow(current_user).to receive(:can?).with(:access_duo_chat, trial_group).and_return(true)
+      allow(current_user).to receive(:can?).with(:access_duo_classic_chat, free_group).and_return(false)
+      allow(current_user).to receive(:can?).with(:access_duo_classic_chat, trial_group).and_return(true)
     end
 
     subject { helper.user_billing_data_attributes(plans_data) }

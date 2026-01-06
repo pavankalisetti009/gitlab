@@ -9,6 +9,11 @@ RSpec.describe API::Dependencies, feature_category: :dependency_management do
   let_it_be(:occurrences) { create_list(:sbom_occurrence, 2, :with_vulnerabilities, :mit, project: project) }
 
   describe "GET /projects/:id/dependencies" do
+    it_behaves_like 'authorizing granular token permissions', :read_dependency do
+      let(:boundary_object) { project }
+      let(:request) { get api("/projects/#{project.id}/dependencies", personal_access_token: pat) }
+    end
+
     subject(:request) { get api("/projects/#{project.id}/dependencies", user), params: params }
 
     let(:params) { {} }

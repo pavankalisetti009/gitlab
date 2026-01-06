@@ -36,7 +36,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
 
     context 'when context is authorized' do
       before do
-        allow(user).to receive(:can?).with(:access_duo_chat).and_return(true)
+        allow(user).to receive(:can?).with(:access_duo_classic_chat).and_return(true)
       end
 
       let(:expected_params) do
@@ -117,7 +117,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
 
     context 'when context is not authorized' do
       before do
-        allow(user).to receive(:can?).with(:access_duo_chat).and_return(false)
+        allow(user).to receive(:can?).with(:access_duo_classic_chat).and_return(false)
       end
 
       it 'responds with the message from TanukiBot' do

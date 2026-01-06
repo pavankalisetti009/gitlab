@@ -51,7 +51,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
     end
 
     it_behaves_like 'virtual registry not available', :maven
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
 
     context 'for search param' do

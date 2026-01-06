@@ -66,6 +66,8 @@ module EE
       end
 
       condition(:user_allowed_to_use_glab_ask_git_command) do
+        next false unless @user
+
         @user.allowed_to_use?(:glab_ask_git_command, licensed_feature: :glab_ask_git_command)
       end
 
@@ -74,10 +76,14 @@ module EE
       end
 
       condition(:duo_chat_enabled_for_user) do
+        next false unless @user
+
         @user.allowed_to_use?(:duo_chat)
       end
 
       condition(:duo_agentic_chat_enabled) do
+        next false unless @user
+
         ::Feature.enabled?(:duo_agentic_chat, @user)
       end
 
@@ -246,8 +252,12 @@ module EE
         code_suggestions_licensed & ~ai_features_banned & code_suggestions_enabled_for_user
       end.enable :access_code_suggestions
 
-      rule { duo_chat_enabled_for_user & ~ai_features_banned }.enable :access_duo_chat
-      rule { can?(:access_duo_chat) & duo_agentic_chat_enabled }.enable :access_duo_agentic_chat
+      rule do
+        duo_chat_enabled_for_user & ~ai_features_banned
+      end.enable :access_duo_classic_chat
+      rule do
+        duo_chat_enabled_for_user & ~ai_features_banned & duo_agentic_chat_enabled
+      end.enable :access_duo_agentic_chat
       rule { runner_upgrade_management_available | user_belongs_to_paid_namespace }.enable :read_runner_upgrade_status
 
       rule { security_policy_bot }.policy do

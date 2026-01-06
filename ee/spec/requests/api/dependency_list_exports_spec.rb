@@ -152,6 +152,11 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           expect(json_response['export_type']).to eq('dependency_list')
         end
       end
+
+      it_behaves_like 'authorizing granular token permissions', :create_dependency_list_export do
+        let(:boundary_object) { project }
+        let(:request) { post api(request_path, personal_access_token: pat) }
+      end
     end
   end
 
@@ -184,6 +189,11 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['export_type']).to eq('json_array')
         end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_dependency_list_export do
+        let(:boundary_object) { group }
+        let(:request) { post api(request_path, personal_access_token: pat) }
       end
     end
   end

@@ -602,8 +602,8 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
   end
 
-  describe 'access_duo_chat' do
-    let(:policy) { :access_duo_chat }
+  describe 'access_duo_classic_chat' do
+    let(:policy) { :access_duo_classic_chat }
 
     let_it_be_with_reload(:current_user) { create(:user) }
 
@@ -615,10 +615,16 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
       with_them do
         before do
-          allow(current_user).to receive(:allowed_to_use?).and_return(duo_pro_seat_assigned)
+          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat).and_return(duo_pro_seat_assigned)
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
+      end
+
+      context 'when user is nil' do
+        let(:current_user) { nil }
+
+        it { is_expected.to be_disallowed(policy) }
       end
     end
 
@@ -634,7 +640,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         before do
           allow(::Gitlab).to receive(:org_or_com?).and_return(false)
           stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
-          allow(current_user).to receive(:allowed_to_use?).and_return(duo_pro_seat_assigned)
+          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat).and_return(duo_pro_seat_assigned)
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
@@ -676,10 +682,16 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       with_them do
         before do
           stub_feature_flags(duo_agentic_chat: feature_flag)
-          allow(current_user).to receive(:allowed_to_use?).and_return(duo_pro_seat_assigned)
+          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat).and_return(duo_pro_seat_assigned)
         end
 
         it { is_expected.to duo_agentic_chat_enabled_for_user }
+      end
+
+      context 'when user is nil' do
+        let(:current_user) { nil }
+
+        it { is_expected.to be_disallowed(policy) }
       end
     end
 
@@ -695,7 +707,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         before do
           allow(::Gitlab).to receive(:org_or_com?).and_return(false)
           stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
-          allow(current_user).to receive(:allowed_to_use?).and_return(duo_pro_seat_assigned)
+          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat).and_return(duo_pro_seat_assigned)
         end
 
         it { is_expected.to duo_agentic_chat_enabled_for_user }
@@ -795,6 +807,12 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       end
 
       it { is_expected.to enabled_for_user }
+    end
+
+    context 'when user is nil' do
+      let(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(policy) }
     end
   end
 

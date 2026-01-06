@@ -10,6 +10,7 @@ import {
   DASHBOARD_TYPE_INSTANCE,
 } from 'ee/security_dashboard/constants';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
+import * as SecurityDashboardUtils from 'ee/security_dashboard/utils';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -81,30 +82,13 @@ describe('ActivityToken', () => {
 
   describe('default view', () => {
     const findAllBadges = () => wrapper.findAllComponents(GlBadge);
-    const createWrapperWithAbility = ({
-      accessAdvancedVulnerabilityManagement,
-      resolveVulnerabilityWithAi,
-      securityPolicyApprovalWarnMode,
-      policyViolationsEsFilter,
-      provide = {},
-    } = {}) => {
-      window.gon = {
-        abilities: { accessAdvancedVulnerabilityManagement },
-        features: {
-          securityPolicyApprovalWarnMode,
-          policyViolationsEsFilter,
-        },
-      };
+    const createWrapperWithAbility = ({ resolveVulnerabilityWithAi, provide = {} } = {}) => {
       createWrapper({
         provide: {
           glAbilities: {
-            accessAdvancedVulnerabilityManagement,
             resolveVulnerabilityWithAi,
           },
-          glFeatures: {
-            securityPolicyApprovalWarnMode,
-            policyViolationsEsFilter,
-          },
+
           ...provide,
         },
       });
@@ -125,14 +109,6 @@ describe('ActivityToken', () => {
 
     it('has a defaultValues function', () => {
       expect(ActivityToken.defaultValues()).toEqual(['STILL_DETECTED']);
-    });
-
-    it('transforms the query params correctly', () => {
-      expect(ActivityToken.transformQueryParams([])).toBe('ALL');
-
-      expect(ActivityToken.transformQueryParams(['NO_LONGER_DETECTED', 'HAS_ISSUE'])).toBe(
-        'NO_LONGER_DETECTED,HAS_ISSUE',
-      );
     });
 
     const baseOptions = [
@@ -176,26 +152,19 @@ describe('ActivityToken', () => {
     );
 
     it.each`
-      dashboardType              | accessAdvancedVulnerabilityManagement | securityPolicyApprovalWarnMode | policyViolationsEsFilter | expectedOptions
-      ${DASHBOARD_TYPE_PROJECT}  | ${true}                               | ${true}                        | ${true}                  | ${[...baseOptions, ...policyViolationOptions]}
-      ${DASHBOARD_TYPE_PROJECT}  | ${false}                              | ${false}                       | ${false}                 | ${baseOptions}
-      ${DASHBOARD_TYPE_GROUP}    | ${true}                               | ${true}                        | ${true}                  | ${[...baseOptions, ...policyViolationOptions]}
-      ${DASHBOARD_TYPE_INSTANCE} | ${true}                               | ${true}                        | ${true}                  | ${baseOptions}
+      dashboardType              | isPolicyViolationEnabled | expectedOptions
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                  | ${[...baseOptions, ...policyViolationOptions]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                 | ${baseOptions}
+      ${DASHBOARD_TYPE_GROUP}    | ${true}                  | ${[...baseOptions, ...policyViolationOptions]}
+      ${DASHBOARD_TYPE_INSTANCE} | ${true}                  | ${baseOptions}
     `(
-      'shows the dropdown with correct options when dashboardType=$dashboardType and accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement and securityPolicyApprovalWarnMode=$securityPolicyApprovalWarnMode and policyViolationsEsFilter=$policyViolationsEsFilter',
-      ({
-        dashboardType,
-        accessAdvancedVulnerabilityManagement,
-        securityPolicyApprovalWarnMode,
-        policyViolationsEsFilter,
-        expectedOptions,
-      }) => {
-        createWrapperWithAbility({
-          provide: { dashboardType },
-          accessAdvancedVulnerabilityManagement,
-          securityPolicyApprovalWarnMode,
-          policyViolationsEsFilter,
-        });
+      'shows the dropdown with correct options when dashboardType=$dashboardType and isPolicyViolationEnabled=$isPolicyViolationEnabled',
+      ({ dashboardType, isPolicyViolationEnabled, expectedOptions }) => {
+        jest
+          .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
+          .mockReturnValue(isPolicyViolationEnabled);
+
+        createWrapper({ provide: { dashboardType } });
 
         const findDropdownOptions = () =>
           wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
@@ -204,12 +173,10 @@ describe('ActivityToken', () => {
       },
     );
 
-    it('shows the dropdown with correct options when both the resolveVulnerabilityWithAi and securityPolicyApprovalWarnMode are true', () => {
+    it('shows the dropdown with correct options when both the resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
+      jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
       createWrapperWithAbility({
-        accessAdvancedVulnerabilityManagement: true,
         resolveVulnerabilityWithAi: true,
-        securityPolicyApprovalWarnMode: true,
-        policyViolationsEsFilter: true,
       });
 
       const findDropdownOptions = () =>
@@ -238,26 +205,19 @@ describe('ActivityToken', () => {
     );
 
     it.each`
-      dashboardType              | accessAdvancedVulnerabilityManagement | securityPolicyApprovalWarnMode | policyViolationsEsFilter | expectedGroups
-      ${DASHBOARD_TYPE_PROJECT}  | ${true}                               | ${true}                        | ${true}                  | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
-      ${DASHBOARD_TYPE_PROJECT}  | ${false}                              | ${false}                       | ${false}                 | ${baseGroupHeaders}
-      ${DASHBOARD_TYPE_GROUP}    | ${true}                               | ${true}                        | ${true}                  | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
-      ${DASHBOARD_TYPE_INSTANCE} | ${true}                               | ${true}                        | ${true}                  | ${baseGroupHeaders}
+      dashboardType              | isPolicyViolationEnabled | expectedGroups
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                  | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                 | ${baseGroupHeaders}
+      ${DASHBOARD_TYPE_GROUP}    | ${true}                  | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
+      ${DASHBOARD_TYPE_INSTANCE} | ${true}                  | ${baseGroupHeaders}
     `(
-      'shows the correct group headers when dashboardType=$dashboardType and accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement and securityPolicyApprovalWarnMode=$securityPolicyApprovalWarnMode and policyViolationsEsFilter=$policyViolationsEsFilter',
-      ({
-        dashboardType,
-        accessAdvancedVulnerabilityManagement,
-        securityPolicyApprovalWarnMode,
-        policyViolationsEsFilter,
-        expectedGroups,
-      }) => {
-        createWrapperWithAbility({
-          provide: { dashboardType },
-          accessAdvancedVulnerabilityManagement,
-          securityPolicyApprovalWarnMode,
-          policyViolationsEsFilter,
-        });
+      'shows the correct group headers when dashboardType=$dashboardType and isPolicyViolationEnabled=$isPolicyViolationEnabled',
+      ({ dashboardType, isPolicyViolationEnabled, expectedGroups }) => {
+        jest
+          .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
+          .mockReturnValue(isPolicyViolationEnabled);
+
+        createWrapper({ provide: { dashboardType } });
 
         const findDropdownGroupHeaders = () =>
           wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
@@ -266,12 +226,10 @@ describe('ActivityToken', () => {
       },
     );
 
-    it('shows the correct group headers when both resolveVulnerabilityWithAi and securityPolicyApprovalWarnMode are true', () => {
+    it('shows the correct group headers when both resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
+      jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
       createWrapperWithAbility({
-        accessAdvancedVulnerabilityManagement: true,
         resolveVulnerabilityWithAi: true,
-        securityPolicyApprovalWarnMode: true,
-        policyViolationsEsFilter: true,
       });
 
       const findDropdownGroupHeaders = () =>
@@ -299,22 +257,17 @@ describe('ActivityToken', () => {
     );
 
     it.each`
-      accessAdvancedVulnerabilityManagement | securityPolicyApprovalWarnMode | policyViolationsEsFilter | expectedBadges
-      ${true}                               | ${true}                        | ${true}                  | ${['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb', 'flag']}
-      ${false}                              | ${false}                       | ${false}                 | ${['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb']}
+      isPolicyViolationEnabled | expectedBadges
+      ${true}                  | ${['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb', 'flag']}
+      ${false}                 | ${['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb']}
     `(
-      'shows the correct badges when accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement and securityPolicyApprovalWarnMode=$securityPolicyApprovalWarnMode and policyViolationsEsFilter=$policyViolationsEsFilter',
-      ({
-        accessAdvancedVulnerabilityManagement,
-        securityPolicyApprovalWarnMode,
-        policyViolationsEsFilter,
-        expectedBadges,
-      }) => {
-        createWrapperWithAbility({
-          accessAdvancedVulnerabilityManagement,
-          securityPolicyApprovalWarnMode,
-          policyViolationsEsFilter,
-        });
+      'shows the correct badges when isPolicyViolationEnabled=$isPolicyViolationEnabled',
+      ({ isPolicyViolationEnabled, expectedBadges }) => {
+        jest
+          .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
+          .mockReturnValue(isPolicyViolationEnabled);
+
+        createWrapper();
 
         expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
           expectedBadges,
@@ -322,12 +275,10 @@ describe('ActivityToken', () => {
       },
     );
 
-    it('shows the correct badges when resolveVulnerabilityWithAi and securityPolicyApprovalWarnMode are true', () => {
+    it('shows the correct badges when resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
+      jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
       createWrapperWithAbility({
-        accessAdvancedVulnerabilityManagement: true,
         resolveVulnerabilityWithAi: true,
-        securityPolicyApprovalWarnMode: true,
-        policyViolationsEsFilter: true,
       });
 
       expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual([
@@ -420,6 +371,168 @@ describe('ActivityToken', () => {
     it('shows "All activity" when "All activity" is selected', async () => {
       await clickDropdownItem('ALL');
       expect(findViewSlot().text()).toBe('All activity');
+    });
+  });
+
+  describe('transformFilters', () => {
+    const defaultOptions = { dashboardType: DASHBOARD_TYPE_PROJECT };
+
+    afterEach(() => {
+      window.gon = originalGon;
+    });
+
+    it('returns base filters when given an empty array', () => {
+      window.gon = { abilities: {} };
+
+      expect(ActivityToken.transformFilters([], defaultOptions)).toEqual({
+        hasResolution: undefined,
+        hasIssues: undefined,
+        hasMergeRequest: undefined,
+        hasRemediations: undefined,
+      });
+    });
+
+    it('sets hasResolution correctly based on filters', () => {
+      window.gon = { abilities: {} };
+
+      expect(ActivityToken.transformFilters(['STILL_DETECTED'], defaultOptions).hasResolution).toBe(
+        false,
+      );
+
+      expect(
+        ActivityToken.transformFilters(['NO_LONGER_DETECTED'], defaultOptions).hasResolution,
+      ).toBe(true);
+    });
+
+    it('sets hasIssues correctly based on filters', () => {
+      window.gon = { abilities: {} };
+
+      expect(ActivityToken.transformFilters(['HAS_ISSUE'], defaultOptions).hasIssues).toBe(true);
+
+      expect(
+        ActivityToken.transformFilters(['DOES_NOT_HAVE_ISSUE'], defaultOptions).hasIssues,
+      ).toBe(false);
+    });
+
+    it('sets hasMergeRequest correctly based on filters', () => {
+      window.gon = { abilities: {} };
+
+      expect(
+        ActivityToken.transformFilters(['HAS_MERGE_REQUEST'], defaultOptions).hasMergeRequest,
+      ).toBe(true);
+
+      expect(
+        ActivityToken.transformFilters(['DOES_NOT_HAVE_MERGE_REQUEST'], defaultOptions)
+          .hasMergeRequest,
+      ).toBe(false);
+    });
+
+    it('sets hasRemediations correctly based on filters', () => {
+      window.gon = { abilities: {} };
+
+      expect(ActivityToken.transformFilters(['HAS_SOLUTION'], defaultOptions).hasRemediations).toBe(
+        true,
+      );
+
+      expect(
+        ActivityToken.transformFilters(['DOES_NOT_HAVE_SOLUTION'], defaultOptions).hasRemediations,
+      ).toBe(false);
+    });
+
+    describe('AI resolution filter', () => {
+      describe('when resolveVulnerabilityWithAi ability is true', () => {
+        it('sets hasAiResolution correctly based on filters', () => {
+          window.gon = { abilities: { resolveVulnerabilityWithAi: true } };
+
+          expect(
+            ActivityToken.transformFilters(['AI_RESOLUTION_AVAILABLE'], defaultOptions)
+              .hasAiResolution,
+          ).toBe(true);
+
+          expect(
+            ActivityToken.transformFilters(['AI_RESOLUTION_UNAVAILABLE'], defaultOptions)
+              .hasAiResolution,
+          ).toBe(false);
+        });
+      });
+
+      it('does not include hasAiResolution when resolveVulnerabilityWithAi ability is false', () => {
+        window.gon = { abilities: { resolveVulnerabilityWithAi: false } };
+
+        const result = ActivityToken.transformFilters(['AI_RESOLUTION_AVAILABLE'], defaultOptions);
+
+        expect(result).not.toHaveProperty('hasAiResolution');
+      });
+    });
+
+    describe('policy violation filter', () => {
+      it.each([DASHBOARD_TYPE_PROJECT, DASHBOARD_TYPE_GROUP])(
+        'includes policyViolations when DISMISSED_IN_MR is in filters and dashboardType is %s',
+        (dashboardType) => {
+          jest
+            .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
+            .mockReturnValue(true);
+
+          const result = ActivityToken.transformFilters(['DISMISSED_IN_MR'], { dashboardType });
+
+          expect(result.policyViolations).toBe('DISMISSED_IN_MR');
+        },
+      );
+
+      it('does not include policyViolations when dashboardType is instance', () => {
+        jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+
+        const result = ActivityToken.transformFilters(['DISMISSED_IN_MR'], {
+          dashboardType: DASHBOARD_TYPE_INSTANCE,
+        });
+
+        expect(result).not.toHaveProperty('policyViolations');
+      });
+
+      it('does not include policyViolations when feature flags are disabled', () => {
+        jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(false);
+
+        const result = ActivityToken.transformFilters(['DISMISSED_IN_MR'], defaultOptions);
+
+        expect(result).not.toHaveProperty('policyViolations');
+      });
+
+      it('does not include policyViolations when DISMISSED_IN_MR is not in filters', () => {
+        jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+
+        const result = ActivityToken.transformFilters(['HAS_ISSUE'], defaultOptions);
+
+        expect(result).not.toHaveProperty('policyViolations');
+      });
+    });
+
+    it('handles multiple filters correctly', () => {
+      window.gon = { abilities: { resolveVulnerabilityWithAi: true } };
+
+      const result = ActivityToken.transformFilters(
+        ['STILL_DETECTED', 'HAS_ISSUE', 'HAS_MERGE_REQUEST', 'AI_RESOLUTION_AVAILABLE'],
+        defaultOptions,
+      );
+
+      expect(result).toEqual({
+        hasResolution: false,
+        hasIssues: true,
+        hasMergeRequest: true,
+        hasRemediations: undefined,
+        hasAiResolution: true,
+      });
+    });
+  });
+
+  describe('transformQueryParams', () => {
+    it('returns "ALL" when filters is an empty array', () => {
+      expect(ActivityToken.transformQueryParams([])).toBe('ALL');
+    });
+
+    it('joins the filters in comma-separated string otherwise', () => {
+      expect(ActivityToken.transformQueryParams(['NO_LONGER_DETECTED', 'HAS_ISSUE'])).toBe(
+        'NO_LONGER_DETECTED,HAS_ISSUE',
+      );
     });
   });
 });

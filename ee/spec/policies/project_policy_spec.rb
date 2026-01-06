@@ -4070,7 +4070,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'access_duo_chat' do
+    describe 'access_duo_classic_chat' do
       let_it_be(:current_user) { create(:user) }
       let(:project) { create(:project, :public, group: group) }
 
@@ -4087,12 +4087,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               group.add_guest(current_user)
             end
 
-            it { is_expected.to be_allowed(:access_duo_chat) }
+            it { is_expected.to be_allowed(:access_duo_classic_chat) }
 
             context 'when the group does not have an Premium SaaS license' do
               let_it_be(:group) { create(:group) }
 
-              it { is_expected.to be_disallowed(:access_duo_chat) }
+              it { is_expected.to be_disallowed(:access_duo_classic_chat) }
             end
           end
 
@@ -4100,7 +4100,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             context 'when the user has AI enabled via another group' do
               context 'user can view project' do
                 it 'is allowed' do
-                  is_expected.to be_allowed(:access_duo_chat)
+                  is_expected.to be_allowed(:access_duo_classic_chat)
                 end
               end
 
@@ -4110,7 +4110,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
                 end
 
                 it 'is not allowed' do
-                  is_expected.to be_disallowed(:access_duo_chat)
+                  is_expected.to be_disallowed(:access_duo_classic_chat)
                 end
               end
             end
@@ -4123,7 +4123,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
             context 'when the user has AI enabled through parent group' do
               it 'is allowed' do
-                is_expected.to be_allowed(:access_duo_chat)
+                is_expected.to be_allowed(:access_duo_classic_chat)
               end
             end
           end
@@ -4132,7 +4132,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'for self-managed', :with_cloud_connector do
         let_it_be_with_reload(:group) { create(:group) }
-        let(:policy) { :access_duo_chat }
+        let(:policy) { :access_duo_classic_chat }
 
         before do
           project.add_guest(current_user)
@@ -4151,7 +4151,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               allow(::Gitlab).to receive(:org_or_com?).and_return(false)
               stub_ee_application_setting(duo_features_enabled: duo_features_enabled, lock_duo_features_enabled: true)
               allow(Ability).to receive(:allowed?).and_call_original
-              allow(Ability).to receive(:allowed?).with(current_user, :access_duo_chat).and_return(enabled_for_user)
+              allow(Ability).to receive(:allowed?).with(current_user, :access_duo_classic_chat).and_return(enabled_for_user)
             end
 
             it { is_expected.to duo_chat_matcher }
