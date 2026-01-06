@@ -467,6 +467,18 @@ module EE
             description: 'Global ID of the Maven upstream registry.'
         end
 
+        field :virtual_registries_container_upstream,
+          ::Types::VirtualRegistries::Container::UpstreamDetailsType,
+          null: true,
+          description: 'Finds a container upstream registry with details. ' \
+            'Returns `null` if the `container_virtual_registry` feature flag is disabled.',
+          experiment: { milestone: '18.7' } do
+            argument :id,
+              type: ::Types::GlobalIDType[::VirtualRegistries::Container::Upstream],
+              required: true,
+              description: 'Global ID of the container upstream.'
+          end
+
         field :work_item_allowed_statuses, ::Types::WorkItems::StatusType.connection_type,
           null: true,
           description: 'Allowed work item statuses from the root groups the current user belongs to.',
@@ -575,6 +587,10 @@ module EE
         find_maven_registry_by_id(id)
       end
 
+      def virtual_registries_container_upstream(id:)
+        find_container_registry_by_id(id)
+      end
+
       private
 
       def get_enabled_permissions(permission_keys)
@@ -591,20 +607,22 @@ module EE
       end
 
       def find_maven_registry_by_id(id)
-        ::Gitlab::Graphql::Lazy.with_value(::GitlabSchema.find_by_gid(id)) do |registry_object|
-          next unless registry_object&.group
-
-          registry_object if ::VirtualRegistries::Packages::Maven
-            .virtual_registry_available?(registry_object.group, current_user)
+        find_virtual_registry_by_gid(id) do |registry_object|
+          ::VirtualRegistries::Packages::Maven.virtual_registry_available?(registry_object.group, current_user)
         end
       end
 
       def find_container_registry_by_id(id)
+        find_virtual_registry_by_gid(id) do |registry_object|
+          ::VirtualRegistries::Container.virtual_registry_available?(registry_object.group, current_user)
+        end
+      end
+
+      def find_virtual_registry_by_gid(id)
         ::Gitlab::Graphql::Lazy.with_value(::GitlabSchema.find_by_gid(id)) do |registry_object|
           next unless registry_object&.group
 
-          registry_object if ::VirtualRegistries::Container
-            .virtual_registry_available?(registry_object.group, current_user)
+          registry_object if yield(registry_object)
         end
       end
     end
