@@ -108,8 +108,7 @@ module Gitlab
               "[GitLab Duo Agent Platform](#{agent_platform_url}). " \
               "Alternatively, I can help with other questions."
 
-            Answer.new(status: :error, context: context, content: content,
-              is_final: false, tool: nil, error_code: "G3001")
+            Answer.error_answer(context: context, content: content, error_code: "G3001")
           end
 
           def not_found
