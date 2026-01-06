@@ -40,6 +40,12 @@ module ComplianceManagement
           .where(compliance_requirements_controls: { id: nil })
       }
 
+      def compliance_requirements_controls
+        super
+          .where
+          .not(name: ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl::INVALID_CONTROL_NAMES)
+      end
+
       private
 
       def requirements_count_per_framework

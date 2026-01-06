@@ -157,7 +157,7 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
           it_behaves_like 'a mutation that updates a compliance requirement'
 
           it 'does not update existing controls' do
-            expect { mutate }.not_to change { requirement.compliance_requirements_controls }
+            expect { mutate }.not_to change { requirement.compliance_requirements_controls.to_a }
           end
         end
 
