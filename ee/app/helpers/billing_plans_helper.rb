@@ -76,7 +76,7 @@ module BillingPlansHelper
       upgradeToUltimateTrackingUrl:
         track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(
           namespace_id: namespace.id, plan: ::Plan::ULTIMATE),
-      canAccessDuoChat: current_user.can?(:access_duo_chat, namespace),
+      canAccessDuoChat: current_user.can?(:access_duo_classic_chat, namespace),
       exploreLinks: explore_links(namespace, namespace.all_projects.sorted_by_activity.first)
     }
   end
@@ -99,7 +99,7 @@ module BillingPlansHelper
           trial_active: group.trial_active?,
           group_billings_href: group_billings_path(group),
           upgrade_to_premium_href: plan_purchase_url(group, premium_plan),
-          can_access_duo_chat: current_user.can?(:access_duo_chat, group),
+          can_access_duo_chat: current_user.can?(:access_duo_classic_chat, group),
           explore_links: explore_links(group, group.all_projects.sorted_by_activity.first)
         }
       end,
@@ -300,7 +300,7 @@ module BillingPlansHelper
                              end
 
     {
-      duoChat: current_user.can?(:access_duo_chat, namespace) ? nil : group_settings_gitlab_duo_seat_utilization_index_path(namespace),
+      duoChat: current_user.can?(:access_duo_classic_chat, namespace) ? nil : group_settings_gitlab_duo_seat_utilization_index_path(namespace),
       epics: group_epics_path(namespace)
     }.merge(project_settings_links)
   end

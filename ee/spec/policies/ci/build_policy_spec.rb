@@ -26,7 +26,7 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
         :resource, :allowed?).and_return(authorized)
       allow(user).to receive(:can?).and_call_original
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
-      allow(user).to receive(:can?).with(:access_duo_chat).and_return(true)
+      allow(user).to receive(:can?).with(:access_duo_classic_chat).and_return(true)
       allow(user).to receive(:can?).with(:access_duo_features, build.project).and_return(true)
       allow(user).to receive(:allowed_to_use?).with(:troubleshoot_job).and_return(cloud_connector_user_access)
 
