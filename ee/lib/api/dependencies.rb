@@ -27,6 +27,7 @@ module API
       desc 'Get a list of project dependencies' do
         success code: 200, model: ::API::Entities::Dependency
         failure [{ code: 401, message: 'Unauthorized' }, { code: 404, message: 'Not found' }]
+        tags ['dependency_management']
       end
 
       params do
