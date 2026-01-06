@@ -118,6 +118,14 @@ module Resolvers
         '`advanced_vulnerability_management` feature flag enabled. ' \
         'Not supported on Instance Security Dashboard queries.'
 
+    argument :policy_auto_dismissed, GraphQL::Types::Boolean,
+      required: false,
+      experiment: { milestone: '18.8' },
+      description: 'Returns only the vulnerabilities which have been auto dismissed by security policies. ' \
+        'To use this argument, you must have Elasticsearch configured and the ' \
+        '`advanced_vulnerability_management` feature flag enabled. ' \
+        'Not supported on Instance Security Dashboard queries.'
+
     def resolve_with_lookahead(**args)
       return Vulnerability.none unless vulnerable&.feature_available?(:security_dashboard)
 
