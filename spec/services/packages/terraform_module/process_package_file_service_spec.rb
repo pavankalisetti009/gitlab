@@ -3,8 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Packages::TerraformModule::ProcessPackageFileService, feature_category: :package_registry do
-  let_it_be(:package) { create(:terraform_module_package, :with_metadatum, without_package_files: true) }
-  let_it_be(:package_file) { create(:package_file, :terraform_module, package:) }
+  # Use `let` instead of `let_it_be` because the "0 byte package file" context
+  # mocks `package_file.file`. With `let_it_be`, the same uploader instance is
+  # reused across examples, causing the mock to leak to other tests.
+  let(:package) { create(:terraform_module_package, :with_metadatum, without_package_files: true) }
+  let(:package_file) { create(:package_file, :terraform_module, package:) }
 
   subject(:service) { described_class.new(package_file) }
 
@@ -51,7 +54,7 @@ RSpec.describe Packages::TerraformModule::ProcessPackageFileService, feature_cat
       end
 
       context 'with a zip archive' do
-        let_it_be(:package_file) { create(:package_file, :terraform_module, zip: true, package: package) }
+        let(:package_file) { create(:package_file, :terraform_module, zip: true, package: package) }
 
         it_behaves_like 'extracting metadata', Zip::File
 
@@ -89,9 +92,7 @@ RSpec.describe Packages::TerraformModule::ProcessPackageFileService, feature_cat
       let(:package_file) { create(:package_file, :terraform_module, package:) }
 
       before do
-        allow_next_instance_of(Packages::PackageFileUploader) do |instance|
-          allow(instance).to receive(:size).and_return(0)
-        end
+        allow(package_file.file).to receive(:size).and_return(0)
       end
 
       it_behaves_like 'raises an error', 'invalid package file'

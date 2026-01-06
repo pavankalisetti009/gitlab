@@ -41,10 +41,13 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
     it { is_expected.to validate_length_of(:auth_url).is_at_most(512) }
     it { is_expected.not_to allow_value('').for(:auth_url) }
 
+    # Use 172.21.11.1 (from the rarely-used 172.16.0.0/12 range)
+    # to avoid matching a developer's machine IP and getting classified
+    # as "localhost" instead of "local network" by the URL blocker
     describe '#auth_url validations' do
       where(:auth_url, :valid, :error_message) do
         'http://localhost:8080'        | false | 'Auth url is blocked: Requests to localhost are not allowed'
-        'http://192.168.1.1'           | false | 'Auth url is blocked: Requests to the local network are not allowed'
+        'http://172.21.11.1'           | false | 'Auth url is blocked: Requests to the local network are not allowed'
         'https://example.com/<img src=x>'   | false | 'Auth url is blocked: HTML/CSS/JS tags are not allowed'
         'https://registry.example.com/auth' | true  | nil
       end
