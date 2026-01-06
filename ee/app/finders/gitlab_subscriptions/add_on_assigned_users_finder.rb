@@ -14,7 +14,7 @@ module GitlabSubscriptions
     end
 
     def execute
-      if (after || before) && Feature.enabled?(:historical_add_on_assigned_users_enabled, namespace)
+      if after || before
         historical_add_on_assigned_users
       else
         current_add_on_assigned_users
