@@ -151,6 +151,7 @@ review and distribute your pipeline schedules:
    sudo gitlab-psql --command "
     COPY (SELECT
         ci_pipeline_schedules.cron,
+        ci_pipeline_schedules.cron_timezone,
         projects.path   AS project,
         users.email
     FROM ci_pipeline_schedules
