@@ -34,6 +34,7 @@ module API
           desc: 'File format of the export'
       end
       desc 'Generate a dependency list export on a project-level'
+      route_setting :authorization, permissions: :create_dependency_list_export, boundary_type: :project
       post ':id/dependency_list_exports' do
         authorize! :read_dependency, user_project
 
@@ -52,6 +53,7 @@ module API
           desc: 'File format of the export'
       end
       desc 'Generate a dependency list export on a group-level'
+      route_setting :authorization, permissions: :create_dependency_list_export, boundary_type: :group
       post ':id/dependency_list_exports' do
         authorize! :read_dependency, user_group
 
