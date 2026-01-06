@@ -39,29 +39,16 @@ export function initDuoPanel() {
     setAgenticMode({ agenticMode: true, saveCookie: true });
   }
 
-  const router = createRouter('/', 'user');
   Vue.use(VueApollo);
 
+  const router = createRouter('/', 'user');
   const apolloProvider = new VueApollo({
     defaultClient: createDefaultClient(),
   });
 
   // Configure chat-specific values in a single configuration object
-  const getAgenticComponent = () => {
-    if (parseBoolean(agenticAvailable)) {
-      return DuoAgenticChat;
-    }
-    if (agenticUnavailableMessage) {
-      return agenticUnavailableMessage;
-    }
-    if (parseBoolean(classicAvailable)) {
-      return DuoChat;
-    }
-    return __('Chat is not available.');
-  };
-
   const chatConfiguration = {
-    agenticComponent: getAgenticComponent(),
+    agenticComponent: DuoAgenticChat,
     classicComponent: DuoChat,
     agenticTitle: chatTitle || __('GitLab Duo Agentic Chat'),
     classicTitle: __('GitLab Duo Chat'),
@@ -73,8 +60,10 @@ export function initDuoPanel() {
       rootNamespaceId,
       resourceId,
       metadata,
+      agenticUnavailableMessage,
       userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
       isAgenticAvailable: parseBoolean(agenticAvailable),
+      isClassicAvailable: parseBoolean(classicAvailable),
       forceAgenticModeForCoreDuoUsers: parseBoolean(forceAgenticModeForCoreDuoUsers),
       chatTitle,
       creditsAvailable: parseBoolean(creditsAvailable ?? 'true'),
