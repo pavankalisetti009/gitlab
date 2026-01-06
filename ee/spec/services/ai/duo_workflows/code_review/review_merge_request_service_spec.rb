@@ -27,7 +27,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
         .with(
           container: merge_request.project,
           current_user: user,
-          workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition['code_review/v1'],
+          workflow_definition: ::Ai::Catalog::FoundationalFlow['code_review/v1'],
           goal: merge_request.iid,
           source_branch: merge_request.source_branch
         ).and_return(create_and_start_service)

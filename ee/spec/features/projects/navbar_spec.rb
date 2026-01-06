@@ -24,6 +24,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
     stub_feature_flags(remove_monitor_metrics: false)
     stub_feature_flags(hide_incident_management_features: false)
     stub_feature_flags(visual_ci_editor: false)
+    stub_feature_flags(slsa_provenance_statement: false)
     insert_package_nav
     insert_infrastructure_registry_nav(s_('Terraform|Terraform states'))
     insert_infrastructure_google_cloud_nav

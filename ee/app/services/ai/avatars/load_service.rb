@@ -29,7 +29,7 @@ module Ai
       end
 
       def get_foundational_flow_avatar
-        workflow_definition = ::Ai::DuoWorkflows::WorkflowDefinition[@item.foundational_flow_reference]
+        workflow_definition = ::Ai::Catalog::FoundationalFlow[@item.foundational_flow_reference]
 
         workflow_definition&.avatar
       end

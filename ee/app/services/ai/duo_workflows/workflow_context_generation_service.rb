@@ -68,7 +68,7 @@ module Ai
       end
 
       def ai_feature
-        code_review_v1 = ::Ai::DuoWorkflows::WorkflowDefinition['code_review/v1'].name
+        code_review_v1 = ::Ai::Catalog::FoundationalFlow['code_review/v1'].name
 
         return :review_merge_request if workflow_definition == code_review_v1
 

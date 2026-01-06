@@ -125,11 +125,11 @@ module Ai
       strong_memoize_attr :workflow_oauth_token
 
       def service_account
-        return unless workflow_definition.foundational_flow
+        return unless workflow_definition.catalog_item
 
         result = ::Ai::Catalog::ItemConsumers::ResolveServiceAccountService.new(
           container: container,
-          item: workflow_definition.foundational_flow
+          item: workflow_definition.catalog_item
         ).execute
 
         return if result.error?

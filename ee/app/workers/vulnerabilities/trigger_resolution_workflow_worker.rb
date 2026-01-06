@@ -13,7 +13,7 @@ module Vulnerabilities
     concurrency_limit -> { 100 }
 
     CONFIDENCE_THRESHOLD = 0.6
-    WORKFLOW_DEFINITION = ::Ai::DuoWorkflows::WorkflowDefinition['resolve_sast_vulnerability/v1']
+    WORKFLOW_DEFINITION = ::Ai::Catalog::FoundationalFlow['resolve_sast_vulnerability/v1']
 
     def perform(vulnerability_flag_id)
       vulnerability_flag = find_vulnerability_flag(vulnerability_flag_id)

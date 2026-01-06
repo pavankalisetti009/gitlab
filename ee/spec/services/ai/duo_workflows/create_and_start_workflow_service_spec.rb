@@ -14,7 +14,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
   let(:goal) { 'Custom goal' }
   let(:source_branch) { 'feature/add-workflow' }
   let(:workflow_definition) do
-    ::Ai::DuoWorkflows::WorkflowDefinition.new(
+    ::Ai::Catalog::FoundationalFlow.new(
       name: 'flow_name/experimental',
       workflow_definition: 'flow_name/experimental'
     )
@@ -86,7 +86,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
 
   describe '#workflow_definition_reference' do
     it 'returns foundational_flow_reference for foundational workflows' do
-      workflow_def = ::Ai::DuoWorkflows::WorkflowDefinition.new(
+      workflow_def = ::Ai::Catalog::FoundationalFlow.new(
         name: 'code_review/v1',
         foundational_flow_reference: 'code_review/v1'
       )
@@ -103,7 +103,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     end
 
     it 'returns workflow_definition for non-foundational workflows' do
-      workflow_def = ::Ai::DuoWorkflows::WorkflowDefinition.new(
+      workflow_def = ::Ai::Catalog::FoundationalFlow.new(
         name: 'resolve_sast_vulnerability/v1',
         workflow_definition: 'resolve_sast_vulnerability/v1'
       )
@@ -120,7 +120,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     end
 
     it 'prioritizes foundational_flow_reference when both are present' do
-      workflow_def = ::Ai::DuoWorkflows::WorkflowDefinition.new(
+      workflow_def = ::Ai::Catalog::FoundationalFlow.new(
         name: 'code_review/v1',
         foundational_flow_reference: 'code_review/v1',
         workflow_definition: 'code_review/v1'
@@ -194,7 +194,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     let_it_be(:flow) { create(:ai_catalog_item, :with_foundational_flow_reference, :public, :flow, project: project) }
     let_it_be(:foundational_flow_reference) { flow.foundational_flow_reference }
     let_it_be(:workflow_definition) do
-      ::Ai::DuoWorkflows::WorkflowDefinition.new(
+      ::Ai::Catalog::FoundationalFlow.new(
         name: "#{foundational_flow_reference}/v1",
         foundational_flow_reference: foundational_flow_reference
       )

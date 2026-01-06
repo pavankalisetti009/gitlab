@@ -43,7 +43,7 @@ module Vulnerabilities
       ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
         container: project,
         current_user: project.first_owner || vulnerability.author,
-        workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition[WORKFLOW_DEFINITION],
+        workflow_definition: ::Ai::Catalog::FoundationalFlow[WORKFLOW_DEFINITION],
         goal: vulnerability.id.to_s,
         source_branch: project.default_branch
       ).execute
