@@ -4,6 +4,7 @@ import AnyMergeRequestRuleBuilder from 'ee/security_orchestration/components/pol
 import DefaultRuleBuilder from 'ee/security_orchestration/components/policy_editor/scan_result/rule/default_rule_builder.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/rule_section.vue';
 import SecurityScanRuleBuilder from 'ee/security_orchestration/components/policy_editor/scan_result/rule/security_scan_rule_builder.vue';
+import SecurityScanRuleBuilderV2 from 'ee/security_orchestration/components/policy_editor/scan_result/rule/security_scan_rule_builder_v2.vue';
 import LicenseScanRuleBuilder from 'ee/security_orchestration/components/policy_editor/scan_result/rule/license_scan_rule_builder.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
@@ -56,6 +57,8 @@ describe('RuleSection', () => {
       },
       stubs: {
         GlSprintf,
+        SecurityScanRuleBuilder,
+        SecurityScanRuleBuilderV2,
       },
     });
   };
@@ -64,6 +67,7 @@ describe('RuleSection', () => {
   const findAnyMergeRequestRule = () => wrapper.findComponent(AnyMergeRequestRuleBuilder);
   const findEmptyScanRuleBuilder = () => wrapper.findComponent(DefaultRuleBuilder);
   const findSecurityScanRule = () => wrapper.findComponent(SecurityScanRuleBuilder);
+  const findSecurityScanRuleV2 = () => wrapper.findComponent(SecurityScanRuleBuilderV2);
   const findLicenseScanRule = () => wrapper.findComponent(LicenseScanRuleBuilder);
   const findRuleSeparator = () => wrapper.findByTestId('rule-separator');
 
@@ -78,7 +82,9 @@ describe('RuleSection', () => {
       'renders the $ruleType policy',
       ({ rule, showSecurityRule, showLicenseRule, showAnyMergeRequestRule }) => {
         factory({ propsData: { initRule: rule } });
+
         expect(findSecurityScanRule().exists()).toBe(showSecurityRule);
+        expect(findSecurityScanRuleV2().exists()).toBe(false);
         expect(findLicenseScanRule().exists()).toBe(showLicenseRule);
         expect(findAnyMergeRequestRule().exists()).toBe(showAnyMergeRequestRule);
       },
@@ -153,7 +159,7 @@ describe('RuleSection', () => {
     `('should display correct error message', async ({ findComponent, rule }) => {
       factory({
         propsData: {
-          initRule: { type: rule },
+          initRule: { type: rule, scanners: [] },
         },
       });
 
@@ -184,6 +190,23 @@ describe('RuleSection', () => {
       });
 
       expect(findRuleSeparator().exists()).toBe(false);
+    });
+  });
+
+  describe('security scan builder new version', () => {
+    it('renders new scan rule builder', () => {
+      const expectedRule = securityScanBuildRule();
+      factory({
+        propsData: { initRule: SECURITY_SCAN_RULE },
+        provide: { glFeatures: { securityPoliciesKevFilter: true } },
+      });
+
+      expect(findSecurityScanRule().exists()).toBe(false);
+      expect(findSecurityScanRuleV2().exists()).toBe(true);
+
+      findSecurityScanRuleV2().vm.$emit('changed', expectedRule);
+
+      expect(wrapper.emitted('changed')).toEqual([[expectedRule]]);
     });
   });
 });
