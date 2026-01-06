@@ -1,6 +1,5 @@
 <script>
 import { GlDashboardLayout } from '@gitlab/ui';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -47,7 +46,6 @@ export default {
     SecurityDashboardDescription,
     FilteredSearch,
   },
-  mixins: [glFeatureFlagMixin()],
   data() {
     return {
       filters: {},
@@ -61,23 +59,19 @@ export default {
             scope: 'group',
             filters: this.filters,
           }),
-          ...(this.glFeatures.newSecurityDashboardTotalRiskScore
-            ? [
-                {
-                  id: 'risk-score',
-                  component: markRaw(GroupRiskScorePanel),
-                  componentProps: {
-                    filters: this.filters,
-                  },
-                  gridAttributes: {
-                    width: 5,
-                    height: 4,
-                    yPos: 0,
-                    xPos: 0,
-                  },
-                },
-              ]
-            : []),
+          {
+            id: 'risk-score',
+            component: markRaw(GroupRiskScorePanel),
+            componentProps: {
+              filters: this.filters,
+            },
+            gridAttributes: {
+              width: 5,
+              height: 4,
+              yPos: 0,
+              xPos: 0,
+            },
+          },
           {
             id: 'vulnerabilities-over-time',
             component: markRaw(VulnerabilitiesOverTimePanel),
@@ -89,8 +83,7 @@ export default {
               width: 7,
               height: 4,
               yPos: 0,
-              // When the "Risk score" panel doesn't exist, this shifts "Vulnerabilities over time" to the left, removing the empty space.
-              xPos: this.glFeatures.newSecurityDashboardTotalRiskScore ? 5 : 0,
+              xPos: 5,
             },
           },
         ],

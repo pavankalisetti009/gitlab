@@ -1299,6 +1299,38 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
       end
     end
+
+    context 'allow_personal_snippets', :saas do
+      using RSpec::Parameterized::TableSyntax
+      context 'when authenticated as group owner' do
+        where(:feature_available, :feature_enabled, :value, :result) do
+          true  | false | false | nil
+          true  | true  | true  | true
+          true  | true  | false | false
+          false | true  | false | nil
+          false | false | false | nil
+        end
+
+        with_them do
+          let(:params) { { allow_personal_snippets: value } }
+
+          before do
+            group.add_owner(user)
+
+            stub_licensed_features(domain_verification: true, allow_personal_snippets: true)
+            stub_saas_features(allow_personal_snippets: feature_available)
+            stub_feature_flags(allow_personal_snippets_setting: feature_enabled)
+          end
+
+          it 'updates the attribute as expected' do
+            subject
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['allow_personal_snippets']).to eq(result)
+          end
+        end
+      end
+    end
   end
 
   describe "POST /groups" do

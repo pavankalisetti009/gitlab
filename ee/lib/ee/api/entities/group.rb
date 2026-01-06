@@ -64,6 +64,10 @@ module EE
               ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
                 Ability.allowed?(options[:current_user], :admin_group, group)
             }
+          expose :allow_personal_snippets,
+            if: ->(group, options) {
+              group.allow_personal_snippets_available?(options[:current_user])
+            }
         end
       end
     end

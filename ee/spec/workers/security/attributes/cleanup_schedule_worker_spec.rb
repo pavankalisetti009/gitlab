@@ -48,7 +48,7 @@ RSpec.describe Security::Attributes::CleanupScheduleWorker, feature_category: :s
         it 'schedules workers with nil new_root_namespace_id to update traversal_ids only' do
           handle_event
 
-          expect(cleanup_batch_worker).to have_received(:perform_async).with(project_ids_same_ns, nil)
+          expect(cleanup_batch_worker).to have_received(:perform_async).with(match_array(project_ids_same_ns), nil)
         end
       end
     end
@@ -76,11 +76,11 @@ RSpec.describe Security::Attributes::CleanupScheduleWorker, feature_category: :s
         let_it_be(:projects) { create_list(:project, 3, group: moved_group) }
         let(:project_ids) { projects.map(&:id) }
 
-        it 'schedules update batch workers',
-          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/8338' do
+        it 'schedules update batch workers' do
           handle_event
 
-          expect(cleanup_batch_worker).to have_received(:perform_async).with(project_ids, new_root_namespace.id)
+          expect(cleanup_batch_worker).to have_received(:perform_async).with(match_array(project_ids),
+            new_root_namespace.id)
         end
 
         context 'with large number of projects requiring batching' do

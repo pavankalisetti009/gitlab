@@ -68,7 +68,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
 
     before do
       stub_licensed_features(security_dashboard: true)
-      stub_feature_flags(group_security_dashboard_new: true)
       stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     end
 
@@ -337,20 +336,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
         it_behaves_like 'returns resource not available'
       end
 
-      context 'when group_security_dashboard_new feature flag is disabled' do
-        before_all do
-          group.add_maintainer(current_user)
-          Elastic::ProcessBookkeepingService.track!(*vulnerabilities, *additional_project_vulnerabilities)
-          ensure_elasticsearch_index!
-        end
-
-        before do
-          stub_feature_flags(group_security_dashboard_new: false)
-        end
-
-        it_behaves_like 'returns empty array'
-      end
-
       context 'when security_dashboard feature flag is disabled' do
         before do
           stub_licensed_features(security_dashboard: false)
@@ -377,20 +362,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
         it_behaves_like 'returns resource not available'
       end
 
-      context 'when group_security_dashboard_new feature flag is disabled' do
-        before_all do
-          group.add_maintainer(current_user)
-          Elastic::ProcessBookkeepingService.track!(*vulnerabilities, *additional_project_vulnerabilities)
-          ensure_elasticsearch_index!
-        end
-
-        before do
-          stub_feature_flags(project_security_dashboard_new: false)
-        end
-
-        it_behaves_like 'returns empty array'
-      end
-
       context 'when security_dashboard feature flag is disabled' do
         before do
           stub_licensed_features(security_dashboard: false)
@@ -407,6 +378,23 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
         it_behaves_like 'validates advanced vulnerability management'
       end
     end
+
+    context 'when operated on an instance security dashboard' do
+      let(:operate_on) { InstanceSecurityDashboard.new(current_user) }
+
+      before_all do
+        group.add_maintainer(current_user)
+      end
+
+      before do
+        stub_licensed_features(security_dashboard: true)
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+      end
+
+      it 'skips authorization check for instance security dashboard' do
+        expect(described_class).not_to receive(:authorize!)
+      end
+    end
   end
 
   describe '#validate_date_range' do
@@ -418,7 +406,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
 
     before do
       stub_licensed_features(security_dashboard: true)
-      stub_feature_flags(group_security_dashboard_new: true)
       stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
       Elastic::ProcessBookkeepingService.track!(*vulnerabilities)
       ensure_elasticsearch_index!

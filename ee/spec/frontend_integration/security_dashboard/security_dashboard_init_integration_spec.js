@@ -27,11 +27,7 @@ describe('Security Dashboard', () => {
 
     setWindowLocation(`${TEST_HOST}/-/security/dashboard`);
 
-    // We currently have feature flag logic that needs gon.features to be set
-    // It is set to false by default, so the original test's (where there was no feature flag) snapshot is preserved.
-    window.gon.features = {
-      groupSecurityDashboardNew: false,
-    };
+    window.gon.features = {};
 
     // Set up abilities
     window.gon.abilities = {
@@ -79,26 +75,15 @@ describe('Security Dashboard', () => {
       expect(findNotConfiguredGroup()).toBeInstanceOf(HTMLElement);
     });
 
-    it('shows security dashboard if there are projects', async () => {
+    it('shows old security dashboard if there are projects and advanced vulnerability management is disabled', async () => {
       await createComponent(GROUP_OPTIONS);
       expect(findSecurityDashboard()).toBeInstanceOf(HTMLElement);
     });
 
-    describe('`groupSecurityDashboardNew` feature flag enabled', () => {
-      beforeEach(() => {
-        window.gon.features.groupSecurityDashboardNew = true;
-      });
-
-      it('sets up old dashboard when advanced search is disabled', async () => {
-        await createComponent(GROUP_OPTIONS);
-        expect(findSecurityDashboard()).toBeInstanceOf(HTMLElement);
-      });
-
-      it('sets up new dashboard when advanced search is enabled', async () => {
-        window.gon.abilities.accessAdvancedVulnerabilityManagement = true;
-        await createComponent(GROUP_OPTIONS);
-        expect(findNewGroupDashboard()).toBeInstanceOf(HTMLElement);
-      });
+    it('shows new security dashboard when advanced vulnerability management is enabled', async () => {
+      window.gon.abilities.accessAdvancedVulnerabilityManagement = true;
+      await createComponent(GROUP_OPTIONS);
+      expect(findNewGroupDashboard()).toBeInstanceOf(HTMLElement);
     });
   });
 
@@ -122,29 +107,15 @@ describe('Security Dashboard', () => {
       expect(findNotConfiguredProject()).toBeInstanceOf(HTMLElement);
     });
 
-    it('shows security dashboard if there are vulnerabilities', async () => {
+    it('shows old security dashboard if there are vulnerabilities and advanced vulnerability management is disabled', async () => {
       await createComponent(PROJECT_OPTIONS);
       expect(findProjectDashboard()).toBeInstanceOf(HTMLElement);
     });
 
-    describe('`projectSecurityDashboardNew` feature flag enabled', () => {
-      beforeEach(() => {
-        window.gon.features.projectSecurityDashboardNew = true;
-      });
-
-      it('sets up old dashboard when advanced search is disabled', async () => {
-        await createComponent(PROJECT_OPTIONS);
-
-        expect(findProjectDashboard()).toBeInstanceOf(HTMLElement);
-      });
-
-      it('sets up new dashboard when advanced search is enabled', async () => {
-        window.gon.abilities.accessAdvancedVulnerabilityManagement = true;
-
-        await createComponent(PROJECT_OPTIONS);
-
-        expect(findNewProjectDashboard()).toBeInstanceOf(HTMLElement);
-      });
+    it('sets up new dashboard when advanced search is enabled', async () => {
+      window.gon.abilities.accessAdvancedVulnerabilityManagement = true;
+      await createComponent(PROJECT_OPTIONS);
+      expect(findNewProjectDashboard()).toBeInstanceOf(HTMLElement);
     });
   });
 

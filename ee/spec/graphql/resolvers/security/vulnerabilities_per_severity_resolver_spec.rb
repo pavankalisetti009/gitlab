@@ -67,7 +67,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
 
     before do
       stub_licensed_features(security_dashboard: true)
-      stub_feature_flags(group_security_dashboard_new: true)
       stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     end
 

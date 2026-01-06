@@ -48,30 +48,6 @@ RSpec.describe Groups::Security::DashboardController, feature_category: :vulnera
             expect { show_security_dashboard }.not_to trigger_internal_events('visit_security_dashboard')
           end
         end
-
-        context 'when upgraded dashboard is not available' do
-          before do
-            stub_feature_flags(group_security_dashboard_new: false)
-          end
-
-          it { is_expected.to have_gitlab_http_status(:ok) }
-          it { is_expected.to render_template(:show) }
-
-          it_behaves_like 'tracks govern usage event', 'security_dashboard' do
-            let(:request) { subject }
-          end
-
-          it_behaves_like 'internal event tracking' do
-            let(:event) { 'visit_security_dashboard' }
-            let(:namespace) { group }
-            let(:category) { described_class.name }
-            subject(:service_action) { show_security_dashboard }
-          end
-
-          it 'does not track visit_upgraded_security_dashboard event' do
-            expect { show_security_dashboard }.not_to trigger_internal_events('visit_upgraded_security_dashboard')
-          end
-        end
       end
 
       context 'when user is not allowed to access group security dashboard' do

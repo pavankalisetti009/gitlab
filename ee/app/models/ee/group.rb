@@ -1070,6 +1070,7 @@ module EE
 
     def allow_personal_snippets_available?(user = nil)
       root? &&
+        ::Feature.enabled?(:allow_personal_snippets_setting, self) &&
         enterprise_user_settings_available?(user) &&
         ::Gitlab::Saas.feature_available?(:allow_personal_snippets) &&
         licensed_feature_available?(:allow_personal_snippets)

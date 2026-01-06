@@ -8,7 +8,6 @@ module Projects
       include GovernUsageProjectTracking
 
       before_action do
-        push_frontend_feature_flag(:project_security_dashboard_new, project)
         push_frontend_feature_flag(:vulnerabilities_across_contexts, project)
         push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: project, user: current_user)
       end
@@ -26,8 +25,7 @@ module Projects
       private
 
       def upgraded_dashboard_available?
-        Feature.enabled?(:project_security_dashboard_new, project) &&
-          can?(current_user, :access_advanced_vulnerability_management, project)
+        can?(current_user, :access_advanced_vulnerability_management, project)
       end
     end
   end
