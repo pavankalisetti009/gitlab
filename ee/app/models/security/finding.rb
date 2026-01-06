@@ -59,6 +59,17 @@ module Security
       primary_key: 'uuid',
       foreign_key: 'finding_uuid'
 
+    has_many :finding_enrichments,
+      class_name: 'Security::FindingEnrichment',
+      inverse_of: :security_finding,
+      primary_key: 'uuid',
+      foreign_key: 'finding_uuid'
+
+    has_many :cve_enrichments,
+      through: :finding_enrichments,
+      source: :cve_enrichment,
+      class_name: 'PackageMetadata::CveEnrichment'
+
     enum :severity, ::Enums::Vulnerability.severity_levels, prefix: :severity
 
     validates :uuid, presence: true
