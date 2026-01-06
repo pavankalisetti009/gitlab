@@ -54,7 +54,7 @@ export default {
         return !this.isEditing;
       },
       update(data) {
-        return data?.workspace?.attributes?.nodes || [];
+        return data?.namespace?.attributes?.nodes || [];
       },
       error(error) {
         setError({ error, message: this.$options.i18n.errorSearchingMilestones });

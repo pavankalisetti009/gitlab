@@ -38,7 +38,7 @@ const createMockUser = ({
 function createComponent(adminMergeRequest = true, customUsers = []) {
   autocompleteUsersMock = jest.fn().mockResolvedValue({
     data: {
-      workspace: {
+      namespace: {
         id: 1,
         users: customUsers,
       },
