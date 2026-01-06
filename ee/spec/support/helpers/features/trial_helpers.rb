@@ -83,6 +83,8 @@ module Features
       glm: {},
       last_name: user.last_name
     )
+      stub_ai_cloud_connector
+
       # lead
       expect_duo_enterprise_lead_submission(lead_result, last_name: last_name, glm: glm)
 
@@ -140,6 +142,8 @@ module Features
       glm: {},
       last_name: user.last_name
     )
+      stub_ai_cloud_connector
+
       # lead
       expect_duo_pro_lead_submission(lead_result, last_name: last_name, glm: glm)
 
@@ -267,6 +271,8 @@ module Features
       glm: {},
       extra_params: {}
     )
+      stub_ai_cloud_connector
+
       # lead
       expect_lead_submission(lead_result, glm: glm)
 
@@ -294,6 +300,12 @@ module Features
     def stub_duo_landing_page_data
       stub_licensed_features(code_suggestions: true)
       stub_signing_key
+    end
+
+    def stub_ai_cloud_connector
+      allow_next_instance_of(Ai::ModelSelection::FetchModelDefinitionsService) do |instance|
+        allow(instance).to receive(:execute).and_return(ServiceResponse.error(message: '_fail_'))
+      end
     end
 
     def existing_group_attrs
