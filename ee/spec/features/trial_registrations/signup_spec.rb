@@ -249,8 +249,9 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
 
           allow(GitlabSubscriptions::Trials).to receive(:namespace_eligible?).with(Group.last).and_return(true)
 
-          allow_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
-            allow(service).to receive(:execute).and_return(ServiceResponse.success(message: 'Trial applied'))
+          expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+            expect(service)
+              .to receive(:execute).with({ trial_user: trial_user_params }).and_return(ServiceResponse.success)
           end
 
           click_button _('Resubmit request')
@@ -258,6 +259,25 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
           wait_for_all_requests
 
           expect(page).to have_content('Get started')
+        end
+
+        def trial_user_params
+          ActionController::Parameters.new(
+            company_name: 'My Company',
+            first_name: user.first_name,
+            last_name: user.last_name,
+            work_email: user.email,
+            uid: user.id,
+            country: 'US',
+            state: 'CA',
+            provider: 'gitlab',
+            product_interaction: 'Experiment - SaaS Trial',
+            setup_for_company: true,
+            role: 'software_developer',
+            gitlab_com_trial: true,
+            skip_email_confirmation: true,
+            jtbd: 'move_repository'
+          ).permit!
         end
       end
     end
