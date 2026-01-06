@@ -62124,6 +62124,9 @@ msgstr ""
 msgid "SecurityOrchestration|The schedule is snoozed until %{until}."
 msgstr ""
 
+msgid "SecurityOrchestration|The security findings remain in their current status and are still visible, but will no longer block the merge request."
+msgstr ""
+
 msgid "SecurityOrchestration|Then automatically %{boldStart}dismiss%{boldEnd} these vulnerabilities with the %{reason} reason."
 msgstr ""
 
