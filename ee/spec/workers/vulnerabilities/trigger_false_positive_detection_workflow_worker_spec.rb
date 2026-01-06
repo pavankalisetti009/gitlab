@@ -9,7 +9,7 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
 
   let(:worker) { described_class.new }
   let(:vulnerability_id) { vulnerability.id }
-  let(:workflow_definition) { ::Ai::DuoWorkflows::WorkflowDefinition['sast_fp_detection/v1'] }
+  let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['sast_fp_detection/v1'] }
 
   describe '#perform' do
     let(:workflow) { create(:duo_workflows_workflow, user: user, project: project, environment: :web) }

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Ai
-  module DuoWorkflows
-    class WorkflowDefinition
+  module Catalog
+    class FoundationalFlow
       include ActiveRecord::FixedItemsModel::Model
       include GlobalID::Identification
       include Gitlab::Utils::StrongMemoize
@@ -149,12 +149,12 @@ CI/CD pipeline.",
         super(Array(value).map { |v| Integer(v) })
       end
 
-      def foundational_flow
+      def catalog_item
         return if foundational_flow_reference.nil?
 
         Ai::Catalog::Item.with_foundational_flow_reference(foundational_flow_reference).first
       end
-      strong_memoize_attr :foundational_flow
+      strong_memoize_attr :catalog_item
     end
   end
 end

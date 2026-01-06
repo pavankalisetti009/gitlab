@@ -130,7 +130,7 @@ module EE
       def available_foundational_flows_json
         return [].to_json unless @group.root?
 
-        ::Ai::DuoWorkflows::WorkflowDefinition::ITEMS
+        ::Ai::Catalog::FoundationalFlow::ITEMS
           .select { |item| item[:foundational_flow_reference].present? }
           .map do |item|
           {

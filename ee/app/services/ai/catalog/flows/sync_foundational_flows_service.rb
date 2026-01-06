@@ -168,7 +168,7 @@ module Ai
         end
 
         def fetch_event_type_for_flow(foundational_flow_reference, service_account)
-          flow_definition = ::Ai::DuoWorkflows::WorkflowDefinition[foundational_flow_reference]
+          flow_definition = ::Ai::Catalog::FoundationalFlow[foundational_flow_reference]
           return [] unless flow_definition.present? && flow_definition.triggers.present?
 
           flow_definition.triggers.reject { |event| trigger_exists?(service_account, event) }

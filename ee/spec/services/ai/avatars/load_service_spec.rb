@@ -71,8 +71,8 @@ RSpec.describe Ai::Avatars::LoadService, feature_category: :workflow_catalog do
       end
 
       before do
-        allow(Ai::DuoWorkflows::WorkflowDefinition).to receive(:[]).with('sast_fp_detection/v1')
-                                                                   .and_return(Ai::DuoWorkflows::WorkflowDefinition.new)
+        allow(Ai::Catalog::FoundationalFlow).to receive(:[]).with('sast_fp_detection/v1')
+                                                                   .and_return(Ai::Catalog::FoundationalFlow.new)
       end
 
       it 'returns nil' do

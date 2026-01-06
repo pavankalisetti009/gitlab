@@ -53,7 +53,7 @@ module Ai
           ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
             container: merge_request.project,
             current_user: user,
-            workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition['code_review/v1'],
+            workflow_definition: ::Ai::Catalog::FoundationalFlow['code_review/v1'],
             goal: merge_request.iid,
             source_branch: merge_request.source_branch
           ).execute

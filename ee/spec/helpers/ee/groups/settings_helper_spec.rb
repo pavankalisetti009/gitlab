@@ -102,7 +102,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
       allow(helper).to receive(:show_early_access_program_banner?).and_return(true)
       allow(current_user).to receive(:can?).with(:admin_duo_workflow, group).and_return(true)
       stub_saas_features(gitlab_com_subscriptions: true)
-      stub_const('::Ai::DuoWorkflows::WorkflowDefinition::ITEMS', test_workflows)
+      stub_const('::Ai::Catalog::FoundationalFlow::ITEMS', test_workflows)
     end
 
     it 'returns the expected data' do

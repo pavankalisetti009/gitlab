@@ -11,7 +11,7 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
 
   let(:worker) { described_class.new }
   let(:vulnerability_flag_id) { vulnerability_flag.id }
-  let(:workflow_definition) { ::Ai::DuoWorkflows::WorkflowDefinition['resolve_sast_vulnerability/v1'] }
+  let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['resolve_sast_vulnerability/v1'] }
 
   describe '#perform' do
     let(:workflow) { create(:duo_workflows_workflow, project: project, user: user) }
