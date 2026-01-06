@@ -25,10 +25,24 @@ export default {
       required: false,
       default: 0,
     },
+    totalGroups: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    totalProjects: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
     trialEndsOn: {
       type: String,
       required: false,
       default: '',
+    },
+    isSaas: {
+      type: Boolean,
+      required: true,
     },
   },
   computed: {
@@ -37,10 +51,25 @@ export default {
         ? s__('BillingPlans|a trial of Ultimate + Duo Enterprise')
         : s__('BillingPlans|GitLab Free');
 
-      return sprintf(s__('BillingPlans|Your group is on %{planName}'), { planName });
+      const platform = this.isSaas ? s__('BillingPlans|group') : s__('BillingPlans|instance');
+      return sprintf(s__('BillingPlans|Your %{platform} is on %{planName}'), {
+        planName,
+        platform,
+      });
+    },
+    subscriptionInfo() {
+      if (this.isSaas) {
+        return [{ value: this.seats, description: s__('BillingPlans|Seats in use') }];
+      }
+
+      return [
+        { value: this.seats, description: s__('BillingPlans|users') },
+        { value: this.totalGroups, description: s__('BillingPlans|groups') },
+        { value: this.totalProjects, description: s__('BillingPlans|projects') },
+      ];
     },
     seats() {
-      if (this.trialActive) {
+      if (this.trialActive || !this.isSaas) {
         return this.seatsInUse;
       }
 
@@ -65,15 +94,19 @@ export default {
       </div>
 
       <div class="gl-mt-5 gl-text-lg">
-        <span class="gl-mr-3 gl-text-size-h1 gl-font-bold" data-testid="seats-in-use">{{
-          seats
-        }}</span>
-
-        <span class="gl-text-subtle">{{ s__('BillingPlans|Seats in use') }}</span>
+        <div v-for="(item, i) in subscriptionInfo" :key="i">
+          <span
+            class="gl-mr-3 gl-text-size-h1 gl-font-bold"
+            :data-testid="`subscription-${item.description.replace(/\s/g, '-').toLowerCase()}`"
+          >
+            {{ item.value }}
+          </span>
+          <span class="gl-text-subtle">{{ item.description }}</span>
+        </div>
       </div>
     </div>
 
-    <div class="gl-mt-5 gl-flex-row">
+    <div v-if="isSaas" class="gl-mt-5 gl-flex-row">
       <gl-button
         category="secondary"
         data-track-action="click_button"

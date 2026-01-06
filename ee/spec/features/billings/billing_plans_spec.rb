@@ -202,7 +202,7 @@ RSpec.describe 'Billing plan pages', :with_trial_types, :feature, :saas, :js, :w
         end
 
         it 'displays the billing plans table' do
-          expect(page).to have_selector("[data-testid='seats-in-use']", text: '1')
+          expect(page).to have_selector("[data-testid='subscription-seats-in-use']", text: '1')
           expect(page).to have_link('Manage seats')
           expect(page).to have_content('For individuals working on personal projects')
           expect(page).to have_content('For scaling organizations seeking enhanced productivity')
