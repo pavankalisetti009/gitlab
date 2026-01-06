@@ -149,8 +149,6 @@ tags:
   description: Operations about applications
 - name: imports
   description: Operations about imports
-- name: slack
-  description: Operations about slacks
 - name: issue_statistics
   description: Operations about issue_statistics
 - name: topics
@@ -47181,7 +47179,7 @@ paths:
         '401':
           description: Unauthorized
       tags:
-      - slack
+      - integrations
       operationId: postApiV4SlackTrigger
   "/api/v4/issues_statistics":
     get:
