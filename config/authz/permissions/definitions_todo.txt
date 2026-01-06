@@ -7,7 +7,7 @@ access_api
 access_code_suggestions
 access_description_composer
 access_duo_agentic_chat
-access_duo_chat
+access_duo_classic_chat
 access_duo_features
 access_generate_commit_message
 access_git

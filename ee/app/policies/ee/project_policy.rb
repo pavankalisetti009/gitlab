@@ -407,7 +407,7 @@ module EE
         project.ci_cancellation_restriction.no_one_allowed?
       end
 
-      condition(:chat_allowed_for_parent_group, scope: :subject) do
+      condition(:classic_chat_allowed_for_parent_group, scope: :subject) do
         next true unless ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
 
         ::Gitlab::Llm::StageCheck.available?(@subject.parent, :chat)
@@ -417,8 +417,8 @@ module EE
         ::Gitlab::Llm::StageCheck.available?(@subject.parent, :agentic_chat)
       end
 
-      condition(:chat_available_for_user, scope: :user) do
-        Ability.allowed?(@user, :access_duo_chat)
+      condition(:classic_chat_available_for_user, scope: :user) do
+        Ability.allowed?(@user, :access_duo_classic_chat)
       end
 
       condition(:agentic_chat_available_for_user, scope: :user) do
@@ -1207,8 +1207,8 @@ module EE
         enable :write_ai_agents
       end
 
-      rule { can?(:read_project) & chat_allowed_for_parent_group & chat_available_for_user & duo_features_enabled }.policy do
-        enable :access_duo_chat
+      rule { can?(:read_project) & classic_chat_allowed_for_parent_group & classic_chat_available_for_user & duo_features_enabled }.policy do
+        enable :access_duo_classic_chat
       end
 
       rule do
