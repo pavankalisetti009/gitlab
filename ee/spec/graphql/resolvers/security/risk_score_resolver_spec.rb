@@ -32,7 +32,6 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
   describe '#resolve' do
     before do
       stub_licensed_features(security_dashboard: true)
-      stub_feature_flags(new_security_dashboard_total_risk_score: true)
       stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     end
 
@@ -454,18 +453,6 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
         it_behaves_like 'returns resource not available'
       end
 
-      context 'when new_security_dashboard_total_risk_score feature flag is disabled' do
-        before_all do
-          group.add_developer(user)
-        end
-
-        before do
-          stub_feature_flags(new_security_dashboard_total_risk_score: false)
-        end
-
-        it_behaves_like 'returns nil'
-      end
-
       context 'when security_dashboard feature flag is disabled' do
         before do
           stub_licensed_features(security_dashboard: false)
@@ -543,18 +530,6 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
         it_behaves_like 'returns resource not available'
       end
 
-      context 'when new_security_dashboard_total_risk_score feature flag is disabled' do
-        before_all do
-          group.add_developer(user)
-        end
-
-        before do
-          stub_feature_flags(new_security_dashboard_total_risk_score: false)
-        end
-
-        it_behaves_like 'returns nil'
-      end
-
       context 'when security_dashboard feature flag is disabled' do
         before do
           stub_licensed_features(security_dashboard: false)
@@ -620,6 +595,25 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
             )
           end
         end
+      end
+    end
+
+    context 'when operated on an instance security dashboard' do
+      let(:operate_on) { InstanceSecurityDashboard.new(user) }
+
+      before_all do
+        group.add_developer(user)
+      end
+
+      before do
+        stub_licensed_features(security_dashboard: true)
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+        allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:backfill_risk_score_completed?)
+          .and_return(true)
+      end
+
+      it 'skips authorization check for instance security dashboard' do
+        expect(described_class).not_to receive(:authorize!)
       end
     end
   end

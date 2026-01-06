@@ -548,23 +548,6 @@ RSpec.describe 'Security metrics through GroupQuery', :elastic_helpers, :freeze_
       expect(graphql_errors).to be_nil
       expect(security_metrics_data).to be_nil
     end
-
-    context 'when feature flags are disabled' do
-      before do
-        stub_feature_flags(
-          group_security_dashboard_new: false,
-          new_security_dashboard_total_risk_score: false
-        )
-      end
-
-      it 'returns null for security metrics' do
-        post_graphql(query, current_user: current_user)
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(graphql_errors).to be_nil
-        expect(security_metrics_data).to be_nil
-      end
-    end
   end
 
   describe 'when security_dashboard feature is not licensed' do
@@ -604,12 +587,6 @@ RSpec.describe 'Security metrics through GroupQuery', :elastic_helpers, :freeze_
       group.add_maintainer(current_user)
     end
 
-    before do
-      stub_feature_flags(
-        group_security_dashboard_new: true
-      )
-    end
-
     it 'avoids N+1 queries when requesting vulnerabilities per severity' do
       simple_query = graphql_query_for(
         'group',
@@ -644,12 +621,6 @@ RSpec.describe 'Security metrics through GroupQuery', :elastic_helpers, :freeze_
   describe 'argument validation' do
     before_all do
       group.add_maintainer(current_user)
-    end
-
-    before do
-      stub_feature_flags(
-        group_security_dashboard_new: true
-      )
     end
 
     context 'with invalid date range' do

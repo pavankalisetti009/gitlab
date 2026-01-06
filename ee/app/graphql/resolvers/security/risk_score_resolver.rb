@@ -14,8 +14,6 @@ module Resolvers
         validate_advanced_vuln_management!
         validate_risk_score_es_migration!
 
-        return if !vulnerable || Feature.disabled?(:new_security_dashboard_total_risk_score, vulnerable)
-
         base_params = build_base_params
 
         risk_score_data = fetch_risk_score_data(base_params)
