@@ -29,7 +29,6 @@ module EE
     override :work_item_views_only_data
     def work_item_views_only_data(resource_parent, current_user)
       super.merge(
-        duo_remote_flows_availability: resource_parent.duo_remote_flows_enabled.to_s,
         epics_list_path: group_epics_path(resource_parent)
       )
     end
