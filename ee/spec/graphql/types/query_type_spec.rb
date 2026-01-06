@@ -88,6 +88,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :virtual_registries_packages_maven_registry,
       :namespace_security_projects,
       :virtual_registries_packages_maven_upstream,
+      :virtual_registries_container_upstream,
       :work_item_allowed_statuses,
       :subscription_usage,
       :openbao_health,
@@ -158,6 +159,15 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
     it 'finds a maven upstream registry by its gid' do
       is_expected.to have_graphql_arguments(:id)
       is_expected.to have_graphql_type(::Types::VirtualRegistries::Packages::Maven::UpstreamDetailsType)
+    end
+  end
+
+  describe 'virtualRegistriesContainerUpstream field' do
+    subject { described_class.fields['virtualRegistriesContainerUpstream'] }
+
+    it 'finds a container upstream by its gid' do
+      is_expected.to have_graphql_arguments(:id)
+      is_expected.to have_graphql_type(::Types::VirtualRegistries::Container::UpstreamDetailsType)
     end
   end
 end
