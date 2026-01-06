@@ -9,7 +9,6 @@ import { without } from 'lodash';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
 import { isPolicyViolationFilterEnabled } from 'ee/security_dashboard/utils';
 import { ALL_ID as ALL_ACTIVITY_VALUE } from '../../filters/constants';
@@ -117,7 +116,7 @@ export default {
     GlDropdownSectionHeader,
     SearchSuggestion,
   },
-  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
+  mixins: [glAbilitiesMixin()],
   inject: ['dashboardType'],
   props: {
     config: {
