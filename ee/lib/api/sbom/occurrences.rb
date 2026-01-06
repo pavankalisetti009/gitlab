@@ -36,6 +36,7 @@ module API
 
         desc 'Get vulnerabilities' do
           detail 'Returns vulnerabilities related to an occurrence.'
+          tags ['dependency_management']
         end
         get 'vulnerabilities' do
           options = { occurrence_id: params[:id], project: project }
