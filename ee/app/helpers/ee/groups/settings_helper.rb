@@ -134,7 +134,7 @@ module EE
           .select { |item| item[:foundational_flow_reference].present? }
           .map do |item|
           {
-            name: item[:name],
+            name: item[:display_name],
             description: item[:description],
             reference: item[:foundational_flow_reference]
           }

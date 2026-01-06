@@ -93,7 +93,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
     let(:test_workflows) do
       [{
         foundational_flow_reference: 'test_flow/v1',
-        name: 'Test Flow',
+        display_name: 'Test Flow',
         description: 'Test Description'
       }]
     end

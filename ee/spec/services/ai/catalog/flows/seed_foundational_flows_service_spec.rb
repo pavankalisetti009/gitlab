@@ -143,7 +143,7 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
 
         expect(code_review_item).to have_attributes(
           name: 'Code Review',
-          description: 'The Code Review Flow helps you streamline code reviews with agentic AI.',
+          description: 'Streamline code reviews by analyzing code changes, comments, and linked issues.',
           foundational_flow_reference: 'code_review/v1',
           item_type: 'flow',
           verification_level: 'gitlab_maintained',
@@ -158,7 +158,7 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
 
         expect(sast_item).to have_attributes(
           name: 'SAST False Positive Detection',
-          description: 'SAST false positive detection automatically analyzes critical SAST vulnerabilities.',
+          description: 'Analyze critical SAST vulnerabilities.',
           foundational_flow_reference: 'sast_fp_detection/v1',
           item_type: 'flow',
           verification_level: 'gitlab_maintained',
@@ -173,8 +173,7 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
 
         expect(developer_item).to have_attributes(
           name: 'Developer',
-          description:
-            'The Developer Flow streamlines the process of converting issues into actionable merge requests.',
+          description: 'Convert issues into actionable merge requests.',
           foundational_flow_reference: 'developer/v1',
           item_type: 'flow',
           verification_level: 'gitlab_maintained',
