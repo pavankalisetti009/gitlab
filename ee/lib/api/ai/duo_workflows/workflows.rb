@@ -39,7 +39,8 @@ module API
             return unless namespace
 
             # Then enforce authorization (raises 404 if no access)
-            check_namespace_access(namespace)
+            not_found!('Namespace') unless Ability.allowed?(
+              current_user, :read_group, namespace, composite_identity_check: false)
 
             root_namespace = namespace.root_ancestor
 
@@ -60,7 +61,10 @@ module API
             # If working in a namespace context (without project), must match or be ancestor
             return unless params[:namespace_id].presence
 
-            context_namespace = find_namespace!(params[:namespace_id])
+            context_namespace = find_namespace(params[:namespace_id])
+            not_found!('Namespace') unless Ability.allowed?(
+              current_user, :read_group, context_namespace, composite_identity_check: false)
+
             return if namespace.id == context_namespace.root_ancestor.id
 
             forbidden!("Namespace does not match workflow context")

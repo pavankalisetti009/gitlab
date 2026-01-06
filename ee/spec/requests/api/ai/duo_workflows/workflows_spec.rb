@@ -1467,6 +1467,23 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           ).and_call_original
 
           get api(path, oauth_access_token:), headers: workhorse_headers, params: { project_id: project.id }
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        context 'and namespace is specified' do
+          let_it_be(:group) { create(:group, :private) }
+          let_it_be(:project) { create(:project, :repository, group: group) }
+
+          it 'is successful' do
+            project.add_developer(service_account)
+            group.add_developer(user)
+
+            get api(path, oauth_access_token:), headers: workhorse_headers,
+              params: { project_id: project.id, namespace_id: group.id, root_namespace_id: group.root_ancestor.id }
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
         end
       end
 
@@ -1664,7 +1681,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       context 'with namespace authorization and context validation' do
         let_it_be(:other_group) { create(:group) }
         let_it_be(:other_project) { create(:project, :repository, group: other_group) }
-        let_it_be(:unauthorized_group) { create(:group) }
+        let_it_be(:unauthorized_group) { create(:group, :private) }
         let_it_be(:parent_group_2) { create(:group) }
         let_it_be(:child_group_2) { create(:group, parent: parent_group_2) }
         let_it_be(:nested_project_2) { create(:project, :repository, group: child_group_2) }
