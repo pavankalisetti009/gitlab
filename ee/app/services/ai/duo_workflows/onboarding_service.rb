@@ -18,7 +18,6 @@ module Ai
         create_composite_identity_oauth_application!
 
         if update_settings
-          enable_feature_flags
           ServiceResponse.success(message: 'GitLab Duo Agent Platform onboarding for the instance is complete')
         else
           ServiceResponse.error(message: ai_settings.errors.full_messages.to_sentence)
@@ -26,11 +25,6 @@ module Ai
       end
 
       private
-
-      def enable_feature_flags
-        Feature.enable(:duo_workflow, duo_workflow_service_account)
-        Feature.enable(:duo_workflow_in_ci, duo_workflow_service_account)
-      end
 
       def update_settings
         return false if ai_settings.errors.any?
