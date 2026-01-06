@@ -502,13 +502,13 @@ module EE
 
         field :pre_receive_secret_detection_enabled, GraphQL::Types::Boolean,
           null: true,
-          description: 'Indicates whether Secret Push Protection is on or not for the project.',
+          description: 'Indicates whether secret push protection is on or not for the project.',
           method: :secret_push_protection_enabled,
           authorize: :read_secret_push_protection_info
 
         field :secret_push_protection_enabled, GraphQL::Types::Boolean,
           null: true,
-          description: 'Indicates whether Secret Push Protection is on or not for the project.',
+          description: 'Indicates whether secret push protection is on or not for the project.',
           authorize: :read_secret_push_protection_info
 
         field :container_scanning_for_registry_enabled, GraphQL::Types::Boolean,
