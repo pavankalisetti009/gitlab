@@ -15,6 +15,15 @@ module PackageMetadata
       foreign_key: :cve,
       inverse_of: :cve_enrichment
 
+    has_many :finding_enrichments,
+      class_name: 'Security::FindingEnrichment',
+      inverse_of: :cve_enrichment
+
+    has_many :security_findings,
+      through: :finding_enrichments,
+      source: :security_finding,
+      class_name: 'Security::Finding'
+
     validates :cve, presence: true, format: { with: CVE_REGEX }
     validates :epss_score, presence: true
     validates :is_known_exploit, inclusion: { in: [true, false] }

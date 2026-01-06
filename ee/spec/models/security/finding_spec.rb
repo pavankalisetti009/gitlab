@@ -34,6 +34,21 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
                   .class_name('Vulnerabilities::Feedback')
                   .with_foreign_key('finding_uuid')
     end
+
+    it do
+      is_expected.to have_many(:finding_enrichments)
+                  .with_primary_key('uuid')
+                  .with_foreign_key('finding_uuid')
+                  .class_name('Security::FindingEnrichment')
+                  .inverse_of(:security_finding)
+    end
+
+    it do
+      is_expected.to have_many(:cve_enrichments)
+                  .through(:finding_enrichments)
+                  .source(:cve_enrichment)
+                  .class_name('PackageMetadata::CveEnrichment')
+    end
   end
 
   describe 'validations' do
