@@ -76,7 +76,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     end
 
     it_behaves_like 'virtual registry not available', :maven
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'logging access through project membership'
   end
@@ -153,7 +155,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
     end
 
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API' do
       before do
         allow_next_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |instance|
@@ -202,7 +206,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     end
 
     it_behaves_like 'virtual registry not available', :maven
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'logging access through project membership'
   end
@@ -379,7 +385,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     end
 
     it_behaves_like 'virtual registry not available', :maven
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'logging access through project membership'
   end
@@ -634,7 +642,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
     end
 
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 
@@ -646,7 +656,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
     it_behaves_like 'virtual registry not available', :maven
 
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
 
     context 'with no override params' do
       before do

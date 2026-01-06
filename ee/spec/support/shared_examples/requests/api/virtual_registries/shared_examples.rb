@@ -85,11 +85,23 @@ RSpec.shared_examples 'virtual registry not available' do |registry_type|
   it_behaves_like 'disabled virtual_registry feature flag', registry_type
 end
 
-RSpec.shared_examples 'virtual registry non member user access' do |status_overrides = {}|
+# rubocop:disable Layout/LineLength -- keyword args are clearer on one line
+RSpec.shared_examples 'virtual registry non member user access' do |registry_factory:, upstream_factory:, status_overrides: {}|
+  # rubocop:enable Layout/LineLength
   using RSpec::Parameterized::TableSyntax
 
   context 'with a non member user' do
-    let_it_be(:user) { create(:user) }
+    # We use `let` instead of `let_it_be` for user, group, and registry because:
+    #
+    # 1. We need a fresh group with a specific visibility level for each test case.
+    #    Previously this shared example modified the shared `let_it_be(:group)` with
+    #    `update!`, which persisted changes across examples causing test pollution.
+    #
+    # 2. The registry must belong to the fresh group for the access checks to work.
+    #
+    # 3. The user must be a non-member of the group (not added to the fresh group).
+    let(:non_member_user) { create(:user) }
+    let(:user) { non_member_user }
 
     where(:group_access_level, :status) do
       'PUBLIC'   | (status_overrides[:public] || :forbidden)
@@ -98,9 +110,9 @@ RSpec.shared_examples 'virtual registry non member user access' do |status_overr
     end
 
     with_them do
-      before do
-        group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
-      end
+      let(:group) { create(:group, visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false)) }
+      let(:registry) { create(registry_factory, group: group) }
+      let(:upstream) { create(upstream_factory, registries: [registry]) }
 
       it_behaves_like 'returning response status', params[:status]
     end
