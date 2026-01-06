@@ -14,6 +14,34 @@ RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :sec
     allow(security_orchestration_policy_configuration).to receive(:configuration_sha).and_return('config_sha')
   end
 
+  describe '#config_strategy' do
+    subject { config.config_strategy }
+
+    context 'with string strategy' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: 'inject_ci') }
+
+      it { is_expected.to eq(:inject_ci) }
+    end
+
+    context 'with object strategy' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: { type: 'override_project_ci' }) }
+
+      it { is_expected.to eq(:override_project_ci) }
+    end
+
+    context 'with nil strategy' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: nil) }
+
+      it { is_expected.to eq(described_class::DEFAULT_CONFIG_STRATEGY) }
+    end
+
+    context 'with object strategy missing type' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: { apply_on_empty_pipeline: 'never' }) }
+
+      it { is_expected.to eq(described_class::DEFAULT_CONFIG_STRATEGY) }
+    end
+  end
+
   describe '#strategy_override_project_ci?' do
     subject { config.strategy_override_project_ci? }
 

@@ -8,6 +8,7 @@ module Security
       include ::Security::PolicyCiSkippable
 
       DEFAULT_SUFFIX_STRATEGY = 'on_conflict'
+      DEFAULT_CONFIG_STRATEGY = :inject_policy
       SUFFIX_STRATEGIES = { on_conflict: 'on_conflict', never: 'never' }.freeze
       DEFAULT_SKIP_CI_STRATEGY = { allowed: false }.freeze
       DEFAULT_APPLY_ON_EMPTY_PIPELINE = 'always'
@@ -61,12 +62,12 @@ module Security
 
       def parse_pipeline_config_strategy(strategy_config)
         if strategy_config.is_a?(Hash)
-          @config_strategy = strategy_config.fetch(:type).to_sym
+          @config_strategy = strategy_config.fetch(:type, DEFAULT_CONFIG_STRATEGY).to_sym
           @apply_on_empty_pipeline = strategy_config.fetch(
             :apply_on_empty_pipeline, DEFAULT_APPLY_ON_EMPTY_PIPELINE
           ).to_s
         else
-          @config_strategy = strategy_config.to_sym
+          @config_strategy = strategy_config&.to_sym || DEFAULT_CONFIG_STRATEGY
           @apply_on_empty_pipeline = DEFAULT_APPLY_ON_EMPTY_PIPELINE
         end
       end

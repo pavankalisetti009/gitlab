@@ -83,8 +83,9 @@ module EE
               def applicable_policy_pipelines
                 policy_context = command.pipeline_policy_context.pipeline_execution_context
 
-                # If the pipeline has jobs from project CI config, all policies apply.
-                # Otherwise, filter policies based on their apply_on_empty_pipeline setting.
+                # If the pipeline has jobs from project CI config and is not ruled out,
+                # all policies apply. Otherwise (empty pipeline), filter
+                # policies based on their apply_on_empty_pipeline setting.
                 return policy_context.policy_pipelines unless command.pipeline_creation_forced_to_continue
 
                 policy_context.empty_pipeline_applicable_policy_pipelines(pipeline)

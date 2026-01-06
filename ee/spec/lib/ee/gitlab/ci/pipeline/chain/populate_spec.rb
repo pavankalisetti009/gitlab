@@ -26,7 +26,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Populate, feature_category: :pipelin
           has_execution_policy_pipelines?: true,
           job_options: {},
           creating_policy_pipeline?: true,
-          force_pipeline_creation?: force_pipeline_creation
+          force_pipeline_creation_on_empty_pipeline?: force_pipeline_creation
         ),
         job_options: {}
       ),

@@ -113,9 +113,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::EvaluateWorkflowRules, feature_categ
             .and_return(pipeline_execution_context)
         end
 
-        context 'when force_pipeline_creation? returns true' do
+        context 'when force_pipeline_creation_on_empty_pipeline? returns true' do
           before do
-            allow(pipeline_execution_context).to receive(:force_pipeline_creation?).with(pipeline).and_return(true)
+            allow(pipeline_execution_context).to(
+              receive(:force_pipeline_creation_on_empty_pipeline?).with(pipeline).and_return(true)
+            )
           end
 
           it_behaves_like 'pipeline not skipped' do
@@ -137,9 +139,12 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::EvaluateWorkflowRules, feature_categ
           end
         end
 
-        context 'when force_pipeline_creation? returns false' do
+        context 'when force_pipeline_creation_on_empty_pipeline? returns false' do
           before do
-            allow(pipeline_execution_context).to receive(:force_pipeline_creation?).with(pipeline).and_return(false)
+            allow(pipeline_execution_context).to(
+              receive(:force_pipeline_creation_on_empty_pipeline?).with(pipeline).and_return(false)
+            )
+
             step.perform!
           end
 
