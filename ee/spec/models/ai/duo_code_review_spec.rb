@@ -13,10 +13,7 @@ RSpec.describe Ai::DuoCodeReview, feature_category: :code_suggestions do
 
     shared_examples 'delegates to ModeResolver.enabled?' do
       it 'delegates to ModeResolver.enabled?' do
-        expect(Ai::DuoCodeReview::ModeResolver)
-          .to receive(:new)
-          .with(user: user, container: container)
-          .and_return(active_mode)
+        stub_active_mode_with(active_mode)
 
         expect(active_mode).to receive(:enabled?)
 
@@ -42,10 +39,7 @@ RSpec.describe Ai::DuoCodeReview, feature_category: :code_suggestions do
 
     shared_examples 'delegates to ModeResolver.mode' do
       it 'delegates to ModeResolver.mode' do
-        expect(Ai::DuoCodeReview::ModeResolver)
-          .to receive(:new)
-          .with(user: user, container: container)
-          .and_return(active_mode)
+        stub_active_mode_with(active_mode)
 
         expect(active_mode).to receive(:mode)
 
@@ -64,5 +58,65 @@ RSpec.describe Ai::DuoCodeReview, feature_category: :code_suggestions do
 
       include_examples 'delegates to ModeResolver.mode'
     end
+  end
+
+  describe '.dap?' do
+    subject(:dap) { described_class.dap?(user: user, container: project) }
+
+    before do
+      stub_active_mode_with(active_mode)
+    end
+
+    context 'when active mode is dap' do
+      let(:active_mode) { instance_double(Ai::DuoCodeReview::Modes::Dap, mode: :dap) }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when active mode is classic' do
+      let(:active_mode) { instance_double(Ai::DuoCodeReview::Modes::Classic, mode: :classic) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when active mode is disabled' do
+      let(:active_mode) { instance_double(Ai::DuoCodeReview::Modes::Disabled, mode: :disabled) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
+  describe '.classic?' do
+    subject(:classic) { described_class.classic?(user: user, container: project) }
+
+    before do
+      stub_active_mode_with(active_mode)
+    end
+
+    context 'when active mode is dap' do
+      let(:active_mode) { instance_double(Ai::DuoCodeReview::Modes::Dap, mode: :dap) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when active mode is classic' do
+      let(:active_mode) { instance_double(Ai::DuoCodeReview::Modes::Classic, mode: :classic) }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when active mode is disabled' do
+      let(:active_mode) { instance_double(Ai::DuoCodeReview::Modes::Disabled, mode: :disabled) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
+  private
+
+  def stub_active_mode_with(active_mode)
+    allow(Ai::DuoCodeReview::ModeResolver)
+      .to receive(:new)
+      .and_return(active_mode)
   end
 end

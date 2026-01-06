@@ -931,19 +931,13 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
 
     describe '#use_duo_agent_platform?' do
       let(:service) { described_class.new(project: project, current_user: user, params: {}) }
-      let(:validator) { instance_double(Ai::DuoWorkflows::CodeReview::AvailabilityValidator) }
 
-      subject(:use_duo_agent_platform) { service.send(:use_duo_agent_platform?, merge_request) }
+      it 'delegates to Ai::DuoCodeReview.dap?' do
+        expect(::Ai::DuoCodeReview).to receive(:dap?)
+          .with(user: user, container: merge_request.project)
+          .and_call_original
 
-      before do
-        allow(Ai::DuoWorkflows::CodeReview::AvailabilityValidator).to receive(:new)
-          .with(user: user, resource: merge_request.project)
-          .and_return(validator)
-      end
-
-      it 'delegates to AvailabilityValidator' do
-        expect(validator).to receive(:available?).and_return(true)
-        expect(use_duo_agent_platform).to be true
+        service.send(:use_duo_agent_platform?, merge_request)
       end
     end
   end

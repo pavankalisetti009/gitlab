@@ -24,7 +24,7 @@ module Ai
           # - GA rollout is enabled OR experimental features are enabled
           # - DWS is configured (for self-managed)
           user.allowed_to_use?(:duo_agent_platform) &&
-            ::Gitlab::Llm::StageCheck.available?(container, :duo_workflow) &&
+            container.duo_code_review_dap_available? &&
             duo_agent_platform_configured?
         end
 
@@ -35,8 +35,6 @@ module Ai
         end
 
         def duo_agent_platform_configured?
-          return false unless container.duo_foundational_flows_enabled
-
           feature_setting = selected_feature_setting
 
           # SaaS customers always have DWS available

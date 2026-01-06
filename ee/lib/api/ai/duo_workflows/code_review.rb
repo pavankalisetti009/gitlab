@@ -20,10 +20,7 @@ module API
 
         helpers do
           def verify_duo_agent_platform_code_review_enabled!
-            return if ::Ai::DuoWorkflows::CodeReview::AvailabilityValidator.new(
-              user: current_user,
-              resource: project_from_params
-            ).available?
+            return if ::Ai::DuoCodeReview.dap?(user: current_user, container: project_from_params)
 
             forbidden!('You are not allowed to use Duo Code Review through Duo Agent Platform')
           end
