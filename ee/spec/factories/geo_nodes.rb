@@ -13,6 +13,16 @@ FactoryBot.define do
     primary { false }
     sync_object_storage { true }
 
+    # Secondary nodes create an OAuth application via the before_validation callback.
+    # The OAuth application requires an organization to exist for the organization_id
+    # foreign key constraint. In production a default organization should always
+    # exist, see db/fixtures/production/002_default_organization.rb
+    after(:build) do |geo_node, _evaluator|
+      next if geo_node.primary?
+
+      FactoryBot.create(:common_organization)
+    end
+
     trait :primary do
       primary { true }
       minimum_reverification_interval { 7 }
