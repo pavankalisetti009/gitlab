@@ -19,6 +19,16 @@ class MergeRequestResetApprovalsWorker # rubocop:disable Scalability/IdempotentW
     user = User.find_by_id(user_id)
     return unless user
 
-    MergeRequests::ResetApprovalsService.new(project: project, current_user: user).execute(ref, newrev)
+    result = MergeRequests::ResetApprovalsService.new(project: project, current_user: user).execute(ref, newrev)
+    return unless result.is_a?(Hash)
+
+    total_duration = result.values.sum
+    hash_with_total = result.merge(reset_approvals_service_total_duration_s: total_duration)
+
+    hash_with_total.transform_values! do |duration|
+      duration.round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+    end
+
+    log_hash_metadata_on_done(hash_with_total)
   end
 end

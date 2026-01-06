@@ -776,6 +776,51 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
           service.send(:delete_code_owner_approvals, merge_request, patch_id_sha: patch_id_sha, cause: :something_else)
         end
       end
+
+      describe 'duration statistics' do
+        let!(:rb_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: owner,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        it 'returns operation durations for code owner approval methods' do
+          result = service.execute('feature', feature_sha3)
+
+          expect(result).to be_a(Hash)
+          expect(result).to include(
+            delete_code_owner_approvals_total_duration_s: be_a(Float),
+            find_approved_code_owner_rules_total_duration_s: be_a(Float),
+            code_owner_approver_ids_to_delete_total_duration_s: be_a(Float),
+            code_owner_approver_ids_previous_diff_sha_duration_s: be_a(Float),
+            code_owner_approver_ids_entries_since_commit_duration_s: be_a(Float),
+            code_owner_approver_ids_match_rules_duration_s: be_a(Float),
+            code_owner_approver_ids_filter_approvals_duration_s: be_a(Float),
+            perform_code_owner_approval_deletion_total_duration_s: be_a(Float),
+            perform_deletion_check_approval_state_duration_s: be_a(Float),
+            perform_deletion_delete_all_duration_s: be_a(Float),
+            perform_deletion_expire_keys_duration_s: be_a(Float),
+            perform_deletion_update_reviewer_state_duration_s: be_a(Float),
+            perform_deletion_trigger_events_duration_s: be_a(Float),
+            perform_deletion_webhooks_duration_s: be_a(Float)
+          )
+        end
+
+        context 'when log_merge_request_reset_approvals_duration feature flag is disabled' do
+          before do
+            stub_feature_flags(log_merge_request_reset_approvals_duration: false)
+          end
+
+          it 'does not return duration statistics' do
+            result = service.execute('feature', feature_sha3)
+
+            expect(result).to be_nil
+          end
+        end
+      end
     end
   end
 end
