@@ -267,59 +267,6 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::QualifiedGroupsFilter, featu
     end
   end
 
-  context 'when check_inherited_groups_for_codeowners ff is disabled' do
-    before do
-      stub_feature_flags(check_inherited_groups_for_codeowners: false)
-    end
-
-    # Reinitialize the filter with the feature flag stubbed
-    let_it_be(:filter) { described_class.new(project, groups: groups, group_names: group_names) }
-
-    describe '#output_groups' do
-      it 'returns ancestoral groups and invited groups with developer access' do
-        expect(filter.output_groups).to contain_exactly(
-          developer_group,
-          maintainer_group,
-          owner_group,
-          nested_group,
-          project_group,
-          parent_group
-        )
-      end
-    end
-
-    describe '#valid_group_names' do
-      it 'returns all group names that match a qualified group' do
-        expect(filter.valid_group_names).to contain_exactly(
-          developer_group.full_path,
-          maintainer_group.full_path,
-          owner_group.full_path,
-          nested_group.full_path,
-          project_group.full_path,
-          parent_group.full_path
-        )
-      end
-    end
-
-    describe '#invalid_group_names' do
-      it 'returns all group names that do not match a qualified group' do
-        expect(filter.invalid_group_names).to contain_exactly(
-          guest_group.full_path,
-          planner_group.full_path,
-          reporter_group.full_path,
-          external_group.full_path,
-          developer_subgroup_of_parent_group.full_path,
-          project_group_shared_with_group.full_path,
-          parent_group_shared_with_group.full_path,
-          project_group_shared_with_reporter_group.full_path,
-          parent_group_shared_with_reporter_group.full_path,
-          group_shared_with_project_group.full_path,
-          group_shared_with_parent_group.full_path
-        )
-      end
-    end
-  end
-
   it 'does not perform N+1 queries', :request_store, :use_sql_query_cache do
     project_id = project.id
     # refind the project to ensure the associations aren't loaded

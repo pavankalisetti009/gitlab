@@ -183,15 +183,5 @@ RSpec.describe Gitlab::CodeOwners::GroupsLoader, feature_category: :source_code_
 
       it { is_expected.to be_empty }
     end
-
-    context 'when check_inherited_groups_for_codeowners is disabled' do
-      before do
-        stub_feature_flags(check_inherited_groups_for_codeowners: false)
-      end
-
-      it "excludes groups invited to project's group and ancestors" do
-        is_expected.not_to include(*project_group_and_ancestors_shared_with_groups)
-      end
-    end
   end
 end
