@@ -17375,7 +17375,8 @@ CREATE TABLE deployment_merge_requests (
     deployment_id bigint NOT NULL,
     merge_request_id bigint NOT NULL,
     environment_id bigint,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_5ae1fd5b0e CHECK ((project_id IS NOT NULL))
 );
 
 CREATE TABLE deployments (
@@ -42026,6 +42027,8 @@ CREATE INDEX index_deployment_clusters_on_project_id ON deployment_clusters USIN
 
 CREATE INDEX index_deployment_merge_requests_on_merge_request_id ON deployment_merge_requests USING btree (merge_request_id);
 
+CREATE INDEX index_deployment_merge_requests_on_project_id ON deployment_merge_requests USING btree (project_id);
+
 CREATE INDEX index_deployments_for_visible_scope ON deployments USING btree (environment_id, finished_at DESC) WHERE (status = ANY (ARRAY[1, 2, 3, 4, 6]));
 
 CREATE INDEX index_deployments_on_archived_project_id_iid ON deployments USING btree (archived, project_id, iid);
@@ -50436,6 +50439,9 @@ ALTER TABLE ONLY project_relation_export_uploads
 
 ALTER TABLE ONLY approval_policy_merge_request_bypass_events
     ADD CONSTRAINT fk_0fae251483 FOREIGN KEY (security_policy_id) REFERENCES security_policies(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY deployment_merge_requests
+    ADD CONSTRAINT fk_10059fbe96 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY board_assignees
     ADD CONSTRAINT fk_105c1d6d08 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
