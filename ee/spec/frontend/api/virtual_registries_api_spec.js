@@ -104,37 +104,6 @@ describe('VirtualRegistriesApi', () => {
     });
   });
 
-  describe('getMavenUpstreamCacheEntries', () => {
-    it('fetches the maven upstream cache entries', () => {
-      const requestPath = 'virtual_registries/packages/maven/upstreams';
-      const upstreamId = '5';
-      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/${requestPath}/${upstreamId}/cache_entries`;
-      const expectedParams = {
-        id: upstreamId,
-      };
-      const expectResponse = [
-        {
-          id: 'NSAvdGVzdC9iYXI=',
-          group_id: 209,
-          upstream_id: 5,
-          upstream_checked_at: '2025-05-19T14:22:23.048Z',
-          file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83',
-          size: 15,
-          relative_path: '/test/bar',
-          upstream_etag: null,
-          content_type: 'application/octet-stream',
-          created_at: '2025-05-19T14:22:23.050Z',
-          updated_at: '2025-05-19T14:22:23.050Z',
-        },
-      ];
-      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, expectResponse);
-
-      return VirtualRegistryApi.getMavenUpstreamCacheEntries(expectedParams).then(({ data }) => {
-        expect(data).toEqual(expectResponse);
-      });
-    });
-  });
-
   describe('getMavenUpstreamRegistriesList', () => {
     it('fetches the maven upstreams for top-level group', () => {
       const requestPath = 'virtual_registries/packages/maven/upstreams';

@@ -1,0 +1,26 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+
+query getMavenUpstreamCacheEntries(
+  $id: VirtualRegistriesPackagesMavenUpstreamID!
+  $search: String
+  $after: String
+  $before: String
+  $first: Int
+  $last: Int
+) {
+  virtualRegistriesPackagesMavenUpstream(id: $id) {
+    id
+    cacheEntries(search: $search, after: $after, before: $before, first: $first, last: $last) {
+      nodes {
+        id
+        contentType
+        relativePath
+        size
+        upstreamCheckedAt
+      }
+      pageInfo {
+        ...PageInfo
+      }
+    }
+  }
+}
