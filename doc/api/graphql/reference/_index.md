@@ -28125,7 +28125,7 @@ CI/CD job analytics data.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="cijobanalyticsname"></a>`name` | [`String`](#string) | Job name. |
-| <a id="cijobanalyticsstagename"></a>`stageName` | [`String`](#string) | Stage information. |
+| <a id="cijobanalyticsstagename"></a>`stageName` | [`String`](#string) | Stage name. |
 | <a id="cijobanalyticsstatistics"></a>`statistics` | [`CiJobAnalyticsStatistics`](#cijobanalyticsstatistics) | Statistics for the jobs. |
 
 ### `CiJobAnalyticsStatistics`
