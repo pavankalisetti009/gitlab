@@ -26,6 +26,7 @@ module API
                 { code: 403, message: '403 Forbidden' },
                 { code: 404, message: '404 Not found' }
               ]
+              tags %w[search_migrations]
             end
             get do
               migrations = Elastic::DataMigrationService.migrations
@@ -42,6 +43,7 @@ module API
                 { code: 403, message: '403 Forbidden' },
                 { code: 404, message: '404 Not found' }
               ]
+              tags %w[search_migrations]
             end
             params do
               requires :migration_id,
