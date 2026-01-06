@@ -14,11 +14,18 @@ Vue.use(VueApollo);
 describe('MRWidget approvals summary', () => {
   let wrapper;
 
+  const defaultProps = {
+    canApprove: true,
+    disableCommittersApproval: false,
+    optional: false,
+  };
+
   const findPolicyApprovalSettingsIcon = () => wrapper.findComponent(PolicyApprovalSettingsIcon);
 
   const createComponent = (response = approvalRulesResponse, propsData = {}) => {
     wrapper = mount(ApprovalsSummary, {
       propsData: {
+        ...defaultProps,
         approvalState: response.data.project.mergeRequest,
         multipleApprovalRulesAvailable: true,
         ...propsData,
