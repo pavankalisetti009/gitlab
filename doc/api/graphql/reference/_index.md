@@ -28125,7 +28125,7 @@ CI/CD job analytics data.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="cijobanalyticsname"></a>`name` | [`String`](#string) | Job name. |
-| <a id="cijobanalyticsstagename"></a>`stageName` | [`String`](#string) | Stage information. |
+| <a id="cijobanalyticsstagename"></a>`stageName` | [`String`](#string) | Stage name. |
 | <a id="cijobanalyticsstatistics"></a>`statistics` | [`CiJobAnalyticsStatistics`](#cijobanalyticsstatistics) | Statistics for the jobs. |
 
 ### `CiJobAnalyticsStatistics`
@@ -33618,6 +33618,7 @@ GPG signature for a signed commit.
 | <a id="grouprepositorysizeexcessprojectcount"></a>`repositorySizeExcessProjectCount` | [`Int`](#int) | Number of projects in the root namespace where the repository size exceeds the limit. This only applies to namespaces under Project limit enforcement. |
 | <a id="grouprequestaccessenabled"></a>`requestAccessEnabled` | [`Boolean`](#boolean) | Indicates if users can request access to namespace. |
 | <a id="grouprequiretwofactorauthentication"></a>`requireTwoFactorAuthentication` | [`Boolean`](#boolean) | Indicates if all users in the group are required to set up two-factor authentication. |
+| <a id="grouprootnamespace"></a>`rootNamespace` | [`Namespace!`](#namespace) | Top-level namespace of the namespace. |
 | <a id="grouprootstoragestatistics"></a>`rootStorageStatistics` | [`RootStorageStatistics`](#rootstoragestatistics) | Aggregated storage statistics of the namespace. Only available for root namespaces. |
 | <a id="groupsecuritycategories"></a>`securityCategories` | [`[SecurityCategory!]`](#securitycategory) | Security categories for the group. |
 | <a id="groupsecuritypolicyproject"></a>`securityPolicyProject` | [`Project`](#project) | Security policy project assigned to the namespace. |
@@ -39867,6 +39868,7 @@ Version of a machine learning model.
 | <a id="namespaceproductanalyticsstoredeventslimit"></a>`productAnalyticsStoredEventsLimit` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 16.9. **Status**: Experiment. Number of product analytics events namespace is permitted to store per cycle. |
 | <a id="namespacerepositorysizeexcessprojectcount"></a>`repositorySizeExcessProjectCount` | [`Int`](#int) | Number of projects in the root namespace where the repository size exceeds the limit. This only applies to namespaces under Project limit enforcement. |
 | <a id="namespacerequestaccessenabled"></a>`requestAccessEnabled` | [`Boolean`](#boolean) | Indicates if users can request access to namespace. |
+| <a id="namespacerootnamespace"></a>`rootNamespace` | [`Namespace!`](#namespace) | Top-level namespace of the namespace. |
 | <a id="namespacerootstoragestatistics"></a>`rootStorageStatistics` | [`RootStorageStatistics`](#rootstoragestatistics) | Aggregated storage statistics of the namespace. Only available for root namespaces. |
 | <a id="namespacesecuritypolicyproject"></a>`securityPolicyProject` | [`Project`](#project) | Security policy project assigned to the namespace. |
 | <a id="namespacesharedrunnerssetting"></a>`sharedRunnersSetting` | [`SharedRunnersSetting`](#sharedrunnerssetting) | Shared runners availability for the namespace and its descendants. |
@@ -54911,6 +54913,7 @@ Name of the feature that the callout is for.
 | <a id="usergroupcalloutfeaturenameexpired_duo_enterprise_trial_widget"></a>`EXPIRED_DUO_ENTERPRISE_TRIAL_WIDGET` | Callout feature name for expired_duo_enterprise_trial_widget. |
 | <a id="usergroupcalloutfeaturenameexpired_duo_pro_trial_widget"></a>`EXPIRED_DUO_PRO_TRIAL_WIDGET` | Callout feature name for expired_duo_pro_trial_widget. |
 | <a id="usergroupcalloutfeaturenameexpired_trial_status_widget"></a>`EXPIRED_TRIAL_STATUS_WIDGET` | Callout feature name for expired_trial_status_widget. |
+| <a id="usergroupcalloutfeaturenamefoundational_items_available"></a>`FOUNDATIONAL_ITEMS_AVAILABLE` | Callout feature name for foundational_items_available. |
 | <a id="usergroupcalloutfeaturenamefree_group_limited_alert"></a>`FREE_GROUP_LIMITED_ALERT` | Callout feature name for free_group_limited_alert. |
 | <a id="usergroupcalloutfeaturenameinvite_members_banner"></a>`INVITE_MEMBERS_BANNER` | Callout feature name for invite_members_banner. |
 | <a id="usergroupcalloutfeaturenamemrs_premium_message_callout"></a>`MRS_PREMIUM_MESSAGE_CALLOUT` | Callout feature name for mrs_premium_message_callout. |

@@ -206,6 +206,7 @@ module EE
         field :ai_settings,
           ::Types::Ai::NamespaceSettingsType,
           null: true,
+          scopes: [:api, :read_api, :ai_workflows],
           experiment: { milestone: '18.8' },
           description: 'AI settings for the namespace.'
 
