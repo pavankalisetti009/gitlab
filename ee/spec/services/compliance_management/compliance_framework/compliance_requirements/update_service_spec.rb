@@ -156,7 +156,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
           service.execute
 
-          expect(::Gitlab::Audit::Auditor).to have_received(:audit).exactly(5).times
+          expect(::Gitlab::Audit::Auditor).to have_received(:audit).exactly(2).times
 
           old_values.each do |attribute, old_value|
             expect(::Gitlab::Audit::Auditor).to have_received(:audit).with(
@@ -173,7 +173,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           it_behaves_like 'updates requirement'
 
           it 'does not update existing control entries' do
-            expect { service.execute }.not_to change { requirement.compliance_requirements_controls }
+            expect { service.execute }.not_to change { requirement.compliance_requirements_controls.to_a }
           end
 
           it_behaves_like 'do not enqueue project compliance evaluation for framework'
@@ -189,7 +189,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           end
 
           it 'does not delete controls of other requirements' do
-            expect { service.execute }.not_to change { other_requirement.compliance_requirements_controls }
+            expect { service.execute }.not_to change { other_requirement.compliance_requirements_controls.to_a }
           end
 
           it_behaves_like 'do not enqueue project compliance evaluation for framework'

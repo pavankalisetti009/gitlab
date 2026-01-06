@@ -36825,6 +36825,9 @@ msgstr ""
 msgid "Invalid name %{input} was given for this default stage, allowed names: %{names}"
 msgstr ""
 
+msgid "Invalid name for the compliance control %{name}"
+msgstr ""
+
 msgid "Invalid passkey data received. Try creating a new passkey."
 msgstr ""
 

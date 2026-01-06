@@ -67,6 +67,30 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       end
     end
 
+    context 'when using an invalid control name' do
+      let(:invalid_params) do
+        {
+          name: 'scanner_fuzz_testing_running',
+          expression: control_expression
+        }
+      end
+
+      subject(:control_creator) do
+        described_class.new(requirement: requirement, params: invalid_params, current_user: current_user)
+      end
+
+      it 'responds with an error service response' do
+        response = control_creator.execute
+
+        expect(response.success?).to be false
+        expect(response.message).to eq('Invalid name for the compliance control scanner_fuzz_testing_running')
+      end
+
+      it 'does not create a new compliance control' do
+        expect { control_creator.execute }.not_to change { requirement.compliance_requirements_controls.count }
+      end
+    end
+
     context 'when using parameters for a valid compliance control' do
       subject(:control_creator) do
         described_class.new(requirement: requirement, params: params, current_user: current_user)

@@ -110,4 +110,29 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirement,
       end
     end
   end
+
+  describe '#compliance_requirements_controls' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
+    let_it_be(:requirement) { create(:compliance_requirement, framework: framework, namespace: namespace) }
+
+    it 'excludes controls with invalid names' do
+      existing_valid_control = create(:compliance_requirements_control,
+        :project_visibility_not_internal,
+        namespace: namespace,
+        compliance_requirement: requirement
+      )
+
+      existing_invalid_control = build(:compliance_requirements_control,
+        compliance_requirement: requirement,
+        namespace: namespace,
+        name: 'scanner_fuzz_testing_running',
+        expression: { operator: '=', field: 'scanner_fuzz_testing_running', value: true }.to_json
+      )
+      existing_invalid_control.save!(validate: false)
+
+      expect(requirement.compliance_requirements_controls).to include(existing_valid_control)
+      expect(requirement.compliance_requirements_controls).not_to include(existing_invalid_control)
+    end
+  end
 end

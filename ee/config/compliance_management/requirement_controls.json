@@ -117,15 +117,6 @@
     }
   },
   {
-    "id": "scanner_fuzz_testing_running",
-    "name": "Fuzz testing running",
-    "expression": {
-      "field": "scanner_fuzz_testing_running",
-      "operator": "=",
-      "value": true
-    }
-  },
-  {
     "id": "scanner_code_quality_running",
     "name": "Code quality running",
     "expression": {
