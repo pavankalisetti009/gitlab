@@ -16,7 +16,7 @@ module EE
               # they will be merged onto the pipeline in PipelineExecutionPolicies::ApplyPolicies
               super || command.pipeline_policy_context
                 .pipeline_execution_context
-                .force_pipeline_creation?(pipeline)
+                .force_pipeline_creation_on_empty_pipeline?(pipeline)
             end
           end
         end

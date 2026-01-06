@@ -83,10 +83,10 @@ module Gitlab
             source == ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE
           end
 
-          def force_pipeline_creation?(pipeline)
+          def force_pipeline_creation_on_empty_pipeline?(pipeline)
             return false unless has_execution_policy_pipelines?
 
-            strong_memoize_with(:force_pipeline_creation, pipeline) do
+            strong_memoize_with(:force_pipeline_creation_on_empty_pipeline, pipeline) do
               break true unless Feature.enabled?(:pipeline_execution_policy_empty_pipeline_behavior,
                 pipeline.project)
 

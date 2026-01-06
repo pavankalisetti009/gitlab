@@ -13,9 +13,9 @@ export * from 'jest/work_items/mock_data';
 /* eslint-disable import/export */
 export const projectMembersAutocompleteResponseWithCurrentUser = {
   data: {
-    workspace: {
-      ...CE.projectMembersAutocompleteResponseWithCurrentUser.data.workspace,
-      users: CE.projectMembersAutocompleteResponseWithCurrentUser.data.workspace.users.map(
+    namespace: {
+      ...CE.projectMembersAutocompleteResponseWithCurrentUser.data.namespace,
+      users: CE.projectMembersAutocompleteResponseWithCurrentUser.data.namespace.users.map(
         (user) => ({
           ...user,
           status: {

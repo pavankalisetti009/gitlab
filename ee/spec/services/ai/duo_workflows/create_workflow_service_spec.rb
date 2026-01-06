@@ -126,22 +126,6 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
         end
       end
 
-      context 'with service error' do
-        before do
-          allow_next_instance_of(Ai::UsageQuotaService) do |instance|
-            allow(instance).to receive(:execute).and_return(
-              ServiceResponse.error(message: "Error while fetching usage quota", reason: :service_error)
-            )
-          end
-        end
-
-        it 'returns internal server error' do
-          expect(execute[:status]).to eq(:error)
-          expect(execute[:http_status]).to eq(:internal_server_error)
-          expect(execute[:message]).to include('Error while fetching usage quota')
-        end
-      end
-
       context 'with generic error' do
         before do
           allow_next_instance_of(Ai::UsageQuotaService) do |instance|

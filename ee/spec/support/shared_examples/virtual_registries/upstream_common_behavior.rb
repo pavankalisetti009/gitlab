@@ -12,6 +12,9 @@ RSpec.shared_examples 'virtual registry upstream common behavior' do
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
     it { is_expected.to validate_length_of(:description).is_at_most(1024) }
 
+    # Use 172.21.11.1 (from the rarely-used 172.16.0.0/12 range)
+    # to avoid matching a developer's machine IP and getting classified
+    # as "localhost" instead of "local network" by the URL blocker
     context 'for url' do
       where(:url, :valid, :error_messages) do
         'http://test.maven'   | true  | nil
@@ -22,7 +25,7 @@ RSpec.shared_examples 'virtual registry upstream common behavior' do
         "http://#{'a' * 255}" | false | 'Url is too long (maximum is 255 characters)'
         'http://127.0.0.1'    | false | 'Url is blocked: Requests to localhost are not allowed'
         'maven.local'         | false | 'Url is blocked: Only allowed schemes are http, https'
-        'http://192.168.1.2'  | false | 'Url is blocked: Requests to the local network are not allowed'
+        'http://172.21.11.1'  | false | 'Url is blocked: Requests to the local network are not allowed'
         'http://foobar.x'     | false | 'Url is blocked: Host cannot be resolved or invalid'
       end
 

@@ -169,8 +169,6 @@ module Ai
           :bad_request
         when :usage_quota_exceeded
           :payment_required
-        when :service_error
-          :internal_server_error
         else
           :internal_server_error
         end

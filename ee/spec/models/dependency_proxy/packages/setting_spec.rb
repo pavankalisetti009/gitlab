@@ -13,6 +13,9 @@ RSpec.describe DependencyProxy::Packages::Setting, type: :model, feature_categor
     it { is_expected.to validate_presence_of(:project) }
 
     context 'for maven registry url' do
+      # Use 172.21.11.1 (from the rarely-used 172.16.0.0/12 range)
+      # to avoid matching a developer's machine IP and getting classified
+      # as "localhost" instead of "local network" by the URL blocker
       where(:url, :valid, :error_message) do
         'http://test.maven'   | true  | nil
         'https://test.maven'  | true  | nil
@@ -24,7 +27,7 @@ RSpec.describe DependencyProxy::Packages::Setting, type: :model, feature_categor
         "http://#{'a' * 255}" | false | 'Maven external registry url is too long (maximum is 255 characters)'
         'http://127.0.0.1'    | false | 'Maven external registry url is blocked: Requests to localhost are not allowed'
         'maven.local'         | false | 'Maven external registry url is blocked: Only allowed schemes are http, https'
-        'http://192.168.1.2'  | false | 'Maven external registry url is blocked: Requests to the local network are ' \
+        'http://172.21.11.1'  | false | 'Maven external registry url is blocked: Requests to the local network are ' \
                                         'not allowed'
       end
 
@@ -34,7 +37,7 @@ RSpec.describe DependencyProxy::Packages::Setting, type: :model, feature_categor
         if params[:valid]
           it { expect(setting).to be_valid }
         else
-          it do
+          it 'is invalid with the expected error' do
             expect(setting).not_to be_valid
             expect(setting.errors).to contain_exactly(error_message)
           end
@@ -79,6 +82,9 @@ RSpec.describe DependencyProxy::Packages::Setting, type: :model, feature_categor
     end
 
     context 'for npm registry url' do
+      # Use 172.21.11.1 (from the rarely-used 172.16.0.0/12 range)
+      # to avoid matching a developer's machine IP and getting classified
+      # as "localhost" instead of "local network" by the URL blocker
       where(:url, :valid, :error_message) do
         'http://test.npm'     | true  | nil
         'https://test.npm'    | true  | nil
@@ -90,7 +96,7 @@ RSpec.describe DependencyProxy::Packages::Setting, type: :model, feature_categor
         "http://#{'a' * 255}" | false | 'Npm external registry url is too long (maximum is 255 characters)'
         'http://127.0.0.1'    | false | 'Npm external registry url is blocked: Requests to localhost are not allowed'
         'maven.local'         | false | 'Npm external registry url is blocked: Only allowed schemes are http, https'
-        'http://192.168.1.2'  | false | 'Npm external registry url is blocked: Requests to the local network are ' \
+        'http://172.21.11.1'  | false | 'Npm external registry url is blocked: Requests to the local network are ' \
                                         'not allowed'
       end
 
@@ -100,7 +106,7 @@ RSpec.describe DependencyProxy::Packages::Setting, type: :model, feature_categor
         if params[:valid]
           it { expect(setting).to be_valid }
         else
-          it do
+          it 'is invalid with the expected error' do
             expect(setting).not_to be_valid
             expect(setting.errors).to contain_exactly(error_message)
           end
