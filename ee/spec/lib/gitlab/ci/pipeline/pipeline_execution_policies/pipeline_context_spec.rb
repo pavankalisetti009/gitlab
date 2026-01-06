@@ -749,8 +749,8 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
-  describe '#force_pipeline_creation?' do
-    subject(:force_creation) { context.force_pipeline_creation?(pipeline) }
+  describe '#force_pipeline_creation_on_empty_pipeline?' do
+    subject(:force_creation) { context.force_pipeline_creation_on_empty_pipeline?(pipeline) }
 
     include_context 'with mocked policy_pipelines'
 
