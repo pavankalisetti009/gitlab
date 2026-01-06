@@ -39,6 +39,7 @@ module API
         use :pagination
       end
 
+      route_setting :authorization, permissions: :read_dependency, boundary_type: :project
       get ':id/dependencies' do
         authorize! :read_dependency, user_project
 
