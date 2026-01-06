@@ -523,6 +523,36 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
             expect { result }.to change { Ai::FeatureAccessRule.count }.from(1).to(0)
           end
         end
+
+        context 'when clearing all rules' do
+          let(:duo_namespace_access_rules) { [] }
+
+          it 'audits the cleared rules' do
+            create(:ai_instance_accessible_entity_rules, through_namespace_id: namespace_a.id)
+
+            expect(Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(
+              name: 'feature_access_rules_updated',
+              author: user,
+              scope: be_an_instance_of(::Gitlab::Audit::InstanceScope),
+              target: be_an_instance_of(::Gitlab::Audit::NullTarget),
+              message: 'Cleared feature access rules'
+            ))
+
+            expect { result }.to change { Ai::FeatureAccessRule.count }.from(1).to(0)
+          end
+        end
+
+        it 'audits the updated rules' do
+          expect(Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(
+            name: 'feature_access_rules_updated',
+            author: user,
+            scope: be_an_instance_of(::Gitlab::Audit::InstanceScope),
+            target: be_an_instance_of(::Gitlab::Audit::NullTarget),
+            message: include("Updated feature access rules")
+          ))
+
+          result
+        end
       end
 
       context 'when rules are invalid' do
@@ -536,6 +566,14 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
           expect(result).to be false
           expect(Ai::FeatureAccessRule.count).to eq(0)
         end
+
+        it 'does not audit the event' do
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(name: 'feature_access_rules_updated')
+          )
+
+          result
+        end
       end
 
       context 'when duo_access_through_namespaces feature flag is disabled' do
@@ -546,6 +584,14 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
         it 'adds errors to the setting' do
           expect(result).to be false
           expect(Ai::FeatureAccessRule.count).to eq(0)
+        end
+
+        it 'does not audit the event' do
+          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(name: 'feature_access_rules_updated')
+          )
+
+          result
         end
       end
     end
