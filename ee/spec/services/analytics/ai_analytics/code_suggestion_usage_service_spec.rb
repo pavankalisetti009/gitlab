@@ -188,8 +188,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
         contributors_count: 2,
         shown_count: 4,
         accepted_count: 1,
-        ide_names: ["", "ide_3", "ide_2", "ide_1"],
-        languages: %w[js rust ruby],
+        ide_names: contain_exactly("", "ide_3", "ide_2", "ide_1"),
+        languages: contain_exactly("js", "rust", "ruby"),
         shown_lines_of_code: 130,
         accepted_lines_of_code: 20
       }
@@ -206,8 +206,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
         contributors_count: 1,
         shown_count: 2,
         accepted_count: 0,
-        ide_names: ["", "ide_3"],
-        languages: %w[js rust],
+        ide_names: contain_exactly("", "ide_3"),
+        languages: contain_exactly("js", "rust"),
         shown_lines_of_code: 90,
         accepted_lines_of_code: 0
       }
@@ -224,8 +224,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
         contributors_count: 2,
         shown_count: 2,
         accepted_count: 1,
-        ide_names: %w[ide_3 ide_2],
-        languages: %w[js ruby],
+        ide_names: contain_exactly("ide_3", "ide_2"),
+        languages: contain_exactly("js", "ruby"),
         shown_lines_of_code: 70,
         accepted_lines_of_code: 20
       }
@@ -271,8 +271,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           # New fields
           shown_count: 5,
           accepted_count: 2,
-          ide_names: ["", "ide_3", "ide_2", "ide_1"],
-          languages: ["c", "js", "c++", "rust", "ruby"],
+          ide_names: contain_exactly("", "ide_3", "ide_2", "ide_1"),
+          languages: contain_exactly("c", "js", "c++", "rust", "ruby"),
           shown_lines_of_code: 190,
           accepted_lines_of_code: 90
         }
@@ -289,8 +289,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           contributors_count: 1,
           shown_count: 2,
           accepted_count: 0,
-          ide_names: ["", "ide_3"],
-          languages: %w[js rust],
+          ide_names: contain_exactly("", "ide_3"),
+          languages: contain_exactly("js", "rust"),
           shown_lines_of_code: 90,
           accepted_lines_of_code: 0
         }
@@ -307,8 +307,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           contributors_count: 2,
           shown_count: 2,
           accepted_count: 1,
-          ide_names: %w[ide_3 ide_2],
-          languages: %w[js ruby],
+          ide_names: contain_exactly("ide_3", "ide_2"),
+          languages: contain_exactly("js", "ruby"),
           shown_lines_of_code: 70,
           accepted_lines_of_code: 20
         }
@@ -333,8 +333,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           contributors_count: 2,
           shown_count: 2,
           accepted_count: 1,
-          ide_names: ["", "ide_3", "ide_2"],
-          languages: %w[rust ruby],
+          ide_names: contain_exactly("", "ide_3", "ide_2"),
+          languages: contain_exactly("rust", "ruby"),
           shown_lines_of_code: 80,
           accepted_lines_of_code: 20
         }
@@ -369,7 +369,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           contributors_count: 1,
           shown_count: 1,
           accepted_count: 1,
-          ide_names: %w[ide_3 ide_2],
+          ide_names: contain_exactly("ide_3", "ide_2"),
           languages: %w[ruby],
           shown_lines_of_code: 30,
           accepted_lines_of_code: 20
