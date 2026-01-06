@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import FreeTrialBillingApp from 'ee/groups/billing/components/app.vue';
-import CurrentPlanHeader from 'ee/groups/billing/components/current_plan_header.vue';
+import CurrentPlanHeader from 'ee/vue_shared/subscription/components/current_plan_header.vue';
 import PremiumPlanHeader from 'ee/groups/billing/components/premium_plan_header.vue';
 import FreePlanBillingHeader from 'ee/groups/billing/components/free_plan_billing_header.vue';
 import FreePlanBilling from 'ee/groups/billing/components/free_plan_billing.vue';

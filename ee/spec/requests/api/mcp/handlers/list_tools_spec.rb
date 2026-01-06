@@ -136,25 +136,35 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           "inputSchema" => {
             "type" => "object",
             "properties" => {
-              "id" => {
-                "type" => "string",
-                "description" => "The ID or URL-encoded path of the project."
-              },
-              "title" => {
-                "type" => "string",
-                "description" => "The title of the merge request."
-              },
-              "source_branch" => {
-                "type" => "string",
-                "description" => "The source branch."
-              },
-              "target_branch" => {
-                "type" => "string",
-                "description" => "The target branch."
-              },
+              "id" => { "type" => "string", "description" => "The ID or URL-encoded path of the project." },
+              "title" => { "type" => "string", "description" => "The title of the merge request." },
+              "source_branch" => { "type" => "string", "description" => "The source branch." },
+              "target_branch" => { "type" => "string", "description" => "The target branch." },
               "target_project_id" => {
                 "type" => "integer",
                 "description" => "The target project of the merge request defaults to the :id of the project."
+              },
+              "assignee_ids" => {
+                "type" => "array",
+                "items" => { "type" => "integer" },
+                "description" => "The IDs of the users to assign the merge request to, as a comma-separated list. Set to 0 or provide an empty value to unassign all assignees."
+              },
+              "reviewer_ids" => {
+                "type" => "array",
+                "items" => { "type" => "integer" },
+                "description" => "The IDs of the users to review the merge request, as a comma-separated list. Set to 0 or provide an empty value to unassign all reviewers."
+              },
+              "description" => {
+                "type" => "string",
+                "description" => "Description of the merge request. Limited to 1,048,576 characters."
+              },
+              "labels" => {
+                "type" => "string",
+                "description" => "Comma-separated label names for a merge request. Set to an empty string to unassign all labels."
+              },
+              "milestone_id" => {
+                "type" => "integer",
+                "description" => "The global ID of a milestone to assign the merge request to."
               }
             },
             "required" => %w[id title source_branch target_branch],
