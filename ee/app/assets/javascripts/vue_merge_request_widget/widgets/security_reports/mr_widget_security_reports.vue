@@ -2,7 +2,6 @@
 import { visitUrl } from '~/lib/utils/url_utility';
 import { historyPushState } from '~/lib/utils/common_utils';
 import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
-import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
@@ -12,7 +11,6 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import SmartInterval from '~/smart_interval';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_OK,
@@ -25,15 +23,6 @@ import { i18n, reportTypes } from './i18n';
 import { highlightsFromReport, transformToEnabledScans } from './utils';
 
 const POLL_INTERVAL = 3000;
-
-// The backend returns the cached finding objects. Let's remove them as they may cause
-// bugs. Instead, fetch the non-cached data when the finding modal is opened.
-const getFindingWithoutFeedback = (finding) => ({
-  ...finding,
-  dismissal_feedback: undefined,
-  merge_request_feedback: undefined,
-  issue_feedback: undefined,
-});
 
 // Transform GraphQL finding to match REST API's expected format used by components
 // TODO: Once REST is removed, update GraphQL schema to return expected format
@@ -60,7 +49,6 @@ export default {
     SummaryHighlights,
     SecurityTrainingPromoWidget,
   },
-  mixins: [glFeatureFlagMixin()],
   i18n,
   props: {
     mr: {
@@ -368,79 +356,9 @@ export default {
     },
 
     fetchCollapsedData() {
-      if (this.glFeatures.mrSecurityWidgetGraphql) {
-        return this.enabledScansGraphQL.map(({ reportType, scanMode }) => () => {
-          return this.fetchCollapsedDataGraphQL(reportType, scanMode);
-        });
-      }
-
-      return this.endpoints.map(([path, reportType]) => () => {
-        return this.fetchCollapsedDataREST(path, reportType);
+      return this.enabledScansGraphQL.map(({ reportType, scanMode }) => () => {
+        return this.fetchCollapsedDataGraphQL(reportType, scanMode);
       });
-    },
-
-    fetchCollapsedDataREST(path, reportType) {
-      const isPartial = path.indexOf('scan_mode=partial') > -1;
-
-      const defaultReportStructure = {
-        reportType,
-        reportTypeDescription: reportTypes[reportType],
-        numberOfNewFindings: 0,
-        numberOfFixedFindings: 0,
-        added: [],
-        fixed: [],
-      };
-
-      return axios
-        .get(path)
-        .then(({ data, headers = {}, status }) => {
-          const added = data.added?.map?.(getFindingWithoutFeedback) || [];
-          const fixed = data.fixed?.map?.(getFindingWithoutFeedback) || [];
-
-          // If a single report has 25 findings, it means it potentially has more than 25 findings.
-          // Therefore, we display the UI hint in the top-level summary.
-          // If there are no reports with 25 findings, but the total sum of all reports is still 25 or more,
-          // we won't display the UI hint.
-          if (added.length === MAX_NEW_VULNERABILITIES) {
-            this.hasAtLeastOneReportWithMaxNewVulnerabilities = true;
-          }
-
-          const report = {
-            ...defaultReportStructure,
-            ...data,
-            added,
-            fixed,
-            findings: [...added, ...fixed],
-            numberOfNewFindings: added.length,
-            numberOfFixedFindings: fixed.length,
-            testId: this.$options.testId[reportType],
-          };
-
-          const key = isPartial ? 'partial' : 'full';
-          this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
-
-          this.$emit('loaded', added.length);
-
-          return {
-            headers,
-            status,
-            data: report,
-          };
-        })
-        .catch(({ response: { status, headers } }) => {
-          const report = { ...defaultReportStructure, error: true };
-
-          const key = isPartial ? 'partial' : 'full';
-          this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
-
-          if (status === 400) {
-            this.topLevelErrorMessage = s__(
-              'ciReport|Parsing schema failed. Check the validity of your .gitlab-ci.yml content.',
-            );
-          }
-
-          return { headers, status, data: report };
-        });
     },
 
     fetchCollapsedDataGraphQL(reportType, scanMode = 'FULL') {
