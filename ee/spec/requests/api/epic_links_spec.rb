@@ -120,6 +120,13 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
       before do
         stub_licensed_features(epics: true, subepics: true)
 
+        tracking_service_double = instance_double(
+          Gitlab::WorkItems::Instrumentation::TrackingService,
+          execute: true
+        )
+
+        allow(Gitlab::WorkItems::Instrumentation::TrackingService).to receive(:new).and_return(
+          tracking_service_double)
         allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(108)
       end
 
