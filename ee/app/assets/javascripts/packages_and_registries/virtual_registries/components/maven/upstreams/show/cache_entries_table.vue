@@ -67,7 +67,7 @@ export default {
   },
   fields: [
     {
-      key: 'relative_path',
+      key: 'relativePath',
       label: __('Artifact'),
       thClass: 'gl-w-3/5',
     },
@@ -118,14 +118,14 @@ export default {
         </p>
       </template>
 
-      <template #cell(relative_path)="{ item }">
+      <template #cell(relativePath)="{ item }">
         <div class="gl-mb-3">
           <gl-icon name="doc-text" />
           <span class="gl-ml-2 gl-text-subtle" data-testid="relative-path">{{
-            item.relative_path
+            item.relativePath
           }}</span>
         </div>
-        <gl-badge>{{ item.content_type }}</gl-badge>
+        <gl-badge>{{ item.contentType }}</gl-badge>
       </template>
 
       <template #cell(size)="{ item }">
@@ -148,7 +148,7 @@ export default {
           <div class="gl-text-sm gl-text-subtle">
             <gl-sprintf :message="s__('VirtualRegistry|last checked %{date}')">
               <template #date>
-                <time-ago-tooltip :time="item.upstream_checked_at" />
+                <time-ago-tooltip :time="item.upstreamCheckedAt" />
               </template>
             </gl-sprintf>
           </div>
@@ -170,7 +170,7 @@ export default {
         :message="s__('VirtualRegistry|Are you sure you want to delete %{name}?')"
       >
         <template #name>
-          <strong>{{ cacheEntryToBeDeleted.relative_path }}</strong>
+          <strong>{{ cacheEntryToBeDeleted.relativePath }}</strong>
         </template>
       </gl-sprintf>
     </gl-modal>

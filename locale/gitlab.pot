@@ -74610,6 +74610,9 @@ msgstr ""
 msgid "VirtualRegistry|Failed to delete cache entry."
 msgstr ""
 
+msgid "VirtualRegistry|Failed to fetch cache entries count."
+msgstr ""
+
 msgid "VirtualRegistry|Failed to fetch cache entries."
 msgstr ""
 
@@ -74623,9 +74626,6 @@ msgid "VirtualRegistry|Failed to fetch upstream summary."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to remove upstream. Try again."
-msgstr ""
-
-msgid "VirtualRegistry|Failed to search cache entries."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to update position of the upstream. Try again."
