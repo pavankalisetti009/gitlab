@@ -80102,9 +80102,6 @@ msgstr ""
 msgid "can't be nil"
 msgstr ""
 
-msgid "can't be solely blank"
-msgstr ""
-
 msgid "can't be specified if a merge request was already provided"
 msgstr ""
 
@@ -81696,6 +81693,9 @@ msgid "must be set for a project namespace"
 msgstr ""
 
 msgid "must be specified"
+msgstr ""
+
+msgid "must be specified when channel is provided"
 msgstr ""
 
 msgid "must be unique by status and elapsed time within a policy"
