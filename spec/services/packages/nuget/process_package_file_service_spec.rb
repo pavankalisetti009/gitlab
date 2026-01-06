@@ -32,14 +32,20 @@ RSpec.describe Packages::Nuget::ProcessPackageFileService, feature_category: :pa
     end
 
     context 'when linked to a non nuget package' do
-      before do
-        package_file.package.maven!
-      end
+      # Use `let` instead of `let_it_be` to avoid modifying the shared package fixture.
+      # The `maven!` call changes the package type, which would persist across tests
+      # when using `let_it_be`, causing flaky test failures.
+      let(:package_file) { build(:package_file, :nuget, package: build(:maven_package)) }
 
       it_behaves_like 'raises an error', 'invalid package file'
     end
 
     context 'with a 0 byte package file' do
+      # Use `let` to create package_file AFTER the mock is set up.
+      # With `let_it_be`, the uploader instance exists before the `before` block runs,
+      # so `allow_next_instance_of` doesn't intercept it.
+      let(:package_file) { build(:package_file, :nuget) }
+
       before do
         allow_next_instance_of(Packages::PackageFileUploader) do |instance|
           allow(instance).to receive(:size).and_return(0)

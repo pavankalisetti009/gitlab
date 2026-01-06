@@ -40,7 +40,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     end
 
     it_behaves_like 'virtual registry not available', :maven
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'logging access through project membership'
   end
@@ -198,7 +200,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     end
 
     it_behaves_like 'virtual registry not available', :maven
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_packages_maven_registry,
+      upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'logging access through project membership'
   end

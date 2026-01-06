@@ -76,7 +76,8 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
     end
 
     it_behaves_like 'virtual registry not available', :container
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access', registry_factory: :virtual_registries_container_registry,
+      upstream_factory: :virtual_registries_container_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 
@@ -119,7 +120,8 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
     end
 
     it_behaves_like 'virtual registry not available', :container
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access', registry_factory: :virtual_registries_container_registry,
+      upstream_factory: :virtual_registries_container_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 
@@ -293,7 +295,8 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
     end
 
     it_behaves_like 'virtual registry not available', :container
-    it_behaves_like 'virtual registry non member user access'
+    it_behaves_like 'virtual registry non member user access', registry_factory: :virtual_registries_container_registry,
+      upstream_factory: :virtual_registries_container_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 
