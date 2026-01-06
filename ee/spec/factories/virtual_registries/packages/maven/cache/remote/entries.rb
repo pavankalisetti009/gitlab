@@ -12,7 +12,6 @@ FactoryBot.define do
     file_md5 { 'd8e8fca2dc0f896fd7cb4cb0031ba249' }
     file_sha1 { '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83' }
     status { :default }
-    object_storage_key { "virtual_registries/packages/maven/#{group.path}/remote/#{relative_path}" }
 
     transient do
       file_fixture { 'spec/fixtures/bfg_object_map.txt' }

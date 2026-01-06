@@ -25,6 +25,9 @@ module VirtualRegistries
         has_many :cache_entries,
           class_name: 'VirtualRegistries::Packages::Maven::Cache::Entry',
           inverse_of: :upstream
+        has_many :cache_remote_entries,
+          class_name: 'VirtualRegistries::Packages::Maven::Cache::Remote::Entry',
+          inverse_of: :upstream
 
         encrypts :username, :password
 
