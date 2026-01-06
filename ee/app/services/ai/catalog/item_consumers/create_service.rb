@@ -96,7 +96,7 @@ module Ai
 
           service_account_params = {
             namespace_id: group.id,
-            name: item.name,
+            name: service_account_name,
             username: service_account_username,
             avatar: service_account_avatar,
             organization_id: group.organization_id,
@@ -144,6 +144,12 @@ module Ai
             description: "Auto-created triggers for #{item.name}",
             event_types: trigger_types
           }
+        end
+
+        def service_account_name
+          return item.name unless item.foundational_flow_reference.present?
+
+          "Duo #{item.name}"
         end
 
         def service_account_username
