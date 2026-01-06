@@ -607,6 +607,58 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
     end
 
+    context 'when filtering vulnerabilities with policy_auto_dismissed', :elastic do
+      let(:params) { { policy_auto_dismissed: true } }
+
+      let_it_be(:security_policy_bot) { create(:user, :security_policy_bot) }
+      let_it_be(:dismissed_vulnerability) { create(:vulnerability, :dismissed, dismissed_by: security_policy_bot, project: project) }
+      let_it_be(:dismissed_vulnerability_read) { create(:vulnerability_read, vulnerability: dismissed_vulnerability, project: project) }
+
+      let_it_be(:non_dismissed_vulnerability_read) { create(:vulnerability_read, project: project) }
+
+      before do
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+        Elastic::ProcessBookkeepingService.track!(dismissed_vulnerability_read, non_dismissed_vulnerability_read)
+        ensure_elasticsearch_index!
+
+        allow(current_user).to receive(:can?).with(:access_advanced_vulnerability_management, vulnerable).and_return(true)
+      end
+
+      shared_examples_for 'when elasticsearch is available' do
+        it 'only returns vulnerabilities with matching policy_auto_dismissed' do
+          expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+
+          results = resolved.to_a
+
+          expect(results).to match_array([dismissed_vulnerability_read].map(&:vulnerability))
+        end
+      end
+
+      context 'when vulnerable is a project' do
+        let(:vulnerable) { project }
+
+        it_behaves_like 'when elasticsearch is available'
+      end
+
+      context 'when vulnerable is a group' do
+        let(:vulnerable) { group }
+
+        it_behaves_like 'when elasticsearch is available'
+      end
+
+      context 'when vulnerable is nil' do
+        let(:vulnerable) { nil }
+        let(:error_msg) { 'The filter policy_auto_dismissed is not available.' }
+
+        it 'raises an error' do
+          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, s_(error_msg)) do
+            subject
+          end
+        end
+      end
+    end
+
     context 'when identifer_name is given' do
       let_it_be(:identifier_name) { 'CVE-2024-1234' }
 
