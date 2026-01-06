@@ -1,4 +1,4 @@
-- return unless group.allow_personal_snippets_available?(current_user) && Feature.enabled?(:allow_personal_snippets_setting, group)
+- return unless group.allow_personal_snippets_available?(current_user)
 
 = f.gitlab_ui_checkbox_component :allow_personal_snippets, checkbox_options: { checked: group.namespace_settings.allow_personal_snippets } do |c|
   - c.with_label do

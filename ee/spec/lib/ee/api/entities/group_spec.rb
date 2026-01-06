@@ -24,7 +24,8 @@ RSpec.describe API::Entities::Group, feature_category: :groups_and_projects do
       :duo_core_features_enabled,
       :duo_features_enabled,
       :lock_duo_features_enabled,
-      :web_based_commit_signing_enabled
+      :web_based_commit_signing_enabled,
+      :allow_personal_snippets
     )
   end
 
@@ -115,6 +116,24 @@ RSpec.describe API::Entities::Group, feature_category: :groups_and_projects do
             :web_based_commit_signing_enabled
           )
         end
+      end
+    end
+  end
+
+  context 'when the group is an enterprise group', :saas do
+    let(:user) { create(:user, enterprise_group: group, owner_of: group) }
+    let(:options) { { current_user: user } }
+
+    context 'and the allow_personal_snippets feature is available' do
+      before do
+        stub_licensed_features(domain_verification: true, allow_personal_snippets: true)
+        stub_saas_features(allow_personal_snippets: true)
+      end
+
+      it 'returns expected data' do
+        expect(json.keys).to include(
+          :allow_personal_snippets
+        )
       end
     end
   end

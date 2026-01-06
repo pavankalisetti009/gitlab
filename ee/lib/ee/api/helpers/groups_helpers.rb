@@ -110,6 +110,9 @@ module EE
               desc: 'Only allow to merge if all threads are resolved'
             optional :enabled_foundational_flows,
               type: Array[String], desc: 'References of enabled foundational flows'
+            optional :allow_personal_snippets,
+              type: ::Grape::API::Boolean,
+              desc: 'Allow creation of personal snippets for enterprise users of this group'
           end
 
           params :optional_projects_params_ee do

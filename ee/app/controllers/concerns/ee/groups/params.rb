@@ -95,8 +95,7 @@ module EE
 
           params_ee << :hide_email_on_profile if current_group&.enterprise_user_settings_available?(current_user)
 
-          params_ee << :allow_personal_snippets if current_group&.enterprise_user_settings_available?(current_user) &&
-            ::Feature.enabled?(:allow_personal_snippets_setting, current_group)
+          params_ee << :allow_personal_snippets if current_group&.allow_personal_snippets_available?(current_user)
 
           if enterprise_bypass_placeholders_allowed?
             params_ee << :allow_enterprise_bypass_placeholder_confirmation
