@@ -1814,32 +1814,36 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   end
 
   describe '#elasticsearch_url', feature_category: :global_search do
-    it 'presents a single URL as a one-element array' do
-      setting.elasticsearch_url = 'http://example.com'
+    using RSpec::Parameterized::TableSyntax
 
-      expect(setting.elasticsearch_url).to match_array([URI.parse('http://example.com')])
+    # rubocop:disable Layout/LineLength -- Keep one-line table syntax in this case
+    where(:input_value, :expected_urls) do
+      'http://example.com'                                                                | [URI.parse('http://example.com')]
+      'http://example.com,https://invalid.invalid:9200'                                   | [URI.parse('http://example.com'), URI.parse('https://invalid.invalid:9200')]
+      ' http://example.com, https://invalid.invalid:9200 '                                | [URI.parse('http://example.com'), URI.parse('https://invalid.invalid:9200')]
+      'http://example.com/, https://example.com:9200/, https://example.com:9200/prefix//' | [URI.parse('http://example.com'), URI.parse('https://example.com:9200'), URI.parse('https://example.com:9200/prefix')]
+
+      # Array inputs
+      ['http://example.com']                                                              | [URI.parse('http://example.com')]
+      ['http://example.com', 'https://other.example.com:9200']                            | [URI.parse('http://example.com'), URI.parse('https://other.example.com:9200')]
+      ['http://example.com, https://other.example.com:9200']                              | [URI.parse('http://example.com'), URI.parse('https://other.example.com:9200')]
+      [' http://example.com ', ' https://other.example.com:9200 ']                        | [URI.parse('http://example.com'), URI.parse('https://other.example.com:9200')]
+
+      # Edge cases
+      []                                                                                  | []
+      [URI.parse('http://example.com')]                                                   | [URI.parse('http://example.com')]
+      ''                                                                                  | []
+      nil                                                                                 | []
+      123                                                                                 | []
     end
+    # rubocop:enable Layout/LineLength
 
-    it 'presents multiple URLs as a many-element array' do
-      setting.elasticsearch_url = 'http://example.com,https://invalid.invalid:9200'
+    with_them do
+      it 'correctly parses the array input' do
+        setting.elasticsearch_url = input_value
 
-      expect(setting.elasticsearch_url).to match_array([URI.parse('http://example.com'), URI.parse('https://invalid.invalid:9200')])
-    end
-
-    it 'strips whitespace from around URLs' do
-      setting.elasticsearch_url = ' http://example.com, https://invalid.invalid:9200 '
-
-      expect(setting.elasticsearch_url).to match_array([URI.parse('http://example.com'), URI.parse('https://invalid.invalid:9200')])
-    end
-
-    it 'strips trailing slashes from URLs' do
-      setting.elasticsearch_url = 'http://example.com/, https://example.com:9200/, https://example.com:9200/prefix//'
-
-      expect(setting.elasticsearch_url).to match_array([
-        URI.parse('http://example.com'),
-        URI.parse('https://example.com:9200'),
-        URI.parse('https://example.com:9200/prefix')
-      ])
+        expect(setting.elasticsearch_url).to match_array(expected_urls)
+      end
     end
   end
 

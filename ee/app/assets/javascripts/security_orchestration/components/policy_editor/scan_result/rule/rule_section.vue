@@ -1,9 +1,11 @@
 <script>
 import { GlButton, GlAlert, GlSprintf } from '@gitlab/ui';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { ANY_MERGE_REQUEST, SCAN_FINDING, LICENSE_FINDING } from '../lib';
 import { RULE_OR_LABEL } from '../../constants';
 import AnyMergeRequestRuleBuilder from './any_merge_request_rule_builder.vue';
 import SecurityScanRuleBuilder from './security_scan_rule_builder.vue';
+import SecurityScanRuleBuilderV2 from './security_scan_rule_builder_v2.vue';
 import LicenseScanRuleBuilder from './license_scan_rule_builder.vue';
 import DefaultRuleBuilder from './default_rule_builder.vue';
 
@@ -16,8 +18,10 @@ export default {
     DefaultRuleBuilder,
     AnyMergeRequestRuleBuilder,
     SecurityScanRuleBuilder,
+    SecurityScanRuleBuilderV2,
     LicenseScanRuleBuilder,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     disabledRuleTypes: {
       type: Array,
@@ -61,6 +65,9 @@ export default {
     };
   },
   computed: {
+    hasKevFilterEnabled() {
+      return this.glFeatures.securityPoliciesKevFilter;
+    },
     isAnyMergeRequestRule() {
       return this.initRule.type === ANY_MERGE_REQUEST;
     },
@@ -139,8 +146,17 @@ export default {
         />
 
         <security-scan-rule-builder
-          v-else-if="isSecurityRule"
+          v-else-if="isSecurityRule && !hasKevFilterEnabled"
           :disabled-rule-types="disabledRuleTypes"
+          :init-rule="initRule"
+          @error="handleError"
+          @changed="updateRule"
+          @remove="removeRule"
+          @set-scan-type="setScanType"
+        />
+
+        <security-scan-rule-builder-v2
+          v-else-if="isSecurityRule && hasKevFilterEnabled"
           :init-rule="initRule"
           @error="handleError"
           @changed="updateRule"

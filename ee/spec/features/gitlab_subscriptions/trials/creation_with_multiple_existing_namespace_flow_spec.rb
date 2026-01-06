@@ -201,6 +201,8 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     extra_params: {},
     glm: {}
   )
+    stub_ai_cloud_connector
+
     # lead
     expect_lead_submission(lead_result, glm: glm)
 
