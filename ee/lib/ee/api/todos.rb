@@ -17,6 +17,7 @@ module EE
         resource :groups, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
           desc 'Create a to-do item for the current user on an epic' do
             success ::API::Entities::Todo
+            tags ['epics']
           end
           params do
             requires :id, type: String, desc: 'The ID or URL-encoded path of the group owned by the authenticated user'
