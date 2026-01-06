@@ -268,6 +268,8 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
       stage_id: build.stage_id || 0,
       stage_name: build.stage_name || '',
       root_namespace_id: build.project.root_namespace.id,
+      version: be_a(Time),
+      deleted: false,
       **runner_attributes(build.runner, build.runner_manager)
     }
   end

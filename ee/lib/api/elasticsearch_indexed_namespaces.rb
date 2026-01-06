@@ -18,6 +18,7 @@ module API
 
           If the same percentage is applied again at a later time, due to possible new namespaces being created during the period, some of them will also be indexed. Therefore you may expect that setting this to 10%, then waiting a month and setting to 10% again will trigger new namespaces to be added (i.e. 10% of the number of newly created namespaces in the last month within the given plan).
         END
+        tags %w[advanced_search_rollout]
       end
       params do
         requires :percentage, type: Integer, values: 0..100,
@@ -37,6 +38,7 @@ module API
 
           This percentage is never persisted but is used to calculate the number of namespaces to rollback.
         END
+        tags %w[advanced_search_rollout]
       end
       params do
         requires :percentage, type: Integer, values: 0..100,

@@ -55,6 +55,7 @@ describe('AiPanel', () => {
           classicComponent: DuoChat,
           defaultProps: {
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
@@ -118,6 +119,7 @@ describe('AiPanel', () => {
           props: {
             mode: 'new',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
@@ -153,6 +155,7 @@ describe('AiPanel', () => {
           props: {
             mode: 'new',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
@@ -184,6 +187,7 @@ describe('AiPanel', () => {
         props: {
           mode: 'active',
           isAgenticAvailable: true,
+          isClassicAvailable: true,
           isEmbedded: true,
           showStudioHeader: true,
         },
@@ -245,6 +249,7 @@ describe('AiPanel', () => {
           props: {
             mode: 'new',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
@@ -388,6 +393,7 @@ describe('AiPanel', () => {
           props: {
             mode: 'active',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
@@ -726,6 +732,7 @@ describe('AiPanel', () => {
         props: {
           mode: 'active',
           isAgenticAvailable: true,
+          isClassicAvailable: true,
           isEmbedded: true,
           showStudioHeader: true,
         },
@@ -763,6 +770,7 @@ describe('AiPanel', () => {
           props: {
             mode: 'active',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
@@ -788,6 +796,7 @@ describe('AiPanel', () => {
           props: {
             mode: 'new',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
@@ -808,11 +817,109 @@ describe('AiPanel', () => {
           props: {
             mode: 'history',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
         });
       });
+    });
+  });
+
+  describe('chat availability and fallback behavior', () => {
+    describe('isAgenticMode behavior', () => {
+      it.each`
+        isAgenticAvailable | chatMode              | expected
+        ${true}            | ${CHAT_MODES.AGENTIC} | ${true}
+        ${false}           | ${CHAT_MODES.AGENTIC} | ${false}
+        ${true}            | ${CHAT_MODES.CLASSIC} | ${false}
+        ${false}           | ${CHAT_MODES.CLASSIC} | ${false}
+      `(
+        'returns $expected when isAgenticAvailable is $isAgenticAvailable and chatMode is $chatMode',
+        ({ isAgenticAvailable, chatMode, expected }) => {
+          duoChatGlobalState.chatMode = chatMode;
+          createComponent({
+            provide: {
+              chatConfiguration: {
+                agenticTitle: 'GitLab Duo Agentic Chat',
+                classicTitle: 'GitLab Duo Chat',
+                agenticComponent: DuoAgenticChat,
+                classicComponent: DuoChat,
+                defaultProps: {
+                  isAgenticAvailable,
+                  isClassicAvailable: true,
+                  isEmbedded: true,
+                  showStudioHeader: true,
+                },
+              },
+            },
+          });
+
+          expect(wrapper.vm.isAgenticMode).toBe(expected);
+        },
+      );
+    });
+
+    describe('currentChatComponent fallback logic', () => {
+      describe.each`
+        scenario                                                                            | chatMode              | isAgenticAvailable | isClassicAvailable | agenticUnavailableMessage          | expectedComponent
+        ${'when agentic unavailable but classic available'}                                 | ${CHAT_MODES.CLASSIC} | ${false}           | ${true}            | ${undefined}                       | ${DuoChat}
+        ${'when agentic unavailable but classic available with custom message'}             | ${CHAT_MODES.CLASSIC} | ${false}           | ${true}            | ${'Agentic unavailable'}           | ${'Agentic unavailable'}
+        ${'when both unavailable with custom message'}                                      | ${CHAT_MODES.AGENTIC} | ${false}           | ${false}           | ${'Custom unavailable message'}    | ${'Custom unavailable message'}
+        ${'when both unavailable without custom message'}                                   | ${CHAT_MODES.AGENTIC} | ${false}           | ${false}           | ${undefined}                       | ${'Chat is not available.'}
+        ${'when in classic mode but classic is explicitly disabled with custom message'}    | ${CHAT_MODES.CLASSIC} | ${true}            | ${false}           | ${'Please switch to agentic mode'} | ${'Please switch to agentic mode'}
+        ${'when in classic mode but classic is explicitly disabled without custom message'} | ${CHAT_MODES.CLASSIC} | ${true}            | ${false}           | ${undefined}                       | ${'Chat is not available.'}
+      `(
+        '$scenario',
+        ({
+          chatMode,
+          isAgenticAvailable,
+          isClassicAvailable,
+          agenticUnavailableMessage,
+          expectedComponent,
+        }) => {
+          beforeEach(() => {
+            duoChatGlobalState.chatMode = chatMode;
+            createComponent({
+              provide: {
+                chatConfiguration: {
+                  agenticTitle: 'GitLab Duo Agentic Chat',
+                  classicTitle: 'GitLab Duo Chat',
+                  agenticComponent: DuoAgenticChat,
+                  classicComponent: DuoChat,
+                  defaultProps: {
+                    isAgenticAvailable,
+                    isClassicAvailable,
+                    agenticUnavailableMessage,
+                    isEmbedded: true,
+                    showStudioHeader: true,
+                  },
+                },
+              },
+            });
+          });
+
+          it.each(['chat', 'new', 'history'])(
+            'returns expected component for %s tab',
+            async (tabName) => {
+              findNavigationRail().vm.$emit(
+                tabName === 'new' ? 'new-chat' : 'handleTabToggle',
+                tabName,
+              );
+              await nextTick();
+
+              const activeTab = findContentContainer().props('activeTab');
+              expect(activeTab.component).toBe(expectedComponent);
+              expect(activeTab.props).toMatchObject({
+                isAgenticAvailable,
+                isClassicAvailable,
+                isEmbedded: true,
+                showStudioHeader: true,
+              });
+            },
+          );
+        },
+      );
     });
   });
 
@@ -830,6 +937,7 @@ describe('AiPanel', () => {
           props: {
             mode: 'active',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
@@ -849,6 +957,7 @@ describe('AiPanel', () => {
           props: {
             mode: 'chat',
             isAgenticAvailable: true,
+            isClassicAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
           },
