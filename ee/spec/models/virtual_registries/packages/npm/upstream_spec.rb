@@ -43,6 +43,9 @@ RSpec.describe VirtualRegistries::Packages::Npm::Upstream, feature_category: :vi
       it { is_expected.to validate_presence_of(:username) }
       it { is_expected.to validate_presence_of(:password) }
 
+      # Use 172.21.11.1 (from the rarely-used 172.16.0.0/12 range)
+      # to avoid matching a developer's machine IP and getting classified
+      # as "localhost" instead of "local network" by the URL blocker
       context 'for url' do
         where(:url, :valid, :error_messages) do
           'http://test.npm'     | true  | nil
@@ -53,7 +56,7 @@ RSpec.describe VirtualRegistries::Packages::Npm::Upstream, feature_category: :vi
           "http://#{'a' * 255}" | false | 'Url is too long (maximum is 255 characters)'
           'http://127.0.0.1'    | false | 'Url is blocked: Requests to localhost are not allowed'
           'npm.local'           | false | 'Url is blocked: Only allowed schemes are http, https'
-          'http://192.168.1.2'  | false | 'Url is blocked: Requests to the local network are not allowed'
+          'http://172.21.11.1'  | false | 'Url is blocked: Requests to the local network are not allowed'
           'http://foobar.x'     | false | 'Url is blocked: Host cannot be resolved or invalid'
         end
 
@@ -65,7 +68,10 @@ RSpec.describe VirtualRegistries::Packages::Npm::Upstream, feature_category: :vi
           if params[:valid]
             it { is_expected.to be_valid }
           else
-            it { is_expected.to be_invalid.and have_attributes(errors: match_array(Array.wrap(error_messages))) }
+            it 'is invalid with the expected error' do
+              is_expected.to be_invalid
+              expect(upstream.errors).to match_array(Array.wrap(error_messages))
+            end
           end
         end
 

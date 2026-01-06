@@ -3,7 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Packages::Nuget::ProcessPackageFileService, feature_category: :package_registry do
-  let_it_be(:package_file) { build(:package_file, :nuget) }
+  # Use `let` instead of `let_it_be` because the "0 byte package file" context
+  # mocks `package_file.file`. With `let_it_be`, the same uploader instance is
+  # reused across examples, causing the mock to leak to other tests.
+  let(:package_file) { create(:package_file, :nuget) }
 
   let(:service) { described_class.new(package_file) }
 
@@ -41,9 +44,7 @@ RSpec.describe Packages::Nuget::ProcessPackageFileService, feature_category: :pa
 
     context 'with a 0 byte package file' do
       before do
-        allow_next_instance_of(Packages::PackageFileUploader) do |instance|
-          allow(instance).to receive(:size).and_return(0)
-        end
+        allow(package_file.file).to receive(:size).and_return(0)
       end
 
       it_behaves_like 'raises an error', 'invalid package file'
