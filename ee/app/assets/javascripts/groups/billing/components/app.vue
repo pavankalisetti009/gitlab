@@ -1,7 +1,7 @@
 <script>
 import { GlTabs, GlTab } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import CurrentPlanHeader from './current_plan_header.vue';
+import CurrentPlanHeader from 'ee/vue_shared/subscription/components/current_plan_header.vue';
 import PremiumPlanHeader from './premium_plan_header.vue';
 import FreePlanBillingHeader from './free_plan_billing_header.vue';
 import FreePlanBilling from './free_plan_billing.vue';
@@ -108,6 +108,7 @@ export default {
         :trial-active="trialActive"
         :trial-ends-on="trialEndsOn"
         :manage-seats-path="manageSeatsPath"
+        is-saas
       />
 
       <premium-plan-header
