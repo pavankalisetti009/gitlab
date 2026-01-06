@@ -1,12 +1,17 @@
 import { nextTick } from 'vue';
 import { GlBadge, GlButton, GlLoadingIcon, GlModal, GlTable } from '@gitlab/ui';
+import mavenUpstreamCacheEntriesFixture from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_cache_entries.query.graphql.json';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import { numberToHumanSize } from '~/lib/utils/number_utils';
 import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/cache_entries_table.vue';
-import { mockCacheEntries } from '../../../../mock_data';
 
 describe('CacheEntriesTable', () => {
   let wrapper;
+
+  const mockCacheEntries =
+    mavenUpstreamCacheEntriesFixture.data.virtualRegistriesPackagesMavenUpstream.cacheEntries.nodes;
+  const [mockCacheEntry] = mockCacheEntries;
 
   const defaultProps = {
     cacheEntries: mockCacheEntries,
@@ -47,19 +52,19 @@ describe('CacheEntriesTable', () => {
     });
 
     it('displays badge', () => {
-      expect(findBadge().text()).toBe('application/octet-stream');
+      expect(findBadge().text()).toBe(mockCacheEntry.contentType);
     });
 
     it('displays path', () => {
-      expect(findRelativePath().text()).toBe('/test/bar');
+      expect(findRelativePath().text()).toBe(mockCacheEntry.relativePath);
     });
 
     it('displays time ago', () => {
-      expect(findTimeAgo().props('time')).toBe('2025-05-19T14:22:23.048Z');
+      expect(findTimeAgo().props('time')).toBe(mockCacheEntry.upstreamCheckedAt);
     });
 
     it('displays artifact size', () => {
-      expect(findSize().text()).toBe('15 B');
+      expect(findSize().text()).toBe(numberToHumanSize(mockCacheEntry.size));
     });
   });
 
@@ -105,7 +110,7 @@ describe('CacheEntriesTable', () => {
 
       await nextTick();
 
-      expect(wrapper.emitted('delete')).toStrictEqual([[{ id: 'NSAvdGVzdC9iYXI=' }]]);
+      expect(wrapper.emitted('delete')).toStrictEqual([[{ id: mockCacheEntry.id }]]);
     });
   });
 

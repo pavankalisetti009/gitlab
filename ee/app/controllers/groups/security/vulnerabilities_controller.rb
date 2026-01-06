@@ -14,7 +14,6 @@ module Groups
         conditions: -> { dashboard_available? }
 
       before_action do
-        push_frontend_feature_flag(:validity_check_es_filter, @group, type: :beta)
         push_frontend_feature_flag(:hide_vulnerability_severity_override, @group.root_ancestor, type: :ops)
         push_frontend_feature_flag(:existing_jira_issue_attachment_from_vulnerability_bulk_action, @project, type: :wip)
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @group, user: current_user)

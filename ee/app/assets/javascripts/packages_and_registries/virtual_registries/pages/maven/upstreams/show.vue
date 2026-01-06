@@ -1,17 +1,24 @@
 <script>
-import { GlFilteredSearch, GlPagination } from '@gitlab/ui';
-import {
-  getMavenUpstreamCacheEntries,
-  deleteMavenUpstreamCacheEntry,
-} from 'ee/api/virtual_registries_api';
+import { GlFilteredSearch, GlKeysetPagination } from '@gitlab/ui';
+import { deleteMavenUpstreamCacheEntry } from 'ee/api/virtual_registries_api';
 import { createAlert } from '~/alert';
 import { setUrlParams, updateHistory, queryToObject } from '~/lib/utils/url_utility';
+import { getPageParams } from '~/packages_and_registries/shared/utils';
+import getMavenUpstreamCacheEntriesCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_cache_entries_count.query.graphql';
+import getMavenUpstreamCacheEntriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_cache_entries.query.graphql';
 import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/header.vue';
 import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/cache_entries_table.vue';
+import { convertToMavenUpstreamGraphQLId } from 'ee/packages_and_registries/virtual_registries/utils';
 import { s__ } from '~/locale';
 
 const PAGE_SIZE = 20;
-const INITIAL_PAGE = 1;
+const INITIAL_PAGE_PARAMS = {
+  first: PAGE_SIZE,
+};
+
+const QUERY_CONTEXT = {
+  batchKey: 'MavenUpstreamCacheEntries',
+};
 
 export default {
   name: 'MavenUpstreamDetailsApp',
@@ -19,7 +26,7 @@ export default {
   components: {
     CacheEntriesTable,
     GlFilteredSearch,
-    GlPagination,
+    GlKeysetPagination,
     UpstreamDetailsHeader,
   },
   inject: {
@@ -29,15 +36,75 @@ export default {
   },
   data() {
     return {
-      cacheEntries: [],
+      cacheEntriesConnection: {
+        nodes: [],
+        pageInfo: {},
+      },
       cacheEntriesCount: 0,
-      cacheEntriesCountLoading: false,
-      cacheEntriesLoading: false,
-      urlParams: {},
-      page: INITIAL_PAGE,
+      cacheEntriesCountLoadingKey: 0,
+      cacheEntriesLoadingKey: 0,
+      urlParams: null,
+      pageParams: INITIAL_PAGE_PARAMS,
+      mavenUpstreamID: convertToMavenUpstreamGraphQLId(this.upstream.id),
     };
   },
+  apollo: {
+    cacheEntriesCount: {
+      query: getMavenUpstreamCacheEntriesCountQuery,
+      context: QUERY_CONTEXT,
+      loadingKey: 'cacheEntriesCountLoadingKey',
+      skip() {
+        return this.urlParamsIsNotSet;
+      },
+      variables() {
+        return {
+          id: this.mavenUpstreamID,
+          search: this.urlParams.search,
+        };
+      },
+      update: (data) => data.virtualRegistriesPackagesMavenUpstream?.cacheEntries?.count ?? 0,
+      error(error) {
+        createAlert({
+          message: s__('VirtualRegistry|Failed to fetch cache entries count.'),
+          error,
+          captureError: true,
+        });
+      },
+    },
+    cacheEntriesConnection: {
+      query: getMavenUpstreamCacheEntriesQuery,
+      loadingKey: 'cacheEntriesLoadingKey',
+      context: QUERY_CONTEXT,
+      skip() {
+        return this.urlParamsIsNotSet;
+      },
+      variables() {
+        return this.queryVariables;
+      },
+      update: (data) =>
+        data.virtualRegistriesPackagesMavenUpstream?.cacheEntries ?? {
+          nodes: [],
+          pageInfo: {},
+        },
+      error(error) {
+        createAlert({
+          message: s__('VirtualRegistry|Failed to fetch cache entries.'),
+          error,
+          captureError: true,
+        });
+      },
+    },
+  },
   computed: {
+    cacheEntriesLoading() {
+      return Boolean(this.cacheEntriesLoadingKey);
+    },
+    cacheEntriesCountLoading() {
+      return Boolean(this.cacheEntriesCountLoadingKey);
+    },
+    cacheEntries() {
+      return this.cacheEntriesConnection.nodes;
+    },
     filteredSearchValue() {
       return [
         {
@@ -46,120 +113,79 @@ export default {
         },
       ];
     },
-    showPagination() {
-      return this.cacheEntriesCount > this.$options.perPage;
+    pageInfo() {
+      return this.cacheEntriesConnection.pageInfo;
+    },
+    queryVariables() {
+      return {
+        id: this.mavenUpstreamID,
+        ...this.urlParams,
+        ...this.pageParams,
+      };
+    },
+    urlParamsIsNotSet() {
+      return this.urlParams === null;
     },
   },
   created() {
     const queryStringObject = queryToObject(window.location.search);
 
     // Extract both search and page from URL
+    if (queryStringObject.after) {
+      this.pageParams = this.buildPageParams({ after: queryStringObject.after });
+    } else if (queryStringObject.before) {
+      this.pageParams = this.buildPageParams({ before: queryStringObject.before });
+    }
     this.urlParams = queryStringObject.search ? { search: queryStringObject.search } : {};
-    this.page = parseInt(queryStringObject.page, 10) || INITIAL_PAGE;
-
-    this.fetchCacheEntries(this.page, { isInitialLoad: true });
   },
   methods: {
-    async fetchCacheEntries(page, { isInitialLoad = false } = {}) {
-      if (isInitialLoad) {
-        this.cacheEntriesCountLoading = true;
-      }
-      this.cacheEntriesLoading = true;
-
-      try {
-        const response = await getMavenUpstreamCacheEntries({
-          id: this.upstream.id,
-          params: { ...this.urlParams, page, per_page: PAGE_SIZE },
-        });
-
-        this.setCacheEntries(response);
-
-        this.updateUrl();
-      } catch (error) {
-        createAlert({
-          message: s__('VirtualRegistry|Failed to fetch cache entries.'),
-          error,
-          captureError: true,
-        });
-      } finally {
-        if (isInitialLoad) {
-          this.cacheEntriesCountLoading = false;
-        }
-        this.cacheEntriesLoading = false;
-      }
-    },
     async handleDeleteCacheEntry({ id }) {
-      this.cacheEntriesCountLoading = true;
-      this.cacheEntriesLoading = true;
-
       try {
         await deleteMavenUpstreamCacheEntry({
           id,
         });
-        await this.fetchCacheEntries(this.page);
+        this.pageParams = INITIAL_PAGE_PARAMS;
+        this.$apollo.queries.cacheEntriesCount.refetch();
+        this.$apollo.queries.cacheEntriesConnection.refetch();
       } catch (error) {
         createAlert({
           message: s__('VirtualRegistry|Failed to delete cache entry.'),
           error,
           captureError: true,
         });
-      } finally {
-        this.cacheEntriesCountLoading = false;
-        this.cacheEntriesLoading = false;
       }
     },
     async searchCacheEntries(filters) {
-      this.cacheEntriesCountLoading = true;
-      this.cacheEntriesLoading = true;
-      this.page = INITIAL_PAGE;
-
-      try {
-        const searchTerm = filters[0];
-
-        this.urlParams = { search: searchTerm };
-
-        const response = await getMavenUpstreamCacheEntries({
-          id: this.upstream.id,
-          params: { search: searchTerm, page: INITIAL_PAGE, per_page: PAGE_SIZE },
-        });
-
-        this.setCacheEntries(response);
-
-        this.updateUrl();
-      } catch (error) {
-        createAlert({
-          message: s__('VirtualRegistry|Failed to search cache entries.'),
-          error,
-          captureError: true,
-        });
-      } finally {
-        this.cacheEntriesCountLoading = false;
-        this.cacheEntriesLoading = false;
-      }
+      const searchTerm = filters[0];
+      this.urlParams = { search: searchTerm };
+      this.updateUrlAndPageParams(this.urlParams, INITIAL_PAGE_PARAMS);
     },
-    setCacheEntries({ headers, data }) {
-      this.cacheEntries = data;
-      this.cacheEntriesCount = Number(headers['x-total']);
+    buildPageParams(pageInfo) {
+      return getPageParams(pageInfo, PAGE_SIZE);
     },
-    handlePageChange(page) {
-      this.page = page;
-      this.fetchCacheEntries(page);
+    handleNextPage() {
+      const urlParams = { after: this.pageInfo.endCursor };
+      const pageParams = this.buildPageParams(urlParams);
+
+      this.updateUrlAndPageParams(urlParams, pageParams);
     },
-    updateUrl() {
-      const params = {};
+    handlePreviousPage() {
+      const urlParams = { before: this.pageInfo.startCursor };
+      const pageParams = this.buildPageParams(urlParams);
 
-      // Add search parameter if it exists
-      if (this.urlParams.search) {
-        params.search = this.urlParams.search;
-      }
+      this.updateUrlAndPageParams(urlParams, pageParams);
+    },
+    updateUrlAndPageParams(params, pageParams) {
+      this.pageParams = pageParams;
 
-      params.page = this.page;
+      const updatedParams = {
+        ...params,
+        ...(this.urlParams.search && { search: this.urlParams.search }),
+      };
 
-      if (Object.keys(params).length > 0) {
-        updateHistory({
-          url: setUrlParams(params, { url: window.location.href, clearParams: true }),
-        });
-      }
+      updateHistory({
+        url: setUrlParams(updatedParams, { url: window.location.href, clearParams: true }),
+      });
     },
   },
 };
@@ -181,6 +207,7 @@ export default {
         :value="filteredSearchValue"
         terms-as-tokens
         @submit="searchCacheEntries"
+        @clear="searchCacheEntries([''])"
       />
     </div>
 
@@ -190,14 +217,8 @@ export default {
       @delete="handleDeleteCacheEntry"
     />
 
-    <gl-pagination
-      v-if="showPagination"
-      :value="page"
-      :per-page="$options.perPage"
-      :total-items="cacheEntriesCount"
-      align="center"
-      class="gl-mt-5"
-      @input="handlePageChange"
-    />
+    <div class="gl-flex gl-justify-center">
+      <gl-keyset-pagination v-bind="pageInfo" @next="handleNextPage" @prev="handlePreviousPage" />
+    </div>
   </div>
 </template>
