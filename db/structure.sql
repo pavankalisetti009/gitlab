@@ -44912,6 +44912,8 @@ CREATE INDEX index_sprints_on_title ON sprints USING btree (title);
 
 CREATE INDEX index_sprints_on_title_trigram ON sprints USING gin (title gin_trgm_ops);
 
+CREATE UNIQUE INDEX index_ssh_signatures_on_commit_sha ON ssh_signatures USING btree (commit_sha);
+
 CREATE INDEX index_ssh_signatures_on_key_id ON ssh_signatures USING btree (key_id);
 
 CREATE UNIQUE INDEX index_ssh_signatures_on_project_id_and_commit_sha ON ssh_signatures USING btree (project_id, commit_sha);
