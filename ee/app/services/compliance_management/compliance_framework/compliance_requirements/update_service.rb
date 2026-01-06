@@ -4,6 +4,13 @@ module ComplianceManagement
   module ComplianceFramework
     module ComplianceRequirements
       class UpdateService < BaseRequirementsService
+        def initialize(requirement:, params:, current_user:, controls:)
+          @requirement = requirement
+          @params = params
+          @current_user = current_user
+          @controls = controls
+        end
+
         def execute
           return ServiceResponse.error(message: _('Not permitted to update requirement')) unless permitted?
           return control_limit_error if control_count_exceeded?

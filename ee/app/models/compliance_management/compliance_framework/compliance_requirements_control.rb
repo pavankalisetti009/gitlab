@@ -17,6 +17,10 @@ module ComplianceManagement
       CONTROL_EXPRESSION_SCHEMA_PATH = 'ee/app/validators/json_schemas/compliance_requirements_control_expression.json'
       CONTROL_EXPRESSION_SCHEMA = JSONSchemer.schema(Rails.root.join(CONTROL_EXPRESSION_SCHEMA_PATH))
 
+      INVALID_CONTROL_NAMES = [
+        'scanner_fuzz_testing_running'
+      ].freeze
+
       belongs_to :compliance_requirement,
         class_name: 'ComplianceManagement::ComplianceFramework::ComplianceRequirement', optional: false
       belongs_to :namespace

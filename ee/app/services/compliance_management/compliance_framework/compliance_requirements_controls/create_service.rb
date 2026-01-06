@@ -16,6 +16,14 @@ module ComplianceManagement
         end
 
         def execute
+          return ServiceResponse.error(message: _('Not permitted to create compliance control')) unless permitted?
+
+          unless control_name_allowed?
+            return ServiceResponse.error(
+              message: format(_('Invalid name for the compliance control %{name}'), name: params[:name])
+            )
+          end
+
           control.assign_attributes(
             compliance_requirement: requirement,
             namespace_id: requirement.namespace.id,
@@ -28,8 +36,6 @@ module ComplianceManagement
             ping_enabled: params.fetch(:ping_enabled, true)
           )
 
-          return ServiceResponse.error(message: _('Not permitted to create compliance control')) unless permitted?
-
           return error unless control.save
 
           audit_create
@@ -40,6 +46,11 @@ module ComplianceManagement
 
         def permitted?
           can?(current_user, :admin_compliance_framework, requirement.framework)
+        end
+
+        def control_name_allowed?
+          ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl::INVALID_CONTROL_NAMES
+            .exclude?(params[:name])
         end
 
         def success

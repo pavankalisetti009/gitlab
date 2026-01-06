@@ -5,12 +5,6 @@ module ComplianceManagement
     module ComplianceRequirements
       class BaseRequirementsService < BaseService
         InvalidControlError = Class.new(StandardError)
-        def initialize(requirement:, params:, current_user:, controls:)
-          @requirement = requirement
-          @params = params
-          @current_user = current_user
-          @controls = controls || []
-        end
 
         private
 
@@ -60,7 +54,7 @@ module ComplianceManagement
         end
 
         def enqueue_project_framework_evaluation
-          return unless controls.any?
+          return if controls.nil? || controls.empty?
 
           ComplianceManagement::ComplianceFramework::ProjectsComplianceEnqueueWorker.perform_async(
             requirement.framework_id
