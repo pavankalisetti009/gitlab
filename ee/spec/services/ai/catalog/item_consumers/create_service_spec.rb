@@ -391,7 +391,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       service_account = User.last
       expect(service_account).to be_service_account
       expect(service_account).to have_attributes(
-        username: "ai-item_name-group-name", provisioned_by_group_id: group.id, composite_identity_enforced: true
+        name: 'item_name',
+        username: "ai-item_name-group-name",
+        provisioned_by_group_id: group.id,
+        composite_identity_enforced: true
       )
       expect(Ai::Catalog::ItemConsumer.last).to have_attributes(service_account:)
     end
@@ -412,7 +415,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         expect { execute }.to change { User.count }.by(1)
         service_account = User.last
         expect(service_account).to be_service_account
-        expect(service_account.username).to eq("duo-foundational_flow-group-name")
+        expect(service_account).to have_attributes(
+          name: "Duo foundational_flow",
+          username: "duo-foundational_flow-group-name"
+        )
       end
     end
 
