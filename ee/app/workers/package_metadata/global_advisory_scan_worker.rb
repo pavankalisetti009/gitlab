@@ -4,7 +4,7 @@ module PackageMetadata
   class GlobalAdvisoryScanWorker
     include Gitlab::EventStore::Subscriber
 
-    data_consistency :delayed
+    data_consistency :sticky
     feature_category :software_composition_analysis
     urgency :throttled
     deduplicate :until_executed
