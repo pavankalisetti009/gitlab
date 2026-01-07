@@ -207,6 +207,12 @@ module Gitlab
           # when enabled, it makes SaaS mode like Self-Managed mode when it comes to
           # certain Duo things so best to disable
           ::Feature.disable(:allow_self_hosted_features_for_com)
+
+          # forbid_composite_identities_to_run_pipelines is disabled by default.
+          # We disable it here for development to allow testing.
+          # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/215193
+          # TODO: Discuss removing the related code and this feature flag entirely.
+          ::Feature.disable(:forbid_composite_identities_to_run_pipelines)
         end
 
         def ensure_license!
