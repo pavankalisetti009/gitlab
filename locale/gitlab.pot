@@ -33189,6 +33189,12 @@ msgstr ""
 msgid "GroupProjectArchiveSettings|Make your project read-only. You can still access its data, work items, and merge requests."
 msgstr ""
 
+msgid "GroupProjectArchiveSettings|To archive this group, you must restore it from deletion."
+msgstr ""
+
+msgid "GroupProjectArchiveSettings|To archive this project, you must restore it from deletion."
+msgstr ""
+
 msgid "GroupProjectUnarchiveSettings|An error occurred while unarchiving the group. Please refresh the page and try again."
 msgstr ""
 
