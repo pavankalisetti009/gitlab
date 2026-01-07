@@ -95,12 +95,16 @@ module EE
         ::License.feature_available?(:default_roles_assignees)
       end
 
-      condition(:instance_model_configuration_allowed, scope: :global) do
-        ::License.feature_available?(:self_hosted_models) &&
+      condition(:instance_model_configuration_allowed) do
+        next false unless ::License.feature_available?(:self_hosted_models)
+
+        has_duo_core_pro_or_enterprise =
           ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core_pro_or_enterprise.active.exists?
+
+        has_duo_core_pro_or_enterprise || dap_self_hosted?
       end
 
-      condition(:self_hosted_models_allowed, scope: :global) do
+      condition(:self_hosted_models_allowed) do
         next false if ::Feature.disabled?(:allow_self_hosted_features_for_com, :instance) &&
           ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
@@ -108,7 +112,11 @@ module EE
 
         next false if ::Ai::AmazonQ.connected?
 
-        ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
+        ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists? || dap_self_hosted?
+      end
+
+      condition(:self_hosted_dap_allowed, scope: :global) do
+        dap_self_hosted?
       end
 
       condition(:instance_model_selection_available) do
@@ -187,6 +195,8 @@ module EE
         enable :read_runner_usage
         enable :manage_ldap_admin_links
         enable :manage_self_hosted_models_settings
+        enable :read_dap_self_hosted_model
+        enable :update_dap_self_hosted_model
         enable :manage_instance_model_selection
         enable :read_enterprise_ai_analytics
       end
@@ -198,6 +208,10 @@ module EE
 
       rule { ~self_hosted_models_allowed }.prevent :manage_self_hosted_models_settings
       rule { ~instance_model_selection_available }.prevent :manage_instance_model_selection
+      rule { ~self_hosted_dap_allowed }.policy do
+        prevent :read_dap_self_hosted_model
+        prevent :update_dap_self_hosted_model
+      end
 
       rule { admin & custom_roles_allowed }.policy do
         enable :admin_member_role
@@ -324,6 +338,12 @@ module EE
     # Check whether a user is allowed to use Duo Chat powered by self-hosted models
     def duo_chat_self_hosted?
       ::Ai::FeatureSetting.find_by_feature(:duo_chat)&.self_hosted?
+    end
+
+    def dap_self_hosted?
+      return false unless ::Feature.enabled?(:self_hosted_dap_sku, :instance)
+
+      ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_self_hosted_dap.active.exists?
     end
 
     def custom_role_ability(user)

@@ -2,12 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::FeatureSettings::FeatureSettingFinder, feature_category: :"self-hosted_models" do
+RSpec.describe Ai::FeatureSettings::FeatureSettingFinder,
+  feature_category: :"self-hosted_models" do
   let_it_be(:test_ai_feature_enum) do
     {
       code_generations: 0,
       code_completions: 1,
-      duo_chat: 2
+      duo_chat: 2,
+      duo_agent_platform: 3,
+      duo_agent_platform_agentic_chat: 4
     }
   end
 
@@ -33,38 +36,63 @@ RSpec.describe Ai::FeatureSettings::FeatureSettingFinder, feature_category: :"se
     context 'when no argument is provided' do
       let(:args) { {} }
 
-      let(:expected_results) do
-        test_ai_feature_enum.keys.map do |feature|
+      let(:expected_dap_results) do
+        [:duo_agent_platform, :duo_agent_platform_agentic_chat].map do |feature|
           ::Ai::FeatureSetting.find_or_initialize_by_feature(feature)
         end
       end
 
-      it 'returns all the feature settings with the uninitialized ones', :aggregate_failures do
+      let(:expected_classic_results) do
+        [:code_generations, :code_completions, :duo_chat].map do |feature|
+          ::Ai::FeatureSetting.find_or_initialize_by_feature(feature)
+        end
+      end
+
+      it 'returns feature settings grouped by dap and classic', :aggregate_failures do
         results = execute_finder
 
-        # Testing attributes because uninitialized instances never have the same ref even with same values
-        expect(results.map(&:id)).to match_array(expected_results.map(&:id))
-        expect(results.map(&:feature)).to match_array(expected_results.map(&:feature))
-        expect(results.map(&:provider)).to match_array(expected_results.map(&:provider))
-        expect(results.map(&:self_hosted_model)).to match_array(expected_results.map(&:self_hosted_model))
+        expect(results).to be_a(Hash)
+        expect(results.keys).to match_array([:dap, :classic])
+
+        expected_results = {
+          dap: expected_dap_results,
+          classic: expected_classic_results
+        }
+
+        [:dap, :classic].each do |key|
+          # Testing attributes because uninitialized instances never have the same ref even with same values
+          expect(results[key].map(&:id)).to match_array(expected_results[key].map(&:id))
+          expect(results[key].map(&:feature)).to match_array(expected_results[key].map(&:feature))
+          expect(results[key].map(&:provider)).to match_array(expected_results[key].map(&:provider))
+          expect(results[key].map(&:self_hosted_model)).to match_array(expected_results[key].map(&:self_hosted_model))
+        end
       end
     end
 
     context 'when a self_hosted_model_id argument is provided' do
       let(:args) { { self_hosted_model_id: self_hosted_model } }
-      let(:expected_results) { [existing_feature_setting] }
 
       context 'with an existing self-hosted model' do
-        it 'only returns the settings belonging to self-hosted model' do
-          expect(execute_finder).to match_array(expected_results)
+        it 'returns settings belonging to self-hosted model grouped by dap and classic', :aggregate_failures do
+          results = execute_finder
+
+          expect(results).to be_a(Hash)
+          expect(results.keys).to match_array([:dap, :classic])
+          expect(results[:dap]).to be_empty
+          expect(results[:classic]).to match_array([existing_feature_setting])
         end
       end
 
       context 'with an non-existing self-hosted model' do
         let(:args) { { self_hosted_model_id: non_existing_record_id } }
 
-        it 'returns an empty array' do
-          expect(execute_finder).to be_empty
+        it 'returns empty arrays for both dap and classic', :aggregate_failures do
+          results = execute_finder
+
+          expect(results).to be_a(Hash)
+          expect(results.keys).to match_array([:dap, :classic])
+          expect(results[:dap]).to be_empty
+          expect(results[:classic]).to be_empty
         end
       end
     end
