@@ -48054,6 +48054,8 @@ definitions:
         type: string
       allow_personal_snippets:
         type: string
+      duo_namespace_access_rules:
+        type: string
     description: API_Entities_Group model
   API_Entities_Namespace_RootStorageStatistics:
     type: object
@@ -48792,6 +48794,36 @@ definitions:
         type: boolean
         description: Allow creation of personal snippets for enterprise users of this
           group
+      duo_namespace_access_rules:
+        type: array
+        description: AI entity access rules for controlling Duo feature access
+        items:
+          type: object
+          properties:
+            through_namespace:
+              type: object
+              description: Object containing through namespace information
+              properties:
+                id:
+                  type: integer
+                  format: int32
+                  description: ID of the through namespace
+                name:
+                  type: string
+                  description: Name of the through namespace
+                full_path:
+                  type: string
+                  description: Full path of the through namespace
+              required:
+              - id
+            features:
+              type: array
+              description: List of accessible features
+              items:
+                type: string
+          required:
+          - through_namespace
+          - features
     description: Update a group. Available only for users who can administrate groups.
   API_Entities_GroupDetail:
     type: object
@@ -48915,6 +48947,8 @@ definitions:
       web_based_commit_signing_enabled:
         type: string
       allow_personal_snippets:
+        type: string
+      duo_namespace_access_rules:
         type: string
       shared_with_groups:
         type: string
