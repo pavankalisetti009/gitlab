@@ -114,6 +114,7 @@ export default {
       foundationalAgentsStatuses,
       selectedFoundationalFlowIds,
       duoAgentPlatformEnabled,
+      namespaceAccessRules,
     }) {
       try {
         this.isLoading = true;
@@ -143,6 +144,7 @@ export default {
           duo_chat_expiration_days: this.chatExpirationDays,
           duo_chat_expiration_column: this.chatExpirationColumn,
           duo_agent_platform_enabled: duoAgentPlatformEnabled,
+          duo_namespace_access_rules: this.formatNamespaceAccessRules(namespaceAccessRules),
           foundational_agents_default_enabled: foundationalAgentsEnabled,
           ...(foundationalAgentsStatuses && {
             foundational_agents_statuses: transformedFoundationalAgentsStatuses,
@@ -222,6 +224,20 @@ export default {
     },
     onAiGatewayTimeoutChange(value) {
       this.aiGatewayTimeoutSecondsInput = value;
+    },
+    formatNamespaceAccessRules(rules) {
+      if (!rules) {
+        return [];
+      }
+
+      return rules.map((rule) => {
+        return {
+          through_namespace: {
+            id: rule.throughNamespace.id,
+          },
+          features: rule.features,
+        };
+      });
     },
     onError(error) {
       createAlert({

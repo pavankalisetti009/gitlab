@@ -111,6 +111,7 @@ export default {
       duoAgentPlatformEnabledInput: this.duoAgentPlatformEnabled,
       hasFoundationalAgentsStatusesChanged: false,
       localSelectedFlowIds: this.selectedFoundationalFlowIds,
+      namespaceAccessRules: this.initialNamespaceAccessRules,
     };
   },
   computed: {
@@ -144,6 +145,12 @@ export default {
     hasDuoAgentPlatformEnabledChanged() {
       return this.duoAgentPlatformEnabledInput !== this.duoAgentPlatformEnabled;
     },
+    hasNamespaceAccessRulesChanged() {
+      const currentLength = this.namespaceAccessRules?.length || 0;
+      const initialLength = this.initialNamespaceAccessRules?.length || 0;
+
+      return currentLength !== initialLength;
+    },
     hasFormChanged() {
       return (
         this.hasAvailabilityChanged ||
@@ -157,7 +164,8 @@ export default {
         this.hasFoundationalAgentsEnabledChanged ||
         this.hasFoundationalAgentsStatusesChanged ||
         this.hasSelectedFlowIdsChanged ||
-        this.hasDuoAgentPlatformEnabledChanged
+        this.hasDuoAgentPlatformEnabledChanged ||
+        this.hasNamespaceAccessRulesChanged
       );
     },
     showWarning() {
@@ -234,6 +242,10 @@ export default {
       this.duoAgentPlatformEnabledInput = value;
       this.$emit('duo-agent-platform-enabled-changed', value);
     },
+    onAiNamespaceAccessRulesChanged(value) {
+      this.namespaceAccessRules = value;
+      this.$emit('namespace-access-rules-changed', value);
+    },
   },
 };
 </script>
@@ -245,7 +257,8 @@ export default {
 
     <ai-namespace-access-rules
       v-if="initialNamespaceAccessRules"
-      :initial-namespace-access-rules="initialNamespaceAccessRules"
+      :initial-namespace-access-rules="namespaceAccessRules"
+      @change="onAiNamespaceAccessRulesChanged"
     />
 
     <duo-core-features-form

@@ -125,6 +125,9 @@ describe('AiCommonSettingsForm', () => {
             hasParentFormChanged: false,
             foundationalAgentsEnabled: false,
             foundationalAgentsStatuses: mockAgentStatuses,
+            duoAgentPlatformEnabled: true,
+            initialNamespaceAccessRules: [],
+            selectedFoundationalFlowIds: [],
             ...props,
           },
           provide: {
@@ -217,6 +220,16 @@ describe('AiCommonSettingsForm', () => {
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 
+    it('enables save button when namespace access rules changes are made', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findAiNamespaceAccessRules().vm.$emit('change', [
+        { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
+      ]);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
     it('enables save button when duo SAST FP detection changes are made (feature flag enabled)', async () => {
       createComponent({}, { glFeatures: { aiExperimentSastFpDetection: true } });
 
@@ -292,6 +305,8 @@ describe('AiCommonSettingsForm', () => {
           foundationalAgentsEnabled: false,
           foundationalAgentsStatuses: mockAgentStatuses,
           duoAgentPlatformEnabled: true,
+          initialNamespaceAccessRules: [],
+          selectedFoundationalFlowIds: [],
         },
         provide: {
           onGeneralSettingsPage: false,

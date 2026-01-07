@@ -58,6 +58,7 @@ export default {
       selectedFlowIds: this.initialSelectedFoundationalFlowIds || [],
       foundationalAgentsStatuses: this.initialFoundationalAgentsStatuses,
       duoAgentPlatformEnabled: this.initialDuoAgentPlatformEnabled,
+      namespaceAccessRules: this.initialNamespaceAccessRules,
     };
   },
   methods: {
@@ -74,6 +75,7 @@ export default {
         foundationalAgentsStatuses: this.foundationalAgentsStatuses,
         selectedFoundationalFlowIds: this.selectedFlowIds,
         duoAgentPlatformEnabled: this.duoAgentPlatformEnabled,
+        namespaceAccessRules: this.namespaceAccessRules,
       });
     },
     onRadioChanged(value) {
@@ -108,6 +110,9 @@ export default {
     },
     onSelectedFlowIdsChanged(flowIds) {
       this.selectedFlowIds = flowIds;
+    },
+    onNamespaceAccessRulesChanged(value) {
+      this.namespaceAccessRules = value;
     },
   },
   aiFeaturesHelpPath: helpPagePath('user/gitlab_duo/_index'),
@@ -210,6 +215,7 @@ export default {
         @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
         @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
         @change-selected-flow-ids="onSelectedFlowIdsChanged"
+        @namespace-access-rules-changed="onNamespaceAccessRulesChanged"
       >
         <template #ai-common-settings-top>
           <slot name="ai-common-settings-top"></slot>

@@ -84,6 +84,9 @@ describe('AiCommonSettings', () => {
     await findForm().vm.$emit('duo-foundational-flows-checkbox-changed', true);
     await findForm().vm.$emit('change-selected-flow-ids', [1, 2]);
     await findForm().vm.$emit('duo-agent-platform-enabled-changed', false);
+    await findForm().vm.$emit('namespace-access-rules-changed', [
+      { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
+    ]);
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
@@ -100,6 +103,9 @@ describe('AiCommonSettings', () => {
       selectedFoundationalFlowIds: [1, 2],
       foundationalAgentsStatuses: mockAgentStatuses,
       duoAgentPlatformEnabled: false,
+      namespaceAccessRules: [
+        { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
+      ],
     });
   });
 

@@ -122,6 +122,7 @@ describe('AiAdminSettings', () => {
         foundationalAgentsStatuses: mockAgentStatuses,
         selectedFoundationalFlowIds: [],
         duoAgentPlatformEnabled: true,
+        namespaceAccessRules: [{ throughNamespace: { id: 1 }, features: ['duo_classic'] }],
       });
 
       const transformedFilteredAgentStatuses = expectedFilteredAgentStatuses.map((agent) => ({
@@ -136,6 +137,7 @@ describe('AiAdminSettings', () => {
         model_prompt_cache_enabled: true,
         duo_remote_flows_availability: false,
         duo_foundational_flows_availability: false,
+        duo_namespace_access_rules: [{ through_namespace: { id: 1 }, features: ['duo_classic'] }],
         enabled_foundational_flows: [],
         disabled_direct_code_suggestions: false,
         enabled_expanded_logging: false,
@@ -144,6 +146,21 @@ describe('AiAdminSettings', () => {
         duo_agent_platform_enabled: true,
         foundational_agents_default_enabled: true,
         foundational_agents_statuses: transformedFilteredAgentStatuses,
+      });
+    });
+
+    describe('without namespace access rules', () => {
+      it('calls updateApplicationSettings with empty namespace access rules', async () => {
+        updateApplicationSettings.mockResolvedValue();
+        await findAiCommonSettings().vm.$emit('submit', {});
+        await waitForPromises();
+
+        expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
+        expect(updateApplicationSettings).toHaveBeenCalledWith(
+          expect.objectContaining({
+            duo_namespace_access_rules: [],
+          }),
+        );
       });
     });
 
