@@ -391,6 +391,82 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
         it 'sets provisioned by group' do
           expect(result.payload[:user].provisioned_by_group_id).to eq(group_with_trial.id)
         end
+
+        context 'when allow_unlimited_service_account_for_trials feature flag is disabled' do
+          before do
+            stub_feature_flags(allow_unlimited_service_account_for_trials: false)
+          end
+
+          it_behaves_like 'service account creation success' do
+            let(:username_prefix) { "service_account_group_#{namespace_id}" }
+          end
+
+          context 'when service account limit is reached' do
+            let_it_be(:group_with_limited_trial) { create(:group, owners: current_user) }
+            let(:namespace_id) { group_with_limited_trial.id }
+
+            before do
+              create(:gitlab_subscription, :active_trial, namespace: group_with_limited_trial,
+                hosted_plan: create(:ultimate_plan))
+
+              create(:group_member, :owner, group: group_with_limited_trial, user: create(:user))
+              stub_const('GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL', 2)
+              create_list(:user, 2, :service_account, provisioned_by_group_id: group_with_limited_trial.id)
+            end
+
+            it 'produces an error' do
+              expect(result.status).to eq(:error)
+              expect(result.message).to include('No more seats are available to create Service Account User')
+            end
+          end
+
+          context 'when trial namespace has service accounts with composite identity' do
+            let_it_be(:group_with_composite_identity) { create(:group, owners: current_user) }
+            let(:namespace_id) { group_with_composite_identity.id }
+
+            before do
+              create(:gitlab_subscription, :active_trial, namespace: group_with_composite_identity,
+                hosted_plan: create(:ultimate_plan))
+              stub_const('GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL', 3)
+            end
+
+            context 'when composite identity service accounts exist alongside regular ones below limit' do
+              before do
+                create_list(:user, 5, :service_account,
+                  provisioned_by_group_id: group_with_composite_identity.id,
+                  composite_identity_enforced: true)
+                create_list(:user, 2, :service_account,
+                  provisioned_by_group_id: group_with_composite_identity.id,
+                  composite_identity_enforced: false)
+              end
+
+              it 'only counts service accounts without composite identity against the limit' do
+                result = service.execute
+
+                expect(result.status).to eq(:success)
+                expect(result.payload[:user].user_type).to eq('service_account')
+              end
+            end
+
+            context 'when service accounts without composite identity reach the limit' do
+              before do
+                create_list(:user, 3, :service_account,
+                  provisioned_by_group_id: group_with_composite_identity.id,
+                  composite_identity_enforced: false)
+                create_list(:user, 2, :service_account,
+                  provisioned_by_group_id: group_with_composite_identity.id,
+                  composite_identity_enforced: true)
+              end
+
+              it 'produces an error' do
+                result = service.execute
+
+                expect(result.status).to eq(:error)
+                expect(result.message).to include('No more seats are available to create Service Account User')
+              end
+            end
+          end
+        end
       end
 
       context 'when namespace does not have a gitlab_subscription' do
