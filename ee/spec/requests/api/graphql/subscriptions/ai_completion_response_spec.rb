@@ -13,9 +13,7 @@ RSpec.describe 'Subscriptions::AiCompletionResponse', feature_category: :duo_cha
   let_it_be(:agent_version) { create(:ai_agent_version, agent: agent) }
 
   let_it_be(:external_issue) { create(:issue) }
-  let_it_be(:external_issue_url) do
-    project_issue_url(external_issue.project, external_issue)
-  end
+  let_it_be(:external_issue_url) { ::Gitlab::UrlBuilder.instance.issue_url(external_issue) }
 
   let_it_be(:thread) { create(:ai_conversation_thread) }
 
