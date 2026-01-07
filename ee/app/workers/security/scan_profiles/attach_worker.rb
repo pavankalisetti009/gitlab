@@ -13,19 +13,18 @@ module Security
 
       feature_category :security_asset_inventories
 
-      def perform(group_id, scan_profile_id, traverse_hierarchy = true, retry_count = 0)
+      def perform(group_id, scan_profile_id, traverse_hierarchy = true)
         group = Group.find_by_id(group_id)
         return unless group
 
         scan_profile = Security::ScanProfile.find_by_id(scan_profile_id)
         return unless scan_profile
 
-        Security::ScanProfiles::AttachService.new(
+        Security::ScanProfiles::AttachService.execute(
           group,
           scan_profile,
-          traverse_hierarchy: traverse_hierarchy,
-          retry_count: retry_count
-        ).execute
+          traverse_hierarchy: traverse_hierarchy
+        )
       end
     end
   end
