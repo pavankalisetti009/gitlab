@@ -19,6 +19,7 @@ import {
   WORK_ITEM_TYPE_ENUM_OBJECTIVE,
   WORK_ITEM_TYPE_ENUM_TASK,
   WORK_ITEM_TYPE_ENUM_TEST_CASE,
+  WORK_ITEM_TYPE_ENUM_TICKET,
 } from '~/work_items/constants';
 
 describe('getDefaultWorkItemTypes', () => {
@@ -33,6 +34,7 @@ describe('getDefaultWorkItemTypes', () => {
       WORK_ITEM_TYPE_ENUM_ISSUE,
       WORK_ITEM_TYPE_ENUM_INCIDENT,
       WORK_ITEM_TYPE_ENUM_TASK,
+      WORK_ITEM_TYPE_ENUM_TICKET,
       WORK_ITEM_TYPE_ENUM_EPIC,
       WORK_ITEM_TYPE_ENUM_KEY_RESULT,
       WORK_ITEM_TYPE_ENUM_OBJECTIVE,
