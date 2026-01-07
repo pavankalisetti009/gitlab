@@ -2,6 +2,7 @@
 import { GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getTimeago } from '~/lib/utils/datetime_utility';
+import { captureException } from '~/sentry/sentry_browser_wrapper';
 import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
 import { getMessageData } from 'ee/ai/duo_agents_platform/utils';
 import ActivityConnectorSvg from './activity_connector_svg.vue';
@@ -56,7 +57,15 @@ export default {
       return getMessageData(message)?.icon;
     },
     filePath(item) {
-      return item.toolInfo?.args?.file_path;
+      return this.getToolInfo(item)?.args?.file_path;
+    },
+    getToolInfo(item) {
+      try {
+        return JSON.parse(item.toolInfo);
+      } catch (e) {
+        captureException(e);
+        return {};
+      }
     },
     isMarkdown(item, index) {
       return item.messageType !== 'user' && index > 0;

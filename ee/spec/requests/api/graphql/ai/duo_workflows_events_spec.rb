@@ -71,7 +71,7 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_agent_plat
   context 'when user is logged in' do
     let_it_be(:chat_log) do
       [{ "content" => "hi", "correlationId" => nil, "messageType" => "user", "role" => nil, "status" => "success",
-         "timestamp" => "2025-11-25T21:10:57.734182+00:00", "toolInfo" => nil }]
+         "timestamp" => "2025-11-25T21:10:57.734182+00:00", "toolInfo" => "null" }]
     end
 
     before do

@@ -35,6 +35,10 @@ module Types
         field :role, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           null: true, description: 'Role of the message.'
+
+        def tool_info
+          object.tool_info.to_json
+        end
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end
