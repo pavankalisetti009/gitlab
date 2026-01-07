@@ -1,6 +1,7 @@
 <script>
 import { GlTable, GlButton, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import GroupSelector from './group_selector.vue';
 
 const AVAILABLE_FEATURES = [
   {
@@ -25,20 +26,27 @@ export default {
     GlFormGroup,
     GlFormCheckbox,
     GlLink,
+    GroupSelector,
   },
   AVAILABLE_FEATURES,
   fields: [
     {
       key: 'namespaceName',
       label: s__('AiPowered|Group'),
+      thStyle: { width: '40%' },
+      tdClass: 'gl-max-w-0',
     },
     {
       key: 'features',
       label: s__('AiPowered|Membership grants access to'),
+      thStyle: { width: '40%' },
+      tdClass: 'gl-max-w-0',
     },
     {
       key: 'actions',
       label: null,
+      thStyle: { width: '20%' },
+      tdClass: 'gl-max-w-0',
     },
   ],
   props: {
@@ -57,6 +65,27 @@ export default {
   methods: {
     isFeatureEnabled(namespaceAccessRule, feature) {
       return namespaceAccessRule.features.includes(feature) || false;
+    },
+    onGroupSelected(group) {
+      const exists = this.namespaceAccessRules.some(
+        (rule) => rule.throughNamespace.id === group.id,
+      );
+
+      if (exists) {
+        return;
+      }
+
+      this.namespaceAccessRules = [
+        ...this.namespaceAccessRules,
+        {
+          throughNamespace: {
+            id: group.id,
+            name: group.name,
+            fullPath: group.fullPath,
+          },
+          features: AVAILABLE_FEATURES.map((rule) => rule.key),
+        },
+      ];
     },
   },
 };
@@ -79,7 +108,8 @@ export default {
         :fields="$options.fields"
         show-empty
         bordered
-        thead-class="gl-bg-gray-50"
+        thead-class="gl-bg-subtle"
+        table-class="gl-table-layout-fixed"
       >
         <template #empty>
           <div class="gl-my-5 gl-text-center gl-text-secondary">
@@ -88,9 +118,11 @@ export default {
         </template>
 
         <template #cell(namespaceName)="{ item }">
-          <gl-link :href="`/${item.throughNamespace.fullPath}`" target="_blank">
-            {{ item.throughNamespace.name }}
-          </gl-link>
+          <div class="gl-truncate">
+            <gl-link :href="`/${item.throughNamespace.fullPath}`" target="_blank">
+              {{ item.throughNamespace.name }}
+            </gl-link>
+          </div>
         </template>
 
         <template #cell(features)="{ item }">
@@ -113,9 +145,7 @@ export default {
         </template>
       </gl-table>
 
-      <gl-button category="secondary" disabled>
-        {{ s__('AiPowered|Add Group') }}
-      </gl-button>
+      <group-selector @group-selected="onGroupSelected" />
     </gl-form-group>
   </div>
 </template>

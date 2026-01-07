@@ -1,7 +1,8 @@
+import { nextTick } from 'vue';
 import { GlTable, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
-import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiNamespaceAccessRules from 'ee/ai/settings/components/ai_namespace_access_rules.vue';
+import GroupSelector from 'ee/ai/settings/components/group_selector.vue';
 
 describe('AiNamespaceAccessRules', () => {
   let wrapper;
@@ -13,7 +14,7 @@ describe('AiNamespaceAccessRules', () => {
         name: 'Group A',
         fullPath: 'group-a',
       },
-      features: ['duo_classic', 'duo_agents'],
+      features: ['duo_agents', 'duo_classic'],
     },
     {
       throughNamespace: {
@@ -25,15 +26,17 @@ describe('AiNamespaceAccessRules', () => {
     },
   ];
 
-  const createComponent = ({ props = {} } = {}) => {
-    wrapper = extendedWrapper(
-      mount(AiNamespaceAccessRules, {
-        propsData: {
-          initialNamespaceAccessRules: mockAccessRules,
-          ...props,
-        },
-      }),
-    );
+  const createComponent = ({ props = {}, mountFn = shallowMountExtended, stubs = {} } = {}) => {
+    wrapper = mountFn(AiNamespaceAccessRules, {
+      propsData: {
+        initialNamespaceAccessRules: mockAccessRules,
+        ...props,
+      },
+      stubs: {
+        GroupSelector: true,
+        ...stubs,
+      },
+    });
   };
 
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
@@ -42,6 +45,7 @@ describe('AiNamespaceAccessRules', () => {
   const findNamespaceLinks = () =>
     wrapper.findAllComponents(GlLink).filter((link) => link.attributes('target') === '_blank');
   const findCheckboxes = () => wrapper.findAllComponents(GlFormCheckbox);
+  const findGroupSelector = () => wrapper.findComponent(GroupSelector);
 
   describe('when access rules array is empty', () => {
     beforeEach(() => {
@@ -59,7 +63,7 @@ describe('AiNamespaceAccessRules', () => {
 
   describe('when initialNamespaceAccessRules is provided', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent({ mountFn: mountExtended });
     });
 
     it('renders the form group with correct label', () => {
@@ -84,9 +88,24 @@ describe('AiNamespaceAccessRules', () => {
 
     it('renders the table with correct fields', () => {
       expect(findTable().props('fields')).toEqual([
-        { key: 'namespaceName', label: 'Group' },
-        { key: 'features', label: 'Membership grants access to' },
-        { key: 'actions', label: null },
+        {
+          key: 'namespaceName',
+          label: 'Group',
+          thStyle: { width: '40%' },
+          tdClass: 'gl-max-w-0',
+        },
+        {
+          key: 'features',
+          label: 'Membership grants access to',
+          thStyle: { width: '40%' },
+          tdClass: 'gl-max-w-0',
+        },
+        {
+          key: 'actions',
+          label: null,
+          thStyle: { width: '20%' },
+          tdClass: 'gl-max-w-0',
+        },
       ]);
     });
 
@@ -102,8 +121,8 @@ describe('AiNamespaceAccessRules', () => {
       });
     });
 
-    describe('access rules checkboxes', () => {
-      it('renders checkboxes for each feature for each rule', () => {
+    describe('enabled features checkboxes', () => {
+      it('renders checkbox for all features for each rule', () => {
         const checkboxes = findCheckboxes();
         expect(checkboxes).toHaveLength(6);
       });
@@ -127,6 +146,64 @@ describe('AiNamespaceAccessRules', () => {
         expect(checkboxes.at(4).props('checked')).toBe(false);
         expect(checkboxes.at(5).props('checked')).toBe(true);
       });
+    });
+  });
+
+  describe('GroupSelector', () => {
+    beforeEach(() => {
+      createComponent({ mountFn: mountExtended });
+    });
+
+    it('adds new namespace to access rules when namespace is selected', async () => {
+      const namespace1 = {
+        id: 'gid://gitlab/Group/9',
+        name: 'Group C',
+        fullPath: 'group-c',
+      };
+
+      const namespace2 = {
+        id: 'gid://gitlab/Group/10',
+        name: 'Group D',
+        fullPath: 'group-d',
+      };
+
+      findGroupSelector().vm.$emit('group-selected', namespace1);
+      await nextTick();
+      findGroupSelector().vm.$emit('group-selected', namespace2);
+      await nextTick();
+
+      const links = findNamespaceLinks();
+      const checkboxes = findCheckboxes();
+
+      expect(links).toHaveLength(4);
+
+      expect(links.at(2).attributes('href')).toBe('/group-c');
+      expect(links.at(2).text()).toBe('Group C');
+
+      expect(checkboxes.at(6).props('checked')).toBe(true);
+      expect(checkboxes.at(7).props('checked')).toBe(true);
+      expect(checkboxes.at(8).props('checked')).toBe(true);
+
+      expect(links.at(3).attributes('href')).toBe('/group-d');
+      expect(links.at(3).text()).toBe('Group D');
+    });
+
+    it('skips new namespace when namespace is already added', async () => {
+      const namespace1 = {
+        id: 'gid://gitlab/Group/9',
+        name: 'Group C',
+        fullPath: 'group-c',
+      };
+
+      findGroupSelector().vm.$emit('group-selected', namespace1);
+      await nextTick();
+
+      expect(findNamespaceLinks()).toHaveLength(3);
+
+      findGroupSelector().vm.$emit('group-selected', namespace1);
+      await nextTick();
+
+      expect(findNamespaceLinks()).toHaveLength(3);
     });
   });
 });
