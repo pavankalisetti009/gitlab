@@ -1,0 +1,18 @@
+query getVirtualRegistriesCleanupPolicyDetails($fullPath: ID!) {
+  group(fullPath: $fullPath) {
+    id
+    virtualRegistriesCleanupPolicy {
+      enabled
+      status
+      cadence
+      keepNDaysAfterDownload
+      lastRunAt
+      lastRunDeletedSize
+      lastRunDeletedEntriesCount
+      nextRunAt
+      notifyOnFailure
+      notifyOnSuccess
+      failureMessage
+    }
+  }
+}

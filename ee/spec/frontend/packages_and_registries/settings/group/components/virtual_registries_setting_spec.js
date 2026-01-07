@@ -5,6 +5,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import VirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/components/virtual_registries_setting.vue';
+import CleanupPolicyDetails from 'ee_component/packages_and_registries/settings/group/components/cleanup_policy_details.vue';
 
 import getGroupVirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/graphql/queries/get_group_virtual_registries_setting.query.graphql';
 import updateVirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/graphql/mutations/update_virtual_registries_setting.mutation.graphql';
@@ -60,6 +61,7 @@ describe('VirtualRegistriesSetting', () => {
   const findEnableVirtualRegistriesSettingToggle = () =>
     wrapper.findByTestId('virtual-registries-setting-toggle');
   const findTestingAgreementLink = () => wrapper.findComponent(GlLink);
+  const findCleanupPolicyDetails = () => wrapper.findComponent(CleanupPolicyDetails);
 
   const fillApolloCache = () => {
     apolloProvider.defaultClient.cache.writeQuery({
@@ -200,6 +202,44 @@ describe('VirtualRegistriesSetting', () => {
       mountComponent({ isLoading: true });
 
       expect(findEnableVirtualRegistriesSettingToggle().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('cleanup policy details', () => {
+    beforeEach(async () => {
+      mountComponent();
+      await waitForPromises();
+    });
+
+    it('renders cleanup policy details component', () => {
+      expect(findCleanupPolicyDetails().exists()).toBe(true);
+    });
+
+    it('passes virtualRegistriesSettingEnabled as true when virtual registry is enabled', async () => {
+      fillApolloCache();
+      await waitForPromises();
+
+      expect(findCleanupPolicyDetails().props('virtualRegistriesSettingEnabled')).toBe(true);
+    });
+
+    it('passes virtualRegistriesSettingEnabled as false when virtual registry is disabled', async () => {
+      queryResolver = jest.fn().mockResolvedValue({
+        data: {
+          group: {
+            id: 'gid://gitlab/Group/1',
+            __typename: 'Group',
+            virtualRegistriesSetting: {
+              __typename: 'VirtualRegistriesSetting',
+              enabled: false,
+            },
+          },
+        },
+      });
+
+      mountComponent();
+      await waitForPromises();
+
+      expect(findCleanupPolicyDetails().props('virtualRegistriesSettingEnabled')).toBe(false);
     });
   });
 });
