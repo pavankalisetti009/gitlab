@@ -24,34 +24,13 @@ RSpec.describe GitlabSubscriptions::AddOnAssignedUsersFinder, feature_category: 
           { add_on_name: :code_suggestions, after: after, before: before }
         end
 
-        context 'when historical_add_on_assigned_users_enabled feature flag is enabled' do
-          before do
-            stub_feature_flags(historical_add_on_assigned_users_enabled: namespace)
+        it 'uses historical_add_on_assigned_users' do
+          expect_next_instance_of(described_class) do |instance|
+            expect(instance).to receive(:historical_add_on_assigned_users).and_return(User.none)
+            expect(instance).not_to receive(:current_add_on_assigned_users)
           end
 
-          it 'uses historical_add_on_assigned_users' do
-            expect_next_instance_of(described_class) do |instance|
-              expect(instance).to receive(:historical_add_on_assigned_users).and_return(User.none)
-              expect(instance).not_to receive(:current_add_on_assigned_users)
-            end
-
-            assigned_users
-          end
-        end
-
-        context 'when historical_add_on_assigned_users_enabled feature flag is disabled' do
-          before do
-            stub_feature_flags(historical_add_on_assigned_users_enabled: false)
-          end
-
-          it 'uses current_add_on_assigned_users' do
-            expect_next_instance_of(described_class) do |instance|
-              expect(instance).not_to receive(:historical_add_on_assigned_users)
-              expect(instance).to receive(:current_add_on_assigned_users).and_return(User.none)
-            end
-
-            assigned_users
-          end
+          assigned_users
         end
       end
 
@@ -60,34 +39,13 @@ RSpec.describe GitlabSubscriptions::AddOnAssignedUsersFinder, feature_category: 
           { add_on_name: :code_suggestions, after: after }
         end
 
-        context 'when historical_add_on_assigned_users_enabled feature flag is enabled' do
-          before do
-            stub_feature_flags(historical_add_on_assigned_users_enabled: namespace)
+        it 'uses historical_add_on_assigned_users' do
+          expect_next_instance_of(described_class) do |instance|
+            expect(instance).to receive(:historical_add_on_assigned_users).and_return(User.none)
+            expect(instance).not_to receive(:current_add_on_assigned_users)
           end
 
-          it 'uses historical_add_on_assigned_users' do
-            expect_next_instance_of(described_class) do |instance|
-              expect(instance).to receive(:historical_add_on_assigned_users).and_return(User.none)
-              expect(instance).not_to receive(:current_add_on_assigned_users)
-            end
-
-            assigned_users
-          end
-        end
-
-        context 'when historical_add_on_assigned_users_enabled feature flag is disabled' do
-          before do
-            stub_feature_flags(historical_add_on_assigned_users_enabled: false)
-          end
-
-          it 'uses current_add_on_assigned_users' do
-            expect_next_instance_of(described_class) do |instance|
-              expect(instance).not_to receive(:historical_add_on_assigned_users)
-              expect(instance).to receive(:current_add_on_assigned_users).and_return(User.none)
-            end
-
-            assigned_users
-          end
+          assigned_users
         end
       end
 
@@ -96,34 +54,13 @@ RSpec.describe GitlabSubscriptions::AddOnAssignedUsersFinder, feature_category: 
           { add_on_name: :code_suggestions, before: before }
         end
 
-        context 'when historical_add_on_assigned_users_enabled feature flag is enabled' do
-          before do
-            stub_feature_flags(historical_add_on_assigned_users_enabled: namespace)
+        it 'uses historical_add_on_assigned_users' do
+          expect_next_instance_of(described_class) do |instance|
+            expect(instance).to receive(:historical_add_on_assigned_users).and_return(User.none)
+            expect(instance).not_to receive(:current_add_on_assigned_users)
           end
 
-          it 'uses historical_add_on_assigned_users' do
-            expect_next_instance_of(described_class) do |instance|
-              expect(instance).to receive(:historical_add_on_assigned_users).and_return(User.none)
-              expect(instance).not_to receive(:current_add_on_assigned_users)
-            end
-
-            assigned_users
-          end
-        end
-
-        context 'when historical_add_on_assigned_users_enabled feature flag is disabled' do
-          before do
-            stub_feature_flags(historical_add_on_assigned_users_enabled: false)
-          end
-
-          it 'uses current_add_on_assigned_users' do
-            expect_next_instance_of(described_class) do |instance|
-              expect(instance).not_to receive(:historical_add_on_assigned_users)
-              expect(instance).to receive(:current_add_on_assigned_users).and_return(User.none)
-            end
-
-            assigned_users
-          end
+          assigned_users
         end
       end
 
@@ -236,36 +173,15 @@ RSpec.describe GitlabSubscriptions::AddOnAssignedUsersFinder, feature_category: 
         { add_on_name: :code_suggestions, after: after, before: before }
       end
 
-      context 'when historical_add_on_assigned_users_enabled feature flag is enabled' do
-        before do
-          stub_feature_flags(historical_add_on_assigned_users_enabled: namespace)
+      it 'delegates to the historical concern' do
+        # This tests that the historical_add_on_assigned_users method from the concern is called
+        # The actual implementation of historical_add_on_assigned_users would be tested
+        # in the spec for Concerns::HistoricalAddOnAssignedUsers
+        expect_next_instance_of(described_class) do |instance|
+          expect(instance).to receive(:historical_add_on_assigned_users).and_return(User.none)
         end
 
-        it 'delegates to the historical concern' do
-          # This tests that the historical_add_on_assigned_users method from the concern is called
-          # The actual implementation of historical_add_on_assigned_users would be tested
-          # in the spec for Concerns::HistoricalAddOnAssignedUsers
-          expect_next_instance_of(described_class) do |instance|
-            expect(instance).to receive(:historical_add_on_assigned_users).and_return(User.none)
-          end
-
-          expect(assigned_users).to eq(User.none)
-        end
-      end
-
-      context 'when historical_add_on_assigned_users_enabled feature flag is disabled' do
-        before do
-          stub_feature_flags(historical_add_on_assigned_users_enabled: false)
-        end
-
-        it 'falls back to current data path' do
-          expect_next_instance_of(described_class) do |instance|
-            expect(instance).not_to receive(:historical_add_on_assigned_users)
-            expect(instance).to receive(:current_add_on_assigned_users).and_return(User.none)
-          end
-
-          expect(assigned_users).to eq(User.none)
-        end
+        expect(assigned_users).to eq(User.none)
       end
     end
   end

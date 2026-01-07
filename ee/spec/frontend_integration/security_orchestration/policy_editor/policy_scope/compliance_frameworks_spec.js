@@ -32,6 +32,8 @@ import {
   defaultHandlers,
 } from './apollo_utils';
 
+jest.mock('~/lib/logger');
+
 describe('ComplianceFrameworks', () => {
   let wrapper;
 

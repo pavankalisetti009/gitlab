@@ -66,8 +66,24 @@ module Gitlab
         ATTRS_TO_SANITIZE.each do |attr|
           next unless node.has_attribute?(attr)
 
+<<<<<<< HEAD
           node[attr] = node[attr].strip
           node.remove_attribute(attr) unless permit_url?(node[attr], remove_invalid_links:)
+=======
+          begin
+            node[attr] = node[attr].strip
+
+            uri = Addressable::URI.parse(node[attr])
+            uri = uri.normalize
+
+            next unless uri.scheme
+            next if safe_protocol?(uri.scheme)
+
+            node.remove_attribute(attr)
+          rescue Addressable::URI::InvalidURIError, Addressable::IDNA::PunycodeBigOutput
+            node.remove_attribute(attr) if remove_invalid_links
+          end
+>>>>>>> source-project/master
         end
       end
     end

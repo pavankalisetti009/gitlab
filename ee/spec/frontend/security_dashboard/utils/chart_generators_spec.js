@@ -1,6 +1,6 @@
+import { markRaw } from 'vue';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 import VulnerabilitiesForSeverityWrapper from 'ee/security_dashboard/components/shared/vulnerabilities_for_severity_wrapper.vue';
-import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 
 describe('Security Dashboard - Chart Utils', () => {
   const severities = ['Critical', 'High', 'Medium', 'Low', 'Info', 'Unknown'];

@@ -1082,6 +1082,84 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     end
   end
 
+  context 'when updating duo_namespace_access_rules', :saas do
+    let(:through_namespace_a) { create(:group, parent: group) }
+    let(:through_namespace_b) { create(:group, parent: group) }
+
+    let(:rules) do
+      [
+        { through_namespace: { id: through_namespace_a.id }, features: ['duo_classic'] },
+        { through_namespace: { id: through_namespace_b.id }, features: ['duo_agent_platform'] }
+      ]
+    end
+
+    let(:params) { { duo_namespace_access_rules: rules } }
+
+    before do
+      stub_feature_flags(duo_access_through_namespaces: true)
+    end
+
+    context 'when rules are valid' do
+      it 'creates namespace feature access rules' do
+        expect { update_group(group, user, params) }
+          .to change { group.ai_feature_rules.count }.from(0).to(2)
+      end
+
+      it 'deletes existing feature access rules and creates new ones' do
+        existing_rule = create(:ai_namespace_feature_access_rules,
+          through_namespace: through_namespace_a,
+          root_namespace: group
+        )
+
+        expect { update_group(group, user, params) }
+          .to change { group.ai_feature_rules.count }.from(1).to(2)
+        expect { existing_rule.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+
+      context 'when duo_namespace_access_rules is empty' do
+        let(:rules) { [] }
+
+        it 'deletes existing access rules and does not create new ones' do
+          create(:ai_namespace_feature_access_rules,
+            through_namespace: through_namespace_a,
+            root_namespace: group
+          )
+
+          expect { update_group(group, user, params) }
+            .to change { group.ai_feature_rules.count }.from(1).to(0)
+        end
+      end
+    end
+
+    context 'when rules are invalid' do
+      let(:rules) do
+        [
+          through_namespace: { id: through_namespace_a.id }, features: ['invalid_entity']
+        ]
+      end
+
+      it 'adds errors to the group' do
+        result = update_group(group, user, params)
+
+        expect(result).to be false
+        expect(group.ai_feature_rules).to be_empty
+      end
+    end
+
+    context 'when duo_access_through_namespaces feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_access_through_namespaces: false)
+      end
+
+      it 'adds errors to the group' do
+        result = update_group(group, user, params)
+
+        expect(result).to be false
+        expect(group.ai_feature_rules).to be_empty
+      end
+    end
+  end
+
   def update_group(group, user, opts)
     Groups::UpdateService.new(group, user, opts).execute
   end

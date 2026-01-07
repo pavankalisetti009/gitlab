@@ -48,61 +48,75 @@ RSpec.describe Types::Analytics::AiMetrics::UserMetricsType, feature_category: :
 
   describe '#total_event_count' do
     let_it_be(:user) { create(:user) }
+    let(:metrics_response) do
+      {
+        user.id => {
+          total_events_count: 25,
+          code_suggestions_accepted_count: 10,
+          duo_chat_interactions_count: 15
+        }
+      }
+    end
 
-    let(:type_instance) do
-      query = GraphQL::Query.new(GitlabSchema, document: nil, context: {}, variables: {})
-      context = GraphQL::Query::Context.new(query: query, values: { current_user: user, ai_metrics_params: {} })
-      described_class.authorized_new(user, context)
+    let(:context) do
+      {
+        current_user: user,
+        ai_metrics_params: {}
+      }
     end
 
     before do
-      allow(type_instance).to receive(:load_metrics_for_feature).and_call_original
+      allow_next_instance_of(::Analytics::AiAnalytics::AiUserMetricsService) do |service|
+        allow(service).to receive(:execute).and_return(
+          ServiceResponse.success(payload: metrics_response)
+        )
+      end
     end
 
-    it 'only counts events accessed through count_field_name' do
-      allow(described_class).to receive(:exposed_events)
-        .with(:code_suggestions)
-        .and_return(%w[
-          code_suggestion_shown_in_ide
-          code_suggestion_accepted_in_ide
-          code_suggestion_rejected_in_ide
-          imaginary_random_event
-        ])
-
-      other_features = Gitlab::Tracking::AiTracking.registered_features - [:code_suggestions]
-      other_features.each do |feature|
-        allow(described_class).to receive(:exposed_events)
-          .with(feature)
-          .and_call_original
+    it 'returns the total event count from the service' do
+      result = batch_sync do
+        resolve_field(:total_event_count, user, ctx: context)
       end
 
-      allow(type_instance).to receive(:load_metrics_for_feature)
-        .with(:code_suggestions)
-        .and_return({
-          code_suggestion_shown_in_ide_event_count: 10,
-          code_suggestion_accepted_in_ide_event_count: 5,
-          code_suggestion_rejected_in_ide_event_count: 3,
-          imaginary_random_event: 10
-        })
-
-      allow(type_instance).to receive(:load_metrics_for_feature)
-        .with(:chat)
-        .and_return({
-          request_duo_chat_response_event_count: 7
-        })
-
-      # Expected: 10 + 5 + 3  + 7 = 25 , Not including imaginary_random_event value
-      expect(type_instance.total_event_count).to eq(25)
+      expect(result).to eq(25)
     end
 
-    it 'returns 0 when no metrics are available' do
-      Gitlab::Tracking::AiTracking.registered_features.each do |feature|
-        allow(type_instance).to receive(:load_metrics_for_feature)
-          .with(feature)
-          .and_return({})
+    it 'calls the service with all_features parameter' do
+      expect(::Analytics::AiAnalytics::AiUserMetricsService).to receive(:new).with(
+        hash_including(feature: :all_features)
+      ).and_call_original
+
+      batch_sync { resolve_field(:total_event_count, user, ctx: context) }
+    end
+
+    context 'when no metrics are available' do
+      let(:metrics_response) { { user.id => {} } }
+
+      it 'returns 0' do
+        result = batch_sync do
+          resolve_field(:total_event_count, user, ctx: context)
+        end
+
+        expect(result).to eq(0)
+      end
+    end
+
+    context 'when service returns empty payload' do
+      before do
+        allow_next_instance_of(::Analytics::AiAnalytics::AiUserMetricsService) do |service|
+          allow(service).to receive(:execute).and_return(
+            ServiceResponse.success(payload: {})
+          )
+        end
       end
 
-      expect(type_instance.total_event_count).to eq(0)
+      it 'returns 0' do
+        result = batch_sync do
+          resolve_field(:total_event_count, user, ctx: context)
+        end
+
+        expect(result).to eq(0)
+      end
     end
   end
 end

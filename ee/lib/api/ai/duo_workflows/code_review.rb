@@ -40,16 +40,7 @@ module API
           # - service_account_user: the service account (e.g., duo-developer)
           def valid_service_account?
             service_account = Gitlab::Auth::Identity.invert_composite_identity(current_user)
-
             return false unless service_account
-
-            # Temporarily check if the service account user is the `@duo-developer` service account.
-            # This is necessary because prior to https://gitlab.com/gitlab-org/gitlab/-/merge_requests/215813,
-            # Duo workflows used to use the instance-wide service account.
-            # Once that MR is merged AND Duo Code Review foundational flow is configured on .com, we can remove
-            # this condition.
-            instance_wide_duo_developer = ::Ai::Setting.instance.duo_workflow_service_account_user
-            return true if service_account.id == instance_wide_duo_developer.id
 
             workflow_definition = ::Ai::Catalog::FoundationalFlow['code_review/v1']
             resolved_service_account_result = ::Ai::Catalog::ItemConsumers::ResolveServiceAccountService.new(

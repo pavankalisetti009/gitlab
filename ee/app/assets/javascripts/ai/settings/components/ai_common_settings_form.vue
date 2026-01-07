@@ -111,6 +111,7 @@ export default {
       duoAgentPlatformEnabledInput: this.duoAgentPlatformEnabled,
       hasFoundationalAgentsStatusesChanged: false,
       localSelectedFlowIds: this.selectedFoundationalFlowIds,
+      namespaceAccessRules: this.initialNamespaceAccessRules,
     };
   },
   computed: {
@@ -144,6 +145,27 @@ export default {
     hasDuoAgentPlatformEnabledChanged() {
       return this.duoAgentPlatformEnabledInput !== this.duoAgentPlatformEnabled;
     },
+    hasNamespaceAccessRulesChanged() {
+      const currentLength = this.namespaceAccessRules?.length || 0;
+      const initialLength = this.initialNamespaceAccessRules?.length || 0;
+
+      if (currentLength !== initialLength) {
+        return true;
+      }
+
+      return this.namespaceAccessRules?.some((namespaceAccessRule) => {
+        const initialNamespaceAccessRule = this.initialNamespaceAccessRules.find(
+          (rule) => rule.throughNamespace.id === namespaceAccessRule.throughNamespace.id,
+        );
+
+        if (!initialNamespaceAccessRule) return true;
+
+        const currentFeatures = [...namespaceAccessRule.features].sort();
+        const initialFeatures = [...initialNamespaceAccessRule.features].sort();
+
+        return JSON.stringify(currentFeatures) !== JSON.stringify(initialFeatures);
+      });
+    },
     hasFormChanged() {
       return (
         this.hasAvailabilityChanged ||
@@ -157,7 +179,8 @@ export default {
         this.hasFoundationalAgentsEnabledChanged ||
         this.hasFoundationalAgentsStatusesChanged ||
         this.hasSelectedFlowIdsChanged ||
-        this.hasDuoAgentPlatformEnabledChanged
+        this.hasDuoAgentPlatformEnabledChanged ||
+        this.hasNamespaceAccessRulesChanged
       );
     },
     showWarning() {
@@ -234,6 +257,10 @@ export default {
       this.duoAgentPlatformEnabledInput = value;
       this.$emit('duo-agent-platform-enabled-changed', value);
     },
+    onNamespaceAccessRulesChanged(value) {
+      this.namespaceAccessRules = value;
+      this.$emit('namespace-access-rules-changed', value);
+    },
   },
 };
 </script>
@@ -245,7 +272,8 @@ export default {
 
     <ai-namespace-access-rules
       v-if="initialNamespaceAccessRules"
-      :initial-namespace-access-rules="initialNamespaceAccessRules"
+      :initial-namespace-access-rules="namespaceAccessRules"
+      @change="onNamespaceAccessRulesChanged"
     />
 
     <duo-core-features-form

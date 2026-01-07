@@ -64,6 +64,57 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
         end
       end
 
+      context 'when feature is :all_features' do
+        let(:feature) { :all_features }
+        let_it_be(:user3) { create(:user, developer_of: group) }
+
+        before do
+          clickhouse_fixture(:ai_usage_events_daily, [
+            # Code suggestions events (event IDs: 2, 3)
+            { user_id: user1.id, namespace_path: container.traversal_path, event: 3,
+              date: (to - 3.days).to_date, occurrences: 2 },
+            { user_id: user1.id, namespace_path: container.traversal_path, event: 2,
+              date: (to - 3.days).to_date, occurrences: 1 },
+            # Chat events (event ID: 6)
+            { user_id: user1.id, namespace_path: container.traversal_path, event: 6,
+              date: (to - 2.days).to_date, occurrences: 3 },
+            { user_id: user2.id, namespace_path: container.traversal_path, event: 6,
+              date: (to - 2.days).to_date, occurrences: 2 },
+            # Code review events (event ID: 10)
+            { user_id: user2.id, namespace_path: container.traversal_path, event: 10,
+              date: (to - 1.day).to_date, occurrences: 1 }
+          ])
+        end
+
+        it 'returns aggregated metrics across all features' do
+          expect(service_response).to be_success
+          expect(service_response.payload).to match({
+            user1.id => a_hash_including(
+              total_events_count: 6,
+              code_suggestion_accepted_in_ide_event_count: 2,
+              code_suggestion_shown_in_ide_event_count: 1,
+              request_duo_chat_response_event_count: 3
+            ),
+            user2.id => a_hash_including(
+              total_events_count: 3,
+              request_duo_chat_response_event_count: 2,
+              encounter_duo_code_review_error_during_review_event_count: 1
+            )
+          })
+        end
+
+        it 'includes event counts from all registered features' do
+          expect(service_response).to be_success
+
+          expect(service_response.payload.values).to all(include(
+            :total_events_count,
+            :code_suggestion_accepted_in_ide_event_count,
+            :code_suggestion_shown_in_ide_event_count,
+            :request_duo_chat_response_event_count
+          ))
+        end
+      end
+
       context 'with code suggestions data' do
         let_it_be(:other_namespace) { create(:project).reload.project_namespace }
         let_it_be(:user3) { create(:user, developer_of: group) }

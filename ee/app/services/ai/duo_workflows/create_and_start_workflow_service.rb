@@ -9,6 +9,7 @@ module Ai
       MISSING_OAUTH_TOKEN_ERROR = 'Could not obtain authentication token'
       MISSING_WORKFLOW_DEFINITION_ERROR = 'Workflow definition cannot be blank'
       MISSING_SOURCE_BRANCH_ERROR = 'Source branch cannot be blank'
+      MISSING_SERVICE_ACCOUNT_ERROR = 'Could not resolve the service account for this flow'
 
       def initialize(container:, current_user:, goal:, source_branch:, workflow_definition:)
         @container = container
@@ -53,6 +54,7 @@ module Ai
         return error(MISSING_SOURCE_BRANCH_ERROR, :invalid_source_branch) if source_branch.blank?
         return error(MISSING_WORKFLOW_TOKEN_ERROR, :invalid_duo_workflow_token) if workflow_service_token.nil?
         return error(MISSING_OAUTH_TOKEN_ERROR, :invalid_oauth_token) if workflow_oauth_token.nil?
+        return error(MISSING_SERVICE_ACCOUNT_ERROR, :invalid_service_account) if service_account.nil?
 
         ServiceResponse.success
       end

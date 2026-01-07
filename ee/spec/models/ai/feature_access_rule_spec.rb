@@ -216,6 +216,17 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
         .to match_array(%w[duo_agent_platform])
     end
 
+    context 'when hash has stringified keys' do
+      it 'creates instance accessible entity rules' do
+        described_class.duo_namespace_access_rules = [
+          { "through_namespace" => { "id" => namespace_a.id }, "features" => ["duo_agent_platform"] }
+        ]
+
+        expect(namespace_a.accessible_ai_features_on_instance.pluck(:accessible_entity))
+          .to match_array(%w[duo_agent_platform])
+      end
+    end
+
     context 'with empty array' do
       before do
         create(:ai_instance_accessible_entity_rules, through_namespace_id: namespace_a.id)

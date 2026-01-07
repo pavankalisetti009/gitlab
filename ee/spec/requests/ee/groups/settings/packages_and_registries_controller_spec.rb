@@ -26,6 +26,7 @@ RSpec.describe Groups::Settings::PackagesAndRegistriesController, feature_catego
 
       it_behaves_like 'returning response status', :ok
       it_behaves_like 'pushed feature flag', :ui_for_virtual_registry_cleanup_policy
+      it_behaves_like 'pushed feature flag', :virtual_registry_cleanup_policies
 
       context 'with shouldRenderVirtualRegistriesSetting' do
         it 'includes the setting as true in the dataset' do

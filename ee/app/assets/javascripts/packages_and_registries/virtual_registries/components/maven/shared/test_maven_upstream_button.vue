@@ -1,7 +1,10 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
-import { testExistingMavenUpstream, testMavenUpstream } from 'ee/api/virtual_registries_api';
+import {
+  testExistingMavenUpstreamWithOverrides,
+  testMavenUpstream,
+} from 'ee/api/virtual_registries_api';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 export default {
@@ -54,18 +57,22 @@ export default {
 
         let testFn;
         let args = {};
+        const defaultArgs = {
+          url,
+          username,
+          password,
+        };
         if (upstreamId) {
-          testFn = testExistingMavenUpstream;
+          testFn = testExistingMavenUpstreamWithOverrides;
           args = {
+            ...defaultArgs,
             id: upstreamId,
           };
         } else {
           testFn = testMavenUpstream;
           args = {
+            ...defaultArgs,
             id: this.groupPath,
-            url,
-            username,
-            password,
           };
         }
 

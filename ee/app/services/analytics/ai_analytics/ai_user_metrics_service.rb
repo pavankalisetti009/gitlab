@@ -27,6 +27,10 @@ module Analytics
 
       attr_reader :current_user, :namespace, :from, :to, :user_ids, :feature, :sort
 
+      def fetch_all_features?
+        feature == :all_features
+      end
+
       def query_and_aggregate_metrics
         builder = ClickHouse::Client::QueryBuilder.new('ai_usage_events_daily')
         query = build_unified_query(builder)
@@ -128,11 +132,23 @@ module Analytics
       end
 
       def feature_events
-        @feature_events ||= ::Gitlab::Tracking::AiTracking.registered_events(feature).keys
+        @feature_events ||= registered_event_names
       end
 
       def feature_event_ids
-        @feature_event_ids ||= feature_events.filter_map { |name| ::Ai::UsageEvent.events[name] }.compact
+        @feature_event_ids ||= registered_event_names.filter_map do |name|
+          ::Ai::UsageEvent.events[name]
+        end.compact
+      end
+
+      def registered_event_names
+        if fetch_all_features?
+          Gitlab::Tracking::AiTracking.registered_features.flat_map do |feature|
+            ::Gitlab::Tracking::AiTracking.registered_events(feature).keys
+          end
+        else
+          ::Gitlab::Tracking::AiTracking.registered_events(feature).keys
+        end
       end
 
       def filter_by_namespace(query, builder)

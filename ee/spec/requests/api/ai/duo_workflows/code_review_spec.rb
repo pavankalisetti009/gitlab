@@ -26,7 +26,6 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let_it_be(:oauth_app) { create(:doorkeeper_application) }
-  let_it_be(:instance_wide_duo_developer) { create(:user, :service_account, organization: organization) }
   let_it_be(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
   let_it_be(:service_account) do
     create(:user, :service_account,
@@ -61,8 +60,6 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
   before_all do
     group.add_developer(user)
     project.add_developer(service_account)
-
-    ::Ai::Setting.instance.update!(duo_workflow_service_account_user: instance_wide_duo_developer)
   end
 
   describe 'POST /ai/duo_workflows/code_review/add_comments' do
@@ -315,16 +312,6 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
           expect(json_response['message']).to eq(
             '403 Forbidden - This endpoint can only be accessed by Duo Workflow Service'
           )
-        end
-      end
-
-      context 'when service account matches the instance-wide Duo developer' do
-        let(:service_account) { instance_wide_duo_developer }
-
-        it 'processes the request' do
-          post api(path, user, oauth_access_token: token), params: params
-
-          expect(response).to have_gitlab_http_status(:created)
         end
       end
 

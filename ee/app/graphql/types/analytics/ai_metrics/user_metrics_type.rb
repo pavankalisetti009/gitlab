@@ -59,21 +59,22 @@ module Types
         end
 
         def total_event_count
-          all_features = Gitlab::Tracking::AiTracking.registered_features
-
-          all_features.reduce(0) do |total, feature|
-            lazy_metrics = load_metrics_for_feature(feature)
-            forced_metrics = ::Gitlab::Graphql::Lazy.force(lazy_metrics)
-
-            feature_total = self.class.exposed_events(feature).sum do |event|
-              forced_metrics[self.class.count_field_name(event)] || 0
-            end
-
-            total + feature_total
+          ::Gitlab::Graphql::Lazy.with_value(load_all_features_metrics) do |metrics|
+            metrics[:total_events_count] || 0
           end
         end
 
         private
+
+        def load_all_features_metrics
+          BatchLoader::GraphQL.for(user).batch(key: :user_metrics_all_features) do |users, return_result|
+            all_metrics = fetch_metrics_for_users(users, :all_features)
+            users.each do |user|
+              metrics = all_metrics[user.id] || {}
+              return_result.call(user, metrics)
+            end
+          end
+        end
 
         def load_metrics_for_feature(feature)
           BatchLoader::GraphQL.for(user).batch(key: :"user_metrics_#{feature}") do |users, return_result|
@@ -89,11 +90,15 @@ module Types
           ::Analytics::AiAnalytics::AiUserMetricsService.new(
             current_user: context[:current_user],
             user_ids: users.map(&:id),
-            namespace: context.dig(:ai_metrics_params, :namespace),
-            from: context.dig(:ai_metrics_params, :start_date),
-            to: context.dig(:ai_metrics_params, :end_date),
+            namespace: ai_metrics_params[:namespace],
+            from: ai_metrics_params[:start_date],
+            to: ai_metrics_params[:end_date],
             feature: feature
           ).execute.payload
+        end
+
+        def ai_metrics_params
+          @ai_metrics_params ||= context[:ai_metrics_params] || {}
         end
       end
       # rubocop: enable Graphql/AuthorizeTypes

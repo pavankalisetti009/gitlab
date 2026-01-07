@@ -93,5 +93,12 @@ RSpec.describe EE::PackagesHelper, feature_category: :package_registry do
         should_render_virtual_registries_setting: 'true'
       )
     end
+
+    it 'includes the virtual registry cleanup policy path' do
+      expect(helper.packages_and_registries_group_settings_template_data(group)).to include(
+        virtual_registry_cleanup_policy_path:
+          group_settings_packages_and_registries_virtual_registry_cleanup_policy_index_path(group)
+      )
+    end
   end
 end

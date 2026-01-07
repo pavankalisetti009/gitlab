@@ -856,6 +856,44 @@ module EE
       super || build_ai_settings
     end
 
+    def ai_feature_rules=(values)
+      # These are settings that can only be update at the root namespace level, and only applies to SaaS
+      return unless root? &&
+        ::Feature.enabled?(:duo_access_through_namespaces, self) &&
+        ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+      values = values.reject(&:blank?)
+
+      ai_feature_rules.delete_all(:delete_all)
+
+      return if values.empty?
+
+      timestamp = Time.current
+      rules = values.flat_map do |rule|
+        features = rule[:features].reject(&:blank?)
+        next [] if features.blank?
+
+        through_namespace = self.class.find_by_id(rule.dig(:through_namespace, :id))
+
+        next [] unless through_namespace
+
+        features.map do |access_entity|
+          ::Ai::NamespaceFeatureAccessRule.new(
+            through_namespace: through_namespace,
+            accessible_entity: access_entity,
+            root_namespace_id: id,
+            created_at: timestamp,
+            updated_at: timestamp
+          )
+        end
+      end
+
+      ai_feature_rules.bulk_insert!(rules) if rules.any?
+
+      # Clearing the association cache since bulk_insert doesn't update cached associations
+      association(:ai_feature_rules).reset
+    end
+
     private
 
     def has_paid_hosted_plan?

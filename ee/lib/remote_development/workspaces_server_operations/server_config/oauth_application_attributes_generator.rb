@@ -26,12 +26,15 @@ module RemoteDevelopment
           redirect_uri = api_external_url.dup
           redirect_uri.path = "#{redirect_uri.path}/#{OAUTH_REDIRECT_URI_PATH_SEGMENT}"
 
+          organization_id = Organizations::Organization.first&.id # rubocop:disable Gitlab/PreventOrganizationFirst -- Instance-level OAuth app for Workspaces infrastructure, following Web IDE pattern.
+
           attributes = {
             name: OAUTH_NAME,
             redirect_uri: redirect_uri.to_s,
             scopes: "openid",
             trusted: TRUSTED,
-            confidential: CONFIDENTIAL
+            confidential: CONFIDENTIAL,
+            organization_id: organization_id
           }
 
           context.merge(

@@ -1,6 +1,7 @@
 <script>
 import { GlTable, GlButton, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import GroupSelector from './group_selector.vue';
 
 const AVAILABLE_FEATURES = [
   {
@@ -8,12 +9,8 @@ const AVAILABLE_FEATURES = [
     label: s__('AiPowered|GitLab Duo Classic'),
   },
   {
-    key: 'duo_agents',
-    label: s__('AiPowered|GitLab Duo Agents'),
-  },
-  {
-    key: 'duo_flows',
-    label: s__('AiPowered|GitLab Duo Flows and External Agents'),
+    key: 'duo_agent_platform',
+    label: s__('AiPowered|GitLab Duo Agent Platform'),
   },
 ];
 
@@ -25,20 +22,27 @@ export default {
     GlFormGroup,
     GlFormCheckbox,
     GlLink,
+    GroupSelector,
   },
   AVAILABLE_FEATURES,
   fields: [
     {
       key: 'namespaceName',
       label: s__('AiPowered|Group'),
+      thStyle: { width: '40%' },
+      tdClass: 'gl-max-w-0',
     },
     {
       key: 'features',
       label: s__('AiPowered|Membership grants access to'),
+      thStyle: { width: '40%' },
+      tdClass: 'gl-max-w-0',
     },
     {
       key: 'actions',
       label: null,
+      thStyle: { width: '20%' },
+      tdClass: 'gl-max-w-0',
     },
   ],
   props: {
@@ -57,6 +61,54 @@ export default {
   methods: {
     isFeatureEnabled(namespaceAccessRule, feature) {
       return namespaceAccessRule.features.includes(feature) || false;
+    },
+    onGroupSelected(group) {
+      const exists = this.namespaceAccessRules.some(
+        (rule) => rule.throughNamespace.id === group.id,
+      );
+
+      if (exists) {
+        return;
+      }
+
+      this.namespaceAccessRules = [
+        ...this.namespaceAccessRules,
+        {
+          throughNamespace: {
+            id: group.id,
+            name: group.name,
+            fullPath: group.fullPath,
+          },
+          features: AVAILABLE_FEATURES.map((rule) => rule.key),
+        },
+      ];
+    },
+    removeNamespaceAccessRule(namespaceId) {
+      this.namespaceAccessRules = this.namespaceAccessRules.filter(
+        (rule) => rule.throughNamespace.id !== namespaceId,
+      );
+
+      this.$emit('change', this.namespaceAccessRules);
+    },
+    toggleFeature(namespaceId, feature, isEnabled) {
+      this.namespaceAccessRules = this.namespaceAccessRules.map((rule) => {
+        if (rule.throughNamespace.id !== namespaceId) return rule;
+
+        const features = new Set(rule.features);
+
+        if (isEnabled) {
+          features.add(feature);
+        } else {
+          features.delete(feature);
+        }
+
+        return {
+          ...rule,
+          features: [...features],
+        };
+      });
+
+      this.$emit('change', this.namespaceAccessRules);
     },
   },
 };
@@ -79,18 +131,21 @@ export default {
         :fields="$options.fields"
         show-empty
         bordered
-        thead-class="gl-bg-gray-50"
+        fixed
+        thead-class="gl-bg-subtle"
       >
         <template #empty>
-          <div class="gl-my-5 gl-text-center gl-text-secondary">
+          <div class="gl-my-5 gl-text-center gl-text-subtle">
             {{ s__('AiPowered|No access rules configured') }}
           </div>
         </template>
 
         <template #cell(namespaceName)="{ item }">
-          <gl-link :href="`/${item.throughNamespace.fullPath}`" target="_blank">
-            {{ item.throughNamespace.name }}
-          </gl-link>
+          <div class="gl-truncate">
+            <gl-link :href="`/${item.throughNamespace.fullPath}`" target="_blank">
+              {{ item.throughNamespace.name }}
+            </gl-link>
+          </div>
         </template>
 
         <template #cell(features)="{ item }">
@@ -99,23 +154,25 @@ export default {
               v-for="feature in $options.AVAILABLE_FEATURES"
               :key="feature.key"
               :checked="isFeatureEnabled(item, feature.key)"
-              disabled
+              @change="toggleFeature(item.throughNamespace.id, feature.key, $event)"
             >
               {{ feature.label }}
             </gl-form-checkbox>
           </div>
         </template>
 
-        <template #cell(actions)="">
-          <gl-button variant="link" category="secondary" disabled>
+        <template #cell(actions)="{ item }">
+          <gl-button
+            variant="link"
+            category="secondary"
+            @click="removeNamespaceAccessRule(item.throughNamespace.id)"
+          >
             {{ s__('AiPowered|Remove') }}
           </gl-button>
         </template>
       </gl-table>
 
-      <gl-button category="secondary" disabled>
-        {{ s__('AiPowered|Add Group') }}
-      </gl-button>
+      <group-selector @group-selected="onGroupSelected" />
     </gl-form-group>
   </div>
 </template>

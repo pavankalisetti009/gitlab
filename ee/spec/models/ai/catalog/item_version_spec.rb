@@ -192,6 +192,51 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
     end
   end
 
+  describe 'scopes' do
+    let_it_be(:item) { create(:ai_catalog_item, :public) }
+    let_it_be(:original_version) { item.latest_version }
+
+    describe '.created_after' do
+      it 'returns the expected versions' do
+        new_version = create(:ai_catalog_item_version, item: item, created_at: Date.tomorrow + 1.hour)
+
+        results = described_class.created_after(Date.tomorrow)
+
+        expect(results).to contain_exactly(new_version)
+      end
+    end
+
+    describe '.for_public_items' do
+      it 'returns the expected versions' do
+        create(:ai_catalog_item, :private)
+
+        results = described_class.for_public_items
+
+        expect(results).to contain_exactly(original_version)
+      end
+    end
+
+    describe '.in_organization' do
+      it 'returns the expected versions' do
+        create(:ai_catalog_item, organization: create(:organization))
+
+        results = described_class.in_organization(item.organization)
+
+        expect(results).to contain_exactly(original_version)
+      end
+    end
+
+    describe '.order_by_id_desc' do
+      it 'returns the expected versions' do
+        new_version = create(:ai_catalog_item_version, item: item)
+
+        results = described_class.order_by_id_desc
+
+        expect(results).to eq([new_version, original_version])
+      end
+    end
+  end
+
   describe '#human_version' do
     it 'returns nil when version is nil' do
       expect(build(:ai_catalog_item_version, version: nil).human_version).to be_nil

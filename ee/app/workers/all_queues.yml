@@ -4147,6 +4147,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_project_tracked_contexts_update_default_context
+  :worker_name: Security::ProjectTrackedContexts::UpdateDefaultContextWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_recreate_orchestration_configuration
   :worker_name: Security::RecreateOrchestrationConfigurationWorker
   :feature_category: :security_policy_management

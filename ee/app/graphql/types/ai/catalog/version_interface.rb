@@ -29,6 +29,7 @@ module Types
           description: 'Human-friendly name of the item version. In the form v1.0.0-draft.'
         field :version_name, GraphQL::Types::String, null: true, method: :version,
           description: 'Version name of the item version.'
+        field :item, Types::Ai::Catalog::ItemInterface, null: false, description: 'Item the version belongs to.'
 
         orphan_types ::Types::Ai::Catalog::AgentVersionType
         orphan_types ::Types::Ai::Catalog::FlowVersionType
@@ -44,6 +45,10 @@ module Types
           return unless object.created_by_id
 
           Gitlab::Graphql::Loaders::BatchModelLoader.new(User, object.created_by_id).find
+        end
+
+        def item
+          Gitlab::Graphql::Loaders::BatchModelLoader.new(::Ai::Catalog::Item, object.ai_catalog_item_id).find
         end
       end
     end

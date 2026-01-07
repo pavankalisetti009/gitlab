@@ -101,7 +101,31 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
                 it_behaves_like 'skips the push check'
               end
 
-              it_behaves_like 'performs the push check'
+              context 'when scan profile does not have git_push_event trigger' do
+                it_behaves_like 'skips the push check'
+              end
+
+              context 'when scan profile has git_push_event trigger' do
+                let_it_be(:trigger) do
+                  create(:security_scan_profile_trigger,
+                    namespace: project.namespace,
+                    scan_profile: secret_detection_profile,
+                    trigger_type: :git_push_event)
+                end
+
+                it_behaves_like 'performs the push check'
+              end
+
+              context 'when scan profile has a different trigger type' do
+                let_it_be(:trigger) do
+                  create(:security_scan_profile_trigger,
+                    namespace: project.namespace,
+                    scan_profile: secret_detection_profile,
+                    trigger_type: :default_branch_pipeline)
+                end
+
+                it_behaves_like 'skips the push check'
+              end
             end
           end
 
@@ -166,7 +190,31 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
                 it_behaves_like 'skips the push check'
               end
 
-              it_behaves_like 'performs the push check'
+              context 'when scan profile does not have git_push_event trigger' do
+                it_behaves_like 'skips the push check'
+              end
+
+              context 'when scan profile has git_push_event trigger' do
+                let_it_be(:trigger) do
+                  create(:security_scan_profile_trigger,
+                    namespace: project.namespace,
+                    scan_profile: secret_detection_profile,
+                    trigger_type: :git_push_event)
+                end
+
+                it_behaves_like 'performs the push check'
+              end
+
+              context 'when scan profile has a different trigger type' do
+                let_it_be(:trigger) do
+                  create(:security_scan_profile_trigger,
+                    namespace: project.namespace,
+                    scan_profile: secret_detection_profile,
+                    trigger_type: :default_branch_pipeline)
+                end
+
+                it_behaves_like 'skips the push check'
+              end
             end
           end
 

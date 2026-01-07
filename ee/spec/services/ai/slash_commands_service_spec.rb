@@ -71,7 +71,7 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
       let(:issue) { create(:issue, project: project) }
 
       context 'on individual issue page' do
-        let(:url) { Gitlab::Routing.url_helpers.project_issue_url(project, issue) }
+        let(:url) { ::Gitlab::UrlBuilder.instance.issue_url(issue) }
 
         context 'when user has Duo Enterprise access' do
           before do
@@ -210,7 +210,7 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
     end
 
     context 'when on individual issue page' do
-      let(:url) { Gitlab::Routing.url_helpers.project_issue_url(project, issue) }
+      let(:url) { ::Gitlab::UrlBuilder.instance.issue_url(issue) }
 
       it { is_expected.to be false }
     end

@@ -11,11 +11,12 @@ module Search
     end
 
     def execute
-      return unless project.should_check_index_integrity?
-
-      repair_index_for_blobs if should_repair_index_for_blobs?
+      return false if ::Gitlab::Geo.secondary?
+      return false unless project.should_check_index_integrity?
 
       repair_index_for_project if project_missing?
+      repair_index_for_blobs_or_commits if should_repair_index_for_blobs_or_commits?
+      repair_index_for_wikis if should_repair_index_for_wikis?
     end
 
     private
@@ -51,15 +52,17 @@ module Search
       ::Elastic::ProcessBookkeepingService.track!(project)
     end
 
-    def repair_index_for_blobs
+    def repair_index_for_blobs_or_commits
       index_repair_counter.increment(base_metrics_labels(Repository))
-
       ::Search::Elastic::CommitIndexerWorker.perform_in(rand(DELAY_INTERVAL), project.id, { 'force' => true })
+    end
 
+    def repair_index_for_wikis
+      index_repair_counter.increment(base_metrics_labels(::Wiki))
       ElasticWikiIndexerWorker.perform_in(rand(DELAY_INTERVAL), project.id, project.class.name, { 'force' => true })
     end
 
-    def blobs_missing?
+    def blobs_completely_missing?
       query = {
         query: {
           bool: {
@@ -89,18 +92,69 @@ module Search
       end
     end
 
-    def should_repair_index_for_blobs?
-      return false if ::Gitlab::Geo.secondary?
-      return true if params[:force_repair_blobs]
-      return false unless blobs_missing?
-      return true if project.index_status.blank?
+    def commits_completely_missing?
+      query = {
+        query: {
+          bool: {
+            filter: [
+              { term: { type: 'commit' } },
+              { term: { rid: project.id.to_s } }
+            ]
+          }
+        }
+      }
 
+      commit_count = client.count(
+        index: ::Elastic::Latest::CommitConfig.index_name,
+        routing: project.es_id,
+        body: query
+      )['count']
+      commit_count == 0
+    end
+
+    def wikis_completely_missing?
+      query = {
+        query: {
+          bool: {
+            filter: [
+              { term: { type: 'wiki_blob' } },
+              { term: { project_id: project.id } }
+            ]
+          }
+        }
+      }
+
+      routing = ::Elastic::Latest::WikiClassProxy.new(::Wiki).routing_options(
+        { root_ancestor_ids: [project.root_ancestor.id] }
+      )[:routing]
+      wiki_count = client.count(index: ::Wiki.index_name, routing: routing, body: query)['count']
+
+      wiki_count == 0
+    end
+
+    # Order of checks is important
+    def should_repair_index_for_blobs_or_commits?
       # Use root_ref to avoid when HEAD points to non-existent branch
       # https://gitlab.com/gitlab-org/gitaly/-/issues/1446
       last_commit_for_root_ref = project.commit(project.repository.root_ref)
-      return false if last_commit_for_root_ref.blank?
+      return false if last_commit_for_root_ref.nil?
+      return true if project.index_status.blank?
+      return true unless project.index_status.last_commit == last_commit_for_root_ref.sha
+      return true if commits_completely_missing?
+      return false unless Gitlab::CurrentSettings.elasticsearch_code_scope?
 
-      project.index_status.last_commit != last_commit_for_root_ref.sha
+      params[:force_repair_blobs] || blobs_completely_missing?
+    end
+
+    def should_repair_index_for_wikis?
+      # Use root_ref to avoid when HEAD points to non-existent branch
+      # https://gitlab.com/gitlab-org/gitaly/-/issues/1446
+      last_commit_ref = project.wiki.repository.commit(project.wiki.repository.root_ref)
+      return false if last_commit_ref.nil?
+      return true if project.index_status.blank?
+      return true unless project.index_status.last_wiki_commit == last_commit_ref.sha
+
+      wikis_completely_missing?
     end
 
     def client
@@ -116,8 +170,10 @@ module Search
     end
 
     def index_repair_counter
-      @index_repair_counter ||= ::Gitlab::Metrics.counter(:search_advanced_index_repair_total,
-        'Count of search index repair operations.')
+      @index_repair_counter ||= ::Gitlab::Metrics.counter(
+        :search_advanced_index_repair_total,
+        'Count of search index repair operations.'
+      )
     end
   end
 end

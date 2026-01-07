@@ -10,12 +10,28 @@ module Ai
       end
 
       def execute
+        feature_settings = get_feature_settings
+        partition_by_dap_features(feature_settings)
+      end
+
+      private
+
+      def dap_features
+        %w[duo_agent_platform duo_agent_platform_agentic_chat]
+      end
+
+      def partition_by_dap_features(feature_settings)
+        {
+          dap: feature_settings.select { |setting| dap_features.include?(setting.feature) },
+          classic: feature_settings.reject { |setting| dap_features.include?(setting.feature) }
+        }
+      end
+
+      def get_feature_settings
         return scope_all unless @self_hosted_model_id # return type of scope_all is Array
 
         scope_for_self_hosted_model(@self_hosted_model_id).to_a # .to_a to keep the return type consistent
       end
-
-      private
 
       def scope_for_self_hosted_model(self_hosted_model_id)
         ::Ai::FeatureSetting.for_self_hosted_model(self_hosted_model_id)

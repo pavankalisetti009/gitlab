@@ -381,6 +381,8 @@ module EE
           experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::VirtualRegistries::Setting::Update, experiment: { milestone: '18.5' }
         mount_mutation ::Mutations::VirtualRegistries::Cleanup::Policy::Upsert, experiment: { milestone: '18.7' }
+        mount_mutation ::Mutations::VirtualRegistries::Container::ContainerUpstreamUpdateMutation,
+          experiment: { milestone: '18.8' }
 
         prepend(Types::DeprecatedMutations)
       end

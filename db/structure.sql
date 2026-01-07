@@ -259,6 +259,22 @@ RETURN NULL;
 END
 $$;
 
+CREATE FUNCTION delete_orphaned_granular_scopes() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+DELETE FROM granular_scopes
+WHERE id = OLD.granular_scope_id
+AND NOT EXISTS (
+  SELECT 1
+  FROM personal_access_token_granular_scopes
+  WHERE granular_scope_id = OLD.granular_scope_id
+);
+RETURN OLD;
+
+END
+$$;
+
 CREATE FUNCTION ensure_note_diff_files_sharding_key() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -18753,7 +18769,6 @@ CREATE TABLE granular_scopes (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     permissions jsonb DEFAULT '[]'::jsonb NOT NULL,
-    all_membership_namespaces boolean DEFAULT false NOT NULL,
     access smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_permissions_is_array CHECK ((jsonb_typeof(permissions) = 'array'::text))
 );
@@ -41204,8 +41219,6 @@ CREATE INDEX index_background_operation_workers_by_status ON ONLY background_ope
 
 CREATE INDEX index_background_operation_workers_by_user ON ONLY background_operation_workers USING btree (user_id);
 
-CREATE UNIQUE INDEX index_background_operation_workers_on_unique_configuration ON ONLY background_operation_workers USING btree (partition, organization_id, job_class_name, table_name, column_name, job_arguments);
-
 CREATE INDEX index_backup_finding_evidences_on_fk ON ONLY backup_finding_evidences USING btree (finding_id);
 
 CREATE INDEX index_backup_finding_evidences_on_project_id ON ONLY backup_finding_evidences USING btree (project_id);
@@ -41372,7 +41385,9 @@ CREATE INDEX index_boards_on_project_id ON boards USING btree (project_id);
 
 CREATE INDEX index_bow_cell_local_by_status ON ONLY background_operation_workers_cell_local USING btree (status);
 
-CREATE UNIQUE INDEX index_bow_cell_local_on_unique_configuration ON ONLY background_operation_workers_cell_local USING btree (partition, job_class_name, table_name, column_name, job_arguments);
+CREATE UNIQUE INDEX index_bow_cell_local_on_unique_undone ON ONLY background_operation_workers_cell_local USING btree (partition, job_class_name, table_name, column_name, job_arguments) WHERE (status = ANY (ARRAY[0, 1, 2]));
+
+CREATE UNIQUE INDEX index_bow_on_unique_undone ON ONLY background_operation_workers USING btree (partition, organization_id, job_class_name, table_name, column_name, job_arguments) WHERE (status = ANY (ARRAY[0, 1, 2]));
 
 CREATE UNIQUE INDEX index_branch_rule_squash_options_on_protected_branch_id ON projects_branch_rules_squash_options USING btree (protected_branch_id);
 
@@ -50143,6 +50158,8 @@ CREATE TRIGGER trigger_dc13168b8025 BEFORE INSERT OR UPDATE ON vulnerability_fla
 CREATE TRIGGER trigger_de59b81d3044 BEFORE INSERT OR UPDATE ON bulk_import_export_batches FOR EACH ROW EXECUTE FUNCTION trigger_de59b81d3044();
 
 CREATE TRIGGER trigger_de99bb993511 BEFORE INSERT ON namespace_descendants FOR EACH ROW EXECUTE FUNCTION function_for_trigger_de99bb993511();
+
+CREATE TRIGGER trigger_delete_orphaned_granular_scopes AFTER DELETE ON personal_access_token_granular_scopes FOR EACH ROW EXECUTE FUNCTION delete_orphaned_granular_scopes();
 
 CREATE TRIGGER trigger_delete_project_namespace_on_project_delete AFTER DELETE ON projects FOR EACH ROW WHEN ((old.project_namespace_id IS NOT NULL)) EXECUTE FUNCTION delete_associated_project_namespace();
 
