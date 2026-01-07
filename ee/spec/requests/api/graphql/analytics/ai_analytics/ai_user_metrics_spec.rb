@@ -26,6 +26,11 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
       .with(current_user, :read_enterprise_ai_analytics, anything)
       .and_return(true)
 
+    allow_next_instance_of(Analytics::AiAnalytics::AiUserMetricsService,
+      hash_including(current_user: current_user, feature: :all_features, **expected_filters)) do |instance|
+      allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: service_payload))
+    end
+
     Gitlab::Tracking::AiTracking.registered_features.each do |feature|
       feature_payload = filter_service_payload_by_feature(service_payload, feature)
 
@@ -249,7 +254,7 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     let_it_be(:user3) { create(:user, reporter_of: group) }
     let_it_be(:user4) { create(:user, reporter_of: group) }
 
-    let(:fields) { ['user { id }', 'totalEventCount'] }
+    let(:fields) { ['user { id }'] }
     let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_user_metrics_fields) }
     let(:ai_user_metrics) { graphql_data['group']['aiUserMetrics'] }
 
