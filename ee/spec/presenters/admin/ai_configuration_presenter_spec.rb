@@ -10,8 +10,9 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
   end
 
   describe '#settings' do
-    subject(:settings) { described_class.new.settings }
+    subject(:settings) { described_class.new(current_user).settings }
 
+    let(:current_user) { build(:admin) }
     let(:application_setting_attributes) do
       {
         disabled_direct_code_suggestions?: true,
@@ -40,11 +41,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     end
 
     let(:ai_settings) { instance_double(Ai::Setting, **ai_settings_attributes) }
-    let(:any_add_on_purchase) { build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed, :active) }
-    let(:active_add_on_purchase_for_self_managed?) { true }
-    let(:application_settings) { instance_double(ApplicationSetting, **application_setting_attributes) }
     let(:beta_self_hosted_models_enabled) { true }
-    let(:self_hosted_models) { true }
     let(:active_duo_add_ons_exist?) { true }
     let(:namespace_access_rules) do
       [
@@ -67,6 +64,8 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     end
 
     before do
+      stub_ee_application_setting(**application_setting_attributes)
+
       allow(GitlabSubscriptions::AddOnPurchase)
         .to receive(:active_duo_add_ons_exist?)
         .with(:instance)
@@ -78,14 +77,10 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         .to receive(:has_accepted?)
         .and_return(beta_self_hosted_models_enabled)
 
-      allow(License).to receive(:feature_available?).with(:self_hosted_models).and_return self_hosted_models
+      allow(Ability).to receive(:allowed?).with(current_user, :manage_self_hosted_models_settings).and_return(true)
 
-      allow(Gitlab::CurrentSettings).to receive(:current_application_settings).and_return application_settings
       allow(Ai::FeatureAccessRule).to receive(:duo_root_namespace_access_rules).and_return namespace_access_rules
 
-      allow(GitlabSubscriptions::DuoEnterprise).to receive_messages(
-        active_add_on_purchase_for_self_managed?: active_add_on_purchase_for_self_managed?
-      )
       stub_feature_flags(duo_foundational_agents_per_agent_availability: false)
     end
 
@@ -163,20 +158,10 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       it { expect(settings).to include(beta_self_hosted_models_enabled: 'false') }
     end
 
-    context 'with Dedicated instance' do
-      let(:application_setting_attributes) { super().merge(gitlab_dedicated_instance?: true) }
-
-      it { expect(settings).to include(can_manage_self_hosted_models: 'false') }
-    end
-
-    context 'without self-hosted models license' do
-      let(:self_hosted_models) { false }
-
-      it { expect(settings).to include(can_manage_self_hosted_models: 'false') }
-    end
-
-    context 'without add-on purchase for Duo Enterprise' do
-      let(:active_add_on_purchase_for_self_managed?) { false }
+    context 'when user cannot manage self-hosted models' do
+      before do
+        allow(Ability).to receive(:allowed?).with(current_user, :manage_self_hosted_models_settings).and_return(false)
+      end
 
       it { expect(settings).to include(can_manage_self_hosted_models: 'false') }
     end
@@ -233,7 +218,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       include_context 'with mocked Foundational Chat Agents'
 
       it 'returns all foundational agents except duo chat with default enabled status' do
-        statuses = Gitlab::Json.parse(settings.fetch(:foundational_agents_statuses))
+        statuses = Gitlab::Json.safe_parse(settings.fetch(:foundational_agents_statuses))
 
         expect(statuses).to match_array([
           { "description" => "First agent", "enabled" => nil, "name" => "Agent 1", "reference" => "agent_1" },

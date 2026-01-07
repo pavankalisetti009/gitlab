@@ -87,7 +87,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     {
       code_generations: 0,
       code_completions: 1,
-      glab_ask_git_command: 2
+      glab_ask_git_command: 2,
+      duo_agent_platform: 3
     }
   end
 
@@ -107,11 +108,13 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
       .and_return(generate_feature_setting_data(feature_setting))
     end
 
-    context 'with manage_self_hosted_models_settings check' do
-      where(:allowed) do
+    context 'with self-hosted models permissions' do
+      where(:manage_self_hosted_models_settings, :read_dap_self_hosted_model) do
         [
-          true,
-          false
+          [true, true],
+          [true, false],
+          [false, true],
+          [false, false]
         ]
       end
 
@@ -120,18 +123,32 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
           allow(Ability).to receive(:allowed?).and_call_original
           allow(Ability).to receive(:allowed?)
             .with(current_user, :manage_self_hosted_models_settings)
-            .and_return(allowed)
+            .and_return(manage_self_hosted_models_settings)
+          allow(Ability).to receive(:allowed?)
+            .with(current_user, :read_dap_self_hosted_model)
+            .and_return(read_dap_self_hosted_model)
         end
 
-        it "decorates with_self_hosted_models: #{params[:allowed]}" do
+        it "decorates DAP features with_self_hosted_models: #{params[:read_dap_self_hosted_model]}" \
+          "and classic features with_self_hosted_models: #{params[:manage_self_hosted_models_settings]}" do
           post_graphql(query, current_user: current_user)
 
           expect(::Gitlab::Graphql::Representation::AiFeatureSetting)
             .to have_received(:decorate)
             .with(
+              array_including(an_object_having_attributes(feature: "duo_agent_platform")),
+              hash_including(with_self_hosted_models: read_dap_self_hosted_model)
+            ).ordered
+            .at_least(:once)
+
+          # Classic feature settings
+          expect(::Gitlab::Graphql::Representation::AiFeatureSetting)
+            .to have_received(:decorate)
+            .with(
               anything,
-              hash_including(with_self_hosted_models: allowed)
-            )
+              hash_including(with_self_hosted_models: manage_self_hosted_models_settings)
+            ).ordered
+            .at_least(:once)
         end
       end
     end
@@ -161,6 +178,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
               anything,
               hash_including(with_gitlab_models: allowed)
             )
+            .twice
         end
       end
     end
@@ -181,6 +199,53 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
       result = ai_feature_settings_data
 
       expect(result).to match_array(expected_response)
+    end
+  end
+
+  context 'when validModels is not requested in the query' do
+    let(:query_without_valid_models) do
+      %(
+        query aiFeatureSettings {
+          aiFeatureSettings {
+            nodes {
+              feature
+              title
+              provider
+            }
+          }
+        }
+      )
+    end
+
+    it 'does not check self-hosted models permissions' do
+      allow(Ability).to receive(:allowed?).and_call_original
+
+      post_graphql(query_without_valid_models, current_user: current_user)
+
+      expect(Ability).not_to have_received(:allowed?).with(current_user, :read_dap_self_hosted_model)
+      expect(Ability).not_to have_received(:allowed?).with(current_user, :manage_self_hosted_models_settings)
+    end
+
+    it 'decorates with_self_hosted_models as false for both DAP and classic features' do
+      allow(::Gitlab::Graphql::Representation::AiFeatureSetting).to receive(:decorate).and_call_original
+
+      post_graphql(query_without_valid_models, current_user: current_user)
+
+      # DAP features
+      expect(::Gitlab::Graphql::Representation::AiFeatureSetting)
+        .to have_received(:decorate)
+        .with(
+          anything,
+          hash_including(with_self_hosted_models: false)
+        ).at_least(:once)
+
+      # Classic features
+      expect(::Gitlab::Graphql::Representation::AiFeatureSetting)
+        .to have_received(:decorate)
+        .with(
+          anything,
+          hash_including(with_self_hosted_models: false)
+        ).at_least(:once)
     end
   end
 

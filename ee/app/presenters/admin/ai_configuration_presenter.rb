@@ -25,6 +25,10 @@ module Admin
       :foundational_agents_default_enabled,
       to: :ai_settings
 
+    def initialize(current_user)
+      @current_user = current_user
+    end
+
     def settings
       settings_hash = {
         ai_gateway_url: ai_gateway_url,
@@ -82,12 +86,7 @@ module Admin
     end
 
     def can_manage_self_hosted_models?
-      return false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
-
-      has_required_license = ::License.feature_available?(:self_hosted_models)
-      has_duo_enterprise = ::GitlabSubscriptions::DuoEnterprise.active_add_on_purchase_for_self_managed?
-
-      has_required_license && has_duo_enterprise
+      ::Ability.allowed?(@current_user, :manage_self_hosted_models_settings)
     end
 
     def url_helpers
