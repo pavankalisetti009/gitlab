@@ -141,7 +141,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
       let(:route3) { instance_double(Grape::Router::Route, app: app3) }
       let(:route4) { instance_double(Grape::Router::Route, app: app4) }
       let(:routes) { [route1, route2, route3, route4] }
-      let(:search_aggregator) { class_double(Mcp::Tools::AggregatedService, tool_name: 'gitlab_search') }
+      let(:search_aggregator) { class_double(Mcp::Tools::AggregatedService, tool_name: 'search') }
       let(:user_aggregator) { class_double(Mcp::Tools::AggregatedService, tool_name: 'user_management') }
       let(:search_service) { instance_double(Mcp::Tools::AggregatedService) }
       let(:user_service) { instance_double(Mcp::Tools::AggregatedService) }
@@ -171,7 +171,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         manager = described_class.new
 
         expect(manager.tools).to include(
-          'gitlab_search' => search_service,
+          'search' => search_service,
           'user_management' => user_service,
           'standalone_tool' => api_tool4
         )
@@ -222,6 +222,13 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
       manager = described_class.new
 
       expect(manager.list_tools).to eq(manager.tools)
+    end
+
+    it 'does not include tool aliases' do
+      manager = described_class.new
+
+      expect(manager.list_tools.keys).to include('search')
+      expect(manager.list_tools.keys).not_to include('gitlab_search')
     end
   end
 
@@ -311,27 +318,58 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
     context 'with aggregated API tool' do
       context 'when requesting latest version' do
         it 'returns the latest version' do
-          tool = manager.get_tool(name: 'gitlab_search')
+          tool = manager.get_tool(name: 'search')
 
-          expect(tool).to be_a(Mcp::Tools::GitlabSearchService)
+          expect(tool).to be_a(Mcp::Tools::SearchService)
           expect(tool.version).to eq('0.1.0')
         end
       end
 
       context 'when requesting specific version' do
         it 'returns the correct version' do
-          tool = manager.get_tool(name: 'gitlab_search', version: '0.1.0')
+          tool = manager.get_tool(name: 'search', version: '0.1.0')
 
-          expect(tool).to be_a(Mcp::Tools::GitlabSearchService)
+          expect(tool).to be_a(Mcp::Tools::SearchService)
           expect(tool.version).to eq('0.1.0')
         end
       end
 
       context 'when requesting non-existent version' do
         it 'raises VersionNotFoundError' do
+          expect { manager.get_tool(name: 'search', version: '99.99.99') }
+            .to raise_error(described_class::VersionNotFoundError) do |error|
+            expect(error.tool_name).to eq('search')
+            expect(error.requested_version).to eq('99.99.99')
+            expect(error.available_versions).to eq(['0.1.0'])
+          end
+        end
+      end
+    end
+
+    context 'with tool alias' do
+      context 'when requesting by alias name' do
+        it 'resolves to the canonical tool' do
+          tool = manager.get_tool(name: 'gitlab_search')
+
+          expect(tool).to be_a(Mcp::Tools::SearchService)
+          expect(tool.version).to eq('0.1.0')
+        end
+      end
+
+      context 'when requesting alias with specific version' do
+        it 'resolves to the canonical tool with correct version' do
+          tool = manager.get_tool(name: 'gitlab_search', version: '0.1.0')
+
+          expect(tool).to be_a(Mcp::Tools::SearchService)
+          expect(tool.version).to eq('0.1.0')
+        end
+      end
+
+      context 'when requesting alias with non-existent version' do
+        it 'raises VersionNotFoundError with alias name' do
           expect { manager.get_tool(name: 'gitlab_search', version: '99.99.99') }
             .to raise_error(described_class::VersionNotFoundError) do |error|
-            expect(error.tool_name).to eq('gitlab_search')
+            expect(error.tool_name).to eq('search')
             expect(error.requested_version).to eq('99.99.99')
             expect(error.available_versions).to eq(['0.1.0'])
           end
