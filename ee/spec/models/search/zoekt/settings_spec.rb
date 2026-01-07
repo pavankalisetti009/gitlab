@@ -17,6 +17,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_lost_node_threshold,
         :zoekt_indexing_timeout,
         :zoekt_maximum_files,
+        :zoekt_trigram_max,
         :zoekt_indexed_file_size_limit,
         :zoekt_rollout_retry_interval,
         :zoekt_default_number_of_replicas
@@ -62,10 +63,15 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
 
     it 'has numeric settings with correct type' do
       expect(described_class::SETTINGS[:zoekt_cpu_to_tasks_ratio][:type]).to eq(:float)
-      expect(described_class::SETTINGS[:zoekt_indexing_parallelism][:type]).to eq(:integer)
-      expect(described_class::SETTINGS[:zoekt_rollout_batch_size][:type]).to eq(:integer)
-      expect(described_class::SETTINGS[:zoekt_maximum_files][:type]).to eq(:integer)
-      expect(described_class::SETTINGS[:zoekt_default_number_of_replicas][:type]).to eq(:integer)
+      %i[
+        zoekt_default_number_of_replicas
+        zoekt_indexing_parallelism
+        zoekt_maximum_files
+        zoekt_trigram_max
+        zoekt_rollout_batch_size
+      ].each do |setting|
+        expect(described_class::SETTINGS[setting][:type]).to eq(:integer)
+      end
     end
 
     it 'has text settings with correct type' do
@@ -113,6 +119,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         zoekt_cpu_to_tasks_ratio
         zoekt_indexing_parallelism
         zoekt_rollout_batch_size
+        zoekt_trigram_max
         zoekt_lost_node_threshold
         zoekt_indexing_timeout
         zoekt_maximum_files
@@ -134,6 +141,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
           _('Indexing CPU to tasks multiplier'),
           _('Number of parallel processes per indexing task'),
           _('Number of namespaces per indexing rollout'),
+          _('Maximum trigrams per file'),
           _('Offline nodes automatically deleted after'),
           _('Indexing timeout per project'),
           _('Maximum number of files per project to be indexed'),
@@ -217,6 +225,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         zoekt_rollout_batch_size
         zoekt_rollout_retry_interval
         zoekt_default_number_of_replicas
+        zoekt_trigram_max
       ]
 
       expect(input_ui_settings.keys).to match_array(expected_list)

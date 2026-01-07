@@ -49,6 +49,7 @@ module Search
           Parallelism: ::Gitlab::CurrentSettings.zoekt_indexing_parallelism,
           Timeout: "#{::Search::Zoekt::Settings.indexing_timeout.to_i}s",
           FileCountLimit: ::Gitlab::CurrentSettings.zoekt_maximum_files,
+          TrigramMax: ::Gitlab::CurrentSettings.zoekt_trigram_max,
           MissingRepo: ::Search::Zoekt.missing_repo?(project),
           Metadata: {
             project_id: project.id,

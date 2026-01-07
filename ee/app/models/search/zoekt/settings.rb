@@ -21,6 +21,7 @@ module Search
       DEFAULT_MAXIMUM_FILES = 500_000
       DEFAULT_FILE_SIZE_LIMIT = '1MB'
       DEFAULT_NUM_REPLICAS = 1
+      DEFAULT_TRIGRAM_MAX = 20_000
       DISABLED_VALUE = '0'
       DURATION_BASE_REGEX = %r{([1-9]\d*)([mhd])}
       DURATION_INTERVAL_REGEX = %r{\A(?:0|#{DURATION_BASE_REGEX})\z}
@@ -109,6 +110,12 @@ module Search
             )
           },
           input_type: :text_field
+        },
+        zoekt_trigram_max: {
+          type: :integer,
+          default: DEFAULT_TRIGRAM_MAX,
+          label: -> { _('Maximum trigrams per file') },
+          input_type: :number_field
         },
         zoekt_rollout_retry_interval: {
           type: :text,

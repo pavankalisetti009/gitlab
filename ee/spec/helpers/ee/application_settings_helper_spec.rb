@@ -423,10 +423,14 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         selector = 'input[type="text"][name="application_setting[zoekt_indexed_file_size_limit]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_FILE_SIZE_LIMIT}\"]"
         expect(result[13]).to have_selector(selector)
-        expect(result[14]).to have_selector('label', text: _('Retry interval for failed namespaces'))
+        expect(result[14]).to have_selector('label', text: _('Maximum trigrams per file'))
+        selector = 'input[type="number"][name="application_setting[zoekt_trigram_max]"]' \
+          "[value=\"#{Search::Zoekt::Settings::DEFAULT_TRIGRAM_MAX}\"]"
+        expect(result[15]).to have_selector(selector)
+        expect(result[16]).to have_selector('label', text: _('Retry interval for failed namespaces'))
         selector = 'input[type="text"][name="application_setting[zoekt_rollout_retry_interval]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL}\"]"
-        expect(result[15]).to have_selector(selector)
+        expect(result[17]).to have_selector(selector)
       end
     end
 

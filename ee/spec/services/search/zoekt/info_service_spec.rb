@@ -26,6 +26,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
       zoekt_rollout_batch_size: 32,
       zoekt_indexing_timeout: '30m',
       zoekt_indexed_file_size_limit: '1KB',
+      zoekt_trigram_max: 20000,
       zoekt_rollout_retry_interval: '1d',
       zoekt_lost_node_threshold: '24h',
       zoekt_default_number_of_replicas: 1

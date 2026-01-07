@@ -38,6 +38,7 @@ module EE
         zoekt_search_enabled: [:boolean, { default: false }],
         zoekt_auto_index_root_namespace: [:boolean, { default: false }],
         zoekt_cpu_to_tasks_ratio: [:float, { default: 1.0 }],
+        zoekt_trigram_max: [:integer, { default: ::Search::Zoekt::Settings::DEFAULT_TRIGRAM_MAX }],
         zoekt_indexed_file_size_limit: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_FILE_SIZE_LIMIT }],
         zoekt_indexing_parallelism: [:integer, { default: 1 }],
         zoekt_rollout_batch_size: [:integer, { default: 32 }],
@@ -350,6 +351,7 @@ module EE
       validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
       validates :zoekt_indexing_parallelism, numericality: { greater_than: 0 }
       validates :zoekt_default_number_of_replicas, numericality: { greater_than: 0 }
+      validates :zoekt_trigram_max, numericality: { only_integer: true, greater_than: 0 }
       validates :zoekt_indexed_file_size_limit, format: {
         with: ::Search::Zoekt::Settings::SIZE_REGEX,
         message: N_('Must be in the following format: `5B`, `5b`, `1KB`, `1kb`, `2MB`, `2mb`, `1GB`, or `1gb`')

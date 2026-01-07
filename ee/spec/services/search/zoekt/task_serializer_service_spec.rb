@@ -41,11 +41,13 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
         :Timeout,
         :Parallelism,
         :FileCountLimit,
+        :TrigramMax,
         :MissingRepo,
         :Metadata
       )
       expect(payload[:FileSizeLimit]).to eq(100)
       expect(payload[:Timeout]).to eq("#{1.hour.to_i}s")
+      expect(payload[:TrigramMax]).to eq(::Gitlab::CurrentSettings.zoekt_trigram_max)
 
       meta = payload[:Metadata]
       expect(meta[:project_id]).to eq(project.id.to_s)
@@ -72,6 +74,7 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
           :Timeout,
           :Parallelism,
           :FileCountLimit,
+          :TrigramMax,
           :MissingRepo,
           :Metadata
         )
@@ -117,6 +120,7 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
           :Force,
           :Parallelism,
           :FileCountLimit,
+          :TrigramMax,
           :MissingRepo,
           :Metadata
         )
