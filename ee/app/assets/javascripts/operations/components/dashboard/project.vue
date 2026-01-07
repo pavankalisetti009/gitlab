@@ -59,20 +59,14 @@ export default {
     },
     cardClasses() {
       return {
-        'gl-border-orange-500': !this.hasPipelineFailed && this.hasPipelineErrors,
-        'gl-border-red-500': this.hasPipelineFailed,
-      };
-    },
-    bodyClasses() {
-      return {
-        'gl-bg-orange-50': !this.hasPipelineFailed && this.hasPipelineErrors,
-        'gl-bg-red-50': this.hasPipelineFailed,
+        'gl-border-feedback-warning': !this.hasPipelineFailed && this.hasPipelineErrors,
+        'gl-border-feedback-danger': this.hasPipelineFailed,
       };
     },
     headerClasses() {
       return {
-        'gl-bg-orange-100 gl-border-orange-500': this.hasPipelineErrors,
-        'gl-bg-red-100 gl-border-red-500': this.hasPipelineFailed,
+        'gl-bg-feedback-warning gl-border-feedback-warning': this.hasPipelineErrors,
+        'gl-bg-feedback-danger gl-border-feedback-danger': this.hasPipelineFailed,
       };
     },
     noPipelineMessage() {
@@ -116,8 +110,6 @@ export default {
   <gl-card
     :class="[cardClasses, 'js-dashboard-project']"
     :header-class="headerClasses"
-    :body-class="[bodyClasses, 'gl-rounded-b-base']"
-    footer-class="gl-border-none"
     data-testid="dashboard-project-card"
   >
     <template #header>
