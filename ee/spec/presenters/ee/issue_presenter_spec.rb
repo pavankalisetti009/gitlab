@@ -32,7 +32,7 @@ RSpec.describe IssuePresenter do
     context 'when issue has default type' do
       let_it_be(:issue) { build_stubbed(:issue) }
 
-      it { is_expected.to eq("http://localhost/#{issue.project.full_path}/-/issues/#{issue.iid}") }
+      it { is_expected.to eq(::Gitlab::UrlBuilder.build(issue)) }
     end
 
     context 'when issue has test_case type' do

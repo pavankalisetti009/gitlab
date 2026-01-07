@@ -25,7 +25,7 @@ RSpec.describe 'Search with default scope setting', :elastic, :clean_gitlab_redi
       make_search_request(search: 'Test')
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(response.body).to include(CGI.escapeHTML("/-/issues/#{issue.iid}"))
+      expect(response.body).to include(CGI.escapeHTML(::Gitlab::UrlBuilder.instance.issue_path(issue)))
     end
   end
 
@@ -150,7 +150,7 @@ RSpec.describe 'Search with default scope setting', :elastic, :clean_gitlab_redi
         make_search_request(search: 'Test')
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(response.body).to include(CGI.escapeHTML("/-/issues/#{issue.iid}"))
+        expect(response.body).to include(CGI.escapeHTML(::Gitlab::UrlBuilder.instance.issue_path(issue)))
       end
 
       it 'uses merge_requests as default when configured' do
@@ -277,7 +277,7 @@ RSpec.describe 'Search with default scope setting', :elastic, :clean_gitlab_redi
     get search_path, params: { search: 'Test' }
 
     expect(response).to have_gitlab_http_status(:ok)
-    expect(response.body).to include(CGI.escapeHTML("/-/issues/#{issue.iid}"))
+    expect(response.body).to include(CGI.escapeHTML(::Gitlab::UrlBuilder.instance.issue_path(issue)))
   end
 
   context 'when search_scope_registry feature flag is disabled' do

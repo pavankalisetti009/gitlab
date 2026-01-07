@@ -15,9 +15,7 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
   let_it_be(:other_thread) { create(:ai_conversation_thread, user: other_user, organization: organization) }
 
   let_it_be(:external_issue) { create(:issue) }
-  let_it_be(:external_issue_url) do
-    project_issue_url(external_issue.project, external_issue)
-  end
+  let_it_be(:external_issue_url) { ::Gitlab::UrlBuilder.instance.issue_url(external_issue) }
 
   let(:fields) do
     <<~GRAPHQL

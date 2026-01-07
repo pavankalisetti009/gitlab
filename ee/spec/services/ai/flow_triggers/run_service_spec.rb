@@ -1078,7 +1078,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       context 'when resource is an Issue' do
         it 'returns the issue URL' do
           result = service.send(:catalog_item_user_prompt, input, :assign)
-          expect(result).to include("/#{project.full_path}/-/issues/#{resource.iid}")
+          expect(result).to include(::Gitlab::UrlBuilder.instance.issue_path(resource))
         end
       end
     end
