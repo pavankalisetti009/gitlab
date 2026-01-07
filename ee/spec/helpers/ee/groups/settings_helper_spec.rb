@@ -120,7 +120,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_sast_fp_detection_availability: group.namespace_settings.duo_sast_fp_detection_availability.to_s,
           duo_core_features_enabled: group.namespace_settings.duo_core_features_enabled.to_s,
           prompt_injection_protection_available: "true",
-          prompt_injection_protection_level: "no_checks",
+          prompt_injection_protection_level: "log_only",
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
           prompt_cache_enabled: group.namespace_settings.model_prompt_cache_enabled.to_s,
@@ -160,7 +160,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
       it 'returns the expected data' do
         is_expected.to include(
           is_saas: 'true',
-          duo_workflow_mcp_enabled: '',
+          duo_workflow_mcp_enabled: 'false',
           foundational_agents_default_enabled: 'true',
           duo_agent_platform_enabled: 'true',
           ai_settings_minimum_access_level_execute: nil,

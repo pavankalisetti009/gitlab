@@ -65,10 +65,14 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:allow_enterprise_bypass_placeholder_confirmation=).to(:namespace_settings).with_arguments(:args) }
   it { is_expected.to delegate_method(:enterprise_bypass_expires_at).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:enterprise_bypass_expires_at=).to(:namespace_settings).with_arguments(:args) }
-  it { is_expected.to delegate_method(:duo_workflow_mcp_enabled).to(:ai_settings).allow_nil }
-  it { is_expected.to delegate_method(:duo_workflow_mcp_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
-  it { is_expected.to delegate_method(:prompt_injection_protection_level).to(:ai_settings).allow_nil }
-  it { is_expected.to delegate_method(:prompt_injection_protection_level=).to(:ai_settings).with_arguments(:args).allow_nil }
+  it { is_expected.to delegate_method(:foundational_agents_default_enabled).to(:ai_settings) }
+  it { is_expected.to delegate_method(:foundational_agents_default_enabled=).to(:ai_settings).with_arguments(:args) }
+  it { is_expected.to delegate_method(:prompt_injection_protection_level).to(:ai_settings) }
+  it { is_expected.to delegate_method(:prompt_injection_protection_level=).to(:ai_settings).with_arguments(:args) }
+  it { is_expected.to delegate_method(:duo_workflow_mcp_enabled).to(:ai_settings) }
+  it { is_expected.to delegate_method(:duo_workflow_mcp_enabled=).to(:ai_settings).with_arguments(:args) }
+  it { is_expected.to delegate_method(:duo_agent_platform_enabled).to(:ai_settings) }
+  it { is_expected.to delegate_method(:duo_agent_platform_enabled=).to(:ai_settings).with_arguments(:args) }
   it { is_expected.to delegate_method(:duo_remote_flows_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:lock_duo_remote_flows_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:duo_foundational_flows_enabled).to(:namespace_settings) }
@@ -3206,32 +3210,68 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
   describe '#foundational_agents_default_enabled' do
     it 'provides safe defaults when there is no ai_settings record exists' do
-      expect(namespace.ai_settings).to be_nil
-      expect(namespace.foundational_agents_default_enabled).to be true
+      expect(namespace.ai_settings).not_to be_persisted
+      expect(namespace.foundational_agents_default_enabled).to eq(true)
     end
   end
 
   describe '#foundational_agents_default_enabled=' do
     it 'persists ai_settings record via nested attributes' do
-      expect(namespace.ai_settings).to be_nil
+      expect(namespace.ai_settings).not_to be_persisted
 
       namespace.update!(ai_settings_attributes: { foundational_agents_default_enabled: false })
 
       expect(namespace.ai_settings).to be_persisted
-      expect(namespace.ai_settings.reload.foundational_agents_default_enabled).to be false
+      expect(namespace.ai_settings.reload.foundational_agents_default_enabled).to eq(false)
+    end
+  end
+
+  describe '#prompt_injection_protection_level' do
+    it 'provides safe defaults when there is no ai_settings record exists' do
+      expect(namespace.ai_settings).not_to be_persisted
+      expect(namespace.prompt_injection_protection_level).to eq('log_only')
+    end
+  end
+
+  describe '#prompt_injection_protection_level=' do
+    it 'persists ai_settings record via nested attributes' do
+      expect(namespace.ai_settings).not_to be_persisted
+
+      namespace.update!(ai_settings_attributes: { prompt_injection_protection_level: 'interrupt' })
+
+      expect(namespace.ai_settings).to be_persisted
+      expect(namespace.ai_settings.reload.prompt_injection_protection_level).to eq('interrupt')
+    end
+  end
+
+  describe '#duo_workflow_mcp_enabled' do
+    it 'provides safe defaults when there is no ai_settings record exists' do
+      expect(namespace.ai_settings).not_to be_persisted
+      expect(namespace.duo_workflow_mcp_enabled).to eq(false)
+    end
+  end
+
+  describe '#duo_workflow_mcp_enabled=' do
+    it 'persists ai_settings record via nested attributes' do
+      expect(namespace.ai_settings).not_to be_persisted
+
+      namespace.update!(ai_settings_attributes: { duo_workflow_mcp_enabled: true })
+
+      expect(namespace.ai_settings).to be_persisted
+      expect(namespace.ai_settings.reload.duo_workflow_mcp_enabled).to eq(true)
     end
   end
 
   describe '#duo_agent_platform_enabled' do
     it 'provides safe defaults when there is no ai_settings record exists' do
-      expect(namespace.ai_settings).to be_nil
+      expect(namespace.ai_settings).not_to be_persisted
       expect(namespace.duo_agent_platform_enabled).to be true
     end
   end
 
   describe '#duo_agent_platform_enabled=' do
     it 'persists ai_settings record via nested attributes' do
-      expect(namespace.ai_settings).to be_nil
+      expect(namespace.ai_settings).not_to be_persisted
 
       namespace.update!(ai_settings_attributes: { duo_agent_platform_enabled: false })
 
