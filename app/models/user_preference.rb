@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class UserPreference < ApplicationRecord
+  include IgnorableColumns
   include SafelyChangeColumnDefault
+
+  ignore_column :new_ui_enabled, remove_after: '2026-01-09', remove_with: '18.9'
 
   # We could use enums, but Rails 4 doesn't support multiple
   # enum options with same name for multiple fields, also it creates
