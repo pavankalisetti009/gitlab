@@ -1079,7 +1079,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
     context 'duo_workflow_mcp_enabled' do
       it_behaves_like 'updates a group setting correctly' do
         let(:params) { { ai_settings_attributes: { duo_workflow_mcp_enabled: true } } }
-        let(:from) { nil }
+        let(:from) { false }
         let(:to) { true }
         let(:changed_property) { :duo_workflow_mcp_enabled }
       end
@@ -1179,7 +1179,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(json_response).to eq({ 'error' => 'ai_settings_attributes[minimum_access_level_execute] does not have a valid value' })
-        expect(group.ai_settings&.reload&.minimum_access_level_execute).to be_nil
+        expect(group.reload.ai_settings.minimum_access_level_execute).to be_nil
       end
 
       it 'does not update the field when the feature flag is disabled' do
@@ -1205,7 +1205,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(json_response).to eq({ 'error' => 'ai_settings_attributes[minimum_access_level_execute_async] does not have a valid value' })
-        expect(group.ai_settings&.reload&.minimum_access_level_execute_async).to be_nil
+        expect(group.reload.ai_settings.minimum_access_level_execute_async).to be_nil
       end
 
       it 'does not update the field when the feature flag is disabled' do
@@ -1231,7 +1231,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(json_response).to eq({ 'error' => 'ai_settings_attributes[minimum_access_level_manage] does not have a valid value' })
-        expect(group.ai_settings&.reload&.minimum_access_level_manage).to be_nil
+        expect(group.reload.ai_settings.minimum_access_level_manage).to be_nil
       end
 
       it 'does not update the field when the feature flag is disabled' do
@@ -1257,7 +1257,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(json_response).to eq({ 'error' => 'ai_settings_attributes[minimum_access_level_enable_on_projects] does not have a valid value' })
-        expect(group.ai_settings&.reload&.minimum_access_level_enable_on_projects).to be_nil
+        expect(group.reload.ai_settings.minimum_access_level_enable_on_projects).to be_nil
       end
 
       it 'does not update the field when the feature flag is disabled' do
