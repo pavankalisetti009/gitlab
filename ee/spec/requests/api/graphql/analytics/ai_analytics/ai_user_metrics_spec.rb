@@ -390,7 +390,6 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
         }
       ])
 
-      stub_feature_flags(historical_add_on_assigned_users_enabled: true)
       allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
       allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?)
