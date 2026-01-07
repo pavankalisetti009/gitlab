@@ -34,6 +34,12 @@ module Types
           description: 'Status of the dashboard.',
           experiment: { milestone: '17.0' }
 
+        field :grid_height,
+          type: Types::Analytics::Dashboards::GridHeightEnum,
+          null: true,
+          description: 'Grid cell height of the dashboard.',
+          experiment: { milestone: '18.9' }
+
         field :panels,
           type: Types::Analytics::Dashboards::PanelType.connection_type,
           null: true,
