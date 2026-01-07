@@ -856,6 +856,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     let(:setup_commands) { ['npm install', 'npm run build', 'npm test'] }
     let(:shared_main_commands) do
       [
+        %(git remote set-url origin "${CI_REPOSITORY_URL}"),
         %(echo $DUO_WORKFLOW_DEFINITION),
         %(echo $DUO_WORKFLOW_GOAL),
         %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
@@ -1063,9 +1064,9 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
           expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
             commands = workload_definition.commands
             expect(commands[0]).to eq('npm install')
-            expect(commands[1..7]).to eq(shared_main_commands)
-            expect(commands[8..11]).to eq(cli_install_commands)
-            expect(commands[12..]).to eq(wrapped_commands)
+            expect(commands[1..8]).to eq(shared_main_commands)
+            expect(commands[9..12]).to eq(cli_install_commands)
+            expect(commands[13..]).to eq(wrapped_commands)
           end
         end
       end
