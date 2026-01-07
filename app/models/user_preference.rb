@@ -35,7 +35,6 @@ class UserPreference < ApplicationRecord
   validates :render_whitespace_in_code, allow_nil: false, inclusion: { in: [true, false] }
   validates :pass_user_identities_to_ci_jwt, allow_nil: false, inclusion: { in: [true, false] }
   validates :pinned_nav_items, json_schema: { filename: 'pinned_nav_items' }
-  validates :new_ui_enabled, allow_nil: true, inclusion: { in: [true, false] }
   validates :early_access_studio_participant, allow_nil: false, inclusion: { in: [true, false] }
 
   validates :time_display_format, inclusion: { in: TIME_DISPLAY_FORMATS.values }, presence: true
