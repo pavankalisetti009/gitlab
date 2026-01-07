@@ -157,6 +157,7 @@ review and distribute your pipeline schedules:
     FROM ci_pipeline_schedules
     JOIN projects ON projects.id = ci_pipeline_schedules.project_id
     JOIN users    ON users.id    = ci_pipeline_schedules.owner_id
+    WHERE ci_pipeline_schedules.active = 't'
     ) TO '$outfile' CSV HEADER DELIMITER E'\t' ;"
    sort  "$outfile" | uniq -c | sort -n
    ```
