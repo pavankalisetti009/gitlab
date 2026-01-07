@@ -237,4 +237,58 @@ RSpec.describe API::Ci::RunnerControllerTokens, feature_category: :continuous_in
       end
     end
   end
+
+  describe 'POST /runner_controllers/:runner_controller_id/tokens/:id/rotate' do
+    context 'when user is admin' do
+      it 'rotates the runner controller token' do
+        post api("#{path}/#{token.id}/rotate", admin, admin_mode: true)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['id']).to be_present
+        expect(json_response['runner_controller_id']).to eq(runner_controller.id)
+        expect(json_response['token']).to start_with('glrct-')
+        expect(json_response['description']).to eq(token.description)
+        expect(token.reload.revoked?).to be true
+      end
+
+      context 'when token rotate fails' do
+        before do
+          allow(::Ci::RunnerControllers::RotateTokenService).to receive_message_chain(:new, :execute).and_return(
+            ServiceResponse.error(message: 'Rotate failed')
+          )
+        end
+
+        it 'returns 400 with error message' do
+          post api("#{path}/#{token.id}/rotate", admin, admin_mode: true)
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to eq('400 Bad request - Rotate failed')
+        end
+      end
+
+      context 'when runner controller does not exist' do
+        subject(:call_endpoint) do
+          post api("/runner_controllers/#{non_existing_record_id}/tokens/#{token.id}/rotate", admin, admin_mode: true)
+        end
+
+        it_behaves_like 'returns status 404 (not found)'
+      end
+
+      context 'when runner controller token does not exist' do
+        subject(:call_endpoint) do
+          post api("#{path}/#{non_existing_record_id}/rotate", admin, admin_mode: true)
+        end
+
+        it_behaves_like 'returns status 404 (not found)'
+      end
+    end
+
+    context 'when user is not admin' do
+      it 'returns status 403 (forbidden)' do
+        post api("#{path}/#{token.id}/rotate", non_admin_user)
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+  end
 end

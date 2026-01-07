@@ -118,6 +118,41 @@ module API
             bad_request!(result.message.to_sentence)
           end
         end
+
+        desc 'Rotate a runner controller token' do
+          detail 'Rotate an existing token for a specific runner controller.'
+          success Entities::Ci::RunnerControllerTokenWithToken
+          failure [
+            { code: 403, message: 'Forbidden' },
+            { code: 400, message: 'Bad Request' },
+            { code: 404, message: 'Not found' }
+          ]
+          tags %w[runner_controller_tokens]
+        end
+        params do
+          requires :runner_controller_id, type: Integer, desc: 'ID of the runner controller'
+          requires :id, type: Integer, desc: 'ID of the runner controller token'
+        end
+        post ':runner_controller_id/tokens/:id/rotate' do
+          controller = ::Ci::RunnerController.find_by_id(params[:runner_controller_id])
+          not_found! unless controller
+
+          token = controller.tokens.active.find_by_id(params[:id])
+          not_found! unless token
+
+          response = ::Ci::RunnerControllers::RotateTokenService.new(
+            token: token,
+            current_user: current_user
+          ).execute
+
+          if response.success?
+            status :ok
+
+            present response.payload, with: Entities::Ci::RunnerControllerTokenWithToken
+          else
+            bad_request!(response.message)
+          end
+        end
       end
     end
   end
