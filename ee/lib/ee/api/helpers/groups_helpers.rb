@@ -113,6 +113,14 @@ module EE
             optional :allow_personal_snippets,
               type: ::Grape::API::Boolean,
               desc: 'Allow creation of personal snippets for enterprise users of this group'
+            optional :duo_namespace_access_rules, type: Array, desc: 'AI entity access rules for controlling Duo feature access' do
+              requires :through_namespace, type: Hash, desc: 'Object containing through namespace information' do
+                requires :id, type: Integer, desc: 'ID of the through namespace'
+                optional :name, type: String, desc: 'Name of the through namespace'
+                optional :full_path, type: String, desc: 'Full path of the through namespace'
+              end
+              requires :features, type: Array[String], desc: 'List of accessible features', allow_blank: true
+            end
           end
 
           params :optional_projects_params_ee do

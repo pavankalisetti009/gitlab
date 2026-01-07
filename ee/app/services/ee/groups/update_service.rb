@@ -127,6 +127,7 @@ module EE
       def handle_changes
         handle_allowed_email_domains_update
         handle_ip_restriction_update
+        handle_ai_feature_rules
         super
       end
 
@@ -150,6 +151,20 @@ module EE
         @allowed_email_domains_update_service = AllowedEmailDomains::UpdateService.new(current_user, group, comma_separated_domains)
         @allowed_email_domains_update_service.execute
         # rubocop:enable Gitlab/ModuleWithInstanceVariables
+      end
+
+      def handle_ai_feature_rules
+        return unless params.key?(:duo_namespace_access_rules)
+
+        ai_feature_rules = params.delete(:duo_namespace_access_rules)
+
+        if ::Feature.disabled?(:duo_access_through_namespaces, group)
+          raise ArgumentError, 'duo_access_through_namespaces feature flag is not enabled'
+        end
+
+        group.ai_feature_rules = ai_feature_rules
+      rescue ArgumentError, ActiveRecord::RecordInvalid => e
+        group.errors.add(:duo_namespace_access_rules, e.message)
       end
 
       override :allowed_settings_params

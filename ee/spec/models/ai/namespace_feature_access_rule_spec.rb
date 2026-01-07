@@ -72,4 +72,28 @@ RSpec.describe ::Ai::NamespaceFeatureAccessRule, feature_category: :ai_abstracti
       expect { described_class.bulk_insert!(records) }.to change { described_class.count }.by(2)
     end
   end
+
+  describe '.by_through_namespace' do
+    let_it_be(:other_through_namespace) { create(:group, parent: root_namespace) }
+
+    before do
+      create(:ai_namespace_feature_access_rules,
+        :duo_classic,
+        through_namespace: through_namespace,
+        root_namespace: root_namespace
+      )
+      create(:ai_namespace_feature_access_rules,
+        :duo_agent_platform,
+        through_namespace: other_through_namespace,
+        root_namespace: root_namespace
+      )
+    end
+
+    it 'groups rules by through_namespace_id' do
+      result = described_class.by_through_namespace
+
+      expect(result.keys).to contain_exactly(through_namespace.id, other_through_namespace.id
+      )
+    end
+  end
 end

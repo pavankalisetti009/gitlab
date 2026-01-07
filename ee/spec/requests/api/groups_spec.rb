@@ -1331,6 +1331,78 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
       end
     end
+
+    context 'duo_namespace_access_rules', :saas do
+      let_it_be(:sub_group_a) { create(:group, parent: group) }
+      let_it_be(:sub_group_b) { create(:group, parent: group) }
+      let(:ai_feature_rules) do
+        [
+          { through_namespace: { id: sub_group_a.id }, features: %w[duo_classic duo_agent_platform] },
+          { through_namespace: { id: sub_group_b.id }, features: ['duo_agent_platform'] }
+        ]
+      end
+
+      let(:params) { { duo_namespace_access_rules: ai_feature_rules } }
+
+      before do
+        stub_feature_flags(duo_access_through_namespaces: true)
+        group.add_owner(user)
+      end
+
+      it 'creates accessible AI entity rules' do
+        put api("/groups/#{group.id}", user), params: params
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['duo_namespace_access_rules']).to contain_exactly(
+          hash_including(
+            'through_namespace' => {
+              'id' => sub_group_a.id,
+              'name' => sub_group_a.name,
+              'full_path' => sub_group_a.full_path
+            },
+            'features' => contain_exactly('duo_classic', 'duo_agent_platform')
+          ),
+          hash_including(
+            'through_namespace' => {
+              'id' => sub_group_b.id,
+              'name' => sub_group_b.name,
+              'full_path' => sub_group_b.full_path
+            },
+            'features' => ['duo_agent_platform']
+          )
+        )
+      end
+
+      context 'with an invalid entity' do
+        let(:ai_feature_rules) do
+          [
+            { 'through_namespace' => { 'id' => sub_group_a.id }, 'features' => %w[invalid_entity] }
+          ]
+        end
+
+        it 'is a bad request' do
+          put api("/groups/#{group.id}", user), params: params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']['duo_namespace_access_rules'].to_s).to include(
+            'Accessible entity is not included in the list'
+          )
+        end
+      end
+
+      context 'when duo_access_through_namespaces feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_access_through_namespaces: false)
+        end
+
+        it 'does not create rules' do
+          put api("/groups/#{group.id}", user), params: params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(group.ai_feature_rules.count).to eq(0)
+        end
+      end
+    end
   end
 
   describe "POST /groups" do

@@ -3488,6 +3488,129 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#ai_feature_rules=' do
+    let_it_be(:root_namespace) { create(:group) }
+    let_it_be(:through_namespace) { create(:group, parent: root_namespace) }
+    let_it_be(:through_namespace_2) { create(:group, parent: root_namespace) }
+
+    let(:rules) do
+      [{ through_namespace: { id: through_namespace.id }, features: %w[duo_classic] }]
+    end
+
+    subject(:update_rules) { root_namespace.ai_feature_rules = rules }
+
+    context 'when not on SaaS' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it 'does not create any rules' do
+        expect { update_rules }.not_to change { Ai::NamespaceFeatureAccessRule.count }
+      end
+    end
+
+    context 'when feature flag disabled' do
+      before do
+        stub_feature_flags(duo_access_through_namespaces: false)
+      end
+
+      it 'does not create any rules' do
+        expect { update_rules }.not_to change { Ai::NamespaceFeatureAccessRule.count }
+      end
+    end
+
+    context 'when on saas', :saas do
+      context 'when namespace is not the root namespace' do
+        let(:subgroup) { create(:group, parent: root_namespace) }
+
+        it 'does not create any rules' do
+          expect { subgroup.ai_feature_rules = rules }.not_to change { Ai::NamespaceFeatureAccessRule.count }
+        end
+      end
+
+      context 'when namespace is the root namespace' do
+        let(:rules) do
+          [
+            { through_namespace: { id: through_namespace.id }, features: ['duo_classic'] },
+            { through_namespace: { id: through_namespace_2.id }, features: ['duo_agent_platform'] }
+          ]
+        end
+
+        before do
+          create(:ai_namespace_feature_access_rules,
+            :duo_agent_platform,
+            root_namespace: root_namespace,
+            through_namespace: through_namespace
+          )
+        end
+
+        it 'creates ai feature rules and deletes existing ones' do
+          expect { update_rules }.to change { Ai::NamespaceFeatureAccessRule.count }.by(1)
+
+          created_rules = Ai::NamespaceFeatureAccessRule.where(root_namespace_id: root_namespace.id)
+          expect(created_rules.pluck(:accessible_entity)).to match_array(
+            %w[duo_classic duo_agent_platform]
+          )
+          expect(created_rules.pluck(:through_namespace_id)).to match_array(
+            [through_namespace.id, through_namespace_2.id]
+          )
+
+          # deletes previously created rules
+          expect(Ai::NamespaceFeatureAccessRule.where(
+            root_namespace: root_namespace,
+            through_namespace: through_namespace,
+            accessible_entity: 'duo_agent_platform'
+          ).exists?).to be false
+        end
+
+        context 'with blank features' do
+          let(:rules) do
+            [
+              { through_namespace: { id: through_namespace.id }, features: ['duo_classic'] },
+              { through_namespace: { id: through_namespace_2.id }, features: [''] }
+            ]
+          end
+
+          it 'does not create rules for blank features' do
+            update_rules
+
+            expect(through_namespace.ai_feature_rules_through_namespace.pluck(:accessible_entity)).to eq(['duo_classic'])
+            expect(through_namespace_2.ai_feature_rules_through_namespace).to be_empty
+          end
+        end
+
+        context 'when all features are empty' do
+          let(:rules) do
+            [
+              { through_namespace: { id: through_namespace.id }, features: [] },
+              { through_namespace: { id: through_namespace_2.id }, features: [] }
+            ]
+          end
+
+          it 'deletes existing rules and does not create new ones' do
+            expect { update_rules }.to change { Ai::NamespaceFeatureAccessRule.count }.from(1).to(0)
+          end
+        end
+
+        context 'when a through_namespace does not exist' do
+          let(:rules) do
+            [
+              { through_namespace: { id: through_namespace.id }, features: ['duo_classic'] },
+              { through_namespace: { id: -1 }, features: ['duo_classic'] }
+            ]
+          end
+
+          it 'skips the namespace features' do
+            expect { update_rules }.not_to change { Ai::NamespaceFeatureAccessRule.count }
+
+            expect(through_namespace.reload.ai_feature_rules_through_namespace.pluck(:accessible_entity))
+              .to eq(['duo_classic'])
+          end
+        end
+      end
+    end
+  end
+
   def create_project(repository_size:, lfs_objects_size: 0, repository_size_limit: nil)
     create(:project, namespace: namespace, repository_size_limit: repository_size_limit).tap do |project|
       create(:project_statistics, project: project, repository_size: repository_size, lfs_objects_size: lfs_objects_size)
