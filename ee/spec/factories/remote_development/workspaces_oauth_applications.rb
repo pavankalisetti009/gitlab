@@ -18,6 +18,7 @@ FactoryBot.define do
     scopes { app_attributes[:scopes] }
     trusted { app_attributes[:trusted] }
     confidential { app_attributes[:confidential] }
+    organization_id { app_attributes[:organization_id] }
 
     after(:create) do |oauth_app|
       settings = ::Gitlab::CurrentSettings.current_application_settings

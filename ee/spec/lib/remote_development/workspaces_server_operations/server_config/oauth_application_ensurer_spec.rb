@@ -5,6 +5,8 @@ require "spec_helper"
 RSpec.describe ::RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationEnsurer, feature_category: :workspaces do
   include TestRequestHelpers
 
+  let_it_be(:organization) { create(:organization) }
+
   let(:oauth_application_attributes) do
     {
       name: "App Name",
@@ -13,7 +15,8 @@ RSpec.describe ::RemoteDevelopment::WorkspacesServerOperations::ServerConfig::Oa
       trusted:
         RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationAttributesGenerator::TRUSTED,
       confidential:
-        RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationAttributesGenerator::CONFIDENTIAL
+        RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationAttributesGenerator::CONFIDENTIAL,
+      organization_id: organization.id
     }
   end
 
