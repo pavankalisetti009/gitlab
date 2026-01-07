@@ -196,6 +196,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     let_it_be(:issue_type) { described_class.find_by_name('Issue') }
     let_it_be(:epic_type) { described_class.find_by_name('Epic') }
     let_it_be(:task_type) { described_class.find_by_name('Task') }
+    let_it_be(:ticket_type) { described_class.find_by_name('Ticket') }
 
     subject { parent_type.allowed_child_types(authorize: authorized, resource_parent: resource_parent) }
 
@@ -223,11 +224,11 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
 
     context 'when parent type has licensed child types' do
       let(:parent_type) { epic_type }
-      let(:all_child_types) { [epic_type, issue_type] }
+      let(:all_child_types) { [epic_type, issue_type, ticket_type] }
 
       it_behaves_like 'allowed child types' do
         let(:features) { { epics: true, subepics: true } }
-        let(:expected_child_types) { [epic_type, issue_type] }
+        let(:expected_child_types) { [epic_type, issue_type, ticket_type] }
       end
 
       it_behaves_like 'allowed child types' do
@@ -238,7 +239,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       it_behaves_like 'allowed child types' do
         let(:parent_type) { epic_type }
         let(:features) { { epics: true, subepics: false } }
-        let(:expected_child_types) { [issue_type] }
+        let(:expected_child_types) { [issue_type, ticket_type] }
       end
 
       it_behaves_like 'allowed child types' do
@@ -263,6 +264,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     let_it_be(:issue_type) { described_class.find_by_name('Issue') }
     let_it_be(:epic_type) { described_class.find_by_name('Epic') }
     let_it_be(:task_type) { described_class.find_by_name('Task') }
+    let_it_be(:ticket_type) { described_class.find_by_name('Ticket') }
 
     subject { child_type.allowed_parent_types(authorize: authorized, resource_parent: resource_parent) }
 
