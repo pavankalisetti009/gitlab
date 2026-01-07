@@ -94,12 +94,12 @@ export default {
         <component
           :is="locationComponent"
           v-if="hasPaths"
-          class="gl-inline-flex gl-items-center gl-gap-2 @md/panel:gl-whitespace-nowrap"
+          class="gl-flex gl-items-center gl-justify-end gl-gap-2 @md/panel:gl-justify-start @md/panel:gl-whitespace-nowrap"
           data-testid="dependency-path"
           :href="location.blobPath"
         >
-          <gl-icon v-if="isContainerImageDependency" name="container-image" />
-          <gl-icon v-else name="doc-text" />
+          <gl-icon v-if="isContainerImageDependency" name="container-image" class="gl-shrink-0" />
+          <gl-icon v-else name="doc-text" class="gl-shrink-0" />
           <gl-truncate
             class="gl-hidden @md/panel:gl-inline-flex"
             position="start"
