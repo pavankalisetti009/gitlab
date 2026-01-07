@@ -27,7 +27,8 @@ module EE
 
       LICENSED_HIERARCHY_TYPES = {
         issue: { parent: { epic: :epics } },
-        epic: { parent: { epic: :subepics }, child: { epic: :subepics, issue: :epics } }
+        ticket: { parent: { epic: :epics } },
+        epic: { parent: { epic: :subepics }, child: { epic: :subepics, issue: :epics, ticket: :epics } }
       }.freeze
 
       override :widgets

@@ -238,6 +238,7 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
     let(:issue_type) { build(:work_item_system_defined_type, :issue) }
     let(:epic_type) { build(:work_item_system_defined_type, :epic) }
     let(:task_type) { build(:work_item_system_defined_type, :task) }
+    let(:ticket_type) { build(:work_item_system_defined_type, :ticket) }
 
     context 'with EE hierarchy including epics' do
       before do
@@ -248,7 +249,7 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
         descendants = epic_type.descendant_types
 
         # This will depend on your actual hierarchy configuration
-        expect(descendants).to match_array([epic_type, issue_type, task_type])
+        expect(descendants).to match_array([epic_type, issue_type, task_type, ticket_type])
       end
     end
 
