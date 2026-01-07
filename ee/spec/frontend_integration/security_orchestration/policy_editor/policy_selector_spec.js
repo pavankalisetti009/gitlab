@@ -25,6 +25,8 @@ jest.mock('~/lib/utils/url_utility', () => ({
   getParameterByName: jest.fn(),
 }));
 
+jest.mock('~/lib/logger');
+
 describe('Policy Editor', () => {
   let wrapper;
 
