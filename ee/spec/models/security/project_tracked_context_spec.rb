@@ -386,4 +386,26 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
       it { is_expected.to be false }
     end
   end
+
+  describe '.find_default_branch_context' do
+    let_it_be(:project_with_repository) { create(:project, :repository) }
+
+    subject(:find_default_branch_context) { described_class.find_default_branch_context(project_with_repository) }
+
+    context 'when a matching branch context exists' do
+      let_it_be(:default_branch_context) do
+        create(:security_project_tracked_context,
+          project: project_with_repository,
+          context_name: project_with_repository.default_branch,
+          context_type: :branch
+        )
+      end
+
+      it { is_expected.to eq(default_branch_context) }
+    end
+
+    context 'when no matching context exists' do
+      it { is_expected.to be_nil }
+    end
+  end
 end

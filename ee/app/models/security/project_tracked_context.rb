@@ -85,6 +85,14 @@ module Security
       for_pipeline(pipeline).tracked.exists?
     end
 
+    def self.find_default_branch_context(project)
+      find_by(
+        project: project,
+        context_name: project.default_branch_or_main,
+        context_type: :branch
+      )
+    end
+
     private
 
     def tracked_refs_limit
