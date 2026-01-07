@@ -87,6 +87,13 @@ export default {
         },
       ];
     },
+    removeNamespaceAccessRule(namespaceId) {
+      this.namespaceAccessRules = this.namespaceAccessRules.filter(
+        (rule) => rule.throughNamespace.id !== namespaceId,
+      );
+
+      this.$emit('change', this.namespaceAccessRules);
+    },
   },
 };
 </script>
@@ -108,8 +115,8 @@ export default {
         :fields="$options.fields"
         show-empty
         bordered
-        thead-class="gl-bg-subtle"
-        table-class="gl-table-layout-fixed"
+        fixed
+        thead-class="gl-bg-gray-50"
       >
         <template #empty>
           <div class="gl-my-5 gl-text-center gl-text-secondary">
@@ -138,8 +145,12 @@ export default {
           </div>
         </template>
 
-        <template #cell(actions)="">
-          <gl-button variant="link" category="secondary" disabled>
+        <template #cell(actions)="{ item }">
+          <gl-button
+            variant="link"
+            category="secondary"
+            @click="removeNamespaceAccessRule(item.throughNamespace.id)"
+          >
             {{ s__('AiPowered|Remove') }}
           </gl-button>
         </template>

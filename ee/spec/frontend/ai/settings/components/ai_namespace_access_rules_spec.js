@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlTable, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
+import { GlTable, GlFormCheckbox, GlFormGroup, GlLink, GlButton } from '@gitlab/ui';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiNamespaceAccessRules from 'ee/ai/settings/components/ai_namespace_access_rules.vue';
 import GroupSelector from 'ee/ai/settings/components/group_selector.vue';
@@ -7,7 +7,7 @@ import GroupSelector from 'ee/ai/settings/components/group_selector.vue';
 describe('AiNamespaceAccessRules', () => {
   let wrapper;
 
-  const mockAccessRules = [
+  const mockNamespaceAccessRules = [
     {
       throughNamespace: {
         id: 1,
@@ -29,7 +29,7 @@ describe('AiNamespaceAccessRules', () => {
   const createComponent = ({ props = {}, mountFn = shallowMountExtended, stubs = {} } = {}) => {
     wrapper = mountFn(AiNamespaceAccessRules, {
       propsData: {
-        initialNamespaceAccessRules: mockAccessRules,
+        initialNamespaceAccessRules: mockNamespaceAccessRules,
         ...props,
       },
       stubs: {
@@ -46,6 +46,8 @@ describe('AiNamespaceAccessRules', () => {
     wrapper.findAllComponents(GlLink).filter((link) => link.attributes('target') === '_blank');
   const findCheckboxes = () => wrapper.findAllComponents(GlFormCheckbox);
   const findGroupSelector = () => wrapper.findComponent(GroupSelector);
+  const findRemoveButtons = () =>
+    wrapper.findAllComponents(GlButton).filter((btn) => btn.text() === 'Remove');
 
   describe('when access rules array is empty', () => {
     beforeEach(() => {
@@ -83,7 +85,7 @@ describe('AiNamespaceAccessRules', () => {
     });
 
     it('renders the table with access rules data', () => {
-      expect(findTable().props('items')).toEqual(mockAccessRules);
+      expect(findTable().props('items')).toEqual(mockNamespaceAccessRules);
     });
 
     it('renders the table with correct fields', () => {
@@ -145,6 +147,27 @@ describe('AiNamespaceAccessRules', () => {
         expect(checkboxes.at(3).props('checked')).toBe(false);
         expect(checkboxes.at(4).props('checked')).toBe(false);
         expect(checkboxes.at(5).props('checked')).toBe(true);
+      });
+    });
+
+    describe('remove namespace access rule', () => {
+      it('removes the namespace access rule with matching id', async () => {
+        expect(findTable().props('items')).toHaveLength(2);
+
+        await findRemoveButtons().at(0).trigger('click');
+        await nextTick();
+
+        const items = findTable().props('items');
+
+        expect(items).toHaveLength(1);
+        expect(items).toEqual([mockNamespaceAccessRules[1]]);
+      });
+
+      it('emits change event with updated namespace access rules', async () => {
+        await findRemoveButtons().at(1).trigger('click');
+
+        expect(wrapper.emitted('change')).toHaveLength(1);
+        expect(wrapper.emitted('change')[0][0]).toEqual([mockNamespaceAccessRules[0]]);
       });
     });
   });
