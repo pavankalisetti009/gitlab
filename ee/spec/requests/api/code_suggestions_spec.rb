@@ -75,7 +75,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     stub_feature_flags(use_claude_code_completion: false)
     stub_feature_flags(code_completion_opt_out_fireworks: false)
     stub_feature_flags(usage_quota_left_check: false)
-    stub_feature_flags(duo_use_billing_endpoint: false)
   end
 
   shared_examples 'a response' do |case_name|
@@ -1465,25 +1464,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['headers']).to include('x-gitlab-enabled-feature-flags' => 'expanded_ai_logging')
-        end
-
-        context 'when duo_use_billing_endpoint is enabled' do
-          before do
-            stub_feature_flags(duo_use_billing_endpoint: current_user)
-            allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
-              allow(client).to receive(:direct_access_token)
-                .and_return({ status: :success, token: token, expires_at: expected_expiration })
-            end
-          end
-
-          it 'includes duo_use_billing_endpoint in x-gitlab-enabled-feature-flags header' do
-            post_api
-
-            expect(response).to have_gitlab_http_status(:created)
-            expect(json_response['headers']).to include(
-              'x-gitlab-enabled-feature-flags' => 'expanded_ai_logging,duo_use_billing_endpoint'
-            )
-          end
         end
 
         describe 'Fireworks/Codestral opt out by ops FF' do
