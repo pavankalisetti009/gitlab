@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -68,6 +68,9 @@ function createComponent(adminMergeRequest = true, customUsers = []) {
 
   wrapper = mountExtended(ReviewerDropdown, {
     apolloProvider,
+    propsData: {
+      users: customUsers,
+    },
     provide: {
       projectPath: 'gitlab-org/gitlab',
       issuableId: '1',
@@ -84,19 +87,20 @@ const findApprovalRule = () => wrapper.findByTestId('approval-rule');
 
 describe('Reviewer dropdown component', () => {
   it('renders dropdown approval rule', async () => {
-    createComponent(true, [
-      createMockUser({
-        mergeRequestInteraction: {
-          applicableApprovalRules: [{ id: 1, name: 'Frontend', type: 'CODE_OWNER' }],
-        },
-      }),
-    ]);
+    const mockUser = createMockUser({
+      mergeRequestInteraction: {
+        applicableApprovalRules: [{ id: 1, name: 'Frontend', type: 'CODE_OWNER' }],
+      },
+    });
+
+    createComponent(true, [mockUser]);
 
     await waitForPromises();
 
     wrapper.findByTestId('base-dropdown-toggle').trigger('click');
 
     await waitForPromises();
+    await nextTick();
 
     expect(findApprovalRule().text()).toContain('Code Owner');
   });
