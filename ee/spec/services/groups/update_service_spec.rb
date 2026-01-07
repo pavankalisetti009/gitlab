@@ -1116,6 +1116,16 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
         expect { existing_rule.reload }.to raise_error(ActiveRecord::RecordNotFound)
       end
 
+      it 'audits the update' do
+        expect(::Ai::FeatureAccessRuleAuditor).to receive(:new).with(
+          current_user: user,
+          rules: rules,
+          scope: group
+        ).and_call_original
+
+        update_group(group, user, params)
+      end
+
       context 'when duo_namespace_access_rules is empty' do
         let(:rules) { [] }
 
@@ -1127,6 +1137,16 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
           expect { update_group(group, user, params) }
             .to change { group.ai_feature_rules.count }.from(1).to(0)
+        end
+
+        it 'audits the update' do
+          expect(::Ai::FeatureAccessRuleAuditor).to receive(:new).with(
+            current_user: user,
+            rules: rules,
+            scope: group
+          ).and_call_original
+
+          update_group(group, user, params)
         end
       end
     end
@@ -1144,6 +1164,12 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
         expect(result).to be false
         expect(group.ai_feature_rules).to be_empty
       end
+
+      it 'does not create an audit event' do
+        expect(::Ai::FeatureAccessRuleAuditor).not_to receive(:new)
+
+        update_group(group, user, params)
+      end
     end
 
     context 'when duo_access_through_namespaces feature flag is disabled' do
@@ -1156,6 +1182,12 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
         expect(result).to be false
         expect(group.ai_feature_rules).to be_empty
+      end
+
+      it 'does not create an audit event' do
+        expect(::Ai::FeatureAccessRuleAuditor).not_to receive(:new)
+
+        update_group(group, user, params)
       end
     end
   end
