@@ -3,7 +3,7 @@
 module EE
   module Mcp
     module Tools
-      module GitlabSearchService
+      module SearchService
         extend ::Gitlab::Utils::Override
 
         override :transform_arguments

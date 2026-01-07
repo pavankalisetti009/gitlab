@@ -263,7 +263,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             "additionalProperties" => false
           }
         },
-        { "name" => "gitlab_search",
+        { "name" => "search",
           "description" => "" \
             "Search across GitLab with automatic selection of the best available search method.\n\n" \
             "**Capabilities:** basic (keywords, file filters)\n\n**Syntax Examples:**\n" \
