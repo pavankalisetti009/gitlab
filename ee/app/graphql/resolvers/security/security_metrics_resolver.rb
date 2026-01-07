@@ -19,6 +19,11 @@ module Resolvers
         required: false,
         description: 'Filter by report types.'
 
+      argument :security_attributes_filters, [Types::Security::AttributeFilterInputType],
+        required: false,
+        experiment: { milestone: '18.8' },
+        description: 'Filter by security attributes.'
+
       def resolve(**args)
         return unless Ability.allowed?(current_user, :read_security_resource, object)
 

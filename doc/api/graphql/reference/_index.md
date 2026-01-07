@@ -35053,6 +35053,7 @@ Returns [`SecurityMetrics`](#securitymetrics).
 | ---- | ---- | ----------- |
 | <a id="groupsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs in a group. This argument is ignored when we are querying for a project. |
 | <a id="groupsecuritymetricsreporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
+| <a id="groupsecuritymetricssecurityattributesfilters"></a>`securityAttributesFilters` {{< icon name="warning-solid" >}} | [`[AttributeFilterInput!]`](#attributefilterinput) | **Introduced** in GitLab 18.8. **Status**: Experiment. Filter by security attributes. |
 
 ##### `Group.securityPolicies`
 
@@ -44301,6 +44302,7 @@ Returns [`SecurityMetrics`](#securitymetrics).
 | ---- | ---- | ----------- |
 | <a id="projectsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs in a group. This argument is ignored when we are querying for a project. |
 | <a id="projectsecuritymetricsreporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
+| <a id="projectsecuritymetricssecurityattributesfilters"></a>`securityAttributesFilters` {{< icon name="warning-solid" >}} | [`[AttributeFilterInput!]`](#attributefilterinput) | **Introduced** in GitLab 18.8. **Status**: Experiment. Filter by security attributes. |
 
 ##### `Project.securityPolicies`
 
