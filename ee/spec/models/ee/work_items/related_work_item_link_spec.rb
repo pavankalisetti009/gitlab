@@ -60,7 +60,7 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
         if all_types
           %i[ticket requirement incident test_case task issue epic objective key_result]
         elsif with_unsupported_types
-          type_names + %i[requirement test_case ticket]
+          type_names + %i[requirement test_case]
         else
           type_names
         end
@@ -109,13 +109,14 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
           :requirement | get_items(all_types: true)                                   | false
           :incident    | get_items(with_unsupported_types: true)                      | false
           :test_case   | get_items(all_types: true)                                   | false
-          :ticket      | get_items(all_types: true)                                   | false
+          :ticket      | get_items(with_unsupported_types: true)                      | false
           :issue       | get_items(with_unsupported_types: true)                      | false
           :epic        | get_items(with_unsupported_types: true)                      | false
           :task        | get_items(with_unsupported_types: true)                      | false
           :objective   | get_items(%i[epic issue task], with_unsupported_types: true) | false
           :key_result  | get_items(%i[epic issue task], with_unsupported_types: true) | false
           :issue       | get_items(%i[task issue epic objective key_result])          | true
+          :ticket      | get_items(%i[task issue epic objective key_result])          | true
           :epic        | get_items(%i[task issue epic objective key_result])          | true
           :task        | get_items(%i[task issue epic objective key_result])          | true
           :objective   | get_items(%i[objective key_result])                          | true
@@ -145,13 +146,14 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
           :requirement | get_items(all_types: true)                                        | false
           :incident    | get_items(with_unsupported_types: true)                           | false
           :test_case   | get_items(all_types: true)                                        | false
-          :ticket      | get_items(all_types: true)                                        | false
+          :ticket      | get_items(with_unsupported_types: true)                           | false
           :issue       | get_items(%i[objective key_result], with_unsupported_types: true) | false
           :epic        | get_items(%i[objective key_result], with_unsupported_types: true) | false
           :task        | get_items(%i[objective key_result], with_unsupported_types: true) | false
           :objective   | get_items(with_unsupported_types: true)                           | false
           :key_result  | get_items(with_unsupported_types: true)                           | false
           :issue       | get_items(%i[task issue epic])                                    | true
+          :ticket      | get_items(%i[task issue epic objective key_result])               | true
           :epic        | get_items(%i[task issue epic])                                    | true
           :task        | get_items(%i[task issue epic])                                    | true
           :objective   | get_items(%i[epic issue task objective key_result])               | true
