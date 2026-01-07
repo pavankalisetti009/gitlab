@@ -325,13 +325,16 @@ module API
                 post :test do
                   authorize! :read_virtual_registry, upstream
 
-                  url_override = declared_params[:url].presence
-                  username_param = declared_params[:username].presence
-                  password_param = declared_params[:password].presence
+                  params_provided = declared_params(include_missing: false)
 
-                  url_changed = url_override && url_override != upstream.url
-                  username_changed = username_param && username_param != upstream.username
-                  password_changed = password_param && password_param != upstream.password
+                  url_override = params_provided[:url]
+                  username_param = params_provided[:username]
+                  password_param = params_provided[:password]
+
+                  url_changed = params_provided.key?(:url) && url_override != upstream.url
+                  username_changed = params_provided.key?(:username) && username_param != upstream.username
+                  password_changed = params_provided.key?(:password) &&
+                    password_param.present? && password_param != upstream.password
 
                   credentials_changed = username_changed || password_changed
 

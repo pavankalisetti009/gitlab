@@ -1,7 +1,10 @@
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
-import { testMavenUpstream, testExistingMavenUpstream } from 'ee/api/virtual_registries_api';
+import {
+  testMavenUpstream,
+  testExistingMavenUpstreamWithOverrides,
+} from 'ee/api/virtual_registries_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
@@ -116,27 +119,75 @@ describe('TestMavenUpstreamButton', () => {
 
   describe('when upstreamId is provided', () => {
     beforeEach(() => {
-      testExistingMavenUpstream.mockResolvedValue(testSuccessResponse);
+      testExistingMavenUpstreamWithOverrides.mockResolvedValue(testSuccessResponse);
       createComponent({
         props: { upstreamId: 1 },
       });
     });
 
-    it('on click calls testExistingMavenUpstream API', async () => {
+    it('on click calls testExistingMavenUpstreamWithOverrides API with overrides', async () => {
       findTestUpstreamButton().vm.$emit('click');
 
       await waitForPromises();
 
-      expect(testExistingMavenUpstream).toHaveBeenCalledWith({
+      expect(testExistingMavenUpstreamWithOverrides).toHaveBeenCalledWith({
         id: 1,
+        url: defaultProps.url,
+        username: '',
+        password: '',
       });
       expect(showToastSpy).toHaveBeenCalledWith('Connection successful.');
     });
 
-    describe('when testExistingMavenUpstream fails', () => {
+    it('passes username and password overrides when provided', async () => {
+      createComponent({
+        props: {
+          upstreamId: 1,
+          url: defaultProps.url,
+          username: 'test-user',
+          password: 'test-password',
+        },
+      });
+
+      findTestUpstreamButton().vm.$emit('click');
+
+      await waitForPromises();
+
+      expect(testExistingMavenUpstreamWithOverrides).toHaveBeenCalledWith({
+        id: 1,
+        url: defaultProps.url,
+        username: 'test-user',
+        password: 'test-password',
+      });
+    });
+
+    it('calls API with only upstreamId when no overrides are provided (link existing upstream modal)', async () => {
+      createComponent({
+        props: {
+          upstreamId: 1,
+          url: '',
+          username: '',
+          password: '',
+        },
+      });
+
+      findTestUpstreamButton().vm.$emit('click');
+
+      await waitForPromises();
+
+      expect(testExistingMavenUpstreamWithOverrides).toHaveBeenCalledWith({
+        id: 1,
+        url: '',
+        username: '',
+        password: '',
+      });
+      expect(showToastSpy).toHaveBeenCalledWith('Connection successful.');
+    });
+
+    describe('when testExistingMavenUpstreamWithOverrides fails', () => {
       it('shows toast with default message & reports error to Sentry', async () => {
         const mockError = new Error();
-        testExistingMavenUpstream.mockRejectedValue(mockError);
+        testExistingMavenUpstreamWithOverrides.mockRejectedValue(mockError);
         createComponent({
           props: { upstreamId: 1 },
         });
@@ -153,7 +204,7 @@ describe('TestMavenUpstreamButton', () => {
       });
 
       it('shows toast with message from API and does not report error to Sentry', async () => {
-        testExistingMavenUpstream.mockResolvedValue(testFailureResponse);
+        testExistingMavenUpstreamWithOverrides.mockResolvedValue(testFailureResponse);
         createComponent({
           props: { upstreamId: 1 },
         });
@@ -166,8 +217,8 @@ describe('TestMavenUpstreamButton', () => {
         expect(captureException).not.toHaveBeenCalled();
       });
 
-      it('shows toast with error message from API message from API and does not report error to Sentry', async () => {
-        testExistingMavenUpstream.mockRejectedValue(testErrorResponse);
+      it('shows toast with error message from API and does not report error to Sentry', async () => {
+        testExistingMavenUpstreamWithOverrides.mockRejectedValue(testErrorResponse);
         createComponent({
           props: { upstreamId: 1 },
         });
