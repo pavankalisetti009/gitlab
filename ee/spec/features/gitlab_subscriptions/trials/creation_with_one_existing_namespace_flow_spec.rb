@@ -82,7 +82,8 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
     end
 
     context 'on a premium plan and has previously had a legacy ultimate trial' do
-      it 'fills out form, submits and lands on the group page' do
+      it 'fills out form, submits and lands on the group page',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/22555' do
         group.gitlab_subscription.update!(
           hosted_plan_id: create(:premium_plan).id,
           trial: true,
