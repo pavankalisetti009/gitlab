@@ -1014,6 +1014,96 @@ describe('MR Widget Security Reports', () => {
         });
       },
     );
+
+    it('should refetch the query if scan is not ready', async () => {
+      createComponent({
+        mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest
+              .fn()
+              .mockResolvedValueOnce(
+                enabledScansQueryResult({ full: { ready: false }, partial: { ready: false } }),
+              )
+              .mockResolvedValueOnce(
+                enabledScansQueryResult({
+                  full: { ready: true },
+                  partial: { ready: true },
+                }),
+              ),
+          ],
+          [findingReportsComparerQuery, jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse)],
+        ]),
+      });
+
+      await waitForPromises();
+
+      expect(SmartInterval).toHaveBeenCalledWith(
+        expect.objectContaining({
+          callback: expect.any(Function),
+          incrementByFactorOf: 1,
+          startingInterval: 3000,
+          immediateExecution: true,
+        }),
+      );
+
+      // Widget should be loading
+      expect(findWidget().text()).toBe('Security scanning is loading');
+
+      const spy = jest.spyOn(wrapper.vm.$options.pollingInterval, 'destroy');
+
+      wrapper.vm.$apollo.queries.enabledScans.refetch();
+
+      await waitForPromises();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('when the query fails', async () => {
+      createComponent({
+        mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockRejectedValue({
+              data: {},
+            }),
+          ],
+        ]),
+      });
+
+      await waitForPromises();
+
+      expect(
+        wrapper
+          .findByText('Error while fetching enabled scans. Please try again later.')
+          .exists(),
+      ).toBe(true);
+    });
+
+    it('when the pipeline is null, it should not render anything', async () => {
+      createComponent({
+        mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValueOnce({
+              data: {
+                project: {
+                  id: 'gid://1',
+                  pipeline: null,
+                },
+              },
+            }),
+          ],
+        ]),
+      });
+
+      await waitForPromises();
+
+      expect(wrapper.text()).toBe('');
+    });
   });
 
   describe('when using REST', () => {
