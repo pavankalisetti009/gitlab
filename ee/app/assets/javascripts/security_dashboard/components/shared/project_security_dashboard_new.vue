@@ -1,7 +1,7 @@
 <script>
 import { GlDashboardLayout } from '@gitlab/ui';
+import { markRaw } from 'vue';
 import { s__ } from '~/locale';
-import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';

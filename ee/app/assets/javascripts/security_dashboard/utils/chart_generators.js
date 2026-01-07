@@ -1,4 +1,4 @@
-import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
+import { markRaw } from 'vue';
 import VulnerabilitiesForSeverityWrapper from '../components/shared/vulnerabilities_for_severity_wrapper.vue';
 import { SEVERITY_LEVELS_KEYS } from '../constants';
 
