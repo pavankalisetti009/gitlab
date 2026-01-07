@@ -88,8 +88,11 @@ export function testMavenUpstream({ id, url, username, password }) {
   });
 }
 
-export function testExistingMavenUpstream({ id }) {
+export function testExistingMavenUpstreamWithOverrides({ id, url, username, password }) {
   const apiUrl = buildApiUrl(MAVEN_UPSTREAM_TEST_PATH).replace(':id', id);
 
-  return axios.get(apiUrl);
+  if (url) {
+    return axios.post(apiUrl, { url, username, password });
+  }
+  return axios.post(apiUrl);
 }
