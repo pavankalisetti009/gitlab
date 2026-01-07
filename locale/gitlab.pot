@@ -7338,9 +7338,6 @@ msgstr ""
 msgid "AiPowered|GitLab Duo Agent Platform is an AI-native coding agent."
 msgstr ""
 
-msgid "AiPowered|GitLab Duo Agents"
-msgstr ""
-
 msgid "AiPowered|GitLab Duo Chat conversations"
 msgstr ""
 
@@ -7348,9 +7345,6 @@ msgid "AiPowered|GitLab Duo Classic"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Core available to all users"
-msgstr ""
-
-msgid "AiPowered|GitLab Duo Flows and External Agents"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Model Selection"

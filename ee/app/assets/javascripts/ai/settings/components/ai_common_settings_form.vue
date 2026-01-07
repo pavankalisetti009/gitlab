@@ -149,7 +149,22 @@ export default {
       const currentLength = this.namespaceAccessRules?.length || 0;
       const initialLength = this.initialNamespaceAccessRules?.length || 0;
 
-      return currentLength !== initialLength;
+      if (currentLength !== initialLength) {
+        return true;
+      }
+
+      return this.namespaceAccessRules?.some((namespaceAccessRule) => {
+        const initialNamespaceAccessRule = this.initialNamespaceAccessRules.find(
+          (rule) => rule.throughNamespace.id === namespaceAccessRule.throughNamespace.id,
+        );
+
+        if (!initialNamespaceAccessRule) return true;
+
+        const currentFeatures = [...namespaceAccessRule.features].sort();
+        const initialFeatures = [...initialNamespaceAccessRule.features].sort();
+
+        return JSON.stringify(currentFeatures) !== JSON.stringify(initialFeatures);
+      });
     },
     hasFormChanged() {
       return (
@@ -242,7 +257,7 @@ export default {
       this.duoAgentPlatformEnabledInput = value;
       this.$emit('duo-agent-platform-enabled-changed', value);
     },
-    onAiNamespaceAccessRulesChanged(value) {
+    onNamespaceAccessRulesChanged(value) {
       this.namespaceAccessRules = value;
       this.$emit('namespace-access-rules-changed', value);
     },
@@ -258,7 +273,7 @@ export default {
     <ai-namespace-access-rules
       v-if="initialNamespaceAccessRules"
       :initial-namespace-access-rules="namespaceAccessRules"
-      @change="onAiNamespaceAccessRulesChanged"
+      @change="onNamespaceAccessRulesChanged"
     />
 
     <duo-core-features-form

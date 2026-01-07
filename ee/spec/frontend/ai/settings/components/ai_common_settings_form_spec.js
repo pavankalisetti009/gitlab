@@ -220,14 +220,119 @@ describe('AiCommonSettingsForm', () => {
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 
-    it('enables save button when namespace access rules changes are made', async () => {
-      expect(findSaveButton().props('disabled')).toBe(true);
+    describe('when namespace access rules get extended by a group', () => {
+      it('enables save button', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
 
-      await findAiNamespaceAccessRules().vm.$emit('change', [
-        { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
-      ]);
+        await findAiNamespaceAccessRules().vm.$emit('change', [
+          { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
+        ]);
 
-      expect(findSaveButton().props('disabled')).toBe(false);
+        expect(findSaveButton().props('disabled')).toBe(false);
+      });
+    });
+
+    describe('when feature gets added to namespace access rule', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            initialNamespaceAccessRules: [
+              { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
+            ],
+          },
+        });
+      });
+
+      it('enables save button', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        await findAiNamespaceAccessRules().vm.$emit('change', [
+          {
+            throughNamespace: { id: 1, name: 'group' },
+            features: ['duo_agent_platform', 'duo_classic'],
+          },
+        ]);
+
+        expect(findSaveButton().props('disabled')).toBe(false);
+      });
+    });
+
+    describe('when features of namespace access rule stay unchanged', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            initialNamespaceAccessRules: [
+              { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
+            ],
+          },
+        });
+      });
+
+      it('save button stays disabled', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        await findAiNamespaceAccessRules().vm.$emit('change', [
+          {
+            throughNamespace: { id: 1, name: 'group' },
+            features: ['duo_agent_platform'],
+          },
+        ]);
+
+        expect(findSaveButton().props('disabled')).toBe(true);
+      });
+    });
+
+    describe('when features of namespace access rule gets removed', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            initialNamespaceAccessRules: [
+              { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
+            ],
+          },
+        });
+      });
+
+      it('enables save button', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        await findAiNamespaceAccessRules().vm.$emit('change', [
+          {
+            throughNamespace: { id: 1, name: 'group' },
+            features: [],
+          },
+        ]);
+
+        expect(findSaveButton().props('disabled')).toBe(false);
+      });
+    });
+
+    describe('when order of features of namespace access rule gets changed', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            initialNamespaceAccessRules: [
+              {
+                throughNamespace: { id: 1, name: 'group' },
+                features: ['duo_agent_platform', 'duo_classic'],
+              },
+            ],
+          },
+        });
+      });
+
+      it('save button stays disabled', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        await findAiNamespaceAccessRules().vm.$emit('change', [
+          {
+            throughNamespace: { id: 1, name: 'group' },
+            features: ['duo_classic', 'duo_agent_platform'],
+          },
+        ]);
+
+        expect(findSaveButton().props('disabled')).toBe(true);
+      });
     });
 
     it('enables save button when duo SAST FP detection changes are made (feature flag enabled)', async () => {

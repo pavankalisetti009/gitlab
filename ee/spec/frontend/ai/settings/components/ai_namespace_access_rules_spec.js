@@ -14,7 +14,7 @@ describe('AiNamespaceAccessRules', () => {
         name: 'Group A',
         fullPath: 'group-a',
       },
-      features: ['duo_agents', 'duo_classic'],
+      features: ['duo_agent_platform'],
     },
     {
       throughNamespace: {
@@ -22,7 +22,7 @@ describe('AiNamespaceAccessRules', () => {
         name: 'Group B',
         fullPath: 'group-b',
       },
-      features: ['duo_flows'],
+      features: ['duo_classic'],
     },
   ];
 
@@ -126,27 +126,24 @@ describe('AiNamespaceAccessRules', () => {
     describe('enabled features checkboxes', () => {
       it('renders checkbox for all features for each rule', () => {
         const checkboxes = findCheckboxes();
-        expect(checkboxes).toHaveLength(6);
+        expect(checkboxes).toHaveLength(4);
       });
 
       it('renders checkbox labels for all available features', () => {
         const checkboxes = findCheckboxes();
 
         expect(checkboxes.at(0).text()).toBe('GitLab Duo Classic');
-        expect(checkboxes.at(1).text()).toBe('GitLab Duo Agents');
-        expect(checkboxes.at(2).text()).toBe('GitLab Duo Flows and External Agents');
+        expect(checkboxes.at(1).text()).toBe('GitLab Duo Agent Platform');
       });
 
       it('checks the correct checkboxes based on configuration', () => {
         const checkboxes = findCheckboxes();
 
-        expect(checkboxes.at(0).props('checked')).toBe(true);
+        expect(checkboxes.at(0).props('checked')).toBe(false);
         expect(checkboxes.at(1).props('checked')).toBe(true);
-        expect(checkboxes.at(2).props('checked')).toBe(false);
 
+        expect(checkboxes.at(2).props('checked')).toBe(true);
         expect(checkboxes.at(3).props('checked')).toBe(false);
-        expect(checkboxes.at(4).props('checked')).toBe(false);
-        expect(checkboxes.at(5).props('checked')).toBe(true);
       });
     });
 
@@ -168,6 +165,59 @@ describe('AiNamespaceAccessRules', () => {
 
         expect(wrapper.emitted('change')).toHaveLength(1);
         expect(wrapper.emitted('change')[0][0]).toEqual([mockNamespaceAccessRules[0]]);
+      });
+    });
+
+    describe('when feature is toggled', () => {
+      it('enables feature for specific namespace access rule', async () => {
+        await findCheckboxes().at(0).vm.$emit('change', true);
+        await nextTick();
+
+        expect(wrapper.emitted('change')).toHaveLength(1);
+        expect(wrapper.emitted('change')[0][0]).toEqual([
+          {
+            throughNamespace: { id: 1, name: 'Group A', fullPath: 'group-a' },
+            features: ['duo_agent_platform', 'duo_classic'], // Now has both features
+          },
+          {
+            throughNamespace: { id: 2, name: 'Group B', fullPath: 'group-b' },
+            features: ['duo_classic'],
+          },
+        ]);
+      });
+
+      it('disables feature for specific namespace access rule', async () => {
+        await findCheckboxes().at(1).vm.$emit('change', false);
+        await nextTick();
+
+        expect(wrapper.emitted('change')).toHaveLength(1);
+        expect(wrapper.emitted('change')[0][0]).toEqual([
+          {
+            throughNamespace: { id: 1, name: 'Group A', fullPath: 'group-a' },
+            features: [],
+          },
+          {
+            throughNamespace: { id: 2, name: 'Group B', fullPath: 'group-b' },
+            features: ['duo_classic'],
+          },
+        ]);
+      });
+
+      it('de-duplicates features for namespace access rules', async () => {
+        await findCheckboxes().at(1).vm.$emit('change', true);
+        await nextTick();
+
+        expect(wrapper.emitted('change')).toHaveLength(1);
+        expect(wrapper.emitted('change')[0][0]).toEqual([
+          {
+            throughNamespace: { id: 1, name: 'Group A', fullPath: 'group-a' },
+            features: ['duo_agent_platform'],
+          },
+          {
+            throughNamespace: { id: 2, name: 'Group B', fullPath: 'group-b' },
+            features: ['duo_classic'],
+          },
+        ]);
       });
     });
   });
@@ -205,7 +255,6 @@ describe('AiNamespaceAccessRules', () => {
 
       expect(checkboxes.at(6).props('checked')).toBe(true);
       expect(checkboxes.at(7).props('checked')).toBe(true);
-      expect(checkboxes.at(8).props('checked')).toBe(true);
 
       expect(links.at(3).attributes('href')).toBe('/group-d');
       expect(links.at(3).text()).toBe('Group D');
