@@ -151,8 +151,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           ])
         end
 
-        it 'returns matched code contributors AI usage stats',
-          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/23497' do
+        it 'returns matched code contributors AI usage stats' do
           expect(service_response).to be_success
           expect(service_response.payload).to match(expected_results)
         end
@@ -165,8 +164,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           end
         end
 
-        context 'when using IDE names filter',
-          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/23497' do
+        context 'when using IDE names filter' do
           let(:ide_names) { %w[ide_2 ide_3] }
 
           it 'returns metrics filtered by IDEs used' do
