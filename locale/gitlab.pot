@@ -77147,6 +77147,9 @@ msgstr ""
 msgid "WorkItem|Add view"
 msgstr ""
 
+msgid "WorkItem|Added"
+msgstr ""
+
 msgid "WorkItem|All activity"
 msgstr ""
 
@@ -77262,6 +77265,9 @@ msgid "WorkItem|Blocking"
 msgstr ""
 
 msgid "WorkItem|Blue"
+msgstr ""
+
+msgid "WorkItem|Browse views"
 msgstr ""
 
 msgid "WorkItem|Cancel"
@@ -77462,6 +77468,9 @@ msgstr ""
 msgid "WorkItem|Edit work item"
 msgstr ""
 
+msgid "WorkItem|Edit your search and try again."
+msgstr ""
+
 msgid "WorkItem|Email participants"
 msgstr ""
 
@@ -77490,9 +77499,6 @@ msgid "WorkItem|Existing %{workItemName}"
 msgstr ""
 
 msgid "WorkItem|Existing task"
-msgstr ""
-
-msgid "WorkItem|Existing view"
 msgstr ""
 
 msgid "WorkItem|Export as CSV"
@@ -77730,6 +77736,9 @@ msgstr ""
 msgid "WorkItem|New %{workItemType}"
 msgstr ""
 
+msgid "WorkItem|New View"
+msgstr ""
+
 msgid "WorkItem|New custom field"
 msgstr ""
 
@@ -77808,7 +77817,13 @@ msgstr ""
 msgid "WorkItem|No parent"
 msgstr ""
 
+msgid "WorkItem|No results found"
+msgstr ""
+
 msgid "WorkItem|No template"
+msgstr ""
+
+msgid "WorkItem|No views currently exist"
 msgstr ""
 
 msgid "WorkItem|None"
@@ -77883,6 +77898,9 @@ msgstr ""
 msgid "WorkItem|Private"
 msgstr ""
 
+msgid "WorkItem|Private: only you can see and edit this view."
+msgstr ""
+
 msgid "WorkItem|Progress"
 msgstr ""
 
@@ -77929,6 +77947,9 @@ msgid "WorkItem|Rose"
 msgstr ""
 
 msgid "WorkItem|Save and overwrite"
+msgstr ""
+
+msgid "WorkItem|Search by view name or description"
 msgstr ""
 
 msgid "WorkItem|Search existing items or enter an item's URL or reference ID"
@@ -78325,6 +78346,12 @@ msgid "WorkItem|View current version"
 msgstr ""
 
 msgid "WorkItem|View on a roadmap"
+msgstr ""
+
+msgid "WorkItem|Views"
+msgstr ""
+
+msgid "WorkItem|Views created by you or shared by others will show up here."
 msgstr ""
 
 msgid "WorkItem|Weight"
