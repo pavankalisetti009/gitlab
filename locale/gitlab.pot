@@ -41339,6 +41339,9 @@ msgstr ""
 msgid "Maximum time, in seconds, for a web terminal websocket connection. 0 for unlimited."
 msgstr ""
 
+msgid "Maximum trigrams per file"
+msgstr ""
+
 msgid "Maximum unauthenticated API requests per rate limit period per IP"
 msgstr ""
 

@@ -171,6 +171,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         zoekt_indexing_paused: false,
         zoekt_rollout_batch_size: 32,
         zoekt_rollout_retry_interval: Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL,
+        zoekt_trigram_max: Search::Zoekt::Settings::DEFAULT_TRIGRAM_MAX,
         zoekt_lost_node_threshold: Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD,
         zoekt_search_enabled: false,
         enforce_pipl_compliance: false,
@@ -1548,6 +1549,10 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         expect(setting).to validate_inclusion_of(:display_gitlab_credits_user_data)
           .in_array([true, false])
       end
+    end
+
+    describe 'zoekt_trigram_max' do
+      it { is_expected.to validate_numericality_of(:zoekt_trigram_max).only_integer.is_greater_than(0) }
     end
   end
 
