@@ -240,22 +240,24 @@ module EE
     end
 
     def project_security_dashboard_config_with_vulnerabilities(project)
-      base_project_security_dashboard_config(project).merge(
-        {
-          has_vulnerabilities: 'true',
-          vulnerabilities_export_endpoint:
-            expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id)),
-          vulnerabilities_pdf_export_endpoint:
-          expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id,
-            params: { export_format: :pdf })),
-          new_project_pipeline_path: new_project_pipeline_path(project),
-          scanners: VulnerabilityScanners::ListService.new(project).execute.to_json,
-          can_view_false_positive: can_view_false_positive?,
-          vulnerability_quota: vulnerability_quota_information(project),
-          validity_checks_enabled: project.security_setting&.validity_checks_enabled&.to_s || 'false',
-          manage_duo_settings_path: edit_project_path(project, anchor: 'js-gitlab-duo-settings')
-        }
-      )
+      config = {
+        has_vulnerabilities: 'true',
+        vulnerabilities_export_endpoint:
+          expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id)),
+        vulnerabilities_pdf_export_endpoint:
+        expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id,
+          params: { export_format: :pdf })),
+        new_project_pipeline_path: new_project_pipeline_path(project),
+        scanners: VulnerabilityScanners::ListService.new(project).execute.to_json,
+        can_view_false_positive: can_view_false_positive?,
+        vulnerability_quota: vulnerability_quota_information(project),
+        validity_checks_enabled: project.security_setting&.validity_checks_enabled&.to_s || 'false',
+        manage_duo_settings_path: edit_project_path(project, anchor: 'js-gitlab-duo-settings')
+      }
+
+      config.merge!(security_dashboard_default_tracked_ref_data(project))
+
+      base_project_security_dashboard_config(project).merge(config)
     end
 
     def project_security_dashboard_config(project)
@@ -402,6 +404,21 @@ module EE
     end
 
     private
+
+    def security_dashboard_default_tracked_ref_data(project)
+      return {} unless ::Feature.enabled?(:vulnerabilities_across_contexts, project)
+
+      default_branch_context = Security::ProjectTrackedContext.find_default_branch_context(project)
+      return {} unless default_branch_context
+
+      {
+        default_branch_context: {
+          id: default_branch_context.id.to_s,
+          name: default_branch_context.context_name,
+          ref_type: default_branch_context.context_type
+        }.to_json
+      }
+    end
 
     def paid_duo_tier_for_project(project)
       namespace = project.root_ancestor

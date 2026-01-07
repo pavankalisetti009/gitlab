@@ -317,7 +317,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       Gitlab::Json.parse(fixture_file('vulnerabilities/dismissal_descriptions.json', dir: 'ee')).to_json
     end
 
-    subject { helper.project_security_dashboard_config(project) }
+    subject(:config) { helper.project_security_dashboard_config(project) }
 
     before_all do
       group.add_owner(user)
@@ -517,6 +517,36 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           end
 
           it { is_expected.to include(validity_checks_enabled: 'false') }
+        end
+      end
+
+      context 'with default branch context' do
+        let_it_be(:default_branch_context) do
+          create(
+            :security_project_tracked_context,
+            :default,
+            project: project,
+            context_name: project.default_branch_or_main,
+            context_type: :branch
+          )
+        end
+
+        it 'sets expected data for default_branch_context' do
+          context_data = Gitlab::Json.parse(config[:default_branch_context])
+
+          expect(context_data).to include(
+            'id' => default_branch_context.id.to_s,
+            'name' => default_branch_context.context_name,
+            'ref_type' => default_branch_context.context_type
+          )
+        end
+
+        context 'when vulnerabilities_across_contexts feature flag is disabled' do
+          before do
+            stub_feature_flags(vulnerabilities_across_contexts: false)
+          end
+
+          it { is_expected.not_to include(:default_branch_context) }
         end
       end
     end
