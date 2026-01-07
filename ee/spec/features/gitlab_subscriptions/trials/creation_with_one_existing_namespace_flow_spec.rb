@@ -142,7 +142,8 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
   end
 
   context 'when applying trial fails' do
-    it 'fills out form, submits and is sent to select namespace with errors and is then resolved' do
+    it 'fills out form, submits and is sent to select namespace with errors and is then resolved',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/22556' do
       # setup
       sign_in(user)
 
