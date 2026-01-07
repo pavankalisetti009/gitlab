@@ -34,7 +34,7 @@ module Admin
         ai_gateway_url: ai_gateway_url,
         ai_gateway_timeout_seconds: ai_gateway_timeout_seconds,
         duo_agent_platform_service_url: duo_agent_platform_service_url,
-        expose_duo_agent_platform_service_url: ::Feature.enabled?(:self_hosted_agent_platform, :instance),
+        expose_duo_agent_platform_service_url: expose_duo_agent_platform_service_url?,
         are_experiment_settings_allowed: active_duo_add_ons_exist?,
         are_prompt_cache_settings_allowed: true,
         beta_self_hosted_models_enabled: beta_self_hosted_models_enabled,
@@ -71,6 +71,12 @@ module Admin
 
     def namespace_access_rules
       ::Ai::FeatureAccessRule.duo_root_namespace_access_rules
+    end
+
+    def expose_duo_agent_platform_service_url?
+      return false unless ::Feature.enabled?(:self_hosted_agent_platform, :instance)
+
+      ::Ability.allowed?(@current_user, :update_dap_self_hosted_model)
     end
 
     def show_foundational_agents_per_agent_availability?
