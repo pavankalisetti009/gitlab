@@ -11,6 +11,7 @@ query projectAutocompleteUsersSearchWithMRPermissionsEE(
     users: autocompleteUsers(search: $search) {
       ...User
       ...UserAvailability
+      compositeIdentityEnforced @gl_introduced(version: "18.7.0")
       mergeRequestInteraction(id: $mergeRequestId) {
         canMerge
         applicableApprovalRules {

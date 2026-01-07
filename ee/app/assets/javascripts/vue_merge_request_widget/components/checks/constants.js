@@ -30,6 +30,9 @@ export const POLICY_EXCEPTIONS_BYPASS_REASONS = [
 export const WARN_MODE_NEXT_STEPS = [
   s__('SecurityOrchestration|All selected policy requirements will be bypassed.'),
   s__('SecurityOrchestration|The action will be logged in the audit log.'),
+  s__(
+    'SecurityOrchestration|The security findings remain in their current status and are still visible, but will no longer block the merge request.',
+  ),
 ];
 
 export const INITIAL_STATE_NEXT_STEPS = [
@@ -50,4 +53,7 @@ export const POLICY_EXCEPTIONS_NEXT_STEPS = [
   ),
   s__('SecurityOrchestration|The action will be logged in the audit log with your justification'),
   s__('SecurityOrchestration|Security teams will be notified of this exception'),
+  s__(
+    'SecurityOrchestration|The security findings remain in their current status and are still visible, but will no longer block the merge request.',
+  ),
 ];
