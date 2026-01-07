@@ -44,7 +44,7 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :so
             'gemnasium-dependency_scanning'         | 'registry.gitlab.com/security-products/gemnasium:6'
             'gemnasium-maven-dependency_scanning'   | 'registry.gitlab.com/security-products/gemnasium-maven:6'
             'gemnasium-python-dependency_scanning'  | 'registry.gitlab.com/security-products/gemnasium-python:6'
-            'dependency-scanning'                   | 'registry.gitlab.com/security-products/dependency-scanning:v0'
+            'dependency-scanning'                   | 'registry.gitlab.com/security-products/dependency-scanning:1'
           end
 
           with_them do
