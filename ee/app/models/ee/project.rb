@@ -1546,7 +1546,9 @@ module EE
     end
 
     def should_check_index_integrity?
-      use_elasticsearch? && repository_exists? && !empty_repo?
+      return false unless use_elasticsearch?
+
+      !empty_repo? || !wiki.empty?
     end
 
     def merge_train_for(target_branch)

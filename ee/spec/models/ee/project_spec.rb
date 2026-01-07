@@ -1351,22 +1351,25 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     subject(:should_check_index_integrity) { project.should_check_index_integrity? }
 
-    where(:advanced_search_enabled, :repository_exists, :repository_empty, :expected) do
-      false | true | true | false
-      false | false | true | false
-      false | true | false | false
+    where(:advanced_search_enabled, :repository_empty, :wiki_empty, :expected) do
       false | false | false | false
-      true | true | true | false
-      true | false | true | false
-      true | true | false | true
-      true | false | false | false
+      false | false | true  | false
+      false | true  | false | false
+      false | true  | true  | false
+      true  | false | false | true
+      true  | false | true  | true
+      true  | true  | false | true
+      true  | true  | true  | false
     end
 
     with_them do
       before do
-        stub_ee_application_setting(elasticsearch_search: advanced_search_enabled, elasticsearch_indexing: advanced_search_enabled)
-        allow(project).to receive(:repository_exists?).and_return(repository_exists)
+        stub_ee_application_setting(
+          elasticsearch_search: advanced_search_enabled,
+          elasticsearch_indexing: advanced_search_enabled
+        )
         allow(project).to receive(:empty_repo?).and_return(repository_empty)
+        allow(project).to receive_message_chain(:wiki, :empty?).and_return(wiki_empty)
       end
 
       it { is_expected.to be(expected) }
