@@ -30,6 +30,8 @@ module MergeRequests
         # Note: When we remove the 10 second delay in
         # ee/app/services/ee/merge_requests/refresh_service.rb :51
         # We should be able to remove this
+        merge_request.approval_state.expire_unapproved_key!
+        trigger_merge_request_merge_status_updated(merge_request)
         AutoMergeProcessWorker.perform_async(merge_request.id) if merge_request.auto_merge_enabled?
       end
     end

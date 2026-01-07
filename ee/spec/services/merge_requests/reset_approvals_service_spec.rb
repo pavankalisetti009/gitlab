@@ -53,6 +53,15 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
       perform_enqueued_jobs
     end
 
+    shared_examples_for 'triggers GraphQL subscription mergeRequestMergeStatusUpdated at least once' do
+      specify do
+        expect(GraphqlTriggers).to receive(:merge_request_merge_status_updated)
+          .with(merge_request).at_least(:once)
+
+        action
+      end
+    end
+
     shared_examples_for 'MergeRequests::ApprovalsResetEvent published' do
       it 'publishes MergeRequests::ApprovalsResetEvent' do
         expect { action }
@@ -161,7 +170,7 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         end
       end
 
-      it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
+      it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated at least once' do
         let(:action) do
           execute_service(execute_method, 'refs/heads/master', newrev)
         end
@@ -218,6 +227,19 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
           merge_request.reload
 
           expect(merge_request.approvals).to contain_exactly(approval_1, approval_2)
+        end
+
+        it 'removes the unmergeable flag after the service is run' do
+          expect_next_instance_of(ApprovalState) do |instance|
+            expect(instance).to receive(:expire_unapproved_key!)
+          end
+          execute_service(execute_method, 'refs/heads/master', newrev)
+        end
+
+        it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated at least once' do
+          let(:action) do
+            execute_service(execute_method, 'refs/heads/master', newrev)
+          end
         end
 
         it_behaves_like 'MergeRequests::ApprovalsResetEvent not published' do
@@ -669,6 +691,19 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
             expect(merge_request.approvals).to contain_exactly(security_approval, js_approval, rb_approval)
           end
 
+          it 'removes the unmergeable flag after the service is run' do
+            expect_next_instance_of(ApprovalState) do |instance|
+              expect(instance).to receive(:expire_unapproved_key!)
+            end
+            service.execute('feature2', feature2_change_unrelated_to_codeowners)
+          end
+
+          it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated at least once' do
+            let(:action) do
+              service.execute('feature2', feature2_change_unrelated_to_codeowners)
+            end
+          end
+
           it_behaves_like 'MergeRequests::ApprovalsResetEvent not published' do
             let(:action) do
               service.execute('feature2', feature2_change_unrelated_to_codeowners)
@@ -681,7 +716,7 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         end
       end
 
-      it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
+      it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated at least once' do
         let(:action) do
           # Create an approval that will be reset to trigger the GraphQL subscription
           create(:approval, merge_request: merge_request, user: owner, patch_id_sha: patch_id_sha)
@@ -735,6 +770,17 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
 
           expect(merge_request.approvals.count).to eq(3)
           expect(merge_request.approvals).to contain_exactly(security_approval, js_approval, rb_approval)
+        end
+
+        it 'removes the unmergeable flag after the service is run' do
+          expect_next_instance_of(ApprovalState) do |instance|
+            expect(instance).to receive(:expire_unapproved_key!)
+          end
+          service.execute('feature', feature_sha3)
+        end
+
+        it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated at least once' do
+          let(:action) { service.execute('feature', feature_sha3) }
         end
 
         it_behaves_like 'MergeRequests::ApprovalsResetEvent not published' do
