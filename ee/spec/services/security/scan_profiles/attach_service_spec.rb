@@ -18,8 +18,23 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
   end
 
   let(:group) { root_group }
-  let(:retry_count) { 0 }
-  let(:service) { described_class.new(group, scan_profile, retry_count: retry_count) }
+  let(:traverse_hierarchy) { true }
+  let(:service) { described_class.new(group, scan_profile, traverse_hierarchy: traverse_hierarchy) }
+
+  describe '.execute' do
+    let(:mock_instance) { instance_double(described_class, execute: true) }
+
+    before do
+      allow(described_class).to receive(:new).and_return(mock_instance)
+    end
+
+    it 'instantiates a new instance and delegates the call to it' do
+      described_class.execute(root_group.id, scan_profile.id, false)
+
+      expect(described_class).to have_received(:new).with(root_group.id, scan_profile.id, false)
+      expect(mock_instance).to have_received(:execute)
+    end
+  end
 
   describe '#execute' do
     it 'attaches the scan profile to all projects in the group hierarchy' do
@@ -93,140 +108,22 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
       end
     end
 
-    context 'when exclusive lease cannot be obtained' do
-      context 'when root group lock cannot be obtained' do
-        before do
-          stub_exclusive_lease_taken(Security::ScanProfiles.update_lease_key(root_group.id))
-        end
-
-        it 'schedules a retry worker for the namespace' do
-          expect(Security::ScanProfiles::AttachWorker).to receive(:perform_in)
-            .with(described_class::RETRY_DELAY, root_group.id, scan_profile.id, false, retry_count + 1)
-
-          service.execute
-        end
-
-        it 'processes other groups successfully' do
-          expect { service.execute }.to change { Security::ScanProfileProject.count }.by(2)
-
-          # Root group project should not be processed
-          expect(project1.security_scan_profiles.first).to be_nil
-
-          # Subgroup and nested group projects should be processed
-          expect(project2.security_scan_profiles.first).to eq(scan_profile)
-          expect(project3.security_scan_profiles.first).to eq(scan_profile)
-        end
-      end
-
-      context 'when subgroup lock cannot be obtained' do
-        before do
-          stub_exclusive_lease_taken(Security::ScanProfiles.update_lease_key(subgroup.id))
-        end
-
-        it 'schedules a retry worker for the subgroup' do
-          expect(Security::ScanProfiles::AttachWorker).to receive(:perform_in)
-            .with(described_class::RETRY_DELAY, subgroup.id, scan_profile.id, false, retry_count + 1)
-
-          service.execute
-        end
-
-        it 'processes other groups successfully' do
-          expect { service.execute }.to change { Security::ScanProfileProject.count }.by(2)
-
-          # Root group and nested group projects should be processed
-          expect(project1.security_scan_profiles.first).to eq(scan_profile)
-          expect(project3.security_scan_profiles.first).to eq(scan_profile)
-
-          # Subgroup projects should not be processed yet
-          expect(project2.security_scan_profiles.first).to be_nil
-        end
-      end
-
-      context 'when max retries reached' do
-        let(:retry_count) { described_class::MAX_RETRY }
-
-        before do
-          stub_exclusive_lease_taken(Security::ScanProfiles.update_lease_key(root_group.id))
-        end
-
-        it 'does not schedule another retry' do
-          expect(Security::ScanProfiles::AttachWorker).not_to receive(:perform_in)
-
-          service.execute
-        end
-
-        it 'tracks the error' do
-          expect(Gitlab::ErrorTracking).to receive(:track_exception)
-            .with(
-              an_instance_of(StandardError),
-              hash_including(
-                namespace_id: root_group.id,
-                scan_profile_id: scan_profile.id,
-                retry_count: described_class::MAX_RETRY
-              )
-            )
-
-          service.execute
-        end
-      end
-    end
-
-    context 'when error occurs after obtaining lock' do
-      before do
-        # Simulate error during project fetching after lock is obtained
-        allow(Project).to receive(:in_namespace).and_raise(StandardError, 'Query error')
-      end
-
-      it 'tracks the exception and returns error response' do
-        expect(Gitlab::ErrorTracking).to receive(:track_exception)
-          .with(
-            an_instance_of(StandardError),
-            {
-              group_id: group.id,
-              scan_profile_id: scan_profile.id
-            }
-          )
-
-        result = service.execute
-        expect(result[:status]).to eq(:error)
-        expect(result[:message]).to eq('Failed to attach scan profile to projects')
-      end
-    end
-
     context 'when an error occurs during attachment' do
+      let(:error) { StandardError.new }
+
       before do
         allow_next_instance_of(Gitlab::Database::NamespaceEachBatch) do |instance|
-          allow(instance).to receive(:each_batch).and_raise(StandardError, 'Database error')
+          allow(instance).to receive(:each_batch).and_raise(error)
         end
       end
 
-      it 'tracks the exception with context' do
-        expect(Gitlab::ErrorTracking).to receive(:track_exception)
-          .with(
-            an_instance_of(StandardError),
-            {
-              group_id: group.id,
-              scan_profile_id: scan_profile.id
-            }
-          )
-
-        service.execute
-      end
-
-      it 'returns an error response' do
-        result = service.execute
-
-        expect(result[:status]).to eq(:error)
-        expect(result[:message]).to eq('Failed to attach scan profile to projects')
-      end
-
-      it 'does not create any records' do
-        expect { service.execute }.not_to change { Security::ScanProfileProject.count }
+      it 'propagates the error to the caller' do
+        expect { service.execute }.to raise_error(error)
       end
     end
 
     context 'when traverse_hierarchy is false' do
-      let(:service) { described_class.new(group, scan_profile, traverse_hierarchy: false, retry_count: retry_count) }
+      let(:traverse_hierarchy) { false }
 
       it 'only processes the specific group, not descendants' do
         expect { service.execute }.to change { project1.security_scan_profiles.first }.from(nil).to(scan_profile)
@@ -241,6 +138,66 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
           expect { service.execute }.to change { project2.security_scan_profiles.first }.from(nil).to(scan_profile)
             .and not_change { project1.security_scan_profiles.first }.from(nil)
             .and not_change { project3.security_scan_profiles.first }.from(nil)
+        end
+      end
+    end
+
+    describe 'running the logic in lock' do
+      context 'when the logic is running for the entire hierarchy' do
+        it 'tries to obtain the lock just once for each namespace' do
+          expect_next_instances_of(Gitlab::ExclusiveLeaseHelpers::SleepingLock, 3) do |instance|
+            expect(instance).to receive(:obtain).with(1)
+          end
+
+          service.execute
+        end
+
+        context 'when exclusive lease cannot be obtained' do
+          before do
+            stub_exclusive_lease_taken(Security::ScanProfiles.update_lease_key(root_group.id))
+          end
+
+          it 'schedules a retry worker for the namespace' do
+            expect(Security::ScanProfiles::AttachWorker).to receive(:perform_in)
+              .with(described_class::RETRY_DELAY, root_group.id, scan_profile.id, false)
+
+            service.execute
+          end
+
+          it 'processes other groups successfully' do
+            expect { service.execute }.to change { Security::ScanProfileProject.count }.by(2)
+
+            # Root group project should not be processed
+            expect(project1.security_scan_profiles.first).to be_nil
+
+            # Subgroup and nested group projects should be processed
+            expect(project2.security_scan_profiles.first).to eq(scan_profile)
+            expect(project3.security_scan_profiles.first).to eq(scan_profile)
+          end
+        end
+      end
+
+      context 'when the logic is running for a specific group' do
+        let(:traverse_hierarchy) { false }
+
+        it 'tries to obtain the lock with the correct number of retries' do
+          expect_next_instance_of(Gitlab::ExclusiveLeaseHelpers::SleepingLock) do |instance|
+            expect(instance).to receive(:obtain).with(described_class::LEASE_RETRY_WITHOUT_TRAVERSAL + 1)
+          end
+
+          service.execute
+        end
+
+        context 'when exclusive lease cannot be obtained' do
+          before do
+            stub_const("#{described_class}::LEASE_RETRY_WITHOUT_TRAVERSAL", 0)
+
+            stub_exclusive_lease_taken(Security::ScanProfiles.update_lease_key(root_group.id))
+          end
+
+          it 'propagates the error to the caller' do
+            expect { service.execute }.to raise_error(Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError)
+          end
         end
       end
     end

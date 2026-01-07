@@ -8,14 +8,19 @@ module Security
 
       BATCH_SIZE = 500
       LEASE_TIMEOUT = 5.minutes
-      MAX_RETRY = 25
       RETRY_DELAY = 30.seconds
+      LEASE_RETRY_WITH_TRAVERSAL = 0
+      LEASE_RETRY_WITHOUT_TRAVERSAL = 10
+      LEASE_WAIT_WITHOUT_TRAVERSAL = 10.seconds
 
-      def initialize(group, scan_profile, traverse_hierarchy: true, retry_count: 0)
+      def self.execute(...)
+        new(...).execute
+      end
+
+      def initialize(group, scan_profile, traverse_hierarchy: true)
         @group = group
         @scan_profile = scan_profile
         @traverse_hierarchy = traverse_hierarchy
-        @retry_count = retry_count
       end
 
       def execute
@@ -23,17 +28,11 @@ module Security
 
         attach_profile_to_projects
         success
-      rescue StandardError => e
-        Gitlab::ErrorTracking.track_exception(e, {
-          group_id: group.id,
-          scan_profile_id: scan_profile.id
-        })
-        error('Failed to attach scan profile to projects')
       end
 
       private
 
-      attr_reader :group, :scan_profile, :traverse_hierarchy, :retry_count
+      attr_reader :group, :scan_profile, :traverse_hierarchy
 
       def valid_namespace?
         scan_profile.namespace_id == group.root_ancestor.id
@@ -65,28 +64,24 @@ module Security
       def insert_batch_with_lock(namespace_id, batch)
         lease_key = Security::ScanProfiles.update_lease_key(namespace_id)
 
-        in_lock(lease_key, ttl: LEASE_TIMEOUT, retries: 0) do
+        in_lock(lease_key, ttl: LEASE_TIMEOUT, **lock_retry_options) do
           batch_ids = batch.pluck_primary_key
           bulk_insert_profile_projects(batch_ids)
         end
-      rescue Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError
-        handle_lock_failure(namespace_id)
+      rescue Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError => error
+        handle_lock_failure(error, namespace_id)
       end
 
-      def handle_lock_failure(namespace_id)
-        if retry_count < MAX_RETRY
-          Security::ScanProfiles::AttachWorker.perform_in(
-            RETRY_DELAY, namespace_id, scan_profile.id, false, retry_count + 1)
-        else
-          Gitlab::ErrorTracking.track_exception(
-            StandardError.new('Max retries reached for attaching scan profile'),
-            {
-              namespace_id: namespace_id,
-              scan_profile_id: scan_profile.id,
-              retry_count: retry_count
-            }
-          )
-        end
+      def lock_retry_options
+        return { retries: LEASE_RETRY_WITH_TRAVERSAL } if traverse_hierarchy
+
+        { retries: LEASE_RETRY_WITHOUT_TRAVERSAL, sleep_sec: LEASE_WAIT_WITHOUT_TRAVERSAL }
+      end
+
+      def handle_lock_failure(error, namespace_id)
+        raise error unless traverse_hierarchy
+
+        Security::ScanProfiles::AttachWorker.perform_in(RETRY_DELAY, namespace_id, scan_profile.id, false)
       end
 
       def bulk_insert_profile_projects(batch_ids)
