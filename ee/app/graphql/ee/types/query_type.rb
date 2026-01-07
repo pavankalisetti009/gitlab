@@ -30,6 +30,11 @@ module EE
           null: false,
           experiment: { milestone: '18.2' },
           description: 'List of AI Catalog items.'
+        field :ai_catalog_item_versions,
+          resolver: ::Resolvers::Ai::Catalog::ItemVersionsResolver,
+          null: false,
+          experiment: { milestone: '18.8' },
+          description: 'Public AI Catalog item versions.'
         field :ai_foundational_chat_agents, resolver: ::Resolvers::Ai::FoundationalChatAgentsResolver,
           null: false,
           description: "Core agents in GitLab.",

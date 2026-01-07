@@ -13,6 +13,7 @@ RSpec.describe Types::Ai::Catalog::VersionInterface, feature_category: :workflow
       created_by
       human_version_name
       id
+      item
       released_at
       released
       updated_at

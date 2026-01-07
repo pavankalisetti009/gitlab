@@ -41,6 +41,13 @@ module Ai
 
       delegate :flow?, to: :item
 
+      scope :created_after, ->(created_after) { where(created_at: created_after..) }
+      scope :for_public_items, -> { joins(:item).where(item: { public: true }) }
+      scope :in_organization, ->(organization) { where(organization: organization) }
+      scope :order_by_id_desc, -> { order(id: :desc) }
+
+      scope :with_items, -> { includes(:item) }
+
       def human_version
         return if version.nil?
 
