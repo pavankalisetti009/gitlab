@@ -38,6 +38,32 @@ RSpec.describe Security::ScanProfile, feature_category: :security_asset_inventor
     end
   end
 
+  describe 'scopes' do
+    let_it_be(:scan_profile_1) { create(:security_scan_profile, namespace: root_level_group, name: "profile 1") }
+    let_it_be(:scan_profile_2) { create(:security_scan_profile, namespace: root_level_group, name: "profile 2") }
+
+    describe '.with_trigger_type' do
+      let_it_be(:git_push_trigger_1) do
+        create(:security_scan_profile_trigger,
+          namespace: root_level_group,
+          scan_profile: scan_profile_1,
+          trigger_type: :git_push_event)
+      end
+
+      it 'returns scan profiles with the specified trigger type' do
+        result = described_class.with_trigger_type(:git_push_event)
+
+        expect(result).to contain_exactly(scan_profile_1)
+      end
+
+      it 'returns empty relation when no profiles have the specified trigger type' do
+        result = described_class.with_trigger_type(:default_branch_pipeline)
+
+        expect(result).to be_empty
+      end
+    end
+  end
+
   describe 'class methods' do
     let_it_be(:scan_profile_1) { create(:security_scan_profile, namespace: root_level_group, name: "profile 1") }
     let_it_be(:scan_profile_2) { create(:security_scan_profile, namespace: root_level_group, name: "profile 2") }

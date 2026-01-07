@@ -58,7 +58,7 @@ module Gitlab
 
         def secret_push_protection_enabled?
           project.security_setting&.secret_push_protection_enabled ||
-            project.security_scan_profile_for(:secret_detection)&.exists?
+            project.security_scan_profile_for(:secret_detection, :git_push_event)&.exists?
         end
 
         def includes_full_revision_history?

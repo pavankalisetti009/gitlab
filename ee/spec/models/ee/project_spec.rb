@@ -5883,6 +5883,35 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           expect(result).not_to be_nil
           expect(result).to be_empty
         end
+
+        context 'when filtering by trigger_type' do
+          let_it_be(:trigger) do
+            create(:security_scan_profile_trigger,
+              namespace: project.namespace,
+              scan_profile: secret_detection_profile,
+              trigger_type: :default_branch_pipeline)
+          end
+
+          it 'returns profiles with matching trigger type' do
+            result = project.security_scan_profile_for(:secret_detection, :default_branch_pipeline)
+
+            expect(result.first).to eq(secret_detection_profile)
+          end
+
+          it 'returns empty relation for non matching trigger type' do
+            result = project.security_scan_profile_for(:secret_detection, :merge_request_pipeline)
+
+            expect(result).not_to be_nil
+            expect(result).to be_empty
+          end
+
+          it 'returns all profiles when trigger_type is nil' do
+            result = project.security_scan_profile_for(:secret_detection, nil)
+
+            expect(result).to exist
+            expect(result.first).to eq(secret_detection_profile)
+          end
+        end
       end
 
       context 'when project has no scan profiles' do

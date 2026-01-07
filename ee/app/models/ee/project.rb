@@ -1680,11 +1680,13 @@ module EE
       organization_policy_setting.csp_namespace
     end
 
-    def security_scan_profile_for(type)
+    def security_scan_profile_for(type, trigger_type = nil)
       return unless licensed_feature_available?(:security_scan_profiles) &&
         ::Feature.enabled?(:security_scan_profiles_feature, root_ancestor)
 
-      security_scan_profiles.by_type(type)
+      profiles = security_scan_profiles.by_type(type)
+      profiles = profiles.with_trigger_type(trigger_type) if trigger_type.present?
+      profiles
     end
 
     private
