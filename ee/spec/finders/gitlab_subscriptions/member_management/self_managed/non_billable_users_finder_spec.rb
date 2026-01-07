@@ -19,6 +19,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SelfManaged::NonBillableUs
     create(
       :member_role,
       :guest,
+      organization: guest_user.organization,
       namespace: nil,
       read_vulnerability: true
     )
@@ -28,6 +29,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SelfManaged::NonBillableUs
     create(
       :member_role,
       :guest,
+      organization: guest_user.organization,
       namespace: nil,
       read_code: true
     )

@@ -60,7 +60,7 @@ RSpec.describe ProjectMember, feature_category: :groups_and_projects do
       let(:maintainer) { create(:user) }
       let(:custom_roles) { [guest_role_admin_mr] }
 
-      let(:guest_role_admin_mr) { create(:member_role, :guest, :admin_merge_request, namespace: nil) }
+      let(:guest_role_admin_mr) { create(:member_role, :guest, :admin_merge_request, namespace: nil, organization: guest.organization) }
       let!(:guest_with_role) { create(:project_member, :guest, source: project, member_role: guest_role_admin_mr).user }
 
       subject(:approver_ids) do

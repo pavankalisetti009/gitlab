@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :member_role do
     namespace { association(:group) }
-    organization
+    organization { nil }
     base_access_level { Gitlab::Access::DEVELOPER }
     name { generate(:title) }
 
@@ -28,12 +28,16 @@ FactoryBot.define do
         send(attributes[:name].to_sym) { true }
 
         namespace { nil }
+        organization
         base_access_level { nil }
       end
     end
 
     # this trait can be used only for self-managed
-    trait(:instance) { namespace { nil } }
+    trait(:instance) do
+      namespace { nil }
+      organization
+    end
 
     trait(:billable) do
       base_access_level { Gitlab::Access::GUEST }
@@ -83,6 +87,7 @@ FactoryBot.define do
     trait(:admin) do
       base_access_level { nil }
       namespace_id { nil }
+      organization
       read_code { false }
       read_admin_users { true }
     end

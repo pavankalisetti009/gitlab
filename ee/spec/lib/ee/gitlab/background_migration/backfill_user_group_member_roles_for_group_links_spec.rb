@@ -44,11 +44,13 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillUserGroupMemberRolesForGroup
   end
 
   let!(:member_role_1) do
-    member_roles.create!(name: 'Custom role', base_access_level: Gitlab::Access::GUEST)
+    member_roles.create!(name: 'Custom role', base_access_level: Gitlab::Access::GUEST,
+      organization_id: organization.id)
   end
 
   let!(:member_role_2) do
-    member_roles.create!(name: 'Custom role 2', base_access_level: Gitlab::Access::GUEST)
+    member_roles.create!(name: 'Custom role 2', base_access_level: Gitlab::Access::GUEST,
+      organization_id: organization.id)
   end
 
   subject(:migration) { described_class.new(**migration_args) }

@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enable_admin_mode, feature_category: :user_management do
-  let_it_be(:member_role) { create(:member_role, namespace: nil) }
+  let_it_be(:member_role) { create(:member_role, :instance) }
   let_it_be(:role_id) { member_role.id }
   let_it_be(:admin) { create(:admin) }
 

@@ -52,7 +52,8 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueMembersApprovalServic
 
         context 'with member_role_id in params' do
           it 'saves member_role_id in metadata when passed in params' do
-            member_role = create(:member_role, :guest, namespace: nil, read_vulnerability: true)
+            member_role = create(:member_role, :guest, namespace: nil, organization: current_user.organization,
+              read_vulnerability: true)
             params[:member_role_id] = member_role.id
 
             response = service.execute

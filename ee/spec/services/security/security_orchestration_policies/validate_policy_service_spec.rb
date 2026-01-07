@@ -425,7 +425,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         end
 
         context 'with custom role approvers' do
-          let_it_be(:guest_role_admin_mr) { create(:member_role, :guest, :admin_merge_request, namespace: nil) }
+          let_it_be(:guest_role_admin_mr) do
+            create(:member_role, :guest, :admin_merge_request, namespace: nil, organization: container.organization)
+          end
+
           let!(:guest_with_role) do
             if container.is_a?(Group)
               create(:group_member, :guest, source: container, member_role: guest_role_admin_mr).user

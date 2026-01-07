@@ -41423,6 +41423,9 @@ msgstr ""
 msgid "MemberRole|%{requirement} has to be enabled in order to enable %{permission}"
 msgstr ""
 
+msgid "MemberRole|A sharding key (namespace_id or organization_id) is required"
+msgstr ""
+
 msgid "MemberRole|Access level"
 msgstr ""
 
