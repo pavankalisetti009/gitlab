@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :duo_agent_platform do
   let_it_be_with_refind(:project) { create(:project, :repository) }
-  let_it_be(:author) { create(:service_account, maintainer_of: project) }
+  let_it_be(:author) { create(:service_account, maintainer_of: project, name: 'Author Name') }
   let_it_be(:resource) { create(:issue, project: project) }
   let_it_be(:existing_note) { create(:note, project: project, noteable: resource) }
   let_it_be(:discussion) { existing_note.discussion }
@@ -31,7 +31,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :duo_agent
         expect(Notes::CreateService).to receive(:new).with(
           project,
           author,
-          note: '🔄 Processing the request and starting the agent...',
+          note: '🔄 Processing the request...',
           noteable: resource,
           in_reply_to_discussion_id: discussion.id
         ).and_call_original
@@ -49,9 +49,24 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :duo_agent
         expect(Note.count).to eq(initial_note_count + 1)
 
         created_note = Note.last
-        expect(created_note.note).to include('✅ Agent has started. You can view the progress')
+        expect(created_note.note).to include('✅ Author Name has started. You can view progress')
         expect(created_note.note).to match(/automate.agent.sessions.#{workflow.id}/)
         expect(created_note.note).to include('target="_blank" rel="noopener noreferrer"')
+      end
+
+      context 'when the username contains HTML' do
+        before do
+          allow(author).to receive(:name).and_return('Hacker <a>Person</a>')
+        end
+
+        it 'safely renders the name' do
+          service.execute(params) do
+            [mock_response, workflow]
+          end
+
+          created_note = Note.last
+          expect(created_note.note).to include('✅ Hacker &lt;a&gt;Person&lt;/a&gt; has started.')
+        end
       end
     end
 
@@ -67,7 +82,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :duo_agent
         expect(Note.count).to eq(initial_note_count + 1)
 
         created_note = Note.last
-        expect(created_note.note).to include('❌ Could not start the agent due to this error: Something went wrong')
+        expect(created_note.note).to include('❌ Could not start processing due to this error: Something went wrong')
       end
     end
 
@@ -85,7 +100,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :duo_agent
         expect(Notes::CreateService).to receive(:new).with(
           project,
           author,
-          note: '🔄 Processing the request and starting the agent...',
+          note: '🔄 Processing the request...',
           noteable: resource,
           in_reply_to_discussion_id: nil
         ).and_call_original
@@ -110,7 +125,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :duo_agent
         expect(Notes::CreateService).to receive(:new).with(
           project,
           author,
-          note: '🔄 Processing the request and starting the agent...',
+          note: '🔄 Processing the request...',
           noteable: merge_request,
           in_reply_to_discussion_id: discussion.id
         ).and_call_original
