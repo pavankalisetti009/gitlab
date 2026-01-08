@@ -173,7 +173,7 @@ export default {
     },
     selectProject(projectId) {
       const project = this.projects.find(({ id }) => projectId === id);
-      this.$emit('projectClicked', project);
+      this.$emit('project-clicked', project);
     },
   },
 };

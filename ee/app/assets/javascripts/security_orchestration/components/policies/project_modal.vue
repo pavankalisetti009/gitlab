@@ -244,7 +244,7 @@ export default {
           :disabled="disableSecurityPolicyProject"
           :only-linked="searchOnlyPolicyProjects"
           :selected-project="selectedProject"
-          @projectClicked="setSelectedProject"
+          @project-clicked="setSelectedProject"
         />
         <gl-button
           v-if="selectedProjectId"
