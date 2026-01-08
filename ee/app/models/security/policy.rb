@@ -389,6 +389,13 @@ module Security
     end
     strong_memoize_attr :pipeline_execution_policy
 
+    def vulnerability_management_policy
+      return unless type_vulnerability_management_policy?
+
+      Security::VulnerabilityManagementPolicies::VulnerabilityManagementPolicy.new(self)
+    end
+    strong_memoize_attr :vulnerability_management_policy
+
     def supports_policy_rules?
       Security::PolicyRule::SUPPORTED_POLICY_TYPES.include?(type.to_sym)
     end

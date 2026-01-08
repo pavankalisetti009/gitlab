@@ -623,6 +623,26 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#vulnerability_management_policy' do
+    context 'when policy is a vulnerability management policy' do
+      let_it_be(:vulnerability_management_policy) { create(:security_policy, :vulnerability_management_policy) }
+
+      it 'returns a VulnerabilityManagementPolicy instance' do
+        expect(vulnerability_management_policy.vulnerability_management_policy).to be_a(
+          Security::VulnerabilityManagementPolicies::VulnerabilityManagementPolicy
+        )
+      end
+    end
+
+    context 'when policy is not a vulnerability management policy' do
+      let_it_be(:approval_policy) { create(:security_policy, :approval_policy) }
+
+      it 'returns nil' do
+        expect(approval_policy.vulnerability_management_policy).to be_nil
+      end
+    end
+  end
+
   describe '#max_rule_index' do
     let_it_be(:policy) { create(:security_policy) }
     let_it_be(:rule1) { create(:approval_policy_rule, security_policy: policy, rule_index: 0) }
