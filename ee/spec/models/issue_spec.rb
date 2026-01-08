@@ -1226,9 +1226,11 @@ RSpec.describe Issue, feature_category: :team_planning do
     let_it_be(:issue) { create(:issue) }
     let_it_be(:test_case) { create(:quality_test_case) }
     let_it_be(:incident) { create(:incident) }
+    let_it_be(:ticket) { create(:work_item, :ticket) }
 
     it do
       expect(issue.issue_type_supports?(:epics)).to be(true)
+      expect(ticket.issue_type_supports?(:epics)).to be(true)
       expect(test_case.issue_type_supports?(:epics)).to be(false)
       expect(incident.issue_type_supports?(:epics)).to be(false)
     end
@@ -1241,6 +1243,7 @@ RSpec.describe Issue, feature_category: :team_planning do
         [:issue, [:incident], true, true],
         [:issue, [:incident], false, false],
         [:work_item, [:issue], true, false],
+        [:work_item, [:ticket], true, false],
         [:issue, [:group_level, :issue], true, false],
         [:issue, [:user_namespace_level, :issue], true, false],
         [:work_item, [:group_level, :issue], true, false],
