@@ -10,6 +10,8 @@ fragment AiMetricItem on AiMetrics {
     requestReviewDuoCodeReviewOnMrByAuthorEventCount
     requestReviewDuoCodeReviewOnMrByNonAuthorEventCount
     postCommentDuoCodeReviewOnDiffEventCount
+    reactThumbsDownOnDuoCodeReviewCommentEventCount
+    reactThumbsUpOnDuoCodeReviewCommentEventCount
   }
   codeSuggestions(languages: $languages, ideNames: $ideNames) {
     contributorsCount

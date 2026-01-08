@@ -75,16 +75,19 @@ describe('AI impact Dashboard utils', () => {
     it('returns null when counts are invalid', () => {
       expect(calculateRate({ numerator: -2, denominator: 10 })).toBeNull();
       expect(calculateRate({ numerator: 1, denominator: 0 })).toBeNull();
-
-      expect(calculateRate({ numerator: 0, denominator: 1 })).toBe(0);
     });
 
-    it('returns null when there is no code suggestions usage data', () => {
+    it('returns null when counts are zero', () => {
       expect(calculateRate({ numerator: 0, denominator: 0 })).toBeNull();
     });
 
-    it('returns the code suggestions usage rate as expected', () => {
-      expect(calculateRate({ numerator: 3, denominator: 4 })).toEqual(75);
+    it('returns rate as percentage', () => {
+      expect(calculateRate({ numerator: 3, denominator: 4 })).toBe(75);
+      expect(calculateRate({ numerator: 0, denominator: 1 })).toBe(0);
+    });
+
+    it('returns rate as decimal when asDecimal=true', () => {
+      expect(calculateRate({ numerator: 5, denominator: 10, asDecimal: true })).toBe(0.5);
     });
   });
 

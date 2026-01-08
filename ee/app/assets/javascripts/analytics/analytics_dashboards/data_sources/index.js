@@ -53,4 +53,6 @@ export default {
   code_generation_volume_over_time: () => import('./code_generation_volume_over_time'),
   user_ai_usage_data: () => import('./user_ai_usage_data'),
   code_review_requests_by_role_over_time: () => import('./code_review_requests_by_role_over_time'),
+  code_review_comments_sentiment_over_time: () =>
+    import('./code_review_comments_sentiment_over_time'),
 };

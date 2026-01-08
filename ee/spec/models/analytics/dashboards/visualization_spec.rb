@@ -58,6 +58,7 @@ RSpec.describe Analytics::Dashboards::Visualization, feature_category: :product_
       duo_total_event_count_by_user
       code_review_requests_by_role_chart
       code_suggestions_acceptance_by_ide_chart
+      code_review_comments_sentiment_over_time_chart
     ]
   end
 

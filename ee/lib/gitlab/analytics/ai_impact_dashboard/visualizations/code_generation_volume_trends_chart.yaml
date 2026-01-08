@@ -13,3 +13,5 @@ options:
     name: "Lines of Code"
     type: "value"
   includeLegendAvgMax: false
+  chartTooltip:
+    valueUnit: COUNT
