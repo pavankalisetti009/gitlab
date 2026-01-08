@@ -4703,6 +4703,9 @@ msgstr ""
 msgid "Add a related issue"
 msgstr ""
 
+msgid "Add a related ticket"
+msgstr ""
+
 msgid "Add a reply"
 msgstr ""
 
@@ -8759,6 +8762,9 @@ msgid "An error occurred while removing epics."
 msgstr ""
 
 msgid "An error occurred while removing issues."
+msgstr ""
+
+msgid "An error occurred while removing tickets."
 msgstr ""
 
 msgid "An error occurred while rendering the editor"
@@ -27369,6 +27375,9 @@ msgstr ""
 msgid "Enter confidential issue URL"
 msgstr ""
 
+msgid "Enter confidential ticket URL"
+msgstr ""
+
 msgid "Enter duration"
 msgstr ""
 
@@ -39855,6 +39864,9 @@ msgstr ""
 msgid "Learn more about linking issues and incidents"
 msgstr ""
 
+msgid "Learn more about linking tickets"
+msgstr ""
+
 msgid "Learn more about max seats used"
 msgstr ""
 
@@ -43806,6 +43818,9 @@ msgstr ""
 msgid "Move this item to another group or project"
 msgstr ""
 
+msgid "Move ticket"
+msgstr ""
+
 msgid "Move up"
 msgstr ""
 
@@ -44547,7 +44562,7 @@ msgstr ""
 msgid "New public deploy key"
 msgstr ""
 
-msgid "New related %{issueType}"
+msgid "New related item"
 msgstr ""
 
 msgid "New release"
@@ -68261,6 +68276,9 @@ msgstr ""
 msgid "The current issue"
 msgstr ""
 
+msgid "The current ticket"
+msgstr ""
+
 msgid "The current user is not authorized to access the job log."
 msgstr ""
 
@@ -69920,6 +69938,9 @@ msgid "Thu"
 msgstr ""
 
 msgid "Thursday"
+msgstr ""
+
+msgid "Ticket cannot be found."
 msgstr ""
 
 msgid "TierBadgePopover|Enhance team productivity"
@@ -76000,6 +76021,9 @@ msgid "We could not determine the path to remove the epic"
 msgstr ""
 
 msgid "We could not determine the path to remove the issue"
+msgstr ""
+
+msgid "We could not determine the path to remove the ticket"
 msgstr ""
 
 msgid "We couldn't find any %{scope} matching %{term}"
