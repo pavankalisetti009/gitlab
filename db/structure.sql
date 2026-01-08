@@ -45332,11 +45332,11 @@ CREATE INDEX index_users_on_name_trigram ON users USING gin (name gin_trgm_ops);
 
 CREATE INDEX index_users_on_organization_id ON users USING btree (organization_id);
 
+CREATE UNIQUE INDEX index_users_on_organization_id_and_reset_password_token ON users USING btree (organization_id, reset_password_token);
+
 CREATE INDEX index_users_on_public_email_excluding_null_and_empty ON users USING btree (public_email) WHERE (((public_email)::text <> ''::text) AND (public_email IS NOT NULL));
 
 CREATE INDEX index_users_on_public_email_trigram ON users USING gin (public_email gin_trgm_ops);
-
-CREATE UNIQUE INDEX index_users_on_reset_password_token ON users USING btree (reset_password_token);
 
 CREATE INDEX index_users_on_state_and_user_type ON users USING btree (state, user_type);
 
