@@ -2305,7 +2305,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       stub_const("Issuable::MAX_NUMBER_OF_ASSIGNEES_OR_REVIEWERS", 2)
     end
 
-    it 'will not exceed the reviewer limit' do
+    it 'does not exceed the reviewer limit' do
       expect do
         subject.update!(reviewers: [reviewer1, reviewer2, reviewer3])
       end.to raise_error(ActiveRecord::RecordInvalid)

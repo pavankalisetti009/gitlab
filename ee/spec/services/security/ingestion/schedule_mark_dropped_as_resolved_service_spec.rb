@@ -156,7 +156,7 @@ RSpec.describe Security::Ingestion::ScheduleMarkDroppedAsResolvedService,
   context 'when primary_identifiers is empty' do
     subject(:service) { described_class.new(pipeline.project_id, 'sast', []).execute }
 
-    it 'will not schedule a MarkDroppedAsResolvedWorker' do
+    it 'does not schedule a MarkDroppedAsResolvedWorker' do
       expect { service }.not_to change { ::Vulnerabilities::MarkDroppedAsResolvedWorker.jobs.count }
     end
   end
@@ -164,7 +164,7 @@ RSpec.describe Security::Ingestion::ScheduleMarkDroppedAsResolvedService,
   context 'when primary_identifiers do not reference existing types' do
     subject(:service) { described_class.new(pipeline.project_id, 'sast', [dropped_ident1, dropped_ident2]).execute }
 
-    it 'will not schedule a MarkDroppedAsResolvedWorker' do
+    it 'does not schedule a MarkDroppedAsResolvedWorker' do
       expect { service }.not_to change { ::Vulnerabilities::MarkDroppedAsResolvedWorker.jobs.count }
     end
   end

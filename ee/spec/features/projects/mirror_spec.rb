@@ -154,7 +154,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
       context 'when username is provided in url' do
         let(:url) { 'http://urlusername@example.com' }
 
-        it 'will be ignored' do
+        it 'is ignored' do
           add_mirror
 
           project.reload

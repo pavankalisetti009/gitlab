@@ -68,7 +68,7 @@ RSpec.describe "User creates a merge request", :js, feature_category: :code_revi
         expect(page).to have_link(href: %r{/groups/#{restricted_group.name}/-/saml})
       end
 
-      it 'will not show any inaccessible branches in the dropdown', :aggregate_failures, :js do
+      it 'does not show any inaccessible branches in the dropdown', :aggregate_failures, :js do
         visit project_new_merge_request_path(target_project)
 
         find(".js-target-project").click

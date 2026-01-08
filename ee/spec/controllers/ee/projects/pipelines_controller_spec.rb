@@ -249,7 +249,7 @@ RSpec.describe Projects::PipelinesController do
           licenses_with_json
         end
 
-        it 'will return 404'  do
+        it 'returns 404' do
           expect(response).to have_gitlab_http_status(:not_found)
         end
       end
@@ -269,7 +269,7 @@ RSpec.describe Projects::PipelinesController do
           licenses_with_json
         end
 
-        it 'will return 404' do
+        it 'returns 404' do
           expect(response).to have_gitlab_http_status(:not_found)
         end
       end

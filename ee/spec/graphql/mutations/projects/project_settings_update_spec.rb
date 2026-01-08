@@ -127,7 +127,7 @@ RSpec.describe Mutations::Projects::ProjectSettingsUpdate, feature_category: :co
         project.add_developer(current_user)
       end
 
-      it 'will raise an error' do
+      it 'raises an error' do
         expect { resolve }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
       end
     end

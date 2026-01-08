@@ -198,7 +198,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       end
       # rubocop:enable Rails/SaveBang
 
-      it 'will be set to nil when seat_control is off' do
+      it 'is set to nil when seat_control is off' do
         settings.update!(seat_control: :off, new_user_signups_cap: 5)
 
         expect(settings.new_user_signups_cap).to be_nil

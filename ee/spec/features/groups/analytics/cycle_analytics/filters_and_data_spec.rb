@@ -463,7 +463,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
       end
     end
 
-    it 'will not display the stage table on the overview stage' do
+    it 'does not display the stage table on the overview stage' do
       expect(page).not_to have_selector('[data-testid="vsa-stage-table"]')
 
       select_stage("Issue")
@@ -476,7 +476,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
       expect(page).not_to have_selector('[data-testid="vsa-duration-chart"]')
     end
 
-    it 'will have data available' do
+    it 'has data available' do
       duration_overview_chart = find_by_testid('vsa-duration-overview-chart')
       expect(duration_overview_chart).not_to have_text(_("There is no data available. Please change your selection."))
       expect(duration_overview_chart).to have_text(s_('CycleAnalytics|Average time to completion'))
@@ -492,7 +492,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
         wait_for_stages_to_load
       end
 
-      it 'will filter the data' do
+      it 'filters the data' do
         duration_overview_chart = find_by_testid('vsa-duration-overview-chart')
         expect(duration_overview_chart).not_to have_text(s_('CycleAnalytics|Average time to completion (days)'))
         expect(duration_overview_chart).to have_text(
