@@ -38,6 +38,10 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
       }
     end
 
+    before do
+      stub_feature_flags(new_trial_lead_endpoint: false)
+    end
+
     shared_examples 'correct client attributes' do
       let(:params) do
         base_params.merge(jtbd: nil)

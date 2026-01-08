@@ -16,6 +16,13 @@ module Gitlab
             http_post("trials", admin_headers, trial_user_params)
           end
 
+          def generate_trial_lead(params)
+            return request_disabled_error unless requests_enabled?
+
+            trial_user_params = params[:trial_user] ? params : { trial_user: params }
+            http_post("leads/gitlab_com/ultimates", admin_headers, trial_user_params)
+          end
+
           def generate_addon_trial(params)
             return request_disabled_error unless requests_enabled?
 

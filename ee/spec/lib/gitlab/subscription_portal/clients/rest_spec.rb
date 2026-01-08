@@ -176,6 +176,16 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       it_behaves_like 'when request is disabled'
     end
 
+    describe '#generate_trial_lead' do
+      subject do
+        client.generate_trial_lead({})
+      end
+
+      let(:route_path) { 'leads/gitlab_com/ultimates' }
+
+      it_behaves_like 'when request is disabled'
+    end
+
     describe '#generate_addon_trial' do
       subject do
         client.generate_addon_trial({})
@@ -248,6 +258,32 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
         expect(client).to receive(:http_post).with('trials', anything, { trial_user: { foo: 'bar' } })
 
         client.generate_trial(foo: 'bar')
+      end
+    end
+
+    describe '#generate_trial_lead' do
+      subject do
+        client.generate_trial_lead({})
+      end
+
+      let(:route_path) { 'leads/gitlab_com/ultimates' }
+
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+
+      it 'passes trial_user param' do
+        expect(client).to receive(:http_post).with(route_path, anything, { trial_user: { foo: 'bar' } })
+
+        client.generate_trial_lead(trial_user: { foo: 'bar' })
+      end
+
+      it 'nests in the trial_user param if needed' do
+        expect(client).to receive(:http_post).with(route_path, anything, { trial_user: { foo: 'bar' } })
+
+        client.generate_trial_lead(foo: 'bar')
       end
     end
 
