@@ -3,8 +3,6 @@ import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
 import { keysFor, DUO_CHAT } from '~/behaviors/shortcuts/keybindings';
 import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
-import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { __, sprintf } from '~/locale';
 import { sanitize } from '~/lib/dompurify';
 import NewChatButton from './new_chat_button.vue';
@@ -56,16 +54,12 @@ export default {
       required: false,
       default: null,
     },
-  },
-  data() {
-    return {
-      duoChatGlobalState,
-    };
+    isAgenticMode: {
+      type: Boolean,
+      required: true,
+    },
   },
   computed: {
-    isAgenticMode() {
-      return this.duoChatGlobalState.chatMode === CHAT_MODES.AGENTIC;
-    },
     duoShortcutKey() {
       return shouldDisableShortcuts() || this.isChatDisabled ? null : keysFor(DUO_CHAT);
     },

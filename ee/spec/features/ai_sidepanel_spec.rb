@@ -30,6 +30,7 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
     allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
     allow(::Gitlab::Llm::TanukiBot).to receive_messages(show_breadcrumbs_entry_point?: true, enabled_for?: true)
     allow(::Gitlab::Llm::TanukiBot).to receive_messages(chat_disabled_reason: nil, credits_available?: true)
+    allow(::Gitlab::Llm::TanukiBot).to receive(:agentic_mode_available?).and_return(true)
   end
 
   describe 'sidepanel visibility' do
@@ -147,6 +148,55 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
 
           expect(page).not_to have_content('No agent sessions yet')
         end
+      end
+    end
+  end
+
+  context 'when agentic_mode_available is false' do
+    before do
+      allow(::Gitlab::Llm::TanukiBot).to receive(:agentic_mode_available?).and_return(false)
+    end
+
+    describe 'sidepanel visibility' do
+      it 'shows the AI sidepanel' do
+        visit project_path(project)
+
+        expect(page).to have_css(ai_sidepanel_selector)
+      end
+    end
+
+    describe 'sessions tab functionality' do
+      let_it_be(:workflow) do
+        create(:duo_workflows_workflow,
+          project: project,
+          user: user,
+          goal: 'Test workflow',
+          workflow_definition: 'issue_to_mr',
+          environment: :web)
+      end
+
+      it 'can navigate to sessions and displays sessions list' do
+        visit project_path(project)
+
+        within(ai_sidepanel_selector) do
+          find_by_testid(sessions_toggle_selector).click
+        end
+
+        expect(page).to have_content("Sessions")
+        expect(page).to have_content("Issue to mr ##{workflow.id}")
+      end
+    end
+
+    describe 'agentic mode UI elements' do
+      it 'does not show agentic mode toggle in chat' do
+        visit project_path(project)
+
+        within(ai_sidepanel_selector) do
+          find_by_testid('ai-chat-toggle').click
+        end
+
+        expect(page).not_to have_content('Agentic mode')
+        expect(page).not_to have_content('Agentic')
       end
     end
   end
