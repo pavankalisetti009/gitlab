@@ -78,7 +78,7 @@ module Ai
 
       def workload_definition
         ::Ci::Workloads::WorkloadDefinition.new do |d|
-          d.image = @workflow.image.presence || configured_image || IMAGE
+          d.image = @workflow.image.presence || configured_image || instance_image
           d.variables = variables
           d.commands = commands
           d.cache = cache_configuration if cache_configuration.present?
@@ -90,6 +90,10 @@ module Ai
         return unless project
 
         duo_config.default_image
+      end
+
+      def instance_image
+        IMAGE
       end
 
       def sandbox
