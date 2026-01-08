@@ -337,6 +337,7 @@ describe('invalidWarnModeRules', () => {
     ${'returns false for non-license scan rule and enforce type'} | ${[{ type: 'other' }]}         | ${ENFORCE_VALUE} | ${false}
     ${'returns true for license scan rule and warn type'}         | ${[{ type: LICENSE_FINDING }]} | ${WARN_VALUE}    | ${true}
     ${'returns false for non-license scan rule and warn type'}    | ${[{ type: 'other' }]}         | ${WARN_VALUE}    | ${false}
+    ${'returns false when no rules are present in warn mode'}     | ${undefined}                   | ${WARN_VALUE}    | ${false}
   `('$title', ({ rules, enforcementType, expected }) => {
     expect(invalidWarnModeRules(rules, enforcementType)).toBe(expected);
   });
