@@ -27,7 +27,9 @@ module Mutations
         def resolve(**args)
           check_feature_access!
 
-          raise_argument_not_available_if!(args, :ai_self_hosted_model_id) { !self_hosted_models? }
+          raise_argument_not_available_if!(args, :ai_self_hosted_model_id) do
+            !self_hosted_models_for_features?(args[:features])
+          end
           raise_argument_not_available_if!(args, :offered_model_ref) { !gitlab_models? }
 
           return { ai_feature_settings: [], errors: ['At least one feature is required'] } if args[:features].empty?
@@ -56,6 +58,24 @@ module Mutations
         end
 
         private
+
+        def dap_features
+          [:duo_agent_platform, :duo_agent_platform_agentic_chat]
+        end
+
+        def self_hosted_models_for_features?(features)
+          has_dap_feature = features.any? { |feature| dap_features.include?(feature) }
+          has_classic_feature = features.any? { |feature| dap_features.exclude?(feature) }
+
+          return false if has_dap_feature && !dap_self_hosted_models?
+          return false if has_classic_feature && !self_hosted_models?
+
+          true
+        end
+
+        def dap_self_hosted_models?
+          Ability.allowed?(current_user, :update_dap_self_hosted_model)
+        end
 
         def self_hosted_models?
           Ability.allowed?(current_user, :manage_self_hosted_models_settings)

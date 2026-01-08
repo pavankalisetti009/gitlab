@@ -28,6 +28,8 @@ import {
   EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS,
 } from './mocks';
 
+jest.mock('~/lib/logger');
+
 describe('Policy Scope With Exceptions', () => {
   let wrapper;
 

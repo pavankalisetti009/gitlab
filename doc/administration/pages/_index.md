@@ -66,6 +66,10 @@ supporting custom domains, a secondary IP is not needed.
 
 This section describes the prerequisites for configuring GitLab Pages.
 
+> [!note]
+> If your GitLab instance and the Pages daemon are deployed in a private network or behind a firewall,
+> your GitLab Pages websites are only accessible to devices and users with access to the private network.
+
 ### Wildcard domains
 
 Before configuring Pages for wildcard domains, you must:
@@ -75,8 +79,13 @@ Before configuring Pages for wildcard domains, you must:
    | GitLab domain        | Pages domain        | Does it work? |
    | -------------------- | ------------------- | ------------- |
    | `example.com`        | `example.io`        | {{< icon name="check-circle" >}} Yes |
-   | `example.com`        | `pages.example.com` | {{< icon name="dotted-circle" >}} No |
+   | `example.com`        | `pages.example.com` | {{< icon name="dotted-circle" >}} No <sup>1</sup> |
    | `gitlab.example.com` | `pages.example.com` | {{< icon name="check-circle" >}} Yes |
+
+   **Footnotes**:
+
+   1. If the Pages domain is a subdomain of your GitLab instance domain,
+      all deployed Pages sites can access GitLab session cookies.
 
 1. Configure a **wildcard DNS record**.
 1. Optional. Have a **wildcard certificate** for that domain if you decide to
@@ -94,17 +103,19 @@ Before configuring Pages for single-domain sites, you must:
    | GitLab domain        | Pages domain        | Supported |
    | -------------------- | ------------------- | ------------- |
    | `example.com`        | `example.io`        | {{< icon name="check-circle" >}} Yes |
-   | `example.com`        | `pages.example.com` | {{< icon name="dotted-circle" >}} No |
+   | `example.com`        | `pages.example.com` | {{< icon name="dotted-circle" >}} No <sup>1</sup> |
    | `gitlab.example.com` | `pages.example.com` | {{< icon name="check-circle" >}} Yes |
+
+   **Footnotes**:
+
+   1. If the Pages domain is a subdomain of your GitLab instance domain,
+      all deployed Pages sites can access GitLab session cookies.
 
 1. Configure a **DNS record**.
 1. Optional. If you decide to serve Pages under HTTPS, have a **TLS certificate** for that domain.
 1. Optional but recommended. Enable [instance runners](../../ci/runners/_index.md)
    so that your users don't have to bring their own.
 1. For custom domains, have a **secondary IP**.
-
-> [!note]
-> If your GitLab instance and the Pages daemon are deployed in a private network or behind a firewall, your GitLab Pages websites are only accessible to devices and users with access to the private network.
 
 ### Add the domain to the Public Suffix List
 
@@ -287,7 +298,7 @@ public internet.
 Prerequisites:
 
 - You've configured [wildcard DNS](#dns-configuration).
-- You have a TLS certificate. It can be either wildcard or any other type meeting the [requirements](../../user/project/pages/custom_domains_ssl_tls_certification/_index.md#manual-addition-of-ssltls-certificates).
+- You have a TLS certificate. It can be either wildcard or any other type meeting the [requirements](../../user/project/pages/custom_domains_ssl_tls_certification/_index.md#manually-add-ssltls-certificates).
 
 1. Place the wildcard TLS certificate for `*.example.io` and the key inside `/etc/gitlab/ssl`.
 1. In `/etc/gitlab/gitlab.rb` specify the following configuration:
@@ -565,7 +576,7 @@ Prerequisites:
 
 - You've configured wildcard DNS.
 - You have a TLS certificate. It can be either wildcard or any other type meeting the
-  [requirements](../../user/project/pages/custom_domains_ssl_tls_certification/_index.md#manual-addition-of-ssltls-certificates).
+  [requirements](../../user/project/pages/custom_domains_ssl_tls_certification/_index.md#manually-add-ssltls-certificates).
 - Secondary IP.
 
 1. Place the wildcard TLS certificate for `*.example.io` and the key inside `/etc/gitlab/ssl`.
@@ -600,7 +611,7 @@ Prerequisites:
 ### Custom domain verification
 
 To prevent malicious users from hijacking domains that don't belong to them,
-GitLab supports [custom domain verification](../../user/project/pages/custom_domains_ssl_tls_certification/_index.md#steps).
+GitLab supports [custom domain verification](../../user/project/pages/custom_domains_ssl_tls_certification/_index.md).
 When adding a custom domain, users are required to prove they own it by
 adding a GitLab-controlled verification code to the DNS records for that domain.
 

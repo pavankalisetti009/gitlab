@@ -326,7 +326,7 @@ export default {
       isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? false,
       tanukiAiSvgUrl,
       // this is required for classic/agentic toggle
-      isAgenticAvailable: this.chatConfiguration?.defaultProps?.isAgenticAvailable ?? false,
+      isClassicAvailable: this.chatConfiguration?.defaultProps?.isClassicAvailable ?? false,
       // eslint-disable-next-line vue/no-unused-properties
       userId: this.activeTabData?.props?.userId,
       duoChatTitle: s__('DuoAgenticChat|GitLab Duo'),
@@ -454,6 +454,11 @@ export default {
         { linkStart, linkEnd },
         false,
       );
+    },
+    toggleText() {
+      return this.glFeatures.agenticChatGa
+        ? s__('DuoChat|Agentic')
+        : s__('DuoChat|Agentic mode (Beta)');
     },
   },
   watch: {
@@ -1133,22 +1138,10 @@ export default {
           />
         </div>
       </template>
-      <template
-        v-if="isAgenticAvailable && !forceAgenticModeForCoreDuoUsers && glFeatures.agenticChatGa"
-        #agentic-switch
-      >
+      <template v-if="isClassicAvailable && !forceAgenticModeForCoreDuoUsers" #agentic-switch>
         <gl-toggle v-model="duoAgenticModePreference" label-position="left" class="gl-h-5">
           <template #label>
-            <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Agentic') }}</span>
-          </template>
-        </gl-toggle>
-      </template>
-      <template v-else-if="isAgenticAvailable && !forceAgenticModeForCoreDuoUsers" #agentic-switch>
-        <gl-toggle v-model="duoAgenticModePreference" label-position="left" class="gl-h-5">
-          <template #label>
-            <span class="gl-font-normal gl-text-subtle">{{
-              s__('DuoChat|Agentic mode (Beta)')
-            }}</span>
+            <span class="gl-font-normal gl-text-subtle">{{ toggleText }}</span>
           </template>
         </gl-toggle>
       </template>

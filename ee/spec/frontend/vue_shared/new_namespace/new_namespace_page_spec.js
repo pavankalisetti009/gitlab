@@ -14,6 +14,8 @@ import NewNamespacePage from '~/vue_shared/new_namespace/new_namespace_page.vue'
 
 Vue.use(VueApollo);
 
+jest.mock('~/lib/logger');
+
 describe('Experimental new project creation app', () => {
   let wrapper;
 

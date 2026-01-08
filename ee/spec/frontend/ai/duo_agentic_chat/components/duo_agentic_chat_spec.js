@@ -382,7 +382,7 @@ describe('Duo Agentic Chat', () => {
     const defaultProvide = {
       chatConfiguration: {
         title: 'GitLab Duo Agentic Chat',
-        isAgenticAvailable: false,
+        isClassicAvailable: false,
         defaultProps: {
           isEmbedded: false,
         },
@@ -390,7 +390,7 @@ describe('Duo Agentic Chat', () => {
       activeTabData: {
         props: {
           isEmbedded: false,
-          isAgenticAvailable: false,
+          isClassicAvailable: false,
           userId: null,
         },
       },
@@ -2176,7 +2176,7 @@ describe('Duo Agentic Chat', () => {
           chatConfiguration: {
             title: 'GitLab Duo Agentic Chat',
             defaultProps: {
-              isAgenticAvailable: true,
+              isClassicAvailable: true,
             },
           },
         },
@@ -2193,7 +2193,7 @@ describe('Duo Agentic Chat', () => {
           chatConfiguration: {
             title: 'GitLab Duo Agentic Chat',
             defaultProps: {
-              isAgenticAvailable: true,
+              isClassicAvailable: true,
             },
           },
         },
@@ -2372,7 +2372,7 @@ describe('Duo Agentic Chat', () => {
           chatConfiguration: {
             title: 'GitLab Duo Agentic Chat',
             defaultProps: {
-              isAgenticAvailable: true,
+              isClassicAvailable: true,
             },
           },
         },
@@ -2411,7 +2411,7 @@ describe('Duo Agentic Chat', () => {
           chatConfiguration: {
             title: 'GitLab Duo Agentic Chat',
             defaultProps: {
-              isAgenticAvailable: true,
+              isClassicAvailable: true,
             },
           },
           glFeatures: {
@@ -2450,7 +2450,7 @@ describe('Duo Agentic Chat', () => {
             chatConfiguration: {
               title: 'GitLab Duo Agentic Chat',
               defaultProps: {
-                isAgenticAvailable: true,
+                isClassicAvailable: true,
               },
             },
             glFeatures: {
@@ -3153,7 +3153,7 @@ describe('Duo Agentic Chat', () => {
           provide: {
             chatConfiguration: {
               title: 'GitLab Duo Agentic Chat',
-              isAgenticAvailable: false,
+              isClassicAvailable: false,
               defaultProps: {
                 isEmbedded: false,
               },
@@ -3180,7 +3180,7 @@ describe('Duo Agentic Chat', () => {
           provide: {
             chatConfiguration: {
               title: 'GitLab Duo Agentic Chat',
-              isAgenticAvailable: false,
+              isClassicAvailable: false,
               defaultProps: {
                 isEmbedded: false,
               },
@@ -3232,7 +3232,7 @@ describe('Duo Agentic Chat', () => {
           provide: {
             chatConfiguration: {
               title: 'GitLab Duo Agentic Chat',
-              isAgenticAvailable: true,
+              isClassicAvailable: true,
               defaultProps: {
                 isEmbedded: true,
               },
@@ -3240,7 +3240,7 @@ describe('Duo Agentic Chat', () => {
             activeTabData: {
               props: {
                 isEmbedded: true,
-                isAgenticAvailable: true,
+                isClassicAvailable: true,
                 userId: null,
               },
             },
@@ -3270,7 +3270,7 @@ describe('Duo Agentic Chat', () => {
           provide: {
             chatConfiguration: {
               title: 'GitLab Duo Agentic Chat',
-              isAgenticAvailable: true,
+              isClassicAvailable: true,
               defaultProps: {
                 isEmbedded: true,
               },
@@ -3278,7 +3278,7 @@ describe('Duo Agentic Chat', () => {
             activeTabData: {
               props: {
                 isEmbedded: true,
-                isAgenticAvailable: true,
+                isClassicAvailable: true,
                 userId: null,
               },
             },
@@ -3321,13 +3321,13 @@ describe('Duo Agentic Chat', () => {
               title: 'GitLab Duo Agentic Chat',
               defaultProps: {
                 isEmbedded: true,
-                isAgenticAvailable: true,
+                isClassicAvailable: true,
               },
             },
             activeTabData: {
               props: {
                 isEmbedded: true,
-                isAgenticAvailable: true,
+                isClassicAvailable: true,
                 userId: null,
               },
             },
@@ -3376,7 +3376,7 @@ describe('Duo Agentic Chat', () => {
             provide: {
               chatConfiguration: {
                 title: 'GitLab Duo Agentic Chat',
-                isAgenticAvailable: true,
+                isClassicAvailable: true,
                 defaultProps: {
                   isEmbedded: true,
                 },
@@ -3384,7 +3384,7 @@ describe('Duo Agentic Chat', () => {
               activeTabData: {
                 props: {
                   isEmbedded: true,
-                  isAgenticAvailable: true,
+                  isClassicAvailable: true,
                   userId: null,
                 },
               },

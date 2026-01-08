@@ -18,6 +18,12 @@ module Ai
 
     validate :through_namespace_root_is_root_namespace
 
+    def self.by_through_namespace
+      includes(:through_namespace)
+        .order(:through_namespace_id, :accessible_entity)
+        .group_by(&:through_namespace_id)
+    end
+
     private
 
     def through_namespace_root_is_root_namespace

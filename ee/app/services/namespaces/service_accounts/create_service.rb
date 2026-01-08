@@ -89,13 +89,22 @@ module Namespaces
         return false unless group_subscription
         return false if group_subscription.expired?
         return false unless group_subscription.plan_name
+        return true if !namespace.trial_active? && Plan::PAID_HOSTED_PLANS.include?(group_subscription.plan_name)
 
-        Plan::PAID_HOSTED_PLANS.include?(group_subscription.plan_name) || namespace.trial_active?
+        return true if namespace.trial_active? && ::Feature.enabled?(:allow_unlimited_service_account_for_trials,
+          namespace)
+
+        GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL >
+          service_accounts_provisioned_by_namespace.count
       end
 
       def username_unavailable?(username)
         ::Namespace.by_path(username) ||
           ::User.username_exists?(username)
+      end
+
+      def service_accounts_provisioned_by_namespace
+        ::User.with_provisioning_group(namespace.self_and_descendants).service_accounts_without_composite_identity
       end
 
       def saas?

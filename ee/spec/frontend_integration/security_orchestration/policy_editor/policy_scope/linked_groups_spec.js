@@ -19,6 +19,8 @@ import {
 import { createMockApolloProvider, defaultHandlers } from './apollo_utils';
 import { INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS, INCLUDING_GROUPS_MOCKS } from './mocks';
 
+jest.mock('~/lib/logger');
+
 describe('Policy Scope for linked groups', () => {
   let wrapper;
 

@@ -173,6 +173,7 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
               trusted: true,
               redirect_uri: node.oauth_callback_url
             )
+            expect(node.oauth_application.organization_id).to be_present
           end
         end
 
@@ -370,6 +371,43 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
       node.repair
 
       expect(node.oauth_application).to be_present
+    end
+
+    it 'creates an oauth application with organization_id set' do
+      stub_current_geo_node(node)
+      node.update_attribute(:oauth_application, nil)
+
+      node.repair
+
+      expect(node.oauth_application.organization_id).to be_present
+    end
+  end
+
+  describe '#update_oauth_application!' do
+    context 'for secondary nodes' do
+      it 'sets organization_id when creating oauth application' do
+        secondary_node = build(:geo_node, :secondary)
+        secondary_node.save!
+
+        expect(secondary_node.oauth_application.organization_id).to be_present
+      end
+
+      it 'preserves organization_id when oauth application already exists' do
+        secondary_node = create(:geo_node, :secondary)
+        original_organization_id = secondary_node.oauth_application.organization_id
+
+        secondary_node.update!(url: 'http://updated-url.example.com')
+
+        expect(secondary_node.oauth_application.organization_id).to eq(original_organization_id)
+      end
+    end
+
+    context 'for primary nodes' do
+      it 'does not create an oauth application' do
+        primary = create(:geo_node, :primary)
+
+        expect(primary.oauth_application).to be_nil
+      end
     end
   end
 

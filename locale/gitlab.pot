@@ -7158,7 +7158,7 @@ msgstr ""
 msgid "AiPowered|AI logs"
 msgstr ""
 
-msgid "AiPowered|Add Group"
+msgid "AiPowered|Add group"
 msgstr ""
 
 msgid "AiPowered|After the conversation was created"
@@ -7311,6 +7311,9 @@ msgstr ""
 msgid "AiPowered|Failed to enable composite identity for GitLab Duo Agent Platform."
 msgstr ""
 
+msgid "AiPowered|Failed to load groups"
+msgstr ""
+
 msgid "AiPowered|Features are available. However, any group, subgroup, or project can turn them off."
 msgstr ""
 
@@ -7335,9 +7338,6 @@ msgstr ""
 msgid "AiPowered|GitLab Duo Agent Platform is an AI-native coding agent."
 msgstr ""
 
-msgid "AiPowered|GitLab Duo Agents"
-msgstr ""
-
 msgid "AiPowered|GitLab Duo Chat conversations"
 msgstr ""
 
@@ -7345,9 +7345,6 @@ msgid "AiPowered|GitLab Duo Classic"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Core available to all users"
-msgstr ""
-
-msgid "AiPowered|GitLab Duo Flows and External Agents"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Model Selection"
@@ -7422,6 +7419,9 @@ msgstr ""
 msgid "AiPowered|No access rules configured"
 msgstr ""
 
+msgid "AiPowered|No groups found"
+msgstr ""
+
 msgid "AiPowered|Not enabled"
 msgstr ""
 
@@ -7441,6 +7441,12 @@ msgid "AiPowered|Purchase Duo Pro seats"
 msgstr ""
 
 msgid "AiPowered|Remove"
+msgstr ""
+
+msgid "AiPowered|Select a group to continue"
+msgstr ""
+
+msgid "AiPowered|Select group"
 msgstr ""
 
 msgid "AiPowered|Self-hosted beta models and features"
@@ -27417,6 +27423,12 @@ msgstr ""
 msgid "EnvironmentsDashboard|This dashboard displays 3 environments per project, and is linked to the Operations Dashboard. When you add or remove a project from one dashboard, GitLab adds or removes the project from the other. %{linkStart}More information%{linkEnd}"
 msgstr ""
 
+msgid "Environments|%{requestLinkStart}Request version support%{requestLinkEnd} or %{apiLinkStart}use API%{apiLinkEnd} to set resource path."
+msgstr ""
+
+msgid "Environments|(available version - %{version})"
+msgstr ""
+
 msgid "Environments|A freeze period is in effect from %{startTime} to %{endTime}. Deployments might fail during this time. For more information, see the %{docsLinkStart}deploy freeze documentation%{docsLinkEnd}."
 msgstr ""
 
@@ -27624,6 +27636,9 @@ msgstr ""
 msgid "Environments|The description is displayed to anyone who can see this environment."
 msgstr ""
 
+msgid "Environments|The preferred version of your resource is not supported:"
+msgstr ""
+
 msgid "Environments|There are no deployments for this environment yet. %{linkStart}Learn more about setting up deployments.%{linkEnd}"
 msgstr ""
 
@@ -27634,6 +27649,9 @@ msgid "Environments|This action will %{docsStart}roll back this environment%{doc
 msgstr ""
 
 msgid "Environments|Unable to access the following resources from this environment. Check your authorization on the following and try again:"
+msgstr ""
+
+msgid "Environments|Unable to discover supported Flux resource versions."
 msgstr ""
 
 msgid "Environments|Updating"
@@ -33187,6 +33205,12 @@ msgid "GroupProjectArchiveSettings|Make your group read-only. You can still acce
 msgstr ""
 
 msgid "GroupProjectArchiveSettings|Make your project read-only. You can still access its data, work items, and merge requests."
+msgstr ""
+
+msgid "GroupProjectArchiveSettings|To archive this group, you must restore it from deletion."
+msgstr ""
+
+msgid "GroupProjectArchiveSettings|To archive this project, you must restore it from deletion."
 msgstr ""
 
 msgid "GroupProjectUnarchiveSettings|An error occurred while unarchiving the group. Please refresh the page and try again."
@@ -40875,6 +40899,9 @@ msgid "MarkdownEditor|Replace"
 msgstr ""
 
 msgid "MarkdownEditor|Suggest code changes which can be immediately applied in one click. Try it out!"
+msgstr ""
+
+msgid "MarkdownEditor|Toggle section"
 msgstr ""
 
 msgid "MarkdownEditor|header"
@@ -74460,6 +74487,86 @@ msgstr ""
 msgid "VirtualRegistries|Virtual Registries"
 msgstr ""
 
+msgid "VirtualRegistryCleanupPolicy|%{labelStart}Last cleanup:%{labelEnd} %{date}."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|%{labelStart}Last cleanup:%{labelEnd} %{iconPlaceholder}Cleanup failed on %{date}."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|%{labelStart}Last cleanup:%{labelEnd} Never run."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|%{labelStart}Next cleanup:%{labelEnd} %{date}."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|%{labelStart}Next cleanup:%{labelEnd} Not scheduled."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|%{labelStart}Next cleanup:%{labelEnd} Running."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|%{size} saved."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Automatically delete unused caches from the virtual registry to save storage space. %{linkStart}How do cleanup policies work?%{linkEnd}"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Cache cleanup failed. No cache entries were removed."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Create policy"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Delete caches not accessed in last %{strongStart}%{days} day%{strongEnd}"
+msgid_plural "VirtualRegistryCleanupPolicy|Delete caches not accessed in last %{strongStart}%{days} days%{strongEnd}"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "VirtualRegistryCleanupPolicy|Disabled"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Edit policy"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Enabled"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|No cleanup policy yet. Create a policy to delete caches and save space."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Running"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Runs %{strongStart}every day%{strongEnd}:"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Runs %{strongStart}every month%{strongEnd}:"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Runs %{strongStart}every three months%{strongEnd}:"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Runs %{strongStart}every two weeks%{strongEnd}:"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Runs %{strongStart}every week%{strongEnd}:"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Send email notifications %{strongStart}if cleanup fails%{strongEnd}"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Send email notifications %{strongStart}when cleanup runs%{strongEnd}"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Send email notifications %{strongStart}when cleanup runs%{strongEnd} and %{strongStart}if cleanup fails%{strongEnd}"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Something went wrong while fetching the cleanup policy."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Virtual registry cache cleanup policy"
+msgstr ""
+
 msgid "VirtualRegistry|%d artifact"
 msgid_plural "VirtualRegistry|%d artifacts"
 msgstr[0] ""
@@ -77046,6 +77153,9 @@ msgstr ""
 msgid "WorkItem|Add view"
 msgstr ""
 
+msgid "WorkItem|Added"
+msgstr ""
+
 msgid "WorkItem|All activity"
 msgstr ""
 
@@ -77161,6 +77271,9 @@ msgid "WorkItem|Blocking"
 msgstr ""
 
 msgid "WorkItem|Blue"
+msgstr ""
+
+msgid "WorkItem|Browse views"
 msgstr ""
 
 msgid "WorkItem|Cancel"
@@ -77361,6 +77474,9 @@ msgstr ""
 msgid "WorkItem|Edit work item"
 msgstr ""
 
+msgid "WorkItem|Edit your search and try again."
+msgstr ""
+
 msgid "WorkItem|Email participants"
 msgstr ""
 
@@ -77389,9 +77505,6 @@ msgid "WorkItem|Existing %{workItemName}"
 msgstr ""
 
 msgid "WorkItem|Existing task"
-msgstr ""
-
-msgid "WorkItem|Existing view"
 msgstr ""
 
 msgid "WorkItem|Export as CSV"
@@ -77629,6 +77742,9 @@ msgstr ""
 msgid "WorkItem|New %{workItemType}"
 msgstr ""
 
+msgid "WorkItem|New View"
+msgstr ""
+
 msgid "WorkItem|New custom field"
 msgstr ""
 
@@ -77707,7 +77823,13 @@ msgstr ""
 msgid "WorkItem|No parent"
 msgstr ""
 
+msgid "WorkItem|No results found"
+msgstr ""
+
 msgid "WorkItem|No template"
+msgstr ""
+
+msgid "WorkItem|No views currently exist"
 msgstr ""
 
 msgid "WorkItem|None"
@@ -77782,6 +77904,9 @@ msgstr ""
 msgid "WorkItem|Private"
 msgstr ""
 
+msgid "WorkItem|Private: only you can see and edit this view."
+msgstr ""
+
 msgid "WorkItem|Progress"
 msgstr ""
 
@@ -77828,6 +77953,9 @@ msgid "WorkItem|Rose"
 msgstr ""
 
 msgid "WorkItem|Save and overwrite"
+msgstr ""
+
+msgid "WorkItem|Search by view name or description"
 msgstr ""
 
 msgid "WorkItem|Search existing items or enter an item's URL or reference ID"
@@ -78224,6 +78352,12 @@ msgid "WorkItem|View current version"
 msgstr ""
 
 msgid "WorkItem|View on a roadmap"
+msgstr ""
+
+msgid "WorkItem|Views"
+msgstr ""
+
+msgid "WorkItem|Views created by you or shared by others will show up here."
 msgstr ""
 
 msgid "WorkItem|Weight"

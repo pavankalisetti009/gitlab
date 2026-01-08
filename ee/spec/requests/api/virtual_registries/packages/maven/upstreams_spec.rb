@@ -700,7 +700,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         context 'with no username and password' do
           let(:params) { { url: new_url } }
 
-          it 'creates a new upstream instance with the new url and no credentials' do
+          it 'builds a new upstream instance with the new url and no credentials' do
             expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
               url: new_url,
               username: nil,
@@ -719,7 +719,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         context 'with new username and password' do
           let(:params) { { url: new_url, username: 'new-username', password: 'new-password' } }
 
-          it 'creates a new upstream instance with new url and new credentials' do
+          it 'builds a new upstream instance with new url and new credentials' do
             expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
               url: new_url,
               username: 'new-username',
@@ -742,7 +742,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
             expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
               url: new_url,
               username: upstream.username,
-              password: nil,
+              password: '',
               group: upstream.group,
               name: 'test'
             )
@@ -761,7 +761,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
             expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
               url: new_url,
               username: 'new-username',
-              password: nil,
+              password: '',
               group: upstream.group,
               name: 'test'
             )
@@ -779,7 +779,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
           it 'returns a bad request and a validation error' do
             expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
               url: new_url,
-              username: nil,
+              username: '',
               password: 'new-password',
               group: upstream.group,
               name: 'test'
@@ -805,7 +805,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
             expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
               url: upstream.url,
               username: 'new-username',
-              password: nil,
+              password: '',
               group: upstream.group,
               name: 'test'
             )
@@ -827,7 +827,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
             expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
               url: upstream.url,
-              username: nil,
+              username: '',
               password: 'new-password',
               group: upstream.group,
               name: 'test'
@@ -843,7 +843,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         context 'with existing username and no password' do
           let(:params) { { username: upstream.username, password: '' } }
 
-          it 'tests the existing upstream without creating a new instance' do
+          it 'tests the existing upstream without building a new instance' do
             allow_next_found_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
               allow(upstream_instance).to receive(:test).and_return({ success: true })
             end
@@ -860,12 +860,35 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         context 'with existing username and existing password' do
           let(:params) { { username: upstream.username, password: upstream.password } }
 
-          it 'tests the existing upstream without creating a new instance' do
+          it 'tests the existing upstream without building a new instance' do
             allow_next_found_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
               allow(upstream_instance).to receive(:test).and_return({ success: true })
             end
 
             expect(::VirtualRegistries::Packages::Maven::Upstream).not_to receive(:new)
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to eq({ 'success' => true })
+          end
+        end
+
+        context 'with existing url and username and password as empty strings' do
+          let(:params) { { url: upstream.url, username: '', password: '' } }
+
+          it 'builds a new upstream instance with empty credentials' do
+            allow_next_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
+              allow(upstream_instance).to receive(:test).and_return({ success: true })
+            end
+
+            expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
+              url: upstream.url,
+              username: '',
+              password: '',
+              group: upstream.group,
+              name: 'test'
+            )
 
             api_request
 

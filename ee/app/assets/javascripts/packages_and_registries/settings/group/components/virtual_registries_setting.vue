@@ -5,10 +5,12 @@ import getGroupVirtualRegistriesSetting from 'ee_component/packages_and_registri
 import updateVirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/graphql/mutations/update_virtual_registries_setting.mutation.graphql';
 import { updateVirtualRegistriesSettingOptimisticResponse } from 'ee_component/packages_and_registries/settings/group/graphql/utils/optimistic_responses';
 import { updateGroupVirtualRegistriesSetting } from 'ee_component/packages_and_registries/settings/group/graphql/utils/cache_update';
+import CleanupPolicyDetails from 'ee_component/packages_and_registries/settings/group/components/cleanup_policy_details.vue';
 
 export default {
   name: 'VirtualRegistriesSetting',
   components: {
+    CleanupPolicyDetails,
     GlExperimentBadge,
     GlLink,
     GlSprintf,
@@ -43,7 +45,7 @@ export default {
     },
     enabled: {
       get() {
-        return this.virtualRegistriesSetting.enabled;
+        return Boolean(this.virtualRegistriesSetting.enabled);
       },
       set(enabled) {
         this.updateSettings({ enabled });
@@ -132,5 +134,7 @@ export default {
         </p>
       </template>
     </gl-toggle>
+
+    <cleanup-policy-details :virtual-registries-setting-enabled="enabled" class="gl-mt-5" />
   </settings-section>
 </template>

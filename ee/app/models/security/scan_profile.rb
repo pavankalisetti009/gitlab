@@ -29,6 +29,9 @@ module Security
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
     scope :by_type, ->(type) { where(scan_type: type) }
     scope :by_gitlab_recommended, ->(gitlab_recommended = true) { where(gitlab_recommended: gitlab_recommended) }
+    scope :with_trigger_type, ->(trigger_type) {
+      joins(:scan_profile_triggers).where(security_scan_profile_triggers: { trigger_type: trigger_type })
+    }
 
     def self.scan_profile_ids(limit = MAX_PLUCK)
       limit(limit).ids

@@ -307,6 +307,27 @@ Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
 | ---- | ---- | ----------- |
 | <a id="queryaicatalogitemconsumerid"></a>`id` | [`AiCatalogItemConsumerID!`](#aicatalogitemconsumerid) | Global ID of the AI Catalog item consumer. |
 
+### `Query.aiCatalogItemVersions`
+
+{{< details >}}
+**Introduced** in GitLab 18.8.
+**Status**: Experiment.
+{{< /details >}}
+
+Public AI Catalog item versions.
+
+Returns [`AiCatalogItemVersionConnection!`](#aicatalogitemversionconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryaicatalogitemversionscreatedafter"></a>`createdAfter` | [`Time`](#time) | Item versions created after the timestamp. |
+
 ### `Query.aiCatalogItems`
 
 {{< details >}}
@@ -5006,6 +5027,36 @@ Input type: `ContainerUpstreamCreateInput`
 | <a id="mutationcontainerupstreamcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationcontainerupstreamcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationcontainerupstreamcreateupstream"></a>`upstream` | [`ContainerUpstreamDetails`](#containerupstreamdetails) | Container upstream after the mutation. |
+
+### `Mutation.containerUpstreamUpdate`
+
+{{< details >}}
+**Introduced** in GitLab 18.8.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `ContainerUpstreamUpdateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationcontainerupstreamupdatecachevalidityhours"></a>`cacheValidityHours` | [`Int`](#int) | Cache validity period. Defaults to 24 hours. |
+| <a id="mutationcontainerupstreamupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationcontainerupstreamupdatedescription"></a>`description` | [`String`](#string) | Description of the upstream registry. |
+| <a id="mutationcontainerupstreamupdateid"></a>`id` | [`VirtualRegistriesContainerUpstreamID!`](#virtualregistriescontainerupstreamid) | ID of the container virtual registry upstream. |
+| <a id="mutationcontainerupstreamupdatename"></a>`name` | [`String`](#string) | Name of upstream registry. |
+| <a id="mutationcontainerupstreamupdatepassword"></a>`password` | [`String`](#string) | Password of the upstream registry. |
+| <a id="mutationcontainerupstreamupdateurl"></a>`url` | [`String`](#string) | URL of the upstream registry. |
+| <a id="mutationcontainerupstreamupdateusername"></a>`username` | [`String`](#string) | Username of the upstream registry. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationcontainerupstreamupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationcontainerupstreamupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationcontainerupstreamupdateupstream"></a>`upstream` | [`ContainerUpstreamDetails`](#containerupstreamdetails) | Container upstream after the mutation. |
 
 ### `Mutation.corpusCreate`
 
@@ -25611,6 +25662,7 @@ An AI catalog agent version.
 | <a id="aicatalogagentversioncreatedby"></a>`createdBy` | [`UserCore`](#usercore) | User that created the item version. |
 | <a id="aicatalogagentversionhumanversionname"></a>`humanVersionName` | [`String`](#string) | Human-friendly name of the item version. In the form v1.0.0-draft. |
 | <a id="aicatalogagentversionid"></a>`id` | [`ID!`](#id) | ID of the item version. |
+| <a id="aicatalogagentversionitem"></a>`item` | [`AiCatalogItem!`](#aicatalogitem) | Item the version belongs to. |
 | <a id="aicatalogagentversionreleased"></a>`released` | [`Boolean!`](#boolean) | Indicates the item version is released. |
 | <a id="aicatalogagentversionreleasedat"></a>`releasedAt` | [`Time`](#time) | Timestamp of when the item version was released. |
 | <a id="aicatalogagentversionsystemprompt"></a>`systemPrompt` | [`String`](#string) | System prompt for the agent. |
@@ -25725,6 +25777,7 @@ An AI catalog flow version.
 | <a id="aicatalogflowversiondefinition"></a>`definition` | [`String`](#string) | YAML definition of the flow. |
 | <a id="aicatalogflowversionhumanversionname"></a>`humanVersionName` | [`String`](#string) | Human-friendly name of the item version. In the form v1.0.0-draft. |
 | <a id="aicatalogflowversionid"></a>`id` | [`ID!`](#id) | ID of the item version. |
+| <a id="aicatalogflowversionitem"></a>`item` | [`AiCatalogItem!`](#aicatalogitem) | Item the version belongs to. |
 | <a id="aicatalogflowversionreleased"></a>`released` | [`Boolean!`](#boolean) | Indicates the item version is released. |
 | <a id="aicatalogflowversionreleasedat"></a>`releasedAt` | [`Time`](#time) | Timestamp of when the item version was released. |
 | <a id="aicatalogflowversionsteps"></a>`steps` | [`AiCatalogFlowStepsConnection`](#aicatalogflowstepsconnection) | Steps of the flow. (see [Connections](#connections)) |
@@ -25859,6 +25912,7 @@ An AI catalog third party flow version.
 | <a id="aicatalogthirdpartyflowversiondefinition"></a>`definition` | [`String!`](#string) | YAML definition of the third party flow. |
 | <a id="aicatalogthirdpartyflowversionhumanversionname"></a>`humanVersionName` | [`String`](#string) | Human-friendly name of the item version. In the form v1.0.0-draft. |
 | <a id="aicatalogthirdpartyflowversionid"></a>`id` | [`ID!`](#id) | ID of the item version. |
+| <a id="aicatalogthirdpartyflowversionitem"></a>`item` | [`AiCatalogItem!`](#aicatalogitem) | Item the version belongs to. |
 | <a id="aicatalogthirdpartyflowversionreleased"></a>`released` | [`Boolean!`](#boolean) | Indicates the item version is released. |
 | <a id="aicatalogthirdpartyflowversionreleasedat"></a>`releasedAt` | [`Time`](#time) | Timestamp of when the item version was released. |
 | <a id="aicatalogthirdpartyflowversionupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the item version was updated. |
@@ -35075,6 +35129,7 @@ Returns [`SecurityMetrics`](#securitymetrics).
 | ---- | ---- | ----------- |
 | <a id="groupsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs in a group. This argument is ignored when we are querying for a project. |
 | <a id="groupsecuritymetricsreporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
+| <a id="groupsecuritymetricssecurityattributesfilters"></a>`securityAttributesFilters` {{< icon name="warning-solid" >}} | [`[AttributeFilterInput!]`](#attributefilterinput) | **Introduced** in GitLab 18.8. **Status**: Experiment. Filter by security attributes. |
 
 ##### `Group.securityPolicies`
 
@@ -44331,6 +44386,7 @@ Returns [`SecurityMetrics`](#securitymetrics).
 | ---- | ---- | ----------- |
 | <a id="projectsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs in a group. This argument is ignored when we are querying for a project. |
 | <a id="projectsecuritymetricsreporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
+| <a id="projectsecuritymetricssecurityattributesfilters"></a>`securityAttributesFilters` {{< icon name="warning-solid" >}} | [`[AttributeFilterInput!]`](#attributefilterinput) | **Introduced** in GitLab 18.8. **Status**: Experiment. Filter by security attributes. |
 
 ##### `Project.securityPolicies`
 
@@ -57278,6 +57334,7 @@ Implementations:
 | <a id="aicatalogitemversioncreatedby"></a>`createdBy` | [`UserCore`](#usercore) | User that created the item version. |
 | <a id="aicatalogitemversionhumanversionname"></a>`humanVersionName` | [`String`](#string) | Human-friendly name of the item version. In the form v1.0.0-draft. |
 | <a id="aicatalogitemversionid"></a>`id` | [`ID!`](#id) | ID of the item version. |
+| <a id="aicatalogitemversionitem"></a>`item` | [`AiCatalogItem!`](#aicatalogitem) | Item the version belongs to. |
 | <a id="aicatalogitemversionreleased"></a>`released` | [`Boolean!`](#boolean) | Indicates the item version is released. |
 | <a id="aicatalogitemversionreleasedat"></a>`releasedAt` | [`Time`](#time) | Timestamp of when the item version was released. |
 | <a id="aicatalogitemversionupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the item version was updated. |

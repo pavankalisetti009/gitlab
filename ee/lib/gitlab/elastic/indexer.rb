@@ -55,14 +55,16 @@ module Gitlab
         commit_sha = commit&.sha
 
         repository.__elasticsearch__.elastic_writing_targets.each do |target|
-          logger.debug(build_structured_payload(message: 'indexing_commit_range',
-            group_id: group&.id,
-            project_id: project&.id,
-            from_sha: from_sha,
-            to_sha: commit_sha,
-            index_wiki: index_wiki?
+          logger.debug(
+            build_structured_payload(
+              message: 'indexing_commit_range',
+              group_id: group&.id,
+              project_id: project&.id,
+              from_sha: from_sha,
+              to_sha: commit_sha,
+              index_wiki: index_wiki?
+            )
           )
-                      )
 
           # This might happen when default branch has been reset or rebased.
           base_sha = if purge_unreachable_commits_from_index?(commit_sha)

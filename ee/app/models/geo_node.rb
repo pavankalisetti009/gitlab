@@ -325,6 +325,7 @@ class GeoNode < ApplicationRecord
       build_oauth_application
       oauth_application.trusted = true
       oauth_application.confidential = true
+      oauth_application.organization = Organizations::Organization.first # rubocop:disable Gitlab/PreventOrganizationFirst -- Geo OAuth apps are instance-level infrastructure, not user-created
     end
 
     oauth_application.name = "Geo node: #{url}"

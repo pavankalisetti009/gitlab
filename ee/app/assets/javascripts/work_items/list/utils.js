@@ -32,7 +32,7 @@ const customFieldApiFieldName = 'customField';
 
 /**
  * Get the types of work items that should be displayed on issues lists.
- * This should be consistent with `Issue::TYPES_FOR_LIST` in the backend.
+ * This should be consistent with `TYPES_FOR_LIST` in the backend.
  *
  * @returns {Array<string>}
  * */

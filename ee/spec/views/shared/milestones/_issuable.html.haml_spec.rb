@@ -15,7 +15,8 @@ RSpec.describe 'shared/milestones/_issuable.html.haml', feature_category: :group
     let_it_be(:issuable) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
 
     it 'links to the epic' do
-      expect(rendered).to have_css("a[href$='#{group_epic_path(group, issuable)}']", class: 'issue-link')
+      url = ::Gitlab::UrlBuilder.build(issuable)
+      expect(rendered).to have_css("a[href$='#{url}']", class: 'issue-link')
     end
   end
 

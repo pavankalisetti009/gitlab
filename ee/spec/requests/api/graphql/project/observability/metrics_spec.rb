@@ -117,7 +117,7 @@ RSpec.describe "getting a project's linked observability metrics", feature_categ
         expect(metrics.first).to eq({
           issue: {
             title: metric3.issue.title,
-            webUrl: Gitlab::Routing.url_helpers.project_issue_url(project, metric3.issue)
+            webUrl: Gitlab::UrlBuilder.build(metric3.issue)
           }.stringify_keys,
           name: "test1",
           type: "sum_type"
@@ -125,7 +125,7 @@ RSpec.describe "getting a project's linked observability metrics", feature_categ
         expect(metrics.second).to eq({
           issue: {
             title: metric2.issue.title,
-            webUrl: Gitlab::Routing.url_helpers.project_issue_url(project, metric2.issue)
+            webUrl: Gitlab::UrlBuilder.build(metric2.issue)
           }.stringify_keys,
           name: "test1",
           type: "sum_type"

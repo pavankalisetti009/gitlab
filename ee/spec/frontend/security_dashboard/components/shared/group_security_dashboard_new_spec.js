@@ -1,6 +1,5 @@
-import { nextTick } from 'vue';
+import { nextTick, markRaw } from 'vue';
 import { GlDashboardLayout } from '@gitlab/ui';
-import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import {

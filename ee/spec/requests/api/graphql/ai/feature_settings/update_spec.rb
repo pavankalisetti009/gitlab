@@ -8,7 +8,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
   include_context 'with mocked ::Ai::ModelSelection::FetchModelDefinitionsService'
 
   let_it_be(:current_user) { create(:admin) }
-  let_it_be(:self_hosted_model) { create(:ai_self_hosted_model) }
+  let_it_be(:self_hosted_model) { create(:ai_self_hosted_model, model: :gpt) }
   let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :vendored, self_hosted_model: nil) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
   let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed) }
@@ -26,6 +26,15 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
   subject(:request) { post_graphql_mutation(mutation, current_user: current_user) }
 
   describe '#resolve' do
+    shared_examples 'performs the right self-hosted DAP authorization' do
+      it 'performs the right authorization check' do
+        allow(Ability).to receive(:allowed?).and_call_original
+        expect(Ability).to receive(:allowed?).with(current_user, :update_dap_self_hosted_model)
+
+        request
+      end
+    end
+
     shared_examples 'performs the right instance model selection authorization' do
       it 'performs the right authorization check' do
         allow(Ability).to receive(:allowed?).and_call_original
@@ -95,6 +104,54 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           expect(graphql_errors).to be_present
           expect(graphql_errors.pluck('message')).to include(
             "You don't have permission to update the setting ai_self_hosted_model_id."
+          )
+        end
+      end
+
+      context 'for self-hosted DAP' do
+        let(:self_hosted_model_id) { self_hosted_model.to_global_id.to_s }
+        let(:mutation_params) do
+          {
+            features: %w[DUO_AGENT_PLATFORM DUO_AGENT_PLATFORM_AGENTIC_CHAT],
+            provider: 'SELF_HOSTED',
+            ai_self_hosted_model_id: self_hosted_model_id
+          }
+        end
+
+        it_behaves_like 'performs the right self-hosted DAP authorization'
+
+        it 'returns an error about the missing permission' do
+          request
+
+          expect(graphql_errors).to be_present
+          expect(graphql_errors.pluck('message')).to match_array(
+            "You don't have permission to update the setting ai_self_hosted_model_id."
+          )
+        end
+      end
+
+      context "for gitlab managed models" do
+        let(:self_hosted_model_id) { self_hosted_model.to_global_id.to_s }
+        let(:mutation_params) do
+          {
+            features: ['CODE_GENERATIONS'],
+            provider: 'VENDORED',
+            offered_model_ref: 'claude_3_5_sonnet_20240620'
+          }
+        end
+
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(current_user, :manage_instance_model_selection)
+          request
+        end
+
+        it 'returns an error about the missing permission' do
+          request
+
+          expect(graphql_errors).to be_present
+          expect(graphql_errors.pluck('message')).to match_array(
+            "You don't have permission to update the setting offered_model_ref."
           )
         end
       end
@@ -212,6 +269,33 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
               offered_model_ref: 'claude-sonnet'
             }
           end
+
+          it 'successfully updates the feature settings without errors' do
+            request
+
+            result = json_response['data']['aiFeatureSettingUpdate']
+            expect(result['errors']).to eq([])
+            expect(result['aiFeatureSettings']).not_to be_empty
+          end
+        end
+
+        context 'for self-hosted DAP feature settings' do
+          let(:self_hosted_model_id) { self_hosted_model.to_global_id.to_s }
+          let(:mutation_params) do
+            {
+              features: %w[DUO_AGENT_PLATFORM DUO_AGENT_PLATFORM_AGENTIC_CHAT DUO_CHAT],
+              provider: 'SELF_HOSTED',
+              ai_self_hosted_model_id: self_hosted_model_id
+            }
+          end
+
+          before do
+            allow(Ability).to receive(:allowed?).and_call_original
+            allow(Ability).to receive(:allowed?).with(current_user,
+              :update_dap_self_hosted_model).and_return(true)
+          end
+
+          it_behaves_like 'performs the right self-hosted DAP authorization'
 
           it 'successfully updates the feature settings without errors' do
             request

@@ -4,4 +4,4 @@
 - breadcrumb_title configuration_text
 - add_to_breadcrumbs(_('GitLab Duo'), admin_gitlab_duo_path)
 
-#js-ai-settings{ data: Admin::AiConfigurationPresenter.new.settings }
+#js-ai-settings{ data: Admin::AiConfigurationPresenter.new(current_user).settings }

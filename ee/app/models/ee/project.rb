@@ -1546,7 +1546,9 @@ module EE
     end
 
     def should_check_index_integrity?
-      use_elasticsearch? && repository_exists? && !empty_repo?
+      return false unless use_elasticsearch?
+
+      !empty_repo? || !wiki.empty?
     end
 
     def merge_train_for(target_branch)
@@ -1680,11 +1682,13 @@ module EE
       organization_policy_setting.csp_namespace
     end
 
-    def security_scan_profile_for(type)
+    def security_scan_profile_for(type, trigger_type = nil)
       return unless licensed_feature_available?(:security_scan_profiles) &&
         ::Feature.enabled?(:security_scan_profiles_feature, root_ancestor)
 
-      security_scan_profiles.by_type(type)
+      profiles = security_scan_profiles.by_type(type)
+      profiles = profiles.with_trigger_type(trigger_type) if trigger_type.present?
+      profiles
     end
 
     private

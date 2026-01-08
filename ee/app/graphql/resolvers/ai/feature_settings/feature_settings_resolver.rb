@@ -14,27 +14,41 @@ module Resolvers
           description: 'Global ID of the self-hosted model.'
 
         def resolve(self_hosted_model_id: nil)
-          feature_settings = get_feature_settings(self_hosted_model_id)
+          feature_settings = ::Ai::FeatureSettings::FeatureSettingFinder.new(
+            self_hosted_model_id: self_hosted_model_id
+          ).execute
 
-          ::Gitlab::Graphql::Representation::AiFeatureSetting
-            .decorate(feature_settings,
+          dap_settings = ::Gitlab::Graphql::Representation::AiFeatureSetting
+            .decorate(feature_settings[:dap],
+              with_self_hosted_models: dap_self_hosted_models?,
+              with_gitlab_models: gitlab_models?,
+              model_definitions: gitlab_model_definitions)
+
+          classic_settings = ::Gitlab::Graphql::Representation::AiFeatureSetting
+            .decorate(feature_settings[:classic],
               with_self_hosted_models: self_hosted_models?,
               with_gitlab_models: gitlab_models?,
               model_definitions: gitlab_model_definitions)
+
+          dap_settings + classic_settings
         end
 
         private
 
-        def get_feature_settings(self_hosted_model_id)
-          ::Ai::FeatureSettings::FeatureSettingFinder.new(self_hosted_model_id: self_hosted_model_id).execute
+        def dap_self_hosted_models?
+          return false unless self_hosted_models_requested?
+
+          Ability.allowed?(current_user, :read_dap_self_hosted_model)
         end
 
         def self_hosted_models?
-          self_hosted_models_requested = context.query.sanitized_query_string.include?('validModels')
-
-          return false unless self_hosted_models_requested
+          return false unless self_hosted_models_requested?
 
           Ability.allowed?(current_user, :manage_self_hosted_models_settings)
+        end
+
+        def self_hosted_models_requested?
+          context.query.sanitized_query_string.include?('validModels')
         end
 
         def gitlab_models?

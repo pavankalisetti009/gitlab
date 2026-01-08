@@ -1,6 +1,5 @@
-import { nextTick } from 'vue';
+import { nextTick, markRaw } from 'vue';
 import { GlFilteredSearch } from '@gitlab/ui';
-import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import setWindowLocation from 'helpers/set_window_location_helper';

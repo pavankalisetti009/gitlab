@@ -67,6 +67,10 @@ module EE
               ::Gitlab::CurrentSettings.enable_member_promotion_management?
             }
           store.subscribe ::Security::CreateDefaultTrackedContextWorker, to: ::Projects::ProjectCreatedEvent
+          store.subscribe ::Security::ProjectTrackedContexts::UpdateDefaultContextWorker,
+            to: ::Repositories::DefaultBranchChangedEvent
+          store.subscribe ::Security::ProjectTrackedContexts::UpdateDefaultContextWorker,
+            to: ::Repositories::RepositoryCreatedEvent
 
           register_threat_insights_subscribers(store)
           register_security_policy_subscribers(store)

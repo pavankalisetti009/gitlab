@@ -11,7 +11,8 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
   end
 
   context 'when creating lead and applying trial is successful' do
-    it 'fills out form, submits and lands on the duo page' do
+    it 'fills out form, submits and lands on the duo page',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/22551' do
       sign_in(user)
 
       stub_cdot_namespace_eligible_trials

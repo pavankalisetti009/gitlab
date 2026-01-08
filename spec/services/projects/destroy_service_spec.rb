@@ -199,31 +199,13 @@ RSpec.describe Projects::DestroyService, :aggregate_failures, :event_store_publi
       expect(project.pending_delete).to be_falsey
     end
 
-    context 'when namespace_state_management feature flag is enabled' do
-      before do
-        stub_feature_flags(namespace_state_management: true)
-      end
-
+    context 'when project state is deletion_scheduled' do
       it 'transitions state to deletion_in_progress' do
         expect(project).to receive(:cancel_deletion!).with(transition_user: unauthorized_user).and_call_original
 
         expect { destroy_project(project, unauthorized_user) }.to change { project.reload.state }
          .from(Namespaces::Stateful::STATES[:deletion_scheduled])
          .to(Namespaces::Stateful::STATES[:ancestor_inherited])
-      end
-    end
-
-    context 'when namespace_state_management feature flag is disabled' do
-      before do
-        stub_feature_flags(namespace_state_management: false)
-      end
-
-      it 'does not call cancel_deletion!' do
-        expect(project).not_to receive(:cancel_deletion!)
-
-        expect { destroy_project(project, unauthorized_user) }.not_to change { project.state }
-
-        expect(project.reload.pending_delete).to be_falsey
       end
     end
   end
@@ -247,11 +229,7 @@ RSpec.describe Projects::DestroyService, :aggregate_failures, :event_store_publi
       project.add_owner(user)
     end
 
-    context 'when namespace_state_management feature flag is enabled' do
-      before do
-        stub_feature_flags(namespace_state_management: true)
-      end
-
+    context 'when project state is ancestor_inherited' do
       it 'transitions the project state to deletion_in_progress' do
         expect(project).to receive(:start_deletion!).with(transition_user: user)
 
@@ -268,18 +246,6 @@ RSpec.describe Projects::DestroyService, :aggregate_failures, :event_store_publi
 
           destroy_project(project, user, {})
         end
-      end
-    end
-
-    context 'when namespace_state_management feature flag is disabled' do
-      before do
-        stub_feature_flags(namespace_state_management: false)
-      end
-
-      it 'does not call start_deletion!' do
-        expect(project).not_to receive(:start_deletion!)
-
-        destroy_project(project, user, {})
       end
     end
   end
@@ -511,11 +477,7 @@ RSpec.describe Projects::DestroyService, :aggregate_failures, :event_store_publi
         project.add_owner(user)
       end
 
-      context 'when namespace_state_management feature flag is enabled' do
-        before do
-          stub_feature_flags(namespace_state_management: true)
-        end
-
+      context 'when project state is ancestor_inherited' do
         it 'transitions the project state to deletion_in_progress before scheduling the job' do
           expect(project).to receive(:start_deletion!).with(transition_user: user)
 
@@ -532,18 +494,6 @@ RSpec.describe Projects::DestroyService, :aggregate_failures, :event_store_publi
 
             destroy_project(project, user, {})
           end
-        end
-      end
-
-      context 'when namespace_state_management feature flag is disabled' do
-        before do
-          stub_feature_flags(namespace_state_management: false)
-        end
-
-        it 'does not call start_deletion!' do
-          expect(project).not_to receive(:start_deletion!)
-
-          destroy_project(project, user, {})
         end
       end
     end
@@ -997,9 +947,8 @@ RSpec.describe Projects::DestroyService, :aggregate_failures, :event_store_publi
       expect(project.builds).to be_empty
     end
 
-    context 'when namespace_state_management feature flag is enabled' do
+    context 'when project state is deletion_scheduled' do
       before do
-        stub_feature_flags(namespace_state_management: true)
         set_state(project.project_namespace, :deletion_scheduled)
         allow(project).to receive(:destroy!).and_raise(StandardError)
       end
@@ -1010,21 +959,6 @@ RSpec.describe Projects::DestroyService, :aggregate_failures, :event_store_publi
         destroy_project(project, user, {})
 
         expect(project.reload.state).to eq(Namespaces::Stateful::STATES[:deletion_scheduled])
-      end
-    end
-
-    context 'when namespace_state_management feature flag is disabled' do
-      before do
-        stub_feature_flags(namespace_state_management: false)
-        allow(project).to receive(:destroy!).and_raise(StandardError)
-      end
-
-      it 'does not call start_deletion! in reschedule_deletion' do
-        expect(project).not_to receive(:reschedule_deletion!)
-
-        destroy_project(project, user, {})
-
-        expect(project.reload.state).to eq(Namespaces::Stateful::STATES[:ancestor_inherited])
       end
     end
   end
@@ -1235,6 +1169,44 @@ RSpec.describe Projects::DestroyService, :aggregate_failures, :event_store_publi
         )
 
         service.send(:destroy_orphaned_ci_job_artifacts!)
+      end
+    end
+  end
+
+  describe '#destroy_relation_export_uploads!' do
+    let(:service) { described_class.new(project, user) }
+
+    context 'when project has relation export uploads' do
+      let!(:export_job) { create(:project_export_job, project: project) }
+      let!(:relation_export) { create(:project_relation_export, project_export_job: export_job) }
+      let!(:relation_export_upload) { create(:relation_export_upload, relation_export: relation_export) }
+
+      it 'calls the RemoveRelationExportUploadsService' do
+        expect(Projects::ImportExport::RemoveRelationExportUploadsService)
+          .to receive(:new).with(project).and_call_original
+        expect_any_instance_of(Projects::ImportExport::RemoveRelationExportUploadsService)
+          .to receive(:execute).and_call_original
+
+        service.send(:destroy_relation_export_uploads!)
+      end
+
+      it 'enqueues workers for each upload', :sidekiq_inline do
+        relation_export_upload.update!(export_file: fixture_file_upload('spec/fixtures/gitlab/import_export/labels.tar.gz'))
+        upload_id = relation_export_upload.uploads.first.id
+
+        expect(Projects::ImportExport::RemoveRelationExportUploadWorker)
+          .to receive(:perform_async).with(upload_id)
+
+        service.send(:destroy_relation_export_uploads!)
+      end
+    end
+
+    context 'when project has no relation export uploads' do
+      it 'does not enqueue any workers' do
+        expect(Projects::ImportExport::RemoveRelationExportUploadWorker)
+          .not_to receive(:perform_async)
+
+        service.send(:destroy_relation_export_uploads!)
       end
     end
   end

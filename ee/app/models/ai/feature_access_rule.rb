@@ -51,7 +51,7 @@ module Ai
       def duo_namespace_access_rules=(values)
         return unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
 
-        values = values.reject(&:blank?)
+        values = values.map(&:deep_symbolize_keys).reject(&:blank?)
 
         delete_all
 

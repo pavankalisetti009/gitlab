@@ -8,6 +8,8 @@ RSpec.describe ::RemoteDevelopment::WorkspacesServerOperations::ServerConfig::Ma
 
   include_context "with remote development shared fixtures"
 
+  let_it_be(:organization) { create(:organization) }
+
   let_it_be(:attributes_generator_class) do
     ::RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationAttributesGenerator
   end
@@ -30,7 +32,7 @@ RSpec.describe ::RemoteDevelopment::WorkspacesServerOperations::ServerConfig::Ma
   end
 
   # noinspection HttpUrlsUsage,RubyResolve
-  let_it_be(:expected_oauth_application_attributes) do
+  let(:expected_oauth_application_attributes) do
     {
       name: attributes_generator_class::OAUTH_NAME,
       redirect_uri: expected_oauth_redirect_url,
@@ -38,7 +40,8 @@ RSpec.describe ::RemoteDevelopment::WorkspacesServerOperations::ServerConfig::Ma
       trusted:
         RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationAttributesGenerator::TRUSTED,
       confidential:
-        RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationAttributesGenerator::CONFIDENTIAL
+        RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationAttributesGenerator::CONFIDENTIAL,
+      organization_id: organization.id
     }
   end
 
@@ -77,6 +80,14 @@ RSpec.describe ::RemoteDevelopment::WorkspacesServerOperations::ServerConfig::Ma
   context "when the oauth application does not yet exist" do
     it "creates the oauth application" do
       expect { response }.to change { Authn::OauthApplication.count }.by(1)
+    end
+
+    it "creates the oauth application with the correct organization_id" do
+      response
+
+      oauth_application = ::Gitlab::CurrentSettings.current_application_settings.workspaces_oauth_application
+
+      expect(oauth_application.organization_id).to eq(organization.id)
     end
 
     it_behaves_like("expected server config response")

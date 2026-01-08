@@ -17,6 +17,7 @@ describe('VirtualRegistriesApi', () => {
     };
     jest.spyOn(axios, 'get');
     jest.spyOn(axios, 'delete');
+    jest.spyOn(axios, 'post');
   });
 
   afterEach(() => {
@@ -211,21 +212,65 @@ describe('VirtualRegistriesApi', () => {
     });
   });
 
-  describe('testExistingMavenUpstream', () => {
-    it('calls test endpoint of existing upstream', () => {
-      const requestPath = 'virtual_registries/packages/maven/upstreams';
-      const upstreamId = '5';
-      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/${requestPath}/${upstreamId}/test`;
-      const expectedParams = {
+  describe('testExistingMavenUpstreamWithOverrides', () => {
+    const requestPath = 'virtual_registries/packages/maven/upstreams';
+    const upstreamId = '5';
+    const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/${requestPath}/${upstreamId}/test`;
+    const expectedResponse = {
+      success: true,
+    };
+
+    it('calls test endpoint without body when no overrides are provided', () => {
+      const params = {
         id: upstreamId,
       };
-      const expectedResponse = {
-        success: true,
-      };
-      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
 
-      return VirtualRegistryApi.testExistingMavenUpstream(expectedParams).then(({ data }) => {
+      mock.onPost(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
+
+      return VirtualRegistryApi.testExistingMavenUpstreamWithOverrides(params).then(({ data }) => {
         expect(data).toEqual(expectedResponse);
+        expect(axios.post).toHaveBeenCalledWith(expectedUrl);
+      });
+    });
+
+    it('calls test endpoint with url, username and password in body', () => {
+      const params = {
+        id: upstreamId,
+        url: 'https://gitlab.com',
+        username: 'test-user',
+        password: 'test-password',
+      };
+
+      const expectedBody = {
+        url: params.url,
+        username: params.username,
+        password: params.password,
+      };
+      mock.onPost(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
+
+      return VirtualRegistryApi.testExistingMavenUpstreamWithOverrides(params).then(({ data }) => {
+        expect(data).toEqual(expectedResponse);
+        expect(axios.post).toHaveBeenCalledWith(expectedUrl, expectedBody);
+      });
+    });
+
+    it('calls test endpoint with url and empty username and password as body', () => {
+      const params = {
+        id: upstreamId,
+        url: 'https://gitlab.com',
+        username: '',
+        password: '',
+      };
+      const expectedBody = {
+        url: params.url,
+        username: params.username,
+        password: params.password,
+      };
+      mock.onPost(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
+
+      return VirtualRegistryApi.testExistingMavenUpstreamWithOverrides(params).then(({ data }) => {
+        expect(data).toEqual(expectedResponse);
+        expect(axios.post).toHaveBeenCalledWith(expectedUrl, expectedBody);
       });
     });
   });
