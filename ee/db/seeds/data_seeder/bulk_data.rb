@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require Rails.root.join('ee/db/seeds/data_seeder/data_seeder')
+
 class DataSeeder
   # Factories that will be excluded in the process of creating test data
   EXCLUDED_FACTORIES = %w[
@@ -39,7 +41,7 @@ class DataSeeder
     allowed_factories.each_with_index do |factory, i|
       retries ||= 0
       # Create a new instance for each factory
-      FactoryBot.create(factory.name)
+      resource = FactoryBot.create(factory.name)
     rescue ActiveRecord::RecordNotUnique => e
       # Workaround for UniqueViolation, context https://gitlab.com/gitlab-org/quality/quality-engineering/team-tasks/-/issues/2354#note_1793812916
       puts "#{factory.name} failed with #{e}! Attempt##{retries}"
@@ -49,6 +51,7 @@ class DataSeeder
       # We rescue exception here to make sure seeding proceeds unrelated to various unique exceptions from Factories
       puts "#{factory.name} caught exception #{e} of class #{e.class}!"
     else
+      Gitlab::DataSeeder.log_resource_creation(resource)
       puts "Successfully created Factory #{factory.name}" unless @quiet
     ensure
       puts "Factory ##{i + 1}" unless @quiet
