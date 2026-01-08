@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-constraints(::Constraints::ProjectUrlConstrainer.new) do
+constraints(::Projects::ProjectUrlConstraint.new) do
   scope(
     path: '*namespace_id',
     as: :namespace,
