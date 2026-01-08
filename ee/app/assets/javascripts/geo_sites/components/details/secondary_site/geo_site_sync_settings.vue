@@ -35,7 +35,7 @@ export default {
       return !this.site.lastEventTimestamp || !this.site.cursorLastEventTimestamp;
     },
     syncLagInSeconds() {
-      return this.site.cursorLastEventTimestamp - this.site.lastEventTimestamp;
+      return this.site.lastEventTimestamp - this.site.cursorLastEventTimestamp;
     },
     syncStatusEventInfo() {
       const timeAgoStr = timeIntervalInWords(this.syncLagInSeconds);
