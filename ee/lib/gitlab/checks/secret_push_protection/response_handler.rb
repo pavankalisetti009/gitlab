@@ -11,9 +11,7 @@ module Gitlab
           blob_timed_out_error: "\n    - Scanning blob(id: %{payload_id}) timed out.",
           scan_timeout_error: 'Secret detection scan timed out.',
           invalid_input_error: 'Secret detection scan failed due to invalid input.',
-          invalid_scan_status_code_error: 'Invalid secret detection scan status, check passed.',
-          too_many_tree_entries_error: 'Too many tree entries exist for commit(sha: %{sha}).',
-          gitaly_index_error: 'Gitaly: invalid revision or path'
+          invalid_scan_status_code_error: 'Invalid secret detection scan status, check passed.'
         }.freeze
 
         LOG_MESSAGES = {
@@ -41,11 +39,7 @@ module Gitlab
           if response.status == ::Gitlab::SecretDetection::Core::Status::FOUND ||
               response.status == ::Gitlab::SecretDetection::Core::Status::FOUND_WITH_ERRORS
 
-            results = if Feature.enabled?(:drop_get_tree_entries_from_spp, project)
-                        transform_findings_without_get_tree_entries(response, lookup_map)
-                      else
-                        transform_findings(response)
-                      end
+            results = transform_findings(response, lookup_map)
 
             # If there is no findings in `response.results`, that means all findings
             # were excluded in `transform_findings`, so we set status to no secrets found.
@@ -113,11 +107,7 @@ module Gitlab
 
         private
 
-        def commits
-          @commit ||= changes_access.commits.map(&:valid_full_sha)
-        end
-
-        def transform_findings_without_get_tree_entries(response, lookup_map)
+        def transform_findings(response, lookup_map)
           # Let's group the findings by the blob id.
           findings_by_blobs = response.results.group_by(&:payload_id)
 
@@ -196,97 +186,6 @@ module Gitlab
           }
         end
 
-        def transform_findings(response)
-          # Let's group the findings by the blob id.
-          findings_by_blobs = response.results.group_by(&:payload_id)
-
-          # We create an empty hash for the structure we'll create later as we pull out tree entries.
-          findings_by_commits = {}
-
-          # Let's create a set to store ids of blobs found in tree entries.
-          blobs_found_with_tree_entries = Set.new
-
-          # Scanning had found secrets, let's try to look up their file path and commit id. This can be done
-          # by using `GetTreeEntries()` RPC, and cross examining blobs with ones where secrets where found.
-          commits.each do |revision|
-            # We could try to handle pagination, but it is likely to timeout way earlier given the
-            # huge default limit (100000) of entries, so we log an error if we get too many results.
-            entries = fetch_tree_entries(revision)
-
-            # Let's grab the `commit_id` and the `path` for that entry, we use the blob id as key.
-            entries.each do |entry|
-              # Skip any entry that isn't a blob.
-              next if entry.type != :blob
-
-              # Skip if the blob doesn't have any findings.
-              next unless findings_by_blobs[entry.id].present?
-
-              # Skip a tree entry if it's excluded from scanning by the user based on its file
-              # path. We unfortunately have to do this after scanning is done because we only get
-              # file paths when calling `GetTreeEntries()` RPC and not earlier. When diff scanning
-              # is available, we will likely be able move this check to the gem/secret detection service
-              # since paths will be available pre-scanning.
-              if exclusions_manager.matches_excluded_path?(entry.path)
-                response.results.delete_if { |finding| finding.payload_id == entry.id }
-
-                findings_by_blobs.delete(entry.id)
-
-                next
-              end
-
-              new_entry = findings_by_blobs[entry.id].each_with_object({}) do |finding, hash|
-                hash[entry.commit_id] ||= {}
-                hash[entry.commit_id][entry.path] ||= []
-                hash[entry.commit_id][entry.path] << finding
-              end
-
-              # Put findings with tree entries inside `findings_by_commits` hash.
-              findings_by_commits.merge!(new_entry) do |_commit_sha, existing_findings, new_findings|
-                existing_findings.merge!(new_findings)
-              end
-
-              # Mark as found with tree entry already.
-              blobs_found_with_tree_entries << entry.id
-            end
-          end
-
-          # Remove blobs that has already been found in a tree entry.
-          findings_by_blobs.delete_if { |payload_id, _| blobs_found_with_tree_entries.include?(payload_id) }
-
-          # Return the findings as a hash sorted by commits and blobs (minus ones already found).
-          {
-            commits: findings_by_commits,
-            blobs: findings_by_blobs
-          }
-        end
-
-        def fetch_tree_entries(revision)
-          entries, cursor = ::Gitlab::Git::Tree.tree_entries(
-            repository: project.repository,
-            sha: revision,
-            recursive: true,
-            rescue_not_found: false
-          )
-
-          # TODO: Handle pagination in the upcoming iterations
-          # We don't raise because we could still provide a hint to the user
-          # about the detected secrets even without a commit SHA/file path information.
-          unless cursor.next_cursor.empty?
-            secret_detection_logger.error(
-              build_structured_payload(
-                message: format(ERROR_MESSAGES[:too_many_tree_entries_error], { sha: revision })
-              )
-            )
-          end
-
-          entries
-        rescue Gitlab::Git::Index::IndexError
-          secret_detection_logger.error(
-            build_structured_payload(message: ERROR_MESSAGES[:gitaly_index_error])
-          )
-          []
-        end
-
         def build_secrets_found_message(results, with_errors: false)
           message = with_errors ? LOG_MESSAGES[:found_secrets_with_errors] : LOG_MESSAGES[:found_secrets]
 
@@ -354,13 +253,6 @@ module Gitlab
 
         def build_blob_finding_message(finding)
           format(LOG_MESSAGES[:finding_message], finding.to_h)
-        end
-
-        def exclusions_manager
-          @exclusions_manager ||= ::Gitlab::Checks::SecretPushProtection::ExclusionsManager.new(
-            project: project,
-            changes_access: changes_access
-          )
         end
       end
     end

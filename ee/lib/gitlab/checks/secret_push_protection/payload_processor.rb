@@ -257,7 +257,7 @@ module Gitlab
           paths.reject! { |changed_path| exclusions_manager.matches_excluded_path?(changed_path.path) }
 
           # This map is used later in ResponseHandler to correlate a path to a commit and file path
-          populate_lookup_map(paths, lookup_map) if Feature.enabled?(:drop_get_tree_entries_from_spp, project)
+          populate_lookup_map(paths, lookup_map)
 
           # Log only the scanned paths (so excluded paths are omitted) and break them down by type
           log_changed_paths_breakdown(paths)
