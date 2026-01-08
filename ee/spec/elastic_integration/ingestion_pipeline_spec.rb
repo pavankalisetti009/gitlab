@@ -150,17 +150,33 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
       work_item = create(:work_item, project: project)
       ensure_elasticsearch_index!
 
-      expect(docs_in_index('gitlab-test-work_items', include_source: true)).to match_array([hash_including({
-        'id' => work_item.id, 'routing' => group_routing, 'title' => work_item.title, 'embedding_1' => embedding
-      })])
+      doc = docs_in_index('gitlab-test-work_items', include_source: true).first
+
+      expect(doc).to include(
+        'id' => work_item.id,
+        'routing' => group_routing,
+        'title' => work_item.title
+      )
+
+      expect(doc['embedding_1']).to be_an(Array)
+      expect(doc['embedding_1'].size).to eq(768)
+      expect(doc['embedding_1']).to all(be_a(Float))
 
       new_title = 'My title 2'
       work_item.update!(title: new_title)
       ensure_elasticsearch_index!
 
-      expect(docs_in_index('gitlab-test-work_items', include_source: true)).to match_array([hash_including({
-        'id' => work_item.id, 'routing' => group_routing, 'title' => new_title, 'embedding_1' => embedding
-      })])
+      doc = docs_in_index('gitlab-test-work_items', include_source: true).first
+
+      expect(doc).to include(
+        'id' => work_item.id,
+        'routing' => group_routing,
+        'title' => new_title
+      )
+
+      expect(doc['embedding_1']).to be_an(Array)
+      expect(doc['embedding_1'].size).to eq(768)
+      expect(doc['embedding_1']).to all(be_a(Float))
     end
 
     context 'when embeddings is not enabled' do
@@ -192,13 +208,25 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
   end
 
   def docs_in_index(index, include_source: false)
+    body = { query: { match_all: {} } }
+
+    body[:_source] = { includes: ['*'] + dense_vector_fields_in_index(index) } if include_source
+
     client
-      .search(index: index)
+      .search(index: index, body: body)
       .dig('hits', 'hits')
       .map do |hit|
         hash = { id: hit['_id'], routing: hit['_routing'] }
         hash.merge!(hit['_source']) if include_source
         hash.with_indifferent_access
       end
+  end
+
+  def dense_vector_fields_in_index(index)
+    mapping = client.indices.get_mapping(index: index)
+    index_name = mapping.each_key.first
+    properties = mapping.dig(index_name, 'mappings', 'properties') || {}
+
+    properties.select { |_field, config| config['type'] == 'dense_vector' }.keys
   end
 end
