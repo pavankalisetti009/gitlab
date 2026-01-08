@@ -25,7 +25,7 @@ module Ai
       private
 
       def create_note
-        note = s_('AiFlowTriggers|🔄 Processing the request and starting the agent...')
+        note = s_('AiFlowTriggers|🔄 Processing the request...')
 
         ::Notes::CreateService.new(
           project,
@@ -41,11 +41,12 @@ module Ai
           if response.success?
             link_start = format('<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe,
               url: "#{Gitlab::Routing.url_helpers.project_automate_agent_sessions_url(project)}/#{workflow.id}")
+            # We already sanitize names, but as an added safety, it's a good idea to sanitize this input here as well.
             format(s_(
-              "AiFlowTriggers|✅ Agent has started. You can view the progress %{link_start}here%{link_end}."
-            ), link_start: link_start, link_end: '</a>'.html_safe)
+              "AiFlowTriggers|✅ %{flow_name} has started. You can view progress %{link_start}here%{link_end}."
+            ), link_start: link_start, link_end: '</a>'.html_safe, flow_name: html_escape(author.name))
           else
-            format(s_("AiFlowTriggers|❌ Could not start the agent due to this error: %{error}"),
+            format(s_("AiFlowTriggers|❌ Could not start processing due to this error: %{error}"),
               error: response.message)
           end
 

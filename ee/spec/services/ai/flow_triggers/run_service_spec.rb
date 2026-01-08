@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platform do
   let_it_be_with_refind(:project) { create(:project, :repository) }
-  let_it_be_with_reload(:service_account) { create(:service_account, maintainer_of: project) }
+  let_it_be_with_reload(:service_account) { create(:service_account, maintainer_of: project, name: 'Service Account') }
 
   let_it_be(:current_user) { create(:user, maintainer_of: project) }
   let_it_be(:resource) { create(:issue, project: project) }
@@ -584,7 +584,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       expect(::Ci::Workloads::Workload.count).to eq(1)
       expect(Note.count).to eq(2)
 
-      expect(Note.last.note).to include('✅ Agent has started. You can view the progress')
+      expect(Note.last.note).to include('✅ Service Account has started. You can view progress')
 
       workflow = ::Ai::DuoWorkflows::Workflow.last
       expect(Note.last.note).to match(/automate.agent.sessions.#{workflow.id}/)
@@ -846,7 +846,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
         expect(response).to be_success
         expect(Note.count).to eq(2)
 
-        expect(Note.last.note).to include('✅ Agent has started. You can view the progress')
+        expect(Note.last.note).to include('✅ Service Account has started. You can view progress')
         expect(Note.last.note).to match(/automate.agent.sessions.#{catalog_workflow.id}/)
       end
 
