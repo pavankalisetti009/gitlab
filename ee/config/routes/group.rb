@@ -51,8 +51,6 @@ constraints(::Namespaces::GroupUrlConstraint.new) do
       end
     end
 
-    resource :early_access_opt_in, only: %i[create show], controller: 'early_access_opt_in'
-
     resources :group_members, only: [], concerns: :access_requestable do
       patch :override, on: :member
       put :unban, on: :member

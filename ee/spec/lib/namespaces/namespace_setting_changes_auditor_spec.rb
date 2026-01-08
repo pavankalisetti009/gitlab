@@ -116,11 +116,11 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         setup_for_company jobs_to_be_done runner_token_expiration_interval
         subgroup_runner_token_expiration_interval project_runner_token_expiration_interval product_analytics_enabled
         unique_project_download_limit unique_project_download_limit_interval_in_seconds math_rendering_limits_enabled
-        unique_project_download_limit_allowlist early_access_program_joined_by_id default_branch_protection_defaults
+        unique_project_download_limit_allowlist default_branch_protection_defaults
         allow_merge_on_skipped_pipeline default_compliance_framework_id unique_project_download_limit_alertlist
         only_allow_merge_if_all_discussions_are_resolved enterprise_users_extensions_marketplace_opt_in_status
         default_branch_protection_defaults allow_merge_without_pipeline auto_ban_user_on_excessive_projects_download
-        lock_math_rendering_limits_enabled early_access_program_participant
+        lock_math_rendering_limits_enabled
         lock_duo_features_enabled allow_merge_without_pipeline only_allow_merge_if_pipeline_succeeds
         lock_spp_repository_pipeline_access hide_email_on_profile spp_repository_pipeline_access archived
         resource_access_token_notify_inherited lock_resource_access_token_notify_inherited

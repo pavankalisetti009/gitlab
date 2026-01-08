@@ -14,11 +14,6 @@ jest.mock('ee/api/groups_api');
 jest.mock('~/lib/utils/url_utility');
 jest.mock('~/alert');
 
-jest.mock('ee/ai/settings/components/early_access_program_banner.vue', () => ({
-  name: 'EarlyAccessProgramBanner',
-  render: (h) => h('early-access-program-banner'),
-}));
-
 let wrapper;
 
 const createComponent = ({ props = {}, provide = {} } = {}) => {
@@ -29,7 +24,6 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
       ...props,
     },
     provide: {
-      showEarlyAccessBanner: false,
       onGeneralSettingsPage: false,
       duoWorkflowAvailable: true,
       duoWorkflowMcpEnabled: false,
@@ -42,7 +36,6 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
 };
 
 const findAiCommonSettings = () => wrapper.findComponent(AiCommonSettings);
-const findEarlyAccessBanner = () => wrapper.findComponent({ name: 'EarlyAccessProgramBanner' });
 const findDuoWorkflowSettingsForm = () => wrapper.findComponent(DuoWorkflowSettingsForm);
 
 describe('AiGroupSettings', () => {
@@ -91,19 +84,6 @@ describe('AiGroupSettings', () => {
 
     it('passes hasFormChanged prop to AiCommonSettings', () => {
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(false);
-    });
-  });
-
-  describe('when showEarlyAccessBanner setting is set', () => {
-    it('does not render the banner when the cookie is missing', () => {
-      expect(findEarlyAccessBanner().exists()).toBe(false);
-    });
-
-    it('is true it renders EarlyAccessProgramBanner', async () => {
-      createComponent({ provide: { showEarlyAccessBanner: true } });
-      await nextTick();
-      await nextTick();
-      expect(findEarlyAccessBanner().exists()).toBe(true);
     });
   });
 

@@ -99,7 +99,6 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
     end
 
     before do
-      allow(helper).to receive(:show_early_access_program_banner?).and_return(true)
       allow(current_user).to receive(:can?).with(:admin_duo_workflow, group).and_return(true)
       stub_saas_features(gitlab_com_subscriptions: true)
       stub_const('::Ai::Catalog::FoundationalFlow::ITEMS', test_workflows)
@@ -126,8 +125,6 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           prompt_cache_enabled: group.namespace_settings.model_prompt_cache_enabled.to_s,
           are_experiment_settings_allowed: (group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
           are_prompt_cache_settings_allowed: (group.prompt_cache_settings_allowed? && gitlab_com_subscription?).to_s,
-          show_early_access_banner: "true",
-          early_access_path: group_early_access_opt_in_path(group),
           update_id: group.id,
           duo_workflow_available: "true",
           duo_agent_platform_enabled: "true",
@@ -352,34 +349,6 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
 
       it 'returns the expected result' do
         expect(helper.show_group_ai_settings_page?).to eq(expected_result)
-      end
-    end
-  end
-
-  describe 'show_early_access_program_banner?' do
-    using RSpec::Parameterized::TableSyntax
-    subject { helper.show_early_access_program_banner? }
-
-    where(:feature_enabled, :participant, :experiment_features_enabled, :expected_result) do
-      true  | false | true  | true
-      true  | false | false | false
-      true  | true  | true  | false
-      true  | true  | false | false
-      false | false | true  | false
-      false | false | false | false
-      false | true  | true  | false
-      false | true  | false | false
-    end
-
-    with_them do
-      before do
-        stub_feature_flags(early_access_program_toggle: feature_enabled)
-        current_user.user_preference.update!(early_access_program_participant: participant)
-        allow(group).to receive(:experiment_features_enabled).and_return(experiment_features_enabled)
-      end
-
-      it 'returns the expected result' do
-        expect(helper.show_early_access_program_banner?).to eq(expected_result)
       end
     end
   end
