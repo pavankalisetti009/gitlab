@@ -83,7 +83,11 @@ namespace :admin do
   # using `only: []` to keep duplicate routes from being created
   resource :application_settings, only: [] do
     get :seat_link_payload
-    match :templates, :search, :security_and_compliance, :namespace_storage, :analytics, via: [:get, :patch]
+    match :templates, via: [:get, :patch]
+    match :search, via: [:get, :patch]
+    match :security_and_compliance, via: [:get, :patch]
+    match :namespace_storage, via: [:get, :patch]
+    match :analytics, via: [:get, :patch]
     get :advanced_search, to: redirect('admin/application_settings/search')
     get :geo, to: "geo/settings#show"
     put :update_microsoft_application

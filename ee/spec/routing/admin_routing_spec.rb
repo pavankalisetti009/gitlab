@@ -107,6 +107,25 @@ RSpec.describe 'EE-specific admin routing' do
       expect(get('/admin/application_settings/search')).to route_to('admin/application_settings#search')
       expect(patch('/admin/application_settings/search')).to route_to('admin/application_settings#search')
     end
+
+    it 'redirects /security_and_compliance to #security_and_compliance' do
+      expect(get('/admin/application_settings/security_and_compliance'))
+        .to route_to('admin/application_settings#security_and_compliance')
+      expect(patch('/admin/application_settings/security_and_compliance'))
+        .to route_to('admin/application_settings#security_and_compliance')
+    end
+
+    it 'redirects /namespace_storage to #namespace_storage' do
+      expect(get('/admin/application_settings/namespace_storage'))
+        .to route_to('admin/application_settings#namespace_storage')
+      expect(patch('/admin/application_settings/namespace_storage'))
+        .to route_to('admin/application_settings#namespace_storage')
+    end
+
+    it 'redirects /analytics to #analytics' do
+      expect(get('/admin/application_settings/analytics')).to route_to('admin/application_settings#analytics')
+      expect(patch('/admin/application_settings/analytics')).to route_to('admin/application_settings#analytics')
+    end
   end
 
   describe Admin::ApplicationSettings::RolesAndPermissionsController, 'routing' do
