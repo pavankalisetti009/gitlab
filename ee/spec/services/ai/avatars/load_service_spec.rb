@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::Avatars::LoadService, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
 
-  let(:project) { build_stubbed(:project, group: build_stubbed(:group)) }
+  let(:project) { build_stubbed(:project) }
   let(:item) { build_stubbed(:ai_catalog_flow, project: project) }
 
   subject(:avatar) { described_class.new(item).execute }

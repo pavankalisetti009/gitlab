@@ -11,14 +11,6 @@ module Gitlab
       # Seed test data using GitLab Data Seeder
       # @param [String] seed_file the full-path of the seed file to load (.yml, .rb)
       def seed(owner, seed_file)
-        FactoryBot.define do
-          after(:create) do |resource|
-            Gitlab::DataSeeder::Logger.info(seeding: "#<#{resource.class.name}>")
-
-            print '.'
-          end
-        end
-
         case File.basename(seed_file)
         when /\.y(a)?ml(\.erb)?/
           Parsers::Yaml.new(seed_file, owner).parse
@@ -27,6 +19,13 @@ module Gitlab
         when /\.rb/
           Parsers::Ruby.new(seed_file, owner).parse
         end
+      end
+
+      # Log a resource created during seeding
+      # @param [ApplicationRecord] resource
+      def log_resource_creation(resource)
+        Gitlab::DataSeeder::Logger.info(seeding: "#<#{resource.class.name}>")
+        print '.'
       end
     end
 
@@ -96,9 +95,13 @@ module Gitlab
 
           factory.tap do |f|
             f.save
-            Gitlab::AppLogger.info(
-              "Created `#{@factory}` with traits `#{@traits}` and attributes `#{@attributes}` [ID: #{f.id}]"
-            )
+
+            if f.persisted?
+              Gitlab::DataSeeder.log_resource_creation(f)
+              Gitlab::AppLogger.info(
+                "Created `#{@factory}` with traits `#{@traits}` and attributes `#{@attributes}` [ID: #{f.id}]"
+              )
+            end
 
             parser_binding.local_variable_get(@factory.pluralize)[@id] = f if @id
           end
