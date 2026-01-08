@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton, GlExperimentBadge } from '@gitlab/ui';
+import { GlExperimentBadge } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -15,18 +15,15 @@ import {
   AI_CATALOG_TYPE_FLOW,
   TRACK_EVENT_TYPE_FLOW,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
-  VERSION_LATEST,
-  VERSION_PINNED,
   ENABLE_FLOW_MODAL_TEXTS,
-  VERSION_PINNED_GROUP,
 } from 'ee/ai/catalog/constants';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
+import VersionAlert from '../components/version_alert.vue';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
-import updateAiCatalogConfiguredItem from '../graphql/mutations/update_ai_catalog_item_consumer.mutation.graphql';
 import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogItemConsumer from '../graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -44,8 +41,7 @@ export default {
     PageHeading,
     AiCatalogItemActions,
     AiCatalogItemView,
-    GlAlert,
-    GlButton,
+    VersionAlert,
   },
   mixins: [InternalEvents.mixin()],
   inject: {
@@ -91,49 +87,13 @@ export default {
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
-    pinnedVersionKey() {
-      return this.isProjectNamespace ? VERSION_PINNED : VERSION_PINNED_GROUP;
-    },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
-    },
-    isReadyToUpdate() {
-      return this.version.activeVersionKey === VERSION_LATEST;
     },
     configuration() {
       return this.isProjectNamespace
         ? this.aiCatalogFlow.configurationForProject
         : this.aiCatalogFlow.configurationForGroup;
-    },
-    primaryButtonText() {
-      return this.isReadyToUpdate
-        ? sprintf(s__('AICatalog|Update to %{version}'), {
-            version: this.aiCatalogFlow.latestVersion.humanVersionName,
-          })
-        : s__('AICatalog|View latest version');
-    },
-    primaryButtonAction() {
-      const updateToVersion = this.aiCatalogFlow.latestVersion.versionName;
-      return this.isReadyToUpdate
-        ? () => this.updateFlowVersion(this.configuration, updateToVersion)
-        : () => this.version.setActiveVersionKey(VERSION_LATEST);
-    },
-    secondaryButtonText() {
-      return this.isReadyToUpdate ? s__('AICatalog|View enabled version') : null;
-    },
-    secondaryButtonAction() {
-      return this.isReadyToUpdate
-        ? () => this.version.setActiveVersionKey(this.pinnedVersionKey)
-        : null;
-    },
-    updateMessage() {
-      return this.groupId
-        ? s__(
-            "AICatalog|Updating a flow in this group does not update the flows enabled in this group's projects.",
-          )
-        : s__(
-            'AICatalog|Only this flow in this project will be updated. Other projects using this flow will not be affected.',
-          );
     },
   },
   mounted() {
@@ -142,6 +102,10 @@ export default {
     });
   },
   methods: {
+    setErrors({ title = null, errors = [] } = {}) {
+      this.errorTitle = title;
+      this.errors = errors;
+    },
     async addFlowToTarget({ target, triggerTypes }) {
       const input = {
         itemId: this.aiCatalogFlow.id,
@@ -166,8 +130,10 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = s__('AICatalog|Could not enable flow');
-            this.errors = errors;
+            this.setErrors({
+              title: s__('AICatalog|Could not enable flow'),
+              errors,
+            });
             return;
           }
 
@@ -195,61 +161,18 @@ export default {
           }
         }
       } catch (error) {
-        this.errors = [
-          prerequisitesError(
-            s__(
-              'AICatalog|Could not enable flow in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+        this.setErrors({
+          errors: [
+            prerequisitesError(
+              s__(
+                'AICatalog|Could not enable flow in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+              ),
+              {
+                target: targetTypeLabel,
+              },
             ),
-            {
-              target: targetTypeLabel,
-            },
-          ),
-        ];
-        Sentry.captureException(error);
-      }
-    },
-    async updateFlowVersion(target /* ItemConsumer */, pinnedVersionPrefix) {
-      if (!this.version.isUpdateAvailable) return;
-
-      const input = {
-        id: target.id,
-        pinnedVersionPrefix,
-      };
-
-      const targetType = target.groupId
-        ? AI_CATALOG_CONSUMER_TYPE_GROUP
-        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
-      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
-
-      try {
-        const { data } = await this.$apollo.mutate({
-          mutation: updateAiCatalogConfiguredItem,
-          variables: {
-            input,
-          },
-          refetchQueries: [aiCatalogFlowQuery],
+          ],
         });
-
-        if (data) {
-          const { errors } = data.aiCatalogItemConsumerUpdate;
-          if (errors.length > 0) {
-            this.errorTitle = s__('AICatalog|Could not update flow.');
-            this.errors = errors;
-            return;
-          }
-
-          const newVersion = data.aiCatalogItemConsumerUpdate.itemConsumer.pinnedVersionPrefix;
-          this.version.setActiveVersionKey(VERSION_PINNED); // reset for the next update
-          this.$toast.show(
-            sprintf(s__('AICatalog|Flow is now at version %{newVersion}.'), { newVersion }),
-          );
-        }
-      } catch (error) {
-        this.errors = [
-          prerequisitesError(s__('AICatalog|Could not update flow in the %{target}.'), {
-            target: targetTypeLabel,
-          }),
-        ];
         Sentry.captureException(error);
       }
     },
@@ -268,11 +191,13 @@ export default {
 
         const deleteResponse = data[config.responseKey];
         if (!deleteResponse.success) {
-          this.errors = [
-            sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
-              error: deleteResponse.errors?.[0],
-            }),
-          ];
+          this.setErrors({
+            errors: [
+              sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
+                error: deleteResponse.errors?.[0],
+              }),
+            ],
+          });
           return;
         }
 
@@ -281,7 +206,9 @@ export default {
           name: AI_CATALOG_FLOWS_ROUTE,
         });
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error })];
+        this.setErrors({
+          errors: [sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error })],
+        });
         Sentry.captureException(error);
       }
     },
@@ -296,17 +223,21 @@ export default {
         });
 
         if (!data.aiCatalogItemConsumerDelete.success) {
-          this.errors = [
-            sprintf(s__('AICatalog|Failed to disable flow. %{error}'), {
-              error: data.aiCatalogItemConsumerDelete.errors?.[0],
-            }),
-          ];
+          this.setErrors({
+            errors: [
+              sprintf(s__('AICatalog|Failed to disable flow. %{error}'), {
+                error: data.aiCatalogItemConsumerDelete.errors?.[0],
+              }),
+            ],
+          });
           return;
         }
 
         this.$toast.show(s__('AICatalog|Flow disabled in this project.'));
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to disable flow. %{error}'), { error })];
+        this.setErrors({
+          errors: [sprintf(s__('AICatalog|Failed to disable flow. %{error}'), { error })],
+        });
         Sentry.captureException(error);
       }
     },
@@ -324,19 +255,22 @@ export default {
         });
 
         if (data.aiCatalogItemReport.errors?.length > 0) {
-          this.errors = data.aiCatalogItemReport.errors;
+          this.setErrors({
+            errors: data.aiCatalogItemReport.errors,
+          });
           return;
         }
 
         this.$toast.show(s__('AICatalog|Report submitted successfully.'));
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to report flow. %{error}'), { error })];
+        this.setErrors({
+          errors: [sprintf(s__('AICatalog|Failed to report flow. %{error}'), { error })],
+        });
         Sentry.captureException(error);
       }
     },
     dismissErrors() {
-      this.errors = [];
-      this.errorTitle = null;
+      this.setErrors();
     },
   },
   itemRoutes: {
@@ -365,29 +299,14 @@ export default {
         </div>
       </template>
       <template v-if="version.isUpdateAvailable" #description>
-        <gl-alert
-          :dismissible="false"
-          :title="s__('AICatalog|A new version is available')"
+        <version-alert
+          :configuration="configuration"
+          :item-type="aiCatalogFlow.itemType"
+          :latest-version="aiCatalogFlow.latestVersion"
+          :version="version"
           class="gl-mt-4"
-        >
-          <div class="gl-my-3 gl-flex gl-flex-col gl-gap-4">
-            <span>{{ updateMessage }}</span>
-            <div class="gl-flex gl-w-min gl-flex-col gl-gap-4 @sm:gl-flex-row">
-              <gl-button
-                v-if="secondaryButtonText"
-                data-testid="flows-show-secondary-button"
-                @click="secondaryButtonAction"
-                >{{ secondaryButtonText }}</gl-button
-              >
-              <gl-button
-                variant="confirm"
-                data-testid="flows-show-primary-button"
-                @click="primaryButtonAction"
-                >{{ primaryButtonText }}</gl-button
-              >
-            </div>
-          </div>
-        </gl-alert>
+          @error="setErrors"
+        />
       </template>
       <template #actions>
         <ai-catalog-item-actions

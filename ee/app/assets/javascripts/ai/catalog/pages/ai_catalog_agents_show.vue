@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton, GlExperimentBadge } from '@gitlab/ui';
+import { GlExperimentBadge } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -15,18 +15,15 @@ import {
   AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG,
   TRACK_EVENT_TYPE_AGENT,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
-  VERSION_LATEST,
-  VERSION_PINNED,
   ENABLE_AGENT_MODAL_TEXTS,
-  VERSION_PINNED_GROUP,
 } from 'ee/ai/catalog/constants';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
+import VersionAlert from '../components/version_alert.vue';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
-import updateAiCatalogConfiguredItem from '../graphql/mutations/update_ai_catalog_item_consumer.mutation.graphql';
 import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogItemConsumer from '../graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -43,9 +40,8 @@ export default {
     PageHeading,
     AiCatalogItemActions,
     AiCatalogItemView,
-    GlAlert,
-    GlButton,
     GlExperimentBadge,
+    VersionAlert,
   },
   mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   inject: {
@@ -101,49 +97,13 @@ export default {
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
-    pinnedVersionKey() {
-      return this.isProjectNamespace ? VERSION_PINNED : VERSION_PINNED_GROUP;
-    },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
-    },
-    isReadyToUpdate() {
-      return this.version.activeVersionKey === VERSION_LATEST;
     },
     configuration() {
       return this.isProjectNamespace
         ? this.aiCatalogAgent.configurationForProject
         : this.aiCatalogAgent.configurationForGroup;
-    },
-    primaryButtonText() {
-      return this.isReadyToUpdate
-        ? sprintf(s__('AICatalog|Update to %{version}'), {
-            version: this.aiCatalogAgent.latestVersion.humanVersionName,
-          })
-        : s__('AICatalog|View latest version');
-    },
-    primaryButtonAction() {
-      const updateToVersion = this.aiCatalogAgent.latestVersion.versionName;
-      return this.isReadyToUpdate
-        ? () => this.updateAgentVersion(this.configuration, updateToVersion)
-        : () => this.version.setActiveVersionKey(VERSION_LATEST);
-    },
-    secondaryButtonText() {
-      return this.isReadyToUpdate ? s__('AICatalog|View enabled version') : null;
-    },
-    secondaryButtonAction() {
-      return this.isReadyToUpdate
-        ? () => this.version.setActiveVersionKey(this.pinnedVersionKey)
-        : null;
-    },
-    updateMessage() {
-      return this.groupId
-        ? s__(
-            "AICatalog|Updating an agent in this group does not update the agents enabled in this group's projects.",
-          )
-        : s__(
-            'AICatalog|Only this agent in this project will be updated. Other projects using this agent will not be affected.',
-          );
     },
   },
   mounted() {
@@ -152,6 +112,10 @@ export default {
     });
   },
   methods: {
+    setErrors({ title = null, errors = [] } = {}) {
+      this.errorTitle = title;
+      this.errors = errors;
+    },
     async addAgentToTarget({ target, triggerTypes }) {
       const input = {
         itemId: this.aiCatalogAgent.id,
@@ -176,8 +140,10 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = s__('AICatalog|Could not enable agent');
-            this.errors = errors;
+            this.setErrors({
+              title: s__('AICatalog|Could not enable agent'),
+              errors,
+            });
             return;
           }
           const targetData = data.aiCatalogItemConsumerCreate.itemConsumer[targetType];
@@ -204,61 +170,18 @@ export default {
           }
         }
       } catch (error) {
-        this.errors = [
-          prerequisitesError(
-            s__(
-              'AICatalog|Could not enable agent in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+        this.setErrors({
+          errors: [
+            prerequisitesError(
+              s__(
+                'AICatalog|Could not enable agent in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+              ),
+              {
+                target: targetTypeLabel,
+              },
             ),
-            {
-              target: targetTypeLabel,
-            },
-          ),
-        ];
-        Sentry.captureException(error);
-      }
-    },
-    async updateAgentVersion(target /* ItemConsumer */, pinnedVersionPrefix) {
-      if (!this.version.isUpdateAvailable) return;
-
-      const input = {
-        id: target.id,
-        pinnedVersionPrefix,
-      };
-
-      const targetType = target.groupId
-        ? AI_CATALOG_CONSUMER_TYPE_GROUP
-        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
-      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
-
-      try {
-        const { data } = await this.$apollo.mutate({
-          mutation: updateAiCatalogConfiguredItem,
-          variables: {
-            input,
-          },
-          refetchQueries: [aiCatalogAgentQuery],
+          ],
         });
-
-        if (data) {
-          const { errors } = data.aiCatalogItemConsumerUpdate;
-          if (errors.length > 0) {
-            this.errorTitle = s__('AICatalog|Could not update agent.');
-            this.errors = errors;
-            return;
-          }
-
-          const newVersion = data.aiCatalogItemConsumerUpdate.itemConsumer.pinnedVersionPrefix;
-          this.version.setActiveVersionKey(this.pinnedVersionKey); // reset for the next update
-          this.$toast.show(
-            sprintf(s__('AICatalog|Agent is now at version %{newVersion}.'), { newVersion }),
-          );
-        }
-      } catch (error) {
-        this.errors = [
-          prerequisitesError(s__('AICatalog|Could not update agent in the %{target}.'), {
-            target: targetTypeLabel,
-          }),
-        ];
         Sentry.captureException(error);
       }
     },
@@ -277,11 +200,13 @@ export default {
 
         const deleteResponse = data[config.responseKey];
         if (!deleteResponse.success) {
-          this.errors = [
-            sprintf(s__('AICatalog|Failed to delete agent. %{error}'), {
-              error: deleteResponse.errors?.[0],
-            }),
-          ];
+          this.setErrors({
+            errors: [
+              sprintf(s__('AICatalog|Failed to delete agent. %{error}'), {
+                error: deleteResponse.errors?.[0],
+              }),
+            ],
+          });
           return;
         }
 
@@ -290,7 +215,9 @@ export default {
           name: AI_CATALOG_AGENTS_ROUTE,
         });
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to delete agent. %{error}'), { error })];
+        this.setErrors({
+          errors: [sprintf(s__('AICatalog|Failed to delete agent. %{error}'), { error })],
+        });
         Sentry.captureException(error);
       }
     },
@@ -305,17 +232,21 @@ export default {
         });
 
         if (!data.aiCatalogItemConsumerDelete.success) {
-          this.errors = [
-            sprintf(s__('AICatalog|Failed to disable agent. %{error}'), {
-              error: data.aiCatalogItemConsumerDelete.errors?.[0],
-            }),
-          ];
+          this.setErrors({
+            errors: [
+              sprintf(s__('AICatalog|Failed to disable agent. %{error}'), {
+                error: data.aiCatalogItemConsumerDelete.errors?.[0],
+              }),
+            ],
+          });
           return;
         }
 
         this.$toast.show(s__('AICatalog|Agent disabled in this project.'));
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to disable agent. %{error}'), { error })];
+        this.setErrors({
+          errors: [sprintf(s__('AICatalog|Failed to disable agent. %{error}'), { error })],
+        });
         Sentry.captureException(error);
       }
     },
@@ -333,19 +264,22 @@ export default {
         });
 
         if (data.aiCatalogItemReport.errors?.length > 0) {
-          this.errors = data.aiCatalogItemReport.errors;
+          this.setErrors({
+            errors: data.aiCatalogItemReport.errors,
+          });
           return;
         }
 
         this.$toast.show(s__('AICatalog|Report submitted successfully.'));
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to report agent. %{error}'), { error })];
+        this.setErrors({
+          errors: [sprintf(s__('AICatalog|Failed to report agent. %{error}'), { error })],
+        });
         Sentry.captureException(error);
       }
     },
     dismissErrors() {
-      this.errors = [];
-      this.errorTitle = null;
+      this.setErrors();
     },
   },
   itemRoutes: {
@@ -374,29 +308,14 @@ export default {
         </div>
       </template>
       <template v-if="version.isUpdateAvailable" #description>
-        <gl-alert
-          :dismissible="false"
-          :title="s__('AICatalog|A new version is available')"
+        <version-alert
+          :configuration="configuration"
+          :item-type="aiCatalogAgent.itemType"
+          :latest-version="aiCatalogAgent.latestVersion"
+          :version="version"
           class="gl-mt-4"
-        >
-          <div class="gl-my-3 gl-flex gl-flex-col gl-gap-4">
-            <span>{{ updateMessage }}</span>
-            <div class="gl-flex gl-w-min gl-flex-col gl-gap-4 @sm:gl-flex-row">
-              <gl-button
-                v-if="secondaryButtonText"
-                data-testid="agents-show-secondary-button"
-                @click="secondaryButtonAction"
-                >{{ secondaryButtonText }}</gl-button
-              >
-              <gl-button
-                variant="confirm"
-                data-testid="agents-show-primary-button"
-                @click="primaryButtonAction"
-                >{{ primaryButtonText }}</gl-button
-              >
-            </div>
-          </div>
-        </gl-alert>
+          @error="setErrors"
+        />
       </template>
       <template #actions>
         <ai-catalog-item-actions
