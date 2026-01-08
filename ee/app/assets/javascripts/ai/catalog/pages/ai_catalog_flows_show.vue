@@ -95,6 +95,11 @@ export default {
     isReadyToUpdate() {
       return this.version.activeVersionKey === VERSION_LATEST;
     },
+    configuration() {
+      return this.isProjectNamespace
+        ? this.aiCatalogFlow.configurationForProject
+        : this.aiCatalogFlow.configurationForGroup;
+    },
     primaryButtonText() {
       return this.isReadyToUpdate
         ? sprintf(s__('AICatalog|Update to %{version}'), {
@@ -103,12 +108,9 @@ export default {
         : s__('AICatalog|View latest version');
     },
     primaryButtonAction() {
-      const target = this.isProjectNamespace
-        ? this.aiCatalogFlow.configurationForProject
-        : this.aiCatalogFlow.configurationForGroup;
       const updateToVersion = this.aiCatalogFlow.latestVersion.versionName;
       return this.isReadyToUpdate
-        ? () => this.updateFlowVersion(target, updateToVersion)
+        ? () => this.updateFlowVersion(this.configuration, updateToVersion)
         : () => this.version.setActiveVersionKey(VERSION_LATEST);
     },
     secondaryButtonText() {
@@ -279,13 +281,11 @@ export default {
       }
     },
     async disableFlow() {
-      const { id } = this.aiCatalogFlow.configurationForProject;
-
       try {
         const { data } = await this.$apollo.mutate({
           mutation: deleteAiCatalogItemConsumer,
           variables: {
-            id,
+            id: this.configuration.id,
           },
           refetchQueries: [aiCatalogFlowQuery],
         });
