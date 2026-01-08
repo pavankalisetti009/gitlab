@@ -41,9 +41,8 @@ RSpec.describe 'merge requests creations', feature_category: :code_review_workfl
         let(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
 
         before do
-          authorization = instance_double(::Ai::CodeReviewAuthorization)
-          allow(authorization).to receive(:allowed?).with(user).and_return(has_duo_access)
-          allow(::Ai::CodeReviewAuthorization).to receive(:new).and_return(authorization)
+          allow(Ai::DuoCodeReview).to receive(:enabled?).with(user: user, container: project).and_return(has_duo_access)
+
           project.project_setting.update_attribute(:auto_duo_code_review_enabled, true)
           project.project_setting.update!(duo_features_enabled: true)
         end

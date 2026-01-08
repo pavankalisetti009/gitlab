@@ -72,6 +72,12 @@ RSpec.describe Ai::DuoCodeReview::Modes::Dap, feature_category: :code_suggestion
       end
     end
 
+    context 'when no user in the context' do
+      let(:user) { nil }
+
+      include_examples 'not active'
+    end
+
     context 'when Duo features are disabled' do
       let(:duo_features_enabled) { false }
 

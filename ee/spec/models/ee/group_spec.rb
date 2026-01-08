@@ -4388,8 +4388,8 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     let_it_be(:group) { create(:group) }
     let_it_be(:current_user) { create(:user) }
 
-    it 'delegates to Ai::CodeReviewAuthorization' do
-      expect(Ai::CodeReviewAuthorization).to receive(:new).with(group).and_call_original
+    it 'delegates to Ai::DuoCodeReview' do
+      expect(Ai::DuoCodeReview).to receive(:enabled?).with(user: current_user, container: group).and_call_original
 
       group.ai_review_merge_request_allowed?(current_user)
     end

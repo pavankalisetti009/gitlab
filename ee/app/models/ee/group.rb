@@ -319,7 +319,7 @@ module EE
     end
 
     def ai_review_merge_request_allowed?(user)
-      ::Ai::CodeReviewAuthorization.new(self).allowed?(user)
+      ::Ai::DuoCodeReview.enabled?(user: user, container: self)
     end
 
     def project_epics_enabled?

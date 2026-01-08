@@ -13,6 +13,7 @@ module Ai
         end
 
         def active?
+          return false unless user
           return false unless container.duo_features_enabled
 
           # For Duo Enterprise: use duo agent platform only for internal GitLab users if feature flag is enabled

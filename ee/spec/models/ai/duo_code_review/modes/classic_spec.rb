@@ -57,6 +57,12 @@ RSpec.describe Ai::DuoCodeReview::Modes::Classic, feature_category: :code_sugges
       end
     end
 
+    context 'when no user in the context' do
+      let(:user) { nil }
+
+      include_examples 'not active'
+    end
+
     context 'when user has access_ai_review_mr ability and feature authorizer allows' do
       include_examples 'active'
     end
