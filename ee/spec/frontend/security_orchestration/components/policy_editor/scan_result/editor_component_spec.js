@@ -970,6 +970,20 @@ describe('EditorComponent', () => {
           }
         });
       });
+
+      it.each`
+        title                                         | policy                                                | expected
+        ${'shows the correct text for enforced mode'} | ${settingsPolicy}                                     | ${"For any merge request that matches this policy's rules, no action is applied. This policy overrides the project approval settings and notifies users with a bot message, which means that no approvals are required."}
+        ${'shows the correct text for warn mode'}     | ${{ ...settingsPolicy, enforcement_type: WARN_TYPE }} | ${"For any merge request that matches this policy's rules, no action is applied. Users are warned about project approval settings that could have been overridden, if the policy were enforced rather than in warn mode, through a bot message. No additional approvals are required."}
+      `('$title', ({ policy, expected }) => {
+        factoryWithExistingPolicy({
+          policy,
+          hasActions: false,
+          hasRules: false,
+          provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
+        });
+        expect(findEmptyActionsAlert().text()).toBe(expected);
+      });
     });
 
     describe('linked groups', () => {

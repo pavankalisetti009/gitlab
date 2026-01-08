@@ -84,8 +84,8 @@ export default {
     settingWarningTitle: s__(
       'SecurityOrchestration|Only overriding settings and bot message will take effect',
     ),
-    settingWarningDescription: s__(
-      "SecurityOrchestration|For any MR that matches this policy's rules, only the override project approval settings apply and bot message enabled. No additional approvals are required.",
+    enforcedSettingWarningDescription: s__(
+      "SecurityOrchestration|For any merge request that matches this policy's rules, no action is applied. This policy overrides the project approval settings and notifies users with a bot message, which means that no approvals are required.",
     ),
     settingErrorTitle: s__('SecurityOrchestration|Cannot create an empty policy'),
     settingErrorDescription: s__(
@@ -93,6 +93,9 @@ export default {
     ),
     exceedingRulesMessage: s__(
       'SecurityOrchestration|You can add a maximum of %{rulesCount} %{rules}.',
+    ),
+    warnSettingWarningDescription: s__(
+      "SecurityOrchestration|For any merge request that matches this policy's rules, no action is applied. Users are warned about project approval settings that could have been overridden, if the policy were enforced rather than in warn mode, through a bot message. No additional approvals are required.",
     ),
   },
   components: {
@@ -360,7 +363,9 @@ export default {
       return {
         variant: 'warning',
         title: this.$options.i18n.settingWarningTitle,
-        description: this.$options.i18n.settingWarningDescription,
+        description: this.isWarnMode
+          ? this.$options.i18n.warnSettingWarningDescription
+          : this.$options.i18n.enforcedSettingWarningDescription,
       };
     },
   },

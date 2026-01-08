@@ -142,7 +142,7 @@ export const invalidVulnerabilityAttributes = (rules) => {
     });
 };
 
-export const invalidWarnModeRules = (rules, enforcementType) => {
+export const invalidWarnModeRules = (rules = [], enforcementType) => {
   if (gon?.features?.securityPolicyWarnModeLicenseScanning) {
     return false;
   }
