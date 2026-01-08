@@ -131,6 +131,7 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
     let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let_it_be(:group) { create(:group) }
     let_it_be(:project_in_group) { create(:project, group: group) }
+    let_it_be(:code_review_foundational_flow) { create(:ai_catalog_item, :with_foundational_flow_reference) }
 
     context 'when project has auto_duo_code_review_settings available' do
       context 'on SaaS', :saas do
@@ -151,6 +152,14 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
               duo_features_enabled: true,
               duo_foundational_flows_enabled: true
             )
+            allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
+              .with('code_review/v1')
+              .and_return(
+                instance_double(::Ai::Catalog::FoundationalFlow,
+                  catalog_item: code_review_foundational_flow)
+              )
+            create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: group,
+              catalog_item: code_review_foundational_flow)
             allow(::Gitlab::Llm::StageCheck).to receive(:available?)
               .with(project_in_group, :duo_workflow).and_return(true)
             create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: add_on)
@@ -201,6 +210,30 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
         end
       end
 
+      context 'with add-on but code_review flow is not enabled', :saas do
+        let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
+
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
+          allow(project_in_group).to receive_messages(
+            duo_features_enabled: true,
+            duo_foundational_flows_enabled: true
+          )
+          allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
+            .with('code_review/v1')
+            .and_return(
+              instance_double(::Ai::Catalog::FoundationalFlow, catalog_item: code_review_foundational_flow)
+            )
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+            .with(project_in_group, :duo_workflow).and_return(true)
+          create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_core_add_on)
+        end
+
+        it 'returns nil because code_review flow is not enabled' do
+          expect(entity_subject[:auto_duo_code_review_enabled]).to be_nil
+        end
+      end
+
       context 'with add-on but StageCheck returns false', :saas do
         let(:entity_subject) { ::API::Entities::Project.new(project_in_group, {}).as_json }
 
@@ -210,6 +243,13 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
             duo_features_enabled: true,
             duo_foundational_flows_enabled: true
           )
+          allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
+            .with('code_review/v1')
+            .and_return(
+              instance_double(::Ai::Catalog::FoundationalFlow, catalog_item: code_review_foundational_flow)
+            )
+          create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: group,
+            catalog_item: code_review_foundational_flow)
           allow(::Gitlab::Llm::StageCheck).to receive(:available?)
             .with(project_in_group, :duo_workflow).and_return(false)
           create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_core_add_on)

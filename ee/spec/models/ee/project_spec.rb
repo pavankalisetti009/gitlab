@@ -5360,6 +5360,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     let_it_be(:project) { create(:project, group: namespace) }
     let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+    let_it_be(:code_review_foundational_flow) { create(:ai_catalog_item, :with_foundational_flow_reference) }
 
     subject { project.auto_duo_code_review_settings_available? }
 
@@ -5385,6 +5386,11 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       context 'on SaaS', :saas do
         before do
           stub_ee_application_setting(should_check_namespace_plan: true)
+          allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
+            .with('code_review/v1')
+            .and_return(
+              instance_double(::Ai::Catalog::FoundationalFlow, catalog_item: code_review_foundational_flow)
+            )
         end
 
         context 'when duo_foundational_flows_enabled is false' do
@@ -5398,15 +5404,27 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           end
         end
 
+        context 'when code_review workflow definition is nil' do
+          before do
+            allow(project).to receive(:duo_foundational_flows_enabled).and_return(true)
+            allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
+              .with('code_review/v1')
+              .and_return(nil)
+            create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_core_add_on)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+
         context 'when duo_foundational_flows_enabled is true' do
           before do
             allow(project).to receive(:duo_foundational_flows_enabled).and_return(true)
           end
 
-          context 'when StageCheck returns false' do
+          context 'when code_review flow is not enabled' do
             before do
               allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-                .with(project, :duo_workflow).and_return(false)
+                .with(project, :duo_workflow).and_return(true)
               create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_core_add_on)
             end
 
@@ -5415,37 +5433,55 @@ RSpec.describe Project, feature_category: :groups_and_projects do
             end
           end
 
-          context 'when StageCheck returns true' do
-            where(:add_on_type, :add_on) do
-              [
-                ['duo_core',       ref(:duo_core_add_on)],
-                ['duo_pro',        lazy { create(:gitlab_subscription_add_on, :duo_pro) }],
-                ['duo_enterprise', ref(:duo_enterprise_add_on)]
-              ]
-            end
-
-            with_them do
-              before do
-                create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on)
-                allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-                  .with(project, :duo_workflow).and_return(true)
-              end
-
-              it "returns true for #{params[:add_on_type]}" do
-                expect(subject).to be_truthy
-              end
-            end
-          end
-
-          context 'when duo_foundational_flows_enabled differs between namespace and project' do
+          context 'when code_review flow is enabled' do
             before do
-              namespace.namespace_settings.update!(duo_foundational_flows_enabled: true)
-              allow(project).to receive(:duo_foundational_flows_enabled).and_return(false)
-              create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_core_add_on)
+              create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: code_review_foundational_flow)
             end
 
-            it 'returns false because project setting is used' do
-              expect(subject).to be_falsey
+            context 'when StageCheck returns false' do
+              before do
+                allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                  .with(project, :duo_workflow).and_return(false)
+                create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_core_add_on)
+              end
+
+              it 'returns false with duo_core add-on' do
+                expect(subject).to be_falsey
+              end
+            end
+
+            context 'when StageCheck returns true' do
+              where(:add_on_type, :add_on) do
+                [
+                  ['duo_core',       ref(:duo_core_add_on)],
+                  ['duo_pro',        lazy { create(:gitlab_subscription_add_on, :duo_pro) }],
+                  ['duo_enterprise', ref(:duo_enterprise_add_on)]
+                ]
+              end
+
+              with_them do
+                before do
+                  create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on)
+                  allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                    .with(project, :duo_workflow).and_return(true)
+                end
+
+                it "returns true for #{params[:add_on_type]}" do
+                  expect(subject).to be_truthy
+                end
+              end
+            end
+
+            context 'when duo_foundational_flows_enabled differs between namespace and project' do
+              before do
+                namespace.namespace_settings.update!(duo_foundational_flows_enabled: true)
+                allow(project).to receive(:duo_foundational_flows_enabled).and_return(false)
+                create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_core_add_on)
+              end
+
+              it 'returns false because project setting is used' do
+                expect(subject).to be_falsey
+              end
             end
           end
         end

@@ -36,6 +36,11 @@ module Ai
         def duo_agent_platform_configured?
           return false unless resource.duo_foundational_flows_enabled
 
+          workflow_definition = ::Ai::Catalog::FoundationalFlow['code_review/v1']
+          return false unless resource.enabled_flow_catalog_item_ids.include?(
+            workflow_definition&.catalog_item&.id
+          )
+
           feature_setting = selected_feature_setting
 
           # SaaS customers always have DWS available

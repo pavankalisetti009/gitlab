@@ -252,6 +252,7 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
 
             context 'with DAP flow (Duo Core/Pro or Duo Enterprise with internal flag)' do
               let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+              let_it_be(:code_review_foundational_flow) { create(:ai_catalog_item, :with_foundational_flow_reference) }
 
               before do
                 project.project_setting.update!(duo_features_enabled: true, duo_foundational_flows_enabled: true)
@@ -259,6 +260,15 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
                 allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
                 allow(::Gitlab::Llm::StageCheck).to receive(:available?)
                   .with(merge_request.project, :duo_workflow).and_return(true)
+                allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
+                  .with('code_review/v1')
+                  .and_return(
+                    instance_double(
+                      ::Ai::Catalog::FoundationalFlow, catalog_item: code_review_foundational_flow
+                    )
+                  )
+                create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: project.root_ancestor,
+                  catalog_item: code_review_foundational_flow)
                 allow(Ability).to receive(:allowed?).and_call_original
                 allow(Ability).to receive(:allowed?).with(current_user, :create_note, merge_request).and_return(true)
               end
