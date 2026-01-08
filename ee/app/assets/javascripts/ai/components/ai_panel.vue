@@ -290,6 +290,7 @@ export default {
       :chat-disabled-reason="chatDisabledReason"
       :project-id="projectId"
       :namespace-id="namespaceId"
+      :is-agentic-mode="isAgenticMode"
       @handleTabToggle="handleTabToggle"
       @new-chat="handleNewChat"
       @newChatError="handleNewChatError"
