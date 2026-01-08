@@ -7,6 +7,7 @@ module API
 
     feature_category :code_suggestions
 
+    MAX_CONTEXT_TYPE_SIZE = 255
     # a limit used for overall body size when forwarding request to ai-assist
     MAX_BODY_SIZE = 600_000
     MAX_CONTENT_SIZE = 400_000
@@ -158,9 +159,9 @@ module API
             requires :type, type: String,
               values: ::Ai::AdditionalContext::CODE_SUGGESTIONS_CONTEXT_TYPES.values,
               desc: 'The type of a related part of context'
-            requires :name, type: String, limit: ::Ai::AdditionalContext::MAX_CONTEXT_TYPE_SIZE, allow_blank: false,
+            requires :name, type: String, limit: MAX_CONTEXT_TYPE_SIZE, allow_blank: false,
               desc: 'The name of a related part of context'
-            requires :content, type: String, limit: ::Ai::AdditionalContext::MAX_BODY_SIZE, allow_blank: false,
+            requires :content, type: String, limit: MAX_BODY_SIZE, allow_blank: false,
               desc: 'The content of a part of context'
           end
         end
