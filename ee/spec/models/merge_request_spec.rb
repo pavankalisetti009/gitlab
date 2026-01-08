@@ -3516,11 +3516,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     subject(:ai_review_merge_request_allowed?) { merge_request.ai_review_merge_request_allowed?(current_user) }
 
-    it 'delegates to Ai::CodeReviewAuthorization and checks create_note ability' do
-      authorization = instance_double(Ai::CodeReviewAuthorization, allowed?: true)
-
-      expect(Ai::CodeReviewAuthorization).to receive(:new).with(merge_request).and_return(authorization)
-      expect(authorization).to receive(:allowed?).with(current_user).and_return(true)
+    it 'delegates to Ai::DuoCodeReview and checks create_note ability' do
+      expect(Ai::DuoCodeReview).to receive(:enabled?).with(user: current_user, container: project).and_return(true)
       expect(Ability).to receive(:allowed?).with(current_user, :create_note, merge_request).and_return(true)
 
       expect(ai_review_merge_request_allowed?).to be(true)
@@ -3529,9 +3526,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     context 'when user cannot create note' do
       let(:current_user) { create(:user, guest_of: project) }
 
-      it 'returns false even if CodeReviewAuthorization allows' do
-        authorization = instance_double(Ai::CodeReviewAuthorization, allowed?: true)
-        allow(Ai::CodeReviewAuthorization).to receive(:new).and_return(authorization)
+      it 'returns false even if Duo Code Review is enabled' do
+        allow(Ai::DuoCodeReview).to receive(:enabled?).and_return(true)
 
         expect(ai_review_merge_request_allowed?).to be(false)
       end

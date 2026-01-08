@@ -13,6 +13,8 @@ module Ai
         end
 
         def active?
+          return false unless user
+
           Ability.allowed?(user, :access_ai_review_mr, container) &&
             ::Gitlab::Llm::FeatureAuthorizer.new(
               container: container,

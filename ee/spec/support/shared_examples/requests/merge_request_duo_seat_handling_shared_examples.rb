@@ -4,9 +4,9 @@ RSpec.shared_examples 'handle quickactions without Duo access' do
   let(:duo_bot) { ::Users::Internal.duo_code_review_bot }
 
   before do
-    authorization = instance_double(::Ai::CodeReviewAuthorization)
-    allow(authorization).to receive(:allowed?).with(user).and_return(has_duo_access)
-    allow(::Ai::CodeReviewAuthorization).to receive(:new).and_return(authorization)
+    allow(Ai::DuoCodeReview).to receive(:enabled?)
+      .with(user: user, container: project)
+      .and_return(has_duo_access)
   end
 
   context 'when using /assign_reviewer with Duo bot' do
