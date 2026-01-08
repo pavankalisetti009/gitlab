@@ -43,6 +43,10 @@ module Ai
       def update_options!(new_options)
         update!(options: options.merge(new_options))
       end
+
+      def name_without_prefix
+        connection.adapter.collection_name_without_prefix(name)
+      end
     end
   end
 end

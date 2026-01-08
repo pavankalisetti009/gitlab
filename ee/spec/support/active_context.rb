@@ -11,8 +11,7 @@ RSpec.configure do |config|
   end
 
   config.around(:each, :active_context) do |example|
-    # Clear adapter cache before each example to ensure correct connection is used.
-    ActiveContext::Adapter.instance_variable_set(:@current, nil)
+    ::ActiveContext::Adapter.reset
 
     skip_if_adapter_mismatch(example)
 

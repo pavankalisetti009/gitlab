@@ -143,6 +143,29 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
     end
   end
 
+  describe '#adapter' do
+    let_it_be(:connection) { create(:ai_active_context_connection) }
+    let(:mock_adapter) { instance_double(::ActiveContext::Databases::Elasticsearch::Adapter) }
+
+    before do
+      allow(::ActiveContext::Adapter).to receive(:for_connection).and_return(mock_adapter)
+    end
+
+    it 'returns the adapter for the connection' do
+      expect(connection.adapter).to eq(mock_adapter)
+    end
+
+    context 'when adapter is not available' do
+      before do
+        allow(::ActiveContext::Adapter).to receive(:for_connection).and_return(nil)
+      end
+
+      it 'returns nil' do
+        expect(connection.adapter).to be_nil
+      end
+    end
+  end
+
   describe '#activate!' do
     let!(:active_connection) { create(:ai_active_context_connection) }
     let!(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
@@ -194,6 +217,52 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
 
       it 'deactivates the connection' do
         expect { connection.deactivate! }.to change { connection.reload.active }.from(true).to(false)
+      end
+    end
+  end
+
+  describe '#reload_adapter' do
+    let(:connection) { create(:ai_active_context_connection) }
+
+    it 'clears the cached adapter instance' do
+      mock_adapter = instance_double(::ActiveContext::Databases::Elasticsearch::Adapter)
+      ::ActiveContext::Adapter.instance_variable_set(:@current, mock_adapter)
+
+      expect(::ActiveContext::Adapter.instance_variable_get(:@current)).to eq(mock_adapter)
+
+      connection.reload_adapter
+
+      expect(::ActiveContext::Adapter.instance_variable_get(:@current)).to be_nil
+    end
+
+    context 'when called as an after_save callback' do
+      it 'clears the adapter cache after saving' do
+        mock_adapter = instance_double(::ActiveContext::Databases::Elasticsearch::Adapter)
+        ::ActiveContext::Adapter.instance_variable_set(:@current, mock_adapter)
+
+        connection.update!(name: 'updated_name')
+
+        expect(::ActiveContext::Adapter.instance_variable_get(:@current)).to be_nil
+      end
+    end
+
+    context 'when a new connection is activated' do
+      let_it_be(:old_connection) { create(:ai_active_context_connection) }
+      let_it_be(:new_connection) { create(:ai_active_context_connection, :inactive) }
+      let(:old_adapter) { instance_double(::ActiveContext::Databases::Elasticsearch::Adapter) }
+      let(:new_adapter) { instance_double(::ActiveContext::Databases::Elasticsearch::Adapter) }
+
+      before do
+        allow(::ActiveContext::Adapter).to receive(:for_connection).with(old_connection).and_return(old_adapter)
+        allow(::ActiveContext::Adapter).to receive(:for_connection).with(new_connection).and_return(new_adapter)
+      end
+
+      it 'updates the adapter when the active connection changes' do
+        expect(::ActiveContext.adapter).to eq(old_adapter)
+
+        new_connection.activate!
+
+        expect(::ActiveContext.adapter).to eq(new_adapter)
       end
     end
   end
