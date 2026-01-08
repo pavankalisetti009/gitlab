@@ -72,8 +72,15 @@ module Gitlab
           end
 
           def verify_usage_quota(
-            user_id: nil, root_namespace_id: nil, unique_instance_id: nil,
-            realm: ::CloudConnector.gitlab_realm)
+            event_type,
+            metadata,
+            user_id: nil,
+            root_namespace_id: nil,
+            unique_instance_id: nil,
+            realm: ::CloudConnector.gitlab_realm
+          )
+            raise ArgumentError, "event_type cannot be nil" if event_type.nil?
+            raise ArgumentError, "metadata for the target feature cannot be nil" if metadata.nil?
             raise ArgumentError, "user_id is required" if user_id.blank?
             raise ArgumentError, "realm is required" if realm.blank?
 
@@ -82,11 +89,14 @@ module Gitlab
             end
 
             query = {
+              event_type: event_type,
               user_id: user_id,
               root_namespace_id: root_namespace_id,
               unique_instance_id: unique_instance_id,
               instance_id: unique_instance_id,
-              realm: realm
+              realm: realm,
+              feature_qualified_name: metadata.feature_qualified_name,
+              feature_ai_catalog_item: metadata.feature_ai_catalog_item
             }.compact
 
             return verify_usage_quota_request(query) if use_mock_usage_quota_endpoint?
