@@ -29,7 +29,7 @@ describe('ProjectModal Component', () => {
   const findModal = () => wrapper.findComponent(GlModal);
 
   const selectProject = async ({ project = sampleProject, shouldSubmit = true } = {}) => {
-    findSppSelector().vm.$emit('projectClicked', project);
+    findSppSelector().vm.$emit('project-clicked', project);
     await waitForPromises();
 
     if (shouldSubmit) {
@@ -172,7 +172,7 @@ describe('ProjectModal Component', () => {
 
       expect(findModal().attributes('ok-disabled')).toBe('true');
 
-      findSppSelector().vm.$emit('projectClicked', {
+      findSppSelector().vm.$emit('project-clicked', {
         id: 'gid://gitlab/Project/1',
         name: 'Test 1',
       });

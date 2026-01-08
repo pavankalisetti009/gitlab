@@ -196,13 +196,13 @@ describe('SppSelector Component', () => {
       });
     });
 
-    it('emits on "projectClicked"', async () => {
+    it('emits on "project-clicked"', async () => {
       findListbox().vm.$emit('search', 'Pages');
       await waitForPromises();
 
       const project = { id: 'gid://gitlab/Project/5000162' };
       findListbox().vm.$emit('select', project.id);
-      expect(wrapper.emitted('projectClicked')).toStrictEqual([
+      expect(wrapper.emitted('project-clicked')).toStrictEqual([
         [
           mockGetProjectSpp().success.data[NAMESPACE_TYPES.PROJECT].securityPolicyProjectSuggestions
             .nodes[0],
@@ -227,13 +227,13 @@ describe('SppSelector Component', () => {
       expect(querySpy).toHaveBeenCalledWith(defaultQueryVariables);
     });
 
-    it('emits on "projectClicked"', async () => {
+    it('emits on "project-clicked"', async () => {
       findListbox().vm.$emit('search', 'Pages');
       await waitForPromises();
 
       const project = { id: 'gid://gitlab/Project/5000162' };
       findListbox().vm.$emit('select', project.id);
-      expect(wrapper.emitted('projectClicked')).toStrictEqual([
+      expect(wrapper.emitted('project-clicked')).toStrictEqual([
         [
           mockGetProjectSpp(NAMESPACE_TYPES.GROUP).success.data[NAMESPACE_TYPES.GROUP]
             .securityPolicyProjectSuggestions.nodes[0],

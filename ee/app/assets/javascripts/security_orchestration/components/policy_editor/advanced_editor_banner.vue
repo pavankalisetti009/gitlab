@@ -36,6 +36,7 @@ export default {
 
 <template>
   <local-storage-sync v-model="alertDismissed" :storage-key="$options.BANNER_STORAGE_KEY">
+    <!-- eslint-disable vue/v-on-event-hyphenation -->
     <gl-alert
       v-if="!alertDismissed"
       :secondary-button-text="$options.i18n.secondaryButtonText"
@@ -43,6 +44,7 @@ export default {
       @dismiss="dismissBanner"
       @secondaryAction="dismissBanner"
     >
+      <!-- eslint-enable vue/v-on-event-hyphenation -->
       <gl-sprintf :message="$options.i18n.bannerContent">
         <template #bold="{ content }">
           <strong>{{ content }}</strong>
