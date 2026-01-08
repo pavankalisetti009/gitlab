@@ -1233,6 +1233,7 @@ RSpec.describe Issue, feature_category: :team_planning do
       expect(ticket.issue_type_supports?(:epics)).to be(true)
       expect(test_case.issue_type_supports?(:epics)).to be(false)
       expect(incident.issue_type_supports?(:epics)).to be(false)
+      expect(ticket.issue_type_supports?(:time_tracking)).to be(true)
     end
   end
 
