@@ -21,12 +21,7 @@ module Security
       return unless pipeline.project.licensed_feature_available?(:security_dashboard)
 
       root_namespace = pipeline.project.root_namespace
-
-      if Feature.enabled?(:analyzer_status_update_worker_lock, root_namespace)
-        perform_with_lock(pipeline, root_namespace.id)
-      else
-        perform_without_lock(pipeline)
-      end
+      perform_with_lock(pipeline, root_namespace.id)
     end
 
     private
@@ -37,10 +32,6 @@ module Security
       end
     rescue Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError
       self.class.perform_in(RETRY_IN_IF_LOCKED, pipeline.id)
-    end
-
-    def perform_without_lock(pipeline)
-      AnalyzersStatus::UpdateService.new(pipeline).execute
     end
 
     def lease_key(root_namespace_id)
