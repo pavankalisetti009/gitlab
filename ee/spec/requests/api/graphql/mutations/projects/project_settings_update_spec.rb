@@ -50,7 +50,7 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
       stub_saas_features(duo_chat_on_saas: true)
     end
 
-    it 'will update the settings' do
+    it 'updates the settings' do
       expect { post_graphql_mutation(mutation, current_user: user) }
         .to change {
               [
@@ -71,7 +71,7 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
     context 'when updating duo_context_exclusion_settings' do
       let(:duo_context_exclusion_settings) { { "exclusion_rules" => ['*.txt', 'node_modules/'] } }
 
-      it 'will update the duo context exclusion settings' do
+      it 'updates the duo context exclusion settings' do
         expect { post_graphql_mutation(mutation, current_user: user) }
           .to change { project.project_setting.reload.duo_context_exclusion_settings }
           .from({}).to(duo_context_exclusion_settings)

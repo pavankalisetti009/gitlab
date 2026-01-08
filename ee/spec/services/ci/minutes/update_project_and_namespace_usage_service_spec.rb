@@ -51,7 +51,7 @@ RSpec.describe Ci::Minutes::UpdateProjectAndNamespaceUsageService, feature_categ
         let(:project) { double(id: non_existing_record_id) }
         let(:namespace) { create(:namespace) }
 
-        it 'will complete successfully and increment the usage' do
+        it 'completes successfully and increment the usage' do
           subject
 
           expect(Ci::Minutes::ProjectMonthlyUsage.find_by_project_id(project.id)).to be_nil
@@ -62,7 +62,7 @@ RSpec.describe Ci::Minutes::UpdateProjectAndNamespaceUsageService, feature_categ
       context 'when namespace deleted' do
         let(:namespace) { double(id: non_existing_record_id) }
 
-        it 'will complete successfully' do
+        it 'completes successfully' do
           subject
 
           expect(Ci::Minutes::ProjectMonthlyUsage.find_by_project_id(project.id).amount_used).to eq(consumption_minutes)
@@ -74,7 +74,7 @@ RSpec.describe Ci::Minutes::UpdateProjectAndNamespaceUsageService, feature_categ
         let(:project) { double(id: non_existing_record_id) }
         let(:namespace) { double(id: non_existing_record_id) }
 
-        it 'will complete successfully' do
+        it 'completes successfully' do
           subject
 
           expect(Ci::Minutes::ProjectMonthlyUsage.find_by_project_id(project.id)).to be_nil

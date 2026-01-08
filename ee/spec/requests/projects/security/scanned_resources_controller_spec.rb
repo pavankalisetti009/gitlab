@@ -30,7 +30,7 @@ RSpec.describe Projects::Security::ScannedResourcesController, type: :request, f
     end
 
     shared_examples 'returns a 404' do
-      it 'will return a 404' do
+      it 'returns a 404' do
         subject
 
         expect(response).to have_gitlab_http_status(:not_found)

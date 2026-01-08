@@ -81,7 +81,7 @@ RSpec.describe 'Query.project(fullPath)', feature_category: :product_analytics d
     end
 
     shared_examples_for 'queries state successfully' do
-      it 'will query state correctly' do
+      it 'queries state correctly' do
         expect_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|
           expect(instance).to receive(:execute).and_return(
             ServiceResponse.success(
@@ -122,7 +122,7 @@ RSpec.describe 'Query.project(fullPath)', feature_category: :product_analytics d
 
     it_behaves_like 'queries state successfully'
 
-    it 'will pass through Cube API errors' do
+    it 'passes through Cube API errors' do
       expect_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|
         expect(instance).to receive(:execute).and_return(
           ServiceResponse.error(
@@ -136,7 +136,7 @@ RSpec.describe 'Query.project(fullPath)', feature_category: :product_analytics d
       expect(result.dig('errors', 0, 'message')).to eq('Error from Cube API: Test Error')
     end
 
-    it 'will query state when Cube DB does not exist' do
+    it 'queries state when Cube DB does not exist' do
       expect_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|
         expect(instance).to receive(:execute).and_return(
           ServiceResponse.error(
@@ -146,7 +146,7 @@ RSpec.describe 'Query.project(fullPath)', feature_category: :product_analytics d
       expect(result.dig('data', 'project', 'productAnalyticsState')).to eq('WAITING_FOR_EVENTS')
     end
 
-    it 'will pass through Cube API connection errors' do
+    it 'passes through Cube API connection errors' do
       expect_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|
         expect(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Connection Error'))
       end

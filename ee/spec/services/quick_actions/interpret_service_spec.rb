@@ -253,13 +253,13 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
               QUICKACTION
             end
 
-            it 'will correctly remove the reviewer' do
+            it 'correctly removes the reviewer' do
               _, updates, _ = service.execute(content, merge_request)
 
               expect(updates[:reviewer_ids]).to match_array([developer2.id])
             end
 
-            it 'will correctly remove the reviewer even for non-persisted merge requests' do
+            it 'correctly removes the reviewer even for non-persisted merge requests' do
               _, updates, _ = service.execute(content, merge_request_not_persisted)
 
               expect(updates[:reviewer_ids]).to match_array([developer2.id])

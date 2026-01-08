@@ -55,7 +55,7 @@ RSpec.describe Ci::SyncReportsToApprovalRulesService, '#execute', feature_catego
 
         it_behaves_like 'a successful execution'
 
-        it "won't lower approvals_required count" do
+        it "does not lower approvals_required count" do
           expect { sync_rules }
             .not_to change { report_approver_rule.reload.approvals_required }
         end
@@ -86,7 +86,7 @@ RSpec.describe Ci::SyncReportsToApprovalRulesService, '#execute', feature_catego
 
           it_behaves_like 'a successful execution'
 
-          it "won't change approvals_required count" do
+          it "does not change approvals_required count" do
             expect { subject }
               .not_to change { report_approver_rule.reload.approvals_required }
           end
@@ -146,7 +146,7 @@ RSpec.describe Ci::SyncReportsToApprovalRulesService, '#execute', feature_catego
 
       it_behaves_like 'a successful execution'
 
-      it "won't lower approvals_required count" do
+      it "does not lower approvals_required count" do
         expect { sync_rules }
           .not_to change { report_approver_rule.reload.approvals_required }
       end

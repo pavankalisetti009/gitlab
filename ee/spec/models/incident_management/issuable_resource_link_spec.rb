@@ -27,7 +27,7 @@ RSpec.describe IncidentManagement::IssuableResourceLink, type: :model do
     context 'when link is invalid' do
       let(:issuable_resource_link) { build(:issuable_resource_link, link: 'some-invalid-url') }
 
-      it 'will be invalid' do
+      it 'is invalid' do
         expect(issuable_resource_link).to be_invalid
       end
     end

@@ -778,7 +778,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       expect(page).to have_content("The domain you entered is misformatted")
     end
 
-    it 'will save valid domains' do
+    it 'saves valid domains' do
       new_domain = "gitlab.com"
 
       update_email_domains(new_domain)
@@ -865,7 +865,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
             expect(page).to have_content('Restricted access')
           end
 
-          it 'will save positive numbers for the user cap' do
+          it 'saves positive numbers for the user cap' do
             find_by_testid("seat-control-user-cap-radio").click
 
             find(user_caps_selector).set(5)
@@ -876,7 +876,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
             expect(page).to have_content("Group 'Foo bar' was successfully updated.")
           end
 
-          it 'will not allow a negative number for the user cap' do
+          it 'does not allow a negative number for the user cap' do
             find_by_testid("seat-control-user-cap-radio").click
 
             find(user_caps_selector).set(-5)
@@ -921,7 +921,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
             expect(find('#group_new_user_signups_cap')).to be_disabled
           end
 
-          it 'will save restricted access' do
+          it 'saves restricted access' do
             choose 'Restricted access'
 
             click_button 'Save changes'
@@ -935,7 +935,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
               create(:group_group_link, shared_group: group)
             end
 
-            it 'will disable both options' do
+            it 'disables both options' do
               visit edit_group_path(group)
 
               expect(find('#group_seat_control_block_overages')).to be_disabled
@@ -1147,7 +1147,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
     describe 'when connected' do
       let(:amazon_q_connected) { true }
 
-      it 'should render Amazon Q section' do
+      it 'renders Amazon Q section' do
         expect(page).to have_content(_('Amazon Q'))
       end
 

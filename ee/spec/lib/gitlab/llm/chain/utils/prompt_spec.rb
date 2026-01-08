@@ -126,7 +126,7 @@ RSpec.describe Gitlab::Llm::Chain::Utils::Prompt, feature_category: :duo_chat do
       let(:variables) { { provided_string: 'test' } }
       let(:prompt) { [described_class.as_assistant(content)] }
 
-      it 'will substitute provided variables' do
+      it 'substitutes provided variables' do
         expect(formatted_conversation)
           .to eq([[:assistant, "hello test"]])
       end

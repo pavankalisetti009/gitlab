@@ -13,7 +13,7 @@ RSpec.describe ProductAnalytics::Settings, feature_category: :product_analytics 
         mock_settings('test')
       end
 
-      it 'will be configured' do
+      it 'is configured' do
         expect(subject.configured?).to be_truthy
       end
     end
@@ -23,7 +23,7 @@ RSpec.describe ProductAnalytics::Settings, feature_category: :product_analytics 
         mock_settings('')
       end
 
-      it 'will not be configured' do
+      it 'does not be configured' do
         expect(subject.configured?).to be_falsey
       end
     end
@@ -35,7 +35,7 @@ RSpec.describe ProductAnalytics::Settings, feature_category: :product_analytics 
         allow(::Gitlab::CurrentSettings).to receive(missing_key).and_return('')
       end
 
-      it 'will not be configured' do
+      it 'does not be configured' do
         expect(subject.configured?).to be_falsey
       end
     end
@@ -48,14 +48,14 @@ RSpec.describe ProductAnalytics::Settings, feature_category: :product_analytics 
       end
 
       context 'with project' do
-        it "will override when provided a project #{key}" do
+        it "overrides when provided a project #{key}" do
           expect(::Gitlab::CurrentSettings).not_to receive(key)
           expect(project.project_setting).to receive(key).and_return('test')
 
           expect(subject.send(key)).to eq('test')
         end
 
-        it "will will not override when provided a blank project #{key}" do
+        it "wills not override when provided a blank project #{key}" do
           expect(::Gitlab::CurrentSettings).to receive(key).and_return('test')
           expect(project.project_setting).to receive(key).and_return('')
 
@@ -75,7 +75,7 @@ RSpec.describe ProductAnalytics::Settings, feature_category: :product_analytics 
         allow(::Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
       end
 
-      it 'will be enabled' do
+      it 'is enabled' do
         expect(subject.enabled?).to be_truthy
       end
     end
@@ -85,7 +85,7 @@ RSpec.describe ProductAnalytics::Settings, feature_category: :product_analytics 
         allow(::Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(false)
       end
 
-      it 'will be enabled' do
+      it 'is enabled' do
         expect(subject.enabled?).to be_falsey
       end
     end

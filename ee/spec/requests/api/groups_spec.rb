@@ -1091,7 +1091,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
           group.namespace_settings.update!(seat_control: :block_overages)
         end
 
-        it 'will not set prevent_sharing_groups_outside_hierarchy to false' do
+        it 'does not set prevent_sharing_groups_outside_hierarchy to false' do
           put api("/groups/#{group.id}", user), params: { description: 'it works', prevent_sharing_groups_outside_hierarchy: false }
 
           expect(response).to have_gitlab_http_status(:ok)
