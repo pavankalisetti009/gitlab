@@ -51,7 +51,7 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
         group.add_maintainer(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
 
       it 'allows creation of new maven virtual registry', :aggregate_failures do
         visit url
@@ -116,7 +116,7 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
         group.add_maintainer(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
 
       it 'allows updating existing maven virtual registry' do
         visit url
@@ -180,7 +180,7 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
         group.add_guest(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
 
       context 'without existing upstream registry', :aggregate_failures, :js do
         it_behaves_like 'page is accessible'
@@ -223,7 +223,7 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
         group.add_maintainer(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
 
       context 'without existing upstream registry', :aggregate_failures, :js do
         it_behaves_like 'page is accessible'

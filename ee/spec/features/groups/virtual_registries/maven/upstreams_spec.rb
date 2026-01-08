@@ -33,7 +33,7 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
         group.add_maintainer(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
 
       describe 'behavior', :aggregate_failures, :js do
         it 'renders all cache entries with their details' do
@@ -93,7 +93,7 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
         group.add_maintainer(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
 
       describe 'behaviour', :aggregate_failures, :js do
         it 'allows updation of existing maven upstream' do

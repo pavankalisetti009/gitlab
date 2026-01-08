@@ -45,7 +45,7 @@ RSpec.describe Groups::VirtualRegistries::Maven::UpstreamsController, feature_ca
 
         it_behaves_like 'returning response status', :ok
 
-        it_behaves_like 'disallowed access to virtual registry'
+        it_behaves_like 'disallowed access to maven virtual registry'
 
         context 'when the upstream does not exist' do
           subject { get group_virtual_registries_maven_upstream_path(group, id: non_existing_record_id) }

@@ -28,13 +28,15 @@ module EE
               active_routes: { controller: %w[groups/virtual_registries
                 groups/virtual_registries/maven/registries_and_upstreams
                 groups/virtual_registries/maven/registries
-                groups/virtual_registries/maven/upstreams] },
+                groups/virtual_registries/maven/upstreams
+                groups/virtual_registries/container] },
               item_id: :virtual_registry
             )
           end
 
           def virtual_registry_available?
-            ::VirtualRegistries::Packages::Maven.virtual_registry_available?(context.group, current_user)
+            ::VirtualRegistries::Packages::Maven.virtual_registry_available?(context.group, current_user) ||
+              ::VirtualRegistries::Container.virtual_registry_available?(context.group, current_user)
           end
         end
       end

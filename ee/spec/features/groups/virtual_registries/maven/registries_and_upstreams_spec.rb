@@ -39,7 +39,7 @@ RSpec.describe 'Maven virtual registries and upstreams', :aggregate_failures, fe
         group.add_guest(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
     end
 
     context 'when user is maintainer' do
@@ -47,7 +47,7 @@ RSpec.describe 'Maven virtual registries and upstreams', :aggregate_failures, fe
         group.add_maintainer(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
     end
 
     context 'with existing virtual registry', :js do
