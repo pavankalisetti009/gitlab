@@ -45,6 +45,11 @@ module Admin
         ::Ability.allowed?(current_user, :manage_self_hosted_models_settings)
       end
 
+      def can_manage_dap_self_hosted_models?
+        ::Ability.allowed?(current_user, :read_dap_self_hosted_model) &&
+          ::Ability.allowed?(current_user, :update_dap_self_hosted_model)
+      end
+
       def beta_models_enabled?
         ::Ai::TestingTermsAcceptance.has_accepted?
       end

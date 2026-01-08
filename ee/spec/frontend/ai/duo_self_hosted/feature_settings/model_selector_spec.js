@@ -147,7 +147,8 @@ describe('ModelSelector', () => {
       shallowMount(ModelSelector, {
         apolloProvider: mockApollo,
         provide: {
-          canManageSelfHostedModels: true,
+          canManageSelfHostedModels: false,
+          canManageDapSelfHostedModels: false,
           ...injectedProps,
         },
         propsData: {
@@ -188,25 +189,68 @@ describe('ModelSelector', () => {
     expect(findModelSelectDropdown().props('headerText')).toBe('Compatible models');
   });
 
-  describe('self-hosted models footer', () => {
-    describe('when user can manage self-hosted models', () => {
-      it('renders "Add self-hosted model" button', () => {
-        createComponent();
+  describe('canAddSelfHostedModel', () => {
+    describe('for Classic settings', () => {
+      it.each`
+        canManageDapSelfHostedModels | canManageSelfHostedModels | expected
+        ${true}                      | ${true}                   | ${true}
+        ${false}                     | ${true}                   | ${true}
+        ${true}                      | ${false}                  | ${false}
+        ${false}                     | ${false}                  | ${false}
+      `(
+        'returns expected canAddSelfHostedModel props',
+        ({ canManageSelfHostedModels, canManageDapSelfHostedModels, expected }) => {
+          createComponent({
+            props: {
+              aiFeatureSetting: { feature: 'code_suggestions', title: 'Code Suggestions' },
+            },
+            injectedProps: { canManageDapSelfHostedModels, canManageSelfHostedModels },
+          });
 
-        expect(findAddModelButton().text()).toBe('Add self-hosted model');
-        expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
-      });
+          if (expected) {
+            expect(findAddModelButton().text()).toBe('Add self-hosted model');
+            expect(findAddModelButton().props('to')).toEqual({
+              name: SELF_HOSTED_ROUTE_NAMES.NEW,
+            });
+          } else {
+            expect(findAddModelButton().exists()).toBe(false);
+          }
+        },
+      );
     });
 
-    describe('when user can not manage self-hosted models', () => {
-      it('does not render "Add self-hosted model" button', () => {
-        createComponent({
-          injectedProps: {
-            canManageSelfHostedModels: false,
-          },
-        });
+    describe('for DAP settings', () => {
+      describe.each`
+        feature                              | title
+        ${'duo_agent_platform'}              | ${'Duo Agent Platform'}
+        ${'duo_agent_platform_agentic_chat'} | ${'Duo Agent Platform Agentic Chat'}
+      `('for $feature: returns expected canAddSelfHostedModel props', ({ feature, title }) => {
+        it.each`
+          canManageDapSelfHostedModels | canManageSelfHostedModels | expected
+          ${true}                      | ${true}                   | ${true}
+          ${true}                      | ${false}                  | ${true}
+          ${false}                     | ${true}                   | ${false}
+          ${false}                     | ${false}                  | ${false}
+        `(
+          'with canManageDapSelfHostedModels=$canManageDapSelfHostedModels and canManageSelfHostedModels=$canManageSelfHostedModels',
+          ({ canManageSelfHostedModels, canManageDapSelfHostedModels, expected }) => {
+            createComponent({
+              props: {
+                aiFeatureSetting: { feature, title },
+              },
+              injectedProps: { canManageDapSelfHostedModels, canManageSelfHostedModels },
+            });
 
-        expect(findAddModelButton().exists()).toBe(false);
+            if (expected) {
+              expect(findAddModelButton().text()).toBe('Add self-hosted model');
+              expect(findAddModelButton().props('to')).toEqual({
+                name: SELF_HOSTED_ROUTE_NAMES.NEW,
+              });
+            } else {
+              expect(findAddModelButton().exists()).toBe(false);
+            }
+          },
+        );
       });
     });
   });

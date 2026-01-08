@@ -7,8 +7,7 @@ import {
   FEATURE_SETTINGS_FIXED_LOADER_WIDTH,
   FEATURE_SETTINGS_VARIABLE_LOADER_WIDTHS,
 } from 'ee/ai/shared/feature_settings/constants';
-
-import { RELEASE_STATES } from '../../constants';
+import { RELEASE_STATES } from 'ee/ai/duo_self_hosted/constants';
 import ModelSelector from './model_selector.vue';
 import DuoSelfHostedBatchSettingsUpdater from './batch_settings_updater.vue';
 
