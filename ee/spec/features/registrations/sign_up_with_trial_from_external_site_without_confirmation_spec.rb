@@ -20,6 +20,8 @@ RSpec.describe 'Sign up with trial from external site without confirmation', :wi
 
     subscription_portal_url = ::Gitlab::Routing.url_helpers.subscription_portal_url
 
+    stub_feature_flags(new_trial_lead_endpoint: false)
+
     stub_request(:post, "#{subscription_portal_url}/trials")
   end
 

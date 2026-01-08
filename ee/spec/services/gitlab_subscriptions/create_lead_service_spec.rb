@@ -33,17 +33,43 @@ RSpec.describe GitlabSubscriptions::CreateLeadService, feature_category: :subscr
     subject(:execute) { described_class.new.execute(company_params) }
 
     it 'successfully creates a trial' do
-      allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial).with(company_params)
-                                                                           .and_return({ success: true })
+      allow(Gitlab::SubscriptionPortal::Client)
+        .to receive(:generate_trial_lead)
+        .with(company_params)
+        .and_return({ success: true })
 
       expect(execute).to be_success
     end
 
     it 'errors while creating trial' do
-      allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
-                                                     .and_return({ success: false, data: { errors: '_fail_' } })
+      allow(Gitlab::SubscriptionPortal::Client)
+        .to receive(:generate_trial_lead)
+        .and_return({ success: false, data: { errors: '_fail_' } })
 
       expect(execute).to be_error.and have_attributes(message: '_fail_')
+    end
+
+    context 'when new_trial_lead_endpoint is disabled' do
+      before do
+        stub_feature_flags(new_trial_lead_endpoint: false)
+      end
+
+      it 'successfully creates a trial' do
+        allow(Gitlab::SubscriptionPortal::Client)
+          .to receive(:generate_trial)
+          .with(company_params)
+          .and_return({ success: true })
+
+        expect(execute).to be_success
+      end
+
+      it 'errors while creating trial' do
+        allow(Gitlab::SubscriptionPortal::Client)
+          .to receive(:generate_trial)
+          .and_return({ success: false, data: { errors: '_fail_' } })
+
+        expect(execute).to be_error.and have_attributes(message: '_fail_')
+      end
     end
   end
 end
