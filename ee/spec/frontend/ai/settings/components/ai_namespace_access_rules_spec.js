@@ -277,5 +277,43 @@ describe('AiNamespaceAccessRules', () => {
 
       expect(findNamespaceLinks()).toHaveLength(3);
     });
+
+    it('emits namespace access rules when namespace is added', async () => {
+      const namespace1 = {
+        id: 'gid://gitlab/Group/3',
+        name: 'Group C',
+        fullPath: 'group-c',
+      };
+
+      findGroupSelector().vm.$emit('group-selected', namespace1);
+      await nextTick();
+
+      expect(wrapper.emitted('change')[0][0]).toEqual([
+        {
+          features: ['duo_agent_platform'],
+          throughNamespace: {
+            fullPath: 'group-a',
+            id: 1,
+            name: 'Group A',
+          },
+        },
+        {
+          features: ['duo_classic'],
+          throughNamespace: {
+            fullPath: 'group-b',
+            id: 2,
+            name: 'Group B',
+          },
+        },
+        {
+          features: ['duo_classic', 'duo_agent_platform'],
+          throughNamespace: {
+            fullPath: 'group-c',
+            id: 3,
+            name: 'Group C',
+          },
+        },
+      ]);
+    });
   });
 });

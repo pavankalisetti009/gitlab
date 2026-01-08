@@ -1,6 +1,7 @@
 <script>
 import { GlTable, GlButton, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import GroupSelector from './group_selector.vue';
 
 const AVAILABLE_FEATURES = [
@@ -63,9 +64,8 @@ export default {
       return namespaceAccessRule.features.includes(feature) || false;
     },
     onGroupSelected(group) {
-      const exists = this.namespaceAccessRules.some(
-        (rule) => rule.throughNamespace.id === group.id,
-      );
+      const id = getIdFromGraphQLId(group.id);
+      const exists = this.namespaceAccessRules.some((rule) => rule.throughNamespace.id === id);
 
       if (exists) {
         return;
@@ -75,13 +75,15 @@ export default {
         ...this.namespaceAccessRules,
         {
           throughNamespace: {
-            id: group.id,
+            id,
             name: group.name,
             fullPath: group.fullPath,
           },
           features: AVAILABLE_FEATURES.map((rule) => rule.key),
         },
       ];
+
+      this.$emit('change', this.namespaceAccessRules);
     },
     removeNamespaceAccessRule(namespaceId) {
       this.namespaceAccessRules = this.namespaceAccessRules.filter(
