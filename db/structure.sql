@@ -20766,7 +20766,8 @@ CREATE TABLE member_roles (
     permissions jsonb DEFAULT '{}'::jsonb NOT NULL,
     organization_id bigint,
     CONSTRAINT check_4364846f58 CHECK ((char_length(description) <= 255)),
-    CONSTRAINT check_9907916995 CHECK ((char_length(name) <= 255))
+    CONSTRAINT check_9907916995 CHECK ((char_length(name) <= 255)),
+    CONSTRAINT check_ae96d7c575 CHECK ((num_nonnulls(namespace_id, organization_id) = 1))
 );
 
 CREATE SEQUENCE member_roles_id_seq

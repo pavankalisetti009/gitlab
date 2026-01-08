@@ -6,7 +6,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
   let_it_be(:project) { create(:project) }
   let_it_be(:normal_user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:custom_role) { create(:member_role, namespace: project.group) }
+  let_it_be(:custom_role) { create(:member_role, namespace: project.namespace) }
 
   let(:security_policy) do
     create(:security_policy, linked_projects: [project], content: { bypass_settings: {} })

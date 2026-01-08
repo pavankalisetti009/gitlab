@@ -13,11 +13,19 @@ RSpec.describe Resolvers::MemberRoles::RolesResolver, feature_category: :api do
 
     let_it_be(:group) { create(:group) }
 
-    let_it_be(:admin_runners_role) { create(:member_role, :admin_runners, name: 'Role C', namespace: nil) }
-    let_it_be(:read_code_role) { create(:member_role, :read_code, name: 'Role A', namespace: nil) }
-    let_it_be(:read_runners_role) { create(:member_role, :read_runners, name: 'Role B', namespace: nil) }
-
     let_it_be(:user) { create(:user) }
+
+    let_it_be(:admin_runners_role) do
+      create(:member_role, :admin_runners, name: 'Role C', namespace: nil, organization: user.organization)
+    end
+
+    let_it_be(:read_code_role) do
+      create(:member_role, :read_code, name: 'Role A', namespace: nil, organization: user.organization)
+    end
+
+    let_it_be(:read_runners_role) do
+      create(:member_role, :read_runners, name: 'Role B', namespace: nil, organization: user.organization)
+    end
 
     before_all do
       group.add_developer(user)

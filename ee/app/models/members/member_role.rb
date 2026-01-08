@@ -32,6 +32,7 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
   validate :validate_namespace_locked, on: :update
   validate :base_access_level_locked, on: :update
   validate :validate_requirements
+  validate :sharding_key_is_a_single_column
 
   before_save :set_occupies_seat
   before_destroy :prevent_delete_if_member_associated
@@ -259,5 +260,11 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
 
     self.occupies_seat = base_access_level > Gitlab::Access::GUEST ||
       self.class.elevating_permissions.any? { |attr| self[attr] }
+  end
+
+  def sharding_key_is_a_single_column
+    return if namespace.present? ^ organization.present?
+
+    errors.add(:base, s_('MemberRole|A sharding key (namespace_id or organization_id) is required'))
   end
 end

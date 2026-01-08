@@ -31,6 +31,22 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         .in_array(::Gitlab::Access.options_for_custom_roles.values.freeze)
     end
 
+    context 'for sharding key' do
+      it 'validates that namespace and organization both cannot be present' do
+        member_role = build(:member_role, namespace: build(:namespace), organization: build(:organization))
+
+        expect(member_role).not_to be_valid
+        expect(member_role.errors[:base]).to include('A sharding key (namespace_id or organization_id) is required')
+      end
+
+      it 'validates that namespace and organization cannot be blank' do
+        member_role = build(:member_role, namespace: nil, organization: nil)
+
+        expect(member_role).not_to be_valid
+        expect(member_role.errors[:base]).to include('A sharding key (namespace_id or organization_id) is required')
+      end
+    end
+
     context 'for name uniqueness' do
       let_it_be(:group) { create(:group) }
       let_it_be(:existing_member_role) { create(:member_role, name: 'foo', namespace: group) }

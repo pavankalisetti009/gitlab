@@ -72,7 +72,8 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillUserGroupMemberRoles, :sidek
   end
 
   let!(:member_role) do
-    member_roles.create!(name: 'Custom role', base_access_level: Gitlab::Access::GUEST)
+    member_roles.create!(name: 'Custom role', base_access_level: Gitlab::Access::GUEST,
+      organization_id: organization.id)
   end
 
   let!(:group_member) do
@@ -229,7 +230,8 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillUserGroupMemberRoles, :sidek
 
     context 'with an existing UserGroupMemberRole record' do
       let!(:member_role_2) do
-        member_roles.create!(name: 'Custom role 2', base_access_level: Gitlab::Access::GUEST)
+        member_roles.create!(name: 'Custom role 2', base_access_level: Gitlab::Access::GUEST,
+          organization_id: organization.id)
       end
 
       before do
