@@ -3,20 +3,25 @@ import { GlIcon, GlButton, GlLink, GlPopover } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { focusDuoChatInput } from 'ee/ai/utils';
+import { PROMO_URL } from '~/constants';
 import { FEATURE_HIGHLIGHTS } from './constants';
 
 const trackingMixin = InternalEvents.mixin();
 
 export default {
-  name: 'PremiumPlanHeader',
+  name: 'UpgradePlanHeader',
   components: {
     GlIcon,
     GlButton,
-    GlLink,
     GlPopover,
+    GlLink,
   },
   mixins: [trackingMixin],
   props: {
+    isSaas: {
+      type: Boolean,
+      required: true,
+    },
     trialActive: {
       type: Boolean,
       required: true,
@@ -44,6 +49,20 @@ export default {
   },
   computed: {
     attributes() {
+      if (!this.isSaas) {
+        return {
+          ...FEATURE_HIGHLIGHTS.notInTrialSM,
+          ctaHref: this.startTrialPath,
+          ctaTrackingData: {
+            'data-event-tracking': 'click_sm_ultimate_trial_subscription_page',
+          },
+          ctaSecondaryHref: `${PROMO_URL}/pricing/?deployment=self-managed-deployment`,
+          ctaTrackingSecondaryData: {
+            'data-event-tracking': 'click_sm_explore_plans_subscription_page',
+          },
+        };
+      }
+
       if (this.trialActive) {
         return {
           ...FEATURE_HIGHLIGHTS.trialActive,
@@ -72,7 +91,7 @@ export default {
       }
 
       return {
-        ...FEATURE_HIGHLIGHTS.notInTrial,
+        ...FEATURE_HIGHLIGHTS.notInTrialSaas,
         ctaHref: this.startTrialPath,
         ctaTrackingData: {
           'data-event-tracking': 'click_duo_enterprise_trial_billing_page',
@@ -124,7 +143,17 @@ export default {
         <div v-for="feature in attributes.features" :key="feature.id" class="gl-mb-3 gl-mt-3">
           <div :id="feature.id">
             <gl-icon :name="feature.iconName" class="gl-mr-2 gl-mt-1" :variant="feature.variant" />
-            <span :class="trialActive ? 'gl-text-base gl-underline' : 'gl-text-sm'">{{
+            <gl-link
+              v-if="feature.showAsLink && feature.docsLink"
+              data-testid="feature-link"
+              class="gl-text-sm"
+              :href="feature.docsLink"
+              target="_blank"
+              v-bind="feature.tracking"
+            >
+              {{ feature.title }}
+            </gl-link>
+            <span v-else :class="trialActive ? 'gl-text-base gl-underline' : 'gl-text-sm'">{{
               feature.title
             }}</span>
           </div>
@@ -159,17 +188,30 @@ export default {
       </div>
     </div>
 
-    <div class="gl-mt-5 gl-flex-row">
+    <div class="gl-mt-5 gl-flex gl-gap-3">
       <gl-button
         data-testid="upgrade-link-cta"
         :class="{ 'gl-w-full': trialActive }"
-        :category="trialActive ? 'primary' : 'secondary'"
-        :variant="trialActive ? 'confirm' : 'default'"
+        :category="trialActive || attributes.secondaryCtaLabel ? 'primary' : 'secondary'"
+        :variant="trialActive || attributes.secondaryCtaLabel ? 'confirm' : 'default'"
         v-bind="attributes.ctaTrackingData"
         :href="attributes.ctaHref"
         referrerpolicy="no-referrer-when-downgrade"
+        target="_blank"
       >
         {{ attributes.ctaLabel }}
+      </gl-button>
+      <gl-button
+        v-if="Boolean(attributes.secondaryCtaLabel)"
+        data-testid="explore-link-cta"
+        category="secondary"
+        variant="confirm"
+        v-bind="attributes.ctaTrackingSecondaryData"
+        :href="attributes.ctaSecondaryHref"
+        referrerpolicy="no-referrer-when-downgrade"
+        target="_blank"
+      >
+        {{ attributes.secondaryCtaLabel }}
       </gl-button>
     </div>
   </div>

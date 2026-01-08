@@ -2,7 +2,7 @@
 import { GlModal, GlSprintf, GlPopover, GlIcon, GlButton } from '@gitlab/ui';
 import GITLAB_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg?url';
 import UserGroupCalloutDismisser from '~/vue_shared/components/user_group_callout_dismisser.vue';
-import { TRIAL_ACTIVE_FEATURE_HIGHLIGHTS } from 'ee/groups/billing/components/constants';
+import { TRIAL_ACTIVE_FEATURE_HIGHLIGHTS } from 'ee/vue_shared/subscription/components/constants';
 import { InternalEvents } from '~/tracking';
 import { s__, __ } from '~/locale';
 

@@ -3,7 +3,7 @@ import { GlIcon, GlButton, GlLink, GlPopover } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { focusDuoChatInput } from 'ee/ai/utils';
-import { TRIAL_ACTIVE_FEATURE_HIGHLIGHTS } from 'ee/groups/billing/components/constants';
+import { TRIAL_ACTIVE_FEATURE_HIGHLIGHTS } from 'ee/vue_shared/subscription/components/constants';
 
 export default {
   name: 'TrialUpgradeSection',

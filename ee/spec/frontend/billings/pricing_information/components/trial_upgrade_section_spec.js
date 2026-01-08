@@ -2,7 +2,7 @@ import { GlButton, GlPopover } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import TrialUpgradeSection from 'ee/billings/pricing_information/components/trial_upgrade_section.vue';
-import { TRIAL_ACTIVE_FEATURE_HIGHLIGHTS } from 'ee/groups/billing/components/constants';
+import { TRIAL_ACTIVE_FEATURE_HIGHLIGHTS } from 'ee/vue_shared/subscription/components/constants';
 import { focusDuoChatInput } from 'ee/ai/utils';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 

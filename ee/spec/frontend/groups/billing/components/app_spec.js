@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import FreeTrialBillingApp from 'ee/groups/billing/components/app.vue';
 import CurrentPlanHeader from 'ee/vue_shared/subscription/components/current_plan_header.vue';
-import PremiumPlanHeader from 'ee/groups/billing/components/premium_plan_header.vue';
+import UpgradePlanHeader from 'ee/vue_shared/subscription/components/upgrade_plan_header.vue';
 import FreePlanBillingHeader from 'ee/groups/billing/components/free_plan_billing_header.vue';
 import FreePlanBilling from 'ee/groups/billing/components/free_plan_billing.vue';
 import PremiumPlanBillingHeader from 'ee/groups/billing/components/premium_plan_billing_header.vue';
@@ -14,7 +14,7 @@ describe('FreeTrialBillingApp', () => {
   let wrapper;
 
   const findCurrentPlanHeader = () => wrapper.findComponent(CurrentPlanHeader);
-  const findPremiumPlanHeader = () => wrapper.findComponent(PremiumPlanHeader);
+  const findPremiumPlanHeader = () => wrapper.findComponent(UpgradePlanHeader);
   const findFreePlanBillingHeader = () => wrapper.findComponent(FreePlanBillingHeader);
   const findFreePlanBilling = () => wrapper.findComponent(FreePlanBilling);
   const findPremiumPlanBillingHeader = () => wrapper.findComponent(PremiumPlanBillingHeader);
