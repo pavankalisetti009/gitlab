@@ -116,8 +116,7 @@ html {
   align-items: stretch;
   overflow: hidden;
 
-  > #js-peek,
-  > .header-logged-out {
+  > #js-peek {
     position: static;
     top: auto;
   }

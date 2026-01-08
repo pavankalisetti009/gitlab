@@ -13,10 +13,7 @@
     = render 'peek/bar'
     = header_message
 
-    - if project_studio_enabled?
-      %header.super-topbar.js-super-topbar
-    - elsif !current_user
-      = render partial: "layouts/header/super_sidebar_logged_out"
+    %header.super-topbar.js-super-topbar
     = render 'layouts/page', sidebar: sidebar, nav: nav
     = footer_message
 
