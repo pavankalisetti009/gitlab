@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe PreferencesHelper, feature_category: :shared do
+RSpec.describe PreferencesHelper, feature_category: :settings do
   before do
     allow(helper).to receive(:current_user).and_return(user)
   end
