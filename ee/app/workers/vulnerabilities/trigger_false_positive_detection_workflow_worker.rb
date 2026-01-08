@@ -13,6 +13,7 @@ module Vulnerabilities
     urgency :throttled
     idempotent!
     concurrency_limit -> { 100 }
+    sidekiq_options retry: 10
 
     def perform(vulnerability_id)
       vulnerability = find_vulnerability(vulnerability_id)
