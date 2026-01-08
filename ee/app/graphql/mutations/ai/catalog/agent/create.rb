@@ -45,10 +45,6 @@ module Mutations
             required: false,
             description: 'User prompt for the agent.'
 
-          argument :add_to_project_when_created, GraphQL::Types::Boolean,
-            required: false,
-            description: 'Whether to add to the project upon creation.'
-
           authorize :admin_ai_catalog_item
 
           def resolve(args)
