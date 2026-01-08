@@ -1033,7 +1033,10 @@ describe('MR Widget Security Reports', () => {
                 }),
               ),
           ],
-          [findingReportsComparerQuery, jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse)],
+          [
+            findingReportsComparerQuery,
+            jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse),
+          ],
         ]),
       });
 
@@ -1076,9 +1079,7 @@ describe('MR Widget Security Reports', () => {
       await waitForPromises();
 
       expect(
-        wrapper
-          .findByText('Error while fetching enabled scans. Please try again later.')
-          .exists(),
+        wrapper.findByText('Error while fetching enabled scans. Please try again later.').exists(),
       ).toBe(true);
     });
 
