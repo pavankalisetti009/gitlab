@@ -301,6 +301,9 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
         subject
 
         expect(response).to have_gitlab_http_status(:created)
+        expect(response).to match_response_schema('public_api/v4/merge_trains', dir: 'ee')
+        expect(json_response).to be_an(Array)
+        expect(json_response.first['merge_request']['iid']).to eq(merge_request.iid)
       end
     end
 
@@ -366,6 +369,8 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
           subject
 
           expect(response).to have_gitlab_http_status(:accepted)
+          expect(response).to match_response_schema('public_api/v4/merge_trains', dir: 'ee')
+          expect(json_response).to be_an(Array)
         end
       end
     end
@@ -380,6 +385,8 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
           subject
 
           expect(response).to have_gitlab_http_status(:accepted)
+          expect(response).to match_response_schema('public_api/v4/merge_trains', dir: 'ee')
+          expect(json_response).to be_an(Array)
         end
       end
     end

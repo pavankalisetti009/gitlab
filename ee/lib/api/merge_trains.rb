@@ -113,6 +113,7 @@ module API
             { code: 409, message: 'Conflict' },
             { code: 403, message: 'Forbidden' }
           ]
+          is_array true
           tags %w[merge_trains]
         end
         params do
