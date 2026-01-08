@@ -45,25 +45,26 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
       context 'when namespace is provided' do
         subject(:service_call) { described_class.new(ai_feature: ai_feature, user: user, namespace: namespace).execute }
 
-        let_it_be(:namespace) { create(:group) }
+        let_it_be(:root_namespace) { create(:group) }
+        let_it_be(:namespace) { create(:group, parent: root_namespace) }
 
         context 'when the user can invoke the feature in the given namespace' do
           before do
-            allow(user).to receive(:allowed_by_namespace_ids).with(ai_feature).and_return([namespace.id])
+            allow(user).to receive(:allowed_by_namespace_ids).with(ai_feature).and_return([root_namespace.id])
           end
 
           context 'when usage quota is available' do
             before do
               allow(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
                 user_id: user.id,
-                root_namespace_id: namespace.id
+                root_namespace_id: root_namespace.id
               ).and_return({ success: true })
             end
 
             it 'calls portal with provided namespace and returns success' do
               expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
                 user_id: user.id,
-                root_namespace_id: namespace.id
+                root_namespace_id: root_namespace.id
               )
 
               expect(service_call).to be_success
@@ -74,14 +75,14 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
             before do
               allow(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
                 user_id: user.id,
-                root_namespace_id: namespace.id
+                root_namespace_id: root_namespace.id
               ).and_return({ success: false })
             end
 
             it 'calls portal with provided namespace and returns error' do
               expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
                 user_id: user.id,
-                root_namespace_id: namespace.id
+                root_namespace_id: root_namespace.id
               )
 
               expect(service_call).to be_error
