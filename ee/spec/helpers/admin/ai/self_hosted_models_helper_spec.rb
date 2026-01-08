@@ -3,6 +3,8 @@
 require "spec_helper"
 
 RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hosted_models" do
+  using RSpec::Parameterized::TableSyntax
+
   let(:user) { build(:user) }
 
   before do
@@ -74,6 +76,23 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
     it 'returns true if ability is allowed' do
       allow(Ability).to receive(:allowed?).with(user, :manage_self_hosted_models_settings).and_return(true)
       expect(helper.can_manage_self_hosted_models?).to be(true)
+    end
+  end
+
+  describe '#can_manage_dap_self_hosted_models?' do
+    where(:read_allowed, :update_allowed, :expected_result) do
+      false | false | false
+      false | true  | false
+      true  | false | false
+      true  | true  | true
+    end
+
+    with_them do
+      it 'returns true only when both read and update abilities are allowed' do
+        allow(Ability).to receive(:allowed?).with(user, :read_dap_self_hosted_model).and_return(read_allowed)
+        allow(Ability).to receive(:allowed?).with(user, :update_dap_self_hosted_model).and_return(update_allowed)
+        expect(helper.can_manage_dap_self_hosted_models?).to be(expected_result)
+      end
     end
   end
 

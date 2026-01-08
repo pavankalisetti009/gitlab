@@ -10,7 +10,7 @@ import { RELEASE_STATES, SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/c
 import { TYPENAME_AI_SELF_HOSTED_MODEL } from 'ee_else_ce/graphql_shared/constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
-import { PROVIDERS, GITLAB_DEFAULT_MODEL } from '../constants';
+import { PROVIDERS, GITLAB_DEFAULT_MODEL, DAP_FEATURES } from '../constants';
 import GitlabManagedModelsDisclaimerModal from './gitlab_managed_models_disclaimer_modal.vue';
 
 export default {
@@ -20,7 +20,7 @@ export default {
     ModelSelectDropdown,
     GitlabManagedModelsDisclaimerModal,
   },
-  inject: ['canManageSelfHostedModels'],
+  inject: ['canManageSelfHostedModels', 'canManageDapSelfHostedModels'],
   props: {
     aiFeatureSetting: {
       type: Object,
@@ -43,6 +43,13 @@ export default {
     };
   },
   computed: {
+    canAddSelfHostedModel() {
+      if (DAP_FEATURES.includes(this.aiFeatureSetting.feature)) {
+        return this.canManageDapSelfHostedModels;
+      }
+
+      return this.canManageSelfHostedModels;
+    },
     isGitlabManagedModelSelected() {
       const { provider, gitlabModel } = this.aiFeatureSetting;
       // Refers to the GitLab managed models offered by instance-level model selection
@@ -233,7 +240,7 @@ export default {
       :is-loading="isSaving || batchUpdateIsSaving"
       @select="onSelect"
     >
-      <template v-if="canManageSelfHostedModels" #footer>
+      <template v-if="canAddSelfHostedModel" #footer>
         <div class="gl-border-t-1 gl-border-t-dropdown !gl-p-2 gl-border-t-solid">
           <gl-button
             data-testid="add-self-hosted-model-button"

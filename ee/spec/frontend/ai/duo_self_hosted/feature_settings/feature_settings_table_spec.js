@@ -11,9 +11,13 @@ import { mockCodeSuggestionsFeatureSettings, mockAiFeatureSettings } from './moc
 describe('FeatureSettingsTable', () => {
   let wrapper;
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, provide = {}) => {
     wrapper = mountExtended(FeatureSettingsTable, {
-      provide: { canManageSelfHostedModels: false },
+      provide: {
+        canManageSelfHostedModels: false,
+        canManageDapSelfHostedModels: false,
+        ...provide,
+      },
       propsData: {
         featureSettings: mockCodeSuggestionsFeatureSettings,
         isLoading: false,

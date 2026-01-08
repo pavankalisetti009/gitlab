@@ -24,6 +24,7 @@ function mountSelfHostedDuoRootApp() {
     canManageInstanceModelSelection,
     canManageSelfHostedModels,
     isDedicatedInstance,
+    canManageDapSelfHostedModels,
   } = JSON.parse(el.dataset.viewModel);
 
   const router = createRouter(basePath);
@@ -41,6 +42,7 @@ function mountSelfHostedDuoRootApp() {
       canManageInstanceModelSelection,
       canManageSelfHostedModels,
       isDedicatedInstance,
+      canManageDapSelfHostedModels,
     },
     render(createElement) {
       return createElement('router-view');
