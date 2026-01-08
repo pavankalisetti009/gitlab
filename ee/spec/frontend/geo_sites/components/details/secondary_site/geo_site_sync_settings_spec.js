@@ -62,9 +62,9 @@ describe('GeoSiteSyncSettings', () => {
         beforeEach(() => {
           createComponent({
             site: {
-              lastEventTimestamp: 1511255300,
+              lastEventTimestamp: 1511255320,
               lastEventId: 10,
-              cursorLastEventTimestamp: 1511255200,
+              cursorLastEventTimestamp: 1511255300,
               cursorLastEventId: 9,
             },
           });
