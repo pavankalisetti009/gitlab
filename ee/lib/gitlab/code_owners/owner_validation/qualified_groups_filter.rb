@@ -17,13 +17,7 @@ module Gitlab
         end
 
         def output_groups
-          scope = project_group_and_ancestors + invited_groups
-
-          if Feature.enabled?(:check_inherited_groups_for_codeowners, project)
-            scope += shared_with_groups_of_project_group_and_ancestors
-          end
-
-          scope
+          project_group_and_ancestors + invited_groups + shared_with_groups_of_project_group_and_ancestors
         end
         strong_memoize_attr :output_groups
 

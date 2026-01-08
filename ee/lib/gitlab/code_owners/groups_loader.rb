@@ -27,12 +27,10 @@ module Gitlab
             .self_and_ancestors
             .where_full_path_in(names, preload_routes: false)
 
-          if Feature.enabled?(:check_inherited_groups_for_codeowners, project)
-            # Retrieve groups that have access shared with the project's group and ancestor(s)
-            relations << project.group
-              .shared_with_groups_of_ancestors_and_self.with_developer_maintainer_owner_access
-              .where_full_path_in(names, preload_routes: false)
-          end
+          # Retrieve groups that have access shared with the project's group and ancestor(s)
+          relations << project.group
+            .shared_with_groups_of_ancestors_and_self.with_developer_maintainer_owner_access
+            .where_full_path_in(names, preload_routes: false)
         end
 
         Group.from_union(relations).with_route.with_users
