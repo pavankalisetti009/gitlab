@@ -52,6 +52,8 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
         stub_licensed_features(group_ip_restriction: true)
         allow_any_instance_of(Gitlab::IpRestriction::Enforcer).to(
           receive(:allows_current_ip?).and_return(true))
+        # TODO: Remove this workaround once https://gitlab.com/gitlab-org/gitlab/-/issues/442164 is addressed
+        allow_any_instance_of(EE::Namespace).to receive(:auto_duo_code_review_settings_available?).and_return(false)
       end
 
       context 'top-level group' do
@@ -217,6 +219,8 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
 
       before do
         stub_licensed_features(group_allowed_email_domains: true)
+        # TODO: Remove this workaround once https://gitlab.com/gitlab-org/gitlab/-/issues/442164 is addressed
+        allow_any_instance_of(EE::Namespace).to receive(:auto_duo_code_review_settings_available?).and_return(false)
       end
 
       context 'top-level group' do

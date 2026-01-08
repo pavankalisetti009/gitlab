@@ -103,12 +103,22 @@ RSpec.describe 'merge requests creations', feature_category: :code_review_workfl
 
         context 'with DAP flow (Duo Core/Pro add-ons)' do
           let(:has_duo_access) { true }
+          let_it_be(:code_review_foundational_flow) { create(:ai_catalog_item, :with_foundational_flow_reference) }
 
           before do
             create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
             project.project_setting.update!(duo_foundational_flows_enabled: true)
             allow(::Gitlab::Llm::StageCheck).to receive(:available?)
               .with(project, :duo_workflow).and_return(true)
+            allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
+              .with('code_review/v1')
+              .and_return(
+                instance_double(
+                  ::Ai::Catalog::FoundationalFlow, catalog_item: code_review_foundational_flow
+                )
+              )
+            create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: project.root_ancestor,
+              catalog_item: code_review_foundational_flow)
             allow_next_instance_of(MergeRequest) do |instance|
               allow(instance).to receive(:ai_review_merge_request_allowed?).with(user).and_return(true)
             end

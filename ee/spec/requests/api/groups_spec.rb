@@ -922,6 +922,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       using RSpec::Parameterized::TableSyntax
 
       let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+      let_it_be(:code_review_foundational_flow) { create(:ai_catalog_item, :with_foundational_flow_reference) }
 
       before do
         stub_ee_application_setting(should_check_namespace_plan: true)
@@ -961,6 +962,14 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
 
         context 'with DAP flow' do
+          before do
+            allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
+              .with('code_review/v1')
+              .and_return(
+                instance_double(::Ai::Catalog::FoundationalFlow, catalog_item: code_review_foundational_flow)
+              )
+          end
+
           context 'when duo_foundational_flows_enabled is false' do
             before do
               group.namespace_settings.update!(duo_features_enabled: true, duo_foundational_flows_enabled: false)
@@ -985,9 +994,11 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
               group.namespace_settings.update!(duo_features_enabled: true, duo_foundational_flows_enabled: true)
             end
 
-            context 'when StageCheck returns false' do
+            context 'when code_review flow is not enabled' do
               before do
-                allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(false)
+                allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+                allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                  .with(group, :duo_workflow).and_return(true)
               end
 
               context 'with duo_core add-on' do
@@ -1004,34 +1015,63 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
               end
             end
 
-            context 'when StageCheck returns true' do
-              where(:add_on_factory) do
-                [[:duo_pro], [:duo_core], [:duo_enterprise]]
+            context 'when code_review flow is enabled' do
+              before do
+                create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: group, catalog_item: code_review_foundational_flow)
               end
 
-              with_them do
+              context 'when StageCheck returns false' do
                 before do
-                  if add_on_factory == :duo_enterprise
-                    create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_enterprise_add_on)
-                  else
-                    create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: group)
+                  allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+                  allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                    .with(group, :duo_workflow).and_return(false)
+                end
+
+                context 'with duo_core add-on' do
+                  before do
+                    create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group)
                   end
 
-                  allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+                  it 'does not allow setting auto_duo_code_review_enabled' do
+                    put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
+
+                    expect(response).to have_gitlab_http_status(:ok)
+                    expect(json_response['auto_duo_code_review_enabled']).to be_nil
+                  end
+                end
+              end
+
+              context 'when StageCheck returns true' do
+                where(:add_on_factory) do
+                  [[:duo_pro], [:duo_core], [:duo_enterprise]]
                 end
 
-                it "allows setting auto_duo_code_review_enabled for #{params[:add_on_factory]}" do
-                  put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
+                with_them do
+                  before do
+                    if add_on_factory == :duo_enterprise
+                      create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_enterprise_add_on)
+                    else
+                      create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: group)
+                    end
 
-                  expect(response).to have_gitlab_http_status(:ok)
-                  expect(json_response['auto_duo_code_review_enabled']).to eq(true)
-                end
+                    allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+                    allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                      .with(group, :duo_workflow).and_return(true)
+                  end
 
-                it "allows disabling auto_duo_code_review_enabled for #{params[:add_on_factory]}" do
-                  put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: false }
+                  it "allows setting auto_duo_code_review_enabled for #{params[:add_on_factory]}" do
+                    put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
 
-                  expect(response).to have_gitlab_http_status(:ok)
-                  expect(json_response['auto_duo_code_review_enabled']).to eq(false)
+                    expect(response).to have_gitlab_http_status(:ok)
+                    expect(json_response['auto_duo_code_review_enabled']).to eq(true)
+                  end
+
+                  it "allows disabling auto_duo_code_review_enabled for #{params[:add_on_factory]}" do
+                    put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: false }
+
+                    expect(response).to have_gitlab_http_status(:ok)
+                    expect(json_response['auto_duo_code_review_enabled']).to eq(false)
+                  end
                 end
               end
             end

@@ -717,6 +717,9 @@ module EE
     def duo_code_review_dap_available?
       return false unless duo_foundational_flows_enabled
 
+      workflow_definition = ::Ai::Catalog::FoundationalFlow['code_review/v1']
+      return false unless enabled_flow_catalog_item_ids.include?(workflow_definition&.catalog_item&.id)
+
       ::Gitlab::Llm::StageCheck.available?(self, :duo_workflow)
     end
 
