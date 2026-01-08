@@ -4,10 +4,11 @@ module Ai
   class UsageQuotaService < BaseService
     include Gitlab::Utils::StrongMemoize
 
-    def initialize(ai_feature:, user:, namespace: nil)
+    def initialize(ai_feature:, user:, namespace: nil, event_type: :rails_on_ui_check)
       @ai_feature = ai_feature
       @user = user
       @namespace = namespace
+      @event_type = event_type
     end
 
     def execute
@@ -24,7 +25,12 @@ module Ai
         params[:unique_instance_id] = Gitlab::GlobalAnonymousId.instance_uuid
       end
 
-      response = ::Gitlab::SubscriptionPortal::Client.verify_usage_quota(**params)
+      feature_metadata = ::Gitlab::SubscriptionPortal::FeatureMetadata.for(:dap_feature_legacy)
+      response = ::Gitlab::SubscriptionPortal::Client.verify_usage_quota(
+        @event_type,
+        feature_metadata,
+        **params
+      )
 
       if response[:success]
         ServiceResponse.success

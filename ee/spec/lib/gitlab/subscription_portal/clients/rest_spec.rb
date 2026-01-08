@@ -432,7 +432,15 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     end
 
     describe '#verify_usage_quota' do
-      subject(:verify_usage_quota_request) { client.verify_usage_quota(**method_params) }
+      subject(:verify_usage_quota_request) { client.verify_usage_quota(event_type, metadata, **method_params) }
+
+      let(:event_type) { 'ai_request' }
+      let(:metadata) do
+        Gitlab::SubscriptionPortal::FeatureMetadata::Feature.new(
+          feature_qualified_name: 'duo_chat',
+          feature_ai_catalog_item: nil
+        )
+      end
 
       let(:method_params) do
         {
@@ -498,6 +506,24 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
           expect { verify_usage_quota_request }
             .to raise_error(ArgumentError,
               "Either root_namespace_id or unique_instance_id is required")
+        end
+      end
+
+      context "when event_type param is nil" do
+        let(:event_type) { nil }
+
+        it "raises an error" do
+          expect { verify_usage_quota_request }
+            .to raise_error(ArgumentError, "event_type cannot be nil")
+        end
+      end
+
+      context "when metadata param is nil" do
+        let(:metadata) { nil }
+
+        it "raises an error" do
+          expect { verify_usage_quota_request }
+            .to raise_error(ArgumentError, "metadata for the target feature cannot be nil")
         end
       end
 
@@ -584,29 +610,29 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
         end
 
         it 'uses cached response on subsequent calls' do
-          client.verify_usage_quota(**method_params)
-          client.verify_usage_quota(**method_params)
+          client.verify_usage_quota(event_type, metadata, **method_params)
+          client.verify_usage_quota(event_type, metadata, **method_params)
 
           expect(Gitlab::HTTP).to have_received(http_method).once
         end
 
         it 'generates different cache keys for different user' do
-          client.verify_usage_quota(user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
-          client.verify_usage_quota(user_id: 4, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(event_type, metadata, user_id: 4, root_namespace_id: 2, unique_instance_id: 3)
 
           expect(Gitlab::HTTP).to have_received(http_method).twice
         end
 
         it 'generates different cache keys for different namespace' do
-          client.verify_usage_quota(user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
-          client.verify_usage_quota(user_id: 1, root_namespace_id: 4, unique_instance_id: 3)
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 4, unique_instance_id: 3)
 
           expect(Gitlab::HTTP).to have_received(http_method).twice
         end
 
         it 'generates different cache keys for different instance' do
-          client.verify_usage_quota(user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
-          client.verify_usage_quota(user_id: 1, root_namespace_id: 2, unique_instance_id: 4)
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 2, unique_instance_id: 4)
 
           expect(Gitlab::HTTP).to have_received(http_method).twice
         end
@@ -624,8 +650,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
           end
 
           it 'makes HTTP request on every call' do
-            client.verify_usage_quota(**method_params)
-            client.verify_usage_quota(**method_params)
+            client.verify_usage_quota(event_type, metadata, **method_params)
+            client.verify_usage_quota(event_type, metadata, **method_params)
 
             expect(Gitlab::HTTP).to have_received(http_method).twice
           end

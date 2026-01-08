@@ -7,6 +7,19 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
   let(:ai_feature) { :duo_chat }
 
   describe '#usage_quota_check' do
+    let(:event_type) { :rails_on_ui_check }
+    let(:feature_metadata) do
+      Gitlab::SubscriptionPortal::FeatureMetadata::Feature.new(
+        feature_qualified_name: 'dap_feature_legacy',
+        feature_ai_catalog_item: nil
+      )
+    end
+
+    before do
+      allow(::Gitlab::SubscriptionPortal::FeatureMetadata)
+        .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
+    end
+
     context 'when running on GitLab.com' do
       shared_examples 'falling back to default namespace' do
         context 'when default namespace selected by user' do
@@ -16,8 +29,12 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
             allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
           end
 
-          it 'calls portal with default namespace' do
+          it 'calls portal with default namespace, dap_feature_legacy metadata, and rails_on_ui_check event type' do
+            expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
+              .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
             expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
+              :rails_on_ui_check,
+              feature_metadata,
               user_id: user.id,
               root_namespace_id: default_namespace.id
             )
@@ -56,13 +73,19 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
           context 'when usage quota is available' do
             before do
               allow(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
+                :rails_on_ui_check,
+                feature_metadata,
                 user_id: user.id,
                 root_namespace_id: root_namespace.id
               ).and_return({ success: true })
             end
 
-            it 'calls portal with provided namespace and returns success' do
+            it 'calls portal with provided namespace, dap_feature_legacy metadata, and rails_on_ui_check event type' do
+              expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
+                .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
               expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
+                :rails_on_ui_check,
+                feature_metadata,
                 user_id: user.id,
                 root_namespace_id: root_namespace.id
               )
@@ -74,13 +97,19 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
           context 'when usage quota is not available' do
             before do
               allow(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
+                :rails_on_ui_check,
+                feature_metadata,
                 user_id: user.id,
                 root_namespace_id: root_namespace.id
               ).and_return({ success: false })
             end
 
-            it 'calls portal with provided namespace and returns error' do
+            it 'calls portal with provided namespace, dap_feature_legacy metadata, and rails_on_ui_check event type' do
+              expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
+                .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
               expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
+                :rails_on_ui_check,
+                feature_metadata,
                 user_id: user.id,
                 root_namespace_id: root_namespace.id
               )
@@ -104,10 +133,39 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
         allow(::Gitlab::GlobalAnonymousId).to receive(:instance_uuid).and_return("instance_id")
       end
 
-      it 'calls portal with instance id' do
+      it 'calls portal with instance id, dap_feature_legacy metadata, and rails_on_ui_check event type' do
+        expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
+          .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
         expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
+          :rails_on_ui_check,
+          feature_metadata,
           user_id: user.id,
           unique_instance_id: "instance_id"
+        )
+
+        service_call
+      end
+    end
+
+    context 'when custom event_type is provided' do
+      subject(:service_call) do
+        described_class.new(ai_feature: ai_feature, user: user, event_type: :custom_event).execute
+      end
+
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+        allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(create(:group, id: 999))
+        allow(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).and_return({ success: true })
+      end
+
+      it 'uses the custom event_type instead of default rails_on_ui_check' do
+        expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
+          .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
+        expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
+          :custom_event,
+          feature_metadata,
+          user_id: user.id,
+          root_namespace_id: 999
         )
 
         service_call
