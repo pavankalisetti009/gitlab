@@ -25,6 +25,8 @@ module Mutations
           description: 'Identifier of the selected model for the feature.'
 
         def resolve(**args)
+          check_feature_access!
+
           raise_argument_not_available_if!(args, :ai_self_hosted_model_id) do
             !self_hosted_models_for_features?(args[:features])
           end
