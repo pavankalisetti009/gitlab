@@ -159,6 +159,8 @@ export const mockAiMetricsResponse = (values = []) =>
         requestReviewDuoCodeReviewOnMrByAuthorEventCount,
         requestReviewDuoCodeReviewOnMrByNonAuthorEventCount,
         postCommentDuoCodeReviewOnDiffEventCount,
+        reactThumbsUpOnDuoCodeReviewCommentEventCount,
+        reactThumbsDownOnDuoCodeReviewCommentEventCount,
         languages,
         acceptedLinesOfCode,
         shownLinesOfCode,
@@ -191,6 +193,8 @@ export const mockAiMetricsResponse = (values = []) =>
                 requestReviewDuoCodeReviewOnMrByAuthorEventCount,
                 requestReviewDuoCodeReviewOnMrByNonAuthorEventCount,
                 postCommentDuoCodeReviewOnDiffEventCount,
+                reactThumbsUpOnDuoCodeReviewCommentEventCount,
+                reactThumbsDownOnDuoCodeReviewCommentEventCount,
               },
               agentPlatformFlows: {
                 startedSessionEventCount: agentPlatformFlowsStartedSessionEventCount,

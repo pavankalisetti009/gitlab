@@ -218,15 +218,18 @@ export const generateTableRows = (timePeriods) =>
  *
  * @param {number} numerator - The value to be divided (above the line)
  * @param {number} denominator - The number to be divided by (below the line)
- * @returns {number|null} - Percentage or null if either count is invalid
+ * @param {boolean} [asDecimal=false] - If true, returns decimal rate (e.g., 0.75). Otherwise, returns percentage (e.g., 75)
+ * @returns {number|null} - Rate as percentage or decimal, or null if either count is invalid
  */
-export const calculateRate = ({ numerator, denominator }) => {
+export const calculateRate = ({ numerator, denominator, asDecimal = false }) => {
   const hasValidCounts =
     isPositiveInteger(numerator) && isPositiveInteger(denominator) && denominator > 0;
 
   if (!hasValidCounts) return null;
 
-  return (numerator / denominator) * 100;
+  const rate = numerator / denominator;
+
+  return asDecimal ? rate : rate * 100;
 };
 
 /**

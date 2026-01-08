@@ -1,8 +1,8 @@
 <script>
 import { GlAreaChart } from '@gitlab/ui/src/charts';
-import { merge } from 'lodash';
+import { merge, omit } from 'lodash';
 import { AREA_CHART_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
-import { formatVisualizationTooltipTitle, formatVisualizationValue } from './utils';
+import { formatChartTooltipTitle, humanizeChartTooltipValue } from './utils';
 
 export default {
   name: 'AreaChart',
@@ -23,7 +23,17 @@ export default {
   },
   computed: {
     fullOptions() {
-      return merge(this.$options.defaultChartOptions, this.options);
+      const defaultChartOptions = {
+        xAxis: {
+          type: 'category',
+        },
+        yAxis: {
+          type: 'value',
+        },
+      };
+
+      // Exclude `tooltip` to prevent ECharts from rendering default tooltip
+      return merge({}, defaultChartOptions, omit(this.options, 'tooltip'));
     },
     chartData() {
       return this.data.map((seriesData) => ({
@@ -36,15 +46,16 @@ export default {
     },
   },
   methods: {
-    formatVisualizationValue,
-    formatVisualizationTooltipTitle,
-  },
-  defaultChartOptions: {
-    xAxis: {
-      type: 'category',
+    formatTooltipTitle(title, params) {
+      const { chartTooltip: { titleFormatter: formatter } = {} } = this.options;
+      const xAxisValue = params?.seriesData?.at(0)?.value?.at(0);
+
+      return formatChartTooltipTitle({ title, value: xAxisValue, formatter });
     },
-    yAxis: {
-      type: 'value',
+    formatTooltipValue(value) {
+      const { chartTooltip: { valueUnit } = {} } = this.options;
+
+      return humanizeChartTooltipValue({ unit: valueUnit, value });
     },
   },
 };
@@ -59,9 +70,13 @@ export default {
     responsive
     data-testid="dashboard-visualization-area-chart"
   >
-    <template #tooltip-title="{ title, params }">
-      {{ formatVisualizationTooltipTitle(title, params) }}</template
+    <template #tooltip-title="{ title, params }"
+      ><span data-testid="chart-tooltip-title">{{
+        formatTooltipTitle(title, params)
+      }}</span></template
     >
-    <template #tooltip-value="{ value }">{{ formatVisualizationValue(value) }}</template>
+    <template #tooltip-value="{ value }"
+      ><span data-testid="chart-tooltip-value">{{ formatTooltipValue(value) }}</span></template
+    >
   </gl-area-chart>
 </template>

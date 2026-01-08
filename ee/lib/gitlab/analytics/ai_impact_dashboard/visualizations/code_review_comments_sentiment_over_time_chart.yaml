@@ -2,15 +2,16 @@
 version: 1
 type: AreaChart
 data:
-  type: merge_request_counts
+  type: code_review_comments_sentiment_over_time
   query:
-    dateRange: 365d
+    dateRange: 180d
 options:
   xAxis:
     name: "Month"
     type: "category"
   yAxis:
-    name: "Merge Requests merged"
+    name: ""
     type: "value"
   chartTooltip:
-    valueUnit: COUNT
+    valueUnit: PERCENT
+  includeLegendAvgMax: false

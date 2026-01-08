@@ -77,6 +77,7 @@ module Analytics
         duo_total_event_count_by_user
         code_review_requests_by_role_chart
         code_suggestions_acceptance_by_ide_chart
+        code_review_comments_sentiment_over_time_chart
       ].freeze
 
       CONTRIBUTIONS_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/contributions_dashboard/visualizations'
