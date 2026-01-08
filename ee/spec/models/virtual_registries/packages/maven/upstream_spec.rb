@@ -23,6 +23,12 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         .inverse_of(:upstream)
     end
 
+    it 'has many cache remote entries' do
+      is_expected.to have_many(:cache_remote_entries)
+        .class_name('VirtualRegistries::Packages::Maven::Cache::Remote::Entry')
+        .inverse_of(:upstream)
+    end
+
     it 'has many registry upstreams' do
       is_expected.to have_many(:registry_upstreams)
         .class_name('VirtualRegistries::Packages::Maven::RegistryUpstream')
