@@ -11223,6 +11223,9 @@ msgstr ""
 msgid "BillingPlans|Add-ons"
 msgstr ""
 
+msgid "BillingPlans|Additional features"
+msgstr ""
+
 msgid "BillingPlans|Advanced CI/CD"
 msgstr ""
 
@@ -11322,6 +11325,9 @@ msgstr ""
 msgid "BillingPlans|Explore %{feature}"
 msgstr ""
 
+msgid "BillingPlans|Explore plans"
+msgstr ""
+
 msgid "BillingPlans|Explore these Premium features to optimize your GitLab experience."
 msgstr ""
 
@@ -11341,6 +11347,9 @@ msgid "BillingPlans|Free guest users"
 msgstr ""
 
 msgid "BillingPlans|Get the most from your trial"
+msgstr ""
+
+msgid "BillingPlans|Get the most out of GitLab with Ultimate"
 msgstr ""
 
 msgid "BillingPlans|Get the most out of GitLab with Ultimate and GitLab Duo Enterprise"
@@ -11440,6 +11449,9 @@ msgid "BillingPlans|Start a GitLab Duo Enterprise trial to try all end-to-end AI
 msgstr ""
 
 msgid "BillingPlans|Start a free GitLab Duo Enterprise Trial"
+msgstr ""
+
+msgid "BillingPlans|Start an Ultimate trial to try the complete set of features from GitLab."
 msgstr ""
 
 msgid "BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to try the complete set of features from GitLab."

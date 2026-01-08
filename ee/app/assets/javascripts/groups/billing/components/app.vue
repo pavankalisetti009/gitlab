@@ -2,7 +2,7 @@
 import { GlTabs, GlTab } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import CurrentPlanHeader from 'ee/vue_shared/subscription/components/current_plan_header.vue';
-import PremiumPlanHeader from './premium_plan_header.vue';
+import UpgradePlanHeader from 'ee/vue_shared/subscription/components/upgrade_plan_header.vue';
 import FreePlanBillingHeader from './free_plan_billing_header.vue';
 import FreePlanBilling from './free_plan_billing.vue';
 import PremiumPlanBillingHeader from './premium_plan_billing_header.vue';
@@ -16,7 +16,7 @@ export default {
     GlTabs,
     GlTab,
     CurrentPlanHeader,
-    PremiumPlanHeader,
+    UpgradePlanHeader,
     FreePlanBillingHeader,
     FreePlanBilling,
     PremiumPlanBillingHeader,
@@ -111,13 +111,14 @@ export default {
         is-saas
       />
 
-      <premium-plan-header
+      <upgrade-plan-header
         :trial-active="trialActive"
         :trial-expired="trialExpired"
         :start-trial-path="startTrialPath"
         :upgrade-to-premium-url="upgradeToPremiumUrl"
         :can-access-duo-chat="canAccessDuoChat"
         :explore-links="exploreLinks"
+        is-saas
       />
     </div>
 

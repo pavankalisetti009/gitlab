@@ -1,5 +1,6 @@
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { PROMO_URL } from '~/constants';
 
 export const TRIAL_ACTIVE_FEATURE_HIGHLIGHTS = {
   header: s__('BillingPlans|Get the most from your trial'),
@@ -104,7 +105,7 @@ export const FEATURE_HIGHLIGHTS = {
     ],
     ctaLabel: s__('BillingPlans|Upgrade to Premium'),
   },
-  notInTrial: {
+  notInTrialSaas: {
     header: s__('BillingPlans|Get the most out of GitLab with Ultimate and GitLab Duo Enterprise'),
     subheader: s__(
       'BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to try the complete set of features from GitLab.',
@@ -136,5 +137,42 @@ export const FEATURE_HIGHLIGHTS = {
       },
     ],
     ctaLabel: s__('BillingPlans|Start free trial'),
+  },
+  notInTrialSM: {
+    header: s__('BillingPlans|Get the most out of GitLab with Ultimate'),
+    subheader: s__(
+      'BillingPlans|Start an Ultimate trial to try the complete set of features from GitLab.',
+    ),
+    features: [
+      {
+        id: 'ciCd',
+        iconName: 'check',
+        variant: 'info',
+        title: s__('BillingPlans|Advanced CI/CD'),
+      },
+      {
+        id: 'mergeRequestApprovals',
+        iconName: 'check',
+        variant: 'info',
+        title: s__('BillingPlans|Merge request approvals'),
+      },
+      {
+        id: 'mergeTrains',
+        iconName: 'check',
+        variant: 'info',
+        title: s__('BillingPlans|Merge trains'),
+      },
+      {
+        id: 'additionalFeatures',
+        iconName: 'plus',
+        variant: 'info',
+        title: s__('BillingPlans|Additional features'),
+        showAsLink: true,
+        docsLink: `${PROMO_URL}/pricing/feature-comparison/`,
+        tracking: { 'data-event-tracking': 'click_sm_additional_features_subscription_page' },
+      },
+    ],
+    ctaLabel: s__('BillingPlans|Start free trial'),
+    secondaryCtaLabel: s__('BillingPlans|Explore plans'),
   },
 };

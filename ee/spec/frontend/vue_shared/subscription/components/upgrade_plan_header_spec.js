@@ -1,9 +1,10 @@
 import { GlButton, GlPopover, GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import PremiumPlanHeader from 'ee/groups/billing/components/premium_plan_header.vue';
+import UpgradePlanHeader from 'ee/vue_shared/subscription/components/upgrade_plan_header.vue';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { mockBillingPageAttributes } from '../../mock_data';
+import { PROMO_URL } from '~/constants';
+import { mockBillingPageAttributes } from '../../../groups/mock_data';
 
 jest.mock('~/super_sidebar/constants', () => ({
   duoChatGlobalState: {
@@ -16,20 +17,20 @@ jest.mock('ee/ai/tanuki_bot/constants', () => ({
   CHAT_MODES: { CLASSIC: 'classic' },
 }));
 
-describe('PremiumPlanHeader', () => {
+describe('UpgradePlanHeader', () => {
   let wrapper;
   const premiumFeatureId = 'duoChat';
   const findGlButton = () => wrapper.findByTestId('upgrade-link-cta');
   const content = () => wrapper.text().replace(/\s+/g, ' ');
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMountExtended(PremiumPlanHeader, {
-      propsData: { ...mockBillingPageAttributes, ...props },
+    wrapper = shallowMountExtended(UpgradePlanHeader, {
+      propsData: { ...mockBillingPageAttributes, isSaas: true, ...props },
       stubs: { GlSprintf },
     });
   };
 
-  it('renders component', () => {
+  it('renders component for Saas', () => {
     createComponent();
 
     expect(content()).toContain('Get the most out of GitLab with Ultimate');
@@ -51,7 +52,7 @@ describe('PremiumPlanHeader', () => {
     expect(popoverTarget.exists()).toBe(false);
   });
 
-  describe('when trial is active', () => {
+  describe('when Saas trial is active', () => {
     beforeEach(() => {
       global.window.gon = {
         features: {
@@ -207,7 +208,7 @@ describe('PremiumPlanHeader', () => {
     });
   });
 
-  describe('when trial is expired', () => {
+  describe('when Saas trial is expired', () => {
     beforeEach(() => {
       createComponent({ trialExpired: true });
     });
@@ -229,6 +230,41 @@ describe('PremiumPlanHeader', () => {
     it('does not render popovers', () => {
       const popoverTarget = wrapper.find(`#${premiumFeatureId}`);
       expect(popoverTarget.exists()).toBe(false);
+    });
+  });
+
+  describe('self-managed', () => {
+    it('renders component', () => {
+      createComponent({ isSaas: false });
+
+      expect(content()).toContain('Get the most out of GitLab with Ultimate');
+      expect(content()).toContain(
+        'Start an Ultimate trial to try the complete set of features from GitLab.',
+      );
+      expect(content()).toContain('Additional features');
+
+      const featureLink = wrapper.findByTestId('feature-link');
+      expect(featureLink.props('href')).toBe(`${PROMO_URL}/pricing/feature-comparison/`);
+      expect(featureLink.attributes('data-event-tracking')).toBe(
+        'click_sm_additional_features_subscription_page',
+      );
+
+      const cta = findGlButton();
+
+      expect(cta.attributes('data-event-tracking')).toBe(
+        'click_sm_ultimate_trial_subscription_page',
+      );
+      expect(cta.props('href')).toBe(mockBillingPageAttributes.startTrialPath);
+      expect(cta.text()).toBe('Start free trial');
+
+      const secondaryCta = wrapper.findByTestId('explore-link-cta');
+      expect(secondaryCta.attributes('data-event-tracking')).toBe(
+        'click_sm_explore_plans_subscription_page',
+      );
+      expect(secondaryCta.props('href')).toBe(
+        `${PROMO_URL}/pricing/?deployment=self-managed-deployment`,
+      );
+      expect(secondaryCta.text()).toBe('Explore plans');
     });
   });
 });
