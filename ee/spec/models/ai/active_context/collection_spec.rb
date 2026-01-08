@@ -273,4 +273,19 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
       )
     end
   end
+
+  describe '#name_without_prefix' do
+    before do
+      collection.update!(name: 'documents')
+    end
+
+    it 'delegates to the adapter to remove the prefix from the collection name' do
+      expect(collection.name_without_prefix)
+        .to eq(collection.connection.adapter.collection_name_without_prefix(collection.name))
+    end
+
+    it 'returns the name unchanged' do
+      expect(collection.name_without_prefix).to eq('documents')
+    end
+  end
 end

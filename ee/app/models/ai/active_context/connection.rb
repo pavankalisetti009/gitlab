@@ -26,6 +26,9 @@ module Ai
       validates :options, presence: true
       validates_uniqueness_of :active, conditions: -> { where(active: true) }, if: :active
 
+      after_destroy :reload_adapter
+      after_save :reload_adapter
+
       def self.active
         where(active: true).first
       end
@@ -73,6 +76,14 @@ module Ai
 
       def use_advanced_search_config_option
         read_attribute(:options)['use_advanced_search_config']
+      end
+
+      def adapter
+        ::ActiveContext::Adapter.for_connection(self)
+      end
+
+      def reload_adapter
+        ::ActiveContext::Adapter.reset
       end
     end
   end
