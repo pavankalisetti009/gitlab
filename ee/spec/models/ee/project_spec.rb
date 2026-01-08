@@ -4344,7 +4344,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#inactive?' do
+  describe '#dormant?' do
     context 'when Gitlab.com', :saas do
       context 'when project belongs to paid namespace' do
         before do
@@ -4356,7 +4356,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           ultimate_group = create(:group_with_plan, plan: :ultimate_plan)
           ultimate_project = create(:project, last_activity_at: 3.years.ago, namespace: ultimate_group)
 
-          expect(ultimate_project.inactive?).to eq(false)
+          expect(ultimate_project.dormant?).to eq(false)
         end
       end
 
@@ -4364,24 +4364,24 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         let_it_be(:no_plan_group) { create(:group_with_plan, plan: nil) }
         let_it_be_with_reload(:project) { create(:project, namespace: no_plan_group) }
 
-        it_behaves_like 'returns true if project is inactive'
+        it_behaves_like 'returns true if project is dormant'
       end
     end
 
     context 'when not Gitlab.com' do
       let_it_be_with_reload(:project) { create(:project, name: 'test-project') }
 
-      it_behaves_like 'returns true if project is inactive'
+      it_behaves_like 'returns true if project is dormant'
     end
   end
 
-  describe '.inactive', :saas do
+  describe '.dormant', :saas do
     before do
       stub_application_setting(inactive_projects_min_size_mb: 5)
       stub_application_setting(inactive_projects_send_warning_email_after_months: 24)
     end
 
-    it 'returns inactive projects belonging to free namespace' do
+    it 'returns dormant projects belonging to free namespace' do
       ultimate_group = create(:group_with_plan, plan: :ultimate_plan)
       premium_group = create(:group_with_plan, plan: :premium_plan)
       free_plan_group = create(:group_with_plan, plan: :free_plan)
@@ -4391,12 +4391,12 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           project.update!(last_activity_at: 7.days.ago)
         end
 
-      free_small_inactive_project =
+      free_small_dormant_project =
         create_project_with_statistics(free_plan_group, with_data: true, size_multiplier: 1.kilobyte).tap do |project|
           project.update!(last_activity_at: 3.years.ago)
         end
 
-      free_large_inactive_project =
+      free_large_dormant_project =
         create_project_with_statistics(free_plan_group, with_data: true, size_multiplier: 10.megabytes).tap do |project|
           project.update!(last_activity_at: 3.years.ago)
         end
@@ -4411,20 +4411,20 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           project.update!(last_activity_at: 7.days.ago)
         end
 
-      paid_small_inactive_project =
+      paid_small_dormant_project =
         create_project_with_statistics(premium_group, with_data: true, size_multiplier: 1.megabyte).tap do |project|
           project.update!(last_activity_at: 7.years.ago)
         end
 
-      paid_large_inactive_project =
+      paid_large_dormant_project =
         create_project_with_statistics(ultimate_group, with_data: true, size_multiplier: 1.gigabyte).tap do |project|
           project.update!(last_activity_at: 7.years.ago)
         end
 
-      expect(described_class.inactive).to contain_exactly(free_large_inactive_project)
-      expect(described_class.inactive).not_to include(
-        free_small_active_project, free_small_inactive_project, free_large_active_project,
-        paid_small_active_project, paid_small_inactive_project, paid_large_inactive_project
+      expect(described_class.dormant).to contain_exactly(free_large_dormant_project)
+      expect(described_class.dormant).not_to include(
+        free_small_active_project, free_small_dormant_project, free_large_active_project,
+        paid_small_active_project, paid_small_dormant_project, paid_large_dormant_project
       )
     end
   end

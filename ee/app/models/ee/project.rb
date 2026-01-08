@@ -813,8 +813,8 @@ module EE
         super.with_invited_groups
       end
 
-      override :inactive
-      def inactive
+      override :dormant
+      def dormant
         return super unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         statistics = ::ProjectStatistics.arel_table
@@ -1511,8 +1511,8 @@ module EE
       security_orchestration_policies_for_scope(security_policies, include_invalid: include_invalid)
     end
 
-    override :inactive?
-    def inactive?
+    override :dormant?
+    def dormant?
       ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) && root_namespace.paid? ? false : super
     end
 
