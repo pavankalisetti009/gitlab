@@ -26,27 +26,25 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
   subject(:request) { post_graphql_mutation(mutation, current_user: current_user) }
 
   describe '#resolve' do
-<<<<<<< HEAD
-    shared_examples 'performs the right instance model selection authorization' do
-      it 'performs the right authorization check' do
-        allow(Ability).to receive(:allowed?).and_call_original
-        expect(Ability).to receive(:allowed?).with(current_user, :manage_instance_model_selection)
-=======
     shared_examples 'performs the right self-hosted DAP authorization' do
       it 'performs the right authorization check' do
         allow(Ability).to receive(:allowed?).and_call_original
         expect(Ability).to receive(:allowed?).with(current_user, :update_dap_self_hosted_model)
->>>>>>> source-project/master
 
         request
       end
     end
 
-<<<<<<< HEAD
+    shared_examples 'performs the right instance model selection authorization' do
+      it 'performs the right authorization check' do
+        allow(Ability).to receive(:allowed?).and_call_original
+        expect(Ability).to receive(:allowed?).with(current_user, :manage_instance_model_selection)
+
+        request
+      end
+    end
+
     context 'when the user does not have write access (cannot manage self-hosted or instance model selection)' do
-=======
-    context 'when the user does not have write access' do
->>>>>>> source-project/master
       let(:current_user) { create(:user) }
 
       it_behaves_like 'performs the right instance model selection authorization'
@@ -109,8 +107,6 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           )
         end
       end
-<<<<<<< HEAD
-=======
 
       context 'for self-hosted DAP' do
         let(:self_hosted_model_id) { self_hosted_model.to_global_id.to_s }
@@ -159,7 +155,6 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           )
         end
       end
->>>>>>> source-project/master
     end
 
     context 'when the user has write access (can manage both self-hosted or instance model selection)' do

@@ -25,15 +25,11 @@ module Mutations
           description: 'Identifier of the selected model for the feature.'
 
         def resolve(**args)
-<<<<<<< HEAD
           check_feature_access!
 
-          raise_argument_not_available_if!(args, :ai_self_hosted_model_id) { !self_hosted_models? }
-=======
           raise_argument_not_available_if!(args, :ai_self_hosted_model_id) do
             !self_hosted_models_for_features?(args[:features])
           end
->>>>>>> source-project/master
           raise_argument_not_available_if!(args, :offered_model_ref) { !gitlab_models? }
 
           return { ai_feature_settings: [], errors: ['At least one feature is required'] } if args[:features].empty?
