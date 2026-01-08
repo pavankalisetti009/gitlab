@@ -28,7 +28,16 @@ RSpec.describe 'Virtual registry', feature_category: :virtual_registry do
         group.add_guest(user)
       end
 
-      it_behaves_like 'virtual registry is unavailable'
+      it_behaves_like 'maven virtual registry is unavailable'
+
+      it 'sidebar menu is open', :js do
+        visit url
+        wait_for_requests
+
+        within_testid 'super-sidebar' do
+          expect(page).to have_link('Virtual registry', href: group_virtual_registries_path(group))
+        end
+      end
 
       it 'renders virtual registry page' do
         visit url

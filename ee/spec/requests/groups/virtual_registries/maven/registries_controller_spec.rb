@@ -44,7 +44,7 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesController, feature_c
 
         it_behaves_like 'returning response status', :ok
 
-        it_behaves_like 'disallowed access to virtual registry'
+        it_behaves_like 'disallowed access to maven virtual registry'
       end
     end
   end
@@ -227,7 +227,7 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesController, feature_c
 
         it_behaves_like 'returning response status', :ok
 
-        it_behaves_like 'disallowed access to virtual registry'
+        it_behaves_like 'disallowed access to maven virtual registry'
 
         it 'assigns the registry to @maven_registry' do
           get_edit

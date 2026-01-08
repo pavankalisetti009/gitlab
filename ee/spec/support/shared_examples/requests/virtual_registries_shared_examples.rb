@@ -15,6 +15,19 @@ RSpec.shared_examples 'disallowed access to virtual registry' do
     it_behaves_like 'returning response status', :not_found
   end
 
+  context 'when virtual registries setting enabled is false' do
+    before do
+      allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
+        :virtual_registries_setting, :disabled, group: group))
+    end
+
+    it_behaves_like 'returning response status', :not_found
+  end
+end
+
+RSpec.shared_examples 'disallowed access to maven virtual registry' do
+  it_behaves_like 'disallowed access to virtual registry'
+
   context 'when license is invalid' do
     before do
       stub_licensed_features(packages_virtual_registry: false)
@@ -30,11 +43,30 @@ RSpec.shared_examples 'disallowed access to virtual registry' do
 
     it_behaves_like 'returning response status', :not_found
   end
+end
 
-  context 'when virtual registries setting enabled is false' do
+RSpec.shared_examples 'disallowed access to container virtual registry' do
+  it_behaves_like 'disallowed access to virtual registry'
+
+  context 'when license is invalid' do
     before do
-      allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
-        :virtual_registries_setting, :disabled, group: group))
+      stub_licensed_features(container_virtual_registry: false)
+    end
+
+    it_behaves_like 'returning response status', :not_found
+  end
+
+  context 'when feature flag container_virtual_registries is disabled' do
+    before do
+      stub_feature_flags(container_virtual_registries: false)
+    end
+
+    it_behaves_like 'returning response status', :not_found
+  end
+
+  context 'when feature flag ui_for_container_virtual_registries is disabled' do
+    before do
+      stub_feature_flags(ui_for_container_virtual_registries: false)
     end
 
     it_behaves_like 'returning response status', :not_found

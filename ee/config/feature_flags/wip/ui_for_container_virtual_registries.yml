@@ -1,0 +1,10 @@
+---
+name: ui_for_container_virtual_registries
+description: Allow users access container virtual registry UI
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/19283
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/217553
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/582167
+milestone: '18.8'
+group: group::container registry
+type: wip
+default_enabled: false

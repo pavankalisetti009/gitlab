@@ -29,11 +29,14 @@ RSpec.describe Sidebars::Groups::Menus::PackagesRegistriesMenu, feature_category
 
     describe 'Virtual Registry' do
       let(:item_id) { :virtual_registry }
-      let(:virtual_registry_available) { false }
+      let(:maven_virtual_registry_available) { false }
+      let(:container_virtual_registry_available) { false }
 
       before do
         allow(::VirtualRegistries::Packages::Maven).to receive(:virtual_registry_available?)
-          .and_return(virtual_registry_available)
+          .and_return(maven_virtual_registry_available)
+        allow(::VirtualRegistries::Container).to receive(:virtual_registry_available?)
+          .and_return(container_virtual_registry_available)
       end
 
       context 'when user does not have access' do
@@ -43,12 +46,18 @@ RSpec.describe Sidebars::Groups::Menus::PackagesRegistriesMenu, feature_category
       end
 
       context 'when user has access' do
-        context 'when maven virtual registry is unavailable' do
+        context 'when container & maven virtual registry are unavailable' do
           it { is_expected.to be_nil }
         end
 
         context 'when maven virtual registry is available' do
-          let(:virtual_registry_available) { true }
+          let(:maven_virtual_registry_available) { true }
+
+          it { is_expected.not_to be_nil }
+        end
+
+        context 'when container virtual registry is available' do
+          let(:container_virtual_registry_available) { true }
 
           it { is_expected.not_to be_nil }
         end

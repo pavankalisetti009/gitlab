@@ -7,4 +7,8 @@ namespace :virtual_registries do
     resources :registries, only: [:new, :create, :show, :edit, :update, :destroy]
     resources :upstreams, only: [:show, :edit]
   end
+
+  namespace :container do
+    get '/(*vueroute)', action: :index, format: false
+  end
 end

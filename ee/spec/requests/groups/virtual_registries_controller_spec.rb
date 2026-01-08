@@ -36,7 +36,7 @@ RSpec.describe Groups::VirtualRegistriesController, feature_category: :virtual_r
 
         it_behaves_like 'returning response status', :ok
 
-        it_behaves_like 'disallowed access to virtual registry'
+        it_behaves_like 'disallowed access to maven virtual registry'
 
         context 'when there are available registries' do
           let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group:) }

@@ -2,17 +2,17 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::VirtualRegistries::Maven::RegistriesAndUpstreamsController, feature_category: :virtual_registry do
+RSpec.describe Groups::VirtualRegistries::ContainerController, feature_category: :virtual_registry do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
 
   before do
     stub_config(dependency_proxy: { enabled: true })
-    stub_licensed_features(packages_virtual_registry: true)
+    stub_licensed_features(container_virtual_registry: true)
   end
 
   describe 'GET #index' do
-    subject(:get_index) { get group_virtual_registries_maven_registries_and_upstreams_path(group) }
+    subject(:get_index) { get group_virtual_registries_container_path(group) }
 
     it { is_expected.to have_request_urgency(:low) }
 
@@ -36,7 +36,7 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesAndUpstreamsControlle
 
         it_behaves_like 'returning response status', :ok
 
-        it_behaves_like 'disallowed access to maven virtual registry'
+        it_behaves_like 'disallowed access to container virtual registry'
 
         it 'pushes updateVirtualRegistry: false ability to frontend' do
           get_index
@@ -54,26 +54,6 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesAndUpstreamsControlle
           get_index
 
           expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: true)
-        end
-
-        it 'pushes adminVirtualRegistry: false ability to frontend' do
-          get_index
-
-          expect(response.body).to have_pushed_frontend_ability(adminVirtualRegistry: false)
-        end
-      end
-
-      context 'when user is group owner' do
-        before_all do
-          group.add_owner(user)
-        end
-
-        it_behaves_like 'pushed feature flag', :ui_for_virtual_registry_cleanup_policy
-
-        it 'pushes adminVirtualRegistry: true ability to frontend' do
-          get_index
-
-          expect(response.body).to have_pushed_frontend_ability(adminVirtualRegistry: true)
         end
       end
     end
