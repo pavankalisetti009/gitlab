@@ -199,25 +199,11 @@ module EE
       end
 
       def audit_duo_namespace_access_rules_update(rules)
-        audit_context = {
-          name: 'feature_access_rules_updated',
-          author: current_user,
-          scope: ::Gitlab::Audit::InstanceScope.new,
-          target: ::Gitlab::Audit::NullTarget.new,
-          message: access_rules_audit_message(rules)
-        }
-
-        ::Gitlab::Audit::Auditor.audit(audit_context)
-      end
-
-      def access_rules_audit_message(rules)
-        return 'Cleared feature access rules' if rules.empty?
-
-        updated_rules = rules.map do |rule|
-          "Group id: #{rule.dig(:through_namespace, :id)}, features: #{rule[:features]}"
-        end.join('; ')
-
-        "Updated feature access rules #{updated_rules}"
+        ::Ai::FeatureAccessRuleAuditor.new(
+          current_user: current_user,
+          rules: rules,
+          scope: ::Gitlab::Audit::InstanceScope.new
+        ).execute
       end
     end
   end

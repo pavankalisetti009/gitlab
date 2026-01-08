@@ -163,6 +163,8 @@ module EE
         end
 
         group.ai_feature_rules = ai_feature_rules
+
+        audit_duo_namespace_access_rules_update(ai_feature_rules)
       rescue ArgumentError, ActiveRecord::RecordInvalid => e
         group.errors.add(:duo_namespace_access_rules, e.message)
       end
@@ -301,6 +303,14 @@ module EE
 
       def non_assignable_group_params
         super + [:amazon_q_auto_review_enabled]
+      end
+
+      def audit_duo_namespace_access_rules_update(rules)
+        ::Ai::FeatureAccessRuleAuditor.new(
+          current_user: current_user,
+          rules: rules,
+          scope: group
+        ).execute
       end
     end
   end

@@ -530,26 +530,22 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
           it 'audits the cleared rules' do
             create(:ai_instance_accessible_entity_rules, through_namespace_id: namespace_a.id)
 
-            expect(Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(
-              name: 'feature_access_rules_updated',
-              author: user,
-              scope: be_an_instance_of(::Gitlab::Audit::InstanceScope),
-              target: be_an_instance_of(::Gitlab::Audit::NullTarget),
-              message: 'Cleared feature access rules'
-            ))
+            expect(::Ai::FeatureAccessRuleAuditor).to receive(:new).with(
+              current_user: user,
+              rules: duo_namespace_access_rules,
+              scope: be_an_instance_of(::Gitlab::Audit::InstanceScope)
+            ).and_call_original
 
             expect { result }.to change { Ai::FeatureAccessRule.count }.from(1).to(0)
           end
         end
 
         it 'audits the updated rules' do
-          expect(Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(
-            name: 'feature_access_rules_updated',
-            author: user,
-            scope: be_an_instance_of(::Gitlab::Audit::InstanceScope),
-            target: be_an_instance_of(::Gitlab::Audit::NullTarget),
-            message: include("Updated feature access rules")
-          ))
+          expect(::Ai::FeatureAccessRuleAuditor).to receive(:new).with(
+            current_user: user,
+            rules: duo_namespace_access_rules,
+            scope: be_an_instance_of(::Gitlab::Audit::InstanceScope)
+          ).and_call_original
 
           result
         end
@@ -568,9 +564,7 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
         end
 
         it 'does not audit the event' do
-          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
-            hash_including(name: 'feature_access_rules_updated')
-          )
+          expect(::Ai::FeatureAccessRuleAuditor).not_to receive(:new)
 
           result
         end
@@ -587,9 +581,7 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
         end
 
         it 'does not audit the event' do
-          expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(
-            hash_including(name: 'feature_access_rules_updated')
-          )
+          expect(::Ai::FeatureAccessRuleAuditor).not_to receive(:new)
 
           result
         end
