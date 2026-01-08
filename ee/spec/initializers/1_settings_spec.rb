@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe '1_settings', feature_category: :shared do
+RSpec.describe '1_settings', feature_category: :settings do
   include_context 'when loading 1_settings initializer'
 
   describe 'cron jobs' do
