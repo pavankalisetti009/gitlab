@@ -1,0 +1,7 @@
+fragment UserDisabledForDuoUsage on User {
+  id
+  status {
+    disabledForDuoUsage
+    disabledForDuoUsageReason
+  }
+}
