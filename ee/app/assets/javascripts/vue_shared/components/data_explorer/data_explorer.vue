@@ -100,6 +100,7 @@ export default {
           v-else-if="submittedQuery"
           :key="retryCount"
           :glql-query="submittedQuery"
+          tracking-event-name="render_data_explorer_query"
           @change="handleResolverChange"
         />
         <gl-empty-state
