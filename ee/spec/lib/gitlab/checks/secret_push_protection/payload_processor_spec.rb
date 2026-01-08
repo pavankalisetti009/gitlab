@@ -311,24 +311,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
       end
     end
 
-    context 'when drop_get_tree_entries_from_spp feature flag is disabled' do
-      before do
-        stub_feature_flags(drop_get_tree_entries_from_spp: false)
-      end
-
-      it 'does not populate the map' do
-        _, lookup_map = payload_processor.standardize_payloads
-
-        expect(lookup_map).to be_empty
-      end
-
-      it 'does not log the map population message' do
-        payload_processor.standardize_payloads
-
-        expect(secret_detection_logger).not_to receive(:info)
-      end
-    end
-
     context 'when secret_detection_transition_to_raw_info_gitaly_endpoint is disabled' do
       before do
         stub_feature_flags(secret_detection_transition_to_raw_info_gitaly_endpoint: false)

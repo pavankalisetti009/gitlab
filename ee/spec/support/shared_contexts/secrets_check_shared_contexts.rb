@@ -69,13 +69,6 @@ RSpec.shared_context 'secrets check context' do
     )
   end
 
-  let(:expected_tree_args) do
-    {
-      repository: repository, sha: new_commit,
-      recursive: true, rescue_not_found: false
-    }
-  end
-
   # repository.blank_ref is used to denote a delete commit
   let(:delete_changes) do
     [
@@ -143,22 +136,6 @@ RSpec.shared_context 'secrets check context' do
     )
   end
 
-  # Used for mocking calls to `tree_entries` methods.
-  let(:gitaly_pagination_cursor) { Gitaly::PaginationCursor.new(next_cursor: "") }
-  let(:tree_entries) do
-    [
-      Gitlab::Git::Tree.new(
-        id: blob_2_reference,
-        type: :blob,
-        mode: '100644',
-        name: '.env',
-        path: '.env',
-        flat_path: '.env',
-        commit_id: new_commit
-      )
-    ]
-  end
-
   # Used for mocking calls to logger.
   let(:secret_detection_logger) { instance_double(::Gitlab::SecretDetectionLogger) }
 
@@ -206,26 +183,12 @@ RSpec.shared_context 'secret detection error and log messages context' do
     format(error_messages[:blob_timed_out_error], { payload_id: blob_6_reference })
   end
 
-  let(:too_many_tree_entries_error) do
-    format(error_messages[:too_many_tree_entries_error], { sha: new_commit })
-  end
-
   # Log messages with formatting
   let(:finding_path) { '.env' }
   let(:finding_line_number) { 1 }
   let(:finding_description) { 'GitLab personal access token' }
-  let(:another_finding_path) { 'test.txt' }
-  let(:another_finding_line_number) { 2 }
-  let(:another_finding_description) { 'GitLab runner authentication token' }
   let(:finding_message_header) { format(log_messages[:finding_message_occurrence_header], { sha: new_commit }) }
-  let(:another_finding_message_header) do
-    format(log_messages[:finding_message_occurrence_header], { sha: another_new_commit })
-  end
-
   let(:finding_message_path) { format(log_messages[:finding_message_occurrence_path], { path: finding_path }) }
-  let(:another_finding_message_path) do
-    format(log_messages[:finding_message_occurrence_path], { path: another_finding_path })
-  end
 
   let(:finding_message_occurrence_line) do
     format(
@@ -233,16 +196,6 @@ RSpec.shared_context 'secret detection error and log messages context' do
       {
         line_number: finding_line_number,
         description: finding_description
-      }
-    )
-  end
-
-  let(:another_finding_message_occurrence_line) do
-    format(
-      log_messages[:finding_message_occurrence_line],
-      {
-        line_number: finding_line_number,
-        description: another_finding_description
       }
     )
   end
@@ -267,57 +220,6 @@ RSpec.shared_context 'secret detection error and log messages context' do
     finding_message_path + format(log_messages[:finding_message_occurrence_line], variables) +
       finding_message_path + format(log_messages[:finding_message_occurrence_line],
         variables.merge(line_number: finding_line_number + 10))
-  end
-
-  let(:finding_message_same_blob_in_multiple_commits_header_path_and_lines) do
-    message = finding_message_header
-    message += finding_message_path
-    message += finding_message_occurrence_line
-    message += format(log_messages[:finding_message_occurrence_header], { sha: commit_with_same_blob })
-    message += finding_message_path
-    message += finding_message_occurrence_line
-    message
-  end
-
-  let(:finding_message_multiple_files_occurrence_lines) do
-    message = finding_message_header
-    message += finding_message_path
-    message += finding_message_occurrence_line
-    message += another_finding_message_path
-    message += another_finding_message_occurrence_line
-    message
-  end
-
-  let(:finding_message_multiple_findings_multiple_commits_occurrence_lines) do
-    message = finding_message_header
-    message += finding_message_path
-    message += finding_message_occurrence_line
-    message += another_finding_message_header
-    message += another_finding_message_path
-    message += another_finding_message_occurrence_line
-    message
-  end
-
-  let(:finding_message_multiple_findings_on_same_line) do
-    variables = {
-      line_number: finding_line_number,
-      description: finding_description
-    }
-
-    finding_message_path + format(log_messages[:finding_message_occurrence_line], variables) +
-      finding_message_path + format(log_messages[:finding_message_occurrence_line],
-        variables.merge(description: second_finding_description))
-  end
-
-  let(:finding_message_with_blob) do
-    format(
-      log_messages[:finding_message],
-      {
-        payload_id: blob_2_reference,
-        line_number: finding_line_number,
-        description: finding_description
-      }
-    )
   end
 
   let(:found_secrets_docs_link) do
