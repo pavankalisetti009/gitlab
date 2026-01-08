@@ -11,6 +11,7 @@ module Vulnerabilities
     urgency :throttled
     idempotent!
     concurrency_limit -> { 100 }
+    sidekiq_options retry: 10
 
     CONFIDENCE_THRESHOLD = 0.6
     WORKFLOW_DEFINITION = ::Ai::Catalog::FoundationalFlow['resolve_sast_vulnerability/v1']
