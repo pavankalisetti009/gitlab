@@ -59,6 +59,10 @@ class License < ApplicationRecord
       cache.fetch(CACHE_KEY, as: License, expires_in: 1.minute) { load_license }
     end
 
+    def current?
+      current.present? && current.valid?
+    end
+
     def reset_current
       cache.expire(CACHE_KEY)
     end
@@ -206,6 +210,7 @@ class License < ApplicationRecord
   def sha256
     Digest::SHA256.hexdigest(normalized_data)
   end
+  alias_method :checksum, :sha256
 
   def license
     return unless self.data

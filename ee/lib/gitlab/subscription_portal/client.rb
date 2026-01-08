@@ -9,6 +9,14 @@ module Gitlab
       ResponseError = Class.new(StandardError)
 
       class << self
+        def license_checksum_headers
+          license = ::License.current
+
+          raise 'No active license' unless license
+
+          json_headers.merge('X-License-Token' => license.checksum)
+        end
+
         private
 
         def default_headers

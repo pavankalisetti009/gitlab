@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :subscription_management do
+RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, :without_license, feature_category: :subscription_management do
   let(:client) { Gitlab::SubscriptionPortal::Client }
   let(:message) { nil }
   let(:http_method) { :post }
@@ -166,6 +166,19 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
   end
 
   describe 'request methods - non saas environment' do
+    let(:headers) do
+      {
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json',
+        'X-License-Token' => License.current.checksum,
+        'User-Agent' => "GitLab/#{Gitlab::VERSION}"
+      }
+    end
+
+    before_all do
+      TestLicense.init
+    end
+
     describe '#generate_trial' do
       subject do
         client.generate_trial({})
@@ -237,6 +250,208 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       let(:route_path) { 'api/v1/gitlab/namespaces/trials/trial_types' }
 
       it_behaves_like 'when request is disabled'
+    end
+
+    describe '#verify_usage_quota' do
+      subject(:verify_usage_quota_request) { client.verify_usage_quota(event_type, metadata, **method_params) }
+
+      let(:event_type) { 'ai_request' }
+      let(:metadata) do
+        Gitlab::SubscriptionPortal::FeatureMetadata::Feature.new(
+          feature_qualified_name: 'duo_chat',
+          feature_ai_catalog_item: nil
+        )
+      end
+
+      let(:method_params) do
+        {
+          user_id: 1,
+          unique_instance_id: '00000000-0000-0000-0000-000000000000'
+        }
+      end
+
+      let(:http_method) { :head }
+      let(:route_path) { 'api/v1/consumers/resolve' }
+
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+
+      shared_examples 'when response code is 402' do
+        let(:response) { Net::HTTPPaymentRequired.new(1.0, '402', 'Payment Required') }
+
+        it 'returns the "Payment required" error' do
+          allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+
+          expect(subject[:success]).to eq(false)
+          expect(subject[:data][:errors]).to eq("HTTP status code: 402")
+        end
+      end
+
+      context "when checking quota for an instance" do
+        let(:method_params) { { user_id: 1, unique_instance_id: "00000000-0000-0000-0000-000000000000" } }
+
+        it_behaves_like 'when response is successful'
+      end
+
+      context "when user_id param is missing" do
+        let(:method_params) { { unique_instance_id: "00000000-0000-0000-0000-000000000000" } }
+
+        it "raises an error" do
+          expect { verify_usage_quota_request }.to raise_error(ArgumentError, "user_id is required")
+        end
+      end
+
+      context "when realm param is missing" do
+        let(:method_params) { { user_id: 1, unique_instance_id: "00000000-0000-0000-0000-000000000000", realm: nil } }
+
+        it "raises an error" do
+          expect { verify_usage_quota_request }.to raise_error(ArgumentError, "realm is required")
+        end
+      end
+
+      context "when unique_instance_id is missing" do
+        let(:method_params) { { user_id: 1 } }
+
+        it "raises an error" do
+          expect { verify_usage_quota_request }
+            .to raise_error(ArgumentError,
+              "Either root_namespace_id or unique_instance_id is required")
+        end
+      end
+
+      describe 'url' do
+        let(:expected_url) { "#{::Gitlab::Routing.url_helpers.subscription_portal_url}/#{route_path}" }
+        let(:response) { Net::HTTPSuccess.new(1.0, '201', 'OK') }
+
+        before do
+          allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+          stub_feature_flags(use_mock_dot_api_for_usage_quota: false)
+        end
+
+        it 'uses SUBSCRIPTION_PORTAL_URL' do
+          verify_usage_quota_request
+          expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+        end
+
+        context 'when in development mode' do
+          before do
+            stub_rails_env('development')
+          end
+
+          it 'uses SUBSCRIPTION_PORTAL_URL' do
+            verify_usage_quota_request
+            expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+          end
+        end
+
+        context 'when feature flag is set' do
+          before do
+            stub_feature_flags(use_mock_dot_api_for_usage_quota: true)
+          end
+
+          it 'uses SUBSCRIPTION_PORTAL_URL' do
+            verify_usage_quota_request
+            expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+          end
+        end
+
+        context 'when in development mode and feature flag is set' do
+          before do
+            stub_feature_flags(use_mock_dot_api_for_usage_quota: true)
+            stub_rails_env('development')
+          end
+
+          let(:expected_url) { "http://localhost:4567/#{route_path}" }
+
+          it 'uses mock server url' do
+            verify_usage_quota_request
+            expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+          end
+
+          context 'when env variable is set' do
+            before do
+              stub_env('MOCK_CUSTOMER_DOT_PORTAL_SERVER_URL', 'http://another-url.com')
+            end
+
+            let(:expected_url) { "http://another-url.com/#{route_path}" }
+
+            it 'uses env mock server url' do
+              verify_usage_quota_request
+              expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+            end
+          end
+        end
+      end
+
+      describe 'caching', :use_clean_rails_memory_store_caching do
+        let(:response) { Net::HTTPSuccess.new(1.0, '201', 'OK') }
+
+        before do
+          allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+          Rails.cache.clear
+        end
+
+        it 'caches the response for 1 hour' do
+          # \b[a-f0-9]{64}\b regex for output of Digest::SHA256.hexdigest
+          expect(Rails.cache).to receive(:fetch).with(
+            including(/usage_quota_dot_query:\b[a-f0-9]{64}\b/),
+            expires_in: 1.hour
+          ).and_call_original
+
+          verify_usage_quota_request
+        end
+
+        it 'uses cached response on subsequent calls' do
+          client.verify_usage_quota(event_type, metadata, **method_params)
+          client.verify_usage_quota(event_type, metadata, **method_params)
+
+          expect(Gitlab::HTTP).to have_received(http_method).once
+        end
+
+        it 'generates different cache keys for different user' do
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(event_type, metadata, user_id: 4, root_namespace_id: 2, unique_instance_id: 3)
+
+          expect(Gitlab::HTTP).to have_received(http_method).twice
+        end
+
+        it 'generates different cache keys for different namespace' do
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 4, unique_instance_id: 3)
+
+          expect(Gitlab::HTTP).to have_received(http_method).twice
+        end
+
+        it 'generates different cache keys for different instance' do
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(event_type, metadata, user_id: 1, root_namespace_id: 2, unique_instance_id: 4)
+
+          expect(Gitlab::HTTP).to have_received(http_method).twice
+        end
+
+        context 'when using mock endpoint' do
+          before do
+            stub_feature_flags(use_mock_dot_api_for_usage_quota: true)
+            stub_rails_env('development')
+          end
+
+          it 'does not cache the response' do
+            expect(Rails.cache).not_to receive(:fetch)
+
+            verify_usage_quota_request
+          end
+
+          it 'makes HTTP request on every call' do
+            client.verify_usage_quota(event_type, metadata, **method_params)
+            client.verify_usage_quota(event_type, metadata, **method_params)
+
+            expect(Gitlab::HTTP).to have_received(http_method).twice
+          end
+        end
+      end
     end
   end
 
