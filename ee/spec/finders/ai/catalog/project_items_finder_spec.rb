@@ -11,6 +11,7 @@ RSpec.describe Ai::Catalog::ProjectItemsFinder, feature_category: :workflow_cata
 
   let_it_be(:public_flow) { create(:ai_catalog_flow, :public, project: project) }
   let_it_be(:private_agent) { create(:ai_catalog_agent, :private, project: project) }
+  let_it_be(:private_third_party_flow) { create(:ai_catalog_third_party_flow, project: project) }
   let_it_be(:deleted_flow) { create(:ai_catalog_flow, :soft_deleted, project: project) }
   let_it_be(:private_flow_of_other_project) { create(:ai_catalog_flow, :private, project: other_project) }
   let_it_be(:public_flow_of_other_project) { create(:ai_catalog_flow, :public, project: other_project) }
@@ -28,11 +29,11 @@ RSpec.describe Ai::Catalog::ProjectItemsFinder, feature_category: :workflow_cata
   end
 
   it 'returns items that are not deleted and belong to the project' do
-    is_expected.to contain_exactly(public_flow, private_agent)
+    is_expected.to contain_exactly(public_flow, private_agent, private_third_party_flow)
   end
 
   it 'returns items ordered by id desc' do
-    is_expected.to eq([private_agent, public_flow])
+    is_expected.to eq([private_third_party_flow, private_agent, public_flow])
   end
 
   context 'when user does not have permission to read the project' do
@@ -54,8 +55,6 @@ RSpec.describe Ai::Catalog::ProjectItemsFinder, feature_category: :workflow_cata
   end
 
   context 'when filtering by `item_types`' do
-    let_it_be(:private_third_party_flow) { create(:ai_catalog_third_party_flow, project: project) }
-
     let(:params) { { item_types: %w[flow third_party_flow] } }
 
     it 'returns the matching items' do
@@ -70,6 +69,17 @@ RSpec.describe Ai::Catalog::ProjectItemsFinder, feature_category: :workflow_cata
 
       it 'returns non-flow items only' do
         is_expected.to contain_exactly(private_third_party_flow)
+      end
+    end
+
+    context 'when user cannot read ai catalog third party flows' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_third_party_flow, project).and_return(false)
+      end
+
+      it 'returns non-third party flow items only' do
+        is_expected.to contain_exactly(public_flow)
       end
     end
 
@@ -89,7 +99,18 @@ RSpec.describe Ai::Catalog::ProjectItemsFinder, feature_category: :workflow_cata
     end
 
     it 'returns non-flow items only' do
-      is_expected.to contain_exactly(private_agent)
+      is_expected.to contain_exactly(private_agent, private_third_party_flow)
+    end
+  end
+
+  context 'when user cannot read ai catalog third party flows' do
+    before do
+      allow(Ability).to receive(:allowed?).and_call_original
+      allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_third_party_flow, project).and_return(false)
+    end
+
+    it 'returns non-third party flow items only' do
+      is_expected.to contain_exactly(public_flow, private_agent)
     end
   end
 
@@ -113,7 +134,12 @@ RSpec.describe Ai::Catalog::ProjectItemsFinder, feature_category: :workflow_cata
     let(:params) { { all_available: true } }
 
     it 'also returns public items of other projects within the same organization' do
-      is_expected.to contain_exactly(public_flow, private_agent, public_flow_of_other_project)
+      is_expected.to contain_exactly(
+        public_flow,
+        private_agent,
+        private_third_party_flow,
+        public_flow_of_other_project
+      )
     end
   end
 
@@ -138,7 +164,7 @@ RSpec.describe Ai::Catalog::ProjectItemsFinder, feature_category: :workflow_cata
       let(:enabled) { false }
 
       it 'returns only items that have not been enabled for the project' do
-        is_expected.to contain_exactly(public_flow)
+        is_expected.to contain_exactly(public_flow, private_third_party_flow)
       end
     end
   end

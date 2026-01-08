@@ -27,7 +27,7 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_cata
       item.latest_version.update!(release_date: Time.now)
     end
 
-    let_it_be(:item_consumer) do
+    let_it_be_with_reload(:item_consumer) do
       create(:ai_catalog_item_consumer,
         project: project,
         item: item
@@ -35,11 +35,14 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_cata
     end
 
     let(:flows_available) { false }
+    let(:third_party_flows_available) { false }
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(true)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
         .with(project, :ai_catalog_flows).and_return(flows_available)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(project, :ai_catalog_third_party_flows).and_return(third_party_flows_available)
     end
 
     context 'when item is flow' do
@@ -67,7 +70,15 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_cata
         item.latest_version.update!(release_date: Time.now)
       end
 
-      it { is_expected.to be_allowed(:execute_ai_catalog_item) }
+      context 'when StageCheck :ai_catalog_third_party_flows is false' do
+        it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      end
+
+      context 'when StageCheck :ai_catalog_third_party_flows is true' do
+        let(:third_party_flows_available) { true }
+
+        it { is_expected.to be_allowed(:execute_ai_catalog_item) }
+      end
     end
 
     context 'when pinned_version is not executable' do

@@ -50,12 +50,12 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
   end
 
   context 'with at least guest access in the project' do
-    # ItemConsumersFinder filters out results for flow items if the user does not have
-    # `read_ai_catalog_flow` permission, which requires developer+ of the project.
-    let(:expected_items) { configured_items.reject { |i| i.item.flow? } }
+    # ItemConsumersFinder filters out results for flow and third party flow items if the user
+    # does not have permission, which requires developer+ of the project.
+    let(:expected_items) { configured_items.reject { |i| i.item.flow? || i.item.third_party_flow? } }
     let(:current_user) { guest }
 
-    it 'returns configured AI catalog items excluding flows' do
+    it 'returns configured AI catalog items excluding flows and third party flows' do
       post_graphql(query, current_user: current_user)
 
       expect(response).to have_gitlab_http_status(:success)

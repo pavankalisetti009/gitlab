@@ -432,6 +432,7 @@ module EE
         enable :admin_security_testing
         enable :admin_ai_catalog_item_consumer
         enable :create_ai_catalog_flow_item_consumer
+        enable :create_ai_catalog_third_party_flow_item_consumer
         enable :enable_secret_push_protection
       end
 
@@ -685,6 +686,7 @@ module EE
         enable :read_vulnerability_statistics
         enable :read_security_inventory
         enable :read_ai_catalog_flow
+        enable :read_ai_catalog_third_party_flow
       end
 
       rule { has_maintainer_projects }.policy do
@@ -1173,20 +1175,35 @@ module EE
         ::Feature.enabled?(:ai_catalog_flows, @user)
       end
 
+      condition(:third_party_flows_enabled, scope: :user) do
+        ::Feature.enabled?(:ai_catalog_third_party_flows, @user)
+      end
+
       condition(:flows_available, scope: :subject) do
         ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog_flows)
       end
 
+      condition(:third_party_flows_available, scope: :subject) do
+        ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog_third_party_flows)
+      end
+
       rule { ~ai_catalog_enabled | ~ai_catalog_available }.policy do
         prevent :create_ai_catalog_flow_item_consumer
+        prevent :create_ai_catalog_third_party_flow_item_consumer
         prevent :admin_ai_catalog_item_consumer
         prevent :read_ai_catalog_item_consumer
         prevent :read_ai_catalog_flow
+        prevent :read_ai_catalog_third_party_flow
       end
 
       rule { ~flows_enabled | ~flows_available }.policy do
         prevent :read_ai_catalog_flow
         prevent :create_ai_catalog_flow_item_consumer
+      end
+
+      rule { ~third_party_flows_enabled | ~third_party_flows_available }.policy do
+        prevent :read_ai_catalog_third_party_flow
+        prevent :create_ai_catalog_third_party_flow_item_consumer
       end
 
       rule { can?(:admin_group) & group_model_selection_enabled }.enable :admin_group_model_selection

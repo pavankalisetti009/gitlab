@@ -75,11 +75,13 @@ module Ai
         types = params[:item_types].presence || all_types
         types.map!(&:to_sym)
 
-        if Ability.allowed?(current_user, :read_ai_catalog_flow, project)
-          types
-        else
-          types - [Ai::Catalog::Item::FLOW_TYPE]
+        types -= [Ai::Catalog::Item::FLOW_TYPE] unless Ability.allowed?(current_user, :read_ai_catalog_flow, project)
+
+        unless Ability.allowed?(current_user, :read_ai_catalog_third_party_flow, project)
+          types -= [Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE]
         end
+
+        types
       end
 
       def all_types

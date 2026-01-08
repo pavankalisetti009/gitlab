@@ -885,17 +885,19 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           }
         end
 
-        context 'when ai_catalog_third_party_flows feature flag is disabled' do
+        context 'when user cannot execute the item' do
           before do
-            stub_feature_flags(ai_catalog_third_party_flows: false)
+            allow(Ability).to receive(:allowed?).with(current_user, :execute_ai_catalog_item, ai_catalog_item_consumer)
           end
 
           it 'returns an error response' do
+            expect(::Ci::Workloads::RunWorkloadService).not_to receive(:new)
             expect(::Ai::Catalog::Flows::ExecuteService).not_to receive(:new)
 
             response = service.execute(params)
+
             expect(response).to be_error
-            expect(response.message).to eq('ai_catalog_third_party_flows feature flag is not enabled')
+            expect(response.message).to eq('current user not permitted to execute external agent')
           end
         end
 

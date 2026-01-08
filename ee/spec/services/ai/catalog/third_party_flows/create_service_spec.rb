@@ -125,6 +125,27 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
       )
     end
 
+    context 'when just the ai_catalog StageCheck passes' do
+      let(:third_party_flows_available) { false }
+
+      before do
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(true)
+        allow(Gitlab::Llm::StageCheck).to receive(:available?)
+          .with(project, :ai_catalog_third_party_flows).and_return(third_party_flows_available)
+      end
+
+      it_behaves_like 'an error response', 'You have insufficient permissions'
+
+      context 'and the ai_catalog_third_party_flows StageCheck also passes' do
+        let(:third_party_flows_available) { true }
+
+        it 'is successful' do
+          expect(response).to be_success
+        end
+      end
+    end
+
     context 'when the version is not being released' do
       let(:params) { super().merge(release: false) }
 

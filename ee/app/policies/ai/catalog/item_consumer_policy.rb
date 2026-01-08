@@ -6,12 +6,20 @@ module Ai
       delegate { @subject.project }
       delegate { @subject.group }
 
-      condition(:flow) do
+      condition(:flow, scope: :subject) do
         @subject.item.flow?
+      end
+
+      condition(:third_party_flow, scope: :subject) do
+        @subject.item.third_party_flow?
       end
 
       condition(:flows_available, scope: :subject) do
         ::Gitlab::Llm::StageCheck.available?(@subject.project, :ai_catalog_flows)
+      end
+
+      condition(:third_party_flows_available, scope: :subject) do
+        ::Gitlab::Llm::StageCheck.available?(@subject.project, :ai_catalog_third_party_flows)
       end
 
       condition(:pinned_version_available, scope: :subject) do
@@ -22,9 +30,12 @@ module Ai
         @subject.pinned_version.present? && @subject.pinned_version.draft?
       end
 
-      rule { ~pinned_version_available | pinned_version_draft | (flow & ~flows_available) }.policy do
-        prevent :execute_ai_catalog_item
-      end
+      rule do
+        ~pinned_version_available |
+          pinned_version_draft |
+          (flow & ~flows_available) |
+          (third_party_flow & ~third_party_flows_available)
+      end.prevent :execute_ai_catalog_item
     end
   end
 end

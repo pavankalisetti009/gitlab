@@ -28,6 +28,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
   let(:ai_catalog_available) { true }
   let(:flows_available) { true }
+  let(:third_party_flows_available) { true }
   let(:duo_features_enabled) { true }
 
   before do
@@ -38,6 +39,9 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     allow(::Gitlab::Llm::StageCheck)
       .to receive(:available?)
       .with(project, :ai_catalog_flows).and_return(flows_available)
+    allow(::Gitlab::Llm::StageCheck)
+      .to receive(:available?)
+      .with(project, :ai_catalog_third_party_flows).and_return(third_party_flows_available)
     project.update!(duo_features_enabled: duo_features_enabled)
   end
 
@@ -257,6 +261,13 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
       it_behaves_like 'no permissions'
     end
+
+    context 'with ai_catalog_third_party_flows is not available' do
+      let(:third_party_flows_available) { false }
+
+      it_behaves_like 'read-only permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
+    end
   end
 
   context 'when not third_party_flow' do
@@ -270,6 +281,13 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       before do
         stub_feature_flags(ai_catalog_third_party_flows: false)
       end
+
+      it_behaves_like 'read-write permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
+    end
+
+    context 'with ai_catalog_third_party_flows is not available' do
+      let(:third_party_flows_available) { false }
 
       it_behaves_like 'read-write permissions'
       it_behaves_like 'report_ai_catalog_item permission', allowed: true

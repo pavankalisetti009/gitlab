@@ -651,6 +651,31 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     let(:parent_item_consumer) { third_party_flow_parent_item_consumer }
 
     it_behaves_like 'creates an audit event', entity_type: 'Project'
+
+    it 'is successful' do
+      expect(execute).to be_success
+    end
+
+    context 'when just the ai_catalog StageCheck passes for the container' do
+      let(:third_party_flows_available) { false }
+
+      before do
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).with(container, :ai_catalog).and_return(true)
+        allow(Gitlab::Llm::StageCheck).to receive(:available?)
+          .with(container, :ai_catalog_third_party_flows).and_return(third_party_flows_available)
+      end
+
+      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+
+      context 'and the third_party_flows_available StageCheck also passes' do
+        let(:third_party_flows_available) { true }
+
+        it 'is successful' do
+          expect(execute).to be_success
+        end
+      end
+    end
   end
 
   context 'when passing trigger_types' do
