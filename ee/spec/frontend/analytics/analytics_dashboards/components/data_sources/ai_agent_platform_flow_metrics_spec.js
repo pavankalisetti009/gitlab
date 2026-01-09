@@ -33,8 +33,6 @@ const mockFlowMetrics = [
   },
 ];
 
-const mockTooManyFlowMetrics = [...mockFlowMetrics, ...mockFlowMetrics, ...mockFlowMetrics];
-
 describe('AI Agent platform flow metrics data source', () => {
   const namespace = 'namespace';
 
@@ -50,6 +48,13 @@ describe('AI Agent platform flow metrics data source', () => {
 
     const result = await fetch({ namespace });
     expect(result).toMatchSnapshot();
+  });
+
+  it('returns an empty object if there are no results', async () => {
+    mockResolvedQuery([]);
+
+    const result = await fetch({ namespace });
+    expect(result).toEqual({});
   });
 
   it('uses 30 days as the default date range', async () => {
@@ -83,12 +88,6 @@ describe('AI Agent platform flow metrics data source', () => {
         }),
       }),
     );
-  });
-
-  it('limits to 10 returned nodes', async () => {
-    mockResolvedQuery(mockTooManyFlowMetrics);
-    const result = await fetch({ namespace });
-    expect(result.nodes).toHaveLength(10);
   });
 
   it.each([

@@ -1,4 +1,5 @@
 <script>
+import { isNil } from 'lodash';
 import { formatNumber } from '~/locale';
 
 export default {
@@ -19,7 +20,7 @@ export default {
     formattedValue() {
       const { value, fractionDigits } = this;
 
-      if (value === null || value === undefined) return '-';
+      if (isNil(value)) return '-';
 
       return formatNumber(value, {
         minimumFractionDigits: fractionDigits,
