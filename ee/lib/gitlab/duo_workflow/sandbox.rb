@@ -14,8 +14,6 @@ module Gitlab
       # @param command [String] The command to wrap
       # @return [Array<String>] Array with shell commands
       def wrap_command(command)
-        return [command] unless enabled?
-
         [
           %(if which srt > /dev/null; then),
           %(  echo "SRT found, creating config..."),
@@ -41,8 +39,6 @@ module Gitlab
       # Returns environment variables needed for SRT sandbox
       # @return [Hash] Environment variables
       def environment_variables
-        return {} unless enabled?
-
         {
           NPM_CONFIG_CACHE: "/tmp/.npm-cache",
           GITLAB_LSP_STORAGE_DIR: "/tmp"
@@ -50,13 +46,6 @@ module Gitlab
       end
 
       private
-
-      # Checks if network firewall is enabled
-      # @return [Boolean]
-      def enabled?
-        Feature.enabled?(:ai_duo_agent_platform_network_firewall, @current_user) &&
-          Feature.enabled?(:ai_dap_executor_connects_over_ws, @current_user)
-      end
 
       # Generates SRT configuration for network and filesystem restrictions
       # @return [Hash] SRT configuration

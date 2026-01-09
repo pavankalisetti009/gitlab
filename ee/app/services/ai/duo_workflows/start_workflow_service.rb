@@ -195,16 +195,10 @@ module Ai
           %(which duo || echo "duo not in PATH")
         ]
 
-        cli_command = %(duo run --existing-session-id #{@workflow.id} --connection-type #{connection_type})
+        cli_command = %(duo run --existing-session-id #{@workflow.id} --connection-type websocket)
         wrapped_commands = sandbox_enabled? ? sandbox.wrap_command(cli_command) : [cli_command]
 
         cli_install_commands + wrapped_commands
-      end
-
-      def connection_type
-        return "grpc" unless Feature.enabled?(:ai_dap_executor_connects_over_ws, @current_user)
-
-        "websocket"
       end
 
       def workflow_metadata
