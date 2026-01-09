@@ -1,5 +1,5 @@
 query groupWorkItemTypesForSelect($fullPath: ID!) {
-  workspace: namespace(fullPath: $fullPath) {
+  namespace(fullPath: $fullPath) {
     id
     workItemTypes {
       nodes {

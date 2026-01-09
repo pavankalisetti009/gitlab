@@ -86,7 +86,7 @@ describe('CustomFieldForm', () => {
   };
 
   const namespaceWorkItemTypesResponse = {
-    data: { workspace: { id: '1', workItemTypes: { nodes: mockWorkItemTypes } } },
+    data: { namespace: { id: '1', workItemTypes: { nodes: mockWorkItemTypes } } },
   };
 
   const fullPath = 'group/subgroup';

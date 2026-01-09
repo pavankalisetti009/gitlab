@@ -426,7 +426,7 @@ export const getHealthStatusQueryResponse = ({ state = 'opened', healthStatus = 
 
 export const mockGetMergeRequestReviewers = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Project/1',
       issuable: {
         id: 'gid://gitlab/MergeRequest/1',

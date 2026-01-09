@@ -59,7 +59,7 @@ export const mockEpicBoard = {
 
 export const mockEpicBoardResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Group/114',
       board: mockEpicBoard,
       __typename: 'Group',
