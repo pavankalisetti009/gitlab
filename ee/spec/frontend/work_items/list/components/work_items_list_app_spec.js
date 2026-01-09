@@ -13,6 +13,7 @@ import {
   WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
   WORK_ITEM_TYPE_NAME_TASK,
+  WORK_ITEM_TYPE_NAME_TICKET,
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
 } from '~/work_items/constants';
@@ -462,6 +463,13 @@ describe('filter tokens', () => {
       const statusToken = findToken(TOKEN_TYPE_STATUS);
 
       expect(statusToken).toBeUndefined();
+    });
+
+    it('excludes status token when feature is enabled and is service desk list', async () => {
+      mountComponent({ hasStatusFeature: true, workItemType: WORK_ITEM_TYPE_NAME_TICKET });
+      await waitForPromises();
+
+      expect(findToken(TOKEN_TYPE_STATUS)).toBeUndefined();
     });
   });
 });
