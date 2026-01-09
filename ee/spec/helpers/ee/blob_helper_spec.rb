@@ -74,7 +74,9 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
     it 'returns data related to blob header app' do
       Current.organization = organization
       allow(helper).to receive_messages(selected_branch: ref, current_user: nil,
-        breadcrumb_data_attributes: breadcrumb_data)
+        breadcrumb_data_attributes: breadcrumb_data,
+        web_ide_button_data: {},
+        fork_modal_options: {})
 
       expect(helper.vue_blob_header_app_data(project, blob, ref)).to include({
         new_workspace_path: new_remote_development_workspace_path,
