@@ -152,10 +152,6 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
 
             expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_context)
 
-            if container.is_a?(Project)
-              expect(::Gitlab::Audit::Auditor).to receive(:audit).with(include(name: "user_destroyed")) # policy bot user
-            end
-
             repeated_service
           end
 

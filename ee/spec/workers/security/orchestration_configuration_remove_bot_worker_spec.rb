@@ -69,6 +69,14 @@ RSpec.describe Security::OrchestrationConfigurationRemoveBotWorker, feature_cate
             expect { run_worker }.to change { project.security_policy_bot }.to(nil)
               .and(change { project.member(security_policy_bot) }.to(nil))
           end
+
+          context 'when the project is still linked to other security policies' do
+            let_it_be(:security_orchestration_policy_configuration) do
+              create(:security_orchestration_policy_configuration, project: project)
+            end
+
+            it_behaves_like 'worker exits without error'
+          end
         end
       end
     end
