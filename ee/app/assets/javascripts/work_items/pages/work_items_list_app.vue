@@ -10,6 +10,7 @@ import EmptyStateWithAnyIssues from '~/work_items/list/components/empty_state_wi
 import {
   WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
+  WORK_ITEM_TYPE_NAME_TICKET,
   CREATION_CONTEXT_LIST_ROUTE,
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
@@ -134,6 +135,9 @@ export default {
     isEpicsList() {
       return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC;
     },
+    isServiceDeskList() {
+      return this.workItemType === WORK_ITEM_TYPE_NAME_TICKET;
+    },
     searchTokens() {
       const tokens = [];
 
@@ -202,7 +206,7 @@ export default {
       return tokens;
     },
     showCustomStatusFeature() {
-      return this.hasStatusFeature && !this.isEpicsList;
+      return this.hasStatusFeature && !this.isEpicsList && !this.isServiceDeskList;
     },
   },
   methods: {
