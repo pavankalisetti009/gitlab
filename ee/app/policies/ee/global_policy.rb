@@ -81,6 +81,12 @@ module EE
         @user.allowed_to_use?(:duo_chat)
       end
 
+      condition(:duo_agentic_chat_enabled_for_user) do
+        next false unless @user
+
+        @user.allowed_to_use?(:duo_agent_platform)
+      end
+
       condition(:duo_agentic_chat_enabled) do
         next false unless @user
 
@@ -272,7 +278,7 @@ module EE
         duo_chat_enabled_for_user & ~ai_features_banned
       end.enable :access_duo_classic_chat
       rule do
-        duo_chat_enabled_for_user & ~ai_features_banned & duo_agentic_chat_enabled
+        duo_agentic_chat_enabled_for_user & ~ai_features_banned & duo_agentic_chat_enabled
       end.enable :access_duo_agentic_chat
       rule { runner_upgrade_management_available | user_belongs_to_paid_namespace }.enable :read_runner_upgrade_status
 
