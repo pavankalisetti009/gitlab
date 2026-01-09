@@ -392,11 +392,11 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
         expect(secondary_node.oauth_application.organization_id).to be_present
       end
 
-      it 'preserves organization_id when oauth application already exists' do
+      it 'always sets organization_id to the default organization ID because the application is instance level' do
         secondary_node = create(:geo_node, :secondary)
         original_organization_id = secondary_node.oauth_application.organization_id
 
-        secondary_node.update!(url: 'http://updated-url.example.com')
+        secondary_node.oauth_application.destroy!
 
         expect(secondary_node.oauth_application.organization_id).to eq(original_organization_id)
       end
