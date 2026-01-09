@@ -432,7 +432,7 @@ To update your extension to the latest version:
 1. A menu opens under the VS Code search box, and the GitLab Workflow extension shows the status
    of the extension. Any errors are displayed next to **Status:**.
 
-You can also check the [status of GitLab Duo Chat](../../user/gitlab_duo_chat/_index.md#check-the-status-of-chat).
+For GitLab Duo Chat (Classic), you can also check the [status of Chat](../../user/gitlab_duo_chat/_index.md#check-the-status-of-chat).
 
 ## Enable telemetry
 
