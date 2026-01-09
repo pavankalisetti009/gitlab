@@ -26,6 +26,7 @@ query getGroupMergeRequestsCountEE(
   $mergedAfter: Time
   $not: MergeRequestsResolverNegatedParams
   $or: UnionedMergeRequestFilterInput
+  $maxCount: Int
 ) {
   namespace: group(fullPath: $fullPath) {
     id
@@ -59,7 +60,7 @@ query getGroupMergeRequestsCountEE(
       or: $or
       includeSubgroups: true
     ) {
-      count
+      count(limit: $maxCount)
     }
     mergedMergeRequests: mergeRequests(
       state: merged
@@ -91,7 +92,7 @@ query getGroupMergeRequestsCountEE(
       or: $or
       includeSubgroups: true
     ) {
-      count
+      count(limit: $maxCount)
     }
     closedMergeRequests: mergeRequests(
       state: closed
@@ -123,7 +124,7 @@ query getGroupMergeRequestsCountEE(
       or: $or
       includeSubgroups: true
     ) {
-      count
+      count(limit: $maxCount)
     }
     allMergeRequests: mergeRequests(
       state: all
@@ -155,7 +156,7 @@ query getGroupMergeRequestsCountEE(
       or: $or
       includeSubgroups: true
     ) {
-      count
+      count(limit: $maxCount)
     }
   }
 }
