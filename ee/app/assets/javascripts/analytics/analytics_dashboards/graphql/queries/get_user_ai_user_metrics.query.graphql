@@ -9,6 +9,7 @@ query getUserAiUserMetrics(
   $after: String
   $last: Int
   $first: Int
+  $sort: AiUserMetricsSort
 ) {
   group(fullPath: $fullPath) {
     id
@@ -19,6 +20,7 @@ query getUserAiUserMetrics(
       before: $before
       first: $first
       last: $last
+      sort: $sort
     ) {
       nodes {
         ...AiUserMetricItem
@@ -37,6 +39,7 @@ query getUserAiUserMetrics(
       before: $before
       first: $first
       last: $last
+      sort: $sort
     ) {
       nodes {
         ...AiUserMetricItem

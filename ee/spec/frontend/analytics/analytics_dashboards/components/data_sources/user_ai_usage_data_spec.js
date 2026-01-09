@@ -251,4 +251,54 @@ describe('User ai usage data source', () => {
       expect(res.nodes).toMatchSnapshot();
     });
   });
+
+  describe('sorting', () => {
+    it('ignores fields that are not sortable', async () => {
+      mockResolvedQuery();
+
+      res = await fetch({
+        namespace,
+        query: {
+          ...defaultQueryParams,
+          sortBy: 'someFakeField',
+          sortDesc: true,
+        },
+      });
+
+      expectQueryWithVariables({
+        fullPath: namespace,
+        first: 10,
+        sort: null,
+      });
+    });
+
+    it.each`
+      sortBy                                                | sortDesc | sortField
+      ${'codeSuggestionShownInIdeEventCount'}               | ${true}  | ${'CODE_SUGGESTION_SHOWN_IN_IDE_DESC'}
+      ${'codeSuggestionShownInIdeEventCount'}               | ${false} | ${'CODE_SUGGESTION_SHOWN_IN_IDE_ASC'}
+      ${'codeSuggestionAcceptedInIdeEventCount'}            | ${true}  | ${'CODE_SUGGESTION_ACCEPTED_IN_IDE_DESC'}
+      ${'codeSuggestionAcceptedInIdeEventCount'}            | ${false} | ${'CODE_SUGGESTION_ACCEPTED_IN_IDE_ASC'}
+      ${'troubleshootJobEventCount'}                        | ${true}  | ${'TROUBLESHOOT_JOB_TOTAL_COUNT_DESC'}
+      ${'troubleshootJobEventCount'}                        | ${false} | ${'TROUBLESHOOT_JOB_TOTAL_COUNT_ASC'}
+      ${'requestReviewDuoCodeReviewOnMrByAuthorEventCount'} | ${true}  | ${'REQUEST_REVIEW_DUO_CODE_REVIEW_ON_MR_BY_AUTHOR_DESC'}
+      ${'requestReviewDuoCodeReviewOnMrByAuthorEventCount'} | ${false} | ${'REQUEST_REVIEW_DUO_CODE_REVIEW_ON_MR_BY_AUTHOR_ASC'}
+    `('can sort $sortBy when sortDesc=$sortDesc', async ({ sortBy, sortDesc, sortField }) => {
+      mockResolvedQuery();
+
+      res = await fetch({
+        namespace,
+        query: {
+          ...defaultQueryParams,
+          sortBy,
+          sortDesc,
+        },
+      });
+
+      expectQueryWithVariables({
+        fullPath: namespace,
+        first: 10,
+        sort: sortField,
+      });
+    });
+  });
 });
