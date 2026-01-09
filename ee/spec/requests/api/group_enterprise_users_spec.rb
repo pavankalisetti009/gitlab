@@ -109,6 +109,12 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
       )
     end
 
+    it_behaves_like 'authorizing granular token permissions', :read_enterprise_user do
+      let(:boundary_object) { enterprise_group }
+      let(:user) { owner_of_enterprise_group }
+      let(:request) { get api("/groups/#{group_id}/enterprise_users", personal_access_token: pat), params: params }
+    end
+
     context 'for pagination parameters' do
       let(:params) { { page: 1, per_page: 2 } }
 
@@ -345,6 +351,12 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
       expect(json_response['id']).to eq(enterprise_user_of_the_group.id)
     end
 
+    it_behaves_like 'authorizing granular token permissions', :read_enterprise_user do
+      let(:boundary_object) { enterprise_group }
+      let(:user) { owner_of_enterprise_group }
+      let(:request) { get api("/groups/#{group_id}/enterprise_users/#{user_id}", personal_access_token: pat) }
+    end
+
     context 'when user_id does not refer to an enterprise user of the group' do
       let(:user_id) { enterprise_user_of_another_group.id }
 
@@ -380,6 +392,14 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
           enterprise_user_of_the_group_with_two_factor_enabled.reload.two_factor_enabled?
         }.from(true).to(false)
         expect(response).to have_gitlab_http_status(:no_content)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :disable_two_factor_enterprise_user do
+        let(:boundary_object) { enterprise_group }
+        let(:user) { owner_of_enterprise_group }
+        let(:request) do
+          patch api("/groups/#{group_id}/enterprise_users/#{user_id}/disable_two_factor", personal_access_token: pat)
+        end
       end
     end
 
@@ -422,6 +442,14 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response['id']).to eq(enterprise_user_of_the_group.id)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :update_enterprise_user do
+        let(:boundary_object) { enterprise_group }
+        let(:user) { owner_of_enterprise_group }
+        let(:request) do
+          patch api("/groups/#{group_id}/enterprise_users/#{user_id}", personal_access_token: pat), params: params
+        end
       end
     end
 
@@ -561,6 +589,16 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
         }.by(1)
 
       expect(response).to have_gitlab_http_status(:no_content)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_enterprise_user do
+      let(:boundary_object) { enterprise_group }
+      let(:user) { owner_of_enterprise_group }
+      let(:request) do
+        delete api("/groups/#{group_id}/enterprise_users/#{user_id}", personal_access_token: pat),
+          params: delete_params,
+          headers: delete_headers
+      end
     end
 
     context 'when the user being deleted has a solo owned group' do
