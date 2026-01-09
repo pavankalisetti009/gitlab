@@ -18,6 +18,9 @@ RSpec.describe 'layouts/_duo_chat_panel', feature_category: :duo_chat do
       .to receive(:show_breadcrumbs_entry_point?)
       .with(user: user)
       .and_return(duo_enabled)
+    allow(::Gitlab::Llm::TanukiBot)
+      .to receive(:credits_available?)
+      .and_return(true)
   end
 
   context 'when duo is enabled' do

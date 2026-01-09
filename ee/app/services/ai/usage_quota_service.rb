@@ -32,10 +32,12 @@ module Ai
         **params
       )
 
-      if response[:success]
-        ServiceResponse.success
-      else
+      # To adhere to GitLab SLA we treat every error as success if it's not related to payment error
+      # This also on a parity how we make this check in AIGW/DWS
+      if response.dig("data", "errors")&.include?("402")
         ServiceResponse.error(message: "Usage quota exceeded", reason: :usage_quota_exceeded)
+      else
+        ServiceResponse.success
       end
     rescue StandardError
       # To adhere to GitLab SLA for this specific domain we should process the request as successful

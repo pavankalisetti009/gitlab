@@ -54,9 +54,8 @@ module Gitlab
 
       def self.credits_available?(user:, project: nil, group: nil)
         return false unless user
-        return false unless project || group
 
-        ::Ai::UsageQuotaService.new(ai_feature: :duo_chat, user: user, namespace: group || project.group).execute
+        ::Ai::UsageQuotaService.new(ai_feature: :duo_chat, user: user, namespace: group || project&.group).execute
           .success?
       end
 
