@@ -89,7 +89,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_subscription) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_cloud_connector_status) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_admin_subscription) }
-    it { expect(described_class.new(admin, [user])).to be_allowed(:read_admin_data_management) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_ldap_admin_links) }
   end
 
@@ -1001,13 +1000,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
     where(:custom_ability, :enabled_permissions) do
       :read_admin_cicd         | %i[read_admin_cicd]
-      :read_admin_monitoring   | %i[
-        read_admin_background_migrations
-        read_admin_data_management
-        read_admin_gitaly_servers
-        read_admin_health_check
-        read_admin_system_information
-      ]
       :read_admin_subscription | %i[read_admin_subscription read_billable_member read_licenses]
       :read_admin_users        | %i[read_admin_users]
       :read_admin_groups       | %i[read_admin_groups]
@@ -1035,6 +1027,41 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
           it { is_expected.to be_disallowed(*(enabled_permissions + enabled_for_all)) }
         end
+      end
+    end
+
+    context 'with read_admin_monitoring custom role' do
+      def base_permissions
+        %i[read_admin_background_migrations
+          read_admin_gitaly_servers
+          read_admin_health_check
+          read_admin_system_information
+          access_admin_area
+          read_application_statistics]
+      end
+
+      def permissions_with_data_management
+        base_permissions.insert(1, :read_admin_data_management)
+      end
+
+      where(:custom_roles_enabled, :data_management_enabled, :geo_enabled, :check_policy) do
+        true  | true  | true  | be_allowed(*permissions_with_data_management)
+        true  | true  | false | be_allowed(*base_permissions)
+        true  | false | false | be_allowed(*base_permissions)
+        false | true  | true  | be_disallowed(*base_permissions)
+        false | true  | false | be_disallowed(*base_permissions)
+        false | false | false | be_disallowed(*base_permissions)
+      end
+
+      with_them do
+        before do
+          create(:admin_member_role, :read_admin_monitoring, user: current_user)
+
+          allow(::Gitlab::Geo).to receive(:enabled?).and_return(geo_enabled)
+          stub_licensed_features(data_management: data_management_enabled, custom_roles: custom_roles_enabled)
+        end
+
+        it { is_expected.to check_policy }
       end
     end
   end
@@ -1100,20 +1127,29 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
   describe 'data management' do
     let(:current_user) { admin }
 
-    where(:admin_mode, :data_management_available, :geo_primary_verification_view, :check_policy) do
-      true  | true  | true  | be_allowed(:read_admin_data_management)
-      true  | true  | false | be_disallowed(:read_admin_data_management)
-      true  | false | true  | be_disallowed(:read_admin_data_management)
-      true  | false | false | be_disallowed(:read_admin_data_management)
-      false | true  | true  | be_disallowed(:read_admin_data_management)
-      false | true  | false | be_disallowed(:read_admin_data_management)
-      false | false | true  | be_disallowed(:read_admin_data_management)
-      false | false | false | be_disallowed(:read_admin_data_management)
+    where(:admin_mode, :data_management_available, :geo_enabled, :geo_primary_verification_view, :check_policy) do
+      true  | true  | true  | true | be_allowed(:read_admin_data_management)
+      true  | true  | true  | false | be_disallowed(:read_admin_data_management)
+      true  | true  | false | true  | be_disallowed(:read_admin_data_management)
+      true  | true  | false | false | be_disallowed(:read_admin_data_management)
+      true  | false | true  | true  | be_disallowed(:read_admin_data_management)
+      true  | false | true  | false | be_disallowed(:read_admin_data_management)
+      true  | false | false | true  | be_disallowed(:read_admin_data_management)
+      true  | false | false | false | be_disallowed(:read_admin_data_management)
+      false | true  | true  | true  | be_disallowed(:read_admin_data_management)
+      false | true  | true  | false | be_disallowed(:read_admin_data_management)
+      false | true  | false | true  | be_disallowed(:read_admin_data_management)
+      false | true  | false | false | be_disallowed(:read_admin_data_management)
+      false | false | true  | true  | be_disallowed(:read_admin_data_management)
+      false | false | true  | false | be_disallowed(:read_admin_data_management)
+      false | false | false | true  | be_disallowed(:read_admin_data_management)
+      false | false | false | false | be_disallowed(:read_admin_data_management)
     end
 
     with_them do
       before do
         enable_admin_mode!(current_user) if admin_mode
+        allow(::Gitlab::Geo).to receive(:enabled?).and_return(geo_enabled)
         stub_licensed_features(data_management: data_management_available)
         stub_feature_flags(geo_primary_verification_view: geo_primary_verification_view)
       end
