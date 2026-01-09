@@ -17,7 +17,7 @@ module QA
 
       it 'sets and removes user\'s admin status',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/431125',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24039',
           type: :investigating
         },
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347896' do

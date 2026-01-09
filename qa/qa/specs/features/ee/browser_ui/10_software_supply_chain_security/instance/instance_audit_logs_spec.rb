@@ -86,7 +86,7 @@ module QA
         end
 
         context 'with quarantine',
-          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/16723',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/16723',
                         type: :flaky } do
           it_behaves_like 'audit event', ["Added email", "Removed email"]
         end

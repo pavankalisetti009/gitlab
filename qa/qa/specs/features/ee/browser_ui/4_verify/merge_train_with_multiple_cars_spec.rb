@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Verify', feature_category: :continuous_integration, quarantine: {
-    issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/503711',
+    issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24053',
     type: :flaky
   } do
     describe 'Merge train with multiple cars' do

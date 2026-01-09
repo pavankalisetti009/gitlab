@@ -93,7 +93,7 @@ module QA
           'puts the namespace into read-only mode and reverts back to full-access mode after making space',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/437807',
           quarantine: {
-            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/537025',
+            issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24041',
             type: :investigating
           }
         ) do

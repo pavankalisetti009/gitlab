@@ -11,7 +11,7 @@ module QA
       end
 
       it 'creates an epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347980', quarantine: {
-        issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/17261',
+        issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17261',
         type: :investigating,
         only: { subdomain: :staging }
       } do
@@ -27,7 +27,7 @@ module QA
 
       it 'creates a confidential epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347979',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/17260',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17260',
           type: :investigating,
           only: { subdomain: :staging }
         } do

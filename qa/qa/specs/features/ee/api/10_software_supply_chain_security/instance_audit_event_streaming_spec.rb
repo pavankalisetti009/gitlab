@@ -54,7 +54,7 @@ module QA
 
       context 'when a project is created', quarantine: {
         type: :investigating,
-        issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/427266'
+        issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24034'
       } do
         # Create a group first so its audit event is streamed before we check for the create project event
         let!(:group) { create(:group) }
@@ -65,7 +65,7 @@ module QA
 
       context 'when a user is created', quarantine: {
         type: :investigating,
-        issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/427266'
+        issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24034'
       } do
         let(:entity_path) { create(:user).username }
 

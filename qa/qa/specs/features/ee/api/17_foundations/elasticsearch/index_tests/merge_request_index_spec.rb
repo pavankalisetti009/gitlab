@@ -24,7 +24,7 @@ module QA
         'finds merge request that matches description',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347633',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/21830',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/21830',
           type: :investigating
         }
       ) do

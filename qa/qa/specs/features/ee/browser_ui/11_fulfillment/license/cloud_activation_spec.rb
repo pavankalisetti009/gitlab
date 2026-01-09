@@ -55,7 +55,7 @@ module QA
       it 'successfully removes a cloud activation and shows flash notice',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/364831', quarantine: {
           type: :flaky,
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/505257'
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24040'
         } do
         EE::Page::Admin::Subscription.perform do |subscription|
           subscription.remove_license_file

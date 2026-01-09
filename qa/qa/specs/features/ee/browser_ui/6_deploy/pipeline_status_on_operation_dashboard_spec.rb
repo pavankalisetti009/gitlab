@@ -27,7 +27,7 @@ module QA
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348072',
         quarantine: {
           type: :flaky,
-          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/424230"
+          issue: "https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24055"
         } do
         add_projects_to_board
 

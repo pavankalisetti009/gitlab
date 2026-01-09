@@ -28,7 +28,7 @@ module QA
       it(
         'searches public project and finds a blob as an non-member user',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348063', quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/937',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/937',
           type: :investigating
         }
       ) do
@@ -48,7 +48,7 @@ module QA
           'finds a blob as an authorized user',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348064',
           quarantine: {
-            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/549729',
+            issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24035',
             type: :flaky
           }) do
           response_body = perform_search_with_retry(api_client)
