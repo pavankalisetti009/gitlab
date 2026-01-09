@@ -112,6 +112,7 @@ module API
         optional 'pull_request.base.sha', type: String, desc: 'Target sha'
         optional 'pull_request.base.repo.full_name', type: String, desc: 'Target repository'
       end
+      route_setting :authorization, permissions: :create_pull_mirror, boundary_type: :project
       post ":id/mirror/pull" do
         try_authenticate_with_webhook_token!
 
@@ -148,6 +149,7 @@ module API
         at_least_one_of :enabled, :url, :auth_user, :auth_password, :mirror_overwrites_diverged_branches,
           :mirror_trigger_builds, :only_mirror_protected_branches, :mirror_branch_regex
       end
+      route_setting :authorization, permissions: :update_pull_mirror, boundary_type: :project
       put ':id/mirror/pull' do
         authenticate!
         authorize_admin_project
@@ -172,6 +174,7 @@ module API
         ]
         tags ['project_mirrors']
       end
+      route_setting :authorization, permissions: :read_pull_mirror, boundary_type: :project
       get ':id/mirror/pull' do
         authenticate!
         authorize_admin_project

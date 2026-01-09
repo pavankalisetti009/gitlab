@@ -3,7 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
+  def project_member(project, role, user)
+    create(:project_member, role, user: user, project: project)
+  end
+
   describe 'POST /projects/:id/mirror/pull' do
+    let_it_be(:user) { create(:user) }
     let(:visibility) { Gitlab::VisibilityLevel::PUBLIC }
     let(:project_mirrored) { create(:project, :repository, :mirror, visibility: visibility) }
 
@@ -128,7 +133,7 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
             let_it_be(:user) { create(:user) }
 
             before do
-              project_member(:maintainer, user)
+              project_member(project_mirrored, :maintainer, user)
             end
 
             subject(:send_request) { do_post(params: params, user: user, headers: {}) }
@@ -233,7 +238,7 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
 
             context 'is authenticated as developer' do
               it 'returns forbidden error' do
-                project_member(:developer, user)
+                project_member(project_mirrored, :developer, user)
 
                 do_post(user: user, headers: {})
 
@@ -243,7 +248,7 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
 
             context 'is authenticated as reporter' do
               it 'returns forbidden error' do
-                project_member(:reporter, user)
+                project_member(project_mirrored, :reporter, user)
 
                 do_post(user: user, headers: {})
 
@@ -253,7 +258,7 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
 
             context 'is authenticated as guest' do
               it 'returns forbidden error' do
-                project_member(:guest, user)
+                project_member(project_mirrored, :guest, user)
 
                 do_post(user: user, headers: {})
 
@@ -263,7 +268,7 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
 
             context 'is authenticated as maintainer' do
               it 'triggers the pull mirroring operation' do
-                project_member(:maintainer, user)
+                project_member(project_mirrored, :maintainer, user)
 
                 Sidekiq::Testing.fake! do
                   expect { do_post(user: user, headers: {}) }
@@ -303,10 +308,6 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
 
             it_behaves_like 'an API endpoint that triggers pull mirroring operation'
           end
-        end
-
-        def project_member(role, user)
-          create(:project_member, role, user: user, project: project_mirrored)
         end
       end
     end
@@ -393,6 +394,17 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :create_pull_mirror do
+      let(:boundary_object) { project_mirrored }
+      let(:request) do
+        post api("/projects/#{project_mirrored.id}/mirror/pull", personal_access_token: pat)
+      end
+
+      before do
+        project_member(project_mirrored, :maintainer, user)
+      end
+    end
   end
 
   describe 'GET /projects/:id/mirror/pull' do
@@ -443,10 +455,20 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_pull_mirror do
+      let(:boundary_object) { project }
+      let(:request) { get api(route, personal_access_token: pat) }
+
+      before do
+        project_member(project, :maintainer, user)
+      end
+    end
   end
 
   describe 'PUT /projects/:id/mirror/pull' do
     let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project, :repository, :mirror) }
 
     let(:route) { "/projects/#{project.id}/mirror/pull" }
     let(:request) { put api(route, current_user), params: params }
@@ -625,6 +647,21 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
           updated_project = project.reload
           expect(updated_project.import_data.reload.credentials).to eq(user: auth_user, password: auth_password)
           expect(updated_project.import_data.auth_method).to eq('password')
+        end
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :update_pull_mirror do
+      let(:boundary_object) { project }
+      let(:request) do
+        put api(route, personal_access_token: pat), params: params
+      end
+
+      before do
+        project_member(project, :maintainer, user)
+
+        allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.success)
         end
       end
     end
