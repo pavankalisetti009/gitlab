@@ -3682,6 +3682,51 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
               .to eq(['duo_classic'])
           end
         end
+
+        context 'avoids N+1 queries' do
+          let_it_be(:through_namespace_3) { create(:group, parent: root_namespace) }
+          let_it_be(:through_namespace_4) { create(:group, parent: root_namespace) }
+
+          let(:new_rules) do
+            [
+              { through_namespace: { id: through_namespace.id }, features: ['duo_agent_platform'] },
+              { through_namespace: { id: through_namespace_2.id }, features: ['duo_classic'] },
+              { through_namespace: { id: through_namespace_3.id }, features: ['duo_classic'] },
+              { through_namespace: { id: through_namespace_4.id }, features: ['duo_agent_platform'] }
+            ]
+          end
+
+          it 'batches through_namespace lookups in a single query' do
+            control_count = ActiveRecord::QueryRecorder.new { update_rules }.log.count do |query|
+              query.include?('FROM "namespaces"') && query.include?('parent_id')
+            end
+
+            update_rules_query_count = ActiveRecord::QueryRecorder.new { root_namespace.ai_feature_rules = new_rules }.log.count do |query|
+              query.include?('FROM "namespaces"') && query.include?('parent_id')
+            end
+
+            expect(control_count).to eq(1)
+            expect(update_rules_query_count).to eq(1)
+          end
+        end
+
+        context 'when the through namespace is not in the namespace hierarchy' do
+          let(:other_through_namespace) { create(:group) }
+          let(:rules) do
+            [
+              { through_namespace: { id: through_namespace.id }, features: ['duo_classic'] },
+              { through_namespace: { id: other_through_namespace.id }, features: ['duo_agent_platform'] }
+            ]
+          end
+
+          it 'does not create rules for the through namespace' do
+            update_rules
+
+            expect(through_namespace.ai_feature_rules_through_namespace
+              .pluck(:accessible_entity)).to contain_exactly('duo_classic')
+            expect(other_through_namespace.ai_feature_rules_through_namespace.exists?).to be false
+          end
+        end
       end
     end
   end
