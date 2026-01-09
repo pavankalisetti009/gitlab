@@ -88,11 +88,8 @@ export default {
       return Object.entries(props).reduce(
         (acc, [key, value]) => ({
           ...acc,
-          // Allow mapping a value from another key. For example: `$map(oldKeyName)`
-          [key]:
-            typeof value === 'string' && value.startsWith('$map(') && value.endsWith(')')
-              ? item[value.slice(5, -1)]
-              : value,
+          // Allow copying a value from another field. For example: `{ $copyField: 'oldKeyName' }`
+          [key]: typeof value === 'object' && value?.$copyField ? item[value.$copyField] : value,
         }),
         {},
       );

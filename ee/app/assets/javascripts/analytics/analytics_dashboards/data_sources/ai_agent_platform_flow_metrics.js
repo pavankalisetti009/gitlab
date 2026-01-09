@@ -8,8 +8,6 @@ import {
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { defaultClient } from '../graphql/client';
 
-const MAX_VISIBLE_NODES = 10;
-
 const requestFlowMetrics = async ({ namespace, startDate, endDate, sortBy, sortDesc = false }) => {
   const result = await defaultClient.query({
     query: AiAgentPlatformFlowMetricsQuery,
@@ -37,7 +35,7 @@ const requestFlowMetrics = async ({ namespace, startDate, endDate, sortBy, sortD
         sortDesc ? 'desc' : 'asc',
       )
     : flowMetrics;
-  return nodes.slice(0, MAX_VISIBLE_NODES).map(({ medianExecutionTime, ...rest }) => ({
+  return nodes.map(({ medianExecutionTime, ...rest }) => ({
     medianExecutionTime:
       medianExecutionTime !== null ? secondsToMinutes(medianExecutionTime) : null,
     ...rest,
@@ -62,5 +60,5 @@ export default async function fetch({
     ...overridesRest,
   });
 
-  return { nodes };
+  return nodes.length ? { nodes } : {};
 }

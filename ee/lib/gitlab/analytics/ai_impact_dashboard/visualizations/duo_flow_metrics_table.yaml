@@ -22,7 +22,7 @@ options:
       tdClass: "gl-text-right"
       component: FormatNumber
       componentProps:
-        value: '$map(medianExecutionTime)'
+        value: { $copyField: medianExecutionTime }
         fractionDigits: 1
     - key: 'usersCount'
       label: 'Unique users'

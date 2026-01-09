@@ -451,8 +451,8 @@ describe('DataTable Visualization', () => {
                 key: 'customData',
                 component: 'CalculatePercent',
                 componentProps: {
-                  numerator: '$map(additions)',
-                  denominator: '$map(deletions)',
+                  numerator: { $copyField: 'additions' },
+                  denominator: { $copyField: 'deletions' },
                 },
               },
             ],
