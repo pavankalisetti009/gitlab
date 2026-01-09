@@ -1,7 +1,6 @@
 <script>
 import {
   GlButton,
-  GlDatepicker,
   GlForm,
   GlFormGroup,
   GlFormInput,
@@ -11,7 +10,6 @@ import {
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
-import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import { isEmptyValue } from '~/lib/utils/forms';
 import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
@@ -29,7 +27,6 @@ export default {
   components: {
     CiEnvironmentsDropdown,
     GlButton,
-    GlDatepicker,
     GlForm,
     GlFormGroup,
     GlFormInput,
@@ -69,7 +66,6 @@ export default {
         branch: '',
         description: undefined,
         environment: '',
-        expiration: undefined,
         name: undefined,
         rotationIntervalDays: this.secretData?.rotationInfo?.rotationIntervalDays || null,
         secret: undefined, // shown as "value" in the UI
@@ -114,11 +110,6 @@ export default {
     isRotationValid() {
       const { rotationIntervalDays } = this.secret;
       return isEmptyValue(rotationIntervalDays) || rotationIntervalDays > 6;
-    },
-    minExpirationDate() {
-      // secrets can expire tomorrow, but not today or yesterday
-      const today = new Date();
-      return getDateInFuture(today, 1);
     },
     submitButtonText() {
       return this.isEditing ? __('Save changes') : s__('SecretsManager|Add secret');
@@ -338,20 +329,7 @@ export default {
       </div>
       <div class="gl-flex gl-gap-4">
         <gl-form-group
-          class="gl-w-full"
-          label-for="secret-expiration"
-          :label="__('Expiration date')"
-        >
-          <gl-datepicker
-            id="secret-expiration"
-            v-model="secret.expiration"
-            class="gl-max-w-none"
-            :placeholder="$options.datePlaceholder"
-            :min-date="minExpirationDate"
-          />
-        </gl-form-group>
-        <gl-form-group
-          class="gl-w-full"
+          class="gl-w-half"
           :label="s__('SecretRotation|Rotation reminder period')"
           data-testid="secret-rotation-field-group"
           :description="

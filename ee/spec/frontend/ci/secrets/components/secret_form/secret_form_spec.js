@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import VueRouter from 'vue-router';
-import { GlDatepicker, GlFormInput, GlFormTextarea, GlModal, GlSprintf } from '@gitlab/ui';
+import { GlFormInput, GlFormTextarea, GlModal, GlSprintf } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -41,7 +41,6 @@ describe('SecretForm component', () => {
   const findBranchField = () => wrapper.findComponent(SecretBranchesField);
   const findDescriptionField = () => wrapper.findByTestId('secret-description');
   const findDescriptionFieldGroup = () => wrapper.findByTestId('secret-description-field-group');
-  const findExpirationField = () => wrapper.findComponent(GlDatepicker);
   const findEnvironmentsDropdown = () => wrapper.findComponent(CiEnvironmentsDropdown);
   const findNameFieldGroup = () => wrapper.findByTestId('secret-name-field-group');
   const findNameField = () => findNameFieldGroup().findComponent(GlFormInput);
@@ -77,8 +76,6 @@ describe('SecretForm component', () => {
     });
   };
 
-  const today = new Date();
-
   const inputRequiredFields = async () => {
     findNameField().vm.$emit('input', 'SECRET_KEY');
     findValueField().vm.$emit('input', 'SECRET_VALUE');
@@ -107,7 +104,6 @@ describe('SecretForm component', () => {
     it('renders all fields', () => {
       expect(findBranchField().exists()).toBe(true);
       expect(findDescriptionField().exists()).toBe(true);
-      expect(findExpirationField().exists()).toBe(true);
       expect(findEnvironmentsDropdown().exists()).toBe(true);
       expect(findNameField().exists()).toBe(true);
       expect(findRotationField().exists()).toBe(true);
@@ -115,11 +111,6 @@ describe('SecretForm component', () => {
       expect(findValueField().exists()).toBe(true);
       expect(findValueField().attributes('placeholder')).toBe('Enter a value for the secret');
       expect(findValueField().attributes('disabled')).toBeUndefined();
-    });
-
-    it('sets expiration date in the future', () => {
-      const expirationMinDate = findExpirationField().props('minDate').getTime();
-      expect(expirationMinDate).toBeGreaterThan(today.getTime());
     });
 
     it('does not show the confirmation modal', () => {
@@ -546,7 +537,6 @@ describe('SecretForm component', () => {
           description: 'This is an edited secret',
           environment: 'edit-env',
           metadataVersion: 1,
-          expiration: undefined,
           name: 'PROD_PWD',
           projectPath: 'path/to/project',
           rotationIntervalDays: null,
