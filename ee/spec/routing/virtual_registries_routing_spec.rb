@@ -22,15 +22,73 @@ RSpec.describe 'Virtual Registry routing', "routing", feature_category: :virtual
       end
     end
 
-    shared_examples 'does not route' do
+    shared_examples 'does not route' do |method:|
       specify do
-        expect(get(path))
+        expect(send(method, path))
           .not_to route_to(
             controller: 'virtual_registries/container',
-            action: 'show',
+            action: expected_action,
             id: registry_id,
             path: expected_path
           )
+      end
+    end
+
+    shared_examples 'invalid manifest routes' do |method:, action:, path_suffix: ''|
+      let(:expected_action) { action }
+
+      context 'with invalid tag names' do
+        where(:tag_name) do
+          [
+            ['-invalid'],
+            ['a' * 129],
+            ["md5:#{'a' * 32}"],
+            ["sha256:#{'a' * 63}"],
+            ["sha256:#{'A' * 64}"],
+            ["sha256:#{'g' * 64}"]
+          ]
+        end
+
+        with_them do
+          let(:path) { "/v2/virtual_registries/container/#{registry_id}/alpine/manifests/#{tag_name}#{path_suffix}" }
+          let(:expected_path) { "alpine/manifests/#{tag_name}" }
+
+          it_behaves_like 'does not route', method: method
+        end
+      end
+
+      context 'with invalid image name' do
+        let(:path) { "/v2/virtual_registries/container/#{registry_id}/invalid*/manifests/#{tag}#{path_suffix}" }
+        let(:expected_path) { "invalid*/manifests/#{tag}" }
+
+        it_behaves_like 'does not route', method: method
+      end
+    end
+
+    shared_examples 'invalid blob routes' do |method:, action:, path_suffix: ''|
+      let(:expected_action) { action }
+
+      context 'with invalid sha format' do
+        where(:invalid_sha) do
+          [
+            ['invalid'],
+            ['sha256:..%2F..']
+          ]
+        end
+
+        with_them do
+          let(:path) { "/v2/virtual_registries/container/#{registry_id}/alpine/blobs/#{invalid_sha}#{path_suffix}" }
+          let(:expected_path) { "alpine/blobs/#{invalid_sha}" }
+
+          it_behaves_like 'does not route', method: method
+        end
+      end
+
+      context 'with invalid image name' do
+        let(:path) { "/v2/virtual_registries/container/#{registry_id}/invalid*/blobs/#{sha}#{path_suffix}" }
+        let(:expected_path) { "invalid*/blobs/#{sha}" }
+
+        it_behaves_like 'does not route', method: method
       end
     end
 
@@ -72,52 +130,7 @@ RSpec.describe 'Virtual Registry routing', "routing", feature_category: :virtual
         end
       end
 
-      context 'with invalid tag names' do
-        where(:tag_name) do
-          [
-            ['-invalid'], # has hyphen
-            ['a' * 129], # too long
-            ["md5:#{'a' * 32}"], # unsupported digest format
-            ["sha256:#{'a' * 63}"], # invalid sha256 length
-            ["sha256:#{'A' * 64}"], # has uppercase character
-            ["sha256:#{'g' * 64}"]  # has hex character
-          ]
-        end
-
-        with_them do
-          let(:path) { "/v2/virtual_registries/container/#{registry_id}/#{image}/manifests/#{tag_name}" }
-          let(:expected_path) { "#{image}/manifests/#{tag_name}" }
-
-          it_behaves_like 'does not route'
-        end
-      end
-
-      context 'with invalid image name' do
-        let(:path) { "/v2/virtual_registries/container/#{registry_id}/invalid*/manifests/#{tag}" }
-        let(:expected_path) { "invalid*/manifests/#{tag}" }
-
-        it_behaves_like 'does not route'
-      end
-
-      context 'with invalid sha format' do
-        it 'does not route invalid sha' do
-          expect(get("/v2/virtual_registries/container/#{registry_id}/#{image}/blobs/invalid")).not_to route_to(
-            controller: 'virtual_registries/container',
-            action: 'show',
-            id: registry_id,
-            path: "#{image}/blobs/invalid"
-          )
-        end
-
-        it 'does not route path traversal attempts' do
-          expect(get("/v2/virtual_registries/container/#{registry_id}/#{image}/blobs/sha256:..%2F..")).not_to route_to(
-            controller: 'virtual_registries/container',
-            action: 'show',
-            id: registry_id,
-            path: "#{image}/blobs/sha256:..%2F.."
-          )
-        end
-      end
+      it_behaves_like 'invalid manifest routes', method: :get, action: 'show'
     end
 
     describe 'GET /v2/virtual_registries/container/:id/*path (blobs)' do
@@ -144,28 +157,64 @@ RSpec.describe 'Virtual Registry routing', "routing", feature_category: :virtual
         it_behaves_like 'routes correctly'
       end
 
-      context 'with invalid sha format' do
-        where(:invalid_sha) do
-          [
-            ['invalid'],
-            ['sha256:..%2F..']
-          ]
-        end
+      it_behaves_like 'invalid blob routes', method: :get, action: 'show'
+    end
 
-        with_them do
-          let(:path) { "/v2/virtual_registries/container/#{registry_id}/#{image}/blobs/#{invalid_sha}" }
-          let(:expected_path) { "#{image}/blobs/#{invalid_sha}" }
+    describe 'POST /v2/virtual_registries/container/:id/*path/upload (manifests)' do
+      where(:image_name, :identifier) do
+        [
+          ['alpine',          ref(:tag)],
+          ['alpine',          ref(:digest)],
+          ['library/alpine',  ref(:tag)],
+          ['library/alpine',  ref(:digest)],
+          ['foo/bar/baz/qux', ref(:tag)],
+          ['foo/bar/baz/qux', ref(:digest)]
+        ]
+      end
 
-          it_behaves_like 'does not route'
+      with_them do
+        let(:path) { "/v2/virtual_registries/container/#{registry_id}/#{image_name}/manifests/#{identifier}/upload" }
+        let(:expected_path) { "#{image_name}/manifests/#{identifier}" }
+
+        specify do
+          expect(post(path))
+            .to route_to(
+              controller: 'virtual_registries/container',
+              action: 'upload',
+              id: registry_id,
+              path: expected_path
+            )
         end
       end
 
-      context 'with invalid image name' do
-        let(:path) { "/v2/virtual_registries/container/#{registry_id}/invalid*/blobs/#{sha}" }
-        let(:expected_path) { "invalid*/blobs/#{sha}" }
+      it_behaves_like 'invalid manifest routes', method: :post, action: 'upload', path_suffix: '/upload'
+    end
 
-        it_behaves_like 'does not route'
+    describe 'POST /v2/virtual_registries/container/:id/*path/upload (blobs)' do
+      where(:image_name) do
+        [
+          ['alpine'],
+          ['library/alpine'],
+          ['foo/bar/baz/qux']
+        ]
       end
+
+      with_them do
+        let(:path) { "/v2/virtual_registries/container/#{registry_id}/#{image_name}/blobs/#{sha}/upload" }
+        let(:expected_path) { "#{image_name}/blobs/#{sha}" }
+
+        specify do
+          expect(post(path))
+            .to route_to(
+              controller: 'virtual_registries/container',
+              action: 'upload',
+              id: registry_id,
+              path: expected_path
+            )
+        end
+      end
+
+      it_behaves_like 'invalid blob routes', method: :post, action: 'upload', path_suffix: '/upload'
     end
   end
 end

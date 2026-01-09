@@ -61,11 +61,8 @@ module VirtualRegistries
 
         upstream_etag = extract_digest_from_path(path)
 
-        if upstream_etag
-          base_query.find_by_upstream_etag(upstream_etag)
-        else
+        (upstream_etag && base_query.find_by_upstream_etag(upstream_etag)) ||
           base_query.find_by_relative_path(relative_path)
-        end
       end
       strong_memoize_attr :cache_entry
 
