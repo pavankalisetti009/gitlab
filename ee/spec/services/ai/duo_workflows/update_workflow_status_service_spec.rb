@@ -110,6 +110,40 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         expect(workflow.reload.human_status_name).to eq("finished")
       end
 
+      it 'creates an audit event when finishing a workflow' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+          hash_including(
+            name: 'duo_session_finished',
+            author: user,
+            scope: project,
+            target: workflow,
+            message: 'Completed Duo session'
+          )
+        )
+
+        described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute
+      end
+
+      context 'when audit event creation fails for finish event' do
+        let(:audit_error) { StandardError.new('Audit service unavailable') }
+
+        before do
+          allow(::Gitlab::Audit::Auditor).to receive(:audit).and_raise(audit_error)
+        end
+
+        it 'tracks the exception and workflow update continues successfully' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            audit_error,
+            hash_including(workflow_id: workflow.id)
+          )
+
+          result = described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute
+
+          expect(result[:status]).to eq(:success)
+          expect(workflow.reload.human_status_name).to eq("finished")
+        end
+      end
+
       it "can drop a workflow", :aggregate_failures do
         expect do
           result = described_class.new(workflow: workflow, current_user: user, status_event: "drop").execute
@@ -127,6 +161,40 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
                                })
 
         expect(workflow.reload.human_status_name).to eq("failed")
+      end
+
+      it 'creates an audit event when dropping a workflow' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+          hash_including(
+            name: 'duo_session_failed',
+            author: user,
+            scope: project,
+            target: workflow,
+            message: 'Duo session failed'
+          )
+        )
+
+        described_class.new(workflow: workflow, current_user: user, status_event: "drop").execute
+      end
+
+      context 'when audit event creation fails for drop event' do
+        let(:audit_error) { StandardError.new('Audit service unavailable') }
+
+        before do
+          allow(::Gitlab::Audit::Auditor).to receive(:audit).and_raise(audit_error)
+        end
+
+        it 'tracks the exception and workflow update continues successfully' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            audit_error,
+            hash_including(workflow_id: workflow.id)
+          )
+
+          result = described_class.new(workflow: workflow, current_user: user, status_event: "drop").execute
+
+          expect(result[:status]).to eq(:success)
+          expect(workflow.reload.human_status_name).to eq("failed")
+        end
       end
 
       it "can pause a workflow", :aggregate_failures do
@@ -157,6 +225,43 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
                                    })
 
           expect(workflow.reload.human_status_name).to eq("stopped")
+        end
+
+        it 'creates an audit event when stopping a workflow' do
+          allow(workflow).to receive(:associated_pipelines).and_return([])
+
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'duo_session_stopped',
+              author: user,
+              scope: project,
+              target: workflow,
+              message: 'Duo session stopped'
+            )
+          )
+
+          described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+        end
+
+        context 'when audit event creation fails for stop event' do
+          let(:audit_error) { StandardError.new('Audit service unavailable') }
+
+          before do
+            allow(workflow).to receive(:associated_pipelines).and_return([])
+            allow(::Gitlab::Audit::Auditor).to receive(:audit).and_raise(audit_error)
+          end
+
+          it 'tracks the exception and workflow update continues successfully' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              audit_error,
+              hash_including(workflow_id: workflow.id)
+            )
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("stopped")
+          end
         end
 
         context "with associated pipelines" do
@@ -327,6 +432,40 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
                                })
 
           expect(workflow.reload.human_status_name).to eq("running")
+        end
+
+        it 'creates an audit event when starting a workflow' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'duo_session_started',
+              author: user,
+              scope: project,
+              target: workflow,
+              message: 'Started Duo session'
+            )
+          )
+
+          described_class.new(workflow: workflow, current_user: user, status_event: "start").execute
+        end
+
+        context 'when audit event creation fails' do
+          let(:audit_error) { StandardError.new('Audit service unavailable') }
+
+          before do
+            allow(::Gitlab::Audit::Auditor).to receive(:audit).and_raise(audit_error)
+          end
+
+          it 'tracks the exception when starting a workflow and workflow update continues successfully' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              audit_error,
+              hash_including(workflow_id: workflow.id)
+            )
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "start").execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("running")
+          end
         end
       end
 

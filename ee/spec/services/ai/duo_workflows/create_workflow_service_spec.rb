@@ -53,6 +53,45 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
                               )
     end
 
+    it 'creates an audit event' do
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+        hash_including(
+          name: 'duo_session_created',
+          author: user,
+          scope: project,
+          target: be_a(Ai::DuoWorkflows::Workflow),
+          message: 'Created Duo session'
+        )
+      )
+
+      execute
+    end
+
+    context 'when audit event creation fails' do
+      let(:audit_error) { StandardError.new('Audit service unavailable') }
+
+      before do
+        allow(::Gitlab::Audit::Auditor).to receive(:audit).and_raise(audit_error)
+      end
+
+      it 'tracks the exception and workflow creation continues successfully' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+          audit_error,
+          hash_including(workflow_id: be_a(Integer))
+        )
+
+        expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+        expect(execute[:status]).to eq(:success)
+      end
+
+      it 'does not fail the workflow creation' do
+        result = execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:workflow]).to be_persisted
+      end
+    end
+
     context 'when namespace-level workflow',
       skip: 'Not yet supported. See https://gitlab.com/gitlab-org/gitlab/-/issues/554952' do
       let(:container) { group }
