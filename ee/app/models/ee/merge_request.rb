@@ -312,12 +312,19 @@ module EE
 
     override :skipped_auto_merge_checks
     def skipped_auto_merge_checks(options = {})
+      merge_train_strat = [
+        ::AutoMergeService::STRATEGY_MERGE_TRAIN,
+        ::AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
+      ].include?(options[:auto_merge_strategy])
+
+      result = super.merge(skip_rebase_check: merge_train_strat)
+
       if options[:auto_merge_strategy] == ::AutoMergeService::STRATEGY_MERGE_TRAIN &&
           ::Feature.enabled?(:allow_merge_train_retry_merge, project)
         skip_ci_check = !on_train? && diff_head_pipeline&.merge_train_pipeline? && !pipeline_creating?
-        super.merge(skip_ci_check: skip_ci_check)
+        result.merge(skip_ci_check: skip_ci_check)
       else
-        super
+        result
       end
     end
 
@@ -710,7 +717,13 @@ module EE
 
     override :should_be_rebased?
     def should_be_rebased?
-      return false if MergeTrains::Train.project_using_ff?(target_project)
+      # Skip rebase check for merge train strategies since the train handles rebasing
+      merge_train_strategy = [
+        ::AutoMergeService::STRATEGY_MERGE_TRAIN,
+        ::AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
+      ].include?(auto_merge_strategy)
+
+      return false if merge_train_strategy
       return false if merge_train_car&.on_ff_train?
 
       super
