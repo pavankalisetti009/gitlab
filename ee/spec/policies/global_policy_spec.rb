@@ -862,32 +862,40 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         # rubocop:disable Layout/LineLength -- Table syntax requires long lines for readability
         where(
           :is_licensed, :is_active_duo_add_on, :is_active_dap_add_on, :is_duo_enterprise, :is_saas,
-          :with_saas_flag_enabled, :dedicated_instance, :amazon_q_enabled, :can_manage_self_hosted_settings
+          :with_saas_flag_enabled, :dedicated_instance, :amazon_q_enabled, :is_offline_license,
+          :testing_terms_accepted, :can_manage_self_hosted_settings
         ) do
           # Both add-on types available
-          true  | true  | true  | true  | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | true  | true  | false | false | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
           # Only Duo Core/Pro/Enterprise add-on
-          true  | true  | false | true  | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
-          # Only DAP add-on
-          true  | false | true  | false | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | false | true  | false | false | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
+          # Only DAP add-on with offline license
+          true  | false | true  | false | false | false | false | false | true  | false | be_allowed(:manage_self_hosted_models_settings)
+          # Only DAP add-on with online license (no Duo Enterprise)
+          true  | false | true  | false | false | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # No add-ons
-          true  | false | false | true  | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | false | false | true  | false | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # Amazon Q enabled
-          true  | true  | false | false | false | false | false | true  | be_disallowed(:manage_self_hosted_models_settings)
+          true  | true  | false | false | false | false | false | true  | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # SaaS without flag
-          true  | true  | false | true  | true  | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | true  | false | true  | true  | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # SaaS with flag
-          true  | true  | false | true  | true  | true  | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | false | true  | true  | true  | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
           # Dedicated instance
-          true  | true  | false | true  | false | false | true  | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | true  | false | true  | false | false | true  | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # No license
-          false | true  | false | true  | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          false | true  | false | true  | false | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
         end
         # rubocop:enable Layout/LineLength
 
         with_them do
+          let(:license_double) do
+            instance_double('License', offline_cloud_license?: is_offline_license)
+          end
+
           before do
             stub_licensed_features(self_hosted_models: is_licensed)
+            allow(License).to receive(:current).and_return(license_double)
             allow(::GitlabSubscriptions::AddOnPurchase)
               .to receive_message_chain(:for_self_managed, :for_duo_core_pro_or_enterprise, :active, :exists?)
               .and_return(is_active_duo_add_on)
@@ -898,6 +906,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             allow(::GitlabSubscriptions::AddOnPurchase)
               .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
               .and_return(is_duo_enterprise)
+            allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(testing_terms_accepted)
 
             stub_saas_features(gitlab_com_subscriptions: is_saas)
             stub_feature_flags(allow_self_hosted_features_for_com: with_saas_flag_enabled)
@@ -924,22 +933,24 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       context 'when admin', :enable_admin_mode do # -- Table syntax requires long lines for readability
         where(
           :amazon_q_enabled, :is_licensed, :is_active_duo_add_on, :is_active_dap_add_on, :is_offline_license,
-          :can_manage_instance_model_selection
+          :is_duo_enterprise, :testing_terms_accepted, :can_manage_instance_model_selection
         ) do
           # Standard cases with Duo add-ons
-          false | true  | true  | false | false | be_allowed(:manage_instance_model_selection)
-          # With DAP add-on
-          false | true  | false | true  | false | be_allowed(:manage_instance_model_selection)
+          false | true  | true  | false | false | true  | false | be_allowed(:manage_instance_model_selection)
+          # With DAP add-on and online license with Duo Enterprise + accepted terms
+          false | true  | false | true  | false | true  | true  | be_allowed(:manage_instance_model_selection)
           # Both add-ons
-          false | true  | true  | true  | false | be_allowed(:manage_instance_model_selection)
+          false | true  | true  | true  | false | true  | false | be_allowed(:manage_instance_model_selection)
           # Amazon Q
-          true  | true  | true  | false | false | be_disallowed(:manage_instance_model_selection)
+          true  | true  | true  | false | false | true  | false | be_disallowed(:manage_instance_model_selection)
           # No add-ons
-          false | true  | false | false | false | be_disallowed(:manage_instance_model_selection)
-          # Offline license
-          false | true  | true  | false | true  | be_disallowed(:manage_instance_model_selection)
+          false | true  | false | false | false | false | false | be_disallowed(:manage_instance_model_selection)
+          # Offline license (blocks instance_model_selection_available)
+          false | true  | true  | false | true  | false | false | be_disallowed(:manage_instance_model_selection)
+          # Offline license with DAP add-on (still blocked by offline license)
+          false | true  | false | true  | true  | false | false | be_disallowed(:manage_instance_model_selection)
           # No license
-          false | false | true  | false | false | be_disallowed(:manage_instance_model_selection)
+          false | false | true  | false | false | false | false | be_disallowed(:manage_instance_model_selection)
         end
         with_them do
           let(:license_double) do
@@ -956,6 +967,10 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             allow(::GitlabSubscriptions::AddOnPurchase)
               .to receive_message_chain(:for_self_managed, :for_self_hosted_dap, :active, :exists?)
               .and_return(is_active_dap_add_on)
+            allow(::GitlabSubscriptions::AddOnPurchase)
+              .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
+              .and_return(is_duo_enterprise)
+            allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(testing_terms_accepted)
           end
 
           it { is_expected.to can_manage_instance_model_selection }
@@ -974,19 +989,40 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       end
 
       context 'when admin', :enable_admin_mode do
-        where(:is_dap_flag_enabled, :is_dap_add_on_available, :can_read_dap_models, :can_update_dap_models) do
-          true  | true   | be_allowed(:read_dap_self_hosted_model)    | be_allowed(:update_dap_self_hosted_model)
-          true  | false  | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
-          false | true   | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
-          false | false  | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
+        # rubocop:disable Layout/LineLength -- Table syntax requires long lines for readability
+        where(
+          :is_offline_license, :is_dap_add_on_available, :is_duo_enterprise_available,
+          :testing_terms_accepted, :can_read_dap_models, :can_update_dap_models
+        ) do
+          # Offline cloud license with DAP add-on
+          true  | true  | false | false | be_allowed(:read_dap_self_hosted_model)    | be_allowed(:update_dap_self_hosted_model)
+          # Offline cloud license without DAP add-on
+          true  | false | false | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
+          # Online license with Duo Enterprise and accepted terms
+          false | false | true  | true  | be_allowed(:read_dap_self_hosted_model)    | be_allowed(:update_dap_self_hosted_model)
+          # Online license with Duo Enterprise but not accepted terms
+          false | false | true  | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
+          # Online license without Duo Enterprise
+          false | false | false | true  | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
+          # Online license without Duo Enterprise and not accepted terms
+          false | false | false | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
         end
+        # rubocop:enable Layout/LineLength
 
         with_them do
+          let(:license_double) do
+            instance_double('License', offline_cloud_license?: is_offline_license)
+          end
+
           before do
+            allow(License).to receive(:current).and_return(license_double)
             allow(::GitlabSubscriptions::AddOnPurchase)
               .to receive_message_chain(:for_self_managed, :for_self_hosted_dap, :active, :exists?)
               .and_return(is_dap_add_on_available)
-            stub_feature_flags(self_hosted_dap_sku: is_dap_flag_enabled)
+            allow(::GitlabSubscriptions::AddOnPurchase)
+              .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
+              .and_return(is_duo_enterprise_available)
+            allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(testing_terms_accepted)
           end
 
           it { is_expected.to can_read_dap_models }

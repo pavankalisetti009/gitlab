@@ -351,9 +351,12 @@ module EE
     end
 
     def dap_self_hosted?
-      return false unless ::Feature.enabled?(:self_hosted_dap_sku, :instance)
-
-      ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_self_hosted_dap.active.exists?
+      if ::License.current&.offline_cloud_license?
+        ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_self_hosted_dap.active.exists?
+      else
+        ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists? &&
+          ::Ai::TestingTermsAcceptance.has_accepted?
+      end
     end
 
     def custom_role_ability(user)
