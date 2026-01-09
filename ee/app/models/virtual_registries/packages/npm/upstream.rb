@@ -21,6 +21,9 @@ module VirtualRegistries
           inverse_of: :upstream,
           autosave: true
         has_many :registries, class_name: 'VirtualRegistries::Packages::Npm::Registry', through: :registry_upstreams
+        has_many :cache_local_entries,
+          class_name: 'VirtualRegistries::Packages::Npm::Cache::Local::Entry',
+          inverse_of: :upstream
 
         encrypts :username, :password
 
