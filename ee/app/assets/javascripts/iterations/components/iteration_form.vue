@@ -65,7 +65,7 @@ export default {
         }
 
         this.title = iteration.title;
-        this.description = iteration.description;
+        this.description = iteration.description || '';
         this.startDate = newDate(iteration.startDate);
         this.dueDate = newDate(iteration.dueDate);
         this.automatic = iteration.iterationCadence.automatic;
