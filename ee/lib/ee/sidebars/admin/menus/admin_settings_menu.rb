@@ -19,10 +19,24 @@ module EE
             insert_item_after(:security_and_compliance_menu_item, analytics_menu_item)
             insert_item_after(:admin_preferences, usage_quotas_menu_item)
 
+            if ::Feature.enabled?(:work_item_configurable_types, :instance)
+              insert_item_after(:admin_security_and_compliance, work_item_settings_menu_item)
+            end
+
             true
           end
 
           private
+
+          def work_item_settings_menu_item
+            ::Sidebars::MenuItem.new(
+              title: _('Work items'),
+              link: work_item_admin_application_settings_path,
+              active_routes: { path: 'admin/application_settings#work_item' },
+              item_id: :work_item_settings,
+              container_html_options: { 'data-testid': 'admin-work-item-settings' }
+            )
+          end
 
           def roles_and_permissions_menu_item
             return ::Sidebars::NilMenuItem.new(item_id: :roles_and_permissions) unless roles_and_permissions_available?
