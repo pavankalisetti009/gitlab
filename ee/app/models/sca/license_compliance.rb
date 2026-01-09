@@ -60,7 +60,8 @@ module SCA
     private
 
     def license_scanning_report_diff(other_report)
-      license_scanning_report.diff_with_including_new_dependencies_for_unchanged_licenses(other_report)
+      license_scanning_report.diff_with_including_new_dependencies_for_unchanged_licenses(other_report,
+        include_version: false)
     end
 
     attr_reader :project, :pipeline, :scanner

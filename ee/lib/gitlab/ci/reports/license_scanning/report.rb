@@ -52,27 +52,28 @@ module Gitlab
             }
           end
 
-          def diff_with_including_new_dependencies_for_unchanged_licenses(other_report)
+          def diff_with_including_new_dependencies_for_unchanged_licenses(other_report, include_version: true)
             base = self.licenses
             head = other_report&.licenses || []
 
             diff_with(other_report).tap do |licenses|
-              add_new_dependencies_for_unchanged_licenses(base, head, licenses)
+              add_new_dependencies_for_unchanged_licenses(base, head, licenses, include_version)
             end
           end
 
           private
 
-          def add_new_dependencies_for_unchanged_licenses(base, head, licenses)
+          def add_new_dependencies_for_unchanged_licenses(base, head, licenses, include_version)
             licenses[:unchanged].each do |license|
-              new_dependencies_for_existing_license = new_dependencies_for_existing_license(base, head, license)
+              new_dependencies_for_existing_license = new_dependencies_for_existing_license(base, head, license,
+                include_version)
               next unless new_dependencies_for_existing_license.present?
 
               licenses[:added] << new_license_with_dependencies(license, new_dependencies_for_existing_license)
             end
           end
 
-          def new_dependencies_for_existing_license(base, head, license)
+          def new_dependencies_for_existing_license(base, head, license, include_version)
             license_name = license.name
             head_license = head.find { |license| license.name == license_name }
             base_license = base.find { |license| license.name == license_name }
@@ -80,7 +81,22 @@ module Gitlab
 
             head_license_dependencies = head_license.dependencies || Set.new
             base_license_dependencies = base_license.dependencies || Set.new
-            head_license_dependencies - base_license_dependencies
+
+            if include_version
+              head_license_dependencies - base_license_dependencies
+            else
+              subtract_dependencies_without_version(head_license_dependencies, base_license_dependencies)
+            end
+          end
+
+          def subtract_dependencies_without_version(head_dependencies, base_dependencies)
+            head_dependencies.reject do |head_dep|
+              base_dependencies.any? do |base_dep|
+                head_dep.name == base_dep.name &&
+                  head_dep.package_manager == base_dep.package_manager &&
+                  head_dep.purl_type == base_dep.purl_type
+              end
+            end
           end
 
           def new_license_with_dependencies(license, new_dependencies_for_existing_license)

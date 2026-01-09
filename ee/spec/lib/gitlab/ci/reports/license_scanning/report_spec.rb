@@ -148,7 +148,12 @@ RSpec.describe Gitlab::Ci::Reports::LicenseScanning::Report, feature_category: :
   end
 
   describe '#diff_with_including_new_dependencies_for_unchanged_licenses' do
-    subject { base_report.diff_with_including_new_dependencies_for_unchanged_licenses(head_report) }
+    let(:include_version) { true }
+
+    subject do
+      base_report.diff_with_including_new_dependencies_for_unchanged_licenses(head_report,
+        include_version: include_version)
+    end
 
     it_behaves_like 'diff_with'
 
@@ -202,10 +207,21 @@ RSpec.describe Gitlab::Ci::Reports::LicenseScanning::Report, feature_category: :
             version: '8.0.1')
         end
 
-        it 'returns the new dependencies for unchanged licenses' do
-          expect(subject[:added]).to contain_exactly(
-            have_attributes(name: 'MIT License',
-              dependencies: contain_exactly(have_attributes(name: 'rails', version: '8.0.1'))))
+        context 'when including the dependency version for the comparison' do
+          it 'returns the new dependencies for unchanged licenses' do
+            expect(subject[:added]).to contain_exactly(
+              have_attributes(name: 'MIT License',
+                dependencies: contain_exactly(have_attributes(name: 'rails',
+                  version: '8.0.1'))))
+          end
+        end
+
+        context 'when excluding the dependency version for the comparison' do
+          let(:include_version) { false }
+
+          it 'returns an empty list' do
+            expect(subject[:added]).to be_empty
+          end
         end
       end
     end
