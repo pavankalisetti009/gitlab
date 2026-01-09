@@ -449,4 +449,30 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
       end
     end
   end
+
+  describe '.show_foundational_items_available?' do
+    let(:group) { build_stubbed(:group) }
+    let(:user) { build_stubbed(:user) }
+
+    subject { helper.show_foundational_items_available?(group: group) }
+
+    where(:current_user, :owner_access, :subscription_valid, :feature_enabled, :expected_result) do
+      nil        | true  | true  | true  | false
+      ref(:user) | false | true  | true  | false
+      ref(:user) | true  | false | true  | false
+      ref(:user) | true  | true  | false | false
+      ref(:user) | true  | true  | true  | true
+    end
+
+    with_them do
+      before do
+        allow(helper).to receive(:current_user).and_return(current_user)
+        allow(Ability).to receive(:allowed?).with(current_user, :owner_access, group).and_return(owner_access)
+        allow(helper).to receive(:gitlab_duo_subscription_valid?).with(group).and_return(subscription_valid)
+        allow(Feature).to receive(:enabled?).with(:dap_use_foundational_flows_setting, current_user).and_return(feature_enabled)
+      end
+
+      it { is_expected.to be expected_result }
+    end
+  end
 end

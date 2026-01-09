@@ -1,4 +1,6 @@
 - return unless group && show_foundational_items_available?(group: group)
+- manage_duo_settings_path = ::Gitlab::Saas.enabled? ? group_settings_gitlab_duo_configuration_index_path(group) : edit_group_path(group, anchor: 'js-gitlab-duo-settings')
+- return if request.path == manage_duo_settings_path.split('#').first
 
 - content_for :after_flash_content do
   = render Users::GroupDismissibleAlertComponent.new(variant: :info,
@@ -10,4 +12,4 @@
     - c.with_body do
       = s_("AICatalog|Foundational agents and flows are built, tested, and supported by GitLab, and can help accelerate your productivity. Get started by configuring them now.")
     - c.with_actions do
-      = link_button_to s_('AICatalog|Configure'), group_settings_gitlab_duo_configuration_index_path(group), class: 'gl-alert-action'
+      = link_button_to s_('AICatalog|Configure'), manage_duo_settings_path, class: 'gl-alert-action'
