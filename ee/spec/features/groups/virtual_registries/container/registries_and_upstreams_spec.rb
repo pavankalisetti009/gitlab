@@ -16,10 +16,23 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
   end
 
   shared_examples 'page is rendered', :js do
-    it 'renders page' do
+    it 'redirects to registries' do
       visit url
 
-      expect(page).to have_title('Virtual registry')
+      expect(page).to have_title('Container registries')
+      expect(page).to have_selector('h1', text: 'Container virtual registries')
+    end
+
+    it 'directly visiting registries route renders registries' do
+      visit group_virtual_registries_container_registries_path(group)
+
+      expect(page).to have_title('Container registries')
+    end
+
+    it 'directly visiting upstreams route renders upstreams' do
+      visit group_virtual_registries_container_upstreams_path(group)
+
+      expect(page).to have_title('Container upstreams')
     end
 
     it 'sidebar menu is open' do

@@ -254,4 +254,17 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
       )
     end
   end
+
+  describe '#container_template_data' do
+    let(:group) { build_stubbed(:group) }
+
+    subject { helper.container_template_data(group) }
+
+    it 'returns container template data' do
+      is_expected.to eq({
+        full_path: group.full_path,
+        base_path: group_virtual_registries_container_path(group)
+      })
+    end
+  end
 end

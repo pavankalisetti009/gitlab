@@ -10,5 +10,8 @@ namespace :virtual_registries do
 
   namespace :container do
     get '/(*vueroute)', action: :index, format: false
+    # Additional routes for helpers, used as path in feature specs
+    resources :registries, only: [:index], controller: :container, action: :index
+    resources :upstreams, only: [:index], controller: :container, action: :index
   end
 end

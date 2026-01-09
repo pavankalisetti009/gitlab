@@ -74607,6 +74607,12 @@ msgstr ""
 msgid "VirtualRegistries|Configure Virtual Registries settings."
 msgstr ""
 
+msgid "VirtualRegistries|Container registries"
+msgstr ""
+
+msgid "VirtualRegistries|Container upstreams"
+msgstr ""
+
 msgid "VirtualRegistries|Virtual Registries"
 msgstr ""
 
@@ -74784,6 +74790,9 @@ msgid "VirtualRegistry|Connect Maven virtual registry to an upstream"
 msgstr ""
 
 msgid "VirtualRegistry|Connection successful."
+msgstr ""
+
+msgid "VirtualRegistry|Container virtual registries"
 msgstr ""
 
 msgid "VirtualRegistry|Copy virtual registry ID: %{id}"
