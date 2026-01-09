@@ -1390,6 +1390,8 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
 
       it 'creates accessible AI entity rules' do
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(120)
+
         put api("/groups/#{group.id}", user), params: params
 
         expect(response).to have_gitlab_http_status(:ok)
