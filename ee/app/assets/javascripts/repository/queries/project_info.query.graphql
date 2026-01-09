@@ -1,5 +1,6 @@
 #import "ee/repository/queries/path_locks.fragment.graphql"
 
+# @feature_category: source_code_management
 query getProjectInfoEE($projectPath: ID!) {
   project(fullPath: $projectPath) {
     id

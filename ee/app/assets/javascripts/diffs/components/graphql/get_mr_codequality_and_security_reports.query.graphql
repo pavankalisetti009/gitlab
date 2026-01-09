@@ -1,5 +1,6 @@
 #import "ee/graphql_shared/fragments/vulnerability_detail.fragment.graphql"
 
+# @feature_category: code_review_workflow
 query getMRCodequalityAndSecurityReportsEE($fullPath: ID!, $iid: String!) {
   project(fullPath: $fullPath) {
     id
