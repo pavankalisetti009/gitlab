@@ -9,7 +9,8 @@ module Ai
       def available?(user)
         feature_available?(user) && # rubocop:disable Gitlab/FeatureAvailableUsage -- Not a license check
           duo_agent_platform_available_for_user?(user) &&
-          user_can_access_experimental_ai_catalog_features?(user)
+          user_can_access_experimental_ai_catalog_features?(user) &&
+          user.allowed_to_use_through_namespace?(:ai_catalog)
       end
 
       private

@@ -192,6 +192,16 @@ module Ai
         check_free_access(ai_feature, licensed_feature)
       end
 
+      def allowed_to_use_through_namespace?(ai_feature)
+        # This looks duplicated, but more logic will come in this function with
+        # https://gitlab.com/gitlab-org/gitlab/-/work_items/584384
+        check = check_access_through_namespace_at_instance(ai_feature)
+
+        # treats nil as true since this means no rule was setup, or that this check
+        # shouldn't be taken into account
+        check.nil? || check.allowed?
+      end
+
       def check_access_through_namespace_at_instance(ai_feature)
         return if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         return unless Feature.enabled?(:duo_access_through_namespaces, :instance)

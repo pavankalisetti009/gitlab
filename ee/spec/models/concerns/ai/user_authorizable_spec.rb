@@ -1120,6 +1120,35 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
+  describe '.allowed_to_use_through_namespace?' do
+    let_it_be(:user) { create(:user) }
+
+    before do
+      allow(user).to receive(:check_access_through_namespace_at_instance)
+      .with(:duo_agent_platform).and_return(check_response)
+    end
+
+    subject(:is_allowed) { user.allowed_to_use_through_namespace?(:duo_agent_platform) }
+
+    context 'when check_access_through_namespace_at_instance is allowed' do
+      let(:check_response) { described_class::Response.new(allowed?: true) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when check_access_through_namespace_at_instance is false' do
+      let(:check_response) { described_class::Response.new(allowed?: false) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when check_access_through_namespace_at_instance is nil' do
+      let(:check_response) { nil }
+
+      it { is_expected.to be true }
+    end
+  end
+
   describe '#check_access_through_namespace_at_instance' do
     using RSpec::Parameterized::TableSyntax
 
