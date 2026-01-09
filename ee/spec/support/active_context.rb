@@ -7,7 +7,9 @@ RSpec.configure do |config|
   config.include ActiveContextHelpers, :active_context
 
   config.after(:all, :active_context) do
-    delete_active_context_indices!
+    # Only attempt cleanup if an adapter is available. When no search service is running
+    # (e.g., local development without Elasticsearch/OpenSearch), skip cleanup gracefully.
+    delete_active_context_indices! if ::ActiveContext.adapter.present?
   end
 
   config.around(:each, :active_context) do |example|
@@ -20,6 +22,12 @@ RSpec.configure do |config|
     example.run
 
     clear_active_context_data!
+  ensure
+    # Reset adapter cache after each example to prevent stale adapters from leaking
+    # to subsequent tests or hooks. This is especially important when tests skip
+    # (e.g., OpenSearch tests skipping in an Elasticsearch-only CI job), as the
+    # after(:all) hook would otherwise use the wrong adapter.
+    ::ActiveContext::Adapter.reset
   end
 
   private
