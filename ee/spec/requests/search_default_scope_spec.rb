@@ -280,22 +280,6 @@ RSpec.describe 'Search with default scope setting', :elastic, :clean_gitlab_redi
     expect(response.body).to include(CGI.escapeHTML(::Gitlab::UrlBuilder.instance.issue_path(issue)))
   end
 
-  context 'when search_scope_registry feature flag is disabled' do
-    before do
-      stub_feature_flags(search_scope_registry: false)
-    end
-
-    it 'falls back to legacy behavior' do
-      stub_application_setting(default_search_scope: 'issues')
-
-      get search_path, params: { search: 'Test' }
-
-      expect(response).to have_gitlab_http_status(:ok)
-      # With feature flag off, should fall back to projects scope (legacy behavior)
-      expect(response.body).to include(CGI.escapeHTML(project.path))
-    end
-  end
-
   # Advanced search (Elasticsearch) specific tests
   context 'with advanced search enabled', :elastic, :sidekiq_inline do
     before do

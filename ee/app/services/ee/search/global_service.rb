@@ -71,24 +71,6 @@ module EE
       def zoekt_project_id; end
 
       def zoekt_group_id; end
-
-      private
-
-      override :legacy_allowed_scopes
-      def legacy_allowed_scopes
-        scopes = super
-        return scopes if params[:search_type] == 'basic'
-
-        if use_elasticsearch?
-          scopes += %w[commits epics notes wiki_blobs]
-          scopes << 'blobs' if ::Gitlab::CurrentSettings.elasticsearch_code_scope
-        end
-
-        scopes += %w[blobs] if use_zoekt?
-
-        scopes.uniq
-      end
-      strong_memoize_attr :legacy_allowed_scopes
     end
   end
 end

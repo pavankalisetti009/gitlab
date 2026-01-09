@@ -194,63 +194,6 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       end
     end
 
-    context 'when search_scope_registry FF is disabled' do
-      before do
-        stub_feature_flags(search_scope_registry: false)
-      end
-
-      context 'when request search_type is basic' do
-        it 'returns scopes that are available for basic search' do
-          expected_scopes = %w[issues merge_requests milestones projects users]
-          expect(described_class.new(user, { search_type: 'basic' }).allowed_scopes).to match_array(expected_scopes)
-        end
-      end
-
-      context 'when ES is used' do
-        before do
-          stub_ee_application_setting(elasticsearch_search: true)
-        end
-
-        it 'includes ES-specific scopes from legacy allowed scopes' do
-          expect(described_class.new(user, {}).allowed_scopes).to include('blobs', 'commits', 'epics')
-        end
-
-        context 'when elasticsearch_code_scope is false' do
-          before do
-            stub_ee_application_setting(elasticsearch_code_scope: false)
-          end
-
-          it 'includes ES-specific scopes but not blobs' do
-            expect(described_class.new(user, {}).allowed_scopes).to include('commits', 'epics')
-            expect(described_class.new(user, {}).allowed_scopes).not_to include('blobs')
-          end
-        end
-      end
-
-      context 'when elasticsearch_search is disabled' do
-        let(:service) { described_class.new(user, {}) }
-
-        before do
-          stub_ee_application_setting(elasticsearch_search: false)
-        end
-
-        it 'does not include ES-specific scopes and epics in legacy mode' do
-          expect(service.allowed_scopes).not_to include('blobs', 'commits', 'epics')
-        end
-
-        context 'when zoekt is enabled' do
-          before do
-            allow(service).to receive(:use_zoekt?).and_return(true)
-          end
-
-          it 'does not include ES-specific scopes and epics but includes blobs' do
-            expect(service.allowed_scopes).not_to include('commits', 'epics')
-            expect(service.allowed_scopes).to include('blobs')
-          end
-        end
-      end
-    end
-
     context 'when elasticsearch_limit_indexing is enabled' do
       before do
         stub_ee_application_setting(elasticsearch_limit_indexing: true)
