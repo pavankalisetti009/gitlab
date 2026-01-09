@@ -122,29 +122,30 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
 
     # rubocop:disable Layout/LineLength -- More readable on single lines
     context 'when not SaaS' do
-      where(:flag_enabled, :instance_duo_features_enabled, :instance_duo_agent_platform_enabled, :instance_experiment_setting_enabled) do
-        false | false | false | false
-        false | false | false | true
-        false | false | true  | false
-        false | false | true  | true
-        false | true  | false | false
-        false | true  | false | true
-        false | true  | true  | false
-        false | true  | true  | true
-        true  | false | false | false
-        true  | false | false | true
-        true  | false | true  | false
-        true  | false | true  | true
-        true  | true  | false | false
-        true  | true  | false | true
-        true  | true  | true  | true
+      where(:flag_enabled, :instance_duo_features_enabled, :instance_duo_agent_platform_enabled, :instance_experiment_setting_enabled, :allowed_to_use_through_membership) do
+        false | false | false | false | true
+        false | false | false | true  | true
+        false | false | true  | false | true
+        false | false | true  | true  | true
+        false | true  | false | false | true
+        false | true  | false | true  | true
+        false | true  | true  | false | true
+        false | true  | true  | true  | true
+        true  | false | false | false | true
+        true  | false | false | true  | true
+        true  | false | true  | false | true
+        true  | false | true  | true  | true
+        true  | true  | false | false | true
+        true  | true  | false | true  | true
+        true  | true  | true  | true  | false
+        true  | true  | true  | true  | true
       end
       # rubocop:enable Layout/LineLength -- More readable on single lines
 
       with_them do
         let(:true_when_all_enabled) do
           flag_enabled && instance_duo_features_enabled && instance_duo_agent_platform_enabled &&
-            instance_experiment_setting_enabled
+            instance_experiment_setting_enabled && allowed_to_use_through_membership
         end
 
         before do
@@ -155,6 +156,13 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
           # Create or update the AI setting with the desired duo_agent_platform_enabled value
           ai_setting = ::Ai::Setting.instance
           ai_setting.update!(feature_settings: { duo_agent_platform_enabled: instance_duo_agent_platform_enabled })
+
+          membership_rule = create(
+            :ai_instance_accessible_entity_rules,
+            :duo_agent_platform
+          )
+
+          membership_rule.through_namespace.add_guest(user) if allowed_to_use_through_membership
         end
 
         it { is_expected.to eq(true_when_all_enabled) }
