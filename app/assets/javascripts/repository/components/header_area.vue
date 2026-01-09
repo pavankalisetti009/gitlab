@@ -82,7 +82,7 @@ export default {
     'showEditButton',
     'showWebIdeButton',
     'isGitpodEnabledForInstance',
-    'showPipelineEditorUrl',
+    'showPipelineEditorButton',
     'webIdeUrl',
     'editUrl',
     'pipelineEditorUrl',
@@ -403,7 +403,7 @@ export default {
           :show-edit-button="showEditButton"
           :show-web-ide-button="showWebIdeButton"
           :is-gitpod-enabled-for-instance="isGitpodEnabledForInstance"
-          :show-pipeline-editor-url="showPipelineEditorUrl"
+          :show-pipeline-editor-button="showPipelineEditorButton"
           :web-ide-url="webIDEUrl"
           :edit-url="editUrl"
           :pipeline-editor-url="pipelineEditorUrl"
