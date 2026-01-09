@@ -5,4 +5,4 @@
   = render_ce 'groups/settings/delete_delayed', remove_form_id: remove_form_id
 - else
   = form_tag(@group, method: :delete, id: remove_form_id) do
-    = render_if_exists 'groups/settings/delete_button_with_security_policies', remove_form_id: remove_form_id, linked_configurations: linked_configurations
+    = render_if_exists 'groups/settings/delete_button_with_security_policies', linked_configurations: linked_configurations

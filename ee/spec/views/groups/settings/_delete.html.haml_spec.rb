@@ -95,12 +95,11 @@ RSpec.describe 'groups/settings/_delete.html.haml', feature_category: :groups_an
         })
       end
 
-      it 'disables the remove group button' do
+      it 'does not show delete button' do
         @group = group
         render 'groups/settings/delete'
 
-        expect(rendered).to have_selector '[data-button-testid="remove-group-button"]'
-        expect(rendered).to match 'data-disabled="true"'
+        expect(rendered).not_to have_selector '[data-button-testid="remove-group-button"]'
       end
 
       it 'shows the message about linked security policy projects' do
