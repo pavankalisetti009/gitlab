@@ -180,10 +180,9 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
     context 'with a group level item consumer' do
       let(:item_consumer) { parent_item_consumer }
       let(:cannot_delete_consumer_message) { 'You have insufficient permissions to delete this item consumer' }
-      let(:cannot_delete_service_account_message) { 'User does not have permission to delete a service account.' }
 
-      context 'when user is owner with all permissions' do
-        let(:current_user) { owner }
+      context 'when user is maintainer with all permissions' do
+        let(:current_user) { maintainer }
 
         before do
           stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
@@ -196,23 +195,36 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
           expect(response).to be_success
         end
 
-        it 'deletes the service account' do
-          expect(DeleteUserWorker)
-            .to receive(:perform_async)
-            .with(current_user.id, service_account.id, { skip_authorization: true })
-
-          response
-        end
-
         it 'tracks internal event with group namespace' do
           expect { response }.to trigger_internal_events('delete_ai_catalog_item_consumer').with(
-            user: owner,
+            user: current_user,
             project: nil,
             namespace: group
           )
         end
 
         it_behaves_like 'creates an audit event on deletion', entity_type: 'Group'
+
+        it 'removes the service account from all projects' do
+          expect { response }.to change { project.team.members.count }.by(-1)
+          expect(project.team.users.pluck(:id)).not_to include(service_account.id)
+        end
+
+        context 'when removing a service account member fails' do
+          before do
+            allow_next_instance_of(Members::DestroyService) do |instance|
+              allow(instance).to receive(:execute) do |member|
+                member.errors.add(:base, 'Deletion failed')
+              end
+            end
+          end
+
+          it 'does not delete the item consumer' do
+            expect { response }.not_to change { Ai::Catalog::ItemConsumer.count }
+            expect(response).to be_error
+            expect(response.message).to contain_exactly('Service account membership: Deletion failed')
+          end
+        end
       end
 
       context 'when user does not have permission' do
@@ -229,41 +241,6 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
 
         it 'does not create an audit event on failure' do
           expect { response }.not_to change { AuditEvent.count }
-        end
-      end
-
-      where(:user, :service_accounts_feature, :allow_create_service_accounts, :result, :message) do
-        ref(:developer)  | false | false | false  | ref(:cannot_delete_consumer_message)
-        ref(:maintainer) | false | false | false  | ref(:cannot_delete_service_account_message)
-        ref(:owner)      | false | false | false  | ref(:cannot_delete_service_account_message)
-
-        ref(:developer)  | true | false | false   | ref(:cannot_delete_consumer_message)
-        ref(:maintainer) | true | false | false   | ref(:cannot_delete_service_account_message)
-        ref(:owner)      | true | false | false   | ref(:cannot_delete_service_account_message)
-
-        ref(:developer)  | false | true | false   | ref(:cannot_delete_consumer_message)
-        ref(:maintainer) | false | true | false   | ref(:cannot_delete_service_account_message)
-        ref(:owner)      | false | true | false   | ref(:cannot_delete_service_account_message)
-
-        ref(:developer)  | true | true  | false   | ref(:cannot_delete_consumer_message)
-        ref(:maintainer) | true | true  | false   | ref(:cannot_delete_service_account_message)
-        ref(:owner)      | true | true  | true    | nil
-      end
-
-      with_them do
-        let(:current_user) { user }
-
-        before do
-          stub_ee_application_setting(
-            allow_top_level_group_owners_to_create_service_accounts: allow_create_service_accounts
-          )
-          stub_licensed_features(service_accounts: service_accounts_feature)
-        end
-
-        it 'returns appropriate result', :aggregate_failures do
-          expect(response.success?).to eq(result)
-
-          expect(response.message).to contain_exactly(message) if message
         end
       end
     end

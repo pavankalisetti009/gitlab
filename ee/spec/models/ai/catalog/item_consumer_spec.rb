@@ -23,6 +23,14 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
 
     it { is_expected.to validate_length_of(:pinned_version_prefix).is_at_most(50) }
 
+    it 'uniqueness of service account' do
+      group = create(:group)
+      service_account = create(:service_account, provisioned_by_group: group)
+      item_consumer = create(:ai_catalog_item_consumer, :for_flow, group:, service_account:)
+
+      expect(item_consumer).to validate_uniqueness_of(:service_account).allow_nil
+    end
+
     it 'uniqueness of item for organization' do
       item_consumer = create(:ai_catalog_item_consumer, organization: create(:organization))
 
@@ -385,6 +393,24 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       it 'returns the resolved version' do
         expect(item_consumer.pinned_version).to eq(version)
       end
+    end
+  end
+
+  describe '.for_service_account' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:service_account) { create(:service_account, provisioned_by_group: group) }
+    let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, :for_flow, group:, service_account:) }
+
+    subject(:for_service_account) { described_class.for_service_account(service_account.id) }
+
+    it 'returns the consumer with the given service account' do
+      expect(for_service_account).to contain_exactly(item_consumer)
+    end
+
+    context 'when the service account is not in use' do
+      let_it_be(:service_account) { create(:service_account, provisioned_by_group: group) }
+
+      it { is_expected.to be_empty }
     end
   end
 

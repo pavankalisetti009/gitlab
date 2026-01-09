@@ -30,11 +30,8 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     create(:ai_catalog_third_party_flow_version, :released, item: third_party_flow_item, version: '3.2.1')
   end
 
-  let_it_be(:service_account) { create(:user, :service_account) }
-
-  let_it_be(:service_account_user_detail) do
-    create(:user_detail, user: service_account, provisioned_by_group: consumer_group)
-  end
+  let_it_be(:service_account) { create(:user, :service_account, provisioned_by_group: consumer_group) }
+  let_it_be(:third_party_flow_service_account) { create(:user, :service_account, provisioned_by_group: consumer_group) }
 
   let_it_be_with_refind(:agent_parent_item_consumer) do
     create(:ai_catalog_item_consumer, pinned_version_prefix: '1.2.3', group: consumer_group, item: agent_item)
@@ -47,7 +44,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
   let_it_be_with_refind(:third_party_flow_parent_item_consumer) do
     create(:ai_catalog_item_consumer, pinned_version_prefix: '1.2.3', group: consumer_group,
-      item: third_party_flow_item, service_account: service_account)
+      item: third_party_flow_item, service_account: third_party_flow_service_account)
   end
 
   let(:container) { consumer_project }
@@ -491,19 +488,82 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       it_behaves_like 'a failure', 'Username has already been taken'
     end
 
-    context 'when the service account username already exists' do
-      let_it_be(:existing_user_with_same_name) do
-        build(:user, :with_namespace, username: "ai-item_name-group-name").tap do |user|
-          user.skip_ai_prefix_validation = true
-          user.save!
+    context 'when a user with that username already exists' do
+      context 'when the user is a service account belonging to the same group' do
+        let_it_be(:existing_service_account_with_same_name) do
+          build(
+            :user, :service_account, :with_namespace, username: "ai-item_name-group-name", provisioned_by_group: group
+          ).tap do |user|
+            user.skip_ai_prefix_validation = true
+            user.save!
+          end
+        end
+
+        it 'uses the existing service account' do
+          expect { execute }.not_to change { User.count }
+          expect(execute).to be_success
+          expect(Ai::Catalog::ItemConsumer.last).to have_attributes(
+            service_account: existing_service_account_with_same_name
+          )
+        end
+
+        context 'when the service account is already in use by another item consumer' do
+          let_it_be(:other_flow_item) do
+            create(:ai_catalog_flow, public: true, project: item_project, name: 'item_name')
+          end
+
+          let_it_be(:other_flow_consumer) do
+            create(
+              :ai_catalog_item_consumer,
+              group: group,
+              item: other_flow_item,
+              service_account: existing_service_account_with_same_name
+            )
+          end
+
+          it 'creates a new service account' do
+            expect { execute }.to change { User.count }
+            service_account = User.last
+            expect(service_account).to be_service_account
+            expect(service_account.username).to start_with("ai-item_name-group-name_")
+          end
         end
       end
 
-      it 'creates the service account with a different name' do
-        expect { execute }.to change { User.count }.by(1)
-        service_account = User.last
-        expect(service_account).to be_service_account
-        expect(service_account.username).to start_with("ai-item_name-group-name_")
+      context 'when the user is a regular user' do
+        let_it_be(:existing_user_with_same_name) do
+          build(:user, :with_namespace, username: "ai-item_name-group-name").tap do |user|
+            user.skip_ai_prefix_validation = true
+            user.save!
+          end
+        end
+
+        it 'creates the service account with a different name' do
+          expect { execute }.to change { User.count }.by(1)
+          service_account = User.last
+          expect(service_account).to be_service_account
+          expect(service_account.username).to start_with("ai-item_name-group-name_")
+        end
+      end
+
+      context 'when the user is a service account belonging to a different group' do
+        let_it_be(:other_group) { create(:group) }
+
+        let_it_be(:existing_service_account_with_same_name) do
+          build(
+            :service_account, :with_namespace, username: "ai-item_name-group-name", provisioned_by_group: other_group
+          ).tap do |user|
+            user.skip_ai_prefix_validation = true
+            user.save!
+          end
+        end
+
+        it 'creates the service account with a different name' do
+          expect { execute }.to change { User.count }.by(1)
+          service_account = User.last
+          expect(service_account).to be_service_account
+          expect(service_account.username).to start_with("ai-item_name-group-name_")
+        end
       end
     end
 
