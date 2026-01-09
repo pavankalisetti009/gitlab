@@ -40,6 +40,20 @@ module Ai
 
         track_workflow_event("agent_platform_session_created", workflow)
 
+        audit_context = {
+          name: 'duo_session_created',
+          author: @current_user,
+          scope: workflow.project || workflow.namespace,
+          target: workflow,
+          target_details: "#{workflow.workflow_definition} session #{workflow.id}",
+          message: 'Created Duo session'
+        }
+        begin
+          ::Gitlab::Audit::Auditor.audit(audit_context)
+        rescue StandardError => e
+          Gitlab::ErrorTracking.track_exception(e, workflow_id: workflow.id)
+        end
+
         create_workflow_system_note(workflow)
 
         success(workflow: workflow)

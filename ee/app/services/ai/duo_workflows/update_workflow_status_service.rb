@@ -13,6 +13,13 @@ module Ai
         'resume' => 'agent_platform_session_resumed'
       }.freeze
 
+      AUDIT_EVENT_CONFIG = {
+        'start' => { name: 'duo_session_started', message: 'Started Duo session' },
+        'finish' => { name: 'duo_session_finished', message: 'Completed Duo session' },
+        'drop' => { name: 'duo_session_failed', message: 'Duo session failed' },
+        'stop' => { name: 'duo_session_stopped', message: 'Duo session stopped' }
+      }.freeze
+
       def initialize(workflow:, status_event:, current_user:)
         @workflow = workflow
         @status_event = status_event
@@ -83,6 +90,8 @@ module Ai
 
         track_agent_platform_session_event
 
+        audit_event_for_status_change
+
         update_workflow_system_note(@workflow)
 
         GraphqlTriggers.workflow_events_updated(@workflow.checkpoints.last) if @workflow.checkpoints.any?
@@ -99,6 +108,26 @@ module Ai
 
       def error_response(message, reason = :bad_request)
         ServiceResponse.error(message: message, reason: reason)
+      end
+
+      def audit_event_for_status_change
+        config = AUDIT_EVENT_CONFIG[@status_event]
+        return unless config
+
+        audit_context = {
+          name: config[:name],
+          author: @current_user,
+          scope: @workflow.project || @workflow.namespace,
+          target: @workflow,
+          target_details: "#{@workflow.workflow_definition} session #{@workflow.id}",
+          message: config[:message]
+        }
+
+        begin
+          ::Gitlab::Audit::Auditor.audit(audit_context)
+        rescue StandardError => e
+          Gitlab::ErrorTracking.track_exception(e, workflow_id: @workflow.id)
+        end
       end
 
       def feature_flag_enabled?
