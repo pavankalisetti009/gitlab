@@ -180,11 +180,13 @@ describe('Api', () => {
     it('POSTs to the duo workflows endpoint with correct parameters', async () => {
       const vulnerabilityId = 123;
       const projectId = 456;
+      const aiCatalogItemConsumerId = 789;
       const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/ai/duo_workflows/workflows`;
       const expectedResponse = { workload: { id: 789, status: 'running' } };
       const expectedPayload = {
         project_id: projectId,
         goal: vulnerabilityId.toString(),
+        ai_catalog_item_consumer_id: aiCatalogItemConsumerId,
         start_workflow: true,
         workflow_definition: 'sast_fp_detection/v1',
         agent_privileges: [1, 2, 3, 4, 5],
@@ -193,7 +195,11 @@ describe('Api', () => {
 
       mock.onPost(expectedUrl).replyOnce(HTTP_STATUS_OK, expectedResponse);
 
-      const { data } = await Api.triggerFalsePositiveDetection(vulnerabilityId, projectId);
+      const { data } = await Api.triggerFalsePositiveDetection(
+        vulnerabilityId,
+        projectId,
+        aiCatalogItemConsumerId,
+      );
 
       expect(data).toEqual(expectedResponse);
       expect(mock.history.post).toContainEqual(

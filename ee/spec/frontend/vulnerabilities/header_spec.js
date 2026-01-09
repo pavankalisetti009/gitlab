@@ -39,6 +39,7 @@ import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import download from '~/lib/utils/downloader';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { visitUrl } from '~/lib/utils/url_utility';
+import getConfiguredFlows from 'ee/ai/graphql/get_configured_flows.query.graphql';
 
 import {
   getVulnerabilityStatusMutationResponse,
@@ -92,6 +93,7 @@ describe('Vulnerability Header', () => {
     links: 'links',
     location: 'location',
     name: 'name',
+    project: { id: 123 },
     mergeRequestLinks: [],
     stateTransitions: [],
   };
@@ -909,7 +911,7 @@ describe('Vulnerability Header', () => {
       findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
       await waitForPromises();
 
-      expect(Api.triggerFalsePositiveDetection).toHaveBeenCalledWith(vulnerability.id, 456);
+      expect(Api.triggerFalsePositiveDetection).toHaveBeenCalledWith(vulnerability.id, 456, null);
     });
 
     it('shows success toast when API call succeeds', async () => {
@@ -973,7 +975,6 @@ describe('Vulnerability Header', () => {
     it('sets and clears isProcessingAction state correctly', async () => {
       expect(findActionsDropdown().props('loading')).toBe(false);
 
-      // Set up a request that will be pending
       const pendingPromise = new Promise(() => {});
       jest.spyOn(Api, 'triggerFalsePositiveDetection').mockReturnValue(pendingPromise);
 
@@ -981,6 +982,114 @@ describe('Vulnerability Header', () => {
       await nextTick();
 
       expect(findActionsDropdown().props('loading')).toBe(true);
+    });
+
+    it('skips Apollo query when project.id is not available', async () => {
+      const queryMock = jest.fn();
+      const apolloProvider = createApolloProvider([getConfiguredFlows, queryMock]);
+
+      const vulnerabilityWithoutProjectId = {
+        ...vulnerability,
+        project: {}, // No id property
+      };
+
+      createWrapper({
+        vulnerability: vulnerabilityWithoutProjectId,
+        apolloProvider,
+        glFeatures: { aiExperimentSastFpDetection: true },
+      });
+
+      await waitForPromises();
+
+      const apiResponse = { workload: { id: 'workflow-123', status: 'running' } };
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockResolvedValue({ data: apiResponse });
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await waitForPromises();
+
+      expect(queryMock).not.toHaveBeenCalled();
+      expect(Api.triggerFalsePositiveDetection).toHaveBeenCalledWith(
+        vulnerabilityWithoutProjectId.id,
+        undefined,
+        null,
+      );
+    });
+
+    it('passes aiCatalogItemConsumerId to API when available', async () => {
+      const apolloProvider = createApolloProvider([
+        getConfiguredFlows,
+        jest.fn().mockResolvedValue({
+          data: {
+            aiCatalogConfiguredItems: {
+              nodes: [{ id: 'gid://gitlab/Ai::Catalog::ItemConsumer/123' }],
+            },
+          },
+        }),
+      ]);
+
+      createWrapper({
+        vulnerability,
+        apolloProvider,
+        glFeatures: { aiExperimentSastFpDetection: true },
+      });
+
+      await waitForPromises();
+
+      const apiResponse = { workload: { id: 'workflow-123', status: 'running' } };
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockResolvedValue({ data: apiResponse });
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await waitForPromises();
+
+      expect(Api.triggerFalsePositiveDetection).toHaveBeenCalledWith(vulnerability.id, 456, 123);
+    });
+
+    it('passes null aiCatalogItemConsumerId when Apollo query returns empty', async () => {
+      const apolloProvider = createApolloProvider([
+        getConfiguredFlows,
+        jest.fn().mockResolvedValue({
+          data: {
+            aiCatalogConfiguredItems: {
+              nodes: [],
+            },
+          },
+        }),
+      ]);
+
+      createWrapper({
+        vulnerability,
+        apolloProvider,
+        glFeatures: { aiExperimentSastFpDetection: true },
+      });
+
+      await waitForPromises();
+
+      const apiResponse = { workload: { id: 'workflow-123', status: 'running' } };
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockResolvedValue({ data: apiResponse });
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await waitForPromises();
+
+      expect(Api.triggerFalsePositiveDetection).toHaveBeenCalledWith(vulnerability.id, 456, null);
+    });
+
+    it('handles Apollo query error gracefully', async () => {
+      const apolloProvider = createApolloProvider([
+        getConfiguredFlows,
+        jest.fn().mockRejectedValue(new Error('Apollo error')),
+      ]);
+
+      const sentryCaptureException = jest.spyOn(Sentry, 'captureException');
+
+      createWrapper({
+        vulnerability,
+        apolloProvider,
+        glFeatures: { aiExperimentSastFpDetection: true },
+      });
+
+      await waitForPromises();
+
+      expect(sentryCaptureException).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });

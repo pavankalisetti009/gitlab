@@ -160,12 +160,13 @@ export default {
     });
   },
 
-  triggerFalsePositiveDetection(vulnerabilityId, projectId) {
+  triggerFalsePositiveDetection(vulnerabilityId, projectId, aiCatalogItemConsumerId) {
     const url = Api.buildUrl(this.duoWorkflowsPath);
 
     return axios.post(url, {
       project_id: projectId,
       goal: vulnerabilityId.toString(),
+      ai_catalog_item_consumer_id: aiCatalogItemConsumerId,
       start_workflow: true,
       workflow_definition: 'sast_fp_detection/v1',
       // needed to present this when calling workflow, reserved for future use
