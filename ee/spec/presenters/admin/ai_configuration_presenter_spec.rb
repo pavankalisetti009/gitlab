@@ -115,6 +115,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         foundational_agents_default_enabled: 'true',
         show_foundational_agents_availability: 'true',
         show_foundational_agents_per_agent_availability: 'false',
+        show_duo_agent_platform_enablement_setting: 'true',
         namespace_access_rules: Gitlab::Json.dump(namespace_access_rules)
       )
     end

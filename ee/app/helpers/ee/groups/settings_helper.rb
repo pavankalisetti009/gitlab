@@ -97,16 +97,22 @@ module EE
           duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
           prompt_injection_protection_level: @group.prompt_injection_protection_level.to_s,
           prompt_injection_protection_available: (::Feature.enabled?(:ai_prompt_scanning, current_user) && current_user.can?(:admin_duo_workflow, @group)).to_s,
-          foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
-          foundational_agents_statuses: ::Gitlab::Json.generate(@group.foundational_agents_statuses),
           is_saas: saas?.to_s,
-          show_foundational_agents_availability: show_foundational_agents_availability?.to_s,
-          show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?.to_s,
+          show_duo_agent_platform_enablement_setting: show_duo_agent_platform_enablement_setting?.to_s,
           ai_settings_minimum_access_level_execute: @group.ai_minimum_access_level_execute,
           ai_settings_minimum_access_level_execute_async: @group.ai_minimum_access_level_execute_async,
           ai_settings_minimum_access_level_manage: @group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: @group.ai_minimum_access_level_enable_on_projects
-        }.merge(foundational_flows_settings_data)
+        }.merge(foundational_flows_settings_data).merge(foundational_agents_data)
+      end
+
+      def foundational_agents_data
+        {
+          foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
+          foundational_agents_statuses: ::Gitlab::Json.generate(@group.foundational_agents_statuses),
+          show_foundational_agents_availability: show_foundational_agents_availability?.to_s,
+          show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?.to_s
+        }
       end
 
       def foundational_flows_settings_data
@@ -144,6 +150,10 @@ module EE
       end
 
       def show_foundational_agents_availability?
+        saas? && @group.root?
+      end
+
+      def show_duo_agent_platform_enablement_setting?
         saas? && @group.root?
       end
 

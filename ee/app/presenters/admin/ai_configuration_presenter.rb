@@ -58,6 +58,7 @@ module Admin
         foundational_agents_default_enabled: foundational_agents_default_enabled,
         show_foundational_agents_availability: true,
         show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?,
+        show_duo_agent_platform_enablement_setting: true,
         foundational_agents_statuses: Gitlab::Json.dump(foundational_agents_statuses)
       }
 

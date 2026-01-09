@@ -136,6 +136,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           ]),
           show_foundational_agents_availability: "true",
           show_foundational_agents_per_agent_availability: "true",
+          show_duo_agent_platform_enablement_setting: "true",
           is_saas: 'true',
           ai_settings_minimum_access_level_execute: group.ai_minimum_access_level_execute,
           ai_settings_minimum_access_level_execute_async: group.ai_minimum_access_level_execute_async,
@@ -255,6 +256,28 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
 
         it 'is false' do
           is_expected.to include({ show_foundational_agents_per_agent_availability: "false" })
+        end
+      end
+    end
+
+    describe 'show_duo_agent_platform_enablement_setting' do
+      context 'when group is not root' do
+        before do
+          allow(group).to receive(:root?).and_return(false)
+        end
+
+        it 'is false' do
+          is_expected.to include({ show_duo_agent_platform_enablement_setting: "false" })
+        end
+      end
+
+      context 'when group is not saas' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+        end
+
+        it 'is false' do
+          is_expected.to include({ show_duo_agent_platform_enablement_setting: "false" })
         end
       end
     end

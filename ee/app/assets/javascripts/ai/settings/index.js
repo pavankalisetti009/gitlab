@@ -58,6 +58,7 @@ export const initAiSettings = (id, component, options = {}) => {
     foundationalAgentsDefaultEnabled,
     showFoundationalAgentsAvailability,
     showFoundationalAgentsPerAgentAvailability,
+    showDuoAgentPlatformEnablementSetting,
     foundationalAgentsStatuses,
     availableFoundationalFlows,
     selectedFoundationalFlowReferences,
@@ -148,6 +149,7 @@ export const initAiSettings = (id, component, options = {}) => {
       showFoundationalAgentsPerAgentAvailability: parseBoolean(
         showFoundationalAgentsPerAgentAvailability,
       ),
+      showDuoAgentPlatformEnablementSetting: parseBoolean(showDuoAgentPlatformEnablementSetting),
       initialFoundationalAgentsStatuses: parsedFoundationalAgentsStatuses,
       initialDuoAgentPlatformEnabled: parseBoolean(duoAgentPlatformEnabled),
       toggleBetaModelsPath,

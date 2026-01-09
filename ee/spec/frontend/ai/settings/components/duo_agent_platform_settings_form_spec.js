@@ -5,13 +5,16 @@ import DuoAgentPlatformSettingsForm from 'ee/ai/settings/components/duo_agent_pl
 describe('DuoAgentPlatformSettingsForm', () => {
   let wrapper;
 
-  const createComponent = ({ props = {}, slots = {} } = {}) => {
+  const createComponent = ({ props = {}, slots = {}, provide = {} } = {}) => {
     wrapper = shallowMount(DuoAgentPlatformSettingsForm, {
       propsData: {
         enabled: true,
         ...props,
       },
-
+      provide: {
+        showDuoAgentPlatformEnablementSetting: true,
+        ...provide,
+      },
       slots,
       stubs: {
         GlFormCheckbox,
@@ -27,6 +30,28 @@ describe('DuoAgentPlatformSettingsForm', () => {
 
   beforeEach(() => {
     createComponent();
+  });
+
+  describe('form group visibility', () => {
+    it('renders the form group when showDuoAgentPlatformEnablementSetting is true', () => {
+      createComponent({
+        provide: {
+          showDuoAgentPlatformEnablementSetting: true,
+        },
+      });
+
+      expect(findFormGroup().exists()).toBe(true);
+    });
+
+    it('does not render the form group when showDuoAgentPlatformEnablementSetting is false', () => {
+      createComponent({
+        provide: {
+          showDuoAgentPlatformEnablementSetting: false,
+        },
+      });
+
+      expect(findFormGroup().exists()).toBe(false);
+    });
   });
 
   it('renders the form group with label', () => {
