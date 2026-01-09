@@ -11,38 +11,11 @@ module Types
           authorize :read_virtual_registry
           connection_type_class ::Types::CountableConnectionType
 
-          field :id, GraphQL::Types::ID, null: false,
-            description: 'ID of the upstream registry.',
-            experiment: { milestone: '18.1' }
-
-          field :url, GraphQL::Types::String, null: false,
-            description: 'URL of the upstream registry.',
-            experiment: { milestone: '18.1' }
-
-          field :cache_validity_hours, GraphQL::Types::Int, null: false,
-            description: 'Time before the cache expires for the upstream registry.',
-            experiment: { milestone: '18.1' }
+          implements Types::VirtualRegistries::UpstreamInterface
 
           field :metadata_cache_validity_hours, GraphQL::Types::Int, null: false,
             description: 'Time before the cache expires for Maven metadata.',
             experiment: { milestone: '18.4' }
-
-          field :username, GraphQL::Types::String, null: true,
-            description: 'Username to sign in to the upstream registry.',
-            experiment: { milestone: '18.1' }
-
-          field :name, GraphQL::Types::String, null: false,
-            description: 'Name of the upstream registry.',
-            experiment: { milestone: '18.1' }
-
-          field :description, GraphQL::Types::String, null: true,
-            description: 'Description of the upstream registry.',
-            experiment: { milestone: '18.1' }
-
-          field :registries_count, GraphQL::Types::Int,
-            null: false,
-            experiment: { milestone: '18.6' },
-            description: 'Number of registries using the upstream.'
 
           def registries_count
             BatchLoader::GraphQL.for(object.id)
