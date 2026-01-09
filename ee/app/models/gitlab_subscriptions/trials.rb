@@ -68,7 +68,7 @@ module GitlabSubscriptions
 
     def self.self_managed_non_dedicated_ultimate_trial?(license)
       return false unless license
-      return false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+      return false if ::Gitlab::Dedicated.feature_available?(:skip_ultimate_trial_experience)
 
       license.ultimate? && !!license.trial?
     end
