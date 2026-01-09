@@ -7,6 +7,8 @@ RSpec.describe 'Admin > Data Management', :enable_admin_mode, feature_category: 
   let_it_be(:current_user) { create(:admin) }
 
   before do
+    stub_licensed_features(data_management: true)
+    allow(::Gitlab::Geo).to receive(:enabled?).and_return(true)
     sign_in(current_user)
   end
 

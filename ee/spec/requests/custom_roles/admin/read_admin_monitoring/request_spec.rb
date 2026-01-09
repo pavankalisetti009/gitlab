@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_category: :permissions do
+  using RSpec::Parameterized::TableSyntax
+
   around do |example|
     Gitlab::ExclusiveLease.skipping_transaction_check do
       example.run
@@ -36,19 +38,32 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
   describe Admin::DataManagementController do
     let_it_be(:model) { create(:project) }
     let_it_be(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model.class).pluralize }
-
     let_it_be(:show_path) { "#{admin_data_management_path}/#{model_name}/#{model.id}" }
 
-    it "GET #index" do
-      get admin_data_management_path
-
-      expect(response).to have_gitlab_http_status(:ok)
+    where(:geo_enabled, :data_management_enabled, :expected_status) do
+      true  | true  | :ok
+      true  | false | :not_found
+      false | true  | :not_found
+      false | false | :not_found
     end
 
-    it 'GET #show' do
-      get show_path
+    with_them do
+      before do
+        stub_licensed_features(admin_audit_log: true, custom_roles: true, data_management: data_management_enabled)
+        allow(::Gitlab::Geo).to receive(:enabled?).and_return(geo_enabled)
+      end
 
-      expect(response).to have_gitlab_http_status(:ok)
+      it "GET #index" do
+        get admin_data_management_path
+
+        expect(response).to have_gitlab_http_status(expected_status)
+      end
+
+      it 'GET #show' do
+        get show_path
+
+        expect(response).to have_gitlab_http_status(expected_status)
+      end
     end
   end
 

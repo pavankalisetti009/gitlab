@@ -12,7 +12,7 @@ module EE
             return false unless super
 
             insert_item_after(:health_check, audit_events_menu_item)
-            insert_item_after(:background_jobs, data_management_menu_item)
+            insert_item_after(:background_jobs, data_management_menu_item) if data_management_available?
 
             true
           end
@@ -43,7 +43,11 @@ module EE
               link: admin_data_management_path,
               active_routes: { controller: 'data_management' },
               item_id: :data_management
-            ) { can?(current_user, :read_admin_data_management) }
+            )
+          end
+
+          def data_management_available?
+            Ability.allowed?(current_user, :read_admin_data_management)
           end
         end
       end

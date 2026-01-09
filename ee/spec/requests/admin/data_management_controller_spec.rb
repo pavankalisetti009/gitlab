@@ -17,45 +17,52 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
   end
 
   describe 'before_actions' do
+    using RSpec::Parameterized::TableSyntax
+
     let_it_be(:model) { create(:project) }
     let_it_be(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model.class).pluralize }
     let_it_be(:id) { model.id }
 
-    context 'when the data_management licensed feature is available' do
-      before do
-        stub_licensed_features(data_management: true)
-      end
-
-      it '#index renders template' do
-        get index_path
-        expect(response).to render_template(:index)
-      end
-
-      it '#show renders template' do
-        get show_path
-        expect(response).to render_template(:show)
-      end
+    where(:geo_primary_verification_view, :geo_enabled, :data_management_enabled, :expected_status) do
+      true  | true  | true  | :ok
+      true  | true  | false | :not_found
+      true  | false | false | :not_found
+      false | true  | true  | :not_found
+      false | false | true  | :not_found
+      false | false | false | :not_found
     end
 
-    context 'when the data_management licensed feature is not available' do
+    with_them do
       before do
-        stub_licensed_features(data_management: false)
+        stub_licensed_features(data_management: data_management_enabled)
+        allow(::Gitlab::Geo).to receive(:enabled?).and_return(geo_enabled)
+        stub_feature_flags(geo_primary_verification_view:)
       end
 
-      it '#index renders 404' do
+      it '#index renders with expected status' do
         get index_path
-        expect(response).to have_gitlab_http_status(:not_found)
+
+        expect(response).to have_gitlab_http_status(expected_status)
+        expect(response).to render_template(:index) if expected_status == :ok
       end
 
-      it '#show renders 404' do
+      it '#show renders with expected status' do
         get show_path
-        expect(response).to have_gitlab_http_status(:not_found)
+
+        expect(response).to have_gitlab_http_status(expected_status)
+        expect(response).to render_template(:show) if expected_status == :ok
       end
     end
   end
 
   context 'when model is valid' do
     let_it_be(:default_model) { ::Gitlab::Geo::ModelMapper.available_models.first }
+
+    before do
+      # Ensure the user has permissions to access the data management controller
+      stub_licensed_features(data_management: true)
+      allow(::Gitlab::Geo).to receive(:enabled?).and_return(true)
+    end
 
     where(model_classes: Gitlab::Geo::ModelMapper.available_models)
     with_them do

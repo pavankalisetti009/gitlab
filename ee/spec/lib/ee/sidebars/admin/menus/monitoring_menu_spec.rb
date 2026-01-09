@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Sidebars::Admin::Menus::MonitoringMenu, :enable_admin_mode, feature_category: :navigation do
+  using RSpec::Parameterized::TableSyntax
+
   subject(:menu) do
     described_class.new(Sidebars::Context.new(current_user: user, container: nil))
   end
@@ -32,17 +34,21 @@ RSpec.describe Sidebars::Admin::Menus::MonitoringMenu, :enable_admin_mode, featu
       context "when user has `read_admin_monitoring`" do
         let_it_be(:membership) { create(:admin_member_role, :read_admin_monitoring, user: user) }
 
-        before do
-          stub_licensed_features(admin_audit_log: true, custom_roles: true)
+        where(:data_management_enabled, :geo_enabled, :expected_items) do
+          true  | true  | [_('Background migrations'), _('Data management'), _('Health check'), _('System information')]
+          true  | false | [_('Background migrations'), _('Health check'), _('System information')]
+          false | false | [_('Background migrations'), _('Health check'), _('System information')]
         end
 
-        it 'includes the expected menu items' do
-          is_expected.to contain_exactly(
-            _('Background migrations'),
-            _('Health check'),
-            _('System information'),
-            _('Data management')
-          )
+        with_them do
+          before do
+            stub_licensed_features(admin_audit_log: true, custom_roles: true, data_management: data_management_enabled)
+            allow(::Gitlab::Geo).to receive(:enabled?).and_return(geo_enabled)
+          end
+
+          it 'includes the expected menu items' do
+            is_expected.to match_array(expected_items)
+          end
         end
       end
     end
@@ -50,20 +56,19 @@ RSpec.describe Sidebars::Admin::Menus::MonitoringMenu, :enable_admin_mode, featu
     context 'with admin user' do
       let_it_be(:user) { create(:admin) }
 
-      context "when the data_management licensed feature is available" do
-        before do
-          stub_licensed_features(data_management: true)
-        end
-
-        it { is_expected.to include(_('Data management')) }
+      where(:data_management_enabled, :geo_enabled, :check_menu_item) do
+        true  | true  | include(_('Data management'))
+        true  | false | exclude(_('Data management'))
+        false | false | exclude(_('Data management'))
       end
 
-      context "when the data_management licensed feature is not available" do
+      with_them do
         before do
-          stub_licensed_features(data_management: false)
+          stub_licensed_features(data_management: data_management_enabled)
+          allow(::Gitlab::Geo).to receive(:enabled?).and_return(geo_enabled)
         end
 
-        it { is_expected.not_to include(_('Data management')) }
+        it { is_expected.to check_menu_item }
       end
     end
   end

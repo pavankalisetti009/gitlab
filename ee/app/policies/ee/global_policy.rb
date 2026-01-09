@@ -174,7 +174,9 @@ module EE
       end
 
       condition(:data_management_available) do
-        License.feature_available?(:data_management) && ::Feature.enabled?(:geo_primary_verification_view, @user)
+        License.feature_available?(:data_management) &&
+          ::Gitlab::Geo.enabled? &&
+          ::Feature.enabled?(:geo_primary_verification_view, @user)
       end
 
       condition(:enterprise_user_disallowed_personal_snippets) { @user.enterprise_group&.disallow_personal_snippets? }

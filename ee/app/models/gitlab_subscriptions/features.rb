@@ -55,7 +55,6 @@ module GitlabSubscriptions
       board_iteration_lists
       code_owners
       code_review_analytics
-      data_management
       full_codequality_report
       group_activity_analytics
       group_bulk_edit
@@ -115,6 +114,7 @@ module GitlabSubscriptions
       custom_project_templates
       cycle_analytics_for_groups
       cycle_analytics_for_projects
+      data_management
       db_load_balancing
       default_branch_protection_restriction_in_groups
       default_project_deletion_protection
