@@ -868,5 +868,48 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
         end
       end
     end
+
+    context 'with sync foundational flows from namespace' do
+      let_it_be(:group) { create(:group) }
+      let(:extra_params) { { namespace_id: group.id } }
+
+      before_all do
+        group.add_owner(user)
+      end
+
+      context 'when duo_foundational_flows_enabled is true' do
+        let(:service_double) { instance_double(::Ai::Catalog::Flows::SyncFoundationalFlowsService, execute: true) }
+        let(:catalog_item_ids) { [1, 2, 3] }
+
+        it 'syncs foundational flows from namespace' do
+          allow_any_instance_of(Project) do |project|
+            allow(project).to receive_messages(duo_foundational_flows_enabled: true,
+              enabled_flow_catalog_item_ids: catalog_item_ids)
+          end
+
+          expect_any_instance_of(Project) do |project|
+            expect(project).to receive(:sync_enabled_foundational_flows!).with(catalog_item_ids)
+          end
+
+          expect(::Ai::Catalog::Flows::SyncFoundationalFlowsService)
+            .to receive(:new).with(an_instance_of(Project), current_user: user).and_return(service_double)
+          expect(service_double).to receive(:execute)
+
+          response
+        end
+      end
+
+      context 'when duo_foundational_flows_enabled is false' do
+        it 'does not sync foundational flows' do
+          allow_next_instance_of(Project) do |project|
+            allow(project).to receive(:duo_foundational_flows_enabled).and_return(false)
+          end
+
+          expect(::Ai::Catalog::Flows::SyncFoundationalFlowsService).not_to receive(:new)
+
+          response
+        end
+      end
+    end
   end
 end
