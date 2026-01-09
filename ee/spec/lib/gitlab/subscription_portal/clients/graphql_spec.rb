@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :subscription_management do
+RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, :without_license, feature_category: :subscription_management do
   let(:client) { Gitlab::SubscriptionPortal::Client }
   let(:graphql_url) { ::Gitlab::Routing.url_helpers.subscription_portal_graphql_url }
 

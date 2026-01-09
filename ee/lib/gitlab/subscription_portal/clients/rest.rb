@@ -180,8 +180,14 @@ module Gitlab
           end
 
           def verify_usage_quota_request(query)
+            headers = if Gitlab.com? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Available on gitlab.com only
+                        admin_headers
+                      else
+                        license_checksum_headers
+                      end
+
             http_head(
-              'api/v1/consumers/resolve', admin_headers, query,
+              'api/v1/consumers/resolve', headers, query,
               base_url_to_call: usage_quota_base_url
             )
           end

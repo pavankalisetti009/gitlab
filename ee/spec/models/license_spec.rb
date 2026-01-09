@@ -927,6 +927,36 @@ RSpec.describe License, feature_category: :plan_provisioning do
         it { is_expected.to be(true) }
       end
     end
+
+    describe '.current?' do
+      subject { described_class.current? }
+
+      context "without a license" do
+        before do
+          allow(described_class).to receive(:current).and_return(nil)
+        end
+
+        it { is_expected.to be_falsey }
+      end
+
+      context "with a valid license" do
+        before do
+          allow(described_class).to receive(:current).and_return(license)
+          allow(license).to receive(:valid?).and_return(true)
+        end
+
+        it { is_expected.to be_truthy }
+      end
+
+      context "with an invalid license", :with_license do
+        before do
+          allow(described_class).to receive(:current).and_return(license)
+          allow(license).to receive(:valid?).and_return(false)
+        end
+
+        it { is_expected.to be_falsey }
+      end
+    end
   end
 
   describe '#active?' do
