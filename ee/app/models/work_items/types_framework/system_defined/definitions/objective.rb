@@ -26,7 +26,10 @@ module WorkItems
             end
 
             def widget_options
-              {}
+              {
+                progress: { show_popover: true },
+                hierarchy: { auto_expand_tree_on_move: true }
+              }
             end
 
             def configuration

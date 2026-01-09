@@ -41,6 +41,10 @@ module WorkItems
             def license_name
               :okrs
             end
+
+            def can_promote_to_objective?
+              true
+            end
           end
         end
       end

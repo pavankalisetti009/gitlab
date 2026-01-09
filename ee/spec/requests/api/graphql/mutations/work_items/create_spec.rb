@@ -1048,6 +1048,10 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       context 'when work item type does not support status widget' do
         let_it_be(:work_item_type) { create(:work_item_type, :non_default) }
 
+        before do
+          stub_feature_flags(work_item_system_defined_type: false)
+        end
+
         it_behaves_like 'work item mutation with status widget with error'
       end
     end
