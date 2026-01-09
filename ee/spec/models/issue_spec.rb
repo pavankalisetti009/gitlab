@@ -1295,6 +1295,7 @@ RSpec.describe Issue, feature_category: :team_planning do
     where(:issue_type, :supports_move_and_clone) do
       :requirement | false
       :test_case | true
+      :ticket | true
     end
 
     with_them do
