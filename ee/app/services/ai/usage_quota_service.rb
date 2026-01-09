@@ -22,7 +22,7 @@ module Ai
 
         params[:root_namespace_id] = root_namespace.id
       else
-        params[:unique_instance_id] = Gitlab::GlobalAnonymousId.instance_uuid
+        params[:unique_instance_id] = Gitlab::GlobalAnonymousId.instance_id
       end
 
       feature_metadata = ::Gitlab::SubscriptionPortal::FeatureMetadata.for(:dap_feature_legacy)
