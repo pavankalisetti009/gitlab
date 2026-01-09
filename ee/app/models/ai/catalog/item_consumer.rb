@@ -37,6 +37,7 @@ module Ai
       has_one :flow_trigger, class_name: 'Ai::FlowTrigger', inverse_of: :ai_catalog_item_consumer
 
       validates :service_account, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
+      validates :service_account, uniqueness: true, allow_nil: true
 
       scope :by_enabled, ->(enabled) { where(enabled: enabled) }
 
@@ -56,6 +57,7 @@ module Ai
       scope :with_item_type, ->(item_type) { joins(:item).where(item: { item_type: item_type }) }
 
       scope :for_catalog_items, ->(item_ids) { where(ai_catalog_item_id: item_ids) }
+      scope :for_service_account, ->(service_account_id) { where(service_account_id:) }
 
       def pinned_version
         item.resolve_version(pinned_version_prefix)

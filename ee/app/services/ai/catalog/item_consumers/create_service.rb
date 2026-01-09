@@ -94,6 +94,13 @@ module Ai
           # no_op, and continue creating the item consumer.
           return [:no_op, nil] if group.nil? || item.agent?
 
+          existing_service_account = group.service_accounts.find_by_username(service_account_username)
+
+          if existing_service_account.present? &&
+              Ai::Catalog::ItemConsumer.for_service_account(existing_service_account).none?
+            return [:no_op, existing_service_account]
+          end
+
           service_account_params = {
             namespace_id: group.id,
             name: service_account_name,
