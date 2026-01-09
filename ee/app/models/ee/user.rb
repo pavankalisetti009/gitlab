@@ -185,6 +185,8 @@ module EE
       has_many :arkose_sessions, class_name: 'Users::ArkoseSession', inverse_of: :user
       has_many :designated_beneficiaries, class_name: 'Users::DesignatedBeneficiary', dependent: :destroy
 
+      has_many :activation_metrics, class_name: 'Activation::Metric', dependent: :delete_all
+
       scope :auditors, -> { where('auditor IS true') }
       scope :managed_by, ->(group) { where(managing_group: group) }
 
