@@ -16,14 +16,14 @@ RSpec.describe ::API::Entities::MemberRole, feature_category: :permissions do
       expect(entity_representation[:name]).to eq member_role.name
       expect(entity_representation[:description]).to eq member_role.description
       expect(entity_representation[:base_access_level]).to eq member_role.base_access_level
-      expect(entity_representation[:read_code]).to eq(true)
-      expect(entity_representation[:read_vulnerability]).to eq(false)
-      expect(entity_representation[:admin_terraform_state]).to eq(false)
-      expect(entity_representation[:admin_vulnerability]).to eq(false)
-      expect(entity_representation[:manage_group_access_tokens]).to eq(false)
-      expect(entity_representation[:manage_project_access_tokens]).to eq(false)
-      expect(entity_representation[:archive_project]).to eq(false)
-      expect(entity_representation[:remove_project]).to eq(false)
+      expect(entity_representation[:read_code]).to be(true)
+      expect(entity_representation[:read_vulnerability]).to be(false)
+      expect(entity_representation[:admin_terraform_state]).to be(false)
+      expect(entity_representation[:admin_vulnerability]).to be(false)
+      expect(entity_representation[:manage_group_access_tokens]).to be(false)
+      expect(entity_representation[:manage_project_access_tokens]).to be(false)
+      expect(entity_representation[:archive_project]).to be(false)
+      expect(entity_representation[:remove_project]).to be(false)
       expect(entity_representation[:group_id]).to eq(group.id)
     end
   end

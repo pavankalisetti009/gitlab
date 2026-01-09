@@ -35,7 +35,7 @@ module API
         ::Gitlab::Routing.url_helpers.edit_admin_geo_node_url(geo_node)
       end
 
-      expose :web_geo_replication_details_url, if: ->(geo_node, _) { geo_node.secondary? } do |geo_node|
+      expose :web_geo_replication_details_url, if: ->(geo_node, _options) { geo_node.secondary? } do |geo_node|
         geo_node.geo_replication_details_url
       end
 

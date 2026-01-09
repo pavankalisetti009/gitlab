@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe ::API::Entities::Experiment, feature_category: :feature_flag do
+RSpec.describe ::API::Entities::Experiment, feature_category: :acquisition do
   let(:experiment) { Feature::Definition.get(:null_hypothesis) }
   let(:entity) { described_class.new(experiment) }
 
-  subject { entity.as_json }
+  subject(:entity_json) { entity.as_json }
 
-  it do
+  it "exposes experiment with definition and current status" do
     is_expected.to match(
       key: "null_hypothesis",
       definition: {
@@ -38,7 +38,7 @@ RSpec.describe ::API::Entities::Experiment, feature_category: :feature_flag do
   it "understands conditional state and what that means" do
     Feature.enable_percentage_of_time(:null_hypothesis, 1)
 
-    expect(subject[:current_status]).to match({
+    expect(entity_json[:current_status]).to match({
       state: :conditional,
       gates: [
         {
@@ -56,7 +56,7 @@ RSpec.describe ::API::Entities::Experiment, feature_category: :feature_flag do
   it "understands state and what that means for if its enabled or not" do
     Feature.enable_percentage_of_time(:null_hypothesis, 100)
 
-    expect(subject[:current_status]).to match({
+    expect(entity_json[:current_status]).to match({
       state: :on,
       gates: [
         {
@@ -74,7 +74,7 @@ RSpec.describe ::API::Entities::Experiment, feature_category: :feature_flag do
   it "truncates the name since some experiments include extra data in their feature flag name" do
     allow(experiment).to receive(:attributes).and_return({ name: 'foo_experiment_percentage' })
 
-    expect(subject).to include(
+    expect(entity_json).to include(
       key: 'foo'
     )
   end

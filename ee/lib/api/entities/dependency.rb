@@ -5,8 +5,10 @@ module API
     class Dependency < Grape::Entity
       expose :name, :version, :package_manager
       expose :input_file_path, as: :dependency_file_path
-      expose :vulnerabilities, using: DependencyEntity::VulnerabilityEntity, if: ->(_, opts) { can_read_vulnerabilities?(opts[:user], opts[:project]) }
-      expose :licenses, using: DependencyEntity::LicenseEntity, if: ->(_, opts) { can_read_licenses?(opts[:user], opts[:project]) }
+      expose :vulnerabilities, using: DependencyEntity::VulnerabilityEntity,
+        if: ->(_, opts) { can_read_vulnerabilities?(opts[:user], opts[:project]) }
+      expose :licenses, using: DependencyEntity::LicenseEntity,
+        if: ->(_, opts) { can_read_licenses?(opts[:user], opts[:project]) }
 
       private
 

@@ -87,11 +87,14 @@ module API
         rollupable_dates.start_date&.to_time&.iso8601
       end
 
-      expose :end_date, documentation: { type: 'DateTime', example: "2022-01-31T15:10:45.080Z" } do |_epic| # @deprecated in favor of due_date
+      expose :end_date, # @deprecated in favor of due_date
+        documentation: { type: "DateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
         rollupable_dates.due_date
       end
 
-      expose :end_date, as: :due_date, documentation: { type: 'DateTime', example: "2022-01-31T15:10:45.080Z" } do |_epic|
+      expose :end_date,
+        as: :due_date,
+        documentation: { type: "DateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
         rollupable_dates.due_date
       end
 
@@ -213,7 +216,9 @@ module API
             type: 'String',
             example: "http://gitlab.example.com/api/v4/groups/7/epics/4"
           } do |epic|
-            expose_url(api_v4_groups_epics_path(id: epic.parent.group_id, epic_iid: epic.parent.iid)) if epic.has_parent?
+            if epic.has_parent?
+              expose_url(api_v4_groups_epics_path(id: epic.parent.group_id, epic_iid: epic.parent.iid))
+            end
           end
       end
     end
