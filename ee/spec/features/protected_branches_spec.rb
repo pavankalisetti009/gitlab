@@ -70,7 +70,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
     end
 
     it 'makes force push toggle and push input disabled showing "No one"', :aggregate_failures,
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446186' do
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17081' do
       expect(allowed_to_merge_input).not_to be_disabled
       expect(allowed_to_push_input).to be_disabled
       expect(allowed_to_merge_input).to have_css('.gl-dropdown-button-text', text: 'Maintainers')

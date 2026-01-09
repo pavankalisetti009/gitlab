@@ -253,7 +253,7 @@ RSpec.describe 'Pipeline', :js, feature_category: :continuous_integration do
         expect(find_by_testid('license-tab')).to have_content('4')
       end
 
-      it 'shows security report section', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/375026' do
+      it 'shows security report section', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9306' do
         expect(page).to have_content('Loading License Compliance report')
       end
     end

@@ -25,7 +25,7 @@ module QA
         'finds note that matches note body',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347634',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/983',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/983',
           type: :investigating,
           only: { pipeline: %w[staging-canary staging] }
         }

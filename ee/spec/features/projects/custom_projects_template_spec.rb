@@ -51,7 +51,7 @@ RSpec.describe 'Project', feature_category: :source_code_management do
       end
 
       it 'renders a Preview link for instance templates', :js,
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444728' do
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17074' do
         click_link 'Create from template'
         click_link 'Instance'
 
@@ -59,7 +59,7 @@ RSpec.describe 'Project', feature_category: :source_code_management do
       end
 
       it 'allows creation from custom project template', :js, :sidekiq_inline,
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444729' do
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17075' do
         new_path = 'example-custom-project-template'
         new_name = 'Example Custom Project Template'
 
@@ -80,7 +80,7 @@ RSpec.describe 'Project', feature_category: :source_code_management do
       end
 
       it 'allows creation from custom project template using only the name', :js, :sidekiq_inline,
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444730' do
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17076' do
         new_path = 'example-custom-project-template'
         new_name = 'Example Custom Project Template'
 
@@ -98,7 +98,7 @@ RSpec.describe 'Project', feature_category: :source_code_management do
       end
 
       it 'allows creation from custom project template using only the path', :js, :sidekiq_inline,
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444731' do
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17077' do
         new_path = 'example-custom-project-template'
         new_name = 'Example Custom Project Template'
 
@@ -115,7 +115,8 @@ RSpec.describe 'Project', feature_category: :source_code_management do
         expect(Project.last.path).to eq new_path
       end
 
-      it 'has a working pagination', :js, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482114' do
+      it 'has a working pagination', :js,
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17078' do
         last_project = "label[for='#{projects.last.name}']"
 
         click_link 'Create from template'

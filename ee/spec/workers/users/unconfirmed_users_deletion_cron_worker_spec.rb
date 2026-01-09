@@ -79,7 +79,8 @@ RSpec.describe Users::UnconfirmedUsersDeletionCronWorker, feature_category: :use
         })
       end
 
-      it 'stops after ITERATIONS of BATCH_SIZE', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484683' do
+      it 'stops after ITERATIONS of BATCH_SIZE',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/18788' do
         stub_const("Users::UnconfirmedUsersDeletionCronWorker::ITERATIONS", 1)
         stub_const("Users::UnconfirmedUsersDeletionCronWorker::BATCH_SIZE", 1)
         _users_to_delete = create_list(:user, 2, :unconfirmed, created_at: cut_off_datetime - 1.day)

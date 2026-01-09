@@ -60,7 +60,8 @@ RSpec.describe 'Merge request > User approves with SAML auth', :js, feature_cate
     wait_for_requests
   end
 
-  it 'shows user can approve and unapprove', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444383' do
+  it 'shows user can approve and unapprove',
+    quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17073' do
     sign_in_and_connect_saml_identity
 
     # approval

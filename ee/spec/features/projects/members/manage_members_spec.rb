@@ -41,7 +41,7 @@ RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :gr
 
     context 'when close to free user limit on a top-level group' do
       it 'shows the alert notification in the modal',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/461953' do
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17079' do
         stub_ee_application_setting(dashboard_limit: 4)
 
         sign_in(user)

@@ -53,7 +53,7 @@ RSpec.describe 'Change type action', :js, feature_category: :portfolio_managemen
       context 'when there is chance of data loss' do
         message = s_('Some fields are not present in %{type}. If you change type now, this information will be lost.')
         it 'renders the warning about the data loss',
-          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/516095' do
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/3370' do
           within_testid 'work-item-milestone' do
             click_button 'Edit'
             send_keys "\"#{milestone.title}\""

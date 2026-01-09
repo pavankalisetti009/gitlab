@@ -401,7 +401,7 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
           stub_ee_application_setting(dashboard_limit: 1)
         end
 
-        it 'creates one member and errors on the other member', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/448800' do
+        it 'creates one member and errors on the other member', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/3565' do
           expect do
             stranger = create(:user)
             stranger2 = create(:user)

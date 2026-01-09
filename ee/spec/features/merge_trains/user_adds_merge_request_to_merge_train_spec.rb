@@ -98,7 +98,8 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
           click_button 'Remove from merge train'
         end
 
-        it 'cancels automatic merge', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/522008' do
+        it 'cancels automatic merge',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9454' do
           page.within('.mr-state-widget') do
             expect(page).not_to have_content("Added to the merge train by #{user.name}")
             expect(page).to have_button('Merge')
@@ -111,7 +112,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
     context 'when the merge request is not the first queue on the train',
       quarantine: {
         issue: [
-          'https://gitlab.com/gitlab-org/gitlab/-/issues/571354',
+          'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/12628',
           'https://gitlab.com/gitlab-org/gitlab/-/issues/498518'
         ]
       } do
@@ -144,7 +145,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
     end
 
     context 'when merge_trains EEP license is not available',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/572684' do
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/12630' do
       before do
         stub_licensed_features(merge_trains: false)
       end
@@ -157,7 +158,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
     end
 
     context "when user clicks 'Add to merge train when all merge checks pass' button",
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/571356' do
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/12629' do
       before do
         visit project_merge_request_path(project, merge_request)
         click_button 'Set to auto-merge'

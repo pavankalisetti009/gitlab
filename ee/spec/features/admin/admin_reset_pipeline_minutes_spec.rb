@@ -91,7 +91,8 @@ RSpec.describe 'Reset namespace compute usage', :js, feature_category: :hosted_r
       click_link 'Edit'
     end
 
-    it 'reset compute usage button is visible', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444899' do
+    it 'reset compute usage button is visible',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17067' do
       expect(page).to have_button('Reset compute usage')
     end
 
