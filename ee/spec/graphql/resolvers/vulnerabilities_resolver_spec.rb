@@ -659,6 +659,76 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
     end
 
+    context 'when filtering vulnerabilities with false_positive', :elastic do
+      let(:params) { { false_positive: true } }
+
+      let_it_be(:vulnerability_read_with_flag) { create_vulnerability_with_flag }
+      let_it_be(:vulnerability_read_without_flag) { create_vulnerability_with_flag(has_flag: false) }
+
+      def create_vulnerability_with_flag(has_flag: true)
+        vulnerability = create(:vulnerability, :with_read, project: project)
+        create(:vulnerabilities_finding, vulnerability: vulnerability)
+
+        if has_flag
+          create(
+            :vulnerabilities_flag,
+            :false_positive,
+            finding: vulnerability.findings.first
+          )
+        end
+
+        vulnerability.vulnerability_read
+      end
+
+      before do
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+        Elastic::ProcessBookkeepingService.track!(
+          vulnerability_read_with_flag,
+          vulnerability_read_without_flag
+        )
+        ensure_elasticsearch_index!
+
+        allow(current_user)
+          .to receive(:can?)
+                .with(:access_advanced_vulnerability_management, vulnerable)
+                .and_return(true)
+      end
+
+      shared_examples_for 'when elasticsearch is available' do
+        it 'only returns vulnerabilities with matching false_positive' do
+          expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+
+          results = resolved.to_a
+
+          expect(results).to match_array([vulnerability_read_with_flag.vulnerability])
+        end
+      end
+
+      context 'when vulnerable is a project' do
+        let(:vulnerable) { project }
+
+        it_behaves_like 'when elasticsearch is available'
+      end
+
+      context 'when vulnerable is a group' do
+        let(:vulnerable) { group }
+
+        it_behaves_like 'when elasticsearch is available'
+      end
+
+      context 'when vulnerable is nil' do
+        let(:vulnerable) { nil }
+        let(:error_msg) { 'The false_positive filter is not available.' }
+
+        it 'raises an error' do
+          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, s_(error_msg)) do
+            subject
+          end
+        end
+      end
+    end
+
     context 'when identifer_name is given' do
       let_it_be(:identifier_name) { 'CVE-2024-1234' }
 
