@@ -78,6 +78,7 @@ module EE
         run_compliance_standards_checks
         sync_group_scan_result_policies
         create_security_policy_project_bot
+        sync_foundational_flows_from_namespace
       end
 
       def setup_pull_mirroring
@@ -219,6 +220,18 @@ module EE
         return if project.project_setting.duo_features_enabled_locked?
 
         project.project_setting.update!(duo_features_enabled: inherited_value)
+      end
+
+      def sync_foundational_flows_from_namespace
+        return unless project.duo_foundational_flows_enabled
+
+        cascaded_target_catalog_item_ids = project.enabled_flow_catalog_item_ids
+        project.sync_enabled_foundational_flows!(cascaded_target_catalog_item_ids)
+
+        ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
+          project,
+          current_user: current_user
+        ).execute
       end
     end
   end
