@@ -1,0 +1,10 @@
+---
+name: associate_security_findings_enrichment_records
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/516814
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/217668
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/585183
+milestone: '18.8'
+group: group::security policies
+type: gitlab_com_derisk
+default_enabled: false

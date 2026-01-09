@@ -46,6 +46,10 @@ module Security
     def store_finding_batch(batch)
       batch.map { finding_data(_1) }
            .then { import_batch(_1) }
+
+      return unless Feature.enabled?(:associate_security_findings_enrichment_records, project)
+
+      associate_security_findings_with_enrichments(batch)
     end
 
     def import_batch(report_finding_data)
@@ -91,6 +95,58 @@ module Security
         remediation_byte_offsets: report_finding.remediation_byte_offsets,
         raw_source_code_extract: report_finding.raw_source_code_extract
       }
+    end
+
+    def associate_security_findings_with_enrichments(report_findings)
+      cve_names = extract_unique_cve_names(report_findings)
+      return if cve_names.empty?
+
+      enrichments_by_cve = load_enrichments_by_cve(cve_names)
+      finding_enrichments = build_finding_enrichments(report_findings, enrichments_by_cve)
+
+      Security::FindingEnrichment.upsert_all(
+        finding_enrichments,
+        unique_by: %i[finding_uuid cve]
+      )
+    rescue StandardError => exception
+      Gitlab::ErrorTracking.track_exception(
+        exception,
+        security_scan_id: security_scan.id,
+        project_id: project.id,
+        class: self.class.name
+      )
+    end
+
+    def extract_unique_cve_names(report_findings)
+      report_findings
+        .flat_map(&:identifiers)
+        .select(&:cve?)
+        .filter_map(&:name)
+        .uniq
+    end
+
+    def load_enrichments_by_cve(cve_names)
+      PackageMetadata::CveEnrichment
+        .by_cves(cve_names)
+        .index_by(&:cve)
+    end
+
+    def build_finding_enrichments(report_findings, enrichments_by_cve)
+      report_findings.flat_map do |finding|
+        cve_identifiers = finding.identifiers.select(&:cve?)
+        next [] if cve_identifiers.empty?
+
+        cve_identifiers.map do |identifier|
+          enrichment = enrichments_by_cve[identifier.name]
+
+          {
+            project_id: project.id,
+            finding_uuid: finding.uuid,
+            cve_enrichment_id: enrichment&.id,
+            cve: identifier.name
+          }
+        end
+      end
     end
   end
 end
