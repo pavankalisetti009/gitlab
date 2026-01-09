@@ -4,6 +4,7 @@ module EE
   module Users
     module CalloutsHelper
       extend ::Gitlab::Utils::Override
+      include ::Nav::GitlabDuoSettingsPage
 
       TWO_FACTOR_AUTH_RECOVERY_SETTINGS_CHECK = 'two_factor_auth_recovery_settings_check'
       ACTIVE_USER_COUNT_THRESHOLD = 'active_user_count_threshold'
@@ -103,6 +104,7 @@ module EE
       def show_foundational_items_available?(group:)
         return false unless current_user
         return false unless Ability.allowed?(current_user, :owner_access, group)
+        return false unless gitlab_duo_subscription_valid?(group)
 
         ::Feature.enabled?(:dap_use_foundational_flows_setting, current_user)
       end
