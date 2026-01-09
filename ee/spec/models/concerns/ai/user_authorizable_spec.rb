@@ -328,13 +328,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           end
 
           context 'when user has a namespace that would grant them access' do
-            let_it_be(:group_member) do
-              create(:group_member,
-                :guest,
-                user: user,
-                group: ns,
-                member_role: create(:member_role, :guest, namespace: ns)
-              )
+            before_all do
+              ns.add_guest(user)
             end
 
             let(:expected_allowed) { true }
@@ -1129,16 +1124,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:user) { create(:user) }
-    let_it_be(:ns) { create(:group) }
-
-    let_it_be(:group_member) do
-      create(:group_member,
-        :guest,
-        user: user,
-        group: ns,
-        member_role: create(:member_role, :guest, namespace: ns)
-      )
-    end
+    let_it_be(:ns) { create(:group).tap { |n| n.add_guest(user) } }
 
     let(:feature_flag_enabled) { true }
     let(:is_saas) { false }
