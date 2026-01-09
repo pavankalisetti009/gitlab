@@ -7,8 +7,8 @@ export default {
   i18n: {
     title: __('Start merge train'),
     cancel: __('Cancel'),
-    info: __('The latest pipeline for this merge request has failed.'),
-    confirmation: __('Are you sure you want to attempt to merge?'),
+    info: __('The latest pipeline failed for this merge request.'),
+    confirmation: __('Do you still want to merge?'),
   },
   components: {
     GlModal,

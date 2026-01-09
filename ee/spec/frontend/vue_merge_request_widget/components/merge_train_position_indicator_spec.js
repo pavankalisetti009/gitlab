@@ -34,7 +34,7 @@ describe('MergeTrainPositionIndicator', () => {
     });
 
     expect(trimText(wrapper.text())).toBe(
-      'This merge request is #4 of 5 in queue. View merge train details.',
+      'This merge request is #4 of 5 in queue. View merge train.',
     );
     expect(findLink().attributes('href')).toBe('namespace/project/-/merge_trains');
   });
@@ -46,7 +46,7 @@ describe('MergeTrainPositionIndicator', () => {
     );
 
     expect(trimText(wrapper.text())).toBe(
-      'A new merge train has started and this merge request is the first of the queue. View merge train details.',
+      'A new merge train has started and this merge request is first in the queue. View merge train.',
     );
     expect(findLink().attributes('href')).toBe('namespace/project/-/merge_trains');
   });
@@ -87,7 +87,9 @@ describe('MergeTrainPositionIndicator', () => {
 
         if (toastShown) {
           expect(mockToast).toHaveBeenCalledTimes(1);
-          expect(mockToast).toHaveBeenCalledWith('Merge request was removed from the merge train.');
+          expect(mockToast).toHaveBeenCalledWith(
+            'This merge request was removed from the merge train.',
+          );
         } else {
           expect(mockToast).not.toHaveBeenCalled();
         }

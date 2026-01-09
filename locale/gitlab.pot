@@ -25396,6 +25396,9 @@ msgstr ""
 msgid "Do not show again"
 msgstr ""
 
+msgid "Do you still want to merge?"
+msgstr ""
+
 msgid "Do you want to remove this deploy key?"
 msgstr ""
 
@@ -68484,7 +68487,7 @@ msgstr ""
 msgid "The latest artifacts created by jobs in the most recent successful pipeline will be stored."
 msgstr ""
 
-msgid "The latest pipeline for this merge request has failed."
+msgid "The latest pipeline failed for this merge request."
 msgstr ""
 
 msgid "The license key is invalid."
@@ -81773,7 +81776,7 @@ msgid_plural "mrWidget|%{count} invalid rules have been approved automatically"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "mrWidget|A new merge train has started and this merge request is the first of the queue."
+msgid "mrWidget|A new merge train has started and this merge request is first in the queue."
 msgstr ""
 
 msgid "mrWidget|Added to the merge train by %{merge_author}"
@@ -81900,9 +81903,6 @@ msgstr ""
 msgid "mrWidget|Merge failed."
 msgstr ""
 
-msgid "mrWidget|Merge request was removed from the merge train."
-msgstr ""
-
 msgid "mrWidget|Merged by"
 msgstr ""
 
@@ -81981,6 +81981,9 @@ msgstr ""
 msgid "mrWidget|This merge request is #%{mergeTrainPosition} of %{total} in queue."
 msgstr ""
 
+msgid "mrWidget|This merge request was removed from the merge train."
+msgstr ""
+
 msgid "mrWidget|To approve this merge request, please enter your password. This project requires all approvals to be authenticated."
 msgstr ""
 
@@ -81996,7 +81999,7 @@ msgstr ""
 msgid "mrWidget|To continue, %{docLinkStart}manage your storage usage%{docLinkEnd}."
 msgstr ""
 
-msgid "mrWidget|View merge train details."
+msgid "mrWidget|View merge train."
 msgstr ""
 
 msgid "mrWidget|Your merge request is almost ready!"

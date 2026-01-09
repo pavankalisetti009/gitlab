@@ -41,7 +41,7 @@ describe('MergeTrainFailedPipelineConfirmationDialog', () => {
 
   it('should render informational text explaining why merging immediately can be dangerous', () => {
     expect(trimText(wrapper.text())).toContain(
-      'The latest pipeline for this merge request has failed. Are you sure you want to attempt to merge?',
+      'The latest pipeline failed for this merge request. Do you still want to merge?',
     );
   });
 
