@@ -64,5 +64,38 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesPushSer
         end
       end
     end
+
+    context 'with ignore_warn_mode' do
+      before do
+        allow(project).to receive(:all_security_orchestration_policy_configurations).and_return([
+          instance_double(
+            Security::OrchestrationPolicyConfiguration,
+            active_scan_result_policies: [
+              {
+                approval_settings: { prevent_pushing_and_force_pushing: true },
+                enforcement_type: Security::Policy::ENFORCEMENT_TYPE_WARN,
+                rules: [{ branches: [branch_name] }]
+              }
+            ]
+          )
+        ])
+      end
+
+      context 'when ignore_warn_mode is false' do
+        subject(:result) { described_class.new(project: project, ignore_warn_mode: false).execute }
+
+        it 'excludes the protected branch (warn mode policy is filtered)' do
+          expect(result).not_to include(branch_name)
+        end
+      end
+
+      context 'when ignore_warn_mode is true' do
+        subject(:result) { described_class.new(project: project, ignore_warn_mode: true).execute }
+
+        it 'includes the protected branch (warn mode policy is not filtered)' do
+          expect(result).to include(branch_name)
+        end
+      end
+    end
   end
 end

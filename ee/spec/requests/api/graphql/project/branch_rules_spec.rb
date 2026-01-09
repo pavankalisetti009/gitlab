@@ -183,13 +183,13 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
               'isDefault' => branch_rule_a.default_branch?,
               'isProtected' => branch_rule_a.protected?,
               'matchingBranchesCount' => branch_rule_a.matching_branches_count,
-              'branchProtection' => {
+              'branchProtection' => hash_including(
                 "allowForcePush" => false,
                 "codeOwnerApprovalRequired" => false,
                 "modificationBlockedByPolicy" => false,
                 "protectedFromPushBySecurityPolicy" => false,
                 "isGroupLevel" => false
-              },
+              ),
               'createdAt' => branch_rule_a.created_at.iso8601,
               'updatedAt' => branch_rule_a.updated_at.iso8601,
               'approvalRules' => be_kind_of(Hash),
@@ -202,13 +202,13 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
               'isDefault' => branch_rule_b.default_branch?,
               'isProtected' => branch_rule_b.protected?,
               'matchingBranchesCount' => branch_rule_b.matching_branches_count,
-              'branchProtection' => {
+              'branchProtection' => hash_including(
                 "allowForcePush" => false,
                 "codeOwnerApprovalRequired" => false,
                 "modificationBlockedByPolicy" => false,
                 "protectedFromPushBySecurityPolicy" => false,
                 "isGroupLevel" => false
-              },
+              ),
               'createdAt' => branch_rule_b.created_at.iso8601,
               'updatedAt' => branch_rule_b.updated_at.iso8601,
               'approvalRules' => be_kind_of(Hash),
@@ -242,13 +242,13 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
                 'isDefault' => group_branch_rule.default_branch?,
                 'isProtected' => group_branch_rule.protected?,
                 'matchingBranchesCount' => group_branch_rule.matching_branches_count,
-                'branchProtection' => {
+                'branchProtection' => hash_including(
                   "allowForcePush" => false,
                   "codeOwnerApprovalRequired" => false,
                   "modificationBlockedByPolicy" => false,
                   "protectedFromPushBySecurityPolicy" => false,
                   "isGroupLevel" => true
-                },
+                ),
                 'createdAt' => group_branch_rule.created_at.iso8601,
                 'updatedAt' => group_branch_rule.updated_at.iso8601,
                 'approvalRules' => be_kind_of(Hash),

@@ -5,6 +5,12 @@ module Security
     class GroupProtectedBranchesDeletionCheckService < BaseGroupService
       BlockingPolicy = Data.define(:policy_configuration_id, :security_policy_name)
 
+      def initialize(group:, params: {}, ignore_warn_mode: false)
+        super(group: group)
+        @params = params
+        @ignore_warn_mode = ignore_warn_mode
+      end
+
       def execute
         all_configurations = group.all_security_orchestration_policy_configurations
         preload_security_policy_management_projects!(all_configurations)
@@ -28,15 +34,19 @@ module Security
 
       private
 
+      attr_reader :ignore_warn_mode, :params
+
       def applicable_active_policies(config)
         policies = config.active_scan_result_policies
 
         if warn_mode_policies_only?
-          return [] unless warn_mode_feature_enabled?(config)
+          return [] unless warn_mode_feature_enabled?(config) && !ignore_warn_mode
 
           policies.select { |policy| warn_mode?(policy) }
         else
-          policies.reject { |policy| warn_mode?(policy) }
+          policies.reject do |policy|
+            !ignore_warn_mode && warn_mode?(policy)
+          end
         end
       end
 

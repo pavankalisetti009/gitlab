@@ -17,6 +17,18 @@ module EE
             null: false,
             description: 'Enforce code owner approvals before allowing a merge.'
 
+          field :warn_modification_blocked_by_policy,
+            type: GraphQL::Types::Boolean,
+            null: false,
+            description: 'Indicates if a warn mode security policy would prevent modification.',
+            calls_gitaly: true
+
+          field :warn_protected_from_push_by_security_policy,
+            type: GraphQL::Types::Boolean,
+            null: false,
+            description: 'Indicates if a warn mode security policy would prevent push or force push.',
+            calls_gitaly: true
+
           field :modification_blocked_by_policy,
             type: GraphQL::Types::Boolean,
             null: false,

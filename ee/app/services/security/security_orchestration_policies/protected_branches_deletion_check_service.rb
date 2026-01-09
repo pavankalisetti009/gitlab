@@ -5,6 +5,11 @@ module Security
     class ProtectedBranchesDeletionCheckService < BaseProjectService
       include Gitlab::Utils::StrongMemoize
 
+      def initialize(project:, ignore_warn_mode: false)
+        super(project: project)
+        @ignore_warn_mode = ignore_warn_mode
+      end
+
       def execute(protected_branches)
         protected_branches.reject do |protected_branch|
           applicable_branches.none? do |branch|
@@ -14,6 +19,8 @@ module Security
       end
 
       private
+
+      attr_reader :ignore_warn_mode
 
       def applicable_branches
         PolicyBranchesService.new(project: project).scan_result_branches(rules).merge(blocked_branch_patterns)
@@ -39,7 +46,7 @@ module Security
         project
           .all_security_orchestration_policy_configurations
           .flat_map(&:active_scan_result_policies)
-          .reject { |policy| policy_in_warn_mode?(policy) }
+          .reject { |policy| policy_in_warn_mode?(policy) unless ignore_warn_mode }
           .select { |policy| policy_scope_checker.policy_applicable?(policy) }
       end
 
