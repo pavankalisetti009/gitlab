@@ -67,12 +67,39 @@ const prepareAdditionalMetrics = ({ nodes = [], pageInfo = {}, ...rest }, pagina
   };
 };
 
+const SORTABLE_FIELD_KEYS = {
+  requestReviewDuoCodeReviewOnMrByAuthorEventCount:
+    'REQUEST_REVIEW_DUO_CODE_REVIEW_ON_MR_BY_AUTHOR',
+  codeSuggestionShownInIdeEventCount: 'CODE_SUGGESTION_SHOWN_IN_IDE',
+  codeSuggestionAcceptedInIdeEventCount: 'CODE_SUGGESTION_ACCEPTED_IN_IDE',
+  troubleshootJobEventCount: 'TROUBLESHOOT_JOB_TOTAL_COUNT',
+};
+
+const constructSortKey = ({ sortBy, sortDesc }) => {
+  if (SORTABLE_FIELD_KEYS[sortBy]) {
+    const baseKey = SORTABLE_FIELD_KEYS[sortBy];
+    return sortDesc ? `${baseKey}_DESC` : `${baseKey}_ASC`;
+  }
+  return null;
+};
+
 export default async function fetch({
   namespace: fullPath,
-  query: { dateRange = DATE_RANGE_OPTION_LAST_30_DAYS },
-  queryOverrides: { pagination = { first: PAGINATION_PAGE_SIZE } } = {},
+  query: {
+    dateRange = DATE_RANGE_OPTION_LAST_30_DAYS,
+    sortBy: defaultSortBy,
+    sortDesc: defaultSortDesc,
+  },
+  queryOverrides: {
+    pagination = { first: PAGINATION_PAGE_SIZE },
+    sortBy: sortByOverride,
+    sortDesc: sortDescOverride,
+  } = {},
 }) {
   const startDate = getStartDate(dateRange);
+
+  const sortBy = sortByOverride ?? defaultSortBy;
+  const sortDesc = sortDescOverride ?? defaultSortDesc;
 
   const response = await defaultClient.query({
     query: UserAiUserMetricsQuery,
@@ -84,6 +111,7 @@ export default async function fetch({
       last: pagination.last,
       before: pagination.startCursor,
       after: pagination.endCursor,
+      sort: constructSortKey({ sortBy, sortDesc }),
     },
   });
 
