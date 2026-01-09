@@ -34,6 +34,10 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
       amazon_q_oauth_application_id: nil
     )
 
+    allow(::Gitlab::Llm::TanukiBot)
+      .to receive(:credits_available?)
+      .and_return(true)
+
     sign_in(admin)
   end
 

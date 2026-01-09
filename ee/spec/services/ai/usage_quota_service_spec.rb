@@ -101,7 +101,7 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
                 feature_metadata,
                 user_id: user.id,
                 root_namespace_id: root_namespace.id
-              ).and_return({ success: false })
+              ).and_return({ success: false, data: { errors: "HTTP status code: 402" } }.with_indifferent_access)
             end
 
             it 'calls portal with provided namespace, dap_feature_legacy metadata, and rails_on_ui_check event type' do

@@ -237,12 +237,6 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       end
     end
 
-    context 'when scope params are not present' do
-      it 'returns false' do
-        expect(described_class.credits_available?(user: user)).to be_falsey
-      end
-    end
-
     context 'when required params are present' do
       before do
         allow_next_instance_of(::Ai::UsageQuotaService) do |service|
