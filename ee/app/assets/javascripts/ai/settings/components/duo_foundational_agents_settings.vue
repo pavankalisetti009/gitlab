@@ -71,24 +71,24 @@ export default {
     },
     description() {
       if (this.showFoundationalAgentsPerAgentAvailability) {
-        return s__('FoundationalAgents|Control whether foundational agents are available.');
+        return s__(
+          'FoundationalAgents|Control whether foundational agents are available by default.',
+        );
       }
 
       return s__(
-        'FoundationalAgents|Control whether %{linkStart}GitLab Duo foundational agents%{linkEnd} are available.',
+        'FoundationalAgents|Control whether foundational agents are available by default.',
       );
     },
     enabledLabel() {
-      if (this.showFoundationalAgentsPerAgentAvailability)
-        return s__('FoundationalAgents|On by default');
+      if (this.showFoundationalAgentsPerAgentAvailability) return s__('FoundationalAgents|On');
 
-      return s__('FoundationalAgents|On by default');
+      return s__('FoundationalAgents|On');
     },
     disabledLabel() {
-      if (this.showFoundationalAgentsPerAgentAvailability)
-        return s__('FoundationalAgents|Off by default');
+      if (this.showFoundationalAgentsPerAgentAvailability) return s__('FoundationalAgents|Off');
 
-      return s__('FoundationalAgents|Off by default');
+      return s__('FoundationalAgents|Off');
     },
     onByDefaultHelpText() {
       if (!this.showFoundationalAgentsPerAgentAvailability)
@@ -106,8 +106,8 @@ export default {
     },
     availabilityOptions() {
       const defaultText = this.enabled
-        ? s__('FoundationalAgents|On (default)')
-        : s__('FoundationalAgents|Off (default)');
+        ? s__('FoundationalAgents|Use default (On)')
+        : s__('FoundationalAgents|Use default (Off)');
 
       return [
         {
@@ -210,6 +210,9 @@ export default {
     <gl-form-group
       v-if="showAgentsTable"
       :label="s__('FoundationalAgents|Availability settings')"
+      :label-description="
+        s__('FoundationalAgents|Control the availability of each foundational agent individually.')
+      "
       class="gl-mt-4"
     >
       <gl-table-lite

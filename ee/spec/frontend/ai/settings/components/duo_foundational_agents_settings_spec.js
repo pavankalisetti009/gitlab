@@ -42,14 +42,16 @@ describe('DuoFoundationalAgentsSettings', () => {
         createComponent({ mountFn: mountExtended });
       });
 
-      it('shows "Enabled" and "Disabled" labels', () => {
-        expect(findEnabledRadio().text()).toContain('On by default');
-        expect(findDisabledRadio().text()).toContain('Off by default');
+      it('shows "On" and "Off" labels', () => {
+        expect(findEnabledRadio().text()).toContain('On');
+        expect(findDisabledRadio().text()).toContain('Off');
       });
 
       it('does not show help text', () => {
-        expect(findEnabledRadio().text()).not.toContain('automatically enabled');
-        expect(findDisabledRadio().text()).not.toContain('disabled by default');
+        expect(findEnabledRadio().text()).not.toContain(
+          'Foundational agents are available for projects in this group.',
+        );
+        expect(findDisabledRadio().text()).not.toContain('Foundational agents are not available.');
       });
     });
 
@@ -62,8 +64,8 @@ describe('DuoFoundationalAgentsSettings', () => {
       });
 
       it('shows "On by default" and "Off by default" labels', () => {
-        expect(findEnabledRadio().text()).toContain('On by default');
-        expect(findDisabledRadio().text()).toContain('Off by default');
+        expect(findEnabledRadio().text()).toContain('On');
+        expect(findDisabledRadio().text()).toContain('Off');
       });
 
       it('shows help text', () => {
@@ -133,8 +135,8 @@ describe('DuoFoundationalAgentsSettings', () => {
 
         it.each`
           defaultEnabledValue | expectedToggleText
-          ${true}             | ${'On (default)'}
-          ${false}            | ${'Off (default)'}
+          ${true}             | ${'Use default (On)'}
+          ${false}            | ${'Use default (Off)'}
         `(
           'sets dropdown toggle text based on agent enabled status and default value',
           ({ defaultEnabledValue, expectedToggleText }) => {
