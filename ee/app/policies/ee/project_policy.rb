@@ -749,7 +749,6 @@ module EE
         enable :push_code_to_protected_branches
         enable :admin_path_locks
         enable :read_approvers
-        enable :read_project_secrets_manager
         enable :update_approvers
         enable :modify_approvers_rules
         enable :modify_merge_request_author_setting
@@ -1325,8 +1324,12 @@ module EE
         ::Gitlab::ClickHouse.configured?
       end
 
-      rule { can?(:owner_access) }.policy do
+      rule { can?(:owner_access) & secrets_manager_enabled }.policy do
         enable :admin_project_secrets_manager
+      end
+
+      rule { can?(:maintainer_access) & secrets_manager_enabled }.policy do
+        enable :read_project_secrets_manager
       end
 
       condition(:container_registry_immutable_tag_rules_available, scope: :subject) do
@@ -1341,15 +1344,11 @@ module EE
         ::Feature.enabled?(:secrets_manager, @subject)
       end
 
-      condition(:secrets_manager_active) do
-        @subject&.secrets_manager&.active?
-      end
-
       rule { can?(:reporter_access) & secrets_manager_enabled }.policy do
         enable :read_project_secrets_manager_status
       end
 
-      rule { can?(:reporter_access) & secrets_manager_enabled & secrets_manager_active }.policy do
+      rule { can?(:reporter_access) & secrets_manager_enabled }.policy do
         enable :read_project_secrets
         enable :create_project_secrets
         enable :update_project_secrets

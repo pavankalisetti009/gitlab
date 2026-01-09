@@ -1228,14 +1228,24 @@ module EE
         prevent :destroy_wiki
       end
 
-      rule { can?(:owner_access) }.policy do
+      condition(:group_secrets_manager_enabled) do
+        ::Feature.enabled?(:group_secrets_manager, @subject)
+      end
+
+      rule { can?(:owner_access) & group_secrets_manager_enabled }.policy do
         enable :configure_group_secrets_manager
         enable :configure_group_secrets_permission
       end
 
-      rule { can?(:maintainer_access) }.policy do
+      rule { can?(:maintainer_access) & group_secrets_manager_enabled }.policy do
         enable :read_group_secrets_manager
         enable :read_group_secrets_permission
+      end
+
+      rule { can?(:reporter_access) & group_secrets_manager_enabled }.policy do
+        enable :read_secret
+        enable :write_secret
+        enable :delete_secret
       end
     end
 

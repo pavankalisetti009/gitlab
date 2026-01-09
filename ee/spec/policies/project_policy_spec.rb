@@ -4646,32 +4646,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'admin_project_secrets_manager' do
-      where(:current_user, :match_expected_result) do
-        ref(:owner)      | be_allowed(:admin_project_secrets_manager)
-        ref(:maintainer) | be_disallowed(:admin_project_secrets_manager)
-        ref(:developer)  | be_disallowed(:admin_project_secrets_manager)
-        ref(:non_member) | be_disallowed(:admin_project_secrets_manager)
-      end
-
-      with_them do
-        it { is_expected.to match_expected_result }
-      end
-    end
-
-    describe 'read_project_secrets_manager' do
-      where(:current_user, :match_expected_result) do
-        ref(:owner)      | be_allowed(:read_project_secrets_manager)
-        ref(:maintainer) | be_allowed(:read_project_secrets_manager)
-        ref(:developer)  | be_disallowed(:read_project_secrets_manager)
-        ref(:non_member) | be_disallowed(:read_project_secrets_manager)
-      end
-
-      with_them do
-        it { is_expected.to match_expected_result }
-      end
-    end
-
     describe 'manage_project_security_exclusions' do
       let(:policy) { :manage_project_security_exclusions }
 
@@ -5368,120 +5342,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
-  describe 'project secrets permissions' do
-    where(:project_visibility, :secrets_manager_active, :role, :allowed) do
-      :private  | false | :guest      | false
-      :private  | false | :reporter   | false
-      :private  | false | :owner      | false
-      :private  | true  | :anonymous  | false
-      :private  | true  | :guest      | false
-      :private  | true  | :reporter   | true
-      :private  | true  | :owner      | true
-      :private  | true  | :guest      | false
-      :private  | true  | :reporter   | true
-      :private  | true  | :developer  | true
-      :private  | true  | :owner      | true
-      :public   | true  | :anonymous  | false
-      :public   | true  | :reporter   | true
-    end
-
-    with_them do
-      let(:project) { create(:project, project_visibility) }
-      let!(:secrets_manager) do
-        if secrets_manager_active
-          secrets_manager_active_value = secrets_manager_active ? 1 : 0
-          create(:project_secrets_manager, project: project, status: secrets_manager_active_value)
-        end
-      end
-
-      let(:current_user) do
-        case role
-        when :anonymous
-          anonymous
-        when :guest
-          create(:user, guest_of: project)
-        when :reporter
-          create(:user, reporter_of: project)
-        when :developer
-          create(:user, developer_of: project)
-        when :maintainer
-          create(:user, maintainer_of: project)
-        when :owner
-          create(:user, owner_of: project)
-        else
-          public_send(role)
-        end
-      end
-
-      it "enforces the expected permissions" do
-        %i[read_project_secrets create_project_secrets update_project_secrets delete_project_secrets].each do |permission|
-          if allowed
-            is_expected.to be_allowed(permission)
-          else
-            is_expected.to be_disallowed(permission)
-          end
-        end
-      end
-    end
-  end
-
-  describe 'secrets_manager_status permissions' do
-    let(:policy) { :read_project_secrets_manager_status }
-
-    where(:project_visibility, :secrets_manager_active, :role, :allowed) do
-      :private  | false | :guest      | false
-      :private  | false | :reporter   | true
-      :private  | false | :owner      | true
-      :private  | true  | :anonymous  | false
-      :private  | true  | :guest      | false
-      :private  | true  | :reporter   | true
-      :private  | true  | :owner      | true
-      :private  | true  | :guest      | false
-      :private  | true  | :reporter   | true
-      :private  | true  | :developer  | true
-      :private  | true  | :owner      | true
-      :public   | true  | :anonymous  | false
-      :public   | true  | :reporter   | true
-    end
-
-    with_them do
-      let(:project) { create(:project, project_visibility) }
-      let!(:secrets_manager) do
-        if secrets_manager_active
-          secrets_manager_active_value = secrets_manager_active ? 1 : 0
-          create(:project_secrets_manager, project: project, status: secrets_manager_active_value)
-        end
-      end
-
-      let(:current_user) do
-        case role
-        when :anonymous
-          anonymous
-        when :guest
-          create(:user, guest_of: project)
-        when :reporter
-          create(:user, reporter_of: project)
-        when :developer
-          create(:user, developer_of: project)
-        when :maintainer
-          create(:user, maintainer_of: project)
-        when :owner
-          create(:user, owner_of: project)
-        else
-          public_send(role)
-        end
-      end
-
-      it "enforces the expected permissions" do
-        if allowed
-          is_expected.to be_allowed(policy)
-        else
-          is_expected.to be_disallowed(policy)
-        end
-      end
-    end
-  end
-
   describe 'AI catalog abilities' do
     let(:ai_catalog_available) { true }
     let(:flows_available) { true }
@@ -5944,6 +5804,107 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
           it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
           it { is_expected.to(allowed_to_manage ? be_allowed(:manage_ai_flow_triggers) : be_disallowed(:manage_ai_flow_triggers)) }
+        end
+      end
+    end
+  end
+
+  # GitLab Secrets Manager Permissions
+  describe 'GitLab Secrets Manager permissions' do
+    shared_examples 'handling secrets manager permission' do
+      it do
+        if allowed
+          is_expected.to be_allowed(permission)
+        else
+          is_expected.to be_disallowed(permission)
+        end
+      end
+
+      context 'when secrets_manager feature flag is disabled' do
+        before do
+          stub_feature_flags(secrets_manager: false)
+        end
+
+        it 'disallows the permission' do
+          is_expected.to be_disallowed(permission)
+        end
+      end
+    end
+
+    describe 'admin_project_secrets_manager' do
+      let(:permission) { :admin_project_secrets_manager }
+
+      where(:current_user, :allowed) do
+        ref(:owner)      | true
+        ref(:maintainer) | false
+        ref(:developer)  | false
+        ref(:reporter)   | false
+        ref(:planner)    | false
+        ref(:guest)      | false
+        ref(:non_member) | false
+        ref(:anonymous)  | false
+      end
+
+      with_them do
+        it_behaves_like 'handling secrets manager permission'
+      end
+    end
+
+    describe 'read_project_secrets_manager' do
+      let(:permission) { :read_project_secrets_manager }
+
+      where(:current_user, :allowed) do
+        ref(:owner)      | true
+        ref(:maintainer) | true
+        ref(:developer)  | false
+        ref(:reporter)   | false
+        ref(:planner)    | false
+        ref(:guest)      | false
+        ref(:non_member) | false
+        ref(:anonymous)  | false
+      end
+
+      with_them do
+        it_behaves_like 'handling secrets manager permission'
+      end
+    end
+
+    describe 'read_project_secrets_manager_status' do
+      let(:permission) { :read_project_secrets_manager_status }
+
+      where(:current_user, :allowed) do
+        ref(:owner)      | true
+        ref(:maintainer) | true
+        ref(:developer)  | true
+        ref(:reporter)   | true
+        ref(:planner)    | false
+        ref(:guest)      | false
+        ref(:non_member) | false
+        ref(:anonymous)  | false
+      end
+
+      with_them do
+        it_behaves_like 'handling secrets manager permission'
+      end
+    end
+
+    %i[read_project_secrets create_project_secrets update_project_secrets delete_project_secrets].each do |perm|
+      describe perm.to_s do
+        let(:permission) { perm }
+
+        where(:current_user, :allowed) do
+          ref(:owner)      | true
+          ref(:maintainer) | true
+          ref(:developer)  | true
+          ref(:reporter)   | true
+          ref(:planner)    | false
+          ref(:guest)      | false
+          ref(:non_member) | false
+          ref(:anonymous)  | false
+        end
+
+        with_them do
+          it_behaves_like 'handling secrets manager permission'
         end
       end
     end

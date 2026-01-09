@@ -75,13 +75,11 @@ RSpec.describe 'Initialize secrets manager on a project', :gitlab_secrets_manage
     end
 
     context 'and secrets_manager feature flag is disabled' do
-      it 'returns an error' do
+      before do
         stub_feature_flags(secrets_manager: false)
-
-        post_mutation
-
-        expect_graphql_errors_to_include("`secrets_manager` feature flag is disabled.")
       end
+
+      it_behaves_like 'a mutation on an unauthorized resource'
     end
   end
 end

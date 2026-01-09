@@ -34,10 +34,6 @@ module Mutations
         def resolve(project_path:, principal:, permissions:, expired_at: nil)
           project = authorized_find!(project_path: project_path)
 
-          if Feature.disabled?(:secrets_manager, project)
-            raise_resource_not_available_error!("`secrets_manager` feature flag is disabled.")
-          end
-
           # Transform old permissions format to new actions format
           actions = permissions_to_actions(permissions)
 

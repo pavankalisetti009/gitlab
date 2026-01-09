@@ -9,9 +9,6 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
   let_it_be(:current_user) { create(:user) }
   let_it_be(:owner_user) { create(:user) }
   let_it_be(:mutation_name) { :project_secret_update }
-  let(:error_message) do
-    "The resource that you are attempting to access does not exist or you don't have permission to perform this action"
-  end
 
   let(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
@@ -325,13 +322,11 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
     end
 
     context 'and secrets_manager feature flag is disabled' do
-      it 'returns an error' do
+      before do
         stub_feature_flags(secrets_manager: false)
-
-        post_mutation
-
-        expect_graphql_errors_to_include(error_message)
       end
+
+      it_behaves_like 'a mutation on an unauthorized resource'
     end
 
     it_behaves_like 'an API request requiring an exclusive project secret operation lease'

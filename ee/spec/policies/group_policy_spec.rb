@@ -5470,71 +5470,132 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  shared_examples 'handling secrets manager permission' do
+    it do
+      if allowed
+        is_expected.to be_allowed(permission)
+      else
+        is_expected.to be_disallowed(permission)
+      end
+    end
+
+    context 'when group_secrets_manager feature flag is disabled' do
+      before do
+        stub_feature_flags(group_secrets_manager: false)
+      end
+
+      it 'disallows the permission' do
+        is_expected.to be_disallowed(permission)
+      end
+    end
+  end
+
   describe 'configure_group_secrets_manager' do
-    where(:current_user, :match_expected_result) do
-      ref(:owner)      | be_allowed(:configure_group_secrets_manager)
-      ref(:maintainer) | be_disallowed(:configure_group_secrets_manager)
-      ref(:developer)  | be_disallowed(:configure_group_secrets_manager)
-      ref(:anonymous)  | be_disallowed(:configure_group_secrets_manager)
-      ref(:planner)    | be_disallowed(:configure_group_secrets_manager)
-      ref(:reporter)   | be_disallowed(:configure_group_secrets_manager)
-      ref(:guest)      | be_disallowed(:configure_group_secrets_manager)
-      ref(:admin)      | be_disallowed(:configure_group_secrets_manager)
+    let(:permission) { :configure_group_secrets_manager }
+
+    where(:current_user, :allowed) do
+      ref(:owner)      | true
+      ref(:maintainer) | false
+      ref(:developer)  | false
+      ref(:anonymous)  | false
+      ref(:planner)    | false
+      ref(:reporter)   | false
+      ref(:guest)      | false
+      ref(:admin)      | false
     end
 
     with_them do
-      it { is_expected.to match_expected_result }
+      it_behaves_like 'handling secrets manager permission'
     end
   end
 
   describe 'configure_group_secrets_permission' do
-    where(:current_user, :match_expected_result) do
-      ref(:owner)      | be_allowed(:configure_group_secrets_permission)
-      ref(:maintainer) | be_disallowed(:configure_group_secrets_permission)
-      ref(:developer)  | be_disallowed(:configure_group_secrets_permission)
-      ref(:anonymous)  | be_disallowed(:configure_group_secrets_permission)
-      ref(:planner)    | be_disallowed(:configure_group_secrets_permission)
-      ref(:reporter)   | be_disallowed(:configure_group_secrets_permission)
-      ref(:guest)      | be_disallowed(:configure_group_secrets_permission)
-      ref(:admin)      | be_disallowed(:configure_group_secrets_permission)
+    let(:permission) { :configure_group_secrets_permission }
+
+    where(:current_user, :allowed) do
+      ref(:owner)      | true
+      ref(:maintainer) | false
+      ref(:developer)  | false
+      ref(:anonymous)  | false
+      ref(:planner)    | false
+      ref(:reporter)   | false
+      ref(:guest)      | false
+      ref(:admin)      | false
     end
 
     with_them do
-      it { is_expected.to match_expected_result }
+      it_behaves_like 'handling secrets manager permission'
     end
   end
 
   describe 'read_group_secrets_manager' do
-    where(:current_user, :match_expected_result) do
-      ref(:owner)      | be_allowed(:read_group_secrets_manager)
-      ref(:maintainer) | be_allowed(:read_group_secrets_manager)
-      ref(:developer)  | be_disallowed(:read_group_secrets_manager)
-      ref(:anonymous)  | be_disallowed(:read_group_secrets_manager)
-      ref(:planner)    | be_disallowed(:read_group_secrets_manager)
-      ref(:reporter)   | be_disallowed(:read_group_secrets_manager)
-      ref(:guest)      | be_disallowed(:read_group_secrets_manager)
-      ref(:admin)      | be_disallowed(:read_group_secrets_manager)
+    let(:permission) { :read_group_secrets_manager }
+
+    where(:current_user, :allowed) do
+      ref(:owner)      | true
+      ref(:maintainer) | true
+      ref(:developer)  | false
+      ref(:anonymous)  | false
+      ref(:planner)    | false
+      ref(:reporter)   | false
+      ref(:guest)      | false
+      ref(:admin)      | false
     end
 
     with_them do
-      it { is_expected.to match_expected_result }
+      it_behaves_like 'handling secrets manager permission'
     end
   end
 
   describe 'read_group_secrets_permission' do
-    where(:current_user, :match_expected_result) do
-      ref(:owner)      | be_allowed(:read_group_secrets_permission)
-      ref(:maintainer) | be_allowed(:read_group_secrets_permission)
-      ref(:developer)  | be_disallowed(:read_group_secrets_permission)
-      ref(:anonymous)  | be_disallowed(:read_group_secrets_permission)
-      ref(:planner)    | be_disallowed(:read_group_secrets_permission)
-      ref(:reporter)   | be_disallowed(:read_group_secrets_permission)
-      ref(:guest)      | be_disallowed(:read_group_secrets_permission)
-      ref(:admin)      | be_disallowed(:read_group_secrets_permission)
+    let(:permission) { :read_group_secrets_permission }
+
+    where(:current_user, :allowed) do
+      ref(:owner)      | true
+      ref(:maintainer) | true
+      ref(:developer)  | false
+      ref(:anonymous)  | false
+      ref(:planner)    | false
+      ref(:reporter)   | false
+      ref(:guest)      | false
+      ref(:admin)      | false
     end
 
     with_them do
-      it { is_expected.to match_expected_result }
+      it_behaves_like 'handling secrets manager permission'
+    end
+  end
+
+  %i[read_secret write_secret delete_secret].each do |permission|
+    describe permission.to_s do
+      let(:permission) { permission }
+
+      where(:group_visibility, :current_user, :allowed) do
+        :private  | ref(:owner)      | true
+        :private  | ref(:maintainer) | true
+        :private  | ref(:developer)  | true
+        :private  | ref(:reporter)   | true
+        :private  | ref(:planner)    | false
+        :private  | ref(:guest)      | false
+        :private  | ref(:anonymous)  | false
+        :private  | ref(:admin)      | false
+        :public   | ref(:owner)      | true
+        :public   | ref(:maintainer) | true
+        :public   | ref(:developer)  | true
+        :public   | ref(:reporter)   | true
+        :public   | ref(:planner)    | false
+        :public   | ref(:guest)      | false
+        :public   | ref(:anonymous)  | false
+        :public   | ref(:admin)      | false
+      end
+
+      with_them do
+        before do
+          group.update!(visibility_level: Gitlab::VisibilityLevel.string_options[group_visibility])
+        end
+
+        it_behaves_like 'handling secrets manager permission'
+      end
     end
   end
 
@@ -5573,6 +5634,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           :read_group_saml_identity,
           :read_group_scim_identity,
           :read_group_secrets_manager,
+          :read_group_secrets_manager_status,
           :read_group_secrets_permission,
           :read_harbor_registry,
           :read_internal_note,
@@ -5594,6 +5656,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           :read_runner_usage,
           :read_runners_registration_token,
           :read_saved_replies,
+          :read_secret,
           :read_security_attribute,
           :read_security_configuration,
           :read_security_inventory,

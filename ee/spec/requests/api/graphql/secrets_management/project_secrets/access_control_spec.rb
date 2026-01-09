@@ -12,7 +12,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
   let(:error_message) do
-    "The resource that you are attempting to access does not exist or you don't have permission to perform this action"
+    "Secrets manager is not active"
   end
 
   let(:list_query) do

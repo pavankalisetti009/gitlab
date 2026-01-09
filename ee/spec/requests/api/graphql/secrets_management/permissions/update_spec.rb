@@ -120,20 +120,15 @@ RSpec.describe 'Update Secret Permission', :gitlab_secrets_manager, feature_cate
     let(:principal) { { id: user.id, type: 'USER' } }
     let(:permissions) { %w[create update read] }
     let(:expired_at) { 1.week.from_now.to_date.iso8601 }
-    let(:err_message) do
-      "`secrets_manager` feature flag is disabled."
-    end
 
     before_all do
       project.add_owner(current_user)
     end
 
-    it 'returns an error' do
+    before do
       stub_feature_flags(secrets_manager: false)
-
-      post_mutation
-
-      expect_graphql_errors_to_include(err_message)
     end
+
+    it_behaves_like 'a mutation on an unauthorized resource'
   end
 end
