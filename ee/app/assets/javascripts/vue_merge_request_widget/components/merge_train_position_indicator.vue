@@ -41,7 +41,7 @@ export default {
     message() {
       if (this.mergeTrainIndex === 0) {
         return s__(
-          'mrWidget|A new merge train has started and this merge request is the first of the queue.',
+          'mrWidget|A new merge train has started and this merge request is first in the queue.',
         );
       }
 
@@ -68,7 +68,7 @@ export default {
       // merge train car is null then the MR was removed
       // from the merge train.
       if (oldCar && !currentCar) {
-        this.$toast?.show(s__('mrWidget|Merge request was removed from the merge train.'));
+        this.$toast?.show(s__('mrWidget|This merge request was removed from the merge train.'));
       }
     },
   },
@@ -80,7 +80,7 @@ export default {
     <div class="media-body gl-text-subtle">
       {{ message }}
       <gl-link v-if="mergeTrainsPath" :href="mergeTrainsPath">
-        {{ s__('mrWidget|View merge train details.') }}
+        {{ s__('mrWidget|View merge train.') }}
       </gl-link>
     </div>
   </div>
