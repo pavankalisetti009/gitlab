@@ -47,12 +47,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
     end
 
     before_all do
-      create(:group_member,
-        :guest,
-        user: user,
-        group: through_namespace,
-        member_role: create(:member_role, :guest, namespace: through_namespace)
-      )
+      through_namespace.add_guest(user)
     end
 
     where(:test_user, :entity, :expected_rules) do

@@ -12,9 +12,10 @@ module Ai
 
     scope :accessible_for_user, ->(user, accessible_entity) {
       joins(
-        "INNER JOIN user_group_member_roles " \
-          "ON user_group_member_roles.group_id = ai_instance_accessible_entity_rules.through_namespace_id "
-      ).where(accessible_entity: accessible_entity, user_group_member_roles: { user_id: user.id })
+        "INNER JOIN members " \
+          "ON members.source_id = ai_instance_accessible_entity_rules.through_namespace_id " \
+          "AND members.source_type = 'Namespace'"
+      ).where(accessible_entity: accessible_entity, members: { user_id: user.id })
     }
 
     class << self
