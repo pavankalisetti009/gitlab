@@ -92,18 +92,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
           with: %w[filters:permissions:global:visibility_level:public_and_internal],
           without: %w[filters:project:membership:id])
       end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(search_advanced_merge_requests_new_auth_filter: false)
-        end
-
-        it 'uses the old authorization filter' do
-          assert_names_in_query(build,
-            with: %w[filters:project:membership:id],
-            without: %w[filters:permissions:global:visibility_level:public_and_internal])
-        end
-      end
     end
 
     describe 'source_branch' do
