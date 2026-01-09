@@ -42,6 +42,20 @@ When you view a GitLab project in VS Code, the extension shows you information a
 - If the merge request includes an [issue closing pattern](../../user/project/issues/managing_issues.md#closing-issues-automatically),
   a link to the issue.
 
+## GitLab extension panels
+
+After you install and set up the extension, you can access the following features:
+
+- GitLab Workflow: On the left sidebar, select **GitLab Workflow** ({{< icon name="tanuki" >}}).
+- GitLab Duo Chat (Agentic): On the left sidebar, select **GitLab Duo Agent Platform**
+  ({{< icon name="duo-agentic-chat" >}}).
+- GitLab Duo Chat (Classic): On the left sidebar, select **GitLab Duo Chat**
+  ({{< icon name="duo-chat" >}}).
+- GitLab Duo Code Suggestions: In the status bar, select **Duo** ({{< icon name="tanuki-ai" >}}).
+  The icon will change based on the [feature status](../../user/project/repository/code_suggestions/set_up.md#verify-that-code-suggestions-is-on).
+
+If these features do not appear, see [troubleshooting](troubleshooting.md#gitlab-duo-features-do-not-appear) for guidance.
+
 ## Switch GitLab accounts in VS Code
 
 The GitLab Workflow extension uses one account for each
