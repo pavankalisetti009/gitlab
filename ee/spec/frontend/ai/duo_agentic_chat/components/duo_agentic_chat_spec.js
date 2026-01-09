@@ -41,7 +41,6 @@ import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
-  DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
   DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
   DUO_CURRENT_WORKFLOW_STORAGE_KEY,
@@ -1003,7 +1002,7 @@ describe('Duo Agentic Chat', () => {
                 ],
               },
             }),
-            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+            status: 'TOOL_CALL_APPROVAL_REQUIRED',
           },
         };
 
@@ -1346,7 +1345,7 @@ describe('Duo Agentic Chat', () => {
                 ],
               },
             }),
-            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+            status: 'TOOL_CALL_APPROVAL_REQUIRED',
           },
         };
 
@@ -1357,7 +1356,7 @@ describe('Duo Agentic Chat', () => {
         });
         await nextTick();
 
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
 
         const mockCompletedData = {
           requestID: 'request-id-approval-2',
@@ -1438,7 +1437,7 @@ describe('Duo Agentic Chat', () => {
                 ],
               },
             }),
-            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+            status: 'TOOL_CALL_APPROVAL_REQUIRED',
           },
         };
 
@@ -1449,7 +1448,7 @@ describe('Duo Agentic Chat', () => {
         });
         await nextTick();
 
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
 
         const mockDenialProcessedData = {
           requestID: 'request-id-denial-2',
@@ -1496,38 +1495,71 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
-  describe('workflowStatus watcher', () => {
+  describe('tool approval state management', () => {
     beforeEach(async () => {
-      createComponent();
       duoChatGlobalState.isAgenticChatShown = true;
+      createComponent();
       await waitForPromises();
     });
 
-    it('sets isProcessingToolApproval to false when workflow status changes from TOOL_CALL_APPROVAL_REQUIRED', () => {
-      wrapper.vm.isProcessingToolApproval = true;
+    it('keeps buttons disabled while tool is running after approval', async () => {
+      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      await waitForPromises();
 
-      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
-      watcherFunction.call(wrapper.vm, 'completed', 'TOOL_CALL_APPROVAL_REQUIRED');
-
-      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-    });
-
-    it('does not change isProcessingToolApproval when workflow status changes from other states', async () => {
-      wrapper.vm.isProcessingToolApproval = true;
+      findDuoChat().vm.$emit('approve-tool');
       await nextTick();
 
-      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
-      watcherFunction.call(wrapper.vm, 'completed', 'processing');
+      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+
+      const socketCall = getLastSocketCall();
+      await socketCall.onMessage({
+        data: {
+          text: () =>
+            Promise.resolve(
+              JSON.stringify({
+                requestID: 'request-1',
+                newCheckpoint: {
+                  checkpoint: JSON.stringify({
+                    channel_values: {
+                      ui_chat_log: [{ content: 'Running', message_type: 'agent' }],
+                    },
+                  }),
+                  status: DUO_WORKFLOW_STATUS_RUNNING,
+                },
+              }),
+            ),
+        },
+      });
+      await nextTick();
 
       expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
     });
 
-    it('does not change isProcessingToolApproval when workflow status changes to TOOL_CALL_APPROVAL_REQUIRED', async () => {
-      wrapper.vm.isProcessingToolApproval = false;
+    it('re-enables buttons when tool finishes running', async () => {
+      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      await waitForPromises();
+
+      findDuoChat().vm.$emit('approve-tool');
       await nextTick();
 
-      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
-      watcherFunction.call(wrapper.vm, 'TOOL_CALL_APPROVAL_REQUIRED', 'processing');
+      const socketCall = getLastSocketCall();
+      await socketCall.onMessage({
+        data: {
+          text: () =>
+            Promise.resolve(
+              JSON.stringify({
+                requestID: 'request-1',
+                newCheckpoint: {
+                  checkpoint: JSON.stringify({
+                    channel_values: { ui_chat_log: [{ content: 'Done', message_type: 'agent' }] },
+                  }),
+                  status: DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
+                },
+              }),
+            ),
+        },
+      });
+      await nextTick();
 
       expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
     });
@@ -2133,30 +2165,42 @@ describe('Duo Agentic Chat', () => {
       expect(findDuoChat().props('isLoading')).toBe(false);
     });
 
-    it('does not set isProcessingToolApproval to false on socket close when waiting for approval', async () => {
+    it('keeps isProcessingToolApproval true on socket close when workflow is RUNNING', async () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
       await waitForPromises();
 
-      jest.clearAllMocks();
+      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      await waitForPromises();
 
-      wrapper.vm.isProcessingToolApproval = true;
-      wrapper.vm.workflowStatus = 'TOOL_CALL_APPROVAL_REQUIRED';
-      wrapper.vm.workflowId = '456';
-
-      wrapper.vm.startWorkflow('test question', {}, wrapper.vm.additionalContext);
-
-      expect(createWebSocket).toHaveBeenCalled();
+      findDuoChat().vm.$emit('approve-tool');
+      await nextTick();
 
       const socketCall = getLastSocketCall();
-      // Set waiting on prompt to true first to verify it stays true
-      wrapper.vm.isWaitingOnPrompt = true;
+      await socketCall.onMessage({
+        data: {
+          text: () =>
+            Promise.resolve(
+              JSON.stringify({
+                requestID: 'request-1',
+                newCheckpoint: {
+                  checkpoint: JSON.stringify({
+                    channel_values: {
+                      ui_chat_log: [{ content: 'Running', message_type: 'agent' }],
+                    },
+                  }),
+                  status: DUO_WORKFLOW_STATUS_RUNNING,
+                },
+              }),
+            ),
+        },
+      });
       await nextTick();
+
       socketCall.onClose();
       await nextTick();
 
       expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
-      expect(findDuoChat().props('isLoading')).toBe(true);
     });
   });
 

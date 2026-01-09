@@ -25,7 +25,6 @@ import {
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
   DUO_AGENTIC_CHAT_CLIENT_CAPABILITIES,
-  DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
   DUO_WORKFLOW_STATUS_RUNNING,
   DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
@@ -490,24 +489,31 @@ export default {
         }
       },
     },
-    workflowStatus(newStatus, oldStatus) {
-      if (
-        oldStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED &&
-        newStatus !== DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED
-      ) {
-        this.isProcessingToolApproval = false;
-      }
+    workflowStatus: {
+      immediate: true,
+      handler(newStatus, oldStatus) {
+        if (!oldStatus && newStatus === DUO_WORKFLOW_STATUS_RUNNING) {
+          const lastMessage = this.messages?.[this.messages.length - 1];
+          const hasPendingToolRequest =
+            lastMessage?.message_type === 'request' && lastMessage?.tool_info;
 
-      // When a flow is locked, we poll in the background because the
-      // websocket connection has closed. If a new status arrives,
-      // we resume the connection.
-      if (this.isFlowLocked && newStatus) {
-        this.isFlowLocked = false;
-        this.setChatState({
-          isEnabled: true,
-        });
-        this.hydrateActiveThread();
-      }
+          if (hasPendingToolRequest) {
+            this.isProcessingToolApproval = true;
+          }
+        }
+
+        if (this.isProcessingToolApproval && newStatus !== DUO_WORKFLOW_STATUS_RUNNING) {
+          this.isProcessingToolApproval = false;
+        }
+
+        if (this.isFlowLocked && newStatus) {
+          this.isFlowLocked = false;
+          this.setChatState({
+            isEnabled: true,
+          });
+          this.hydrateActiveThread();
+        }
+      },
     },
     workflowId(newWorkflowId, oldWorkflowId) {
       if (newWorkflowId !== oldWorkflowId) {
@@ -710,7 +716,7 @@ export default {
           }
           // Only set waiting on prompt to false if we're not waiting for tool approval
           // and we don't have a pending workflow that will create a new connection
-          if (this.workflowStatus !== DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED) {
+          if (this.workflowStatus !== DUO_WORKFLOW_STATUS_RUNNING) {
             this.isProcessingToolApproval = false;
             this.isWaitingOnPrompt = false;
           }

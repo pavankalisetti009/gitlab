@@ -54,7 +54,6 @@ export const DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES = [2];
 export const DUO_WORKFLOW_CLIENT_VERSION = '1.0';
 
 // SSOT: https://docs.gitlab.com/api/graphql/reference/#duoworkflowstatus
-export const DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED = 'TOOL_CALL_APPROVAL_REQUIRED';
 export const DUO_WORKFLOW_STATUS_RUNNING = 'RUNNING';
 export const DUO_WORKFLOW_STATUS_INPUT_REQUIRED = 'INPUT_REQUIRED';
 
