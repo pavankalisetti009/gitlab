@@ -16,6 +16,7 @@ RSpec.describe GitlabSchema.types['MavenRegistryUpstreamWithUpstream'], feature_
   subject { described_class }
 
   it { is_expected.to have_graphql_fields(fields) }
+  it { is_expected.to have_attributes(interfaces: include(Types::VirtualRegistries::RegistryUpstreamInterface)) }
 
   describe '#upstream' do
     subject(:resolved_upstream) { resolve_field(:upstream, registry_upstream, current_user: user) }

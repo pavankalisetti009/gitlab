@@ -4,10 +4,12 @@ module Types
   module VirtualRegistries
     module Packages
       module Maven
-        # rubocop: disable Graphql/AuthorizeTypes -- authorization handled by parent UpstreamType
-        class RegistryUpstreamWithUpstreamType < ::Types::VirtualRegistries::Packages::Maven::RegistryUpstreamType
+        # rubocop: disable Graphql/AuthorizeTypes -- authorization handled by parent type
+        class RegistryUpstreamWithUpstreamType < ::Types::BaseObject
           graphql_name 'MavenRegistryUpstreamWithUpstream'
           description 'Represents a Maven virtual registry upstream and its relationship to the upstream.'
+
+          implements Types::VirtualRegistries::RegistryUpstreamInterface
 
           field :upstream, ::Types::VirtualRegistries::Packages::Maven::UpstreamType, null: false,
             description: 'Maven upstream associated with the registry upstream.',
