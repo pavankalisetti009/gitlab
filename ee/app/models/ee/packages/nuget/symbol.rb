@@ -26,6 +26,23 @@ module EE
               .where(packages_nuget_symbol_states: { verification_state: verification_state_value(state) })
           }
 
+          # On primary, `verifiables` are records that can be checksummed and/or are replicable.
+          # On secondary, `verifiables` are records that have already been replicated
+          # and (ideally) have been checksummed on the primary
+          scope :verifiables, ->(primary_key_in = nil) do
+            node = ::GeoNode.current_node
+
+            replicables =
+              available_replicables
+                .merge(object_storage_scope(node))
+
+            if ::Gitlab::Geo.org_mover_extend_selective_sync_to_primary_checksumming?
+              replicables.merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
+            else
+              primary_key_in ? replicables.primary_key_in(primary_key_in) : replicables
+            end
+          end
+
           def verification_state_object
             packages_nuget_symbol_state
           end
@@ -44,13 +61,34 @@ module EE
             ::Geo::PackagesNugetSymbolState
           end
 
+          override :pluck_verifiable_ids_in_range
+          def pluck_verifiable_ids_in_range(range)
+            verifiables(range).pluck_primary_key
+          end
+
+          # @param primary_key_in [Range, Replicable] arg to pass to primary_key_in scope
+          # @return [ActiveRecord::Relation<Replicable>] everything that should be synced to this
+          #         node, restricted by primary key
+          override :replicables_for_current_secondary
+          def replicables_for_current_secondary(primary_key_in)
+            node = ::Gitlab::Geo.current_node
+
+            replicables = available_replicables.merge(object_storage_scope(node))
+
+            replicables
+              .merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
+          end
+
           # @return [ActiveRecord::Relation<Packages::Nuget::Symbol>] scope observing selective sync settings
           # of the given node
           override :selective_sync_scope
-          def selective_sync_scope(node, **_params)
-            return all unless node.selective_sync?
+          def selective_sync_scope(node, **params)
+            replicables = params.fetch(:replicables, all)
+            replicables = replicables.primary_key_in(params[:primary_key_in]) if params[:primary_key_in].present?
 
-            project_id_in(::Project.selective_sync_scope(node))
+            return replicables unless node.selective_sync?
+
+            replicables.project_id_in(::Project.selective_sync_scope(node).select(:id))
           end
         end
 

@@ -29,9 +29,5 @@ FactoryBot.modify do
         instance.verification_failed!
       end
     end
-
-    trait :remote_store do
-      file_store { Packages::Nuget::SymbolUploader::Store::REMOTE }
-    end
   end
 end
