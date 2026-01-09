@@ -9,13 +9,7 @@ module Types
 
         authorize :read_virtual_registry
 
-        field :id, GraphQL::Types::ID, null: false,
-          description: 'ID of the registry upstream.',
-          experiment: { milestone: '18.7' }
-
-        field :position, GraphQL::Types::Int, null: false,
-          description: 'Position of the upstream registry in an ordered list.',
-          experiment: { milestone: '18.7' }
+        implements Types::VirtualRegistries::RegistryUpstreamInterface
 
         field :upstream, ::Types::VirtualRegistries::Container::UpstreamType, null: false,
           description: 'Container upstream associated with the registry upstream.',
