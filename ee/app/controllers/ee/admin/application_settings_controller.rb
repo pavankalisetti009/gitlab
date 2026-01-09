@@ -21,6 +21,7 @@ module EE
         before_action :indexing_status, only: [:search]
         before_action :search_error_if_version_incompatible, only: [:search], if: -> { es_helper.ping? }
         before_action :search_outdated_code_analyzer_detected, only: [:search], if: -> { es_helper.ping? }
+        before_action :check_feature_availability, only: [:work_item]
 
         before_action :new_license, only: [:general]
         before_action :scim_token, only: [:general]
@@ -38,6 +39,7 @@ module EE
         feature_category :consumables_cost_management, [:namespace_storage]
         feature_category :product_analytics, [:analytics]
         feature_category :system_access, [:update_microsoft_application]
+        feature_category :team_planning, [:work_item]
         urgency :low, [:search, :seat_link_payload]
 
         def elasticsearch_reindexing_task
@@ -89,6 +91,10 @@ module EE
           end
         rescue StandardError => e
           log_exception(e)
+        end
+
+        def check_feature_availability
+          render_404 unless ::Feature.enabled?(:work_item_configurable_types, :instance)
         end
 
         def scim_token

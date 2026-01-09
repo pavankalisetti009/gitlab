@@ -77059,6 +77059,9 @@ msgstr ""
 msgid "Work item not supported"
 msgstr ""
 
+msgid "Work item settings"
+msgstr ""
+
 msgid "Work item type %{work_item_type_name} can only have a maximum of %{limit} active custom fields."
 msgstr ""
 
@@ -78493,6 +78496,9 @@ msgid "WorkItem|Work item"
 msgstr ""
 
 msgid "WorkItem|Work item not found"
+msgstr ""
+
+msgid "WorkItem|Work item settings"
 msgstr ""
 
 msgid "WorkItem|Work item types"

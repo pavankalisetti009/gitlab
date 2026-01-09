@@ -148,6 +148,44 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
     end
   end
 
+  describe 'GET #work_item', feature_category: :team_planning do
+    before do
+      sign_in(admin)
+    end
+
+    it 'renders the work_item settings page' do
+      get work_item_admin_application_settings_path
+
+      expect(response).to have_gitlab_http_status(:ok)
+    end
+
+    context 'when user is unauthorized' do
+      let(:unauthorized_user) { create(:user) }
+
+      before do
+        sign_in(unauthorized_user)
+      end
+
+      it 'does not render the page' do
+        get work_item_admin_application_settings_path
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(work_item_configurable_types: false)
+      end
+
+      it 'returns 404' do
+        get work_item_admin_application_settings_path
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
   describe 'PATCH #update' do
     before do
       sign_in(admin)
