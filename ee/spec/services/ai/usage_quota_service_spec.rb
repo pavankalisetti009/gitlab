@@ -130,7 +130,7 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
       subject(:service_call) { described_class.new(ai_feature: ai_feature, user: user).execute }
 
       before do
-        allow(::Gitlab::GlobalAnonymousId).to receive(:instance_uuid).and_return("instance_id")
+        allow(::Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return("instance_id")
       end
 
       it 'calls portal with instance id, dap_feature_legacy metadata, and rails_on_ui_check event type' do
