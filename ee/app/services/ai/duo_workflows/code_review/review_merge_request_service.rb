@@ -60,9 +60,23 @@ module Ai
         end
 
         def cleanup_failed_review(progress_note)
-          update_progress_note(progress_note, ::Ai::CodeReviewMessages.could_not_start_workflow_error)
+          error_message = if foundational_flow_missing?
+                            ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
+                          else
+                            ::Ai::CodeReviewMessages.could_not_start_workflow_error
+                          end
+
+          update_progress_note(progress_note, error_message)
           update_review_state('reviewed')
           progress_note&.destroy
+        end
+
+        def foundational_flow_missing?
+          project = merge_request.project
+          return true unless project.duo_foundational_flows_enabled
+
+          workflow_definition = ::Ai::Catalog::FoundationalFlow['code_review/v1']
+          project.enabled_flow_catalog_item_ids.exclude?(workflow_definition&.catalog_item&.id)
         end
 
         def create_progress_note
