@@ -45335,6 +45335,8 @@ CREATE INDEX index_users_on_organization_id ON users USING btree (organization_i
 
 CREATE UNIQUE INDEX index_users_on_organization_id_and_reset_password_token ON users USING btree (organization_id, reset_password_token);
 
+CREATE UNIQUE INDEX index_users_on_organization_id_and_unlock_token ON users USING btree (organization_id, unlock_token);
+
 CREATE INDEX index_users_on_public_email_excluding_null_and_empty ON users USING btree (public_email) WHERE (((public_email)::text <> ''::text) AND (public_email IS NOT NULL));
 
 CREATE INDEX index_users_on_public_email_trigram ON users USING gin (public_email gin_trgm_ops);
@@ -45346,8 +45348,6 @@ CREATE UNIQUE INDEX index_users_on_static_object_token ON users USING btree (sta
 CREATE INDEX index_users_on_unconfirmed_created_at_active_type_sign_in_count ON users USING btree (created_at, id) WHERE ((confirmed_at IS NULL) AND ((state)::text = 'active'::text) AND (user_type = 0) AND (sign_in_count = 0));
 
 CREATE INDEX index_users_on_unconfirmed_email ON users USING btree (unconfirmed_email) WHERE (unconfirmed_email IS NOT NULL);
-
-CREATE UNIQUE INDEX index_users_on_unlock_token ON users USING btree (unlock_token);
 
 CREATE INDEX index_users_on_updated_at ON users USING btree (updated_at);
 
