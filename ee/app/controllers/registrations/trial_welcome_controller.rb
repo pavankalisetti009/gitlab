@@ -42,13 +42,17 @@ module Registrations
           params: resubmit_params(result))
       else
         render GitlabSubscriptions::Trials::Welcome::ResubmitComponent.new(
-          hidden_fields: result.payload,
+          hidden_fields: result.payload.merge(lead_params),
           submit_path: users_sign_up_trial_welcome_path(**glm_params)
         ).with_content(result.message)
       end
     end
 
     private
+
+    def lead_params
+      params.permit(:company_name, :country, :state)
+    end
 
     def resubmit_params(result)
       { namespace_id: result.payload[:namespace_id],
