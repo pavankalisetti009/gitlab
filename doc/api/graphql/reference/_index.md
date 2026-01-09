@@ -15980,6 +15980,29 @@ The edge type for [`AgentConfiguration`](#agentconfiguration).
 | <a id="agentconfigurationedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="agentconfigurationedgenode"></a>`node` | [`AgentConfiguration`](#agentconfiguration) | The item at the end of the edge. |
 
+#### `AgentPlatformUserFlowCountConnection`
+
+The connection type for [`AgentPlatformUserFlowCount`](#agentplatformuserflowcount).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentplatformuserflowcountconnectionedges"></a>`edges` | [`[AgentPlatformUserFlowCountEdge]`](#agentplatformuserflowcountedge) | A list of edges. |
+| <a id="agentplatformuserflowcountconnectionnodes"></a>`nodes` | [`[AgentPlatformUserFlowCount]`](#agentplatformuserflowcount) | A list of nodes. |
+| <a id="agentplatformuserflowcountconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AgentPlatformUserFlowCountEdge`
+
+The edge type for [`AgentPlatformUserFlowCount`](#agentplatformuserflowcount).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentplatformuserflowcountedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="agentplatformuserflowcountedgenode"></a>`node` | [`AgentPlatformUserFlowCount`](#agentplatformuserflowcount) | The item at the end of the edge. |
+
 #### `AiAgentConnection`
 
 The connection type for [`AiAgent`](#aiagent).
@@ -25505,6 +25528,18 @@ Agent platform aggregated metrics by flow type.
 | <a id="agentplatformflowmetricmedianexecutiontime"></a>`medianExecutionTime` | [`Float`](#float) | Median flow execution time in seconds. |
 | <a id="agentplatformflowmetricsessionscount"></a>`sessionsCount` | [`Int!`](#int) | Total number of sessions. |
 | <a id="agentplatformflowmetricuserscount"></a>`usersCount` | [`Int!`](#int) | Number of unique users. |
+
+### `AgentPlatformUserFlowCount`
+
+Agent platform flow counts aggergated per user.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentplatformuserflowcountflowtype"></a>`flowType` | [`String!`](#string) | Type of the flow. |
+| <a id="agentplatformuserflowcountsessionscount"></a>`sessionsCount` | [`Int!`](#int) | Total number of flow sessions. |
+| <a id="agentplatformuserflowcountuser"></a>`user` | [`UserCore`](#usercore) | User who triggered the flow. |
 
 ### `AgentVersionWarning`
 
@@ -50781,6 +50816,7 @@ Requires ClickHouse. Premium and Ultimate only.
 | <a id="agentplatformmetricsresumedsessioneventcount"></a>`resumedSessionEventCount` | [`Int`](#int) | Total count of `agent_platform_session_resumed` event. |
 | <a id="agentplatformmetricsstartedsessioneventcount"></a>`startedSessionEventCount` | [`Int`](#int) | Total count of `agent_platform_session_started` event. |
 | <a id="agentplatformmetricsstoppedsessioneventcount"></a>`stoppedSessionEventCount` | [`Int`](#int) | Total count of `agent_platform_session_stopped` event. |
+| <a id="agentplatformmetricsuserflowcounts"></a>`userFlowCounts` | [`AgentPlatformUserFlowCountConnection`](#agentplatformuserflowcountconnection) | Aggregated count of flows per user. (see [Connections](#connections)) |
 
 #### Fields with arguments
 

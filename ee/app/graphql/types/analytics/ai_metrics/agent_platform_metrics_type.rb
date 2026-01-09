@@ -24,6 +24,11 @@ module Types
           null: true,
           description: 'Aggregated flow metrics for Duo Agent Platform.',
           resolver: Resolvers::Analytics::AiMetrics::AgentPlatform::FlowMetricsResolver
+
+        field :user_flow_counts,
+          null: true,
+          description: 'Aggregated count of flows per user.',
+          resolver: Resolvers::Analytics::AiMetrics::AgentPlatform::UserFlowCountsResolver
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end

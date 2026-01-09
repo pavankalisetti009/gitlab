@@ -329,7 +329,6 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
   shared_examples 'common ai usage rate service' do
     # This shared examples requires the following variables
     # :expected_results
-    # :expected_language_filtered_results
 
     context 'when the clickhouse is not available for analytics' do
       before do

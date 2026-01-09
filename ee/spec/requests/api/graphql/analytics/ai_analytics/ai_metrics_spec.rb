@@ -7,6 +7,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
 
   let_it_be(:group) { create(:group, name: 'my-group') }
   let_it_be(:current_user) { create(:user, reporter_of: group) }
+  let_it_be(:ghost_user) { create(:user, :ghost) }
 
   let(:ai_metrics_fields) do
     query_graphql_field(:aiMetrics, filter_params, fields)
@@ -60,6 +61,16 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
             medianExecutionTime
             usersCount
             completionRate
+          }
+
+          userFlowCounts {
+            nodes {
+              user {
+                username
+              }
+              flowType
+              sessionsCount
+            }
           }
         }
       FIELDS
@@ -131,6 +142,21 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
       ]
     end
 
+    let(:agent_platform_user_flow_count_service_payload) do
+      [
+        {
+          'flow_type' => 'fix_pipeline',
+          'sessions_count' => 10,
+          'user_id' => current_user.id
+        },
+        {
+          'flow_type' => 'chat',
+          'sessions_count' => 20,
+          'user_id' => -999
+        }
+      ]
+    end
+
     let(:agent_platform_event_count_service_payload) do
       {
         created_session_event_count: 10,
@@ -173,6 +199,12 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           .and_return(ServiceResponse.success(payload: agent_platform_event_count_service_payload))
       end
 
+      allow_next_instance_of(::Analytics::AiAnalytics::AgentPlatform::UserFlowCountService,
+        current_user, hash_including(expected_filters)) do |instance|
+        allow(instance).to receive(:execute)
+          .and_return(ServiceResponse.success(payload: agent_platform_user_flow_count_service_payload))
+      end
+
       allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?)
         .with(current_user, :read_pro_ai_analytics, anything)
@@ -205,7 +237,21 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
               'sessionsCount' => 2,
               'usersCount' => 2
             }
-          ]
+          ],
+          'userFlowCounts' => {
+            'nodes' => [
+              {
+                'flowType' => 'fix_pipeline',
+                'sessionsCount' => 10,
+                'user' => { 'username' => current_user.username }
+              },
+              {
+                'flowType' => 'chat',
+                'sessionsCount' => 20,
+                'user' => { 'username' => ghost_user.username }
+              }
+            ]
+          }
         },
         'codeSuggestionsContributorsCount' => 3,
         'codeContributorsCount' => 10,
@@ -267,6 +313,10 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         {}
       end
 
+      let(:agent_platform_user_flow_count_service_payload) do
+        []
+      end
+
       let(:agent_platform_event_count_service_payload) do
         {
           created_session_event_count: 999
@@ -288,7 +338,8 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
             'resumedSessionEventCount' => nil,
             'startedSessionEventCount' => nil,
             'stoppedSessionEventCount' => nil,
-            'flowMetrics' => []
+            'flowMetrics' => [],
+            'userFlowCounts' => { 'nodes' => [] }
           },
           'codeSuggestionsContributorsCount' => 3,
           'codeContributorsCount' => 10,
