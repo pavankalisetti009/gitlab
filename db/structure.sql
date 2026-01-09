@@ -11017,6 +11017,24 @@ CREATE SEQUENCE achievements_id_seq
 
 ALTER SEQUENCE achievements_id_seq OWNED BY achievements.id;
 
+CREATE TABLE activation_metrics (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    user_id bigint NOT NULL,
+    namespace_id bigint,
+    metric smallint NOT NULL
+);
+
+CREATE SEQUENCE activation_metrics_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE activation_metrics_id_seq OWNED BY activation_metrics.id;
+
 CREATE TABLE activity_pub_releases_subscriptions (
     id bigint NOT NULL,
     project_id bigint NOT NULL,
@@ -32286,6 +32304,8 @@ ALTER TABLE ONLY abuse_reports ALTER COLUMN id SET DEFAULT nextval('abuse_report
 
 ALTER TABLE ONLY achievements ALTER COLUMN id SET DEFAULT nextval('achievements_id_seq'::regclass);
 
+ALTER TABLE ONLY activation_metrics ALTER COLUMN id SET DEFAULT nextval('activation_metrics_id_seq'::regclass);
+
 ALTER TABLE ONLY activity_pub_releases_subscriptions ALTER COLUMN id SET DEFAULT nextval('activity_pub_releases_subscriptions_id_seq'::regclass);
 
 ALTER TABLE ONLY admin_roles ALTER COLUMN id SET DEFAULT nextval('admin_roles_id_seq'::regclass);
@@ -34894,6 +34914,9 @@ ALTER TABLE ONLY achievement_uploads
 
 ALTER TABLE ONLY achievements
     ADD CONSTRAINT achievements_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY activation_metrics
+    ADD CONSTRAINT activation_metrics_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY activity_pub_releases_subscriptions
     ADD CONSTRAINT activity_pub_releases_subscriptions_pkey PRIMARY KEY (id);
@@ -40813,6 +40836,8 @@ CREATE INDEX index_abuse_reports_on_status_reporter_id_and_id ON abuse_reports U
 
 CREATE UNIQUE INDEX "index_achievements_on_namespace_id_LOWER_name" ON achievements USING btree (namespace_id, lower(name));
 
+CREATE INDEX index_activation_metrics_on_namespace_id ON activation_metrics USING btree (namespace_id);
+
 CREATE UNIQUE INDEX index_active_context_connections_single_active ON ai_active_context_connections USING btree (active) WHERE (active = true);
 
 CREATE UNIQUE INDEX index_activity_pub_releases_sub_on_project_id_inbox_url ON activity_pub_releases_subscriptions USING btree (project_id, lower(subscriber_inbox_url));
@@ -46279,6 +46304,8 @@ CREATE INDEX uniq_preference_by_user_namespace_and_work_item_type ON work_item_t
 
 CREATE UNIQUE INDEX uniq_user_project_member_roles_user_project_shared_with_group ON user_project_member_roles USING btree (user_id, project_id, shared_with_group_id) WHERE (shared_with_group_id IS NOT NULL);
 
+CREATE UNIQUE INDEX unique_activation_metric_user_id_namespace_id_and_metric ON activation_metrics USING btree (user_id, namespace_id, metric);
+
 CREATE UNIQUE INDEX unique_amazon_s3_configurations_namespace_id_and_bucket_name ON audit_events_amazon_s3_configurations USING btree (namespace_id, bucket_name);
 
 CREATE UNIQUE INDEX unique_amazon_s3_configurations_namespace_id_and_name ON audit_events_amazon_s3_configurations USING btree (namespace_id, name);
@@ -50292,6 +50319,9 @@ ALTER TABLE ONLY custom_dashboard_versions
 ALTER TABLE ONLY epics
     ADD CONSTRAINT fk_013c9f36ca FOREIGN KEY (due_date_sourcing_epic_id) REFERENCES epics(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY activation_metrics
+    ADD CONSTRAINT fk_0156a10bb0 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY security_policy_settings
     ADD CONSTRAINT fk_019d4dda87 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
@@ -50654,6 +50684,9 @@ ALTER TABLE ONLY merge_requests_approval_rules_approver_groups
 
 ALTER TABLE ONLY epics
     ADD CONSTRAINT fk_1fbed67632 FOREIGN KEY (start_date_sourcing_milestone_id) REFERENCES milestones(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY activation_metrics
+    ADD CONSTRAINT fk_2013692232 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY resource_state_events
     ADD CONSTRAINT fk_20262abeba FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
