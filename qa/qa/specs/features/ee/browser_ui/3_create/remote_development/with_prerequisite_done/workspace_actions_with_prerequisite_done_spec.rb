@@ -28,7 +28,7 @@ module QA
   RSpec.describe 'Create', feature_category: :workspaces,
     quarantine: {
       type: :waiting_on,
-      issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/397005'
+      issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24051'
     } do
     describe 'Remote Development' do
       context 'when prerequisite is already done',

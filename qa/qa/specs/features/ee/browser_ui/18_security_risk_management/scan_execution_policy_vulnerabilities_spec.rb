@@ -58,7 +58,7 @@ module QA
       it 'takes effect when pipeline is run on the main branch',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/423944',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/516911',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24046',
           type: :investigating
         } do
         expect(scan_execution_policy_commit.api_response).to have_key(:branch)

@@ -55,7 +55,7 @@ module QA
 
       it 'can be approved when requiring a password',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/440729', quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/562556',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24038',
           type: :investigating
         } do
         merge_request.visit!

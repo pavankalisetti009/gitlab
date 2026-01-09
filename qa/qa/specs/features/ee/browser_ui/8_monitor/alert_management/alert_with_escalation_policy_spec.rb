@@ -4,7 +4,7 @@ module QA
   RSpec.describe 'Monitor', :orchestrated, :smtp, feature_category: :incident_management,
     quarantine: {
       type: :bug,
-      issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/397133'
+      issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24056'
     } do
     describe 'Alert with escalation policy' do
       let(:project) { create(:project, name: 'project-for-alert', description: 'Project for alert') }

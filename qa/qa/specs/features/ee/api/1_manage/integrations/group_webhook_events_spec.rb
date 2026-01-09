@@ -59,7 +59,7 @@ module QA
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/389594',
           quarantine: {
             type: :investigating,
-            issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/431816"
+            issue: "https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24036"
           } do
           EE::Resource::GroupWebHook.setup(fail_mock, session: session, issues: true) do |webhook, smocker|
             project = create(:project, group: webhook.group)

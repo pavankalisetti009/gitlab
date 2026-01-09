@@ -177,7 +177,7 @@ module QA
               end
 
               context 'when seat is not assigned', :ai_gateway_no_seat_assigned, quarantine: {
-                issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/547883',
+                issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24037',
                 type: :flaky
               } do
                 # Code suggestions is included with Duo Core
@@ -186,7 +186,7 @@ module QA
             end
 
             context 'with no Duo Enterprise add-on', :ai_gateway_no_add_on, quarantine: {
-              issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/547883',
+              issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24037',
               type: :flaky
             } do
               # Code suggestions is included with Duo Core

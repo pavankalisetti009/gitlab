@@ -48,7 +48,7 @@ module QA
 
         context 'on Self-managed', :orchestrated, :ai_gateway, quarantine: {
           type: :investigating,
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494690'
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24043'
         } do
           let(:api_client) { Runtime::User::Store.admin_api_client }
           let(:user) { Runtime::User::Store.admin_user }

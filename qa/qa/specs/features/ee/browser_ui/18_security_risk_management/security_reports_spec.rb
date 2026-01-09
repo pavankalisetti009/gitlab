@@ -79,7 +79,7 @@ module QA
       it 'displays security reports in the pipeline',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348036',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1682',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1682',
           type: :stale
         } do
         push_security_reports
@@ -115,7 +115,7 @@ module QA
       it 'displays security reports in the project security dashboard',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1008',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1008',
           type: :flaky
         } do
         push_security_reports
@@ -154,7 +154,7 @@ module QA
       it 'displays security reports in the group security dashboard',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348038',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1683',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1683',
           type: :stale
         } do
         push_security_reports
@@ -221,7 +221,7 @@ module QA
 
       it 'displays false positives for the vulnerabilities',
         quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494049',
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24047',
           type: :flaky
         },
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/350412' do
@@ -267,7 +267,7 @@ module QA
           'displays the Dependency List',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348035',
           quarantine: {
-            issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1684',
+            issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1684',
             type: :stale
           }
         ) do

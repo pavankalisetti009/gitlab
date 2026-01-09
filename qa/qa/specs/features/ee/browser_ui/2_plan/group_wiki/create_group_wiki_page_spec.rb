@@ -16,7 +16,7 @@ module QA
         it 'creates a new page',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347689', quarantine: {
             type: :broken,
-            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/578123'
+            issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24049'
           } do
           group.visit!
 
@@ -43,7 +43,7 @@ module QA
         it 'adds a second page',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347693', quarantine: {
             type: :broken,
-            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/578123'
+            issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24049'
           } do
           wiki.visit!
 

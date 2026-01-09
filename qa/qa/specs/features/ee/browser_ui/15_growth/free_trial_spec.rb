@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Growth', :requires_admin, only: { subdomain: :staging }, feature_category: :acquisition, quarantine: {
-    issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1721',
+    issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1721',
     type: :investigating
   } do
     describe 'SaaS trials' do
