@@ -8,8 +8,9 @@ scope 'v2/virtual_registries/container/:id', format: false do
       blobs/#{::Gitlab::PathRegex.oci_blob_digest_regex.source})           # OR blobs/sha
     }x
   ) do
-    get '*path',
-      to: 'virtual_registries/container#show',
-      as: :virtual_registries_container_file
+    controller 'virtual_registries/container' do
+      get '*path', action: :show
+      post '*path/upload', action: :upload
+    end
   end
 end

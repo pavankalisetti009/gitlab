@@ -4,12 +4,13 @@ module VirtualRegistries
   # TODO: Extract shared JWT authentication logic
   # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/578299
   class ContainerController < ::ApplicationController
+    include WorkhorseRequest
     include SendFileUpload
     include ::PackagesHelper
     include Gitlab::Utils::StrongMemoize
 
     EMPTY_AUTH_RESULT = Gitlab::Auth::Result.new(nil, nil, nil, nil).freeze
-    PERMITTED_PARAMS = %i[id path].freeze
+    PERMITTED_PARAMS = %i[id file path].freeze
 
     EXTRA_RESPONSE_HEADERS = {
       'Docker-Distribution-Api-Version' => 'registry/2.0',
@@ -25,16 +26,23 @@ module VirtualRegistries
       Etag
     ].freeze
 
+    UPSTREAM_GID_HEADER = 'X-Gitlab-Virtual-Registry-Upstream-Global-Id'
+    MAX_FILE_SIZE = 5.gigabytes
+
     delegate :actor, to: :@authentication_result, allow_nil: true
     alias_method :authenticated_user, :actor
 
     # We disable `authenticate_user!` since we perform auth using JWT token
     skip_before_action :authenticate_user!, raise: false
 
+    before_action :verify_workhorse_api!, only: [:upload]
+    skip_before_action :verify_authenticity_token, only: [:upload]
+
     before_action :skip_session
     before_action :ensure_feature_available!
     before_action :authenticate_user_from_jwt_token!
     before_action :ensure_user_has_access!
+    before_action :check_rate_limit_for_virtual_registry!
 
     feature_category :virtual_registry
     urgency :low
@@ -50,6 +58,22 @@ module VirtualRegistries
         send_error_response_from!(service_response: service_response)
       else
         send_successful_response_from(service_response: service_response)
+      end
+    end
+
+    def upload
+      return render_404 unless registry.upstreams.include?(upstream_from_header)
+
+      service_response = ::VirtualRegistries::Container::Cache::Entries::CreateOrUpdateService.new(
+        upstream: upstream_from_header,
+        current_user: authenticated_user,
+        params: upload_params
+      ).execute
+
+      if service_response.error?
+        send_error_response_from!(service_response: service_response)
+      else
+        head :ok
       end
     end
 
@@ -112,6 +136,10 @@ module VirtualRegistries
       render_404 unless ::VirtualRegistries::Container.user_has_access?(registry.group, authenticated_user)
     end
 
+    def check_rate_limit_for_virtual_registry!
+      check_rate_limit!(:virtual_registries_endpoints_api_limit, scope: [request.ip])
+    end
+
     def path
       permitted_params[:path]
     end
@@ -123,7 +151,7 @@ module VirtualRegistries
       when :download_file
         send_cached_file(action_params)
       when :workhorse_upload_url
-        send_workhorse_proxy(action_params)
+        workhorse_upload_url(**action_params.slice(:url, :upstream))
       end
     end
 
@@ -151,8 +179,49 @@ module VirtualRegistries
       )
     end
 
-    def send_workhorse_proxy(_)
-      render json: { message: 'Not implemented' }, status: :not_implemented
+    def workhorse_upload_url(url:, upstream:)
+      headers.store(*Gitlab::Workhorse.send_dependency(
+        upstream.headers(path),
+        url,
+        response_headers: EXTRA_RESPONSE_HEADERS,
+        allow_localhost: allow_localhost?,
+        allowed_endpoints: allowed_endpoints,
+        ssrf_filter: true,
+        upload_config: {
+          headers: { UPSTREAM_GID_HEADER => upstream.to_global_id.to_s },
+          authorized_upload_response: authorized_upload_response(upstream)
+        },
+        restrict_forwarded_response_headers: {
+          enabled: true,
+          allow_list: ALLOWED_RESPONSE_HEADERS
+        }
+      ))
+
+      response.content_type = 'application/octet-stream'
+      EXTRA_RESPONSE_HEADERS.each { |key, value| response.headers[key] = value }
+
+      head :ok
+    end
+
+    def authorized_upload_response(upstream)
+      ::VirtualRegistries::Cache::EntryUploader.workhorse_authorize(
+        has_length: true,
+        maximum_size: MAX_FILE_SIZE,
+        use_final_store_path: true,
+        final_store_path_config: {
+          override_path: upstream.object_storage_key
+        }
+      )
+    end
+
+    def allow_localhost?
+      Gitlab.dev_or_test_env? || Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?
+    end
+
+    def allowed_endpoints
+      # rubocop:disable Naming/InclusiveLanguage -- existing setting
+      ObjectStoreSettings.enabled_endpoint_uris + Gitlab::CurrentSettings.outbound_local_requests_whitelist
+      # rubocop:enable Naming/InclusiveLanguage
     end
 
     def manifest_request?
@@ -170,6 +239,25 @@ module VirtualRegistries
       else
         render json: { message: 'Bad Request' }, status: :bad_request
       end
+    end
+
+    def upstream_from_header
+      upstream_gid = request.headers[UPSTREAM_GID_HEADER]
+      Gitlab::GlobalId.safe_locate(upstream_gid, options: { only: ::VirtualRegistries::Container::Upstream })
+    end
+    strong_memoize_attr :upstream_from_header
+
+    def upload_params
+      {
+        path: path,
+        file: permitted_params[:file],
+        etag: sanitize_etag(request.headers['Etag']),
+        content_type: request.headers[Gitlab::Workhorse::SEND_DEPENDENCY_CONTENT_TYPE_HEADER]
+      }
+    end
+
+    def sanitize_etag(etag)
+      etag&.delete('"')
     end
   end
 end
