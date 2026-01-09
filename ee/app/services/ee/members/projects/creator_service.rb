@@ -11,7 +11,16 @@ module EE
 
         override :can_create_new_member?
         def can_create_new_member?
+          return false unless service_account_eligible_for_membership?
+
           super && current_user.can?(:invite_project_members, member.project)
+        end
+
+        def service_account_eligible_for_membership?
+          return true unless member.user&.service_account?
+
+          project_namespace = member.project.namespace
+          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(project_namespace).eligible?(member.user)
         end
       end
     end
