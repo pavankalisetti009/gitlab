@@ -25,6 +25,12 @@ RSpec.describe VirtualRegistries::Packages::Npm::Upstream, feature_category: :vi
         .through(:registry_upstreams)
         .class_name('VirtualRegistries::Packages::Npm::Registry')
     end
+
+    it 'has many cache local entries' do
+      is_expected.to have_many(:cache_local_entries)
+        .class_name('VirtualRegistries::Packages::Npm::Cache::Local::Entry')
+        .inverse_of(:upstream)
+    end
   end
 
   describe 'validations' do
