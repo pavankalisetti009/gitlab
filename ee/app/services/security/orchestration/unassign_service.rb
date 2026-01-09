@@ -16,7 +16,9 @@ module Security
 
         remove_bot if delete_bot
 
-        delete_configuration(security_orchestration_policy_configuration, old_policy_project) if project?
+        if should_delete_configuration?(delete_bot)
+          delete_configuration(security_orchestration_policy_configuration, old_policy_project)
+        end
 
         success
       end
@@ -50,6 +52,10 @@ module Security
         container.is_a?(Project)
       end
       strong_memoize_attr :project?
+
+      def should_delete_configuration?(delete_bot)
+        project? || (container.is_a?(Namespace) && !delete_bot)
+      end
     end
   end
 end

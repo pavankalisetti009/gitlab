@@ -62,7 +62,7 @@ module Security
       end
 
       def unassign_policy_project
-        result = UnassignService.new(container: container, current_user: current_user).execute
+        result = UnassignService.new(container: container, current_user: current_user).execute(delete_bot: false)
 
         result.success?
       end
