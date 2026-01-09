@@ -608,7 +608,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
     end
 
     context 'when filtering vulnerabilities with policy_auto_dismissed', :elastic do
-      let(:params) { { policy_auto_dismissed: true } }
+      let(:params) { { policy_auto_dismissed: policy_auto_dismissed } }
 
       let_it_be(:security_policy_bot) { create(:user, :security_policy_bot) }
       let_it_be(:dismissed_vulnerability) { create(:vulnerability, :dismissed, dismissed_by: security_policy_bot, project: project) }
@@ -626,12 +626,28 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
 
       shared_examples_for 'when elasticsearch is available' do
-        it 'only returns vulnerabilities with matching policy_auto_dismissed' do
-          expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+        context 'when filtering by auto dismissed vulnerabilities' do
+          let(:policy_auto_dismissed) { true }
 
-          results = resolved.to_a
+          it 'only returns vulnerabilities with matching policy_auto_dismissed' do
+            expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
 
-          expect(results).to match_array([dismissed_vulnerability_read].map(&:vulnerability))
+            results = resolved.to_a
+
+            expect(results).to match_array([dismissed_vulnerability_read].map(&:vulnerability))
+          end
+        end
+
+        context 'when filtering by not auto dismissed vulnerabilities' do
+          let(:policy_auto_dismissed) { false }
+
+          it 'only returns vulnerabilities with matching policy_auto_dismissed' do
+            expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+
+            results = resolved.to_a
+
+            expect(results).to match_array([non_dismissed_vulnerability_read].map(&:vulnerability))
+          end
         end
       end
 
@@ -648,6 +664,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
 
       context 'when vulnerable is nil' do
+        let(:policy_auto_dismissed) { true }
         let(:vulnerable) { nil }
         let(:error_msg) { 'The filter policy_auto_dismissed is not available.' }
 
