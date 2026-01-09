@@ -55,8 +55,6 @@ module EE
 
       override :allowed_scopes
       def allowed_scopes
-        return super unless ::Feature.enabled?(:search_scope_registry, :instance)
-
         scopes = ::Search::Scopes.available_for_context(
           context: :group,
           container: group,
@@ -69,21 +67,6 @@ module EE
           scopes - %w[epics]
         end
       end
-
-      private
-
-      override :legacy_allowed_scopes
-      def legacy_allowed_scopes
-        scopes = super
-        return scopes if params[:search_type] == 'basic'
-
-        if group.licensed_feature_available?(:epics)
-          scopes + %w[epics]
-        else
-          scopes - %w[epics]
-        end.uniq
-      end
-      strong_memoize_attr :legacy_allowed_scopes
     end
   end
 end

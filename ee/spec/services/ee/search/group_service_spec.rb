@@ -472,29 +472,23 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
           expect(allowed_scopes).to include('epics')
         end
 
-        context 'when search_scope_registry FF is disabled' do
+        context 'with advanced search' do
           before do
-            stub_feature_flags(search_scope_registry: false)
+            stub_ee_application_setting(elasticsearch_search: true)
           end
 
-          context 'with advanced search' do
-            before do
-              stub_ee_application_setting(elasticsearch_search: true)
-            end
+          it 'includes epics to allowed_scopes' do
+            expect(allowed_scopes).to include('epics')
+          end
+        end
 
-            it 'includes epics to allowed_scopes using legacy logic' do
-              expect(allowed_scopes).to include('epics')
-            end
+        context 'with basic search' do
+          before do
+            stub_ee_application_setting(elasticsearch_search: false)
           end
 
-          context 'with basic search' do
-            before do
-              stub_ee_application_setting(elasticsearch_search: false)
-            end
-
-            it 'includes epics to allowed_scopes using legacy logic' do
-              expect(allowed_scopes).to include('epics')
-            end
+          it 'includes epics to allowed_scopes' do
+            expect(allowed_scopes).to include('epics')
           end
         end
       end
@@ -502,33 +496,27 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       context 'when epics is not available' do
         let(:epics_available) { false }
 
-        it 'filters out epics from allowed_scopes using registry logic' do
+        it 'filters out epics from allowed_scopes' do
           expect(allowed_scopes).not_to include('epics')
         end
 
-        context 'when search_scope_registry FF is disabled' do
+        context 'with advanced search' do
           before do
-            stub_feature_flags(search_scope_registry: false)
+            stub_ee_application_setting(elasticsearch_search: true)
           end
 
-          context 'with advanced search' do
-            before do
-              stub_ee_application_setting(elasticsearch_search: true)
-            end
+          it 'filters out epics from allowed_scopes' do
+            expect(allowed_scopes).not_to include('epics')
+          end
+        end
 
-            it 'filters out epics from allowed_scopes using legacy logic' do
-              expect(allowed_scopes).not_to include('epics')
-            end
+        context 'with basic search' do
+          before do
+            stub_ee_application_setting(elasticsearch_search: false)
           end
 
-          context 'with basic search' do
-            before do
-              stub_ee_application_setting(elasticsearch_search: false)
-            end
-
-            it 'filters out epics from allowed_scopes using legacy logic' do
-              expect(allowed_scopes).not_to include('epics')
-            end
+          it 'filters out epics from allowed_scopes' do
+            expect(allowed_scopes).not_to include('epics')
           end
         end
       end

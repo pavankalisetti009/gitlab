@@ -5,20 +5,6 @@ module EE
     module Navigation
       extend ::Gitlab::Utils::Override
 
-      override :tabs
-      def tabs
-        (super || {}).tap do |nav|
-          unless ::Feature.enabled?(:search_scope_registry, :instance)
-            # Legacy behavior: add epics as standalone tab
-            nav[:epics] ||= {
-              sort: 3,
-              label: _("Epics"),
-              condition: show_epics_search_tab?
-            }
-          end
-        end
-      end
-
       private
 
       def zoekt_enabled?

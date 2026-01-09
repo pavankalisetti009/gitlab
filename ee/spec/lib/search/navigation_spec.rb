@@ -264,7 +264,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
       end
     end
 
-    context 'for epics with search_scope_registry feature flag' do
+    context 'for epics' do
       let(:project) { nil }
       let(:group) { group_double }
       let(:options) { { show_epics: true } }
@@ -276,19 +276,6 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
 
       it 'does not have sub_items under issues' do
         expect(tabs[:issues][:sub_items]).to be_nil
-      end
-
-      context 'when search_scope_registry FF is disabled' do
-        before do
-          stub_feature_flags(search_scope_registry: false)
-        end
-
-        it 'includes epics as a standalone tab (legacy behavior)' do
-          expect(tabs[:epics]).to be_present
-          expect(tabs[:epics][:sort]).to eq(3)
-          expect(tabs[:epics][:label]).to eq('Epics')
-          expect(tabs[:epics][:condition]).to be_truthy
-        end
       end
     end
   end
