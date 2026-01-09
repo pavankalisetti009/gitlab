@@ -60,6 +60,13 @@ module Ai
       )
     end
 
+    def foundational_flow_not_enabled_error
+      s_(
+        "DuoCodeReview|:warning: Code Review Flow is not enabled. " \
+          "Contact your group administrator to enable the Code Review foundational flow in the top-level group."
+      )
+    end
+
     def timeout_error
       s_(
         "DuoCodeReview|:warning: Something went wrong and the review request was stopped. " \

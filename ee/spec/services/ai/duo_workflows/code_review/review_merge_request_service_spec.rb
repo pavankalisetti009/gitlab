@@ -133,7 +133,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
       end
     end
 
-    shared_examples 'posts error comment and cleans up' do
+    shared_examples 'posts error comment and cleans up' do |expected_error_message|
       it 'posts an error comment to the merge request' do
         expect_next_instance_of(::Notes::CreateService) do |notes_service|
           expect(notes_service).to receive(:execute).and_call_original
@@ -143,7 +143,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         merge_request.reload
         error_note = merge_request.notes.non_diff_notes.last
-        expect(error_note.note).to eq(::Ai::CodeReviewMessages.could_not_start_workflow_error)
+        expect(error_note.note).to eq(expected_error_message)
         expect(error_note.author).to eq(duo_code_review_bot)
       end
 
@@ -193,15 +193,63 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
         )
       end
 
-      it_behaves_like 'posts error comment and cleans up'
+      context 'when foundational flows are disabled' do
+        before do
+          allow(project).to receive(:duo_foundational_flows_enabled).and_return(false)
+        end
+
+        it_behaves_like 'posts error comment and cleans up',
+          ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
+      end
+
+      context 'when code review flow is not enabled' do
+        let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['code_review/v1'] }
+        let(:catalog_item_id) { 123 }
+
+        before do
+          allow(project).to receive_messages(
+            duo_foundational_flows_enabled: true,
+            enabled_flow_catalog_item_ids: []
+          )
+          allow(workflow_definition).to receive_message_chain(:catalog_item, :id).and_return(catalog_item_id)
+        end
+
+        it_behaves_like 'posts error comment and cleans up',
+          ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
+      end
+
+      context 'when foundational flows are properly enabled' do
+        let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['code_review/v1'] }
+        let(:catalog_item) { instance_double(::Ai::Catalog::Item, id: 123) }
+
+        before do
+          allow(workflow_definition).to receive(:catalog_item).and_return(catalog_item)
+          allow(merge_request.project).to receive_messages(
+            duo_foundational_flows_enabled: true,
+            enabled_flow_catalog_item_ids: [123]
+          )
+        end
+
+        it_behaves_like 'posts error comment and cleans up',
+          ::Ai::CodeReviewMessages.could_not_start_workflow_error
+      end
     end
 
     context 'when workflow raises an exception' do
+      let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['code_review/v1'] }
+      let(:catalog_item) { instance_double(::Ai::Catalog::Item, id: 123) }
+
       before do
+        allow(workflow_definition).to receive(:catalog_item).and_return(catalog_item)
+        allow(merge_request.project).to receive_messages(
+          duo_foundational_flows_enabled: true,
+          enabled_flow_catalog_item_ids: [123]
+        )
         allow(create_and_start_service).to receive(:execute).and_raise(StandardError.new('Unexpected error'))
       end
 
-      it_behaves_like 'posts error comment and cleans up'
+      it_behaves_like 'posts error comment and cleans up',
+        ::Ai::CodeReviewMessages.could_not_start_workflow_error
 
       it 'tracks the exception with correct unit primitive' do
         expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
