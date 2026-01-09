@@ -580,4 +580,165 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       it { is_expected.to be(false) }
     end
   end
+
+  describe '#warn_modification_blocked_by_policy?' do
+    subject(:result) { protected_branch.warn_modification_blocked_by_policy? }
+
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, :repository, group: group) }
+    let(:branch_name) { protected_branch.name }
+
+    context 'with project-level protected branch' do
+      let_it_be_with_refind(:protected_branch) { create(:protected_branch, project: project) }
+
+      before do
+        project.repository.add_branch(project.creator, branch_name, 'HEAD')
+      end
+
+      context 'without feature available' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'with feature available' do
+        before do
+          stub_licensed_features(security_orchestration_policies: true)
+        end
+
+        context 'when check service returns empty without ignore_warn_mode but returns branch with ignore_warn_mode' do
+          before do
+            allow_next_instance_of(::Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletionCheckService) do |service|
+              allow(service).to receive(:execute).and_return([])
+            end
+            allow_next_instance_of(::Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletionCheckService, project: project, ignore_warn_mode: true) do |service|
+              allow(service).to receive(:execute).and_return([protected_branch])
+            end
+          end
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'when check service returns empty regardless of ignore_warn_mode' do
+          before do
+            allow_next_instance_of(::Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletionCheckService) do |service|
+              allow(service).to receive(:execute).and_return([])
+            end
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+    end
+
+    context 'with group-level protected branch' do
+      let_it_be_with_refind(:protected_branch) { create(:protected_branch, :group_level, group: group) }
+
+      before do
+        project.repository.add_branch(project.creator, branch_name, 'HEAD')
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      context 'without feature available' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'with feature available' do
+        context 'when check returns false without ignore_warn_mode but returns true with ignore_warn_mode' do
+          before do
+            allow_next_instance_of(::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService) do |service|
+              allow(service).to receive(:execute).and_return(false)
+            end
+            allow_next_instance_of(::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService, group: group, ignore_warn_mode: true) do |service|
+              allow(service).to receive(:execute).and_return(true)
+            end
+          end
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'when check service returns false regardless of ignore_warn_mode' do
+          before do
+            allow_next_instance_of(::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService) do |service|
+              allow(service).to receive(:execute).and_return(false)
+            end
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+    end
+  end
+
+  describe '#warn_protected_from_push_by_security_policy?' do
+    subject(:result) { protected_branch.warn_protected_from_push_by_security_policy? }
+
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, :repository, group: group) }
+    let_it_be_with_refind(:protected_branch) { create(:protected_branch, project: project) }
+    let(:branch_name) { protected_branch.name }
+
+    before do
+      project.repository.add_branch(project.creator, branch_name, 'HEAD')
+    end
+
+    context 'without feature available' do
+      before do
+        stub_licensed_features(security_orchestration_policies: false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'with feature available' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      context 'when push service returns empty without ignore_warn_mode but returns branch with ignore_warn_mode' do
+        before do
+          allow_next_instance_of(::Security::SecurityOrchestrationPolicies::ProtectedBranchesPushService) do |service|
+            allow(service).to receive(:execute).and_return([])
+          end
+          allow_next_instance_of(::Security::SecurityOrchestrationPolicies::ProtectedBranchesPushService, project: project, ignore_warn_mode: true) do |service|
+            allow(service).to receive(:execute).and_return([branch_name])
+          end
+        end
+
+        it { is_expected.to be(true) }
+
+        context 'with mismatching name' do
+          before do
+            protected_branch.update!(name: 'other_branch')
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+
+      context 'when push service returns empty regardless of ignore_warn_mode' do
+        before do
+          allow_next_instance_of(::Security::SecurityOrchestrationPolicies::ProtectedBranchesPushService) do |service|
+            allow(service).to receive(:execute).and_return([])
+          end
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'with group-level protected branch' do
+      let_it_be(:protected_branch) { create(:protected_branch, :group_level, group: group) }
+
+      it 'returns false (group-level branches are not project-level)' do
+        expect(result).to be(false)
+      end
+    end
+  end
 end

@@ -27623,6 +27623,8 @@ Branch protection details for a branch rule.
 | <a id="branchprotectionprotectedfrompushbysecuritypolicy"></a>`protectedFromPushBySecurityPolicy` | [`Boolean!`](#boolean) | Indicates if a security policy prevents push or force push. |
 | <a id="branchprotectionpushaccesslevels"></a>`pushAccessLevels` | [`PushAccessLevelConnection`](#pushaccesslevelconnection) | Details about who can push when the branch is the source branch. (see [Connections](#connections)) |
 | <a id="branchprotectionunprotectaccesslevels"></a>`unprotectAccessLevels` | [`UnprotectAccessLevelConnection`](#unprotectaccesslevelconnection) | Details about who can unprotect the branch. (see [Connections](#connections)) |
+| <a id="branchprotectionwarnmodificationblockedbypolicy"></a>`warnModificationBlockedByPolicy` | [`Boolean!`](#boolean) | Indicates if a warn mode security policy would prevent modification. |
+| <a id="branchprotectionwarnprotectedfrompushbysecuritypolicy"></a>`warnProtectedFromPushBySecurityPolicy` | [`Boolean!`](#boolean) | Indicates if a warn mode security policy would prevent push or force push. |
 
 ### `BranchRule`
 

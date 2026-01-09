@@ -48,17 +48,26 @@ module EE
 
       case entity
       when Project
-        ::Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletionCheckService
-          .new(project: entity)
-          .execute([self])
-          .any?
+        modification_blocked_by_policy_result
       when Group
-        ::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService
-          .new(group: entity)
-          .execute
+        group_modification_blocked_by_policy_result
       end
     end
     alias_method :modification_blocked_by_policy, :modification_blocked_by_policy?
+
+    def warn_modification_blocked_by_policy?
+      return false unless entity.licensed_feature_available?(:security_orchestration_policies)
+
+      case entity
+      when Project
+        # Returns true if modification would be blocked by a warn-mode policy
+        # (i.e., blocked when ignoring warn mode but not blocked normally)
+        !modification_blocked_by_policy_result && modification_blocked_by_policy_ignore_warn_result
+      when Group
+        !group_modification_blocked_by_policy_result && group_modification_blocked_by_policy_ignore_warn_result
+      end
+    end
+    alias_method :warn_modification_blocked_by_policy, :warn_modification_blocked_by_policy?
 
     def allow_force_push
       return false if protected_from_push_by_security_policy?
@@ -70,12 +79,19 @@ module EE
       return false unless entity.licensed_feature_available?(:security_orchestration_policies)
       return false unless project_level?
 
-      ::Security::SecurityOrchestrationPolicies::ProtectedBranchesPushService
-        .new(project: project)
-        .execute
-        .include?(name)
+      protected_from_push_by_policy_result
     end
     alias_method :protected_from_push_by_security_policy, :protected_from_push_by_security_policy?
+
+    def warn_protected_from_push_by_security_policy?
+      return false unless entity.licensed_feature_available?(:security_orchestration_policies)
+      return false unless project_level?
+
+      # Returns true if push would be blocked by a warn-mode policy
+      # (i.e., blocked when ignoring warn mode but not blocked normally)
+      !protected_from_push_by_policy_result && protected_from_push_by_policy_ignore_warn_result
+    end
+    alias_method :warn_protected_from_push_by_security_policy, :warn_protected_from_push_by_security_policy?
 
     def can_unprotect?(user)
       return true if unprotect_access_levels.empty?
@@ -97,6 +113,52 @@ module EE
     alias_method :inherited, :inherited?
 
     private
+
+    def modification_blocked_by_policy_result
+      @modification_blocked_by_policy_result ||=
+        ::Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletionCheckService
+          .new(project: entity)
+          .execute([self])
+          .any?
+    end
+
+    def modification_blocked_by_policy_ignore_warn_result
+      @modification_blocked_by_policy_ignore_warn_result ||=
+        ::Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletionCheckService
+          .new(project: entity, ignore_warn_mode: true)
+          .execute([self])
+          .any?
+    end
+
+    def group_modification_blocked_by_policy_result
+      @group_modification_blocked_by_policy_result ||=
+        ::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService
+          .new(group: entity)
+          .execute
+    end
+
+    def group_modification_blocked_by_policy_ignore_warn_result
+      @group_modification_blocked_by_policy_ignore_warn_result ||=
+        ::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService
+          .new(group: entity, ignore_warn_mode: true)
+          .execute
+    end
+
+    def protected_from_push_by_policy_result
+      @protected_from_push_by_policy_result ||=
+        ::Security::SecurityOrchestrationPolicies::ProtectedBranchesPushService
+          .new(project: project)
+          .execute
+          .include?(name)
+    end
+
+    def protected_from_push_by_policy_ignore_warn_result
+      @protected_from_push_by_policy_ignore_warn_result ||=
+        ::Security::SecurityOrchestrationPolicies::ProtectedBranchesPushService
+          .new(project: project, ignore_warn_mode: true)
+          .execute
+          .include?(name)
+    end
 
     def exact_match_for_squash_option
       return unless wildcard? && squash_option.present?

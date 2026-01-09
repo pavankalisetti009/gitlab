@@ -5,11 +5,18 @@ module Security
     class ProtectedBranchesPushService < BaseProjectService
       include Gitlab::Utils::StrongMemoize
 
+      def initialize(project:, ignore_warn_mode: false)
+        super(project: project)
+        @ignore_warn_mode = ignore_warn_mode
+      end
+
       def execute
         PolicyBranchesService.new(project: project).scan_result_branches(rules)
       end
 
       private
+
+      attr_reader :ignore_warn_mode
 
       def rules
         blocking_policies = applicable_active_policies.select do |rule|
@@ -25,7 +32,7 @@ module Security
         project
           .all_security_orchestration_policy_configurations
           .flat_map(&:active_scan_result_policies)
-          .reject { |policy| policy_in_warn_mode?(policy) }
+          .reject { |policy| policy_in_warn_mode?(policy) unless ignore_warn_mode }
           .select { |policy| policy_scope_checker.policy_applicable?(policy) }
       end
 

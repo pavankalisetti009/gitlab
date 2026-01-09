@@ -74,5 +74,36 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletio
         end
       end
     end
+
+    context 'with ignore_warn_mode' do
+      include_context 'with approval policy blocking protected branches' do
+        let(:branch_name) { protected_branch.name }
+        let(:approval_policy) do
+          build(:approval_policy, branches: [branch_name],
+            approval_settings: { block_branch_modification: true },
+            enforcement_type: Security::Policy::ENFORCEMENT_TYPE_WARN)
+        end
+
+        context 'when ignore_warn_mode is false' do
+          let(:result) { described_class.new(project: project, ignore_warn_mode: false).execute([protected_branch]) }
+
+          it_behaves_like 'when policy is applicable based on the policy scope configuration' do
+            it "excludes the protected branch (warn mode policy is filtered)" do
+              expect(result).to exclude(protected_branch)
+            end
+          end
+        end
+
+        context 'when ignore_warn_mode is true' do
+          let(:result) { described_class.new(project: project, ignore_warn_mode: true).execute([protected_branch]) }
+
+          it_behaves_like 'when policy is applicable based on the policy scope configuration' do
+            it "includes the protected branch (warn mode policy is not filtered)" do
+              expect(result).to include(protected_branch)
+            end
+          end
+        end
+      end
+    end
   end
 end
