@@ -69,6 +69,8 @@ export default {
         {{
           s__('AiPowered|Only members of these groups will have access to selected AI features.')
         }}
+        <!-- This docs link is incorrect and needs to be fixed. Should also use help_page_link.vue component. -->
+        <!-- eslint-disable-next-line @gitlab/vue-no-hardcoded-urls -->
         <gl-link href="/help/user/ai_features">
           {{ s__('AiPowered|Learn more') }}
         </gl-link>
