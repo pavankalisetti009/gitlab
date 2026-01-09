@@ -167,7 +167,7 @@ export default {
         return this.baseVariables;
       },
       update(data) {
-        return data.workspace.milestones.nodes;
+        return data.namespace.milestones.nodes;
       },
       skip() {
         return this.columnType !== ListType.milestone;

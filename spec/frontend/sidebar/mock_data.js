@@ -296,7 +296,7 @@ const mockData = {
 
 export const issueConfidentialityResponse = (confidential = false) => ({
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       __typename: 'Project',
       issuable: {
@@ -380,7 +380,7 @@ export const epicParticipantsResponse = () => ({
 
 export const issueReferenceResponse = (reference) => ({
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       __typename: 'Project',
       issuable: {
