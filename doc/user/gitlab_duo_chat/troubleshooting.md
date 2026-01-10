@@ -324,6 +324,16 @@ To resolve this, [assign a default GitLab Duo namespace](../gitlab_duo/model_sel
 
 ## Agentic Chat-specific issues
 
+### Not enough GitLab Credits
+
+You might lose access to Agentic Chat because you have run out of GitLab Credits.
+
+To resolve this issue, you can do either of the following:
+
+- [Buy more GitLab Credits](../../subscriptions/gitlab_credits.md#buy-gitlab-credits).
+- Switch to Classic Chat. When you switch, a new conversation starts.
+  You can still view your previous Agentic Chat conversation, but it is read-only.
+
 ### Slow response times
 
 Agentic Chat can be slower than Classic Chat in processing and responding to requests.
