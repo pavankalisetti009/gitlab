@@ -33,6 +33,8 @@ export function initDuoPanel() {
     chatTitle,
     chatDisabledReason,
     creditsAvailable,
+    defaultNamespaceSelected,
+    preferencesPath,
   } = el.dataset;
 
   if (parseBoolean(forceAgenticModeForCoreDuoUsers)) {
@@ -67,6 +69,8 @@ export function initDuoPanel() {
       forceAgenticModeForCoreDuoUsers: parseBoolean(forceAgenticModeForCoreDuoUsers),
       chatTitle,
       creditsAvailable: parseBoolean(creditsAvailable ?? 'true'),
+      defaultNamespaceSelected: parseBoolean(defaultNamespaceSelected),
+      preferencesPath,
     },
   };
 
