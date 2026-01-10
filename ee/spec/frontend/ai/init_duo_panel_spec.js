@@ -52,6 +52,8 @@ describe('initDuoPanel', () => {
       chatTitle: 'GitLab Duo Chat',
       chatDisabledReason: '',
       creditsAvailable: 'true',
+      defaultNamespaceSelected: 'true',
+      preferencesPath: '/-/profile/preferences',
       ...dataset,
     });
     document.body.appendChild(element);
@@ -241,6 +243,68 @@ describe('initDuoPanel', () => {
         const aiPanel = vueInstance.$children[0];
         const { defaultProps } = aiPanel.chatConfiguration;
         expect(defaultProps.creditsAvailable).toBe(false);
+      });
+    });
+
+    describe('defaultNamespaceSelected attribute', () => {
+      it('parses defaultNamespaceSelected as boolean true', () => {
+        el = createDuoPanelElement({
+          defaultNamespaceSelected: 'true',
+        });
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.defaultNamespaceSelected).toBe(true);
+      });
+
+      it('parses defaultNamespaceSelected as boolean false', () => {
+        el = createDuoPanelElement({
+          defaultNamespaceSelected: 'false',
+        });
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.defaultNamespaceSelected).toBe(false);
+      });
+
+      it('defaults to false when defaultNamespaceSelected is not provided', () => {
+        el = createDuoPanelElement();
+        delete el.dataset.defaultNamespaceSelected;
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.defaultNamespaceSelected).toBe(false);
+      });
+    });
+
+    describe('preferencesPath attribute', () => {
+      it('extracts preferencesPath from dataset', () => {
+        el = createDuoPanelElement({
+          preferencesPath: '/-/profile/preferences',
+        });
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.preferencesPath).toBe('/-/profile/preferences');
+      });
+
+      it('sets preferencesPath to undefined when not provided', () => {
+        el = createDuoPanelElement();
+        delete el.dataset.preferencesPath;
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.preferencesPath).toBeUndefined();
       });
     });
   });

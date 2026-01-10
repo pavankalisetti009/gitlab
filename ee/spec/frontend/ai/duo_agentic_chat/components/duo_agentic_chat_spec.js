@@ -385,6 +385,7 @@ describe('Duo Agentic Chat', () => {
         isClassicAvailable: false,
         defaultProps: {
           isEmbedded: false,
+          defaultNamespaceSelected: true,
         },
       },
       activeTabData: {
@@ -2939,6 +2940,65 @@ describe('Duo Agentic Chat', () => {
       expect(findDuoChat().props('isChatAvailable')).toBe(true);
       expect(findDuoChat().props('error')).toBe('');
     });
+  });
+
+  describe('showErrorBannerMessage computed property', () => {
+    const PREFERENCES_PATH = '/-/profile/preferences';
+
+    const createComponentWithNamespaceConfig = ({
+      defaultNamespaceSelected,
+      preferencesPath = PREFERENCES_PATH,
+      multithreadedView = DUO_CHAT_VIEWS.CHAT,
+      agentOrWorkflowDeletedError = '',
+    }) => {
+      createComponent({
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isEmbedded: false,
+              defaultNamespaceSelected,
+              preferencesPath,
+            },
+          },
+        },
+        data: { multithreadedView, agentOrWorkflowDeletedError },
+      });
+    };
+
+    describe.each`
+      defaultNamespaceSelected | multithreadedView      | agentOrWorkflowDeletedError | expectedError          | description
+      ${false}                 | ${DUO_CHAT_VIEWS.CHAT} | ${''}                       | ${'namespace_message'} | ${'shows namespace message when default namespace is not selected and in CHAT view'}
+      ${false}                 | ${DUO_CHAT_VIEWS.LIST} | ${''}                       | ${''}                  | ${'hides namespace message in LIST view'}
+      ${true}                  | ${DUO_CHAT_VIEWS.CHAT} | ${''}                       | ${''}                  | ${'hides message when namespace is selected'}
+      ${false}                 | ${DUO_CHAT_VIEWS.CHAT} | ${'Agent was deleted'}      | ${'Agent was deleted'} | ${'prioritizes agentOrWorkflowDeletedError over namespace message'}
+      ${true}                  | ${DUO_CHAT_VIEWS.CHAT} | ${'Agent was deleted'}      | ${'Agent was deleted'} | ${'shows agentOrWorkflowDeletedError when namespace is selected'}
+    `(
+      '$description',
+      ({
+        defaultNamespaceSelected,
+        multithreadedView,
+        agentOrWorkflowDeletedError,
+        expectedError,
+      }) => {
+        it('returns correct error', () => {
+          createComponentWithNamespaceConfig({
+            defaultNamespaceSelected,
+            multithreadedView,
+            agentOrWorkflowDeletedError,
+          });
+
+          const errorProp = findDuoChat().props('error');
+
+          if (expectedError === 'namespace_message') {
+            expect(errorProp).toContain('To use GitLab Duo Agentic Chat');
+            expect(errorProp).toContain(PREFERENCES_PATH);
+          } else {
+            expect(errorProp).toBe(expectedError);
+          }
+        });
+      },
+    );
   });
 
   describe('dynamicTitle', () => {

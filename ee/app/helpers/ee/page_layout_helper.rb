@@ -21,6 +21,8 @@ module EE
       credits_available = ::Gitlab::Llm::TanukiBot.credits_available?(
         user: user, project: project, group: group
       )
+      # this is just mocked up for now. we will implement actual logic later
+      default_namespace_selected = true
 
       {
         user_id: user.to_global_id,
@@ -37,6 +39,8 @@ module EE
         chat_title: chat_title,
         chat_disabled_reason: chat_disabled_reason.to_s,
         credits_available: credits_available.to_s,
+        default_namespace_selected: default_namespace_selected.to_s,
+        preferences_path: profile_preferences_path(anchor: 'user_duo_default_namespace_id'),
         expanded: ('true' if ai_panel_expanded?)
       }
     end

@@ -460,6 +460,30 @@ export default {
         ? s__('DuoChat|Agentic')
         : s__('DuoChat|Agentic mode (Beta)');
     },
+    showErrorBannerMessage() {
+      if (this.multithreadedView === DUO_CHAT_VIEWS.CHAT) {
+        if (this.agentOrWorkflowDeletedError) {
+          return this.agentOrWorkflowDeletedError;
+        }
+        if (!this.chatConfiguration?.defaultProps?.defaultNamespaceSelected) {
+          return this.defaultNamespaceNotSelectedMessage;
+        }
+      }
+      return '';
+    },
+    defaultNamespaceNotSelectedMessage() {
+      const preferencesUrl = this.chatConfiguration?.defaultProps?.preferencesPath;
+      return sprintf(
+        s__(
+          'DuoAgenticChat|To use GitLab Duo Agentic Chat, please select a default namespace in your %{linkStart}User Profile Preferences%{linkEnd}.',
+        ),
+        {
+          linkStart: `<a href="${preferencesUrl}" class="gl-link" target="_blank" rel="noopener noreferrer">`,
+          linkEnd: '</a>',
+        },
+        false,
+      );
+    },
   },
   watch: {
     messages: {
@@ -1105,7 +1129,7 @@ export default {
       :is-tool-approval-processing="isProcessingToolApproval"
       :agents="agents"
       :is-chat-available="isChatAvailable"
-      :error="multithreadedView === 'chat' ? agentOrWorkflowDeletedError : ''"
+      :error="showErrorBannerMessage"
       :should-auto-focus-input="!isEmbedded"
       class="gl-h-full gl-w-full"
       @new-chat="onNewChat"
