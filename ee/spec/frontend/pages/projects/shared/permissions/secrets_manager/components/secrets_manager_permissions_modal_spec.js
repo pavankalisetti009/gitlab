@@ -1,6 +1,12 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox, GlDatepicker, GlFormCheckbox, GlModal } from '@gitlab/ui';
+import {
+  GlCollapsibleListbox,
+  GlFormInput,
+  GlDatepicker,
+  GlFormCheckbox,
+  GlModal,
+} from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -49,12 +55,18 @@ describe('SecretsManagerPermissionsModal', () => {
   const findCheckbox = (index) => wrapper.findAllComponents(GlFormCheckbox).at(index);
   const findModal = () => wrapper.findComponent(GlModal);
   const findPrincipalField = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findGroupPathInput = () => wrapper.findComponent(GlFormInput);
 
-  const inputRequiredFields = async (selectedItem = 'MAINTAINER') => {
+  const inputRequiredFields = async (selectedItem = 'MAINTAINER', isGroup = false) => {
     // expiredAt is optional
     findCheckbox(0).vm.$emit('input', true);
     findCheckbox(1).vm.$emit('input', true);
-    findPrincipalField().vm.$emit('select', selectedItem);
+
+    if (isGroup) {
+      findGroupPathInput().vm.$emit('input', 'my-org/sub-group');
+    } else {
+      findPrincipalField().vm.$emit('select', selectedItem);
+    }
 
     await nextTick();
   };
@@ -62,12 +74,13 @@ describe('SecretsManagerPermissionsModal', () => {
   const submitPermission = async ({
     includeOptionalFields = false,
     selectedItem = 'MAINTAINER',
+    isGroup = false,
   } = {}) => {
     if (includeOptionalFields) {
       findDatepicker().vm.$emit('input', new Date('2055-08-12'));
     }
 
-    await inputRequiredFields(selectedItem);
+    await inputRequiredFields(selectedItem, isGroup);
     findModal().vm.$emit('primary', { preventDefault: jest.fn() });
     await waitForPromises();
   };
@@ -109,7 +122,6 @@ describe('SecretsManagerPermissionsModal', () => {
       expect(findCheckbox(0).attributes('disabled')).toBeUndefined();
       expect(findCheckbox(1).attributes('disabled')).toBeDefined();
       expect(findCheckbox(2).attributes('disabled')).toBeDefined();
-      expect(findCheckbox(3).attributes('disabled')).toBeDefined();
     });
 
     it('enables all checkboxes when the first checkbox is selected', async () => {
@@ -118,7 +130,6 @@ describe('SecretsManagerPermissionsModal', () => {
 
       expect(findCheckbox(1).attributes('disabled')).toBeUndefined();
       expect(findCheckbox(2).attributes('disabled')).toBeUndefined();
-      expect(findCheckbox(3).attributes('disabled')).toBeUndefined();
     });
 
     it.each`
@@ -139,14 +150,12 @@ describe('SecretsManagerPermissionsModal', () => {
   });
 
   const USER_ITEMS = ['Administrator', 'John Doe'];
-  const GROUP_ITEMS = ['Organization', 'test-org'];
   const ROLE_ITEMS = ['Reporter', 'Developer', 'Maintainer'];
 
   describe.each`
-    category   | title          | fieldItems     | selectedItem    | principalId
-    ${'USER'}  | ${'Add user'}  | ${USER_ITEMS}  | ${'john.doe'}   | ${2}
-    ${'GROUP'} | ${'Add group'} | ${GROUP_ITEMS} | ${22}           | ${22}
-    ${'ROLE'}  | ${'Add role'}  | ${ROLE_ITEMS}  | ${'MAINTAINER'} | ${40}
+    category  | title         | fieldItems    | selectedItem    | principalId
+    ${'USER'} | ${'Add user'} | ${USER_ITEMS} | ${'john.doe'}   | ${2}
+    ${'ROLE'} | ${'Add role'} | ${ROLE_ITEMS} | ${'MAINTAINER'} | ${40}
   `('$category permissions form', ({ category, title, fieldItems, selectedItem, principalId }) => {
     beforeEach(async () => {
       createComponent({ permissionCategory: category });
@@ -162,9 +171,8 @@ describe('SecretsManagerPermissionsModal', () => {
       expect(findModal().props('title')).toBe(title);
       expect(findDatepicker().exists()).toBe(true);
       expect(findCheckbox(0).text()).toContain('Read');
-      expect(findCheckbox(1).text()).toContain('Create');
-      expect(findCheckbox(2).text()).toContain('Update');
-      expect(findCheckbox(3).text()).toContain('Delete');
+      expect(findCheckbox(1).text()).toContain('Write');
+      expect(findCheckbox(2).text()).toContain('Delete');
     });
 
     it('sets expiration date in the future', () => {
@@ -190,7 +198,44 @@ describe('SecretsManagerPermissionsModal', () => {
           id: principalId,
           type: category,
         },
-        permissions: ['read', 'create'],
+        actions: ['READ', 'WRITE'],
+        expiredAt: '2055-08-12',
+      });
+    });
+  });
+
+  describe('GROUP permissions form', () => {
+    beforeEach(() => {
+      createComponent({ permissionCategory: 'GROUP' });
+    });
+
+    it('renders modal', () => {
+      expect(findModal().props('visible')).toBe(true);
+    });
+
+    it('renders group path input instead of listbox', () => {
+      expect(findGroupPathInput().exists()).toBe(true);
+      expect(findPrincipalField().exists()).toBe(false);
+    });
+
+    it('renders template correctly', () => {
+      expect(findModal().props('title')).toBe('Add group');
+      expect(findDatepicker().exists()).toBe(true);
+      expect(findCheckbox(0).text()).toContain('Read');
+      expect(findCheckbox(1).text()).toContain('Write');
+      expect(findCheckbox(2).text()).toContain('Delete');
+    });
+
+    it('calls the create mutation with the correct variables', async () => {
+      await submitPermission({ includeOptionalFields: true, isGroup: true });
+
+      expect(mockCreatePermission).toHaveBeenCalledWith({
+        projectPath: '/path/to/project',
+        principal: {
+          groupPath: 'my-org/sub-group',
+          type: 'GROUP',
+        },
+        actions: ['READ', 'WRITE'],
         expiredAt: '2055-08-12',
       });
     });
@@ -209,28 +254,6 @@ describe('SecretsManagerPermissionsModal', () => {
 
       expect(Api.projectUsers).toHaveBeenCalledTimes(2);
       expect(Api.projectUsers).toHaveBeenCalledWith('/path/to/project', 'Foo', undefined);
-    });
-
-    it('uses debounced search for group listbox', async () => {
-      jest.spyOn(axios, 'get');
-
-      createComponent({ permissionCategory: 'GROUP' });
-      findPrincipalField().vm.$emit('shown');
-      await waitForPromises();
-
-      expect(axios.get).toHaveBeenCalledTimes(1);
-
-      findPrincipalField().vm.$emit('search', 'Foo');
-      await waitForDebounce();
-
-      expect(axios.get).toHaveBeenCalledTimes(2);
-      expect(axios.get).toHaveBeenCalledWith('/-/autocomplete/project_groups.json', {
-        params: {
-          project_id: 123,
-          search: 'Foo',
-          with_project_access: true,
-        },
-      });
     });
   });
 

@@ -1,5 +1,5 @@
-const TYPENAME_SECRET_PERMISSION_UPDATE_PAYLOAD = 'SecretPermissionUpdatePayload';
-const TYPENAME_SECRET_PERMISSION = 'SecretPermission';
+const TYPENAME_SECRET_PERMISSION_UPDATE_PAYLOAD = 'ProjectSecretsPermissionUpdatePayload';
+const TYPENAME_SECRET_PERMISSION = 'ProjectSecretsPermission';
 
 export const secretManagerSettingsResponse = (status, errors = undefined) => {
   return {
@@ -117,14 +117,14 @@ export const MOCK_GROUPS_API = [
 
 export const mockCreatePermissionResponse = {
   data: {
-    secretPermissionUpdate: {
-      secretPermission: {
+    projectSecretsPermissionUpdate: {
+      secretsPermission: {
         principal: {
           id: 1,
           type: 'Role',
           __typename: 'Principal',
         },
-        permissions: ['read', 'create'],
+        actions: ['read', 'write'],
         __typename: TYPENAME_SECRET_PERMISSION,
       },
       errors: [],
@@ -135,8 +135,8 @@ export const mockCreatePermissionResponse = {
 
 export const mockCreatePermissionErrorResponse = (errorMessage) => ({
   data: {
-    secretPermissionUpdate: {
-      secretPermission: null,
+    projectSecretsPermissionUpdate: {
+      secretsPermission: null,
       errors: [errorMessage],
       __typename: TYPENAME_SECRET_PERMISSION_UPDATE_PAYLOAD,
     },
@@ -145,7 +145,7 @@ export const mockCreatePermissionErrorResponse = (errorMessage) => ({
 
 export const mockDeletePermissionResponse = (errorMessage) => ({
   data: {
-    secretPermissionDelete: {
+    projectSecretsPermissionDelete: {
       errors: [errorMessage],
     },
   },
@@ -163,7 +163,7 @@ export const ROOT_USER_DETAILS = {
 export const OWNER_PERMISSION_NODE = {
   expiredAt: null,
   grantedBy: null,
-  permissions: '["create", "read", "update", "delete"]',
+  actions: ['read', 'write', 'delete'],
   principal: {
     id: 50,
     type: 'ROLE',
@@ -179,7 +179,7 @@ export const OWNER_PERMISSION_NODE = {
 export const ROLE_PERMISSION_NODE = {
   expiredAt: '2035-01-01',
   grantedBy: { ...ROOT_USER_DETAILS },
-  permissions: '["read", "create"]',
+  actions: ['read', 'write'],
   principal: {
     id: 20,
     type: 'ROLE',
@@ -202,7 +202,7 @@ export const GROUP_PERMISSION_NODE = {
       'https://www.gravatar.com/avatar/1e8e3e4b8471a36396bee959a2c31f6fd03ae08a2560bab45205fa795f79f4cf?s=80&d=identicon',
     webUrl: 'http://gdk.test:3000/lonnie',
   },
-  permissions: '["read", "create", "update"]',
+  actions: ['read', 'write', 'delete'],
   principal: {
     id: 22,
     type: 'GROUP',
@@ -223,7 +223,7 @@ export const GROUP_PERMISSION_NODE = {
 export const USER_PERMISSION_NODE = {
   expiredAt: null,
   grantedBy: { ...ROOT_USER_DETAILS },
-  permissions: '["read", "delete"]',
+  actions: ['read', 'delete'],
   principal: {
     id: 49,
     type: 'USER',
@@ -246,20 +246,12 @@ export const USER_PERMISSION_NODE = {
 export const mockPermissionsQueryResponse = (errors = undefined) => ({
   data: {
     errors,
-    secretPermissions: {
-      edges: [
-        {
-          node: OWNER_PERMISSION_NODE,
-        },
-        {
-          node: ROLE_PERMISSION_NODE,
-        },
-        {
-          node: GROUP_PERMISSION_NODE,
-        },
-        {
-          node: USER_PERMISSION_NODE,
-        },
+    projectSecretsPermissions: {
+      nodes: [
+        OWNER_PERMISSION_NODE,
+        ROLE_PERMISSION_NODE,
+        GROUP_PERMISSION_NODE,
+        USER_PERMISSION_NODE,
       ],
     },
   },

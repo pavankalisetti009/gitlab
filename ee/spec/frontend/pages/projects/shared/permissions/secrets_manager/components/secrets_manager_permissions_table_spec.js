@@ -135,7 +135,7 @@ describe('SecretsManagerPermissionsSettings', () => {
 
     it('renders group info', () => {
       expect(findRowCell().at(0).text()).toContain('Toolbox');
-      expect(findRowCell().at(1).text()).toContain('Read, Create, Update');
+      expect(findRowCell().at(1).text()).toContain('Read, Write, Delete');
       expect(findRowCell().at(2).text()).toContain('Jan 1, 2035');
       expect(findRowCell().at(3).text()).toContain('lonnie');
     });
@@ -173,12 +173,12 @@ describe('SecretsManagerPermissionsSettings', () => {
 
     it('renders role info', () => {
       expect(findOwner().at(0).text()).toBe('Owner');
-      expect(findOwner().at(1).text()).toBe('Create, Read, Update, Delete');
+      expect(findOwner().at(1).text()).toBe('Read, Write, Delete');
       expect(findOwner().at(2).text()).toBe('Never');
       expect(findOwner().at(3).text()).toBe('N/A');
 
       expect(findReporter(1).at(0).text()).toBe('Reporter');
-      expect(findReporter(1).at(1).text()).toBe('Read, Create');
+      expect(findReporter(1).at(1).text()).toBe('Read, Write');
       expect(findReporter(1).at(2).text()).toBe('Jan 1, 2035');
       expect(findReporter(1).at(3).text()).toContain('root');
     });

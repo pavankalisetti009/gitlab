@@ -6,6 +6,7 @@ import {
   GlDatepicker,
   GlForm,
   GlFormGroup,
+  GlFormInput,
   GlModal,
 } from '@gitlab/ui';
 import { debounce } from 'lodash';
@@ -42,6 +43,7 @@ export default {
     GlDatepicker,
     GlForm,
     GlFormGroup,
+    GlFormInput,
     GlModal,
   },
   props: {
@@ -63,14 +65,14 @@ export default {
   data() {
     return {
       expiration: null,
+      groupPath: '',
       isListboxLoading: false,
       isSubmitting: false,
       listboxItems: [],
       principal: null,
-      scope: {
+      actions: {
         read: false,
-        create: false,
-        update: false,
+        write: false,
         delete: false,
       },
       selectedListboxItem: '',
@@ -87,7 +89,8 @@ export default {
       return this.permissionCategory === PERMISSION_CATEGORY_ROLE;
     },
     isSubmittable() {
-      return this.principal !== null && this.selectedPermissions.length > 0;
+      const hasPrincipal = this.isCategoryGroup ? this.groupPath.trim() : this.principal !== null;
+      return hasPrincipal && this.selectedActions.length > 0;
     },
     listboxTitle() {
       if (this.isCategoryUser) {
@@ -150,8 +153,10 @@ export default {
 
       return BASE_ROLES.filter((role) => !excludedRoles.includes(role.accessLevel));
     },
-    selectedPermissions() {
-      return Object.keys(this.scope).filter((permission) => this.scope[permission]);
+    selectedActions() {
+      return Object.keys(this.actions)
+        .filter((action) => this.actions[action])
+        .map((action) => action.toUpperCase());
     },
   },
   methods: {
@@ -159,20 +164,29 @@ export default {
       this.isSubmitting = true;
 
       try {
+        const principal = {
+          type: this.permissionCategory,
+        };
+
+        if (this.isCategoryRole) {
+          principal.id = this.principal.accessLevel;
+        } else if (this.isCategoryGroup) {
+          principal.groupPath = this.groupPath;
+        } else {
+          principal.id = this.principal.id;
+        }
+
         const { data } = await this.$apollo.mutate({
           mutation: createSecretsPermission,
           variables: {
             projectPath: this.fullPath,
-            principal: {
-              id: this.isCategoryRole ? this.principal.accessLevel : this.principal.id,
-              type: this.permissionCategory,
-            },
-            permissions: this.selectedPermissions,
+            principal,
+            actions: this.selectedActions,
             expiredAt: this.expiration ? toISODateFormat(this.expiration) : null,
           },
         });
 
-        const error = data.secretPermissionUpdate.errors[0];
+        const error = data.projectSecretsPermissionUpdate.errors[0];
         if (error) {
           createAlert({ message: error });
           return;
@@ -227,11 +241,11 @@ export default {
       this.listboxItems = [];
       this.principal = null;
       this.expiration = null;
+      this.groupPath = '';
       this.selectedListboxItem = '';
-      this.scope = {
+      this.actions = {
         read: false,
-        create: false,
-        update: false,
+        write: false,
         delete: false,
       };
 
@@ -258,7 +272,7 @@ export default {
   >
     <gl-form>
       <gl-form-group
-        v-if="isCategoryUser || isCategoryGroup"
+        v-if="isCategoryUser"
         label-for="secret-permission-principal"
         :label="listboxTitle"
       >
@@ -267,7 +281,7 @@ export default {
           :items="listboxItems"
           :selected="selectedListboxItem"
           :toggle-text="listboxToggleText"
-          :search-placeholder="isCategoryUser ? __('Search users...') : __('Search groups...')"
+          :search-placeholder="__('Search users...')"
           :searching="isListboxLoading"
           searchable
           block
@@ -288,7 +302,24 @@ export default {
           </template>
         </gl-collapsible-listbox>
       </gl-form-group>
-      <gl-form-group v-else label-for="secret-permission-principal" :label="__('Role')">
+      <gl-form-group
+        v-else-if="isCategoryGroup"
+        label-for="secret-permission-group-path"
+        :label="__('Group path')"
+      >
+        <gl-form-input
+          id="secret-permission-group-path"
+          v-model="groupPath"
+          :placeholder="
+            s__('SecretsManagerPermissions|For example, my-group or my-group/sub-group')
+          "
+        />
+      </gl-form-group>
+      <gl-form-group
+        v-else-if="isCategoryRole"
+        label-for="secret-permission-principal"
+        :label="__('Role')"
+      >
         <gl-collapsible-listbox
           id="secret-permission-principal"
           :items="rolesList"
@@ -317,7 +348,7 @@ export default {
           )
         "
       >
-        <gl-form-checkbox v-model="scope.read" class="-gl-mb-4">
+        <gl-form-checkbox v-model="actions.read" class="-gl-mb-4">
           {{ __('Read') }}
           <p class="gl-text-subtle">
             {{
@@ -330,19 +361,13 @@ export default {
             }}
           </p>
         </gl-form-checkbox>
-        <gl-form-checkbox v-model="scope.create" class="-gl-mb-4" :disabled="!scope.read">
-          {{ __('Create') }}
+        <gl-form-checkbox v-model="actions.write" class="-gl-mb-4" :disabled="!actions.read">
+          {{ __('Write') }}
           <p class="gl-text-subtle">
-            {{ s__('SecretsManagerPermissions|Can add new secrets') }}
+            {{ s__('SecretsManagerPermissions|Can create and update secrets.') }}
           </p>
         </gl-form-checkbox>
-        <gl-form-checkbox v-model="scope.update" class="-gl-mb-4" :disabled="!scope.read">
-          {{ __('Update') }}
-          <p class="gl-text-subtle">
-            {{ s__('SecretsManagerPermissions|Can update details of existing secrets.') }}
-          </p>
-        </gl-form-checkbox>
-        <gl-form-checkbox v-model="scope.delete" class="-gl-mb-4" :disabled="!scope.read">
+        <gl-form-checkbox v-model="actions.delete" class="-gl-mb-4" :disabled="!actions.read">
           {{ __('Delete') }}
           <p class="gl-text-subtle">
             {{ s__('SecretsManagerPermissions|Can permanently delete secrets.') }}
