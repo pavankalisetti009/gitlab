@@ -79,8 +79,8 @@ module QA
           Page::Project::Menu.perform(&:go_to_general_settings)
           Page::Project::Settings::Main.perform do |settings|
             settings.expand_visibility_project_features_permissions do |permissions_page|
-              scopes = %w[read create update delete]
-              permissions_page.add_group_permission(group_id: group.id, scopes: scopes)
+              scopes = %w[read write delete]
+              permissions_page.add_group_permission(group_path: group.full_path, scopes: scopes)
               expect(permissions_page).to have_group_permission(group_name: group.name, scopes: scopes)
             end
           end
@@ -116,7 +116,7 @@ module QA
           Page::Project::Menu.perform(&:go_to_general_settings)
           Page::Project::Settings::Main.perform do |settings|
             settings.expand_visibility_project_features_permissions do |permissions_page|
-              scopes = %w[update delete]
+              scopes = %w[write delete]
               permissions_page.add_role_permission(role_name: 'Developer', scopes: scopes)
               expect(permissions_page.alert_text).to eq('Actions must include read')
             end

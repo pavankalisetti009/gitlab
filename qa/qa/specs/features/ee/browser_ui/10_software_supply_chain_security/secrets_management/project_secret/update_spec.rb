@@ -32,7 +32,7 @@ module QA
         Page::Project::Menu.perform(&:go_to_general_settings)
         Page::Project::Settings::Main.perform do |settings|
           settings.expand_visibility_project_features_permissions do |permissions_page|
-            scopes = %w[read update]
+            scopes = %w[read write]
             permissions_page.add_role_permission(role_name: 'Maintainer', scopes: scopes)
           end
         end

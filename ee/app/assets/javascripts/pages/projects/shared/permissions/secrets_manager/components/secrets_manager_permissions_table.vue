@@ -1,6 +1,6 @@
 <script>
 import { GlAvatarLabeled, GlButton, GlTab, GlTableLite } from '@gitlab/ui';
-import { upperFirst } from 'lodash';
+import { capitalize, upperFirst } from 'lodash';
 import { __ } from '~/locale';
 import {
   ACCESS_LEVELS_INTEGER_TO_STRING,
@@ -125,9 +125,8 @@ export default {
 
       return __('Never');
     },
-    formatPermissions(permissions) {
-      const scopes = JSON.parse(permissions).map((p) => upperFirst(p));
-      return scopes.join(', ');
+    formatActions(actions) {
+      return actions.map((a) => capitalize(a)).join(', ');
     },
     formatRoleName(id) {
       const role = ACCESS_LEVELS_INTEGER_TO_STRING[id] || '';
@@ -179,8 +178,8 @@ export default {
         <span v-if="isCategoryUser">{{ formatRoleName(principal.userRoleId) }}</span>
         <span v-if="isCategoryRole">{{ formatRoleName(principal.id) }}</span>
       </template>
-      <template #cell(scope)="{ item: { permissions } }">
-        {{ formatPermissions(permissions) }}
+      <template #cell(scope)="{ item: { actions } }">
+        {{ formatActions(actions) }}
       </template>
       <template #cell(expiration)="{ item: { expiredAt } }">
         <span>{{ formatExpiration(expiredAt) }}</span>

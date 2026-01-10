@@ -37,7 +37,7 @@ module QA
         Page::Project::Menu.perform(&:go_to_general_settings)
         Page::Project::Settings::Main.perform do |settings|
           settings.expand_visibility_project_features_permissions do |permissions_page|
-            permissions_page.add_group_permission(group_id: group.id, scopes: %w[read])
+            permissions_page.add_group_permission(group_path: group.full_path, scopes: %w[read])
           end
         end
 

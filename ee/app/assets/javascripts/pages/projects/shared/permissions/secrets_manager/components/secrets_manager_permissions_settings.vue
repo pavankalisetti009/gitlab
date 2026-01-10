@@ -58,7 +58,7 @@ export default {
         };
       },
       update(data) {
-        return data.secretPermissions.edges?.map((edge) => edge.node) || [];
+        return data.projectSecretsPermissions.nodes || [];
       },
       error(error) {
         createAlert({
@@ -150,12 +150,13 @@ export default {
             projectPath: this.fullPath,
             principal: {
               id: Number(this.permissionToBeDeleted.id),
+              groupPath: this.permissionToBeDeleted.groupPath,
               type: this.permissionToBeDeleted.type,
             },
           },
         });
 
-        const error = data.secretPermissionDelete.errors[0];
+        const error = data.projectSecretsPermissionDelete.errors[0];
         if (error) {
           createAlert({ message: error });
           return;

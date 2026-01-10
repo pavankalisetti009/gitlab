@@ -71,8 +71,8 @@ module QA
               delete_permission(name: role_name, tab: 'Roles')
             end
 
-            def add_group_permission(group_id:, scopes:)
-              add_permission(name: group_id, scopes: scopes, type: 'GROUP')
+            def add_group_permission(group_path:, scopes:)
+              add_permission(name: group_path, scopes: scopes, type: 'GROUP')
             end
 
             def has_group_permission?(group_name:, scopes:)
@@ -106,7 +106,7 @@ module QA
             def has_owner_permissions_in_roles_tab?
               click_on('Roles')
               within('tbody') do
-                has_css?('tr', text: 'Owner') && has_text?('Create, Delete, Read, Update')
+                has_css?('tr', text: 'Owner') && has_text?('Read, Write, Delete')
               end
             end
 
@@ -135,13 +135,25 @@ module QA
               else
                 click_element('listbox-item-ROLE')
               end
-              page.execute_script("document.querySelector('#secret-permission-principal button').click()")
-              wait_for_requests
-              page.execute_script(
-                "document.querySelector(\"[data-testid='listbox-item-#{name}']\").click()"
-              )
-              wait_for_requests
 
+              if type == 'GROUP'
+                page.execute_script("
+                  const input = document.querySelector('#secret-permission-group-path');
+                  if (input) {
+                    input.value = '#{name}';
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                  }
+                ")
+              else
+                page.execute_script("document.querySelector('#secret-permission-principal button').click()")
+                wait_for_requests
+                page.execute_script(
+                  "document.querySelector(\"[data-testid='listbox-item-#{name}']\").click()"
+                )
+              end
+
+              wait_for_requests
               enable_specific_permission(scope_name: 'read') unless scopes.include?('read')
 
               # Select permission scopes using execute_script for more reliable selection
