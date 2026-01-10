@@ -388,6 +388,40 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     end
   end
 
+  describe 'default_duo_namespace_check_passes?' do
+    subject(:namespace_check) { described_class.default_duo_namespace_check_passes?(user: user) }
+
+    context 'for SaaS' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      context 'when a default namespace exists' do
+        let(:default_namespace) { create(:group) }
+
+        before do
+          allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
+        end
+
+        it 'passes the check' do
+          is_expected.to be_truthy
+        end
+      end
+
+      context 'when a default namespace does not exist' do
+        it 'fails the check' do
+          is_expected.to be_falsey
+        end
+      end
+    end
+
+    context 'for self-managed' do
+      it 'passes the check' do
+        is_expected.to be_truthy
+      end
+    end
+  end
+
   describe '.root_namespace_id' do
     let_it_be(:group) { create(:group) }
     let_it_be(:subgroup) { create(:group, parent: group) }

@@ -21,8 +21,9 @@ module EE
       credits_available = ::Gitlab::Llm::TanukiBot.credits_available?(
         user: user, project: project, group: group
       )
-      # this is just mocked up for now. we will implement actual logic later
-      default_namespace_selected = true
+      default_namespace_selected = ::Gitlab::Llm::TanukiBot.default_duo_namespace_check_passes?(
+        user: user
+      )
 
       {
         user_id: user.to_global_id,
