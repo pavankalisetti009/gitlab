@@ -26595,6 +26595,9 @@ msgstr ""
 msgid "Email Notification"
 msgstr ""
 
+msgid "Email OTP:"
+msgstr ""
+
 msgid "Email address copied"
 msgstr ""
 
