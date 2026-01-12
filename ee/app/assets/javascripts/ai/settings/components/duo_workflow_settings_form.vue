@@ -55,7 +55,7 @@ export default {
 <template>
   <div class="gl-flex gl-flex-col gl-gap-4">
     <div v-if="showMcp">
-      <h5>{{ s__('DuoWorkflowSettings|Model Context Protocol') }}</h5>
+      <h5>{{ s__('DuoWorkflowSettings|External MCP tools') }}</h5>
 
       <gl-form-checkbox
         :checked="isMcpEnabled"
@@ -64,14 +64,10 @@ export default {
         @change="checkboxChanged"
       >
         <span id="enable-duo-workflow-mcp-enabled-checkbox-label">{{
-          s__('DuoWorkflowSettings|Turn on support for Model Context Protocol (MCP)')
+          s__('DuoWorkflowSettings|Allow external MCP tools')
         }}</span>
         <template #help>
-          {{
-            s__(
-              'DuoWorkflowSettings|Turn on MCP support for GitLab Duo Chat (Agentic) and GitLab Duo Agent Platform.',
-            )
-          }}
+          {{ s__('DuoWorkflowSettings|Allow the IDE to access external MCP tools.') }}
         </template>
       </gl-form-checkbox>
     </div>
