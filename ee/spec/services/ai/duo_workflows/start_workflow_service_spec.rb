@@ -350,7 +350,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
-      allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+      allow_any_instance_of(User).to receive_messages(allowed_to_use?: true, allowed_to_use_for_resource?: true)
       # rubocop:enable RSpec/AnyInstanceOf
       allow_next_instance_of(Ci::CreatePipelineService) do |instance|
         allow(instance).to receive(:execute).and_return(service_response)
@@ -426,7 +426,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
-      allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+      allow_any_instance_of(User).to receive_messages(allowed_to_use?: true, allowed_to_use_for_resource?: true)
       # rubocop:enable RSpec/AnyInstanceOf
       project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
     end

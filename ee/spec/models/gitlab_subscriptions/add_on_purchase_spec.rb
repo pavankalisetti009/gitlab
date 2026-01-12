@@ -601,9 +601,11 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
       include_context 'with add-on purchases'
 
-      it 'returns all the non-guest purchases related to the user top level namespaces' do
+      it 'returns all the purchases related to the user top level namespaces' do
         expect(user_purchases).to match_array(
           [
+            active_gitlab_duo_pro_purchase_as_guest,
+            active_product_analytics_purchase_as_guest,
             expired_gitlab_duo_pro_purchase_as_owner,
             expired_gitlab_duo_pro_purchase_as_reporter,
             active_gitlab_duo_pro_purchase_as_developer,

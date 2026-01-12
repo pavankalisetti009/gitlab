@@ -30,7 +30,7 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         before do
           allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
           # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
-          allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+          allow_any_instance_of(User).to receive_messages(allowed_to_use?: true, allowed_to_use_for_resource?: true)
           # rubocop:enable RSpec/AnyInstanceOf
         end
 

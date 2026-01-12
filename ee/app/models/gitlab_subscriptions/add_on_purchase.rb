@@ -97,7 +97,7 @@ module GitlabSubscriptions
         .or(for_duo_core_pro_or_enterprise)
     }
     scope :select_distinct_namespace_id, -> { select(:namespace_id).distinct }
-    scope :for_user, ->(user) { by_namespace(user.non_guest_root_group_ids) }
+    scope :for_user, ->(user) { by_namespace(user.root_group_ids) }
     scope :assigned_to_user, ->(user) do
       active.joins(:assigned_users).merge(UserAddOnAssignment.by_user(user))
     end

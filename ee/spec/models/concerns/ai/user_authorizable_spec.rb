@@ -1230,7 +1230,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
-  describe '#non_guest_root_group_ids', :use_clean_rails_redis_caching do
+  describe '#root_group_ids', :use_clean_rails_redis_caching do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:root_group) { create(:group) }
@@ -1238,7 +1238,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     let_it_be(:group_project) { create(:project, group: root_group) }
     let_it_be(:sub_group_project) { create(:project, group: sub_group) }
 
-    subject { user.non_guest_root_group_ids }
+    subject { user.root_group_ids }
 
     context 'when on gitlab.com' do
       before do
@@ -1258,7 +1258,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       end
 
       where(:access_level, :include_group) do
-        :guest      | false
+        :guest      | true
         :reporter   | true
         :developer  | true
         :maintainer | true
@@ -1276,10 +1276,10 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           it { is_expected.to eq(result) }
 
           it 'caches the result' do
-            user.non_guest_root_group_ids
+            user.root_group_ids
 
             expect(
-              Rails.cache.fetch(['users', user.id, described_class::NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY])
+              Rails.cache.fetch(['users', user.id, described_class::ROOT_GROUP_IDS_CACHE_KEY])
             ).to eq(result)
           end
         end
@@ -1385,21 +1385,21 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       user.any_group_with_ai_available?
       other_user.any_group_with_ai_available?
 
-      billable_groups_user.non_guest_root_group_ids
+      billable_groups_user.root_group_ids
     end
 
     it 'clears cache from users with the given ids', :aggregate_failures do
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ai_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', billable_groups_user.id,
-        described_class::NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY])).to eq([])
+        described_class::ROOT_GROUP_IDS_CACHE_KEY])).to eq([])
 
       User.clear_group_with_ai_available_cache([user.id, yet_another_user.id, billable_groups_user.id])
 
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to be_nil
       expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ai_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', billable_groups_user.id,
-        described_class::NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY])).to be_nil
+        described_class::ROOT_GROUP_IDS_CACHE_KEY])).to be_nil
     end
 
     it 'clears cache when given a single id', :aggregate_failures do
@@ -1505,6 +1505,101 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
           it { is_expected.to be false }
         end
+      end
+    end
+  end
+
+  describe '#allowed_to_use_for_resource?' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:resource) { create(:project, group: group) }
+
+    let(:allowed_by_namespace_ids) { [group.id] }
+
+    let(:allowed_response) do
+      described_class::Response.new(
+        allowed?: true,
+        namespace_ids: allowed_by_namespace_ids,
+        enablement_type: 'duo_pro',
+        authorized_by_duo_core: false
+      )
+    end
+
+    let(:denied_response) do
+      described_class::Response.new(
+        allowed?: false,
+        namespace_ids: [],
+        enablement_type: nil,
+        authorized_by_duo_core: false
+      )
+    end
+
+    before do
+      allow(user).to receive(:allowed_to_use).and_return(allowed_response)
+    end
+
+    subject { user.allowed_to_use_for_resource?(:my_feature, resource: resource) }
+
+    context 'when on Gitlab.com instance', :saas do
+      shared_examples 'checking for fallback namespace' do
+        let_it_be(:fallback_namespace) { build(:group) }
+
+        context 'when user has duo_default_namespace' do
+          before do
+            allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(fallback_namespace)
+          end
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'when user does not have duo_default_namespace' do
+          it { is_expected.to be(false) }
+        end
+      end
+
+      context 'when allowed_to_use returns allowed' do
+        context 'when resource responds to root_ancestor' do
+          context 'when resource root_ancestor is in allowed namespace_ids' do
+            before do
+              allow(allowed_response).to receive(:namespace_ids).and_return([group.id])
+            end
+
+            it { is_expected.to be(true) }
+          end
+
+          context 'when resource root_ancestor is not in allowed namespace_ids' do
+            let(:allowed_by_namespace_ids) { [999] }
+
+            it_behaves_like 'checking for fallback namespace'
+          end
+        end
+
+        context 'when resource does not respond to root_ancestor' do
+          let(:resource) { build(:user) }
+
+          it_behaves_like 'checking for fallback namespace'
+        end
+      end
+
+      context 'when allowed_to_use returns denied' do
+        before do
+          allow(user).to receive(:allowed_to_use).and_return(denied_response)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'when on Self managed instance' do
+      context 'when allowed_to_use returns allowed' do
+        it { is_expected.to be(true) }
+      end
+
+      context 'when allowed_to_use returns denied' do
+        before do
+          allow(user).to receive(:allowed_to_use).and_return(denied_response)
+        end
+
+        it { is_expected.to be(false) }
       end
     end
   end
