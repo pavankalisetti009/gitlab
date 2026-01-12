@@ -236,29 +236,15 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
 
       context 'when neither project_id nor namespace_id are specified' do
         let(:container_input) { {} }
+        let(:current_user) { licensed_developer }
 
-        context 'when the user has guest access' do
-          it 'does not create a workflow' do
-            post_graphql_mutation(mutation, current_user: current_user)
+        it 'uses the default duo namespace from user preferences' do
+          post_graphql_mutation(mutation, current_user: current_user)
 
-            expect(response).to have_gitlab_http_status(:success)
-            expect(graphql_errors.pluck('message')).to include(
-              a_string_including("does not exist or you don't have permission to perform this action")
-            )
-          end
-        end
-
-        context 'when the user access level is above guest' do
-          let(:current_user) { licensed_developer }
-
-          it 'uses the default duo namespace from user preferences' do
-            post_graphql_mutation(mutation, current_user: current_user)
-
-            expect(response).to have_gitlab_http_status(:success)
-            workflow = ::Ai::DuoWorkflows::Workflow.last
-            expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
-            expect(mutation_response['errors']).to be_empty
-          end
+          expect(response).to have_gitlab_http_status(:success)
+          workflow = ::Ai::DuoWorkflows::Workflow.last
+          expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
+          expect(mutation_response['errors']).to be_empty
         end
       end
     end

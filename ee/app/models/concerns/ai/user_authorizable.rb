@@ -13,8 +13,8 @@ module Ai
     GROUP_WITH_MCP_SERVER_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_MCP_SERVER_ENABLED_CACHE_KEY = 'group_with_mcp_server_enabled'
 
-    NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY = 'non_guest_root_group_ids'
-    NON_GUEST_ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
+    ROOT_GROUP_IDS_CACHE_KEY = 'root_group_ids'
+    ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
 
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
     # refers to add-ons listed in GitlabSubscriptions::AddOn::DUO_ADD_ONS
@@ -107,18 +107,17 @@ module Ai
       end
 
       # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
-      def non_guest_root_group_ids
+      def root_group_ids
         return unless gitlab_com_subscription?
 
         Rails.cache.fetch(
-          ['users', id, NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY],
-          expires_in: NON_GUEST_ROOT_GROUP_IDS_CACHE_PERIOD
+          ['users', id, ROOT_GROUP_IDS_CACHE_KEY],
+          expires_in: ROOT_GROUP_IDS_CACHE_PERIOD
         ) do
-          group_ids_from_project_authorization = Project.id_in(project_authorizations.non_guests.select(:project_id))
+          group_ids_from_project_authorization = Project.id_in(project_authorizations.select(:project_id))
             .pluck(:namespace_id)
-          group_ids_from_memberships = GroupMember.with_user(self).active.non_guests.pluck(:source_id)
-          group_ids_from_linked_groups = GroupGroupLink.non_guests
-          .where(shared_with_group_id: group_ids_from_memberships)
+          group_ids_from_memberships = GroupMember.with_user(self).active.pluck(:source_id)
+          group_ids_from_linked_groups = GroupGroupLink.where(shared_with_group_id: group_ids_from_memberships)
             .pluck(:shared_group_id)
 
           root_group_ids = Group.where(
@@ -156,6 +155,16 @@ module Ai
       def allowed_to_use?(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features)
         allowed_to_use(ai_feature, unit_primitive_name: unit_primitive_name, licensed_feature: licensed_feature)
           .allowed?
+      end
+
+      def allowed_to_use_for_resource?(*args, resource:, **kwargs)
+        auth_response = allowed_to_use(*args, **kwargs)
+
+        return false unless auth_response.allowed?
+        return true unless saas? # We only check for namespaces in SaaS
+
+        (resource.respond_to?(:root_ancestor) && auth_response.namespace_ids.include?(resource.root_ancestor.id)) ||
+          user_preference.duo_default_namespace_with_fallback.present?
       end
 
       def allowed_by_namespace_ids(...)
@@ -308,7 +317,7 @@ module Ai
       end
 
       def groups_with_duo_core_enabled
-        Namespace.id_in(non_guest_root_group_ids)
+        Namespace.id_in(root_group_ids)
           .namespace_settings_with_duo_core_features_enabled
       end
 
@@ -351,7 +360,7 @@ module Ai
       def clear_group_with_ai_available_cache(ids)
         cache_keys_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_AI_ENABLED_CACHE_KEY] }
         cache_keys_billable_duo_pro_group_ids = Array.wrap(ids).map do |id|
-          ["users", id, NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY]
+          ["users", id, ROOT_GROUP_IDS_CACHE_KEY]
         end
 
         cache_keys = cache_keys_ai_features + cache_keys_billable_duo_pro_group_ids

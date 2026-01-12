@@ -338,8 +338,8 @@ module EE
         Ability.allowed?(@user, :access_duo_classic_chat)
       end
 
-      condition(:agentic_chat_available_for_user, scope: :user) do
-        Ability.allowed?(@user, :access_duo_agentic_chat)
+      condition(:agentic_chat_available_for_user) do
+        Ability.allowed?(@user, :access_duo_agentic_chat) && @user.allowed_to_use_for_resource?(:duo_chat, resource: @subject)
       end
 
       condition(:duo_features_enabled, scope: :subject) { @subject.namespace_settings&.duo_features_enabled }

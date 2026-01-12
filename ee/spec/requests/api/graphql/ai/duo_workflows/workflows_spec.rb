@@ -210,7 +210,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
     context 'when the user has access to the project and is allowed to use duo_agent_platform' do
       before do
         # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
-        allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+        allow_any_instance_of(User).to receive_messages(allowed_to_use?: true, allowed_to_use_for_resource?: true)
         # rubocop:enable RSpec/AnyInstanceOf
       end
 

@@ -5322,24 +5322,26 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       where(
         :stage_check_passed,
         :enabled_for_user,
+        :allowed_to_use_for_resource,
         :duo_agent_platform_enabled,
         :project_duo_features_enabled,
         :can_read_project,
         :amazon_q_enabled,
         :cs_matcher
       ) do
-        true  | true  | true  | true  | true  | false | be_allowed(policy)
-        true  | true  | true  | false | true  | false | be_disallowed(policy)
-        true  | true  | true  | true  | false | false | be_disallowed(policy)
-        true  | false | true  | false | true  | false | be_disallowed(policy)
-        true  | false | true  | true  | true  | false | be_disallowed(policy)
-        true  | true  | true  | true  | true  | true  | be_disallowed(policy)
-        false | true  | true  | false | true  | false | be_disallowed(policy)
-        false | true  | true  | true  | true  | false | be_disallowed(policy)
-        false | false | true  | false | true  | false | be_disallowed(policy)
-        false | false | true  | true  | true  | false | be_disallowed(policy)
-        false | true  | true  | true  | true  | true  | be_disallowed(policy)
-        true  | true  | false | true  | true  | true  | be_disallowed(policy)
+        true  | true  | true  | true  | true  | true  | false | be_allowed(policy)
+        true  | true  | false | true  | true  | true  | false | be_disallowed(policy)
+        true  | true  | true  | true  | false | true  | false | be_disallowed(policy)
+        true  | true  | true  | true  | true  | false | false | be_disallowed(policy)
+        true  | false | true  | true  | false | true  | false | be_disallowed(policy)
+        true  | false | true  | true  | true  | true  | false | be_disallowed(policy)
+        true  | true  | true  | true  | true  | true  | true  | be_disallowed(policy)
+        false | true  | true  | true  | false | true  | false | be_disallowed(policy)
+        false | true  | true  | true  | true  | true  | false | be_disallowed(policy)
+        false | false | true  | true  | false | true  | false | be_disallowed(policy)
+        false | false | true  | true  | true  | true  | false | be_disallowed(policy)
+        false | true  | true  | true  | true  | true  | true  | be_disallowed(policy)
+        true  | true  | true  | false | true  | true  | true  | be_disallowed(policy)
       end
 
       with_them do
@@ -5349,6 +5351,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           project.add_guest(current_user) if can_read_project
           allow(Ability).to receive(:allowed?).and_call_original
           allow(Ability).to receive(:allowed?).with(current_user, :access_duo_agentic_chat).and_return(enabled_for_user)
+          allow(current_user).to receive(:allowed_to_use_for_resource?).with(:duo_chat, resource: project)
+            .and_return(allowed_to_use_for_resource)
           allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :agentic_chat).and_return(stage_check_passed)
           allow(::Ai::DuoWorkflow).to receive(:duo_agent_platform_available?).and_return(duo_agent_platform_enabled)
           allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
