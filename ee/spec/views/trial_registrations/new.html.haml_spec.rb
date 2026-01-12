@@ -75,7 +75,11 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
     it { is_expected.not_to have_content(_('Cannot include your name, username, or email')) }
 
     it { is_expected.to have_content(s_('InProductMarketing|Want to host GitLab on your servers?')) }
-    it { is_expected.to have_link(s_('InProductMarketing|Start a Self-Managed trial'), href: 'https://about.gitlab.com/free-trial/#selfmanaged/') }
+
+    it 'has start self-managed link' do
+      href = promo_url(path: '/free-trial', query: { hosted: 'self-managed' })
+      is_expected.to have_link(s_('InProductMarketing|Start a Self-Managed trial'), href: href)
+    end
   end
 
   context 'for password form' do

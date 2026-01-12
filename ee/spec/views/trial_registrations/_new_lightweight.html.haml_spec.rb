@@ -30,6 +30,13 @@ RSpec.describe 'trial_registrations/_new_lightweight', feature_category: :acquis
     expect(view.content_for(:hide_empty_navbar)).to be_truthy
   end
 
+  it 'has start self-managed link with correct URL' do
+    render
+
+    href = promo_url(path: '/free-trial', query: { hosted: 'self-managed' })
+    expect(rendered).to have_link(s_('InProductMarketing|Start a Self-Managed trial'), href: href)
+  end
+
   context 'when social signin is disabled' do
     it 'does not render social signin section' do
       render
