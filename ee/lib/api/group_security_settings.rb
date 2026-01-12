@@ -30,6 +30,7 @@ module API
             desc: 'Whether to enable the feature'
           optional :projects_to_exclude, type: Array[Integer], desc: 'IDs of projects to exclude from the feature'
         end
+        route_setting :authorization, permissions: :update_security_setting, boundary_type: :group
         put do
           unauthorized! unless can?(current_user, :enable_secret_push_protection, user_group)
 

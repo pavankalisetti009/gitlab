@@ -53,6 +53,14 @@ RSpec.describe API::GroupSecuritySettings, :aggregate_failures, feature_category
         expect(json_response['errors']).to be_empty
         expect(json_response['secret_push_protection_enabled']).to be(true)
       end
+
+      it_behaves_like 'authorizing granular token permissions', :update_security_setting do
+        let(:boundary_object) { group }
+        let(:user) { maintainer }
+        let(:request) do
+          put api(url, personal_access_token: pat), params: { secret_push_protection_enabled: true }
+        end
+      end
     end
   end
 end
