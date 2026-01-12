@@ -3148,16 +3148,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
             expect(group.disable_ssh_keys?).to be_truthy
           end
 
-          context 'when :enterprise_disable_ssh_keys FF is disabled' do
-            before do
-              stub_feature_flags(enterprise_disable_ssh_keys: false)
-            end
-
-            it 'returns false' do
-              expect(group.disable_ssh_keys?).to be_falsey
-            end
-          end
-
           context 'for a subgroup' do
             let(:subgroup) { create(:group, parent: group) }
 
@@ -3194,16 +3184,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
           it 'returns true' do
             expect(group.disable_ssh_keys_available?).to be_truthy
-          end
-
-          context 'when :enterprise_disable_ssh_keys FF is disabled' do
-            before do
-              stub_feature_flags(enterprise_disable_ssh_keys: false)
-            end
-
-            it 'returns false' do
-              expect(group.disable_ssh_keys_available?).to be_falsey
-            end
           end
 
           context 'for a subgroup' do

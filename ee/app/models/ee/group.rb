@@ -1086,7 +1086,6 @@ module EE
 
     def disable_ssh_keys_available?
       root? &&
-        ::Feature.enabled?(:enterprise_disable_ssh_keys, self, type: :gitlab_com_derisk) &&
         ::Gitlab::Saas.feature_available?(:disable_ssh_keys) &&
         licensed_feature_available?(:disable_ssh_keys)
     end
