@@ -112,6 +112,7 @@ module API
       params do
         use :pagination
       end
+      route_setting :authorization, permissions: :read_vulnerability, boundary_type: :project
       get ':id/vulnerabilities' do
         authorize! :read_security_resource, user_project
 
@@ -129,6 +130,7 @@ module API
       params do
         requires :finding_id, type: Integer, desc: 'The id of confirmed vulnerability finding'
       end
+      route_setting :authorization, permissions: :create_vulnerability, boundary_type: :project
       post ':id/vulnerabilities' do
         authorize! :admin_vulnerability, user_project
 
