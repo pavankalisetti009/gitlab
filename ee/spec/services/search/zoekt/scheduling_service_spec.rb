@@ -405,6 +405,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     let_it_be(:sub_group) { create(:group, :nested) }
     let_it_be(:top_group) { create(:group) }
     let_it_be(:top_group2) { create(:group) }
+    let(:user_namespace) { Namespaces::UserNamespace.last }
 
     before do
       stub_ee_application_setting(zoekt_auto_index_root_namespace: true)
@@ -427,13 +428,16 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
     end
 
-    it "creates zoekt_enabled_namespace for the root groups that don't have zoekt_enabled_namespace already" do
+    it "creates zoekt_enabled_namespace for the root namespaces that don't have zoekt_enabled_namespace already" do
+      expect(user_namespace.zoekt_enabled_namespace).to be_nil
       expect(sub_group.root_ancestor.zoekt_enabled_namespace).to be_nil
       expect(top_group.zoekt_enabled_namespace).to be_nil
       expect(top_group2.zoekt_enabled_namespace).not_to be_nil
-      expect { execute_task }.to change { Search::Zoekt::EnabledNamespace.count }.by(2)
+
+      expect { execute_task }.to change { Search::Zoekt::EnabledNamespace.count }.by(3)
       expect(sub_group.root_ancestor.reload.zoekt_enabled_namespace).not_to be_nil
       expect(top_group.reload.zoekt_enabled_namespace).not_to be_nil
+      expect(user_namespace.reload.zoekt_enabled_namespace).not_to be_nil
     end
   end
 
