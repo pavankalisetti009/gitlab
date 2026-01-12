@@ -28,6 +28,9 @@ module GitlabSubscriptions
 
         upsert_data = eligible_user_ids.map { |user_id| { user_id: user_id } }
 
+        assigned_user_ids = assigned_users.select(:user_id).map(&:user_id)
+        newly_assigned_user_ids = eligible_user_ids - assigned_user_ids
+
         add_on_assignment_upsert_result = add_on_purchase.with_lock do
           ensure_seat_availability
 
@@ -41,10 +44,10 @@ module GitlabSubscriptions
 
         if gitlab_com_subscription?
           ::Onboarding::AddOnSeatAssignmentIterableTriggerWorker
-            .perform_async(namespace.id, eligible_user_ids.to_a, iterable_worker_params)
+            .perform_async(namespace.id, newly_assigned_user_ids.to_a, iterable_worker_params)
         elsif Feature.enabled?(:sm_duo_seat_assignment_email, :instance)
           ::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker
-            .perform_async(eligible_user_ids.to_a, email_variant)
+            .perform_async(newly_assigned_user_ids.to_a, email_variant)
         end
 
         Gitlab::AppLogger.info(log_events(type: 'success',
