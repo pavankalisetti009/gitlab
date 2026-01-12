@@ -2,6 +2,7 @@
 import { GlTable, GlButton, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import GroupSelector from './group_selector.vue';
 
 const AVAILABLE_FEATURES = [
@@ -24,6 +25,7 @@ export default {
     GlFormCheckbox,
     GlLink,
     GroupSelector,
+    HelpPageLink,
   },
   AVAILABLE_FEATURES,
   fields: [
@@ -123,11 +125,13 @@ export default {
         {{
           s__('AiPowered|Only members of these groups will have access to selected AI features.')
         }}
-        <!-- This docs link is incorrect and needs to be fixed. Should also use help_page_link.vue component. -->
-        <!-- eslint-disable-next-line @gitlab/vue-no-hardcoded-urls -->
-        <gl-link href="/help/user/ai_features">
+
+        <help-page-link
+          href="administration/gitlab_duo/configure/access_control.md"
+          target="_blank"
+        >
           {{ s__('AiPowered|Learn more') }}
-        </gl-link>
+        </help-page-link>
       </p>
 
       <gl-table
