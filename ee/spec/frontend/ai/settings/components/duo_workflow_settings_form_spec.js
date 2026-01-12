@@ -36,20 +36,16 @@ describe('DuoWorkflowSettingsForm', () => {
   describe('MCP Section', () => {
     it('renders the MCP section title correctly', () => {
       const titles = wrapper.findAll('h5');
-      expect(titles.at(0).text()).toContain('Model Context Protocol');
+      expect(titles.at(0).text()).toContain('External MCP tools');
     });
 
     it('renders the checkbox with correct label', () => {
       expect(findFormCheckbox().exists()).toBe(true);
-      expect(findFormCheckbox().text()).toContain(
-        'Turn on support for Model Context Protocol (MCP)',
-      );
+      expect(findFormCheckbox().text()).toContain('Allow external MCP tools');
     });
 
     it('renders the help text correctly', () => {
-      expect(findFormCheckbox().text()).toContain(
-        'Turn on MCP support for GitLab Duo Chat (Agentic) and GitLab Duo Agent Platform.',
-      );
+      expect(findFormCheckbox().text()).toContain('Allow the IDE to access external MCP tools.');
     });
 
     it.each([[false], [true]])(
@@ -143,7 +139,7 @@ describe('DuoWorkflowSettingsForm', () => {
     it('renders both sections in correct order', () => {
       const headings = wrapper.findAll('h5');
       expect(headings).toHaveLength(1);
-      expect(headings.at(0).text()).toContain('Model Context Protocol');
+      expect(headings.at(0).text()).toContain('External MCP tools');
     });
 
     it('renders form group for protection settings', () => {
