@@ -6,6 +6,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { useAiBetaBadge } from 'ee/ai/duo_agents_platform/composables/use_ai_beta_badge';
 import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
@@ -80,6 +81,10 @@ export default {
     };
   },
   computed: {
+    showBetaBadge() {
+      const { showBetaBadge } = useAiBetaBadge();
+      return showBetaBadge.value || !this.aiCatalogFlow.foundational;
+    },
     formattedItemId() {
       return getIdFromGraphQLId(this.aiCatalogFlow.id);
     },
@@ -351,7 +356,7 @@ export default {
           <span class="gl-line-clamp-1 gl-wrap-anywhere">
             {{ aiCatalogFlow.name }}
           </span>
-          <gl-experiment-badge type="beta" class="gl-self-center" />
+          <gl-experiment-badge v-if="showBetaBadge" type="beta" class="gl-self-center" />
           <foundational-icon
             v-if="aiCatalogFlow.foundational"
             :resource-id="aiCatalogFlow.id"

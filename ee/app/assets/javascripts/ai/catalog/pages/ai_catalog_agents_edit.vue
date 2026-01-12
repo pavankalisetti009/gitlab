@@ -1,9 +1,9 @@
 <script>
-import { GlExperimentBadge, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
+import AiCatalogAgentHeader from '../components/ai_catalog_agent_header.vue';
+import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG } from '../constants';
 import {
   AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
@@ -14,8 +14,7 @@ export default {
   name: 'AiCatalogAgentsEdit',
   components: {
     AiCatalogAgentForm,
-    PageHeading,
-    GlExperimentBadge,
+    AiCatalogAgentHeader,
     GlAlert,
     GlSprintf,
     GlLink,
@@ -50,9 +49,6 @@ export default {
     },
     definition() {
       return this.aiCatalogAgent.latestVersion.definition;
-    },
-    isThirdPartyFlow() {
-      return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
     duplicateLink() {
       return {
@@ -119,22 +115,11 @@ export default {
 
 <template>
   <div>
-    <page-heading>
-      <template #heading>
-        <span class="gl-flex">
-          {{ s__('AICatalog|Edit agent') }}
-          <gl-experiment-badge
-            :type="isThirdPartyFlow ? 'experiment' : 'beta'"
-            class="gl-self-center"
-          />
-        </span>
-      </template>
-      <template #description>
-        <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Manage agent settings.') }}
-        </div>
-      </template>
-    </page-heading>
+    <ai-catalog-agent-header
+      :heading="s__('AICatalog|Edit agent')"
+      :description="s__('AICatalog|Manage agent settings.')"
+      :item-type="aiCatalogAgent.itemType"
+    />
     <gl-alert
       v-if="shouldShowEditingLatestAlert"
       :dismissible="false"

@@ -66,6 +66,11 @@ export default {
       required: false,
       default: undefined,
     },
+    isBeta: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     title() {
@@ -79,7 +84,7 @@ export default {
       return showBetaBadge.value;
     },
     showBadge() {
-      return this.showBetaBadge;
+      return this.isBeta || this.showBetaBadge;
     },
   },
   LINK_TO_DASHBOARD_MODAL_ID,
