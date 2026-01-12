@@ -76,7 +76,10 @@ module Onboarding
     def valid_referer?(path)
       # do not redirect additional requests on the page
       # with current page as a referer
-      request.referer.blank? || path.exclude?(URI(request.referer).path)
+      return true if request.referer.blank?
+
+      referer_path = URI(request.referer).path
+      referer_path.nil? || path.exclude?(referer_path)
     end
   end
 end

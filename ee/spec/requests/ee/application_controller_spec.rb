@@ -193,6 +193,26 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
             post users_sign_up_company_path
           end
         end
+
+        context 'when referer is about:blank' do
+          it 'does not raise an error and redirects to onboarding step' do
+            expect do
+              get root_path, headers: { 'HTTP_REFERER' => 'about:blank' }
+            end.not_to raise_error
+
+            expect(response).to redirect_to(url)
+          end
+        end
+
+        context 'when referer URI has no path' do
+          it 'does not raise an error and redirects to onboarding step' do
+            expect do
+              get root_path, headers: { 'HTTP_REFERER' => 'mailto:user@example.com' }
+            end.not_to raise_error
+
+            expect(response).to redirect_to(url)
+          end
+        end
       end
 
       context 'when onboarding is disabled' do
