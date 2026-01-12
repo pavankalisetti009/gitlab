@@ -72,6 +72,14 @@ module Gitlab
         user.user_preference.duo_default_namespace_with_fallback
       end
 
+      def self.default_duo_namespace_check_passes?(user:)
+        # User need to have default namespace setup so we can properly bill customer.
+        # However, this is required only for SaaS. For Self-Managed instances we can skip this check.
+        return true unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+        !!default_duo_namespace(user: user)
+      end
+
       def self.user_model_selection_enabled?(user:, scope:)
         namespace_to_use = scope&.root_ancestor
 
