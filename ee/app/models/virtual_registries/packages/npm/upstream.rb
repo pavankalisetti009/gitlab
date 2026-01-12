@@ -24,6 +24,9 @@ module VirtualRegistries
         has_many :cache_local_entries,
           class_name: 'VirtualRegistries::Packages::Npm::Cache::Local::Entry',
           inverse_of: :upstream
+        has_many :cache_remote_entries,
+          class_name: 'VirtualRegistries::Packages::Npm::Cache::Remote::Entry',
+          inverse_of: :upstream
 
         encrypts :username, :password
 
@@ -74,6 +77,22 @@ module VirtualRegistries
 
         def remote?
           !local?
+        end
+
+        def object_storage_key
+          hash = Digest::SHA2.hexdigest(SecureRandom.uuid)
+          Gitlab::HashedPath.new(
+            self.class.module_parent_name.underscore,
+            group_id,
+            'upstream',
+            id,
+            'cache',
+            'entry',
+            hash[0..1],
+            hash[2..3],
+            hash[4..],
+            root_hash: group_id
+          ).to_s
         end
 
         private

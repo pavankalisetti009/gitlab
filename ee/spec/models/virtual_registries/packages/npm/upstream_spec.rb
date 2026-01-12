@@ -31,6 +31,12 @@ RSpec.describe VirtualRegistries::Packages::Npm::Upstream, feature_category: :vi
         .class_name('VirtualRegistries::Packages::Npm::Cache::Local::Entry')
         .inverse_of(:upstream)
     end
+
+    it 'has many cache remote entries' do
+      is_expected.to have_many(:cache_remote_entries)
+        .class_name('VirtualRegistries::Packages::Npm::Cache::Remote::Entry')
+        .inverse_of(:upstream)
+    end
   end
 
   describe 'validations' do
@@ -424,5 +430,11 @@ RSpec.describe VirtualRegistries::Packages::Npm::Upstream, feature_category: :vi
     subject { upstream.as_json }
 
     it { is_expected.not_to include('password') }
+  end
+
+  describe '#object_storage_key' do
+    let_it_be(:upstream) { build_stubbed(:virtual_registries_packages_npm_upstream) }
+
+    it_behaves_like 'virtual registries: has object storage key', key_prefix: 'packages/npm'
   end
 end
