@@ -42,6 +42,15 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_security_setting do
+        let(:boundary_object) { project }
+        let(:request) { get api(url, personal_access_token: pat) }
+
+        before do
+          project.add_developer(user)
+        end
+      end
     end
   end
 
@@ -77,6 +86,13 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response['secret_push_protection_enabled']).to be(true)
+          end
+
+          it_behaves_like 'authorizing granular token permissions', :update_security_setting do
+            let(:boundary_object) { project }
+            let(:request) do
+              put api(url, personal_access_token: pat), params: { secret_push_protection_enabled: true }
+            end
           end
         end
 

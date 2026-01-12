@@ -30,6 +30,7 @@ module API
           detail 'Returns a JSON object of the project security setting'
           tags %w[projects]
         end
+        route_setting :authorization, permissions: :read_security_setting, boundary_type: :project
         get do
           unauthorized! unless can?(current_user, :read_security_settings, user_project)
 
@@ -45,6 +46,7 @@ module API
           optional :pre_receive_secret_detection_enabled, type: Boolean, desc: 'Enable/disable secret push protection'
           at_least_one_of :secret_push_protection_enabled, :pre_receive_secret_detection_enabled
         end
+        route_setting :authorization, permissions: :update_security_setting, boundary_type: :project
         put do
           unauthorized! unless can?(current_user, :manage_security_settings, user_project)
           forbidden! if user_project&.self_or_ancestors_archived?
