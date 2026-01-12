@@ -50430,6 +50430,7 @@ definitions:
       status:
         type: string
         enum:
+        - pending
         - started
         - finished
         - failed
