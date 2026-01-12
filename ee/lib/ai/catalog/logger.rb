@@ -29,7 +29,7 @@ module Ai
         }
 
         @item ||= consumer&.item || version&.item
-        @version ||= consumer.item.resolve_version(consumer.pinned_version_prefix) if consumer
+        @version ||= consumer.pinned_version if consumer
 
         attrs.merge(
           item_attrs,
