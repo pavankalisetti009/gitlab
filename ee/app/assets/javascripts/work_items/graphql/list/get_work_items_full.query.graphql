@@ -116,6 +116,7 @@ query getWorkItemsFullEE(
         closedAt
         confidential
         createdAt
+        externalAuthor
         hidden
         namespace {
           id
