@@ -3,7 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Groups::AutocompleteService, feature_category: :groups_and_projects do
-  let_it_be(:group, refind: true) { create(:group, :nested, :private, avatar: fixture_file_upload('spec/fixtures/dk.png')) }
+  let_it_be(:group, refind: true) do
+    create(:group, :nested, :private, avatar: fixture_file_upload('spec/fixtures/dk.png'))
+  end
+
   let_it_be(:sub_group) { create(:group, :private, parent: group) }
 
   let_it_be(:user) { create(:user, developer_of: group) }
@@ -126,32 +129,56 @@ RSpec.describe Groups::AutocompleteService, feature_category: :groups_and_projec
     let_it_be(:group) { create(:group, :public) }
     let_it_be(:wiki) { create(:group_wiki, group: group) }
 
+    let(:service) { described_class.new(group, user) }
+
     before do
+      allow(service).to receive(:can?).and_return(true)
       create(:wiki_page, wiki: wiki, title: 'page1', content: 'content1')
-      create(:wiki_page, wiki: wiki, title: 'templates/page2', content: 'content2')
     end
 
     context 'when user can read wiki' do
-      it 'returns wiki pages (except templates)' do
-        service = described_class.new(group, user)
+      it 'returns wiki pages' do
         allow(service).to receive(:can?).and_return(true)
 
         results = service.wikis
 
         expect(results.size).to eq(1)
-        expect(results.first).to include(path: "/groups/#{group.full_path}/-/wikis/page1", slug: 'page1', title: 'page1')
+        expect(results.first).to include(path: "/groups/#{group.full_path}/-/wikis/page1", slug: 'page1',
+          title: 'page1')
       end
 
-      it 'loads real title of the page from frontmatter if present' do
-        create(:wiki_page, wiki: wiki, title: 'page3', content: "---\ntitle: Real title\n---\ncontent3")
+      %w[templates uploads].each_with_index do |prefix, index|
+        context "with #{prefix}" do
+          let(:page_number) { index + 2 }
 
-        service = described_class.new(group, user)
-        allow(service).to receive(:can?).and_return(true)
+          before do
+            create(:wiki_page, wiki: wiki, title: "#{prefix}/page#{page_number}", content: "content#{page_number}")
+          end
 
-        results = service.wikis
+          it "does not return #{prefix}" do
+            results = service.wikis
 
-        expect(results.size).to eq(2)
-        expect(results.last).to include(path: "/groups/#{group.full_path}/-/wikis/page3", slug: 'page3', title: 'Real title')
+            expect(results.map { |r| r[:slug] }).not_to include("#{prefix}/page#{page_number}")
+          end
+        end
+      end
+
+      context 'with frontmatter title' do
+        before do
+          create(
+            :wiki_page,
+            wiki: wiki,
+            title: 'page4',
+            content: "---\ntitle: Real title\n---\ncontent"
+          )
+        end
+
+        it 'uses the title from frontmatter' do
+          results = service.wikis
+          page4 = results.find { |r| r[:slug] == 'page4' }
+
+          expect(page4).to include(title: 'Real title')
+        end
       end
     end
 
