@@ -174,6 +174,13 @@ RSpec.describe API::Iterations, feature_category: :team_planning do
       expect(json_response.size).to eq(3)
       expect(json_response.map { |i| i['id'] }).to contain_exactly(current_iteration.id, closed_iteration.id, descendant_iteration.id)
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_iteration do
+      let(:boundary_object) { group }
+      let(:request) do
+        get api(api_path, personal_access_token: pat)
+      end
+    end
   end
 
   describe 'GET /projects/:id/iterations' do
@@ -195,6 +202,13 @@ RSpec.describe API::Iterations, feature_category: :team_planning do
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(json_response.map { |i| i['id'] }).to contain_exactly(current_iteration.id, closed_iteration.id, descendant_iteration.id)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_iteration do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api(api_path, personal_access_token: pat)
+      end
     end
   end
 end

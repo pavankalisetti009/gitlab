@@ -568,7 +568,6 @@ read_issue_board
 read_issue_board_list
 read_issue_iid
 read_issue_link
-read_iteration
 read_iteration_cadence
 read_job_artifacts
 read_jobs_statistics
