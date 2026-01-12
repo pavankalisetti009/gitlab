@@ -51,6 +51,7 @@ module API
                 hidden true
               end
 
+              route_setting :authorization, permissions: :read_maven_virtual_registry, boundary_type: :group
               get do
                 authorize! :read_virtual_registry, policy_subject
 
@@ -79,6 +80,7 @@ module API
                   allow_blank: false
                 optional :description, type: String, desc: 'The description of the maven virtual registry'
               end
+              route_setting :authorization, permissions: :create_maven_virtual_registry, boundary_type: :group
               post do
                 authorize! :create_virtual_registry, policy_subject
 

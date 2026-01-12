@@ -25,6 +25,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
 
     context 'with valid group_id' do
       it_behaves_like 'successful response'
+
+      it_behaves_like 'authorizing granular token permissions', :read_maven_virtual_registry do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
 
     context 'with invalid group_id' do
@@ -96,6 +103,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
         end
 
         it_behaves_like 'successful response'
+
+        it_behaves_like 'authorizing granular token permissions', :create_maven_virtual_registry do
+          let(:boundary_object) { group }
+          let(:request) do
+            post api(url, personal_access_token: pat), params: params
+          end
+        end
       end
 
       it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created do
