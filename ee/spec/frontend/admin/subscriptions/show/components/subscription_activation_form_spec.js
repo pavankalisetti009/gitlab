@@ -1,4 +1,4 @@
-import { GlForm, GlFormCheckbox, GlFormInput, GlSprintf } from '@gitlab/ui';
+import { GlForm, GlFormCheckbox, GlFormInput, GlSprintf, GlCard, GlLink } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
@@ -15,6 +15,7 @@ import activateSubscriptionMutation from 'ee/admin/subscriptions/show/graphql/mu
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { preventDefault, stopPropagation } from 'ee_jest/admin/test_helpers';
 import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import {
@@ -26,6 +27,9 @@ import {
 Vue.use(VueApollo);
 
 describe('SubscriptionActivationForm', () => {
+  const customersPortalUrl = 'customers/portal-path';
+  const settingsAddLicensePath = 'admin/add-license-path';
+
   let wrapper;
 
   const createMockApolloProvider = (resolverMock) => {
@@ -40,6 +44,7 @@ describe('SubscriptionActivationForm', () => {
   const findActivationCodeInput = () => wrapper.findComponent(GlFormInput);
   const findActivateSubscriptionForm = () => wrapper.findComponent(GlForm);
   const findTermLink = () => findAgreementCheckboxFormGroup().findComponent(PromoPageLink);
+  const findAddLicenseCard = () => wrapper.findComponent(GlCard);
 
   const createFakeEvent = () => ({ preventDefault, stopPropagation });
   const createComponentWithApollo = ({
@@ -50,6 +55,10 @@ describe('SubscriptionActivationForm', () => {
     wrapper = extendedWrapper(
       mountMethod(SubscriptionActivationForm, {
         apolloProvider: createMockApolloProvider(mutationMock),
+        provide: {
+          customersPortalUrl,
+          settingsAddLicensePath,
+        },
         propsData: {
           ...props,
         },
@@ -62,6 +71,7 @@ describe('SubscriptionActivationForm', () => {
   };
 
   describe('component setup', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
     beforeEach(() => createComponentWithApollo());
 
     it('presents a form', () => {
@@ -72,12 +82,29 @@ describe('SubscriptionActivationForm', () => {
       expect(findActivationCodeInput().exists()).toBe(true);
     });
 
+    it('has a link to the customer portal', () => {
+      createComponentWithApollo({ mountMethod: mount });
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      const link = findActivationCodeFormGroup().findComponent(GlLink);
+      expect(link.props('href')).toBe(customersPortalUrl);
+
+      link.trigger('click');
+      expect(trackEventSpy).toHaveBeenCalledWith('click_sm_customers_portal_subscription_page', {});
+    });
+
     it('applies a class to the checkbox', () => {
       expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('');
     });
 
     it('has an `Activate` button', () => {
-      expect(findActivateButton().text()).toBe('Activate');
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      const button = findActivateButton();
+      expect(button.text()).toBe('Activate');
+
+      button.trigger('click');
+      expect(trackEventSpy).toHaveBeenCalledWith('click_sm_activate_subscription_page', {});
     });
 
     it('has a checkbox to accept subscription agreement', () => {
@@ -91,6 +118,12 @@ describe('SubscriptionActivationForm', () => {
     it('verify terms link url', () => {
       const link = findTermLink();
       expect(link.props('path')).toBe('/terms/');
+    });
+
+    it('has a link to the settings page to add a license', () => {
+      const card = findAddLicenseCard();
+      expect(card.exists()).toBe(true);
+      expect(card.findComponent(GlLink).props('href')).toBe(settingsAddLicensePath);
     });
   });
 
