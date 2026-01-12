@@ -17,7 +17,7 @@ module QA
         EVENT_TRIGGERS = QA::Resource::ProjectWebHook::EVENT_TRIGGERS + %i[subgroup]
 
         EVENT_TRIGGERS.each do |trigger|
-          attribute "#{trigger}_events".to_sym do
+          attribute :"#{trigger}_events" do
             false
           end
         end
