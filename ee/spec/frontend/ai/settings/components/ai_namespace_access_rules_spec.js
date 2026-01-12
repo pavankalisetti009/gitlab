@@ -43,7 +43,10 @@ describe('AiNamespaceAccessRules', () => {
   const findHelpLink = () => wrapper.findAllComponents(GlLink).at(0);
   const findTable = () => wrapper.findComponent(GlTable);
   const findNamespaceLinks = () =>
-    wrapper.findAllComponents(GlLink).filter((link) => link.attributes('target') === '_blank');
+    wrapper
+      .find('table')
+      .findAllComponents(GlLink)
+      .filter((link) => link.attributes('target') === '_blank');
   const findCheckboxes = () => wrapper.findAllComponents(GlFormCheckbox);
   const findGroupSelector = () => wrapper.findComponent(GroupSelector);
   const findRemoveButtons = () =>
@@ -80,7 +83,9 @@ describe('AiNamespaceAccessRules', () => {
 
     it('renders the learn more link with correct href', () => {
       expect(findHelpLink().exists()).toBe(true);
-      expect(findHelpLink().attributes('href')).toBe('/help/user/ai_features');
+      expect(findHelpLink().attributes('href')).toBe(
+        '/help/administration/gitlab_duo/configure/access_control.md',
+      );
       expect(findHelpLink().text()).toBe('Learn more');
     });
 
