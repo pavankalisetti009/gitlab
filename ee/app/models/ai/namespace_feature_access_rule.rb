@@ -24,6 +24,22 @@ module Ai
         .group_by(&:through_namespace_id)
     end
 
+    scope :accessible_for_user, ->(user, accessible_entity, namespace) {
+      joins(
+        "INNER JOIN members " \
+          "ON members.source_id = ai_namespace_feature_access_rules.through_namespace_id " \
+          "AND members.source_type = 'Namespace'"
+      ).where(
+        accessible_entity: accessible_entity,
+        members: { user_id: user.id },
+        ai_namespace_feature_access_rules: { root_namespace: namespace }
+      )
+    }
+
+    scope :for_namespace, ->(namespace) {
+      where(root_namespace: namespace)
+    }
+
     private
 
     def through_namespace_root_is_root_namespace
