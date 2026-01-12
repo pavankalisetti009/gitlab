@@ -29,6 +29,7 @@ export default () => {
     subscriptionSyncPath,
     licenseUsageFilePath,
     isAdmin,
+    settingsAddLicensePath,
   } = el.dataset;
   const connectivityHelpURL = helpPagePath('/administration/license.html', {
     anchor: 'error-cannot-activate-instance-due-to-a-connectivity-issue',
@@ -47,6 +48,7 @@ export default () => {
       freeTrialPath,
       licenseRemovePath,
       subscriptionSyncPath,
+      settingsAddLicensePath,
     },
     render: (h) =>
       h(CloudLicenseShowApp, {

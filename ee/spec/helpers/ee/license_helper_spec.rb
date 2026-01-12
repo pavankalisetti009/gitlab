@@ -109,7 +109,8 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
             license_remove_path: admin_license_path,
             congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
             license_usage_file_path: admin_license_usage_export_path(format: :csv),
-            is_admin: 'true'
+            is_admin: 'true',
+            settings_add_license_path: general_admin_application_settings_path(anchor: 'js-add-license-toggle')
           }
         )
       end
@@ -137,7 +138,8 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
             license_remove_path: admin_license_path,
             congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
             license_usage_file_path: admin_license_usage_export_path(format: :csv),
-            is_admin: 'true'
+            is_admin: 'true',
+            settings_add_license_path: general_admin_application_settings_path(anchor: 'js-add-license-toggle')
           }
         )
       end

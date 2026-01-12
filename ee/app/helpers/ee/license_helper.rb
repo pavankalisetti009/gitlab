@@ -60,7 +60,8 @@ module EE
         subscription_sync_path: sync_seat_link_admin_license_path,
         congratulation_svg_path: image_path('illustrations/cloud-check-sm.svg'),
         license_usage_file_path: admin_license_usage_export_path(format: :csv),
-        is_admin: current_user.can_admin_all_resources?.to_s
+        is_admin: current_user.can_admin_all_resources?.to_s,
+        settings_add_license_path: general_admin_application_settings_path(anchor: 'js-add-license-toggle')
       }
     end
 

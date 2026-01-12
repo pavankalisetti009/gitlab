@@ -1,9 +1,20 @@
 <script>
-import { GlButton, GlForm, GlFormCheckbox, GlFormGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
+import {
+  GlButton,
+  GlCard,
+  GlForm,
+  GlFormCheckbox,
+  GlFormGroup,
+  GlFormInput,
+  GlLink,
+  GlIcon,
+  GlSprintf,
+} from '@gitlab/ui';
 import validation from '~/vue_shared/directives/validation';
 import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import {
   activateLabel,
+  addLicenseKey,
   INVALID_CODE_ERROR,
   INVALID_ACTIVATION_CODE_SERVER_ERROR,
   SUBSCRIPTION_ACTIVATION_FAILURE_EVENT,
@@ -28,10 +39,13 @@ export default {
   name: 'SubscriptionActivationForm',
   components: {
     GlButton,
+    GlCard,
     GlForm,
     GlFormGroup,
     GlFormInput,
     GlFormCheckbox,
+    GlLink,
+    GlIcon,
     GlSprintf,
     PromoPageLink,
   },
@@ -43,10 +57,12 @@ export default {
     acceptTermsFeedback: subscriptionActivationForm.acceptTermsFeedback,
     pasteActivationCode: subscriptionActivationForm.pasteActivationCode,
     activationHelp: subscriptionActivationInsertCode,
+    addLicenseKey,
   },
   directives: {
     validation: validation(feedbackMap),
   },
+  inject: ['customersPortalUrl', 'settingsAddLicensePath'],
   props: {
     hideSubmitButton: {
       type: Boolean,
@@ -131,67 +147,94 @@ export default {
 };
 </script>
 <template>
-  <gl-form novalidate @submit.prevent="submit">
-    <gl-form-group
-      :description="$options.i18n.activationHelp"
-      :invalid-feedback="form.fields.activationCode.feedback"
-      :state="form.fields.activationCode.state"
-      data-testid="form-group-activation-code"
-    >
-      <gl-form-input
-        id="activation-code-group"
-        v-model.trim="form.fields.activationCode.value"
-        v-validation:[form.showValidation]
-        class="gl-mb-4"
-        data-testid="activation-code-field"
-        :disabled="isLoading"
-        :placeholder="$options.i18n.pasteActivationCode"
+  <div>
+    <gl-form novalidate @submit.prevent="submit">
+      <gl-form-group
+        :invalid-feedback="form.fields.activationCode.feedback"
         :state="form.fields.activationCode.state"
-        :validation-message="$options.i18n.activationCodeFeedback"
-        name="activationCode"
-        pattern="\w{24}"
-        required
-      />
-    </gl-form-group>
-
-    <gl-form-group
-      class="gl-mb-0"
-      :invalid-feedback="form.fields.terms.feedback"
-      :state="form.fields.terms.state"
-      data-testid="form-group-terms"
-    >
-      <gl-form-checkbox
-        id="subscription-form-terms-check"
-        v-model="form.fields.terms.value"
-        v-validation:[form.showValidation]
-        :state="form.fields.terms.state"
-        :validation-message="$options.i18n.acceptTermsFeedback"
-        data-testid="subscription-terms-checkbox"
-        name="terms"
-        required
+        data-testid="form-group-activation-code"
       >
-        <span :class="checkboxLabelClass">
-          <gl-sprintf :message="$options.i18n.acceptTerms">
+        <template #description>
+          <gl-sprintf :message="$options.i18n.activationHelp">
             <template #link="{ content }">
-              <promo-page-link path="/terms/" target="_blank">
+              <gl-link
+                :href="customersPortalUrl"
+                target="_blank"
+                data-event-tracking="click_sm_customers_portal_subscription_page"
+              >
                 {{ content }}
-              </promo-page-link>
+              </gl-link>
             </template>
           </gl-sprintf>
-        </span>
-      </gl-form-checkbox>
-    </gl-form-group>
+        </template>
+        <gl-form-input
+          id="activation-code-group"
+          v-model.trim="form.fields.activationCode.value"
+          v-validation:[form.showValidation]
+          class="gl-mb-4"
+          data-testid="activation-code-field"
+          :disabled="isLoading"
+          :placeholder="$options.i18n.pasteActivationCode"
+          :state="form.fields.activationCode.state"
+          :validation-message="$options.i18n.activationCodeFeedback"
+          name="activationCode"
+          pattern="\w{24}"
+          required
+        />
+      </gl-form-group>
 
-    <gl-button
-      v-if="!hideSubmitButton"
-      :loading="isLoading"
-      category="primary"
-      class="js-no-auto-disable gl-mt-6"
-      data-testid="activate-button"
-      type="submit"
-      variant="confirm"
+      <gl-form-group
+        class="gl-mb-0"
+        :invalid-feedback="form.fields.terms.feedback"
+        :state="form.fields.terms.state"
+        data-testid="form-group-terms"
+      >
+        <gl-form-checkbox
+          id="subscription-form-terms-check"
+          v-model="form.fields.terms.value"
+          v-validation:[form.showValidation]
+          :state="form.fields.terms.state"
+          :validation-message="$options.i18n.acceptTermsFeedback"
+          data-testid="subscription-terms-checkbox"
+          name="terms"
+          required
+        >
+          <span :class="checkboxLabelClass">
+            <gl-sprintf :message="$options.i18n.acceptTerms">
+              <template #link="{ content }">
+                <promo-page-link path="/terms/" target="_blank">
+                  {{ content }}
+                </promo-page-link>
+              </template>
+            </gl-sprintf>
+          </span>
+        </gl-form-checkbox>
+      </gl-form-group>
+
+      <gl-button
+        v-if="!hideSubmitButton"
+        :loading="isLoading"
+        category="primary"
+        class="js-no-auto-disable gl-mt-5"
+        data-testid="activate-button"
+        type="submit"
+        variant="confirm"
+        data-event-tracking="click_sm_activate_subscription_page"
+      >
+        {{ $options.i18n.activateLabel }}
+      </gl-button>
+    </gl-form>
+
+    <gl-card
+      class="gl-mt-5 gl-bg-default"
+      body-class="gl-flex gl-gap-3 gl-items-center gl-self-stretch gl-text-subtle"
     >
-      {{ $options.i18n.activateLabel }}
-    </gl-button>
-  </gl-form>
+      <gl-icon name="question-o" variant="subtle" />
+      <gl-sprintf :message="$options.i18n.addLicenseKey">
+        <template #link="{ content }">
+          <gl-link :href="settingsAddLicensePath" target="_blank">{{ content }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </gl-card>
+  </div>
 </template>
