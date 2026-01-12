@@ -11,6 +11,9 @@ module Elastic
 
       embedding_gauge = Gitlab::Metrics.gauge(:search_advanced_bulk_cron_embedding_queue_size, 'Number of embedding updates waiting to be synchronized to Elasticsearch', {}, :max)
       embedding_gauge.set({}, ::Search::Elastic::ProcessEmbeddingBookkeepingService.queue_size)
+
+      dead_gauge = Gitlab::Metrics.gauge(:search_advanced_bulk_cron_dead_queue_size, 'Number of failed items in the dead queue requiring manual intervention', {}, :max)
+      dead_gauge.set({}, ::Search::Elastic::DeadQueue.queue_size)
     end
   end
 end
