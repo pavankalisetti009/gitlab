@@ -926,28 +926,6 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
 
         expect(execute).to be_success
       end
-
-      context 'without ai_dap_executor_connects_over_ws feature flag' do
-        before do
-          stub_feature_flags(ai_dap_executor_connects_over_ws: false)
-        end
-
-        let(:executor_commands) do
-          cli_install_commands + [
-            %(duo run --existing-session-id #{workflow.id} --connection-type grpc)
-          ]
-        end
-
-        it 'uses only the main commands' do
-          expect(execute).to be_success
-
-          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
-            expect(workload_definition.commands).to eq(shared_main_commands + executor_commands)
-          end
-
-          expect(execute).to be_success
-        end
-      end
     end
 
     context 'when setup_script is empty array' do
