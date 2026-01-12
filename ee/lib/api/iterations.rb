@@ -100,6 +100,7 @@ module API
       params do
         use :list_params
       end
+      route_setting :authorization, permissions: :read_iteration, boundary_type: :project
       get ":id/iterations" do
         authorize! :read_iteration, user_project
 
@@ -120,6 +121,7 @@ module API
       params do
         use :list_params
       end
+      route_setting :authorization, permissions: :read_iteration, boundary_type: :group
       get ":id/iterations" do
         authorize! :read_iteration, user_group
 
