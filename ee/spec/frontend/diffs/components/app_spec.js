@@ -15,6 +15,7 @@ import { useNotes } from '~/notes/store/legacy_notes';
 import { useBatchComments } from '~/batch_comments/store';
 import { useFindingsDrawer } from '~/mr_notes/store/findings_drawer';
 import { useCodeReview } from '~/diffs/stores/code_review';
+import { useFileBrowser } from '~/diffs/stores/file_browser';
 import {
   codeQualityNewErrorsHandler,
   SASTParsedHandler,
@@ -181,7 +182,8 @@ describe('diffs/components/app', () => {
     it('passes the SAST report-data to the diff component', async () => {
       store.viewDiffsFileByFile = true;
       store.diffFiles = [{ file_hash: '123' }];
-      store.treeEntries = { 123: { type: 'blob', id: 123, file_hash: '123' } };
+      useFileBrowser().treeEntries = { 123: { type: 'blob', id: 123, file_hash: '123' } };
+      useFileBrowser().isLoadingFileBrowser = false;
       store.virtualScrollerDisabled = true;
       createComponent({
         props: {
