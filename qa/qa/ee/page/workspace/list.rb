@@ -60,14 +60,14 @@ module QA
           end
 
           def get_workspaces_list(tab:)
-            within_element("workspace-tab-#{tab}".to_sym) do
+            within_element(:"workspace-tab-#{tab}") do
               all_elements('workspace-name', minimum: 0)
                 .map { |element| element.text.strip }
             end
           end
 
           def wait_for_workspaces_creation(workspace)
-            within_element("#{workspace}-action".to_sym) do
+            within_element(:"#{workspace}-action") do
               QA::Support::WaitForRequests.wait_for_requests
             end
           end
