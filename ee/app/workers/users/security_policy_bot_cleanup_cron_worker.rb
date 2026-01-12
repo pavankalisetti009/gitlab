@@ -13,8 +13,6 @@ module Users
     MAX_BATCHES = 10
 
     def perform
-      return unless Feature.enabled?(:security_policy_bot_cleanup_cron_worker, :instance)
-
       options = { skip_authorization: true, hard_delete: false,
                   reason_for_deletion: "Security policy bot no longer associated with any project" }
       users_to_ignore = []

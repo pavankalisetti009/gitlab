@@ -81,18 +81,6 @@ RSpec.describe Users::SecurityPolicyBotCleanupCronWorker, feature_category: :sec
 
         perform
       end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(security_policy_bot_cleanup_cron_worker: false)
-        end
-
-        it 'does not delete users' do
-          expect(Users::DestroyService).not_to receive(:new)
-
-          perform
-        end
-      end
     end
 
     context 'with security policy bots and ghost user migrations' do
