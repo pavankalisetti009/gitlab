@@ -93,6 +93,13 @@ module VirtualRegistryHelper
     }).to_json
   end
 
+  def container_template_data(group)
+    {
+      full_path: group.full_path,
+      base_path: group_virtual_registries_container_path(group)
+    }
+  end
+
   private
 
   def maven_upstream_attributes(maven_upstream)

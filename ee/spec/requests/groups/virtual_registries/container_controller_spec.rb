@@ -43,9 +43,33 @@ RSpec.describe Groups::VirtualRegistries::ContainerController, feature_category:
 
           expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: false)
         end
+
+        it 'pushes adminVirtualRegistry: false ability to frontend' do
+          get_index
+
+          expect(response.body).to have_pushed_frontend_ability(adminVirtualRegistry: false)
+        end
+
+        it 'pushes ui_for_virtual_registry_cleanup_policy feature flag to frontend' do
+          get_index
+
+          expect(response.body).to have_pushed_frontend_feature_flags(uiForVirtualRegistryCleanupPolicy: true)
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(ui_for_virtual_registry_cleanup_policy: false)
+          end
+
+          it 'pushes ui_for_virtual_registry_cleanup_policy feature flag to frontend as false' do
+            get_index
+
+            expect(response.body).to have_pushed_frontend_feature_flags(uiForVirtualRegistryCleanupPolicy: false)
+          end
+        end
       end
 
-      context 'when user is group admin' do
+      context 'when user is group maintainer' do
         before_all do
           group.add_maintainer(user)
         end
@@ -54,6 +78,24 @@ RSpec.describe Groups::VirtualRegistries::ContainerController, feature_category:
           get_index
 
           expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: true)
+        end
+
+        it 'pushes adminVirtualRegistry: false ability to frontend' do
+          get_index
+
+          expect(response.body).to have_pushed_frontend_ability(adminVirtualRegistry: false)
+        end
+      end
+
+      context 'when user is group owner' do
+        before_all do
+          group.add_owner(user)
+        end
+
+        it 'pushes adminVirtualRegistry: true ability to frontend' do
+          get_index
+
+          expect(response.body).to have_pushed_frontend_ability(adminVirtualRegistry: true)
         end
       end
     end
