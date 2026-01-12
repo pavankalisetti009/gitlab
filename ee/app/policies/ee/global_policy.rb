@@ -90,7 +90,9 @@ module EE
       condition(:duo_agentic_chat_enabled) do
         next false unless @user
 
-        ::Feature.enabled?(:duo_agentic_chat, @user)
+        next false unless ::Feature.enabled?(:duo_agentic_chat, @user)
+
+        @user.allowed_to_use?(:duo_agent_platform)
       end
 
       condition(:user_belongs_to_paid_namespace) do

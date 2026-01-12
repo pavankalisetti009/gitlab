@@ -228,11 +228,21 @@ module Ai
 
       private
 
+      def get_self_hosted_unit_primitive_name(feature_setting)
+        return unless feature_setting&.self_hosted?
+
+        dap_features = %w[duo_agent_platform duo_agent_platform_agentic_chat]
+
+        return :self_hosted_duo_agent_platform if dap_features.include?(feature_setting.feature)
+
+        :self_hosted_models
+      end
+
       def get_unit_primitive_model(unit_primitive_name, feature_setting: nil)
         unless ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
           feature_setting ||= ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)
 
-          unit_primitive_name = :self_hosted_models if feature_setting&.self_hosted?
+          unit_primitive_name = get_self_hosted_unit_primitive_name(feature_setting) if feature_setting&.self_hosted?
         end
 
         Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(unit_primitive_name)
@@ -249,7 +259,11 @@ module Ai
         # This is _not_ a good use of this API, and we should separate filtering by namespace
         # from filtering by user seat assignments. While this works, it will actually join
         # all add-on purchases in all tenant namespaces, which is not ideal.
-        purchases = GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_ons, nil).assigned_to_user(self)
+        purchases = GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_ons, nil)
+
+        # For self-hosted DAP, all users get access without explicit assignment
+        # For other add-ons, check if the user is explicitly assigned
+        purchases = purchases.assigned_to_user(self) unless unit_primitive == :self_hosted_duo_agent_platform
 
         return unless purchases.any?
 

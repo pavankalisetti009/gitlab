@@ -668,7 +668,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
   describe 'access_duo_agentic_chat' do
     let(:policy) { :access_duo_agentic_chat }
-
     let_it_be_with_reload(:current_user) { create(:user) }
 
     context 'when on .org or .com', :saas do
@@ -681,6 +680,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       with_them do
         before do
           stub_feature_flags(duo_agentic_chat: feature_flag)
+          allow(current_user).to receive(:allowed_to_use?).and_return(false)
           allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform)
             .and_return(duo_agentic_chat_enabled_for_user)
         end
@@ -697,16 +697,17 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
     context 'when not on .org or .com' do
       where(:lock_duo_features_enabled, :duo_agentic_chat_enabled_for_user, :allowed) do
-        true  |  true  |  be_disallowed(policy)
-        true  |  false |  be_disallowed(policy)
-        false |  false |  be_disallowed(policy)
-        false |  true  |  be_allowed(policy)
+        true  | true  | be_disallowed(policy)
+        true  | false | be_disallowed(policy)
+        false | false | be_disallowed(policy)
+        false | true  | be_allowed(policy)
       end
 
       with_them do
         before do
           allow(::Gitlab).to receive(:org_or_com?).and_return(false)
           stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
+          allow(current_user).to receive(:allowed_to_use?).and_return(false)
           allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform)
             .and_return(duo_agentic_chat_enabled_for_user)
         end
