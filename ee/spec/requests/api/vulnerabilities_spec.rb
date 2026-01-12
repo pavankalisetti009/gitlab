@@ -47,6 +47,13 @@ RSpec.describe API::Vulnerabilities, feature_category: :vulnerability_management
       end
 
       it_behaves_like 'forbids access to vulnerability API endpoint in case of disabled features'
+
+      it_behaves_like 'authorizing granular token permissions', :read_vulnerability do
+        let(:boundary_object) { project }
+        let(:request) do
+          get api(project_vulnerabilities_path, personal_access_token: pat)
+        end
+      end
     end
 
     describe 'permissions', :enable_admin_mode do
@@ -163,6 +170,13 @@ RSpec.describe API::Vulnerabilities, feature_category: :vulnerability_management
       end
 
       it_behaves_like 'forbids access to vulnerability API endpoint in case of disabled features'
+
+      it_behaves_like 'authorizing granular token permissions', :create_vulnerability do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api(project_vulnerabilities_path, personal_access_token: pat), params: { finding_id: finding_id }
+        end
+      end
     end
 
     describe 'permissions', :enable_admin_mode do
