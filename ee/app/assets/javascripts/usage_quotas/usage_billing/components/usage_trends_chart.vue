@@ -96,7 +96,7 @@ export default {
           name: s__('UsageBilling|Monthly commitment'),
           stack: 'daily',
           symbolSize: 6,
-          showSymbol: true,
+          showSymbol: false,
           itemStyle: {
             color: '#63a6e9',
           },
@@ -126,7 +126,7 @@ export default {
           name: s__('UsageBilling|Monthly waiver'),
           stack: 'daily',
           symbolSize: 6,
-          showSymbol: true,
+          showSymbol: false,
           itemStyle: {
             color: '#7992f5',
           },
@@ -153,7 +153,7 @@ export default {
           name: s__('UsageBilling|On-demand'),
           stack: 'daily',
           symbolSize: 6,
-          showSymbol: true,
+          showSymbol: false,
           itemStyle: {
             color: '#ab6100',
           },
