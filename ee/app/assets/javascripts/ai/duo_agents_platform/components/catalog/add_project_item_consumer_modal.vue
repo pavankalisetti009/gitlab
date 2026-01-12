@@ -161,7 +161,6 @@ export default {
         ...(this.showTriggers ? { triggerTypes: this.triggerTypes } : {}),
       });
       this.$refs.modal.hide();
-      this.resetForm();
     },
     onHidden() {
       this.errors = [];

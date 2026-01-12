@@ -1,5 +1,6 @@
 import { GlForm, GlFormCheckbox, GlFormCheckboxGroup, GlModal } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import GroupItemConsumerDropdown from 'ee/ai/duo_agents_platform/components/catalog/group_item_consumer_dropdown.vue';
 import AddAgentWarning from 'ee/ai/duo_agents_platform/components/catalog/add_agent_warning.vue';
@@ -120,13 +121,49 @@ describe('AddProjectItemConsumerModal', () => {
         triggerTypes: ['mention'],
       });
     });
+  });
 
-    it('resets form', async () => {
+  describe('when the modal is hidden', () => {
+    beforeEach(async () => {
+      await findGroupItemConsumerDropdown().vm.$emit('input', mockFlowItemConsumer);
+      findFormCheckboxGroup().vm.$emit('input', ['mention']);
+
+      findModal().vm.$emit('hidden');
+    });
+
+    it('resets the form', async () => {
       expect(findGroupItemConsumerDropdown().props('value')).toBeNull();
 
       // Need to set a flow type consumer again to check the trigger types are reset
       await findGroupItemConsumerDropdown().vm.$emit('input', mockFlowItemConsumer);
 
+      expect(findFormCheckboxGroup().attributes('checked')).toEqual(
+        'mention,assign,assign_reviewer',
+      );
+    });
+  });
+
+  describe('when form is submitted and modal is hidden', () => {
+    it('only resets the form once after modal is hidden', async () => {
+      const resetFormSpy = jest.spyOn(wrapper.vm, 'resetForm');
+
+      await findGroupItemConsumerDropdown().vm.$emit('input', mockFlowItemConsumer);
+      await findFormCheckboxGroup().vm.$emit('input', ['assign']);
+
+      findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+
+      // Before hidden event, form should still have the selected values
+      expect(findFormCheckboxGroup().attributes('checked')).toEqual('assign');
+
+      findModal().vm.$emit('hidden');
+      await nextTick();
+
+      // After hidden event, form should be reset
+      expect(resetFormSpy).toHaveBeenCalledTimes(1);
+      expect(findGroupItemConsumerDropdown().props('value')).toBeNull();
+
+      // Need to set a flow type consumer again to check the trigger types are reset
+      await findGroupItemConsumerDropdown().vm.$emit('input', mockFlowItemConsumer);
       expect(findFormCheckboxGroup().attributes('checked')).toEqual(
         'mention,assign,assign_reviewer',
       );
