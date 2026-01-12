@@ -1,4 +1,4 @@
-import { numberToMetricPrefix } from '~/lib/utils/number_utils';
+import { THOUSAND, MILLION } from '~/lib/utils/constants';
 
 export const fillUsageValues = (usage) => {
   const {
@@ -22,14 +22,21 @@ export const fillUsageValues = (usage) => {
  * Formats number with a fixed fraction digits if below 1000, or with a metric prefix
  *
  * @param {number} value
- * @returns string
+ * @param {number} fractionDigits how many digits to show after the decimal point
+ * @returns {string}
  */
-export const formatNumber = (value) => {
+export const formatNumber = (value, fractionDigits = 1) => {
   if (value === 0) return '0';
   if (!value) return `${value}`;
-  if (value < 1000) {
+  if (value < THOUSAND) {
     if (Number.isInteger(value)) return `${value}`;
-    return (Math.round(value * 10) / 10).toFixed(1);
+    const multiplier = 10 ** fractionDigits;
+    return (Math.round(value * multiplier) / multiplier).toFixed(fractionDigits);
   }
-  return numberToMetricPrefix(value);
+
+  // Handle metric prefix with custom fraction digits
+  if (value < MILLION) {
+    return `${Number((value / THOUSAND).toFixed(fractionDigits))}k`;
+  }
+  return `${Number((value / MILLION).toFixed(fractionDigits))}m`;
 };
