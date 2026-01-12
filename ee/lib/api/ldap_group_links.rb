@@ -18,6 +18,7 @@ module API
         is_array true
         tags ldap_group_links_tags
       end
+      route_setting :authorization, permissions: :read_ldap_group_link, boundary_type: :group
       get ":id/ldap_group_links" do
         group = find_group(params[:id])
         authorize! :admin_group, group
@@ -51,6 +52,7 @@ module API
         optional 'member_role_id', type: Integer, desc: 'The ID of the Member Role for members of the LDAP group'
         exactly_one_of :cn, :filter
       end
+      route_setting :authorization, permissions: :create_ldap_group_link, boundary_type: :group
       post ":id/ldap_group_links" do
         group = find_group(params[:id])
         authorize! :admin_group, group
@@ -74,6 +76,7 @@ module API
       params do
         requires 'cn', type: String, desc: 'The CN of a LDAP group'
       end
+      route_setting :authorization, permissions: :delete_ldap_group_link, boundary_type: :group
       # rubocop: disable CodeReuse/ActiveRecord
       delete ":id/ldap_group_links/:cn" do
         group = find_group(params[:id])
@@ -99,6 +102,7 @@ module API
         requires 'cn', type: String, desc: 'The CN of a LDAP group'
         requires 'provider', type: String, desc: 'LDAP provider for the LDAP group link'
       end
+      route_setting :authorization, permissions: :delete_ldap_group_link, boundary_type: :group
       # rubocop: disable CodeReuse/ActiveRecord
       delete ":id/ldap_group_links/:provider/:cn" do
         group = find_group(params[:id])
@@ -126,6 +130,7 @@ module API
         requires 'provider', type: String, desc: 'LDAP provider for the LDAP group link'
         exactly_one_of :cn, :filter
       end
+      route_setting :authorization, permissions: :delete_ldap_group_link, boundary_type: :group
       # rubocop: disable CodeReuse/ActiveRecord
       delete ":id/ldap_group_links" do
         group = find_group(params[:id])

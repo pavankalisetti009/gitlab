@@ -45,6 +45,14 @@ RSpec.describe API::LdapGroupLinks, :api, feature_category: :system_access do
     end
 
     context "when owner of the group" do
+      it_behaves_like 'authorizing granular token permissions', :read_ldap_group_link do
+        let(:user) { owner }
+        let(:boundary_object) { group_with_ldap_links }
+        let(:request) do
+          get api("/groups/#{group_with_ldap_links.id}/ldap_group_links", personal_access_token: pat)
+        end
+      end
+
       it "returns ldap group links" do
         get api("/groups/#{group_with_ldap_links.id}/ldap_group_links", owner)
 
@@ -112,6 +120,15 @@ RSpec.describe API::LdapGroupLinks, :api, feature_category: :system_access do
       end
 
       context "when owner of the group" do
+        it_behaves_like 'authorizing granular token permissions', :create_ldap_group_link do
+          let(:user) { owner }
+          let(:boundary_object) { group_with_ldap_links }
+          let(:request) do
+            post api("/groups/#{group_with_ldap_links.id}/ldap_group_links", personal_access_token: pat),
+              params: params.merge({ group_access: GroupMember::GUEST, provider: 'ldap3' })
+          end
+        end
+
         it "returns ok and add ldap group link" do
           params_test = params.merge({ group_access: GroupMember::GUEST, provider: 'ldap3' })
 
@@ -305,6 +322,14 @@ RSpec.describe API::LdapGroupLinks, :api, feature_category: :system_access do
     end
 
     context "when owner of the group" do
+      it_behaves_like 'authorizing granular token permissions', :delete_ldap_group_link do
+        let(:user) { owner }
+        let(:boundary_object) { group_with_ldap_links }
+        let(:request) do
+          delete api("/groups/#{group_with_ldap_links.id}/ldap_group_links/ldap-group1", personal_access_token: pat)
+        end
+      end
+
       it "removes ldap group link" do
         expect do
           delete api("/groups/#{group_with_ldap_links.id}/ldap_group_links/ldap-group1", owner)
@@ -342,6 +367,15 @@ RSpec.describe API::LdapGroupLinks, :api, feature_category: :system_access do
     end
 
     context "when owner of the group" do
+      it_behaves_like 'authorizing granular token permissions', :delete_ldap_group_link do
+        let(:user) { owner }
+        let(:boundary_object) { group_with_ldap_links }
+        let(:request) do
+          delete api("/groups/#{group_with_ldap_links.id}/ldap_group_links/ldap2/ldap-group2",
+            personal_access_token: pat)
+        end
+      end
+
       it "returns 404 if LDAP group cn not used for a LDAP group link for the specified provider" do
         expect do
           delete api("/groups/#{group_with_ldap_links.id}/ldap_group_links/ldap1/ldap-group2", owner)
@@ -380,6 +414,15 @@ RSpec.describe API::LdapGroupLinks, :api, feature_category: :system_access do
       end
 
       context "when owner of the group" do
+        it_behaves_like 'authorizing granular token permissions', :delete_ldap_group_link do
+          let(:user) { owner }
+          let(:boundary_object) { group_with_ldap_links }
+          let(:request) do
+            delete api("/groups/#{group_with_ldap_links.id}/ldap_group_links", personal_access_token: pat),
+              params: params
+          end
+        end
+
         it "removes ldap group link" do
           expect do
             delete api("/groups/#{group_with_ldap_links.id}/ldap_group_links", owner), params: params
