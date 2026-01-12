@@ -1,20 +1,18 @@
 <script>
-import { GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
+import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG } from '../constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
+import AiCatalogAgentHeader from '../components/ai_catalog_agent_header.vue';
 import { prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogAgentsNew',
   components: {
     AiCatalogAgentForm,
-    PageHeading,
-    GlExperimentBadge,
+    AiCatalogAgentHeader,
   },
   data() {
     return {
@@ -22,11 +20,6 @@ export default {
       isSubmitting: false,
       selectedItemType: null,
     };
-  },
-  computed: {
-    isThirdPartyFlow() {
-      return this.selectedItemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
-    },
   },
   methods: {
     async handleSubmit({ type, ...input }) {
@@ -78,27 +71,15 @@ export default {
 
 <template>
   <div>
-    <page-heading>
-      <template #heading>
-        <span class="gl-flex">
-          {{ s__('AICatalog|New agent') }}
-          <gl-experiment-badge
-            :type="isThirdPartyFlow ? 'experiment' : 'beta'"
-            class="gl-self-center"
-          />
-        </span>
-      </template>
-      <template #description>
-        <div class="gl-border-b gl-pb-3">
-          {{
-            s__(
-              'AICatalog|Use agents with GitLab Duo Chat to complete tasks and answer complex questions.',
-            )
-          }}
-        </div>
-      </template>
-    </page-heading>
-
+    <ai-catalog-agent-header
+      :heading="s__('AICatalog|New agent')"
+      :description="
+        s__(
+          'AICatalog|Use agents with GitLab Duo Chat to complete tasks and answer complex questions.',
+        )
+      "
+      :item-type="selectedItemType"
+    />
     <ai-catalog-agent-form
       mode="create"
       :is-loading="isSubmitting"

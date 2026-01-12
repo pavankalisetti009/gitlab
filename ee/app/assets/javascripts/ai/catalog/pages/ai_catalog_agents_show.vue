@@ -7,6 +7,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { useAiBetaBadge } from 'ee/ai/duo_agents_platform/composables/use_ai_beta_badge';
 import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
@@ -81,6 +82,24 @@ export default {
     };
   },
   computed: {
+    isThirdPartyFlow() {
+      return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+    },
+    showBetaBadge() {
+      const { showBetaBadge } = useAiBetaBadge();
+      return showBetaBadge.value;
+    },
+    badgeType() {
+      if (this.isThirdPartyFlow) {
+        return 'experiment';
+      }
+
+      if (this.showBetaBadge) {
+        return 'beta';
+      }
+
+      return null;
+    },
     formattedItemId() {
       return getIdFromGraphQLId(this.aiCatalogAgent.id);
     },
@@ -95,9 +114,6 @@ export default {
     },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
-    },
-    isThirdPartyFlow() {
-      return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
     isReadyToUpdate() {
       return this.version.activeVersionKey === VERSION_LATEST;
@@ -357,10 +373,7 @@ export default {
           <span class="gl-line-clamp-1 gl-wrap-anywhere">
             {{ aiCatalogAgent.name }}
           </span>
-          <gl-experiment-badge
-            :type="isThirdPartyFlow ? 'experiment' : 'beta'"
-            class="gl-self-center"
-          />
+          <gl-experiment-badge v-if="badgeType" :type="badgeType" class="gl-self-center" />
           <foundational-icon
             v-if="aiCatalogAgent.foundational"
             :resource-id="aiCatalogAgent.id"
