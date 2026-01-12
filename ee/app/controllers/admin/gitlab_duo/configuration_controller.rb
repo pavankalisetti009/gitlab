@@ -21,7 +21,7 @@ module Admin
 
       def ensure_feature_available!
         return if !Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
-          GitlabSubscriptions::Duo.active_self_managed_duo_core_pro_or_enterprise? &&
+          GitlabSubscriptions::Duo.active_self_managed_duo_core_pro_enterprise_or_self_hosted_dap? &&
           License.current&.paid?
 
         redirect_to admin_gitlab_duo_path

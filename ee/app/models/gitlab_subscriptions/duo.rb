@@ -42,8 +42,8 @@ module GitlabSubscriptions
         .new(namespace, add_on: :duo, only_active: false).execute.first
     end
 
-    def self.active_self_managed_duo_core_pro_or_enterprise?
-      GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core_pro_or_enterprise.active.any?
+    def self.active_self_managed_duo_core_pro_enterprise_or_self_hosted_dap?
+      GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core_pro_enterprise_or_self_hosted_dap.active.any?
     end
 
     def self.active_self_managed_duo_pro_or_enterprise

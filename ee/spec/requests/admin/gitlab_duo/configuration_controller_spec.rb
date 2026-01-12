@@ -60,6 +60,14 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
 
       it_behaves_like 'renders duo settings form'
 
+      context 'when the instance has a self-hosted DAP add-on' do
+        let!(:add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :self_hosted_dap, :self_managed, :active)
+        end
+
+        it_behaves_like 'renders duo settings form'
+      end
+
       context 'when instance is SaaS' do
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
