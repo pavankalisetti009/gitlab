@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe UserDetail, feature_category: :system_access do
   it { is_expected.to belong_to(:provisioned_by_group) }
+  it { is_expected.to belong_to(:provisioned_by_project) }
   it { is_expected.to belong_to(:enterprise_group).inverse_of(:enterprise_user_details) }
 
   describe 'validations' do
@@ -30,6 +31,19 @@ RSpec.describe UserDetail, feature_category: :system_access do
         )
       end
     end
+
+    describe '.project_provisioned' do
+      subject(:scope) { described_class.project_provisioned }
+
+      let_it_be(:user_detail_with_project_id) { create(:project_provisioned_user).user_detail }
+      let_it_be(:user_details_without_project_id) { create_list(:user, 3, enterprise_group: nil) }
+
+      it 'returns user details with enterprise group' do
+        expect(scope).to contain_exactly(
+          user_detail_with_project_id
+        )
+      end
+    end
   end
 
   context 'with loose foreign key on user_details.provisioned_by_group_id' do
@@ -37,6 +51,14 @@ RSpec.describe UserDetail, feature_category: :system_access do
       let(:lfk_column) { :provisioned_by_group_id }
       let_it_be(:parent) { create(:group) }
       let_it_be(:model) { create(:user, provisioned_by_group: parent).user_detail }
+    end
+  end
+
+  context 'with loose foreign key on user_details.provisioned_by_project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let(:lfk_column) { :provisioned_by_project_id }
+      let(:parent) { create(:project) }
+      let(:model) { create(:project_provisioned_user, project: parent).user_detail }
     end
   end
 

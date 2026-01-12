@@ -88,4 +88,14 @@ FactoryBot.define do
       association :user_detail, :enterprise, enterprise_group: enterprise_group, user: instance
     end
   end
+
+  factory :project_provisioned_user, parent: :user do
+    transient do
+      project { association(:project) }
+    end
+
+    user_detail do
+      association :user_detail, :enterprise, provisioned_by_project: project, user: instance
+    end
+  end
 end

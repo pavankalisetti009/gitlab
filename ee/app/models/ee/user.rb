@@ -66,6 +66,10 @@ module EE
         :enterprise_group_id, :enterprise_group_id=, :enterprise_group_associated_at, :enterprise_group_associated_at=,
         to: :user_detail, allow_nil: true
 
+      delegate :provisioned_by_project, :provisioned_by_project=,
+        :provisioned_by_project_id, :provisioned_by_project_id=,
+        to: :user_detail, allow_nil: true
+
       delegate :enabled_zoekt?, :enabled_zoekt, :enabled_zoekt=,
         :duo_default_namespace_id, :duo_default_namespace_id=,
         to: :user_preference
@@ -223,6 +227,10 @@ module EE
       end
       scope :with_provisioning_group, ->(group) do
         joins(:user_detail).where(user_detail: { provisioned_by_group: group })
+      end
+
+      scope :with_provisioning_project, ->(project) do
+        joins(:user_detail).where(user_detail: { provisioned_by_project: project })
       end
 
       scope :with_invalid_expires_at_tokens, ->(expiration_date) do

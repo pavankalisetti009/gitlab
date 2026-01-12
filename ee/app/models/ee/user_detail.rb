@@ -8,7 +8,10 @@ module EE
       belongs_to :provisioned_by_group, class_name: 'Group', optional: true, inverse_of: :provisioned_user_details
       belongs_to :enterprise_group, class_name: 'Group', optional: true, inverse_of: :enterprise_user_details
 
+      belongs_to :provisioned_by_project, class_name: 'Project', optional: true, inverse_of: :provisioned_user_details
+
       scope :with_enterprise_group, -> { where.not(enterprise_group_id: nil) }
+      scope :project_provisioned, -> { where.not(provisioned_by_project_id: nil) }
 
       attribute :onboarding_status, ::Gitlab::Database::Type::IndifferentJsonb.new
       store_accessor(

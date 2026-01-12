@@ -263,6 +263,9 @@ module EE
         class_name: 'Ai::Catalog::EnabledFoundationalFlow',
         foreign_key: :project_id
 
+      has_many :provisioned_user_details, class_name: 'UserDetail', foreign_key: 'provisioned_by_project_id', inverse_of: :provisioned_by_project
+      has_many :provisioned_users, through: :provisioned_user_details, source: :user
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :visibility_level
@@ -733,6 +736,10 @@ module EE
 
     def mirror_hard_failed?
       !!import_state&.hard_failed?
+    end
+
+    def service_accounts
+      provisioned_users.service_account
     end
 
     class_methods do
