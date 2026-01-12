@@ -370,6 +370,14 @@ module EE
         ::Feature.enabled?(:global_ai_catalog, @user)
       end
 
+      condition(:ai_catalog_available_for_user, scope: :user) do
+        # Currently this maps to duo_agent_platform, but makes it easier to implement granular controls down the road
+        # We could also add one for ai_catalog_flows, but since it's not granular if the user does not have access to
+        # duo agent platform, they won't have access to anything
+        # When anonymous user, delegates to the other setting controls.
+        @user.nil? || @user.allowed_to_use_through_namespace?(:ai_catalog)
+      end
+
       condition(:ai_catalog_available) do
         @subject.duo_features_enabled && ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog)
       end
@@ -1187,7 +1195,7 @@ module EE
         ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog_third_party_flows)
       end
 
-      rule { ~ai_catalog_enabled | ~ai_catalog_available }.policy do
+      rule { ~ai_catalog_enabled | ~ai_catalog_available_for_user | ~ai_catalog_available }.policy do
         prevent :create_ai_catalog_flow_item_consumer
         prevent :create_ai_catalog_third_party_flow_item_consumer
         prevent :admin_ai_catalog_item_consumer

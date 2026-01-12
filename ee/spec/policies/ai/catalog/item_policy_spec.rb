@@ -207,6 +207,42 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     end
   end
 
+  describe 'group-based access control' do
+    let(:current_user) { maintainer }
+    let(:item) { public_item }
+
+    let_it_be(:membership_rule) do
+      create(
+        :ai_instance_accessible_entity_rules,
+        :duo_agent_platform
+      )
+    end
+
+    context 'when catalog is available for user' do
+      before do
+        membership_rule.through_namespace.add_guest(current_user)
+      end
+
+      it 'enables the catalog permissions' do
+        is_expected.to be_allowed(:admin_ai_catalog_item)
+        is_expected.to be_allowed(:delete_ai_catalog_item)
+        is_expected.to be_allowed(:read_ai_catalog_item)
+      end
+
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
+    end
+
+    context 'when catalog is not available for user' do
+      it 'disables the catalog permissions' do
+        is_expected.to be_disallowed(:admin_ai_catalog_item)
+        is_expected.to be_disallowed(:delete_ai_catalog_item)
+        is_expected.to be_disallowed(:read_ai_catalog_item)
+      end
+
+      it_behaves_like 'report_ai_catalog_item permission', allowed: false
+    end
+  end
+
   context 'when flow' do
     let(:current_user) { maintainer }
     let(:item) { flow_item }

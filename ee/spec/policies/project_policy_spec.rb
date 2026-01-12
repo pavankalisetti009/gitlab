@@ -5629,6 +5629,47 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
+
+    describe 'group-based access control' do
+      let(:current_user) { maintainer }
+
+      let_it_be(:membership_rule) do
+        create(
+          :ai_instance_accessible_entity_rules,
+          :duo_agent_platform
+        )
+      end
+
+      context 'when catalog is available for user' do
+        before do
+          membership_rule.through_namespace.add_guest(current_user)
+        end
+
+        it 'enables the catalog permissions' do
+          is_expected.to be_allowed(:read_ai_catalog_flow)
+          is_expected.to be_allowed(:create_ai_catalog_flow)
+          is_expected.to be_allowed(:read_ai_catalog_third_party_flow)
+          is_expected.to be_allowed(:create_ai_catalog_third_party_flow)
+          is_expected.to be_allowed(:admin_ai_catalog_item)
+          is_expected.to be_allowed(:admin_ai_catalog_item_consumer)
+          is_expected.to be_allowed(:read_ai_catalog_item_consumer)
+          is_expected.to be_allowed(:execute_ai_catalog_item)
+        end
+      end
+
+      context 'when catalog is not available for user' do
+        it 'disables the catalog permissions' do
+          is_expected.to be_disallowed(:read_ai_catalog_flow)
+          is_expected.to be_disallowed(:create_ai_catalog_flow)
+          is_expected.to be_disallowed(:read_ai_catalog_third_party_flow)
+          is_expected.to be_disallowed(:create_ai_catalog_third_party_flow)
+          is_expected.to be_disallowed(:admin_ai_catalog_item)
+          is_expected.to be_disallowed(:admin_ai_catalog_item_consumer)
+          is_expected.to be_disallowed(:read_ai_catalog_item_consumer)
+          is_expected.to be_disallowed(:execute_ai_catalog_item)
+        end
+      end
+    end
   end
 
   context 'deploy token access' do
