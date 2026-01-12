@@ -72409,6 +72409,12 @@ msgstr ""
 msgid "UpdateProject|New visibility level not allowed!"
 msgstr ""
 
+msgid "UpdateProject|Pages access level cannot be public when public access is disabled"
+msgstr ""
+
+msgid "UpdateProject|Pages access level is not allowed for the project visibility level"
+msgstr ""
+
 msgid "UpdateProject|Project could not be updated!"
 msgstr ""
 
