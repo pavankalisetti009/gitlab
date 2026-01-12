@@ -52,7 +52,7 @@ export default {
       </template>
 
       <template #cell(creditsUsed)="{ item }">
-        {{ formatNumber(item.creditsUsed || 0) }}
+        {{ formatNumber(item.creditsUsed || 0, 2) }}
       </template>
     </gl-table-lite>
   </div>

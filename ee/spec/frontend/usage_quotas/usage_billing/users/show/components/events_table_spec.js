@@ -114,7 +114,7 @@ describe('EventsTable', () => {
 
         it('formats fractional number', () => {
           const secondRowCells = findTableRows().at(1).findAll('td');
-          expect(secondRowCells.at(3).text()).toBe('75.3');
+          expect(secondRowCells.at(3).text()).toBe('75.33');
         });
       });
     });

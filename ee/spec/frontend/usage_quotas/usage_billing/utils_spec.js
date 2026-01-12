@@ -144,4 +144,16 @@ describe('formatNumber', () => {
       expect(result).toEqual(expected);
     });
   });
+
+  describe('fractionDigits', () => {
+    it('formats the number with one fraction digit by default', () => {
+      const result = formatNumber(1234.5678);
+      expect(result).toEqual('1.2k');
+    });
+
+    it('formats the number with the specified fraction digits', () => {
+      const result = formatNumber(1234.5678, 2);
+      expect(result).toEqual('1.23k');
+    });
+  });
 });
