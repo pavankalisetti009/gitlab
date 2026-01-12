@@ -24,9 +24,10 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
       ClickHouse::DumpWriteBufferWorker.new.perform(table_name)
     end
 
-    # Re-sync data with ClickHouse
-    ClickHouse::SyncCursor.update_cursor_for('events', 0)
     Gitlab::ExclusiveLease.skipping_transaction_check do
+      ClickHouse::UserAddonAssignmentVersionsSyncWorker.new.perform
+      # Re-sync data with ClickHouse
+      ClickHouse::SyncCursor.update_cursor_for('events', 0)
       ClickHouse::EventsSyncWorker.new.perform
     end
   end
@@ -35,6 +36,42 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
     ::UsageEvents::DumpWriteBufferCronWorker.new.perform
     ::Analytics::AiAnalytics::EventsCountAggregationWorker.new.perform
     ::Analytics::DumpAiUserMetricsWriteBufferCronWorker.new.perform
+  end
+
+  def self.create_add_on_assignments(project)
+    return if project.users.empty?
+
+    namespace = project.project_namespace
+    organization = namespace.organization
+
+    # Find or create a Duo Pro add-on purchase for the namespace
+    add_on = GitlabSubscriptions::AddOn.find_by(name: 'duo_enterprise') ||
+      GitlabSubscriptions::AddOn.find_by(name: 'duo_pro')
+    return unless add_on
+
+    add_on_purchase = GitlabSubscriptions::AddOnPurchase.find_or_create_by!(
+      namespace: namespace,
+      subscription_add_on_id: add_on.id
+    ) do |purchase|
+      purchase.organization = organization
+      purchase.quantity = project.users.count
+      purchase.started_at = Date.current
+      purchase.expires_on = 1.year.from_now.to_date
+      purchase.purchase_xid = "seed-#{SecureRandom.uuid}"
+    end
+
+    # Create user add-on assignments for all project users
+    assigned_user_ids = add_on_purchase.assigned_users.pluck(:id)
+    users_to_assign = project.users.where.not(id: assigned_user_ids)
+
+    users_to_assign.each do |user|
+      GitlabSubscriptions::UserAddOnAssignment.find_or_create_by!(
+        add_on_purchase: add_on_purchase,
+        user: user
+      )
+    end
+
+    puts "Created add-on assignments for #{project.users.count} users in '#{namespace.full_path}'"
   end
 
   def initialize(project)
@@ -183,6 +220,9 @@ Gitlab::Seeder.quiet do
   project ||= Project.first
 
   Sidekiq::Testing.inline! do
+    # Create add-on purchase and assignments for the project's namespace
+    Gitlab::Seeder::AiUsageStats.create_add_on_assignments(project)
+
     Gitlab::Seeder::AiUsageStats.new(project).seed!
 
     Gitlab::Seeder::AiUsageStats.sync_to_postgres
