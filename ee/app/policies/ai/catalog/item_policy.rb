@@ -15,6 +15,14 @@ module Ai
         ::Feature.enabled?(:ai_catalog_third_party_flows, @user)
       end
 
+      condition(:ai_catalog_available_for_user, scope: :user) do
+        # Currently this maps to duo_agent_platform, but makes it easier to implement granular controls down the road
+        # We could also add one for ai_catalog_flows, but since it's not granular if the user does not have access to
+        # duo agent platform, they won't have access to anything
+        # When anonymous user, delegates to the other setting controls.
+        @user.nil? || @user.allowed_to_use_through_namespace?(:ai_catalog)
+      end
+
       condition(:project_ai_catalog_available) do
         @subject.project && @subject.project.ai_catalog_available?
       end
@@ -78,6 +86,13 @@ module Ai
       end
 
       rule { ~ai_catalog_enabled & ~can_admin_organization }.policy do
+        prevent :read_ai_catalog_item
+        prevent :admin_ai_catalog_item
+        prevent :delete_ai_catalog_item
+        prevent :report_ai_catalog_item
+      end
+
+      rule { ~ai_catalog_available_for_user }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
