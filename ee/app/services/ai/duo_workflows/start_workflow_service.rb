@@ -171,6 +171,7 @@ module Ai
 
       def main_workflow_commands
         [
+          %(git remote set-url origin "${CI_REPOSITORY_URL}"),
           %(echo $DUO_WORKFLOW_DEFINITION),
           %(echo $DUO_WORKFLOW_GOAL),
           %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
