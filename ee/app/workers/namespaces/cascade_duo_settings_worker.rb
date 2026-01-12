@@ -13,7 +13,8 @@ module Namespaces
     data_consistency :delayed
     loggable_arguments 0
     worker_resource_boundary :memory
-    defer_on_database_health_signal :gitlab_main, [:namespace_settings, :project_settings], 1.minute
+    defer_on_database_health_signal :gitlab_main,
+      [:namespace_settings, :project_settings, :namespaces, :projects], 1.minute
 
     def perform(group_id, setting_attributes, user_id = nil)
       group = Group.find_by_id(group_id)
