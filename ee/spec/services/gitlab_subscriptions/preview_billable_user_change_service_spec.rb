@@ -494,6 +494,22 @@ RSpec.describe ::GitlabSubscriptions::PreviewBillableUserChangeService, feature_
 
           service.execute
         end
+
+        context 'with owner role' do
+          let(:role) { :owner }
+
+          it 'calls saas_billable_role_change?' do
+            expect(service).to receive(:saas_billable_role_change?).with(
+              target_namespace: target_namespace,
+              role: Gitlab::Access::OWNER,
+              member_role_id: nil
+            ).at_least(:once)
+
+            expect(service).not_to receive(:sm_billable_role_change?)
+
+            service.execute
+          end
+        end
       end
 
       context 'with self-managed instance' do
@@ -506,6 +522,21 @@ RSpec.describe ::GitlabSubscriptions::PreviewBillableUserChangeService, feature_
           expect(service).not_to receive(:saas_billable_role_change?)
 
           service.execute
+        end
+
+        context 'with owner role' do
+          let(:role) { :owner }
+
+          it 'calls sm_billable_role_change?' do
+            expect(service).to receive(:sm_billable_role_change?).with(
+              role: Gitlab::Access::OWNER,
+              member_role_id: nil
+            ).at_least(:once)
+
+            expect(service).not_to receive(:saas_billable_role_change?)
+
+            service.execute
+          end
         end
       end
     end
