@@ -252,7 +252,6 @@ create_terraform_state
 create_test_case
 create_timelog
 create_todo
-create_user_personal_access_token
 create_virtual_registry
 create_vulnerability_archive_export
 create_vulnerability_export
@@ -673,14 +672,12 @@ read_upload
 read_usage
 read_usage_quotas
 read_usage_trends_measurement
-read_user
 read_user_achievement
 read_user_email_address
 read_user_groups
 read_user_membership_counts
 read_user_organizations
 read_user_personal_access_tokens
-read_user_preference
 read_user_profile
 read_users_list
 read_virtual_registry
@@ -828,7 +825,6 @@ update_timelog
 update_todo
 update_user
 update_user_achievement
-update_user_status
 update_virtual_registry
 update_vulnerability
 update_vulnerability_feedback
