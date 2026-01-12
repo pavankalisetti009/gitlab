@@ -86,10 +86,7 @@ module EE
       end
 
       def use_duo_agent_platform?(merge_request)
-        ::Ai::DuoWorkflows::CodeReview::AvailabilityValidator.new(
-          user: current_user,
-          resource: merge_request.project
-        ).available?
+        ::Ai::DuoCodeReview.dap?(user: current_user, container: merge_request.project)
       end
 
       def reset_approvals?(merge_request, _newrev)

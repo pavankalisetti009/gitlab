@@ -29,11 +29,17 @@ RSpec.describe Ai::DuoCodeReview::Modes::Dap, feature_category: :code_suggestion
 
     # Duo features
     let(:dap_enabled) { true }
+
+    # Application settings
     let(:duo_features_enabled) { true }
-    let(:experiment_features_enabled) { true }
+    let(:duo_foundational_flows_enabled) { true }
+    let(:duo_code_review_dap_available) { true }
 
     # User permissions
     let(:user_allowed_to_use_duo_agent_platform) { true }
+
+    # Add-ons
+    let(:user_has_duo_enterprise_add_on) { false }
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
@@ -46,7 +52,8 @@ RSpec.describe Ai::DuoCodeReview::Modes::Dap, feature_category: :code_suggestion
 
       allow(container).to receive_messages(
         duo_features_enabled: duo_features_enabled,
-        experiment_features_enabled: experiment_features_enabled
+        duo_foundational_flows_enabled: duo_foundational_flows_enabled,
+        duo_code_review_dap_available?: duo_code_review_dap_available
       )
 
       allow(user).to receive(:allowed_to_use?)
@@ -58,16 +65,21 @@ RSpec.describe Ai::DuoCodeReview::Modes::Dap, feature_category: :code_suggestion
           ServiceResponse.success(payload: nil)
         )
       end
+
+      allow(::GitlabSubscriptions::AddOnPurchase)
+        .to receive(:for_active_add_ons)
+        .with([:duo_enterprise], user)
+        .and_return(instance_double(ActiveRecord::Relation, exists?: user_has_duo_enterprise_add_on))
     end
 
     shared_examples 'not active' do
-      it 'returns false' do
+      it 'is not active' do
         expect(mode).not_to be_active
       end
     end
 
     shared_examples 'active' do
-      it 'returns true' do
+      it 'is active' do
         expect(mode).to be_active
       end
     end
@@ -84,19 +96,33 @@ RSpec.describe Ai::DuoCodeReview::Modes::Dap, feature_category: :code_suggestion
       include_examples 'not active'
     end
 
-    context 'when user is not allowed to use duo_agent_platform' do
+    context 'when user has duo_enterprise add-on' do
+      let(:user_has_duo_enterprise_add_on) { true }
+
+      context 'and duo_code_review_dap_internal_users feature flag is enabled' do
+        include_examples 'active'
+      end
+
+      context 'and duo_code_review_dap_internal_users feature flag is disabled' do
+        let(:duo_code_review_dap_internal_users) { false }
+
+        include_examples 'not active'
+      end
+    end
+
+    context 'when user is not allowed to use Duo Agent Platform' do
       let(:user_allowed_to_use_duo_agent_platform) { false }
 
       include_examples 'not active'
     end
 
-    context 'when DUO Agent Platform is not available' do
-      let(:dap_enabled) { false }
+    context 'when DAP Duo Code Review is disabled for the container' do
+      let(:duo_code_review_dap_available) { false }
 
       include_examples 'not active'
     end
 
-    context 'when duo_agent_platform is not configured' do
+    context 'when SaaS mode or self-managed using cloud-connected models' do
       before do
         allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
           allow(service).to receive(:execute).and_return(
@@ -105,97 +131,75 @@ RSpec.describe Ai::DuoCodeReview::Modes::Dap, feature_category: :code_suggestion
         end
       end
 
-      context 'and SaaS feature is available' do
-        include_examples 'active'
-      end
+      include_examples 'active'
+    end
 
-      context 'and SaaS feature is not available' do
+    context 'when self-managed using self-hosted models' do
+      context 'with an incompatible model' do
+        let(:self_hosted_model) { instance_double(::Ai::SelfHostedModel) }
+        let(:feature_setting) do
+          instance_double(
+            ::Ai::FeatureSetting,
+            self_hosted?: true,
+            self_hosted_model: self_hosted_model
+          )
+        end
+
         before do
-          allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(false)
+          allow(self_hosted_model).to receive(:unsupported_family_for_duo_agent_platform_code_review?).and_return(true)
+          allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: feature_setting)
+            )
+          end
         end
 
-        include_examples 'active'
-      end
-    end
-
-    context 'when self-hosted model is unsupported for duo agent platform code review' do
-      let(:self_hosted_model) { instance_double(::Ai::SelfHostedModel) }
-      let(:feature_setting) do
-        instance_double(
-          ::Ai::FeatureSetting,
-          self_hosted?: true,
-          self_hosted_model: self_hosted_model
-        )
+        include_examples 'not active'
       end
 
-      before do
-        allow(self_hosted_model).to receive(:unsupported_family_for_duo_agent_platform_code_review?).and_return(true)
-        allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
-          allow(service).to receive(:execute).and_return(
-            ServiceResponse.success(payload: feature_setting)
+      context 'without a self-hosted model' do
+        let(:feature_setting) do
+          instance_double(
+            ::Ai::FeatureSetting,
+            self_hosted?: true,
+            self_hosted_model: nil
           )
         end
+
+        before do
+          allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: feature_setting)
+            )
+          end
+          allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return(nil)
+        end
+
+        include_examples 'not active'
       end
 
-      include_examples 'not active'
-    end
-
-    context 'when self-hosted model is supported but DWS URL is not configured' do
-      let(:self_hosted_model) { instance_double(::Ai::SelfHostedModel) }
-      let(:feature_setting) do
-        instance_double(
-          ::Ai::FeatureSetting,
-          self_hosted?: true,
-          self_hosted_model: self_hosted_model
-        )
-      end
-
-      before do
-        allow(self_hosted_model).to receive(:unsupported_family_for_duo_agent_platform_code_review?).and_return(false)
-        allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
-          allow(service).to receive(:execute).and_return(
-            ServiceResponse.success(payload: feature_setting)
+      context 'with a self-hosted model' do
+        let(:self_hosted_model) { instance_double(::Ai::SelfHostedModel) }
+        let(:feature_setting) do
+          instance_double(
+            ::Ai::FeatureSetting,
+            self_hosted?: true,
+            self_hosted_model: self_hosted_model
           )
         end
-        allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return(nil)
-      end
 
-      include_examples 'not active'
-    end
-
-    context 'when self-hosted model is supported and DWS URL is configured' do
-      let(:self_hosted_model) { instance_double(::Ai::SelfHostedModel) }
-      let(:feature_setting) do
-        instance_double(
-          ::Ai::FeatureSetting,
-          self_hosted?: true,
-          self_hosted_model: self_hosted_model
-        )
-      end
-
-      before do
-        allow(self_hosted_model).to receive(:unsupported_family_for_duo_agent_platform_code_review?).and_return(false)
-        allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
-          allow(service).to receive(:execute).and_return(
-            ServiceResponse.success(payload: feature_setting)
-          )
+        before do
+          allow(self_hosted_model).to receive(:unsupported_family_for_duo_agent_platform_code_review?).and_return(false)
+          allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: feature_setting)
+            )
+          end
+          allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return(nil)
         end
-        allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
+
+        include_examples 'not active'
       end
-
-      include_examples 'active'
-    end
-
-    context 'when feature setting service returns failure' do
-      before do
-        allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
-          allow(service).to receive(:execute).and_return(
-            ServiceResponse.error(message: 'Service error')
-          )
-        end
-      end
-
-      include_examples 'active'
     end
   end
 end

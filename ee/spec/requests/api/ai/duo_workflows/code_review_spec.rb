@@ -7,17 +7,13 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
 
   shared_context 'with DAP Duo Code Review enabled' do
     before do
-      allow_next_instance_of(::Ai::DuoWorkflows::CodeReview::AvailabilityValidator) do |validator|
-        allow(validator).to receive(:available?).and_return(true)
-      end
+      allow(::Ai::DuoCodeReview).to receive(:dap?).and_return(true)
     end
   end
 
   shared_context 'with DAP Duo Code Review disabled' do
     before do
-      allow_next_instance_of(::Ai::DuoWorkflows::CodeReview::AvailabilityValidator) do |validator|
-        allow(validator).to receive(:available?).and_return(false)
-      end
+      allow(::Ai::DuoCodeReview).to receive(:dap?).and_return(false)
     end
   end
 

@@ -11,5 +11,13 @@ module Ai
     def mode(user:, container:)
       ModeResolver.new(user: user, container: container).mode
     end
+
+    def dap?(user:, container:)
+      mode(user:, container:) == :dap
+    end
+
+    def classic?(user:, container:)
+      mode(user:, container:) == :classic
+    end
   end
 end

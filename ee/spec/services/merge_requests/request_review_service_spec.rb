@@ -104,9 +104,7 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
               duo_foundational_flows_enabled: true)
             create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
 
-            allow_next_instance_of(Ai::DuoWorkflows::CodeReview::AvailabilityValidator) do |validator|
-              allow(validator).to receive(:available?).and_return(true)
-            end
+            allow(::Ai::DuoCodeReview).to receive(:dap?).and_return(true)
           end
 
           it 'calls Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService' do
