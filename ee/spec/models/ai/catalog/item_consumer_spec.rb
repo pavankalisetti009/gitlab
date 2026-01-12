@@ -375,7 +375,8 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
   describe '#pinned_version' do
     let_it_be(:project) { create(:project) }
     let_it_be(:item) { create(:ai_catalog_flow, project: project) }
-    let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, item: item, project: project) }
+
+    let(:item_consumer) { create(:ai_catalog_item_consumer, item: item, project: project) }
 
     context 'when pinned_version_prefix is nil' do
       it 'returns the latest version' do
@@ -393,6 +394,22 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       it 'returns the resolved version' do
         expect(item_consumer.pinned_version).to eq(version)
       end
+    end
+
+    it 'is memoized' do
+      first_result, second_result = nil
+
+      first_call = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+        first_result = item_consumer.pinned_version
+      end
+
+      second_call = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+        second_result = item_consumer.pinned_version
+      end
+
+      expect(first_call.count).to be > 0
+      expect(second_call.count).to eq(0)
+      expect(first_result).to eq(second_result)
     end
   end
 

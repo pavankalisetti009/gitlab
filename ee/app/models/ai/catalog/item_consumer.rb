@@ -60,7 +60,7 @@ module Ai
       scope :for_service_account, ->(service_account_id) { where(service_account_id:) }
 
       def pinned_version
-        item.resolve_version(pinned_version_prefix)
+        @pinned_version ||= item.resolve_version(pinned_version_prefix)
       end
 
       private
