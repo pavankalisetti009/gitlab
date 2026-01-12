@@ -122,6 +122,7 @@ module EE
         def indexing_status
           @initial_queue_size = ::Elastic::ProcessInitialBookkeepingService.queue_size
           @incremental_queue_size = ::Elastic::ProcessBookkeepingService.queue_size
+          @dead_queue_size = ::Search::Elastic::DeadQueue.queue_size
 
           # This code cannot be run on GitLab.com due to performance issues
           return if ::Gitlab::Saas.feature_available?(:advanced_search)

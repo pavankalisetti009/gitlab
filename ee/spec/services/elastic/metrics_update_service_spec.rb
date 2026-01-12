@@ -10,6 +10,7 @@ RSpec.describe Elastic::MetricsUpdateService, :prometheus, feature_category: :gl
       expect(Elastic::ProcessBookkeepingService).to receive(:queue_size).and_return(4).once
       expect(Elastic::ProcessInitialBookkeepingService).to receive(:queue_size).and_return(6).once
       expect(Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:queue_size).and_return(5).once
+      expect(Search::Elastic::DeadQueue).to receive(:queue_size).and_return(2).once
 
       incremental_gauge_double = instance_double(Prometheus::Client::Gauge)
       expect(Gitlab::Metrics).to receive(:gauge)
@@ -26,9 +27,15 @@ RSpec.describe Elastic::MetricsUpdateService, :prometheus, feature_category: :gl
         .with(:search_advanced_bulk_cron_embedding_queue_size, anything, {}, :max)
         .and_return(embedding_gauge_double)
 
+      dead_gauge_double = instance_double(Prometheus::Client::Gauge)
+      expect(Gitlab::Metrics).to receive(:gauge)
+        .with(:search_advanced_bulk_cron_dead_queue_size, anything, {}, :max)
+        .and_return(dead_gauge_double)
+
       expect(incremental_gauge_double).to receive(:set).with({}, 4)
       expect(initial_gauge_double).to receive(:set).with({}, 6)
       expect(embedding_gauge_double).to receive(:set).with({}, 5)
+      expect(dead_gauge_double).to receive(:set).with({}, 2)
 
       subject.execute
     end

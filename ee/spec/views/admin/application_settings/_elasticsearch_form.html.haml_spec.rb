@@ -451,6 +451,21 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
       end
     end
 
+    context 'when there are items in dead queue' do
+      let(:initial_queue_size) { 0 }
+      let(:incremental_queue_size) { 0 }
+
+      before do
+        assign(:dead_queue_size, 15)
+      end
+
+      it 'shows count of items in dead queue' do
+        render
+
+        expect(rendered).to have_selector('[data-testid="dead_queue_size"]', text: '15')
+      end
+    end
+
     context 'when there are projects not indexed' do
       context 'when there is 20 projects not indexed' do
         let(:namespace) { instance_double(Namespace, human_name: "Namespace 1") }

@@ -328,6 +328,14 @@
             = render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Incremental indexing queue length'), stat_value: @incremental_queue_size, stat_value_testid: 'incremental_queue_size', title_tag: 'h3')
         - c.with_body do
           = _('The number of documents waiting for updates to existing indexed content. These represent changes to previously indexed files, commits, or metadata.')
+      = render Pajamas::CardComponent.new(**component_params) do |c|
+        - c.with_header do
+          .-gl-mb-3
+            = render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Dead queue length'), stat_value: @dead_queue_size, stat_value_testid: 'dead_queue_size', title_tag: 'h3')
+        - c.with_body do
+          - help_link_url = help_page_path('integration/elasticsearch/troubleshooting/indexing.md', anchor: 'dead-queue')
+          - help_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: help_link_url }
+          = html_escape(_('The number of items that failed after being retried once. Items in the dead queue are not automatically retried. %{help_link_start}Reindex these items manually%{help_link_end} or contact GitLab Support with relevant logs for help.')) % { help_link_start: help_link_start, help_link_end: '</a>'.html_safe }
       - if !::Gitlab::Saas.feature_available?(:advanced_search)
         = render Pajamas::CardComponent.new(**component_params_projects) do |c|
           - c.with_header do
