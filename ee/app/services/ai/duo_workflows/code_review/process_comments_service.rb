@@ -293,7 +293,10 @@ module Ai
           summarize_review = Gitlab::Llm::AiGateway::Completions::SummarizeReview.new(
             summary_prompt_message,
             nil,
-            { draft_notes: draft_notes }
+            {
+              draft_notes: draft_notes,
+              prompt_version: '3.0.0'
+            }
           )
 
           summarize_review.execute
