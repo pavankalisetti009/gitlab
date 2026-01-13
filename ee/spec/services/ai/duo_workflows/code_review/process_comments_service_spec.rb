@@ -473,7 +473,10 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
       expect(Gitlab::Llm::AiGateway::Completions::SummarizeReview).to receive(:new).with(
         mock_ai_message,
         nil,
-        { draft_notes: draft_notes }
+        {
+          draft_notes: draft_notes,
+          prompt_version: '3.0.0'
+        }
       )
       expect(mock_summary_completion).to receive(:execute)
 

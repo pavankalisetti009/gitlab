@@ -235,6 +235,13 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
           end
         end
       end
+
+      context 'when using pinned prompt version' do
+        it_behaves_like 'summarize review with prompt version' do
+          let(:options) { { prompt_version: '3.0.0' } }
+          let(:prompt_version) { '3.0.0' }
+        end
+      end
     end
   end
 end
