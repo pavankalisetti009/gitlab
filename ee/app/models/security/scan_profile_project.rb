@@ -10,6 +10,10 @@ module Security
 
     validates :project_id, uniqueness: { scope: :security_scan_profile_id }
 
+    scope :for_projects_and_profile, ->(projects, scan_profile) {
+      where(project: projects, scan_profile: scan_profile)
+    }
+
     scope :by_project_id, ->(project_id) { where(project_id: project_id) }
     scope :for_scan_profile, ->(scan_profile_id) { where(security_scan_profile_id: scan_profile_id) }
     scope :id_after, ->(id) { where(arel_table[:id].gt(id)) }
