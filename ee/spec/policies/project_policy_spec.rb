@@ -105,6 +105,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :read_compliance_violations_report,
             :read_coverage_fuzzing,
             :read_customizable_dashboards,
+            :read_custom_attribute,
             :read_dap_external_trigger_usage_rule,
             :read_dedicated_hosted_runner_usage,
             :read_deploy_board,
