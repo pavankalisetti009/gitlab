@@ -11,9 +11,9 @@ RSpec.describe Security::Policies::ReportSecurityPoliciesMetricsWorker, feature_
         queue_size_gauge_double = instance_double(Prometheus::Client::Gauge)
 
         expect(Gitlab::Metrics).to receive(:gauge)
-          .at_least(:once)
-          .with(:security_policies_active_builds_scheduled_scans, anything, {})
-          .and_return(queue_size_gauge_double)
+                                     .at_least(:once)
+                                     .with(:security_policies_active_builds_scheduled_scans, anything, {})
+                                     .and_return(queue_size_gauge_double)
 
         expect(queue_size_gauge_double).to receive(:set).with({}, active_ci_builds_count)
 
@@ -47,6 +47,29 @@ RSpec.describe Security::Policies::ReportSecurityPoliciesMetricsWorker, feature_
       let(:active_ci_builds_count) { 2 }
 
       it_behaves_like 'reports prometheus metrics'
+    end
+
+    context 'when there is a timeout error' do
+      before do
+        allow(Ci::Build).to receive(:with_pipeline_source_type).and_raise(ActiveRecord::QueryCanceled.new('timeout'))
+      end
+
+      it 'does not report prometheus metrics' do
+        expect(Gitlab::Metrics).not_to receive(:gauge)
+
+        run_worker
+      end
+
+      it 'logs the timeout error' do
+        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(an_instance_of(ActiveRecord::QueryCanceled),
+          metric: 'security_policies_active_builds_scheduled_scans')
+
+        run_worker
+      end
+
+      it 'handles timeout gracefully without affecting other operations' do
+        expect { run_worker }.not_to raise_error
+      end
     end
 
     it_behaves_like 'an idempotent worker' do

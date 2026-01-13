@@ -22,7 +22,14 @@ module Security
           'Number of active ci builds created by scan execution policy scheduled scans.',
           {})
         limit_metric.set({}, build_count)
+        # rubocop:disable Database/RescueQueryCanceled -- When a timeout occurs, the metric is not updated.
+        # For now, we are gracefully rescuing and logging this error, since the worker runs every minute, and the
+        # metric should be updated soon enough.
+        # We will monitor and evaluate if a query update is required
+      rescue ActiveRecord::QueryCanceled => e
+        Gitlab::ErrorTracking.log_exception(e, metric: 'security_policies_active_builds_scheduled_scans')
       end
+      # rubocop:enable Database/RescueQueryCanceled
     end
   end
 end
