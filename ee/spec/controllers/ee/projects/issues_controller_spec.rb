@@ -120,27 +120,45 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
           describe 'GET #show' do
             let(:issue) { create(:issue, project: project) }
 
-            context 'when generate_description is licensed' do
+            context 'when work_item_planning_view: true' do
               before do
-                stub_licensed_features(generate_description: true)
+                stub_feature_flags(work_item_planning_view: true)
               end
 
-              it 'pushes generate_description licensed feature' do
+              it 'redirects to work item' do
                 get :show, params: { namespace_id: project.namespace, project_id: project, id: issue.iid }
 
-                expect(controller).to have_received(:push_licensed_feature).with(:generate_description, project)
+                expect(response).to redirect_to project_work_item_path(project, issue.iid)
               end
             end
 
-            context 'when generate_description is not licensed' do
+            context 'when work_item_planning_view: false' do
               before do
-                stub_licensed_features(generate_description: false)
+                stub_feature_flags(work_item_planning_view: false)
               end
 
-              it 'pushes generate_description licensed feature when user has permission regardless of license status' do
-                get :show, params: { namespace_id: project.namespace, project_id: project, id: issue.iid }
+              context 'when generate_description is licensed' do
+                before do
+                  stub_licensed_features(generate_description: true)
+                end
 
-                expect(controller).to have_received(:push_licensed_feature).with(:generate_description, project)
+                it 'pushes generate_description licensed feature' do
+                  get :show, params: { namespace_id: project.namespace, project_id: project, id: issue.iid }
+
+                  expect(controller).to have_received(:push_licensed_feature).with(:generate_description, project)
+                end
+              end
+
+              context 'when generate_description is not licensed' do
+                before do
+                  stub_licensed_features(generate_description: false)
+                end
+
+                it 'pushes generate_description licensed feature when user has permission regardless of license status' do
+                  get :show, params: { namespace_id: project.namespace, project_id: project, id: issue.iid }
+
+                  expect(controller).to have_received(:push_licensed_feature).with(:generate_description, project)
+                end
               end
             end
           end
@@ -722,6 +740,10 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
   describe 'GET #discussions' do
     let(:issue) { create(:issue, project: project) }
     let!(:discussion) { create(:discussion_note_on_issue, noteable: issue, project: issue.project) }
+
+    before do
+      stub_feature_flags(work_item_planning_view: false)
+    end
 
     context 'with a related system note' do
       let(:confidential_issue) { create(:issue, :confidential, project: project) }
