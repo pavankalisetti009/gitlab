@@ -26832,6 +26832,9 @@ msgstr ""
 msgid "Editor|Code Editor. Press %{keyCombo} to toggle tab key behavior between indentation and navigation. Editing %{blobPath}."
 msgstr ""
 
+msgid "Editor|Editor accessibility guide"
+msgstr ""
+
 msgid "Edits"
 msgstr ""
 
