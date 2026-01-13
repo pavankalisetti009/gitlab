@@ -2,87 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ContainerRepository, feature_category: :geo_replication do
-  include_examples 'a verifiable model for verification state' do
-    let(:verifiable_model_record) { build(:container_repository) }
-    let(:unverifiable_model_record) { nil }
-  end
-
-  describe '.replicables_for_current_secondary' do
-    let(:secondary) { create(:geo_node, :secondary) }
-
-    let_it_be(:synced_group) { create(:group) }
-    let_it_be(:nested_group) { create(:group, parent: synced_group) }
-    let_it_be(:synced_project) { create(:project, group: synced_group) }
-    let_it_be(:synced_project_in_nested_group) { create(:project, group: nested_group) }
-    let_it_be(:unsynced_project) { create(:project) }
-    let_it_be(:project_broken_storage) { create(:project, :broken_storage) }
-
-    let_it_be(:container_repository_1) { create(:container_repository, project: synced_project) }
-    let_it_be(:container_repository_2) { create(:container_repository, project: synced_project_in_nested_group) }
-    let_it_be(:container_repository_3) { create(:container_repository, project: unsynced_project) }
-    let_it_be(:container_repository_4) { create(:container_repository, project: project_broken_storage) }
-
-    before do
-      stub_current_geo_node(secondary)
-      stub_registry_replication_config(enabled: true)
-    end
-
-    context 'with registry replication disabled' do
-      before do
-        stub_registry_replication_config(enabled: false)
-      end
-
-      it 'returns an empty relation' do
-        replicables =
-          described_class.replicables_for_current_secondary(described_class.minimum(:id)..described_class.maximum(:id))
-
-        expect(replicables).to be_empty
-      end
-    end
-
-    context 'without selective sync' do
-      it 'returns all container repositories' do
-        expected = [container_repository_1, container_repository_2, container_repository_3, container_repository_4]
-
-        replicables =
-          described_class.replicables_for_current_secondary(described_class.minimum(:id)..described_class.maximum(:id))
-
-        expect(replicables).to match_array(expected)
-      end
-    end
-
-    context 'with selective sync by namespace' do
-      before do
-        secondary.update!(selective_sync_type: 'namespaces', namespaces: [synced_group])
-      end
-
-      it 'excludes container repositories that are not in selectively synced projects' do
-        expected = [container_repository_1, container_repository_2]
-
-        replicables =
-          described_class.replicables_for_current_secondary(described_class.minimum(:id)..described_class.maximum(:id))
-
-        expect(replicables).to match_array(expected)
-      end
-    end
-
-    context 'with selective sync by shard' do
-      before do
-        secondary.update!(selective_sync_type: 'shards', selective_sync_shards: ['broken'])
-      end
-
-      it 'excludes container repositories that are not in selectively synced shards' do
-        expected = [container_repository_4]
-
-        replicables =
-          described_class.replicables_for_current_secondary(described_class.minimum(:id)..described_class.maximum(:id))
-
-        expect(replicables).to match_array(expected)
-      end
-    end
-  end
-
+RSpec.describe ContainerRepository, feature_category: :container_registry do
   describe '.search' do
     let_it_be(:container_repository1) { create(:container_repository) }
     let_it_be(:container_repository2) { create(:container_repository) }
@@ -123,6 +43,53 @@ RSpec.describe ContainerRepository, feature_category: :geo_replication do
           end
         end
       end
+    end
+  end
+
+  describe 'Geo', feature_category: :geo_replication do
+    describe 'associations' do
+      it 'has one verification state table class' do
+        is_expected
+          .to have_one(:container_repository_state)
+                .class_name('Geo::ContainerRepositoryState')
+                .inverse_of(:container_repository)
+                .autosave(false)
+      end
+    end
+
+    include_examples 'a verifiable model for verification state' do
+      let(:verifiable_model_record) { build(:container_repository) }
+      let(:unverifiable_model_record) { nil }
+    end
+
+    describe 'replication/verification' do
+      let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+      # Container repository for the root group
+      let!(:first_replicable_and_in_selective_sync) do
+        create(:container_repository, project: project_1)
+      end
+
+      # Container repository for a subgroup
+      let!(:second_replicable_and_in_selective_sync) do
+        create(:container_repository, project: project_2)
+      end
+
+      # Container repository for a group not in selective sync (on broken storage shard)
+      let!(:last_replicable_and_not_in_selective_sync) do
+        create(:container_repository, project: project_3)
+      end
+
+      let_it_be(:group_2) { create(:group, organization: create(:organization)) }
+      let_it_be(:nested_group_1) { create(:group, parent: group_1) }
+      let_it_be(:project_1) { create(:project, group: group_1) }
+      let_it_be(:project_2) { create(:project, group: nested_group_1) }
+      let_it_be(:project_3) { create(:project, :broken_storage, group: group_2) }
+
+      before do
+        stub_registry_replication_config(enabled: true)
+      end
+
+      include_examples 'Geo Framework selective sync behavior'
     end
   end
 
