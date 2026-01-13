@@ -957,6 +957,12 @@ msgstr ""
 msgid "%{group_name} is approaching the limit of available seats"
 msgstr ""
 
+msgid "%{group_name} is being deleted."
+msgstr ""
+
+msgid "%{group_name} moved to pending deletion."
+msgstr ""
+
 msgid "%{group_name}&%{epic_iid} &middot; created %{epic_created} by %{author}"
 msgstr ""
 
@@ -1273,6 +1279,12 @@ msgid "%{projectLength} %{projects}:"
 msgstr ""
 
 msgid "%{project_name}"
+msgstr ""
+
+msgid "%{project_name} is being deleted."
+msgstr ""
+
+msgid "%{project_name} moved to pending deletion."
 msgstr ""
 
 msgid "%{project_name} project members"
@@ -33093,9 +33105,6 @@ msgstr ""
 msgid "Group '%{group_name}' was successfully updated."
 msgstr ""
 
-msgid "Group '%{group_name}' will be deleted on %{date}."
-msgstr ""
-
 msgid "Group Git LFS status:"
 msgstr ""
 
@@ -52569,9 +52578,6 @@ msgid "Project '%{project_name}' was successfully created."
 msgstr ""
 
 msgid "Project '%{project_name}' was successfully updated."
-msgstr ""
-
-msgid "Project '%{project_name}' will be deleted on %{date}."
 msgstr ""
 
 msgid "Project Badges"
