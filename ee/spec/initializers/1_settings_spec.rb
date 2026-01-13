@@ -56,6 +56,7 @@ RSpec.describe '1_settings', feature_category: :settings do
         ci_runners_stale_group_runners_prune_worker_cron
         ci_runners_stale_machines_cleanup_worker
         ci_runner_versions_reconciliation_worker
+        ci_schedule_bulk_delete_job_artifact_cron_worker
         ci_schedule_delete_objects_worker
         ci_schedule_old_pipelines_removal_cron_worker
         ci_schedule_unlock_pipelines_in_queue_worker
