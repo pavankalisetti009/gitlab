@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecutionPolicyConfigService, feature_category: :security_policy_management do
   let(:service) { described_class.new(project: project, current_user: user, params: { content: content }) }
-  let_it_be(:project) { create(:project, :empty_repo) }
+  let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user) }
   let(:content) do
     {
@@ -31,6 +31,23 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecution
         enforced_scans: %w[secret_detection dependency_scanning],
         prefill_variables: content[:variables].deep_stringify_keys
       )
+    end
+
+    it 'passes project ref and sha to Gitlab::Ci::Config' do
+      default_branch = project.default_branch_or_main
+      default_sha = project.repository.root_ref_sha
+
+      expect(Gitlab::Ci::Config).to receive(:new).with(
+        anything,
+        hash_including(
+          project: project,
+          user: user,
+          ref: default_branch,
+          sha: default_sha
+        )
+      ).and_call_original
+
+      execute
     end
 
     describe 'prefill variables' do
