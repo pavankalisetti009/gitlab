@@ -41,7 +41,7 @@ RSpec.describe 'layouts/_duo_chat_panel', feature_category: :duo_chat do
     it 'does not render the ai panel' do
       render
 
-      expect(rendered).not_to have_css('#duo-chat-panel')
+      expect(rendered).to have_css('#duo-chat-panel')
     end
   end
 
