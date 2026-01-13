@@ -6,6 +6,8 @@ module Ai
       class CreateService < ::BaseContainerService
         include EventsTracking
 
+        MAX_SERVICE_NAME_LENGTH = 90
+
         def execute
           return validation_error if validation_error
 
@@ -154,9 +156,10 @@ module Ai
         end
 
         def service_account_name
-          return item.name unless item.foundational_flow_reference.present?
+          name = item.name
+          name = "Duo #{name}" if item.foundational_flow_reference.present?
 
-          "Duo #{item.name}"
+          name[0, MAX_SERVICE_NAME_LENGTH]
         end
 
         def service_account_username

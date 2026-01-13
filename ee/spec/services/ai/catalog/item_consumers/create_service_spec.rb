@@ -419,6 +419,27 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       end
     end
 
+    context 'when item has a very long name' do
+      let_it_be(:long_name_item) do
+        create(:ai_catalog_flow, public: true, project: item_project,
+          name: 'a' * 100)
+      end
+
+      let_it_be(:released_long_name_version) do
+        create(:ai_catalog_flow_version, :released, item: long_name_item, version: '1.0.0')
+      end
+
+      let(:item) { long_name_item }
+
+      it 'creates a service account with a truncated name' do
+        expect { execute }.to change { User.count }.by(1)
+        service_account = User.last
+        expect(service_account).to be_service_account
+        expect(service_account.name).to eq('a' * 90)
+        expect(service_account.name.length).to eq(90)
+      end
+    end
+
     context 'when group is not a top-level group' do
       let_it_be(:child_group) { create(:group, parent: consumer_group, owners: user, maintainers: maintainer_user) }
 
