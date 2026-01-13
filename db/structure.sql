@@ -28368,7 +28368,8 @@ CREATE TABLE slack_api_scopes (
     id bigint NOT NULL,
     name text NOT NULL,
     organization_id bigint,
-    CONSTRAINT check_738678187a CHECK ((char_length(name) <= 100))
+    CONSTRAINT check_738678187a CHECK ((char_length(name) <= 100)),
+    CONSTRAINT check_930d89be0d CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE SEQUENCE slack_api_scopes_id_seq
@@ -28414,7 +28415,8 @@ CREATE TABLE slack_integrations_scopes (
     slack_integration_id bigint NOT NULL,
     project_id bigint,
     group_id bigint,
-    organization_id bigint
+    organization_id bigint,
+    CONSTRAINT check_c5ff08a699 CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1))
 );
 
 CREATE TABLE slack_integrations_scopes_archived (
@@ -36253,14 +36255,8 @@ ALTER TABLE merge_request_context_commit_diff_files
 ALTER TABLE system_note_metadata
     ADD CONSTRAINT check_9135b6f0b6 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
 
-ALTER TABLE slack_api_scopes
-    ADD CONSTRAINT check_930d89be0d CHECK ((organization_id IS NOT NULL)) NOT VALID;
-
 ALTER TABLE related_epic_links
     ADD CONSTRAINT check_a6d9d7c276 CHECK ((issue_link_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE slack_integrations_scopes
-    ADD CONSTRAINT check_c5ff08a699 CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1)) NOT VALID;
 
 ALTER TABLE sprints
     ADD CONSTRAINT check_ccd8a1eae0 CHECK ((start_date IS NOT NULL)) NOT VALID;
