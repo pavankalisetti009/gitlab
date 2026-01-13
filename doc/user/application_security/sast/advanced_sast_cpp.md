@@ -96,13 +96,13 @@ If SAST_COMPILATION_DATABASE is not specified, the GitLab Advanced SAST CPP anal
 ### Optimization: Parallel execution for efficiency
 
 You can run the analyzer in parallel by splitting the CDB into multiple fragments.
-The [`GitLab Advanced SAST CPP` repository](https://gitlab.com/gitlab-org/security-products/analyzers/clangsa/-/blob/main/templates/scripts.yml) provides helper scripts for this.
+The [`GitLab Advanced SAST CPP` repository](https://gitlab.com/gitlab-org/security-products/demos/sast/gitlab-advanced-sast-cpp-templates/-/blob/main/templates/scripts.yml) provides helper scripts for this.
 
 1. Include the scripts:
 
    ```yaml
    include:
-     - project: "gitlab-org/security-products/analyzers/clangsa"
+     - project: "gitlab-org/security-products/demos/sast/gitlab-advanced-sast-cpp-templates"
        file: "templates/scripts.yml"
    ```
 
@@ -112,7 +112,7 @@ The [`GitLab Advanced SAST CPP` repository](https://gitlab.com/gitlab-org/securi
    <YOUR-BUILD-JOB-NAME>:
      script:
        - <your-script to generate the CDB>
-       - !reference [.clangsa-scripts]
+       - !reference [.gitlab-advanced-sast-cpp-scripts]
        - split_cdb "${BUILD_DIR}" 1 4 # Split into 4 fragments
      artifacts:
        paths:
@@ -223,7 +223,7 @@ cdb-rebase compile_commands.json /host/path /container/path > rebased_compile_co
 
 If the build environment differs from the scan environment, the generated CDB might require adjustments.
 You can modify it with [jq](https://jqlang.org),
-or use `cdb_append`, a shell function from the [predefined helper script](https://gitlab.com/gitlab-org/security-products/analyzers/clangsa/-/blob/main/templates/scripts.yml).
+or use `cdb_append`, a shell function from the [predefined helper script](https://gitlab.com/gitlab-org/security-products/demos/sast/gitlab-advanced-sast-cpp-templates/-/blob/main/templates/scripts.yml).
 
 `cdb_append` appends compiler options to an existing CDB.
 It accepts:
@@ -235,12 +235,12 @@ Example in CI:
 
 ```yaml
 include:
-  - project: "gitlab-org/security-products/analyzers/clangsa"
+  - project: "gitlab-org/security-products/demos/sast/gitlab-advanced-sast-cpp-templates"
     file: "templates/scripts.yml"
 
 <YOUR-BUILD-JOB-NAME>:
   script:
-    - !reference [.clangsa-scripts]
+    - !reference [.gitlab-advanced-sast-cpp-scripts]
     - <your-script to generate the CDB>
     - cdb_append "${BUILD_DIR}" "-I'$PWD/include-cache'" "-Wno-error=register"
 ```
