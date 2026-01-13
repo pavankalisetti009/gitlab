@@ -9,9 +9,12 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
   let_it_be(:subgroup_user) { create(:user) }
   let_it_be(:bot) { create(:user, :bot) }
   let_it_be(:direct_group_members) { [active_user, service_user] }
-  let_it_be(:full_group_user_list) { direct_group_members + [subgroup_user] }
   let_it_be(:group) { create(:group, developers: direct_group_members + [bot]) }
   let_it_be(:subgroup) { create(:group, parent: group, developers: subgroup_user) }
+  let_it_be(:project_user) { create(:user) }
+  let_it_be(:project) { create(:project, namespace: subgroup, creator: active_user, developers: project_user) }
+  let_it_be(:full_group_user_list) { direct_group_members + [subgroup_user, project_user] }
+
   let(:subscription_usage) { instance_double(GitlabSubscriptions::SubscriptionUsage) }
   let(:subscription_usage_client) { instance_double(Gitlab::SubscriptionPortal::SubscriptionUsageClient) }
   let(:client_response) do

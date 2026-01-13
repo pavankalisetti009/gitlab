@@ -40,7 +40,7 @@ module GitlabSubscriptions
         strong_memoize_with(:users, username) do
           case subscription_usage.subscription_target
           when :namespace
-            namespace_users = subscription_usage.namespace.users_with_descendants
+            namespace_users = users_from_descendant_members
 
             username.present? ? namespace_users.by_username(username) : namespace_users
           when :instance
@@ -61,6 +61,19 @@ module GitlabSubscriptions
         subscription_usage.subscription_usage_client.get_users_usage_stats[:usersUsage] || {}
       end
       strong_memoize_attr :usage_stats
+
+      def users_from_descendant_members
+        namespace = subscription_usage.namespace
+        user_ids = Member.from_union(
+          [
+            namespace.descendant_project_members_with_inactive.select(:user_id),
+            namespace.members_with_descendants.select(:user_id)
+          ],
+          remove_duplicates: true
+        ).select(:user_id)
+
+        User.id_in(user_ids).without_order
+      end
     end
   end
 end
