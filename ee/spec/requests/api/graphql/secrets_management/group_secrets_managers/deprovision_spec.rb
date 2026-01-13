@@ -80,13 +80,11 @@ RSpec.describe 'Deprovision secrets manager on a group', :gitlab_secrets_manager
     end
 
     context 'and group_secrets_manager feature flag is disabled' do
-      it 'returns an error' do
+      before do
         stub_feature_flags(group_secrets_manager: false)
-
-        post_mutation
-
-        expect_graphql_errors_to_include("`group_secrets_manager` feature flag is disabled.")
       end
+
+      it_behaves_like 'a mutation on an unauthorized resource'
     end
   end
 end

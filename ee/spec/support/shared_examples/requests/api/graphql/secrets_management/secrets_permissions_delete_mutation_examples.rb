@@ -76,20 +76,11 @@ RSpec.shared_examples 'a GraphQL mutation for deleting secrets permissions' do |
   end
 
   context "and #{resource_type}_secrets_manager feature flag is disabled" do
-    let(:err_message) do
-      "`#{feature_flag_name}` feature flag is disabled."
-    end
-
     before do
       resource.add_owner(current_user)
-    end
-
-    it 'returns an error' do
       stub_feature_flags(feature_flag_name => false)
-
-      post_mutation
-
-      expect_graphql_errors_to_include(err_message)
     end
+
+    it_behaves_like 'a mutation on an unauthorized resource'
   end
 end

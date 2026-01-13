@@ -35,10 +35,6 @@ module Mutations
         def resolve(group_path:, principal:, actions:, expired_at: nil)
           group = authorized_find!(group_path: group_path)
 
-          if Feature.disabled?(:group_secrets_manager, group)
-            raise_resource_not_available_error!("`group_secrets_manager` feature flag is disabled.")
-          end
-
           principal_id = resolve_principal_id(principal)
 
           result = ::SecretsManagement::GroupSecretsPermissions::UpdateService
