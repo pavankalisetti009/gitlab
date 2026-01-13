@@ -44,5 +44,5 @@
     %p
     = s_('InProductMarketing|Want to host GitLab on your servers?')
     = link_to s_('InProductMarketing|Start a Self-Managed trial'),
-      'https://about.gitlab.com/free-trial/#selfmanaged/',
+      promo_url(path: '/free-trial', query: { hosted: 'self-managed' }),
       data: { track_action: 'click_link', track_label: 'start_self-managed_trial' }
