@@ -96,7 +96,8 @@ RSpec.describe Elastic::MigrationRecord, :elastic_delete_by_query, feature_categ
   end
 
   describe '#started?' do
-    it 'changes on first save to the index', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/438942' do
+    it 'changes on first save to the index',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24065' do
       expect { record.save!(completed: true) }.to change { record.started? }.from(false).to(true)
     end
   end

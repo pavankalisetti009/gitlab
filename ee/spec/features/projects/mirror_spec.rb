@@ -216,7 +216,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         end
       end
 
-      it 'can be changed to unauthenticated', quarantine: 'https://gitlab.com/gitlab-org/quality/engineering-productivity/master-broken-incidents/-/issues/1486' do
+      it 'can be changed to unauthenticated', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24092' do
         project.update!(import_url: 'http://user:password@example.com')
 
         visit project_settings_repository_path(project)

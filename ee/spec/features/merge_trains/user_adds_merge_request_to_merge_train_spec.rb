@@ -113,7 +113,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
       quarantine: {
         issue: [
           'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/12628',
-          'https://gitlab.com/gitlab-org/gitlab/-/issues/498518'
+          'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24090'
         ]
       } do
       before do

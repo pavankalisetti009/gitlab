@@ -65,7 +65,7 @@ RSpec.describe Gitlab::ImportExport::Project::ProjectHooksRestorer, feature_cate
     end
 
     it 'has equal decrypted values compared to source',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/391187' do
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24067' do
       subject.restore
       importable_hooks = importable.hooks.order_by(created_at: :asc)
 
@@ -79,7 +79,7 @@ RSpec.describe Gitlab::ImportExport::Project::ProjectHooksRestorer, feature_cate
     end
 
     it 'has equal plain values compared to source',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/391187' do
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24067' do
       subject.restore
       importable_hooks = importable.hooks.order_by(created_at: :asc)
       normal_attributes = ProjectHook.column_names

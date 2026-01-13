@@ -210,12 +210,13 @@ RSpec.describe 'Groups > Usage quotas > Seats tab', :with_trial_types, :js, :saa
       click_button 'Add seats'
     end
 
-    it 'does not open modal', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/424582' do
+    it 'does not open modal', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24088' do
       expect(page).not_to have_selector('[data-testid="limited-access-modal-id"]')
     end
 
     context 'when user is allowed to add seats' do
-      it 'does not open modal', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/424582' do
+      it 'does not open modal',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24088' do
         expect(page).not_to have_selector('[data-testid="limited-access-modal-id"]')
       end
     end

@@ -40,7 +40,8 @@ RSpec.describe "CI YML Templates", feature_category: :pipeline_composition do
         EOS
       end
 
-      it 'are valid with default stages', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/433350' do
+      it 'are valid with default stages',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24066' do
         expect(subject).to be_valid
       end
 

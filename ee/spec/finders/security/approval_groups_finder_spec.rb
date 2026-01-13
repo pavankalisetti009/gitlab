@@ -79,7 +79,7 @@ RSpec.describe Security::ApprovalGroupsFinder, "#execute", feature_category: :se
       end
 
       it 'excludes groups the user lacks access to',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/435434' do
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24833' do
         expect(subject).to contain_exactly(group_b)
       end
     end

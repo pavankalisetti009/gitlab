@@ -119,7 +119,7 @@ RSpec.describe 'Group-level Protected Branches', :js, feature_category: :source_
     let(:merge_access) { 'No one' }
     let(:push_access) { 'No one' }
 
-    it 'updated successfully', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/426713' do
+    it 'updated successfully', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24083' do
       expect(branch_input).to have_text(protected_branch.name)
 
       update_protected_branch_form(real_time_request: true)
