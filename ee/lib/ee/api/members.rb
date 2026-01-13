@@ -17,6 +17,7 @@ module EE
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
           end
+          route_setting :authorization, permissions: :create_ldap_member_override, boundary_type: :group
           post ":id/members/:user_id/override", feature_category: :user_management do
             group = find_group!(params[:id])
             member = find_member(params)
@@ -41,6 +42,7 @@ module EE
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
           end
+          route_setting :authorization, permissions: :delete_ldap_member_override, boundary_type: :group
           delete ":id/members/:user_id/override", feature_category: :user_management do
             group = find_group!(params[:id])
             member = find_member(params)
@@ -64,6 +66,7 @@ module EE
           params do
             requires :member_id, type: Integer, desc: 'The ID of the member requiring approval'
           end
+          route_setting :authorization, permissions: :approve_member, boundary_type: :group
           put ':id/members/:member_id/approve', feature_category: :groups_and_projects do
             group = find_group!(params[:id])
             member = ::Member.find_by_id(params[:member_id])
@@ -89,6 +92,7 @@ module EE
           desc 'Approves all pending members' do
             tags ['members']
           end
+          route_setting :authorization, permissions: :approve_member, boundary_type: :group
           post ':id/members/approve_all', feature_category: :groups_and_projects do
             group = find_group!(params[:id])
 
@@ -110,6 +114,7 @@ module EE
           params do
             use :pagination
           end
+          route_setting :authorization, permissions: :read_pending_member, boundary_type: :group
           get ":id/pending_members", feature_category: :groups_and_projects do
             group = find_group!(params[:id])
 
@@ -130,6 +135,7 @@ module EE
             optional :search, type: String, desc: 'The exact name of the subscribed member'
             optional :sort, type: String, desc: 'The sorting option', values: Helpers::MembersHelpers.member_sort_options
           end
+          route_setting :authorization, permissions: :read_billable_member, boundary_type: :group
           get ":id/billable_members", feature_category: :seat_cost_management do
             group = find_group!(params[:id])
 
@@ -161,6 +167,7 @@ module EE
             requires :user_id, type: Integer, desc: 'The user ID of the user'
             requires :state, type: String, values: %w[awaiting active], desc: 'The new state for the memberships of the user'
           end
+          route_setting :authorization, permissions: :toggle_state_member, boundary_type: :group
           put ":id/members/:user_id/state", feature_category: :user_management do
             user = find_user(params[:user_id])
             not_found!('User') unless user
@@ -192,6 +199,7 @@ module EE
             requires :user_id, type: Integer, desc: 'The user ID of the member'
             use :pagination
           end
+          route_setting :authorization, permissions: :read_billable_member, boundary_type: :group
           get ":id/billable_members/:user_id/memberships", feature_category: :seat_cost_management do
             group = find_group!(params[:id])
 
@@ -215,6 +223,7 @@ module EE
             requires :user_id, type: Integer, desc: 'The user ID of the member'
             use :pagination
           end
+          route_setting :authorization, permissions: :read_billable_member, boundary_type: :group
           get ":id/billable_members/:user_id/indirect", feature_category: :seat_cost_management do
             group = find_group!(params[:id])
 
@@ -243,6 +252,7 @@ module EE
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
           end
+          route_setting :authorization, permissions: :delete_billable_member, boundary_type: :group
           delete ":id/billable_members/:user_id", feature_category: :seat_cost_management do
             group = find_group!(params[:id])
 
