@@ -1,12 +1,5 @@
 <script>
-import {
-  GlButton,
-  GlButtonGroup,
-  GlBadge,
-  GlLink,
-  GlTooltipDirective,
-  GlTruncate,
-} from '@gitlab/ui';
+import { GlButton, GlButtonGroup, GlLink, GlTooltipDirective, GlTruncate } from '@gitlab/ui';
 import { s__, sprintf, n__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
@@ -16,7 +9,6 @@ export default {
   components: {
     GlButton,
     GlButtonGroup,
-    GlBadge,
     GlLink,
     GlTruncate,
   },
@@ -73,9 +65,6 @@ export default {
     idFromGraphQL() {
       return getIdFromGraphQLId(this.id);
     },
-    cacheSize() {
-      return this.upstream.cacheSize;
-    },
     cacheValidityHours() {
       return this.upstream.cacheValidityHours;
     },
@@ -91,9 +80,6 @@ export default {
     removeUpstreamAriaLabel() {
       return sprintf(s__('VirtualRegistry|Remove upstream %{name}'), { name: this.upstream.name });
     },
-    artifactCount() {
-      return this.upstream.artifactCount;
-    },
     editPath() {
       return this.editUpstreamPathTemplate.replace(':id', this.idFromGraphQL);
     },
@@ -106,18 +92,8 @@ export default {
     isLastUpstream() {
       return this.index === this.upstreamsCount - 1;
     },
-
-    hasWarning() {
-      return Boolean(this.upstream.warning);
-    },
-    warningText() {
-      return this.upstream.warning?.text || this.$options.i18n.defaultWarningText;
-    },
     showButtons() {
-      return this.hasWarning || (this.canUpdate && this.editPath) || this.canRemove;
-    },
-    cacheSizeLabel() {
-      return sprintf(s__('VirtualRegistry|Cache: %{size}'), { size: this.cacheSize });
+      return (this.canUpdate && this.editPath) || this.canRemove;
     },
     cacheValidityHoursLabel() {
       return sprintf(
@@ -139,16 +115,6 @@ export default {
         { hours: this.metadataCacheValidityHours },
       );
     },
-    artifactCountLabel() {
-      return sprintf(
-        n__(
-          'VirtualRegistry|%{count} artifact',
-          'VirtualRegistry|%{count} artifacts',
-          this.artifactCount,
-        ),
-        { count: this.artifactCount },
-      );
-    },
   },
   methods: {
     reorderUpstream(direction) {
@@ -168,7 +134,6 @@ export default {
     clearCacheLabel: s__('VirtualRegistry|Clear cache'),
     editUpstreamLabel: s__('VirtualRegistry|Edit upstream'),
     removeUpstreamLabel: s__('VirtualRegistry|Remove upstream'),
-    defaultWarningText: s__('VirtualRegistry|There is a problem with this cached upstream'),
   },
 };
 </script>
@@ -223,10 +188,6 @@ export default {
           </span>
         </div>
         <div class="gl-flex gl-flex-wrap gl-items-center gl-gap-2">
-          <div v-if="cacheSize" data-testid="cache-size">
-            {{ cacheSizeLabel }}
-          </div>
-          <div v-if="cacheSize">&middot;</div>
           <div data-testid="cache-validity-hours">
             {{ cacheValidityHoursLabel }}
           </div>
@@ -234,26 +195,12 @@ export default {
           <div data-testid="metadata-cache-validity-hours">
             {{ metadataCacheValidityHoursLabel }}
           </div>
-          <div v-if="artifactCount">&middot;</div>
-          <div v-if="artifactCount" data-testid="artifact-count">
-            {{ artifactCountLabel }}
-          </div>
         </div>
       </div>
       <template v-if="showButtons">
         <div
           class="gl-flex gl-flex-wrap gl-items-start gl-gap-2 @sm/panel:gl-flex-nowrap @sm/panel:gl-justify-end"
         >
-          <div v-if="hasWarning" data-testid="warning-badge">
-            <button
-              v-gl-tooltip="warningText"
-              :title="warningText"
-              type="button"
-              class="gl-border-none gl-bg-transparent gl-p-0"
-            >
-              <gl-badge variant="warning" icon="status-alert" icon-size="sm" />
-            </button>
-          </div>
           <gl-button
             v-if="canUpdate"
             size="small"

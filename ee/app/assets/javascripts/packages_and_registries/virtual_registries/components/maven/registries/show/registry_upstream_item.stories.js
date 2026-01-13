@@ -64,11 +64,6 @@ Default.args = {
       url: 'http://maven.org/test',
       cacheValidityHours: 24,
       metadataCacheValidityHours: 48,
-      cacheSize: '100 MB',
-      artifactCount: 100,
-      warning: {
-        text: 'Example warning text',
-      },
     },
   },
   clearCache: (id) => {
@@ -89,7 +84,6 @@ Default.parameters = {
 - The "Clear cache" button is only displayed if \`canClearCache\` is \`true\`. This button emits a \`clearCache\` event when clicked.
 - The "Edit" button is only displayed if \`canEdit\` is \`true\` and \`editPath\` is defined. This button is a link to the upstream edit page.
 - The "Delete" button is only displayed if \`canDelete\` is \`true\`. This button emits a \`deleteUpstream\` event when clicked.
-- The warning badge is only displayed if \`warning\` is defined. If \`warning.text\` is defined, it is used as the warning text. Otherwise, the default warning text is used.
 `,
     },
   },
