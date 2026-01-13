@@ -383,6 +383,108 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
         expect(result.count).to eq(result.distinct.count)
       end
     end
+
+    describe '.with_active_controls_optimized' do
+      let_it_be(:framework) { create(:compliance_framework) }
+      let_it_be(:requirement) { create(:compliance_requirement, framework: framework) }
+      let_it_be(:internal_control) do
+        create(:compliance_requirements_control, compliance_requirement: requirement)
+      end
+
+      let_it_be(:project_setting) do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework,
+          project: project
+        )
+      end
+
+      let_it_be(:framework_without_controls) { create(:compliance_framework) }
+      let_it_be(:framework_without_projects) { create(:compliance_framework) }
+
+      before do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework_without_controls,
+          project: project
+        )
+
+        requirement2 = create(:compliance_requirement, framework: framework_without_projects)
+        create(:compliance_requirements_control, compliance_requirement: requirement2)
+      end
+
+      it 'includes frameworks with both controls and project settings' do
+        result = described_class.with_active_controls_optimized
+
+        expect(result).to include(framework)
+      end
+
+      it 'excludes frameworks without controls' do
+        result = described_class.with_active_controls_optimized
+
+        expect(result).not_to include(framework_without_controls)
+      end
+
+      it 'excludes frameworks without project settings' do
+        result = described_class.with_active_controls_optimized
+
+        expect(result).not_to include(framework_without_projects)
+      end
+
+      it 'returns unique results' do
+        result = described_class.with_active_controls_optimized
+
+        expect(result.count).to eq(result.distinct.count)
+      end
+    end
+  end
+
+  describe '.active_framework_ids' do
+    let_it_be(:framework1) { create(:compliance_framework) }
+    let_it_be(:framework2) { create(:compliance_framework) }
+    let_it_be(:framework3) { create(:compliance_framework) }
+    let_it_be(:project) { create(:project) }
+
+    before do
+      requirement1 = create(:compliance_requirement, framework: framework1)
+      create(:compliance_requirements_control, compliance_requirement: requirement1)
+      create(:compliance_framework_project_setting,
+        compliance_management_framework: framework1,
+        project: project
+      )
+
+      requirement2 = create(:compliance_requirement, framework: framework2)
+      create(:compliance_requirements_control, compliance_requirement: requirement2)
+      create(:compliance_framework_project_setting,
+        compliance_management_framework: framework2,
+        project: project
+      )
+
+      create(:compliance_framework_project_setting,
+        compliance_management_framework: framework3,
+        project: project
+      )
+    end
+
+    it 'returns IDs of frameworks with active controls' do
+      result = described_class.active_framework_ids
+
+      expect(result).to contain_exactly(framework1.id, framework2.id)
+    end
+
+    it 'excludes frameworks without controls' do
+      result = described_class.active_framework_ids
+
+      expect(result).not_to include(framework3.id)
+    end
+
+    it 'returns an array' do
+      expect(described_class.active_framework_ids).to be_an(Array)
+    end
+
+    it 'returns an empty array when no active frameworks exist' do
+      described_class.delete_all
+
+      expect(described_class.active_framework_ids).to eq([])
+    end
   end
 
   describe '.with_project_coverage_for' do

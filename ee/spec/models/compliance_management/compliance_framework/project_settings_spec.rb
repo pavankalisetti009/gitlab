@@ -256,4 +256,62 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings, type:
 
     it { is_expected.to eq(2) }
   end
+
+  describe '.framework_project_mappings' do
+    let_it_be(:framework1) { create(:compliance_framework, namespace: group, name: 'Framework 1') }
+    let_it_be(:framework2) { create(:compliance_framework, namespace: group, name: 'Framework 2') }
+    let_it_be(:framework3) { create(:compliance_framework, namespace: group, name: 'Framework 3') }
+
+    let_it_be(:project1) { create(:project, group: group) }
+    let_it_be(:project2) { create(:project, group: group) }
+    let_it_be(:project3) { create(:project, group: group) }
+    let_it_be(:project4) { create(:project, group: group) }
+
+    before_all do
+      create(:compliance_framework_project_setting,
+        project: project1,
+        compliance_management_framework: framework1)
+      create(:compliance_framework_project_setting,
+        project: project2,
+        compliance_management_framework: framework1)
+      create(:compliance_framework_project_setting,
+        project: project3,
+        compliance_management_framework: framework2)
+      create(:compliance_framework_project_setting,
+        project: project4,
+        compliance_management_framework: framework3)
+    end
+
+    it 'returns a hash mapping framework IDs to arrays of project IDs' do
+      result = described_class.framework_project_mappings([framework1.id, framework2.id])
+
+      expect(result).to eq({
+        framework1.id => [project1.id, project2.id],
+        framework2.id => [project3.id]
+      })
+    end
+
+    context 'when framework_ids is blank' do
+      it 'returns an empty hash when nil' do
+        expect(described_class.framework_project_mappings(nil)).to eq({})
+      end
+
+      it 'returns an empty hash when empty array' do
+        expect(described_class.framework_project_mappings([])).to eq({})
+      end
+    end
+
+    it 'returns an empty hash when no matching frameworks exist' do
+      result = described_class.framework_project_mappings([non_existing_record_id])
+
+      expect(result).to eq({})
+    end
+
+    it 'only includes requested frameworks' do
+      result = described_class.framework_project_mappings([framework1.id])
+
+      expect(result.keys).to contain_exactly(framework1.id)
+      expect(result[framework1.id]).to contain_exactly(project1.id, project2.id)
+    end
+  end
 end
