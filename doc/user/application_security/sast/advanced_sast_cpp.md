@@ -182,9 +182,9 @@ The [`GitLab Advanced SAST CPP` repository](https://gitlab.com/gitlab-org/securi
          artifacts: true
    ```
 
-    - `parallel: 4` shards execution across 4 jobs.
-    - `${CI_NODE_INDEX}` (1, 2, 3, 4) selects the correct CDB fragment.
-    - `needs` ensures the analyzer jobs receive the artifacts produced by your build job.
+   - `parallel: 4` shards execution across 4 jobs.
+   - `${CI_NODE_INDEX}` (1, 2, 3, 4) selects the correct CDB fragment.
+   - `needs` ensures the analyzer jobs receive the artifacts produced by your build job.
 
 With this setup, your build job produces a single `compile_commands.json`.
 The `split_cdb` script creates multiple partitions, and the analyzer jobs run in parallel, with each job processing one partition.
