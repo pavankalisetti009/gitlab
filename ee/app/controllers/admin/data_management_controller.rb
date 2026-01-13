@@ -30,10 +30,10 @@ module Admin
     end
 
     def find_or_default_model_class
-      mapper = ::Gitlab::Geo::ModelMapper
-      return mapper.available_models.first if model_name.blank?
+      # Default model class is Project
+      return Project if model_name.blank?
 
-      mapper.find_from_name(model_name)
+      ::Gitlab::Geo::ModelMapper.find_from_name(model_name)
     end
 
     def model_params
