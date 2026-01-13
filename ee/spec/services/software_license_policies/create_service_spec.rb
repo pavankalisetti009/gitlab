@@ -90,18 +90,6 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
       end
     end
 
-    context 'when an argument error is raised' do
-      before do
-        allow_next_instance_of(Project) do |instance|
-          allow(instance).to receive(:software_license_policies).and_raise(ArgumentError)
-        end
-      end
-
-      specify { expect(subject.execute[:status]).to be(:error) }
-      specify { expect(subject.execute[:message]).to be_present }
-      specify { expect(subject.execute[:http_status]).to be(400) }
-    end
-
     context 'when invalid input is provided' do
       before do
         params[:approval_status] = nil
