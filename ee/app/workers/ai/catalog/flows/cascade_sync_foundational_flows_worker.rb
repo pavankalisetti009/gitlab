@@ -11,7 +11,9 @@ module Ai
         urgency :low
         worker_has_external_dependencies!
         idempotent!
-        defer_on_database_health_signal :gitlab_main, [:namespace_settings, :project_settings], 1.minute
+        defer_on_database_health_signal :gitlab_main,
+          [:namespace_settings, :project_settings, :namespaces, :projects],
+          1.minute
 
         def perform(group_id, user_id = nil, flow_references = nil)
           group = Group.find_by_id(group_id)
