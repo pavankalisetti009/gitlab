@@ -3,7 +3,7 @@ import Vue, { nextTick } from 'vue';
 import MockAdapter from 'axios-mock-adapter';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import VueDraggable from 'vuedraggable';
+import VueDraggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import Dashboard from 'ee/operations/components/dashboard/dashboard.vue';
 import Project from 'ee/operations/components/dashboard/project.vue';
@@ -43,6 +43,7 @@ describe('dashboard component', () => {
         GlModal: true,
         GlLink: true,
         PageHeading,
+        DraggableCompat: true,
       },
     });
 

@@ -1,7 +1,6 @@
 import { GlIntersectionObserver } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VirtualList from 'vue-virtual-scroll-list';
-import Draggable from 'vuedraggable';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -14,6 +13,7 @@ import { EPIC_LANE_BASE_HEIGHT } from 'ee/boards/constants';
 import epicsSwimlanesQuery from 'ee/boards/graphql/epics_swimlanes.query.graphql';
 import BoardListHeader from 'ee_else_ce/boards/components/board_list_header.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import Draggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
 import { mockLists, mockEpics, mockEpic, mockEpicSwimlanesResponse } from '../mock_data';
 

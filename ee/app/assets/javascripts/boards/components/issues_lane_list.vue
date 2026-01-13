@@ -1,6 +1,6 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
-import Draggable from 'vuedraggable';
+import Draggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import { __, s__ } from '~/locale';
 import BoardCard from '~/boards/components/board_card.vue';
 import BoardNewIssue from '~/boards/components/board_new_issue.vue';
@@ -457,6 +457,7 @@ export default {
         :is="treeRootWrapper"
         v-if="!list.collapsed"
         v-bind="treeRootOptions"
+        item-key="id"
         class="board-cell gl-m-0 gl-h-full gl-list-none gl-p-2"
         :class="{
           'board-column-highlighted': highlighted,
@@ -482,11 +483,13 @@ export default {
             @setFilters="$emit('setFilters', $event)"
           />
         </template>
-        <gl-loading-icon
-          v-if="(isLoading || isLoadingMoreIssues) && isUnassignedIssuesLane"
-          size="sm"
-          class="gl-py-3"
-        />
+        <template #footer>
+          <gl-loading-icon
+            v-if="(isLoading || isLoadingMoreIssues) && isUnassignedIssuesLane"
+            size="sm"
+            class="gl-py-3"
+          />
+        </template>
       </component>
     </div>
   </div>

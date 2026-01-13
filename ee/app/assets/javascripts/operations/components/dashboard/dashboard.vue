@@ -9,10 +9,10 @@ import {
   GlModalDirective,
   GlSprintf,
 } from '@gitlab/ui';
-import VueDraggable from 'vuedraggable';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
 import { s__ } from '~/locale';
+import VueDraggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import ProjectSelector from '~/vue_shared/components/project_selector/project_selector.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DashboardProject from './project.vue';
@@ -175,6 +175,7 @@ export default {
       <vue-draggable
         v-if="projects.length"
         v-model="projects"
+        item-key="id"
         group="dashboard-projects"
         class="gl-grid gl-items-start gl-gap-5 @md/panel:gl-grid-cols-3"
       >

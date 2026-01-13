@@ -12,7 +12,7 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
-import Draggable from 'vuedraggable';
+import Draggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import { defaultSortableOptions, DRAG_DELAY } from '~/sortable/constants';
 import { __, s__, sprintf } from '~/locale';
 import {
@@ -429,10 +429,10 @@ export default {
               }}
             </span></template
           >
-          <draggable v-model="formData.selectOptions" v-bind="dragOptions">
+          <draggable v-model="formData.selectOptions" v-bind="dragOptions" item-key="value">
             <div
               v-for="(selectOption, index) in formData.selectOptions"
-              :key="index"
+              :key="selectOption.value"
               class="gl-mb-3 gl-flex gl-items-center gl-gap-2"
             >
               <gl-icon

@@ -1,7 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import Draggable from 'vuedraggable';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { DraggableItemTypes } from 'ee_else_ce/boards/constants';
@@ -13,6 +12,7 @@ import { ListType } from '~/boards/constants';
 import listsIssuesQuery from '~/boards/graphql/lists_issues.query.graphql';
 import issueCreateMutation from '~/boards/graphql/issue_create.mutation.graphql';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
+import Draggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import issueMoveListMutation from 'ee/boards/graphql/issue_move_list.mutation.graphql';
 import { mockList, boardListQueryResponse } from 'jest/boards/mock_data';
 import {

@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import Draggable from 'vuedraggable';
 import { GlModal, GlSprintf, GlDisclosureDropdown } from '@gitlab/ui';
+import Draggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
