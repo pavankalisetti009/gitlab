@@ -6,6 +6,8 @@ module Ai
       class CascadeSyncFoundationalFlowsWorker
         include ApplicationWorker
 
+        BATCH_SIZE = 100
+
         data_consistency :delayed
         feature_category :ai_abstraction_layer
         urgency :low
@@ -55,7 +57,7 @@ module Ai
             ).execute
           end
 
-          group.descendants.each_batch do |batch|
+          group.descendants.each_batch(of: BATCH_SIZE) do |batch|
             batch.each do |descendant_group|
               ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
                 descendant_group,
@@ -66,7 +68,7 @@ module Ai
         end
 
         def sync_projects(group, user)
-          group.all_projects.each_batch do |batch|
+          group.all_projects.each_batch(of: BATCH_SIZE) do |batch|
             batch.each do |project|
               ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
                 project,
