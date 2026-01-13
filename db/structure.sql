@@ -45497,8 +45497,6 @@ CREATE UNIQUE INDEX index_queries_service_pings_on_org_id_recorded_at ON queries
 
 CREATE UNIQUE INDEX index_raw_usage_data_on_organization_id_recorded_at ON raw_usage_data USING btree (organization_id, recorded_at);
 
-CREATE UNIQUE INDEX index_raw_usage_data_on_recorded_at ON raw_usage_data USING btree (recorded_at);
-
 CREATE INDEX index_redirect_routes_on_namespace_id ON redirect_routes USING btree (namespace_id);
 
 CREATE UNIQUE INDEX index_redirect_routes_on_path ON redirect_routes USING btree (path);
