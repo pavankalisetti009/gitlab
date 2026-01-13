@@ -10,7 +10,7 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
 
   let(:request) { test_request }
   let(:group) { create(:group) }
-  let(:params) { attributes_for(:application, scopes: %w[read_user]) }
+  let(:params) { attributes_for(:application, scopes: %w[read_user], organization_id: user.organization.id) }
 
   subject(:service) { described_class.new(user, request, params) }
 
@@ -52,7 +52,13 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
     end
 
     context 'when application has multiple scopes' do
-      let(:params) { attributes_for(:application, scopes: %w[api read_user read_repository]) }
+      let(:params) do
+        attributes_for(
+          :application,
+          scopes: %w[api read_user read_repository],
+          organization_id: user.organization.id
+        )
+      end
 
       it 'includes all scopes in audit details' do
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
@@ -100,9 +106,16 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
       end
     end
 
-    context 'when application owner and user are both nil' do
+    context 'when application owner and user are both nil', :with_current_organization do
       let(:user) { nil }
-      let(:params) { attributes_for(:application, :without_owner, scopes: %w[read_user]) }
+      let(:params) do
+        attributes_for(
+          :application,
+          :without_owner,
+          scopes: %w[read_user],
+          organization_id: current_organization.id
+        )
+      end
 
       it 'creates the app and does not fail' do
         expect { service.execute }.to change { Authn::OauthApplication.count }.by(1)
