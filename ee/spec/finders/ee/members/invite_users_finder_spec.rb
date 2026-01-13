@@ -93,7 +93,37 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
       end
     end
 
-    context 'for service account invite restrictions' do
+    context 'for MembershipEligibilityChecker filtering' do
+      let_it_be(:resource) { root_group }
+
+      before do
+        filtered_users = User.where(id: [regular_user.id, admin_user.id])
+        checker_instance = instance_double(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+        allow(::Namespaces::ServiceAccounts::MembershipEligibilityChecker).to receive(:new).with(root_group)
+                                                                                           .and_return(checker_instance)
+        allow(checker_instance).to receive(:filter_users).and_return(filtered_users)
+      end
+
+      it 'calls MembershipEligibilityChecker and returns filtered users' do
+        result = finder.execute
+
+        expect(result.map(&:id)).to match_array([regular_user.id, admin_user.id])
+      end
+    end
+
+    context 'when resource is neither Group or Project' do
+      let(:resource) do
+        double(root_ancestor: double(group_namespace?: false)) # rubocop:disable RSpec/VerifiedDoubles -- mock only
+      end
+
+      it 'calls MembershipEligibilityChecker with nil' do
+        expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker).to receive(:new).with(nil).and_call_original
+
+        finder.execute
+      end
+    end
+
+    context 'for service account invite restrictions', :saas do
       let_it_be(:resource) { root_group }
 
       let_it_be(:instance_wide_sa) do
@@ -141,22 +171,14 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         expect(finder.execute).to eq(searchable_users_ordered_by_id_desc)
       end
 
-      context 'when CompositeIdUsersFinder filters users' do
-        it 'includes only the allowed service accounts' do
-          result = finder.execute
-
-          expect(result).not_to include(subgroup_sa, other_group_sa)
-          expect(result).to include(instance_wide_sa, root_group_sa)
-        end
-      end
-
       context 'when resource is a project' do
         let_it_be(:resource) { create(:project, namespace: root_group, creator: current_user) }
 
-        it 'does not filter service accounts' do
+        it 'filters service accounts based on project group hierarchy' do
           result = finder.execute
 
-          expect(result).to include(subgroup_sa, other_group_sa)
+          expect(result).to include(instance_wide_sa, root_group_sa)
+          expect(result).not_to include(subgroup_sa, other_group_sa)
         end
       end
 
@@ -193,6 +215,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
       context 'when feature is not available' do
         before do
           stub_saas_features(service_accounts_invite_restrictions: false)
+          stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
         end
 
         it 'does not filter service accounts' do

@@ -43,12 +43,16 @@ module EE
         override :can_create_new_member?
         def can_create_new_member?
           if member.user&.service_account?
-            return false if ::Ability.composite_id_service_account_outside_origin_group?(member.user, source)
+            return false unless service_account_eligible_for_membership?
 
             current_user.can?(:admin_service_account_member, member.group)
           else
             current_user.can?(:invite_group_members, member.group)
           end
+        end
+
+        def service_account_eligible_for_membership?
+          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(member.group).eligible?(member.user)
         end
 
         def ignore_user_limits

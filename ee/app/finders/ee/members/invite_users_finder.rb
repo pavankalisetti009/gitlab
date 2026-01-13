@@ -15,6 +15,16 @@ module EE
       end
       strong_memoize_attr :root_group
 
+      def target_group
+        case resource
+        when Project
+          resource.group
+        when Group
+          resource
+        end
+      end
+      strong_memoize_attr :target_group
+
       override :scope_for_resource
       def scope_for_resource(users)
         if root_group && root_group.enforced_sso?
@@ -24,11 +34,7 @@ module EE
           )
         else
           scoped_users = super
-
-          return scoped_users unless ::Gitlab::Saas.feature_available?(:service_accounts_invite_restrictions)
-          return scoped_users unless resource.is_a?(Group)
-
-          ::Members::ServiceAccounts::CompositeIdUsersFinder.new(resource).execute(scoped_users)
+          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(target_group).filter_users(scoped_users)
         end
       end
     end
