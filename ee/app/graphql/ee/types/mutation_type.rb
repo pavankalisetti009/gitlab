@@ -370,6 +370,7 @@ module EE
         mount_mutation ::Mutations::WorkItems::Lifecycles::Delete, experiment: { milestone: '18.4' }
         mount_mutation ::Mutations::VirtualRegistries::Container::ContainerUpstreamCreateMutation,
           experiment: { milestone: '18.8' }
+        mount_mutation ::Mutations::VirtualRegistries::Container::Registry::Destroy, experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreateMutation,
           experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::Update,
