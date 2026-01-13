@@ -49,6 +49,7 @@ describe('FlowTriggerForm', () => {
         glAbilities: {
           readAiCatalogFlow: true,
           readAiCatalogThirdPartyFlow: true,
+          createAiCatalogThirdPartyFlow: true,
         },
         ...provide,
       },
@@ -170,6 +171,7 @@ describe('FlowTriggerForm', () => {
           });
 
           it('defaults to manual mode', () => {
+            expect(findConfigModeRadio().exists()).toBe(true);
             expect(findConfigModeRadio().attributes('checked')).toBe('manual');
             expect(findConfigPathInput().exists()).toBe(true);
             expect(findFlowSelect().exists()).toBe(false);
@@ -192,6 +194,122 @@ describe('FlowTriggerForm', () => {
           expect(findFlowSelect().exists()).toBe(false);
           expect(findConfigPathInput().exists()).toBe(true);
         });
+      });
+    });
+  });
+
+  describe('Configuration source toggle', () => {
+    describe('when readAiCatalogFlow, readAiCatalogThirdPartyFlow and createAiCatalogThirdPartyFlow are false', () => {
+      beforeEach(async () => {
+        await createWrapper(
+          {},
+          {
+            glAbilities: {
+              readAiCatalogFlow: false,
+              readAiCatalogThirdPartyFlow: false,
+              createAiCatalogThirdPartyFlow: false,
+            },
+          },
+        );
+      });
+
+      it('does not show the configuration source controls', () => {
+        expect(findConfigModeRadio().exists()).toBe(false);
+      });
+    });
+
+    describe('when only readAiCatalogFlow is true', () => {
+      beforeEach(async () => {
+        await createWrapper(
+          {},
+          {
+            glAbilities: {
+              readAiCatalogFlow: true,
+              readAiCatalogThirdPartyFlow: false,
+              createAiCatalogThirdPartyFlow: false,
+            },
+          },
+        );
+      });
+
+      it('does not show the configuration source controls', () => {
+        expect(findConfigModeRadio().exists()).toBe(false);
+      });
+    });
+
+    describe('when only readAiCatalogFlow and createAiCatalogThirdPartyFlow are true', () => {
+      beforeEach(async () => {
+        await createWrapper(
+          {},
+          {
+            glAbilities: {
+              readAiCatalogFlow: true,
+              readAiCatalogThirdPartyFlow: false,
+              createAiCatalogThirdPartyFlow: true,
+            },
+          },
+        );
+      });
+
+      it('shows the configuration source controls', () => {
+        expect(findConfigModeRadio().exists()).toBe(true);
+      });
+    });
+
+    describe('when only readAiCatalogThirdPartyFlow is true', () => {
+      beforeEach(async () => {
+        await createWrapper(
+          {},
+          {
+            glAbilities: {
+              readAiCatalogFlow: false,
+              readAiCatalogThirdPartyFlow: true,
+              createAiCatalogThirdPartyFlow: false,
+            },
+          },
+        );
+      });
+
+      it('does not show the configuration source controls', () => {
+        expect(findConfigModeRadio().exists()).toBe(false);
+      });
+    });
+
+    describe('when only readAiCatalogThirdPartyFlow and createAiCatalogThirdPartyFlow are true', () => {
+      beforeEach(async () => {
+        await createWrapper(
+          {},
+          {
+            glAbilities: {
+              readAiCatalogFlow: false,
+              readAiCatalogThirdPartyFlow: true,
+              createAiCatalogThirdPartyFlow: true,
+            },
+          },
+        );
+      });
+
+      it('shows the configuration source controls', () => {
+        expect(findConfigModeRadio().exists()).toBe(true);
+      });
+    });
+
+    describe('when only createAiCatalogThirdPartyFlow is true', () => {
+      beforeEach(async () => {
+        await createWrapper(
+          {},
+          {
+            glAbilities: {
+              readAiCatalogFlow: false,
+              readAiCatalogThirdPartyFlow: false,
+              createAiCatalogThirdPartyFlow: true,
+            },
+          },
+        );
+      });
+
+      it('does not show the configuration source controls', () => {
+        expect(findConfigModeRadio().exists()).toBe(false);
       });
     });
   });

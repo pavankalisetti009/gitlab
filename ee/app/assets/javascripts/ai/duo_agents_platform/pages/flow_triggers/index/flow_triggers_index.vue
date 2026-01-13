@@ -2,6 +2,7 @@
 import { GlExperimentBadge } from '@gitlab/ui';
 import emptyStateIllustrationPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-pipeline-md.svg?url';
 import { s__ } from '~/locale';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { createAlert } from '~/alert';
 import { fetchPolicies } from '~/lib/graphql';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -25,6 +26,7 @@ export default {
     ResourceListsEmptyState,
     ResourceListsLoadingStateList,
   },
+  mixins: [glAbilitiesMixin()],
   inject: ['projectPath', 'flowTriggersEventTypeOptions'],
   data() {
     return {
@@ -60,6 +62,13 @@ export default {
     showBetaBadge() {
       const { showBetaBadge } = useAiBetaBadge();
       return showBetaBadge.value;
+    },
+    showNewTriggerButton() {
+      return (
+        this.glAbilities.readAiCatalogThirdPartyFlow || // User could select a configured AI Catalog external agent for the trigger
+        this.glAbilities.readAiCatalogFlow || // User could select a configured AI Catalog flow for the trigger
+        this.glAbilities.createAiCatalogThirdPartyFlow // User could create new "manual" external agent (one with a configuration path)
+      );
     },
   },
   methods: {
@@ -102,7 +111,7 @@ export default {
       <template #description>
         {{ s__('DuoAgentsPlatform|Manage automated flows within your project.') }}
       </template>
-      <template #actions>
+      <template v-if="showNewTriggerButton" #actions>
         <flow-triggers-cta />
       </template>
     </page-heading>
@@ -121,7 +130,7 @@ export default {
       "
       :svg-path="$options.emptyStateIllustrationPath"
     >
-      <template #actions>
+      <template v-if="showNewTriggerButton" #actions>
         <slot name="actions">
           <flow-triggers-cta />
         </slot>

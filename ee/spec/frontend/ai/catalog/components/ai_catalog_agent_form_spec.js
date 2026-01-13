@@ -76,6 +76,7 @@ describe('AiCatalogAgentForm', () => {
         },
         glFeatures: {
           aiCatalogThirdPartyFlows: true,
+          aiCatalogCreateThirdPartyFlows: true,
         },
         ...provide,
       },
@@ -137,6 +138,70 @@ describe('AiCatalogAgentForm', () => {
       it('renders agent type as disabled', () => {
         expect(findAgentType().props('disabled')).toBe(true);
       });
+
+      describe('when createAiCatalogThirdPartyFlow is null and aiCatalogThirdPartyFlows is false', () => {
+        beforeEach(() => {
+          createWrapper({
+            props: { mode: 'edit' },
+            provide: {
+              glAbilities: { createAiCatalogThirdPartyFlow: null },
+              glFeatures: { aiCatalogThirdPartyFlows: false },
+            },
+          });
+        });
+
+        it('does not render the agent type field', () => {
+          expect(findAgentType().exists()).toBe(false);
+        });
+      });
+
+      describe('when createAiCatalogThirdPartyFlow is null and aiCatalogThirdPartyFlows is true', () => {
+        beforeEach(() => {
+          createWrapper({
+            props: { mode: 'edit' },
+            provide: {
+              glAbilities: { createAiCatalogThirdPartyFlow: null },
+              glFeatures: { aiCatalogThirdPartyFlows: true },
+            },
+          });
+        });
+
+        it('renders agent type as disabled', () => {
+          expect(findAgentType().props('disabled')).toBe(true);
+        });
+      });
+
+      describe('when createAiCatalogThirdPartyFlow is false and aiCatalogThirdPartyFlows is true', () => {
+        beforeEach(() => {
+          createWrapper({
+            props: { mode: 'edit' },
+            provide: {
+              glAbilities: { createAiCatalogThirdPartyFlow: false },
+              glFeatures: { aiCatalogThirdPartyFlows: true },
+            },
+          });
+        });
+
+        it('does not render the agent type field', () => {
+          expect(findAgentType().exists()).toBe(false);
+        });
+      });
+
+      describe('when createAiCatalogThirdPartyFlow is true and aiCatalogThirdPartyFlows is false', () => {
+        beforeEach(() => {
+          createWrapper({
+            props: { mode: 'edit' },
+            provide: {
+              glAbilities: { createAiCatalogThirdPartyFlow: true },
+              glFeatures: { aiCatalogThirdPartyFlows: false },
+            },
+          });
+        });
+
+        it('renders agent type as disabled', () => {
+          expect(findAgentType().props('disabled')).toBe(true);
+        });
+      });
     });
   });
 
@@ -189,12 +254,15 @@ describe('AiCatalogAgentForm', () => {
   });
 
   describe('Agent Type Field', () => {
-    describe('when createAiCatalogThirdPartyFlow is null and aiCatalogThirdPartyFlows is false', () => {
+    describe('when createAiCatalogThirdPartyFlow is null and both flags are false', () => {
       beforeEach(() => {
         createWrapper({
           provide: {
             glAbilities: { createAiCatalogThirdPartyFlow: null },
-            glFeatures: { aiCatalogThirdPartyFlows: false },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: false,
+              aiCatalogCreateThirdPartyFlows: false,
+            },
           },
         });
       });
@@ -204,12 +272,51 @@ describe('AiCatalogAgentForm', () => {
       });
     });
 
-    describe('when createAiCatalogThirdPartyFlow is null and aiCatalogThirdPartyFlows is true', () => {
+    describe('when createAiCatalogThirdPartyFlow is null and only aiCatalogThirdPartyFlows is true', () => {
       beforeEach(() => {
         createWrapper({
           provide: {
             glAbilities: { createAiCatalogThirdPartyFlow: null },
-            glFeatures: { aiCatalogThirdPartyFlows: true },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: true,
+              aiCatalogCreateThirdPartyFlows: false,
+            },
+          },
+        });
+      });
+
+      it('does not render the agent type field', () => {
+        expect(findAgentType().exists()).toBe(false);
+      });
+    });
+
+    describe('when createAiCatalogThirdPartyFlow is null and only aiCatalogCreateThirdPartyFlows is true', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: {
+            glAbilities: { createAiCatalogThirdPartyFlow: null },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: false,
+              aiCatalogCreateThirdPartyFlows: true,
+            },
+          },
+        });
+      });
+
+      it('does not render the agent type field', () => {
+        expect(findAgentType().exists()).toBe(false);
+      });
+    });
+
+    describe('when createAiCatalogThirdPartyFlow is null and both flags are true', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: {
+            glAbilities: { createAiCatalogThirdPartyFlow: null },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: true,
+              aiCatalogCreateThirdPartyFlows: true,
+            },
           },
         });
       });
@@ -219,12 +326,15 @@ describe('AiCatalogAgentForm', () => {
       });
     });
 
-    describe('when createAiCatalogThirdPartyFlow is false and aiCatalogThirdPartyFlows is false', () => {
+    describe('when createAiCatalogThirdPartyFlow is false and both flags are false', () => {
       beforeEach(() => {
         createWrapper({
           provide: {
             glAbilities: { createAiCatalogThirdPartyFlow: false },
-            glFeatures: { aiCatalogThirdPartyFlows: false },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: false,
+              aiCatalogCreateThirdPartyFlows: false,
+            },
           },
         });
       });
@@ -234,12 +344,15 @@ describe('AiCatalogAgentForm', () => {
       });
     });
 
-    describe('when createAiCatalogThirdPartyFlow is false and aiCatalogThirdPartyFlows is true', () => {
+    describe('when createAiCatalogThirdPartyFlow is false and both flags are true', () => {
       beforeEach(() => {
         createWrapper({
           provide: {
             glAbilities: { createAiCatalogThirdPartyFlow: false },
-            glFeatures: { aiCatalogThirdPartyFlows: true },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: true,
+              aiCatalogCreateThirdPartyFlows: true,
+            },
           },
         });
       });
@@ -249,12 +362,15 @@ describe('AiCatalogAgentForm', () => {
       });
     });
 
-    describe('when createAiCatalogThirdPartyFlow is true and aiCatalogThirdPartyFlows is false', () => {
+    describe('when createAiCatalogThirdPartyFlow is true and both flags are false', () => {
       beforeEach(() => {
         createWrapper({
           provide: {
             glAbilities: { createAiCatalogThirdPartyFlow: true },
-            glFeatures: { aiCatalogThirdPartyFlows: false },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: false,
+              aiCatalogCreateThirdPartyFlows: false,
+            },
           },
         });
       });
@@ -264,12 +380,15 @@ describe('AiCatalogAgentForm', () => {
       });
     });
 
-    describe('when createAiCatalogThirdPartyFlow is true and aiCatalogThirdPartyFlows is true', () => {
+    describe('when createAiCatalogThirdPartyFlow is true and both flags are true', () => {
       beforeEach(() => {
         createWrapper({
           provide: {
             glAbilities: { createAiCatalogThirdPartyFlow: true },
-            glFeatures: { aiCatalogThirdPartyFlows: true },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: true,
+              aiCatalogCreateThirdPartyFlows: true,
+            },
           },
         });
       });

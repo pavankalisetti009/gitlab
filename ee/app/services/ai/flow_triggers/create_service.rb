@@ -9,6 +9,8 @@ module Ai
       end
 
       def execute(params)
+        return disallow_new_external_agent_error unless new_external_agents_allowed?
+
         super do
           project.ai_flow_triggers.create(params)
         end

@@ -1417,6 +1417,10 @@ module EE
         ::Feature.enabled?(:ai_catalog_third_party_flows, @user)
       end
 
+      condition(:create_third_party_flows_enabled, scope: :user) do
+        ::Feature.enabled?(:ai_catalog_create_third_party_flows, @user)
+      end
+
       condition(:third_party_flows_available, scope: :subject) do
         ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog_third_party_flows)
       end
@@ -1444,6 +1448,10 @@ module EE
         prevent :create_ai_catalog_third_party_flow
         prevent :read_ai_catalog_third_party_flow
         prevent :create_ai_catalog_third_party_flow_item_consumer
+      end
+
+      rule { ~create_third_party_flows_enabled }.policy do
+        prevent :create_ai_catalog_third_party_flow
       end
 
       rule { container_registry_disabled }.policy do

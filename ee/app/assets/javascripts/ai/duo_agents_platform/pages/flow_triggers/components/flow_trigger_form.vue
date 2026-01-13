@@ -155,6 +155,9 @@ export default {
     isCatalogConfigMode() {
       return this.configMode === CONFIG_MODE_CATALOG;
     },
+    isConfigurationSourceToggleAvailable() {
+      return this.isCatalogConfigModeAvailable && this.glAbilities.createAiCatalogThirdPartyFlow;
+    },
     catalogConfigModeTexts() {
       if (this.glAbilities.readAiCatalogFlow && this.glAbilities.readAiCatalogThirdPartyFlow) {
         return {
@@ -356,7 +359,7 @@ export default {
       </gl-form-group>
 
       <gl-form-group
-        v-if="isCatalogConfigModeAvailable"
+        v-if="isConfigurationSourceToggleAvailable"
         :label="s__('DuoAgentsPlatform|Configuration source')"
         label-for="config-mode"
       >

@@ -23,6 +23,8 @@ module Ai
         end
       end
 
+      private
+
       def user_is_authorized_to_service_account?(service_account)
         return false unless service_account.service_account?
 
@@ -38,6 +40,16 @@ module Ai
         service_account.update!(
           composite_identity_enforced: Feature.enabled?(:ai_flow_triggers_use_composite_identity, current_user)
         )
+      end
+
+      # Triggers for "manual" External Agents can only be created by users who can create External Agents.
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/583687.
+      def new_external_agents_allowed?
+        Feature.enabled?(:ai_catalog_create_third_party_flows, current_user)
+      end
+
+      def disallow_new_external_agent_error
+        ServiceResponse.error(message: 'You have insufficient permissions')
       end
     end
   end

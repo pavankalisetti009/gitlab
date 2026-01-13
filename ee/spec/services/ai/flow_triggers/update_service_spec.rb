@@ -90,19 +90,33 @@ RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :duo_agent_pla
           create(:ai_flow_trigger, project: project, user: service_account, config_path: 'path/config.yml')
         end
 
-        it 'updates to use catalog item' do
-          catalog_params = {
+        let(:params) do
+          {
             user_id: service_account.id,
             ai_catalog_item_consumer_id: item_consumer1.id,
             config_path: nil
           }
+        end
 
-          response = service.execute(catalog_params)
-          expect(response).to be_success
+        it 'updates to use catalog item' do
+          response = service.execute(params)
           flow_trigger = response.payload
 
+          expect(response).to be_success
           expect(flow_trigger.ai_catalog_item_consumer).to eq(item_consumer1)
           expect(flow_trigger.config_path).to be_nil
+        end
+
+        context 'when ai_catalog_create_third_party_flows is disabled' do
+          before do
+            stub_feature_flags(ai_catalog_create_third_party_flows: false)
+          end
+
+          it 'does not return an error' do
+            response = service.execute(params)
+
+            expect(response).to be_success
+          end
         end
       end
 
@@ -115,19 +129,34 @@ RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :duo_agent_pla
             ai_catalog_item_consumer: item_consumer1)
         end
 
-        it 'updates to use config_path' do
-          config_params = {
+        let(:params) do
+          {
             user_id: service_account.id,
             config_path: 'new/path/config.yml',
             ai_catalog_item_consumer_id: nil
           }
+        end
 
-          response = service.execute(config_params)
+        it 'updates to use config_path' do
+          response = service.execute(params)
           expect(response).to be_success
           flow_trigger = response.payload
 
           expect(flow_trigger.config_path).to eq('new/path/config.yml')
           expect(flow_trigger.ai_catalog_item_consumer).to be_nil
+        end
+
+        context 'when ai_catalog_create_third_party_flows is disabled' do
+          before do
+            stub_feature_flags(ai_catalog_create_third_party_flows: false)
+          end
+
+          it 'returns an error' do
+            response = service.execute(params)
+
+            expect(response).to be_error
+            expect(response.message).to include('You have insufficient permissions')
+          end
         end
       end
 

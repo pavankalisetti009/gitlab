@@ -115,18 +115,26 @@ export default {
     formId() {
       return uniqueId('ai-catalog-agent-form-');
     },
-    isThirdPartyFlowsAvailable() {
-      return (
-        this.glAbilities.createAiCatalogThirdPartyFlow ?? this.glFeatures.aiCatalogThirdPartyFlows
-      );
-    },
     isThirdPartyFlow() {
-      return (
-        this.isThirdPartyFlowsAvailable && this.formValues.type === AI_CATALOG_TYPE_THIRD_PARTY_FLOW
-      );
+      return this.formValues.type === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
     isEditMode() {
       return this.mode === 'edit';
+    },
+    isCreateThirdPartyFlowsAvailable() {
+      return (
+        this.glAbilities.createAiCatalogThirdPartyFlow ??
+        (this.glFeatures.aiCatalogThirdPartyFlows && this.glFeatures.aiCatalogCreateThirdPartyFlows)
+      );
+    },
+    showTypeSelection() {
+      if (this.isEditMode) {
+        return (
+          this.glAbilities.createAiCatalogThirdPartyFlow ?? this.glFeatures.aiCatalogThirdPartyFlows
+        );
+      }
+
+      return this.isCreateThirdPartyFlowsAvailable;
     },
     allErrors() {
       return [...this.errors, ...this.formErrors];
@@ -377,7 +385,7 @@ export default {
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')">
         <form-group
-          v-if="isThirdPartyFlowsAvailable"
+          v-if="showTypeSelection"
           :field="$options.fields.type"
           :field-value="formValues.type"
         >
