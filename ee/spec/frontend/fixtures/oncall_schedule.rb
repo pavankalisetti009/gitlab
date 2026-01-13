@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'On-call Schedules (GraphQL fixtures)' do
+RSpec.describe 'On-call Schedules (GraphQL fixtures)', feature_category: :on_call_schedule_management do
   include ApiHelpers
   include JavaScriptFixturesHelpers
   include GraphqlHelpers
