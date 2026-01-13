@@ -797,15 +797,6 @@ module EE
       owned_groups.free_or_trial.limit(limit)
     end
 
-    protected
-
-    override :password_required?
-    def password_required?(*)
-      return false if service_account? || group_managed_account?
-
-      super
-    end
-
     # override, from Devise::Confirmable
     def send_confirmation_instructions
       super
@@ -822,6 +813,15 @@ module EE
           unconfirmed_email: unconfirmed_email
         }
       })
+    end
+
+    protected
+
+    override :password_required?
+    def password_required?(*)
+      return false if service_account? || group_managed_account?
+
+      super
     end
 
     private
