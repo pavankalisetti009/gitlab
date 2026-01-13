@@ -933,12 +933,12 @@ The following are Docker image-related CI/CD variables.
    For example, if `SAST_EXCLUDED_PATHS` is set to `*.py,tests`:
 
    - `*.py` ignores the following:
-      - `foo.py`
-      - `src/foo.py`
-      - `foo.py/bar.sh`
+     - `foo.py`
+     - `src/foo.py`
+     - `foo.py/bar.sh`
    - `tests` ignores:
-      - `tests/foo.py`
-      - `a/b/tests/c/foo.py`
+     - `tests/foo.py`
+     - `a/b/tests/c/foo.py`
 
    Each pattern is a glob-style pattern that uses the same syntax as [gitignore](https://git-scm.com/docs/gitignore#_pattern_format).
 
