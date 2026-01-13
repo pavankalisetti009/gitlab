@@ -870,13 +870,17 @@ module EE
 
       return if values.empty?
 
+      through_namespace_ids = values.filter_map { |ns| ns.dig(:through_namespace, :id) }
+      through_namespaces = self.class
+        .where(id: through_namespace_ids, parent_id: id)
+        .index_by(&:id)
       timestamp = Time.current
+
       rules = values.flat_map do |rule|
         features = rule[:features].reject(&:blank?)
         next [] if features.blank?
 
-        through_namespace = self.class.find_by_id(rule.dig(:through_namespace, :id))
-
+        through_namespace = through_namespaces[rule.dig(:through_namespace, :id)]
         next [] unless through_namespace
 
         features.map do |access_entity|
