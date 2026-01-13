@@ -401,7 +401,27 @@ module EE
       supports_epic? && licensed_feature_available?(:epics)
     end
 
+    # WorkItems only
+    # - OKRs (objectives and key results) only work with WorkItems views.
+    # - Epics only work with WorkItems views.
+    override :show_as_work_item?
+    def show_as_work_item?
+      return okr_available_and_enabled? if okr_work_item?
+
+      return true if work_item_type&.epic?
+
+      super
+    end
+
     private
+
+    def okr_work_item?
+      work_item_type&.objective? || work_item_type&.key_result?
+    end
+
+    def okr_available_and_enabled?
+      licensed_feature_available?(:okrs) && resource_parent.okrs_mvc_feature_flag_enabled?
+    end
 
     def blocking_issues_ids
       @blocking_issues_ids ||= self.class.related_link_class.blocking_issuables_ids_for(self)
