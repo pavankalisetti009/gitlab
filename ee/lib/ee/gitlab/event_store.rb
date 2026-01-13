@@ -252,9 +252,6 @@ module EE
 
           store.subscribe ::Ai::ActiveContext::Code::ProcessInvalidEnabledNamespaceEventWorker,
             to: ::Ai::ActiveContext::Code::ProcessInvalidEnabledNamespaceEvent
-
-          store.subscribe ::Ai::ActiveContext::Code::SaasInitialIndexingEventWorker,
-            to: ::Ai::ActiveContext::Code::SaasInitialIndexingEvent
         end
 
         def subscribe_to_zoekt_events(store)
