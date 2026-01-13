@@ -1,6 +1,7 @@
 <script>
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { getPreviousRoute } from 'ee/ai/duo_agents_platform/router/utils';
 import createAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/create_ai_flow_trigger.mutation.graphql';
 import { FLOW_TRIGGERS_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import FlowTriggerForm from './components/flow_trigger_form.vue';
@@ -19,6 +20,14 @@ export default {
     };
   },
   methods: {
+    goToPreviousRoute() {
+      const previousRoute = getPreviousRoute();
+      if (previousRoute) {
+        this.$router.push(previousRoute);
+      } else {
+        this.$router.push({ name: FLOW_TRIGGERS_INDEX_ROUTE });
+      }
+    },
     async createAiFlowTrigger(input) {
       this.resetErrorMessages();
       this.isLoading = true;
@@ -75,6 +84,7 @@ export default {
       :project-id="projectId"
       :is-loading="isLoading"
       mode="create"
+      @cancel="goToPreviousRoute"
       @dismiss-errors="resetErrorMessages"
       @submit="createAiFlowTrigger"
     />

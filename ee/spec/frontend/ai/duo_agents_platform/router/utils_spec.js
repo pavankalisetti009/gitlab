@@ -1,4 +1,8 @@
-import { getNamespaceIndexComponent } from 'ee/ai/duo_agents_platform/router/utils';
+import {
+  getNamespaceIndexComponent,
+  getPreviousRoute,
+  setPreviousRoute,
+} from 'ee/ai/duo_agents_platform/router/utils';
 
 import ProjectAgentsPlatformIndex from 'ee/ai/duo_agents_platform/namespace/project/project_agents_platform_index.vue';
 import UserAgentsPlatformIndex from 'ee/ai/duo_agents_platform/namespace/user/user_agents_platform_index.vue';
@@ -24,4 +28,20 @@ describe('getNamespaceIndexComponent', () => {
       expect(getNamespaceIndexComponent(namespace)).toBe(expectedComponent);
     },
   );
+});
+
+describe('Previous route', () => {
+  beforeEach(() => {
+    setPreviousRoute(null);
+  });
+
+  it('sets and gets a route', () => {
+    const route = { name: 'test_route', params: { id: '123' } };
+    setPreviousRoute(route);
+    expect(getPreviousRoute()).toBe(route);
+  });
+
+  it('returns null when not set', () => {
+    expect(getPreviousRoute()).toBeNull();
+  });
 });

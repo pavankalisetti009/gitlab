@@ -263,9 +263,6 @@ export default {
 
       this.$emit('submit', formValues);
     },
-    onCancel() {
-      this.$router.go(-1);
-    },
     usersProcessor(data) {
       return data.project?.projectMembers?.nodes?.map(({ user }) => user) || [];
     },
@@ -413,7 +410,12 @@ export default {
         >
           {{ submitButtonText }}
         </gl-button>
-        <gl-button :disabled="isLoading" class="gl-w-full @sm/panel:gl-w-auto" @click="onCancel">
+        <gl-button
+          :disabled="isLoading"
+          class="gl-w-full @sm/panel:gl-w-auto"
+          data-testid="trigger-cancel-button"
+          @click="$emit('cancel')"
+        >
           {{ __('Cancel') }}
         </gl-button>
       </div>
