@@ -65,6 +65,7 @@ module Ai
             'x-gitlab-instance-id' => ::Gitlab::GlobalAnonymousId.instance_id,
             'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
             'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user),
+            'x-gitlab-user-id' => current_user&.id&.to_s,
             'x-gitlab-client-type' => 'gitlab-rails',
             'x-gitlab-version' => ::Gitlab.version_info.to_s
           }

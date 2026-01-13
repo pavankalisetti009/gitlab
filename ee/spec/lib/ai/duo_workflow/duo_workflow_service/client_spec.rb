@@ -40,6 +40,7 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
           'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
           'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user),
           'x-gitlab-client-type' => 'gitlab-rails',
+          "x-gitlab-user-id" => current_user.id.to_s,
           'x-gitlab-version' => ::Gitlab.version_info.to_s
         }
       )
