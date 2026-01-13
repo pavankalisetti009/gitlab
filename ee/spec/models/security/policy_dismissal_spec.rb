@@ -292,6 +292,52 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
     end
   end
 
+  describe '.pluck_security_findings_uuid' do
+    let_it_be(:dismissed_security_findings_uuid) { SecureRandom.uuid }
+    let_it_be(:dismissed_security_findings_uuids) { [dismissed_security_findings_uuid] }
+
+    subject(:security_findings_uuids) { described_class.pluck_security_findings_uuid }
+
+    context 'when there is no policy dismissal with security_findings_uuids' do
+      it 'returns none' do
+        expect(security_findings_uuids).to be_empty
+      end
+    end
+
+    context 'when there are policy dismissals with security_findings_uuids' do
+      let_it_be(:security_policy_dismissal) do
+        create(:policy_dismissal, security_findings_uuids: dismissed_security_findings_uuids)
+      end
+
+      it 'returns the security_findings_uuids' do
+        expect(security_findings_uuids).to contain_exactly(dismissed_security_findings_uuid)
+      end
+
+      context 'when there are duplicated security_findings_uuids' do
+        let_it_be(:other_security_policy_dismissal) do
+          create(:policy_dismissal, security_findings_uuids: dismissed_security_findings_uuids)
+        end
+
+        it 'returns distinct security_findings_uuids' do
+          expect(security_findings_uuids).to contain_exactly(dismissed_security_findings_uuid)
+        end
+      end
+
+      context 'with multiple distinct security_findings_uuids' do
+        let_it_be(:other_dismissed_security_findings_uuid) { SecureRandom.uuid }
+
+        let_it_be(:other_security_policy_dismissal) do
+          create(:policy_dismissal, security_findings_uuids: [other_dismissed_security_findings_uuid])
+        end
+
+        it 'returns all security_findings_uuids' do
+          expect(security_findings_uuids).to contain_exactly(dismissed_security_findings_uuid,
+            other_dismissed_security_findings_uuid)
+        end
+      end
+    end
+  end
+
   describe '.pluck_license_occurrence_uuid' do
     let_it_be(:dismissed_license_occurrence_uuid) { SecureRandom.uuid }
     let_it_be(:dismissed_license_occurrence_uuids) { [dismissed_license_occurrence_uuid] }
