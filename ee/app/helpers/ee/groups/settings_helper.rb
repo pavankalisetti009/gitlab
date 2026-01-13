@@ -103,7 +103,7 @@ module EE
           ai_settings_minimum_access_level_execute_async: @group.ai_minimum_access_level_execute_async,
           ai_settings_minimum_access_level_manage: @group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: @group.ai_minimum_access_level_enable_on_projects
-        }.merge(foundational_flows_settings_data).merge(foundational_agents_data)
+        }.merge(foundational_flows_settings_data).merge(foundational_agents_data).merge(namespace_access_rules_data)
       end
 
       def foundational_agents_data
@@ -147,6 +147,21 @@ module EE
 
       def cascading_tooltip_data(setting_key)
         cascading_namespace_settings_tooltip_data(setting_key, @group, method(:edit_group_path))[:tooltip_data]
+      end
+
+      def namespace_access_rules_data
+        return {} if ::Feature.disabled?(:duo_access_through_namespaces, :instance)
+
+        {
+          namespace_access_rules: ::Gitlab::Json.dump(namespace_access_rules),
+          parent_path: @group.full_path
+        }
+      end
+
+      def namespace_access_rules
+        rules = ::Ai::NamespaceFeatureAccessRule.by_root_namespace_group_by_through_namespace(@group)
+
+        Ai::FeatureAccessRuleTransformer.transform(rules)
       end
 
       def show_foundational_agents_availability?

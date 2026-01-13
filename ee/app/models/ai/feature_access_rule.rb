@@ -22,16 +22,16 @@ module Ai
       def duo_namespace_access_rules
         return {} unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
 
-        group_by_namespace all
+        group_by_through_namespace all
       end
 
       def duo_root_namespace_access_rules
         return {} unless ::Feature.enabled?(:duo_access_through_namespaces, :instance)
 
-        group_by_namespace where(namespaces: { parent_id: nil, type: 'Group' })
+        group_by_through_namespace where(namespaces: { parent_id: nil, type: 'Group' })
       end
 
-      def group_by_namespace(scope)
+      def group_by_through_namespace(scope)
         scope
           .includes(:through_namespace)
           .order(:through_namespace_id, :accessible_entity)

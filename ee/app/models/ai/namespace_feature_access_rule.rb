@@ -18,7 +18,11 @@ module Ai
 
     validate :through_namespace_root_is_root_namespace
 
-    def self.by_through_namespace
+    def self.by_root_namespace_group_by_through_namespace(root_namespace)
+      where(namespaces: { parent_id: root_namespace.id, type: 'Group' }).group_by_through_namespace
+    end
+
+    def self.group_by_through_namespace
       includes(:through_namespace)
         .order(:through_namespace_id, :accessible_entity)
         .group_by(&:through_namespace_id)
