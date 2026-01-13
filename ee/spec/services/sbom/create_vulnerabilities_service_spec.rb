@@ -88,18 +88,6 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
           expect { result }.to raise_error(ArgumentError, 'Create error')
         end
       end
-
-      context 'when set_tracked_context_during_ingestion is disabled' do
-        before do
-          stub_feature_flags(set_tracked_context_during_ingestion: false)
-        end
-
-        it 'does not set tracked context on findings' do
-          result
-
-          expect(Vulnerabilities::Finding.pluck(:security_project_tracked_context_id)).to all(be_nil)
-        end
-      end
     end
 
     shared_examples 'when an existing vulnerability is missing from the report' do |report_type|

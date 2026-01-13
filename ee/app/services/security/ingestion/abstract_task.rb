@@ -21,17 +21,6 @@ module Security
       private
 
       attr_reader :pipeline, :finding_maps
-
-      def set_tracked_context?
-        actor = if pipeline.nil?
-                  :instance
-                else
-                  pipeline.project
-                end
-
-        ::Feature.enabled?(:set_tracked_context_during_ingestion, actor)
-      end
-      strong_memoize_attr :set_tracked_context?
     end
   end
 end
