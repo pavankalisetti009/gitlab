@@ -50,6 +50,7 @@ module API
 
         use :pagination
       end
+      route_setting :authorization, permissions: :read_enterprise_user, boundary_type: :group
       get ':id/enterprise_users' do
         finder = ::Authn::EnterpriseUsersFinder.new(
           current_user,
@@ -69,6 +70,7 @@ module API
       params do
         requires :user_id, type: Integer, desc: 'ID of user account.'
       end
+      route_setting :authorization, permissions: :read_enterprise_user, boundary_type: :group
       get ":id/enterprise_users/:user_id" do
         user = user_group.enterprise_users.find(declared_params[:user_id])
 
@@ -82,6 +84,7 @@ module API
       params do
         requires :user_id, type: Integer, desc: 'ID of user account.'
       end
+      route_setting :authorization, permissions: :disable_two_factor_enterprise_user, boundary_type: :group
       patch ":id/enterprise_users/:user_id/disable_two_factor" do
         user = user_group.enterprise_users.find(declared_params[:user_id])
 
@@ -103,6 +106,7 @@ module API
         optional :name, type: String, desc: 'Name of the user account.'
         optional :email, type: String, desc: 'Email address of the user account. Must be from a verified group domain.'
       end
+      route_setting :authorization, permissions: :update_enterprise_user, boundary_type: :group
       patch ":id/enterprise_users/:user_id" do
         user = user_group.enterprise_users.find(declared_params[:user_id])
 
@@ -132,6 +136,7 @@ module API
             '`true`, deletes the user, their associated contributions, and any groups owned solely by the user. ' \
             'Default value: `false`.'
       end
+      route_setting :authorization, permissions: :delete_enterprise_user, boundary_type: :group
       delete ":id/enterprise_users/:user_id" do
         user = user_group.enterprise_users.find(declared_params[:user_id])
 
