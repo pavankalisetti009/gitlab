@@ -9,9 +9,10 @@ module EE
       # https://gitlab.com/gitlab-org/gitlab/issues/26123
       override :finder_params
       def finder_params
-        return super unless ::Gitlab.com?
+        params = super
+        return params unless ::Gitlab.com?
 
-        { authorized_and_user_personal: true }
+        params.merge(authorized_and_user_personal: true)
       end
     end
   end
