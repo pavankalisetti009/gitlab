@@ -68,6 +68,42 @@ RSpec.describe Security::ScanProfileProject, feature_category: :security_asset_i
       ]
     end
 
+    describe '.for_projects_and_profile' do
+      let_it_be(:association1) do
+        create(:security_scan_profile_project, scan_profile: scan_profile, project: project)
+      end
+
+      let_it_be(:association2) do
+        create(:security_scan_profile_project, scan_profile: scan_profile, project: project_1)
+      end
+
+      let_it_be(:association_different_profile) do
+        create(:security_scan_profile_project, scan_profile: scan_profile_in_other, project: project)
+      end
+
+      let_it_be(:association_unrelated) do
+        create(:security_scan_profile_project, scan_profile: scan_profile_in_other, project: project_2)
+      end
+
+      it 'returns associations for the given projects and scan profile' do
+        result = described_class.for_projects_and_profile([project.id, project_1.id], scan_profile)
+
+        expect(result).to contain_exactly(association1, association2)
+      end
+
+      it 'returns empty when no projects match' do
+        result = described_class.for_projects_and_profile([non_existing_record_id], scan_profile)
+
+        expect(result).to be_empty
+      end
+
+      it 'returns empty when projects exist but not for the given profile' do
+        result = described_class.for_projects_and_profile([project_2.id], scan_profile)
+
+        expect(result).to be_empty
+      end
+    end
+
     describe '.not_in_root_namespace' do
       it 'returns associations where scan profile is not in the given root namespace' do
         result = described_class.not_in_root_namespace(root_namespace)
@@ -87,7 +123,6 @@ RSpec.describe Security::ScanProfileProject, feature_category: :security_asset_i
         result = described_class.by_project_id(project_1.id)
 
         expect(result).to contain_exactly(association_1, association_other_profile)
-        expect(result).not_to include(association_2, association_3)
       end
     end
 
@@ -96,7 +131,6 @@ RSpec.describe Security::ScanProfileProject, feature_category: :security_asset_i
         result = described_class.for_scan_profile(scan_profile_1.id)
 
         expect(result).to contain_exactly(association_1, association_2, association_3)
-        expect(result).not_to include(association_other_profile)
       end
     end
 
