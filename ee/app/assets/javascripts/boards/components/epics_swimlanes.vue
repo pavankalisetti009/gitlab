@@ -1,7 +1,7 @@
 <script>
 import { GlButton, GlIcon, GlIntersectionObserver, GlTooltipDirective } from '@gitlab/ui';
 import VirtualList from 'vue-virtual-scroll-list';
-import Draggable from 'vuedraggable';
+import Draggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import BoardListHeader from 'ee_else_ce/boards/components/board_list_header.vue';
 import { isListDraggable } from '~/boards/boards_util';
 import { setError } from '~/boards/graphql/cache_updates';
@@ -234,6 +234,7 @@ export default {
       <component
         :is="treeRootWrapper"
         v-bind="treeRootOptions"
+        item-key="id"
         class="board-swimlanes-headers gl-sticky gl-top-0 gl-z-3 gl-table"
         data-testid="board-swimlanes-headers"
         @end="$emit('move-list', $event)"

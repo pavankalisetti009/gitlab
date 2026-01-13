@@ -1,7 +1,8 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox, GlModal } from '@gitlab/ui';
-import Draggable from 'vuedraggable';
+import { ignoreConsoleMessages } from 'helpers/console_watcher';
+import Draggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { ENTER_KEY } from '~/lib/utils/keys';
 import CustomFieldForm from 'ee/groups/settings/work_items/custom_fields/custom_field_form.vue';
@@ -117,6 +118,8 @@ describe('CustomFieldForm', () => {
       },
     });
   };
+
+  ignoreConsoleMessages([/Duplicate keys detected/]);
 
   describe('initial rendering', () => {
     it('renders create field button when not editing', () => {
@@ -242,6 +245,8 @@ describe('CustomFieldForm', () => {
       expect(findRemoveSelectButtonAt(0).exists()).toBe(false);
 
       findAddSelectOptionButton().vm.$emit('click');
+      await nextTick();
+      findAddSelectInputAt(0).vm.$emit('input', 'Option 1');
       await nextTick();
 
       // Both options have remove buttons now

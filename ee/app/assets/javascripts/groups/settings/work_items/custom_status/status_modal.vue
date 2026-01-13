@@ -11,7 +11,7 @@ import {
   GlSprintf,
   GlLink,
 } from '@gitlab/ui';
-import VueDraggable from 'vuedraggable';
+import VueDraggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import { createListFormat, s__, sprintf } from '~/locale';
 import { getAdaptiveStatusColor, validateHexColor } from '~/lib/utils/color_utils';
 import {
@@ -575,11 +575,12 @@ export default {
 
           <div>
             <vue-draggable
-              :list="statusesByCategory[category]"
+              v-model="statusesByCategory[category]"
               :disabled="!canReorderStatuses(category)"
               :animation="0"
               handle=".js-drag-handle"
               ghost-class="gl-opacity-5"
+              item-key="id"
               @end="onStatusReorder($event)"
             >
               <div
