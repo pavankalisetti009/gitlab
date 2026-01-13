@@ -61444,13 +61444,13 @@ msgstr ""
 msgid "SecurityOrchestration|Create custom variable"
 msgstr ""
 
-msgid "SecurityOrchestration|Create more robust vulnerability rules and apply them to all your projects."
-msgstr ""
-
 msgid "SecurityOrchestration|Create new framework label"
 msgstr ""
 
 msgid "SecurityOrchestration|Create new project with the new policy"
+msgstr ""
+
+msgid "SecurityOrchestration|Create security policies to enforce security and compliance controls that help keep your project secure."
 msgstr ""
 
 msgid "SecurityOrchestration|Create security policy"

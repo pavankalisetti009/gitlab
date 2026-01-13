@@ -14,7 +14,7 @@ export default {
   i18n: {
     securityApprovals: s__('SecurityOrchestration|Security Approvals'),
     description: s__(
-      'SecurityOrchestration|Create more robust vulnerability rules and apply them to all your projects.',
+      'SecurityOrchestration|Create security policies to enforce security and compliance controls that help keep your project secure.',
     ),
     learnMore: __('Learn more'),
     noPolicies: s__("SecurityOrchestration|You don't have any security policies yet"),
@@ -55,7 +55,7 @@ export default {
 </script>
 
 <template>
-  <gl-form-group>
+  <gl-form-group data-testid="security-policies-approvals">
     <crud-component :title="$options.i18n.securityApprovals" icon="shield" :count="policies.length">
       <template #description>
         {{ $options.i18n.description }}

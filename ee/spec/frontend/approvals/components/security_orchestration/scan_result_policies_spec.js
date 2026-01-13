@@ -57,6 +57,9 @@ describe('ScanResultPolicies', () => {
     expect(findCrudComponent().props('title')).toBe('Security Approvals');
     expect(findCrudComponent().props('icon')).toBe('shield');
     expect(findCrudComponent().props('count')).toEqual(0);
+    expect(findCrudComponent().text()).toContain(
+      'Create security policies to enforce security and compliance controls that help keep your project secure.',
+    );
   });
 
   describe('when no policy is available', () => {

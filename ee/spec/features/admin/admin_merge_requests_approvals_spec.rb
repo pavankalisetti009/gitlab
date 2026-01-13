@@ -71,10 +71,7 @@ RSpec.describe 'Admin interacts with merge requests approvals settings', :js, fe
     it 'shows the security approvals', :sidekiq_inline do
       visit project_settings_merge_requests_path(project)
       wait_for_requests
-
-      expect(page).to have_content('Security Approvals')
-      expect(page).to have_content('Create more robust vulnerability rules and apply them to all your projects.')
-      expect(page).to have_content(policy_name)
+      expect(find_by_testid('security-policies-approvals')).to have_content(policy_name)
     end
   end
 end
