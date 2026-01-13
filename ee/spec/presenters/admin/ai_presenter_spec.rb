@@ -119,7 +119,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
         .and_return [instance_double(Integrations::AmazonQ, auto_review_enabled: auto_review_enabled)]
 
       stub_env('CUSTOMER_PORTAL_URL', nil)
-      stub_feature_flags(self_hosted_agent_platform: true)
     end
 
     specify do
@@ -229,14 +228,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     context 'when user cannot update DAP self-hosted models' do
       before do
         allow(Ability).to receive(:allowed?).with(user, :update_dap_self_hosted_model).and_return(false)
-      end
-
-      it { expect(settings).to include(expose_duo_agent_platform_service_url: 'false') }
-    end
-
-    context 'when self_hosted_agent_platform feature flag is disabled' do
-      before do
-        stub_feature_flags(self_hosted_agent_platform: false)
       end
 
       it { expect(settings).to include(expose_duo_agent_platform_service_url: 'false') }
