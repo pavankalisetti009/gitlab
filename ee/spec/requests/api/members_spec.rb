@@ -726,6 +726,14 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
 
           it_behaves_like 'member response with hidden email'
         end
+
+        it_behaves_like 'authorizing granular token permissions', :create_ldap_member_override do
+          let(:user) { owner }
+          let(:boundary_object) { group }
+          let(:request) do
+            post api(url, personal_access_token: pat)
+          end
+        end
       end
 
       describe 'DELETE /groups/:id/members/:user_id/override' do
@@ -758,11 +766,27 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
 
           it_behaves_like 'member response with hidden email'
         end
+
+        it_behaves_like 'authorizing granular token permissions', :delete_ldap_member_override do
+          let(:user) { owner }
+          let(:boundary_object) { group }
+          let(:request) do
+            delete api(url, personal_access_token: pat)
+          end
+        end
       end
     end
 
     describe 'GET /groups/:id/billable_members', feature_category: :seat_cost_management do
       let(:url) { "/groups/#{group.id}/billable_members" }
+
+      it_behaves_like 'authorizing granular token permissions', :read_billable_member do
+        let(:user) { owner }
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
 
       context 'for regular user' do
         it_behaves_like 'members response with hidden email' do
@@ -1242,6 +1266,14 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         group.add_guest(guest)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :read_billable_member do
+        let(:user) { owner }
+        let(:boundary_object) { group }
+        let(:request) do
+          get api("/groups/#{group.id}/billable_members/#{developer.id}/memberships", personal_access_token: pat)
+        end
+      end
+
       it 'returns memberships for the billable group member' do
         membership = developer.members.first
 
@@ -1344,7 +1376,7 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
       end
     end
 
-    describe 'GET /groups/:id/members/:user_id/indirect' do
+    describe 'GET /groups/:id/billable_members/:user_id/indirect' do
       let_it_be(:invited_group) { create(:group) }
       let_it_be(:other_invited_group) { create(:group) }
       let_it_be(:developer) { invited_group.add_developer(create(:user)).user }
@@ -1355,6 +1387,14 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         context 'with group to group invites' do
           before do
             create(:group_group_link, { shared_with_group: invited_group, shared_group: group })
+          end
+
+          it_behaves_like 'authorizing granular token permissions', :read_billable_member do
+            let(:user) { owner }
+            let(:boundary_object) { group }
+            let(:request) do
+              get api("/groups/#{group.id}/billable_members/#{developer.id}/indirect", personal_access_token: pat)
+            end
           end
 
           it 'includes invited group membership' do
@@ -1514,6 +1554,15 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
       context 'when authenticated as an owner' do
         let(:current_user) { owner }
 
+        it_behaves_like 'authorizing granular token permissions', :toggle_state_member do
+          let!(:member) { create(:group_member, :awaiting, group: group) }
+          let(:user) { owner }
+          let(:boundary_object) { group }
+          let(:request) do
+            put api("/groups/#{group.id}/members/#{member.user.id}/state", personal_access_token: pat), params: params
+          end
+        end
+
         context 'when setting the user to be active' do
           let(:state) { 'active' }
 
@@ -1615,9 +1664,19 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
       end
 
       context 'when authenticated as an owner' do
+        let(:path) { "/groups/#{group.id}/billable_members/#{maintainer.id}" }
+
+        it_behaves_like 'authorizing granular token permissions', :delete_billable_member do
+          let(:user) { owner }
+          let(:boundary_object) { group }
+          let(:request) do
+            delete api(path, personal_access_token: pat)
+          end
+        end
+
         it 'schedules async deletion' do
           expect do
-            delete api("/groups/#{group.id}/billable_members/#{maintainer.id}", owner)
+            delete api(path, owner)
           end.to change { Members::DeletionSchedule.count }.from(0).to(1)
         end
       end
@@ -2082,6 +2141,14 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
           end
         end
 
+        it_behaves_like 'authorizing granular token permissions', :approve_member do
+          let(:user) { owner }
+          let(:boundary_object) { group }
+          let(:request) do
+            put api(url, personal_access_token: pat)
+          end
+        end
+
         context 'when the member is a root group member' do
           it_behaves_like 'successful activation'
         end
@@ -2127,6 +2194,15 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
       context 'when the current user is authorized' do
         before do
           group.add_owner(owner)
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :approve_member do
+          let!(:pending_group_member) { create(:group_member, :awaiting, group: group) }
+          let(:user) { owner }
+          let(:boundary_object) { group }
+          let(:request) do
+            post api(url, personal_access_token: pat)
+          end
         end
 
         context 'when the group ID is a subgroup' do
@@ -2185,6 +2261,14 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         let_it_be(:pending_subgroup_member) { create(:group_member, :awaiting, group: subgroup) }
         let_it_be(:pending_project_member) { create(:project_member, :awaiting, project: project) }
         let_it_be(:pending_invited_member) { create(:group_member, :awaiting, :invited, group: group) }
+
+        it_behaves_like 'authorizing granular token permissions', :read_pending_member do
+          let(:user) { owner }
+          let(:boundary_object) { group }
+          let(:request) do
+            get api(url, personal_access_token: pat)
+          end
+        end
 
         it 'returns only pending members' do
           create(:group_member, group: group)
