@@ -7302,6 +7302,9 @@ msgstr ""
 msgid "AiPowered|End date: %{endDate}"
 msgstr ""
 
+msgid "AiPowered|Ensure members can be added to the group that contains the project."
+msgstr ""
+
 msgid "AiPowered|Enter the URL for your Duo Agent Platform service. This endpoint is used for GitLab Duo Agent Platform requests. %{br} The URL must not include the \"http://\" or \"https://\" protocol. For example \"example.com:50052\"."
 msgstr ""
 

@@ -11,6 +11,7 @@ import { s__, __ } from '~/locale';
 import { duoFlowHelpPath } from '~/pages/projects/shared/permissions/constants';
 import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascading_lock_icon.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import FoundationalFlowSelector from './foundational_flow_selector.vue';
 
 export default {
@@ -119,6 +120,9 @@ export default {
     },
   },
   duoFlowHelpPath,
+  duoFlowPrerequisitesHelpPath: helpPagePath('user/duo_agent_platform/flows/_index.md', {
+    anchor: 'prerequisites',
+  }),
 };
 </script>
 <template>
@@ -194,6 +198,8 @@ export default {
         </div>
         <template #help>
           {{ foundationalFlowsDescription }}
+          {{ s__('AiPowered|Ensure members can be added to the group that contains the project.') }}
+          <gl-link :href="$options.duoFlowPrerequisitesHelpPath">{{ __('Learn more') }}</gl-link>
         </template>
       </gl-form-checkbox>
 
