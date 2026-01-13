@@ -14,3 +14,9 @@ export const getNamespaceIndexComponent = (namespace) => {
 
   return componentMappings[namespace];
 };
+
+let previousRoute = null;
+export const getPreviousRoute = () => previousRoute;
+export const setPreviousRoute = (route) => {
+  previousRoute = route;
+};

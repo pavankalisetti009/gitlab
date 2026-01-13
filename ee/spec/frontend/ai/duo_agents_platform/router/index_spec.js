@@ -185,4 +185,28 @@ describe('Agents Platform Router', () => {
       expect(lastRoute.name).toBeUndefined();
     });
   });
+
+  describe('beforeEach hook', () => {
+    beforeEach(() => {
+      jest.spyOn(utils, 'setPreviousRoute');
+      router = createRouter(baseRoute, 'project');
+    });
+
+    it('calls setPreviousRoute when from route has a name', async () => {
+      await router.push('/agents');
+      await router.push('/agents/new');
+
+      expect(utils.setPreviousRoute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: AI_CATALOG_AGENTS_ROUTE,
+        }),
+      );
+    });
+
+    it('does not call setPreviousRoute when from route has no name', async () => {
+      await router.push('/invalid-path');
+
+      expect(utils.setPreviousRoute).not.toHaveBeenCalled();
+    });
+  });
 });

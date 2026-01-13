@@ -9,6 +9,8 @@ import FlowTriggersEdit from 'ee/ai/duo_agents_platform/pages/flow_triggers/flow
 import updateAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/update_ai_flow_trigger.mutation.graphql';
 import getAiFlowTriggersQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import FlowTriggerForm from 'ee/ai/duo_agents_platform/pages/flow_triggers/components/flow_trigger_form.vue';
+import { setPreviousRoute } from 'ee/ai/duo_agents_platform/router/utils';
+import { FLOW_TRIGGERS_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import {
   eventTypeOptions,
   mockAiFlowTriggersResponse,
@@ -31,12 +33,14 @@ describe('FlowTriggersEdit', () => {
   const projectPath = 'group/path';
   const agentId = 1;
   const routeParams = { id: agentId };
+  const previousRoute = { name: 'flows-show', params: { id: '123' } };
 
   const mockToast = {
     show: jest.fn(),
   };
   const mockRouter = {
     go: jest.fn(),
+    push: jest.fn(),
   };
 
   const createWrapper = ({ queryHandler = mockAiFlowTriggersResponse } = {}) => {
@@ -188,6 +192,8 @@ describe('FlowTriggersEdit', () => {
 
     describe('when request succeeds', () => {
       beforeEach(async () => {
+        setPreviousRoute(previousRoute);
+
         submitForm();
         await waitForPromises();
       });
@@ -196,10 +202,32 @@ describe('FlowTriggersEdit', () => {
         expect(mockToast.show).toHaveBeenCalledWith('Trigger updated successfully.');
       });
 
-      it('navigates to triggers page', async () => {
-        await waitForPromises();
-        expect(mockRouter.go).toHaveBeenCalledWith(-1);
+      it('navigates to previous route when previousRoute exists', () => {
+        expect(mockRouter.push).toHaveBeenCalledWith(previousRoute);
       });
+    });
+  });
+
+  describe('Form Cancel', () => {
+    beforeEach(async () => {
+      createWrapper();
+      await waitForPromises();
+    });
+
+    it('navigates to previous route when previousRoute exists', async () => {
+      setPreviousRoute(previousRoute);
+
+      await findForm().vm.$emit('cancel');
+
+      expect(mockRouter.push).toHaveBeenCalledWith(previousRoute);
+    });
+
+    it('navigates to flow triggers index when previousRoute does not exist', async () => {
+      setPreviousRoute(null);
+
+      await findForm().vm.$emit('cancel');
+
+      expect(mockRouter.push).toHaveBeenCalledWith({ name: FLOW_TRIGGERS_INDEX_ROUTE });
     });
   });
 });

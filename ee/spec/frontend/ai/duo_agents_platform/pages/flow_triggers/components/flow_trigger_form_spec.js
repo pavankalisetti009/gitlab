@@ -28,6 +28,7 @@ describe('FlowTriggerForm', () => {
   const findConfigModeRadio = () => wrapper.findComponent(GlFormRadioGroup);
   const findConfigPathInput = () => wrapper.findComponent(GlFormInput);
   const findSubmitButton = () => wrapper.findByTestId('trigger-submit-button');
+  const findCancelButton = () => wrapper.findByTestId('trigger-cancel-button');
   const findAiLegalDisclaimer = () => wrapper.findComponent(AiLegalDisclaimer);
 
   const defaultProps = {
@@ -85,6 +86,7 @@ describe('FlowTriggerForm', () => {
       expect(findUserSelect().exists()).toBe(true);
       expect(findConfigModeRadio().exists()).toBe(true);
       expect(findSubmitButton().exists()).toBe(true);
+      expect(findCancelButton().exists()).toBe(true);
       expect(findAiLegalDisclaimer().exists()).toBe(true);
     });
   });
@@ -517,6 +519,15 @@ describe('FlowTriggerForm', () => {
 
         expect(wrapper.emitted('submit')[0][0].userId).toBe(null);
       });
+    });
+  });
+
+  describe('Form Cancel', () => {
+    it('emits cancel event when clicked', async () => {
+      await createWrapper();
+      await findCancelButton().vm.$emit('click');
+
+      expect(wrapper.emitted('cancel')).toHaveLength(1);
     });
   });
 

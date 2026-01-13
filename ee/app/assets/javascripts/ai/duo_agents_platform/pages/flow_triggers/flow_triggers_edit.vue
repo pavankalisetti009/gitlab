@@ -6,6 +6,8 @@ import { createAlert } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { TYPENAME_AI_FLOW_TRIGGER } from 'ee/graphql_shared/constants';
+import { getPreviousRoute } from 'ee/ai/duo_agents_platform/router/utils';
+import { FLOW_TRIGGERS_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import updateAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/update_ai_flow_trigger.mutation.graphql';
 import getAiFlowTriggersQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import FlowTriggerForm from './components/flow_trigger_form.vue';
@@ -70,6 +72,14 @@ export default {
     },
   },
   methods: {
+    goToPreviousRoute() {
+      const previousRoute = getPreviousRoute();
+      if (previousRoute) {
+        this.$router.push(previousRoute);
+      } else {
+        this.$router.push({ name: FLOW_TRIGGERS_INDEX_ROUTE });
+      }
+    },
     async updateAiFlowTrigger(input) {
       this.resetErrorMessages();
       this.isLoadingMutation = true;
@@ -95,7 +105,7 @@ export default {
         }
 
         this.$toast.show(s__('DuoAgentsPlatform|Trigger updated successfully.'));
-        this.$router.go(-1);
+        this.goToPreviousRoute();
       } catch (error) {
         this.errorMessages = [
           error.message || s__('DuoAgentsPlatform|The trigger could not be updated. Try again.'),
@@ -134,6 +144,7 @@ export default {
       :is-loading="isLoadingMutation"
       :initial-values="flowTrigger"
       mode="edit"
+      @cancel="goToPreviousRoute"
       @dismiss-errors="resetErrorMessages"
       @submit="updateAiFlowTrigger"
     />

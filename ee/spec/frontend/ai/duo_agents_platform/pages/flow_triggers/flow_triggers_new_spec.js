@@ -6,6 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import FlowTriggersNew from 'ee/ai/duo_agents_platform/pages/flow_triggers/flow_triggers_new.vue';
 import createAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/create_ai_flow_trigger.mutation.graphql';
 import FlowTriggerForm from 'ee/ai/duo_agents_platform/pages/flow_triggers/components/flow_trigger_form.vue';
+import { setPreviousRoute } from 'ee/ai/duo_agents_platform/router/utils';
 import { FLOW_TRIGGERS_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import {
   eventTypeOptions,
@@ -134,6 +135,30 @@ describe('FlowTriggersNew', () => {
           name: FLOW_TRIGGERS_INDEX_ROUTE,
         });
       });
+    });
+  });
+
+  describe('Form Cancel', () => {
+    beforeEach(async () => {
+      createWrapper();
+      await waitForPromises();
+    });
+
+    it('navigates to previous route when previousRoute exists', async () => {
+      const previousRoute = { name: 'agents-show', params: { id: '123' } };
+      setPreviousRoute(previousRoute);
+
+      await findForm().vm.$emit('cancel');
+
+      expect(mockRouter.push).toHaveBeenCalledWith(previousRoute);
+    });
+
+    it('navigates to flow triggers index when previousRoute does not exist', async () => {
+      setPreviousRoute(null);
+
+      await findForm().vm.$emit('cancel');
+
+      expect(mockRouter.push).toHaveBeenCalledWith({ name: FLOW_TRIGGERS_INDEX_ROUTE });
     });
   });
 });

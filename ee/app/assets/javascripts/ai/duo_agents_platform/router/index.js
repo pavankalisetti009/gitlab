@@ -38,14 +38,14 @@ import {
   FLOW_TRIGGERS_NEW_ROUTE,
   FLOW_TRIGGERS_EDIT_ROUTE,
 } from './constants';
-import { getNamespaceIndexComponent } from './utils';
+import { getNamespaceIndexComponent, setPreviousRoute } from './utils';
 
 Vue.use(VueRouter);
 
 export const createRouter = (base, namespace) => {
   const isProjectNamespace = namespace === AGENT_PLATFORM_PROJECT_PAGE;
 
-  return new VueRouter({
+  const router = new VueRouter({
     base,
     mode: 'history',
     routes: [
@@ -261,4 +261,13 @@ export const createRouter = (base, namespace) => {
       { path: '*', redirect: '/agent-sessions' },
     ],
   });
+
+  router.beforeEach((_, from, next) => {
+    if (from.name) {
+      setPreviousRoute(from);
+    }
+    next();
+  });
+
+  return router;
 };
