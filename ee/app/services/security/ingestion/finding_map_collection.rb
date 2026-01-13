@@ -61,15 +61,8 @@ module Security
       end
 
       def tracked_context(pipeline)
-        return unless set_tracked_context?
-
         tracked_context_finder.find_or_create_from_pipeline(pipeline)
       end
-
-      def set_tracked_context?
-        ::Feature.enabled?(:set_tracked_context_during_ingestion, pipeline.project)
-      end
-      strong_memoize_attr :set_tracked_context?
     end
   end
 end

@@ -132,9 +132,6 @@ module Sbom
     strong_memoize_attr :scanner
 
     def tracked_context
-      # This calls IngestCvsSliceService which can only use an instance feature flag.
-      return unless ::Feature.enabled?(:set_tracked_context_during_ingestion, :instance)
-
       result = ::Security::ProjectTrackedContexts::FindOrCreateService.from_pipeline(pipeline).execute
 
       raise ArgumentError, result.message unless result.success?
