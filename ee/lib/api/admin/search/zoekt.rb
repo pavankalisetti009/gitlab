@@ -30,6 +30,7 @@ module API
         namespace 'admin' do
           resources 'zoekt/projects/:project_id/index' do
             desc 'Triggers indexing for the specified project' do
+              tags ['code_search']
               success ::API::Entities::Search::Zoekt::ProjectIndexSuccess
               failure [
                 { code: 401, message: '401 Unauthorized' },
@@ -53,6 +54,7 @@ module API
           end
           resources 'zoekt/namespaces' do
             desc 'Update the number of replicas override for an enabled namespace' do
+              tags ['code_search']
               success ::API::Entities::Search::Zoekt::IndexedNamespace
               failure [
                 { code: 400, message: '400 Bad Request' },
@@ -95,6 +97,7 @@ module API
           # This change is part of https://gitlab.com/gitlab-org/gitlab/-/issues/424456
           resources 'zoekt/shards' do
             desc 'Get all the Zoekt nodes' do
+              tags ['code_search']
               success ::API::Entities::Search::Zoekt::Node
               failure [
                 { code: 401, message: '401 Unauthorized' },
@@ -108,6 +111,7 @@ module API
 
             resources ':node_id/indexed_namespaces' do
               desc 'Get all the indexed namespaces for this node' do
+                tags ['code_search']
                 success ::API::Entities::Search::Zoekt::IndexedNamespace
                 failure [
                   { code: 401, message: '401 Unauthorized' },
@@ -130,6 +134,7 @@ module API
 
               resources ':namespace_id' do
                 desc 'Add a namespace to a node for Zoekt indexing' do
+                  tags ['code_search']
                   success ::API::Entities::Search::Zoekt::IndexedNamespace
                   failure [
                     { code: 401, message: '401 Unauthorized' },
@@ -179,6 +184,7 @@ module API
                 end
 
                 desc 'Remove a namespace from a node for Zoekt indexing' do
+                  tags ['code_search']
                   failure [
                     { code: 401, message: '401 Unauthorized' },
                     { code: 403, message: '403 Forbidden' },
