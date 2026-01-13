@@ -11,6 +11,7 @@ import ResourceListsLoadingStateList from '~/vue_shared/components/resource_list
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import FlowTriggersIndex from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/flow_triggers_index.vue';
 import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/components/flow_triggers_table.vue';
+import FlowTriggersCta from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/components/flow_triggers_cta.vue';
 import getProjectAiFlowTriggers from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import deleteAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/delete_ai_flow_trigger.mutation.graphql';
 import {
@@ -36,11 +37,11 @@ describe('FlowTriggersIndex', () => {
   const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
+  const findNewTriggerButton = () => wrapper.findComponent(FlowTriggersCta);
 
   const createWrapper = ({
     queryHandler = mockFlowTriggerQueryHandler,
     mutationHandler = mockFlowDeleteMutationHandler,
-    glFeatures = {},
   } = {}) => {
     mockApollo = createMockApollo([
       [getProjectAiFlowTriggers, queryHandler],
@@ -52,8 +53,10 @@ describe('FlowTriggersIndex', () => {
       provide: {
         projectPath: 'myProject',
         flowTriggersEventTypeOptions: eventTypeOptions,
-        glFeatures: {
-          ...glFeatures,
+        glAbilities: {
+          readAiCatalogFlow: true,
+          readAiCatalogThirdPartyFlow: true,
+          createAiCatalogThirdPartyFlow: true,
         },
       },
     });
@@ -65,12 +68,14 @@ describe('FlowTriggersIndex', () => {
   });
 
   describe('Rendering', () => {
-    it('loads the page heading and experiment badge', () => {
+    it('loads the page heading, experiment badge and "New trigger" button', () => {
       expect(findPageHeading().exists()).toBe(true);
       expect(findPageHeading().text()).toContain('Triggers');
 
       expect(findExperimentBadge().exists()).toBe(true);
       expect(findExperimentBadge().props('type')).toBe('beta');
+
+      expect(findNewTriggerButton().exists()).toBe(true);
     });
 
     describe('when gon.ai_duo_agent_platform_ga_rollout is enabled', () => {
@@ -84,6 +89,80 @@ describe('FlowTriggersIndex', () => {
 
       it('hides the experiment badge', () => {
         expect(findExperimentBadge().exists()).toBe(false);
+      });
+    });
+
+    describe('"New trigger" button', () => {
+      describe('when only readAiCatalogFlow is true', () => {
+        beforeEach(() => {
+          createWrapper({
+            provide: {
+              glAbilities: {
+                readAiCatalogFlow: true,
+                readAiCatalogThirdPartyFlow: false,
+                createAiCatalogThirdPartyFlow: false,
+              },
+            },
+          });
+        });
+
+        it('shows the button', () => {
+          expect(findNewTriggerButton().exists()).toBe(true);
+        });
+      });
+
+      describe('when only readAiCatalogThirdPartyFlow is true', () => {
+        beforeEach(() => {
+          createWrapper({
+            provide: {
+              glAbilities: {
+                readAiCatalogFlow: false,
+                readAiCatalogThirdPartyFlow: true,
+                createAiCatalogThirdPartyFlow: false,
+              },
+            },
+          });
+        });
+
+        it('shows the button', () => {
+          expect(findNewTriggerButton().exists()).toBe(true);
+        });
+      });
+
+      describe('when only createAiCatalogThirdPartyFlow is true', () => {
+        beforeEach(() => {
+          createWrapper({
+            provide: {
+              glAbilities: {
+                readAiCatalogFlow: false,
+                readAiCatalogThirdPartyFlow: false,
+                createAiCatalogThirdPartyFlow: true,
+              },
+            },
+          });
+        });
+
+        it('shows the button', () => {
+          expect(findNewTriggerButton().exists()).toBe(true);
+        });
+      });
+
+      describe('when all three are false', () => {
+        beforeEach(() => {
+          createWrapper({
+            provide: {
+              glAbilities: {
+                readAiCatalogFlow: false,
+                readAiCatalogThirdPartyFlow: false,
+                createAiCatalogThirdPartyFlow: false,
+              },
+            },
+          });
+        });
+
+        it('hides the button', () => {
+          expect(findNewTriggerButton().exists()).toBe(true);
+        });
       });
     });
 

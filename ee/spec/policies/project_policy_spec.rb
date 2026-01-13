@@ -5520,6 +5520,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
     end
 
+    shared_examples 'no create third party flow permission when ai_catalog_create_third_party_flows flag disabled' do
+      before do
+        stub_feature_flags(ai_catalog_create_third_party_flows: false)
+      end
+
+      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
+    end
+
     shared_examples 'no permissions when Duo features are not available' do
       let(:duo_features_enabled) { false }
 
@@ -5572,6 +5580,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
       it_behaves_like 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false'
+      it_behaves_like 'no create third party flow permission when ai_catalog_create_third_party_flows flag disabled'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
@@ -5591,6 +5600,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
       it_behaves_like 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false'
+      it_behaves_like 'no create third party flow permission when ai_catalog_create_third_party_flows flag disabled'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end

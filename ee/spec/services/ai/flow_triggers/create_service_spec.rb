@@ -56,6 +56,19 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :duo_agent_pla
       end
     end
 
+    context 'when ai_catalog_create_third_party_flows is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_create_third_party_flows: false)
+      end
+
+      it 'returns an error' do
+        response = service.execute(params)
+
+        expect(response).to be_error
+        expect(response.message).to include('You have insufficient permissions')
+      end
+    end
+
     context 'when using invalid params' do
       let(:event_types) { [99] }
 
