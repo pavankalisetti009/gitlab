@@ -12,17 +12,7 @@ const { upstream } = registryUpstream;
 const defaultProps = {
   index: 1,
   upstreamsCount: 3,
-  registryUpstream: {
-    ...registryUpstream,
-    upstream: {
-      ...upstream,
-      cacheSize: '100 MB',
-      artifactCount: 100,
-      warning: {
-        text: 'Example warning text',
-      },
-    },
-  },
+  registryUpstream,
 };
 
 const defaultProvide = {
@@ -61,14 +51,9 @@ describe('RegistryUpstreamItem', () => {
 
   const findUpstreamName = () => wrapper.findByTestId('upstream-name');
   const findUpstreamUrl = () => wrapper.findByTestId('upstream-url');
-  const findCacheSize = () => wrapper.findByTestId('cache-size');
   const findCacheValidityHours = () => wrapper.findByTestId('cache-validity-hours');
   const findMetadataCacheValidityHours = () =>
     wrapper.findByTestId('metadata-cache-validity-hours');
-  const findArtifactCount = () => wrapper.findByTestId('artifact-count');
-  const findWarningBadge = () => wrapper.findByTestId('warning-badge');
-  const findWarningText = () =>
-    wrapper.findByTestId('warning-badge').find('button').attributes('title');
   const findClearCacheButton = () => wrapper.findByTestId('clear-cache-button');
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findRemoveButton = () => wrapper.findByTestId('remove-button');
@@ -114,41 +99,12 @@ describe('RegistryUpstreamItem', () => {
       expect(findUpstreamUrl().text()).toBe(upstream.url);
     });
 
-    it('renders the cache size', () => {
-      expect(findCacheSize().text()).toContain(defaultProps.registryUpstream.upstream.cacheSize);
-    });
-
     it('renders artifact cache validity hours', () => {
       expect(findCacheValidityHours().text()).toBe('Artifact cache: 24 hours');
     });
 
     it('renders metadata cache validity hours', () => {
       expect(findMetadataCacheValidityHours().text()).toBe('Metadata cache: 48 hours');
-    });
-
-    it('renders the artifact count', () => {
-      expect(findArtifactCount().text()).toContain(
-        defaultProps.registryUpstream.upstream.artifactCount.toLocaleString(),
-      );
-    });
-
-    it('renders the warning badge if upstream has a warning', () => {
-      expect(findWarningBadge().exists()).toBe(true);
-      expect(findWarningText()).toBe(defaultProps.registryUpstream.upstream.warning.text);
-    });
-
-    it('renders the warning badge with default text if upstream has a warning but no text', () => {
-      createComponent({
-        props: { registryUpstream: { upstream: { ...upstream, warning: { text: null } } } },
-      });
-      expect(findWarningText()).toBe('There is a problem with this cached upstream');
-    });
-
-    it('does not render the warning badge if upstream does not have a warning', () => {
-      createComponent({
-        props: { registryUpstream: { upstream: { ...upstream, warning: null } } },
-      });
-      expect(findWarningBadge().exists()).toBe(false);
     });
 
     it('renders the clear cache button if `glAbilities.updateVirtualRegistry` is true', () => {

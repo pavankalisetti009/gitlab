@@ -74695,11 +74695,6 @@ msgid_plural "VirtualRegistry|%d artifacts"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "VirtualRegistry|%{count} artifact"
-msgid_plural "VirtualRegistry|%{count} artifacts"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "VirtualRegistry|%{count} of %{max}"
 msgstr ""
 
@@ -74754,9 +74749,6 @@ msgid "VirtualRegistry|Cache cleanup failed for %{group_name}"
 msgstr ""
 
 msgid "VirtualRegistry|Cache revalidation is disabled. Upstream URL is known to have immutable responses."
-msgstr ""
-
-msgid "VirtualRegistry|Cache: %{size}"
 msgstr ""
 
 msgid "VirtualRegistry|Changing the URL will clear the username and password."
@@ -75035,9 +75027,6 @@ msgid "VirtualRegistry|The scheduled cache cleanup for %{group_link} could not b
 msgstr ""
 
 msgid "VirtualRegistry|There are no maven virtual registries yet"
-msgstr ""
-
-msgid "VirtualRegistry|There is a problem with this cached upstream"
 msgstr ""
 
 msgid "VirtualRegistry|This action cannot be undone. Deleting this upstream might impact registries associated with it."
