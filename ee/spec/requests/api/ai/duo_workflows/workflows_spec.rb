@@ -2107,7 +2107,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         end
 
         before do
-          stub_feature_flags(duo_agent_platform_model_selection: false)
           stub_saas_features(gitlab_com_subscriptions: false)
         end
 
@@ -2140,7 +2139,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         end
 
         before do
-          stub_feature_flags(duo_agent_platform_model_selection: true)
           stub_saas_features(gitlab_com_subscriptions: true)
 
           stub_request(:get, fetch_service_endpoint_url)

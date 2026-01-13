@@ -84,7 +84,6 @@ module Gitlab
         namespace_to_use = scope&.root_ancestor
 
         return false unless namespace_to_use
-        return false if ::Feature.disabled?(:duo_agent_platform_model_selection, namespace_to_use)
 
         result = ::Ai::FeatureSettingSelectionService
                             .new(
