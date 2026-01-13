@@ -25951,9 +25951,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Path to configuration file"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Prompt"
-msgstr ""
-
 msgid "DuoAgentsPlatform|Read file"
 msgstr ""
 
@@ -25970,9 +25967,6 @@ msgid "DuoAgentsPlatform|Search for a session"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Search issues"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Select a flow"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Select a service account user"
@@ -25997,9 +25991,6 @@ msgid "DuoAgentsPlatform|Software development"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Something went wrong while fetching Agent Flows"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Start agent session"
 msgstr ""
 
 msgid "DuoAgentsPlatform|The trigger could not be created. Try again."
