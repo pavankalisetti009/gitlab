@@ -34,8 +34,7 @@ module Ai
     FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)
 
     FEATURES_UNDER_FLAGS = {
-      duo_agent_platform: :self_hosted_agent_platform,
-      duo_agent_platform_agentic_chat: :ai_agentic_chat_feature_setting_split
+      duo_agent_platform: :self_hosted_agent_platform
     }.freeze
 
     belongs_to :self_hosted_model, foreign_key: :ai_self_hosted_model_id, inverse_of: :feature_settings
