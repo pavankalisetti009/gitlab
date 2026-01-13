@@ -34,6 +34,17 @@ module ComplianceManagement
         delete_by(framework_id: framework_ids)
       end
 
+      def self.framework_project_mappings(framework_ids)
+        return {} if framework_ids.blank?
+
+        # framework_ids is already limited by the batch size in the worker (100)
+        # so this is safe from the RuboCop perspective
+        where(framework_id: framework_ids)
+          .pluck(:framework_id, :project_id) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- batch size controlled by caller
+          .group_by(&:first)
+          .transform_values { |pairs| pairs.map(&:last) }
+      end
+
       private
 
       def frameworks_count_per_project

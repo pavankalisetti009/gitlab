@@ -133,6 +133,23 @@ module ComplianceManagement
         .distinct
     }
 
+    scope :with_active_controls_optimized, -> {
+      where(<<~SQL.squish)
+        EXISTS (
+          SELECT 1
+          FROM compliance_requirements cr
+          INNER JOIN compliance_requirements_controls crc
+            ON crc.compliance_requirement_id = cr.id
+          WHERE cr.framework_id = compliance_management_frameworks.id
+        )
+        AND EXISTS (
+          SELECT 1
+          FROM project_compliance_framework_settings pcfs
+          WHERE pcfs.framework_id = compliance_management_frameworks.id
+        )
+      SQL
+    }
+
     scope :with_project_coverage_for, ->(project_ids) do
       return none if project_ids.blank?
 
@@ -146,6 +163,17 @@ module ComplianceManagement
       SQL
 
       select('*', sanitize_sql_array([subquery_sql, project_ids]))
+    end
+
+    def self.active_framework_ids
+      framework_ids = []
+
+      with_active_controls_optimized
+        .each_batch(column: :id, of: 1000) do |batch|
+        framework_ids.concat(batch.pluck_primary_key)
+      end
+
+      framework_ids
     end
 
     def self.search(query)
