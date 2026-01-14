@@ -7,6 +7,14 @@ module Types
         graphql_name 'AiUserMetricsSort'
         description 'Values for sorting AI user metrics.'
 
+        value "TOTAL_EVENTS_COUNT_DESC",
+          description: "Total count of all AI events in descending order.",
+          value: { field: :total_events_count, direction: :desc }
+
+        value "TOTAL_EVENTS_COUNT_ASC",
+          description: "Total count of all AI events in ascending order.",
+          value: { field: :total_events_count, direction: :asc }
+
         # Feature-level sorting (total events across all events in a feature)
         Gitlab::Tracking::AiTracking.registered_features.each do |feature|
           value "#{feature}_TOTAL_COUNT_DESC".upcase,
