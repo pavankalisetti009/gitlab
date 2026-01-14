@@ -43240,7 +43240,7 @@ CREATE INDEX index_elastic_reindexing_tasks_on_state ON elastic_reindexing_tasks
 
 CREATE INDEX index_elasticsearch_indexed_namespaces_on_created_at ON elasticsearch_indexed_namespaces USING btree (created_at);
 
-CREATE UNIQUE INDEX index_emails_on_confirmation_token ON emails USING btree (confirmation_token);
+CREATE INDEX index_emails_confirmation_token ON emails USING btree (confirmation_token);
 
 CREATE INDEX index_emails_on_created_at_where_confirmed_at_is_null ON emails USING btree (created_at) WHERE (confirmed_at IS NULL);
 
@@ -43251,6 +43251,8 @@ CREATE UNIQUE INDEX index_emails_on_email ON emails USING btree (email);
 CREATE INDEX index_emails_on_email_trigram ON emails USING gin (email gin_trgm_ops);
 
 CREATE INDEX index_emails_on_user_id ON emails USING btree (user_id);
+
+CREATE UNIQUE INDEX index_emails_on_user_id_and_confirmation_token ON emails USING btree (user_id, confirmation_token);
 
 CREATE INDEX index_enabled_clusters_on_id ON clusters USING btree (id) WHERE (enabled = true);
 
