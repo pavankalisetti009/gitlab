@@ -221,6 +221,10 @@ Prompt caching is enabled by default to improve Code Suggestions latency. When p
 You can turn off prompt caching for top-level groups in the GitLab Duo settings.
 This also turns off prompt caching for [GitLab Duo Chat (Agentic)](../../../gitlab_duo_chat/agentic_chat.md#prompt-caching).
 
+Prerequisites:
+
+- Administrator access for GitLab Self-Managed.
+
 On GitLab.com:
 
 1. On the top bar, select **Search or go to** and find your group.
