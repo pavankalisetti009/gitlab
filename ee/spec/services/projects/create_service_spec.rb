@@ -758,7 +758,8 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
         end
 
         it 'invokes workers', :sidekiq_inline do
-          expect(::Security::SyncProjectPoliciesWorker).to receive(:perform_async).twice.and_call_original
+          expect(::Security::SyncProjectPoliciesWorker)
+            .to receive(:perform_in).with(1.second, anything, anything).twice.and_call_original
 
           expect(created_project.approval_rules.count).to eq(2)
           expect(created_project.approval_rules.map(&:security_orchestration_policy_configuration_id)).to match_array([
@@ -802,7 +803,8 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
         end
 
         it 'invokes OrchestrationConfigurationCreateBotWorker', :sidekiq_inline do
-          expect(::Security::OrchestrationConfigurationCreateBotWorker).to receive(:perform_async).and_call_original
+          expect(::Security::OrchestrationConfigurationCreateBotWorker)
+            .to receive(:perform_in).with(1.second, anything, anything).and_call_original
 
           expect(created_project.security_policy_bot).to be_present
         end
@@ -811,7 +813,8 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           let(:extra_params) { { namespace_id: sub_group.id } }
 
           it 'invokes OrchestrationConfigurationCreateBotWorker', :sidekiq_inline do
-            expect(::Security::OrchestrationConfigurationCreateBotWorker).to receive(:perform_async).and_call_original
+            expect(::Security::OrchestrationConfigurationCreateBotWorker)
+              .to receive(:perform_in).with(1.second, anything, anything).and_call_original
 
             expect(created_project.security_policy_bot).to be_present
           end

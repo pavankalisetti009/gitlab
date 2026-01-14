@@ -121,14 +121,14 @@ module EE
         configurations = group_security_orchestration_policy_configurations
 
         configurations.each do |configuration|
-          ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id)
+          ::Security::SyncProjectPoliciesWorker.perform_in(1.second, project.id, configuration.id)
         end
       end
 
       def create_security_policy_project_bot
         return unless group_security_orchestration_policy_configurations.any?
 
-        ::Security::OrchestrationConfigurationCreateBotWorker.perform_async(project.id, current_user.id)
+        ::Security::OrchestrationConfigurationCreateBotWorker.perform_in(1.second, project.id, current_user.id)
       end
 
       def group_security_orchestration_policy_configurations
