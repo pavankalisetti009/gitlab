@@ -18,9 +18,26 @@ module Geo
     end
 
     def schedule_job(replicable_name, model_record_id)
-      job_id = ::Geo::SyncWorker.with_status.perform_async(replicable_name, model_record_id)
+      # Get the appropriate status_expiration for this specific replicator type.
+      # This ensures long-running jobs are properly tracked to enforce concurrency limits.
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/524762
+      status_expiration = status_expiration_for(replicable_name)
+
+      job_id = ::Geo::SyncWorker
+                 .set(status_expiration: status_expiration)
+                 .perform_async(replicable_name, model_record_id)
 
       { model_record_id: model_record_id, replicable_name: replicable_name, job_id: job_id } if job_id
+    end
+
+    # Returns the appropriate SidekiqStatus expiration for the given replicator.
+    # Falls back to 8 hours if the replicator class cannot be found.
+    #
+    # @param [String] replicable_name the replicable name
+    # @return [Integer] status expiration in seconds
+    def status_expiration_for(replicable_name)
+      replicator_class = Gitlab::Geo::Replicator.for_replicable_name(replicable_name)
+      replicator_class.status_expiration
     end
 
     # Pools for new resources to be transferred

@@ -178,6 +178,116 @@ RSpec.describe Gitlab::Geo::Replicator, feature_category: :geo_replication do
     end
   end
 
+  describe '.status_expiration' do
+    context 'when sync_timeout is defined' do
+      let(:test_replicator_class) do
+        Class.new(described_class) do
+          def self.sync_timeout
+            4.hours
+          end
+
+          def self.replicable_name
+            'test_replicable'
+          end
+
+          def self.model
+            Upload
+          end
+        end
+      end
+
+      it 'returns the sync_timeout value as an integer' do
+        expect(test_replicator_class.status_expiration).to eq(4.hours.to_i)
+      end
+
+      it 'returns an integer even if sync_timeout returns ActiveSupport::Duration' do
+        expect(test_replicator_class.status_expiration).to be_a(Integer)
+      end
+
+      it 'validates that sync_timeout is positive' do
+        test_class = Class.new(described_class) do
+          def self.sync_timeout
+            -1
+          end
+
+          def self.replicable_name
+            'test_negative'
+          end
+
+          def self.model
+            Upload
+          end
+        end
+
+        allow(Gitlab::AppLogger).to receive(:warn)
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+        expect(Gitlab::AppLogger).to receive(:warn)
+        expect(test_class.status_expiration).to eq(8.hours.to_i)
+      end
+    end
+
+    context 'when sync_timeout is not defined' do
+      let(:test_replicator_class) do
+        Class.new(described_class) do
+          def self.replicable_name
+            'test_replicable_without_timeout'
+          end
+
+          def self.model
+            Upload
+          end
+        end
+      end
+
+      it 'returns default 8 hours' do
+        allow(Gitlab::AppLogger).to receive(:warn)
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+        expect(test_replicator_class.status_expiration).to eq(8.hours.to_i)
+      end
+
+      it 'logs a warning message' do
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+        expect(Gitlab::AppLogger).to receive(:warn).with(/does not define sync_timeout/)
+        test_replicator_class.status_expiration
+      end
+
+      it 'tracks exception in Sentry' do
+        allow(Gitlab::AppLogger).to receive(:warn)
+        expect(Gitlab::ErrorTracking).to receive(:track_exception)
+        test_replicator_class.status_expiration
+      end
+
+      it 'returns an integer' do
+        allow(Gitlab::AppLogger).to receive(:warn)
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+        expect(test_replicator_class.status_expiration).to be_a(Integer)
+      end
+    end
+
+    context 'with real replicator classes' do
+      it 'returns 8 hours for upload replicator' do
+        expect(Geo::UploadReplicator.status_expiration).to eq(8.hours.to_i)
+      end
+
+      it 'returns 8 hours for package file replicator' do
+        expect(Geo::PackageFileReplicator.status_expiration).to eq(8.hours.to_i)
+      end
+
+      it 'returns 8 hours for container repository replicator' do
+        expect(Geo::ContainerRepositoryReplicator.status_expiration).to eq(8.hours.to_i)
+      end
+    end
+
+    context 'when called multiple times' do
+      it 'returns consistent values' do
+        first_call = Geo::UploadReplicator.status_expiration
+        second_call = Geo::UploadReplicator.status_expiration
+
+        expect(first_call).to eq(second_call)
+      end
+    end
+  end
+
   describe '#initialize' do
     subject(:replicator) { Geo::DummyReplicator.new(**args) }
 
