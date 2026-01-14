@@ -40,14 +40,40 @@ module Vulnerabilities
 
     def trigger_workflow(vulnerability)
       project = vulnerability.project
+      user = project.first_owner || vulnerability.author
 
-      ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
-        container: project,
-        current_user: project.first_owner || vulnerability.author,
-        workflow_definition: ::Ai::Catalog::FoundationalFlow[WORKFLOW_DEFINITION],
-        goal: vulnerability.id.to_s,
-        source_branch: project.default_branch
+      consumer = find_consumer(user, project)
+      service_account = find_service_account(consumer)
+
+      flow_params = {
+        item_consumer: consumer,
+        service_account: service_account,
+        execute_workflow: true,
+        event_type: 'sidekiq_worker',
+        user_prompt: vulnerability.id.to_s
+      }
+
+      ::Ai::Catalog::Flows::ExecuteService.new(
+        project: project,
+        current_user: user,
+        params: flow_params
       ).execute
+    end
+
+    def find_consumer(user, project)
+      ::Ai::Catalog::ItemConsumersFinder.new(user, params: {
+        project_id: project.id,
+        item_type: Ai::Catalog::Item::FLOW_TYPE,
+        foundational_flow_reference: WORKFLOW_DEFINITION
+      }).execute.first
+    end
+
+    def find_service_account(consumer)
+      if consumer.project.present?
+        consumer.parent_item_consumer&.service_account
+      else
+        consumer.service_account
+      end
     end
 
     def handle_error(result, vulnerability)

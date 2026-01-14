@@ -10,8 +10,12 @@ import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vu
 import vulnerabilitiesSeverityOverrideMutation from 'ee/security_dashboard/graphql/mutations/vulnerabilities_severity_override.mutation.graphql';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
 import { createAlert, VARIANT_SUCCESS } from '~/alert';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_USER, TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import {
+  TYPENAME_USER,
+  TYPENAME_VULNERABILITY,
+  TYPENAME_PROJECT,
+} from '~/graphql_shared/constants';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
 import axios from '~/lib/utils/axios_utils';
 import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
@@ -22,6 +26,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { sprintf, s__ } from '~/locale';
 import Api from 'ee/api';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
+import getConfiguredFlows from 'ee/ai/graphql/get_configured_flows.query.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
 import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES, CONFIDENCE_SCORES } from '../constants';
 import { normalizeGraphQLVulnerability, normalizeGraphQLLastStateTransition } from '../helpers';
@@ -85,6 +90,7 @@ export default {
       isLoadingUser: false,
       user: undefined,
       errorAlert: null,
+      aiCatalogItemConsumerId: null,
     };
   },
   computed: {
@@ -219,6 +225,28 @@ export default {
         error(e) {
           this.handleError(e?.message || e.toString());
         },
+      },
+    },
+    aiCatalogItemConsumerId: {
+      query: getConfiguredFlows,
+      variables() {
+        return {
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.vulnerability.project.id),
+          foundationalFlowReference: 'sast_fp_detection/v1',
+        };
+      },
+      skip() {
+        return !this.vulnerability.project.id;
+      },
+      update(data) {
+        const configuredItems = data.aiCatalogConfiguredItems?.nodes || [];
+        if (configuredItems.length > 0) {
+          return data.aiCatalogConfiguredItems.nodes[0].id;
+        }
+        return null;
+      },
+      error(error) {
+        Sentry.captureException(error);
       },
     },
   },
@@ -405,7 +433,11 @@ export default {
     runAiFalsePositiveDetection() {
       this.isProcessingAction = true;
 
-      Api.triggerFalsePositiveDetection(this.vulnerability.id, this.vulnerability.project.id)
+      Api.triggerFalsePositiveDetection(
+        this.vulnerability.id,
+        this.vulnerability.project.id,
+        getIdFromGraphQLId(this.aiCatalogItemConsumerId),
+      )
         .then(({ data }) => {
           if (data.workload && !data.workload.id && data.workload.message) {
             createAlert({

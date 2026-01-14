@@ -9,16 +9,20 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
 
   let(:worker) { described_class.new }
   let(:vulnerability_id) { vulnerability.id }
-  let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['sast_fp_detection/v1'] }
+  let(:workflow_definition) { 'sast_fp_detection/v1' }
 
   describe '#perform' do
     let(:workflow) { create(:duo_workflows_workflow, user: user, project: project, environment: :web) }
-    let(:workflow_service) { instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService) }
+    let(:execute_service) { instance_double(::Ai::Catalog::Flows::ExecuteService) }
     let(:service_result) { ServiceResponse.success(payload: { workflow_id: workflow.id, workload_id: 456 }) }
+    let(:consumer) { create(:ai_catalog_item_consumer, project: project) }
 
     before do
-      allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).and_return(workflow_service)
-      allow(workflow_service).to receive(:execute).and_return(service_result)
+      allow(::Ai::Catalog::ItemConsumersFinder).to receive(:new).and_return(
+        instance_double(::Ai::Catalog::ItemConsumersFinder, execute: [consumer])
+      )
+      allow(::Ai::Catalog::Flows::ExecuteService).to receive(:new).and_return(execute_service)
+      allow(execute_service).to receive(:execute).and_return(service_result)
     end
 
     it_behaves_like 'an idempotent worker' do
@@ -32,7 +36,7 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
         end
 
         it 'returns early without calling the workflow service' do
-          expect(::Ai::DuoWorkflows::CreateAndStartWorkflowService).not_to receive(:new)
+          expect(::Ai::Catalog::Flows::ExecuteService).not_to receive(:new)
           expect(Gitlab::AppLogger).not_to receive(:error)
 
           worker.perform(vulnerability_id)
@@ -40,16 +44,106 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
       end
 
       context 'when feature flag is enabled' do
-        it 'creates and executes the workflow service with correct parameters' do
-          expect(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).with(
-            container: project,
-            current_user: project.first_owner,
-            workflow_definition: workflow_definition,
-            goal: vulnerability_id.to_s,
-            source_branch: project.default_branch
+        it 'finds the consumer with correct parameters' do
+          expect(::Ai::Catalog::ItemConsumersFinder).to receive(:new).with(
+            project.first_owner,
+            params: {
+              project_id: project.id,
+              item_type: Ai::Catalog::Item::FLOW_TYPE,
+              foundational_flow_reference: workflow_definition
+            }
           )
 
           worker.perform(vulnerability_id)
+        end
+
+        it 'creates and executes the flow service with correct parameters' do
+          expect(::Ai::Catalog::Flows::ExecuteService).to receive(:new).with(
+            project: project,
+            current_user: project.first_owner,
+            params: {
+              item_consumer: consumer,
+              service_account: nil,
+              execute_workflow: true,
+              event_type: 'sidekiq_worker',
+              user_prompt: vulnerability_id.to_s
+            }
+          )
+
+          worker.perform(vulnerability_id)
+        end
+
+        context 'when consumer has parent item consumer with service account' do
+          let(:group) { create(:group) }
+          let(:project_with_group) { create(:project, :repository, group: group) }
+
+          let(:vulnerability_with_group) do
+            create(:vulnerability, :with_finding, project: project_with_group, author: user)
+          end
+
+          let(:service_account) { create(:user, :service_account, provisioned_by_group: group) }
+          let(:flow_item) { create(:ai_catalog_flow, public: true) }
+          let!(:parent_consumer) do
+            create(:ai_catalog_item_consumer, group: group, item: flow_item, service_account: service_account)
+          end
+
+          let(:consumer) do
+            Ai::Catalog::ItemConsumer.create!(
+              project: project_with_group,
+              item: flow_item,
+              parent_item_consumer: parent_consumer
+            )
+          end
+
+          it 'uses service account from parent consumer' do
+            expected_user = project_with_group.first_owner || user
+
+            expect(::Ai::Catalog::Flows::ExecuteService).to receive(:new).with(
+              project: project_with_group,
+              current_user: expected_user,
+              params: {
+                item_consumer: consumer,
+                service_account: service_account,
+                execute_workflow: true,
+                event_type: 'sidekiq_worker',
+                user_prompt: vulnerability_with_group.id.to_s
+              }
+            )
+
+            worker.perform(vulnerability_with_group.id)
+          end
+        end
+
+        context 'when consumer is group-level with service account' do
+          let(:group) { create(:group) }
+          let(:project_with_group) { create(:project, :repository, group: group) }
+          let(:vulnerability_with_group) do
+            create(:vulnerability, :with_finding, project: project_with_group, author: user)
+          end
+
+          let(:service_account) { create(:user, :service_account, provisioned_by_group: group) }
+          let(:flow_item) { create(:ai_catalog_flow, public: true) }
+          let(:consumer) do
+            create(:ai_catalog_item_consumer, group: group, item: flow_item, service_account: service_account)
+          end
+
+          it 'uses service account from consumer' do
+            expected_user = project_with_group.first_owner || user
+
+            expect(::Ai::Catalog::Flows::ExecuteService).to receive(:new).with(
+              project: project_with_group,
+              current_user: expected_user,
+              params: {
+                item_consumer: consumer,
+                service_account: service_account,
+                execute_workflow: true,
+                event_type: 'sidekiq_worker',
+                user_prompt: vulnerability_with_group.id.to_s
+              }
+            )
+
+            worker.perform(vulnerability_with_group.id)
+          end
         end
 
         context 'when workflow service succeeds' do
@@ -151,7 +245,7 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
       let(:vulnerability_id) { non_existing_record_id }
 
       it 'returns early without calling the workflow service' do
-        expect(::Ai::DuoWorkflows::CreateAndStartWorkflowService).not_to receive(:new)
+        expect(::Ai::Catalog::Flows::ExecuteService).not_to receive(:new)
         expect(Gitlab::AppLogger).not_to receive(:error)
 
         worker.perform(vulnerability_id)
@@ -162,7 +256,7 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
       let(:error) { StandardError.new('Service error') }
 
       before do
-        allow(workflow_service).to receive(:execute).and_raise(error)
+        allow(execute_service).to receive(:execute).and_raise(error)
       end
 
       it 'logs and raises the exception' do
