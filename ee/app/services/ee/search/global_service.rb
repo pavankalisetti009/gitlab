@@ -35,11 +35,8 @@ module EE
       override :zoekt_node_id
       def zoekt_node_id; end
 
-      # This method isn't compatible with multi-node search, so we override it
-      # to always return true.
-      override :zoekt_node_available_for_search?
-      def zoekt_node_available_for_search?
-        true
+      def zoekt_nodes
+        @zoekt_nodes ||= ::Search::Zoekt::Node.for_search.online
       end
 
       def elasticsearchable_scope
