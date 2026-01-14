@@ -1,3 +1,4 @@
+# @feature_category: team_planning
 query BoardListCountEE($id: ListID!, $filters: BoardIssueInput) {
   boardList(id: $id, issueFilters: $filters) {
     id
