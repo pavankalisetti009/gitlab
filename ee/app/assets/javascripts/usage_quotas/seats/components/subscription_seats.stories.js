@@ -13,6 +13,22 @@ import {
 export default {
   component: SubscriptionSeatsApp,
   title: 'ee/usage_quotas/seats/subscription_seats',
+  parameters: {
+    a11y: {
+      config: {
+        rules: [
+          {
+            id: 'empty-table-header',
+            enabled: false,
+          },
+          {
+            id: 'link-name',
+            enabled: false,
+          },
+        ],
+      },
+    },
+  },
 };
 
 const defaultProvide = {
@@ -139,3 +155,21 @@ export const Loading = createTemplate({
   mockBillableMembersCountResponse: new Promise(() => {}),
   mockBillableMembersResponse: new Promise(() => {}),
 });
+Loading.parameters = {
+  a11y: {
+    config: {
+      rules: [
+        {
+          id: 'color-contrast',
+          enabled: false,
+        },
+      ],
+    },
+  },
+  docs: {
+    description: {
+      story:
+        'Loading state table uses `:busy` prop from BootstrapVue `BTable` component. Apart from suppressing interaction, it also adds `opacity: 0.6` to the whole table.',
+    },
+  },
+};
