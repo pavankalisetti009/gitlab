@@ -67,6 +67,8 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
     let_it_be(:namespace_a) { create(:group) }
     let_it_be(:namespace_b) { create(:group) }
 
+    subject(:result) { described_class.duo_namespace_access_rules }
+
     before do
       stub_feature_flags(duo_access_through_namespaces: true)
     end
@@ -79,41 +81,23 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
       end
 
       it 'returns rules' do
-        expect(described_class.duo_namespace_access_rules).to match_array([
-          {
-            through_namespace: {
-              id: namespace_a.id,
-              name: namespace_a.name,
-              full_path: namespace_a.full_path
-            },
-            features: %w[duo_agent_platform duo_classic]
-          },
-          {
-            through_namespace: {
-              id: namespace_b.id,
-              name: namespace_b.name,
-              full_path: namespace_b.full_path
-            },
-            features: %w[duo_classic]
-          }
-        ])
+        expect(result.keys).to contain_exactly(namespace_a.id, namespace_b.id)
+        expect(result[namespace_a.id].map(&:accessible_entity)).to contain_exactly('duo_classic', 'duo_agent_platform')
+        expect(result[namespace_b.id].map(&:accessible_entity)).to contain_exactly('duo_classic')
       end
     end
 
     context 'when no rules exist' do
-      it 'returns empty array' do
-        expect(described_class.duo_namespace_access_rules).to eq []
-      end
+      it { expect(result).to be_empty }
     end
 
     context 'when duo_access_through_namespaces feature flag is disabled' do
       before do
         stub_feature_flags(duo_access_through_namespaces: false)
+        create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace: namespace_a)
       end
 
-      it 'returns empty array' do
-        expect(described_class.duo_namespace_access_rules).to eq []
-      end
+      it { expect(result).to be_empty }
     end
   end
 
@@ -136,24 +120,11 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
       end
 
       it 'returns only root namespace rules' do
-        expect(result).to match_array([
-          {
-            through_namespace: {
-              id: root_namespace_a.id,
-              name: root_namespace_a.name,
-              full_path: root_namespace_a.full_path
-            },
-            features: %w[duo_agent_platform duo_classic]
-          },
-          {
-            through_namespace: {
-              id: root_namespace_b.id,
-              name: root_namespace_b.name,
-              full_path: root_namespace_b.full_path
-            },
-            features: %w[duo_classic]
-          }
-        ])
+        expect(result.keys).to contain_exactly(root_namespace_a.id, root_namespace_b.id)
+        expect(result[root_namespace_a.id].map(&:accessible_entity)).to contain_exactly(
+          'duo_classic', 'duo_agent_platform'
+        )
+        expect(result[root_namespace_b.id].map(&:accessible_entity)).to contain_exactly('duo_classic')
       end
     end
 
@@ -164,21 +135,13 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
       end
 
       it 'returns only root namespace rules' do
-        expect(result).to match_array([
-          {
-            through_namespace: {
-              id: root_namespace_a.id,
-              name: root_namespace_a.name,
-              full_path: root_namespace_a.full_path
-            },
-            features: %w[duo_classic]
-          }
-        ])
+        expect(result.keys).to contain_exactly(root_namespace_a.id)
+        expect(result[root_namespace_a.id].map(&:accessible_entity)).to contain_exactly('duo_classic')
       end
     end
 
     context 'when no rules exist' do
-      it { expect(result).to eq [] }
+      it { expect(result).to be_empty }
     end
 
     context 'when duo_access_through_namespaces feature flag is disabled' do
@@ -187,7 +150,7 @@ RSpec.describe ::Ai::FeatureAccessRule, feature_category: :ai_abstraction_layer 
         create(:ai_instance_accessible_entity_rules, :duo_classic, through_namespace: root_namespace_a)
       end
 
-      it { expect(result).to eq [] }
+      it { expect(result).to be_empty }
     end
   end
 
