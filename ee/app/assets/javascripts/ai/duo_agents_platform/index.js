@@ -39,6 +39,7 @@ export const initDuoAgentsPlatformPage = ({
   const router = createRouter(agentsPlatformBaseRoute, namespace);
 
   return initSinglePageApplication({
+    name: 'AiDuoAgentsPlatformRoot',
     router,
     el,
     provide: {
