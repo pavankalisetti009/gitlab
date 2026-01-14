@@ -1,12 +1,7 @@
-import { GlBadge, GlPopover, GlProgressBar, GlButton } from '@gitlab/ui';
-import { stubComponent } from 'helpers/stub_component';
+import { GlBadge, GlPopover, GlProgressBar } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { CONFIDENCE_SCORES } from 'ee/vulnerabilities/constants';
-import AiPossibleFpBadge, {
-  VULNERABILITY_UNTRIAGED_STATUS,
-} from 'ee/security_dashboard/components/shared/ai_possible_fp_badge.vue';
-import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
-import DismissFalsePositiveModal from 'ee/security_dashboard/components/shared/dismiss_false_positive_modal.vue';
+import AiPossibleFpBadge from 'ee/security_dashboard/components/shared/ai_possible_fp_badge.vue';
 
 describe('AiPossibleFpBadge', () => {
   let wrapper;
@@ -14,19 +9,11 @@ describe('AiPossibleFpBadge', () => {
   const defaultVulnerability = {
     id: 'gid://gitlab/Vulnerabilities::Finding/123',
     title: 'Test Vulnerability',
-    state: VULNERABILITY_UNTRIAGED_STATUS,
     latestFlag: {
       confidenceScore: 0.61,
       description: 'This is likely a false positive because...',
     },
   };
-
-  const modalShowStub = jest.fn();
-  const modalStub = { show: modalShowStub };
-  const showToastStub = jest.fn();
-  const DismissFalsePositiveModalStub = stubComponent(DismissFalsePositiveModal, {
-    methods: modalStub,
-  });
 
   const createComponent = (props = {}, options = {}) => {
     wrapper = shallowMountExtended(AiPossibleFpBadge, {
@@ -35,18 +22,10 @@ describe('AiPossibleFpBadge', () => {
           ...defaultVulnerability,
           ...props.vulnerability,
         },
-        canAdminVulnerability: false,
         ...props,
       },
       stubs: {
         GlPopover,
-        NonGfmMarkdown,
-        DismissFalsePositiveModal: DismissFalsePositiveModalStub,
-      },
-      mocks: {
-        $toast: {
-          show: showToastStub,
-        },
       },
       ...options,
     });
@@ -56,8 +35,6 @@ describe('AiPossibleFpBadge', () => {
   const findBadge = () => wrapper.findComponent(GlBadge);
   const findBadgeText = () => wrapper.findByTestId('ai-fix-in-progress-b');
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
-  const findRemoveFlagButton = () => wrapper.findComponent(GlPopover).findComponent(GlButton);
-  const findModal = () => wrapper.findComponent(DismissFalsePositiveModal);
 
   describe('when confidence score is between minimal and likely threshold', () => {
     beforeEach(() => {
@@ -79,7 +56,6 @@ describe('AiPossibleFpBadge', () => {
     });
 
     it('renders the confidence score correctly', () => {
-      expect(wrapper.text()).toContain('AI Confidence Score');
       expect(findProgressBar().props('value')).toBe(61);
       expect(findProgressBar().props('variant')).toBe('warning');
       expect(wrapper.text()).toContain('61%');
@@ -122,109 +98,31 @@ describe('AiPossibleFpBadge', () => {
       });
     });
 
-    it('does not render the badge', () => {
-      expect(findBadge().exists()).toBe(false);
+    it('renders the badge with neutral variant', () => {
+      expect(findBadge().props('variant')).toBe('neutral');
+    });
+
+    it('renders "Not an FP" text', () => {
+      expect(findBadgeText().text()).toBe('Not an FP');
+    });
+
+    it('renders the progress bar with primary variant', () => {
+      expect(findProgressBar().props('variant')).toBe('primary');
+    });
+
+    it('renders the "Not a false positive" message', () => {
+      expect(wrapper.text()).toContain('FP scanning found that this vulnerability is');
+      expect(wrapper.text()).toContain('NOT a false positive');
     });
   });
 
-  describe('when flag description is present', () => {
+  describe('when confidence score indicates possible or likely false positive', () => {
     beforeEach(() => {
       wrapper = createComponent();
     });
 
-    it('renders the description section', () => {
-      expect(wrapper.text()).toContain('Why it is likely a false positive');
-      expect(wrapper.findComponent(NonGfmMarkdown).props('markdown')).toBe(
-        'This is likely a false positive because...',
-      );
-    });
-  });
-
-  describe('when flag description is not present', () => {
-    beforeEach(() => {
-      wrapper = createComponent({
-        vulnerability: {
-          latestFlag: {
-            confidenceScore: 0.61,
-            description: null,
-          },
-        },
-      });
-    });
-
-    it('does not render the description section', () => {
-      expect(wrapper.text()).not.toContain('Why it is likely a false positive');
-      expect(wrapper.findComponent(NonGfmMarkdown).exists()).toBe(false);
-    });
-  });
-
-  describe('Apollo mutations and modal', () => {
-    beforeEach(() => {
-      wrapper = createComponent({
-        canAdminVulnerability: true,
-      });
-    });
-
-    it('renders the remove flag button', () => {
-      expect(findRemoveFlagButton().exists()).toBe(true);
-      expect(findRemoveFlagButton().text()).toBe('Remove False Positive Flag');
-    });
-
-    it('renders the confirmation modal', () => {
-      expect(findModal().exists()).toBe(true);
-      expect(findModal().props('vulnerability')).toEqual(defaultVulnerability);
-      expect(findModal().props('modalId')).toBe('dismiss-fp-confirm-modal');
-    });
-
-    it('shows modal when remove flag button is clicked', async () => {
-      await findRemoveFlagButton().vm.$emit('click');
-      expect(modalShowStub).toHaveBeenCalled();
-    });
-
-    it('handles modal success event and shows toast', async () => {
-      const showToastSpy = jest.fn();
-      wrapper = createComponent(
-        { canAdminVulnerability: true },
-        {
-          mocks: {
-            $toast: {
-              show: showToastSpy,
-            },
-          },
-        },
-      );
-
-      await findModal().vm.$emit('success');
-
-      expect(showToastSpy).toHaveBeenCalledWith('False positive flag dismissed successfully.');
-    });
-  });
-
-  describe('when user cannot admin vulnerability', () => {
-    beforeEach(() => {
-      wrapper = createComponent({
-        canAdminVulnerability: false,
-      });
-    });
-
-    it('does not render the remove flag button', () => {
-      expect(findRemoveFlagButton().exists()).toBe(false);
-    });
-  });
-
-  describe('when vulnerability is not untriaged', () => {
-    beforeEach(() => {
-      wrapper = createComponent({
-        canAdminVulnerability: true,
-        vulnerability: {
-          ...defaultVulnerability,
-          state: 'RESOLVED',
-        },
-      });
-    });
-
-    it('does not render the remove flag button', () => {
-      expect(findRemoveFlagButton().exists()).toBe(false);
+    it('renders the "For more information" message', () => {
+      expect(wrapper.text()).toContain('For more information, view vulnerability details.');
     });
   });
 });
