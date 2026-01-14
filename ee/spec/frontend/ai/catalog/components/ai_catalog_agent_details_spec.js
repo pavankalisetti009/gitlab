@@ -131,7 +131,7 @@ describe('AiCatalogAgentDetails', () => {
     });
 
     it('renders "System prompt"', () => {
-      expect(configurationDetails.at(1).props()).toMatchObject({
+      expect(configurationDetails.at(2).props()).toMatchObject({
         title: 'System prompt',
       });
 
@@ -143,11 +143,11 @@ describe('AiCatalogAgentDetails', () => {
         toggleButtonProps: { class: 'gl-font-regular' },
       });
 
-      expect(configurationDetails.at(1).find('pre').text()).toBe(mockAgentVersion.systemPrompt);
+      expect(configurationDetails.at(2).find('pre').text()).toBe(mockAgentVersion.systemPrompt);
     });
 
     it('renders "Tools" with sorted values', () => {
-      const toolsField = configurationDetails.at(2);
+      const toolsField = configurationDetails.at(1);
       expect(toolsField.props('title')).toBe('Tools');
 
       const tokens = toolsField.findAllComponents(GlToken);
