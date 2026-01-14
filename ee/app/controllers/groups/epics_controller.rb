@@ -17,7 +17,6 @@ class Groups::EpicsController < Groups::ApplicationController
   after_action :log_epic_show, only: :show
 
   before_action do
-    push_frontend_feature_flag(:preserve_markdown, @group)
     push_frontend_feature_flag(:notifications_todos_buttons, current_user)
 
     push_force_frontend_feature_flag(:glql_load_on_click, !!@group&.glql_load_on_click_feature_flag_enabled?)
