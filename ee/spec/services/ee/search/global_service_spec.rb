@@ -299,6 +299,29 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
     end
   end
 
+  describe '#zoekt_nodes' do
+    let(:service) { described_class.new(user, {}) }
+
+    subject(:zoekt_nodes) { service.zoekt_nodes }
+
+    it 'calls Node.for_search.online' do
+      allow(Search::Zoekt::Node).to receive_message_chain(:for_search, :online).and_return(:online_nodes)
+
+      expect(zoekt_nodes).to eq(:online_nodes)
+    end
+
+    it 'memoizes the result' do
+      allow(Search::Zoekt::Node).to receive_message_chain(:for_search, :online).and_return(:online_nodes)
+
+      # Call twice
+      service.zoekt_nodes
+      service.zoekt_nodes
+
+      # Should only call the chain once due to memoization
+      expect(Search::Zoekt::Node).to have_received(:for_search).once
+    end
+  end
+
   context 'on confidential notes' do
     let_it_be(:project) { create(:project, :public, :repository) }
 

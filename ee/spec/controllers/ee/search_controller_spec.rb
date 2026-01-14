@@ -347,6 +347,10 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
       subject(:request) { get :show, params: params }
 
+      before do
+        allow(Search::Zoekt::Node).to receive_message_chain(:for_search, :online, :exists?).and_return(true)
+      end
+
       it 'trigger search_exact_code internal event' do
         expect { request }.to trigger_internal_events('search_exact_code').with(user: user)
           .and increment_usage_metrics(

@@ -46,7 +46,7 @@ module Search
 
     def zoekt_nodes
       # Note: there will be more zoekt nodes whenever replicas are introduced.
-      @zoekt_nodes ||= zoekt_searchable_scope.root_ancestor.zoekt_enabled_namespace.nodes
+      @zoekt_nodes ||= zoekt_searchable_scope.root_ancestor.zoekt_enabled_namespace.nodes.for_search.online
     end
 
     def zoekt_node_available_for_search?
