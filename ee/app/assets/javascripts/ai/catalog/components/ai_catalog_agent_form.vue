@@ -404,6 +404,19 @@ export default {
           />
         </form-group>
         <template v-else>
+          <form-group :field="$options.fields.tools" :field-value="formValues.tools">
+            <gl-token-selector
+              :id="$options.fields.tools.id"
+              :selected-tokens="selectedTools"
+              :dropdown-items="filteredAvailableTools"
+              :placeholder="s__('AICatalog|Search tools.')"
+              allow-clear-all
+              data-testid="agent-form-token-selector-tools"
+              @input="handleToolsInput"
+              @text-input="handleToolSearch"
+              @keydown.enter.prevent
+            />
+          </form-group>
           <form-group
             #default="{ state, blur }"
             ref="fieldSystemPrompt"
@@ -423,19 +436,6 @@ export default {
               data-testid="agent-form-textarea-system-prompt"
               :state="state"
               @blur="blur"
-            />
-          </form-group>
-          <form-group :field="$options.fields.tools" :field-value="formValues.tools">
-            <gl-token-selector
-              :id="$options.fields.tools.id"
-              :selected-tokens="selectedTools"
-              :dropdown-items="filteredAvailableTools"
-              :placeholder="s__('AICatalog|Search tools.')"
-              allow-clear-all
-              data-testid="agent-form-token-selector-tools"
-              @input="handleToolsInput"
-              @text-input="handleToolSearch"
-              @keydown.enter.prevent
             />
           </form-group>
         </template>

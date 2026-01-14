@@ -95,6 +95,16 @@ export default {
         </template>
         <template v-else>
           <ai-catalog-item-field :title="s__('AICatalog|Type')" :value="s__('AICatalog|Custom')" />
+          <ai-catalog-item-field :title="s__('AICatalog|Tools')">
+            <span v-if="toolTitles.length === 0" class="gl-text-subtle">
+              {{ __('None') }}
+            </span>
+            <div v-else class="gl-mt-3 gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
+              <gl-token v-for="tool in toolTitles" :key="tool" view-only>
+                {{ tool }}
+              </gl-token>
+            </div>
+          </ai-catalog-item-field>
           <ai-catalog-item-field :title="s__('AICatalog|System prompt')">
             <div class="gl-border gl-mt-3 gl-rounded-default gl-bg-default gl-p-3">
               <pre class="gl-m-0 gl-whitespace-pre-wrap"><gl-truncate-text
@@ -104,16 +114,6 @@ export default {
               :toggle-button-props="$options.truncateTextToggleButtonProps"
               class="gl-flex gl-flex-col gl-items-start gl-gap-3"
             >{{ systemPrompt }}</gl-truncate-text></pre>
-            </div>
-          </ai-catalog-item-field>
-          <ai-catalog-item-field :title="s__('AICatalog|Tools')">
-            <span v-if="toolTitles.length === 0" class="gl-text-subtle">
-              {{ __('None') }}
-            </span>
-            <div v-else class="gl-mt-3 gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
-              <gl-token v-for="tool in toolTitles" :key="tool" view-only>
-                {{ tool }}
-              </gl-token>
             </div>
           </ai-catalog-item-field>
         </template>
