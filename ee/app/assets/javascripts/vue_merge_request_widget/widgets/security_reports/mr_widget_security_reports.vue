@@ -26,20 +26,6 @@ import { highlightsFromReport, transformToEnabledScans } from './utils';
 
 const POLL_INTERVAL = 3000;
 
-// Transform GraphQL finding to match REST API's expected format used by components
-// TODO: Once REST is removed, update GraphQL schema to return expected format
-// to avoid transformation https://gitlab.com/gitlab-org/gitlab/-/issues/581754
-const transformFinding = (finding) => ({
-  uuid: finding.uuid,
-  name: finding.title,
-  severity: finding.severity?.toLowerCase(),
-  state: finding.state?.toLowerCase(),
-  ai_resolution_enabled: finding.aiResolutionEnabled,
-  found_by_pipeline: {
-    iid: finding.foundByPipelineIid ? Number(finding.foundByPipelineIid) : null,
-  },
-});
-
 export default {
   name: 'WidgetSecurityReports',
   components: {
@@ -192,7 +178,8 @@ export default {
     },
 
     pipelineIid() {
-      return this.modalData.vulnerability.found_by_pipeline?.iid;
+      const iid = this.modalData.vulnerability.foundByPipelineIid;
+      return iid ? Number(iid) : null;
     },
     branchRef() {
       return this.mr.sourceBranch;
@@ -374,8 +361,10 @@ export default {
             };
           }
 
-          const added = data.report?.added?.map(transformFinding) || [];
-          const fixed = data.report?.fixed?.map(transformFinding) || [];
+          // GraphQL responses are read-only, so clone to enable mutations
+          // Allows "updateFindingState" to show dismissed badge changes immediately without refresh
+          const added = data.report?.added?.map((finding) => ({ ...finding })) || [];
+          const fixed = data.report?.fixed?.map((finding) => ({ ...finding })) || [];
 
           if (added.length === MAX_NEW_VULNERABILITIES) {
             this.hasAtLeastOneReportWithMaxNewVulnerabilities = true;
@@ -422,7 +411,7 @@ export default {
     setModalData(finding) {
       this.modalData = {
         error: null,
-        title: finding.name,
+        title: finding.title,
         vulnerability: finding,
       };
     },

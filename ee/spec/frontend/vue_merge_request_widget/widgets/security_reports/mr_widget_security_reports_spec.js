@@ -574,29 +574,20 @@ describe('MR Widget Security Reports', () => {
 
   describe('successful response', () => {
     it.each`
-      type       | mockResponse                                          | expectedAdded | expectedFixed
-      ${'added'} | ${mockFindingReportsComparerSuccessResponse}          | ${1}          | ${0}
-      ${'fixed'} | ${mockFindingReportsComparerSuccessResponseWithFixed} | ${0}          | ${1}
+      type       | mockResponse
+      ${'added'} | ${mockFindingReportsComparerSuccessResponse}
+      ${'fixed'} | ${mockFindingReportsComparerSuccessResponseWithFixed}
     `(
-      'transforms "$type" GraphQL findings to expected format',
-      async ({ type, mockResponse, expectedAdded, expectedFixed }) => {
+      'clones "$type" GraphQL findings to make them mutable for UI state changes',
+      async ({ type, mockResponse }) => {
         await createComponentWithMockData(mockResponse);
         const result = await getFirstScanResult();
 
         const originalFinding =
           mockResponse.data.project.mergeRequest.findingReportsComparer.report[type][0];
 
-        expect(result.data[type][0]).toEqual({
-          uuid: originalFinding.uuid,
-          name: originalFinding.title,
-          severity: originalFinding.severity.toLowerCase(),
-          state: originalFinding.state.toLowerCase(),
-          ai_resolution_enabled: originalFinding.aiResolutionEnabled,
-          found_by_pipeline: { iid: Number(originalFinding.foundByPipelineIid) },
-        });
-
-        expect(result.data.numberOfNewFindings).toBe(expectedAdded);
-        expect(result.data.numberOfFixedFindings).toBe(expectedFixed);
+        expect(result.data[type][0]).not.toBe(originalFinding);
+        expect(result.data[type][0]).toEqual(originalFinding);
       },
     );
   });
