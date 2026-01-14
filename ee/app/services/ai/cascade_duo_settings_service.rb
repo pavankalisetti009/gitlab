@@ -2,7 +2,7 @@
 
 module Ai
   class CascadeDuoSettingsService
-    BATCH_SIZE = 100
+    BATCH_SIZE = 10
     DUO_SETTINGS = %w[
       duo_features_enabled
       duo_remote_flows_enabled
