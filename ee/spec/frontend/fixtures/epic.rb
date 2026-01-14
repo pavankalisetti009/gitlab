@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Epics (JavaScript fixtures)' do
+RSpec.describe 'Epics (JavaScript fixtures)', feature_category: :portfolio_management do
   include ApplicationHelper
   include JavaScriptFixturesHelpers
 
