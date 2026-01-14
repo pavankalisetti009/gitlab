@@ -58,7 +58,7 @@ describe('ConfigurableTypesSettings', () => {
     it('renders help page link', () => {
       expect(findHelpPageLink().exists()).toBe(true);
       expect(findHelpPageLink().props('href')).toBe('user/work_items/_index.md');
-      expect(findHelpPageLink().text()).toBe('How do I use configure work item types?');
+      expect(findHelpPageLink().text()).toBe('How do I use or configure work item types?');
     });
   });
 
