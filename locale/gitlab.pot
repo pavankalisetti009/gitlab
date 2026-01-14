@@ -83208,6 +83208,15 @@ msgstr ""
 msgid "severity|Unknown"
 msgstr ""
 
+msgid "should be a valid Maven artifact ID with optional wildcard characters."
+msgstr ""
+
+msgid "should be a valid Maven group ID with optional wildcard characters."
+msgstr ""
+
+msgid "should be a valid Maven version with optional wildcard characters."
+msgstr ""
+
 msgid "should be a valid NPM package name with optional wildcard characters."
 msgstr ""
 

@@ -36,6 +36,12 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         .class_name('VirtualRegistries::Packages::Maven::Registry')
     end
 
+    it 'has many rules' do
+      is_expected.to have_many(:rules)
+        .class_name('VirtualRegistries::Packages::Maven::Upstream::Rule')
+        .inverse_of(:remote_upstream)
+    end
+
     context 'with an upstream with remote cache entries' do
       let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_remote_entry) }
       let_it_be(:upstream) { cache_entry.upstream }
