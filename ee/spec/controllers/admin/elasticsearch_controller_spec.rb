@@ -118,6 +118,23 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
     end
   end
 
+  describe 'POST #disable_semantic_search' do
+    before do
+      sign_in(admin)
+    end
+
+    it 'disables semantic search' do
+      expect(Ai::ActiveContext::ConnectionService).to receive(:disable_connection)
+
+      post :disable_semantic_search
+
+      expect(controller).to set_flash[:notice].to include('Semantic search will be disabled soon')
+
+      expected_redirect = search_admin_application_settings_path(anchor: 'js-semantic-search-settings')
+      expect(response).to redirect_to expected_redirect
+    end
+  end
+
   describe 'POST #retry_migration' do
     before do
       sign_in(admin)

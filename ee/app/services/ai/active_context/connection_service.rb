@@ -23,6 +23,10 @@ module Ai
         )
         connection.activate!
       end
+
+      def self.disable_connection
+        Ai::ActiveContext::DisableWorker.perform_in(1.minute)
+      end
     end
   end
 end
