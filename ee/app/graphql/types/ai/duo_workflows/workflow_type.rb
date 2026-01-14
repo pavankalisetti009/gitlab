@@ -114,6 +114,11 @@ module Types
           null: true, description: 'ID of the AI catalog item version that triggered the workflow.',
           experiment: { milestone: '18.4' }
 
+        field :agent_name, GraphQL::Types::String, # rubocop: disable GraphQL/ExtractType -- keeping agent fields flat for simpler API
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          null: true, description: 'Name of the agent used for the workflow.',
+          experiment: { milestone: '18.8' }
+
         field :user_permissions, Types::PermissionTypes::Ai::DuoWorkflows::Workflow, # rubocop: disable GraphQL/ExtractType -- user_id is intentionally separate as per comment above
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           null: true,

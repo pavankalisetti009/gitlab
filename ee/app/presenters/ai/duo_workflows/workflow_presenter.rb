@@ -32,6 +32,12 @@ module Ai
       def latest_checkpoint
         workflow.checkpoints.latest
       end
+
+      def agent_name
+        return workflow.ai_catalog_item_version.item.name if workflow.ai_catalog_item_version_id.present?
+
+        ::Ai::FoundationalChatAgent.with_workflow_definition(workflow.workflow_definition)&.name
+      end
     end
   end
 end

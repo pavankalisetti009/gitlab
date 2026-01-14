@@ -66,6 +66,12 @@ module Ai
       def any_agents_with_reference?(definition)
         !!where(reference: definition).first
       end
+
+      def with_workflow_definition(definition)
+        return if definition.nil?
+
+        where(reference: reference_from_workflow_definition(definition)).first
+      end
     end
   end
 end

@@ -149,6 +149,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
         }
         lastExecutorLogsUrl
         aiCatalogItemVersionId
+        agentName
       }
     GRAPHQL
   end
@@ -742,6 +743,35 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
           expect(returned_workflows.pluck('status')).to eq(%w[CREATED CREATED CREATED])
           expect(page_info['hasNextPage']).to be(true)
           expect(page_info['hasPreviousPage']).to be(true)
+        end
+      end
+
+      context 'with agentName field' do
+        it 'returns agent names correctly', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          # Custom catalog agent - should return the catalog item name
+          workflow_with_catalog_agent = returned_workflows.find do |w|
+            w['aiCatalogItemVersionId'] == ai_catalog_item_version.to_global_id.to_s
+          end
+          expect(workflow_with_catalog_agent).not_to be_nil
+          expect(workflow_with_catalog_agent['agentName']).to eq(ai_catalog_item_version.item.name)
+
+          # Foundational agent - should return foundational agent name
+          agentic_chat_workflow = returned_workflows.find do |w|
+            w['id'] == namespace_level_workflow.to_global_id.to_s
+          end
+          expect(agentic_chat_workflow).not_to be_nil
+          expect(agentic_chat_workflow['agentName']).to eq('GitLab Duo')
+
+          # No agent info - should return nil
+          workflows_without_agents = returned_workflows.select do |w|
+            w['aiCatalogItemVersionId'].nil? && w['agentName'].nil?
+          end
+          expect(workflows_without_agents).not_to be_empty
         end
       end
     end
