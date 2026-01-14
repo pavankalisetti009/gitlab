@@ -167,4 +167,42 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
       expect(described_class.any_agents_with_reference?('invalid_agent_1')).to be false
     end
   end
+
+  describe '#with_workflow_definition' do
+    context 'when agent with workflow definition exists' do
+      it 'returns the agent for chat without version' do
+        agent = described_class.with_workflow_definition('chat')
+
+        expect(agent).not_to be_nil
+        expect(agent.reference).to eq('chat')
+        expect(agent.name).to eq('GitLab Duo')
+      end
+
+      it 'returns the agent for workflow definition with version' do
+        agent = described_class.with_workflow_definition('duo_planner/experimental')
+
+        expect(agent).not_to be_nil
+        expect(agent.reference).to eq('duo_planner')
+        expect(agent.version).to eq('experimental')
+        expect(agent.name).to eq('Planner')
+      end
+
+      it 'returns the agent for analytics agent' do
+        agent = described_class.with_workflow_definition('analytics_agent/v1')
+
+        expect(agent).not_to be_nil
+        expect(agent.reference).to eq('analytics_agent')
+        expect(agent.version).to eq('v1')
+        expect(agent.name).to eq('Data Analyst')
+      end
+    end
+
+    context 'when agent with workflow definition does not exist' do
+      it 'returns nil' do
+        agent = described_class.with_workflow_definition('nonexistent_agent/v1')
+
+        expect(agent).to be_nil
+      end
+    end
+  end
 end

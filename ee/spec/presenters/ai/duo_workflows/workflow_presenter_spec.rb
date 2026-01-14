@@ -103,4 +103,41 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowPresenter, feature_category: :duo_age
       expect(presenter.latest_checkpoint).to be_nil
     end
   end
+
+  describe 'agent_name' do
+    context 'when workflow uses a custom catalog agent' do
+      it 'returns the catalog item name' do
+        catalog_item = instance_double(Ai::Catalog::Item, name: 'Custom Agent')
+        catalog_item_version = instance_double(Ai::Catalog::ItemVersion, item: catalog_item)
+        allow(workflow).to receive_messages(
+          ai_catalog_item_version_id: 123,
+          ai_catalog_item_version: catalog_item_version
+        )
+
+        expect(presenter.agent_name).to eq('Custom Agent')
+      end
+    end
+
+    context 'when workflow uses a foundational agent' do
+      it 'returns the foundational agent name' do
+        allow(workflow).to receive_messages(
+          ai_catalog_item_version_id: nil,
+          workflow_definition: 'chat'
+        )
+
+        expect(presenter.agent_name).to eq('GitLab Duo')
+      end
+    end
+
+    context 'when workflow has no agent information' do
+      it 'returns nil' do
+        allow(workflow).to receive_messages(
+          ai_catalog_item_version_id: nil,
+          workflow_definition: nil
+        )
+
+        expect(presenter.agent_name).to be_nil
+      end
+    end
+  end
 end
