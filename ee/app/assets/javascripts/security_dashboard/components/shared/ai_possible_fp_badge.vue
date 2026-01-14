@@ -1,38 +1,19 @@
 <script>
-import { GlBadge, GlIcon, GlPopover, GlProgressBar, GlButton, GlTruncateText } from '@gitlab/ui';
-import { BV_HIDE_POPOVER } from '~/lib/utils/constants';
-import { VULNERABILITY_STATE_OBJECTS, CONFIDENCE_SCORES } from 'ee/vulnerabilities/constants';
-import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
+import { GlBadge, GlIcon, GlPopover, GlProgressBar } from '@gitlab/ui';
+import { CONFIDENCE_SCORES } from 'ee/vulnerabilities/constants';
 import { s__ } from '~/locale';
-import DismissFalsePositiveModal from './dismiss_false_positive_modal.vue';
-
-export const VULNERABILITY_UNTRIAGED_STATUS = VULNERABILITY_STATE_OBJECTS.detected.searchParamValue;
 
 export default {
   components: {
     GlBadge,
-    GlButton,
     GlIcon,
-    DismissFalsePositiveModal,
     GlPopover,
     GlProgressBar,
-    GlTruncateText,
-    NonGfmMarkdown,
-  },
-  inject: {
-    vulnerabilitiesQuery: {
-      default: null,
-    },
   },
   props: {
     vulnerability: {
       type: Object,
       required: true,
-    },
-    canAdminVulnerability: {
-      type: Boolean,
-      required: false,
-      default: false,
     },
   },
   computed: {
@@ -42,48 +23,52 @@ export default {
     isLikelyFalsePositive() {
       return this.flag.confidenceScore >= CONFIDENCE_SCORES.LIKELY_FALSE_POSITIVE;
     },
-    shouldRenderBadge() {
+    isAboveMinimalConfidence() {
       return this.flag?.confidenceScore > CONFIDENCE_SCORES.MINIMAL;
     },
     badgeText() {
-      return this.isLikelyFalsePositive
-        ? this.$options.i18n.badgeTextLikelyFP
-        : this.$options.i18n.badgeTextPossibleFP;
+      if (this.isLikelyFalsePositive) {
+        return this.$options.i18n.badgeTextLikelyFP;
+      }
+      if (this.isAboveMinimalConfidence) {
+        return this.$options.i18n.badgeTextPossibleFP;
+      }
+      return this.$options.i18n.badgeTextNotFP;
     },
     badgeVariant() {
-      return this.isLikelyFalsePositive ? 'success' : 'warning';
+      if (this.isLikelyFalsePositive) {
+        return 'success';
+      }
+      if (this.isAboveMinimalConfidence) {
+        return 'warning';
+      }
+      return 'neutral';
+    },
+    progressBarVariant() {
+      return this.badgeVariant === 'neutral' ? 'primary' : this.badgeVariant;
+    },
+    popoverTitle() {
+      if (this.isLikelyFalsePositive || this.isAboveMinimalConfidence) {
+        return this.$options.i18n.popoverTitleFP;
+      }
+      return this.$options.i18n.popoverTitleNotFP;
     },
     confidencePercentage() {
       return Math.round(this.flag.confidenceScore * 100);
-    },
-    canDismissVulnerability() {
-      return (
-        this.canAdminVulnerability && this.vulnerability.state === VULNERABILITY_UNTRIAGED_STATUS
-      );
-    },
-  },
-  methods: {
-    showConfirmModal() {
-      this.$root.$emit(BV_HIDE_POPOVER);
-      this.$refs.confirmModal.show();
-    },
-    showFalsePositiveToast() {
-      this.$toast.show(this.$options.i18n.dismissSuccess);
     },
   },
   i18n: {
     badgeTextPossibleFP: s__('Vulnerability|Possible FP'),
     badgeTextLikelyFP: s__('Vulnerability|Likely FP'),
-    aiConfidenceScore: s__('Vulnerability|AI Confidence Score'),
-    why: s__('Vulnerability|Why it is likely a false positive'),
-    removeFlag: s__('Vulnerability|Remove False Positive Flag'),
-    dismissSuccess: s__('Vulnerability|False positive flag dismissed successfully.'),
+    badgeTextNotFP: s__('Vulnerability|Not an FP'),
+    popoverTitleFP: s__('Vulnerability|AI false positive confidence score'),
+    popoverTitleNotFP: s__('Vulnerability|AI false positive scan complete'),
   },
 };
 </script>
 
 <template>
-  <gl-badge v-if="shouldRenderBadge" ref="badge" :variant="badgeVariant" size="sm">
+  <gl-badge ref="badge" :variant="badgeVariant" size="sm">
     <gl-icon name="tanuki-ai" class="gl-mr-1" />
     <span data-testid="ai-fix-in-progress-b"> {{ badgeText }}</span>
     <gl-popover
@@ -92,36 +77,24 @@ export default {
       show-close-button
       :css-classes="['gl-max-w-62']"
     >
-      <template #title>{{ vulnerability.title }}</template>
+      <template #title>{{ popoverTitle }}</template>
       <div class="gl-mt-2 gl-flex gl-items-center gl-gap-3 gl-font-bold">
-        {{ $options.i18n.aiConfidenceScore }}:
         <gl-progress-bar
           :value="confidencePercentage"
-          class="gl-h-3 gl-w-15"
-          :variant="badgeVariant"
+          class="gl-h-3 gl-w-26"
+          :variant="progressBarVariant"
         />
         {{ confidencePercentage }}%
       </div>
-      <div v-if="flag.description" class="gl-mt-3">
-        <h4 class="gl-text-base gl-font-bold">{{ $options.i18n.why }}</h4>
-        <gl-truncate-text :lines="5" class="gl-whitespace-pre-wrap">
-          <non-gfm-markdown :markdown="flag.description" />
-        </gl-truncate-text>
+      <div class="gl-mt-3 gl-w-26">
+        <template v-if="isAboveMinimalConfidence">
+          {{ s__('Vulnerability|For more information, view vulnerability details.') }}
+        </template>
+        <template v-else>
+          {{ s__('Vulnerability|FP scanning found that this vulnerability is ')
+          }}<strong>{{ s__('Vulnerability|NOT a false positive') }}</strong>
+        </template>
       </div>
-      <gl-button
-        v-if="canDismissVulnerability"
-        class="gl-mt-5"
-        variant="link"
-        @click="showConfirmModal"
-      >
-        {{ $options.i18n.removeFlag }}
-      </gl-button>
     </gl-popover>
-    <dismiss-false-positive-modal
-      ref="confirmModal"
-      :vulnerability="vulnerability"
-      modal-id="dismiss-fp-confirm-modal"
-      @success="showFalsePositiveToast"
-    />
   </gl-badge>
 </template>
