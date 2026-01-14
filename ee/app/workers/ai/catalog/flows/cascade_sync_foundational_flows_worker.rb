@@ -6,7 +6,7 @@ module Ai
       class CascadeSyncFoundationalFlowsWorker
         include ApplicationWorker
 
-        BATCH_SIZE = 100
+        BATCH_SIZE = 10
 
         data_consistency :delayed
         feature_category :ai_abstraction_layer
