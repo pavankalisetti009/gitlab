@@ -132,7 +132,7 @@ module Ai
 
       def feature_flag_enabled?
         if @workflow.chat?
-          Feature.enabled?(:duo_agentic_chat, @current_user)
+          true
         else
           Feature.enabled?(:duo_workflow, @current_user)
         end

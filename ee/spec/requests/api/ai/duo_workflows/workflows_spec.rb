@@ -1193,45 +1193,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       end
     end
 
-    context 'when agentic_chat feature flag is disabled for the user' do
-      before do
-        stub_feature_flags(duo_agentic_chat: false)
-      end
-
-      context 'when workflow_definition is chat' do
-        let(:workflow_definition) { 'chat' }
-
-        it 'returns not found' do
-          post_with_definition
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-
-      context 'when workflow_definition is software_developer' do
-        let(:workflow_definition) { 'software_developer' }
-
-        it 'process request further' do
-          post_with_definition
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-        end
-      end
-    end
-
-    context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
-      before do
-        stub_feature_flags(duo_workflow: false)
-        stub_feature_flags(duo_agentic_chat: false)
-      end
-
-      it 'returns not found' do
-        post_without_params
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
-
     context 'when rate limited' do
       it 'returns api error' do
         allow(Gitlab::ApplicationRateLimiter).to receive(:throttled_request?).and_return(true)
@@ -2506,16 +2467,15 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
-      context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
+      context 'when the duo_workflows feature flag is disabled for the user' do
         before do
           stub_feature_flags(duo_workflow: false)
-          stub_feature_flags(duo_agentic_chat: false)
         end
 
         it 'returns not found' do
           get_response
 
-          expect(response).to have_gitlab_http_status(:not_found)
+          expect(response).to have_gitlab_http_status(:ok)
         end
       end
 
@@ -2713,45 +2673,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(response).to have_gitlab_http_status(:bad_request)
         end
-      end
-    end
-
-    context 'when agentic_chat feature flag is disabled for the user' do
-      before do
-        stub_feature_flags(duo_agentic_chat: false)
-      end
-
-      context 'when workflow_definition is chat' do
-        let(:workflow_definition) { 'chat' }
-
-        it 'returns not found' do
-          get_with_definition
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-
-      context 'when workflow_definition is software_developer' do
-        let(:workflow_definition) { 'software_developer' }
-
-        it 'process request further' do
-          get_with_definition
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-        end
-      end
-    end
-
-    context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
-      before do
-        stub_feature_flags(duo_workflow: false)
-        stub_feature_flags(duo_agentic_chat: false)
-      end
-
-      it 'returns not found' do
-        get_without_params
-
-        expect(response).to have_gitlab_http_status(:not_found)
       end
     end
 
