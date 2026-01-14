@@ -219,6 +219,28 @@ module Gitlab
         log_error('Geo::EventLog could not be created in bulk', e)
       end
 
+      # Returns the appropriate SidekiqStatus expiration time for this replicator.
+      # This matches the exclusive lease timeout used by the sync service to ensure
+      # jobs are properly tracked even if they run for extended periods.
+      #
+      # @return [Integer] expiration time in seconds
+      def self.status_expiration
+        if respond_to?(:sync_timeout)
+          int_sync_timeout = sync_timeout.to_i
+          return int_sync_timeout if int_sync_timeout > 0
+        end
+
+        # Default to 8 hours, which matches most Geo sync service lease timeouts
+        message = "Replicator #{name} does not define sync_timeout, using default 8 hour expiration"
+        Gitlab::AppLogger.warn(message)
+        Gitlab::ErrorTracking.track_exception(
+          StandardError.new(message),
+          replicator_class: name
+        )
+
+        8.hours.to_i
+      end
+
       # @param [ActiveRecord::Base] model_record
       # @param [Integer] model_record_id
       def initialize(model_record: nil, model_record_id: nil)

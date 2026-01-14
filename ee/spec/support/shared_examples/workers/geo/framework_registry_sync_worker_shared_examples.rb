@@ -15,7 +15,7 @@ RSpec.shared_examples 'a framework registry sync worker' do |registry_factory, s
         allow(instance).to receive(:over_time?).and_return(false)
       end
 
-      allow(::Geo::SyncWorker).to receive(:with_status).and_return(::Geo::SyncWorker)
+      allow(::Geo::SyncWorker).to receive(:set).and_return(::Geo::SyncWorker)
     end
 
     it 'does not schedule anything when tracking database is not configured' do
