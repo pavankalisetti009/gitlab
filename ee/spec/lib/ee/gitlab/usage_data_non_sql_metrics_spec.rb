@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::UsageDataNonSqlMetrics do
+RSpec.describe Gitlab::UsageDataNonSqlMetrics, feature_category: :service_ping do
   include UsageDataHelpers
 
   before do
