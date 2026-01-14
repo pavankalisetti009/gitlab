@@ -108,6 +108,14 @@ export default {
       return this.isInherited || this.addingRequirementsDisabled;
     },
   },
+  watch: {
+    requirements(newRequirements) {
+      // Reset to page 1 if pagination is no longer needed
+      if (newRequirements.length <= this.perPage && this.currentPage > 1) {
+        this.currentPage = 1;
+      }
+    },
+  },
   methods: {
     showRequirementModal(requirement, index = null) {
       if (this.isInherited) return;
@@ -127,13 +135,16 @@ export default {
     },
     handleDelete(index) {
       if (this.isInherited) return;
-      this.$emit(this.$options.requirementEvents.delete, index);
+      this.$emit(this.$options.requirementEvents.delete, this.getAbsoluteIndex(index));
     },
     getControls(requirementControlNodes) {
       return getControls(requirementControlNodes, this.complianceRequirementControls);
     },
     pageChanged(newPage) {
       this.currentPage = newPage;
+    },
+    getAbsoluteIndex(pageRelativeIndex) {
+      return (this.currentPage - 1) * this.perPage + pageRelativeIndex;
     },
     showPingDisabledBadge({ controlType, pingEnabled } = {}) {
       return controlType === 'external' && pingEnabled === false;
@@ -237,7 +248,7 @@ export default {
         >
           <gl-disclosure-dropdown-item
             data-testid="edit-action"
-            @action="showRequirementModal(item, index)"
+            @action="showRequirementModal(item, getAbsoluteIndex(index))"
           >
             <template #list-item>
               {{ $options.i18n.actionEdit }}

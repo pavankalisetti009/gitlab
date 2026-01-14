@@ -5,7 +5,7 @@ import {
   GlBadge,
   GlTooltip,
 } from '@gitlab/ui';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
 import RequirementModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirement_modal.vue';
@@ -311,6 +311,27 @@ describe('Requirements section', () => {
       await findDeleteAction().vm.$emit('action');
       expect(wrapper.emitted(requirementEvents.delete)).toStrictEqual([[0]]);
     });
+
+    it('emits a delete event with the correct absolute index when on page 2', async () => {
+      const generateRequirements = (count) => {
+        return Array(count)
+          .fill()
+          .map((_, i) => ({ ...mockRequirements[0], name: `Requirement ${i + 1}` }));
+      };
+
+      const manyRequirements = generateRequirements(15);
+      await createComponent({
+        requirements: manyRequirements,
+      });
+
+      // Navigate to page 2
+      await findPagination().vm.$emit('input', 2);
+      await nextTick();
+
+      // Click delete on the first item visible on page 2 (which is index 10 overall)
+      await findDeleteAction().vm.$emit('action');
+      expect(wrapper.emitted(requirementEvents.delete)).toStrictEqual([[10]]);
+    });
   });
 
   describe('Update requirement', () => {
@@ -392,6 +413,24 @@ describe('Requirements section', () => {
       expect(wrapper.vm.currentPage).toBe(1);
       await findPagination().vm.$emit('input', 2);
       expect(wrapper.vm.currentPage).toBe(2);
+    });
+
+    it('resets to page 1 when pagination is no longer needed', async () => {
+      const manyRequirements = generateRequirements(11);
+      await createComponent({ requirements: manyRequirements });
+
+      // Navigate to page 2
+      await findPagination().vm.$emit('input', 2);
+      await nextTick();
+      expect(wrapper.vm.currentPage).toBe(2);
+
+      // Simulate deleting an item so only 10 remain (triggers showPagination computed property)
+      await wrapper.setProps({ requirements: generateRequirements(10) });
+      await nextTick();
+
+      // Should reset to page 1 and hide pagination
+      expect(wrapper.vm.currentPage).toBe(1);
+      expect(findPagination().exists()).toBe(false);
     });
   });
 
