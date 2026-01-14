@@ -11,6 +11,8 @@ module Resolvers
         authorizes_object!
         authorize :read_enterprise_ai_analytics
 
+        ALL_FEATURES = ::Analytics::AiAnalytics::AiUserMetricsService::ALL_FEATURES
+
         argument :start_date, Types::DateType,
           required: false,
           description: 'Date range to start from. Default is the beginning of current month.
@@ -77,7 +79,15 @@ module Resolvers
         end
 
         def first_registered_feature
+          sort_field = context[:ai_metrics_params][:sort][:field]
+
+          return ALL_FEATURES if total_events_sort?(sort_field)
+
           Gitlab::Tracking::AiTracking.registered_features.first
+        end
+
+        def total_events_sort?(sort_field)
+          sort_field == :total_events_count
         end
 
         def sort_users_by_ids(users, sorted_ids)

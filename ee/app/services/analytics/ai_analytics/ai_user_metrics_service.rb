@@ -3,6 +3,8 @@
 module Analytics
   module AiAnalytics
     class AiUserMetricsService
+      ALL_FEATURES = :all_features
+
       # rubocop: disable CodeReuse/ActiveRecord -- no ActiveRecord
       def initialize(current_user:, namespace:, from:, to:, user_ids:, feature:, sort: nil)
         @namespace = namespace
@@ -28,7 +30,7 @@ module Analytics
       attr_reader :current_user, :namespace, :from, :to, :user_ids, :feature, :sort
 
       def fetch_all_features?
-        feature == :all_features
+        feature == ALL_FEATURES
       end
 
       def query_and_aggregate_metrics
@@ -84,7 +86,7 @@ module Analytics
         direction = sort[:direction]
 
         if sort_field == :total_events_count
-          # Sort by total events across the entire feature
+          # Sort by count of all events of all features
           query.order(Arel.sql('total_events_count'), direction)
         elsif ::Ai::UsageEvent.events[sort_field].present?
           # Sort by a specific event within the feature
@@ -96,7 +98,7 @@ module Analytics
           ])
           query.order(sort_expression, direction)
         else
-          # Sort by all events of a different feature
+          # Sort by count of all events of a specific feature
           sort_event_ids = event_ids_for_feature(sort_field)
           sort_expression = Arel::Nodes::NamedFunction.new('sumIf', [
             Arel.sql('occurrences'),

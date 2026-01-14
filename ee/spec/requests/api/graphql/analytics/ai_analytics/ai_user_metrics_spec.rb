@@ -26,8 +26,9 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
       .with(current_user, :read_enterprise_ai_analytics, anything)
       .and_return(true)
 
+    all_features = Analytics::AiAnalytics::AiUserMetricsService::ALL_FEATURES
     allow_next_instance_of(Analytics::AiAnalytics::AiUserMetricsService,
-      hash_including(current_user: current_user, feature: :all_features, **expected_filters)) do |instance|
+      hash_including(current_user: current_user, feature: all_features, **expected_filters)) do |instance|
       allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: service_payload))
     end
 
@@ -277,28 +278,28 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           user_id: user1.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 100
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 60
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 40
         },
         {
           user_id: user4.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 20
         },
         # Code suggestions - accepted events
@@ -306,28 +307,28 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           user_id: user1.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 50
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 80
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 30
         },
         {
           user_id: user4.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 10
         },
         # Code suggestions - rejected events
@@ -335,28 +336,28 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           user_id: user1.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 25
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 40
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 60
         },
         {
           user_id: user4.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 5
         },
         # Chat events
@@ -364,28 +365,28 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           user_id: user1.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 30
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 100
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 50
         },
         {
           user_id: user4.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.new(2025, 12, 15).to_s,
+          date: Date.current.to_s,
           occurrences: 80
         }
       ])
@@ -425,6 +426,29 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
       user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
       # user2: 100, user4: 80, user3: 50, user1: 30
       expect(user_ids).to eq([user2, user4, user3, user1].map { |u| u.to_global_id.to_s })
+    end
+
+    context 'with total events count sorting' do
+      it 'sorts by total events count descending' do
+        filter_params[:sort] = :TOTAL_EVENTS_COUNT_DESC
+
+        post_graphql(query, current_user: current_user)
+
+        user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+        # user2: 280 total (60+80+40+100), user1: 205 total (100+50+25+30),
+        # user3: 180 total (40+30+60+50), user4: 115 total (20+10+5+80)
+        expect(user_ids).to eq([user2, user1, user3, user4].map { |u| u.to_global_id.to_s })
+      end
+
+      it 'sorts by total events count ascending' do
+        filter_params[:sort] = :TOTAL_EVENTS_COUNT_ASC
+
+        post_graphql(query, current_user: current_user)
+
+        user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+        # user4: 115 total, user3: 180 total, user1: 205 total, user2: 280 total
+        expect(user_ids).to eq([user4, user3, user1, user2].map { |u| u.to_global_id.to_s })
+      end
     end
 
     context 'with event-level sorting' do

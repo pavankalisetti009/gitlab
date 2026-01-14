@@ -11,6 +11,8 @@ module Types
 
         include ::Analytics::AiEventFields
 
+        ALL_FEATURES = ::Analytics::AiAnalytics::AiUserMetricsService::ALL_FEATURES
+
         field :user, Types::GitlabSubscriptions::AddOnUserType,
           description: 'User associated with metrics.',
           null: false
@@ -68,7 +70,7 @@ module Types
 
         def load_all_features_metrics
           BatchLoader::GraphQL.for(user).batch(key: :user_metrics_all_features) do |users, return_result|
-            all_metrics = fetch_metrics_for_users(users, :all_features)
+            all_metrics = fetch_metrics_for_users(users, ALL_FEATURES)
             users.each do |user|
               metrics = all_metrics[user.id] || {}
               return_result.call(user, metrics)

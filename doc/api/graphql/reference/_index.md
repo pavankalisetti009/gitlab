@@ -51388,6 +51388,8 @@ Values for sorting AI user metrics.
 | <a id="aiusermetricssortrequest_review_duo_code_review_on_mr_by_non_author_desc"></a>`REQUEST_REVIEW_DUO_CODE_REVIEW_ON_MR_BY_NON_AUTHOR_DESC` | Request Review Duo Code Review On Mr By Non Author event count in descending order. |
 | <a id="aiusermetricssortstart_mcp_tool_call_asc"></a>`START_MCP_TOOL_CALL_ASC` | Start Mcp Tool Call event count in ascending order. |
 | <a id="aiusermetricssortstart_mcp_tool_call_desc"></a>`START_MCP_TOOL_CALL_DESC` | Start Mcp Tool Call event count in descending order. |
+| <a id="aiusermetricssorttotal_events_count_asc"></a>`TOTAL_EVENTS_COUNT_ASC` | Total count of all AI events in ascending order. |
+| <a id="aiusermetricssorttotal_events_count_desc"></a>`TOTAL_EVENTS_COUNT_DESC` | Total count of all AI events in descending order. |
 | <a id="aiusermetricssorttroubleshoot_job_asc"></a>`TROUBLESHOOT_JOB_ASC` | Troubleshoot Job event count in ascending order. |
 | <a id="aiusermetricssorttroubleshoot_job_desc"></a>`TROUBLESHOOT_JOB_DESC` | Troubleshoot Job event count in descending order. |
 | <a id="aiusermetricssorttroubleshoot_job_total_count_asc"></a>`TROUBLESHOOT_JOB_TOTAL_COUNT_ASC` | Troubleshoot Job total event count in ascending order. |
