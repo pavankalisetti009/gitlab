@@ -3012,10 +3012,10 @@ describe('Duo Agentic Chat', () => {
 
     describe.each`
       defaultNamespaceSelected | multithreadedView      | agentOrWorkflowDeletedError | expectedError          | description
-      ${false}                 | ${DUO_CHAT_VIEWS.CHAT} | ${''}                       | ${'namespace_message'} | ${'shows namespace message when default namespace is not selected and in CHAT view'}
-      ${false}                 | ${DUO_CHAT_VIEWS.LIST} | ${''}                       | ${''}                  | ${'hides namespace message in LIST view'}
-      ${true}                  | ${DUO_CHAT_VIEWS.CHAT} | ${''}                       | ${''}                  | ${'hides message when namespace is selected'}
-      ${false}                 | ${DUO_CHAT_VIEWS.CHAT} | ${'Agent was deleted'}      | ${'Agent was deleted'} | ${'prioritizes agentOrWorkflowDeletedError over namespace message'}
+      ${false}                 | ${DUO_CHAT_VIEWS.CHAT} | ${''}                       | ${''}                  | ${'returns empty string when namespace not selected (now handled by empty state)'}
+      ${false}                 | ${DUO_CHAT_VIEWS.LIST} | ${''}                       | ${''}                  | ${'returns empty string in LIST view'}
+      ${true}                  | ${DUO_CHAT_VIEWS.CHAT} | ${''}                       | ${''}                  | ${'returns empty string when namespace is selected'}
+      ${false}                 | ${DUO_CHAT_VIEWS.CHAT} | ${'Agent was deleted'}      | ${'Agent was deleted'} | ${'shows agentOrWorkflowDeletedError'}
       ${true}                  | ${DUO_CHAT_VIEWS.CHAT} | ${'Agent was deleted'}      | ${'Agent was deleted'} | ${'shows agentOrWorkflowDeletedError when namespace is selected'}
     `(
       '$description',
@@ -3033,16 +3033,135 @@ describe('Duo Agentic Chat', () => {
           });
 
           const errorProp = findDuoChat().props('error');
-
-          if (expectedError === 'namespace_message') {
-            expect(errorProp).toContain('To use GitLab Duo Agentic Chat');
-            expect(errorProp).toContain(PREFERENCES_PATH);
-          } else {
-            expect(errorProp).toBe(expectedError);
-          }
+          expect(errorProp).toBe(expectedError);
         });
       },
     );
+  });
+
+  describe('showNoNamespaceEmptyState computed property', () => {
+    const PREFERENCES_PATH = '/-/profile/preferences';
+
+    const createComponentWithNamespaceConfig = ({
+      defaultNamespaceSelected,
+      preferencesPath = PREFERENCES_PATH,
+      multithreadedView = DUO_CHAT_VIEWS.CHAT,
+    }) => {
+      createComponent({
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isEmbedded: false,
+              defaultNamespaceSelected,
+              preferencesPath,
+            },
+          },
+        },
+        data: { multithreadedView },
+      });
+    };
+
+    describe('when namespace is not selected', () => {
+      it('renders no-namespace empty state in CHAT view', () => {
+        createComponentWithNamespaceConfig({
+          defaultNamespaceSelected: false,
+          multithreadedView: DUO_CHAT_VIEWS.CHAT,
+        });
+
+        const duoChat = findDuoChat();
+        const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state']({});
+
+        expect(customEmptyState).toBeDefined();
+      });
+
+      it('disables the chat input', async () => {
+        createComponentWithNamespaceConfig({
+          defaultNamespaceSelected: false,
+          multithreadedView: DUO_CHAT_VIEWS.CHAT,
+        });
+
+        await nextTick();
+
+        const duoChat = findDuoChat();
+
+        expect(duoChat.props('chatState')).toMatchObject({
+          isEnabled: false,
+        });
+      });
+
+      it('does not render empty state in LIST view', () => {
+        createComponentWithNamespaceConfig({
+          defaultNamespaceSelected: false,
+          multithreadedView: DUO_CHAT_VIEWS.LIST,
+        });
+
+        const duoChat = findDuoChat();
+        const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state'];
+
+        expect(customEmptyState).toBeUndefined();
+      });
+    });
+
+    describe('when namespace is selected', () => {
+      it('does not render no-namespace empty state', () => {
+        createComponentWithNamespaceConfig({
+          defaultNamespaceSelected: true,
+          multithreadedView: DUO_CHAT_VIEWS.CHAT,
+        });
+
+        const duoChat = findDuoChat();
+        const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state'];
+
+        expect(customEmptyState).toBeUndefined();
+      });
+    });
+  });
+
+  describe('empty state priority', () => {
+    const PREFERENCES_PATH = '/-/profile/preferences';
+
+    it('shows no-namespace empty state over no-credits when both conditions are true', () => {
+      createComponent({
+        propsData: { creditsAvailable: false },
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isEmbedded: false,
+              defaultNamespaceSelected: false,
+              preferencesPath: PREFERENCES_PATH,
+            },
+          },
+        },
+      });
+
+      const duoChat = findDuoChat();
+      const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state']({});
+
+      expect(customEmptyState).toBeDefined();
+    });
+
+    it('shows no-credits empty state when namespace is selected but credits exhausted', () => {
+      createComponent({
+        propsData: { creditsAvailable: false },
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isEmbedded: false,
+              defaultNamespaceSelected: true,
+              preferencesPath: PREFERENCES_PATH,
+            },
+          },
+        },
+      });
+
+      const duoChat = findDuoChat();
+      const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state']({});
+
+      expect(customEmptyState).toBeDefined();
+    });
   });
 
   describe('dynamicTitle', () => {
