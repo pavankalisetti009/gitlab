@@ -11,7 +11,8 @@ RSpec.describe Gitlab::MailRoom, feature_category: :build do
       url: "localhost",
       db: 99,
       sentinels: [{ host: 'localhost', port: 1234 }],
-      sentinels?: true
+      sentinels?: true,
+      ssl_params: nil
     )
   end
 
@@ -121,6 +122,34 @@ RSpec.describe Gitlab::MailRoom, feature_category: :build do
           redis_db: 99,
           sentinels: [{ host: 'localhost', port: 1234 }]
         )
+      end
+
+      context 'when redis ssl_params are present' do
+        let(:ssl_params) do
+          {
+            ca_file: '/etc/gitlab/ssl/redis-bundle.crt',
+            cert: '/etc/gitlab/ssl/redis-client.crt',
+            key: '/etc/gitlab/ssl/redis-client.key'
+          }
+        end
+
+        before do
+          allow(fake_redis_queues).to receive(:ssl_params).and_return(ssl_params)
+        end
+
+        it 'includes redis_ssl_params in the config' do
+          config = first_value
+          expect(config).to include(
+            redis_ssl_params: ssl_params
+          )
+        end
+      end
+
+      context 'when redis ssl_params are not present' do
+        it 'does not include redis_ssl_params in the config' do
+          config = first_value
+          expect(config).not_to have_key(:redis_ssl_params)
+        end
       end
     end
 
