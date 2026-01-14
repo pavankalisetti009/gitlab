@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe IncidentManagement::OncallUsersFinder do
+RSpec.describe IncidentManagement::OncallUsersFinder, feature_category: :incident_management do
   let_it_be_with_refind(:project) { create(:project) }
 
   # Project 1             Shift 1          Shift 2          Shift 3
