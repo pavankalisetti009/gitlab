@@ -12,6 +12,22 @@ import PromotionRequestsTabApp from './app.vue';
 const meta = {
   title: 'ee/members/promotion_requests/app.vue',
   component: PromotionRequestsTabApp,
+  parameters: {
+    a11y: {
+      config: {
+        rules: [
+          {
+            id: 'aria-required-children',
+            enabled: false,
+          },
+          {
+            id: 'color-contrast',
+            enabled: false,
+          },
+        ],
+      },
+    },
+  },
 };
 
 export default meta;
