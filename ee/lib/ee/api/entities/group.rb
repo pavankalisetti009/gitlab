@@ -73,25 +73,14 @@ module EE
               ::Feature.enabled?(:duo_access_through_namespaces, group) && group.root? &&
                 Ability.allowed?(options[:current_user], :admin_group, group)
             } do |group|
-            namespace_accessible_entity_rules(group)
+            namespace_feature_access_rules(group.ai_feature_rules.by_through_namespace)
           end
         end
 
         private
 
-        def namespace_accessible_entity_rules(group)
-          group.ai_feature_rules.by_through_namespace
-            .map do |_, rules|
-              through_namespace = rules.first.through_namespace
-              {
-                through_namespace: {
-                  id: through_namespace.id,
-                  name: through_namespace.name,
-                  full_path: through_namespace.full_path
-                },
-                features: rules.map(&:accessible_entity)
-              }
-            end
+        def namespace_feature_access_rules(rules)
+          ::Ai::FeatureAccessRuleTransformer.transform(rules)
         end
       end
     end

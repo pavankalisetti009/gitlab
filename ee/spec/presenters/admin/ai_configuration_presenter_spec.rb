@@ -44,21 +44,50 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     let(:beta_self_hosted_models_enabled) { true }
     let(:active_duo_add_ons_exist?) { true }
     let(:namespace_access_rules) do
+      {
+        1 => [
+          instance_double(
+            ::Ai::FeatureAccessRule,
+            through_namespace: instance_double(
+              Namespace,
+              id: 1,
+              name: 'Group A',
+              full_path: 'group-a'
+            ),
+            accessible_entity: 'duo_classic'
+          )
+        ],
+        2 => [
+          instance_double(
+            ::Ai::FeatureAccessRule,
+            through_namespace: instance_double(
+              Namespace,
+              id: 2,
+              name: 'Group B',
+              full_path: 'group-b'
+            ),
+            accessible_entity: 'duo_agent_platform'
+          )
+        ]
+      }
+    end
+
+    let(:transformed_namespace_access_rules) do
       [
         {
           through_namespace: {
             id: 1,
             name: 'Group A',
-            path: 'group-a'
+            full_path: 'group-a'
           },
           features: ["duo_classic"]
         }, {
           through_namespace: {
             id: 2,
             name: 'Group B',
-            path: 'group-b'
+            full_path: 'group-b'
           },
-          features: %w[duo_agents duo_flow]
+          features: ["duo_agent_platform"]
         }
       ]
     end
@@ -116,7 +145,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         show_foundational_agents_availability: 'true',
         show_foundational_agents_per_agent_availability: 'false',
         show_duo_agent_platform_enablement_setting: 'true',
-        namespace_access_rules: Gitlab::Json.dump(namespace_access_rules)
+        namespace_access_rules: Gitlab::Json.dump(transformed_namespace_access_rules)
       )
     end
 
@@ -128,7 +157,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       it { expect(settings).to include(show_foundational_agents_per_agent_availability: 'true') }
     end
 
-    context 'with duo_access_through_namespaces enabled' do
+    context 'with duo_access_through_namespaces feature flag disabled' do
       before do
         stub_feature_flags(duo_access_through_namespaces: false)
       end

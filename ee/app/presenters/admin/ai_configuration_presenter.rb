@@ -71,7 +71,9 @@ module Admin
     private
 
     def namespace_access_rules
-      ::Ai::FeatureAccessRule.duo_root_namespace_access_rules
+      rules = ::Ai::FeatureAccessRule.duo_root_namespace_access_rules
+
+      ::Ai::FeatureAccessRuleTransformer.transform(rules)
     end
 
     def expose_duo_agent_platform_service_url?

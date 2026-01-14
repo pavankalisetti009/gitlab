@@ -846,30 +846,19 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         end
 
         it 'returns rules' do
-          expect(setting.duo_namespace_access_rules).to match_array([
-            {
-              through_namespace: {
-                id: namespace_a.id,
-                name: namespace_a.name,
-                full_path: namespace_a.full_path
-              },
-              features: %w[duo_agent_platform duo_classic]
-            },
-            {
-              through_namespace: {
-                id: namespace_b.id,
-                name: namespace_b.name,
-                full_path: namespace_b.full_path
-              },
-              features: %w[duo_agent_platform]
-            }
-          ])
+          result = setting.duo_namespace_access_rules
+
+          expect(result.keys).to contain_exactly(namespace_a.id, namespace_b.id)
+          expect(result[namespace_a.id].map(&:accessible_entity)).to contain_exactly(
+            'duo_classic', 'duo_agent_platform'
+          )
+          expect(result[namespace_b.id].map(&:accessible_entity)).to contain_exactly('duo_agent_platform')
         end
       end
 
       context 'when no rules exist' do
-        it 'returns empty array' do
-          expect(setting.duo_namespace_access_rules).to eq []
+        it 'is empty' do
+          expect(setting.duo_namespace_access_rules).to be_empty
         end
       end
     end

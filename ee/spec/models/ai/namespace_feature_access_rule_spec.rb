@@ -92,8 +92,9 @@ RSpec.describe ::Ai::NamespaceFeatureAccessRule, feature_category: :ai_abstracti
     it 'groups rules by through_namespace_id' do
       result = described_class.by_through_namespace
 
-      expect(result.keys).to contain_exactly(through_namespace.id, other_through_namespace.id
-      )
+      expect(result.keys).to contain_exactly(through_namespace.id, other_through_namespace.id)
+      expect(result[through_namespace.id].map(&:accessible_entity)).to contain_exactly('duo_classic')
+      expect(result[other_through_namespace.id].map(&:accessible_entity)).to contain_exactly('duo_agent_platform')
     end
   end
 end

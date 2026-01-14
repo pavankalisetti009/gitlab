@@ -860,35 +860,6 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     end
   end
 
-  context 'show_duo_namespace_access_rules' do
-    subject(:get_settings) { get api(path, admin, admin_mode: true) }
-
-    before do
-      stub_feature_flags(duo_access_through_namespaces: true)
-      stub_licensed_features(ai_features: true)
-    end
-
-    it 'returns true' do
-      get_settings
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(json_response['show_duo_namespace_access_rules']).to eq(true)
-    end
-
-    context 'when duo_access_through_namespaces feature flag is disabled' do
-      before do
-        stub_feature_flags(duo_access_through_namespaces: false)
-      end
-
-      it 'returns false' do
-        get_settings
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response['show_duo_namespace_access_rules']).to eq(false)
-      end
-    end
-  end
-
   context 'duo_namespace_access_rules' do
     let_it_be(:namespace_a) { create(:group) }
     let_it_be(:namespace_b) { create(:group) }
