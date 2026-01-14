@@ -12723,6 +12723,31 @@ Input type: `SecurityScanProfileAttachInput`
 | <a id="mutationsecurityscanprofileattachclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationsecurityscanprofileattacherrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 
+### `Mutation.securityScanProfileDetach`
+
+{{< details >}}
+**Introduced** in GitLab 18.9.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `SecurityScanProfileDetachInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecurityscanprofiledetachclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecurityscanprofiledetachgroupids"></a>`groupIds` | [`[GroupID!]`](#groupid) | Group IDs to detach the profile from. |
+| <a id="mutationsecurityscanprofiledetachprojectids"></a>`projectIds` | [`[ProjectID!]`](#projectid) | Project IDs to detach the profile from. |
+| <a id="mutationsecurityscanprofiledetachsecurityscanprofileid"></a>`securityScanProfileId` | [`SecurityScanProfileID!`](#securityscanprofileid) | Security scan profile ID to detach. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecurityscanprofiledetachclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecurityscanprofiledetacherrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+
 ### `Mutation.securityTrainingUpdate`
 
 Input type: `SecurityTrainingUpdateInput`

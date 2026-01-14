@@ -219,6 +219,7 @@ module EE
         mount_mutation ::Mutations::Security::Categories::Update
         mount_mutation ::Mutations::Security::Categories::Destroy
         mount_mutation ::Mutations::Security::ScanProfiles::Attach, experiment: { milestone: '18.9' }
+        mount_mutation ::Mutations::Security::ScanProfiles::Detach, experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::Users::Abuse::NamespaceBans::Destroy
         mount_mutation ::Mutations::Users::MemberRoles::Assign, experiment: { milestone: '17.7' }
         mount_mutation ::Mutations::AuditEvents::ExternalAuditEventDestinations::Create
