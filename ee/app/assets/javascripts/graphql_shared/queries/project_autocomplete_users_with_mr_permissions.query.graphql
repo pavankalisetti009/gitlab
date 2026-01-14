@@ -6,14 +6,10 @@ query projectAutocompleteUsersSearchWithMRPermissionsEE(
   $search: String!
   $fullPath: ID!
   $mergeRequestId: MergeRequestID!
-  $hideServiceAccountsWithoutFlowTriggers: Boolean!
 ) {
   namespace: project(fullPath: $fullPath) {
     id
-    users: autocompleteUsers(
-      search: $search
-      hideServiceAccountsWithoutFlowTriggers: $hideServiceAccountsWithoutFlowTriggers
-    ) {
+    users: autocompleteUsers(search: $search) {
       ...User
       ...UserAvailability
       ...UserDisabledForDuoUsage
