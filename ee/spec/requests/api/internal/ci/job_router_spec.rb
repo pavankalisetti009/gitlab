@@ -24,7 +24,9 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
     allow(Gitlab::Kas).to receive_messages(enabled?: true, secret: jwt_secret)
   end
 
-  shared_examples 'authorization' do
+  describe 'GET /internal/ci/agents/runnerc/info' do
+    subject(:request) { get api('/internal/ci/agents/runnerc/info'), headers: headers.reverse_merge(kas_headers) }
+
     context 'when not authenticated' do
       let(:headers) { { Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => '' } }
 
@@ -34,9 +36,7 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
         expect(response).to have_gitlab_http_status(:unauthorized)
       end
     end
-  end
 
-  shared_examples 'agent authentication' do
     context 'when no Gitlab-Agent-Api-Request header is sent' do
       let(:headers) { {} }
 
@@ -56,13 +56,6 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
         expect(response).to have_gitlab_http_status(:unauthorized)
       end
     end
-  end
-
-  describe 'GET /internal/ci/agents/runnerc/info' do
-    subject(:request) { get api('/internal/ci/agents/runnerc/info'), headers: headers.reverse_merge(kas_headers) }
-
-    include_examples 'authorization'
-    include_examples 'agent authentication'
 
     context 'when a runner controller is found' do
       let!(:runner_controller_token) { create(:ci_runner_controller_token) }
@@ -74,9 +67,7 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
         request
 
         expect(response).to have_gitlab_http_status(:success)
-        expect(json_response).to match(
-          a_hash_including('agent_id' => runner_controller.id)
-        )
+        expect(json_response).to eq('agent_id' => runner_controller.id)
       end
     end
   end
