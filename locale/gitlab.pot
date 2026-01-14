@@ -50216,6 +50216,9 @@ msgstr ""
 msgid "Pipelines|Something went wrong while cleaning runners cache."
 msgstr ""
 
+msgid "Pipelines|Something went wrong while updating pipeline information"
+msgstr ""
+
 msgid "Pipelines|Start using inputs"
 msgstr ""
 
