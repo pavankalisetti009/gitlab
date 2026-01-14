@@ -9074,6 +9074,9 @@ msgstr ""
 msgid "Analyze your source code for vulnerabilities."
 msgstr ""
 
+msgid "Analyzer type"
+msgstr ""
+
 msgid "Analyzing file…"
 msgstr ""
 
@@ -59005,6 +59008,45 @@ msgid "ScanExecutionPolicy|on the Kubernetes agent pod"
 msgstr ""
 
 msgid "ScanExecutionPolicy|selected automatically"
+msgstr ""
+
+msgid "ScanProfiles|Apply profile"
+msgstr ""
+
+msgid "ScanProfiles|Block secrets such as keys and API tokens from being pushed to your repositories. Secret detection is triggered when commits are pushed to a repository. If any secrets are detected, the push is blocked."
+msgstr ""
+
+msgid "ScanProfiles|Configuration profiles are reusable settings templates for security tools. Create and manage profiles once, then apply them to multiple projects to ensure consistent security coverage."
+msgstr ""
+
+msgid "ScanProfiles|General Details"
+msgstr ""
+
+msgid "ScanProfiles|Git Push Events"
+msgstr ""
+
+msgid "ScanProfiles|Information about this configuration profile."
+msgstr ""
+
+msgid "ScanProfiles|Scan all Git push events and block pushes with detected secrets."
+msgstr ""
+
+msgid "ScanProfiles|Scan triggers"
+msgstr ""
+
+msgid "ScanProfiles|Secret push protection profile"
+msgstr ""
+
+msgid "ScanProfiles|View documentation"
+msgstr ""
+
+msgid "ScanProfiles|View profile settings and associated projects."
+msgstr ""
+
+msgid "ScanProfiles|What are configuration profiles?"
+msgstr ""
+
+msgid "ScanProfiles|When and how scans are run."
 msgstr ""
 
 msgid "ScanResultPolicy|%{count} licenses"
