@@ -464,23 +464,13 @@ export default {
         if (this.agentOrWorkflowDeletedError) {
           return this.agentOrWorkflowDeletedError;
         }
-        if (!this.chatConfiguration?.defaultProps?.defaultNamespaceSelected) {
-          return this.defaultNamespaceNotSelectedMessage;
-        }
       }
       return '';
     },
-    defaultNamespaceNotSelectedMessage() {
-      const preferencesUrl = this.chatConfiguration?.defaultProps?.preferencesPath;
-      return sprintf(
-        s__(
-          'DuoAgenticChat|To use GitLab Duo Agentic Chat, please select a default namespace in your %{linkStart}User Profile Preferences%{linkEnd}.',
-        ),
-        {
-          linkStart: `<a href="${preferencesUrl}" class="gl-link" target="_blank" rel="noopener noreferrer">`,
-          linkEnd: '</a>',
-        },
-        false,
+    showNoNamespaceEmptyState() {
+      return (
+        this.multithreadedView === DUO_CHAT_VIEWS.CHAT &&
+        !this.chatConfiguration?.defaultProps?.defaultNamespaceSelected
       );
     },
   },
@@ -558,6 +548,7 @@ export default {
     },
   },
   mounted() {
+    this.checkNamespaceAvailability();
     this.checkCreditsAvailability();
 
     // Only manage dimensions and resize when not isEmbedded
@@ -609,6 +600,33 @@ export default {
       } else {
         throw new Error(s__('DuoAgenticChat|Invalid chat state provided'));
       }
+    },
+    checkNamespaceAvailability() {
+      if (!this.chatConfiguration?.defaultProps?.defaultNamespaceSelected) {
+        const preferencesUrl = this.chatConfiguration?.defaultProps?.preferencesPath;
+        this.setChatState({
+          isEnabled: false,
+          reason: sprintf(
+            s__(
+              'DuoAgenticChat|To use Agentic Chat, select a default namespace in your %{preferencesLinkStart}user profile preferences%{preferencesLinkEnd}. Alternatively, turn off the  %{agenticModeStart}Agentic toggle%{agenticModeEnd} to return to Classic Chat.',
+            ),
+            {
+              preferencesLinkStart: `<a href="${preferencesUrl}" class="gl-link" target="_blank" rel="noopener noreferrer">`,
+              preferencesLinkEnd: '</a>',
+              agenticModeStart: '<strong>',
+              agenticModeEnd: '</strong>',
+            },
+            false,
+          ),
+        });
+      }
+    },
+    turnOffAgenticMode() {
+      setAgenticMode({
+        agenticMode: false,
+        saveCookie: true,
+        isEmbedded: this.isEmbedded,
+      });
     },
     checkCreditsAvailability() {
       if (!this.hasCredits) {
@@ -1175,10 +1193,46 @@ export default {
           </template>
         </gl-toggle>
       </template>
-      <template v-if="!hasCredits" #custom-empty-state>
+      <template v-if="showNoNamespaceEmptyState || !hasCredits" #custom-empty-state>
+        <!-- Priority 1: No namespace selected -->
         <div
+          v-if="showNoNamespaceEmptyState"
+          key="no-namespace-empty-state"
+          class="gl-flex gl-w-full gl-flex-col gl-items-start gl-gap-4 gl-py-8"
+          data-testid="no-namespace-empty-state"
+        >
+          <img :src="tanukiAiSvgUrl" class="gl-h-10 gl-w-10" />
+          <h2 class="gl-my-0 gl-text-size-h2">
+            {{ s__('DuoAgenticChat|GitLab Duo Agentic Chat is unavailable') }}
+          </h2>
+          <p class="gl-text-subtle">
+            {{
+              s__(
+                'DuoAgenticChat|To use Agentic Chat, select a default namespace in your user profile preferences. Alternatively, turn off the Agentic toggle to return to Classic Chat.',
+              )
+            }}
+          </p>
+          <div class="gl-flex gl-gap-3">
+            <gl-button
+              variant="confirm"
+              category="primary"
+              :href="chatConfiguration.defaultProps.preferencesPath"
+              target="_blank"
+              data-testid="go-to-preferences-button"
+            >
+              {{ s__('DuoAgenticChat|Select default namespace') }}
+            </gl-button>
+            <gl-button variant="default" category="primary" @click="turnOffAgenticMode">
+              {{ s__('DuoAgenticChat|Return to Classic Chat') }}
+            </gl-button>
+          </div>
+        </div>
+        <!-- Priority 2: No credits remaining -->
+        <div
+          v-else-if="!hasCredits"
           key="no-credits-empty-state"
           class="gl-flex gl-w-full gl-flex-col gl-items-start gl-gap-4 gl-py-8"
+          data-testid="no-credits-empty-state"
         >
           <img :src="tanukiAiSvgUrl" class="gl-h-10 gl-w-10" />
           <h2 class="gl-my-0 gl-text-size-h2">
