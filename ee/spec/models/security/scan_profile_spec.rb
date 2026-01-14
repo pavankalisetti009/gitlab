@@ -62,6 +62,22 @@ RSpec.describe Security::ScanProfile, feature_category: :security_asset_inventor
         expect(result).to be_empty
       end
     end
+
+    describe '.by_gitlab_recommended' do
+      let_it_be(:profile) { create(:security_scan_profile, namespace: root_level_group, scan_type: :secret_detection) }
+      let_it_be(:gitlab_recommended_profile) do
+        create(:security_scan_profile,
+          namespace: root_level_group,
+          scan_type: :secret_detection,
+          gitlab_recommended: true,
+          name: "gitlab_recommended_profile"
+        )
+      end
+
+      it 'returns gitlab recommended profiles' do
+        expect(described_class.by_gitlab_recommended).to match_array([gitlab_recommended_profile])
+      end
+    end
   end
 
   describe 'class methods' do

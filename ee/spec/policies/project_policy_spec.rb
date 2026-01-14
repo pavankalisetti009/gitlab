@@ -1180,6 +1180,42 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    describe 'apply_security_scan_profiles' do
+      let(:policy) { :apply_security_scan_profiles }
+
+      where(:role, :licensed, :allowed) do
+        :maintainer       | true  | true
+        :owner            | true  | true
+        :admin            | true  | true
+        :developer        | true  | false
+        :security_manager | true  | false
+        :reporter         | true  | false
+        :planner          | true  | false
+        :guest            | true  | false
+        :auditor          | true  | false
+        :maintainer       | false | false
+        :owner            | false | false
+        :admin            | false | false
+        :developer        | false | false
+        :security_manager | false | false
+        :reporter         | false | false
+        :planner          | false | false
+        :guest            | false | false
+        :auditor          | false | false
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        before do
+          stub_licensed_features(security_scan_profiles: licensed)
+          enable_admin_mode!(current_user) if role == :admin
+        end
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
+
     describe 'remove_project when default_project_deletion_protection is set to true' do
       before do
         stub_application_setting(default_project_deletion_protection: true)
@@ -2962,6 +2998,16 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :create_vulnerability_state_transition
           ]
         end
+
+        it_behaves_like 'custom roles abilities'
+
+        it_behaves_like 'does not call custom role query', [:maintainer, :owner]
+      end
+
+      context 'for a member role with the `apply_security_scan_profiles` ability' do
+        let(:member_role_abilities) { { apply_security_scan_profiles: true } }
+        let(:allowed_abilities) { [:apply_security_scan_profiles] }
+        let(:licensed_features) { { security_scan_profiles: true } }
 
         it_behaves_like 'custom roles abilities'
 

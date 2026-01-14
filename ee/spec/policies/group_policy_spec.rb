@@ -4465,6 +4465,16 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
           it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner, :security_manager]
         end
+
+        context 'for a member role with the `apply_security_scan_profiles` ability' do
+          let(:licensed_features) { { security_scan_profiles: true } }
+          let(:member_role_abilities) { { apply_security_scan_profiles: true } }
+          let(:allowed_abilities) { [:apply_security_scan_profiles] }
+
+          it_behaves_like 'custom roles abilities'
+
+          it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner]
+        end
       end
     end
   end
@@ -5281,7 +5291,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'security scan profiles' do
+  describe 'read_security_scan_profiles' do
     context 'when security scan profiles are available' do
       let(:policy) { :read_security_scan_profiles }
 
@@ -5311,6 +5321,42 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
         it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
       end
+    end
+  end
+
+  describe 'apply_security_scan_profiles' do
+    let(:policy) { :apply_security_scan_profiles }
+
+    where(:role, :licensed, :allowed) do
+      :maintainer       | true  | true
+      :owner            | true  | true
+      :admin            | true  | true
+      :developer        | true  | false
+      :security_manager | true  | false
+      :reporter         | true  | false
+      :planner          | true  | false
+      :guest            | true  | false
+      :auditor          | true  | false
+      :maintainer       | false | false
+      :owner            | false | false
+      :admin            | false | false
+      :developer        | false | false
+      :security_manager | false | false
+      :reporter         | false | false
+      :planner          | false | false
+      :guest            | false | false
+      :auditor          | false | false
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        stub_licensed_features(security_scan_profiles: licensed)
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
     end
   end
 

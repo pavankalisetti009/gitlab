@@ -22,8 +22,7 @@ RSpec.describe Security::DefaultScanProfilesHelper, feature_category: :security_
     subject(:profile) { described_class.build_secret_detection_scan_profile }
 
     it 'creates a secret detection scan profile' do
-      expect(profile).to be_a(Security::ScanProfile)
-      expect(profile.scan_type).to eq('secret_detection')
+      expect(profile).to be_a(Security::ScanProfile).and have_attributes(scan_type: 'secret_detection')
     end
 
     it 'sets the correct attributes' do
