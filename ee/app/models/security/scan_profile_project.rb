@@ -4,6 +4,8 @@ module Security
   class ScanProfileProject < ::SecApplicationRecord
     self.table_name = 'security_scan_profiles_projects'
 
+    MAX_PROFILES_PER_PROJECT = 10
+
     belongs_to :project, optional: false
     belongs_to :scan_profile, class_name: 'Security::ScanProfile', foreign_key: :security_scan_profile_id,
       inverse_of: :scan_profile_projects, optional: false

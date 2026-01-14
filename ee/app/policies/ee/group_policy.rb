@@ -442,6 +442,7 @@ module EE
         enable :create_ai_catalog_flow_item_consumer
         enable :create_ai_catalog_third_party_flow_item_consumer
         enable :enable_secret_push_protection
+        enable :apply_security_scan_profiles
       end
 
       rule { (admin | maintainer) & group_analytics_dashboards_available & ~has_parent }.policy do
@@ -760,8 +761,11 @@ module EE
 
       rule { custom_role_enables_read_security_scan_profiles }.enable(:read_security_scan_profiles)
 
+      rule { custom_role_enables_apply_security_scan_profiles }.enable(:apply_security_scan_profiles)
+
       rule { ~security_scan_profiles_available }.policy do
         prevent :read_security_scan_profiles
+        prevent :apply_security_scan_profiles
       end
 
       rule { ~security_inventory_available }.prevent :read_security_inventory
