@@ -87,7 +87,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
             name: 'Group B',
             full_path: 'group-b'
           },
-          features: ["duo_agent_platform"]
+          features: ['duo_agent_platform']
         }
       ]
     end
@@ -162,7 +162,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         stub_feature_flags(duo_access_through_namespaces: false)
       end
 
-      it { expect(settings).not_to have_key('namespace_access_rules') }
+      it { expect(settings).not_to have_key(:namespace_access_rules) }
     end
 
     context 'with foundational_agents_default_enabled false' do

@@ -73,7 +73,7 @@ module EE
               ::Feature.enabled?(:duo_access_through_namespaces, group) && group.root? &&
                 Ability.allowed?(options[:current_user], :admin_group, group)
             } do |group|
-            namespace_feature_access_rules(group.ai_feature_rules.by_through_namespace)
+            namespace_feature_access_rules(group.ai_feature_rules.group_by_through_namespace)
           end
         end
 

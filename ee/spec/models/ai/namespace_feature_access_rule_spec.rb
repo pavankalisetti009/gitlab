@@ -73,7 +73,65 @@ RSpec.describe ::Ai::NamespaceFeatureAccessRule, feature_category: :ai_abstracti
     end
   end
 
-  describe '.by_through_namespace' do
+  describe '.by_root_namespace_group_by_through_namespace' do
+    let_it_be(:root_namespace1) { create(:group) }
+    let_it_be(:root_namespace2) { create(:group) }
+    let_it_be(:subgroup1) { create(:group, parent: root_namespace1) }
+    let_it_be(:subgroup2) { create(:group, parent: root_namespace1) }
+    let_it_be(:subgroup3) { create(:group, parent: root_namespace2) }
+
+    before do
+      create(:ai_namespace_feature_access_rules,
+        :duo_classic,
+        through_namespace: subgroup1,
+        root_namespace: root_namespace1
+      )
+      create(:ai_namespace_feature_access_rules,
+        :duo_classic,
+        through_namespace: subgroup2,
+        root_namespace: root_namespace1
+      )
+      create(:ai_namespace_feature_access_rules,
+        :duo_agent_platform,
+        through_namespace: subgroup2,
+        root_namespace: root_namespace1
+      )
+      create(:ai_namespace_feature_access_rules,
+        :duo_agent_platform,
+        through_namespace: subgroup3,
+        root_namespace: root_namespace2
+      )
+    end
+
+    subject(:result) { described_class.by_root_namespace_group_by_through_namespace(root_namespace1) }
+
+    it 'filters groups by root namespace and groups by through_namespace_id' do
+      expect(result.keys).to contain_exactly(subgroup1.id, subgroup2.id)
+
+      expect(result[subgroup1.id]).to contain_exactly(
+        have_attributes(
+          accessible_entity: 'duo_classic',
+          through_namespace_id: subgroup1.id,
+          root_namespace_id: root_namespace1.id
+        )
+      )
+
+      expect(result[subgroup2.id]).to contain_exactly(
+        have_attributes(
+          accessible_entity: 'duo_classic',
+          through_namespace_id: subgroup2.id,
+          root_namespace_id: root_namespace1.id
+        ),
+        have_attributes(
+          accessible_entity: 'duo_agent_platform',
+          through_namespace_id: subgroup2.id,
+          root_namespace_id: root_namespace1.id
+        )
+      )
+    end
+  end
+
+  describe '.group_by_through_namespace' do
     let_it_be(:other_through_namespace) { create(:group, parent: root_namespace) }
 
     before do
@@ -90,7 +148,7 @@ RSpec.describe ::Ai::NamespaceFeatureAccessRule, feature_category: :ai_abstracti
     end
 
     it 'groups rules by through_namespace_id' do
-      result = described_class.by_through_namespace
+      result = described_class.group_by_through_namespace
 
       expect(result.keys).to contain_exactly(through_namespace.id, other_through_namespace.id)
       expect(result[through_namespace.id].map(&:accessible_entity)).to contain_exactly('duo_classic')

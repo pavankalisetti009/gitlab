@@ -30,6 +30,9 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
     )
   end
 
+  let(:subgroup1) { build_stubbed(:group, parent: group) }
+  let(:subgroup2) { build_stubbed(:group, parent: group) }
+
   let(:current_user) { build(:user) }
 
   before do
@@ -86,7 +89,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
   end
 
   describe 'group_ai_settings_helper_data' do
-    subject { helper.group_ai_settings_helper_data }
+    subject(:settings) { helper.group_ai_settings_helper_data }
 
     let(:add_on_purchase) { nil }
     let(:root_ancestor) { group }
@@ -98,10 +101,63 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
       }]
     end
 
+    let(:subgroup1) { build_stubbed(:group, parent: group) }
+    let(:subgroup2) { build_stubbed(:group, parent: group) }
+
+    let(:namespace_access_rules_mock) do
+      {
+        subgroup1.id => [
+          build_stubbed(
+            :ai_namespace_feature_access_rules,
+            through_namespace: subgroup1,
+            root_namespace: group,
+            accessible_entity: 'duo_classic'
+          ),
+          build_stubbed(
+            :ai_namespace_feature_access_rules,
+            through_namespace: subgroup1,
+            root_namespace: group,
+            accessible_entity: 'duo_agent_platform'
+          )
+        ],
+        subgroup2.id => [
+          build_stubbed(
+            :ai_namespace_feature_access_rules,
+            through_namespace: subgroup2,
+            root_namespace: group,
+            accessible_entity: 'duo_classic'
+          )
+        ]
+      }
+    end
+
+    let(:namespace_access_rules_result) do
+      [
+        {
+          through_namespace: {
+            id: subgroup1.id,
+            name: subgroup1.name,
+            full_path: subgroup1.full_path
+          },
+          features: %w[duo_classic duo_agent_platform]
+        }, {
+          through_namespace: {
+            id: subgroup2.id,
+            name: subgroup2.name,
+            full_path: subgroup2.full_path
+          },
+          features: %w[duo_classic]
+        }
+      ]
+    end
+
     before do
       allow(current_user).to receive(:can?).with(:admin_duo_workflow, group).and_return(true)
       stub_saas_features(gitlab_com_subscriptions: true)
       stub_const('::Ai::Catalog::FoundationalFlow::ITEMS', test_workflows)
+
+      allow(Ai::NamespaceFeatureAccessRule).to receive(:by_root_namespace_group_by_through_namespace)
+        .and_return namespace_access_rules_mock
     end
 
     it 'returns the expected data' do
@@ -147,9 +203,20 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
             description: 'Test Description',
             reference: 'test_flow/v1'
           }]),
-          selected_foundational_flow_references: '[]'
+          selected_foundational_flow_references: '[]',
+          namespace_access_rules: Gitlab::Json.dump(namespace_access_rules_result),
+          parent_path: group.full_path
         }
       )
+    end
+
+    context 'with duo_access_through_namespaces disabled' do
+      before do
+        stub_feature_flags(duo_access_through_namespaces: false)
+      end
+
+      it { expect(settings).not_to have_key(:parent_path) }
+      it { expect(settings).not_to have_key(:namespace_access_rules) }
     end
 
     context 'without an ai_settings record' do
