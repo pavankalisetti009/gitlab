@@ -121,6 +121,8 @@ exports[`DiscussionNote rendering renders with correct timeline structure 1`] = 
   <gl-modal-stub
     arialabel=""
     dismisslabel="Close"
+    footertag="div"
+    headertag="div"
     modalclass=""
     modalid="delete-note-modal"
     ok-title="Delete comment"
