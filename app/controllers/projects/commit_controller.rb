@@ -215,7 +215,7 @@ class Projects::CommitController < Projects::ApplicationController
     params.require(:note).permit(
       :type,
       :note,
-      position: [:old_path, :new_path, :old_line, :new_line]
+      position: [:old_path, :new_path, :old_line, :new_line, :position_type, :x, :y, :width, :height]
     ).tap do |create_params|
       enrich_note_params(create_params, params[:in_reply_to_discussion_id])
     end
@@ -228,6 +228,7 @@ class Projects::CommitController < Projects::ApplicationController
       create_params[:position][:old_line] = create_params[:position][:old_line]&.to_i.presence
       create_params[:position][:new_line] = create_params[:position][:new_line]&.to_i.presence
       create_params[:type] = 'DiffNote' if create_params[:type].blank?
+      create_params[:position][:position_type] = 'text' unless create_params[:position][:position_type].present?
       create_params[:position] = enrich_position_data(create_params[:position])
     end
 
@@ -242,8 +243,7 @@ class Projects::CommitController < Projects::ApplicationController
     position.reverse_merge!(
       'base_sha' => noteable.diff_refs.base_sha,
       'start_sha' => noteable.diff_refs.start_sha,
-      'head_sha' => noteable.diff_refs.head_sha,
-      'position_type' => 'text'
+      'head_sha' => noteable.diff_refs.head_sha
     )
 
     position
