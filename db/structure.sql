@@ -643,6 +643,22 @@ BEGIN
 END
 $$;
 
+CREATE FUNCTION heal_ci_runner_taggings_tag_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW.tag_id IS NULL AND NEW.tag_name IS NOT NULL THEN
+  INSERT INTO tags (name)
+  VALUES (NEW.tag_name)
+  ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+  RETURNING id INTO NEW.tag_id;
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION insert_catalog_resource_sync_event() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -50919,6 +50935,10 @@ CREATE TRIGGER chat_names_loose_fk_trigger AFTER DELETE ON chat_names REFERENCIN
 CREATE TRIGGER ci_pipeline_artifacts_loose_fk_trigger AFTER DELETE ON ci_pipeline_artifacts REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
 CREATE TRIGGER ci_runner_machines_loose_fk_trigger AFTER DELETE ON ci_runner_machines REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records_override_table('ci_runner_machines');
+
+CREATE TRIGGER ci_runner_taggings_heal_tag_id_trigger BEFORE INSERT ON ci_runner_taggings FOR EACH ROW EXECUTE FUNCTION heal_ci_runner_taggings_tag_id();
+
+ALTER TABLE ci_runner_taggings ENABLE ALWAYS TRIGGER ci_runner_taggings_heal_tag_id_trigger;
 
 CREATE TRIGGER ci_runners_loose_fk_trigger AFTER DELETE ON ci_runners REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records_override_table('ci_runners');
 
