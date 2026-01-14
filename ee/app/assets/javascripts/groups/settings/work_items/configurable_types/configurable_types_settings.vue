@@ -43,7 +43,7 @@ export default {
           )
         }}
         <help-page-link href="user/work_items/_index.md" target="_blank">
-          {{ s__('WorkItem|How do I use configure work item types?') }}
+          {{ s__('WorkItem|How do I use or configure work item types?') }}
         </help-page-link>
       </p>
     </template>
