@@ -4,7 +4,8 @@ import { __, s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ProjectAttributesUpdateDrawer from 'ee_component/security_configuration/security_attributes/components/project_attributes_update_drawer.vue';
 import BulkAttributesUpdateDrawer from 'ee_component/security_configuration/security_attributes/components/bulk_attributes_update_drawer.vue';
-import { MAX_SELECTED_COUNT } from '../constants';
+import { MAX_SELECTED_COUNT, ACTION_TYPE_BULK_EDIT_SCANNERS } from '../constants';
+import BulkScannersUpdateDrawer from './bulk_scanners_update_drawer.vue';
 import NameCell from './name_cell.vue';
 import VulnerabilityCell from './vulnerability_cell.vue';
 import ToolCoverageCell from './tool_coverage_cell.vue';
@@ -27,12 +28,13 @@ export default {
     CheckboxCell,
     ProjectAttributesUpdateDrawer,
     BulkAttributesUpdateDrawer,
+    BulkScannersUpdateDrawer,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [glFeatureFlagMixin()],
-  inject: ['canReadAttributes', 'canManageAttributes'],
+  inject: ['canReadAttributes', 'canManageAttributes', 'canApplyProfiles'],
   props: {
     items: {
       type: Array,
@@ -62,7 +64,10 @@ export default {
         : this.items;
     },
     shouldShowBulkEdit() {
-      return this.glFeatures.securityContextLabels && this.canManageAttributes;
+      return (
+        (this.glFeatures.securityContextLabels && this.canManageAttributes) ||
+        (this.glFeatures.securityScanProfilesFeature && this.canApplyProfiles)
+      );
     },
     isAnyItemSelected() {
       return this.items.some((item) => this.isSelected(item));
@@ -121,21 +126,30 @@ export default {
       }
       this.$emit('selectedCount', this.selectedItems.length);
     },
-    // eslint-disable-next-line vue/no-unused-properties
     clearSelection() {
       this.selectAll(false);
     },
-    // eslint-disable-next-line vue/no-unused-properties
-    bulkEdit() {
-      this.$nextTick(() => {
-        this.$refs.bulkAttributesDrawer.openDrawer();
-      });
+    bulkEdit(type) {
+      if (type === ACTION_TYPE_BULK_EDIT_SCANNERS) {
+        this.$nextTick(() => {
+          this.$refs.bulkScannersDrawer.openDrawer();
+        });
+      } else {
+        this.$nextTick(() => {
+          this.$refs.bulkAttributesDrawer.openDrawer();
+        });
+      }
     },
     openAttributesDrawer(item) {
       this.selectedProject = item;
       this.$nextTick(() => {
         this.$refs.attributesDrawer.openDrawer();
       });
+    },
+    openScannersDrawer(item) {
+      this.clearSelection();
+      this.selectedItems = [item];
+      this.bulkEdit(ACTION_TYPE_BULK_EDIT_SCANNERS);
     },
     refreshDashboard() {
       this.$emit('refetch');
@@ -215,7 +229,12 @@ export default {
         <gl-skeleton-loader v-if="isLoading" :width="32" :height="18">
           <rect x="0" y="3" width="12" height="12" rx="2" />
         </gl-skeleton-loader>
-        <action-cell v-else :item="item" @openAttributesDrawer="openAttributesDrawer" />
+        <action-cell
+          v-else
+          :item="item"
+          @openAttributesDrawer="openAttributesDrawer"
+          @openScannersDrawer="openScannersDrawer"
+        />
       </template>
     </gl-table-lite>
 
@@ -229,6 +248,11 @@ export default {
     <bulk-attributes-update-drawer
       v-if="selectedItems.length"
       ref="bulkAttributesDrawer"
+      :item-ids="selectedItems"
+      @refetch="refreshDashboard"
+    />
+    <bulk-scanners-update-drawer
+      ref="bulkScannersDrawer"
       :item-ids="selectedItems"
       @refetch="refreshDashboard"
     />
