@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import { fetchPolicies } from '~/lib/graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, n__, sprintf } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { createAlert } from '~/alert';
 import {
   getLocationHash,
@@ -21,6 +22,7 @@ import SubgroupSidebar from './sidebar/subgroup_sidebar.vue';
 import EmptyState from './empty_state.vue';
 import SecurityInventoryTable from './security_inventory_table.vue';
 import InventoryDashboardFilteredSearchBar from './inventory_dashboard_filtered_search_bar.vue';
+import BulkEditActionsDropdown from './bulk_edit_actions_dropdown.vue';
 
 const PAGE_SIZE = 20;
 
@@ -35,11 +37,20 @@ export default {
     EmptyState,
     SecurityInventoryTable,
     InventoryDashboardFilteredSearchBar,
+    BulkEditActionsDropdown,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['groupFullPath', 'groupId', 'newProjectPath', 'canReadAttributes'],
+  mixins: [glFeatureFlagMixin()],
+  inject: [
+    'groupFullPath',
+    'groupId',
+    'newProjectPath',
+    'canReadAttributes',
+    'canManageAttributes',
+    'canApplyProfiles',
+  ],
   i18n: {
     errorFetchingChildren: s__(
       'SecurityInventory|An error occurred while fetching subgroups and projects. Please try again.',
@@ -335,9 +346,9 @@ export default {
         url: urlWithHashPreserved,
       });
     },
-    bulkEdit() {
+    bulkEdit(type) {
       this.$nextTick(() => {
-        this.$refs.inventoryTable.bulkEdit();
+        this.$refs.inventoryTable.bulkEdit(type);
       });
     },
     handleSelectedCount(count) {
@@ -397,9 +408,17 @@ export default {
               variant="warning"
             />
           </span>
-          <gl-button @click="bulkEdit">{{
-            s__('SecurityAttributes|Edit security attributes')
-          }}</gl-button>
+          <bulk-edit-actions-dropdown
+            v-if="glFeatures.securityScanProfilesFeature && canApplyProfiles"
+            :selected-count="selectedCount"
+            @bulk-edit="bulkEdit"
+          />
+          <gl-button
+            v-else-if="canManageAttributes"
+            data-testid="edit-attributes-button"
+            @click="bulkEdit"
+            >{{ s__('SecurityAttributes|Edit security attributes') }}</gl-button
+          >
         </div>
         <recursive-breadcrumbs
           v-else

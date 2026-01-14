@@ -1,5 +1,5 @@
-import { shallowMount } from '@vue/test-utils';
-import { GlDisclosureDropdown } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import { isSubGroup } from 'ee/security_inventory/utils';
 import {
@@ -17,9 +17,13 @@ describe('ActionCell', () => {
 
   const createComponent = (
     props = {},
-    provide = { glFeatures: { securityContextLabels: false }, canManageAttributes: false },
+    provide = {
+      glFeatures: { securityContextLabels: false, securityScanProfilesFeature: false },
+      canManageAttributes: false,
+      canApplyProfiles: false,
+    },
   ) => {
-    wrapper = shallowMount(ActionCell, {
+    wrapper = shallowMountExtended(ActionCell, {
       propsData: {
         item: {},
         ...props,
@@ -29,6 +33,7 @@ describe('ActionCell', () => {
   };
 
   const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
 
   const securityConfigPath = (item) => `${item.webUrl}${PROJECT_SECURITY_CONFIGURATION_PATH}`;
 
@@ -51,23 +56,23 @@ describe('ActionCell', () => {
     });
 
     it('renders correct dropdown items', () => {
-      const items = findDropdown().props('items');
+      const items = findDropdownItems().wrappers;
       const expectedLength = showToolCoverage ? 3 : 2;
 
       expect(items).toHaveLength(expectedLength);
 
-      expect(items[0]).toMatchObject({
+      expect(items[0].props('item')).toMatchObject({
         text: viewText,
         href: item.webUrl,
       });
 
-      expect(items[1]).toMatchObject({
+      expect(items[1].props('item')).toMatchObject({
         text: 'View vulnerability report',
         href: vulnerabilityPath(item),
       });
 
       if (showToolCoverage) {
-        expect(items[2]).toMatchObject({
+        expect(items[2].props('item')).toMatchObject({
           text: 'Manage tool coverage',
           href: securityConfigPath(item),
         });
@@ -75,29 +80,114 @@ describe('ActionCell', () => {
     });
   });
 
-  describe('when securityContextLabels feature flag is true and user has permission', () => {
+  describe('with securityContextLabels feature flag enabled and canManageAttributes permission', () => {
     beforeEach(() => {
       createComponent(
         { item: mockProject },
-        { glFeatures: { securityContextLabels: true }, canManageAttributes: true },
+        {
+          glFeatures: { securityContextLabels: true },
+          canManageAttributes: true,
+          canApplyProfiles: false,
+        },
       );
     });
 
-    it('renders correct dropdown items including "Edit security attributes"', () => {
-      const items = findDropdown().props('items');
+    it('renders "Edit security attributes" action', () => {
+      const items = findDropdownItems().wrappers;
 
-      expect(items).toHaveLength(4);
-
-      expect(items[3]).toMatchObject({
+      expect(items[3].props('item')).toMatchObject({
         text: 'Edit security attributes',
       });
     });
 
-    it('emits "openAttributesDrawer" when "Edit security attributes" is clicked', () => {
-      const items = findDropdown().props('items');
-      items[3].action();
+    it('attributes action emits "openAttributesDrawer"', () => {
+      const items = findDropdownItems().wrappers;
+      items[3].props('item').action();
 
       expect(wrapper.emitted('openAttributesDrawer')).toEqual([[mockProject]]);
     });
+  });
+
+  describe('with securityScanProfilesFeature feature flag enabled and canApplyProfiles permission', () => {
+    beforeEach(() => {
+      createComponent(
+        { item: mockGroup },
+        {
+          glFeatures: { securityScanProfilesFeature: true },
+          canManageAttributes: true,
+          canApplyProfiles: true,
+        },
+      );
+    });
+
+    it('renders "Manage security scanners for subgroup projects" action', () => {
+      expect(findDropdownItems().at(0).props('item')).toMatchObject({
+        text: 'Manage security scanners for subgroup projects',
+      });
+    });
+
+    it('emits "openScannersDrawer" event when scanners action is clicked', () => {
+      findDropdownItems().at(0).props('item').action();
+
+      expect(wrapper.emitted('openScannersDrawer')).toEqual([[mockGroup]]);
+    });
+  });
+
+  describe('available actions', () => {
+    describe.each`
+      type         | item           | securityScanProfilesFeature | securityContextLabels | expectedItems
+      ${'project'} | ${mockProject} | ${true}                     | ${true}               | ${['View project', 'View vulnerability report', 'Manage tool coverage', 'Edit security attributes']}
+      ${'project'} | ${mockProject} | ${true}                     | ${false}              | ${['View project', 'View vulnerability report', 'Manage tool coverage']}
+      ${'group'}   | ${mockGroup}   | ${true}                     | ${true}               | ${['Manage security scanners for subgroup projects', 'View subgroup', 'View vulnerability report']}
+      ${'group'}   | ${mockGroup}   | ${false}                    | ${true}               | ${['View subgroup', 'View vulnerability report']}
+    `(
+      'feature flags: when securityScanProfilesFeature is $securityScanProfilesFeature and securityContextLabels $securityContextLabels',
+      ({ item, securityScanProfilesFeature, securityContextLabels, expectedItems }) => {
+        beforeEach(() => {
+          createComponent(
+            { item },
+            {
+              glFeatures: { securityScanProfilesFeature, securityContextLabels },
+              canApplyProfiles: true,
+              canManageAttributes: true,
+            },
+          );
+        });
+
+        it('renders correct actions', () => {
+          const items = findDropdownItems().wrappers.map((w) => w.props('item').text);
+
+          expect(items).toStrictEqual(expectedItems);
+        });
+      },
+    );
+
+    describe.each`
+      type         | item           | canApplyProfiles | canManageAttributes | expectedItems
+      ${'project'} | ${mockProject} | ${true}          | ${true}             | ${['View project', 'View vulnerability report', 'Manage tool coverage', 'Edit security attributes']}
+      ${'project'} | ${mockProject} | ${true}          | ${false}            | ${['View project', 'View vulnerability report', 'Manage tool coverage']}
+      ${'group'}   | ${mockGroup}   | ${true}          | ${true}             | ${['Manage security scanners for subgroup projects', 'View subgroup', 'View vulnerability report']}
+      ${'group'}   | ${mockGroup}   | ${false}         | ${true}             | ${['View subgroup', 'View vulnerability report']}
+    `(
+      'permissions: when canApplyProfiles is $canApplyProfiles and canManageAttributes is $canManageAttributes',
+      ({ item, canApplyProfiles, canManageAttributes, expectedItems }) => {
+        beforeEach(() => {
+          createComponent(
+            { item },
+            {
+              glFeatures: { securityScanProfilesFeature: true, securityContextLabels: true },
+              canApplyProfiles,
+              canManageAttributes,
+            },
+          );
+        });
+
+        it('renders correct actions', () => {
+          const items = findDropdownItems().wrappers.map((w) => w.props('item').text);
+
+          expect(items).toStrictEqual(expectedItems);
+        });
+      },
+    );
   });
 });

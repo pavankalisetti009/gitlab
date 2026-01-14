@@ -9458,6 +9458,9 @@ msgstr ""
 msgid "Apply a template"
 msgstr ""
 
+msgid "Apply default profile to all"
+msgstr ""
+
 msgid "Apply selected attributes to projects (keeps existing attributes)"
 msgstr ""
 
@@ -25245,6 +25248,9 @@ msgid "Disable What's new"
 msgstr ""
 
 msgid "Disable fetching cloud alerts if this GitLab instance is isolated from the public internet, or does not use observe.gitlab.com for Observability features."
+msgstr ""
+
+msgid "Disable for all"
 msgstr ""
 
 msgid "Disable inviting new members to group or project by group/project owners or project maintainers"
@@ -43044,6 +43050,9 @@ msgstr ""
 msgid "MissingSSHKeyWarningLink|You won't be able to pull or push repositories via SSH until you add an SSH key to your profile"
 msgstr ""
 
+msgid "Mixed"
+msgstr ""
+
 msgid "MlExperimentTracking|%d experiment"
 msgid_plural "MlExperimentTracking|%d experiments"
 msgstr[0] ""
@@ -44998,6 +45007,9 @@ msgid "No prioritized labels with such name or description"
 msgstr ""
 
 msgid "No prioritized labels yet!"
+msgstr ""
+
+msgid "No profile applied"
 msgstr ""
 
 msgid "No project found"
@@ -51384,6 +51396,9 @@ msgid "Preview Markdown"
 msgstr ""
 
 msgid "Preview changes"
+msgstr ""
+
+msgid "Preview default profile"
 msgstr ""
 
 msgid "Preview diagram"
@@ -60933,6 +60948,11 @@ msgstr ""
 msgid "SecurityInventory|Edit security attributes"
 msgstr ""
 
+msgid "SecurityInventory|Edit security scanners for %d item"
+msgid_plural "SecurityInventory|Edit security scanners for %d items"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "SecurityInventory|GitLab Advanced SAST"
 msgstr ""
 
@@ -60949,6 +60969,12 @@ msgid "SecurityInventory|Infrastructure as code scanning (IaC)"
 msgstr ""
 
 msgid "SecurityInventory|Load more"
+msgstr ""
+
+msgid "SecurityInventory|Manage security scanners"
+msgstr ""
+
+msgid "SecurityInventory|Manage security scanners for subgroup projects"
 msgstr ""
 
 msgid "SecurityInventory|Manage tool coverage"
@@ -60988,6 +61014,9 @@ msgid "SecurityInventory|Secret push protection (SD)"
 msgstr ""
 
 msgid "SecurityInventory|Security inventory"
+msgstr ""
+
+msgid "SecurityInventory|Select bulk action"
 msgstr ""
 
 msgid "SecurityInventory|Severity critical"
@@ -68733,6 +68762,9 @@ msgid "The selected image is too large."
 msgstr ""
 
 msgid "The selected project is not available"
+msgstr ""
+
+msgid "The selected projects use different configuration profiles. Choosing a new profile will replace their existing ones."
 msgstr ""
 
 msgid "The snippet can be accessed without any authentication."

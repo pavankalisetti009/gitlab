@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { shallowMount, mount } from '@vue/test-utils';
 import { GlTableLite, GlSkeletonLoader, GlFormCheckbox } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
@@ -8,6 +9,10 @@ import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cel
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import AttributesCell from 'ee/security_inventory/components/attributes_cell.vue';
 import CheckboxCell from 'ee/security_inventory/components/checkbox_cell.vue';
+import {
+  ACTION_TYPE_BULK_EDIT_SCANNERS,
+  ACTION_TYPE_BULK_EDIT_ATTRIBUTES,
+} from 'ee/security_inventory/constants';
 import { subgroupsAndProjects } from '../mock_data';
 
 const mockProject = subgroupsAndProjects.data.namespaceSecurityProjects.edges[0].node;
@@ -16,12 +21,18 @@ const items = [mockGroup, mockProject];
 
 describe('SecurityInventoryTable', () => {
   let wrapper;
+  let openDrawerSpy;
 
   const createComponentFactory = ({ mountFn = shallowMount } = {}) => {
     return ({
       props = {},
       stubs = {},
-      provide = { canManageAttributes: false, canReadAttributes: true },
+      provide = {
+        groupFullPath: 'path/to/group',
+        canManageAttributes: false,
+        canReadAttributes: true,
+        canApplyProfiles: false,
+      },
     } = {}) => {
       wrapper = mountFn(SecurityInventoryTable, {
         propsData: {
@@ -33,7 +44,7 @@ describe('SecurityInventoryTable', () => {
           ...stubs,
         },
         provide: {
-          glFeatures: { securityContextLabels: true },
+          glFeatures: { securityContextLabels: true, securityScanProfilesFeature: false },
           ...provide,
         },
         mocks: {
@@ -128,6 +139,7 @@ describe('SecurityInventoryTable', () => {
             glFeatures: { securityContextLabels: true },
             canReadAttributes: true,
             canManageAttributes: true,
+            canApplyProfiles: false,
             groupFullPath: 'path/to/group',
           },
         });
@@ -162,6 +174,7 @@ describe('SecurityInventoryTable', () => {
           glFeatures: { securityContextLabels: false },
           canManageAttributes: true,
           canReadAttributes: true,
+          canApplyProfiles: false,
         },
       });
     });
@@ -180,6 +193,7 @@ describe('SecurityInventoryTable', () => {
           glFeatures: { securityContextLabels: true },
           canManageAttributes: false,
           canReadAttributes: false,
+          canApplyProfiles: false,
         },
       });
     });
@@ -188,6 +202,41 @@ describe('SecurityInventoryTable', () => {
       expect(findTable().props('fields')).not.toContain(
         expect.objectContaining({ key: 'securityAttributes' }),
       );
+    });
+  });
+
+  describe('bulkEdit method with action types', () => {
+    beforeEach(() => {
+      createFullComponent({
+        stubs: { GlTableLite: false },
+        provide: {
+          glFeatures: { securityContextLabels: true, securityScanProfilesFeature: true },
+          canApplyProfiles: true,
+          canManageAttributes: true,
+          canReadAttributes: true,
+          groupFullPath: 'path/to/group',
+        },
+      });
+
+      findSelectAllCheckbox().vm.$emit('change', true);
+    });
+
+    it('opens attributes drawer when called with attributes action type', async () => {
+      openDrawerSpy = jest.spyOn(wrapper.vm.$refs.bulkAttributesDrawer, 'openDrawer');
+
+      wrapper.vm.bulkEdit(ACTION_TYPE_BULK_EDIT_ATTRIBUTES);
+      await nextTick();
+
+      expect(openDrawerSpy).toHaveBeenCalled();
+    });
+
+    it('opens scanners drawer when called with scanners action type', async () => {
+      openDrawerSpy = jest.spyOn(wrapper.vm.$refs.bulkScannersDrawer, 'openDrawer');
+
+      wrapper.vm.bulkEdit(ACTION_TYPE_BULK_EDIT_SCANNERS);
+      await nextTick();
+
+      expect(openDrawerSpy).toHaveBeenCalled();
     });
   });
 });

@@ -28,6 +28,7 @@ import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cel
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
 import InventoryDashboardFilteredSearchBar from 'ee/security_inventory/components/inventory_dashboard_filtered_search_bar.vue';
+import BulkEditActionsDropdown from 'ee/security_inventory/components/bulk_edit_actions_dropdown.vue';
 import { MAX_SELECTED_COUNT } from 'ee/security_inventory/constants';
 import {
   subgroupsAndProjects,
@@ -74,18 +75,19 @@ describe('InventoryDashboard', () => {
     groupFullPath: 'group/project',
     canManageAttributes: false,
     canReadAttributes: false,
+    canApplyProfiles: false,
     groupId: '33',
     newProjectPath: '/new',
   };
 
   const createComponentFactory =
     (mountFn = shallowMountExtended) =>
-    async ({ resolver = childrenResolver } = {}) => {
+    async ({ resolver = childrenResolver, provide = {} } = {}) => {
       requestHandler = resolver;
       apolloProvider = createMockApollo([[SubgroupsAndProjectsQuery, resolver]]);
       wrapper = mountFn(InventoryDashboard, {
         apolloProvider,
-        provide: defaultProvide,
+        provide: { ...defaultProvide, ...provide },
         stubs: {
           SubgroupSidebar: stubComponent(SubgroupSidebar),
           InventoryDashboardFilteredSearchBar: stubComponent(InventoryDashboardFilteredSearchBar),
@@ -116,6 +118,8 @@ describe('InventoryDashboard', () => {
   const loadMoreButton = () => wrapper.findByTestId('load-more-button');
   const findFilteredSearchBar = () => wrapper.findComponent(InventoryDashboardFilteredSearchBar);
   const findIcon = () => wrapper.findComponent(GlIcon);
+  const findBulkEditActionsDropdown = () => wrapper.findComponent(BulkEditActionsDropdown);
+  const findEditAttributesButton = () => wrapper.findByTestId('edit-attributes-button');
 
   /* eslint-disable no-underscore-dangle */
   const getIndexByType = (children, type) => {
@@ -551,6 +555,60 @@ describe('InventoryDashboard', () => {
       expect(getBinding(findIcon().element, 'gl-tooltip').value).toBe(
         `You can edit up to ${MAX_SELECTED_COUNT} items at once`,
       );
+    });
+  });
+
+  describe('bulk edit actions dropdown', () => {
+    describe('when securityScanProfilesFeature is enabled and user has canApplyProfiles permission', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: {
+            canApplyProfiles: true,
+            glFeatures: { securityScanProfilesFeature: true },
+          },
+        });
+        if (wrapper.vm.$refs.inventoryTable) {
+          wrapper.vm.$refs.inventoryTable.bulkEdit = jest.fn();
+        }
+        wrapper.findComponent(SecurityInventoryTable).vm.$emit('selectedCount', 10);
+        await nextTick();
+      });
+
+      it('renders BulkEditActionsDropdown instead of "Edit security attributes" button', () => {
+        expect(findBulkEditActionsDropdown().exists()).toBe(true);
+      });
+
+      it('passes bulk-edit event to inventory table with correct action type', async () => {
+        findBulkEditActionsDropdown().vm.$emit('bulk-edit', 'SCANNERS');
+        await nextTick();
+
+        expect(wrapper.vm.$refs.inventoryTable.bulkEdit).toHaveBeenCalledWith('SCANNERS');
+      });
+
+      it('does not render button', () => {
+        expect(findEditAttributesButton().exists()).toBe(false);
+      });
+    });
+
+    describe('when securityScanProfilesFeature is disabled', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: {
+            canManageAttributes: true,
+            glFeatures: { securityContextLabels: true },
+          },
+        });
+        wrapper.findComponent(SecurityInventoryTable).vm.$emit('selectedCount', 10);
+        await nextTick();
+      });
+
+      it('renders single "Edit security attributes" button when user has canManageAttributes', () => {
+        expect(findEditAttributesButton().exists()).toBe(true);
+      });
+
+      it('does not render BulkEditActionsDropdown', () => {
+        expect(findBulkEditActionsDropdown().exists()).toBe(false);
+      });
     });
   });
 });

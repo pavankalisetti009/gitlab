@@ -1,0 +1,13 @@
+# @feature_category: security_asset_inventories
+query AvailableSecurityScanProfiles($fullPath: ID!, $gitlabRecommended: Boolean) {
+  group(fullPath: $fullPath) {
+    id
+    availableSecurityScanProfiles(gitlabRecommended: $gitlabRecommended) {
+      id
+      name
+      description
+      scanType
+      gitlabRecommended
+    }
+  }
+}

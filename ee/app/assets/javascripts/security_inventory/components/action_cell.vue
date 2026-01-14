@@ -1,5 +1,5 @@
 <script>
-import { GlDisclosureDropdown } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlDropdownDivider } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { isSubGroup } from '../utils';
@@ -12,9 +12,11 @@ import {
 export default {
   components: {
     GlDisclosureDropdown,
+    GlDisclosureDropdownItem,
+    GlDropdownDivider,
   },
   mixins: [glFeatureFlagMixin()],
-  inject: ['canManageAttributes'],
+  inject: ['canManageAttributes', 'canApplyProfiles'],
   props: {
     item: {
       type: Object,
@@ -32,22 +34,38 @@ export default {
     toolCoveragePath(item) {
       return item?.webUrl ? `${item.webUrl}${PROJECT_SECURITY_CONFIGURATION_PATH}` : '#';
     },
-    getActionItems(item) {
+    firstSectionActions(item) {
+      const isGroup = isSubGroup(item);
+
+      const items = [];
+
+      if (this.glFeatures.securityScanProfilesFeature && this.canApplyProfiles) {
+        if (isGroup) {
+          items.push({
+            text: s__('SecurityInventory|Manage security scanners for subgroup projects'),
+            action: () => this.$emit('openScannersDrawer', item),
+          });
+        }
+      }
+
+      return items;
+    },
+    secondSectionActions(item) {
       const hasWebUrl = Boolean(item?.webUrl);
       const isGroup = isSubGroup(item);
 
-      const items = [
-        {
-          text: isGroup
-            ? s__('SecurityInventory|View subgroup')
-            : s__('SecurityInventory|View project'),
-          href: hasWebUrl ? item.webUrl : '#',
-        },
-        {
-          text: s__('SecurityInventory|View vulnerability report'),
-          href: this.vulnerabilityReportPath(item),
-        },
-      ];
+      const items = [];
+
+      items.push({
+        text: isGroup
+          ? s__('SecurityInventory|View subgroup')
+          : s__('SecurityInventory|View project'),
+        href: hasWebUrl ? item.webUrl : '#',
+      });
+      items.push({
+        text: s__('SecurityInventory|View vulnerability report'),
+        href: this.vulnerabilityReportPath(item),
+      });
 
       if (!isGroup) {
         items.push({
@@ -74,6 +92,17 @@ export default {
     size="small"
     icon="ellipsis_v"
     no-caret
-    :items="getActionItems(item)"
-  />
+  >
+    <gl-disclosure-dropdown-item
+      v-for="(action, index) in firstSectionActions(item)"
+      :key="`primary-action-${index}`"
+      :item="action"
+    />
+    <gl-dropdown-divider v-if="firstSectionActions(item).length" />
+    <gl-disclosure-dropdown-item
+      v-for="(action, index) in secondSectionActions(item)"
+      :key="`secondary-action-${index}`"
+      :item="action"
+    />
+  </gl-disclosure-dropdown>
 </template>

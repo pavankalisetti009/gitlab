@@ -18,6 +18,7 @@ export default () => {
     groupName,
     canManageAttributes,
     canReadAttributes,
+    canApplyProfiles,
     groupManageAttributesPath,
     newProjectPath,
   } = el.dataset;
@@ -31,6 +32,7 @@ export default () => {
       groupName,
       canManageAttributes: parseBoolean(canManageAttributes),
       canReadAttributes: parseBoolean(canReadAttributes),
+      canApplyProfiles: parseBoolean(canApplyProfiles),
       groupManageAttributesPath,
       newProjectPath,
     },
