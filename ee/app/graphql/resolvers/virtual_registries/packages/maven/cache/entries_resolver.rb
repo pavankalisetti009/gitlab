@@ -5,30 +5,10 @@ module Resolvers
     module Packages
       module Maven
         module Cache
-          class EntriesResolver < BaseResolver
+          class EntriesResolver < ::Resolvers::VirtualRegistries::Cache::EntriesResolver
             type ::Types::VirtualRegistries::Packages::Maven::Cache::EntryType.connection_type, null: true
 
-            alias_method :upstream, :object
-
-            argument :search, GraphQL::Types::String,
-              required: false,
-              default_value: nil,
-              description: 'Search cache entries by relative path.'
-
-            def resolve(**args)
-              return unless virtual_registry_available?
-
-              ::VirtualRegistries::Cache::EntriesFinder.new(
-                upstream: upstream,
-                params: args.slice(:search)
-              ).execute
-            end
-
             private
-
-            def authorized?(**_args)
-              Ability.allowed?(current_user, :read_virtual_registry, upstream)
-            end
 
             def virtual_registry_available?
               ::VirtualRegistries::Packages::Maven.virtual_registry_available?(
