@@ -143,7 +143,9 @@ module Security
             project_id: project.id,
             finding_uuid: finding.uuid,
             cve_enrichment_id: enrichment&.id,
-            cve: identifier.name
+            cve: identifier.name,
+            epss_score: enrichment&.epss_score,
+            is_known_exploit: enrichment&.is_known_exploit
           }
         end
       end

@@ -34,6 +34,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       it { is_expected.to have_many(:security_findings).class_name('Security::Finding') }
       it { is_expected.to have_many(:triggered_workflows).class_name('::Vulnerabilities::TriggeredWorkflow') }
       it { is_expected.to have_many(:detection_transitions).class_name('::Vulnerabilities::DetectionTransition') }
+      it { is_expected.to have_many(:security_finding_enrichments).class_name('Security::FindingEnrichment').with_primary_key('uuid').with_foreign_key('finding_uuid').inverse_of(:vulnerability_finding) }
     end
 
     describe 'validations' do

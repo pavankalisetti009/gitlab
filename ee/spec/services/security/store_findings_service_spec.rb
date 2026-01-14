@@ -100,8 +100,8 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
 
         let_it_be(:non_cve_identifier) { build(:ci_reports_security_identifier, external_type: 'cwe', name: 'CWE-79') }
         let_it_be(:cve_enrichment_1) { create(:pm_cve_enrichment, cve: 'CVE-2024-1234') }
-        let_it_be(:cve_enrichment_2) { create(:pm_cve_enrichment, cve: 'CVE-2024-5678') }
-        let_it_be(:cve_enrichment_3) { create(:pm_cve_enrichment, cve: 'CVE-2024-8910') }
+        let_it_be(:cve_enrichment_2) { create(:pm_cve_enrichment, cve: 'CVE-2024-5678', is_known_exploit: false) }
+        let_it_be(:cve_enrichment_3) { create(:pm_cve_enrichment, cve: 'CVE-2024-8910', epss_score: 0.9) }
 
         let_it_be(:security_finding_with_cve_1) do
           build(:ci_reports_security_finding, identifiers: [cve_identifier_1, non_cve_identifier])
@@ -142,8 +142,14 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
           finding_2 = Security::Finding.find_by(uuid: security_finding_with_cve_2.uuid)
 
           expect(finding_2.finding_enrichments.pluck(:cve)).to contain_exactly('CVE-2024-5678', 'CVE-2024-8910')
-          expect(finding_2.finding_enrichments.map(&:cve_enrichment)).to match_array(
-            [cve_enrichment_2, cve_enrichment_3]
+          expect(finding_2.finding_enrichments.pluck(:cve_enrichment_id)).to match_array(
+            [cve_enrichment_2.id, cve_enrichment_3.id]
+          )
+          expect(finding_2.finding_enrichments.pluck(:epss_score)).to match_array(
+            [cve_enrichment_2.epss_score, cve_enrichment_3.epss_score]
+          )
+          expect(finding_2.finding_enrichments.pluck(:is_known_exploit)).to match_array(
+            [cve_enrichment_2.is_known_exploit, cve_enrichment_3.is_known_exploit]
           )
         end
 
@@ -195,7 +201,9 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
             expect { store_findings }.to change(Security::FindingEnrichment, :count).by(1)
 
             finding_enrichment = Security::FindingEnrichment.last
-            expect(finding_enrichment.cve_enrichment).to be_nil
+            expect(finding_enrichment.cve_enrichment_id).to be_nil
+            expect(finding_enrichment.epss_score).to be_nil
+            expect(finding_enrichment.is_known_exploit).to be_nil
           end
         end
 
