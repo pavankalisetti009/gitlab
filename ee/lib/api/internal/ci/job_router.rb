@@ -29,6 +29,32 @@ module API
 
         namespace 'internal' do
           namespace 'ci' do
+            namespace 'agents' do
+              namespace 'runnerc' do
+                helpers ::EE::API::Helpers::RunnerControllerHelpers
+
+                before do
+                  check_runner_controller_token!
+                end
+
+                desc 'Gets agent info for runnerc' do
+                  detail 'Retrieves agent info for runnerc (Runner Controllers) for the given token'
+                  success code: 200
+                  failure [
+                    { code: 401, message: '401 Unauthorized' }
+                  ]
+                  tags %w[job_router runner_controller]
+                end
+                route_setting :authentication, runner_controller_token_allowed: true
+                get '/info' do
+                  status 200
+                  {
+                    agent_id: runner_controller.id
+                  }
+                end
+              end
+            end
+
             namespace 'job_router' do
               namespace 'runner_controllers' do
                 helpers ::API::Ci::Helpers::Runner
