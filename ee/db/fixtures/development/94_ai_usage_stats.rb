@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require './spec/support/sidekiq_middleware'
+require 'active_support/testing/time_helpers'
 
 # Usage:
 #
@@ -14,6 +15,8 @@ require './spec/support/sidekiq_middleware'
 
 # rubocop:disable Rails/Output -- this is a seed script
 class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildren -- this is a seed script
+  extend ActiveSupport::Testing::TimeHelpers
+
   DEFAULT_EVENT_COUNT_SAMPLE = 15
   TIME_PERIOD_DAYS = 90
 
@@ -49,26 +52,28 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
       GitlabSubscriptions::AddOn.find_by(name: 'duo_pro')
     return unless add_on
 
-    add_on_purchase = GitlabSubscriptions::AddOnPurchase.find_or_create_by!(
-      namespace: namespace,
-      subscription_add_on_id: add_on.id
-    ) do |purchase|
-      purchase.organization = organization
-      purchase.quantity = project.users.count
-      purchase.started_at = Date.current
-      purchase.expires_on = 1.year.from_now.to_date
-      purchase.purchase_xid = "seed-#{SecureRandom.uuid}"
-    end
+    travel_to(TIME_PERIOD_DAYS.days.ago) do
+      add_on_purchase = GitlabSubscriptions::AddOnPurchase.find_or_create_by!(
+        namespace: namespace.root_ancestor,
+        subscription_add_on_id: add_on.id
+      ) do |purchase|
+        purchase.organization = organization
+        purchase.quantity = project.users.count
+        purchase.started_at = Date.current
+        purchase.expires_on = 1.year.from_now.to_date
+        purchase.purchase_xid = "seed-#{SecureRandom.uuid}"
+      end
 
-    # Create user add-on assignments for all project users
-    assigned_user_ids = add_on_purchase.assigned_users.pluck(:id)
-    users_to_assign = project.users.where.not(id: assigned_user_ids)
+      # Create user add-on assignments for all project users
+      assigned_user_ids = add_on_purchase.assigned_users.pluck(:id)
+      users_to_assign = project.users.where.not(id: assigned_user_ids)
 
-    users_to_assign.each do |user|
-      GitlabSubscriptions::UserAddOnAssignment.find_or_create_by!(
-        add_on_purchase: add_on_purchase,
-        user: user
-      )
+      users_to_assign.each do |user|
+        GitlabSubscriptions::UserAddOnAssignment.find_or_create_by!(
+          add_on_purchase: add_on_purchase,
+          user: user
+        )
+      end
     end
 
     puts "Created add-on assignments for #{project.users.count} users in '#{namespace.full_path}'"
