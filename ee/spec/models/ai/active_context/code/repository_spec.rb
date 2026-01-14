@@ -400,15 +400,9 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
     end
 
     describe 'when connection is deleted' do
-      it 'sets connection_id and enabled_namespace_id to nil but keeps the repository record' do
-        expect(repository.connection_id).to eq(connection.id)
-
-        connection.destroy!
-        repository.reload
-
-        expect(repository).to be_persisted
-        expect(repository.project_id).to eq(project.id)
-        expect(repository.connection_id).to be_nil
+      it_behaves_like 'cleanup by a loose foreign key' do
+        let!(:model) { create(:ai_active_context_code_repository) }
+        let!(:parent) { model.active_context_connection }
       end
     end
   end
