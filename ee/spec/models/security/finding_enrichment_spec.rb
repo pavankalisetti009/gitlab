@@ -21,6 +21,15 @@ RSpec.describe Security::FindingEnrichment, feature_category: :vulnerability_man
                       .required
     end
 
+    it 'belongs to vulnerability finding' do
+      is_expected.to belong_to(:vulnerability_finding)
+                      .class_name('Vulnerabilities::Finding')
+                      .with_primary_key('uuid')
+                      .with_foreign_key('finding_uuid')
+                      .inverse_of(:security_finding_enrichments)
+                      .optional
+    end
+
     it 'belongs to CVE enrichment' do
       is_expected.to belong_to(:cve_enrichment)
                       .class_name('PackageMetadata::CveEnrichment')
@@ -42,6 +51,107 @@ RSpec.describe Security::FindingEnrichment, feature_category: :vulnerability_man
       it { is_expected.not_to allow_value('cve-2024-1234').for(:cve) }
       it { is_expected.not_to allow_value('2024-1234').for(:cve) }
       it { is_expected.not_to allow_value('CVE-2024-1234567890123456').for(:cve) }
+    end
+  end
+
+  describe 'scopes' do
+    describe '.with_known_exploited' do
+      let_it_be(:enrichment_exploited) do
+        create(:security_finding_enrichment, project: project, security_finding: security_finding,
+          is_known_exploit: true)
+      end
+
+      let_it_be(:enrichment_not_exploited) do
+        create(:security_finding_enrichment, project: project,
+          is_known_exploit: false)
+      end
+
+      it 'returns enrichments with known exploits when true' do
+        expect(described_class.with_known_exploited(true)).to contain_exactly(enrichment_exploited)
+      end
+
+      it 'returns enrichments without known exploits when false' do
+        expect(described_class.with_known_exploited(false)).to contain_exactly(enrichment_not_exploited)
+      end
+    end
+
+    describe '.with_epss_score' do
+      let_it_be(:enrichment_high_score) do
+        create(:security_finding_enrichment, project: project, security_finding: security_finding,
+          epss_score: 0.9)
+      end
+
+      let_it_be(:enrichment_medium_score) do
+        create(:security_finding_enrichment, project: project,
+          epss_score: 0.5)
+      end
+
+      let_it_be(:enrichment_low_score) do
+        create(:security_finding_enrichment, project: project,
+          epss_score: 0.1)
+      end
+
+      context 'with greater_than operator' do
+        it 'returns enrichments with EPSS score greater than threshold' do
+          expect(described_class.with_epss_score(:greater_than, 0.5))
+            .to contain_exactly(enrichment_high_score)
+        end
+      end
+
+      context 'with greater_than_or_equal_to operator' do
+        it 'returns enrichments with EPSS score greater than or equal to threshold' do
+          expect(described_class.with_epss_score(:greater_than_or_equal_to, 0.5))
+            .to contain_exactly(enrichment_high_score, enrichment_medium_score)
+        end
+      end
+
+      context 'with less_than operator' do
+        it 'returns enrichments with EPSS score less than threshold' do
+          expect(described_class.with_epss_score(:less_than, 0.5))
+            .to contain_exactly(enrichment_low_score)
+        end
+      end
+
+      context 'with less_than_or_equal_to operator' do
+        it 'returns enrichments with EPSS score less than or equal to threshold' do
+          expect(described_class.with_epss_score(:less_than_or_equal_to, 0.5))
+            .to contain_exactly(enrichment_medium_score, enrichment_low_score)
+        end
+      end
+
+      context 'with invalid operator' do
+        it 'raises an error' do
+          expect { described_class.with_epss_score(:invalid_operator, 0.5) }
+            .to raise_error(ArgumentError, 'Unsupported operator: invalid_operator')
+        end
+      end
+
+      context 'when operator is nil' do
+        it 'returns none' do
+          expect(described_class.with_epss_score(nil, 0.5)).to eq(described_class.none)
+        end
+      end
+
+      context 'when value is nil' do
+        it 'returns none' do
+          expect(described_class.with_epss_score(:greater_than, nil)).to eq(described_class.none)
+        end
+      end
+
+      context 'when chaining scopes' do
+        let_it_be(:enrichment_exploited_high_score) do
+          create(:security_finding_enrichment, project: project,
+            is_known_exploit: true, epss_score: 0.95)
+        end
+
+        it 'can be chained with other scopes' do
+          result = described_class
+            .with_known_exploited(true)
+            .with_epss_score(:greater_than, 0.9)
+
+          expect(result).to contain_exactly(enrichment_exploited_high_score)
+        end
+      end
     end
   end
 end

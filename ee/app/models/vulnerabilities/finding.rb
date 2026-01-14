@@ -125,6 +125,12 @@ module Vulnerabilities
       foreign_key: :uuid,
       inverse_of: :vulnerability_finding
 
+    has_many :security_finding_enrichments,
+      class_name: 'Security::FindingEnrichment',
+      inverse_of: :vulnerability_finding,
+      primary_key: 'uuid',
+      foreign_key: 'finding_uuid'
+
     belongs_to :project_tracked_context,
       class_name: 'Security::ProjectTrackedContext',
       foreign_key: 'security_project_tracked_context_id',
