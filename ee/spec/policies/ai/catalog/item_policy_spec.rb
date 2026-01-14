@@ -64,10 +64,12 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   end
 
   shared_examples 'no permissions' do
-    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:delete_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:read_ai_catalog_item) }
+    it 'disallows all permissions' do
+      is_expected.to be_disallowed(:admin_ai_catalog_item)
+      is_expected.to be_disallowed(:delete_ai_catalog_item)
+      is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item)
+      is_expected.to be_disallowed(:read_ai_catalog_item)
+    end
 
     it_behaves_like 'report_ai_catalog_item permission', allowed: false
 
@@ -75,10 +77,12 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   end
 
   shared_examples 'read-only permissions' do
-    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:delete_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
-    it { is_expected.to be_allowed(:read_ai_catalog_item) }
+    it 'disallows admin and delete permissions but allows read' do
+      is_expected.to be_disallowed(:admin_ai_catalog_item)
+      is_expected.to be_disallowed(:delete_ai_catalog_item)
+      is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item)
+      is_expected.to be_allowed(:read_ai_catalog_item)
+    end
 
     include_examples 'admin permissions when can admin organization'
 
@@ -89,10 +93,12 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   end
 
   shared_examples 'read-write permissions' do
-    it { is_expected.to be_allowed(:admin_ai_catalog_item) }
-    it { is_expected.to be_allowed(:delete_ai_catalog_item) }
-    it { is_expected.to be_allowed(:read_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
+    it 'allows admin and delete permissions but disallows force hard delete' do
+      is_expected.to be_allowed(:admin_ai_catalog_item)
+      is_expected.to be_allowed(:delete_ai_catalog_item)
+      is_expected.to be_allowed(:read_ai_catalog_item)
+      is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item)
+    end
 
     include_examples 'admin permissions when can admin organization'
 
@@ -106,19 +112,23 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     context 'when admin', :enable_admin_mode do
       let(:current_user) { admin }
 
-      it { is_expected.to be_allowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_allowed(:delete_ai_catalog_item) }
-      it { is_expected.to be_allowed(:read_ai_catalog_item) }
-      it { is_expected.to be_allowed(:force_hard_delete_ai_catalog_item) }
+      it 'allows all permissions' do
+        is_expected.to be_allowed(:admin_ai_catalog_item)
+        is_expected.to be_allowed(:delete_ai_catalog_item)
+        is_expected.to be_allowed(:read_ai_catalog_item)
+        is_expected.to be_allowed(:force_hard_delete_ai_catalog_item)
+      end
     end
 
     context 'when organization owner' do
       let(:current_user) { organization_owner }
 
-      it { is_expected.to be_allowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_allowed(:delete_ai_catalog_item) }
-      it { is_expected.to be_allowed(:read_ai_catalog_item) }
-      it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
+      it 'allows admin, delete, and read but disallows force hard delete' do
+        is_expected.to be_allowed(:admin_ai_catalog_item)
+        is_expected.to be_allowed(:delete_ai_catalog_item)
+        is_expected.to be_allowed(:read_ai_catalog_item)
+        is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item)
+      end
     end
   end
 
@@ -135,10 +145,12 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       item.deleted_at = 1.day.ago
     end
 
-    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:delete_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
-    it { is_expected.to be_allowed(:read_ai_catalog_item) }
+    it 'disallows admin and delete permissions but allows read' do
+      is_expected.to be_disallowed(:admin_ai_catalog_item)
+      is_expected.to be_disallowed(:delete_ai_catalog_item)
+      is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item)
+      is_expected.to be_allowed(:read_ai_catalog_item)
+    end
 
     include_examples 'admin permissions when can admin organization'
   end
@@ -146,9 +158,11 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   shared_examples 'no permissions when StageCheck :ai_catalog is false, unless item is public' do
     let(:ai_catalog_available) { false }
 
-    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:delete_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
+    it 'disallows admin, delete, and force hard delete permissions' do
+      is_expected.to be_disallowed(:admin_ai_catalog_item)
+      is_expected.to be_disallowed(:delete_ai_catalog_item)
+      is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item)
+    end
 
     it 'is expected not to allow read_ai_catalog_item, unless item is public' do
       allowed = item.public?
@@ -162,9 +176,11 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   shared_examples 'no permissions when project Duo features disabled, unless item is public' do
     let(:duo_features_enabled) { false }
 
-    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:delete_ai_catalog_item) }
-    it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
+    it 'disallows admin, delete, and force hard delete permissions' do
+      is_expected.to be_disallowed(:admin_ai_catalog_item)
+      is_expected.to be_disallowed(:delete_ai_catalog_item)
+      is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item)
+    end
 
     it 'is expected not to allow read_ai_catalog_item, unless item is public' do
       allowed = item.public?
