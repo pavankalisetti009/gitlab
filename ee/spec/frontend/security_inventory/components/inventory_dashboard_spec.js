@@ -47,6 +47,9 @@ jest.mock('~/lib/utils/url_utility', () => ({
   setUrlParams: jest.fn().mockReturnValue(''),
   updateHistory: jest.fn(),
 }));
+jest.mock('~/helpers/help_page_helper', () => ({
+  helpPagePath: jest.fn(),
+}));
 jest.mock('ee/security_inventory/components/recursive_breadcrumbs.vue', () => ({
   name: 'RecursiveBreadcrumbs',
   props: ['currentPath', 'groupFullPath'],

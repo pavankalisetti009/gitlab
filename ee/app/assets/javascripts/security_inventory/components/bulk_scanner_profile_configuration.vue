@@ -26,6 +26,7 @@ export default {
   },
   directives: { GlTooltip: GlTooltipDirective },
   inject: ['groupFullPath'],
+  emits: ['attach-profile', 'detach-profile', 'preview-profile'],
   data() {
     return {
       group: {
@@ -164,6 +165,7 @@ export default {
                 data-testid="apply-default-profile-button"
                 variant="confirm"
                 category="secondary"
+                @click="$emit('attach-profile', item)"
               >
                 {{ __('Apply default profile to all') }}
               </gl-button>
@@ -176,6 +178,7 @@ export default {
                 category="secondary"
                 icon="eye"
                 icon-only
+                @click="$emit('preview-profile', item)"
               />
             </gl-button-group>
             <gl-button
@@ -183,6 +186,7 @@ export default {
               data-testid="disable-for-all-button"
               variant="danger"
               category="secondary"
+              @click="$emit('detach-profile', item)"
             >
               {{ __('Disable for all') }}
             </gl-button>
