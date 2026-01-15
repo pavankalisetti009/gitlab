@@ -46,14 +46,22 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
       end
 
       context 'when namespace has a free plan' do
-        before do
+        it 'with expected parameters' do
+          stub_feature_flags(ultimate_trial_with_dap: false)
           allow_trial_creation(
             namespace,
             trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::FREE_TRIAL_TYPE)
           )
+
+          expect(execute).to be_success
         end
 
-        it 'with expected parameters' do
+        it 'has expected parameters for ultimate_trial_with_dap' do
+          allow_trial_creation(
+            namespace,
+            trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2)
+          )
+
           expect(execute).to be_success
         end
       end
@@ -61,14 +69,22 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
       context 'when namespace has a premium plan' do
         let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
 
-        before do
+        it 'with expected parameters' do
+          stub_feature_flags(ultimate_trial_with_dap: false)
           allow_trial_creation(
             namespace,
             trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE)
           )
+
+          expect(execute).to be_success
         end
 
-        it 'with expected parameters' do
+        it 'has expected parameters for ultimate_trial_with_dap' do
+          allow_trial_creation(
+            namespace,
+            trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE_V2)
+          )
+
           expect(execute).to be_success
         end
       end

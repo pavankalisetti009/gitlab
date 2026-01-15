@@ -3,9 +3,11 @@
 module GitlabSubscriptions
   module Trials
     FREE_TRIAL_TYPE = 'ultimate_with_gitlab_duo_enterprise'
+    FREE_TRIAL_TYPE_V2 = 'ultimate_with_dap'
     PREMIUM_TRIAL_TYPE = 'ultimate_on_premium_with_gitlab_duo_enterprise'
+    PREMIUM_TRIAL_TYPE_V2 = 'ultimate_on_premium_with_dap'
     DUO_ENTERPRISE_TRIAL_TYPE = 'gitlab_duo_enterprise'
-    TRIAL_TYPES = [FREE_TRIAL_TYPE, PREMIUM_TRIAL_TYPE].freeze
+    TRIAL_TYPES = [FREE_TRIAL_TYPE, FREE_TRIAL_TYPE_V2, PREMIUM_TRIAL_TYPE, PREMIUM_TRIAL_TYPE_V2].freeze
 
     TIME_FRAME_AFTER_EXPIRATION = 10.days
     private_constant :TIME_FRAME_AFTER_EXPIRATION
