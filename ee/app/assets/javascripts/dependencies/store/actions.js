@@ -147,10 +147,18 @@ const buildGraphQLPaginationVariables = ({ cursor, pageInfo = {}, pageSize = 20 
 };
 
 const buildGraphQLFilterOptions = (searchFilterParameters) => {
-  const { component_names: componentNamesFilters, component_versions: componentVersionsFilters } =
-    searchFilterParameters;
+  const {
+    component_activity: componentActivityFilters,
+    component_names: componentNamesFilters,
+    component_versions: componentVersionsFilters,
+  } = searchFilterParameters;
 
   const filterOptions = {};
+
+  const policyViolations = componentActivityFilters?.filter((v) => v !== 'ALL');
+  if (policyViolations?.length > 0) {
+    filterOptions.policyViolations = policyViolations;
+  }
 
   if (componentVersionsFilters?.length > 0) {
     filterOptions.componentVersions = componentVersionsFilters;
