@@ -3,9 +3,8 @@
 # Finder for retrieving authorized projects to use for search
 # This finder returns all projects that a user has authorization to because:
 # 1. They are direct members of the project
-# 2. They are direct members of a group that is invited to the project
-#
-# This finder does not take into account inherited project membership from a group
+# 2. They are a direct member of a group and the project gets shared with that group
+# 3. They are a direct member of a group and the project gets shared with a group in the descendent hierarchy
 module Search
   class ProjectsFinder
     include Gitlab::Utils::StrongMemoize
@@ -33,7 +32,11 @@ module Search
     attr_reader :user
 
     def group_membership_source_ids
-      user.group_members.active.select(:source_id)
+      if Feature.enabled?(:search_projects_finder_group_auth_fix, user)
+        user.authorized_groups(include_project_authorizations: false).select(:id)
+      else
+        user.group_members.active.select(:source_id)
+      end
     end
 
     def project_membership_source_ids

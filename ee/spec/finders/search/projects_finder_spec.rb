@@ -50,20 +50,52 @@ RSpec.describe Search::ProjectsFinder, feature_category: :global_search do
     end
 
     context 'when user has membership through a shared project group link' do
-      let_it_be(:shared_with_group) { create(:group, developers: user) }
-      let_it_be_with_reload(:project_group_link) do
-        create(:project_group_link, project: project, group: shared_with_group)
+      context 'when membership is through a direct group' do
+        let_it_be(:shared_with_group) { create(:group, developers: user) }
+        let_it_be_with_reload(:project_group_link) do
+          create(:project_group_link, project: project, group: shared_with_group)
+        end
+
+        it 'returns that project' do
+          expect(execute).to contain_exactly(project)
+        end
+
+        context 'and the project group link is expired' do
+          it 'returns nothing' do
+            project_group_link.update!(expires_at: 1.day.ago)
+
+            expect(execute).to be_empty
+          end
+        end
       end
 
-      it 'returns that project' do
-        expect(execute).to contain_exactly(project)
-      end
+      context 'when membership is through a descendant group' do
+        let_it_be(:parent_group) { create(:group, developers: user) }
+        let_it_be(:child_group) { create(:group, parent: parent_group) }
+        let_it_be_with_reload(:project_group_link) do
+          create(:project_group_link, project: project, group: child_group)
+        end
 
-      context 'and the project group link is expired' do
-        it 'returns nothing' do
-          project_group_link.update!(expires_at: 1.day.ago)
+        it 'returns that project' do
+          expect(execute).to contain_exactly(project)
+        end
 
-          expect(execute).to be_empty
+        context 'when search_projects_finder_group_auth_fix is false' do
+          before do
+            stub_feature_flags(search_projects_finder_group_auth_fix: false)
+          end
+
+          it 'returns nothing' do
+            expect(execute).to be_empty
+          end
+        end
+
+        context 'and the project group link is expired' do
+          it 'returns nothing' do
+            project_group_link.update!(expires_at: 1.day.ago)
+
+            expect(execute).to be_empty
+          end
         end
       end
     end

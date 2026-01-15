@@ -1,0 +1,10 @@
+---
+name: search_projects_finder_group_auth_fix
+description: fix group auth in project search
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/580918
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/217070
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/585696
+milestone: '18.9'
+group: group::global search
+type: gitlab_com_derisk
+default_enabled: false

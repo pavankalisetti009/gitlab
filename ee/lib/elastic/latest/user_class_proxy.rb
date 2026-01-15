@@ -107,7 +107,7 @@ module Elastic
         authorized_groups = ::Search::GroupsFinder.new(user: user).execute
         group_authorized_ids = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids)).to_a
 
-        authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
+        authorized_projects = ::Search::ProjectsFinder.new(user: user).execute.inc_routes
         project_authorized_traversal_ids = authorized_projects.map(&:elastic_namespace_ancestry)
 
         return query_hash if group_authorized_ids.empty? && project_authorized_traversal_ids.empty?
