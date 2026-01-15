@@ -29,6 +29,20 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionSer
 
         expect(deprovision_worker_spy).to have_received(:perform_async).with(user.id, secrets_manager.id)
       end
+
+      it 'creates a maintenance task', :aggregate_failures do
+        expect { result }.to change {
+          SecretsManagement::ProjectSecretsManagerMaintenanceTask.count
+        }.by(1)
+
+        task = SecretsManagement::ProjectSecretsManagerMaintenanceTask.last
+        expect(task.project_secrets_manager).to eq(secrets_manager)
+        expect(task.user).to eq(user)
+        expect(task.action).to eq('deprovision')
+        expect(task.retry_count).to eq(0)
+        expect(task.last_processed_at).to be_present
+        expect(task.last_processed_at).to be_within(1.second).of(Time.current)
+      end
     end
 
     context 'when secrets manager does not exist' do
@@ -36,6 +50,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionSer
         expect(result).to be_error
         expect(result.message).to eq('Secrets manager not found for the project.')
         expect(deprovision_worker_spy).not_to have_received(:perform_async)
+        expect(SecretsManagement::ProjectSecretsManagerMaintenanceTask.count).to be_zero
       end
     end
 
@@ -46,6 +61,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionSer
         expect(result).to be_error
         expect(result.message).to eq('Secrets manager is not active')
         expect(deprovision_worker_spy).not_to have_received(:perform_async)
+        expect(SecretsManagement::ProjectSecretsManagerMaintenanceTask.count).to be_zero
       end
     end
   end
