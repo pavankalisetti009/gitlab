@@ -194,7 +194,6 @@ create_container_registry_protection_immutable_tag_rule
 create_coverage_fuzzing_corpus
 create_custom_emoji
 create_design
-create_environment
 create_environment_terminal
 create_epic
 create_epic_tree_relation
@@ -498,7 +497,6 @@ read_duo_workflow
 read_duo_workflow_event
 read_emoji
 read_enterprise_ai_analytics
-read_environment
 read_ephemeral_token
 read_epic
 read_epic_board
@@ -734,7 +732,6 @@ set_warn_about_potentially_unwanted_characters
 set_work_item_metadata
 sign_in_with_saml_provider
 start_trial
-stop_environment
 summarize_comments
 take_ownership_pipeline_schedule
 transfer_projects
@@ -761,7 +758,6 @@ update_deploy_keys_project
 update_deploy_token
 update_design
 update_duo_workflow
-update_environment
 update_epic
 update_escalation_status
 update_feature_flag
