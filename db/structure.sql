@@ -27593,6 +27593,25 @@ CREATE SEQUENCE sbom_sources_id_seq
 
 ALTER SEQUENCE sbom_sources_id_seq OWNED BY sbom_sources.id;
 
+CREATE TABLE sbom_vulnerability_scan_results (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    project_id bigint NOT NULL,
+    result_file_store smallint DEFAULT 1,
+    result_file text,
+    CONSTRAINT check_3708c8e90d CHECK ((char_length(result_file) <= 255))
+);
+
+CREATE SEQUENCE sbom_vulnerability_scan_results_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE sbom_vulnerability_scan_results_id_seq OWNED BY sbom_vulnerability_scan_results.id;
+
 CREATE TABLE sbom_vulnerability_scans (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -27606,8 +27625,11 @@ CREATE TABLE sbom_vulnerability_scans (
     sbom_file_final_path text,
     result_file text,
     error_message text,
+    sbom_vulnerability_scan_result_id bigint,
+    sbom_digest text,
     CONSTRAINT check_0225eb20d7 CHECK ((char_length(error_message) <= 1024)),
     CONSTRAINT check_08ddfcbe95 CHECK ((char_length(sbom_file_final_path) <= 1024)),
+    CONSTRAINT check_222ac50b84 CHECK ((char_length(sbom_digest) <= 1024)),
     CONSTRAINT check_31a6970d96 CHECK ((char_length(result_file) <= 255)),
     CONSTRAINT check_6c95e56fd1 CHECK ((char_length(sbom_file) <= 255))
 );
@@ -34197,6 +34219,8 @@ ALTER TABLE ONLY sbom_source_packages ALTER COLUMN id SET DEFAULT nextval('sbom_
 
 ALTER TABLE ONLY sbom_sources ALTER COLUMN id SET DEFAULT nextval('sbom_sources_id_seq'::regclass);
 
+ALTER TABLE ONLY sbom_vulnerability_scan_results ALTER COLUMN id SET DEFAULT nextval('sbom_vulnerability_scan_results_id_seq'::regclass);
+
 ALTER TABLE ONLY sbom_vulnerability_scans ALTER COLUMN id SET DEFAULT nextval('sbom_vulnerability_scans_id_seq'::regclass);
 
 ALTER TABLE ONLY scan_execution_policy_rules ALTER COLUMN id SET DEFAULT nextval('scan_execution_policy_rules_id_seq'::regclass);
@@ -38077,6 +38101,9 @@ ALTER TABLE ONLY sbom_source_packages
 
 ALTER TABLE ONLY sbom_sources
     ADD CONSTRAINT sbom_sources_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY sbom_vulnerability_scan_results
+    ADD CONSTRAINT sbom_vulnerability_scan_results_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY sbom_vulnerability_scans
     ADD CONSTRAINT sbom_vulnerability_scans_pkey PRIMARY KEY (id);
@@ -45729,7 +45756,9 @@ CREATE INDEX index_sbom_vulnerability_scans_on_build_id ON sbom_vulnerability_sc
 
 CREATE INDEX index_sbom_vulnerability_scans_on_created_at ON sbom_vulnerability_scans USING btree (created_at);
 
-CREATE INDEX index_sbom_vulnerability_scans_on_project_id ON sbom_vulnerability_scans USING btree (project_id);
+CREATE INDEX index_sbom_vulnerability_scans_on_project_id_and_sbom_digest ON sbom_vulnerability_scans USING btree (project_id, sbom_digest);
+
+CREATE INDEX index_sbom_vulnerability_scans_on_sbom_scan_result_id ON sbom_vulnerability_scans USING btree (sbom_vulnerability_scan_result_id);
 
 CREATE INDEX index_scan_execution_policy_rules_on_policy_mgmt_project_id ON scan_execution_policy_rules USING btree (security_policy_management_project_id);
 
@@ -52966,6 +52995,9 @@ ALTER TABLE ONLY pages_domain_acme_orders
 
 ALTER TABLE ONLY duo_workflows_workflows
     ADD CONSTRAINT fk_7fcf81369f FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY sbom_vulnerability_scans
+    ADD CONSTRAINT fk_8036638675 FOREIGN KEY (sbom_vulnerability_scan_result_id) REFERENCES sbom_vulnerability_scan_results(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY group_import_states
     ADD CONSTRAINT fk_8053b3ebd6 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
