@@ -505,6 +505,18 @@ if Gitlab.ee? && Settings['ee_cron_jobs']
   Settings.cron_jobs.merge!(Settings.ee_cron_jobs)
 end
 
+#
+# Cron Background Operations
+#
+Settings.cron_jobs['bbo_users_delete_unconfirmed_secondary'] ||= {}
+Settings.cron_jobs['bbo_users_delete_unconfirmed_secondary']['cron'] ||= '0 * * * *'
+Settings.cron_jobs['bbo_users_delete_unconfirmed_secondary']['job_class'] = 'Database::BackgroundOperation::CronEnqueueWorker'
+Settings.cron_jobs['bbo_users_delete_unconfirmed_secondary']['args'] = {
+  'job_class_name' => 'UsersDeleteUnconfirmedSecondaryEmails',
+  'table_name' => 'emails',
+  'column_name' => 'id'
+}
+
 Settings.cron_jobs['adjourned_group_deletion_worker'] ||= {}
 Settings.cron_jobs['adjourned_group_deletion_worker']['cron'] ||= '0 2 * * *'
 Settings.cron_jobs['adjourned_group_deletion_worker']['job_class'] = 'AdjournedGroupDeletionWorker'
@@ -1022,7 +1034,7 @@ Gitlab.ee do
   Settings.cron_jobs['users_delete_unconfirmed_users_worker']['cron'] ||= '0 * * * *'
   Settings.cron_jobs['users_delete_unconfirmed_users_worker']['job_class'] = 'Users::UnconfirmedUsersDeletionCronWorker'
   Settings.cron_jobs['users_unconfirmed_secondary_emails_deletion_cron_worker'] ||= {}
-  Settings.cron_jobs['users_unconfirmed_secondary_emails_deletion_cron_worker']['cron'] ||= '0 * * * *'
+  Settings.cron_jobs['users_unconfirmed_secondary_emails_deletion_cron_worker']['cron'] ||= '10 * * * *'
   Settings.cron_jobs['users_unconfirmed_secondary_emails_deletion_cron_worker']['job_class'] = 'Users::UnconfirmedSecondaryEmailsDeletionCronWorker'
   Settings.cron_jobs['package_metadata_advisories_sync_worker'] ||= {}
   Settings.cron_jobs['package_metadata_advisories_sync_worker']['cron'] ||= "*/5 * * * *"
