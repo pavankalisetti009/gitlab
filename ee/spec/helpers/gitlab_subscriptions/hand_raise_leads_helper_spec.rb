@@ -23,22 +23,6 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
     end
   end
 
-  describe '#free_plan_billing_hand_raise_lead_data' do
-    it 'provides the expected dataset' do
-      result = {
-        glm_content: 'billing-group',
-        button_text: s_("BillingPlans|Talk to an expert"),
-        cta_tracking: { action: 'click_button' }.to_json,
-        button_attributes: {
-          category: 'secondary',
-          class: 'gl-align-text-bottom'
-        }.to_json
-      }
-
-      expect(helper.free_plan_billing_hand_raise_lead_data).to eq(result)
-    end
-  end
-
   describe '#code_suggestions_usage_app_hand_raise_lead_data' do
     it 'provides the expected dataset' do
       result = {

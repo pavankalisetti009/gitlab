@@ -10,8 +10,4 @@
 
     - trusted_by_logos.each do |logo|
       = image_tag(logo[:path], alt: logo[:name], title: logo[:name], class: logo[:no_invert] ? "" : logo_classes)
-  - image_alt = s_('InProductMarketing|Team members collaborating')
-  = image_tag 'marketing/free-trial-team-members.png', alt: image_alt, title: image_alt, width: 210, height: 90, class: 'gl-mb-3'
-  .gl-text-size-h1.gl-font-bold.gl-leading-24.gl-mb-5
-    = s_("BillingPlans|Have a question? We're here to help.")
-  .js-hand-raise-lead-trigger{ data: free_plan_billing_hand_raise_lead_data }
+  = render GitlabSubscriptions::ExpertContactComponent.new
