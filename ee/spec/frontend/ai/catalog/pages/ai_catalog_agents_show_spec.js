@@ -393,11 +393,32 @@ describe('AiCatalogAgentsShow', () => {
     });
 
     describe('when request succeeds', () => {
+      const mockVersionPropWithFn = {
+        ...mockVersionProp,
+        activeVersionKey: VERSION_PINNED,
+        setActiveVersionKey: jest.fn(),
+      };
+
+      beforeEach(() => {
+        createComponent({
+          props: {
+            version: mockVersionPropWithFn,
+          },
+        });
+      });
+
       it('shows toast', async () => {
         disableAgent();
         await waitForPromises();
 
         expect(mockToast.show).toHaveBeenCalledWith('Agent disabled in this project.');
+      });
+
+      it('clears the active version key to allow parent recomputation', async () => {
+        disableAgent();
+        await waitForPromises();
+
+        expect(mockVersionPropWithFn.setActiveVersionKey).toHaveBeenCalledWith(null);
       });
 
       it('refetches agent data', () => {

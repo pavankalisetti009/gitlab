@@ -247,6 +247,8 @@ export default {
           return;
         }
 
+        this.version.setActiveVersionKey(null); // let the parent re-compute this
+
         this.$toast.show(s__('AICatalog|Agent disabled in this project.'));
       } catch (error) {
         this.setErrors({
