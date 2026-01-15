@@ -196,7 +196,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
 
   describe 'access control' do
     describe 'with ref permissions for users enabled',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/437793' do
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24093' do
       before do
         stub_licensed_features(protected_refs_for_users: true)
       end
@@ -264,7 +264,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
   end
 
   context 'when the users for protected branches feature is on',
-    quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/437794' do
+    quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24094' do
     before do
       stub_licensed_features(protected_refs_for_users: true)
     end

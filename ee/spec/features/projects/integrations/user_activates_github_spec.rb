@@ -47,7 +47,8 @@ RSpec.describe 'User activates GitHub integration', feature_category: :integrati
       let(:pipeline) { create(:ci_pipeline) }
       let(:project) { create(:project, ci_pipelines: [pipeline]) }
 
-      it 'tests integration before save', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/416659' do
+      it 'tests integration before save',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24091' do
         stub_request(:post, "https://api.github.com/repos/h5bp/html5-boilerplate/statuses/#{pipeline.sha}").to_return(
           body: { context: {} }.to_json,
           headers: { 'Content-Type' => 'application/json' }

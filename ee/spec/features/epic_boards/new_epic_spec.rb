@@ -20,7 +20,8 @@ RSpec.describe 'create epic in board', :js, feature_category: :portfolio_managem
       visit_epic_boards_page
     end
 
-    it 'creates new epic and opens sidebar', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/394693' do
+    it 'creates new epic and opens sidebar',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24082' do
       page.within(first('.board')) do
         click_button 'Create new epic'
       end

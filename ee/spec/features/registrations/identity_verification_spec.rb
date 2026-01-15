@@ -367,7 +367,8 @@ RSpec.describe 'Identity Verification', :with_trial_types, :js, :with_current_or
       it_behaves_like 'registering a medium risk user with identity verification',
         flow: :invite, skip_email_validation: true
 
-      context 'when user is high risk', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/449531' do
+      context 'when user is high risk',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24096' do
         it_behaves_like 'registering a high risk user with identity verification',
           flow: :invite, skip_email_validation: true
       end

@@ -68,7 +68,7 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
   end
 
   describe Admin::GitalyServersController do
-    it "GET #index", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570207' do
+    it "GET #index", quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9375' do
       get admin_gitaly_servers_path
 
       expect(response).to have_gitlab_http_status(:ok)
@@ -84,7 +84,7 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
   end
 
   describe Admin::SystemInfoController do
-    it "GET #show", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570208' do
+    it "GET #show", quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9377' do
       get admin_system_info_path
 
       expect(response).to have_gitlab_http_status(:ok)

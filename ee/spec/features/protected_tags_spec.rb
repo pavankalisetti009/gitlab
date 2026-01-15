@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Protected Tags', :js, feature_category: :source_code_management,
-  quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/437960' do
+  quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24095' do
   include ProtectedTagHelpers
 
   let_it_be(:user) { create(:user) }

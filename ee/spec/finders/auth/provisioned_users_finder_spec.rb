@@ -27,7 +27,7 @@ RSpec.describe Auth::ProvisionedUsersFinder, feature_category: :system_access do
         let(:params) { { provisioning_group: nil } }
 
         it 'raises provisioning group error',
-          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/17084' do
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/17084' do
           expect { finder }.to raise_error ArgumentError, 'Provisioning group is required for ProvisionedUsersFinder'
         end
       end

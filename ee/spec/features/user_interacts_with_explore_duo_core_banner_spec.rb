@@ -55,7 +55,7 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
   end
 
   # Banner not showing for self-managed
-  context 'for self-managed', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/577871' do
+  context 'for self-managed', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24097' do
     before do
       stub_licensed_features(code_suggestions: true, ai_chat: true)
       ::Ai::Setting.instance.update!(duo_core_features_enabled: true)

@@ -495,7 +495,8 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
         0)['metrics']['count']['value']
     end
 
-    context 'when quarantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482804' do
+    context 'when quarantined shared example',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24062' do
       it_behaves_like 'value streams query'
     end
 
@@ -609,7 +610,8 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
         0)['metrics']['count']['value']
     end
 
-    context 'when qurantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482805' do
+    context 'when qurantined shared example',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24063' do
       it_behaves_like 'value streams query'
     end
 
