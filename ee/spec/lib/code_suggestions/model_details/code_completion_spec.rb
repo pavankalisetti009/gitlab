@@ -143,8 +143,8 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
 
       let(:expected_codestral_result) do
         {
-          model_provider: 'vertex-ai',
-          model_name: 'codestral-2501'
+          model_provider: 'gitlab',
+          model_name: 'codestral_2508_vertex'
         }
       end
 
@@ -195,6 +195,21 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
               expect(actual_result).to eq({
                 model_provider: 'gitlab',
                 model_name: 'claude_sonnet_3_5'
+              })
+            end
+          end
+
+          context 'and has chosen a remapped model' do
+            before do
+              create(:instance_model_selection_feature_setting,
+                feature: 'code_completions',
+                offered_model_ref: 'codestral_2501_vertex')
+            end
+
+            it 'returns the selected model' do
+              expect(actual_result).to eq({
+                model_provider: 'gitlab',
+                model_name: 'codestral_2508_vertex'
               })
             end
           end

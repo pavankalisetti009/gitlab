@@ -17,6 +17,10 @@ module CodeSuggestions
 
       private
 
+      def prompt_request_params
+        prompt.request_params
+      end
+
       def model_details
         @model_details ||= CodeSuggestions::ModelDetails::Base.new(
           current_user: current_user,

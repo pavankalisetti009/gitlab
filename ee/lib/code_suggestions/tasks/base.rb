@@ -16,11 +16,15 @@ module CodeSuggestions
       end
 
       def body
-        body_params = unsafe_passthrough_params.merge(prompt.request_params)
+        body_params = unsafe_passthrough_params.merge(prompt_request_params)
 
         trim_content_params(body_params)
 
         body_params.to_json
+      end
+
+      def prompt_request_params
+        raise NotImplementedError
       end
 
       def endpoint

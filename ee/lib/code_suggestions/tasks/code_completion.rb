@@ -6,7 +6,7 @@ module CodeSuggestions
       extend ::Gitlab::Utils::Override
       include Gitlab::Utils::StrongMemoize
 
-      delegate :saas_primary_model_class, to: :model_details
+      delegate :saas_primary_model_class, :remap_model, to: :model_details
 
       override :endpoint
       def endpoint
@@ -15,11 +15,18 @@ module CodeSuggestions
 
       private
 
+      override :prompt_request_params
+      def prompt_request_params
+        request_params = prompt.request_params
+        remap_model(request_params)
+      end
+
       override :endpoint_name
       def endpoint_name
         'completions'
       end
 
+      override :model_details
       def model_details
         @model_details ||= CodeSuggestions::ModelDetails::CodeCompletion.new(
           current_user: current_user,
