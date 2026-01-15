@@ -203,6 +203,13 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
               }
             end
 
+            it 'excludes dependencies from archived projects' do
+              subject
+
+              occurrence_ids = json_response['dependencies'].pluck('occurrence_id')
+              expect(occurrence_ids).not_to include(archived_occurrence.id)
+            end
+
             it 'returns the expected response' do
               subject
 
@@ -214,6 +221,39 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
               expect(response.headers).to include('X-Per-Page', 'X-Page', 'X-Next-Page', 'X-Prev-Page')
               expect(response.headers['X-Page-Type']).to eq('cursor')
+            end
+
+            it 'includes expected fields in each dependency' do
+              subject
+
+              dependency = json_response['dependencies'].first
+              expect(dependency.keys).to include(
+                'name',
+                'packager',
+                'version',
+                'licenses',
+                'occurrence_count',
+                'project_count',
+                'component_id',
+                'occurrence_id',
+                'vulnerability_count'
+              )
+            end
+
+            context 'with dependencies from subgroups' do
+              let_it_be(:subgroup) { create(:group, parent: group) }
+              let_it_be(:subgroup_project) { create(:project, group: subgroup) }
+              let_it_be(:subgroup_occurrence) do
+                create(:sbom_occurrence, :mit, :yarn, project: subgroup_project)
+              end
+
+              it 'includes dependencies from subgroup projects' do
+                subject
+
+                expect(response).to have_gitlab_http_status(:ok)
+                occurrence_ids = json_response['dependencies'].pluck('occurrence_id')
+                expect(occurrence_ids).to include(subgroup_occurrence.id)
+              end
             end
 
             context 'when filtering with component_id' do
