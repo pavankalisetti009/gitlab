@@ -25,10 +25,14 @@ module API
     helpers do
       include Gitlab::Utils::StrongMemoize
 
-      def completion_model_details
-        ::CodeSuggestions::ModelDetails::CodeCompletion.new(current_user: current_user)
+      def completion_model_details(project_path = nil)
+        root_namespace = project(project_path)&.root_namespace if project_path.present?
+
+        ::CodeSuggestions::ModelDetails::CodeCompletion.new(
+          current_user: current_user,
+          root_namespace: root_namespace
+        )
       end
-      strong_memoize_attr :completion_model_details
 
       def project(project_path)
         strong_memoize_with(:project, project_path) do
@@ -115,11 +119,13 @@ module API
 
       # Any Claude model (including failover provider) needs v3 of the code completion prompt
       # which isn't supported by direct access
-      def forbid_direct_access?
+      def forbid_direct_access?(project_path = nil)
         return true if Gitlab::CurrentSettings.disabled_direct_code_suggestions
         return true if Feature.enabled?(:incident_fail_over_completion_provider, current_user)
-        return true if completion_model_details.user_group_with_claude_code_completion.present?
-        return true if completion_model_details.any_user_groups_with_model_selected_for_completion?
+
+        model_details = completion_model_details(project_path)
+        return true if model_details.user_group_with_claude_code_completion.present?
+        return true if model_details.any_user_groups_with_model_selected_for_completion?
         return true if ::Ai::AmazonQ.connected?
 
         false
@@ -238,7 +244,9 @@ module API
             documentation: { example: 'namespace/project' }
         end
         post do
-          forbidden!('Direct connections are disabled') if forbid_direct_access?
+          project_path = declared_params[:project_path]
+
+          forbidden!('Direct connections are disabled') if forbid_direct_access?(project_path)
 
           check_rate_limit!(:code_suggestions_direct_access, scope: current_user) do
             Gitlab::InternalEvents.track_event('code_suggestions_direct_access_rate_limit_exceeded', user: current_user)
@@ -256,9 +264,11 @@ module API
             }, token.dig(:context, :response_code) || 503)
           end
 
-          unauthorized! if completion_model_details.feature_disabled?
+          model_details = completion_model_details(project_path)
 
-          if completion_model_details.duo_context_not_found?
+          unauthorized! if model_details.feature_disabled?
+
+          if model_details.duo_context_not_found?
             msg = _("I'm sorry, you have not selected a default GitLab Duo namespace. " \
               "Please go to GitLab and in user Preferences - Behavior, select a default namespace for GitLab Duo.")
 
@@ -269,19 +279,18 @@ module API
             }, 422)
           end
 
-          details_hash = completion_model_details.current_model
-          project_path = declared_params[:project_path]
+          details_hash = model_details.current_model
 
           access = {
-            base_url: completion_model_details.base_url,
+            base_url: model_details.base_url,
             # for development purposes we just return instance JWT, this should not be used in production
             # until we generate a short-term token for user
             # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/429
             token: token[:token],
             expires_at: token[:expires_at],
             headers: ai_gateway_public_headers(
-              completion_model_details.feature_name,
-              completion_model_details.unit_primitive_name,
+              model_details.feature_name,
+              model_details.unit_primitive_name,
               project_path
             )
           }.tap do |a|
