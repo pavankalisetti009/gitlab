@@ -134,6 +134,26 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           it { is_expected.to eq expected_response }
         end
       end
+
+      context 'when checking add-on purchases with mixed add-on types' do
+        let(:unit_primitive_add_ons) { %w[duo_pro] }
+
+        context 'when user is assigned to duo_pro' do
+          let(:expected_allowed) { true }
+          let(:expected_namespace_ids) { [active_gitlab_purchase.namespace_id].compact }
+          let(:expected_enablement_type) { 'duo_pro' }
+
+          before do
+            create(
+              :gitlab_subscription_user_add_on_assignment,
+              user: user,
+              add_on_purchase: active_gitlab_purchase
+            )
+          end
+
+          it { is_expected.to eq expected_response }
+        end
+      end
     end
 
     let(:ai_feature) { :my_feature }
@@ -681,16 +701,14 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         allow(dap_unit_primitive).to receive(:cut_off_date).and_return(Time.current - 1.month)
       end
 
-      # This hits line 266 branch for :self_hosted_duo_agent_platform
-      it 'executes DAP code path without user assignment check' do
+      it 'allows access to DAP without user assignment check' do
         result = user.allowed_to_use(ai_feature,
           unit_primitive_name: :self_hosted_duo_agent_platform,
           feature_setting: dap_feature_setting)
-        # Just verify it executes and returns a Response - don't assert the value
         expect(result).to be_a(described_class::Response)
+        expect(result.allowed?).to be(true)
       end
 
-      # This hits line 236 branch for DAP features (get_self_hosted_unit_primitive_name)
       it 'identifies duo_agent_platform as DAP feature' do
         result = user.allowed_to_use(ai_feature, feature_setting: dap_feature_setting)
         expect(result).to be_a(described_class::Response)
@@ -716,6 +734,37 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         it 'uses self_hosted_models for non-DAP features' do
           result = user.allowed_to_use(:code_generations, feature_setting: non_dap_feature_setting)
           expect(result).to be_a(described_class::Response)
+        end
+      end
+
+      context 'when user is not assigned to non-DAP add-on' do
+        let_it_be(:product_analytics_add_on) do
+          create(:gitlab_subscription_add_on, :product_analytics)
+        end
+
+        let_it_be(:product_analytics_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :self_managed,
+            add_on: product_analytics_add_on,
+            namespace: nil,
+            expires_on: 1.year.from_now)
+        end
+
+        let(:product_analytics_unit_primitive) do
+          build(:cloud_connector_unit_primitive,
+            name: :product_analytics_feature,
+            add_ons: %w[product_analytics])
+        end
+
+        before do
+          allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name)
+            .with(:product_analytics_feature)
+            .and_return(product_analytics_unit_primitive)
+          allow(product_analytics_unit_primitive).to receive(:cut_off_date).and_return(nil)
+        end
+
+        it 'denies access to non-DAP add-on without user assignment' do
+          result = user.allowed_to_use(:product_analytics_feature, unit_primitive_name: :product_analytics_feature)
+          expect(result.allowed?).to be(false)
         end
       end
     end
