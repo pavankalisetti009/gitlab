@@ -134,6 +134,10 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: root_group)
       end
 
+      let_it_be(:root_group_non_comp_id_sa) do
+        create(:user, :service_account, composite_identity_enforced: false, provisioned_by_group: root_group)
+      end
+
       let_it_be(:subgroup_sa) do
         create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: subgroup)
       end
@@ -152,7 +156,8 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
           omniauth_user,
           service_account_user,
           instance_wide_sa,
-          root_group_sa
+          root_group_sa,
+          root_group_non_comp_id_sa
         ].sort_by(&:id).reverse
       end
 
@@ -163,7 +168,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
       it 'excludes service accounts from subgroups and other groups' do
         result = finder.execute
 
-        expect(result).to include(instance_wide_sa, root_group_sa)
+        expect(result).to include(instance_wide_sa, root_group_sa, root_group_non_comp_id_sa)
         expect(result).not_to include(subgroup_sa, other_group_sa)
       end
 
@@ -172,13 +177,28 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
       end
 
       context 'when resource is a project' do
-        let_it_be(:resource) { create(:project, namespace: root_group, creator: current_user) }
+        context 'when project created in a group' do
+          let_it_be(:resource) { create(:project, namespace: root_group, creator: current_user) }
 
-        it 'filters service accounts based on project group hierarchy' do
-          result = finder.execute
+          it 'filters service accounts based on project group hierarchy' do
+            result = finder.execute
 
-          expect(result).to include(instance_wide_sa, root_group_sa)
-          expect(result).not_to include(subgroup_sa, other_group_sa)
+            expect(result).to include(instance_wide_sa, root_group_sa, root_group_non_comp_id_sa)
+            expect(result).not_to include(subgroup_sa, other_group_sa)
+          end
+        end
+
+        context 'when project created in a personal namespace' do
+          let_it_be(:resource) do
+            create(:project, creator: current_user, namespace: create(:namespace, owner: current_user))
+          end
+
+          it 'filters service accounts based on project group hierarchy' do
+            result = finder.execute
+
+            expect(result).to include(instance_wide_sa, root_group_non_comp_id_sa)
+            expect(result).not_to include(root_group_sa, subgroup_sa, other_group_sa)
+          end
         end
       end
 
@@ -196,6 +216,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
             service_account_user,
             instance_wide_sa,
             root_group_sa,
+            root_group_non_comp_id_sa,
             subgroup_sa
           ].sort_by(&:id).reverse
         end
@@ -203,7 +224,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         it 'excludes service accounts from other groups only' do
           result = finder.execute
 
-          expect(result).to include(instance_wide_sa, root_group_sa, subgroup_sa)
+          expect(result).to include(instance_wide_sa, root_group_sa, root_group_non_comp_id_sa, subgroup_sa)
           expect(result).not_to include(other_group_sa)
         end
 
@@ -221,7 +242,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         it 'does not filter service accounts' do
           result = finder.execute
 
-          expect(result).to include(subgroup_sa, other_group_sa)
+          expect(result).to include(subgroup_sa, other_group_sa, root_group_sa, root_group_non_comp_id_sa)
         end
       end
     end
