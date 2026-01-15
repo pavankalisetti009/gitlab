@@ -1,4 +1,4 @@
-import { GlDropdown, GlFormInput, GlPopover } from '@gitlab/ui';
+import { GlDropdown, GlFormInput } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
@@ -30,7 +30,6 @@ import {
   mockEpicMutationResponse,
   mockEpic2,
   emptyGroupEpicsResponse,
-  mockNoPermissionEpicResponse,
   mockEpicUpdatesSubscriptionResponse,
   noParentUpdatedResponse,
   currentEpicHasParentResponse,
@@ -53,17 +52,6 @@ describe('SidebarDropdownWidget', () => {
 
   const findDropdown = () => wrapper.findComponent(GlDropdown);
   const findSidebarDropdown = () => wrapper.findComponent(SidebarDropdown);
-  const findPopoverCta = () => wrapper.findByTestId('confirm-edit-cta');
-  const findPopoverCancel = () => wrapper.findByTestId('confirm-edit-cancel');
-
-  const waitForDropdown = async () => {
-    /** This sequence is important to wait for
-     * dropdown to render
-     */
-    await waitForPromises();
-    jest.runOnlyPendingTimers();
-    await waitForPromises();
-  };
 
   const createComponentWithApollo = async ({
     requestHandlers = [],
@@ -89,9 +77,6 @@ describe('SidebarDropdownWidget', () => {
         provide: {
           canUpdate: true,
           issuableAttributesQueries,
-          glFeatures: {
-            epicWidgetEditConfirmation: true,
-          },
         },
         apolloProvider: mockApollo,
         propsData: {
@@ -239,46 +224,6 @@ describe('SidebarDropdownWidget', () => {
             });
 
             expect(epicUpdatedSpy).toHaveBeenCalled();
-          });
-        });
-
-        describe("when user doesn't have permission", () => {
-          it('opens popover on edit click', async () => {
-            await createComponentWithApollo({
-              currentEpicSpy: jest.fn().mockResolvedValue(mockNoPermissionEpicResponse),
-            });
-
-            await clickEdit(wrapper);
-
-            expect(wrapper.findComponent(GlPopover).emitted('open')).toHaveLength(1);
-          });
-
-          it('renders dropdown when popover is confirmed', async () => {
-            await createComponentWithApollo({
-              currentEpicSpy: jest.fn().mockResolvedValue(mockNoPermissionEpicResponse),
-            });
-
-            await clickEdit(wrapper);
-
-            const button = findPopoverCta();
-            button.trigger('click');
-            await waitForDropdown();
-
-            expect(findDropdown().isVisible()).toBe(true);
-          });
-
-          it('does not render dropdown when popover is canceled', async () => {
-            await createComponentWithApollo({
-              currentEpicSpy: jest.fn().mockResolvedValue(mockNoPermissionEpicResponse),
-            });
-
-            await clickEdit(wrapper);
-
-            const button = findPopoverCancel();
-            button.trigger('click');
-            await waitForDropdown();
-
-            expect(findDropdown().exists()).toBe(false);
           });
         });
 
