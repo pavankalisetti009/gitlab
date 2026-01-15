@@ -127,7 +127,7 @@ module Mcp
 
         formatted_content = [{ type: 'text', text: lines.join("\n") }]
 
-        ::Mcp::Tools::Response.success(formatted_content, result.to_a)
+        ::Mcp::Tools::Response.success(formatted_content, filtered_results)
       end
 
       # Fallback to 0.1.0 behavior for any unimplemented versions
