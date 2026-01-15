@@ -1,7 +1,7 @@
 <script>
 import { GlModal, GlButton, GlSkeletonLoader, GlIcon, GlPopover } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
-import queryProfile from '~/security_configuration/graphql/scan_profiles/security_scan_profile.query.graphql';
+import queryProfile from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile.query.graphql';
 import CollapsibleSection from './collapsible_section.vue';
 import ScanTriggersDetail from './scan_triggers_detail.vue';
 
@@ -13,6 +13,7 @@ const i18n = {
   ),
   profileSubtitle: s__('ScanProfiles|View profile settings and associated projects.'),
   applyProfile: s__('ScanProfiles|Apply profile'),
+  currentlyActive: s__('ScanProfiles|Currently active'),
   generalDetails: s__('ScanProfiles|General Details'),
   generalDetailsInfo: s__('ScanProfiles|Information about this configuration profile.'),
   scanTriggers: s__('ScanProfiles|Scan triggers'),
@@ -44,6 +45,15 @@ export default {
       type: Boolean,
       required: true,
     },
+    profileId: {
+      type: String,
+      required: true,
+    },
+    isAttached: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   emits: ['close', 'apply'],
 
@@ -58,8 +68,11 @@ export default {
   apollo: {
     profile: {
       query: queryProfile,
+      skip() {
+        return !this.profileId;
+      },
       variables() {
-        return { id: 'gid://gitlab/Security::ScanProfile/secret_detection' };
+        return { id: this.profileId };
       },
       update(data) {
         return data?.securityScanProfile || null;
@@ -79,6 +92,15 @@ export default {
       return this.profile?.name;
     },
   },
+
+  watch: {
+    visible(isVisible) {
+      if (isVisible && this.profileId) {
+        this.$apollo.queries.profile.refetch();
+      }
+    },
+  },
+
   methods: {
     close() {
       this.$emit('close');
@@ -98,7 +120,7 @@ export default {
     :visible="visible"
     size="lg"
     modal-class="scanner-profile-modal"
-    @close="close"
+    @hidden="close"
   >
     <template #modal-title>
       <span>{{ $options.i18n.modalTitle }}</span>
@@ -126,9 +148,17 @@ export default {
               {{ $options.i18n.profileSubtitle }}
             </span>
           </div>
-          <gl-button variant="confirm" class="gl-self-center" @click="applyProfile">
+          <gl-button
+            v-if="!isAttached"
+            variant="confirm"
+            class="gl-self-center"
+            @click="applyProfile"
+          >
             {{ $options.i18n.applyProfile }}
           </gl-button>
+          <span v-else class="gl-font-weight-bold gl-self-center gl-text-green-600">
+            {{ $options.i18n.currentlyActive }}
+          </span>
         </div>
       </div>
       <collapsible-section

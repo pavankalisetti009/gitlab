@@ -1,0 +1,7 @@
+# @feature_category: security_asset_inventories
+mutation SecurityScanProfileDetach($input: SecurityScanProfileDetachInput!) {
+  securityScanProfileDetach(input: $input) {
+    clientMutationId
+    errors
+  }
+}

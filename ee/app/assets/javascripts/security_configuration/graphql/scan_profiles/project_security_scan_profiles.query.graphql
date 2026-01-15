@@ -1,0 +1,12 @@
+#import "./scan_profile.fragment.graphql"
+
+# @feature_category: security_asset_inventories
+query ProjectSecurityScanProfiles($fullPath: ID!) {
+  project(fullPath: $fullPath) {
+    id
+    name
+    securityScanProfiles {
+      ...ScanProfileFields
+    }
+  }
+}

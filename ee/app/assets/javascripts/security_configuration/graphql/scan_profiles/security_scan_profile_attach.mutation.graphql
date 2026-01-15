@@ -1,0 +1,7 @@
+# @feature_category: security_asset_inventories
+mutation SecurityScanProfileAttach($input: SecurityScanProfileAttachInput!) {
+  securityScanProfileAttach(input: $input) {
+    clientMutationId
+    errors
+  }
+}

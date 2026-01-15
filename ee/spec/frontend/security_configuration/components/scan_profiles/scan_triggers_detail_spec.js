@@ -2,7 +2,7 @@ import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import ScanTriggersDetail from '~/security_configuration/components/scan_profiles/scan_triggers_detail.vue';
+import ScanTriggersDetail from 'ee/security_configuration/components/scan_profiles/scan_triggers_detail.vue';
 
 jest.mock('~/helpers/help_page_helper', () => ({
   helpPagePath: jest.fn(),

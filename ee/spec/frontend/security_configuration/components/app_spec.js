@@ -12,12 +12,14 @@ import { SERVICE_PING_SECURITY_CONFIGURATION_THREAT_MANAGEMENT_VISIT } from '~/t
 import {
   TAB_VULNERABILITY_MANAGEMENT_INDEX,
   LICENSE_INFORMATION_SOURCE,
+  i18n,
 } from '~/security_configuration/constants';
 import { REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY } from '~/vue_shared/security_reports/constants';
 import FeatureCard from '~/security_configuration/components/feature_card.vue';
 import ContainerScanningForRegistryFeatureCard from 'ee_component/security_configuration/components/container_scanning_for_registry_feature_card.vue';
 import ProjectSecurityAttributesList from 'ee/security_configuration/security_attributes/components/project_attributes_list.vue';
 import LicenseInformationSourceFeatureCard from 'ee/security_configuration/components/license_information_source_feature_card.vue';
+import ScanProfileConfiguration from 'ee/security_configuration/components/scan_profiles/scan_profile_configuration.vue';
 import { stubComponent } from 'helpers/stub_component';
 import vulnerabilityArchivesQuery from 'ee/security_configuration/graphql/vulnerability_archives.query.graphql';
 import getProjectSecurityAttributesQuery from 'ee_component/security_configuration/graphql/project_security_attributes.query.graphql';
@@ -91,6 +93,7 @@ describe('~/security_configuration/components/app', () => {
     wrapper.findComponent(ContainerScanningForRegistryFeatureCard);
   const findLicenseInformationSource = () =>
     wrapper.findComponent(LicenseInformationSourceFeatureCard);
+  const findScanProfileConfiguration = () => wrapper.findComponent(ScanProfileConfiguration);
 
   describe('upgrade banner', () => {
     const makeAvailable = (available) => (feature) => ({ ...feature, available });
@@ -295,5 +298,63 @@ describe('~/security_configuration/components/app', () => {
         });
       },
     );
+  });
+
+  describe('scanner profiles section', () => {
+    describe('when securityScanProfilesFeature feature flag is enabled', () => {
+      beforeEach(async () => {
+        createComponent({
+          props: {
+            augmentedSecurityFeatures: securityFeaturesMock,
+            securityTrainingEnabled: true,
+          },
+          provide: {
+            glFeatures: {
+              securityScanProfilesFeature: true,
+            },
+          },
+        });
+        await nextTick();
+      });
+
+      it('renders scanner profile configuration component', () => {
+        expect(findScanProfileConfiguration().exists()).toBe(true);
+      });
+
+      it('displays scanner profiles section with correct heading', () => {
+        const section = wrapper.text();
+        expect(section).toContain(i18n.securityProfiles);
+      });
+
+      it('displays scanner profiles description', () => {
+        const section = wrapper.text();
+        expect(section).toContain(i18n.securityProfilesDesc);
+      });
+    });
+
+    describe('when securityScanProfilesFeature feature flag is disabled', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            augmentedSecurityFeatures: securityFeaturesMock,
+            securityTrainingEnabled: true,
+          },
+          provide: {
+            glFeatures: {
+              securityScanProfilesFeature: false,
+            },
+          },
+        });
+      });
+
+      it('does not render scanner profile configuration component', () => {
+        expect(findScanProfileConfiguration().exists()).toBe(false);
+      });
+
+      it('does not display scanner profiles section', () => {
+        const section = wrapper.text();
+        expect(section).not.toContain(i18n.securityProfiles);
+      });
+    });
   });
 });

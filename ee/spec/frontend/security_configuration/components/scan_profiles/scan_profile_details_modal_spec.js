@@ -5,10 +5,10 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
-import ScanProfileDetailsModal from '~/security_configuration/components/scan_profiles/scan_profile_details_modal.vue';
-import CollapsibleSection from '~/security_configuration/components/scan_profiles/collapsible_section.vue';
-import ScanTriggersDetail from '~/security_configuration/components/scan_profiles/scan_triggers_detail.vue';
-import queryProfile from '~/security_configuration/graphql/scan_profiles/security_scan_profile.query.graphql';
+import ScanProfileDetailsModal from 'ee/security_configuration/components/scan_profiles/scan_profile_details_modal.vue';
+import CollapsibleSection from 'ee/security_configuration/components/scan_profiles/collapsible_section.vue';
+import ScanTriggersDetail from 'ee/security_configuration/components/scan_profiles/scan_triggers_detail.vue';
+import queryProfile from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile.query.graphql';
 
 Vue.use(VueApollo);
 
@@ -21,12 +21,16 @@ describe('ScanProfileDetailsModal', () => {
     description: 'Default profile for secret detection',
     scanType: 'SECRET_DETECTION',
     gitlabRecommended: false,
+    __typename: 'ScanProfileType',
   };
 
   const createSuccessResolver = (profile = mockProfile) =>
     jest.fn().mockResolvedValue({
       data: {
-        securityScanProfile: profile,
+        securityScanProfile: {
+          ...profile,
+          __typename: 'ScanProfileType',
+        },
       },
     });
 
@@ -38,7 +42,11 @@ describe('ScanProfileDetailsModal', () => {
 
     wrapper = shallowMountExtended(ScanProfileDetailsModal, {
       apolloProvider,
-      propsData: { visible: true, ...props },
+      propsData: {
+        visible: true,
+        profileId: mockProfile.id,
+        ...props,
+      },
       stubs: { GlModal },
     });
 
@@ -166,7 +174,7 @@ describe('ScanProfileDetailsModal', () => {
     });
 
     it('emits close event when modal is closed', () => {
-      findModal().vm.$emit('close');
+      findModal().vm.$emit('hidden');
 
       expect(wrapper.emitted('close')).toHaveLength(1);
     });
@@ -182,7 +190,10 @@ describe('ScanProfileDetailsModal', () => {
   describe('apollo query', () => {
     it('calls resolver with correct variables', async () => {
       const resolver = createSuccessResolver();
-      createComponent({ resolver });
+      createComponent({
+        resolver,
+        props: { profileId: 'gid://gitlab/Security::ScanProfile/secret_detection' },
+      });
       await waitForPromises();
 
       expect(resolver).toHaveBeenCalledWith({
