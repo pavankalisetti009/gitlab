@@ -176,6 +176,11 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
         project.add_maintainer(user)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :read_protected_environment do
+        let(:boundary_object) { project }
+        let(:request) { get api(route, personal_access_token: pat) }
+      end
+
       it 'returns the protected environments' do
         request
 
@@ -199,6 +204,11 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
     context 'when authenticated as a maintainer' do
       before do
         project.add_maintainer(user)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_protected_environment do
+        let(:boundary_object) { project }
+        let(:request) { get api(route, personal_access_token: pat) }
       end
 
       it 'returns the protected environment' do
@@ -249,6 +259,14 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
     context 'when authenticated as a maintainer' do
       before do
         project.add_maintainer(user)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_protected_environment do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/protected_environments/", personal_access_token: pat),
+            params: { name: 'staging', deploy_access_levels: [{ access_level: Gitlab::Access::MAINTAINER }] }
+        end
       end
 
       context 'when required_approval_count is set' do
@@ -353,6 +371,14 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
         project.add_developer(deployer)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :update_protected_environment do
+        let(:boundary_object) { project }
+        let(:request) do
+          put api("/projects/#{project.id}/protected_environments/#{project_protected_environment.name}", personal_access_token: pat),
+            params: { deploy_access_levels: [{ access_level: Gitlab::Access::MAINTAINER }] }
+        end
+      end
+
       it_behaves_like 'requests to update deploy access levels' do
         let(:request_url) { api_url }
         let(:user_id) { deployer.id }
@@ -398,6 +424,11 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
         project.add_maintainer(user)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :delete_protected_environment do
+        let(:boundary_object) { project }
+        let(:request) { delete api(route, personal_access_token: pat) }
+      end
+
       it 'unprotects the environment' do
         expect do
           request
@@ -419,6 +450,11 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
     context 'when authenticated as a owner' do
       before do
         group.add_owner(user)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_protected_environment do
+        let(:boundary_object) { group }
+        let(:request) { get api(route, personal_access_token: pat) }
       end
 
       it 'returns the protected environments' do
@@ -444,6 +480,11 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
     context 'when authenticated as a owner' do
       before do
         group.add_owner(user)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_protected_environment do
+        let(:boundary_object) { group }
+        let(:request) { get api(route, personal_access_token: pat) }
       end
 
       it 'returns the protected environment' do
@@ -494,6 +535,14 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
     context 'when authenticated as a owner' do
       before do
         group.add_owner(user)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_protected_environment do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api("/groups/#{group.id}/protected_environments/", personal_access_token: pat),
+            params: { name: 'staging', deploy_access_levels: [{ access_level: Gitlab::Access::MAINTAINER }] }
+        end
       end
 
       context 'when required_approval_count is set' do
@@ -622,6 +671,14 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
         create(:group_group_link, shared_group: group, shared_with_group: shared_group)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :update_protected_environment do
+        let(:boundary_object) { group }
+        let(:request) do
+          put api("/groups/#{group.id}/protected_environments/#{group_protected_environment.name}", personal_access_token: pat),
+            params: { deploy_access_levels: [{ access_level: Gitlab::Access::MAINTAINER }] }
+        end
+      end
+
       it_behaves_like 'requests to update deploy access levels' do
         let(:request_url) { api_url }
         let(:user_id) { deployer.id }
@@ -709,6 +766,11 @@ RSpec.describe API::ProtectedEnvironments, feature_category: :continuous_deliver
     context 'when authenticated as a owner' do
       before do
         group.add_owner(user)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :delete_protected_environment do
+        let(:boundary_object) { group }
+        let(:request) { delete api(route, personal_access_token: pat) }
       end
 
       it 'unprotects the environment' do

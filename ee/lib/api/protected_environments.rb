@@ -111,6 +111,7 @@ module API
       params do
         use :pagination
       end
+      route_setting :authorization, permissions: :read_protected_environment, boundary_type: :project
       get ':id/protected_environments' do
         protected_environments = user_project.protected_environments.sorted_by_name
 
@@ -128,6 +129,7 @@ module API
       params do
         requires :name, type: String, desc: 'The name of the protected environment'
       end
+      route_setting :authorization, permissions: :read_protected_environment, boundary_type: :project
       get ':id/protected_environments/:name', requirements: ENVIRONMENT_ENDPOINT_REQUIREMENTS do
         present protected_environment, with: ::API::Entities::ProtectedEnvironment, project: user_project
       end
@@ -149,6 +151,7 @@ module API
         use :deploy_access_levels
         use :optional_approval_rules
       end
+      route_setting :authorization, permissions: :create_protected_environment, boundary_type: :project
       post ':id/protected_environments' do
         if has_deprecated_approval_rules_params?
           unprocessable_entity!(s_("ProtectedEnvironment|Parameter 'required_approval_count' is deprecated and shouldn't be used. See https://gitlab.com/groups/gitlab-org/-/epics/9662"))
@@ -187,6 +190,7 @@ module API
         use :optional_deploy_access_levels
         use :optional_approval_rules
       end
+      route_setting :authorization, permissions: :update_protected_environment, boundary_type: :project
       put ':id/protected_environments/:name', requirements: ENVIRONMENT_ENDPOINT_REQUIREMENTS do
         not_found! unless protected_environment
 
@@ -214,6 +218,7 @@ module API
       params do
         requires :name, type: String, desc: 'The name of the protected environment'
       end
+      route_setting :authorization, permissions: :delete_protected_environment, boundary_type: :project
       delete ':id/protected_environments/:name', requirements: ENVIRONMENT_ENDPOINT_REQUIREMENTS do
         destroy_conditionally!(protected_environment) do
           ::ProtectedEnvironments::DestroyService.new(container: user_project, current_user: current_user).execute(protected_environment)
@@ -247,6 +252,7 @@ module API
       params do
         use :pagination
       end
+      route_setting :authorization, permissions: :read_protected_environment, boundary_type: :group
       get ':id/protected_environments' do
         protected_environments = user_group.protected_environments.sorted_by_name
 
@@ -267,6 +273,7 @@ module API
           desc: 'The deployment tier of the protected environment. ' \
                 'One of `production`, `staging`, `testing`, `development`, or `other`'
       end
+      route_setting :authorization, permissions: :read_protected_environment, boundary_type: :group
       get ':id/protected_environments/:name' do
         present protected_environment, with: ::API::Entities::ProtectedEnvironment
       end
@@ -295,6 +302,7 @@ module API
         use :deploy_access_levels
         use :optional_approval_rules
       end
+      route_setting :authorization, permissions: :create_protected_environment, boundary_type: :group
       post ':id/protected_environments' do
         if has_deprecated_approval_rules_params?
           unprocessable_entity!(s_("ProtectedEnvironment|Parameter 'required_approval_count' is deprecated and shouldn't be used. See https://gitlab.com/groups/gitlab-org/-/epics/9662"))
@@ -340,6 +348,7 @@ module API
         use :optional_deploy_access_levels
         use :optional_approval_rules
       end
+      route_setting :authorization, permissions: :update_protected_environment, boundary_type: :group
       put ':id/protected_environments/:name' do
         not_found! unless protected_environment
 
@@ -367,6 +376,7 @@ module API
       params do
         requires :name, type: String, desc: 'The tier name of the protected environment'
       end
+      route_setting :authorization, permissions: :delete_protected_environment, boundary_type: :group
       delete ':id/protected_environments/:name' do
         destroy_conditionally!(protected_environment) do
           ::ProtectedEnvironments::DestroyService.new(container: user_group, current_user: current_user).execute(protected_environment)
