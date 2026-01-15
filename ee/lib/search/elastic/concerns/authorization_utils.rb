@@ -33,7 +33,7 @@ module Search
           search_level = options.fetch(:search_level).to_sym
 
           authorized_projects = ::Gitlab::SafeRequestStore.fetch("user:#{user&.id}-projects_for_search") do
-            ::Search::ProjectsFinder.new(user: user).execute
+            ::Search::ProjectsFinder.new(user: user).execute.inc_routes
           end
 
           case search_level
@@ -183,7 +183,7 @@ module Search
         # @return [Array<Integer>] Uses trie node approach to return authorized traversal_ids
         def authorized_namespace_ids_for_project_group_ancestry(user)
           authorized_groups = ::Search::GroupsFinder.new(user: user).execute
-          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
+          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute.inc_routes
           authorized_project_namespaces = Namespace.id_in(authorized_projects.select(:namespace_id))
 
           # shortcut the filter if the user is authorized to see a namespace in the hierarchy already

@@ -685,11 +685,11 @@ module EE
 
     # Returns the groups a user has access to, either through a membership or a project authorization
     override :authorized_groups
-    def authorized_groups(with_minimal_access: true)
-      return super() unless with_minimal_access
+    def authorized_groups(with_minimal_access: true, include_project_authorizations: true)
+      return super unless with_minimal_access
 
       ::Group.unscoped do
-        ::Group.from_union([super(), available_minimal_access_groups])
+        ::Group.from_union([super, available_minimal_access_groups])
       end
     end
 
