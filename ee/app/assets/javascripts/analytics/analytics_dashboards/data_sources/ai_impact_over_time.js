@@ -7,7 +7,6 @@ import {
 import { calculateRate } from 'ee/analytics/dashboards/ai_impact/utils';
 import {
   DATE_RANGE_OPTION_LAST_30_DAYS,
-  DATE_RANGE_OPTION_LAST_180_DAYS,
   DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { AI_METRICS } from '~/analytics/shared/constants';
@@ -110,16 +109,16 @@ const fetchAiImpactQuery = async ({ metric, namespace, startDate, endDate }) => 
 
 export default async function fetch({
   namespace,
-  query: { metric, dateRange = DATE_RANGE_OPTION_LAST_180_DAYS },
+  query: { metric, dateRange = DATE_RANGE_OPTION_LAST_30_DAYS },
   queryOverrides: { dateRange: dateRangeOverride = null, ...overridesRest } = {},
   setVisualizationOverrides = () => {},
 }) {
   const dateRangeKey = dateRangeOverride || dateRange;
 
-  // Default to 180 days if an invalid date range is given
+  // Default to 30 days if an invalid date range is given
   const { startDate, endDate } = DATE_RANGE_OPTIONS[dateRangeKey]
     ? DATE_RANGE_OPTIONS[dateRangeKey]
-    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_180_DAYS];
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_30_DAYS];
 
   const { rate, tooltip } = await fetchAiImpactQuery({
     startDate,

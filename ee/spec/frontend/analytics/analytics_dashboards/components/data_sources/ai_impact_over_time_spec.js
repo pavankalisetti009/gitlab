@@ -9,7 +9,6 @@ import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client'
 import {
   DATE_RANGE_OPTION_LAST_7_DAYS,
   DATE_RANGE_OPTION_LAST_30_DAYS,
-  DATE_RANGE_OPTION_LAST_180_DAYS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { AI_IMPACT_OVER_TIME_METRICS } from 'ee/analytics/dashboards/ai_impact/constants';
 
@@ -153,16 +152,16 @@ describe('AI Impact Over Time Data Source', () => {
         });
       });
 
-      it('will default to DATE_RANGE_OPTION_LAST_180_DAYS when given an invalid dateRange', async () => {
+      it('will default to DATE_RANGE_OPTION_LAST_30_DAYS when given an invalid dateRange', async () => {
         res = await mockQuery(INVALID_DATE_RANGE);
 
         expectQueryWithVariables({
-          startDate: new Date('2020-01-08'),
+          startDate: new Date('2020-06-06'),
           endDate: new Date('2020-07-06'),
           fullPath: namespace,
         });
 
-        const defaultRes = await mockQuery(DATE_RANGE_OPTION_LAST_180_DAYS);
+        const defaultRes = await mockQuery(DATE_RANGE_OPTION_LAST_30_DAYS);
         expect(defaultRes).toEqual(res);
       });
     });

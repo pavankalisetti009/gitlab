@@ -5,7 +5,6 @@ data:
   type: ai_impact_over_time
   query:
     metric: duo_chat_usage_rate
-    dateRange: 30d
 options:
   unit: percent
   decimalPlaces: 1
