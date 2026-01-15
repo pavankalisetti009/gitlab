@@ -270,9 +270,11 @@ module Ai
         # all add-on purchases in all tenant namespaces, which is not ideal.
         purchases = GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_ons, nil)
 
+        self_hosted_dap_add_on = purchases.for_self_hosted_dap
+
         # For self-hosted DAP, all users get access without explicit assignment
         # For other add-ons, check if the user is explicitly assigned
-        purchases = purchases.assigned_to_user(self) unless unit_primitive == :self_hosted_duo_agent_platform
+        purchases = purchases.assigned_to_user(self) unless self_hosted_dap_add_on.any?
 
         return unless purchases.any?
 

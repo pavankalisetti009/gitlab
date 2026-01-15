@@ -67,6 +67,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(GitlabSubscriptions::AddOnPurchase).to(
       receive_message_chain(:for_active_add_ons, :assigned_to_user).and_return(purchases)
     )
+    allow(GitlabSubscriptions::AddOnPurchase).to(
+      receive_message_chain(:for_active_add_ons, :for_self_hosted_dap).and_return([])
+    )
     allow(purchases).to receive_messages(any?: true, uniq_namespace_ids: enabled_by_namespace_ids, last: mock_purchase)
 
     default_namespace_example_state
