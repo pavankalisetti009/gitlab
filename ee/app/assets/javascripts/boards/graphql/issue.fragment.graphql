@@ -1,4 +1,4 @@
-#import "~/graphql_shared/fragments/issue.fragment.graphql"
+#import "~/boards/graphql/issue_node.fragment.graphql"
 #import "ee/work_items/graphql/work_item_status.fragment.graphql"
 
 fragment Issue on Issue {
