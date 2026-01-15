@@ -1,0 +1,10 @@
+---
+name: new_security_dashboard_vulnerabilities_by_age
+description: Vulnerabilities by age chart for the new group security dashboard
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/work_items/17417
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/218896
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/586245
+milestone: '18.9'
+group: group::security insights
+type: beta
+default_enabled: false
