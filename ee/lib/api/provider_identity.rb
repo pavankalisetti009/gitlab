@@ -19,7 +19,7 @@ module API
             success ::API::Entities::IdentityDetail
             tags ['provider_identities']
           end
-
+          route_setting :authorization, permissions: :"read_#{provider_type}_identity", boundary_type: :group
           get "/identities" do
             group = find_group(params[:id])
 
@@ -39,6 +39,7 @@ module API
           params do
             requires :uid, type: String, desc: 'External UID of the user'
           end
+          route_setting :authorization, permissions: :"read_#{provider_type}_identity", boundary_type: :group
           get ':uid', format: false, requirements: { uid: API::NO_SLASH_URL_PART_REGEX } do
             group = find_group(params[:id])
             identity = find_provider_identity(provider_type, params[:uid], group)
@@ -57,7 +58,7 @@ module API
             requires :uid, type: String, desc: "Current external UID of the user"
             requires :extern_uid, type: String, desc: "Desired/new external UID of the user"
           end
-
+          route_setting :authorization, permissions: :"update_#{provider_type}_identity", boundary_type: :group
           patch ':uid', format: false, requirements: { uid: API::NO_SLASH_URL_PART_REGEX } do
             group = find_group(params[:id])
             identity = find_provider_identity(provider_type, params[:uid], group)
@@ -79,7 +80,7 @@ module API
           params do
             requires :uid, type: String, desc: "Current external UID of the user"
           end
-
+          route_setting :authorization, permissions: :"delete_#{provider_type}_identity", boundary_type: :group
           delete ':uid', format: false, requirements: { uid: API::NO_SLASH_URL_PART_REGEX } do
             group = find_group(params[:id])
             identity = find_provider_identity(provider_type, params[:uid], group)

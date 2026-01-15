@@ -106,8 +106,10 @@ RSpec.describe API::ProviderIdentity, :api, feature_category: :system_access do
       end
 
       context "when GET identity" do
+        let(:path) { "/groups/#{group.id}/#{provider_type}/#{provider_extern_uid_1}" }
+
         subject(:get_identity) do
-          get api("/groups/#{group.id}/#{provider_type}/#{provider_extern_uid_1}", current_user)
+          get api(path, current_user)
         end
 
         context "when user is not a group owner" do
@@ -140,9 +142,10 @@ RSpec.describe API::ProviderIdentity, :api, feature_category: :system_access do
       end
 
       context "when PATCH uid" do
+        let(:path) { "/groups/#{group.id}/#{provider_type}/#{uid}" }
+
         subject(:patch_identities) do
-          patch api("/groups/#{group.id}/#{provider_type}/#{uid}", current_user),
-            params: { extern_uid: extern_uid }
+          patch api(path, current_user), params: { extern_uid: extern_uid }
         end
 
         context "when user is not a group owner" do
@@ -188,8 +191,7 @@ RSpec.describe API::ProviderIdentity, :api, feature_category: :system_access do
               let(:extern_uid) { 'updated_test@gmail.com' }
 
               it "updates the identity record" do
-                patch api("/groups/#{group.id}/#{provider_type}/#{uid}", current_user),
-                  params: { extern_uid: extern_uid }
+                patch api(path, current_user), params: { extern_uid: extern_uid }
 
                 expect(response).to have_gitlab_http_status(:ok)
 
@@ -231,8 +233,10 @@ RSpec.describe API::ProviderIdentity, :api, feature_category: :system_access do
       end
 
       context "when DELETE uid" do
+        let(:path) { "/groups/#{group.id}/#{provider_type}/#{uid}" }
+
         subject(:delete_identities) do
-          delete api("/groups/#{group.id}/#{provider_type}/#{uid}", current_user)
+          delete api(path, current_user)
         end
 
         context "when user is not a group owner" do
@@ -268,6 +272,68 @@ RSpec.describe API::ProviderIdentity, :api, feature_category: :system_access do
               expect(response).to have_gitlab_http_status(:no_content)
             end
           end
+        end
+      end
+    end
+
+    describe "granular permission authorization" do
+      let(:user) { owner }
+      let(:boundary_object) { group }
+
+      describe "GET identities" do
+        let(:request) { get api("/groups/#{group.id}/#{provider_type}/identities", personal_access_token: pat) }
+
+        it_behaves_like 'authorizing granular token permissions', :read_scim_identity do
+          let(:provider_type) { 'scim' }
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :read_saml_identity do
+          let(:provider_type) { 'saml' }
+        end
+      end
+
+      describe "GET identity" do
+        let(:request) { get api("/groups/#{group.id}/#{provider_type}/#{uid}", personal_access_token: pat) }
+
+        it_behaves_like 'authorizing granular token permissions', :read_scim_identity do
+          let(:uid) { "scim-uid-1" }
+          let(:provider_type) { 'scim' }
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :read_saml_identity do
+          let(:uid) { "saml-uid-1" }
+          let(:provider_type) { 'saml' }
+        end
+      end
+
+      describe "PATCH uid" do
+        let(:request) do
+          patch api("/groups/#{group.id}/#{provider_type}/#{uid}", personal_access_token: pat),
+            params: { extern_uid: 'updated_uid' }
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :update_scim_identity do
+          let(:uid) { "scim-uid-1" }
+          let(:provider_type) { 'scim' }
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :update_saml_identity do
+          let(:uid) { "saml-uid-1" }
+          let(:provider_type) { 'saml' }
+        end
+      end
+
+      describe "DELETE uid" do
+        let(:request) { delete api("/groups/#{group.id}/#{provider_type}/#{uid}", personal_access_token: pat) }
+
+        it_behaves_like 'authorizing granular token permissions', :delete_scim_identity do
+          let(:uid) { "scim-uid-1" }
+          let(:provider_type) { 'scim' }
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :delete_saml_identity do
+          let(:uid) { "saml-uid-1" }
+          let(:provider_type) { 'saml' }
         end
       end
     end
