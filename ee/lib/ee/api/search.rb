@@ -21,7 +21,7 @@ module EE
 
           params :search_params_forks_filter_ee do
             optional :exclude_forks, type: Grape::API::Boolean, default: true,
-              desc: "Excludes forked projects in the search. Available with exact code search. Gated by the :search_api_fork_archived_filters feature flag" # rubocop:disable Layout/LineLength,Lint/RedundantCopDisableDirective -- temporary until FF is removed
+              desc: 'Excludes forked projects in the search. Available with exact code search. Introduced in GitLab 18.9.' # rubocop:disable Layout/LineLength,Lint/RedundantCopDisableDirective -- keep readability
           end
 
           override :scope_preload_method
@@ -41,13 +41,6 @@ module EE
             return if ADVANCED_SEARCH_SCOPES.exclude?(search_scope) || search_type == ADVANCED_SEARCH_SEARCH_TYPE
 
             render_api_error!({ error: 'Scope supported only with advanced search' }, 400)
-          end
-
-          override :search_params_keys
-          def search_params_keys
-            super.tap do |keys|
-              keys << :exclude_forks if ::Feature.enabled?(:search_api_fork_archived_filters, current_user)
-            end
           end
         end
       end

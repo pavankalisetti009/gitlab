@@ -460,22 +460,8 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
           context 'when exclude_forks is false' do
             it 'includes forks' do
-              get api(api_endpoint, user), params: { scope: 'blobs', search: 'monitors', exclude_forks: false }
-
-              expect(response).to have_gitlab_http_status(:success)
-
-              project_ids_in_response = json_response.pluck('project_id').uniq
-              expect(project_ids_in_response).to include(forked_project.id)
-            end
-          end
-
-          context 'when search_api_fork_archived_filters feature flag is disabled' do
-            before do
-              stub_feature_flags(search_api_fork_archived_filters: false)
-            end
-
-            it 'ignores exclude_forks parameter and includes forks' do
-              get api(api_endpoint, user), params: { scope: 'blobs', search: 'monitors', exclude_forks: true }
+              get api(api_endpoint, user),
+                params: { scope: 'blobs', search: 'monitors', exclude_forks: false }
 
               expect(response).to have_gitlab_http_status(:success)
 
