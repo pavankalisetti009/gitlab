@@ -392,6 +392,11 @@ RSpec.describe API::Deployments, feature_category: :continuous_delivery do
             project.add_maintainer(user)
           end
 
+          it_behaves_like 'authorizing granular token permissions', :approve_deployment do
+            let(:boundary_object) { project }
+            let(:request) { post api(path, personal_access_token: pat), params: { status: 'approved' } }
+          end
+
           it 'creates an approval' do
             expect { post(api(path, user), params: { status: 'approved' }) }.to change { Deployments::Approval.count }.by(1)
 
