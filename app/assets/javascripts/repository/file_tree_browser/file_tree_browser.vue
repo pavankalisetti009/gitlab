@@ -58,6 +58,12 @@ export default {
   created() {
     this.restoreTreeWidthUserPreference();
   },
+  mounted() {
+    document.addEventListener('keydown', this.handleEscapeKey);
+  },
+  beforeDestroy() {
+    document.removeEventListener('keydown', this.handleEscapeKey);
+  },
   methods: {
     ...mapActions(useFileTreeBrowserVisibility, ['resetFileTreeBrowserAllStates']),
     restoreTreeWidthUserPreference() {
@@ -74,6 +80,11 @@ export default {
     },
     onOverlayClick() {
       this.resetFileTreeBrowserAllStates();
+    },
+    handleEscapeKey(event) {
+      if (event.key === 'Escape' && this.fileTreeBrowserIsPeekOn) {
+        this.resetFileTreeBrowserAllStates();
+      }
     },
   },
   fileTreeBrowserStorageKey: FILE_TREE_BROWSER_STORAGE_KEY,
