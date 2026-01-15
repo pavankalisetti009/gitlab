@@ -36899,6 +36899,12 @@ msgstr ""
 msgid "Integrations|There are no projects using custom settings"
 msgstr ""
 
+msgid "Integrations|This integration is deprecated and replaced with the %{linkStart}GitLab for Slack app%{linkEnd}. Contact your GitLab administrator for help."
+msgstr ""
+
+msgid "Integrations|This integration is deprecated. Install the %{linkStart}GitLab for Slack app%{linkEnd} instead."
+msgstr ""
+
 msgid "Integrations|This integration, and inheriting projects were reset."
 msgstr ""
 
