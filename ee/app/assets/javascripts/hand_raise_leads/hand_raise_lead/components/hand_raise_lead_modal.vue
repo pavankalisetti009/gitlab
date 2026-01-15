@@ -80,7 +80,7 @@ export default {
         attributes: {
           variant: 'confirm',
           disabled: !this.canSubmit,
-          class: 'gl-w-full @sm/panel:gl-w-auto',
+          class: 'gl-w-full @sm:gl-w-auto',
         },
       };
     },
@@ -88,7 +88,7 @@ export default {
       return {
         text: this.$options.i18n.modalCancel,
         attributes: {
-          class: 'gl-w-full @sm/panel:gl-w-auto',
+          class: 'gl-w-full @sm:gl-w-auto',
         },
       };
     },
