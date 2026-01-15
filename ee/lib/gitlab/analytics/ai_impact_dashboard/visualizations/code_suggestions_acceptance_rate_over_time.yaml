@@ -5,7 +5,7 @@ data:
   type: ai_impact_over_time
   query:
     metric: code_suggestions_acceptance_rate
-    dateRange: last_30_days
+    dateRange: 30d
 options:
   unit: percent
   decimalPlaces: 1

@@ -1,8 +1,8 @@
 import codeSuggestionsAcceptanceByLanguage from 'ee/analytics/analytics_dashboards/data_sources/code_suggestions_acceptance_by_language';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import {
-  LAST_180_DAYS,
-  LAST_90_DAYS,
+  DATE_RANGE_OPTION_LAST_180_DAYS,
+  DATE_RANGE_OPTION_LAST_90_DAYS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 
 const mockCodeSuggestionsResponse = (response = {}) => ({
@@ -19,7 +19,7 @@ const mockCodeSuggestionsResponse = (response = {}) => ({
 
 const defaultParams = {
   namespace: 'test-namespace',
-  query: { dateRange: LAST_90_DAYS },
+  query: { dateRange: DATE_RANGE_OPTION_LAST_90_DAYS },
 };
 
 describe('`Code suggestion acceptance by language` Data Source', () => {
@@ -72,8 +72,8 @@ describe('`Code suggestion acceptance by language` Data Source', () => {
       it('fetches metrics for valid requested code suggestion languages', () => {
         const variables = {
           fullPath: 'test-namespace',
-          startDate: new Date('2020-04-08'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-04-07'),
+          endDate: new Date('2020-07-06'),
         };
 
         expect(defaultClient.query).toHaveBeenCalledTimes(3);
@@ -179,8 +179,8 @@ describe('`Code suggestion acceptance by language` Data Source', () => {
 
         expectQueryWithVariables({
           fullPath: 'test-namespace',
-          startDate: new Date('2020-06-07'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-06-06'),
+          endDate: new Date('2020-07-06'),
         });
       });
     });
@@ -190,13 +190,13 @@ describe('`Code suggestion acceptance by language` Data Source', () => {
         mockResolvedCodeSuggestionsLanguagesQuery();
 
         await fetch({
-          queryOverrides: { dateRange: LAST_180_DAYS },
+          queryOverrides: { dateRange: DATE_RANGE_OPTION_LAST_180_DAYS },
         });
 
         expectQueryWithVariables({
           fullPath: 'test-namespace',
-          startDate: new Date('2020-01-09'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-01-08'),
+          endDate: new Date('2020-07-06'),
         });
       });
 
@@ -209,8 +209,8 @@ describe('`Code suggestion acceptance by language` Data Source', () => {
 
         expectQueryWithVariables({
           fullPath: 'cool-namespace',
-          startDate: new Date('2020-04-08'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-04-07'),
+          endDate: new Date('2020-07-06'),
         });
       });
     });

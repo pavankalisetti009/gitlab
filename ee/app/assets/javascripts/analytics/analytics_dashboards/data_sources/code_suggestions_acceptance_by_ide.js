@@ -3,9 +3,8 @@ import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { s__, __, sprintf } from '~/locale';
 import {
-  LAST_30_DAYS,
-  DORA_METRIC_QUERY_RANGES,
-  startOfTomorrow,
+  DATE_RANGE_OPTION_LAST_30_DAYS,
+  DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { GENERIC_DASHBOARD_ERROR } from 'ee/analytics/dashboards/constants';
 import { defaultClient } from '../graphql/client';
@@ -80,22 +79,21 @@ const extractAcceptanceMetricsByIde = (results = []) => {
 
 export default async function fetch({
   namespace,
-  query: { dateRange = LAST_30_DAYS },
+  query: { dateRange = DATE_RANGE_OPTION_LAST_30_DAYS },
   queryOverrides: { dateRange: dateRangeOverride, namespace: namespaceOverride } = {},
   setVisualizationOverrides = () => {},
   setAlerts = () => {},
 }) {
-  const dateRangeKey = dateRangeOverride
-    ? dateRangeOverride.toUpperCase()
-    : dateRange.toUpperCase();
+  const dateRangeKey = dateRangeOverride || dateRange;
 
-  const startDate =
-    DORA_METRIC_QUERY_RANGES[dateRangeKey] ?? DORA_METRIC_QUERY_RANGES[LAST_30_DAYS];
+  const { startDate, endDate } = DATE_RANGE_OPTIONS[dateRangeKey]
+    ? DATE_RANGE_OPTIONS[dateRangeKey]
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_30_DAYS];
 
   const { successful, failed } = await fetchAllCodeSuggestionsIdeMetrics({
     fullPath: namespaceOverride ?? namespace,
     startDate,
-    endDate: startOfTomorrow,
+    endDate,
   });
 
   if (failed.length > 0 && successful.length === 0) {
