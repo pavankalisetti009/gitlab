@@ -9,6 +9,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
 
   before do
     stub_saas_features(subscriptions_trials: subscriptions_trials_enabled, marketing_google_tag_manager: false)
+    stub_feature_flags(ultimate_trial_with_dap: false)
   end
 
   shared_examples 'namespace_id is passed' do

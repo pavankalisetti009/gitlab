@@ -16,8 +16,20 @@ module GitlabSubscriptions
       end
 
       def trial_type
-        if namespace.free_plan?
+        namespace.free_plan? ? free_trial_type : premium_trial_type
+      end
+
+      def free_trial_type
+        if Feature.enabled?(:ultimate_trial_with_dap, :instance)
+          GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2
+        else
           GitlabSubscriptions::Trials::FREE_TRIAL_TYPE
+        end
+      end
+
+      def premium_trial_type
+        if Feature.enabled?(:ultimate_trial_with_dap, :instance)
+          GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE_V2
         else
           GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE
         end

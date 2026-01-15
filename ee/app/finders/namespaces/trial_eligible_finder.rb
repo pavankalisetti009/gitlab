@@ -31,10 +31,22 @@ module Namespaces
     end
 
     def namespace_trial_type(namespace)
-      if namespace.premium_plan?
-        GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE
+      namespace.premium_plan? ? premium_trial_type : free_trial_type
+    end
+
+    def free_trial_type
+      if Feature.enabled?(:ultimate_trial_with_dap, :instance)
+        GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2
       else
         GitlabSubscriptions::Trials::FREE_TRIAL_TYPE
+      end
+    end
+
+    def premium_trial_type
+      if Feature.enabled?(:ultimate_trial_with_dap, :instance)
+        GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE_V2
+      else
+        GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE
       end
     end
 

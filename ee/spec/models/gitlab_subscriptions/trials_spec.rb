@@ -128,16 +128,30 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
   end
 
   describe '.namespace_add_on_eligible?', :use_clean_rails_memory_store_caching do
-    let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
     let_it_be(:namespace) { create(:group) }
-
-    before do
-      Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
-    end
 
     subject(:execute) { described_class.namespace_add_on_eligible?(namespace) }
 
-    it { is_expected.to be(true) }
+    context 'when ultimate_trial_with_dap FF is disabled' do
+      let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
+
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false)
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when ultimate_trial_with_dap FF is enabled' do
+      let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2] }
+
+      before do
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+      end
+
+      it { is_expected.to be(true) }
+    end
 
     context 'when ineligible' do
       let(:trial_types) { ['gitlab_duo_pro'] }
@@ -147,17 +161,31 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
   end
 
   describe '.eligible_namespaces_for_user', :use_clean_rails_memory_store_caching do
-    let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group, owners: user) }
 
-    before do
-      Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
-    end
-
     subject { described_class.eligible_namespaces_for_user(user) }
 
-    it { is_expected.to eq([namespace]) }
+    context 'when ultimate_trial_with_dap FF is disabled' do
+      let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
+
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false)
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+      end
+
+      it { is_expected.to eq([namespace]) }
+    end
+
+    context 'when ultimate_trial_with_dap FF is enabled' do
+      let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2] }
+
+      before do
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+      end
+
+      it { is_expected.to eq([namespace]) }
+    end
 
     context 'when ineligible' do
       let(:trial_types) { ['gitlab_duo_pro'] }
@@ -167,17 +195,31 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
   end
 
   describe '.no_eligible_namespaces_for_user?', :use_clean_rails_memory_store_caching do
-    let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group, owners: user) }
 
-    before do
-      Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
-    end
-
     subject { described_class.no_eligible_namespaces_for_user?(user) }
 
-    it { is_expected.to be(false) }
+    context 'when ultimate_trial_with_dap FF is disabled' do
+      let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
+
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false)
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when ultimate_trial_with_dap FF is enabled' do
+      let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2] }
+
+      before do
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+      end
+
+      it { is_expected.to be(false) }
+    end
 
     context 'when no eligible namespaces exist' do
       let(:trial_types) { ['gitlab_duo_pro'] }

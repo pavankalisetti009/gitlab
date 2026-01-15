@@ -1,0 +1,10 @@
+---
+name: ultimate_trial_with_dap
+description: gates adding of new DAP trial types to subscription plans
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/585539
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/218374
+rollout_issue_url:
+milestone: '18.9'
+group: group::acquisition
+type: gitlab_com_derisk
+default_enabled: false
