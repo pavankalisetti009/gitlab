@@ -290,14 +290,14 @@ To delete a group and its contents:
 1. Select **Settings** > **General**.
 1. Expand the **Advanced** section.
 1. In the **Delete group** section, select **Delete**.
-1. On the confirmation dialog, enter the group name and select **Confirm**.
+1. On the confirmation dialog, enter the group path and select **Yes, delete group**.
 
 You can also delete a group from the groups dashboard:
 
 1. On the top bar, select **Search or go to** > **View all my groups**.
 1. Select ({{< icon name="ellipsis_v" >}}) for the group you want to delete.
 1. Select **Delete**.
-1. On the confirmation dialog, enter the group name and select **Confirm**.
+1. On the confirmation dialog, enter the group path and select **Yes, delete group**.
 
 This action adds a background job to schedule a group for deletion. On GitLab.com, the group is deleted after 30 days. On GitLab Self-Managed,
 you can modify the retention period through the [instance settings](../../administration/settings/visibility_and_access_controls.md#deletion-protection).
@@ -333,7 +333,7 @@ To immediately delete a group scheduled for deletion:
 1. Select **Settings** > **General**.
 1. Expand **Advanced**.
 1. In the **Delete group** section, select **Delete immediately**.
-1. Confirm the action when asked to.
+1. On the confirmation dialog, enter the group path and select **Yes, delete group**.
 
 This action deletes the group, its subgroups, projects, and all related resources, including issues and merge requests.
 
