@@ -136,7 +136,7 @@ module Ai
       end
 
       def check_duo_workflow_access
-        return if Ability.allowed?(@current_user, :duo_workflow, @container) && @container.is_a?(::Project)
+        return if Ability.allowed?(@current_user, :create_duo_workflow_for_ci, @container)
 
         error('forbidden to access duo workflow', :forbidden)
       end

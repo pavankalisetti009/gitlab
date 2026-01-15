@@ -110,7 +110,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     allow(::Ai::DuoWorkflow).to receive(:available?).and_return(true)
 
     allow(Ability).to receive(:allowed?).and_call_original
-    allow(Ability).to receive(:allowed?).with(current_user, :duo_workflow, project).and_return(true)
+    allow(Ability).to receive(:allowed?).with(current_user, :create_duo_workflow_for_ci, project).and_return(true)
     allow(Ability).to receive(:allowed?).with(current_user, :execute_duo_workflow_in_ci, anything).and_return(true)
     allow(Ability).to receive(:allowed?).with(current_user, :read_ai_catalog_item_consumer, anything).and_return(true)
 

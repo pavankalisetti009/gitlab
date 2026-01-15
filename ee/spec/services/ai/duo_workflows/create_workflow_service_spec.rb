@@ -24,7 +24,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
 
     before do
       allow(Ability).to receive(:allowed?).and_call_original
-      allow(Ability).to receive(:allowed?).with(user, :duo_workflow, container).and_return(true)
+      allow(Ability).to receive(:allowed?).with(user, :create_duo_workflow_for_ci, container).and_return(true)
       allow_next_instance_of(Ai::UsageQuotaService) do |instance|
         allow(instance).to receive(:execute).and_return(
           ServiceResponse.success
@@ -104,9 +104,9 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
       end
     end
 
-    context 'when user cannot access duo agentic chat' do
+    context 'when user cannot execute asynchronous duo workflows' do
       before do
-        allow(Ability).to receive(:allowed?).with(user, :duo_workflow, container).and_return(false)
+        allow(Ability).to receive(:allowed?).with(user, :create_duo_workflow_for_ci, container).and_return(false)
       end
 
       it 'returns error' do
