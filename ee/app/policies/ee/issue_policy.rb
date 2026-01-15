@@ -16,22 +16,8 @@ module EE
     end
 
     prepended do
-      condition(:relations_for_non_members_available) do
-        scope = group_issue? ? subject_container : subject_container.group
-
-        ::Feature.enabled?(:epic_relations_for_non_members, scope)
-      end
-
-      condition(:member_or_support_bot) do
-        (is_project_member? && can?(:read_issue)) || (support_bot? && service_desk_enabled?)
-      end
-
       rule { can_be_promoted_to_epic }.policy do
         enable :promote_to_epic
-      end
-
-      rule { relations_for_non_members_available & ~member_or_support_bot }.policy do
-        prevent :admin_issue_relation
       end
 
       # summarize comments is enabled at namespace(project or group) level, however if issue is confidential

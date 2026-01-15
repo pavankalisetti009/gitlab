@@ -161,10 +161,13 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     let_it_be(:public_issue) { create(:issue, project: public_project) }
     let_it_be(:private_issue) { create(:issue, project: private_project) }
 
-    it 'does not allow non-members to admin_issue_relation' do
+    it 'allows non-members to admin_issue_relation in public projects' do
+      expect(permissions(non_member, public_issue)).to be_allowed(:admin_issue_relation)
+    end
+
+    it 'does not allow non-members to admin_issue_relation in private projects or group issues' do
       expect(permissions(non_member, group_issue)).to be_disallowed(:admin_issue_relation)
       expect(permissions(non_member, private_issue)).to be_disallowed(:admin_issue_relation)
-      expect(permissions(non_member, public_issue)).to be_disallowed(:admin_issue_relation)
     end
 
     it 'allow guest to admin_issue_relation' do
@@ -224,25 +227,6 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
         expect(permissions(support_bot, group_issue)).to be_disallowed(:admin_issue_relation, :read_issue)
         expect(permissions(support_bot, public_issue)).to be_disallowed(:admin_issue_relation)
         expect(permissions(support_bot, private_issue)).to be_disallowed(:admin_issue_relatio)
-      end
-    end
-
-    context 'when epic_relations_for_non_members feature flag is disabled' do
-      before do
-        stub_feature_flags(epic_relations_for_non_members: false)
-      end
-
-      it 'allows non-members to admin_issue_relation in public projects' do
-        expect(permissions(non_member, public_issue)).to be_allowed(:admin_issue_relation)
-      end
-
-      it 'does not allow non-members to admin_issue_relation in private projects' do
-        expect(permissions(non_member, private_issue)).to be_disallowed(:admin_issue_relation)
-      end
-
-      it 'allows guest to admin_issue_relation' do
-        expect(permissions(guest, public_issue)).to be_allowed(:admin_issue_relation)
-        expect(permissions(guest, private_issue)).to be_allowed(:admin_issue_relation)
       end
     end
 

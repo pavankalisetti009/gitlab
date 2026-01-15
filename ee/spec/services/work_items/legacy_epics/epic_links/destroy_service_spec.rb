@@ -69,16 +69,6 @@ RSpec.describe WorkItems::LegacyEpics::EpicLinks::DestroyService, feature_catego
         end
 
         include_examples 'returns not found error'
-
-        context 'when `epic_relations_for_non_members` feature flag is disabled' do
-          let_it_be(:child_epic_group) { create(:group, :public) }
-
-          before do
-            stub_feature_flags(epic_relations_for_non_members: false)
-          end
-
-          include_examples 'returns not found error'
-        end
       end
 
       context 'when the user has no access to child epic' do

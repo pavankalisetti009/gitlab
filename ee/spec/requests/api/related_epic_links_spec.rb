@@ -345,11 +345,7 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
             it_behaves_like 'not found resource', '404 Group Not Found'
           end
 
-          context 'when epic_relations_for_non_members is disabled' do
-            before do
-              stub_feature_flags(epic_relations_for_non_members: false)
-            end
-
+          context 'when group is public' do
             # user is not a member of the public target group
             it_behaves_like 'forbidden resource'
           end
