@@ -320,13 +320,6 @@ the deletion job instead restores the group, and the group is no longer schedule
 
 {{< /history >}}
 
-{{< alert type="warning" >}}
-
-On GitLab.com and GitLab Dedicated, after a group is deleted, its data is retained for 30 days, and immediate deletion is not available.
-If you must delete a group immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
-
-{{< /alert >}}
-
 If you don't want to wait, you can delete a group immediately.
 
 Prerequisites:
