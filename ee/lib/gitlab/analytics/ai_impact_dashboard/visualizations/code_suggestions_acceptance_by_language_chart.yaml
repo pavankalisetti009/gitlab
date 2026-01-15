@@ -3,8 +3,7 @@ version: 1
 type: BarChart
 data:
   type: code_suggestions_acceptance_by_language
-  query:
-    dateRange: 30d
+  query: {}
 options:
   xAxis:
     name: "Suggestions accepted"
