@@ -5,22 +5,47 @@ module Elastic
     class MilestoneInstanceProxy < ApplicationInstanceProxy
       SCHEMA_VERSION = 23_08
 
-      def as_indexed_json(options = {})
-        # We don't use as_json(only: ...) because it calls all virtual and serialized attributtes
-        # https://gitlab.com/gitlab-org/gitlab/issues/349
+      DEFAULT_INDEX_ATTRIBUTES = %i[
+        id
+        iid
+        title
+        description
+        project_id
+        created_at
+        updated_at
+      ].freeze
+
+      def as_indexed_json(_options = {})
         data = {}
 
-        [:id, :iid, :title, :description, :project_id, :created_at, :updated_at].each do |attr|
-          data[attr.to_s] = safely_read_attribute_for_elasticsearch(attr)
+        DEFAULT_INDEX_ATTRIBUTES.each do |attribute|
+          data[attribute.to_s] = safely_read_attribute_for_elasticsearch(attribute)
         end
 
-        data['visibility_level'] = target.project.visibility_level
-        data['merge_requests_access_level'] = safely_read_project_feature_for_elasticsearch(:merge_requests)
-        data['issues_access_level'] = safely_read_project_feature_for_elasticsearch(:issues)
-        data['archived'] = target.project.self_or_ancestors_archived? if target.project
+        data.merge!(build_extra_data)
+        data.merge!(build_project_data(target))
 
-        data['schema_version'] = SCHEMA_VERSION
-        data.merge(generic_attributes)
+        data.merge(generic_attributes).stringify_keys
+      end
+
+      private
+
+      def build_extra_data
+        {
+          schema_version: SCHEMA_VERSION
+        }
+      end
+
+      def build_project_data(target)
+        return {} unless target.project.present?
+
+        {
+          archived: target.project.self_or_ancestors_archived?,
+          visibility_level: target.project.visibility_level,
+          issues_access_level: safely_read_project_feature_for_elasticsearch(:issues),
+          merge_requests_access_level: safely_read_project_feature_for_elasticsearch(:merge_requests),
+          traversal_ids: target.project.elastic_namespace_ancestry
+        }
       end
     end
   end

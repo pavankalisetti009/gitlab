@@ -21,16 +21,13 @@ RSpec.describe ::Search::Elastic::MilestoneQueryBuilder, :elastic_helpers, featu
   subject(:build) { described_class.build(query: query, options: options) }
 
   it 'contains all expected filters' do
+    set_elasticsearch_migration_to(:backfill_traversal_ids_for_milestones, including: true)
+
     assert_names_in_query(build, with: %w[
       milestone:multi_match:and:search_terms
       milestone:multi_match_phrase:search_terms
       filters:doc:is_a:milestone
-      filters:project
-      filters:project:visibility:10
-      filters:project:visibility:20
-      filters:project:visibility:20:issues:access_level:enabled
-      filters:project:visibility:20:merge_requests:access_level:enabled
-      filters:project
+      filters:permissions:global:visibility_level:public_and_internal
       filters:non_archived
     ])
   end
@@ -52,8 +49,36 @@ RSpec.describe ::Search::Elastic::MilestoneQueryBuilder, :elastic_helpers, featu
     it_behaves_like 'a query filtered by archived'
 
     describe 'authorization' do
-      it 'applies authorization filters' do
-        assert_names_in_query(build, with: %w[filters:project])
+      it 'uses the new authorization filter' do
+        set_elasticsearch_migration_to(:backfill_traversal_ids_for_milestones, including: true)
+
+        assert_names_in_query(build,
+          with: %w[filters:permissions:global:visibility_level:public_and_internal],
+          without: %w[filters:project])
+      end
+
+      context 'when backfill_traversal_ids_for_milestones migration has not finished' do
+        before do
+          set_elasticsearch_migration_to(:backfill_traversal_ids_for_milestones, including: false)
+        end
+
+        it 'uses the old authorization filter' do
+          assert_names_in_query(build,
+            with: %w[filters:project],
+            without: %w[filters:permissions:global:visibility_level:public_and_internal])
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(search_advanced_milestones_new_auth_filter: false)
+        end
+
+        it 'uses the old authorization filter' do
+          assert_names_in_query(build,
+            with: %w[filters:project],
+            without: %w[filters:permissions:global:visibility_level:public_and_internal])
+        end
       end
     end
   end

@@ -55,8 +55,7 @@ RSpec.describe Search::GroupService, '#visibility', feature_category: :global_se
 
         # milestones cannot use the project feature setup helper in the shared example
         # because they need to update multiple access levels.
-        # milestones use the legacy authorization in the query builder and are not handling group access correctly
-        it_behaves_like 'search respects visibility', project_feature_setup: false, group_access: false
+        it_behaves_like 'search respects visibility', project_feature_setup: false
       end
     end
   end

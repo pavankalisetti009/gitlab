@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, feature_category: :global_search do
+  include AdminModeHelper
+
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
   end
@@ -13,6 +15,7 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:query) { 'Foo' }
+    let_it_be(:admin_user) { create(:admin) }
     let_it_be(:current_user) { create(:user) }
     let(:options) { { current_user: current_user, project_ids: [project.id] } }
     let_it_be(:group) { create(:group) }
@@ -27,86 +30,116 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
       ensure_elasticsearch_index!
     end
 
-    where(:search_level, :projects, :groups, :public_and_internal_projects) do
-      'global'  | :any            | []            | true
-      'global'  | :any            | []            | false
-      'group'   | :any            | [ref(:group)] | true
-      'group'   | :any            | [ref(:group)] | false
-      'group'   | []              | [ref(:group)] | true
-      'group'   | []              | [ref(:group)] | false
-      'project' | :any            | []            | true
-      'project' | :any            | []            | false
-      'project' | [ref(:project)] | []            | true
-      'project' | [ref(:project)] | []            | false
-      'project' | [ref(:project)] | [ref(:group)] | true
-      'project' | [ref(:project)] | [ref(:group)] | false
+    where(:search_level, :projects, :groups, :is_admin) do
+      'global'  | []              | []              | true
+      'global'  | []              | []              | false
+      'group'   | []              | [ref(:group)]   | true
+      'group'   | []              | [ref(:group)]   | false
+      'group'   | []              | [ref(:group)]   | true
+      'group'   | []              | [ref(:group)]   | false
+      'project' | [ref(:project)] | []              | true
+      'project' | [ref(:project)] | []              | false
+      'project' | [ref(:project)] | [ref(:group)]   | true
+      'project' | [ref(:project)] | [ref(:group)]   | false
     end
 
     with_them do
-      let(:project_ids) { projects.eql?(:any) ? projects : projects.map(&:id) }
+      let(:project_ids) { projects.map(&:id) }
       let(:group_ids) { groups.map(&:id) }
 
       let(:options) do
         {
-          current_user: current_user,
           search_level: search_level,
           project_ids: project_ids,
           group_ids: group_ids,
-          public_and_internal_projects: public_and_internal_projects,
           order_by: nil,
           sort: nil
-        }
+        }.tap do |base_options|
+          base_options[:current_user] = is_admin ? admin_user : current_user
+        end
       end
 
-      it 'has the correct named queries' do
-        result.response
+      shared_examples 'correctly names queries' do
+        it 'has the correct named queries' do
+          enable_admin_mode!(admin_user) if is_admin
+          result.response
 
-        expected_queries = %w[
-          milestone:multi_match:and:search_terms
-          milestone:multi_match_phrase:search_terms
-          filters:project
-          filters:doc:is_a:milestone
-        ]
+          expected_queries = %w[filters:doc:is_a:milestone]
+          expected_queries.concat(match_queries)
+          expected_queries.concat(%w[filters:non_archived]) if search_level != 'project'
 
-        expected_queries.concat(%w[filters:non_archived]) if search_level != 'project'
+          unless is_admin
+            expected_queries.concat(%W[
+              filters:permissions:#{search_level}:visibility_level:public_and_internal
+              filters:permissions:#{search_level}:issues_access_level:enabled
+              filters:permissions:#{search_level}:merge_requests_access_level:enabled
+            ])
+          end
 
-        if projects == :any
-          any_filter = %w[
-            filters:project:any
-            filters:project:issues:enabled_or_private
-            filters:project:merge_requests:enabled_or_private
-          ]
-
-          expected_queries.concat(any_filter)
-        else
-          expected_queries.concat(%w[filters:project])
+          assert_named_queries(
+            *expected_queries
+          )
         end
+      end
 
-        if public_and_internal_projects
-          visibility_filters = %w[filters:project:visibility:10
-            filters:project:visibility:20
-            filters:project:visibility:10:issues:access_level:enabled
-            filters:project:visibility:20:issues:access_level:enabled
-            filters:project:visibility:10:merge_requests:access_level:enabled
-            filters:project:visibility:20:merge_requests:access_level:enabled]
-
-          expected_queries.concat(visibility_filters)
-        end
-
-        assert_named_queries(
-          *expected_queries
-        )
+      it_behaves_like 'correctly names queries' do
+        let(:match_queries) { %w[milestone:multi_match:and:search_terms milestone:multi_match_phrase:search_terms] }
       end
 
       context 'when advanced search syntax is used in the query' do
         let_it_be(:query) { 'Foo*' }
 
+        it_behaves_like 'correctly names queries' do
+          let(:match_queries) { %w[milestone:match:search_terms] }
+        end
+      end
+    end
+
+    context 'when legacy auth method is used' do
+      before do
+        stub_feature_flags(search_advanced_milestones_new_auth_filter: false)
+      end
+
+      where(:search_level, :projects, :groups, :public_and_internal_projects) do
+        'global'  | :any            | []            | true
+        'global'  | :any            | []            | false
+        'group'   | :any            | [ref(:group)] | true
+        'group'   | :any            | [ref(:group)] | false
+        'group'   | []              | [ref(:group)] | true
+        'group'   | []              | [ref(:group)] | false
+        'project' | :any            | []            | true
+        'project' | :any            | []            | false
+        'project' | [ref(:project)] | []            | true
+        'project' | [ref(:project)] | []            | false
+        'project' | [ref(:project)] | [ref(:group)] | true
+        'project' | [ref(:project)] | [ref(:group)] | false
+      end
+
+      with_them do
+        let(:project_ids) { projects.eql?(:any) ? projects : projects.map(&:id) }
+        let(:group_ids) { groups.map(&:id) }
+
+        let(:options) do
+          {
+            current_user: current_user,
+            search_level: search_level,
+            project_ids: project_ids,
+            group_ids: group_ids,
+            public_and_internal_projects: public_and_internal_projects,
+            order_by: nil,
+            sort: nil
+          }
+        end
+
         it 'has the correct named queries' do
           result.response
 
-          expected_queries = %w[milestone:match:search_terms
+          expected_queries = %w[
+            milestone:multi_match:and:search_terms
+            milestone:multi_match_phrase:search_terms
             filters:project
-            filters:doc:is_a:milestone]
+            filters:doc:is_a:milestone
+          ]
 
           expected_queries.concat(%w[filters:non_archived]) if search_level != 'project'
 
@@ -136,6 +169,47 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
           assert_named_queries(
             *expected_queries
           )
+        end
+
+        context 'when advanced search syntax is used in the query' do
+          let_it_be(:query) { 'Foo*' }
+
+          it 'has the correct named queries' do
+            result.response
+
+            expected_queries = %w[milestone:match:search_terms
+              filters:project
+              filters:doc:is_a:milestone]
+
+            expected_queries.concat(%w[filters:non_archived]) if search_level != 'project'
+
+            if projects == :any
+              any_filter = %w[
+                filters:project:any
+                filters:project:issues:enabled_or_private
+                filters:project:merge_requests:enabled_or_private
+              ]
+
+              expected_queries.concat(any_filter)
+            else
+              expected_queries.concat(%w[filters:project])
+            end
+
+            if public_and_internal_projects
+              visibility_filters = %w[filters:project:visibility:10
+                filters:project:visibility:20
+                filters:project:visibility:10:issues:access_level:enabled
+                filters:project:visibility:20:issues:access_level:enabled
+                filters:project:visibility:10:merge_requests:access_level:enabled
+                filters:project:visibility:20:merge_requests:access_level:enabled]
+
+              expected_queries.concat(visibility_filters)
+            end
+
+            assert_named_queries(
+              *expected_queries
+            )
+          end
         end
       end
     end
