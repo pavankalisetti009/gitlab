@@ -36833,6 +36833,9 @@ msgstr ""
 msgid "Integrations|Integration details"
 msgstr ""
 
+msgid "Integrations|Integration properties exceed maximum size of %{max_size}"
+msgstr ""
+
 msgid "Integrations|Issues created in Jira are shown here once you have created the issues in project setup in Jira."
 msgstr ""
 
