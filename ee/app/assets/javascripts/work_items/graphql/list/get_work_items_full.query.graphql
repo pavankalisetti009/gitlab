@@ -1,6 +1,7 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 #import "./work_item_widgets.fragment.graphql"
 
+# @feature_category: team_planning
 query getWorkItemsFullEE(
   $excludeProjects: Boolean = false
   $excludeGroupWorkItems: Boolean = false

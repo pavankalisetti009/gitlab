@@ -1,3 +1,4 @@
+# @feature_category: vulnerability_management
 query enabledScans($fullPath: ID!, $pipelineIid: ID!) {
   project(fullPath: $fullPath) {
     id
