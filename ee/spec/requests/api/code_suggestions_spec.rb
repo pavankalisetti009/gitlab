@@ -1063,8 +1063,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
               _command, params = workhorse_send_data
               code_completion_params = Gitlab::Json.parse(params['Body'])
-              expect(code_completion_params['model_provider']).to eq('vertex-ai')
-              expect(code_completion_params['model_name']).to eq('codestral-2501')
+              expect(code_completion_params['model_provider']).to eq('gitlab')
+              expect(code_completion_params['model_name']).to eq('codestral_2508_vertex')
             end
           end
         end
@@ -1507,8 +1507,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             post_api
 
             expect(json_response['model_details']).to eq({
-              'model_provider' => 'vertex-ai',
-              'model_name' => 'codestral-2501'
+              'model_provider' => 'gitlab',
+              'model_name' => 'codestral_2508_vertex'
             })
           end
         end

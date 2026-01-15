@@ -129,8 +129,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
     let(:request_body_for_vertrex_codestral) do
       request_body_without_model_details.merge(
-        "model_name" => "codestral-2501",
-        "model_provider" => "vertex-ai"
+        "model_name" => "codestral_2508_vertex",
+        "model_provider" => "gitlab"
       )
     end
 
@@ -395,6 +395,28 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       # code completions will fallback to using the saas primary model,
       # as decided by the `saas_prompt` method
       it_behaves_like 'uses the saas primary model for code completions'
+    end
+
+    context 'when the group is configured to use a remapped deprecated model' do
+      let_it_be(:namespace_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          feature: :code_completions,
+          offered_model_ref: 'codestral_2501_vertex',
+          namespace: group
+        )
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:expected_feature_name) { :code_suggestions }
+        let(:expected_body) do
+          unsafe_params.merge(
+            model_name: 'codestral_2508_vertex',
+            model_provider: 'gitlab',
+            prompt: nil,
+            prompt_version: 3
+          )
+        end
+      end
     end
   end
 

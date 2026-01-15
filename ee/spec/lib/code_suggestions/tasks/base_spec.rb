@@ -27,8 +27,14 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
     end
   end
 
+  describe '#prompt_request_params' do
+    it 'raises NotImplementedError' do
+      expect { klass.new(current_user: user).prompt_request_params }.to raise_error(NotImplementedError)
+    end
+  end
+
   describe '#endpoint' do
-    it 'raies NotImplementedError' do
+    it 'raises NotImplementedError' do
       expect { klass.new(current_user: user).endpoint }.to raise_error(NotImplementedError)
     end
   end

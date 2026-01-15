@@ -7,6 +7,11 @@ module CodeSuggestions
 
       FEATURE_SETTING_NAME = 'code_completions'
 
+      # We do remapping when we need to deprecate some models
+      MODELS_REMAPPING = {
+        'codestral_2501_vertex' => 'codestral_2508_vertex'
+      }.freeze
+
       def initialize(current_user:, root_namespace: nil)
         super(
           current_user: current_user, feature_setting_name: FEATURE_SETTING_NAME,
@@ -29,9 +34,17 @@ module CodeSuggestions
 
         return params_from_feature_setting(feature_setting) unless Gitlab.org_or_com? || default? # rubocop: disable Gitlab/AvoidGitlabInstanceChecks -- This is already used in this class
 
-        return vertex_codestral_2501_model_details if code_completion_opt_out_fireworks?
+        return vertex_codestral_2508_model_details if code_completion_opt_out_fireworks?
 
         fireworks_codestral_2501_model_details
+      end
+
+      def remap_model(params)
+        if params[:model_provider] == "gitlab" && MODELS_REMAPPING.key?(params[:model_name])
+          params[:model_name] = MODELS_REMAPPING[params[:model_name]]
+        end
+
+        params
       end
 
       def saas_primary_model_class
@@ -71,7 +84,7 @@ module CodeSuggestions
         }
       end
 
-      def vertex_codestral_2501_model_details
+      def vertex_codestral_2508_model_details
         {
           model_provider: CodeSuggestions::Prompts::CodeCompletion::VertexCodestral::MODEL_PROVIDER,
           model_name: CodeSuggestions::Prompts::CodeCompletion::VertexCodestral::MODEL_NAME
@@ -79,10 +92,11 @@ module CodeSuggestions
       end
 
       def params_from_feature_setting(feature_setting)
-        {
+        # Remapping the model here is necessary for direct-access-token
+        remap_model({
           model_provider: "gitlab",
           model_name: feature_setting.offered_model_ref.to_s
-        }
+        })
       end
 
       # For :code_completion_opt_out_fireworks

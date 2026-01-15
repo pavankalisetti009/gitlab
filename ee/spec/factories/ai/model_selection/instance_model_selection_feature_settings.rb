@@ -17,7 +17,9 @@ FactoryBot.define do
           { 'name' => 'Claude 3.5 Sonnet 20240620', 'identifier' => 'claude-3-5-sonnet-20240620' },
           { 'name' => 'OpenAI Chat GPT 4o', 'identifier' => 'openai_chatgpt_4o' },
           { 'name' => 'Claude Sonnet 4.0 20250514', 'identifier' => 'claude_sonnet_4_20250514' },
-          { 'name' => 'Fireworks Codestral', 'identifier' => 'codestral_2501_fireworks' }
+          { 'name' => 'Fireworks Codestral', 'identifier' => 'codestral_2501_fireworks' },
+          { 'name' => 'Vertex Codestral 2501', 'identifier' => 'codestral_2501_vertex' },
+          { 'name' => 'Vertex Codestral 2508', 'identifier' => 'codestral_2508_vertex' }
         ],
         "unit_primitives" => [
           {
@@ -31,7 +33,7 @@ FactoryBot.define do
             "feature_setting" => "code_completions",
             "default_model" => "claude_sonnet_3_5",
             "selectable_models" => %w[claude_sonnet_3_5 claude-3-7-sonnet-20250219 openai_chatgpt_4o
-              codestral_2501_fireworks],
+              codestral_2501_fireworks codestral_2501_vertex codestral_2508_vertex],
             "beta_models" => [],
             "unit_primitives" => %w[ask_build ask_commit]
           },
