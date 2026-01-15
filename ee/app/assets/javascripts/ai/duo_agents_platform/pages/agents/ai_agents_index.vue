@@ -8,7 +8,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
   VISIBILITY_LEVEL_PUBLIC_STRING,
@@ -72,6 +72,12 @@ export default {
     exploreAiCatalogPath: {
       default: '',
     },
+    rootGroupId: {
+      default: null,
+    },
+    groupId: {
+      default: null,
+    },
   },
   apollo: {
     aiAgents: {
@@ -80,10 +86,13 @@ export default {
         return !this.projectPath || this.selectedTabIndex === 0;
       },
       variables() {
+        const effectiveGroupId = this.projectId ? this.rootGroupId : this.groupId;
+
         return {
           projectPath: this.projectPath,
           itemTypes: this.itemTypes,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+          groupId: convertToGraphQLId(TYPENAME_GROUP, effectiveGroupId),
           search: this.searchTerm,
           ...this.paginationVariables,
         };
@@ -190,6 +199,12 @@ export default {
           showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
           text: __('Disable'),
         },
+        ...this.itemTypeConfig,
+      };
+    },
+    itemTypeConfigManaged() {
+      return {
+        showStatusBadge: true,
         ...this.itemTypeConfig,
       };
     },
@@ -380,7 +395,7 @@ export default {
         <ai-catalog-list-wrapper
           :is-loading="isLoading"
           :items="aiAgents"
-          :item-type-config="itemTypeConfig"
+          :item-type-config="itemTypeConfigManaged"
           :page-info="pageInfo"
           :empty-state-title="emptyStateTitle"
           :empty-state-description="emptyStateDescription"

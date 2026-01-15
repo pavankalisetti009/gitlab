@@ -3,7 +3,7 @@ import {
   TYPENAME_PROJECT,
   mockAgentsWithConfig,
   mockPageInfo,
-  mockFlows,
+  mockFlowsWithConfigs,
 } from 'ee_jest/ai/catalog/mock_data';
 
 export const mockProjectAgentsResponse = {
@@ -44,7 +44,7 @@ export const mockProjectFlowsResponse = {
     project: {
       id: 'gid://gitlab/Project/1',
       aiCatalogItems: {
-        nodes: mockFlows,
+        nodes: mockFlowsWithConfigs,
         pageInfo: mockPageInfo,
         __typename: TYPENAME_AI_CATALOG_ITEM_CONNECTION,
       },

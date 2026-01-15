@@ -49,6 +49,7 @@ describe('AiAgentsIndex', () => {
     show: jest.fn(),
   };
   const mockProjectId = 1;
+  const mockRootGroupId = 10000;
   const mockProjectPath = '/mock-group/test-project';
   const mockConfiguredItemsQueryHandler = jest
     .fn()
@@ -79,6 +80,7 @@ describe('AiAgentsIndex', () => {
         projectId: mockProjectId,
         projectPath: mockProjectPath,
         exploreAiCatalogPath: '/explore/ai-catalog',
+        rootGroupId: mockRootGroupId,
         glFeatures: {
           aiCatalogThirdPartyFlows: true,
           aiCatalogAgents: true,
@@ -144,6 +146,7 @@ describe('AiAgentsIndex', () => {
     it('fetches list data', () => {
       expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
         projectId: `gid://gitlab/Project/${mockProjectId}`,
+        groupId: `gid://gitlab/Group/${mockRootGroupId}`,
         itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
         projectPath: mockProjectPath,
         search: '',
@@ -191,6 +194,7 @@ describe('AiAgentsIndex', () => {
         await nextTick();
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          groupId: `gid://gitlab/Group/${mockRootGroupId}`,
           itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           projectPath: mockProjectPath,
           allAvailable: false,
@@ -207,6 +211,7 @@ describe('AiAgentsIndex', () => {
         await nextTick();
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          groupId: `gid://gitlab/Group/${mockRootGroupId}`,
           itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           projectPath: mockProjectPath,
           allAvailable: false,
@@ -230,6 +235,7 @@ describe('AiAgentsIndex', () => {
 
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          groupId: `gid://gitlab/Group/${mockRootGroupId}`,
           itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           projectPath: mockProjectPath,
           allAvailable: false,
@@ -252,6 +258,7 @@ describe('AiAgentsIndex', () => {
 
         expect(mockProjectAgentsQueryHandler).toHaveBeenLastCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          groupId: `gid://gitlab/Group/${mockRootGroupId}`,
           projectPath: mockProjectPath,
           itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           allAvailable: false,
@@ -274,6 +281,7 @@ describe('AiAgentsIndex', () => {
 
         expect(mockProjectAgentsQueryHandler).toHaveBeenLastCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          groupId: `gid://gitlab/Group/${mockRootGroupId}`,
           projectPath: mockProjectPath,
           itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           allAvailable: false,
@@ -303,6 +311,7 @@ describe('AiAgentsIndex', () => {
     it('does not fetch third party flows when fetching list data', () => {
       expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
         projectId: `gid://gitlab/Project/${mockProjectId}`,
+        groupId: `gid://gitlab/Group/${mockRootGroupId}`,
         itemTypes: ['AGENT'],
         projectPath: mockProjectPath,
         allAvailable: false,

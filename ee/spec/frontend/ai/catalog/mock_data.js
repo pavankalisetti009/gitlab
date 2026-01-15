@@ -258,6 +258,11 @@ export const mockAgentsWithConfig = [
       },
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
     },
+    configurationForGroup: {
+      id: 'gid://gitlab/Ai::Catalog::ItemConsumer/14',
+      enabled: true,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+    },
   }),
   mockAgentFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/2',
@@ -277,6 +282,11 @@ export const mockAgentsWithConfig = [
         id: 'gid://gitlab/Ai::Catalog::ItemVersion/4',
         humanVersionName: 'v1.0.0',
       },
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+    },
+    configurationForGroup: {
+      id: 'gid://gitlab/Ai::Catalog::ItemConsumer/14',
+      enabled: true,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
     },
   }),
@@ -299,6 +309,11 @@ export const mockAgentsWithConfig = [
         id: 'gid://gitlab/Ai::Catalog::ItemVersion/6',
         humanVersionName: 'v1.0.0',
       },
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+    },
+    configurationForGroup: {
+      id: 'gid://gitlab/Ai::Catalog::ItemConsumer/14',
+      enabled: true,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
     },
   }),
@@ -501,6 +516,42 @@ export const mockFlows = [
     description: 'Another AI flow',
     createdAt: '2024-02-10T14:20:00Z',
     project: mockProjectWithNamespace,
+  }),
+];
+
+export const mockBaseConfigs = {
+  configurationForProject: {
+    id: 'gid://gitlab/Ai::Catalog::ItemConsumer/12',
+    enabled: true,
+    __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+  },
+  configurationForGroup: {
+    id: 'gid://gitlab/Ai::Catalog::ItemConsumer/14',
+    enabled: true,
+    __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+  },
+};
+
+export const mockFlowsWithConfigs = [
+  mockFlowFactory({
+    project: mockProjectWithNamespace,
+    ...mockBaseConfigs,
+  }),
+  mockFlowFactory({
+    id: 'gid://gitlab/Ai::Catalog::Item/5',
+    name: 'Test AI Flow 2',
+    description: 'Another AI flow',
+    createdAt: '2024-02-10T14:20:00Z',
+    project: mockProjectWithNamespace,
+    ...mockBaseConfigs,
+  }),
+  mockFlowFactory({
+    id: 'gid://gitlab/Ai::Catalog::Item/6',
+    name: 'Test AI Flow 3',
+    description: 'Another AI flow',
+    createdAt: '2024-02-10T14:20:00Z',
+    project: mockProjectWithNamespace,
+    ...mockBaseConfigs,
   }),
 ];
 
