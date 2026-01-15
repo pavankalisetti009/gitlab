@@ -14,7 +14,6 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
     allow(Ability).to receive(:allowed?).with(user, anything, anything).and_return(true)
     allow(Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
     allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
-    stub_feature_flags(duo_workflow_in_ci: true)
   end
 
   describe 'GET /:namespace/:project/-/automate' do
@@ -52,19 +51,6 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
     context 'when ::Ai::DuoWorkflow is disabled' do
       before do
         allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(false)
-      end
-
-      it 'returns 404' do
-        get project_automate_agent_sessions_path(project)
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
-
-    context 'when duo_workflow_in_ci feature flag is disabled' do
-      before do
-        allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
-        stub_feature_flags(duo_workflow_in_ci: false)
       end
 
       it 'returns 404' do

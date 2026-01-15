@@ -302,23 +302,21 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
 
   context 'with workflow enablement checks' do
     using RSpec::Parameterized::TableSyntax
-    where(:duo_workflow_ff, :duo_workflow_in_ci_ff, :duo_features_enabled, :duo_remote_flows_enabled, :current_user,
+    where(:duo_workflow_ff, :duo_features_enabled, :duo_remote_flows_enabled, :current_user,
       :shared_examples) do
-      false | false | true  | true  | ref(:maintainer) | 'failure'
-      true  | false | true  | true  | ref(:developer)  | 'failure'
-      false | true  | true  | true  | ref(:developer)  | 'failure'
-      true  | true  | true  | false | ref(:maintainer) | 'failure'
-      true  | true  | true  | true  | ref(:maintainer) | 'success'
-      true  | true  | true  | true  | ref(:reporter)   | 'failure'
-      true  | true  | false | true  | ref(:developer)  | 'failure'
-      true  | true  | false | false | ref(:developer)  | 'failure'
-      true  | true  | true  | true  | ref(:maintainer) | 'successful flow config'
-      true  | true  | true  | true  | ref(:developer) | 'additional context'
+      false | true  | true  | ref(:developer)  | 'failure'
+      true  | true  | false | ref(:maintainer) | 'failure'
+      true  | true  | true  | ref(:maintainer) | 'success'
+      true  | true  | true  | ref(:reporter)   | 'failure'
+      true  | false | true  | ref(:developer)  | 'failure'
+      true  | false | false | ref(:developer)  | 'failure'
+      true  | true  | true  | ref(:maintainer) | 'successful flow config'
+      true  | true  | true  | ref(:developer) | 'additional context'
     end
 
     with_them do
       before do
-        stub_feature_flags(duo_workflow: duo_workflow_ff, duo_workflow_in_ci: duo_workflow_in_ci_ff)
+        stub_feature_flags(duo_workflow: duo_workflow_ff)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         allow(current_user).to receive(:allowed_to_use?).and_return(true)
         project.project_setting.update!(duo_features_enabled: duo_features_enabled,

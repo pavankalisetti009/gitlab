@@ -213,22 +213,14 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
       end
     end
 
-    context 'when feature flag is disabled' do
+    context 'when blob.project is nil' do
       let(:blob) { fake_blob(path: 'Jenkinsfile') }
 
       before do
-        blob.project.update!(duo_remote_flows_enabled: true)
+        allow(blob).to receive(:project).and_return(nil)
       end
 
       it 'returns false' do
-        stub_feature_flags(duo_workflow_in_ci: false)
-
-        expect(helper.show_duo_workflow_action?(blob)).to be false
-      end
-
-      it 'returns false when user does not have the feature flag' do
-        Feature.disable(:duo_workflow_in_ci, user)
-
         expect(helper.show_duo_workflow_action?(blob)).to be false
       end
     end

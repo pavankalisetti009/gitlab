@@ -621,14 +621,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
-      context 'when Feature flag is disabled' do
-        before do
-          stub_feature_flags(duo_workflow_in_ci: false)
-        end
-
-        include_examples 'workflow execution blocked in CI'
-      end
-
       context 'when duo_remote_flows_enabled settings is turned off' do
         before do
           project.project_setting.update!(duo_remote_flows_enabled: false)

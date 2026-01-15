@@ -203,21 +203,19 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_agent_pl
   end
 
   describe "execute_duo_workflow_in_ci" do
-    where(:duo_workflow_ff, :duo_workflow_in_ci_ff, :duo_features_enabled, :duo_remote_flows_enabled, :current_user,
+    where(:duo_workflow_ff, :duo_features_enabled, :duo_remote_flows_enabled, :current_user,
       :stage_check, :allowed) do
-      false | false | true  | true  | ref(:developer)  | true  | false
-      true  | false | true  | true  | ref(:developer)  | true  | false
-      false | true  | true  | true  | ref(:developer)  | true  | false
-      true  | true  | true  | false | ref(:developer)  | true  | false
-      true  | true  | true  | true  | ref(:developer)  | false | false
-      true  | true  | true  | true  | ref(:developer)  | true  | true
-      true  | true  | true  | true  | ref(:guest)      | true  | false
-      true  | true  | false | true  | ref(:developer)  | true  | false
+      false | true  | true  | ref(:developer)  | true  | false
+      true  | true  | false | ref(:developer)  | true  | false
+      true  | true  | true  | ref(:developer)  | false | false
+      true  | true  | true  | ref(:developer)  | true  | true
+      true  | true  | true  | ref(:guest)      | true  | false
+      true  | false | true  | ref(:developer)  | true  | false
     end
 
     with_them do
       before do
-        stub_feature_flags(duo_workflow: duo_workflow_ff, duo_workflow_in_ci: duo_workflow_in_ci_ff)
+        stub_feature_flags(duo_workflow: duo_workflow_ff)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(stage_check)
         allow(current_user).to receive(:allowed_to_use?).and_return(true)
         project.project_setting.update!(duo_features_enabled: duo_features_enabled,

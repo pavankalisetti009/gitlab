@@ -8,7 +8,6 @@ module EE
       prepended do
         before_action only: [:show, :index] do
           push_licensed_feature(:generate_description, project) if can?(current_user, :generate_description, project)
-          push_frontend_feature_flag(:duo_workflow_in_ci, current_user)
           push_frontend_feature_flag(:duo_developer_button, current_user)
         end
         before_action do
