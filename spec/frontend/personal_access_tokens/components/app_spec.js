@@ -125,6 +125,8 @@ describe('PersonalAccessTokensApp', () => {
     it('refetches when date field with less than operator is set', async () => {
       findFilteredSearch().vm.$emit('input', [
         { type: 'expires', value: { data: '2026-01-20', operator: '<' } },
+        { type: 'created', value: { data: '2026-01-20', operator: '<' } },
+        { type: 'lastUsed', value: { data: '2026-01-20', operator: '<' } },
       ]);
 
       findFilteredSearch().vm.$emit('submit');
@@ -139,12 +141,16 @@ describe('PersonalAccessTokensApp', () => {
         last: null,
         before: null,
         expiresBefore: '2026-01-20',
+        createdBefore: '2026-01-20',
+        lastUsedBefore: '2026-01-20',
       });
     });
 
     it('refetches when date field with greater than or equal to operator is set', async () => {
       findFilteredSearch().vm.$emit('input', [
         { type: 'expires', value: { data: '2026-01-20', operator: '≥' } },
+        { type: 'created', value: { data: '2026-01-20', operator: '≥' } },
+        { type: 'lastUsed', value: { data: '2026-01-20', operator: '≥' } },
       ]);
 
       findFilteredSearch().vm.$emit('submit');
@@ -159,6 +165,8 @@ describe('PersonalAccessTokensApp', () => {
         last: null,
         before: null,
         expiresAfter: '2026-01-20',
+        createdAfter: '2026-01-20',
+        lastUsedAfter: '2026-01-20',
       });
     });
 
