@@ -9,7 +9,7 @@ module VirtualRegistries
     validates :group, top_level_group: true, presence: true
     validates :name, presence: true, length: { maximum: 255 }
     validates :description, length: { maximum: 1024 }
-    validates :group_id, uniqueness: { scope: :name }
+    validates :name, uniqueness: { scope: :group_id }
     validate :max_per_group, on: :create
 
     scope :for_group, ->(group) { where(group: group) }
