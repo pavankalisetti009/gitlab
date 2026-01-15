@@ -268,6 +268,7 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     end
 
     before do
+      date = Time.zone.today.beginning_of_month + 15
       # user1: 100 shown, 50 accepted, 25 rejected | 30 chat requests
       # user2: 60 shown, 80 accepted, 40 rejected | 100 chat requests
       # user3: 40 shown, 30 accepted, 60 rejected | 50 chat requests
@@ -278,28 +279,28 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           user_id: user1.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 100
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 60
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 40
         },
         {
           user_id: user4.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 20
         },
         # Code suggestions - accepted events
@@ -307,28 +308,28 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           user_id: user1.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 50
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 80
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 30
         },
         {
           user_id: user4.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 10
         },
         # Code suggestions - rejected events
@@ -336,28 +337,28 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           user_id: user1.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 25
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 40
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 60
         },
         {
           user_id: user4.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:code_suggestion_rejected_in_ide],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 5
         },
         # Chat events
@@ -365,28 +366,28 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           user_id: user1.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 30
         },
         {
           user_id: user2.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 100
         },
         {
           user_id: user3.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 50
         },
         {
           user_id: user4.id,
           namespace_path: group.traversal_path,
           event: ::Ai::UsageEvent.events[:request_duo_chat_response],
-          date: Date.current.to_s,
+          date: date.to_s,
           occurrences: 80
         }
       ])

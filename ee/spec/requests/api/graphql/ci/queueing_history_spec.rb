@@ -12,6 +12,7 @@ RSpec.describe 'Query.ciQueueingHistory', :click_house, feature_category: :fleet
 
   let_it_be(:admin) { create(:user, :admin) }
   let(:current_user) { admin }
+  let(:required_license) { :runner_performance_insights }
 
   let(:runner_type) { nil }
 

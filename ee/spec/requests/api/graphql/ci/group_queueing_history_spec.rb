@@ -12,6 +12,7 @@ RSpec.describe 'Query.group(fullPath).ciQueueingHistory', :click_house, feature_
 
   let_it_be(:maintainer) { create(:user) { |user| group.add_maintainer(user) } }
   let(:current_user) { maintainer }
+  let(:required_license) { :runner_performance_insights_for_namespace }
 
   let_it_be(:starting_time) { Time.utc(2023) }
   let(:from_time) { starting_time }
