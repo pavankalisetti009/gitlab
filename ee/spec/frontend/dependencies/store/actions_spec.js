@@ -961,15 +961,23 @@ describe('Dependencies actions', () => {
 
       describe('filters', () => {
         it.each`
-          scenario                                                                            | searchFilterParameters                               | expectedComponentNames          | expectedComponentVersions
-          ${'includes componentNames as a query variable when present'}                       | ${{ component_names: ['component1', 'component2'] }} | ${['component1', 'component2']} | ${undefined}
-          ${'does not include componentNames as a query variable when filter is empty'}       | ${{ component_names: [] }}                           | ${undefined}                    | ${undefined}
-          ${'does not include componentNames as a query variable when filter is not present'} | ${{}}                                                | ${undefined}                    | ${undefined}
-          ${'includes componentVersions as a query variable when present'}                    | ${{ component_versions: ['1.0.0', '2.0.0'] }}        | ${undefined}                    | ${['1.0.0', '2.0.0']}
-          ${'does not include componentVersions as a query variable when filter is empty'}    | ${{ component_versions: [] }}                        | ${undefined}                    | ${undefined}
+          scenario                                                                            | searchFilterParameters                               | expectedComponentNames          | expectedComponentVersions | expectedPolicyViolations
+          ${'includes componentNames as a query variable when present'}                       | ${{ component_names: ['component1', 'component2'] }} | ${['component1', 'component2']} | ${undefined}              | ${undefined}
+          ${'does not include componentNames as a query variable when filter is empty'}       | ${{ component_names: [] }}                           | ${undefined}                    | ${undefined}              | ${undefined}
+          ${'does not include componentNames as a query variable when filter is not present'} | ${{}}                                                | ${undefined}                    | ${undefined}              | ${undefined}
+          ${'includes componentVersions as a query variable when present'}                    | ${{ component_versions: ['1.0.0', '2.0.0'] }}        | ${undefined}                    | ${['1.0.0', '2.0.0']}     | ${undefined}
+          ${'does not include componentVersions as a query variable when filter is empty'}    | ${{ component_versions: [] }}                        | ${undefined}                    | ${undefined}              | ${undefined}
+          ${'includes policyViolations when component_activity filter is present'}            | ${{ component_activity: ['DISMISSED_IN_MR'] }}       | ${undefined}                    | ${undefined}              | ${['DISMISSED_IN_MR']}
+          ${'does not include policyViolations when component_activity contains only ALL'}    | ${{ component_activity: ['ALL'] }}                   | ${undefined}                    | ${undefined}              | ${undefined}
+          ${'does not include policyViolations when component_activity is empty'}             | ${{ component_activity: [] }}                        | ${undefined}                    | ${undefined}              | ${undefined}
         `(
           '$scenario',
-          async ({ searchFilterParameters, expectedComponentNames, expectedComponentVersions }) => {
+          async ({
+            searchFilterParameters,
+            expectedComponentNames,
+            expectedComponentVersions,
+            expectedPolicyViolations,
+          }) => {
             state.searchFilterParameters = searchFilterParameters;
 
             await testAction(
@@ -995,6 +1003,7 @@ describe('Dependencies actions', () => {
                 fullPath: state.fullPath,
                 ...(expectedComponentNames && { componentNames: expectedComponentNames }),
                 ...(expectedComponentVersions && { componentVersions: expectedComponentVersions }),
+                ...(expectedPolicyViolations && { policyViolations: expectedPolicyViolations }),
               },
             };
 

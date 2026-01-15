@@ -7,13 +7,15 @@ import ProjectDependenciesFilteredSearch from 'ee/dependencies/components/filter
 import DependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/dependencies_filtered_search.vue';
 import ComponentToken from 'ee/dependencies/components/filtered_search/tokens/component_token.vue';
 import VersionToken from 'ee/dependencies/components/filtered_search/tokens/version_token.vue';
+import ActivityToken from 'ee/dependencies/components/filtered_search/tokens/activity_token.vue';
 
 describe('ProjectDependenciesFilteredSearch', () => {
   let wrapper;
 
-  const createComponent = ({ provide = {} } = {}) => {
+  const createComponent = ({ provide = {}, glFeatures = {} } = {}) => {
     wrapper = shallowMount(ProjectDependenciesFilteredSearch, {
       provide: {
+        glFeatures,
         ...provide,
       },
     });
@@ -43,5 +45,38 @@ describe('ProjectDependenciesFilteredSearch', () => {
         }),
       ]),
     );
+  });
+
+  describe('Activity token', () => {
+    it('does not include Activity token when feature flag is disabled', () => {
+      createComponent({ glFeatures: { securityPolicyWarnModeLicenseScanning: false } });
+
+      const tokens = findDependenciesFilteredSearch().props('tokens');
+      expect(tokens).not.toMatchObject(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'component_activity',
+          }),
+        ]),
+      );
+    });
+
+    it('includes Activity token when feature flag is enabled', () => {
+      createComponent({ glFeatures: { securityPolicyWarnModeLicenseScanning: true } });
+
+      const tokens = findDependenciesFilteredSearch().props('tokens');
+      expect(tokens).toMatchObject(
+        expect.arrayContaining([
+          expect.objectContaining({
+            title: 'Activity',
+            type: 'component_activity',
+            multiSelect: false,
+            unique: true,
+            token: ActivityToken,
+            operators: OPERATORS_IS,
+          }),
+        ]),
+      );
+    });
   });
 });
