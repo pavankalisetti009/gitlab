@@ -85,14 +85,20 @@ export const createRouter = (base, namespace) => {
             path: '',
             component: FlowTriggersIndex,
           },
-          {
-            name: FLOW_TRIGGERS_NEW_ROUTE,
-            path: 'new',
-            component: FlowTriggersNew,
-            meta: {
-              text: s__('DuoAgentsPlatform|New trigger'),
-            },
-          },
+          ...(gon.abilities?.readAiCatalogThirdPartyFlow ||
+          gon.abilities?.createAiCatalogThirdPartyFlow ||
+          gon.abilities?.readAiCatalogFlow
+            ? [
+                {
+                  name: FLOW_TRIGGERS_NEW_ROUTE,
+                  path: 'new',
+                  component: FlowTriggersNew,
+                  meta: {
+                    text: s__('DuoAgentsPlatform|New trigger'),
+                  },
+                },
+              ]
+            : []),
           {
             path: ':id(\\d+)/edit',
             component: FlowTriggersEdit,

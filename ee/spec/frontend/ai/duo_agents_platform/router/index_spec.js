@@ -66,6 +66,35 @@ describe('Agents Platform Router', () => {
 
       expect(router.currentRoute.path).toBe('/triggers');
     });
+
+    describe('triggers new route', () => {
+      it.each`
+        readAiCatalogThirdPartyFlow | createAiCatalogThirdPartyFlow | readAiCatalogFlow | expectedPath
+        ${true}                     | ${false}                      | ${false}          | ${'/triggers/new'}
+        ${false}                    | ${true}                       | ${false}          | ${'/triggers/new'}
+        ${false}                    | ${false}                      | ${true}           | ${'/triggers/new'}
+        ${false}                    | ${false}                      | ${false}          | ${'/agent-sessions'}
+      `(
+        'navigates to $expectedPath when readAiCatalogThirdPartyFlow=$readAiCatalogThirdPartyFlow, createAiCatalogThirdPartyFlow=$createAiCatalogThirdPartyFlow, readAiCatalogFlow=$readAiCatalogFlow',
+        async ({
+          readAiCatalogThirdPartyFlow,
+          createAiCatalogThirdPartyFlow,
+          readAiCatalogFlow,
+          expectedPath,
+        }) => {
+          gon.abilities = {
+            readAiCatalogThirdPartyFlow,
+            createAiCatalogThirdPartyFlow,
+            readAiCatalogFlow,
+          };
+          router = createRouter(baseRoute, 'project');
+
+          await router.push('/triggers/new');
+
+          expect(router.currentRoute.path).toBe(expectedPath);
+        },
+      );
+    });
   });
 
   describe('agents', () => {
