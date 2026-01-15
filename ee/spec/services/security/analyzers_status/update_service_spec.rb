@@ -126,12 +126,12 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
         let!(:secret_detection_build) { create(:ci_build, :secret_detection, :success, pipeline: pipeline) }
 
         let!(:kics_build) do
-          create(:ci_build, :success, pipeline: pipeline, name: 'kics-iac-sast',
+          create(:ci_build, :success, pipeline: pipeline, name: 'kics-iac-sast-0',
             options: setup_build_options_for_reports([:sast]))
         end
 
         let!(:advanced_sast_build) do
-          create(:ci_build, :success, pipeline: pipeline, name: 'gitlab-advanced-sast',
+          create(:ci_build, :success, pipeline: pipeline, name: 'gitlab-advanced-sast-0',
             options: setup_build_options_for_reports([:sast]))
         end
 
