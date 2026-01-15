@@ -270,7 +270,7 @@ module Search
         return if Gitlab::Saas.feature_available?(:exact_code_search)
         return unless Gitlab::CurrentSettings.zoekt_auto_index_root_namespace?
 
-        Namespace.group_namespaces.root_namespaces_without_zoekt_enabled_namespace.each_batch do |batch|
+        Namespace.root_namespaces_without_zoekt_enabled_namespace.each_batch do |batch|
           data = batch.pluck_primary_key.map { |id| { root_namespace_id: id } }
           Search::Zoekt::EnabledNamespace.insert_all(data)
         end
