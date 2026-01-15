@@ -56,7 +56,7 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
   end
 
   context 'when model is valid' do
-    let_it_be(:default_model) { ::Gitlab::Geo::ModelMapper.available_models.first }
+    let_it_be(:default_model) { Project }
 
     before do
       # Ensure the user has permissions to access the data management controller
