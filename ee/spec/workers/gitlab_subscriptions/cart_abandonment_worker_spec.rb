@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :acquisition do
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:namespace) }
 

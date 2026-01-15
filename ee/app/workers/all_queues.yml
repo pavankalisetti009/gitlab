@@ -2608,7 +2608,7 @@
   :queue_namespace:
 - :name: gitlab_subscriptions_cart_abandonment
   :worker_name: GitlabSubscriptions::CartAbandonmentWorker
-  :feature_category: :subscription_management
+  :feature_category: :acquisition
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
