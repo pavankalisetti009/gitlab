@@ -69,6 +69,7 @@ RSpec.describe 'Every GitLab uploader' do
         Repositories::CommitsUploader => 'Used to force workhorse to pass an upload as a local file to rails. No direct interactions with object storage.',
         VirtualRegistries::Cache::EntryUploader => 'This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/473033',
         Security::VulnerabilityScanning::SbomScanUploader => "Used to store ephemeral security scans. We don't want to replicate these files as they are only short living (usually, less than a couple of minutes)",
+        Security::VulnerabilityScanning::SbomScanResultUploader => "Used to store ephemeral security scan results. We don't want to replicate these files because of their short TTL, see https://gitlab.com/gitlab-org/gitlab/-/issues/562694.",
         SupplyChain::AttestationUploader => 'This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/571772.'
       }.key?(uploader)
     end
