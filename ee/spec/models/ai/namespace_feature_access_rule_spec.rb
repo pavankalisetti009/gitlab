@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe ::Ai::NamespaceFeatureAccessRule, feature_category: :ai_abstraction_layer do
   let_it_be(:root_namespace) { create(:group) }
-  let_it_be(:through_namespace) { create(:group, parent: root_namespace) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:through_namespace) { create(:group, parent: root_namespace).tap { |ns| ns.add_guest(user) } }
   let_it_be(:other_root_namespace) { create(:group) }
 
   it_behaves_like 'accessible entity ruleable'
@@ -153,6 +154,67 @@ RSpec.describe ::Ai::NamespaceFeatureAccessRule, feature_category: :ai_abstracti
       expect(result.keys).to contain_exactly(through_namespace.id, other_through_namespace.id)
       expect(result[through_namespace.id].map(&:accessible_entity)).to contain_exactly('duo_classic')
       expect(result[other_through_namespace.id].map(&:accessible_entity)).to contain_exactly('duo_agent_platform')
+    end
+  end
+
+  describe '.accessible_for_user' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:other_user) { create(:user) }
+    let_it_be(:ns_with_access) { through_namespace }
+    let_it_be(:ns_no_access) { create(:group, parent: root_namespace) }
+
+    let_it_be(:rule_classic) do
+      create(
+        :ai_namespace_feature_access_rules,
+        :duo_classic,
+        through_namespace: ns_with_access,
+        root_namespace: root_namespace
+      )
+    end
+
+    let_it_be(:rule_agents) do
+      create(
+        :ai_namespace_feature_access_rules,
+        :duo_agent_platform,
+        through_namespace: ns_no_access,
+        root_namespace: root_namespace
+      )
+    end
+
+    where(:test_user, :entity, :target_namespace, :expected_rules) do
+      ref(:user) | 'duo_classic' | ref(:root_namespace) | [ref(:rule_classic)]
+      ref(:user) | 'duo_agent_platform' | ref(:root_namespace) | []
+      ref(:other_user) | 'duo_classic' | ref(:root_namespace) | []
+    end
+
+    with_them do
+      it 'filters by user access, entity, and namespace' do
+        expect(described_class.accessible_for_user(test_user, entity, target_namespace)).to match_array(expected_rules)
+      end
+    end
+  end
+
+  describe '.for_namespace' do
+    let_it_be(:rule_for_root) do
+      create(:ai_namespace_feature_access_rules,
+        :duo_classic,
+        through_namespace: through_namespace,
+        root_namespace: root_namespace
+      )
+    end
+
+    let_it_be(:rule_for_other) do
+      create(
+        :ai_namespace_feature_access_rules,
+        :duo_agent_platform,
+        through_namespace: create(:group, parent: other_root_namespace),
+        root_namespace: other_root_namespace
+      )
+    end
+
+    it 'returns rules for the specified namespace' do
+      expect(described_class.for_namespace(root_namespace)).to match_array([rule_for_root])
     end
   end
 end
