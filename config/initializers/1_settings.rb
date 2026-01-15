@@ -1130,6 +1130,9 @@ Gitlab.ee do
   Settings.cron_jobs['secret_rotation_reminder_batch_worker'] ||= {}
   Settings.cron_jobs['secret_rotation_reminder_batch_worker']['cron'] ||= '* * * * *'
   Settings.cron_jobs['secret_rotation_reminder_batch_worker']['job_class'] = 'SecretsManagement::SecretRotationReminderBatchWorker'
+  Settings.cron_jobs['project_secrets_manager_maintenance_tasks_cron_worker'] ||= {}
+  Settings.cron_jobs['project_secrets_manager_maintenance_tasks_cron_worker']['cron'] ||= '* * * * *'
+  Settings.cron_jobs['project_secrets_manager_maintenance_tasks_cron_worker']['job_class'] = 'SecretsManagement::ProjectSecretsManagerMaintenanceTasksCronWorker'
   Settings.cron_jobs['virtual_registries_cleanup_enqueue_policy_worker'] ||= {}
   Settings.cron_jobs['virtual_registries_cleanup_enqueue_policy_worker']['cron'] ||= '40 * * * *'
   Settings.cron_jobs['virtual_registries_cleanup_enqueue_policy_worker']['job_class'] = 'VirtualRegistries::Cleanup::EnqueuePolicyWorker'

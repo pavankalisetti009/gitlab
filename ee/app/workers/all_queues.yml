@@ -833,6 +833,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:secrets_management_project_secrets_manager_maintenance_tasks_cron
+  :worker_name: SecretsManagement::ProjectSecretsManagerMaintenanceTasksCronWorker
+  :feature_category: :secrets_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:secrets_management_secret_rotation_reminder_batch
   :worker_name: SecretsManagement::SecretRotationReminderBatchWorker
   :feature_category: :secrets_management

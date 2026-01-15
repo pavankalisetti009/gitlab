@@ -16,6 +16,14 @@ module SecretsManagement
 
         secrets_manager.initiate_deprovision!
 
+        # Create maintenance task for tracking and recovery
+        SecretsManagement::ProjectSecretsManagerMaintenanceTask.create!(
+          project_secrets_manager: secrets_manager,
+          user: current_user,
+          last_processed_at: Time.zone.now,
+          action: :deprovision
+        )
+
         SecretsManagement::DeprovisionProjectSecretsManagerWorker.perform_async(
           current_user.id,
           secrets_manager.id

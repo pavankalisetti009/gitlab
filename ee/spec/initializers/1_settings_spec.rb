@@ -157,6 +157,7 @@ RSpec.describe '1_settings', feature_category: :settings do
         postgres_dynamic_partitions_dropper
         postgres_dynamic_partitions_manager
         projects_schedule_refresh_build_artifacts_size_statistics_worker
+        project_secrets_manager_maintenance_tasks_cron_worker
         prune_old_events_worker
         publish_release_worker
         remove_expired_group_links_worker
