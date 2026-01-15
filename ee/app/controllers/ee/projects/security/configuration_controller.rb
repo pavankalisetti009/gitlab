@@ -17,6 +17,7 @@ module EE
             push_frontend_feature_flag(:security_context_labels, project&.root_ancestor)
             push_frontend_feature_flag(:vulnerabilities_across_contexts, project)
             push_licensed_feature(:security_attributes, project&.root_ancestor)
+            push_frontend_feature_flag(:security_scan_profiles_feature, project&.root_ancestor)
           end
 
           feature_category :static_application_security_testing, [:show]

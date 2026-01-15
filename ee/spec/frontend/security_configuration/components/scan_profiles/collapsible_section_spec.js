@@ -1,6 +1,6 @@
 import { GlButton, GlCollapse, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import CollapsibleSection from '~/security_configuration/components/scan_profiles/collapsible_section.vue';
+import CollapsibleSection from 'ee/security_configuration/components/scan_profiles/collapsible_section.vue';
 
 describe('CollapsibleSection', () => {
   let wrapper;

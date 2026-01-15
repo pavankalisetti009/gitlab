@@ -1,0 +1,12 @@
+#import "./scan_profile.fragment.graphql"
+
+# @feature_category: security_asset_inventories
+query GroupAvailableSecurityScanProfiles($fullPath: ID!, $type: SecurityScanProfileType) {
+  group(fullPath: $fullPath) {
+    id
+    name
+    availableSecurityScanProfiles(type: $type) {
+      ...ScanProfileFields
+    }
+  }
+}
