@@ -40,6 +40,7 @@ module API
               success Entities::Clusters::AgentUrlConfiguration
               tags %w[cluster_agents]
             end
+            route_setting :authorization, permissions: :read_cluster_agent_url_configuration, boundary_type: :project
             get do
               authorize! :admin_cluster, user_project
 
@@ -64,6 +65,7 @@ module API
             params do
               requires :url_configuration_id, type: Integer, desc: 'The ID of the agent url configuration'
             end
+            route_setting :authorization, permissions: :read_cluster_agent_url_configuration, boundary_type: :project
             get ':url_configuration_id' do
               authorize! :admin_cluster, user_project
 
@@ -92,6 +94,7 @@ module API
                 desc: 'The CA certificate in PEM format for TLS validation'
               optional :tls_host, type: String, desc: 'The host name for TLS validation'
             end
+            route_setting :authorization, permissions: :create_cluster_agent_url_configuration, boundary_type: :project
             post do
               authorize! :create_cluster, user_project
 
@@ -118,6 +121,7 @@ module API
             params do
               requires :url_configuration_id, type: Integer, desc: 'The ID of the agent url configuration'
             end
+            route_setting :authorization, permissions: :delete_cluster_agent_url_configuration, boundary_type: :project
             delete ':url_configuration_id' do
               authorize! :admin_cluster, user_project
 

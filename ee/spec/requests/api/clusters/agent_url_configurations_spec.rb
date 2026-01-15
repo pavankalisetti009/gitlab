@@ -62,6 +62,14 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response).to be_empty
         end
+
+        it_behaves_like 'authorizing granular token permissions', :read_cluster_agent_url_configuration do
+          let(:boundary_object) { project }
+          let(:request) do
+            get api("/projects/#{project.id}/cluster_agents/#{agent.id}/url_configurations",
+              personal_access_token: pat)
+          end
+        end
       end
 
       context 'with unauthorized user' do
@@ -132,6 +140,14 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
             user)
 
           expect(response).to have_gitlab_http_status(:not_found)
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :read_cluster_agent_url_configuration do
+          let(:boundary_object) { project }
+          let(:request) do
+            get api("/projects/#{project.id}/cluster_agents/#{agent.id}/url_configurations/#{url_configuration.id}",
+              personal_access_token: pat)
+          end
         end
       end
 
@@ -300,6 +316,14 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
         end
       end
 
+      it_behaves_like 'authorizing granular token permissions', :create_cluster_agent_url_configuration do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/cluster_agents/#{agent.id}/url_configurations",
+            personal_access_token: pat), params: { url: 'grpcs://localhost:4242' }
+        end
+      end
+
       context 'when an already registered url configuration' do
         let_it_be(:receptive_agent) { create(:cluster_agent, project: project, is_receptive: true) }
 
@@ -403,6 +427,14 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
         )
 
         expect(response).to have_gitlab_http_status(:not_found)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :delete_cluster_agent_url_configuration do
+        let(:boundary_object) { project }
+        let(:request) do
+          delete api("/projects/#{project.id}/cluster_agents/#{agent.id}/url_configurations/#{url_configuration.id}",
+            personal_access_token: pat)
+        end
       end
     end
 
