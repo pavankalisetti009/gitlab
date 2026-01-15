@@ -115,7 +115,7 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
         prompt_class: nil,
         feature_category: :workflow_catalog,
         execute_method: nil,
-        maturity: :experimental,
+        maturity: :ga,
         self_managed: true,
         internal: true
       })

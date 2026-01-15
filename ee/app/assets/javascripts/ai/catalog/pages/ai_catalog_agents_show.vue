@@ -16,7 +16,6 @@ import {
   TRACK_EVENT_TYPE_AGENT,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
   VERSION_LATEST,
-  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   VERSION_PINNED,
   ENABLE_AGENT_MODAL_TEXTS,
   VERSION_PINNED_GROUP,
@@ -82,18 +81,11 @@ export default {
     };
   },
   computed: {
-    isThirdPartyFlow() {
-      return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
-    },
     showBetaBadge() {
       const { showBetaBadge } = useAiBetaBadge();
       return showBetaBadge.value;
     },
     badgeType() {
-      if (this.isThirdPartyFlow) {
-        return 'experiment';
-      }
-
       if (this.showBetaBadge) {
         return 'beta';
       }

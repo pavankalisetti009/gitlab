@@ -37,7 +37,7 @@ export default {
     },
     badgeType() {
       if (this.isThirdPartyFlow) {
-        return 'experiment';
+        return null;
       }
 
       if (this.showBetaBadge) {
