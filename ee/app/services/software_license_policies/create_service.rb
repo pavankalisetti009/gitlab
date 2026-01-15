@@ -11,9 +11,6 @@ module SoftwareLicensePolicies
       success(software_license_policy: result)
     rescue ActiveRecord::RecordInvalid => exception
       error(exception.record.errors.full_messages, 400)
-    rescue ArgumentError => exception
-      log_error(exception.message)
-      error(exception.message, 400)
     end
 
     private
