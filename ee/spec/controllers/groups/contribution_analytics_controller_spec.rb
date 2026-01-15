@@ -20,7 +20,9 @@ RSpec.describe Groups::ContributionAnalyticsController, feature_category: :value
       action: action,
       target: target,
       author: author,
-      created_at: Time.current)
+      created_at: Time.current).tap do |e|
+        insert_events_into_click_house([e]) if Gitlab::ClickHouse.enabled_for_analytics?
+      end
   end
 
   def create_push_event(author, project)
@@ -304,6 +306,7 @@ RSpec.describe Groups::ContributionAnalyticsController, feature_category: :value
     context 'when clickhouse is the data source', :click_house do
       before do
         allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+        insert_events_into_click_house
       end
 
       it_behaves_like 'correct data is returned'

@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'ciQueueingHistory' do
-  let(:licensed_feature_available) { true }
-
   before do
-    stub_licensed_features(runner_performance_insights: licensed_feature_available)
+    stub_licensed_features(required_license => true)
   end
 
   context 'when ClickHouse database is not configured' do
@@ -26,8 +24,10 @@ RSpec.shared_examples 'ciQueueingHistory' do
     end
   end
 
-  context 'when runner_performance_insights feature is disabled' do
-    let(:licensed_feature_available) { false }
+  context 'when licensed feature is not available' do
+    before do
+      stub_licensed_features(required_license => false)
+    end
 
     include_examples 'returns unauthorized error'
   end
