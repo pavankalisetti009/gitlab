@@ -474,7 +474,7 @@ RSpec.describe 'Groups > Members > Manage members', :with_trial_types, :js, feat
 
     let_it_be(:group_owner) { create(:user, owner_of: group) }
 
-    let(:access_levels) { %w[Guest Planner Reporter Developer Maintainer Owner] }
+    let(:access_levels) { Gitlab::Access.all_keys }
     let(:member_role_text) { "#{member_role.name}\n#{member_role.description}" }
 
     before do
