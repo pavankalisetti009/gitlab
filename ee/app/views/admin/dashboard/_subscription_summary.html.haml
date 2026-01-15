@@ -15,10 +15,11 @@
       = s_('AdminArea|For teams who need advanced CI/CD and productivity features.')
     .gl-flex
       - options = { variant: 'confirm', size: 'small', button_options: { class: 'gl-p-3 gl-mr-3' } }
-      = render Pajamas::ButtonComponent.new(href: self_managed_new_trial_url,
-        target: "_blank",
-        **options.deep_merge(button_options: { data: { 'event-tracking': 'click_start_trial_cta_sm_admin_dashboard' }})) do
-        = s_('AdminArea|Start free trial')
+      - unless Feature.enabled?(:automatic_self_managed_trial_activation, :instance)
+        = render Pajamas::ButtonComponent.new(href: self_managed_new_trial_url,
+          target: "_blank",
+          **options.deep_merge(button_options: { data: { 'event-tracking': 'click_start_trial_cta_sm_admin_dashboard' }})) do
+          = s_('AdminArea|Start free trial')
       = render Pajamas::ButtonComponent.new(category: 'secondary',
         href: promo_pricing_url(query: { deployment: 'self-managed' }),
         target: "_blank",

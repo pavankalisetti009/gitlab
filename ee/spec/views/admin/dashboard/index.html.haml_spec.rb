@@ -26,6 +26,7 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
     allow(view).to receive(:admin?).and_return(true)
     allow(view).to receive(:current_application_settings).and_return(Gitlab::CurrentSettings.current_application_settings)
     allow(view).to receive(:current_user).and_return(user)
+    stub_feature_flags(automatic_self_managed_trial_activation: false)
   end
 
   context 'when license is present' do
@@ -97,6 +98,62 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
 
       expect(rendered).not_to have_content "Active subscription"
       expect(rendered).not_to have_content "GitLab Free"
+    end
+  end
+
+  describe 'automatic_self_managed_trial_activation feature flag' do
+    context 'when feature flag is enabled', :without_license do
+      before do
+        stub_feature_flags(automatic_self_managed_trial_activation: true)
+      end
+
+      it 'hides Start free trial button' do
+        render
+        expect(rendered).not_to have_link('Start free trial', href: self_managed_new_trial_url)
+      end
+
+      it 'shows Explore plans button' do
+        render
+        expect(rendered).to have_css(
+          "a[data-event-tracking='click_explore_plans_cta_sm_admin_dashboard']",
+          text: 'Explore plans'
+        )
+      end
+
+      it 'shows trial activation messaging' do
+        render
+        expect(rendered).to have_content('GitLab Free')
+        expect(rendered).to have_content('Active subscription')
+        expect(rendered).to have_content('Try a 30 day free trial of Ultimate')
+      end
+    end
+
+    context 'when license is present' do
+      before do
+        assign(:license, create(:license))
+        stub_feature_flags(automatic_self_managed_trial_activation: true)
+      end
+
+      it 'does not show trial activation UI', :with_license do
+        render
+        expect(rendered).not_to have_content('Try a 30 day free trial of Ultimate')
+        expect(rendered).not_to have_link('Start free trial')
+        expect(rendered).not_to have_link('Explore plans')
+      end
+    end
+
+    context 'on GitLab.com', :without_license, :saas_gitlab_com_subscriptions do
+      before do
+        assign(:license, nil)
+        stub_feature_flags(automatic_self_managed_trial_activation: true)
+      end
+
+      it 'does not show trial activation UI' do
+        render
+        expect(rendered).not_to have_content('Try a 30 day free trial of Ultimate')
+        expect(rendered).not_to have_link('Start free trial')
+        expect(rendered).not_to have_link('Explore plans')
+      end
     end
   end
 

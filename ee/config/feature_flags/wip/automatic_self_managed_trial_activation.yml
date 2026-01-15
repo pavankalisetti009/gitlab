@@ -1,0 +1,10 @@
+---
+name: automatic_self_managed_trial_activation
+description: In-instance self managed trial activations
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/585713
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/218516
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/585747
+milestone: '18.9'
+group: group::acquisition
+type: wip
+default_enabled: false
