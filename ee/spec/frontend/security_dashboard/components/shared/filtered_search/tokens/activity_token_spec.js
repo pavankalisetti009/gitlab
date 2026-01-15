@@ -309,7 +309,7 @@ describe('ActivityToken', () => {
 
       it.each`
         autoDismissVulnerabilityPoliciesEnabled | expectedBadges
-        ${true}                                 | ${[...defaultBadges, 'flag']}
+        ${true}                                 | ${[...defaultBadges, 'clear-all']}
         ${false}                                | ${defaultBadges}
       `(
         'shows the correct badges when autoDismissVulnerabilityPoliciesEnabled=$autoDismissVulnerabilityPoliciesEnabled',

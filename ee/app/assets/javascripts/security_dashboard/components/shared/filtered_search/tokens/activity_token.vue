@@ -221,7 +221,7 @@ export default {
         groups.push({
           text: s__('SecurityReports|Policy actions'),
           options: [ITEMS.DISMISSED_BY_POLICY, ITEMS.NOT_DISMISSED_BY_POLICY],
-          icon: 'flag',
+          icon: 'clear-all',
         });
       }
 

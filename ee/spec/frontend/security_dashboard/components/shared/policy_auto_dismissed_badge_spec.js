@@ -18,7 +18,7 @@ describe('Policy auto-dismissed badge component', () => {
   describe('icon badge', () => {
     it('should render correctly', () => {
       expect(findBadge().props()).toMatchObject({
-        icon: 'flag',
+        icon: 'clear-all',
         variant: 'neutral',
       });
     });
