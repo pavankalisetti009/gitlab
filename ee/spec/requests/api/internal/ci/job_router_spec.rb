@@ -24,6 +24,54 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
     allow(Gitlab::Kas).to receive_messages(enabled?: true, secret: jwt_secret)
   end
 
+  describe 'GET /internal/ci/agents/runnerc/info' do
+    subject(:request) { get api('/internal/ci/agents/runnerc/info'), headers: headers.reverse_merge(kas_headers) }
+
+    context 'when not authenticated' do
+      let(:headers) { { Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => '' } }
+
+      it 'returns 401' do
+        request
+
+        expect(response).to have_gitlab_http_status(:unauthorized)
+      end
+    end
+
+    context 'when no Gitlab-Agent-Api-Request header is sent' do
+      let(:headers) { {} }
+
+      it 'returns 401' do
+        request
+
+        expect(response).to have_gitlab_http_status(:unauthorized)
+      end
+    end
+
+    context 'when Gitlab-Agent-Api-Request header is for non-existent agent' do
+      let(:headers) { { Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => 'NONEXISTENT' } }
+
+      it 'returns 401' do
+        request
+
+        expect(response).to have_gitlab_http_status(:unauthorized)
+      end
+    end
+
+    context 'when a runner controller is found' do
+      let!(:runner_controller_token) { create(:ci_runner_controller_token) }
+
+      let(:runner_controller) { runner_controller_token.runner_controller }
+      let(:headers) { { Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => runner_controller_token.token } }
+
+      it 'returns expected data' do
+        request
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(json_response).to eq('agent_id' => runner_controller.id)
+      end
+    end
+  end
+
   describe 'GET /internal/ci/job_router/runner_controllers/job_admission' do
     subject(:perform_request) { get api('/internal/ci/job_router/runner_controllers/job_admission'), headers: headers }
 
