@@ -41858,7 +41858,7 @@ msgstr ""
 msgid "MemberRole|The Reporter role is suitable for team members who need to stay informed about a project or group but do not actively contribute code."
 msgstr ""
 
-msgid "MemberRole|The Security Manager role provides comprehensive visibility and management over security aspects of the group or project."
+msgid "MemberRole|The Security Manager role is for security team members who need to view and manage security features for the group or project."
 msgstr ""
 
 msgid "MemberRole|This member is an LDAP user. Changing their role will override the settings from the LDAP group sync."
@@ -60283,6 +60283,9 @@ msgid "Security Dashboard"
 msgstr ""
 
 msgid "Security Finding not found"
+msgstr ""
+
+msgid "Security Manager"
 msgstr ""
 
 msgid "Security Policy project already exists, but is not linked."

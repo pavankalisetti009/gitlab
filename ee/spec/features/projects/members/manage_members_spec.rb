@@ -19,6 +19,7 @@ RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :gr
     before do
       stub_signing_key
       stub_reconciliation_request(true)
+      stub_subscription_request_seat_usage(true)
       stub_ee_application_setting(dashboard_limit_enabled: true)
     end
 
@@ -118,7 +119,7 @@ RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :gr
 
     let_it_be(:project_owner) { create(:user, owner_of: project) }
 
-    let(:access_levels) { %w[Guest Planner Reporter Developer Maintainer Owner] }
+    let(:access_levels) { Gitlab::Access.all_keys }
     let(:member_role_text) { "#{member_role.name}\n#{member_role.description}" }
 
     before do
