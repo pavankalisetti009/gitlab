@@ -101,7 +101,6 @@ describe('EE WorkItemDetail component', () => {
     describe('when duoRemoteFlowsAvailability  is false', () => {
       beforeEach(async () => {
         createComponent({
-          glFeatures: { duoWorkflowInCi: true },
           provide: { duoRemoteFlowsAvailability: false },
         });
         await waitForPromises();
@@ -115,7 +114,6 @@ describe('EE WorkItemDetail component', () => {
     describe('when duoRemoteFlowsAvailability is true', () => {
       beforeEach(async () => {
         createComponent({
-          glFeatures: { duoWorkflowInCi: true },
           provide: { duoRemoteFlowsAvailability: true },
         });
         await waitForPromises();
@@ -138,17 +136,6 @@ describe('EE WorkItemDetail component', () => {
           workItemId: workItem.iid,
         });
         expect(duoWorkflowAction.text()).toBe('Generate MR with Duo');
-      });
-    });
-
-    describe('when duoWorkflowInCi feature flag is disabled', () => {
-      beforeEach(async () => {
-        createComponent({ glFeatures: { duoWorkflowInCi: false } });
-        await waitForPromises();
-      });
-
-      it('does not show DuoWorkflowAction component', () => {
-        expect(findDuoWorkflowAction().exists()).toBe(false);
       });
     });
   });

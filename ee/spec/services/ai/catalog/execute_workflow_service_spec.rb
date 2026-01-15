@@ -322,14 +322,6 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
         it_behaves_like 'returns error response', 'Workflow start failed'
       end
 
-      context 'when duo_workflow_in_ci Feature flag is disabled' do
-        before do
-          stub_feature_flags(duo_workflow_in_ci: false)
-        end
-
-        it_behaves_like 'skips workflow execution'
-      end
-
       context 'when duo_remote_flows_enabled settings is turned off' do
         before do
           project.project_setting.update!(duo_remote_flows_enabled: false)

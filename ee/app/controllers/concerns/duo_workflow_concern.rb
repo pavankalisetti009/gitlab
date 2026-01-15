@@ -8,7 +8,6 @@ module DuoWorkflowConcern
     user ||= current_user
     return false unless project && user
 
-    project.duo_remote_flows_enabled && ::Feature.enabled?(:duo_workflow_in_ci, user) &&
-      ::Ai::DuoWorkflow.enabled?
+    project.duo_remote_flows_enabled && ::Ai::DuoWorkflow.enabled?
   end
 end

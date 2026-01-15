@@ -15,7 +15,7 @@ RSpec.describe 'Automate Agent Sessions', :js, feature_category: :duo_agent_plat
   before do
     sign_in(user)
 
-    stub_feature_flags(duo_workflow_in_ci: true, duo_workflow: true)
+    stub_feature_flags(duo_workflow: true)
     stub_licensed_features(ai_workflows: true)
     allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
@@ -107,14 +107,6 @@ RSpec.describe 'Automate Agent Sessions', :js, feature_category: :duo_agent_plat
     context 'when duo remote flows are disabled' do
       before do
         project.project_setting.update!(duo_remote_flows_enabled: false)
-      end
-
-      include_examples 'returns 404 page'
-    end
-
-    context 'when duo workflow feature flag is disabled' do
-      before do
-        stub_feature_flags(duo_workflow_in_ci: false)
       end
 
       include_examples 'returns 404 page'

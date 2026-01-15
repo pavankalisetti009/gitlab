@@ -22,7 +22,6 @@ RSpec.describe DuoWorkflowConcern, feature_category: :duo_agent_platform do
   describe '#duo_workflow_enabled?' do
     before do
       allow(project).to receive(:duo_remote_flows_enabled).and_return(true)
-      allow(::Feature).to receive(:enabled?).with(:duo_workflow_in_ci, user).and_return(true)
       allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
     end
 
@@ -32,11 +31,6 @@ RSpec.describe DuoWorkflowConcern, feature_category: :duo_agent_platform do
 
     it 'returns false when duo_remote_flows_enabled is false' do
       allow(project).to receive(:duo_remote_flows_enabled).and_return(false)
-      expect(instance.duo_workflow_enabled?).to be false
-    end
-
-    it 'returns false when duo_workflow_in_ci feature flag is disabled' do
-      allow(::Feature).to receive(:enabled?).with(:duo_workflow_in_ci, user).and_return(false)
       expect(instance.duo_workflow_enabled?).to be false
     end
 
@@ -59,7 +53,6 @@ RSpec.describe DuoWorkflowConcern, feature_category: :duo_agent_platform do
       custom_project = build_stubbed(:project)
       custom_user = build_stubbed(:user)
       allow(custom_project).to receive(:duo_remote_flows_enabled).and_return(true)
-      allow(::Feature).to receive(:enabled?).with(:duo_workflow_in_ci, custom_user).and_return(true)
 
       expect(instance.duo_workflow_enabled?(custom_project, custom_user)).to be true
     end
