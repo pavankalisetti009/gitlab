@@ -74,7 +74,7 @@ export default {
         return !this.iid;
       },
       update(data) {
-        return data.workspace?.issuable || {};
+        return data.namespace?.issuable || {};
       },
       error() {
         createAlert({
@@ -84,7 +84,7 @@ export default {
         });
       },
       result({ data }) {
-        this.localWeight = data?.workspace.issuable.weight ?? '';
+        this.localWeight = data?.namespace.issuable.weight ?? '';
       },
       subscribeToMore: {
         document() {
