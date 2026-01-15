@@ -6,16 +6,17 @@ import {
 } from 'ee/analytics/dashboards/ai_impact/constants';
 import { calculateRate } from 'ee/analytics/dashboards/ai_impact/utils';
 import {
-  LAST_30_DAYS,
-  LAST_180_DAYS,
-  DORA_METRIC_QUERY_RANGES,
-  startOfTomorrow,
+  DATE_RANGE_OPTION_LAST_30_DAYS,
+  DATE_RANGE_OPTION_LAST_180_DAYS,
+  DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { AI_METRICS } from '~/analytics/shared/constants';
 import { scaledValueForDisplay, extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { defaultClient } from '../graphql/client';
 
-const DATE_RANGE_TITLES = { [LAST_30_DAYS]: sprintf(__('Last %{days} days'), { days: 30 }) };
+const DATE_RANGE_TITLES = {
+  [DATE_RANGE_OPTION_LAST_30_DAYS]: sprintf(__('Last %{days} days'), { days: 30 }),
+};
 
 const extractMetricData = ({ metric, rawQueryResult: result }) => {
   const resp = extractQueryResponseFromNamespace({
@@ -109,22 +110,20 @@ const fetchAiImpactQuery = async ({ metric, namespace, startDate, endDate }) => 
 
 export default async function fetch({
   namespace,
-  query: { metric, dateRange = LAST_180_DAYS },
+  query: { metric, dateRange = DATE_RANGE_OPTION_LAST_180_DAYS },
   queryOverrides: { dateRange: dateRangeOverride = null, ...overridesRest } = {},
   setVisualizationOverrides = () => {},
 }) {
-  const dateRangeKey = dateRangeOverride
-    ? dateRangeOverride.toUpperCase()
-    : dateRange.toUpperCase();
+  const dateRangeKey = dateRangeOverride || dateRange;
 
   // Default to 180 days if an invalid date range is given
-  const startDate = DORA_METRIC_QUERY_RANGES[dateRangeKey]
-    ? DORA_METRIC_QUERY_RANGES[dateRangeKey]
-    : DORA_METRIC_QUERY_RANGES[LAST_180_DAYS];
+  const { startDate, endDate } = DATE_RANGE_OPTIONS[dateRangeKey]
+    ? DATE_RANGE_OPTIONS[dateRangeKey]
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_180_DAYS];
 
   const { rate, tooltip } = await fetchAiImpactQuery({
     startDate,
-    endDate: startOfTomorrow,
+    endDate,
     metric,
     namespace,
     ...overridesRest,

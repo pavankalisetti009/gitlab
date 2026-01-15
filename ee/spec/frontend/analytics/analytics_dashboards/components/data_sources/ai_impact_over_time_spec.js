@@ -7,16 +7,21 @@ import { AI_METRICS } from '~/analytics/shared/constants';
 import fetch from 'ee/analytics/analytics_dashboards/data_sources/ai_impact_over_time';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import {
-  LAST_WEEK,
-  LAST_30_DAYS,
-  LAST_180_DAYS,
+  DATE_RANGE_OPTION_LAST_7_DAYS,
+  DATE_RANGE_OPTION_LAST_30_DAYS,
+  DATE_RANGE_OPTION_LAST_180_DAYS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { AI_IMPACT_OVER_TIME_METRICS } from 'ee/analytics/dashboards/ai_impact/constants';
+
+const INVALID_DATE_RANGE = 'invalid-range';
 
 describe('AI Impact Over Time Data Source', () => {
   let res;
 
-  const query = { metric: AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE, dateRange: LAST_30_DAYS };
+  const query = {
+    metric: AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE,
+    dateRange: DATE_RANGE_OPTION_LAST_30_DAYS,
+  };
   const namespace = 'cool namespace';
   const defaultParams = {
     namespace,
@@ -40,8 +45,8 @@ describe('AI Impact Over Time Data Source', () => {
         res = await fetch({ namespace, query });
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-07'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-06-06'),
+          endDate: new Date('2020-07-06'),
           fullPath: namespace,
         });
       });
@@ -109,11 +114,11 @@ describe('AI Impact Over Time Data Source', () => {
       };
 
       it('can override the date range', async () => {
-        res = await mockQuery(LAST_WEEK);
+        res = await mockQuery(DATE_RANGE_OPTION_LAST_7_DAYS);
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-30'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-06-29'),
+          endDate: new Date('2020-07-06'),
           fullPath: namespace,
         });
       });
@@ -125,11 +130,11 @@ describe('AI Impact Over Time Data Source', () => {
         ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'50.0'}
         ${AI_METRICS.DUO_USAGE_RATE}                   | ${'30.0'}
       `('can override the metric with `$metric`', async ({ metric, result }) => {
-        res = await mockQuery(LAST_WEEK, { metric });
+        res = await mockQuery(DATE_RANGE_OPTION_LAST_7_DAYS, { metric });
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-30'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-06-29'),
+          endDate: new Date('2020-07-06'),
           fullPath: namespace,
         });
 
@@ -137,25 +142,27 @@ describe('AI Impact Over Time Data Source', () => {
       });
 
       it('can override the namespace', async () => {
-        res = await mockQuery(LAST_WEEK, { namespace: 'cool-namespace/sub-namespace' });
+        res = await mockQuery(DATE_RANGE_OPTION_LAST_7_DAYS, {
+          namespace: 'cool-namespace/sub-namespace',
+        });
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-30'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-06-29'),
+          endDate: new Date('2020-07-06'),
           fullPath: 'cool-namespace/sub-namespace',
         });
       });
 
-      it('will default to LAST_180_DAYS when given an invalid dateRange', async () => {
-        res = await mockQuery('LAST_45_DAYS');
+      it('will default to DATE_RANGE_OPTION_LAST_180_DAYS when given an invalid dateRange', async () => {
+        res = await mockQuery(INVALID_DATE_RANGE);
 
         expectQueryWithVariables({
-          startDate: new Date('2020-01-09'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-01-08'),
+          endDate: new Date('2020-07-06'),
           fullPath: namespace,
         });
 
-        const defaultRes = await mockQuery(LAST_180_DAYS);
+        const defaultRes = await mockQuery(DATE_RANGE_OPTION_LAST_180_DAYS);
         expect(defaultRes).toEqual(res);
       });
     });

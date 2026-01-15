@@ -2,9 +2,8 @@ import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { __, s__, sprintf } from '~/locale';
 import {
-  LAST_30_DAYS,
-  DORA_METRIC_QUERY_RANGES,
-  startOfTomorrow,
+  DATE_RANGE_OPTION_LAST_30_DAYS,
+  DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { getLanguageDisplayName } from 'ee/analytics/analytics_dashboards/code_suggestions_languages';
 import { truncate } from '~/lib/utils/text_utility';
@@ -82,22 +81,21 @@ const extractAcceptanceMetricsByLanguage = (results = []) => {
 
 export default async function fetch({
   namespace,
-  query: { dateRange = LAST_30_DAYS },
+  query: { dateRange = DATE_RANGE_OPTION_LAST_30_DAYS },
   queryOverrides: { dateRange: dateRangeOverride, namespace: namespaceOverride } = {},
   setVisualizationOverrides = () => {},
   setAlerts = () => {},
 }) {
-  const dateRangeKey = dateRangeOverride
-    ? dateRangeOverride.toUpperCase()
-    : dateRange.toUpperCase();
+  const dateRangeKey = dateRangeOverride || dateRange;
 
-  const startDate =
-    DORA_METRIC_QUERY_RANGES[dateRangeKey] ?? DORA_METRIC_QUERY_RANGES[LAST_30_DAYS];
+  const { startDate, endDate } = DATE_RANGE_OPTIONS[dateRangeKey]
+    ? DATE_RANGE_OPTIONS[dateRangeKey]
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_30_DAYS];
 
   const { successfulLanguages, failedLanguages } = await fetchAllCodeSuggestionsLanguagesMetrics({
     fullPath: namespaceOverride ?? namespace,
     startDate,
-    endDate: startOfTomorrow,
+    endDate,
   });
 
   const { chartData, contextualData } = extractAcceptanceMetricsByLanguage(successfulLanguages);
