@@ -479,7 +479,7 @@ describe('DuoWorkflowAction component', () => {
         });
 
         it('shows success toast with the session ID and action link', () => {
-          expect(toast).toHaveBeenCalledWith('Issue to merge request #1056241 created', {
+          expect(toast).toHaveBeenCalledWith('Developer/v1 #1056241 created', {
             action: {
               text: 'View',
               href: '/group/project/-/automate/agent-sessions/1056241',

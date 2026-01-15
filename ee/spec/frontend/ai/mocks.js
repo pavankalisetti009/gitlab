@@ -171,7 +171,7 @@ export const mockCreateFlowResponse = {
   ],
   pre_approved_agent_privileges: [1, 2],
   pre_approved_agent_privileges_names: ['read_write_files', 'read_only_gitlab'],
-  workflow_definition: 'issue_to_merge_request',
+  workflow_definition: 'developer/v1',
   status: 'created',
   allow_agent_to_request_user: true,
   image: null,

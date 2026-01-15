@@ -49,7 +49,6 @@ module EE
         before_action only: [:index, :show] do
           push_force_frontend_feature_flag(:okrs_mvc, !!project&.okrs_mvc_feature_flag_enabled?)
           push_licensed_feature(:okrs, project)
-          push_frontend_feature_flag(:duo_developer_button, current_user)
         end
 
         before_action only: %i[show index] do
