@@ -67,19 +67,22 @@ RSpec.describe Ai::ActiveContext::MigrationWorker, :clean_gitlab_redis_shared_st
 
     context 'with valid configuration' do
       let(:dictionary_instance) { instance_double(ActiveContext::Migration::Dictionary) }
-      let(:migration_versions) { %w[20240101010101 20240101010102] }
+      let(:migration_versions) { %w[20240101010101] }
+      let(:migration_class) { Class.new(ActiveContext::Migration::V1_0) }
+      let(:migration_instance) { instance_double(migration_class) }
 
       before do
         allow(ActiveContext::Migration::Dictionary).to receive(:instance).and_return(dictionary_instance)
         allow(dictionary_instance).to receive(:migrations).with(versions_only: true).and_return(migration_versions)
-        allow(dictionary_instance).to receive(:find_by_version)
+        allow(dictionary_instance).to receive(:find_by_version).with('20240101010101').and_return(migration_class)
+        allow(migration_class).to receive(:new).and_return(migration_instance)
+        allow(migration_instance).to receive(:migrate!)
+        allow(migration_instance).to receive_messages(all_operations_completed?: true, skip?: false)
       end
 
       it 'creates missing migration records' do
         expect(Ai::ActiveContext::Migration).to receive(:create!)
           .with(connection: connection, version: '20240101010101')
-        expect(Ai::ActiveContext::Migration).to receive(:create!)
-          .with(connection: connection, version: '20240101010102')
 
         perform
       end
@@ -97,23 +100,11 @@ RSpec.describe Ai::ActiveContext::MigrationWorker, :clean_gitlab_redis_shared_st
       end
 
       context 'when there is a pending migration' do
-        let(:migration_class) { Class.new(ActiveContext::Migration::V1_0) }
-        let(:migration_instance) { instance_double(migration_class) }
         let!(:pending_migration) do
           create(:ai_active_context_migration, connection: connection, version: '20240101010101', status: :pending)
         end
 
-        before do
-          allow(dictionary_instance).to receive(:find_by_version).with('20240101010101').and_return(migration_class)
-          allow(migration_class).to receive(:new).and_return(migration_instance)
-          allow(migration_instance).to receive(:migrate!)
-        end
-
         context 'when all operations are completed' do
-          before do
-            allow(migration_instance).to receive(:all_operations_completed?).and_return(true)
-          end
-
           it 'marks the migration as completed' do
             perform
 
@@ -162,6 +153,54 @@ RSpec.describe Ai::ActiveContext::MigrationWorker, :clean_gitlab_redis_shared_st
               expect(pending_migration.reload).to be_failed
               expect(pending_migration.reload.error_message).to include('Something went wrong')
             end
+          end
+        end
+
+        context 'when the migration should be skipped' do
+          before do
+            allow(migration_instance).to receive(:skip?).and_return(true)
+          end
+
+          it 'marks the migration as skipped' do
+            perform
+
+            expect(pending_migration.reload).to be_skipped
+          end
+
+          it 'does not execute the migration' do
+            perform
+
+            expect(migration_instance).not_to have_received(:migrate!)
+          end
+        end
+      end
+
+      context 'when there are skipped migrations that need re-evaluation' do
+        let!(:skipped_migration) do
+          create(:ai_active_context_migration, connection: connection, version: '20240101010101', status: :skipped)
+        end
+
+        context 'when skip condition is no longer met' do
+          before do
+            allow(migration_instance).to receive(:skip?).and_return(false)
+          end
+
+          it 're-evaluates the migration' do
+            perform
+
+            expect(skipped_migration.reload).to be_completed
+          end
+        end
+
+        context 'when skip condition is still met' do
+          before do
+            allow(migration_instance).to receive(:skip?).and_return(true)
+          end
+
+          it 'keeps the migration as skipped' do
+            perform
+
+            expect(skipped_migration.reload).to be_skipped
           end
         end
       end

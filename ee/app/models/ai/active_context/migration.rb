@@ -14,6 +14,7 @@ module Ai
         pending: 0,
         in_progress: 1,
         completed: 10,
+        skipped: 100,
         failed: 255
       }
 
