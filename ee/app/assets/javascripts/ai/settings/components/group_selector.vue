@@ -14,6 +14,7 @@ export default {
   actionCancel: {
     text: __('Cancel'),
   },
+  inject: ['parentPath'],
   emits: ['group-selected'],
   data() {
     return {
@@ -28,8 +29,18 @@ export default {
     groups: {
       query: searchGroups,
       variables() {
+        if (this.parentPath) {
+          return {
+            search: this.searchTerm,
+            parentPath: this.parentPath,
+            topLevelOnly: null,
+          };
+        }
+
         return {
           search: this.searchTerm,
+          topLevelOnly: true,
+          parentPath: null,
         };
       },
       skip() {

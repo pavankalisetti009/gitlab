@@ -226,18 +226,14 @@ export default {
       this.aiGatewayTimeoutSecondsInput = value;
     },
     formatNamespaceAccessRules(rules) {
-      if (!rules) {
-        return [];
-      }
+      if (!rules) return [];
 
-      return rules.map((rule) => {
-        return {
-          through_namespace: {
-            id: rule.throughNamespace.id,
-          },
-          features: rule.features,
-        };
-      });
+      return rules.map((rule) => ({
+        through_namespace: {
+          id: rule.throughNamespace.id,
+        },
+        features: rule.features,
+      }));
     },
     onError(error) {
       createAlert({
