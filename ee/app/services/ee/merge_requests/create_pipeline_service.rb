@@ -15,13 +15,24 @@ module EE
       end
 
       def allowed?(merge_request)
-        (can_create_merged_result_pipeline_for?(merge_request) && user_can_run_pipeline?(merge_request)) || super
+        (
+          merge_request.project.merge_pipelines_enabled? &&
+          can_create_merged_result_pipeline_for?(merge_request) &&
+          user_can_run_pipeline?(merge_request)
+        ) || super
       end
 
       private
 
       def create_merged_result_pipeline_for(merge_request)
-        return cannot_create_pipeline_error unless can_create_merged_result_pipeline_for?(merge_request)
+        unless merge_request.project.merge_pipelines_enabled?
+          return ServiceResponse.error(
+            message: 'Cannot create a pipeline for this merge request: merge pipelines not enabled'
+          )
+        end
+
+        duplicate_error = check_duplicate_pipeline(merge_request)
+        return duplicate_error if duplicate_error
 
         result = ::MergeRequests::MergeabilityCheckService.new(merge_request).execute(recheck: true)
 
@@ -38,15 +49,16 @@ module EE
               push_options: params[:push_options])
             .execute(:merge_request_event, merge_request: merge_request)
         else
-          cannot_create_pipeline_error
+          cannot_create_pipeline_error('mergeability check failed')
         end
       end
 
       def can_create_merged_result_pipeline_for?(merge_request)
-        return false unless merge_request.project.merge_pipelines_enabled?
         return false unless can_create_pipeline_in_target_project?(merge_request)
 
-        can_create_pipeline_for?(merge_request)
+        return false if merge_request.has_no_commits?
+
+        true
       end
 
       def merge_status_race?(merge_request, result)

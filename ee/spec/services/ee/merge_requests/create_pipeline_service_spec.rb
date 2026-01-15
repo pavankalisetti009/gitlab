@@ -204,7 +204,9 @@ RSpec.describe MergeRequests::CreatePipelineService, :clean_gitlab_redis_shared_
 
       it 'responds with error', :aggregate_failures do
         expect(subject).to be_error
-        expect(subject.message).to eq('Cannot create a pipeline for this merge request.')
+        expect(subject.message).to eq(
+          'Cannot create a pipeline for this merge request: duplicate pipeline.'
+        )
       end
     end
   end
@@ -214,6 +216,7 @@ RSpec.describe MergeRequests::CreatePipelineService, :clean_gitlab_redis_shared_
 
     subject(:allowed) { service.allowed?(merge_request) }
 
+    let(:merge_pipelines_enabled) { true }
     let(:user_without_permissions) { create(:user) }
 
     where(:merged_result_pipeline_supported, :detached_mr_pipeline_supported, :user_can_run_pipeline, :result) do
@@ -240,10 +243,53 @@ RSpec.describe MergeRequests::CreatePipelineService, :clean_gitlab_redis_shared_
           .and_return(detached_mr_pipeline_supported)
 
         project.add_developer(user) if user_can_run_pipeline
+
+        source_project.merge_pipelines_enabled = merge_pipelines_enabled
+        stub_licensed_features(merge_pipelines: true)
       end
 
       it 'matches the expected result' do
         expect(allowed).to eq(result)
+      end
+    end
+  end
+
+  describe '#can_create_merged_result_pipeline_for?' do
+    context 'when user can create pipeline and has commits' do
+      before do
+        allow(service).to receive(:can_create_pipeline_in_target_project?)
+          .with(merge_request).and_return(true)
+        allow(merge_request).to receive(:has_no_commits?).and_return(false)
+      end
+
+      it 'returns true' do
+        expect(service.send(:can_create_merged_result_pipeline_for?, merge_request))
+          .to be true
+      end
+    end
+
+    context 'when user cannot create pipeline in target project' do
+      before do
+        allow(service).to receive(:can_create_pipeline_in_target_project?)
+          .with(merge_request).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(service.send(:can_create_merged_result_pipeline_for?, merge_request))
+          .to be false
+      end
+    end
+
+    context 'when merge request has no commits' do
+      before do
+        allow(service).to receive(:can_create_pipeline_in_target_project?)
+          .with(merge_request).and_return(true)
+        allow(merge_request).to receive(:has_no_commits?).and_return(true)
+      end
+
+      it 'returns false' do
+        expect(service.send(:can_create_merged_result_pipeline_for?, merge_request))
+          .to be false
       end
     end
   end
