@@ -39,6 +39,7 @@ module API
         is_array true
         tags SAML_GROUP_LINKS
       end
+      route_setting :authorization, permissions: :read_saml_group_link, boundary_type: :group
       get ":id/saml_group_links" do
         group = find_group(params[:id])
         unauthorized! unless can?(current_user, :admin_saml_group_links, group)
@@ -66,6 +67,7 @@ module API
         optional 'provider', type: String,
           desc: 'Provider string that must match for this group link to be applied'
       end
+      route_setting :authorization, permissions: :create_saml_group_link, boundary_type: :group
       post ":id/saml_group_links" do
         group = find_group(params[:id])
 
@@ -101,6 +103,7 @@ module API
         optional 'provider', type: String,
           desc: 'Provider string to disambiguate when multiple links exist with same name'
       end
+      route_setting :authorization, permissions: :read_saml_group_link, boundary_type: :group
       get ":id/saml_group_links/:saml_group_name" do
         group = find_group(params[:id])
 
@@ -125,6 +128,7 @@ module API
         optional 'provider', type: String,
           desc: 'Provider string to disambiguate when multiple links exist with same name'
       end
+      route_setting :authorization, permissions: :delete_saml_group_link, boundary_type: :group
       delete ":id/saml_group_links/:saml_group_name" do
         group = find_group(params[:id])
 

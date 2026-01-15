@@ -150,6 +150,16 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
         expect(response).to have_gitlab_http_status(:unauthorized)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_saml_group_link do
+      before do
+        stub_licensed_features(group_saml: true, saml_group_sync: true)
+      end
+
+      let(:user) { owner }
+      let(:boundary_object) { group_with_saml_group_links }
+      let(:request) { get api("/groups/#{group_id}/saml_group_links", personal_access_token: pat) }
+    end
   end
 
   describe "POST /groups/:id/saml_group_links" do
@@ -398,6 +408,16 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
         expect(response).to have_gitlab_http_status(:unauthorized)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :create_saml_group_link do
+      before do
+        stub_licensed_features(group_saml: true, saml_group_sync: true)
+      end
+
+      let(:user) { owner }
+      let(:boundary_object) { group_with_saml_group_links }
+      let(:request) { post api("/groups/#{group_id}/saml_group_links", personal_access_token: pat), params: params }
+    end
   end
 
   describe "GET /groups/:id/saml_group_links/:saml_group_name" do
@@ -565,6 +585,16 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
         expect(response).to have_gitlab_http_status(:unauthorized)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_saml_group_link do
+      before do
+        stub_licensed_features(group_saml: true, saml_group_sync: true)
+      end
+
+      let(:user) { owner }
+      let(:boundary_object) { group_with_saml_group_links }
+      let(:request) { get api("/groups/#{group_id}/saml_group_links/#{saml_group_name}", personal_access_token: pat) }
+    end
   end
 
   describe "DELETE /groups/:id/saml_group_links/:saml_group_name" do
@@ -723,6 +753,18 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
         subject
 
         expect(response).to have_gitlab_http_status(:unauthorized)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_saml_group_link do
+      before do
+        stub_licensed_features(group_saml: true, saml_group_sync: true)
+      end
+
+      let(:user) { owner }
+      let(:boundary_object) { group_with_saml_group_links }
+      let(:request) do
+        delete api("/groups/#{group_id}/saml_group_links/#{saml_group_name}", personal_access_token: pat)
       end
     end
   end
