@@ -37,14 +37,18 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
 
 const findAiCommonSettings = () => wrapper.findComponent(AiCommonSettings);
 const findDuoWorkflowSettingsForm = () => wrapper.findComponent(DuoWorkflowSettingsForm);
+const emitSubmitNamespaceAccessRules = async (namespaceAccessRules) => {
+  updateGroupSettings.mockResolvedValueOnce({});
+  await findAiCommonSettings().vm.$emit('submit', {
+    namespaceAccessRules,
+  });
+  await waitForPromises();
+};
 
 describe('AiGroupSettings', () => {
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('UI', () => {
     it('renders the component', () => {
+      createComponent();
       expect(wrapper.exists()).toBe(true);
     });
 
@@ -83,6 +87,7 @@ describe('AiGroupSettings', () => {
     });
 
     it('passes hasFormChanged prop to AiCommonSettings', () => {
+      createComponent();
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(false);
     });
   });
@@ -157,6 +162,10 @@ describe('AiGroupSettings', () => {
   });
 
   describe('methods', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     describe('onDuoWorkflowMcpChanged', () => {
       describe('when mcp-change event is emitted', () => {
         it('updates duoWorkflowMcp value and marks form as changed', async () => {
@@ -194,6 +203,8 @@ describe('AiGroupSettings', () => {
 
   describe('updateSettings', () => {
     it('calls updateGroupSettings with correct parameters', async () => {
+      createComponent();
+
       updateGroupSettings.mockResolvedValue({});
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
@@ -207,6 +218,9 @@ describe('AiGroupSettings', () => {
         foundationalAgentsStatuses: mockAgentStatuses,
         selectedFoundationalFlowIds: [],
         duoAgentPlatformEnabled: true,
+        namespaceAccessRules: [
+          { throughNamespace: { id: 1, name: 'Group' }, features: ['duo_classic'] },
+        ],
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
@@ -225,11 +239,51 @@ describe('AiGroupSettings', () => {
           prompt_injection_protection_level: 'interrupt',
           foundational_agents_default_enabled: true,
         },
+        duo_namespace_access_rules: [{ through_namespace: { id: 1 }, features: ['duo_classic'] }],
+      });
+    });
+
+    describe('when on general settings page', () => {
+      it('calls updateApplicationSettings without namespace access rules', async () => {
+        createComponent({ provide: { onGeneralSettingsPage: true } });
+
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {
+          duo_namespace_access_rules: [{ through_namespace: { id: 1 }, features: ['duo_classic'] }],
+        });
+        await waitForPromises();
+
+        expect(updateGroupSettings).toHaveBeenCalledTimes(1);
+        expect(updateGroupSettings).toHaveBeenCalledWith(
+          '100',
+          expect.not.objectContaining({
+            duo_namespace_access_rules: expect.anything(),
+          }),
+        );
+      });
+    });
+
+    describe('without namespace access rules', () => {
+      it('calls updateApplicationSettings with empty namespace access rules', async () => {
+        createComponent();
+
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {});
+        await waitForPromises();
+
+        expect(updateGroupSettings).toHaveBeenCalledTimes(1);
+        expect(updateGroupSettings).toHaveBeenCalledWith(
+          '100',
+          expect.objectContaining({
+            duo_namespace_access_rules: [],
+          }),
+        );
       });
     });
 
     describe('when duoWorkflowMcp is changed', () => {
       beforeEach(async () => {
+        createComponent();
         updateGroupSettings.mockResolvedValue({});
         findDuoWorkflowSettingsForm().vm.$emit('mcp-change', true);
         await nextTick();
@@ -261,6 +315,7 @@ describe('AiGroupSettings', () => {
 
     describe('when promptInjectionProtection is changed', () => {
       beforeEach(async () => {
+        createComponent();
         updateGroupSettings.mockResolvedValue({});
         findDuoWorkflowSettingsForm().vm.$emit('protection-level-change', 'log_only');
         await nextTick();
@@ -292,6 +347,7 @@ describe('AiGroupSettings', () => {
 
     describe('when update succeeds', () => {
       beforeEach(async () => {
+        createComponent();
         updateGroupSettings.mockResolvedValue({});
         await findAiCommonSettings().vm.$emit('submit', {
           duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
@@ -322,6 +378,7 @@ describe('AiGroupSettings', () => {
 
     describe('when update fails', () => {
       beforeEach(async () => {
+        createComponent();
         const error = new Error('API error');
         updateGroupSettings.mockRejectedValue(error);
         await findAiCommonSettings().vm.$emit('submit', {
@@ -392,6 +449,7 @@ describe('AiGroupSettings', () => {
     describe('foundational flow selection', () => {
       describe('when selectedFoundationalFlowIds are provided', () => {
         beforeEach(async () => {
+          createComponent();
           updateGroupSettings.mockResolvedValue({});
           await findAiCommonSettings().vm.$emit('submit', {
             duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
@@ -414,6 +472,46 @@ describe('AiGroupSettings', () => {
           );
         });
       });
+    });
+  });
+
+  describe('formatNamespaceAccessRules', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('returns empty array when rules is falsy', async () => {
+      await emitSubmitNamespaceAccessRules(null);
+
+      expect(updateGroupSettings).toHaveBeenCalledWith(
+        '100',
+        expect.objectContaining({
+          duo_namespace_access_rules: [],
+        }),
+      );
+    });
+
+    it('correctly formats namespace access rules', async () => {
+      await emitSubmitNamespaceAccessRules([
+        {
+          throughNamespace: { id: 1, name: 'Group A', fullPath: 'group-a' },
+          features: ['duo_classic', 'duo_chat'],
+        },
+        {
+          throughNamespace: { id: 2, name: 'Group B', fullPath: 'group-b' },
+          features: ['duo_workflow'],
+        },
+      ]);
+
+      expect(updateGroupSettings).toHaveBeenCalledWith(
+        '100',
+        expect.objectContaining({
+          duo_namespace_access_rules: [
+            { through_namespace: { id: 1 }, features: ['duo_classic', 'duo_chat'] },
+            { through_namespace: { id: 2 }, features: ['duo_workflow'] },
+          ],
+        }),
+      );
     });
   });
 });

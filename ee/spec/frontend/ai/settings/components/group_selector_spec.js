@@ -44,9 +44,16 @@ describe('GroupSelector', () => {
   const findModal = () => wrapper.findComponent(GlModal);
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
 
-  const createComponent = ({ searchGroupsHandler = searchGroupsSuccessHandler } = {}) => {
+  const createComponent = ({
+    searchGroupsHandler = searchGroupsSuccessHandler,
+    provide = {},
+  } = {}) => {
     wrapper = shallowMount(GroupSelector, {
       apolloProvider: createMockApollo([[searchGroups, searchGroupsHandler]]),
+      provide: {
+        parentPath: undefined,
+        ...provide,
+      },
     });
   };
 
@@ -57,11 +64,11 @@ describe('GroupSelector', () => {
     await nextTick();
   };
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('rendering', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders the add group button', () => {
       expect(findButton().exists()).toBe(true);
       expect(findButton().text()).toBe('Add group');
@@ -93,19 +100,15 @@ describe('GroupSelector', () => {
   });
 
   describe('group search', () => {
-    beforeEach(async () => {
+    it('fetches groups when dropdown is shown', async () => {
+      createComponent();
       await triggerDropdown();
-    });
 
-    it('fetches groups when dropdown is shown', () => {
-      expect(searchGroupsSuccessHandler).toHaveBeenCalledWith({ search: '' });
-    });
-
-    it('updates groups list when search is performed', async () => {
-      findListbox().vm.$emit('search', 'test');
-      await waitForPromises();
-
-      expect(searchGroupsSuccessHandler).toHaveBeenCalledWith({ search: 'test' });
+      expect(searchGroupsSuccessHandler).toHaveBeenCalledWith({
+        search: '',
+        parentPath: null,
+        topLevelOnly: true,
+      });
     });
 
     it('displays no results text when no groups are found', async () => {
@@ -118,15 +121,95 @@ describe('GroupSelector', () => {
       });
 
       createComponent({ searchGroupsHandler: emptyHandler });
-
       await triggerDropdown();
 
       expect(findListbox().props('noResultsText')).toBe('No groups found');
     });
   });
 
+  describe('parentPath injection', () => {
+    describe('when parentPath is provided', () => {
+      const parentPath = 'parent-group';
+
+      beforeEach(() => {
+        createComponent({
+          provide: { parentPath },
+        });
+      });
+
+      it('includes parentPath in query variables', async () => {
+        await triggerDropdown();
+
+        expect(searchGroupsSuccessHandler).toHaveBeenCalledWith({
+          search: '',
+          parentPath,
+          topLevelOnly: null,
+        });
+      });
+
+      it('includes parentPath with search term in query variables', async () => {
+        await triggerDropdown();
+
+        findListbox().vm.$emit('search', 'test');
+        await waitForPromises();
+
+        expect(searchGroupsSuccessHandler).toHaveBeenCalledWith({
+          search: 'test',
+          parentPath,
+          topLevelOnly: null,
+        });
+      });
+
+      it('does set topLevelOnly to null', async () => {
+        await triggerDropdown();
+
+        expect(searchGroupsSuccessHandler).toHaveBeenCalledWith(
+          expect.objectContaining({ topLevelOnly: null }),
+        );
+      });
+    });
+
+    describe('when parentPath is not provided', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('includes topLevelOnly in query variables', async () => {
+        await triggerDropdown();
+
+        expect(searchGroupsSuccessHandler).toHaveBeenCalledWith({
+          search: '',
+          parentPath: null,
+          topLevelOnly: true,
+        });
+      });
+
+      it('includes topLevelOnly with search term in query variables', async () => {
+        await triggerDropdown();
+
+        findListbox().vm.$emit('search', 'test');
+        await waitForPromises();
+
+        expect(searchGroupsSuccessHandler).toHaveBeenCalledWith({
+          search: 'test',
+          parentPath: null,
+          topLevelOnly: true,
+        });
+      });
+
+      it('does set parentPath to null', async () => {
+        await triggerDropdown();
+
+        expect(searchGroupsSuccessHandler).toHaveBeenCalledWith(
+          expect.objectContaining({ parentPath: null }),
+        );
+      });
+    });
+  });
+
   describe('listbox items', () => {
     beforeEach(async () => {
+      createComponent();
       await triggerDropdown();
       await waitForPromises();
       await nextTick();
@@ -156,11 +239,14 @@ describe('GroupSelector', () => {
   });
 
   describe('add group action', () => {
-    it('emits groupSelected event with selected group when add button is clicked', async () => {
+    beforeEach(async () => {
+      createComponent();
       await triggerDropdown();
       await waitForPromises();
       await nextTick();
+    });
 
+    it('emits groupSelected event with selected group when add button is clicked', async () => {
       findListbox().vm.$emit('select', mockGroup1.id);
       await nextTick();
 
@@ -189,6 +275,10 @@ describe('GroupSelector', () => {
   });
 
   describe('modal action buttons', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders modal with correct action primary text', () => {
       expect(findModal().props('actionPrimary').text).toBe('Add');
     });

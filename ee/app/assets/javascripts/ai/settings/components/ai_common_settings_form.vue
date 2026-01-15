@@ -271,7 +271,7 @@ export default {
     <duo-availability :duo-availability="availability" @change="onRadioChanged" />
 
     <ai-namespace-access-rules
-      v-if="initialNamespaceAccessRules"
+      v-if="initialNamespaceAccessRules && !onGeneralSettingsPage"
       :initial-namespace-access-rules="namespaceAccessRules"
       @change="onNamespaceAccessRulesChanged"
     />

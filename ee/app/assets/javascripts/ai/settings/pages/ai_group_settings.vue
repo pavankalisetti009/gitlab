@@ -67,6 +67,7 @@ export default {
       foundationalAgentsStatuses,
       selectedFoundationalFlowIds,
       duoAgentPlatformEnabled,
+      namespaceAccessRules,
     }) {
       try {
         const transformedFoundationalAgentsStatuses = foundationalAgentsStatuses?.filter(
@@ -98,6 +99,7 @@ export default {
 
         if (!this.onGeneralSettingsPage) {
           input.duo_core_features_enabled = duoCoreFeaturesEnabled;
+          input.duo_namespace_access_rules = this.formatNamespaceAccessRules(namespaceAccessRules);
         }
 
         await updateGroupSettings(this.updateId, input);
@@ -122,6 +124,16 @@ export default {
     },
     onPromptInjectionProtectionChanged(value) {
       this.promptInjectionProtection = value;
+    },
+    formatNamespaceAccessRules(rules) {
+      if (!rules) return [];
+
+      return rules.map((rule) => ({
+        through_namespace: {
+          id: rule.throughNamespace.id,
+        },
+        features: rule.features,
+      }));
     },
   },
 };

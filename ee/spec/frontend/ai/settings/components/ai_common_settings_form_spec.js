@@ -62,23 +62,23 @@ describe('AiCommonSettingsForm', () => {
   const findAiNamespaceAccessRules = () => wrapper.findComponent(AiNamespaceAccessRules);
   const findSaveButton = () => wrapper.findComponent(GlButton);
 
-  beforeEach(() => {
-    createComponent();
+  describe('when initialNamespaceAccessRules is null', () => {
+    beforeEach(() => {
+      createComponent({ props: { initialNamespaceAccessRules: null } });
+    });
+
+    it('does not render the namespace access rules component', () => {
+      expect(findAiNamespaceAccessRules().exists()).toBe(false);
+    });
   });
 
   describe('component rendering', () => {
-    it('renders AI Namespace Access Rules component', () => {
-      expect(findAiNamespaceAccessRules().exists()).toBe(true);
+    beforeEach(() => {
+      createComponent();
     });
 
-    describe('when initialNamespaceAccessRules is null', () => {
-      beforeEach(() => {
-        createComponent({ props: { initialNamespaceAccessRules: null } });
-      });
-
-      it('does not render the component', () => {
-        expect(findAiNamespaceAccessRules().exists()).toBe(false);
-      });
+    it('renders AI Namespace Access Rules component', () => {
+      expect(findAiNamespaceAccessRules().exists()).toBe(true);
     });
 
     it('renders GlForm component', () => {
@@ -436,6 +436,10 @@ describe('AiCommonSettingsForm', () => {
   });
 
   describe('prompt cache integration', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('emits cache-checkbox-changed event when DuoPromptCache emits change', async () => {
       await findDuoPromptCache().vm.$emit('change', true);
 
@@ -457,6 +461,10 @@ describe('AiCommonSettingsForm', () => {
   });
 
   describe('duo SAST FP detection integration', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('emits duo-sast-fp-detection-changed event when DuoSastFpDetectionSettings emits change', async () => {
       await findDuoSastFpDetectionSettings().vm.$emit('change', true);
 
@@ -475,6 +483,10 @@ describe('AiCommonSettingsForm', () => {
   });
 
   describe('duo flow integration', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('emits duo-flow-checkbox-changed event when DuoFlowSettings emits change', async () => {
       await findDuoFlowSettings().vm.$emit('change', true);
 
@@ -493,6 +505,10 @@ describe('AiCommonSettingsForm', () => {
   });
 
   describe('duo foundational flow integration', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('emits duo-foundational-flows-checkbox-changed event when DuoFlowSettings emits change-foundational-flows', async () => {
       await findDuoFlowSettings().vm.$emit('change-foundational-flows', true);
 
@@ -511,6 +527,10 @@ describe('AiCommonSettingsForm', () => {
   });
 
   describe('foundational flow selection integration', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('emits change-selected-flow-ids event when DuoFlowSettings emits it', async () => {
       await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [
         'code_review/v1',
@@ -582,13 +602,24 @@ describe('AiCommonSettingsForm', () => {
   });
 
   describe('with onGeneralSettingsPage true', () => {
-    it('does not render the Duo Core features form', () => {
+    beforeEach(() => {
       createComponent({ provide: { onGeneralSettingsPage: true } });
+    });
+
+    it('does not render the Duo Core features form', () => {
       expect(findDuoCoreFeaturesForm().exists()).toBe(false);
+    });
+
+    it('does not render the namespace access rules component', () => {
+      expect(findAiNamespaceAccessRules().exists()).toBe(false);
     });
   });
 
   describe('foundational agents settings', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('does not render the setting when showFoundationalAgentsAvailability is false', () => {
       expect(findDuoFoundationalAgentsSettings().exists()).toBe(false);
     });
@@ -673,6 +704,7 @@ describe('AiCommonSettingsForm', () => {
     });
 
     it('emits duo-agent-platform-enabled-changed event when DuoAgentPlatformSettingsForm emits selected', async () => {
+      createComponent();
       findDuoAgentPlatformSettingsForm().vm.$emit('selected', false);
       await nextTick();
 
@@ -681,6 +713,7 @@ describe('AiCommonSettingsForm', () => {
     });
 
     it('enables save button when duo agent platform enabled value changes', async () => {
+      createComponent();
       expect(findSaveButton().props('disabled')).toBe(true);
 
       findDuoAgentPlatformSettingsForm().vm.$emit('selected', false);
@@ -690,6 +723,7 @@ describe('AiCommonSettingsForm', () => {
     });
 
     it('keeps save button disabled when duo agent platform enabled value is unchanged', async () => {
+      createComponent();
       expect(findSaveButton().props('disabled')).toBe(true);
 
       findDuoAgentPlatformSettingsForm().vm.$emit('selected', true);

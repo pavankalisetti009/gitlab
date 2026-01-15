@@ -64,6 +64,7 @@ export const initAiSettings = (id, component, options = {}) => {
     selectedFoundationalFlowReferences,
     duoAgentPlatformEnabled,
     namespaceAccessRules,
+    parentPath,
   } = el.dataset;
 
   let duoAvailabilityCascadingSettingsParsed;
@@ -178,6 +179,7 @@ export const initAiSettings = (id, component, options = {}) => {
         return selected;
       })(),
       initialNamespaceAccessRules: namespaceAccessRulesParsed,
+      parentPath,
     },
     render: (createElement) =>
       createElement(component, {
