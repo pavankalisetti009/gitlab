@@ -25668,12 +25668,6 @@ msgstr ""
 msgid "DropdownWidget|An error occurred while fetching the assigned %{issuableAttribute} of the selected %{issuableType}."
 msgstr ""
 
-msgid "DropdownWidget|Cancel"
-msgstr ""
-
-msgid "DropdownWidget|Edit %{issuableAttribute}"
-msgstr ""
-
 msgid "DropdownWidget|Failed to fetch the %{issuableAttribute} for this %{issuableType}. Please try again."
 msgstr ""
 
@@ -25690,12 +25684,6 @@ msgid "DropdownWidget|No open %{issuableAttribute} found"
 msgstr ""
 
 msgid "DropdownWidget|Select %{issuableAttribute}"
-msgstr ""
-
-msgid "DropdownWidget|You do not have permission to view the currently assigned %{issuableAttribute} and will not be able to choose it again if you reassign it."
-msgstr ""
-
-msgid "DropdownWidget|You don't have permission to view this %{issuableAttribute}."
 msgstr ""
 
 msgid "Due Date"
