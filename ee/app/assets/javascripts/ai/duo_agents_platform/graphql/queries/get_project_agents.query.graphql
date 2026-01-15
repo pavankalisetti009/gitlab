@@ -8,6 +8,7 @@ query projectAiCatalogAgents(
   $enabled: Boolean
   $allAvailable: Boolean = false
   $projectId: ProjectID!
+  $groupId: GroupID!
   $before: String
   $after: String
   $first: Int
@@ -48,6 +49,10 @@ query projectAiCatalogAgents(
             id
             humanVersionName
           }
+        }
+        configurationForGroup(groupId: $groupId) {
+          id
+          enabled
         }
       }
       pageInfo {

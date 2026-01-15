@@ -121,6 +121,44 @@ export default {
     isThirdPartyFlow() {
       return this.item.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
+    isPending() {
+      return Boolean(this.item.configurationForGroup) && !this.item.configurationForGroup?.enabled;
+    },
+    showStatusBadge() {
+      return (
+        this.itemTypeConfig.showStatusBadge &&
+        !(this.item.configurationForGroup?.enabled && this.item.configurationForProject?.enabled)
+      );
+    },
+    statusBadgeTitle() {
+      if (this.isPending) {
+        return s__('AICatalog|Pending approval');
+      }
+      return s__('AICatalog|Ready to enable');
+    },
+    statusBadgeVariant() {
+      return this.item.configurationForGroup?.enabled ? 'success' : 'warning';
+    },
+    statusBadgeTooltipText() {
+      if (this.isPending) {
+        return sprintf(
+          s__(
+            'AICatalog|To use this %{itemType}, a user with the Owner role must enable it in the top-level group.',
+          ),
+          {
+            itemType: this.itemTypeLabel,
+          },
+        );
+      }
+      return sprintf(
+        s__(
+          'AICatalog|To use this %{itemType}, a user with at least the Maintainer role must enable it in this project.',
+        ),
+        {
+          itemType: this.itemTypeLabel,
+        },
+      );
+    },
     softDeletedTooltipText() {
       return sprintf(
         s__(
@@ -214,11 +252,18 @@ export default {
           </router-link>
         </div>
         <div
+          v-if="showStatusBadge"
+          v-gl-tooltip
+          :title="statusBadgeTooltipText"
+          data-testid="ai-catalog-item-status-badge"
+        >
+          <gl-badge :variant="statusBadgeVariant">{{ statusBadgeTitle }}</gl-badge>
+        </div>
+        <div
           v-if="item.softDeleted"
           v-gl-tooltip
           :title="softDeletedTooltipText"
           data-testid="ai-catalog-item-unlisted"
-          class="gl-flex"
         >
           <gl-badge variant="warning">{{ s__('AICatalog|Unlisted') }}</gl-badge>
         </div>

@@ -3015,6 +3015,9 @@ msgstr ""
 msgid "AICatalog|Other"
 msgstr ""
 
+msgid "AICatalog|Pending approval"
+msgstr ""
+
 msgid "AICatalog|Please describe below."
 msgstr ""
 
@@ -3043,6 +3046,9 @@ msgid "AICatalog|Project-specific automation."
 msgstr ""
 
 msgid "AICatalog|Public %{itemTypePlural} are best for:"
+msgstr ""
+
+msgid "AICatalog|Ready to enable"
 msgstr ""
 
 msgid "AICatalog|Reason for reporting"
@@ -3166,6 +3172,12 @@ msgid "AICatalog|To prevent versioning issues, you can edit only the latest vers
 msgstr ""
 
 msgid "AICatalog|To prevent versioning issues, you can edit only the latest version of this flow. To edit an earlier version, %{linkStart}duplicate the flow%{linkEnd}."
+msgstr ""
+
+msgid "AICatalog|To use this %{itemType}, a user with at least the Maintainer role must enable it in this project."
+msgstr ""
+
+msgid "AICatalog|To use this %{itemType}, a user with the Owner role must enable it in the top-level group."
 msgstr ""
 
 msgid "AICatalog|Tools"

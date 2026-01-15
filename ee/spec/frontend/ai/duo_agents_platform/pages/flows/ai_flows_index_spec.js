@@ -22,7 +22,7 @@ import {
   mockConfiguredItemsEmptyResponse,
   mockGroupUserPermissionsResponse,
   mockProjectUserPermissionsResponse,
-  mockFlows,
+  mockFlowsWithConfigs,
   mockPageInfo,
 } from 'ee_jest/ai/catalog/mock_data';
 import {
@@ -46,6 +46,7 @@ describe('AiFlowsIndex', () => {
     show: jest.fn(),
   };
   const mockProjectId = 1;
+  const mockRootGroupId = 10000;
   const mockProjectPath = 'test-group/test-project';
   const mockConfiguredItemsQueryHandler = jest
     .fn()
@@ -65,6 +66,7 @@ describe('AiFlowsIndex', () => {
     projectId: mockProjectId,
     projectPath: mockProjectPath,
     exploreAiCatalogPath: '/explore/ai-catalog',
+    rootGroupId: mockRootGroupId,
   };
 
   const createComponent = ({ provide = {} } = {}) => {
@@ -120,6 +122,18 @@ describe('AiFlowsIndex', () => {
   });
 
   describe('when "Managed" tab is selected', () => {
+    const baseQueryVariables = {
+      projectPath: mockProjectPath,
+      allAvailable: false,
+      search: '',
+      projectId: `gid://gitlab/Project/${mockProjectId}`,
+      groupId: `gid://gitlab/Group/${mockRootGroupId}`,
+      after: null,
+      before: null,
+      first: 20,
+      last: null,
+    };
+
     beforeEach(() => {
       createComponent();
       findTabs().vm.$emit('input', 1);
@@ -132,20 +146,12 @@ describe('AiFlowsIndex', () => {
 
       await waitForPromises();
 
-      expect(catalogList.props('items')).toEqual(mockFlows);
+      expect(catalogList.props('items')).toEqual(mockFlowsWithConfigs);
       expect(catalogList.props('isLoading')).toBe(false);
     });
 
     it('fetches list data', () => {
-      expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
-        projectPath: mockProjectPath,
-        allAvailable: false,
-        search: '',
-        after: null,
-        before: null,
-        first: 20,
-        last: null,
-      });
+      expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith(baseQueryVariables);
     });
 
     describe('pagination', () => {
@@ -160,29 +166,13 @@ describe('AiFlowsIndex', () => {
       it('refetches query with correct variables when paging backward', async () => {
         findAiCatalogListWrapper().vm.$emit('prev-page');
         await nextTick();
-        expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
-          projectPath: mockProjectPath,
-          search: '',
-          allAvailable: false,
-          after: null,
-          before: 'eyJpZCI6IjUxIn0',
-          first: null,
-          last: 20,
-        });
+        expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith(baseQueryVariables);
       });
 
       it('refetches query with correct variables when paging forward', async () => {
         findAiCatalogListWrapper().vm.$emit('next-page');
         await nextTick();
-        expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
-          projectPath: mockProjectPath,
-          search: '',
-          after: 'eyJpZCI6IjM1In0',
-          allAvailable: false,
-          before: null,
-          first: 20,
-          last: null,
-        });
+        expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith(baseQueryVariables);
       });
     });
 
@@ -196,13 +186,8 @@ describe('AiFlowsIndex', () => {
         await nextTick();
 
         expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
-          projectPath: mockProjectPath,
-          allAvailable: false,
+          ...baseQueryVariables,
           search: 'test flow',
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
         });
       });
 
@@ -215,15 +200,7 @@ describe('AiFlowsIndex', () => {
         findAiCatalogListWrapper().vm.$emit('clear-search');
         await nextTick();
 
-        expect(mockProjectFlowsQueryHandler).toHaveBeenLastCalledWith({
-          projectPath: mockProjectPath,
-          allAvailable: false,
-          search: '',
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-        });
+        expect(mockProjectFlowsQueryHandler).toHaveBeenLastCalledWith(baseQueryVariables);
       });
 
       it('clears search term when switching tabs', async () => {
@@ -236,13 +213,8 @@ describe('AiFlowsIndex', () => {
         await nextTick();
 
         expect(mockProjectFlowsQueryHandler).toHaveBeenLastCalledWith({
-          projectPath: mockProjectPath,
-          allAvailable: false,
+          ...baseQueryVariables,
           search: 'test flow',
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
         });
       });
     });

@@ -5,6 +5,8 @@ query projectAiCatalogFlows(
   $projectPath: ID!
   $enabled: Boolean
   $allAvailable: Boolean = false
+  $projectId: ProjectID!
+  $groupId: GroupID!
   $before: String
   $after: String
   $first: Int
@@ -28,6 +30,14 @@ query projectAiCatalogFlows(
         project {
           id
           nameWithNamespace
+        }
+        configurationForProject(projectId: $projectId) {
+          id
+          enabled
+        }
+        configurationForGroup(groupId: $groupId) {
+          id
+          enabled
         }
       }
       pageInfo {

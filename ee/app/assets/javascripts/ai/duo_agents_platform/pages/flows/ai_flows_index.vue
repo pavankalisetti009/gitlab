@@ -7,7 +7,7 @@ import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -70,6 +70,12 @@ export default {
     exploreAiCatalogPath: {
       default: '',
     },
+    rootGroupId: {
+      default: null,
+    },
+    groupId: {
+      default: null,
+    },
   },
   apollo: {
     aiFlows: {
@@ -78,9 +84,13 @@ export default {
         return !this.projectPath || this.selectedTabIndex === 0;
       },
       variables() {
+        const effectiveGroupId = this.projectId ? this.rootGroupId : this.groupId;
+
         return {
           projectPath: this.projectPath,
           search: this.searchTerm,
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+          groupId: convertToGraphQLId(TYPENAME_GROUP, effectiveGroupId),
           ...this.paginationVariables,
         };
       },
@@ -175,6 +185,12 @@ export default {
           showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
           text: __('Disable'),
         },
+        ...this.itemTypeConfig,
+      };
+    },
+    itemTypeConfigManaged() {
+      return {
+        showStatusBadge: true,
         ...this.itemTypeConfig,
       };
     },
@@ -354,7 +370,7 @@ export default {
         <ai-catalog-list-wrapper
           :is-loading="isLoading"
           :items="aiFlows"
-          :item-type-config="itemTypeConfig"
+          :item-type-config="itemTypeConfigManaged"
           :page-info="pageInfo"
           :empty-state-title="emptyStateTitle"
           :empty-state-description="emptyStateDescription"

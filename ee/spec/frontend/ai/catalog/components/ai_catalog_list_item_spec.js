@@ -66,6 +66,7 @@ describe('AiCatalogListItem', () => {
       public: publicTooltip,
       private: privateTooltip,
     },
+    showStatusBadge: true,
   };
 
   const createComponent = ({ item = mockItem, itemTypeConfig = defaultItemTypeConfig } = {}) => {
@@ -98,6 +99,7 @@ describe('AiCatalogListItem', () => {
   const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
   const findUpdateAvailableLabel = () => wrapper.findByTestId('ai-catalog-item-update');
   const findUpdateUnlistedBadge = () => wrapper.findByTestId('ai-catalog-item-unlisted');
+  const findStatusBadge = () => wrapper.findByTestId('ai-catalog-item-status-badge');
 
   beforeEach(() => {
     createComponent();
@@ -371,6 +373,64 @@ describe('AiCatalogListItem', () => {
       it('does not render Unlisted badge when softDeleted is false', () => {
         expect(findUpdateUnlistedBadge().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('status badge', () => {
+    describe('when item has no group configuration', () => {
+      beforeEach(() => {
+        createComponent({
+          item: {
+            ...mockItem,
+            configurationForGroup: { enabled: false },
+            configurationForProject: { enabled: false },
+          },
+        });
+      });
+
+      it('displays pending badge', () => {
+        expect(findStatusBadge().findComponent(GlBadge).text()).toBe('Pending approval');
+        expect(findStatusBadge().findComponent(GlBadge).props('variant')).toBe('warning');
+        expect(findStatusBadge().attributes('title')).toBe(
+          'To use this agent, a user with the Owner role must enable it in the top-level group.',
+        );
+      });
+    });
+  });
+
+  describe('when item has group configuration but no project configuration', () => {
+    beforeEach(() => {
+      createComponent({
+        item: {
+          ...mockItem,
+          configurationForGroup: { enabled: true },
+          configurationForProject: { enabled: false },
+        },
+      });
+    });
+
+    it('displays ready to enable badge', () => {
+      expect(findStatusBadge().findComponent(GlBadge).text()).toBe('Ready to enable');
+      expect(findStatusBadge().findComponent(GlBadge).props('variant')).toBe('success');
+      expect(findStatusBadge().attributes('title')).toBe(
+        'To use this agent, a user with at least the Maintainer role must enable it in this project.',
+      );
+    });
+  });
+
+  describe('when item has group and project configurations', () => {
+    beforeEach(() => {
+      createComponent({
+        item: {
+          ...mockItem,
+          configurationForGroup: { enabled: true },
+          configurationForProject: { enabled: true },
+        },
+      });
+    });
+
+    it('does not display status badge', () => {
+      expect(findStatusBadge().exists()).toBe(false);
     });
   });
 });
