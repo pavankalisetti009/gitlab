@@ -35,7 +35,7 @@ describe('AiCatalogAgentHeader component', () => {
   describe('badge rendering', () => {
     it.each`
       itemType                            | showBeta | shouldRender | badgeType
-      ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${false} | ${true}      | ${'experiment'}
+      ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${false} | ${false}     | ${null}
       ${AI_CATALOG_TYPE_AGENT}            | ${true}  | ${true}      | ${'beta'}
       ${AI_CATALOG_TYPE_AGENT}            | ${false} | ${false}     | ${null}
       ${null}                             | ${false} | ${false}     | ${null}
