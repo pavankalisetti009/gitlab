@@ -2,6 +2,7 @@
 import { markRaw } from 'vue';
 import { GlDashboardLayout } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 import {
@@ -14,6 +15,7 @@ import ProjectToken from './filtered_search/tokens/project_token.vue';
 import ReportTypeToken from './filtered_search/tokens/report_type_token.vue';
 import VulnerabilitiesOverTimePanel from './vulnerabilities_over_time_panel.vue';
 import GroupRiskScorePanel from './group_risk_score_panel.vue';
+import VulnerabilitiesByAgePanel from './vulnerabilities_by_age_panel.vue';
 import SecurityDashboardDescription from './security_dashboard_description.vue';
 
 const PROJECT_TOKEN_DEFINITION = {
@@ -46,6 +48,7 @@ export default {
     SecurityDashboardDescription,
     FilteredSearch,
   },
+  mixins: [glFeatureFlagMixin()],
   data() {
     return {
       filters: {},
@@ -86,6 +89,23 @@ export default {
               xPos: 5,
             },
           },
+          ...(this.glFeatures.newSecurityDashboardVulnerabilitiesByAge
+            ? [
+                {
+                  id: 'vulnerabilities-by-age',
+                  component: markRaw(VulnerabilitiesByAgePanel),
+                  componentProps: {
+                    filters: this.filters,
+                  },
+                  gridAttributes: {
+                    width: 6,
+                    height: 4,
+                    yPos: 5,
+                    xPos: 0,
+                  },
+                },
+              ]
+            : []),
         ],
       };
     },

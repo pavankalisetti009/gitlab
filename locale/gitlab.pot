@@ -63646,6 +63646,9 @@ msgstr ""
 msgid "SecurityReports|Validity check couldn't confirm whether the secret is active or inactive."
 msgstr ""
 
+msgid "SecurityReports|Vulnerabilities by age"
+msgstr ""
+
 msgid "SecurityReports|Vulnerabilities over time"
 msgstr ""
 

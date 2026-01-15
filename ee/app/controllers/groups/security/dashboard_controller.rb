@@ -13,6 +13,7 @@ class Groups::Security::DashboardController < Groups::ApplicationController
     conditions: -> { dashboard_available? && !upgraded_dashboard_available? }
   before_action only: :show do
     push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: group, user: current_user)
+    push_frontend_feature_flag(:new_security_dashboard_vulnerabilities_by_age, group)
   end
 
   def show

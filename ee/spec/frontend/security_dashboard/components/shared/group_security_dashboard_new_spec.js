@@ -13,6 +13,7 @@ import GroupSecurityDashboardNew from 'ee/security_dashboard/components/shared/g
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/project_token.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
+import VulnerabilitiesByAgePanel from 'ee/security_dashboard/components/shared/vulnerabilities_by_age_panel.vue';
 import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
 import SecurityDashboardDescription from 'ee/security_dashboard/components/shared/security_dashboard_description.vue';
 
@@ -23,13 +24,19 @@ describe('Group Security Dashboard (new version) - Component', () => {
 
   const mockGroupFullPath = 'group/subgroup';
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({
+    props = {},
+    newSecurityDashboardVulnerabilitiesByAge = true,
+  } = {}) => {
     wrapper = shallowMountExtended(GroupSecurityDashboardNew, {
       propsData: {
         ...props,
       },
       provide: {
         groupFullPath: mockGroupFullPath,
+        glFeatures: {
+          newSecurityDashboardVulnerabilitiesByAge,
+        },
       },
     });
   };
@@ -40,6 +47,7 @@ describe('Group Security Dashboard (new version) - Component', () => {
   const getDashboardConfig = () => findDashboardLayout().props('config');
   const findPanelWithId = (panelId) => getDashboardConfig().panels.find(({ id }) => id === panelId);
   const getVulnerabilitiesOverTimePanel = () => findPanelWithId('vulnerabilities-over-time');
+  const getVulnerabilitiesByAgePanel = () => findPanelWithId('vulnerabilities-by-age');
   const getRiskScorePanel = () => findPanelWithId('risk-score');
   const getTitle = () => wrapper.find('h1');
 
@@ -102,6 +110,24 @@ describe('Group Security Dashboard (new version) - Component', () => {
           xPos: 2 * index,
         });
       });
+    });
+
+    it('renders the vulnerabilities by age panel with the correct configuration', () => {
+      const vulnerabilitiesByAgePanel = getVulnerabilitiesByAgePanel();
+
+      expect(vulnerabilitiesByAgePanel.component).toBe(VulnerabilitiesByAgePanel);
+      expect(vulnerabilitiesByAgePanel.gridAttributes).toEqual({
+        width: 6,
+        height: 4,
+        xPos: 0,
+        yPos: 5,
+      });
+    });
+
+    it('does not render the vulnerabilities by age panel if the feature flag is disabled', () => {
+      createComponent({ newSecurityDashboardVulnerabilitiesByAge: false });
+
+      expect(getVulnerabilitiesByAgePanel()).toBeUndefined();
     });
   });
 
