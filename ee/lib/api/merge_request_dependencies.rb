@@ -62,19 +62,35 @@ module API
 
       params do
         requires :merge_request_iid, type: Integer, desc: 'The internal IID of the blocked merge request'
-        requires :blocking_merge_request_id, type: Integer, desc: 'The internal ID of the blocking merge request'
+        optional :blocking_merge_request_id, type: Integer, desc: 'The global ID of the blocking merge request'
+        optional :blocking_merge_request_iid, type: Integer, desc: 'The IID of the blocking merge request'
+        optional :blocking_project_id, types: [String, Integer],
+          desc: 'The ID or URL-encoded path of the project containing the blocking merge request ' \
+            '(defaults to current project)'
+        mutually_exclusive :blocking_merge_request_id, :blocking_merge_request_iid
+        exactly_one_of :blocking_merge_request_id, :blocking_merge_request_iid
       end
       route_setting :authorization, permissions: :create_merge_request_dependency, boundary_type: :project
       post ":id/merge_requests/:merge_request_iid/blocks", urgency: :low do
         merge_request = find_project_merge_request(params[:merge_request_iid])
 
+        blocking_merge_request_id =
+          if params[:blocking_merge_request_id]
+            params[:blocking_merge_request_id]
+          else
+            # IID-based lookup with optional project context
+            blocking_project = params[:blocking_project_id] ? find_project!(params[:blocking_project_id]) : user_project
+            blocking_merge_request = blocking_project.merge_requests.find_by_iid(params[:blocking_merge_request_iid])
+            blocking_merge_request&.id
+          end
+
         result =
           ::MergeRequests::CreateBlockService
-          .new(
-            merge_request: merge_request,
-            user: current_user,
-            blocking_merge_request_id: params[:blocking_merge_request_id]
-          ).execute
+            .new(
+              merge_request: merge_request,
+              user: current_user,
+              blocking_merge_request_id: blocking_merge_request_id
+            ).execute
 
         if result.success?
           present result.payload[:merge_request_block], with: ::API::Entities::MergeRequestDependency, current_user:

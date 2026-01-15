@@ -303,6 +303,180 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
           params: { blocking_merge_request_id: extra_merge_request.id }
       end
     end
+
+    context 'when using blocking_merge_request_iid' do
+      let(:blocking_iid) { extra_merge_request.iid }
+
+      context 'when blocking within the same project' do
+        let(:request) do
+          post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", user),
+            params: { blocking_merge_request_iid: blocking_iid }
+        end
+
+        it 'returns 201 for a valid merge request' do
+          request
+
+          new_blockee = MergeRequestBlock.last
+
+          aggregate_failures('response') do
+            expect(response).to have_gitlab_http_status(:created)
+          end
+
+          aggregate_failures('json_response') do
+            expect(json_response['id']).to eq(new_blockee.id)
+            expect(json_response.dig('blocking_merge_request', 'iid')).to eq(blocking_iid)
+            expect(json_response.dig('blocking_merge_request', 'id')).to eq(extra_merge_request.id)
+            expect(json_response.dig('blocked_merge_request', 'id')).to eq(merge_request.id)
+          end
+        end
+
+        context 'when blocking_merge_request_iid does not exist' do
+          let(:blocking_iid) { non_existing_record_iid }
+
+          it 'returns 404' do
+            request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('Blocking merge request not found')
+          end
+        end
+      end
+
+      context 'with blocking_project_id for cross-project blocks' do
+        let(:other_project_merge_request) do
+          create(:merge_request, :unique_branches, source_project: other_project, author: maintainer)
+        end
+
+        let(:blocking_iid) { other_project_merge_request.iid }
+
+        let(:request) do
+          post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", maintainer),
+            params: {
+              blocking_merge_request_iid: blocking_iid,
+              blocking_project_id: other_project.id
+            }
+        end
+
+        before_all do
+          other_project.add_maintainer(maintainer)
+        end
+
+        it 'creates a block across projects' do
+          request
+
+          new_blockee = MergeRequestBlock.last
+
+          aggregate_failures('response') do
+            expect(response).to have_gitlab_http_status(:created)
+          end
+
+          aggregate_failures('json_response') do
+            expect(json_response['id']).to eq(new_blockee.id)
+            expect(json_response.dig('blocking_merge_request', 'id')).to eq(other_project_merge_request.id)
+            expect(json_response.dig('blocking_merge_request', 'iid')).to eq(blocking_iid)
+            expect(json_response.dig('blocked_merge_request', 'id')).to eq(merge_request.id)
+          end
+        end
+
+        context 'when blocking_project_id uses URL-encoded path' do
+          let(:request) do
+            post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", maintainer),
+              params: {
+                blocking_merge_request_iid: blocking_iid,
+                blocking_project_id: other_project.full_path
+              }
+          end
+
+          it 'creates a block using project path' do
+            request
+
+            expect(response).to have_gitlab_http_status(:created)
+            expect(json_response.dig('blocking_merge_request', 'id')).to eq(other_project_merge_request.id)
+          end
+        end
+
+        context 'when user lacks permissions on blocking project' do
+          let(:request) do
+            post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", guest),
+              params: {
+                blocking_merge_request_iid: blocking_iid,
+                blocking_project_id: other_project.id
+              }
+          end
+
+          it 'returns 404' do
+            request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 Not found')
+          end
+        end
+
+        context 'when blocking_project_id does not exist' do
+          let(:request) do
+            post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", maintainer),
+              params: {
+                blocking_merge_request_iid: blocking_iid,
+                blocking_project_id: non_existing_record_id
+              }
+          end
+
+          it 'returns 404' do
+            request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'when blocking_merge_request_iid does not exist in blocking project' do
+          let(:request) do
+            post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", maintainer),
+              params: {
+                blocking_merge_request_iid: non_existing_record_iid,
+                blocking_project_id: other_project.id
+              }
+          end
+
+          it 'returns 404' do
+            request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('Blocking merge request not found')
+          end
+        end
+      end
+
+      context 'when both blocking_merge_request_id and blocking_merge_request_iid are provided' do
+        let(:request) do
+          post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", user),
+            params: {
+              blocking_merge_request_id: extra_merge_request.id,
+              blocking_merge_request_iid: extra_merge_request.iid
+            }
+        end
+
+        it 'returns 400 with mutually exclusive error' do
+          request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['error']).to include('mutually exclusive')
+        end
+      end
+
+      context 'when neither blocking_merge_request_id nor blocking_merge_request_iid is provided' do
+        let(:request) do
+          post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", user),
+            params: {}
+        end
+
+        it 'returns 400 with missing parameter error' do
+          request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['error']).to match(/blocking_merge_request_(id|iid)/)
+        end
+      end
+    end
   end
 
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/blockees' do
