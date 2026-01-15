@@ -25,40 +25,67 @@ RSpec.describe Milestone, :elastic, feature_category: :global_search do
       ensure_elasticsearch_index!
     end
 
-    it 'searches milestones', :sidekiq_inline do
+    it 'searches milestones', :enable_admin_mode do
       options = { search_level: 'global', project_ids: [project.id], current_user: user }
 
       expect(described_class.elastic_search('(term1 | term2 | term3) +bla-bla', options: options).total_count).to eq(2)
 
-      options = { search_level: 'global', project_ids: :any }
+      options = { current_user: create(:admin), search_level: 'global', project_ids: :any }
       expect(described_class.elastic_search('bla-bla', options: options).total_count).to eq(3)
     end
   end
 
-  describe 'json' do
-    let_it_be(:milestone) { create :milestone }
-    let(:expected_hash) do
-      milestone.attributes.extract!(
-        'id',
-        'iid',
-        'title',
-        'description',
-        'project_id',
-        'created_at',
-        'updated_at'
-      ).merge({
-        'type' => milestone.es_type,
-        'issues_access_level' => milestone.project.issues_access_level,
-        'merge_requests_access_level' => milestone.project.merge_requests_access_level,
-        'visibility_level' => milestone.project.visibility_level,
-        'archived' => milestone.project.archived,
-        'schema_version' => Elastic::Latest::MilestoneInstanceProxy::SCHEMA_VERSION,
-        'join_field' => { 'name' => milestone.es_type, 'parent' => milestone.es_parent }
-      })
+  describe 'as_indexed_json' do
+    context 'for project milestone' do
+      let_it_be(:milestone) { create(:milestone, :on_project) }
+
+      let(:expected_hash) do
+        milestone.attributes.extract!(
+          'id',
+          'iid',
+          'title',
+          'description',
+          'project_id',
+          'created_at',
+          'updated_at'
+        ).merge({
+          'type' => milestone.es_type,
+          'issues_access_level' => milestone.project.issues_access_level,
+          'merge_requests_access_level' => milestone.project.merge_requests_access_level,
+          'visibility_level' => milestone.project.visibility_level,
+          'archived' => milestone.project.archived,
+          'schema_version' => Elastic::Latest::MilestoneInstanceProxy::SCHEMA_VERSION,
+          'join_field' => { 'name' => milestone.es_type, 'parent' => milestone.es_parent },
+          'traversal_ids' => milestone.project.elastic_namespace_ancestry
+        })
+      end
+
+      it 'returns json with all needed elements' do
+        expect(milestone.__elasticsearch__.as_indexed_json).to eq(expected_hash)
+      end
     end
 
-    it 'returns json with all needed elements' do
-      expect(milestone.__elasticsearch__.as_indexed_json).to eq(expected_hash)
+    context 'for group milestone' do
+      let_it_be(:milestone) { create(:milestone, :on_group) }
+
+      let(:expected_hash) do
+        milestone.attributes.extract!(
+          'id',
+          'iid',
+          'title',
+          'description',
+          'project_id',
+          'created_at',
+          'updated_at'
+        ).merge({
+          'type' => milestone.es_type,
+          'schema_version' => Elastic::Latest::MilestoneInstanceProxy::SCHEMA_VERSION
+        })
+      end
+
+      it 'returns json with all needed elements' do
+        expect(milestone.__elasticsearch__.as_indexed_json).to eq(expected_hash)
+      end
     end
   end
 

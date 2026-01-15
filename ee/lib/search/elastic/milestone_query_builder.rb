@@ -13,13 +13,29 @@ module Search
 
         query_hash = ::Search::Elastic::Queries.by_full_text(query: query, options: options)
         query_hash = ::Search::Elastic::Filters.by_type(query_hash: query_hash, options: options)
-        query_hash = ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
+
+        query_hash =
+          if use_new_auth?
+            ::Search::Elastic::Filters.by_search_level_and_membership(
+              query_hash: query_hash, options: options
+            )
+          else
+            ::Search::Elastic::Filters.by_project_authorization(
+              query_hash: query_hash, options: options
+            )
+          end
+
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Formats.source_fields(query_hash: query_hash, options: options)
         ::Search::Elastic::Formats.size(query_hash: query_hash, options: options)
       end
 
       private
+
+      def use_new_auth?
+        ::Elastic::DataMigrationService.migration_has_finished?(:backfill_traversal_ids_for_milestones) &&
+          Feature.enabled?(:search_advanced_milestones_new_auth_filter, options[:current_user])
+      end
 
       override :extra_options
       def extra_options
