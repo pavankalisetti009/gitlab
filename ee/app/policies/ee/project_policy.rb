@@ -1314,7 +1314,10 @@ module EE
 
       rule { duo_workflow_enabled & duo_agent_platform_enabled & duo_workflow_available & can?(:developer_access) }.policy do
         enable :duo_workflow
+        enable :create_duo_workflow_for_ci
       end
+
+      rule { ai_settings_prevent_execute_async }.prevent :create_duo_workflow_for_ci
 
       rule { custom_role_enables_admin_web_hook }.policy do
         enable :read_web_hook

@@ -4627,16 +4627,119 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           allow(current_user).to receive(:allowed_to_use?).and_return(false)
         end
 
-        context 'when user is not allowed to use duo_agent_platfrom' do
+        context 'when user is not allowed to use duo_agent_platform' do
           it { is_expected.to be_disallowed(:duo_workflow) }
         end
 
-        context 'when user is allowed to use duo_agent_platfrom' do
+        context 'when user is allowed to use duo_agent_platform' do
           before do
             allow(current_user).to receive(:allowed_to_use?).and_return(true)
           end
 
           it { is_expected.to match_expected_result }
+        end
+      end
+    end
+
+    describe 'create_duo_workflow_for_ci' do
+      let(:project) { public_project_in_group }
+
+      where(:duo_workflow_feature_flag, :stage_check_available, :duo_features_enabled, :current_user, :match_expected_result) do
+        true  | true  | true  | ref(:owner)      | be_allowed(:create_duo_workflow_for_ci)
+        true  | true  | true  | ref(:maintainer) | be_allowed(:create_duo_workflow_for_ci)
+        true  | true  | true  | ref(:developer)  | be_allowed(:create_duo_workflow_for_ci)
+        true  | true  | true  | ref(:planner)    | be_disallowed(:create_duo_workflow_for_ci)
+        true  | true  | true  | ref(:guest)      | be_disallowed(:create_duo_workflow_for_ci)
+        true  | true  | true  | ref(:non_member) | be_disallowed(:create_duo_workflow_for_ci)
+        true  | false | true  | ref(:owner)      | be_disallowed(:create_duo_workflow_for_ci)
+        true  | false | true  | ref(:maintainer) | be_disallowed(:create_duo_workflow_for_ci)
+        true  | false | true  | ref(:developer)  | be_disallowed(:create_duo_workflow_for_ci)
+        true  | false | true  | ref(:planner)    | be_disallowed(:create_duo_workflow_for_ci)
+        true  | false | true  | ref(:guest)      | be_disallowed(:create_duo_workflow_for_ci)
+        true  | false | true  | ref(:non_member) | be_disallowed(:create_duo_workflow_for_ci)
+        false | true  | true  | ref(:owner)      | be_disallowed(:create_duo_workflow_for_ci)
+        false | true  | true  | ref(:maintainer) | be_disallowed(:create_duo_workflow_for_ci)
+        false | true  | true  | ref(:developer)  | be_disallowed(:create_duo_workflow_for_ci)
+        false | true  | true  | ref(:planner)    | be_disallowed(:create_duo_workflow_for_ci)
+        false | true  | true  | ref(:guest)      | be_disallowed(:create_duo_workflow_for_ci)
+        false | true  | true  | ref(:non_member) | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | true  | ref(:owner)      | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | true  | ref(:maintainer) | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | true  | ref(:developer)  | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | true  | ref(:planner)    | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | true  | ref(:guest)      | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | true  | ref(:non_member) | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | false | ref(:owner)      | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | false | ref(:maintainer) | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | false | ref(:developer)  | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | false | ref(:planner)    | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | false | ref(:guest)      | be_disallowed(:create_duo_workflow_for_ci)
+        false | false | false | ref(:non_member) | be_disallowed(:create_duo_workflow_for_ci)
+      end
+
+      with_them do
+        before do
+          stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(stage_check_available)
+          stub_ee_application_setting(duo_features_enabled: duo_features_enabled)
+          allow(current_user).to receive(:allowed_to_use?).and_return(false)
+        end
+
+        context 'when user is not allowed to use duo_agent_platform' do
+          it { is_expected.to be_disallowed(:create_duo_workflow_for_ci) }
+        end
+
+        context 'when user is allowed to use duo_agent_platform' do
+          before do
+            allow(current_user).to receive(:allowed_to_use?).and_return(true)
+          end
+
+          it { is_expected.to match_expected_result }
+        end
+      end
+
+      context 'with customizable permissions' do
+        before do
+          stub_feature_flags(duo_workflow: true)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+          stub_ee_application_setting(duo_features_enabled: true)
+          allow(current_user).to receive(:allowed_to_use?).and_return(true)
+        end
+
+        context 'when the minimum role has been set in a saas environment', :saas do
+          before do
+            project.root_ancestor.create_ai_settings(minimum_access_level_execute_async: ::Gitlab::Access::MAINTAINER)
+          end
+
+          context 'when the role requirement is not met' do
+            let(:current_user) { developer }
+
+            it { is_expected.to be_disallowed(:create_duo_workflow_for_ci) }
+          end
+
+          context 'when the role requirement is met' do
+            let(:current_user) { maintainer }
+
+            it { is_expected.to be_allowed(:create_duo_workflow_for_ci) }
+          end
+        end
+
+        context 'when the minimum role has been set in a self-managed environment' do
+          before do
+            Ai::Setting.instance.update!(minimum_access_level_execute_async: ::Gitlab::Access::MAINTAINER)
+          end
+
+          context 'when the role requirement is not met' do
+            let(:current_user) { developer }
+
+            it { is_expected.to be_disallowed(:create_duo_workflow_for_ci) }
+          end
+
+          context 'when the role requirement is met' do
+            let(:current_user) { maintainer }
+
+            it { is_expected.to be_allowed(:create_duo_workflow_for_ci) }
+          end
         end
       end
     end
