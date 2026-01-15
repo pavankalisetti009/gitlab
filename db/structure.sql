@@ -29654,6 +29654,7 @@ CREATE TABLE user_details (
     email_otp_last_sent_at timestamp with time zone,
     email_otp_required_after timestamp with time zone,
     company text DEFAULT ''::text NOT NULL,
+    provisioned_by_project_id bigint,
     CONSTRAINT check_18a53381cd CHECK ((char_length(bluesky) <= 256)),
     CONSTRAINT check_245664af82 CHECK ((char_length(webauthn_xid) <= 100)),
     CONSTRAINT check_444573ee52 CHECK ((char_length(skype) <= 500)),
@@ -46291,6 +46292,8 @@ COMMENT ON INDEX index_user_details_on_password_last_changed_at IS 'JiHu-specifi
 CREATE UNIQUE INDEX index_user_details_on_phone ON user_details USING btree (phone) WHERE (phone IS NOT NULL);
 
 COMMENT ON INDEX index_user_details_on_phone IS 'JiHu-specific index';
+
+CREATE INDEX index_user_details_on_provisioned_by_project_id ON user_details USING btree (provisioned_by_project_id);
 
 CREATE UNIQUE INDEX index_user_details_on_user_id ON user_details USING btree (user_id);
 

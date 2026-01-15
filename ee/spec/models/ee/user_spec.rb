@@ -577,6 +577,34 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
 
+    describe '.with_provisioning_project' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:project) { create(:project) }
+
+      subject(:with_provisioning_project) { described_class.with_provisioning_project(project) }
+
+      it 'does not find users without a provisioning project' do
+        expect(with_provisioning_project).to be_empty
+      end
+
+      context 'when users have a provisioning project' do
+        before do
+          user.provisioned_by_project = project
+          user.save!
+        end
+
+        it 'finds the matching users' do
+          expect(with_provisioning_project).to match_array([user])
+        end
+
+        it 'does not find users with a different provisioning group' do
+          project = create(:project)
+
+          expect(described_class.with_provisioning_project(project)).to be_empty
+        end
+      end
+    end
+
     describe '.security_policy_bots_for_projects' do
       let_it_be(:project_1) { create(:project) }
       let_it_be(:project_2) { create(:project) }

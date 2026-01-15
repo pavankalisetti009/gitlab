@@ -119,6 +119,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:ai_flow_triggers).class_name('Ai::FlowTrigger') }
     it { is_expected.to have_many(:policy_dismissals).class_name('Security::PolicyDismissal') }
     it { is_expected.to have_many(:enabled_foundational_flow_records).class_name('Ai::Catalog::EnabledFoundationalFlow') }
+    it { is_expected.to have_many(:provisioned_user_details).inverse_of(:provisioned_by_project) }
+    it { is_expected.to have_many(:provisioned_users) }
 
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
@@ -246,6 +248,16 @@ RSpec.describe Project, feature_category: :groups_and_projects do
             jira_integration_licensed && jira_integration_active && jira_enforcement_licensed
           )
         end
+      end
+    end
+
+    describe '#service_accounts' do
+      let!(:service_account) { create(:service_account, provisioned_by_project: project) }
+      let!(:service_account_another_project) { create(:service_account, provisioned_by_project: create(:project)) }
+      let!(:provisioned_user) { create(:user, provisioned_by_project: project) }
+
+      it 'returns only the project service accounts' do
+        expect(project.service_accounts).to eq([service_account])
       end
     end
 
