@@ -460,7 +460,6 @@ read_ci_minutes_limited_summary
 read_ci_pipeline_schedules_plan_limit
 read_cloud_connector_status
 read_cluster
-read_cluster_agent
 read_cluster_environments
 read_code
 read_code_review_analytics
