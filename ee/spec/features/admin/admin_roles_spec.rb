@@ -16,7 +16,7 @@ RSpec.describe 'Admin roles', feature_category: :permissions do
       before do
         stub_saas_features(gitlab_com_subscriptions: false)
 
-        gitlab_sign_in(admin)
+        sign_in(admin)
 
         visit admin_application_settings_roles_and_permissions_path
       end
@@ -113,7 +113,7 @@ RSpec.describe 'Admin roles', feature_category: :permissions do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
 
-        gitlab_sign_in(admin)
+        sign_in(admin)
       end
 
       it 'renders the page' do

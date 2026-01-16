@@ -74,7 +74,7 @@ RSpec.describe 'Instance-level Member Roles', feature_category: :permissions do
 
   describe 'when in admin mode', :enable_admin_mode do
     before do
-      gitlab_sign_in(admin)
+      sign_in(admin)
     end
 
     context 'when on self-managed', :js do

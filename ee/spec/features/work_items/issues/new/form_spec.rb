@@ -21,7 +21,7 @@ RSpec.describe 'New/edit issue', :js, feature_category: :team_planning do
     project.add_maintainer(user2)
 
     stub_licensed_features(multiple_issue_assignees: true)
-    gitlab_sign_in(user)
+    sign_in(user)
   end
 
   context 'new issue' do

@@ -11,7 +11,7 @@ RSpec.describe 'Admin mode', :js, feature_category: :permissions do
       before do
         stub_licensed_features(custom_roles: true)
 
-        gitlab_sign_in(user)
+        sign_in(user)
       end
 
       context 'when application setting :admin_mode is enabled', :request_store do
@@ -66,7 +66,7 @@ RSpec.describe 'Admin mode', :js, feature_category: :permissions do
       before do
         stub_licensed_features(custom_roles: false)
 
-        gitlab_sign_in(user)
+        sign_in(user)
       end
 
       it 'shows no admin buttons' do

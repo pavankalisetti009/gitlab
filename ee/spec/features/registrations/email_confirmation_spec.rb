@@ -58,22 +58,24 @@ RSpec.describe 'Email Confirmation', :with_current_organization, feature_categor
     end
   end
 
-  context 'when signing up through SAML' do
-    let(:external_uid) { 'my-uid' }
-    let(:user) { create(:omniauth_user, :unconfirmed, extern_uid: external_uid, provider: 'saml') }
+  with_and_without_sign_in_form_vue do
+    context 'when signing up through SAML' do
+      let(:external_uid) { 'my-uid' }
+      let(:user) { create(:omniauth_user, :unconfirmed, extern_uid: external_uid, provider: 'saml') }
 
-    before do
-      stub_application_setting_enum('email_confirmation_setting', 'soft')
-      stub_saas_features(identity_verification: true)
-      stub_omniauth_saml_config(enabled: true, auto_link_saml_user: true)
-      gitlab_sign_in_via('saml', user, external_uid)
-    end
+      before do
+        stub_application_setting_enum('email_confirmation_setting', 'soft')
+        stub_saas_features(identity_verification: true)
+        stub_omniauth_saml_config(enabled: true, auto_link_saml_user: true)
+        gitlab_sign_in_via('saml', user, external_uid)
+      end
 
-    it 'signs in successfully' do
-      expect(page).to have_current_path(root_path)
-      expect_successful_resend_instructions(from_banner: true)
-      expect_successful_devise_confirmation
-      expect(user.reload.confirmed?).to be(true)
+      it 'signs in successfully' do
+        expect(page).to have_current_path(root_path)
+        expect_successful_resend_instructions(from_banner: true)
+        expect_successful_devise_confirmation
+        expect(user.reload.confirmed?).to be(true)
+      end
     end
   end
 
