@@ -273,7 +273,19 @@ describe('SecurityPolicyViolations merge checks component', () => {
       expect(findWarnModeModal().exists()).toBe(false);
     });
 
-    it('enables bypass button for bypass statuses', async () => {
+    it('does not show bypass button when a user cannot bypass a policy', async () => {
+      createComponent({
+        allowBypass: false,
+        securityPoliciesPath: policiesPath,
+        warnModeEnabled: true,
+        policies: [mockEnforcedSecurityPolicyViolation],
+      });
+      await waitForPromises();
+
+      expect(findBypassButton().exists()).toBe(false);
+    });
+
+    it('shows and enables the bypass button for bypass statuses', async () => {
       createComponent({
         allowBypass: true,
         securityPoliciesPath: policiesPath,

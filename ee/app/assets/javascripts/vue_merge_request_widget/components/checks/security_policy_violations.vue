@@ -33,11 +33,16 @@ export default {
         return { iid: this.mr.iid.toString(), projectPath: this.mr.targetProjectFullPath };
       },
       update(data) {
+        // policies are only returned if the user is able to approve the MR
         const policies = get(data, 'project.mergeRequest.policyViolations.policies', []);
         return uniqBy(policies, 'securityPolicyId');
       },
       result({ data }) {
-        this.bypassStatuses = get(data, 'project.mergeRequest.policyBypassStatuses', []);
+        // "policyBypassStatuses" are returned regardless of the users ability to bypass them
+        // the `allowBypass` flag is used to signify if a user can bypass the policy
+        this.bypassStatuses = get(data, 'project.mergeRequest.policyBypassStatuses', []).filter(
+          ({ allowBypass }) => allowBypass,
+        );
       },
     },
   },
@@ -65,11 +70,11 @@ export default {
     mode() {
       return getSelectedModeOption({
         hasBypassPolicies: this.hasActiveWarnPolicies,
-        allowBypass: this.hasActiveBypassStatuses,
+        hasBypassExceptions: this.hasActiveBypassStatuses,
       });
     },
     activeBypassStatuses() {
-      return this.bypassStatuses.filter(({ allowBypass, bypassed }) => allowBypass && !bypassed);
+      return this.bypassStatuses.filter(({ bypassed }) => !bypassed);
     },
     activeWarnPolicies() {
       return this.bypassPolicies.filter(({ dismissed }) => !dismissed);
