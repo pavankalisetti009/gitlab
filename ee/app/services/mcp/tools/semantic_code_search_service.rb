@@ -2,7 +2,7 @@
 
 module Mcp
   module Tools
-    class SearchCodebaseService < CustomService
+    class SemanticCodeSearchService < CustomService
       extend ::Gitlab::Utils::Override
 
       ACTIVE_CONTEXT_QUERY = ::Ai::ActiveContext::Queries

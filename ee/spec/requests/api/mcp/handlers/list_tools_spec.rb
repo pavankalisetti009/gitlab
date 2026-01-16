@@ -426,7 +426,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
       before do
         # We have to use `allow_any_instance_of` since this tool is initialized
         # *on class definition time* in EE::Mcp::Tools::Manager
-        allow_any_instance_of(Mcp::Tools::SearchCodebaseService).to receive(:available?).and_return(true) # rubocop: disable RSpec/AnyInstanceOf -- see explanation above
+        allow_any_instance_of(Mcp::Tools::SemanticCodeSearchService).to receive(:available?).and_return(true) # rubocop: disable RSpec/AnyInstanceOf -- see explanation above
       end
 
       it 'returns the semantic_code_search in the tools list' do

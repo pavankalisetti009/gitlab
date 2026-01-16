@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server do
+RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_server do
   let(:service_name) { 'get_code_context' }
   let(:current_user) { create(:user) }
   let(:project) { create :project, :repository }
