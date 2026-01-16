@@ -241,6 +241,7 @@ export const rawIssue = {
   title: 'Issue 1',
   id: 'gid://gitlab/Issue/436',
   iid: '27',
+  author: { id: '1', username: 'root', __typename: 'UserCore' },
   closedAt: null,
   dueDate: null,
   timeEstimate: 0,
@@ -300,6 +301,7 @@ export const mockIssueProjectPath = `${mockIssueGroupPath}/gitlab-test`;
 export const mockIssue = {
   id: 'gid://gitlab/Issue/436',
   iid: '27',
+  author: { id: '1', username: 'root' },
   title: 'Issue 1',
   referencePath: `${mockIssueProjectPath}#27`,
   dueDate: null,
@@ -330,6 +332,7 @@ export const mockIssue = {
 export const mockIssue2 = {
   id: 'gid://gitlab/Issue/437',
   iid: '28',
+  author: { id: '1', username: 'root' },
   title: 'Issue 2',
   referencePath: 'gitlab-org/test-subgroup/gitlab-test#28',
   dueDate: null,
@@ -515,6 +518,7 @@ export const rawEpic = {
 export const mockEpic = {
   id: 'gid://gitlab/Epic/41',
   iid: '1',
+  author: { id: '1', username: 'root' },
   title: 'Epic title',
   state: 'opened',
   webUrl: '/groups/gitlab-org/-/epics/1',
