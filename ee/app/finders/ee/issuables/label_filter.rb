@@ -18,21 +18,6 @@ module EE
         find_wildcard_label_ids(scoped_label_wildcards) + super(label_names)
       end
 
-      override :target_label_links_query
-      def target_label_links_query(target_model, base_target_model, label_ids)
-        return super if parent.is_a?(Project)
-        # Note that this is only correct for as long as we do not show issues/work items of type Epic
-        # in issues list pages, otherwise this will resul in returning incomplete results when filtering by labels as
-        # for Epic WorkItems labels can be linked either to legacy Epic records or Epic WorkItem records, by the
-        # label_links.target_type for Epic WorkItems is set to `Issue`.
-        # to be cleaned-up after we have:
-        # - labels writes delegated from epic to epic work item: https://gitlab.com/gitlab-org/gitlab/-/issues/465725
-        # - back-fill epic label links to work item label links: https://gitlab.com/groups/gitlab-org/-/epics/13021
-        return super unless %w[Epic WorkItem].include?(target_model.name)
-
-        multi_target_label_links_query(base_target_model, label_ids)
-      end
-
       def extract_scoped_label_wildcards(label_names)
         label_names.partition { |name| name.ends_with?(::Label::SCOPED_LABEL_SEPARATOR + SCOPED_LABEL_WILDCARD) }
       end
@@ -78,37 +63,6 @@ module EE
           end
         end
       end
-
-      # rubocop: disable CodeReuse/ActiveRecord
-      def multi_target_label_links_query(target_model, label_ids)
-        case target_model.name
-        when 'Epic'
-          sync_model = ::Issue
-          join_clause = target_model.arel_table['issue_id']
-
-          ::LabelLink.from_union(
-            [
-              ::LabelLink.by_target_for_exists_query(target_model.name, target_model.arel_table['id'], label_ids),
-              ::LabelLink.by_target_for_exists_query(sync_model.name, join_clause, label_ids)
-            ],
-            remove_duplicates: false
-          )
-        when 'Issue'
-          sync_model = ::Epic
-          join_clause = sync_model.arel_table.project(sync_model.arel_table['id']).where(
-            sync_model.arel_table['issue_id'].eq(target_model.arel_table['id'])
-          )
-
-          ::LabelLink.from_union(
-            [
-              ::LabelLink.by_target_for_exists_query(target_model.name, target_model.arel_table['id'], label_ids),
-              ::LabelLink.by_target_for_exists_query(sync_model.name, join_clause, label_ids)
-            ],
-            remove_duplicates: false
-          )
-        end
-      end
-      # rubocop: enable CodeReuse/ActiveRecord
     end
   end
 end

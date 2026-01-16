@@ -12,6 +12,15 @@ module EE
       before_validation :rewrite_epic_type, on: :create
     end
 
+    class_methods do
+      def by_target_for_exists_query(target_type, arel_join_column, label_ids = nil)
+        return super unless target_type == 'Epic'
+
+        # Epic labels are stored as target_type = 'Issue' with the issue_id.
+        super('Issue', ::Epic.arel_table['issue_id'], label_ids)
+      end
+    end
+
     private
 
     # Force the use of Epic's WorkItem ID and type
