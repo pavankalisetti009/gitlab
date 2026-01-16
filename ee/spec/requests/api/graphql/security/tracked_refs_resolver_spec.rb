@@ -1,0 +1,201 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe 'Query.project.securityTrackedRefs', feature_category: :vulnerability_management do
+  include GraphqlHelpers
+  include ApiHelpers
+  using RSpec::Parameterized::TableSyntax
+
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:user) { create(:user) }
+
+  let_it_be(:tracked_branch) do
+    create(:security_project_tracked_context, :tracked, :default,
+      project: project, context_name: 'main', context_type: :branch)
+  end
+
+  let_it_be(:tracked_tag) do
+    create(:security_project_tracked_context, :tracked,
+      project: project, context_name: 'v1.1.0', context_type: :tag)
+  end
+
+  let_it_be(:untracked_branch) do
+    create(:security_project_tracked_context, :untracked,
+      project: project, context_name: 'untracked-branch', context_type: :branch)
+  end
+
+  let(:tracked_refs_data) { graphql_data&.dig('project', 'securityTrackedRefs') }
+  let(:tracked_refs_nodes) { tracked_refs_data&.[]('nodes') || [] }
+
+  before_all do
+    project.add_developer(user)
+  end
+
+  before do
+    stub_licensed_features(security_dashboard: true)
+  end
+
+  def build_query(project_path = project.full_path, fields: :basic, **args)
+    graphql_query_for(
+      :project,
+      { fullPath: project_path },
+      query_graphql_field(:securityTrackedRefs, args, fields_selection(fields))
+    )
+  end
+
+  def fields_selection(type = :basic)
+    case type
+    when :basic
+      <<~FIELDS
+        nodes {
+          name
+          refType
+          state
+          trackedAt
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+        }
+      FIELDS
+    end
+  end
+
+  def execute_query(query_args: {}, current_user: user, project_path: project.full_path, fields: :basic)
+    query = build_query(project_path, fields: fields, **query_args)
+    post_graphql(query, current_user: current_user)
+  end
+
+  describe 'basic functionality' do
+    it 'returns all refs for the project' do
+      execute_query
+
+      expect(graphql_errors).to be_blank
+      expect(tracked_refs_nodes).to contain_exactly(
+        a_hash_including('name' => 'main', 'refType' => 'BRANCH', 'state' => 'TRACKED'),
+        a_hash_including('name' => 'v1.1.0', 'refType' => 'TAG', 'state' => 'TRACKED'),
+        a_hash_including('name' => 'untracked-branch', 'refType' => 'BRANCH', 'state' => 'UNTRACKED')
+      )
+    end
+
+    it 'returns valid GraphQL structure' do
+      execute_query
+
+      expect(tracked_refs_data).to include(
+        'nodes' => be_an(Array),
+        'pageInfo' => a_hash_including('hasNextPage', 'hasPreviousPage')
+      )
+    end
+  end
+
+  describe 'state filtering' do
+    where(:state, :expected_names) do
+      :TRACKED   | ['main', 'v1.1.0']
+      :UNTRACKED | ['untracked-branch']
+    end
+
+    with_them do
+      it "returns only #{params[:state].downcase} refs" do
+        execute_query(query_args: { state: state })
+
+        expect(graphql_errors).to be_blank
+        actual_names = tracked_refs_nodes.pluck('name')
+        expect(actual_names).to match_array(expected_names)
+      end
+    end
+
+    it 'returns validation error for invalid enum value' do
+      execute_query(query_args: { state: :INVALID })
+
+      expect(graphql_errors).to be_present
+      expect(graphql_errors.first['message']).to match(/invalid value.*INVALID/i)
+    end
+  end
+
+  describe 'pagination' do
+    where(:pagination_args, :expected_size, :expected_page_info) do
+      { first: 1 } | 1 | { 'hasNextPage' => true, 'hasPreviousPage' => false }
+      { last: 1 }  | 1 | { 'hasPreviousPage' => true }
+    end
+
+    with_them do
+      it "handles pagination correctly" do
+        execute_query(query_args: pagination_args)
+
+        expect(graphql_errors).to be_blank
+        expect(tracked_refs_nodes.size).to eq(expected_size)
+        expect(tracked_refs_data['pageInfo']).to include(expected_page_info)
+      end
+    end
+  end
+
+  describe 'authorization' do
+    let_it_be(:guest_user) { create(:user) }
+    let_it_be(:reporter_user) { create(:user) }
+    let_it_be(:maintainer_user) { create(:user) }
+
+    before_all do
+      project.add_guest(guest_user)
+      project.add_reporter(reporter_user)
+      project.add_maintainer(maintainer_user)
+    end
+
+    where(:role, :should_have_access) do
+      :guest      | false
+      :reporter   | false
+      :developer  | true
+      :maintainer | true
+    end
+
+    with_them do
+      it "#{params[:should_have_access] ? 'allows' : 'denies'} access for #{params[:role]} users" do
+        test_user = role == :developer ? user : send(:"#{role}_user")
+        execute_query(current_user: test_user)
+
+        if should_have_access
+          expect(tracked_refs_nodes).not_to be_empty
+        else
+          expect(tracked_refs_nodes).to be_empty
+        end
+      end
+    end
+
+    it 'denies access for nil users' do
+      execute_query(current_user: nil)
+      expect(tracked_refs_nodes).to be_empty
+    end
+  end
+
+  describe 'licensing' do
+    context 'when security dashboard is not licensed' do
+      before do
+        stub_licensed_features(security_dashboard: false)
+      end
+
+      it 'returns empty result' do
+        execute_query
+
+        expect(graphql_errors).to be_blank
+        expect(tracked_refs_nodes).to be_empty
+      end
+    end
+  end
+
+  describe 'edge cases' do
+    it 'returns empty result for project with no refs' do
+      empty_project = create(:project, :repository)
+      empty_project.add_developer(user)
+
+      execute_query(project_path: empty_project.full_path)
+
+      expect(graphql_errors).to be_blank
+      expect(tracked_refs_nodes).to be_empty
+    end
+
+    it 'returns null for non-existent project' do
+      execute_query(project_path: 'non-existent/project')
+      expect(graphql_data['project']).to be_nil
+    end
+  end
+end

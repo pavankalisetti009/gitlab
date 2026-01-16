@@ -716,6 +716,13 @@ module EE
           description: 'Security scan profiles attached to the project.',
           authorize: :read_security_scan_profiles,
           experiment: { milestone: '18.7' }
+
+        field :security_tracked_refs,
+          ::Types::Security::TrackedRefType.connection_type,
+          null: true,
+          description: 'Refs tracked for security vulnerabilities.',
+          resolver: ::Resolvers::Security::TrackedRefsResolver,
+          experiment: { milestone: '18.8' }
       end
 
       def tracking_key
