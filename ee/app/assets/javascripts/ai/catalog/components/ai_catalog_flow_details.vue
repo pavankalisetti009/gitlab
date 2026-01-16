@@ -1,5 +1,6 @@
 <script>
-import { GlAvatarLabeled, GlAvatarLink, GlLink } from '@gitlab/ui';
+import { GlAvatarLabeled, GlAvatarLink, GlLink, GlSprintf } from '@gitlab/ui';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import { getByVersionKey } from '../utils';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
@@ -14,6 +15,7 @@ export default {
     GlAvatarLabeled,
     GlAvatarLink,
     GlLink,
+    GlSprintf,
     AiCatalogItemField,
     AiCatalogItemVisibilityField,
     FormFlowDefinition,
@@ -45,6 +47,7 @@ export default {
     },
   },
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
+  serviceAccountsDocsLink: helpPagePath('user/profile/service_accounts'),
 };
 </script>
 
@@ -68,7 +71,24 @@ export default {
         />
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')">
-        <ai-catalog-item-field v-if="serviceAccount" :title="s__('AICatalog|Service account')">
+        <ai-catalog-item-field
+          v-if="serviceAccount"
+          :title="s__('AICatalog|Service account')"
+          data-testid="service-account-field"
+        >
+          <p class="gl-text-subtle">
+            <gl-sprintf
+              :message="
+                s__(
+                  'AICatalog|%{linkStart}Service accounts%{linkEnd} represent non-human entities. This is the account that you mention or assign to trigger the flow.',
+                )
+              "
+            >
+              <template #link="{ content }">
+                <gl-link :href="$options.serviceAccountsDocsLink">{{ content }}</gl-link>
+              </template>
+            </gl-sprintf>
+          </p>
           <gl-avatar-link
             :href="serviceAccount.webPath"
             :title="serviceAccount.name"
@@ -83,7 +103,10 @@ export default {
           </gl-avatar-link>
         </ai-catalog-item-field>
         <trigger-field v-if="hasProjectConfiguration" :item="item" />
-        <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
+        <ai-catalog-item-field
+          :title="s__('AICatalog|Configuration')"
+          data-testid="configuration-field"
+        >
           <form-flow-definition :value="definition" read-only class="gl-mt-3" />
         </ai-catalog-item-field>
       </form-section>

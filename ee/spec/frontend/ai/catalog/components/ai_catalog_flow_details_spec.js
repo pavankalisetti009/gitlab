@@ -1,5 +1,5 @@
-import { shallowMount } from '@vue/test-utils';
-import { GlAvatarLabeled, GlAvatarLink, GlLink } from '@gitlab/ui';
+import { GlAvatarLabeled, GlAvatarLink, GlLink, GlSprintf } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
@@ -18,13 +18,14 @@ describe('AiCatalogFlowDetails', () => {
   };
 
   const createComponent = ({ props = {} } = {}) => {
-    wrapper = shallowMount(AiCatalogFlowDetails, {
+    wrapper = shallowMountExtended(AiCatalogFlowDetails, {
       propsData: {
         ...defaultProps,
         ...props,
       },
       stubs: {
         AiCatalogItemVisibilityField,
+        GlSprintf,
       },
     });
   };
@@ -37,6 +38,8 @@ describe('AiCatalogFlowDetails', () => {
   const findTriggerField = () => wrapper.findComponent(TriggerField);
   const findServiceAccountAvatar = () => wrapper.findComponent(GlAvatarLabeled);
   const findServiceAccountLink = () => wrapper.findComponent(GlAvatarLink);
+  const findServiceAccountField = () => wrapper.findByTestId('service-account-field');
+  const findConfigurationField = () => wrapper.findByTestId('configuration-field');
 
   beforeEach(() => {
     createComponent();
@@ -84,9 +87,8 @@ describe('AiCatalogFlowDetails', () => {
 
   describe('renders "Configuration" details', () => {
     it('renders latestVersion flow definition', () => {
-      const configurationField = findAllFieldsForSection(2).at(0);
-      expect(configurationField.props('title')).toBe('Configuration');
-      expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
+      expect(findConfigurationField().props('title')).toBe('Configuration');
+      expect(findConfigurationField().findComponent(FormFlowDefinition).props('value')).toBe(
         mockFlow.latestVersion.definition,
       );
     });
@@ -117,8 +119,7 @@ describe('AiCatalogFlowDetails', () => {
       });
 
       it('renders pinnedItemVersion flow definition', () => {
-        const configurationField = findAllFieldsForSection(2).at(0);
-        expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
+        expect(findConfigurationField().findComponent(FormFlowDefinition).props('value')).toBe(
           mockFlowConfigurationForProject.pinnedItemVersion.definition,
         );
       });
@@ -151,6 +152,20 @@ describe('AiCatalogFlowDetails', () => {
         expect(findServiceAccountLink().attributes()).toMatchObject({
           href: mockServiceAccount.webPath,
           title: mockServiceAccount.name,
+        });
+      });
+
+      describe('renders service account help text', () => {
+        it('renders help text with full phrase', () => {
+          const helpText = findServiceAccountField().text();
+          expect(helpText).toBe(
+            'Service accounts represent non-human entities. This is the account that you mention or assign to trigger the flow.',
+          );
+        });
+
+        it('renders service account docs link in help text', () => {
+          const link = findServiceAccountField().findComponent(GlLink);
+          expect(link.attributes('href')).toBe('/help/user/profile/service_accounts');
         });
       });
     });
