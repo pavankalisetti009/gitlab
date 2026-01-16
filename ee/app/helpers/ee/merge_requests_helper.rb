@@ -4,20 +4,6 @@ module EE
   module MergeRequestsHelper
     extend ::Gitlab::Utils::Override
 
-    def render_items_list(items, separator = "and")
-      items_cnt = items.size
-
-      case items_cnt
-      when 1
-        items.first
-      when 2
-        "#{items.first} #{separator} #{items.last}"
-      else
-        last_item = items.pop
-        "#{items.join(', ')} #{separator} #{last_item}"
-      end
-    end
-
     override :can_use_description_composer
     def can_use_description_composer(user, merge_request)
       ::Llm::DescriptionComposerService.new(user, merge_request).valid?.to_s
