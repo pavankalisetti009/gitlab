@@ -73,15 +73,13 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
       end
     end
 
-    context 'when skip_parent is false' do
-      it 'syncs the parent group' do
-        expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-          .to receive(:new).with(group, current_user: user)
-                           .and_return(sync_service)
-        expect(sync_service).to receive(:execute)
+    it 'syncs the parent group' do
+      expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
+        .to receive(:new).with(group, current_user: user)
+                         .and_return(sync_service)
+      expect(sync_service).to receive(:execute)
 
-        worker.send(:sync_groups, group, user, skip_parent: false)
-      end
+      worker.send(:sync_groups, group, user)
     end
 
     context 'when user_id is not provided' do
