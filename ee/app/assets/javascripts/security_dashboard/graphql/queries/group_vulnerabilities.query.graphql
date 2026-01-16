@@ -27,6 +27,7 @@ query groupVulnerabilities(
   $owaspTopTen2021: [VulnerabilityOwasp2021Top10!]
   $includeSeverityOverrides: Boolean = false
   $includeLatestFlag: Boolean = false
+  $policyAutoDismissed: Boolean
   $policyViolations: [PolicyViolations!]
   $reachability: ReachabilityType
   $validityCheck: [VulnerabilityFindingTokenStatusState!]
@@ -44,6 +45,7 @@ query groupVulnerabilities(
       scannerId: $scannerId
       state: $state
       dismissalReason: $dismissalReason
+      policyAutoDismissed: $policyAutoDismissed
       projectId: $projectId
       sort: $sort
       hasIssues: $hasIssues

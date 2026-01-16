@@ -1,4 +1,7 @@
-import { isPolicyViolationFilterEnabled } from 'ee/security_dashboard/utils';
+import {
+  autoDismissVulnerabilityPoliciesEnabled,
+  isPolicyViolationFilterEnabled,
+} from 'ee/security_dashboard/utils';
 
 describe('isPolicyViolationFilterEnabled', () => {
   it.each`
@@ -23,6 +26,20 @@ describe('isPolicyViolationFilterEnabled', () => {
       window.gon.abilities = { accessAdvancedVulnerabilityManagement };
 
       expect(isPolicyViolationFilterEnabled()).toBe(expected);
+    },
+  );
+
+  it.each`
+    autoDismissVulnerabilityPolicies | policyAutoDismissedEsFilter | expected
+    ${false}                         | ${false}                    | ${false}
+    ${false}                         | ${true}                     | ${false}
+    ${true}                          | ${false}                    | ${false}
+    ${true}                          | ${true}                     | ${true}
+  `(
+    'returns correct output when autoDismissVulnerabilityPolicies=$autoDismissVulnerabilityPolicies and policyAutoDismissedEsFilter=$policyAutoDismissedEsFilter',
+    ({ autoDismissVulnerabilityPolicies, policyAutoDismissedEsFilter, expected }) => {
+      window.gon.features = { autoDismissVulnerabilityPolicies, policyAutoDismissedEsFilter };
+      expect(autoDismissVulnerabilityPoliciesEnabled()).toBe(expected);
     },
   );
 });

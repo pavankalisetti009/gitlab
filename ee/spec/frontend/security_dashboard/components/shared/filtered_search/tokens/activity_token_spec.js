@@ -136,6 +136,8 @@ describe('ActivityToken', () => {
 
     const policyViolationsGroupHeaders = ['Policy violations'];
 
+    const policyActionsGroupHeaders = ['Policy actions'];
+
     it.each`
       resolveVulnerabilityWithAi | expectedOptions
       ${true}                    | ${[...baseOptions, ...aiOptions]}
@@ -226,8 +228,34 @@ describe('ActivityToken', () => {
       },
     );
 
+    it.each`
+      dashboardType              | autoDismissVulnerabilityPoliciesEnabled | expectedGroups
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                                 | ${[...baseGroupHeaders, ...policyActionsGroupHeaders]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                                | ${baseGroupHeaders}
+      ${DASHBOARD_TYPE_GROUP}    | ${true}                                 | ${[...baseGroupHeaders, ...policyActionsGroupHeaders]}
+      ${DASHBOARD_TYPE_INSTANCE} | ${true}                                 | ${baseGroupHeaders}
+    `(
+      'renders policy actions group based on feature flag',
+      ({ dashboardType, autoDismissVulnerabilityPoliciesEnabled, expectedGroups }) => {
+        jest
+          .spyOn(SecurityDashboardUtils, 'autoDismissVulnerabilityPoliciesEnabled')
+          .mockReturnValue(autoDismissVulnerabilityPoliciesEnabled);
+
+        createWrapper({ provide: { dashboardType } });
+
+        const findDropdownGroupHeaders = () =>
+          wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
+
+        expect(findDropdownGroupHeaders()).toEqual(expectedGroups);
+      },
+    );
+
     it('shows the correct group headers when both resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
       jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+      jest
+        .spyOn(SecurityDashboardUtils, 'autoDismissVulnerabilityPoliciesEnabled')
+        .mockReturnValue(true);
+
       createWrapperWithAbility({
         resolveVulnerabilityWithAi: true,
       });
@@ -239,56 +267,80 @@ describe('ActivityToken', () => {
         ...baseGroupHeaders,
         ...aiGroupHeaders,
         ...policyViolationsGroupHeaders,
+        ...policyActionsGroupHeaders,
       ]);
     });
 
-    it.each`
-      resolveVulnerabilityWithAi | expectedBadges
-      ${true}                    | ${['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb', 'tanuki-ai']}
-      ${false}                   | ${['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb']}
-    `(
-      'shows the correct badges when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
-      ({ resolveVulnerabilityWithAi, expectedBadges }) => {
-        createWrapperWithAbility({ resolveVulnerabilityWithAi });
-        expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
-          expectedBadges,
-        );
-      },
-    );
+    describe('badges', () => {
+      const defaultBadges = ['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb'];
 
-    it.each`
-      isPolicyViolationEnabled | expectedBadges
-      ${true}                  | ${['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb', 'flag']}
-      ${false}                 | ${['check-circle-dashed', 'work-item-issue', 'merge-request', 'bulb']}
-    `(
-      'shows the correct badges when isPolicyViolationEnabled=$isPolicyViolationEnabled',
-      ({ isPolicyViolationEnabled, expectedBadges }) => {
-        jest
-          .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
-          .mockReturnValue(isPolicyViolationEnabled);
+      it.each`
+        resolveVulnerabilityWithAi | expectedBadges
+        ${true}                    | ${[...defaultBadges, 'tanuki-ai']}
+        ${false}                   | ${defaultBadges}
+      `(
+        'shows the correct badges when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
+        ({ resolveVulnerabilityWithAi, expectedBadges }) => {
+          createWrapperWithAbility({ resolveVulnerabilityWithAi });
+          expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
+            expectedBadges,
+          );
+        },
+      );
 
-        createWrapper();
+      it.each`
+        isPolicyViolationEnabled | expectedBadges
+        ${true}                  | ${[...defaultBadges, 'flag']}
+        ${false}                 | ${defaultBadges}
+      `(
+        'shows the correct badges when isPolicyViolationEnabled=$isPolicyViolationEnabled',
+        ({ isPolicyViolationEnabled, expectedBadges }) => {
+          jest
+            .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
+            .mockReturnValue(isPolicyViolationEnabled);
 
-        expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
-          expectedBadges,
-        );
-      },
-    );
+          createWrapper();
 
-    it('shows the correct badges when resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
-      jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
-      createWrapperWithAbility({
-        resolveVulnerabilityWithAi: true,
+          expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
+            expectedBadges,
+          );
+        },
+      );
+
+      it.each`
+        autoDismissVulnerabilityPoliciesEnabled | expectedBadges
+        ${true}                                 | ${[...defaultBadges, 'flag']}
+        ${false}                                | ${defaultBadges}
+      `(
+        'shows the correct badges when autoDismissVulnerabilityPoliciesEnabled=$autoDismissVulnerabilityPoliciesEnabled',
+        ({ autoDismissVulnerabilityPoliciesEnabled, expectedBadges }) => {
+          jest
+            .spyOn(SecurityDashboardUtils, 'autoDismissVulnerabilityPoliciesEnabled')
+            .mockReturnValue(autoDismissVulnerabilityPoliciesEnabled);
+
+          createWrapper();
+
+          expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
+            expectedBadges,
+          );
+        },
+      );
+
+      it('shows the correct badges when resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
+        jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+        createWrapperWithAbility({
+          resolveVulnerabilityWithAi: true,
+        });
+
+        expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual([
+          'check-circle-dashed',
+          'work-item-issue',
+          'merge-request',
+          'bulb',
+          'tanuki-ai',
+          'flag',
+        ]);
       });
-
-      expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual([
-        'check-circle-dashed',
-        'work-item-issue',
-        'merge-request',
-        'bulb',
-        'tanuki-ai',
-        'flag',
-      ]);
     });
   });
 
@@ -503,6 +555,28 @@ describe('ActivityToken', () => {
         const result = ActivityToken.transformFilters(['HAS_ISSUE'], defaultOptions);
 
         expect(result).not.toHaveProperty('policyViolations');
+      });
+    });
+
+    describe('policy auto-dismiss filter', () => {
+      it('includes policyAutoDismissed when autoDismissVulnerabilityPoliciesEnabled is true', () => {
+        jest
+          .spyOn(SecurityDashboardUtils, 'autoDismissVulnerabilityPoliciesEnabled')
+          .mockReturnValue(true);
+
+        const result = ActivityToken.transformFilters(['DISMISSED_BY_POLICY'], defaultOptions);
+
+        expect(result.policyAutoDismissed).toBe(true);
+      });
+
+      it('does not include policyAutoDismissed when autoDismissVulnerabilityPoliciesEnabled is false', () => {
+        jest
+          .spyOn(SecurityDashboardUtils, 'autoDismissVulnerabilityPoliciesEnabled')
+          .mockReturnValue(false);
+
+        const result = ActivityToken.transformFilters(['DISMISSED_BY_POLICY'], defaultOptions);
+
+        expect(result).not.toHaveProperty('policyAutoDismissed');
       });
     });
 
