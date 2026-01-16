@@ -4895,6 +4895,32 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    describe 'read_security_project_tracked_refs' do
+      let(:policy) { :read_security_project_tracked_refs }
+
+      before do
+        stub_licensed_features(security_dashboard: true)
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      where(:role, :allowed) do
+        :guest      | false
+        :planner    | false
+        :reporter   | false
+        :developer  | true
+        :maintainer | true
+        :auditor    | true
+        :owner      | true
+        :admin      | true
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
+
     describe 'read_vulnerability_statistics' do
       let(:policy) { :read_vulnerability_statistics }
 
