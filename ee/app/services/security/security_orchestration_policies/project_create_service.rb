@@ -60,7 +60,7 @@ module Security
         {
           creator: current_user,
           visibility_level: container.visibility_level,
-          name: "#{container.name} - Security policy project",
+          name: "#{sanitized_container_name} - Security policy project",
           description: "This project is automatically generated to manage security policies for the project.",
           namespace_id: namespace_id,
           organization_id: namespace.organization_id,
@@ -114,6 +114,10 @@ module Security
 
       def can_create_projects_in_container?
         current_user.can?(:create_projects, namespace)
+      end
+
+      def sanitized_container_name
+        container.name.tr('()', '')
       end
     end
   end
