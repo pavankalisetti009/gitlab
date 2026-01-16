@@ -121,6 +121,18 @@ module Gitlab
           )
         end
 
+        def track_changed_paths_calculated(changed_paths_count)
+          track_internal_event(
+            'calculate_changed_paths_in_secret_push_protection',
+            user: @user,
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              value: changed_paths_count
+            }
+          )
+        end
+
         private
 
         def should_log_audit_events?

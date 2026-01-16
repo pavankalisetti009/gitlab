@@ -294,6 +294,12 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         expect(payload.data).to include("BASE_URL=https://foo.bar")
         expect(payload.offset).to eq(1)
       end
+
+      it 'tracks the changed paths count' do
+        expect(payload_processor.audit_logger).to receive(:track_changed_paths_calculated).with(3)
+
+        payload_processor.standardize_payloads
+      end
     end
 
     context 'when diff_blobs_with_raw_info fails' do
