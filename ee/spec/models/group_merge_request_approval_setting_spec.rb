@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupMergeRequestApprovalSetting, feature_category: :compliance_managment do
+RSpec.describe GroupMergeRequestApprovalSetting, feature_category: :compliance_management do
   describe 'Associations' do
     it { is_expected.to belong_to :group }
   end

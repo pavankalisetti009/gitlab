@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Key, feature_category: :system_acces do
+RSpec.describe Key, feature_category: :system_access do
   describe 'validations' do
     describe 'expiration' do
       using RSpec::Parameterized::TableSyntax
