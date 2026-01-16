@@ -21,9 +21,11 @@ import {
   AI_CATALOG_ITEM_LABELS,
   DELETE_OPTIONS,
   TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_ITEM_TYPES,
   TRACK_EVENT_ORIGIN_EXPLORE,
   TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_ORIGIN_GROUP,
   TRACK_EVENT_PAGE_SHOW,
 } from '../constants';
 import aiCatalogProjectUserPermissionsQuery from '../graphql/queries/ai_catalog_project_user_permissions.query.graphql';
@@ -128,6 +130,9 @@ export default {
     },
   },
   computed: {
+    isProjectNamespace() {
+      return Boolean(this.projectPath);
+    },
     canAdmin() {
       return Boolean(this.item.userPermissions?.adminAiCatalogItem);
     },
@@ -223,18 +228,31 @@ export default {
     deleteOptions() {
       return DELETE_OPTIONS(this.itemTypeLabel);
     },
+    origin() {
+      if (this.isGlobal) return TRACK_EVENT_ORIGIN_EXPLORE;
+      if (this.isProjectNamespace) return TRACK_EVENT_ORIGIN_PROJECT;
+      return TRACK_EVENT_ORIGIN_GROUP;
+    },
   },
   methods: {
-    onClickEnable() {
-      this.trackEvent(TRACK_EVENT_ENABLE_AI_CATALOG_ITEM, {
-        label: TRACK_EVENT_ITEM_TYPES[this.item.itemType],
-        origin: this.isGlobal ? TRACK_EVENT_ORIGIN_EXPLORE : TRACK_EVENT_ORIGIN_PROJECT,
-        page: TRACK_EVENT_PAGE_SHOW,
-      });
-    },
     openDeleteModal() {
       this.forceHardDelete = this.canHardDelete;
       this.showDeleteModal = true;
+    },
+    onClickEnable() {
+      this.trackEvent(TRACK_EVENT_ENABLE_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_ITEM_TYPES[this.item.itemType],
+        origin: this.origin,
+        page: TRACK_EVENT_PAGE_SHOW,
+      });
+    },
+    onClickDisable() {
+      this.showDisableModal = true;
+      this.trackEvent(TRACK_EVENT_DISABLE_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_ITEM_TYPES[this.item.itemType],
+        origin: this.origin,
+        page: TRACK_EVENT_PAGE_SHOW,
+      });
     },
   },
   adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
@@ -310,7 +328,7 @@ export default {
       <gl-disclosure-dropdown-item
         v-if="showDisable"
         data-testid="disable-button"
-        @action="showDisableModal = true"
+        @action="onClickDisable"
       >
         <template #list-item>
           <span class="gl-flex gl-gap-2">

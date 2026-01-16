@@ -1,0 +1,25 @@
+---
+description: AI Catalog item Disable button click
+internal_events: true
+status: active
+action: click_disable_ai_catalog_item_button
+identifiers:
+  - project
+  - namespace
+  - user
+additional_properties:
+  label:
+    description: Type of AI Catalog item
+  page:
+    description: Catalog page of origin (List / Show item)
+  origin:
+    description: Catalog area of origin (Explore / Project / Group)
+product_group: workflow_catalog
+product_categories:
+  - workflow_catalog
+milestone: '18.9'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/216766
+tiers:
+  - premium
+  - ultimate
+classification: duo
