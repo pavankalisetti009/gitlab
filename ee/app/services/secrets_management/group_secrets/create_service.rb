@@ -1,0 +1,40 @@
+# frozen_string_literal: true
+
+module SecretsManagement
+  module GroupSecrets
+    class CreateService < GroupBaseService
+      include Secrets::CreateServiceHelpers
+      include GroupSecrets::SecretRefresherHelper
+
+      def execute(name:, value:, environment:, protected:, description: nil)
+        with_exclusive_lease_for(group) do
+          group_secret = GroupSecret.new(
+            name: name,
+            description: description,
+            group: group,
+            environment: environment,
+            protected: protected
+          )
+
+          execute_secret_creation(
+            secret: group_secret,
+            custom_metadata: {
+              environment: environment,
+              protected: protected.to_s
+            },
+            value: value
+          )
+        end
+      end
+
+      private
+
+      delegate :secrets_manager, to: :group
+
+      def read_secret(group_secret)
+        GroupSecrets::ReadMetadataService.new(group, current_user)
+          .execute(group_secret.name)
+      end
+    end
+  end
+end

@@ -34,5 +34,22 @@ module SecretsManagement
       global_secrets_manager_client.with_namespace(group.secrets_manager.full_group_namespace_path)
     end
     strong_memoize_attr :group_secrets_manager_client
+
+    def user_client
+      user_jwt = GroupUserJwt.new(
+        current_user: current_user,
+        group: group
+      ).encoded
+
+      SecretsManagerClient.new(
+        jwt: user_jwt,
+        role: group.secrets_manager.user_auth_role,
+        auth_namespace: group.secrets_manager.full_group_namespace_path,
+        auth_mount: group.secrets_manager.user_auth_mount,
+        namespace: group.secrets_manager.full_group_namespace_path,
+        use_cel_auth: true
+      )
+    end
+    strong_memoize_attr :user_client
   end
 end

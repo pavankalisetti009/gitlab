@@ -136,7 +136,7 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
       it 'fails', :aggregate_failures do
         post_mutation
 
-        msg = 'Length of project secret value exceeds allowed limits (10k bytes).'
+        msg = 'Length of secret value exceeds allowed limits (10k bytes).'
         expect(mutation_response['errors']).to include(msg)
       end
     end

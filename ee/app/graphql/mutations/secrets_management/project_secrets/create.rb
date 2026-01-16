@@ -63,13 +63,13 @@ module Mutations
           if result.success?
             track_secret_creation_event(project)
             {
-              project_secret: result.payload[:project_secret],
+              project_secret: result.payload[:secret],
               errors: []
             }
           else
             {
               project_secret: nil,
-              errors: error_messages(result, [:project_secret])
+              errors: error_messages(result, [:secret])
             }
           end
         end
