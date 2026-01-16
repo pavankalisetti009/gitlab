@@ -256,6 +256,10 @@ HTTP requests from any Geo secondary site to the primary Geo site use the Intern
 Geo site. If this is not explicitly defined in the primary Geo site settings in the **Admin** area, the
 public URL of the primary site is used.
 
+Prerequisites:
+
+- Administrator access.
+
 To update the internal URL of the primary Geo site:
 
 1. In the upper-right corner, select **Admin**.
