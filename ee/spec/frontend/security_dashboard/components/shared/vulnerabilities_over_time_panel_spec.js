@@ -6,8 +6,8 @@ import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboa
 import * as panelStateUrlSync from 'ee/security_dashboard/utils/panel_state_url_sync';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
-import OverTimeGroupBy from 'ee/security_dashboard/components/shared/over_time_group_by.vue';
-import OverTimeSeverityFilter from 'ee/security_dashboard/components/shared/over_time_severity_filter.vue';
+import PanelGroupBy from 'ee/security_dashboard/components/shared/panel_group_by.vue';
+import PanelSeverityFilter from 'ee/security_dashboard/components/shared/panel_severity_filter.vue';
 import OverTimePeriodSelector from 'ee/security_dashboard/components/shared/over_time_period_selector.vue';
 import projectVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_over_time.query.graphql';
 import groupVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_over_time.query.graphql';
@@ -134,10 +134,15 @@ describe('VulnerabilitiesOverTimePanel', () => {
   const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
   const findVulnerabilitiesOverTimeChart = () =>
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
-  const findOverTimeGroupBy = () => wrapper.findComponent(OverTimeGroupBy);
+  const findPanelGroupBy = () => wrapper.findComponent(PanelGroupBy);
   const findOverTimePeriodSelector = () => wrapper.findComponent(OverTimePeriodSelector);
-  const findSeverityFilter = () => wrapper.findComponent(OverTimeSeverityFilter);
+  const findSeverityFilter = () => wrapper.findComponent(PanelSeverityFilter);
   const findEmptyState = () => wrapper.findByTestId('vulnerabilities-over-time-empty-state');
+
+  const clickToggleButtonBy = async (value) => {
+    await findPanelGroupBy().vm.$emit('input', value);
+    await nextTick();
+  };
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -160,14 +165,14 @@ describe('VulnerabilitiesOverTimePanel', () => {
       expect(findVulnerabilitiesOverTimeChart().exists()).toBe(true);
     });
 
-    it('passes severity value to OverTimeGroupBy by default', () => {
-      expect(findOverTimeGroupBy().props('value')).toBe('severity');
+    it('passes severity value to PanelGroupBy by default', () => {
+      expect(findPanelGroupBy().props('value')).toBe('severity');
     });
 
     it('renders all filter components', () => {
       expect(findOverTimePeriodSelector().exists()).toBe(true);
       expect(findSeverityFilter().exists()).toBe(true);
-      expect(findOverTimeGroupBy().exists()).toBe(true);
+      expect(findPanelGroupBy().exists()).toBe(true);
     });
 
     it('sets initial time period for the chart data to 30 days', () => {
@@ -324,39 +329,30 @@ describe('VulnerabilitiesOverTimePanel', () => {
 
     it('switches to report type grouping when report type button is clicked', async () => {
       await waitForPromises();
-      const overTimeGroupBy = findOverTimeGroupBy();
+      await clickToggleButtonBy('reportType');
 
-      await overTimeGroupBy.vm.$emit('input', 'reportType');
-      await nextTick();
-
-      expect(overTimeGroupBy.props('value')).toBe('reportType');
+      expect(findPanelGroupBy().props('value')).toBe('reportType');
     });
 
     it('switches back to severity grouping when severity button is clicked', async () => {
       await waitForPromises();
-      const overTimeGroupBy = findOverTimeGroupBy();
+      await clickToggleButtonBy('reportType');
+      await clickToggleButtonBy('severity');
 
-      await overTimeGroupBy.vm.$emit('input', 'reportType');
-      await nextTick();
-
-      await overTimeGroupBy.vm.$emit('input', 'severity');
-      await nextTick();
-
-      expect(overTimeGroupBy.props('value')).toBe('severity');
+      expect(findPanelGroupBy().props('value')).toBe('severity');
     });
 
     it('initializes with report type grouping if URL parameter is set', () => {
       setWindowLocation('?vulnerabilitiesOverTime.groupBy=reportType');
       createComponent();
 
-      expect(findOverTimeGroupBy().props('value')).toBe('reportType');
+      expect(findPanelGroupBy().props('value')).toBe('reportType');
     });
 
     it('calls writeToUrl when grouping is set to report type', async () => {
       jest.spyOn(panelStateUrlSync, 'writeToUrl');
 
-      findOverTimeGroupBy().vm.$emit('input', 'reportType');
-      await nextTick();
+      await clickToggleButtonBy('reportType');
 
       expect(panelStateUrlSync.writeToUrl).toHaveBeenCalledWith({
         panelId: 'vulnerabilitiesOverTime',

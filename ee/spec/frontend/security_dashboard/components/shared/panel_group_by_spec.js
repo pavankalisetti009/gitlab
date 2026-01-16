@@ -1,11 +1,11 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import OverTimeGroupBy from 'ee/security_dashboard/components/shared/over_time_group_by.vue';
+import PanelGroupBy from 'ee/security_dashboard/components/shared/panel_group_by.vue';
 
 describe('OverTimeGroupBy', () => {
   let wrapper;
 
   const createComponent = (props = { value: 'severity' }) => {
-    wrapper = shallowMountExtended(OverTimeGroupBy, {
+    wrapper = shallowMountExtended(PanelGroupBy, {
       propsData: {
         ...props,
       },

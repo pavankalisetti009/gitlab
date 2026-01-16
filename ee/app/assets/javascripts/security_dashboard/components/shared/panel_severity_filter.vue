@@ -6,6 +6,7 @@ import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 
 export default {
+  name: 'PanelSeverityFilter',
   components: {
     GlCollapsibleListbox,
   },
@@ -16,6 +17,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['input'],
   computed: {
     severityFilterListboxItems() {
       const allOption = { value: ALL_ID, text: s__('SecurityReports|All severities') };

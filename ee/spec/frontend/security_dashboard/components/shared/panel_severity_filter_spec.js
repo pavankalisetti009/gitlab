@@ -1,17 +1,17 @@
 import { nextTick } from 'vue';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import OverTimeSeverityFilter from 'ee/security_dashboard/components/shared/over_time_severity_filter.vue';
+import PanelSeverityFilter from 'ee/security_dashboard/components/shared/panel_severity_filter.vue';
 import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 
 const SEVERITY_OPTIONS = Object.keys(SEVERITY_LEVELS).map((key) => key.toUpperCase());
 
-describe('OverTimeSeverityFilter', () => {
+describe('PanelSeverityFilter', () => {
   let wrapper;
 
   const createComponent = ({ props = {} } = {}) => {
-    wrapper = shallowMountExtended(OverTimeSeverityFilter, {
+    wrapper = shallowMountExtended(PanelSeverityFilter, {
       propsData: {
         value: [],
         ...props,
