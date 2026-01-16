@@ -75,8 +75,6 @@ RSpec.describe EE::Gitlab::GonHelper do
         expect(gon).to receive(:subscriptions_url=).with(::Gitlab::Routing.url_helpers.subscription_portal_url)
         expect(gon).to receive(:subscriptions_legacy_sign_in_url=).with(::Gitlab::Routing.url_helpers.subscription_portal_legacy_sign_in_url)
         expect(gon).to receive(:billing_accounts_url=).with(::Gitlab::Routing.url_helpers.subscription_portal_billing_accounts_url)
-        expect(gon).to receive(:payment_form_url=).with(::Gitlab::Routing.url_helpers.subscription_portal_payment_form_url)
-        expect(gon).to receive(:payment_validation_form_id=).with(Gitlab::SubscriptionPortal::PAYMENT_VALIDATION_FORM_ID)
 
         helper.add_gon_variables
       end

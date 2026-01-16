@@ -30,8 +30,6 @@ module EE
 
         gon.subscriptions_legacy_sign_in_url = ::Gitlab::Routing.url_helpers.subscription_portal_legacy_sign_in_url
         gon.billing_accounts_url             = ::Gitlab::Routing.url_helpers.subscription_portal_billing_accounts_url
-        gon.payment_form_url                 = ::Gitlab::Routing.url_helpers.subscription_portal_payment_form_url
-        gon.payment_validation_form_id       = ::Gitlab::SubscriptionPortal::PAYMENT_VALIDATION_FORM_ID
       end
 
       def push_frontend_feature_flags
