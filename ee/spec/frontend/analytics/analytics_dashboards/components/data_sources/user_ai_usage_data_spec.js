@@ -274,6 +274,8 @@ describe('User ai usage data source', () => {
 
     it.each`
       sortBy                                                | sortDesc | sortField
+      ${'totalEventCount'}                                  | ${true}  | ${'TOTAL_EVENTS_COUNT_DESC'}
+      ${'totalEventCount'}                                  | ${false} | ${'TOTAL_EVENTS_COUNT_ASC'}
       ${'codeSuggestionShownInIdeEventCount'}               | ${true}  | ${'CODE_SUGGESTION_SHOWN_IN_IDE_DESC'}
       ${'codeSuggestionShownInIdeEventCount'}               | ${false} | ${'CODE_SUGGESTION_SHOWN_IN_IDE_ASC'}
       ${'codeSuggestionAcceptedInIdeEventCount'}            | ${true}  | ${'CODE_SUGGESTION_ACCEPTED_IN_IDE_DESC'}

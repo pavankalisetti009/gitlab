@@ -73,6 +73,7 @@ const SORTABLE_FIELD_KEYS = {
   codeSuggestionShownInIdeEventCount: 'CODE_SUGGESTION_SHOWN_IN_IDE',
   codeSuggestionAcceptedInIdeEventCount: 'CODE_SUGGESTION_ACCEPTED_IN_IDE',
   troubleshootJobEventCount: 'TROUBLESHOOT_JOB_TOTAL_COUNT',
+  totalEventCount: 'TOTAL_EVENTS_COUNT',
 };
 
 const constructSortKey = ({ sortBy, sortDesc }) => {
