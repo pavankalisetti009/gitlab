@@ -3,7 +3,6 @@ import { merge } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CiCdAnalyticsApp from 'ee/analytics/group_ci_cd_analytics/components/app.vue';
 import ReleaseStatsCard from 'ee/analytics/group_ci_cd_analytics/components/release_stats_card.vue';
-import MigrationAlert from 'ee_component/analytics/dora/components/migration_alert.vue';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getParameterValues } from '~/lib/utils/url_utility';
@@ -38,7 +37,6 @@ describe('ee/analytics/group_ci_cd_analytics/components/app.vue', () => {
 
   const findGlTabs = () => wrapper.findComponent(GlTabs);
   const findUsageQuotaLink = () => wrapper.findComponent(GlLink);
-  const findDoraMetricsMigrationAlert = () => wrapper.findComponent(MigrationAlert);
 
   describe('default', () => {
     beforeEach(() => {
@@ -47,10 +45,6 @@ describe('ee/analytics/group_ci_cd_analytics/components/app.vue', () => {
 
     it('renders the release statistics component', () => {
       expect(wrapper.findComponent(ReleaseStatsCard).exists()).toBe(true);
-    });
-
-    it('shows migration alert', () => {
-      expect(findDoraMetricsMigrationAlert().props().namespacePath).toBe(groupPath);
     });
   });
 
