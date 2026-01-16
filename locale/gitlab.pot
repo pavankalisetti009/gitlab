@@ -74752,18 +74752,18 @@ msgid_plural "VirtualRegistry|%d artifacts"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "VirtualRegistry|%d registry"
+msgid_plural "VirtualRegistry|%d registries"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "VirtualRegistry|%d upstream"
+msgid_plural "VirtualRegistry|%d upstreams"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "VirtualRegistry|%{count} of %{max}"
 msgstr ""
-
-msgid "VirtualRegistry|%{count} registry"
-msgid_plural "VirtualRegistry|%{count} registries"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "VirtualRegistry|%{count} upstream"
-msgid_plural "VirtualRegistry|%{count} upstreams"
-msgstr[0] ""
-msgstr[1] ""
 
 msgid "VirtualRegistry|%{hours} hour"
 msgid_plural "VirtualRegistry|%{hours} hours"
