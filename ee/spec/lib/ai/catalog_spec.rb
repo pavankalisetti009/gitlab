@@ -63,6 +63,7 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
 
       context 'when caching behavior for duo_agent_platform_available' do
         let_it_be(:group) { create(:group, guests: user) }
+        let(:cache_key) { "ai_catalog:duo_agent_platform_available:#{user.id}" }
 
         before do
           stub_feature_flags(
@@ -82,10 +83,7 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
             # Verify the method uses Rails.cache.fetch with correct expiration
             allow(Rails.cache).to receive(:fetch).and_call_original
             available?
-            expect(Rails.cache).to have_received(:fetch).with(
-              "ai_catalog:duo_agent_platform_available:#{user.id}",
-              expires_in: 30.minutes
-            )
+            expect(Rails.cache).to have_received(:fetch).with(cache_key, expires_in: 30.minutes)
           end
         end
 
@@ -94,10 +92,10 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
             allow(Rails.env).to receive(:production?).and_return(false)
           end
 
-          it 'does not use cache' do
-            # Cache should not be called in development
-            expect(Rails.cache).not_to receive(:fetch)
+          it 'does not use cache for duo_agent_platform_available' do
+            allow(Rails.cache).to receive(:fetch).and_call_original
             available?
+            expect(Rails.cache).not_to have_received(:fetch).with(cache_key, anything)
           end
         end
       end

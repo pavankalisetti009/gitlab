@@ -167,6 +167,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       build(:cloud_connector_unit_primitive, name: unit_primitive_name, add_ons: unit_primitive_add_ons)
     end
 
+    let(:root_namespace) { nil }
+
     let_it_be(:gitlab_add_on) { create(:gitlab_subscription_add_on) }
     let_it_be(:expired_gitlab_purchase) do
       create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: gitlab_add_on)
@@ -185,7 +187,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         .and_return(unit_primitive)
     end
 
-    subject { user.allowed_to_use(ai_feature) }
+    subject { user.allowed_to_use(ai_feature, root_namespace: root_namespace) }
 
     context 'when on Gitlab.com instance', :saas do
       let(:namespace) { active_gitlab_purchase.namespace }
@@ -200,6 +202,55 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           namespace.namespace_settings.update!(
             duo_core_features_enabled: duo_core_features_enabled
           )
+        end
+
+        context 'when namespace access rules are in place' do
+          let_it_be(:ns) { create(:group).tap { |ns| ns.add_guest(user) } }
+          let_it_be(:subgroup) { create(:group, parent: ns) }
+          let_it_be(:rule) do
+            create(
+              :ai_namespace_feature_access_rules,
+              :duo_classic,
+              root_namespace: ns,
+              through_namespace: subgroup
+            )
+          end
+
+          let(:ai_feature) { :explain_vulnerability }
+          let(:root_namespace) { ns }
+
+          before do
+            create(
+              :gitlab_subscription_user_add_on_assignment,
+              user: user,
+              add_on_purchase: active_gitlab_purchase
+            )
+          end
+
+          context 'when user has no group that would grant them access' do
+            let(:expected_allowed) { false }
+            let(:expected_namespace_ids) { [ns.id] }
+            let(:expected_enablement_type) { 'dap_group_membership' }
+            let(:authorized_by_duo_core) { false }
+
+            it 'is not allowed and does not perform seat checks' do
+              is_expected.to eq expected_response
+            end
+          end
+
+          context 'when user is part of the namespace and subgroup that grants access' do
+            before_all do
+              subgroup.add_guest(user)
+            end
+
+            let(:expected_allowed) { true }
+            let(:expected_namespace_ids) { allowed_by_namespace_ids }
+            let(:expected_enablement_type) { 'duo_pro' }
+
+            it 'performs other checks' do
+              is_expected.to eq expected_response
+            end
+          end
         end
       end
 
@@ -327,6 +378,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
           context 'when user has no group that would grant them access' do
             let(:expected_allowed) { false }
+            let(:expected_enablement_type) { 'dap_group_membership' }
 
             it 'is not allowed and does not perform seat checks' do
               is_expected.to eq expected_response
@@ -737,6 +789,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         end
       end
 
+      # rubocop:disable RSpec/MultipleMemoizedHelpers -- we need these variables
       context 'when user is not assigned to non-DAP add-on' do
         let_it_be(:product_analytics_add_on) do
           create(:gitlab_subscription_add_on, :product_analytics)
@@ -767,6 +820,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           expect(result.allowed?).to be(false)
         end
       end
+      # rubocop:enable RSpec/MultipleMemoizedHelpers
     end
 
     context 'when unit_primitive data is missing' do
@@ -861,7 +915,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       expect(user).to receive(:allowed_to_use).with(
         ai_feature,
         unit_primitive_name: :duo_chat,
-        licensed_feature: :ai_features
+        licensed_feature: :ai_features,
+        root_namespace: nil
       ).and_return(expected_response)
 
       is_expected.to eq(true)
@@ -1649,6 +1704,169 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         end
 
         it { is_expected.to be(false) }
+      end
+    end
+  end
+
+  describe '#check_access_through_namespace' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:root_namespace) { create(:group) }
+
+    let(:feature_name) { :explain_vulnerability }
+
+    subject(:check) { user.check_access_through_namespace(feature_name, root_namespace) }
+
+    context 'when on SaaS' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it 'delegates to check_access_through_namespace_in_saas' do
+        expect(user).to receive(:check_access_through_namespace_in_saas).with(feature_name, root_namespace)
+
+        check
+      end
+    end
+
+    context 'when on self-managed' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it 'delegates to check_access_through_namespace_at_instance' do
+        expect(user).to receive(:check_access_through_namespace_at_instance).with(feature_name)
+
+        check
+      end
+    end
+  end
+
+  describe '#check_access_through_namespace_in_saas', :saas, :use_clean_rails_redis_caching do
+    shared_examples 'checking namespace access rules' do
+      context 'when namespace has group-based rules' do
+        let_it_be(:subgroup) { create(:group, parent: namespace_to_check) }
+
+        let_it_be(:rule) do
+          create(
+            :ai_namespace_feature_access_rules,
+            :duo_classic,
+            root_namespace: namespace_to_check,
+            through_namespace: subgroup
+          )
+        end
+
+        context 'when user is part of group that gives them access' do
+          before_all do
+            subgroup.add_guest(user)
+          end
+
+          it 'returns allowed response' do
+            expect(check).to be_allowed
+            expect(check.namespace_ids).to match_array([namespace_to_check.id])
+
+            cache_key = ['users', user.id, described_class::DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY,
+              namespace_to_check.id, :duo_classic]
+
+            expect(Rails.cache.fetch(cache_key)).to be true
+          end
+        end
+
+        context 'when user is not part of any configured group' do
+          it { is_expected.not_to be_allowed }
+        end
+      end
+
+      context 'when namespace does not have group-based rules' do
+        it { is_expected.to be_nil }
+      end
+    end
+
+    let_it_be(:user) { create(:user) }
+    let_it_be(:root_namespace) { create(:group) }
+    let_it_be(:default_namespace) { create(:group).tap { |ns| ns.add_guest(user) } }
+
+    let(:feature_name) { :explain_vulnerability }
+    let(:feature_flag_enabled) { true }
+
+    before do
+      stub_feature_flags(duo_access_through_namespaces: feature_flag_enabled)
+    end
+
+    subject(:check) { user.check_access_through_namespace_in_saas(feature_name, root_namespace) }
+
+    context 'when not saas' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_access_through_namespaces: false)
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when ai feature is invalid' do
+      let(:feature_name) { :invalid_feature }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when current namespace is provided' do
+      context 'when user is part of current namespace' do
+        before_all do
+          root_namespace.add_guest(user)
+        end
+
+        it_behaves_like 'checking namespace access rules' do
+          let_it_be(:namespace_to_check) { root_namespace }
+        end
+      end
+
+      context 'when user is not part of current namespace' do
+        context 'when user has default namespace' do
+          before do
+            allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
+          end
+
+          it_behaves_like 'checking namespace access rules' do
+            let_it_be(:namespace_to_check) { default_namespace }
+          end
+
+          context 'when user does not have default namespace' do
+            before do
+              allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(nil)
+            end
+
+            it { is_expected.to be_nil }
+          end
+        end
+      end
+    end
+
+    context 'when current namespace is not provided' do
+      subject(:check) { user.check_access_through_namespace_in_saas(feature_name) }
+
+      context 'when user has default namespace' do
+        before do
+          allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
+        end
+
+        it_behaves_like 'checking namespace access rules' do
+          let_it_be(:namespace_to_check) { default_namespace }
+        end
+
+        context 'when user does not have default namespace' do
+          before do
+            allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(nil)
+          end
+
+          it { is_expected.to be_nil }
+        end
       end
     end
   end

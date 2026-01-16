@@ -152,9 +152,13 @@ module Ai
         end
       end
 
-      def allowed_to_use?(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features)
-        allowed_to_use(ai_feature, unit_primitive_name: unit_primitive_name, licensed_feature: licensed_feature)
-          .allowed?
+      def allowed_to_use?(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features, root_namespace: nil)
+        allowed_to_use(
+          ai_feature,
+          unit_primitive_name: unit_primitive_name,
+          licensed_feature: licensed_feature,
+          root_namespace: root_namespace
+        ).allowed?
       end
 
       def allowed_to_use_for_resource?(*args, resource:, **kwargs)
@@ -171,12 +175,17 @@ module Ai
         allowed_to_use(...).namespace_ids
       end
 
-      def allowed_to_use(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features, feature_setting: nil)
+      def allowed_to_use(
+        ai_feature,
+        unit_primitive_name: nil,
+        licensed_feature: :ai_features,
+        feature_setting: nil,
+        root_namespace: nil
+      )
         amazon_q_response = check_amazon_q_feature(ai_feature)
         return amazon_q_response if amazon_q_response
 
-        # Check if it is available through namespace membership on self-managed
-        through_namespace_response = check_access_through_namespace_at_instance(ai_feature)
+        through_namespace_response = check_access_through_namespace(ai_feature, root_namespace)
         return through_namespace_response if through_namespace_response&.allowed? == false
 
         # Check if feature and unit primitive are valid and available
@@ -201,14 +210,22 @@ module Ai
         check_free_access(ai_feature, licensed_feature)
       end
 
-      def allowed_to_use_through_namespace?(ai_feature)
+      def allowed_to_use_through_namespace?(ai_feature, root_namespace = nil)
         # This looks duplicated, but more logic will come in this function with
         # https://gitlab.com/gitlab-org/gitlab/-/work_items/584384
-        check = check_access_through_namespace_at_instance(ai_feature)
+        check = check_access_through_namespace(ai_feature, root_namespace)
 
         # treats nil as true since this means no rule was setup, or that this check
         # shouldn't be taken into account
         check.nil? || check.allowed?
+      end
+
+      def check_access_through_namespace(ai_feature, root_namespace = nil)
+        if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+          check_access_through_namespace_in_saas(ai_feature, root_namespace)
+        else
+          check_access_through_namespace_at_instance(ai_feature)
+        end
       end
 
       def check_access_through_namespace_at_instance(ai_feature)
@@ -231,11 +248,52 @@ module Ai
         Response.new(
           allowed?: has_access,
           namespace_ids: [],
-          authorized_by_duo_core: false
+          authorized_by_duo_core: false,
+          enablement_type: 'dap_group_membership'
         )
       end
 
-      private
+      def check_access_through_namespace_in_saas(ai_feature, root_namespace = nil)
+        return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        return unless Feature.enabled?(:duo_access_through_namespaces, root_namespace)
+
+        accessible_feature = THROUGH_NAMESPACE_ACCESS_FEATURE_MAP[ai_feature]
+
+        return unless accessible_feature
+
+        # The billable namespace is the authority over governance settings. The billable namespace for an action is
+        # the user's default namespace, expect when the user is a member of the namespace the action
+        # is being executed. For further details, see https://gitlab.com/gitlab-org/gitlab/-/issues/580901
+        #
+        # use_billable_namespace
+        authority_namespace = if root_namespace && root_namespace.member?(self)
+                                root_namespace
+                              else
+                                user_preference.duo_default_namespace_with_fallback
+                              end
+
+        # We must have at least one authority namespace
+        return unless authority_namespace
+
+        # If the authority namespace has no rules, it is nil
+        return unless ::Ai::NamespaceFeatureAccessRule.for_namespace(authority_namespace).exists?
+
+        has_access = Rails.cache.fetch(
+          ['users', id, DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY, authority_namespace.id, accessible_feature],
+          expires_in: DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_PERIOD
+        ) do
+          ::Ai::NamespaceFeatureAccessRule
+            .accessible_for_user(self, accessible_feature, authority_namespace)
+            .exists?
+        end
+
+        Response.new(
+          allowed?: has_access,
+          namespace_ids: [authority_namespace.id],
+          authorized_by_duo_core: false,
+          enablement_type: 'dap_group_membership'
+        )
+      end
 
       def get_self_hosted_unit_primitive_name(feature_setting)
         return unless feature_setting&.self_hosted?
