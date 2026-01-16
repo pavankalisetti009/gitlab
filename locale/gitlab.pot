@@ -77148,6 +77148,9 @@ msgstr ""
 msgid "Wiki|Edit page"
 msgstr ""
 
+msgid "Wiki|Edit page options"
+msgstr ""
+
 msgid "Wiki|Edit template"
 msgstr ""
 
