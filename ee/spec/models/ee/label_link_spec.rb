@@ -103,4 +103,75 @@ RSpec.describe LabelLink, feature_category: :global_search do
       end
     end
   end
+
+  describe '.by_target_for_exists_query' do
+    let_it_be(:label1) { create(:label) }
+    let_it_be(:label2) { create(:label) }
+    let_it_be(:label3) { create(:label) }
+
+    context 'when target_type is Epic' do
+      let_it_be(:epic1) { create(:labeled_epic, labels: [label1, label2]) }
+      let_it_be(:epic2) { create(:labeled_epic, labels: [label1]) }
+      let_it_be(:epic3) { create(:labeled_epic, labels: [label3]) }
+
+      context 'with issue_id column' do
+        subject(:query) do
+          Epic.where(described_class.by_target_for_exists_query('Epic', Epic.arel_table['issue_id'],
+            label_ids).arel.exists)
+        end
+
+        context 'without label_ids filter' do
+          let(:label_ids) { nil }
+
+          it 'returns epics with any labels' do
+            expect(query.pluck(:id)).to match_array([epic1.id, epic2.id, epic3.id])
+          end
+        end
+
+        context 'with label_ids filter' do
+          let(:label_ids) { [label1.id] }
+
+          it 'filters epics by specific label_ids' do
+            expect(query.pluck(:id)).to match_array([epic1.id, epic2.id])
+          end
+        end
+      end
+
+      context 'with id column' do
+        subject(:query) do
+          Epic.where(described_class.by_target_for_exists_query('Epic', Epic.arel_table['id'], [label1.id]).arel.exists)
+        end
+
+        it 'rewrites the arel_join_column to use issue_id' do
+          expect(query.pluck(:id)).to match_array([epic1.id, epic2.id])
+        end
+      end
+    end
+
+    context 'when target_type is Issue' do
+      let_it_be(:issue1) { create(:labeled_issue, labels: [label1, label2]) }
+      let_it_be(:issue2) { create(:labeled_issue, labels: [label1]) }
+      let_it_be(:issue3) { create(:labeled_issue, labels: [label3]) }
+
+      subject(:query) do
+        Issue.where(described_class.by_target_for_exists_query('Issue', Issue.arel_table[:id], label_ids).arel.exists)
+      end
+
+      context 'without label_ids filter' do
+        let(:label_ids) { nil }
+
+        it 'returns issues with any labels' do
+          expect(query.pluck(:id)).to match_array([issue1.id, issue2.id, issue3.id])
+        end
+      end
+
+      context 'with label_ids filter' do
+        let(:label_ids) { [label1.id] }
+
+        it 'filters issues by specific label_ids' do
+          expect(query.pluck(:id)).to match_array([issue1.id, issue2.id])
+        end
+      end
+    end
+  end
 end
