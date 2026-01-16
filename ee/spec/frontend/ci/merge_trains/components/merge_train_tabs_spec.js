@@ -1,4 +1,5 @@
 import { GlBadge, GlTab, GlTabs } from '@gitlab/ui';
+import { formatNumber } from '~/locale';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import MergeTrainTabs from 'ee/ci/merge_trains/components/merge_train_tabs.vue';
 
@@ -8,12 +9,12 @@ describe('MergeTrainTabs', () => {
   const defaultProps = {
     activeTrain: {
       cars: {
-        count: 5,
+        count: 59494,
       },
     },
     mergedTrain: {
       cars: {
-        count: 5,
+        count: 94849,
       },
     },
   };
@@ -40,18 +41,22 @@ describe('MergeTrainTabs', () => {
     expect(findTabs().exists()).toBe(true);
   });
 
-  it('displays active tab text and count', () => {
+  it('displays active tab text and formatted count', () => {
     createComponent(shallowMountExtended);
 
     expect(findActiveCarsTab().text()).toContain('Active');
-    expect(findActiveCarsTab().text()).toContain(`${defaultProps.activeTrain.cars.count}`);
+    expect(findActiveCarsTab().text()).toContain(
+      `${formatNumber(defaultProps.activeTrain.cars.count)}`,
+    );
   });
 
-  it('displays merged tab text and count', () => {
+  it('displays merged tab text and formatted count', () => {
     createComponent(shallowMountExtended);
 
     expect(findMergedCarsTab().text()).toContain('Merged');
-    expect(findMergedCarsTab().text()).toContain(`${defaultProps.mergedTrain.cars.count}`);
+    expect(findMergedCarsTab().text()).toContain(
+      `${formatNumber(defaultProps.mergedTrain.cars.count)}`,
+    );
   });
 
   it('emits the activeTab event', () => {

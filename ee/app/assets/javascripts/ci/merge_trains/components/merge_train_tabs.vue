@@ -1,5 +1,6 @@
 <script>
 import { GlBadge, GlTab, GlTabs } from '@gitlab/ui';
+import { formatNumber } from '~/locale';
 
 export default {
   name: 'MergeTrainTabs',
@@ -20,10 +21,10 @@ export default {
   },
   computed: {
     activeCarCount() {
-      return this.activeTrain?.cars?.count || 0;
+      return formatNumber(this.activeTrain?.cars?.count || 0);
     },
     mergedCarCount() {
-      return this.mergedTrain?.cars?.count || 0;
+      return formatNumber(this.mergedTrain?.cars?.count || 0);
     },
   },
 };
