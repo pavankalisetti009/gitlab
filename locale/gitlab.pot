@@ -77405,6 +77405,11 @@ msgid_plural "WorkItem|%d items"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "WorkItem|%d more..."
+msgid_plural "WorkItem|%d more..."
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "WorkItem|%{count} epics closed"
 msgstr ""
 
@@ -77746,6 +77751,9 @@ msgstr ""
 msgid "WorkItem|Copy from existing lifecycle"
 msgstr ""
 
+msgid "WorkItem|Copy link to view"
+msgstr ""
+
 msgid "WorkItem|Create %{workItemType}"
 msgstr ""
 
@@ -77803,6 +77811,9 @@ msgstr ""
 msgid "WorkItem|Delete this %{workItemType} and release all child items? This action cannot be reversed."
 msgstr ""
 
+msgid "WorkItem|Delete view"
+msgstr ""
+
 msgid "WorkItem|Description"
 msgstr ""
 
@@ -77825,6 +77836,9 @@ msgid "WorkItem|Duplicate"
 msgstr ""
 
 msgid "WorkItem|Duplicate default"
+msgstr ""
+
+msgid "WorkItem|Edit"
 msgstr ""
 
 msgid "WorkItem|Edit %{fieldName}"
@@ -78312,6 +78326,9 @@ msgid "WorkItem|Related vulnerabilities"
 msgstr ""
 
 msgid "WorkItem|Remove"
+msgstr ""
+
+msgid "WorkItem|Remove from list"
 msgstr ""
 
 msgid "WorkItem|Remove lifecycle"
