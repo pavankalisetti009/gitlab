@@ -44,10 +44,6 @@ class EpicPolicy < BasePolicy
     end
   end
 
-  condition(:relations_for_non_members_available, scope: :subject) do
-    ::Feature.enabled?(:epic_relations_for_non_members, @subject.group)
-  end
-
   condition(:locked, scope: :subject, score: 0) { @subject.work_item.discussion_locked? }
 
   condition(:user_allowed_to_measure_comment_temperature) do
@@ -135,15 +131,6 @@ class EpicPolicy < BasePolicy
 
   rule { summarize_notes_allowed & can?(:read_epic) }.policy do
     enable :summarize_comments
-  end
-
-  rule { relations_for_non_members_available & ~anonymous & can?(:read_epic) }.policy do
-    enable :read_epic_link_relation
-    enable :read_epic_relation
-  end
-
-  rule { can?(:read_epic_relation) & subepics_available }.policy do
-    enable :create_epic_tree_relation
   end
 
   rule { locked & ~is_group_member }.policy do

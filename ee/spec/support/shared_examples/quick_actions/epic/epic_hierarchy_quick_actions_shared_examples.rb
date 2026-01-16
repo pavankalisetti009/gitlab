@@ -89,19 +89,12 @@ RSpec.shared_examples 'execute epic hierarchy commands' do
         it_behaves_like 'does not add quick action parameter', :quick_action_assign_child_epic, :child_epic
       end
 
-      context 'when user has guest access to the child epic' do
+      context 'when user has guest access to the child epic but not to parent epic group' do
         before do
           private_group.add_guest(current_user)
         end
 
-        it_behaves_like 'adds quick action parameter', :quick_action_assign_child_epic, :child_epic
-        it_behaves_like 'quick action is available', :child_epic
-
-        context 'when target epic is not persisted yet' do
-          let(:target) { build(:epic, group: public_group) }
-
-          it_behaves_like 'adds quick action parameter', :quick_action_assign_child_epic, :child_epic
-        end
+        it_behaves_like 'quick action is unavailable', :child_epic
 
         context 'when passed child epic is nil' do
           let(:child_epic) { nil }
@@ -113,6 +106,22 @@ RSpec.shared_examples 'execute epic hierarchy commands' do
 
             expect { service.execute(content, epic) }.not_to raise_error
           end
+        end
+      end
+
+      context 'when user has guest access to both child epic and parent epic groups' do
+        before do
+          private_group.add_guest(current_user)
+          public_group.add_guest(current_user)
+        end
+
+        it_behaves_like 'adds quick action parameter', :quick_action_assign_child_epic, :child_epic
+        it_behaves_like 'quick action is available', :child_epic
+
+        context 'when target epic is not persisted yet' do
+          let(:target) { build(:epic, group: public_group) }
+
+          it_behaves_like 'adds quick action parameter', :quick_action_assign_child_epic, :child_epic
         end
 
         context 'when child_epic is already linked to the epic' do
@@ -136,22 +145,6 @@ RSpec.shared_examples 'execute epic hierarchy commands' do
           let(:referenced_epic) { epic2 }
 
           it_behaves_like 'quick action is available', :child_epic
-        end
-
-        context 'when epic_relations_for_non_members FF is disabled' do
-          before do
-            stub_feature_flags(epic_relations_for_non_members: false)
-          end
-
-          context "and user is not a member of the parent epic's group" do
-            it_behaves_like 'quick action is unavailable', :child_epic
-          end
-
-          context "and user is a guest of the parent epic's group" do
-            let(:current_user) { create(:user, guest_of: public_group) }
-
-            it_behaves_like 'quick action is available', :child_epic
-          end
         end
       end
     end
