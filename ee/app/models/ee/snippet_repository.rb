@@ -21,20 +21,6 @@ module EE
         foreign_key: :snippet_repository_id,
         class_name: '::Geo::SnippetRepositoryState'
 
-      # On primary, `verifiables` are records that can be checksummed and/or are replicable.
-      # On secondary, `verifiables` are records that have already been replicated
-      # and (ideally) have been checksummed on the primary
-      scope :verifiables, ->(primary_key_in = nil) do
-        node = ::GeoNode.current_node
-        replicables = available_replicables
-
-        if ::Gitlab::Geo.org_mover_extend_selective_sync_to_primary_checksumming?
-          replicables.merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
-        else
-          primary_key_in ? replicables.primary_key_in(primary_key_in) : replicables
-        end
-      end
-
       delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :snippet_repository_state)
 
       scope :available_verifiables, -> { joins(:snippet_repository_state) }
@@ -70,25 +56,6 @@ module EE
         return all if query.empty?
 
         fuzzy_search(query, EE_SEARCHABLE_ATTRIBUTES)
-      end
-
-      override :pluck_verifiable_ids_in_range
-      def pluck_verifiable_ids_in_range(range)
-        verifiables(range).pluck_primary_key
-      end
-
-      # @param primary_key_in [Range, SnippetRepository] arg to pass to primary_key_in scope
-      # @return [ActiveRecord::Relation<SnippetRepository>] everything that should be synced to this
-      #         node, restricted by primary key
-      override :replicables_for_current_secondary
-      def replicables_for_current_secondary(primary_key_in)
-        node = ::Gitlab::Geo.current_node
-
-        replicables = available_replicables
-        replicables = replicables.primary_key_in(primary_key_in) if primary_key_in.present?
-
-        replicables
-          .merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
       end
 
       # @return [ActiveRecord::Relation<SnippetRepository>] scope observing selective sync

@@ -95,6 +95,7 @@ RSpec.describe Geo::ReplicableModel, feature_category: :geo_replication do
           allow(DummyModel).to receive(:respond_to?).with(:all).and_call_original
           allow(DummyModel).to receive(:respond_to?).with(:object_storage_scope).and_call_original
           allow(DummyModel).to receive(:respond_to?).with(:selective_sync_scope).and_call_original
+          allow(DummyModel).to receive(:respond_to?).with(:object_storable?).and_call_original
           allow(DummyModel).to receive(:respond_to?).with(:with_files_stored_locally).and_return(true)
 
           expect(DummyModel).to receive(:with_files_stored_locally).once.and_return(DummyModel.none)
@@ -108,6 +109,7 @@ RSpec.describe Geo::ReplicableModel, feature_category: :geo_replication do
           allow(DummyModel).to receive(:respond_to?).with(:all).and_call_original
           allow(DummyModel).to receive(:respond_to?).with(:object_storage_scope).and_call_original
           allow(DummyModel).to receive(:respond_to?).with(:selective_sync_scope).and_call_original
+          allow(DummyModel).to receive(:respond_to?).with(:object_storable?).and_call_original
           allow(DummyModel).to receive(:respond_to?).with(:with_files_stored_locally).and_return(false)
 
           expect(DummyModel).not_to receive(:with_files_stored_locally)

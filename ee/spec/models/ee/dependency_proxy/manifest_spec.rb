@@ -6,7 +6,6 @@ RSpec.describe DependencyProxy::Manifest, feature_category: :geo_replication do
   describe 'Geo replication' do
     before do
       stub_dependency_proxy_setting(enabled: true)
-      stub_dependency_proxy_object_storage
     end
 
     describe 'associations' do
@@ -20,6 +19,10 @@ RSpec.describe DependencyProxy::Manifest, feature_category: :geo_replication do
     end
 
     include_examples 'a verifiable model for verification state' do
+      before do
+        stub_dependency_proxy_object_storage
+      end
+
       let(:verifiable_model_record) { build(:dependency_proxy_manifest) }
       let(:unverifiable_model_record) { build(:dependency_proxy_manifest, :remote_store) }
     end
@@ -30,22 +33,26 @@ RSpec.describe DependencyProxy::Manifest, feature_category: :geo_replication do
       let_it_be(:nested_group_1) { create(:group, parent: group_1) }
 
       # Manifest for the root group
-      let_it_be(:first_replicable_and_in_selective_sync) do
+      let!(:first_replicable_and_in_selective_sync) do
+        stub_dependency_proxy_object_storage(enabled: false)
         create(:dependency_proxy_manifest, group: group_1)
       end
 
       # Manifest for a subgroup
-      let_it_be(:second_replicable_and_in_selective_sync) do
+      let!(:second_replicable_and_in_selective_sync) do
+        stub_dependency_proxy_object_storage(enabled: false)
         create(:dependency_proxy_manifest, group: nested_group_1)
       end
 
       # Manifest for a subgroup and on object storage
       let!(:third_replicable_on_object_storage_and_in_selective_sync) do
+        stub_dependency_proxy_object_storage(enabled: true)
         create(:dependency_proxy_manifest, :remote_store, group: group_1)
       end
 
       # Manifest for a group not in selective sync
-      let_it_be(:last_replicable_and_not_in_selective_sync) do
+      let!(:last_replicable_and_not_in_selective_sync) do
+        stub_dependency_proxy_object_storage(enabled: false)
         create(:dependency_proxy_manifest, group: group_2)
       end
 

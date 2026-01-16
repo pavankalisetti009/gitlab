@@ -28,17 +28,16 @@ module Geo
       # On primary, `verifiables` are records that can be checksummed and/or are replicable.
       # On secondary, `verifiables` are records that have already been replicated
       # and (ideally) have been checksummed on the primary
-      scope :verifiables, -> do
+      scope :verifiables, ->(primary_key_in = nil) do
         node = ::GeoNode.current_node
 
-        replicables =
-          available_replicables
-            .merge(object_storage_scope(node))
+        replicables = available_replicables
+        replicables = replicables.merge(object_storage_scope(node)) if object_storable?
 
         if ::Gitlab::Geo.org_mover_extend_selective_sync_to_primary_checksumming?
-          replicables.merge(selective_sync_scope(node, replicables: replicables))
+          replicables.merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
         else
-          replicables
+          primary_key_in ? replicables.primary_key_in(primary_key_in) : replicables
         end
       end
 
@@ -59,13 +58,11 @@ module Geo
       def replicables_for_current_secondary(primary_key_in)
         node = ::Gitlab::Geo.current_node
 
-        replicables =
-          available_replicables
-            .merge(object_storage_scope(node))
+        replicables = available_replicables
+        replicables = replicables.merge(object_storage_scope(node)) if object_storable?
 
         replicables
-          .merge(selective_sync_scope(node, replicables: replicables))
-          .primary_key_in(primary_key_in)
+          .merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
       end
 
       # @return [ActiveRecord::Relation<Replicable>] scope observing object storage settings of the given node
