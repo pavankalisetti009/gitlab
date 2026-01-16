@@ -389,7 +389,7 @@ export default {
       <div class="gl-w-auto gl-grow" :class="{ 'gl-pl-5': sidebarVisible }">
         <div
           v-if="selectedCount"
-          class="gl-gl-my-4 gl-border-b gl-sticky gl-top-9 gl-z-2 gl-flex gl-flex-row gl-items-center gl-justify-between gl-bg-default gl-p-3"
+          class="gl-gl-my-4 gl-border-b gl-sticky gl-top-0 gl-z-2 gl-flex gl-flex-row gl-items-center gl-justify-between gl-bg-default gl-p-3"
         >
           <span>
             <gl-sprintf :message="selectedCountMessage">

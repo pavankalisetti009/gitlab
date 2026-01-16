@@ -43,7 +43,7 @@ export default {
         if (isGroup) {
           items.push({
             text: s__('SecurityInventory|Manage security scanners for subgroup projects'),
-            action: () => this.$emit('openScannersDrawer', item),
+            action: () => this.$emit('openScannersDrawer', [item.id]),
           });
         }
       }

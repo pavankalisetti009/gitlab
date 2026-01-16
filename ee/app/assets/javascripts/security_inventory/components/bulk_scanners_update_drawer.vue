@@ -1,7 +1,14 @@
 <script>
 import { GlDrawer, GlSprintf } from '@gitlab/ui';
+import { __, n__, s__, sprintf } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import { createAlert } from '~/alert';
+import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
+import { SCAN_PROFILE_I18N } from '~/security_configuration/constants';
+import ScanProfileDetailsModal from 'ee/security_configuration/components/scan_profiles/scan_profile_details_modal.vue';
+import SecurityScanProfileAttachMutation from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile_attach.mutation.graphql';
+import SecurityScanProfileDetachMutation from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile_detach.mutation.graphql';
 import BulkScannerProfileConfiguration from './bulk_scanner_profile_configuration.vue';
 
 export default {
@@ -10,6 +17,7 @@ export default {
     GlDrawer,
     GlSprintf,
     BulkScannerProfileConfiguration,
+    ScanProfileDetailsModal,
   },
   inject: ['groupFullPath'],
   props: {
@@ -22,11 +30,19 @@ export default {
   data() {
     return {
       isDrawerOpen: false,
+      previewProfileId: '',
+      previewModalVisible: false,
     };
   },
   computed: {
     getDrawerHeaderHeight() {
       return getContentWrapperHeight();
+    },
+    groupIds() {
+      return this.itemIds.filter((id) => id.includes('Group'));
+    },
+    projectIds() {
+      return this.itemIds.filter((id) => id.includes('Project'));
     },
   },
   methods: {
@@ -37,8 +53,89 @@ export default {
     closeDrawer() {
       this.isDrawerOpen = false;
     },
+    openPreview({ id }) {
+      this.previewProfileId = id;
+      this.previewModalVisible = true;
+    },
+    closePreview() {
+      this.previewModalVisible = false;
+      this.previewProfileId = '';
+    },
+    async attachProfile(profileOrId) {
+      const { id = profileOrId, name } = profileOrId;
+      await this.$apollo
+        .mutate({
+          mutation: SecurityScanProfileAttachMutation,
+          variables: {
+            input: {
+              securityScanProfileId: id,
+              groupIds: this.groupIds,
+              projectIds: this.projectIds,
+            },
+          },
+        })
+        .then(() => {
+          if (name) {
+            this.$toast.show(sprintf(s__('SecurityInventory|%{name} applied'), { name }));
+          } else {
+            this.$toast.show(SCAN_PROFILE_I18N.successApplying);
+          }
+        })
+        .catch((error) => {
+          createAlert({
+            message: s__(
+              'SecurityInventory|An error has occurred while applying the scan profile.',
+            ),
+            containerSelector: `.${this.$options.DRAWER_FLASH_CONTAINER_CLASS}`,
+            error,
+          });
+        });
+    },
+    async detachProfile({ id, name }) {
+      const confirmed = await confirmAction(
+        sprintf(
+          n__(
+            'SecurityInventory|You are about to disable %{name} for %{count} item. Are you sure you want to proceed?',
+            'SecurityInventory|You are about to disable %{name} for %{count} items. Are you sure you want to proceed?',
+            this.itemIds.length,
+          ),
+          { name, count: this.itemIds.length },
+        ),
+        {
+          primaryBtnText: sprintf(__('Disable %{name}'), { name }),
+          primaryBtnVariant: 'danger',
+        },
+      );
+      if (!confirmed) {
+        return;
+      }
+      await this.$apollo
+        .mutate({
+          mutation: SecurityScanProfileDetachMutation,
+          variables: {
+            input: {
+              securityScanProfileId: id,
+              groupIds: this.groupIds,
+              projectIds: this.projectIds,
+            },
+          },
+        })
+        .then(() => {
+          this.$toast.show(sprintf(s__('SecurityInventory|%{name} disabled'), { name }));
+        })
+        .catch((error) => {
+          createAlert({
+            message: s__(
+              'SecurityInventory|An error has occurred while disabling the scan profile.',
+            ),
+            containerSelector: `.${this.$options.DRAWER_FLASH_CONTAINER_CLASS}`,
+            error,
+          });
+        });
+    },
   },
   DRAWER_Z_INDEX,
+  DRAWER_FLASH_CONTAINER_CLASS: 'scanners-drawer-flash-container',
 };
 </script>
 
@@ -66,6 +163,18 @@ export default {
       </h4>
     </template>
 
-    <bulk-scanner-profile-configuration />
+    <div :class="$options.DRAWER_FLASH_CONTAINER_CLASS" class="!gl-py-0"></div>
+
+    <bulk-scanner-profile-configuration
+      @preview-profile="openPreview"
+      @attach-profile="attachProfile"
+      @detach-profile="detachProfile"
+    />
+    <scan-profile-details-modal
+      :profile-id="previewProfileId"
+      :visible="previewModalVisible"
+      @apply="attachProfile"
+      @close="closePreview"
+    />
   </gl-drawer>
 </template>
