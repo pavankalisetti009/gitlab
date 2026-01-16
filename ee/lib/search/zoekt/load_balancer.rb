@@ -20,10 +20,13 @@ module Search
 
       def distribution
         with_redis do |redis|
-          nodes.map do |node|
+          keys = nodes.map { |node| node_key(node) }
+          values = redis.mget(*keys)
+
+          nodes.zip(values).map do |node, value|
             {
               node_id: node.id,
-              current_load: redis.get(node_key(node)).to_f
+              current_load: value.to_f
             }
           end
         end
@@ -42,18 +45,23 @@ module Search
         return nodes.first if nodes.size == 1
 
         with_redis do |redis|
+          keys = nodes.map { |node| node_key(node) }
+          values = redis.mget(*keys)
+
           # Select node with lowest load
-          nodes.min_by { |node| redis.get(node_key(node)).to_f }
+          nodes.zip(values).min_by { |_node, value| value.to_f }.first
         end
       end
 
       def increase_load(node, weight: 1)
         # Increase by weight (heavy queries count more)
         with_redis do |redis|
-          redis.multi do |r|
-            r.incrbyfloat(node_key(node), weight)
-            r.expire(node_key(node), CACHE_EXPIRY) # Set expiry to avoid orphans
-          end
+          key = node_key(node)
+          redis.incrbyfloat(key, weight)
+
+          # Set expiry only if it doesn't already have one to avoid resetting TTL
+          # Check if key has a TTL (-1 means no expiry, -2 means key doesn't exist)
+          redis.expire(key, CACHE_EXPIRY) if redis.ttl(key) < 0
         end
       end
 
@@ -70,7 +78,9 @@ module Search
       private
 
       def node_key(node)
-        "node:#{node.id}:load"
+        # Use hash tags to ensure all keys hash to the same Redis Cluster slot
+        # This allows MGET to work in Redis Cluster mode
+        "zoekt:{load_balancer}:node:#{node.id}"
       end
 
       def with_redis(&block)

@@ -32,6 +32,17 @@ RSpec.describe Search::Zoekt::LoadBalancer, :clean_gitlab_redis_cache, feature_c
         a_hash_including(node_id: node2.id, current_load: 0.5)
       )
     end
+
+    it 'uses MGET for efficient batch retrieval' do
+      balancer.increase_load(node1, weight: 1.5)
+      balancer.increase_load(node2, weight: 0.5)
+
+      Gitlab::Redis::Cache.with do |redis|
+        expect(redis).to receive(:mget).with("zoekt:{load_balancer}:node:#{node1.id}",
+          "zoekt:{load_balancer}:node:#{node2.id}").and_call_original
+        balancer.distribution
+      end
+    end
   end
 
   describe '#pick' do
@@ -45,6 +56,17 @@ RSpec.describe Search::Zoekt::LoadBalancer, :clean_gitlab_redis_cache, feature_c
 
     it 'returns a node if all loads are zero' do
       expect(nodes).to include(balancer.pick)
+    end
+
+    it 'uses MGET for efficient batch retrieval' do
+      balancer.increase_load(node1, weight: 5)
+      balancer.increase_load(node2, weight: 1)
+
+      Gitlab::Redis::Cache.with do |redis|
+        expect(redis).to receive(:mget).with("zoekt:{load_balancer}:node:#{node1.id}",
+          "zoekt:{load_balancer}:node:#{node2.id}").and_call_original
+        balancer.pick
+      end
     end
 
     context 'when there is only one node' do
@@ -75,6 +97,30 @@ RSpec.describe Search::Zoekt::LoadBalancer, :clean_gitlab_redis_cache, feature_c
       balancer.increase_load(node1, weight: 1)
       balancer.decrease_load(node1, weight: 2)
       expect(balancer.distribution.find { |h| h[:node_id] == node1.id }[:current_load]).to eq(0.0)
+    end
+
+    it 'sets TTL only on first increase to prevent TTL reset on continuous load' do
+      key = "zoekt:{load_balancer}:node:#{node1.id}"
+
+      Gitlab::Redis::Cache.with do |redis|
+        # First increase - should set TTL
+        balancer.increase_load(node1, weight: 1)
+        ttl_after_first = redis.ttl(key)
+        expect(ttl_after_first).to be_between(1, described_class::CACHE_EXPIRY)
+
+        # Manually reduce the TTL to simulate time passing
+        redis.expire(key, 200)
+        ttl_before_second = redis.ttl(key)
+        expect(ttl_before_second).to eq(200)
+
+        # Second increase - should NOT reset TTL back to CACHE_EXPIRY
+        balancer.increase_load(node1, weight: 1)
+        ttl_after_second = redis.ttl(key)
+
+        # The TTL should remain around 200, not reset to 300
+        expect(ttl_after_second).to be_between(199, 200) # Allow 1 second variance
+        expect(ttl_after_second).not_to eq(described_class::CACHE_EXPIRY)
+      end
     end
   end
 
