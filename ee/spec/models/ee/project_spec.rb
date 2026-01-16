@@ -5290,7 +5290,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'Geo', feature_category: :geo_replication do
+  describe 'Geo replication', feature_category: :geo_replication do
     describe 'associations' do
       it do
         is_expected.to have_one(:project_state)

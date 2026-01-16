@@ -28,6 +28,10 @@ RSpec.describe Packages::Nuget::Symbol, feature_category: :package_registry do
     end
 
     include_examples 'a verifiable model for verification state' do
+      before do
+        stub_nuget_symbol_object_storage
+      end
+
       let(:verifiable_model_record) { build(:nuget_symbol, object_storage_key: 'key') }
       let(:unverifiable_model_record) { nil }
     end

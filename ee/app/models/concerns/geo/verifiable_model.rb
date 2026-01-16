@@ -90,9 +90,7 @@ module Geo
       end
 
       def pluck_verifiable_ids_in_range(range)
-        verifiables
-        .primary_key_in(range)
-        .pluck_primary_key
+        verifiables(range).pluck_primary_key
       end
 
       def create_verification_details_for(primary_keys)
