@@ -99,6 +99,12 @@ module EE
       end
 
       def delete_approvals(merge_request, patch_id_sha: nil, cause: nil)
+        merge_request.log_approval_deletion_on_merged_or_locked_mr(
+          source: 'EE::MergeRequests::BaseService#delete_approvals',
+          current_user: current_user,
+          cause: cause
+        )
+
         approvals = merge_request.approvals
         approvals = filter_approvals(approvals, patch_id_sha) if patch_id_sha.present?
         approver_ids = approvals.map(&:user_id)
