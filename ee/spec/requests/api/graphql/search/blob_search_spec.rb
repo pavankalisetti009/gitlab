@@ -9,11 +9,12 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
   let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:project) { create(:project, :public, :small_repo, group: group) }
   let(:fields) { all_graphql_fields_for(Types::Search::Blob::BlobSearchType, max_depth: 4) }
+  let(:operation_name) { 'getBlobSearchQuery' }
   let(:arguments) do
     { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", chunk_count: 3 }
   end
 
-  let(:query) { graphql_query_for(:blobSearch, arguments, fields) }
+  let(:query) { graphql_query_for(:blobSearch, arguments, fields, operation_name) }
 
   context 'when zoekt is enabled for a group' do
     before_all do
@@ -80,6 +81,19 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
       it 'raises error parsing regexp: missing argument to repetition operator' do
         post_graphql(query, current_user: current_user)
         expect_graphql_errors_to_include(%r{error parsing regexp: missing argument to repetition operator: `*`})
+      end
+    end
+
+    context 'when operation_name is getBlobSearchCountQuery' do
+      let(:operation_name) { 'getBlobSearchCountQuery' }
+      let(:fields) { 'matchCount' }
+
+      it 'does not call search_objects on search_service' do
+        expect_next_instance_of(SearchService) do |instance|
+          expect(instance).not_to receive(:search_objects)
+        end
+        post_graphql(query, current_user: current_user)
+        expect(graphql_data_at(:blobSearch)).to eq({ 'matchCount' => 1 })
       end
     end
 

@@ -88,7 +88,11 @@ module Search
         return Kaminari.paginate_array([]), 0 if empty_results_preflight_check?
 
         strong_memoize(memoize_key(:blobs_and_file_count, page: page, per_page: per_page, count_only: count_only)) do
-          search_as_found_blob(query, Repository, page: (page || 1).to_i, per_page: per_page,
+          search_as_found_blob(
+            query,
+            count_only: count_only,
+            page: (page || 1).to_i,
+            per_page: per_page,
             preload_method: preload_method
           )
         end
@@ -108,10 +112,14 @@ module Search
         end
       end
 
-      def search_as_found_blob(query, _repositories, page:, per_page:, preload_method:)
-        zoekt_search_and_wrap(query, page: page,
+      def search_as_found_blob(query, count_only:, page:, per_page:, preload_method:)
+        zoekt_search_and_wrap(
+          query,
+          page: page,
+          count_only: count_only,
           per_page: per_page,
-          preload_method: preload_method) do |result, project|
+          preload_method: preload_method
+        ) do |result, project|
           parse_zoekt_search_result(result, project)
         end
       end
@@ -123,7 +131,7 @@ module Search
       # @param options [Hash] additional options
       # @param page_limit [Integer] maximum number of pages we parse
       # @return [Array<Hash, Integer>] the results and total count
-      def zoekt_search(query, per_page:, page_limit:)
+      def zoekt_search(query, count_only:, per_page:, page_limit:)
         response = ::Gitlab::Search::Zoekt::Client.search(
           query,
           num: ZOEKT_COUNT_LIMIT,
@@ -141,6 +149,7 @@ module Search
         end
 
         total_count = response.match_count.clamp(0, ZOEKT_COUNT_LIMIT)
+        return [{}, total_count, 0] if count_only
 
         results = zoekt_extract_result_pages(response, per_page: per_page, page_limit: page_limit)
         [results, total_count, response.file_count]
@@ -194,7 +203,7 @@ module Search
         end.join
       end
 
-      def zoekt_search_and_wrap(query, per_page:, page: 1, preload_method: nil, &blk)
+      def zoekt_search_and_wrap(query, per_page:, count_only:, page: 1, preload_method: nil, &blk)
         zoekt_cache = ::Search::Zoekt::Cache.new(
           query,
           current_user: current_user,
@@ -205,11 +214,12 @@ module Search
           max_per_page: DEFAULT_PER_PAGE * 2,
           search_mode: search_mode,
           filters: filters,
-          chunk_size: multi_match&.max_chunks_size
+          chunk_size: multi_match&.max_chunks_size,
+          count_only: count_only
         )
 
         search_results, total_count, file_count = zoekt_cache.fetch do |page_limit|
-          zoekt_search(query, per_page: per_page, page_limit: page_limit)
+          zoekt_search(query, count_only: count_only, per_page: per_page, page_limit: page_limit)
         end
 
         items, total_count = yield_each_zoekt_search_result(
