@@ -16,11 +16,12 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { ENTITY_GROUP, ENTITY_PROJECT, PAGE_SIZE, PROJECT_EVENTS } from 'ee/ci/secrets/constants';
+import { ENTITY_GROUP, ENTITY_PROJECT, PAGE_SIZE } from 'ee/ci/secrets/constants';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import SecretsAlertBanner from 'ee/ci/secrets/components/secrets_table/secrets_alert_banner.vue';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
 import getProjectSecrets from 'ee/ci/secrets/graphql/queries/get_project_secrets.query.graphql';
 import getProjectSecretsNeedingRotation from 'ee/ci/secrets/graphql/queries/get_project_secrets_needing_rotation.query.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
@@ -74,7 +75,7 @@ describe('SecretsTable component', () => {
       propsData: {
         fullPath: `path/to/project`,
         context: ENTITY_PROJECT,
-        eventTracking: PROJECT_EVENTS,
+        contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
         ...props,
       },
       apolloProvider,
@@ -491,7 +492,12 @@ describe('SecretsTable component', () => {
 
   describe('group context', () => {
     beforeEach(async () => {
-      await createComponent({ props: { context: ENTITY_GROUP } });
+      await createComponent({
+        props: {
+          context: ENTITY_GROUP,
+          contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP],
+        },
+      });
     });
 
     it('skips project secrets query and project secrets rotation query', () => {

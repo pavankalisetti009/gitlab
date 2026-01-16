@@ -21,10 +21,7 @@ import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
-import getProjectSecretsQuery from 'ee/ci/secrets/graphql/queries/get_project_secrets.query.graphql';
-import getProjectSecretsNeedingRotation from 'ee/ci/secrets/graphql/queries/get_project_secrets_needing_rotation.query.graphql';
 import {
-  ACCEPTED_CONTEXTS,
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
   ENTITY_PROJECT,
@@ -63,12 +60,7 @@ export default {
   },
   mixins: [InternalEvents.mixin()],
   props: {
-    context: {
-      type: String,
-      required: true,
-      validator: (value) => ACCEPTED_CONTEXTS.includes(value),
-    },
-    eventTracking: {
+    contextConfig: {
       type: Object,
       required: true,
     },
@@ -95,9 +87,11 @@ export default {
   },
   apollo: {
     secrets: {
-      query: getProjectSecretsQuery,
+      query() {
+        return this.contextConfig.getSecrets.query;
+      },
       skip() {
-        return this.context !== ENTITY_PROJECT;
+        return this.contextConfig.type !== ENTITY_PROJECT;
       },
       variables() {
         return {
@@ -106,7 +100,8 @@ export default {
           ...this.secretsCursor,
         };
       },
-      update({ projectSecrets: { edges, pageInfo } }) {
+      update(data) {
+        const { edges, pageInfo } = this.contextConfig.getSecrets.lookup(data);
         this.endCursor = pageInfo?.hasNextPage ? pageInfo.endCursor : null;
         this.startCursor = pageInfo?.hasPreviousPage ? pageInfo.startCursor : null;
         return edges.map((e) => e.node) || [];
@@ -121,17 +116,19 @@ export default {
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
     },
     secretsNeedingRotation: {
-      query: getProjectSecretsNeedingRotation,
+      query() {
+        return this.contextConfig.getSecretsNeedingRotation.query;
+      },
       skip() {
-        return this.context !== ENTITY_PROJECT;
+        return this.contextConfig.type !== ENTITY_PROJECT;
       },
       variables() {
         return {
           projectPath: this.fullPath,
         };
       },
-      update({ projectSecretsNeedingRotation }) {
-        return projectSecretsNeedingRotation?.nodes || [];
+      update(data) {
+        return this.contextConfig.getSecretsNeedingRotation.lookup(data)?.nodes || [];
       },
       error(e) {
         createAlert({
@@ -167,7 +164,8 @@ export default {
     },
   },
   mounted() {
-    this.trackEvent(this.eventTracking.pageVisit, { label: PAGE_VISIT_SECRETS_TABLE });
+    const { eventTracking } = this.contextConfig;
+    this.trackEvent(eventTracking.pageVisit, { label: PAGE_VISIT_SECRETS_TABLE });
   },
   methods: {
     deleteSecret(secretName) {

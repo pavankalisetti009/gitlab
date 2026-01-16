@@ -2,9 +2,7 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { formatGraphQLError } from 'ee/ci/secrets/utils';
-import getProjectSecretsManagerStatusQuery from '../graphql/queries/get_secret_manager_status.query.graphql';
 import {
-  ACCEPTED_CONTEXTS,
   ENTITY_PROJECT,
   POLL_INTERVAL,
   SECRET_MANAGER_STATUS_ERROR,
@@ -17,10 +15,9 @@ export default {
     GlLoadingIcon,
   },
   props: {
-    context: {
-      type: String,
+    contextConfig: {
+      type: Object,
       required: true,
-      validator: (value) => ACCEPTED_CONTEXTS.includes(value),
     },
     fullPath: {
       type: String,
@@ -34,7 +31,9 @@ export default {
   },
   apollo: {
     secretManagerStatus: {
-      query: getProjectSecretsManagerStatusQuery,
+      query() {
+        return this.contextConfig.getStatus.query;
+      },
       skip() {
         return !this.isProjectContext;
       },
@@ -43,8 +42,8 @@ export default {
           fullPath: this.fullPath,
         };
       },
-      update({ projectSecretsManager }) {
-        const newStatus = projectSecretsManager?.status;
+      update(data) {
+        const newStatus = this.contextConfig.getStatus.lookup(data)?.status;
 
         if (newStatus !== SECRET_MANAGER_STATUS_PROVISIONING) {
           this.$apollo.queries.secretManagerStatus.stopPolling();
@@ -66,7 +65,7 @@ export default {
   },
   computed: {
     isProjectContext() {
-      return this.context === ENTITY_PROJECT;
+      return this.contextConfig.type === ENTITY_PROJECT;
     },
     isProvisioning() {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
