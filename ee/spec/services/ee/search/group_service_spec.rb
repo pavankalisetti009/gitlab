@@ -284,17 +284,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
-
-    context 'when feature flag disable_zoekt_search_for_saas is enabled' do
-      before do
-        stub_feature_flags(disable_zoekt_search_for_saas: true)
-      end
-
-      it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to be(false)
-        expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
-      end
-    end
   end
 
   context 'when sorting', :elastic do
