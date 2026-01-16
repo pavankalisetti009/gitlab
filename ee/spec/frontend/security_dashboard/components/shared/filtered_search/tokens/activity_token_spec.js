@@ -82,11 +82,16 @@ describe('ActivityToken', () => {
 
   describe('default view', () => {
     const findAllBadges = () => wrapper.findAllComponents(GlBadge);
-    const createWrapperWithAbility = ({ resolveVulnerabilityWithAi, provide = {} } = {}) => {
+    const createWrapperWithAbility = ({
+      resolveVulnerabilityWithAi,
+      accessAdvancedVulnerabilityManagement,
+      provide = {},
+    } = {}) => {
       createWrapper({
         provide: {
           glAbilities: {
             resolveVulnerabilityWithAi,
+            accessAdvancedVulnerabilityManagement,
           },
 
           ...provide,
@@ -123,29 +128,48 @@ describe('ActivityToken', () => {
       'Does not have a solution',
     ];
 
-    const aiOptions = [
+    const aiResolutionOptions = [
       'Vulnerability Resolution available',
       'Vulnerability Resolution unavailable',
     ];
 
+    const aiFpOptions = ['False positive', 'Not identified as false positive'];
+
     const policyViolationOptions = ['Dismissed in MR'];
-
     const baseGroupHeaders = ['Detection', 'Issue', 'Merge Request', 'Solution available'];
-
-    const aiGroupHeaders = ['GitLab Duo (AI)'];
-
+    const aiResolutionHeaders = ['GitLab Duo resolution'];
+    const aiFpHeaders = ['GitLab Duo FP detection'];
     const policyViolationsGroupHeaders = ['Policy violations'];
-
     const policyActionsGroupHeaders = ['Policy actions'];
 
     it.each`
       resolveVulnerabilityWithAi | expectedOptions
-      ${true}                    | ${[...baseOptions, ...aiOptions]}
+      ${true}                    | ${[...baseOptions, ...aiResolutionOptions]}
       ${false}                   | ${baseOptions}
     `(
       'shows the dropdown with correct options when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
       ({ resolveVulnerabilityWithAi, expectedOptions }) => {
         createWrapperWithAbility({ resolveVulnerabilityWithAi });
+        const findDropdownOptions = () =>
+          wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
+
+        expect(findDropdownOptions()).toEqual(expectedOptions);
+      },
+    );
+
+    it.each`
+      accessAdvancedVulnerabilityManagement | aiExperimentSastFpDetection | expectedOptions
+      ${true}                               | ${true}                     | ${[...baseOptions, ...aiFpOptions]}
+      ${false}                              | ${false}                    | ${baseOptions}
+      ${false}                              | ${true}                     | ${baseOptions}
+      ${true}                               | ${false}                    | ${baseOptions}
+    `(
+      'shows the dropdown with correct options when accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement and aiExperimentSastFpDetection=$aiExperimentSastFpDetection',
+      ({ accessAdvancedVulnerabilityManagement, aiExperimentSastFpDetection, expectedOptions }) => {
+        createWrapperWithAbility({
+          accessAdvancedVulnerabilityManagement,
+          provide: { glFeatures: { aiExperimentSastFpDetection } },
+        });
         const findDropdownOptions = () =>
           wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
 
@@ -186,19 +210,39 @@ describe('ActivityToken', () => {
 
       expect(findDropdownOptions()).toEqual([
         ...baseOptions,
-        ...aiOptions,
+        ...aiResolutionOptions,
         ...policyViolationOptions,
       ]);
     });
 
     it.each`
       resolveVulnerabilityWithAi | expectedGroups
-      ${true}                    | ${[...baseGroupHeaders, ...aiGroupHeaders]}
+      ${true}                    | ${[...baseGroupHeaders, ...aiResolutionHeaders]}
       ${false}                   | ${baseGroupHeaders}
     `(
       'shows the group headers correctly resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
       ({ resolveVulnerabilityWithAi, expectedGroups }) => {
         createWrapperWithAbility({ resolveVulnerabilityWithAi });
+        const findDropdownGroupHeaders = () =>
+          wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
+
+        expect(findDropdownGroupHeaders()).toEqual(expectedGroups);
+      },
+    );
+
+    it.each`
+      accessAdvancedVulnerabilityManagement | aiExperimentSastFpDetection | expectedGroups
+      ${true}                               | ${true}                     | ${[...baseGroupHeaders, ...aiFpHeaders]}
+      ${false}                              | ${false}                    | ${baseGroupHeaders}
+      ${false}                              | ${true}                     | ${baseGroupHeaders}
+      ${true}                               | ${false}                    | ${baseGroupHeaders}
+    `(
+      'shows the group headers correctly accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement and aiExperimentSastFpDetection=$aiExperimentSastFpDetection',
+      ({ accessAdvancedVulnerabilityManagement, aiExperimentSastFpDetection, expectedGroups }) => {
+        createWrapperWithAbility({
+          accessAdvancedVulnerabilityManagement,
+          provide: { glFeatures: { aiExperimentSastFpDetection } },
+        });
         const findDropdownGroupHeaders = () =>
           wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
 
@@ -265,7 +309,7 @@ describe('ActivityToken', () => {
 
       expect(findDropdownGroupHeaders()).toEqual([
         ...baseGroupHeaders,
-        ...aiGroupHeaders,
+        ...aiResolutionHeaders,
         ...policyViolationsGroupHeaders,
         ...policyActionsGroupHeaders,
       ]);
@@ -515,6 +559,34 @@ describe('ActivityToken', () => {
 
         expect(result).not.toHaveProperty('hasAiResolution');
       });
+    });
+
+    describe('AI FP filter', () => {
+      it.each`
+        accessAdvancedVulnerabilityManagement | aiExperimentSastFpDetection | queryParam       | expected
+        ${true}                               | ${true}                     | ${['AI_FP']}     | ${true}
+        ${true}                               | ${true}                     | ${['AI_NON_FP']} | ${false}
+        ${true}                               | ${false}                    | ${['AI_FP']}     | ${undefined}
+        ${false}                              | ${true}                     | ${['AI_NON_FP']} | ${undefined}
+        ${false}                              | ${false}                    | ${[]}            | ${undefined}
+      `(
+        'when accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement and aiExperimentSastFpDetection=$aiExperimentSastFpDetection it sets falsePositive=$expected',
+        ({
+          accessAdvancedVulnerabilityManagement,
+          aiExperimentSastFpDetection,
+          queryParam,
+          expected,
+        }) => {
+          window.gon = {
+            abilities: { accessAdvancedVulnerabilityManagement },
+            features: { aiExperimentSastFpDetection },
+          };
+
+          expect(ActivityToken.transformFilters(queryParam, defaultOptions).falsePositive).toBe(
+            expected,
+          );
+        },
+      );
     });
 
     describe('policy violation filter', () => {

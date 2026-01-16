@@ -9,6 +9,7 @@ import { without } from 'lodash';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
 import {
   autoDismissVulnerabilityPoliciesEnabled,
@@ -20,6 +21,14 @@ import SearchSuggestion from '../components/search_suggestion.vue';
 
 const ITEMS = {
   ...ACTIVITY_FILTER_ITEMS,
+  AI_FP: {
+    value: 'AI_FP',
+    text: s__('SecurityReports|False positive'),
+  },
+  AI_NON_FP: {
+    value: 'AI_NON_FP',
+    text: s__('SecurityReports|Not identified as false positive'),
+  },
   AI_RESOLUTION_AVAILABLE: {
     value: 'AI_RESOLUTION_AVAILABLE',
     text: s__('SecurityReports|Vulnerability Resolution available'),
@@ -90,6 +99,9 @@ const isGroupOrProjectDashboard = (dashboardType) => {
 export default {
   defaultValues: () => [ITEMS.STILL_DETECTED.value],
   transformFilters: (filters, { dashboardType }) => {
+    const showAiFpFilter =
+      window.gon?.abilities?.accessAdvancedVulnerabilityManagement &&
+      window.gon?.features.aiExperimentSastFpDetection;
     const showAiResolutionFilter = window.gon?.abilities?.resolveVulnerabilityWithAi;
     const showPolicyViolationFilter =
       isPolicyViolationFilterEnabled() && isGroupOrProjectDashboard(dashboardType);
@@ -127,6 +139,10 @@ export default {
       );
     }
 
+    if (showAiFpFilter) {
+      transformedFilters.falsePositive = setSelectedStatus('AI_FP', 'AI_NON_FP', filters);
+    }
+
     return transformedFilters;
   },
   transformQueryParams: (filters) => {
@@ -140,7 +156,7 @@ export default {
     GlDropdownSectionHeader,
     SearchSuggestion,
   },
-  mixins: [glAbilitiesMixin()],
+  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   inject: ['dashboardType'],
   props: {
     config: {
@@ -191,6 +207,12 @@ export default {
         maxOptionsShown: 2,
       });
     },
+    showAiFPFilter() {
+      return (
+        this.glAbilities?.accessAdvancedVulnerabilityManagement &&
+        this.glFeatures?.aiExperimentSastFpDetection
+      );
+    },
     showAiResolutionFilter() {
       return this.glAbilities.resolveVulnerabilityWithAi;
     },
@@ -202,8 +224,17 @@ export default {
 
       if (this.showAiResolutionFilter) {
         groups.push({
-          text: s__('SecurityReports|GitLab Duo (AI)'),
+          text: s__('SecurityReports|GitLab Duo resolution'),
           options: [ITEMS.AI_RESOLUTION_AVAILABLE, ITEMS.AI_RESOLUTION_UNAVAILABLE],
+          icon: 'tanuki-ai',
+          variant: 'info',
+        });
+      }
+
+      if (this.showAiFPFilter) {
+        groups.push({
+          text: s__('SecurityReports|GitLab Duo FP detection'),
+          options: [ITEMS.AI_FP, ITEMS.AI_NON_FP],
           icon: 'tanuki-ai',
           variant: 'info',
         });

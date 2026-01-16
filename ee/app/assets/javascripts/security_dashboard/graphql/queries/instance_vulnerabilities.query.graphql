@@ -24,6 +24,7 @@ query instanceVulnerabilities(
   $owaspTopTen: [VulnerabilityOwaspTop10!]
   $includeSeverityOverrides: Boolean = false
   $includeLatestFlag: Boolean = false
+  $falsePositive: Boolean
 ) {
   vulnerabilities(
     before: $before
@@ -45,6 +46,7 @@ query instanceVulnerabilities(
     hasAiResolution: $hasAiResolution
     clusterAgentId: $clusterAgentId
     owaspTopTen: $owaspTopTen
+    falsePositive: $falsePositive
   ) {
     nodes {
       ...VulnerabilityFragment

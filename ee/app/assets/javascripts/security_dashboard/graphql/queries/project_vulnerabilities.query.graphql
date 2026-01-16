@@ -32,6 +32,7 @@ query projectVulnerabilities(
   $validityCheck: [VulnerabilityFindingTokenStatusState!]
   $policyAutoDismissed: Boolean
   $policyViolations: [PolicyViolations!]
+  $falsePositive: Boolean
 ) {
   project(fullPath: $fullPath) {
     id
@@ -61,6 +62,7 @@ query projectVulnerabilities(
       policyViolations: $policyViolations
       reachability: $reachability
       validityCheck: $validityCheck
+      falsePositive: $falsePositive
     ) {
       nodes {
         ...VulnerabilityFragment
