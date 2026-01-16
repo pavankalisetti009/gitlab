@@ -610,6 +610,8 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
 
         let(:items_data) { graphql_data['project']['workItems']['nodes'] }
 
+        let(:linked_items) { graphql_dig_at(items_data, 'widgets', 'linkedItems', 'nodes', 'workItem') }
+
         before do
           create(:work_item_link, source: work_item1, target: related_items[0], link_type: 'relates_to')
           create(:work_item_link, source: work_item2, target: related_items[0], link_type: 'relates_to')
@@ -618,9 +620,18 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
         it 'fetches linked items' do
           post_graphql(query, token: { oauth_access_token: ai_workflows_oauth_token })
 
-          linked_items = graphql_dig_at(items_data, 'widgets', 'linkedItems', 'nodes', 'workItem', 'iid')
+          linked_items_iids = graphql_dig_at(linked_items, 'iid')
 
-          expect(linked_items).to include(related_items[0].iid.to_s)
+          expect(linked_items_iids).to include(related_items[0].iid.to_s)
+        end
+
+        it 'returns value for webUrl' do
+          post_graphql(query, token: { oauth_access_token: ai_workflows_oauth_token })
+          linked_items_web_urls = graphql_dig_at(linked_items, 'webUrl')
+
+          web_url = Gitlab::Routing.url_helpers.project_work_item_url(related_items[0].project, related_items[0])
+
+          expect(linked_items_web_urls).to include(web_url)
         end
       end
     end
