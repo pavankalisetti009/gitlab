@@ -2,6 +2,7 @@
 import { GlIcon, GlPopover, GlSprintf, GlTooltipDirective, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { AI_CATALOG_TYPE_AGENT, AI_CATALOG_TYPE_FLOW } from 'ee/ai/catalog/constants';
 
 const FOUNDATIONAL_ITEM_HELP_ATTRIBUTES = {
@@ -44,7 +45,7 @@ export default {
   },
   computed: {
     popoverTarget() {
-      return `${this.resourceId}-foundational-icon`;
+      return `${getIdFromGraphQLId(this.resourceId)}-foundational-icon`;
     },
     helpPagePath() {
       return FOUNDATIONAL_ITEM_HELP_ATTRIBUTES[this.itemType]?.path;
