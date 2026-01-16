@@ -8,6 +8,8 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
+  let_it_be(:registry) { create(:virtual_registries_container_registry, group: group) }
+  let_it_be(:upstream) { create(:virtual_registries_container_upstream, registries: [registry]) }
 
   before do
     stub_config(dependency_proxy: { enabled: true })
@@ -29,10 +31,19 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
       expect(page).to have_title('Container registries')
     end
 
-    it 'directly visiting upstreams route renders upstreams' do
-      visit group_virtual_registries_container_upstreams_path(group)
+    context 'when visiting upstreams page' do
+      before do
+        visit group_virtual_registries_container_upstreams_path(group)
+      end
 
-      expect(page).to have_title('Container upstreams')
+      it 'renders upstreams' do
+        expect(page).to have_title('Container upstreams')
+        expect(find_by_testid('upstream-name')).to have_text(upstream.name)
+      end
+
+      it 'passes axe automated accessibility testing' do
+        expect(page).to be_axe_clean.within('#content-body')
+      end
     end
 
     it 'sidebar menu is open' do

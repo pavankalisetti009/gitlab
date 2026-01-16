@@ -5,10 +5,9 @@ import {
   GlTable,
   GlTruncate,
 } from '@gitlab/ui';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import MavenUpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_table.vue';
+import MavenUpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/table.vue';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
 import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -26,12 +25,7 @@ describe('MavenUpstreamsTable', () => {
   let wrapper;
 
   const defaultProps = {
-    upstreams: groupMavenUpstreams.group.virtualRegistriesPackagesMavenUpstreams.nodes.map(
-      (upstream) => ({
-        ...upstream,
-        id: getIdFromGraphQLId(upstream.id),
-      }),
-    ),
+    upstreams: groupMavenUpstreams.group.upstreams.nodes,
     busy: false,
   };
 
@@ -324,7 +318,7 @@ describe('MavenUpstreamsTable', () => {
         expect(showToastSpy).toHaveBeenCalledWith('Failed to clear upstream cache. Try again.');
         expect(captureException).toHaveBeenCalledWith({
           error: mockError,
-          component: 'MavenUpstreamsTable',
+          component: 'UpstreamsTable',
         });
       });
     });
@@ -359,24 +353,24 @@ describe('MavenUpstreamsTable', () => {
     });
 
     describe('when modal emits success', () => {
-      it('emits `upstreamDeleted` event and hides the modal', async () => {
+      it('emits `upstream-deleted` event and hides the modal', async () => {
         await findDropdownItem().vm.$emit('action');
         await findUpstreamDeleteModal().vm.$emit('success');
 
-        expect(wrapper.emitted('upstreamDeleted')).toHaveLength(1);
+        expect(wrapper.emitted('upstream-deleted')).toHaveLength(1);
         expect(findUpstreamDeleteModal().props('visible')).toBe(false);
       });
     });
 
     describe('when modal emits error', () => {
-      it('emits `upstreamDeleteFailed` event with parsed error message and hides the modal', async () => {
+      it('emits `upstream-delete-failed` event with parsed error message and hides the modal', async () => {
         const mockError = new Error('API Error');
 
         await findDropdownItem().vm.$emit('action');
         await findUpstreamDeleteModal().vm.$emit('error', mockError);
 
-        expect(wrapper.emitted('upstreamDeleteFailed')).toHaveLength(1);
-        expect(wrapper.emitted('upstreamDeleteFailed')[0][0]).toBe('API Error');
+        expect(wrapper.emitted('upstream-delete-failed')).toHaveLength(1);
+        expect(wrapper.emitted('upstream-delete-failed')[0][0]).toBe('API Error');
         expect(findUpstreamDeleteModal().props('visible')).toBe(false);
       });
     });

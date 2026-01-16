@@ -5,50 +5,15 @@ import {
   GlKeysetPagination,
   GlSkeletonLoader,
 } from '@gitlab/ui';
-import Vue from 'vue';
-import VueApollo from 'vue-apollo';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import createMockApollo from 'helpers/mock_apollo_helper';
-import waitForPromises from 'helpers/wait_for_promises';
-import MavenUpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_list.vue';
-import UpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_table.vue';
+import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/list.vue';
+import UpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/table.vue';
 import EmptyResult from '~/vue_shared/components/empty_result.vue';
-import getMavenUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams.query.graphql';
+import i18n from 'ee/packages_and_registries/virtual_registries/pages/maven/i18n';
 import { groupMavenUpstreams } from '../../../mock_data';
 
-Vue.use(VueApollo);
-
-describe('MavenUpstreamsList', () => {
+describe('UpstreamsList', () => {
   let wrapper;
-
-  const defaultProvide = {
-    fullPath: 'gitlab-org/gitlab',
-  };
-
-  const defaultProps = {
-    pageParams: {
-      first: 20,
-    },
-  };
-
-  const mavenUpstreams = {
-    data: {
-      ...groupMavenUpstreams,
-    },
-  };
-
-  const emptyMavenUpstreams = {
-    data: {
-      group: {
-        ...groupMavenUpstreams.group,
-        virtualRegistriesPackagesMavenUpstreams: {
-          nodes: [],
-          pageInfo: {},
-        },
-      },
-    },
-  };
 
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findAlert = () => wrapper.findComponent(GlAlert);
@@ -58,51 +23,36 @@ describe('MavenUpstreamsList', () => {
   const findUpstreamsTable = () => wrapper.findComponent(UpstreamsTable);
   const findEmptyResult = () => wrapper.findComponent(EmptyResult);
 
-  const mavenUpstreamsHandler = jest.fn().mockResolvedValue(mavenUpstreams);
-  const mockError = new Error('GraphQL error');
-  const errorHandler = jest.fn().mockRejectedValue(mockError);
-
   const createComponent = ({
-    handlers = [[getMavenUpstreamsQuery, mavenUpstreamsHandler]],
+    upstreams = groupMavenUpstreams.group.upstreams,
     props = {},
     provide = {},
   } = {}) => {
-    wrapper = shallowMountExtended(MavenUpstreamsList, {
-      apolloProvider: createMockApollo(handlers),
+    wrapper = shallowMountExtended(UpstreamsList, {
       propsData: {
-        ...defaultProps,
+        upstreams,
         ...props,
       },
       provide: {
-        ...defaultProvide,
+        fullPath: 'gitlab-org/gitlab',
         ...provide,
+        i18n,
       },
     });
   };
 
   describe('initial state', () => {
     it('shows busy state while loading', () => {
-      createComponent();
+      createComponent({ props: { loading: true, upstreams: { nodes: [] } } });
 
       expect(findSkeletonLoader().exists()).toBe(true);
       expect(findEmptyState().exists()).toBe(false);
     });
-
-    it('fetches upstreams', () => {
-      createComponent();
-
-      expect(mavenUpstreamsHandler).toHaveBeenCalledWith({
-        groupPath: 'gitlab-org/gitlab',
-        upstreamName: null,
-        first: 20,
-      });
-    });
   });
 
   describe('with upstreams data', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       createComponent();
-      await waitForPromises();
     });
 
     it('renders filtered search', () => {
@@ -121,10 +71,7 @@ describe('MavenUpstreamsList', () => {
 
     it('renders upstreams table with transformed data', () => {
       expect(findUpstreamsTable().props('upstreams')).toEqual(
-        groupMavenUpstreams.group.virtualRegistriesPackagesMavenUpstreams.nodes.map((upstream) => ({
-          ...upstream,
-          id: getIdFromGraphQLId(upstream.id),
-        })),
+        groupMavenUpstreams.group.upstreams.nodes,
       );
     });
 
@@ -139,19 +86,18 @@ describe('MavenUpstreamsList', () => {
     describe('upstreams table events', () => {
       describe('when `upstreamDeleted` event is emitted', () => {
         it('shows info alert and refetches upstreams', async () => {
-          expect(mavenUpstreamsHandler).toHaveBeenCalledTimes(1);
-          await findUpstreamsTable().vm.$emit('upstreamDeleted');
+          await findUpstreamsTable().vm.$emit('upstream-deleted');
 
           expect(findAlert().props()).toMatchObject({
             variant: 'info',
             dismissible: true,
           });
-          expect(findAlert().text()).toBe('Maven upstream has been deleted.');
+          expect(findAlert().text()).toBe('Upstream has been deleted.');
           expect(wrapper.emitted('upstream-deleted')).toHaveLength(1);
         });
 
         it('info alert can be dismissed', async () => {
-          await findUpstreamsTable().vm.$emit('upstreamDeleted');
+          await findUpstreamsTable().vm.$emit('upstream-deleted');
 
           await findAlert().vm.$emit('dismiss');
 
@@ -161,19 +107,17 @@ describe('MavenUpstreamsList', () => {
 
       describe('when `upstreamDeleteFailed` event is emitted', () => {
         it('shows error alert and does not refetch upstreams', async () => {
-          expect(mavenUpstreamsHandler).toHaveBeenCalledTimes(1);
-          await findUpstreamsTable().vm.$emit('upstreamDeleteFailed', 'error message');
+          await findUpstreamsTable().vm.$emit('upstream-delete-failed', 'error message');
 
           expect(findAlert().props()).toMatchObject({
             variant: 'danger',
             dismissible: true,
           });
           expect(findAlert().text()).toBe('error message');
-          expect(mavenUpstreamsHandler).toHaveBeenCalledTimes(1);
         });
 
         it('error alert can be dismissed', async () => {
-          await findUpstreamsTable().vm.$emit('upstreamDeleteFailed', 'error message');
+          await findUpstreamsTable().vm.$emit('upstream-delete-failed', 'error message');
 
           await findAlert().vm.$emit('dismiss');
 
@@ -184,12 +128,10 @@ describe('MavenUpstreamsList', () => {
   });
 
   describe('empty state', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       createComponent({
-        handlers: [[getMavenUpstreamsQuery, jest.fn().mockResolvedValue(emptyMavenUpstreams)]],
+        upstreams: { nodes: [] },
       });
-
-      await waitForPromises();
     });
 
     it('renders empty state when no upstreams exist', () => {
@@ -207,9 +149,8 @@ describe('MavenUpstreamsList', () => {
   });
 
   describe('search functionality', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       createComponent();
-      await waitForPromises();
     });
 
     it('emits submit event when filtered search is submitted', async () => {
@@ -234,14 +175,6 @@ describe('MavenUpstreamsList', () => {
       });
     });
 
-    it('uses searchTerm for query', () => {
-      expect(mavenUpstreamsHandler).toHaveBeenCalledWith({
-        groupPath: 'gitlab-org/gitlab',
-        upstreamName: 'test',
-        first: 20,
-      });
-    });
-
     it('sets searchTerm for GlFilteredSeach', () => {
       expect(findFilteredSearch().props('value')).toStrictEqual([
         {
@@ -253,14 +186,13 @@ describe('MavenUpstreamsList', () => {
   });
 
   describe('when searchTerm prop is set and there are no upstreams', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       createComponent({
         props: {
           searchTerm: 'test',
         },
-        handlers: [[getMavenUpstreamsQuery, jest.fn().mockResolvedValue(emptyMavenUpstreams)]],
+        upstreams: { nodes: [] },
       });
-      await waitForPromises();
     });
 
     it('renders empty result component', () => {
@@ -269,69 +201,28 @@ describe('MavenUpstreamsList', () => {
   });
 
   describe('pagination', () => {
-    describe('when pageParams prop is set with pagination values', () => {
-      it('uses params for query', () => {
-        createComponent({
-          props: {
-            pageParams: {
-              after: '1232',
-              first: 20,
-            },
-          },
-        });
-        expect(mavenUpstreamsHandler).toHaveBeenCalledWith({
-          groupPath: 'gitlab-org/gitlab',
-          upstreamName: null,
-          first: 20,
-          after: '1232',
-        });
-      });
-    });
-
-    it('configures pagination with correct props', async () => {
+    it('configures pagination with correct props', () => {
       createComponent();
-      await waitForPromises();
 
-      const { pageInfo } = groupMavenUpstreams.group.virtualRegistriesPackagesMavenUpstreams;
+      const { pageInfo } = groupMavenUpstreams.group.upstreams;
       const { __typename, ...rest } = pageInfo;
 
       expect(findPagination().props()).toMatchObject(rest);
     });
 
-    it('sets table busy prop when paginating', async () => {
-      createComponent();
-      await waitForPromises();
-
-      await wrapper.setProps({ pageParams: { after: '1234', first: 20 } });
+    it('sets table busy prop when paginating', () => {
+      createComponent({ props: { loading: true } });
 
       expect(findUpstreamsTable().props('busy')).toBe(true);
     });
 
     it('emits page-change event with correct parameters on pagination change', async () => {
       createComponent();
-      await waitForPromises();
 
       await findPagination().vm.$emit('next');
       await findPagination().vm.$emit('prev');
       expect(wrapper.emitted('page-change')[0][0]).toEqual({ after: 'end' });
       expect(wrapper.emitted('page-change')[1][0]).toEqual({ before: 'start' });
-    });
-  });
-
-  describe('error handling', () => {
-    beforeEach(async () => {
-      createComponent({
-        handlers: [[getMavenUpstreamsQuery, errorHandler]],
-      });
-      await waitForPromises();
-    });
-
-    it('shows error alert when API call fails', () => {
-      expect(findAlert().props()).toMatchObject({
-        variant: 'danger',
-        dismissible: false,
-      });
-      expect(findAlert().text()).toBe('GraphQL error');
     });
   });
 });

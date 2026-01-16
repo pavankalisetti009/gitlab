@@ -22,25 +22,13 @@ export const mavenUpstreamRegistry = {
   __typename: 'MavenUpstream',
 };
 
-export const groupMavenUpstreamsCountResponse = {
-  data: {
-    group: {
-      id: 'gid://gitlab/Group/33',
-      __typename: 'Group',
-      virtualRegistriesPackagesMavenUpstreams: {
-        __typename: 'MavenUpstreamConnection',
-        count: 5,
-      },
-    },
-  },
-};
-
 export const groupMavenUpstreams = {
   group: {
     id: 'gid://gitlab/Group/33',
     __typename: 'Group',
-    virtualRegistriesPackagesMavenUpstreams: {
+    upstreams: {
       __typename: 'MavenUpstreamConnection',
+      count: 5,
       nodes: [
         {
           __typename: 'MavenUpstream',
@@ -68,6 +56,55 @@ export const groupMavenUpstreams = {
         endCursor: 'end',
         __typename: 'PageInfo',
       },
+    },
+  },
+};
+
+export const groupMavenUpstreamsCount = {
+  group: {
+    id: 'gid://gitlab/Group/33',
+    __typename: 'Group',
+    upstreams: {
+      __typename: 'MavenUpstreamConnection',
+      count: 5,
+    },
+  },
+};
+
+export const groupContainerUpstreams = {
+  group: {
+    id: 'gid://gitlab/Group/33',
+    __typename: 'Group',
+    upstreams: {
+      __typename: 'ContainerUpstreamConnection',
+      nodes: [
+        {
+          __typename: 'ContainerUpstream',
+          id: 'gid://gitlab/VirtualRegistries::Container::Upstream/1',
+          name: 'Container',
+          url: 'https://gitlab.com',
+          cacheValidityHours: 24,
+          registriesCount: 2,
+        },
+      ],
+      pageInfo: {
+        hasPreviousPage: false,
+        hasNextPage: false,
+        startCursor: 'start',
+        endCursor: 'end',
+        __typename: 'PageInfo',
+      },
+    },
+  },
+};
+
+export const groupContainerUpstreamsCount = {
+  group: {
+    id: 'gid://gitlab/Group/33',
+    __typename: 'Group',
+    upstreams: {
+      __typename: 'ContainerUpstreamConnection',
+      count: 5,
     },
   },
 };

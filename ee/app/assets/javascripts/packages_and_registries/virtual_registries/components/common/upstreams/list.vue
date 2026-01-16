@@ -8,19 +8,11 @@ import {
 } from '@gitlab/ui';
 import emptyStateIllustrationUrl from '@gitlab/svgs/dist/illustrations/empty-state/empty-radar-md.svg?url';
 import { s__ } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import EmptyResult from '~/vue_shared/components/empty_result.vue';
-import getMavenUpstreamsQuery from '../../../graphql/queries/get_maven_upstreams.query.graphql';
-import { captureException } from '../../../sentry_utils';
-import UpstreamsTable from './upstreams_table.vue';
-
-const INITIAL_VALUE = {
-  nodes: [],
-  pageInfo: {},
-};
+import UpstreamsTable from './table.vue';
 
 export default {
-  name: 'MavenUpstreamsList',
+  name: 'UpstreamsList',
   components: {
     EmptyResult,
     GlAlert,
@@ -30,41 +22,30 @@ export default {
     GlSkeletonLoader,
     UpstreamsTable,
   },
-  inject: ['fullPath'],
+  inject: ['fullPath', 'i18n'],
   props: {
+    upstreams: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+    loading: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     searchTerm: {
       type: String,
       required: false,
       default: null,
     },
-    pageParams: {
-      type: Object,
-      required: true,
-    },
   },
+  emits: ['page-change', 'submit', 'upstream-deleted'],
   data() {
     return {
       alertMessage: '',
-      isLoading: 0,
-      mavenUpstreams: INITIAL_VALUE,
       upstreamDeleteSuccessMessage: '',
     };
-  },
-  apollo: {
-    mavenUpstreams: {
-      query: getMavenUpstreamsQuery,
-      loadingKey: 'isLoading',
-      variables() {
-        return this.queryVariables;
-      },
-      update: (data) => data.group?.virtualRegistriesPackagesMavenUpstreams ?? INITIAL_VALUE,
-      error(error) {
-        this.alertMessage =
-          error.message ||
-          s__('VirtualRegistry|Failed to fetch list of maven upstream registries.');
-        captureException({ error, component: this.$options.name });
-      },
-    },
   },
   computed: {
     filteredSearchValue() {
@@ -75,30 +56,17 @@ export default {
         },
       ];
     },
-    queryVariables() {
-      return {
-        groupPath: this.fullPath,
-        upstreamName: this.searchTerm,
-        ...this.pageParams,
-      };
-    },
     hasSearchTerm() {
       return Boolean(this.searchTerm?.length);
     },
     showUpstreamsTable() {
       return this.hasUpstreams || this.hasSearchTerm;
     },
-    upstreams() {
-      return this.mavenUpstreams.nodes.map((upstream) => ({
-        ...upstream,
-        id: getIdFromGraphQLId(upstream.id),
-      }));
-    },
     pageInfo() {
-      return this.mavenUpstreams.pageInfo;
+      return this.upstreams.pageInfo;
     },
     hasUpstreams() {
-      return this.upstreams.length > 0;
+      return this.upstreams.nodes.length > 0;
     },
   },
   methods: {
@@ -116,7 +84,7 @@ export default {
       this.$emit('submit', searchTerm);
     },
     handleUpstreamDelete() {
-      this.upstreamDeleteSuccessMessage = s__('VirtualRegistry|Maven upstream has been deleted.');
+      this.upstreamDeleteSuccessMessage = s__('VirtualRegistry|Upstream has been deleted.');
       this.$emit('upstream-deleted');
     },
     setAlertMessage(message = '') {
@@ -151,10 +119,10 @@ export default {
       </gl-alert>
       <upstreams-table
         v-if="hasUpstreams"
-        :upstreams="upstreams"
-        :busy="Boolean(isLoading)"
-        @upstreamDeleted="handleUpstreamDelete"
-        @upstreamDeleteFailed="setAlertMessage"
+        :upstreams="upstreams.nodes"
+        :busy="loading"
+        @upstream-deleted="handleUpstreamDelete"
+        @upstream-delete-failed="setAlertMessage"
       />
       <empty-result v-else />
       <div class="gl-flex gl-justify-center">
@@ -165,16 +133,12 @@ export default {
       <gl-alert v-if="alertMessage" variant="danger" :dismissible="false">
         {{ alertMessage }}
       </gl-alert>
-      <gl-skeleton-loader v-else-if="isLoading" :lines="2" :width="500" />
+      <gl-skeleton-loader v-else-if="loading" :lines="2" :width="500" class="gl-mt-4" />
       <gl-empty-state
         v-else
         :svg-path="$options.emptyStateIllustrationUrl"
-        :title="s__('VirtualRegistry|Connect Maven virtual registry to an upstream')"
-        :description="
-          s__(
-            'VirtualRegistry|Configure an upstream registry to manage Maven artifacts and cache entries.',
-          )
-        "
+        :title="i18n.upstreams.emptyStateTitle"
+        :description="i18n.upstreams.emptyStateDescription"
       />
     </div>
   </div>
