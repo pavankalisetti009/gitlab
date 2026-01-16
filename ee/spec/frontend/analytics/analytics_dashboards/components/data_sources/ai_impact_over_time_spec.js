@@ -1,8 +1,6 @@
-import {
-  mockAiMetricsResponseData,
-  mockAiMetricsZeroResponseData,
-  mockAiMetricsNullResponseData,
-} from 'ee_jest/analytics/dashboards/ai_impact/mock_data';
+import mockAiMetricsZeroResponseData from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.zero_values.json';
+import mockAiMetricsNullResponseData from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.null_values.json';
+import mockAiMetricsResponseData from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.json';
 import { AI_METRICS } from '~/analytics/shared/constants';
 import fetch from 'ee/analytics/analytics_dashboards/data_sources/ai_impact_over_time';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
@@ -28,7 +26,7 @@ describe('AI Impact Over Time Data Source', () => {
   };
 
   const mockResolvedQuery = (response = mockAiMetricsResponseData) =>
-    jest.spyOn(defaultClient, 'query').mockResolvedValueOnce({ data: { group: response } });
+    jest.spyOn(defaultClient, 'query').mockResolvedValueOnce(response);
 
   const expectQueryWithVariables = (variables) =>
     expect(defaultClient.query).toHaveBeenCalledWith(

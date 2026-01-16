@@ -143,72 +143,8 @@ export const mockVulnerabilityMetricsResponse = (values = []) =>
     jest.fn(),
   );
 
-export const mockAiMetricsResponse = (values = []) =>
-  values.reduce(
-    (
-      acc,
-      {
-        codeContributorsCount,
-        contributorsCount,
-        acceptedCount,
-        shownCount,
-        duoChatContributorsCount,
-        rootCauseAnalysisUsersCount,
-        duoAssignedUsersCount,
-        duoUsedCount,
-        requestReviewDuoCodeReviewOnMrByAuthorEventCount,
-        requestReviewDuoCodeReviewOnMrByNonAuthorEventCount,
-        postCommentDuoCodeReviewOnDiffEventCount,
-        reactThumbsUpOnDuoCodeReviewCommentEventCount,
-        reactThumbsDownOnDuoCodeReviewCommentEventCount,
-        languages,
-        acceptedLinesOfCode,
-        shownLinesOfCode,
-        ideNames,
-        agentPlatformFlowsStartedSessionEventCount,
-        agentPlatformChatsStartedSessionEventCount,
-      },
-    ) =>
-      acc.mockResolvedValueOnce({
-        data: {
-          project: null,
-          group: {
-            id: 'fake-ai-metrics-request',
-            aiMetrics: {
-              codeSuggestions: {
-                contributorsCount,
-                acceptedCount,
-                shownCount,
-                languages,
-                acceptedLinesOfCode,
-                shownLinesOfCode,
-                ideNames,
-              },
-              codeContributorsCount,
-              duoChatContributorsCount,
-              rootCauseAnalysisUsersCount,
-              duoAssignedUsersCount,
-              duoUsedCount,
-              codeReview: {
-                requestReviewDuoCodeReviewOnMrByAuthorEventCount,
-                requestReviewDuoCodeReviewOnMrByNonAuthorEventCount,
-                postCommentDuoCodeReviewOnDiffEventCount,
-                reactThumbsUpOnDuoCodeReviewCommentEventCount,
-                reactThumbsDownOnDuoCodeReviewCommentEventCount,
-              },
-              agentPlatformFlows: {
-                startedSessionEventCount: agentPlatformFlowsStartedSessionEventCount,
-              },
-              agentPlatformChats: {
-                startedSessionEventCount: agentPlatformChatsStartedSessionEventCount,
-              },
-              __typename: 'AiMetrics',
-            },
-          },
-        },
-      }),
-    jest.fn(),
-  );
+export const mockAiMetricsResponse = (fixtures = []) =>
+  fixtures.reduce((acc, fixture) => acc.mockResolvedValueOnce(fixture), jest.fn());
 
 export const mockAggregatedPipelineMetricsResponse = (values = []) =>
   values.reduce(
