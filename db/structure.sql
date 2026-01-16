@@ -3345,6 +3345,20 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_7840c345e48f() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  row_data JSONB;
+BEGIN
+  row_data := to_jsonb(NEW);
+  IF row_data ? 'source_xid_convert_to_bigint' THEN
+    NEW."source_xid_convert_to_bigint" := NEW."source_xid";
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
 CREATE FUNCTION trigger_78c85ddc4031() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -14997,6 +15011,7 @@ CREATE TABLE bulk_import_entities (
     has_failures boolean DEFAULT false,
     migrate_memberships boolean DEFAULT true NOT NULL,
     organization_id bigint,
+    source_xid_convert_to_bigint bigint,
     CONSTRAINT check_13f279f7da CHECK ((char_length(source_full_path) <= 255)),
     CONSTRAINT check_469f9235c5 CHECK ((num_nonnulls(namespace_id, organization_id, project_id) = 1)),
     CONSTRAINT check_715d725ea2 CHECK ((char_length(destination_name) <= 255)),
@@ -51253,6 +51268,8 @@ CREATE TRIGGER trigger_744ab45ee5ac BEFORE INSERT OR UPDATE ON protected_branch_
 CREATE TRIGGER trigger_7495f5e0efcb BEFORE INSERT OR UPDATE ON snippet_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_7495f5e0efcb();
 
 CREATE TRIGGER trigger_77d9fbad5b12 BEFORE INSERT OR UPDATE ON packages_debian_project_distribution_keys FOR EACH ROW EXECUTE FUNCTION trigger_77d9fbad5b12();
+
+CREATE TRIGGER trigger_7840c345e48f BEFORE INSERT OR UPDATE ON bulk_import_entities FOR EACH ROW EXECUTE FUNCTION trigger_7840c345e48f();
 
 CREATE TRIGGER trigger_78c85ddc4031 BEFORE INSERT OR UPDATE ON issue_emails FOR EACH ROW EXECUTE FUNCTION trigger_78c85ddc4031();
 
