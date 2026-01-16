@@ -101,6 +101,12 @@ module MergeRequests
     end
 
     def perform_code_owner_approval_deletion(merge_request, approver_ids, cause)
+      merge_request.log_approval_deletion_on_merged_or_locked_mr(
+        source: 'MergeRequests::ResetApprovalsService#perform_code_owner_approval_deletion',
+        current_user: current_user,
+        cause: cause
+      )
+
       # Check if merge request is approved BEFORE deleting any approvals
       # We need to clear the approval state cache to get the current state
       was_approved = measure_duration_accumulate(:perform_deletion_check_approval_state) do
