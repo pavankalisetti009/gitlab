@@ -148,11 +148,11 @@ describe('HandRaiseLeadModal', () => {
     it('has the correct modal props', () => {
       expect(findModal().props('actionPrimary')).toStrictEqual({
         text: PQL_MODAL_PRIMARY,
-        attributes: { variant: 'confirm', disabled: true, class: 'gl-w-full @sm/panel:gl-w-auto' },
+        attributes: { variant: 'confirm', disabled: true, class: 'gl-w-full @sm:gl-w-auto' },
       });
       expect(findModal().props('actionCancel')).toStrictEqual({
         text: PQL_MODAL_CANCEL,
-        attributes: { class: 'gl-w-full @sm/panel:gl-w-auto' },
+        attributes: { class: 'gl-w-full @sm:gl-w-auto' },
       });
     });
 
@@ -250,7 +250,7 @@ describe('HandRaiseLeadModal', () => {
 
       expect(findModal().props('actionPrimary')).toStrictEqual({
         text: PQL_MODAL_PRIMARY,
-        attributes: { variant: 'confirm', disabled: false, class: 'gl-w-full @sm/panel:gl-w-auto' },
+        attributes: { variant: 'confirm', disabled: false, class: 'gl-w-full @sm:gl-w-auto' },
       });
     });
   });
