@@ -259,6 +259,8 @@ module Gitlab
           # This map is used later in ResponseHandler to correlate a path to a commit and file path
           populate_lookup_map(paths, lookup_map)
 
+          audit_logger.track_changed_paths_calculated(paths.count)
+
           # Log only the scanned paths (so excluded paths are omitted) and break them down by type
           log_changed_paths_breakdown(paths)
 

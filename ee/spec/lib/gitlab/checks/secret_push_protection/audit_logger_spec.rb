@@ -326,4 +326,14 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::AuditLogger, feature_catego
       end
     end
   end
+
+  describe '#track_changed_paths_calculated' do
+    let(:properties) { { value: 2 } }
+
+    it 'triggers the internal event' do
+      expect { audit_logger.track_changed_paths_calculated(properties[:value]) }
+        .to trigger_internal_events('calculate_changed_paths_in_secret_push_protection')
+        .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
+    end
+  end
 end
