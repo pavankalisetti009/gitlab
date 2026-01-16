@@ -68,6 +68,8 @@ module API
                     optional :search, type: String, desc: 'Search query', documentation: { example: 'foo/bar/mypkg' }
                     use :pagination
                   end
+                  route_setting :authorization, permissions: :read_container_virtual_registry_upstream_cache_entry,
+                    boundary: -> { upstream.group }
                   get do
                     authorize! :read_virtual_registry, upstream
 
@@ -99,6 +101,8 @@ module API
                   documentation: { example: 'MTIzNCA1Njc4' }
               end
 
+              route_setting :authorization, permissions: :delete_container_virtual_registry_upstream_cache_entry,
+                boundary: -> { cache_entry.group }
               delete '*id' do
                 authorize! :destroy_virtual_registry, cache_entry.upstream
 

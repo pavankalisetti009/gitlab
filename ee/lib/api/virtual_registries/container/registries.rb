@@ -50,6 +50,7 @@ module API
               hidden true
             end
 
+            route_setting :authorization, permissions: :read_container_virtual_registry, boundary_type: :group
             get do
               authorize! :read_virtual_registry, policy_subject
 
@@ -78,6 +79,7 @@ module API
                 allow_blank: false
               optional :description, type: String, desc: 'The description of the container virtual registry'
             end
+            route_setting :authorization, permissions: :create_container_virtual_registry, boundary_type: :group
             post do
               authorize! :create_virtual_registry, policy_subject
 
@@ -107,6 +109,8 @@ module API
               tags %w[virtual_registries]
               hidden true
             end
+            route_setting :authorization, permissions: :read_container_virtual_registry,
+              boundary_type: :group, boundary: -> { registry.group }
             get do
               authorize! :read_virtual_registry, registry
 
@@ -137,6 +141,8 @@ module API
 
               at_least_one_of :name, :description
             end
+            route_setting :authorization, permissions: :update_container_virtual_registry,
+              boundary_type: :group, boundary: -> { registry.group }
             patch do
               authorize! :update_virtual_registry, registry
 
@@ -160,6 +166,8 @@ module API
               tags %w[virtual_registries]
               hidden true
             end
+            route_setting :authorization, permissions: :delete_container_virtual_registry,
+              boundary_type: :group, boundary: -> { registry.group }
             delete do
               authorize! :destroy_virtual_registry, registry
 
@@ -180,6 +188,8 @@ module API
               tags %w[virtual_registries]
               hidden true
             end
+            route_setting :authorization, permissions: :purge_container_virtual_registry_cache,
+              boundary_type: :group, boundary: -> { registry.group }
             delete :cache do
               authorize! :destroy_virtual_registry, registry
 

@@ -67,6 +67,8 @@ module API
             params do
               optional :upstream_name, type: String, desc: 'Return upstreams with this name'
             end
+            route_setting :authorization, permissions: :read_container_virtual_registry_upstream,
+              boundary_type: :group
             get do
               upstreams = ::VirtualRegistries::UpstreamsFinder.new(
                 upstream_class: ::VirtualRegistries::Container::Upstream,
@@ -98,6 +100,8 @@ module API
               optional :password, type: String, desc: 'The password of the container virtual registry upstream'
               all_or_none_of :username, :password
             end
+            route_setting :authorization, permissions: :test_container_virtual_registry_upstream,
+              boundary_type: :group
             post :test do
               upstream = ::VirtualRegistries::Container::Upstream.new(
                 declared_params(include_missing: false).merge(group: group, name: 'test')
@@ -129,6 +133,8 @@ module API
                   tags %w[virtual_registries]
                   hidden true
                 end
+                route_setting :authorization, permissions: :read_container_virtual_registry_upstream,
+                  boundary: -> { registry.group }
                 get do
                   authorize! :read_virtual_registry, registry
 
@@ -165,6 +171,9 @@ module API
 
                   all_or_none_of :username, :password
                 end
+
+                route_setting :authorization, permissions: :create_container_virtual_registry_upstream,
+                  boundary: -> { registry.group }
                 post do
                   authorize! :create_virtual_registry, registry
 
@@ -197,6 +206,8 @@ module API
                 tags %w[virtual_registries]
                 hidden true
               end
+              route_setting :authorization, permissions: :read_container_virtual_registry_upstream,
+                boundary: -> { upstream.group }
               get do
                 authorize! :read_virtual_registry, upstream
 
@@ -230,6 +241,8 @@ module API
 
                 at_least_one_of :name, :description, :url, :username, :password, :cache_validity_hours
               end
+              route_setting :authorization, permissions: :update_container_virtual_registry_upstream,
+                boundary: -> { upstream.group }
               patch do
                 authorize! :update_virtual_registry, upstream
 
@@ -252,6 +265,8 @@ module API
                 tags %w[virtual_registries]
                 hidden true
               end
+              route_setting :authorization, permissions: :delete_container_virtual_registry_upstream,
+                boundary: -> { upstream.group }
               delete do
                 authorize! :destroy_virtual_registry, upstream
 
@@ -278,6 +293,8 @@ module API
                 tags %w[virtual_registries]
                 hidden true
               end
+              route_setting :authorization, permissions: :purge_container_virtual_registry_upstream_cache,
+                boundary: -> { upstream.group }
               delete :cache do
                 authorize! :destroy_virtual_registry, upstream
 
@@ -304,6 +321,8 @@ module API
                 optional :username, type: String, desc: 'The username of the container virtual registry upstream'
                 optional :password, type: String, desc: 'The password of the container virtual registry upstream'
               end
+              route_setting :authorization, permissions: :test_container_virtual_registry_upstream,
+                boundary: -> { upstream.group }
               post :test do
                 authorize! :read_virtual_registry, upstream
 

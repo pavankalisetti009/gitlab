@@ -26,6 +26,13 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
     context 'with valid group_id' do
       it_behaves_like 'successful response'
 
+      it_behaves_like "authorizing granular token permissions", :read_container_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
+
       context 'when upstream_name is given' do
         let_it_be(:upstream2) do
           create(:virtual_registries_container_upstream, registries: [registry], name: 'foo-name')
@@ -107,6 +114,13 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response).to eq({ 'success' => true })
       end
+
+      it_behaves_like "authorizing granular token permissions", :test_container_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api(url, personal_access_token: pat), params: params
+        end
+      end
     end
 
     context 'with invalid group_id' do
@@ -187,6 +201,13 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     context 'with valid registry' do
       it_behaves_like 'successful response'
+
+      it_behaves_like "authorizing granular token permissions", :read_container_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
 
     context 'with invalid registry' do
@@ -257,6 +278,23 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
           it_behaves_like 'successful response'
         else
           it_behaves_like 'returning response status', params[:status]
+        end
+      end
+
+      context 'with maintainer role' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        before do
+          registry.upstreams.each(&:destroy!)
+        end
+
+        it_behaves_like "authorizing granular token permissions", :create_container_virtual_registry_upstream do
+          let(:boundary_object) { group }
+          let(:request) do
+            post api(url, personal_access_token: pat), params: params
+          end
         end
       end
     end
@@ -374,6 +412,13 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     context 'with valid params' do
       it_behaves_like 'successful response'
+
+      it_behaves_like "authorizing granular token permissions", :read_container_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
 
     it_behaves_like 'virtual registry not available', :container
@@ -384,12 +429,11 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
   describe 'PATCH /api/v4/virtual_registries/container/upstreams/:id' do
     let(:url) { "/virtual_registries/container/upstreams/#{upstream.id}" }
+    let(:params) { { name: 'foo', description: 'description', url: 'http://example.com', username: 'test', password: 'test' } }
 
     subject(:api_request) { patch api(url), params: params, headers: headers }
 
     context 'with valid params' do
-      let(:params) { { name: 'foo', description: 'description', url: 'http://example.com', username: 'test', password: 'test' } }
-
       it { is_expected.to have_request_urgency(:low) }
 
       it_behaves_like 'virtual registry not available', :container
@@ -410,10 +454,19 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
         it_behaves_like 'returning response status', params[:status]
       end
 
-      it_behaves_like 'an authenticated virtual registry REST API' do
+      context 'with maintainer role' do
         before_all do
           group.add_maintainer(user)
         end
+
+        it_behaves_like "authorizing granular token permissions", :update_container_virtual_registry_upstream do
+          let(:boundary_object) { group }
+          let(:request) do
+            patch api(url, personal_access_token: pat), params: params
+          end
+        end
+
+        it_behaves_like 'an authenticated virtual registry REST API'
       end
     end
 
@@ -502,6 +555,19 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
           it_behaves_like 'returning response status', params[:status]
         end
       end
+
+      context 'with maintainer role' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        it_behaves_like "authorizing granular token permissions", :delete_container_virtual_registry_upstream do
+          let(:boundary_object) { group }
+          let(:request) do
+            delete api(url, personal_access_token: pat)
+          end
+        end
+      end
     end
 
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
@@ -566,6 +632,19 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
           it_behaves_like 'successful response'
         else
           it_behaves_like 'returning response status', params[:status]
+        end
+      end
+
+      context 'with maintainer role' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        it_behaves_like "authorizing granular token permissions", :purge_container_virtual_registry_upstream_cache do
+          let(:boundary_object) { group }
+          let(:request) do
+            delete api(url, personal_access_token: pat)
+          end
         end
       end
     end
@@ -644,6 +723,13 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
       with_them do
         it_behaves_like 'returning response status', :bad_request
+      end
+    end
+
+    it_behaves_like "authorizing granular token permissions", :test_container_virtual_registry_upstream do
+      let(:boundary_object) { group }
+      let(:request) do
+        post api(url, personal_access_token: pat), params: params
       end
     end
   end
