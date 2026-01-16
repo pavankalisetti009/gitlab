@@ -10,4 +10,5 @@ export default {
       'VirtualRegistry|Configure an upstream registry to manage Container artifacts and cache entries.',
     ),
   },
+  newRegistryPageTitle: s__('VirtualRegistry|New container virtual registry'),
 };
