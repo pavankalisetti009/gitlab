@@ -54,7 +54,7 @@ module Security
           # prefer "vulnerability_occurrences" severities for security findings whose severity has been overridden
           'COALESCE("vulnerability_occurrences"."severity", "security_findings"."severity") = "severities"."severity"'
         )
-        .by_partition_number(security_findings_partition_number)
+        .by_partition_number(partition_numbers)
         .deduplicated
         .ordered(params[:sort])
         .then { |relation| by_uuid(relation) }
@@ -93,15 +93,24 @@ module Security
 
     delegate :project, :security_findings_partition_number, to: :pipeline, private: true
 
+    # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- Limited by pipeline hierarchy size
     def pipeline_ids
-      if Feature.enabled?(:show_child_security_reports_in_mr_widget, project)
-        # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- Pluck is more efficient & limit of 1000 by default
-        pipeline.self_and_project_descendants.pluck(:id)
-        # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
-      else
-        [pipeline.id]
-      end
+      @pipeline_ids ||= if Feature.enabled?(:show_child_security_reports_in_mr_widget, project)
+                          pipeline.self_and_project_descendants.pluck(:id)
+                        else
+                          [pipeline.id]
+                        end
     end
+
+    def partition_numbers
+      unless Feature.enabled?(:show_child_security_reports_in_mr_widget, project)
+        return security_findings_partition_number
+      end
+
+      numbers = Security::Scan.by_pipeline_ids(pipeline_ids).distinct.pluck(:findings_partition_number)
+      numbers.presence || [Security::Finding.active_partition_number]
+    end
+    # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
 
     def include_dismissed?
       params[:scope] == 'all' || params[:state]
