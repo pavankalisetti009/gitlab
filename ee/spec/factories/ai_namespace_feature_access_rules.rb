@@ -2,8 +2,8 @@
 
 FactoryBot.define do
   factory :ai_namespace_feature_access_rules, class: 'Ai::NamespaceFeatureAccessRule' do
-    association :through_namespace, factory: :namespace
-    association :root_namespace, factory: :namespace
+    association :through_namespace, factory: :group
+    association :root_namespace, factory: :group
     accessible_entity { 'duo_classic' }
     created_at { Time.zone.now }
     updated_at { Time.zone.now }
