@@ -7,7 +7,6 @@ import App from '~/projects/pipelines/charts/components/app.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 import PipelinesDashboard from '~/projects/pipelines/charts/components/pipelines_dashboard.vue';
-import MigrationAlert from 'ee_component/analytics/dora/components/migration_alert.vue';
 import ProjectQualitySummaryApp from 'ee_component/project_quality_summary/app.vue';
 
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -44,7 +43,6 @@ describe('ProjectsPipelinesChartsApp', () => {
 
   const findPipelinesDashboard = () => wrapper.findComponent(PipelinesDashboard);
 
-  const findDoraMetricsMigrationAlert = () => wrapper.findComponent(MigrationAlert);
   const findProjectQualitySummaryApp = () => wrapper.findComponent(ProjectQualitySummaryApp);
 
   afterEach(() => {
@@ -54,13 +52,6 @@ describe('ProjectsPipelinesChartsApp', () => {
   describe('default', () => {
     beforeEach(() => {
       createWrapper();
-    });
-
-    it('shows migration alert', () => {
-      expect(findDoraMetricsMigrationAlert().props()).toMatchObject({
-        namespacePath: projectPath,
-        isProject: true,
-      });
     });
 
     it(`renders the chart`, () => {

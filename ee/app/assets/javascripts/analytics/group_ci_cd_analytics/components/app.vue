@@ -1,7 +1,5 @@
 <script>
 import { GlTabs, GlTab, GlLink } from '@gitlab/ui';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import MigrationAlert from 'ee/analytics/dora/components/migration_alert.vue';
 import { mergeUrlParams, updateHistory, getParameterValues } from '~/lib/utils/url_utility';
 import API from '~/api';
 import ReleaseStatsCard from './release_stats_card.vue';
@@ -13,10 +11,8 @@ export default {
     GlTabs,
     GlTab,
     GlLink,
-    MigrationAlert,
   },
   releaseStatisticsTabEvent: 'g_analytics_ci_cd_release_statistics',
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     groupPath: {
       type: String,
@@ -73,8 +69,6 @@ export default {
 </script>
 <template>
   <div>
-    <migration-alert :namespace-path="groupPath" />
-
     <gl-tabs v-if="tabs.length > 1" :value="selectedTabIndex" @input="onTabChange">
       <gl-tab
         :title="s__('CICDAnalytics|Release statistics')"
