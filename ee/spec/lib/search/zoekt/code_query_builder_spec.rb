@@ -344,5 +344,99 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
         end
       end
     end
+
+    describe 'filter ordering' do
+      # Placing meta filters (like archived) between query_string and scoping filters
+      # (repo_ids/traversal_ids) causes significant performance regression.
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/586416
+      def filter_names(result)
+        result.dig(:query, :and, :children).map do |child|
+          child.dig(:_context, :name) || child.each_key.first.to_s
+        end
+      end
+
+      context 'for project search' do
+        let(:options) do
+          {
+            features: 'repository',
+            group_ids: [],
+            project_id: 1,
+            search_level: :project,
+            use_traversal_id_queries: true
+          }
+        end
+
+        before do
+          stub_feature_flags(zoekt_search_meta_project_ids: false)
+        end
+
+        it 'places scoping filter before archived filter' do
+          expect(filter_names(result)).to eq(%w[query_string project_id_search meta access_branches])
+        end
+      end
+
+      context 'for group search' do
+        let_it_be(:group) { create(:group) }
+
+        let(:options) do
+          {
+            features: 'repository',
+            current_user: current_user,
+            group_id: group.id,
+            search_level: :group,
+            use_traversal_id_queries: true
+          }
+        end
+
+        before do
+          stub_feature_flags(zoekt_search_meta_project_ids: false)
+
+          guest_projects = class_double(ApplicationRecord, exists?: true, pluck_primary_key: [1, 56, 99])
+          allow(auth).to receive(:get_projects_for_user)
+            .with(hash_including(search_level: :group, group_ids: [group.id]))
+            .and_return(guest_projects)
+
+          allow(auth).to receive(:get_traversal_ids_for_group)
+            .with(group.id)
+            .and_return("9970-")
+
+          no_groups = class_double(ApplicationRecord, exists?: false)
+          allow(auth).to receive(:get_groups_for_user)
+            .with(a_hash_including(min_access_level: ::Gitlab::Access::GUEST,
+              group_ids: [group.id],
+              project_ids: [],
+              search_level: :group))
+            .and_return(no_groups)
+
+          reporter_groups = class_double(ApplicationRecord, exists?: true)
+          allow(auth).to receive(:get_groups_for_user)
+            .with(a_hash_including(min_access_level: ::Gitlab::Access::REPORTER,
+              group_ids: [group.id],
+              project_ids: [],
+              search_level: :group))
+            .and_return(reporter_groups)
+
+          allow(auth).to receive(:get_formatted_traversal_ids_for_groups)
+            .with(reporter_groups,
+              group_ids: [group.id],
+              project_ids: [],
+              search_level: :group)
+            .and_return(%w[9970-457- 9970-123-])
+
+          no_projects = class_double(ApplicationRecord, exists?: false)
+          allow(auth).to receive(:get_projects_with_custom_roles)
+            .with(guest_projects)
+            .and_return(no_projects)
+
+          allow(auth).to receive(:get_groups_with_custom_roles)
+            .with(no_groups)
+            .and_return(no_groups)
+        end
+
+        it 'places scoping filter before archived filter' do
+          expect(filter_names(result)).to eq(%w[query_string traversal_ids_for_group meta access_branches])
+        end
+      end
+    end
   end
 end
