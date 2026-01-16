@@ -36,14 +36,14 @@ module Security
       end
 
       def schedule_project_connections_cleanup(group_id)
-        Security::ScanProfiles::CleanOldNamespaceConnectionsWorker.perform_async(group_id)
+        Security::ScanProfiles::CleanOldNamespaceConnectionsWorker.perform_async(group_id, true)
       end
 
       def schedule_profiles_cleanup(group)
         profiles_ids = group.security_scan_profiles.scan_profile_ids
         return unless profiles_ids.any?
 
-        Security::ScanProfiles::DeleteScanProfilesWorker.perform_async(profiles_ids)
+        Security::ScanProfiles::DeleteScanProfilesWorker.perform_async(profiles_ids, group.id)
       end
     end
   end

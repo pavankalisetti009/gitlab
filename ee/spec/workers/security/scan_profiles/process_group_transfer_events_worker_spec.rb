@@ -60,7 +60,7 @@ RSpec.describe Security::ScanProfiles::ProcessGroupTransferEventsWorker, feature
         it 'schedules cleanup worker to delete project connections' do
           perform
 
-          expect(cleanup_worker).to have_received(:perform_async).with(subgroup.id)
+          expect(cleanup_worker).to have_received(:perform_async).with(subgroup.id, true)
         end
 
         it 'does not schedule delete profiles worker' do
@@ -85,8 +85,9 @@ RSpec.describe Security::ScanProfiles::ProcessGroupTransferEventsWorker, feature
           perform
 
           expected_ids = [scan_profile1, scan_profile2].map(&:id)
-          expect(delete_profiles_worker).to have_received(:perform_async) do |ids|
-            expect(ids).to match_array(expected_ids)
+          expect(delete_profiles_worker).to have_received(:perform_async) do |profile_ids, group_id|
+            expect(profile_ids).to match_array(expected_ids)
+            expect(group_id).to eq(root_group.id)
           end
         end
 
