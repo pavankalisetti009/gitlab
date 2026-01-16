@@ -87,6 +87,9 @@ module Security
         end
       end
 
+      # This method has duplication with the Security::LatestPipelineInformation concern.
+      # This duplication should be refactored away.
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/586294 for more context.
       def normalize_special_report_types(build, existing_group_types, report_artifacts)
         if report_artifacts.include?(:cyclonedx) && build.name.include?("dependency_scanning")
           existing_group_types.push(:dependency_scanning)
@@ -96,10 +99,16 @@ module Security
 
         # Because :sast_iac and :sast_advanced reports belong to a report with a name of 'sast',
         # we have to do extra checking to determine which reports have been included
-        existing_group_types.push(:sast_advanced) if build.name == 'gitlab-advanced-sast'
+        # When using advanced sast, sast should also show in the report names
+        # Support both direct job names and policy-enforced job names with suffixes
+        # e.g., 'gitlab-advanced-sast', 'gitlab-advanced-sast-cpp',
+        # 'gitlab-advanced-sast-0', 'gitlab-advanced-sast:policy-123456-0'
+        existing_group_types.push(:sast_advanced) if build.name.start_with?('gitlab-advanced-sast')
 
         # kics-iac-sast is being treated as IaC and not as SAST
-        if build.name == 'kics-iac-sast'
+        # Support both direct job names and policy-enforced job names with suffixes
+        # e.g., 'kics-iac-sast', 'kics-iac-sast-0', 'kics-iac-sast:policy-123456-0'
+        if build.name.start_with?('kics-iac-sast')
           existing_group_types.push(:sast_iac)
           existing_group_types.delete(:sast)
         end
