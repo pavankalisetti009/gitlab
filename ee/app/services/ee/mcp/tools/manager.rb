@@ -8,7 +8,7 @@ module EE
 
         # Registry of all EE custom tools mapped to their service classes
         EE_CUSTOM_TOOLS = {
-          'semantic_code_search' => ::Mcp::Tools::SearchCodebaseService
+          'semantic_code_search' => ::Mcp::Tools::SemanticCodeSearchService
         }.freeze
 
         override :get_tool

@@ -20,7 +20,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
 
     # Stub the EE_CUSTOM_TOOLS with EE tools
     ee_custom_tools = {
-      'semantic_code_search' => Mcp::Tools::SearchCodebaseService
+      'semantic_code_search' => Mcp::Tools::SemanticCodeSearchService
     }
     stub_const("EE::#{described_class}::EE_CUSTOM_TOOLS", ee_custom_tools)
   end
@@ -71,7 +71,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
           'delete_user' => api_tool2,
           'get_mcp_server_version' => be_a(Mcp::Tools::GetServerVersionService),
           'create_workitem_note' => be_a(Mcp::Tools::WorkItems::GraphqlCreateWorkItemNoteService),
-          'semantic_code_search' => be_a(Mcp::Tools::SearchCodebaseService)
+          'semantic_code_search' => be_a(Mcp::Tools::SemanticCodeSearchService)
         )
         expect(manager.tools.size).to eq(5)
       end
@@ -207,7 +207,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
           'valid_tool' => api_tool1,
           'get_mcp_server_version' => be_a(Mcp::Tools::GetServerVersionService),
           'create_workitem_note' => be_a(Mcp::Tools::WorkItems::GraphqlCreateWorkItemNoteService),
-          'semantic_code_search' => be_a(Mcp::Tools::SearchCodebaseService)
+          'semantic_code_search' => be_a(Mcp::Tools::SemanticCodeSearchService)
         )
         expect(manager.tools.size).to eq(4)
         expect(Mcp::Tools::ApiTool).to have_received(:new).once.with(name: 'valid_tool', route: route1)
@@ -271,7 +271,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         it 'returns the correct version' do
           tool = manager.get_tool(name: 'semantic_code_search', version: '0.1.0')
 
-          expect(tool).to be_a(Mcp::Tools::SearchCodebaseService)
+          expect(tool).to be_a(Mcp::Tools::SemanticCodeSearchService)
           expect(tool.version).to eq('0.1.0')
         end
       end
@@ -280,7 +280,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         it 'returns the latest version' do
           tool = manager.get_tool(name: 'semantic_code_search')
 
-          expect(tool).to be_a(Mcp::Tools::SearchCodebaseService)
+          expect(tool).to be_a(Mcp::Tools::SemanticCodeSearchService)
           expect(tool.version).to eq('0.1.0')
         end
       end
