@@ -30,7 +30,8 @@ module SystemCheck
           Geo::SystemCheck::AuthorizedKeysCheck,
           Geo::SystemCheck::AuthorizedKeysFlagCheck,
           SystemCheck::App::HashedStorageEnabledCheck,
-          SystemCheck::App::HashedStorageAllProjectsCheck
+          SystemCheck::App::HashedStorageAllProjectsCheck,
+          Geo::SystemCheck::ContainerRegistryCheck
         ]
       end
 

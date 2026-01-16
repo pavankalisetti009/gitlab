@@ -17,7 +17,8 @@ RSpec.describe SystemCheck::RakeTask::GeoTask, feature_category: :geo_replicatio
       Geo::SystemCheck::AuthorizedKeysCheck,
       Geo::SystemCheck::AuthorizedKeysFlagCheck,
       SystemCheck::App::HashedStorageEnabledCheck,
-      SystemCheck::App::HashedStorageAllProjectsCheck
+      SystemCheck::App::HashedStorageAllProjectsCheck,
+      Geo::SystemCheck::ContainerRegistryCheck
     ]
   end
 
