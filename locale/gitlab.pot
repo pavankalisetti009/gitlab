@@ -77058,6 +77058,9 @@ msgstr ""
 msgid "WikiPageConflictMessage|Someone edited the page the same time you did. Please check out %{wikiLinkStart}the page%{wikiLinkEnd} and make sure your changes will not unintentionally remove theirs."
 msgstr ""
 
+msgid "WikiPage|Add a commit message"
+msgstr ""
+
 msgid "WikiPage|Cancel"
 msgstr ""
 
@@ -77097,7 +77100,16 @@ msgstr ""
 msgid "WikiPage|Path"
 msgstr ""
 
+msgid "WikiPage|Review and write a commit message"
+msgstr ""
+
 msgid "WikiPage|Save changes"
+msgstr ""
+
+msgid "WikiPage|Save changes directly"
+msgstr ""
+
+msgid "WikiPage|Save changes with message"
 msgstr ""
 
 msgid "WikiPage|Template title"
@@ -77119,6 +77131,9 @@ msgid "WikiPage|Update %{pageTitle}"
 msgstr ""
 
 msgid "WikiPage|Update template %{pageTitle}"
+msgstr ""
+
+msgid "WikiPage|Uses the default commit message"
 msgstr ""
 
 msgid "WikiPage|Write your content or drag files here…"
