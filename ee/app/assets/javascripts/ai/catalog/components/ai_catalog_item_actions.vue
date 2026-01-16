@@ -22,6 +22,7 @@ import {
   DELETE_OPTIONS,
   TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_DELETE_AI_CATALOG_ITEM,
   TRACK_EVENT_ITEM_TYPES,
   TRACK_EVENT_ORIGIN_EXPLORE,
   TRACK_EVENT_ORIGIN_PROJECT,
@@ -235,9 +236,14 @@ export default {
     },
   },
   methods: {
-    openDeleteModal() {
+    onClickDelete() {
       this.forceHardDelete = this.canHardDelete;
       this.showDeleteModal = true;
+      this.trackEvent(TRACK_EVENT_DELETE_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_ITEM_TYPES[this.item.itemType],
+        origin: this.origin,
+        page: TRACK_EVENT_PAGE_SHOW,
+      });
     },
     onClickEnable() {
       this.trackEvent(TRACK_EVENT_ENABLE_AI_CATALOG_ITEM, {
@@ -354,7 +360,7 @@ export default {
         v-if="canAdmin"
         variant="danger"
         data-testid="delete-button"
-        @action="openDeleteModal"
+        @action="onClickDelete"
       >
         <template #list-item>
           <span class="gl-flex gl-gap-2">
