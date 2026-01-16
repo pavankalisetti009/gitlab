@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_server do
-  let(:service_name) { 'get_code_context' }
+  let(:service_name) { 'semantic_code_search' }
   let(:current_user) { create(:user) }
   let(:project) { create :project, :repository }
   let_it_be(:oauth_token) { 'test_token_123' }
@@ -343,7 +343,7 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
-        expect(result[:content].first[:text]).to eq("Tool execution failed: get_code_context: project not " \
+        expect(result[:content].first[:text]).to eq("Tool execution failed: semantic_code_search: project not " \
           "found, the params received: {:arguments=>{:semantic_query=>\"foo\"}}")
       end
     end
@@ -580,6 +580,36 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
       it 'returns all results when file_paths is empty' do
         is_expected.to match_array(results)
       end
+    end
+  end
+
+  context 'when there is a version without its own perform method' do
+    before do
+      project.add_developer(current_user)
+
+      allow(described_class).to receive(:available_versions).and_return(['0.1.0', '0.2.0'])
+      allow(described_class).to receive(:version_exists?).with('0.2.0').and_return(true)
+      allow(described_class).to receive(:version_metadata).with('0.2.0')
+        .and_return(described_class.version_metadata('0.1.0'))
+    end
+
+    let(:service) do
+      described_class.new(name: service_name, version: '0.2.0').tap do |s|
+        s.set_cred(current_user: current_user, access_token: oauth_token)
+      end
+    end
+
+    it 'calls the perform_0_1_0 method on execute' do
+      expect(service).to receive(:perform_0_1_0)
+
+      params = {
+        arguments: {
+          semantic_query: 'the query string',
+          project_id: project.id.to_s
+        }
+      }
+
+      service.execute(request: nil, params: params)
     end
   end
 end
