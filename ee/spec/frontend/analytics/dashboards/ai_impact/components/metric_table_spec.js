@@ -57,11 +57,11 @@ import {
 } from '../helpers';
 import {
   mockTableValues,
-  mockTableLargeValues,
   mockTableBlankValues,
   mockTableZeroValues,
   mockTableMaxLimitValues,
   mockTableAndChartValues,
+  mockAiTableAndChartValues,
 } from '../mock_data';
 
 const mockTypePolicy = {
@@ -89,36 +89,8 @@ describe('Metric table', () => {
     contributorMetricsRequest = mockGraphqlContributorCountResponse(
       mockContributorCountResponseData,
     ),
-    aiMetricsRequest = mockAiMetricsResponse(mockTableAndChartValues),
+    aiMetricsRequest = mockAiMetricsResponse(mockAiTableAndChartValues),
     pipelineMetricsRequest = mockAggregatedPipelineMetricsResponse(mockTableAndChartValues),
-  } = {}) => {
-    return createMockApollo(
-      [
-        [FlowMetricsQuery, flowMetricsRequest],
-        [DoraMetricsQuery, doraMetricsRequest],
-        [VulnerabilitiesQuery, vulnerabilityMetricsRequest],
-        [MergeRequestsQuery, mrMetricsRequest],
-        [ContributorCountQuery, contributorMetricsRequest],
-        [AiMetricsQuery, aiMetricsRequest],
-        [AggregatedPipelineMetricsQuery, pipelineMetricsRequest],
-      ],
-      {},
-      {
-        typePolicies: mockTypePolicy,
-      },
-    );
-  };
-
-  const createMockApolloProviderLargeValues = ({
-    flowMetricsRequest = mockFlowMetricsResponse(mockTableLargeValues),
-    doraMetricsRequest = mockDoraMetricsResponse(mockTableLargeValues),
-    vulnerabilityMetricsRequest = mockVulnerabilityMetricsResponse(mockTableLargeValues),
-    mrMetricsRequest = mockGraphqlMergeRequestsResponse(mockMergeRequestsResponseData),
-    contributorMetricsRequest = mockGraphqlContributorCountResponse(
-      mockContributorCountResponseData,
-    ),
-    aiMetricsRequest = mockAiMetricsResponse(mockTableLargeValues),
-    pipelineMetricsRequest = mockAggregatedPipelineMetricsResponse(mockTableLargeValues),
   } = {}) => {
     return createMockApollo(
       [
@@ -675,13 +647,15 @@ describe('Metric table', () => {
   describe('i18n', () => {
     describe.each`
       language   | formattedValue
-      ${'en-US'} | ${'5,000'}
-      ${'de-DE'} | ${'5.000'}
+      ${'en-US'} | ${'999,999'}
+      ${'de-DE'} | ${'999.999'}
     `('When the language is $language', ({ formattedValue, language }) => {
       beforeEach(() => {
         setLanguage(language);
         return createWrapper([VULNERABILITY_METRICS.CRITICAL], {
-          apolloProvider: createMockApolloProviderLargeValues(),
+          apolloProvider: createMockApolloProvider({
+            vulnerabilityMetricsRequest: mockVulnerabilityMetricsResponse(mockTableMaxLimitValues),
+          }),
         });
       });
 

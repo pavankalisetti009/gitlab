@@ -42,12 +42,12 @@ exports[`Metric table for the change_failure_rate table row when the data is loa
 
 exports[`Metric table for the code_suggestions_acceptance_rate table row when the data is loaded renders the metric values 1`] = `
 [
-  "20.0% 3/15",
-  "42.9% 3/7",
-  "66.7% 10/15",
-  "50.0% 9/18",
-  "17.6% 3/17",
-  "33.3% 4/12",
+  "40.0% 2/5",
+  "40.0% 4/10",
+  "40.0% 6/15",
+  "40.0% 8/20",
+  "40.0% 10/25",
+  "40.0% 12/30",
 ]
 `;
 
@@ -56,23 +56,23 @@ exports[`Metric table for the code_suggestions_acceptance_rate table row when th
   "data": [
     [
       "Jul 1 – 31",
-      20,
+      40,
     ],
     [
       "Aug 1 – 31",
-      42.9,
+      40,
     ],
     [
       "Sep 1 – 30",
-      66.7,
+      40,
     ],
     [
       "Oct 1 – 31",
-      50,
+      40,
     ],
     [
       "Nov 1 – 30",
-      17.6,
+      40,
     ],
   ],
   "tooltipLabel": "%",
@@ -82,23 +82,23 @@ exports[`Metric table for the code_suggestions_acceptance_rate table row when th
 
 exports[`Metric table for the code_suggestions_usage_rate table row renders the correct metric values and tooltips pre- and post-release 1`] = `
 [
-  "5.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
-  "10.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
-  "25.0% 1/4",
-  "5.0% 1/20",
-  "10.0% 1/10",
-  "25.0% 1/4",
+  "62.5% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "62.5% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "62.5% 15/24",
+  "62.5% 20/32",
+  "62.5% 25/40",
+  "62.5% 30/48",
 ]
 `;
 
 exports[`Metric table for the code_suggestions_usage_rate table row when the data is loaded renders the metric values 1`] = `
 [
-  "5.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
-  "10.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
-  "25.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
-  "5.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
-  "10.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
-  "25.0% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "62.5% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "62.5% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "62.5% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "62.5% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "62.5% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
+  "62.5% The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.",
 ]
 `;
 
@@ -107,23 +107,23 @@ exports[`Metric table for the code_suggestions_usage_rate table row when the dat
   "data": [
     [
       "Jul 1 – 31",
-      5,
+      62.5,
     ],
     [
       "Aug 1 – 31",
-      10,
+      62.5,
     ],
     [
       "Sep 1 – 30",
-      25,
+      62.5,
     ],
     [
       "Oct 1 – 31",
-      5,
+      62.5,
     ],
     [
       "Nov 1 – 30",
-      10,
+      62.5,
     ],
   ],
   "tooltipLabel": "%",
@@ -294,22 +294,22 @@ exports[`Metric table for the deploys table row when the data is loaded renders 
 exports[`Metric table for the duo_agent_platform_chats table row renders the correct metric values and tooltips pre- and post-release 1`] = `
 [
   "25 Data available after upgrade to GitLab 18.7. Learn more.",
-  "15 Data available after upgrade to GitLab 18.7. Learn more.",
-  "35 Data available after upgrade to GitLab 18.7. Learn more.",
-  "32 Data available after upgrade to GitLab 18.7. Learn more.",
-  "18 Data available after upgrade to GitLab 18.7. Learn more.",
-  "38 Data available after upgrade to GitLab 18.7. Learn more.",
+  "50 Data available after upgrade to GitLab 18.7. Learn more.",
+  "75 Data available after upgrade to GitLab 18.7. Learn more.",
+  "100 Data available after upgrade to GitLab 18.7. Learn more.",
+  "125 Data available after upgrade to GitLab 18.7. Learn more.",
+  "150 Data available after upgrade to GitLab 18.7. Learn more.",
 ]
 `;
 
 exports[`Metric table for the duo_agent_platform_chats table row when the data is loaded renders the metric values 1`] = `
 [
   "25 Data available after upgrade to GitLab 18.7. Learn more.",
-  "15 Data available after upgrade to GitLab 18.7. Learn more.",
-  "35 Data available after upgrade to GitLab 18.7. Learn more.",
-  "32 Data available after upgrade to GitLab 18.7. Learn more.",
-  "18 Data available after upgrade to GitLab 18.7. Learn more.",
-  "38 Data available after upgrade to GitLab 18.7. Learn more.",
+  "50 Data available after upgrade to GitLab 18.7. Learn more.",
+  "75 Data available after upgrade to GitLab 18.7. Learn more.",
+  "100 Data available after upgrade to GitLab 18.7. Learn more.",
+  "125 Data available after upgrade to GitLab 18.7. Learn more.",
+  "150 Data available after upgrade to GitLab 18.7. Learn more.",
 ]
 `;
 
@@ -322,19 +322,19 @@ exports[`Metric table for the duo_agent_platform_chats table row when the data i
     ],
     [
       "Aug 1 – 31",
-      15,
+      50,
     ],
     [
       "Sep 1 – 30",
-      35,
+      75,
     ],
     [
       "Oct 1 – 31",
-      32,
+      100,
     ],
     [
       "Nov 1 – 30",
-      18,
+      125,
     ],
   ],
   "tooltipLabel": "",
@@ -344,23 +344,23 @@ exports[`Metric table for the duo_agent_platform_chats table row when the data i
 
 exports[`Metric table for the duo_agent_platform_flows table row renders the correct metric values and tooltips pre- and post-release 1`] = `
 [
-  "45 Data available after upgrade to GitLab 18.7. Learn more.",
-  "30 Data available after upgrade to GitLab 18.7. Learn more.",
-  "60 Data available after upgrade to GitLab 18.7. Learn more.",
-  "55 Data available after upgrade to GitLab 18.7. Learn more.",
-  "35 Data available after upgrade to GitLab 18.7. Learn more.",
-  "65 Data available after upgrade to GitLab 18.7. Learn more.",
+  "25 Data available after upgrade to GitLab 18.7. Learn more.",
+  "50 Data available after upgrade to GitLab 18.7. Learn more.",
+  "75 Data available after upgrade to GitLab 18.7. Learn more.",
+  "100 Data available after upgrade to GitLab 18.7. Learn more.",
+  "125 Data available after upgrade to GitLab 18.7. Learn more.",
+  "150 Data available after upgrade to GitLab 18.7. Learn more.",
 ]
 `;
 
 exports[`Metric table for the duo_agent_platform_flows table row when the data is loaded renders the metric values 1`] = `
 [
-  "45 Data available after upgrade to GitLab 18.7. Learn more.",
-  "30 Data available after upgrade to GitLab 18.7. Learn more.",
-  "60 Data available after upgrade to GitLab 18.7. Learn more.",
-  "55 Data available after upgrade to GitLab 18.7. Learn more.",
-  "35 Data available after upgrade to GitLab 18.7. Learn more.",
-  "65 Data available after upgrade to GitLab 18.7. Learn more.",
+  "25 Data available after upgrade to GitLab 18.7. Learn more.",
+  "50 Data available after upgrade to GitLab 18.7. Learn more.",
+  "75 Data available after upgrade to GitLab 18.7. Learn more.",
+  "100 Data available after upgrade to GitLab 18.7. Learn more.",
+  "125 Data available after upgrade to GitLab 18.7. Learn more.",
+  "150 Data available after upgrade to GitLab 18.7. Learn more.",
 ]
 `;
 
@@ -369,23 +369,23 @@ exports[`Metric table for the duo_agent_platform_flows table row when the data i
   "data": [
     [
       "Jul 1 – 31",
-      45,
+      25,
     ],
     [
       "Aug 1 – 31",
-      30,
+      50,
     ],
     [
       "Sep 1 – 30",
-      60,
+      75,
     ],
     [
       "Oct 1 – 31",
-      55,
+      100,
     ],
     [
       "Nov 1 – 30",
-      35,
+      125,
     ],
   ],
   "tooltipLabel": "",
@@ -395,12 +395,12 @@ exports[`Metric table for the duo_agent_platform_flows table row when the data i
 
 exports[`Metric table for the duo_chat_usage_rate table row when the data is loaded renders the metric values 1`] = `
 [
-  "20.0% 3/15",
-  "42.9% 3/7",
-  "66.7% 10/15",
-  "50.0% 9/18",
-  "17.6% 3/17",
-  "33.3% 4/12",
+  "50.0% 5/10",
+  "50.0% 10/20",
+  "50.0% 15/30",
+  "50.0% 20/40",
+  "50.0% 25/50",
+  "50.0% 30/60",
 ]
 `;
 
@@ -409,15 +409,15 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
   "data": [
     [
       "Jul 1 – 31",
-      20,
+      50,
     ],
     [
       "Aug 1 – 31",
-      42.9,
+      50,
     ],
     [
       "Sep 1 – 30",
-      66.7,
+      50,
     ],
     [
       "Oct 1 – 31",
@@ -425,7 +425,7 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
     ],
     [
       "Nov 1 – 30",
-      17.6,
+      50,
     ],
   ],
   "tooltipLabel": "%",
@@ -435,23 +435,23 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
 
 exports[`Metric table for the duo_rca_usage_rate table row renders the correct metric values and tooltips pre- and post-release 1`] = `
 [
-  "33.3% Data available after upgrade to GitLab 18.0. Learn more.",
-  "85.7% Data available after upgrade to GitLab 18.0. Learn more.",
-  "73.3% 11/15",
-  "66.7% 12/18",
-  "41.2% 7/17",
-  "50.0% 6/12",
+  "40.0% Data available after upgrade to GitLab 18.0. Learn more.",
+  "40.0% Data available after upgrade to GitLab 18.0. Learn more.",
+  "40.0% 12/30",
+  "40.0% 16/40",
+  "40.0% 20/50",
+  "40.0% 24/60",
 ]
 `;
 
 exports[`Metric table for the duo_rca_usage_rate table row when the data is loaded renders the metric values 1`] = `
 [
-  "33.3% Data available after upgrade to GitLab 18.0. Learn more.",
-  "85.7% Data available after upgrade to GitLab 18.0. Learn more.",
-  "73.3% Data available after upgrade to GitLab 18.0. Learn more.",
-  "66.7% Data available after upgrade to GitLab 18.0. Learn more.",
-  "41.2% Data available after upgrade to GitLab 18.0. Learn more.",
-  "50.0% Data available after upgrade to GitLab 18.0. Learn more.",
+  "40.0% Data available after upgrade to GitLab 18.0. Learn more.",
+  "40.0% Data available after upgrade to GitLab 18.0. Learn more.",
+  "40.0% Data available after upgrade to GitLab 18.0. Learn more.",
+  "40.0% Data available after upgrade to GitLab 18.0. Learn more.",
+  "40.0% Data available after upgrade to GitLab 18.0. Learn more.",
+  "40.0% Data available after upgrade to GitLab 18.0. Learn more.",
 ]
 `;
 
@@ -460,23 +460,23 @@ exports[`Metric table for the duo_rca_usage_rate table row when the data is load
   "data": [
     [
       "Jul 1 – 31",
-      33.3,
+      40,
     ],
     [
       "Aug 1 – 31",
-      85.7,
+      40,
     ],
     [
       "Sep 1 – 30",
-      73.3,
+      40,
     ],
     [
       "Oct 1 – 31",
-      66.7,
+      40,
     ],
     [
       "Nov 1 – 30",
-      41.2,
+      40,
     ],
   ],
   "tooltipLabel": "%",
@@ -486,12 +486,12 @@ exports[`Metric table for the duo_rca_usage_rate table row when the data is load
 
 exports[`Metric table for the duo_review_comment_count table row when the data is loaded renders the metric values 1`] = `
 [
-  "45 Data available after upgrade to GitLab 18.3. Learn more.",
-  "22 Data available after upgrade to GitLab 18.3. Learn more.",
-  "67 Data available after upgrade to GitLab 18.3. Learn more.",
-  "34 Data available after upgrade to GitLab 18.3. Learn more.",
-  "28 Data available after upgrade to GitLab 18.3. Learn more.",
-  "53 Data available after upgrade to GitLab 18.3. Learn more.",
+  "100 Data available after upgrade to GitLab 18.3. Learn more.",
+  "200 Data available after upgrade to GitLab 18.3. Learn more.",
+  "300 Data available after upgrade to GitLab 18.3. Learn more.",
+  "400 Data available after upgrade to GitLab 18.3. Learn more.",
+  "500 Data available after upgrade to GitLab 18.3. Learn more.",
+  "600 Data available after upgrade to GitLab 18.3. Learn more.",
 ]
 `;
 
@@ -500,23 +500,23 @@ exports[`Metric table for the duo_review_comment_count table row when the data i
   "data": [
     [
       "Jul 1 – 31",
-      45,
+      100,
     ],
     [
       "Aug 1 – 31",
-      22,
+      200,
     ],
     [
       "Sep 1 – 30",
-      67,
+      300,
     ],
     [
       "Oct 1 – 31",
-      34,
+      400,
     ],
     [
       "Nov 1 – 30",
-      28,
+      500,
     ],
   ],
   "tooltipLabel": "",
@@ -526,12 +526,12 @@ exports[`Metric table for the duo_review_comment_count table row when the data i
 
 exports[`Metric table for the duo_review_requests_count table row when the data is loaded renders the metric values 1`] = `
 [
-  "20 Data available after upgrade to GitLab 18.3. Learn more.",
-  "8 Data available after upgrade to GitLab 18.3. Learn more.",
-  "32 Data available after upgrade to GitLab 18.3. Learn more.",
-  "15 Data available after upgrade to GitLab 18.3. Learn more.",
-  "11 Data available after upgrade to GitLab 18.3. Learn more.",
-  "26 Data available after upgrade to GitLab 18.3. Learn more.",
+  "200 Data available after upgrade to GitLab 18.3. Learn more.",
+  "400 Data available after upgrade to GitLab 18.3. Learn more.",
+  "600 Data available after upgrade to GitLab 18.3. Learn more.",
+  "800 Data available after upgrade to GitLab 18.3. Learn more.",
+  "1,000 Data available after upgrade to GitLab 18.3. Learn more.",
+  "1,200 Data available after upgrade to GitLab 18.3. Learn more.",
 ]
 `;
 
@@ -540,23 +540,23 @@ exports[`Metric table for the duo_review_requests_count table row when the data 
   "data": [
     [
       "Jul 1 – 31",
-      20,
+      200,
     ],
     [
       "Aug 1 – 31",
-      8,
+      400,
     ],
     [
       "Sep 1 – 30",
-      32,
+      600,
     ],
     [
       "Oct 1 – 31",
-      15,
+      800,
     ],
     [
       "Nov 1 – 30",
-      11,
+      1000,
     ],
   ],
   "tooltipLabel": "",
