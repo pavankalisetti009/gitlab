@@ -185,6 +185,10 @@ module Security
       end
     end
 
+    def linked_to_project?(project)
+      security_policy_project_links.for_project(project).exists?
+    end
+
     def update_project_approval_policy_rule_links(project, created_rules, deleted_rules)
       transaction do
         unlink_policy_rules_project!(project, deleted_rules)

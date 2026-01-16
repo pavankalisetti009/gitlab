@@ -281,6 +281,32 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#linked_to_project?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:other_project) { create(:project) }
+    let_it_be(:policy) { create(:security_policy) }
+
+    context 'when policy is linked to the project' do
+      before do
+        create(:security_policy_project_link, project: project, security_policy: policy)
+      end
+
+      it 'returns true' do
+        expect(policy.linked_to_project?(project)).to be true
+      end
+
+      it 'returns false for a different project' do
+        expect(policy.linked_to_project?(other_project)).to be false
+      end
+    end
+
+    context 'when policy is not linked to the project' do
+      it 'returns false' do
+        expect(policy.linked_to_project?(project)).to be false
+      end
+    end
+  end
+
   describe '#update_project_approval_policy_rule_links' do
     let_it_be(:project) { create(:project) }
     let_it_be(:policy) { create(:security_policy) }

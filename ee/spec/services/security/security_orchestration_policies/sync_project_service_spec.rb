@@ -223,6 +223,37 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
             include_examples 'with branch exceptions bypass settings for security policy'
           end
         end
+
+        context 'when policy is not linked to the project' do
+          let(:policy_changes) do
+            { diff: {}, rules_diff: { updated: [{ id: approval_policy_rule.id, from: {}, to: {} }] } }
+          end
+
+          before do
+            security_policy.update!(enabled: true)
+          end
+
+          it 'links policy and rules to project' do
+            expect { service.execute }
+              .to change { Security::PolicyProjectLink.count }.from(0).to(1)
+                .and change { Security::ApprovalPolicyRuleProjectLink.count }.from(0).to(1)
+          end
+
+          it 'creates project approval_rule' do
+            expect { service.execute }.to change { project.approval_rules.count }.by(1)
+          end
+
+          context 'when policy_scope is not applicable' do
+            before do
+              allow(service).to receive(:scope_applicable?).and_return(false)
+            end
+
+            it 'does not link the policy and rules' do
+              expect { service.execute }.to not_change { Security::PolicyProjectLink.count }
+                .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
+            end
+          end
+        end
       end
 
       context 'when policy gets disabled' do
