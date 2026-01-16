@@ -36,6 +36,23 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProjectCreateService, fe
         project.add_developer(developer)
       end
 
+      context 'when container name contains parentheses' do
+        ['My Test Group (MTG)', 'My Test Group ((MTG))', 'My Test Group (MTG', 'My Test Group MTG)'].each do |name|
+          context "when the container name is #{name}" do
+            before do
+              allow(container).to receive(:name).and_return(name)
+            end
+
+            it 'sanitizes the project name by removing parentheses' do
+              response = service.execute
+
+              policy_project = response[:policy_project]
+              expect(policy_project.name).to eq('My Test Group MTG - Security policy project')
+            end
+          end
+        end
+      end
+
       it 'creates policy project with maintainers and developers from target project as developers allowing merge request author approval', :aggregate_failures do
         response = service.execute
 
