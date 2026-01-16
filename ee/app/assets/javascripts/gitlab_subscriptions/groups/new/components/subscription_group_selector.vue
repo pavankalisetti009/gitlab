@@ -283,6 +283,7 @@ export default {
       }
 
       visitUrl(purchaseLink);
+      this.isLoading = false;
     },
     reportError(error) {
       Sentry.captureException(error, {
