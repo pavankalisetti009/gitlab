@@ -23,7 +23,7 @@ module Resolvers
       def resolve(lookahead:, project_path:, name:)
         project = authorized_find!(project_path: project_path)
 
-        result = ::SecretsManagement::ProjectSecrets::ReadService.new(project, current_user)
+        result = ::SecretsManagement::ProjectSecrets::ReadMetadataService.new(project, current_user)
           .execute(name, include_rotation_info: lookahead.selects?(:rotation_info))
 
         if result.success?

@@ -189,7 +189,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
               expect(updated_role["token_policies"]).to include(*glob_policies)
 
               # Verify the second secret is still accessible
-              read_service = SecretsManagement::ProjectSecrets::ReadService.new(project, user)
+              read_service = SecretsManagement::ProjectSecrets::ReadMetadataService.new(project, user)
               read_result = read_service.execute(second_secret_name)
               expect(read_result).to be_success
               expect(read_result.payload[:project_secret].name).to eq(second_secret_name)
@@ -255,7 +255,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
               expect(updated_role["token_policies"]).to match_array(expected_policies)
 
               # The second secret should still be accessible
-              read_service = SecretsManagement::ProjectSecrets::ReadService.new(project, user)
+              read_service = SecretsManagement::ProjectSecrets::ReadMetadataService.new(project, user)
               read_result = read_service.execute(second_secret_name)
               expect(read_result).to be_success
             end

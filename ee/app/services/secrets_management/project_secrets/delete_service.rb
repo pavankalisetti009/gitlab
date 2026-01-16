@@ -3,7 +3,7 @@
 module SecretsManagement
   module ProjectSecrets
     class DeleteService < ProjectBaseService
-      include CiPolicies::SecretRefresherHelper
+      include ProjectSecrets::SecretRefresherHelper
 
       def execute(name)
         with_exclusive_lease_for(project) do
@@ -18,7 +18,7 @@ module SecretsManagement
       def execute_secret_deletion(name)
         return secrets_manager_inactive_response unless secrets_manager&.active?
 
-        read_service = ProjectSecrets::ReadService.new(project, current_user)
+        read_service = ProjectSecrets::ReadMetadataService.new(project, current_user)
         read_result = read_service.execute(name)
 
         return read_result unless read_result.success?
@@ -31,7 +31,7 @@ module SecretsManagement
           secrets_manager.ci_data_path(name)
         )
 
-        refresh_secret_ci_policies(project_secret, delete: true)
+        refresh_secret_ci_policies(project_secret, delete_operation: true)
 
         ServiceResponse.success(payload: { project_secret: project_secret })
       end

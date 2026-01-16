@@ -259,7 +259,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
         end
 
         it 'returns stale for old create timestamps' do
-          allow_next_instance_of(SecretsManagement::ProjectSecrets::ReadService) do |svc|
+          allow_next_instance_of(SecretsManagement::ProjectSecrets::ReadMetadataService) do |svc|
             allow(svc).to receive(:execute).and_wrap_original do |orig, name, include_rotation_info: true|
               resp = orig.call(name, include_rotation_info: include_rotation_info)
 

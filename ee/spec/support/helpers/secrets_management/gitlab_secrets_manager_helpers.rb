@@ -118,7 +118,7 @@ module SecretsManagement
 
     def expect_project_secret_not_to_exist(project, name, user = nil)
       user ||= create(:user)
-      result = ProjectSecrets::ReadService.new(project, user).execute(name)
+      result = ProjectSecrets::ReadMetadataService.new(project, user).execute(name)
       expect(result).to be_error
       expect(result.message).to eq('Project secret does not exist.')
     end
@@ -158,13 +158,32 @@ module SecretsManagement
         rotation_interval_days: rotation_interval_days
       )
 
-      project_secret = result.payload[:project_secret]
+      project_secret = result.payload[:secret]
 
       if project_secret.errors.any?
         raise "project secret creation failed with errors: #{project_secret.errors.full_messages.to_sentence}"
       end
 
       project_secret
+    end
+
+    def create_group_secret(
+      user:, group:, name:, protected:, environment:, value:, description: nil)
+      result = GroupSecrets::CreateService.new(group, user).execute(
+        name: name,
+        value: value,
+        description: description,
+        protected: protected,
+        environment: environment
+      )
+
+      group_secret = result.payload[:secret]
+
+      if group_secret.errors.any?
+        raise "group secret creation failed with errors: #{group_secret.errors.full_messages.to_sentence}"
+      end
+
+      group_secret
     end
 
     def update_project_secrets_permission(user:, project:, principal:, actions:, expired_at: nil)
@@ -277,6 +296,12 @@ module SecretsManagement
 
     def cancel_exclusive_project_secret_operation_lease(project)
       lease_key = "project_secret_operation:project_#{project.id}"
+      uuid = Gitlab::ExclusiveLease.get_uuid(lease_key)
+      Gitlab::ExclusiveLease.cancel(lease_key, uuid)
+    end
+
+    def cancel_exclusive_group_secret_operation_lease(group)
+      lease_key = "group_secret_operation:group_#{group.id}"
       uuid = Gitlab::ExclusiveLease.get_uuid(lease_key)
       Gitlab::ExclusiveLease.cancel(lease_key, uuid)
     end
