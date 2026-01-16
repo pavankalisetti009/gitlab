@@ -70,6 +70,7 @@ module QA
         Page::Group::Settings::General.perform do |general_setting|
           general_setting.send(:"set_prevent_forking_outside_group_#{enabled_or_disabled}")
         end
+        Support::WaitForRequests.wait_for_requests
       end
     end
   end
