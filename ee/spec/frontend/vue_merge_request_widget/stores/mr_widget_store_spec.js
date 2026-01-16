@@ -90,25 +90,18 @@ describe('MergeRequestStore', () => {
   });
 
   describe('setPaths', () => {
-    it.each([
-      'discover_project_security_path',
-      'container_scanning_comparison_path',
-      'dependency_scanning_comparison_path',
-      'sast_comparison_path',
-      'dast_comparison_path',
-      'secret_detection_comparison_path',
-      'api_fuzzing_comparison_path',
-      'coverage_fuzzing_comparison_path',
-      'saml_approval_path',
-    ])('should set %s path', (property) => {
-      // Ensure something is set in the mock data
-      expect(property in mockData).toBe(true);
-      const expectedValue = mockData[property];
+    it.each(['discover_project_security_path', 'saml_approval_path'])(
+      'should set %s path',
+      (property) => {
+        // Ensure something is set in the mock data
+        expect(property in mockData).toBe(true);
+        const expectedValue = mockData[property];
 
-      store.setPaths({ ...mockData });
+        store.setPaths({ ...mockData });
 
-      expect(store[convertToCamelCase(property)]).toBe(expectedValue);
-    });
+        expect(store[convertToCamelCase(property)]).toBe(expectedValue);
+      },
+    );
   });
 
   describe('preventMerge', () => {
