@@ -10,7 +10,10 @@ import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
-import { isPolicyViolationFilterEnabled } from 'ee/security_dashboard/utils';
+import {
+  autoDismissVulnerabilityPoliciesEnabled,
+  isPolicyViolationFilterEnabled,
+} from 'ee/security_dashboard/utils';
 import { ALL_ID as ALL_ACTIVITY_VALUE } from '../../filters/constants';
 import { ITEMS as ACTIVITY_FILTER_ITEMS } from '../../filters/activity_filter.vue';
 import SearchSuggestion from '../components/search_suggestion.vue';
@@ -28,6 +31,14 @@ const ITEMS = {
   DISMISSED_IN_MR: {
     value: 'DISMISSED_IN_MR',
     text: s__('SecurityReports|Dismissed in MR'),
+  },
+  DISMISSED_BY_POLICY: {
+    value: 'DISMISSED_BY_POLICY',
+    text: s__('SecurityReports|Dismissed by vulnerability policy'),
+  },
+  NOT_DISMISSED_BY_POLICY: {
+    value: 'NOT_DISMISSED_BY_POLICY',
+    text: s__('SecurityReports|Not dismissed by vulnerability policy'),
   },
 };
 
@@ -72,13 +83,18 @@ const setSelectedStatus = (keyWhenTrue, keyWhenFalse, selectedActivities = []) =
   return undefined;
 };
 
+const isGroupOrProjectDashboard = (dashboardType) => {
+  return [DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT].includes(dashboardType);
+};
+
 export default {
   defaultValues: () => [ITEMS.STILL_DETECTED.value],
   transformFilters: (filters, { dashboardType }) => {
     const showAiResolutionFilter = window.gon?.abilities?.resolveVulnerabilityWithAi;
     const showPolicyViolationFilter =
-      isPolicyViolationFilterEnabled() &&
-      [DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT].includes(dashboardType);
+      isPolicyViolationFilterEnabled() && isGroupOrProjectDashboard(dashboardType);
+    const showAutoDismissVulnerabilityFilter =
+      autoDismissVulnerabilityPoliciesEnabled() && isGroupOrProjectDashboard(dashboardType);
 
     const transformedFilters = {
       hasResolution: setSelectedStatus('NO_LONGER_DETECTED', 'STILL_DETECTED', filters),
@@ -101,6 +117,14 @@ export default {
 
     if (showPolicyViolationFilter && filters.includes(ITEMS.DISMISSED_IN_MR.value)) {
       transformedFilters.policyViolations = ITEMS.DISMISSED_IN_MR.value;
+    }
+
+    if (showAutoDismissVulnerabilityFilter) {
+      transformedFilters.policyAutoDismissed = setSelectedStatus(
+        ITEMS.DISMISSED_BY_POLICY.value,
+        ITEMS.NOT_DISMISSED_BY_POLICY.value,
+        filters,
+      );
     }
 
     return transformedFilters;
@@ -144,6 +168,12 @@ export default {
     };
   },
   computed: {
+    showAutoDismissVulnerabilityFilter() {
+      return (
+        autoDismissVulnerabilityPoliciesEnabled() &&
+        [DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT].includes(this.dashboardType)
+      );
+    },
     tokenValue() {
       return {
         ...this.value,
@@ -165,10 +195,7 @@ export default {
       return this.glAbilities.resolveVulnerabilityWithAi;
     },
     showPolicyViolationsFilter() {
-      return (
-        isPolicyViolationFilterEnabled() &&
-        [DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT].includes(this.dashboardType)
-      );
+      return isPolicyViolationFilterEnabled() && isGroupOrProjectDashboard(this.dashboardType);
     },
     activityTokenGroups() {
       const groups = [...GROUPS];
@@ -186,6 +213,14 @@ export default {
         groups.push({
           text: s__('SecurityReports|Policy violations'),
           options: [ITEMS.DISMISSED_IN_MR],
+          icon: 'flag',
+        });
+      }
+
+      if (this.showAutoDismissVulnerabilityFilter) {
+        groups.push({
+          text: s__('SecurityReports|Policy actions'),
+          options: [ITEMS.DISMISSED_BY_POLICY, ITEMS.NOT_DISMISSED_BY_POLICY],
           icon: 'flag',
         });
       }

@@ -30,6 +30,7 @@ query projectVulnerabilities(
   $includeLatestFlag: Boolean = false
   $reachability: ReachabilityType
   $validityCheck: [VulnerabilityFindingTokenStatusState!]
+  $policyAutoDismissed: Boolean
   $policyViolations: [PolicyViolations!]
 ) {
   project(fullPath: $fullPath) {
@@ -45,6 +46,7 @@ query projectVulnerabilities(
       scannerId: $scannerId
       state: $state
       dismissalReason: $dismissalReason
+      policyAutoDismissed: $policyAutoDismissed
       sort: $sort
       hasIssues: $hasIssues
       hasResolution: $hasResolution
