@@ -14,6 +14,7 @@ const buttons = {
 };
 
 export default {
+  name: 'PanelGroupBy',
   components: {
     GlButton,
     GlButtonGroup,
@@ -26,6 +27,7 @@ export default {
     },
   },
   buttons,
+  emits: ['input'],
 };
 </script>
 

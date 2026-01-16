@@ -1,4 +1,4 @@
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { merge } from 'lodash';
 import { GlDashboardPanel, GlBadge } from '@gitlab/ui';
@@ -94,6 +94,11 @@ describe('GroupRiskScorePanel', () => {
   const findProjectsNotShownBadge = () => wrapper.findComponent(GlBadge);
   const findBodyMessage = () => wrapper.find('p');
 
+  const clickToggleButtonBy = async (value) => {
+    await findRiskScoreGroupBy().vm.$emit('input', value);
+    await waitForPromises();
+  };
+
   beforeEach(() => {
     createComponent();
   });
@@ -124,10 +129,7 @@ describe('GroupRiskScorePanel', () => {
     });
 
     it('passes the projects to the risk score by project component', async () => {
-      const riskScoreGroupBy = findRiskScoreGroupBy();
-
-      await riskScoreGroupBy.vm.$emit('input', 'project');
-      await waitForPromises();
+      await clickToggleButtonBy('project');
 
       expect(findRiskScoreByProject().props('riskScores')).toMatchObject(defaultByProjectMockData);
     });
@@ -144,25 +146,17 @@ describe('GroupRiskScorePanel', () => {
 
     it('switches to project grouping when project button is clicked', async () => {
       await waitForPromises();
-      const riskScoreGroupBy = findRiskScoreGroupBy();
+      await clickToggleButtonBy('project');
 
-      await riskScoreGroupBy.vm.$emit('input', 'project');
-      await nextTick();
-
-      expect(riskScoreGroupBy.props('value')).toBe('project');
+      expect(findRiskScoreGroupBy().props('value')).toBe('project');
     });
 
     it('switches back to "No grouping" grouping when no grouping button is clicked', async () => {
       await waitForPromises();
-      const riskScoreGroupBy = findRiskScoreGroupBy();
+      await clickToggleButtonBy('project');
+      await clickToggleButtonBy('default');
 
-      await riskScoreGroupBy.vm.$emit('input', 'project');
-      await nextTick();
-
-      await riskScoreGroupBy.vm.$emit('input', 'default');
-      await nextTick();
-
-      expect(riskScoreGroupBy.props('value')).toBe('default');
+      expect(findRiskScoreGroupBy().props('value')).toBe('default');
     });
 
     it('initializes with project grouping if URL parameter is set', () => {
@@ -175,8 +169,7 @@ describe('GroupRiskScorePanel', () => {
     it('calls writeToUrl when grouping is set to project', async () => {
       jest.spyOn(panelStateUrlSync, 'writeToUrl');
 
-      findRiskScoreGroupBy().vm.$emit('input', 'project');
-      await nextTick();
+      await clickToggleButtonBy('project');
 
       expect(panelStateUrlSync.writeToUrl).toHaveBeenCalledWith({
         panelId: 'riskScore',

@@ -7,8 +7,8 @@ import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/share
 import projectVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_over_time.query.graphql';
 import groupVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
-import OverTimeSeverityFilter from './over_time_severity_filter.vue';
-import OverTimeGroupBy from './over_time_group_by.vue';
+import PanelSeverityFilter from './panel_severity_filter.vue';
+import PanelGroupBy from './panel_group_by.vue';
 import OverTimePeriodSelector from './over_time_period_selector.vue';
 
 const TIME_PERIODS = {
@@ -37,8 +37,8 @@ export default {
   components: {
     ExtendedDashboardPanel,
     VulnerabilitiesOverTimeChart,
-    OverTimeGroupBy,
-    OverTimeSeverityFilter,
+    PanelGroupBy,
+    PanelSeverityFilter,
     OverTimePeriodSelector,
   },
   inject: {
@@ -212,8 +212,8 @@ export default {
   >
     <template #filters>
       <over-time-period-selector v-model="selectedTimePeriod" class="gl-ml-3 gl-mr-2" />
-      <over-time-severity-filter v-model="severity" class="gl-mr-2" />
-      <over-time-group-by v-model="groupedBy" />
+      <panel-severity-filter v-model="severity" class="gl-mr-2" />
+      <panel-group-by v-model="groupedBy" />
     </template>
     <template #body>
       <!-- resetting the z-index to 0 to make sure the chart's tooltip is below any filter dropdowns, etc. -->
