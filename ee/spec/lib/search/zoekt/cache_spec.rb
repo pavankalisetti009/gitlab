@@ -12,6 +12,7 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
   let(:group_id) { 2 }
   let(:total_count) { 3 }
   let(:file_count) { 3 }
+  let(:count_only) { true }
   let(:response) { [search_results, total_count, file_count] }
   let(:search_results) do
     { 0 => { project_id: 1 }, 1 => { project_id: 2 }, 2 => { project_id: 3 } }
@@ -22,7 +23,14 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
   end
 
   let(:default_options) do
-    { per_page: per_page, chunk_size: 3, max_per_page: 40, search_mode: search_mode, filters: filters }
+    {
+      per_page: per_page,
+      chunk_size: 3,
+      max_per_page: 40,
+      search_mode: search_mode,
+      filters: filters,
+      count_only: count_only
+    }
   end
 
   subject(:cache) do
@@ -102,14 +110,23 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
 
         it 'sets 0 for user_id key' do
           cache.fetch { response }
-          expect(redis.exists?("cache:zoekt:{0}/#{fingerprint}/#{per_page}/#{page}")).to be true
+          expect(redis.exists?("cache:zoekt:{0}/true/#{fingerprint}/#{per_page}/#{page}")).to be true
         end
       end
 
       context 'when current_user exists' do
         it 'sets user_id in the key' do
           cache.fetch { response }
-          expect(redis.exists?("cache:zoekt:{#{user1.id}}/#{fingerprint}/#{per_page}/#{page}")).to be true
+          expect(redis.exists?("cache:zoekt:{#{user1.id}}/true/#{fingerprint}/#{per_page}/#{page}")).to be true
+        end
+      end
+
+      context 'when count_only is false' do
+        let(:count_only) { false }
+
+        it 'sets false in the key' do
+          cache.fetch { response }
+          expect(redis.exists?("cache:zoekt:{#{user1.id}}/false/#{fingerprint}/#{per_page}/#{page}")).to be true
         end
       end
     end

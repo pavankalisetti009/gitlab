@@ -68,7 +68,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             group_id: nil,
             search_mode: :regex,
             chunk_size: nil,
-            filters: {}
+            filters: {},
+            count_only: false
           ).and_call_original
 
           objects
@@ -89,7 +90,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             group_id: nil,
             search_mode: :regex,
             chunk_size: 3,
-            filters: {}
+            filters: {},
+            count_only: false
           ).and_call_original
 
           objects
@@ -492,7 +494,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
           project_id: project_1.id,
           node_id: node_id,
           source: source,
-          modes: { regex: regex_mode })
+          modes: { regex: regex_mode }
+        )
       end
 
       subject(:blobs_count) { results.blobs_count }
@@ -515,6 +518,15 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
         limited_count = [2, expected_count].min
         expect(blobs_count).to eq(limited_count)
       end
+    end
+
+    it 'does not call zoekt_extract_result_pages_multi_match' do
+      expect_next_instance_of(Search::Zoekt::MultiMatch) do |instance|
+        expect(instance).not_to receive(:zoekt_extract_result_pages_multi_match)
+      end
+
+      count = described_class.new(user, 'hello', limit_projects, source: :web).blobs_count
+      expect(count).to eq 2
     end
   end
 

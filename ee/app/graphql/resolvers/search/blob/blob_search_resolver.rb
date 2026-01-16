@@ -81,9 +81,11 @@ module Resolvers
         end
 
         def results(**args)
+          match_count = 0
           global_search_duration_s = Benchmark.realtime do
-            @results = @search_service.search_objects
+            @results = @search_service.search_objects unless count_only_operation?
             @search_results = @search_service.search_results
+            match_count = @search_results.blobs_count
           end
 
           if @search_results.failed?
@@ -106,7 +108,7 @@ module Resolvers
 
           {
             duration_s: global_search_duration_s,
-            match_count: @search_results.blobs_count,
+            match_count: match_count,
             file_count: @search_results.file_count,
             search_level: @search_service.level,
             search_type: @search_service.search_type,
@@ -132,6 +134,10 @@ module Resolvers
 
         def scope
           'blobs'
+        end
+
+        def count_only_operation?
+          context.query.operation_name == 'getBlobSearchCountQuery'
         end
       end
     end

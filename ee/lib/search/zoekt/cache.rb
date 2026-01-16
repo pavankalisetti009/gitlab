@@ -26,6 +26,7 @@ module Search
         @search_mode = options.fetch(:search_mode)
         @chunk_size = options.fetch(:chunk_size)
         @filters = options.fetch(:filters)
+        @count_only = options.fetch(:count_only)
       end
 
       def fetch
@@ -45,7 +46,7 @@ module Search
       private
 
       attr_reader :current_user, :query, :project_id, :group_id, :per_page, :current_page, :max_per_page, :search_mode,
-        :chunk_size, :filters
+        :chunk_size, :filters, :count_only
 
       def enabled?
         return false unless Gitlab::CurrentSettings.zoekt_cache_response?
@@ -56,7 +57,7 @@ module Search
       def cache_key(page: current_page)
         user_id = current_user&.id || 0
         # We need to use {user_id} as part of the key for Redis Cluster support
-        "cache:zoekt:{#{user_id}}/#{search_fingerprint}/#{per_page}/#{page}"
+        "cache:zoekt:{#{user_id}}/#{count_only}/#{search_fingerprint}/#{per_page}/#{page}"
       end
 
       def with_redis(&block)
