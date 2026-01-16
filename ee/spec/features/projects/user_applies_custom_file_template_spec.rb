@@ -12,7 +12,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
   describe 'Custom file templates' do
     before do
       project.add_developer(developer)
-      gitlab_sign_in(developer)
+      sign_in(developer)
     end
 
     it 'allows file creation from an instance template' do

@@ -50,41 +50,45 @@ RSpec.describe 'Compromised Password Detection', :js, feature_category: :system_
     end
   end
 
-  context 'when user signs in without detected compromised password' do
-    it_behaves_like 'does not show compromised password alert'
+  with_and_without_sign_in_form_vue do
+    context 'when user signs in without detected compromised password' do
+      it_behaves_like 'does not show compromised password alert'
 
-    context 'when user has CompromisedPasswordDetection' do
-      before do
-        create(:compromised_password_detection, user: user, resolved_at: resolved_at)
-      end
+      context 'when user has CompromisedPasswordDetection' do
+        before do
+          create(:compromised_password_detection, user: user, resolved_at: resolved_at)
+        end
 
-      context 'when CompromisedPasswordDetection is unresolved' do
-        let(:resolved_at) { nil }
+        context 'when CompromisedPasswordDetection is unresolved' do
+          let(:resolved_at) { nil }
 
-        it_behaves_like 'shows compromised password alert'
-      end
+          it_behaves_like 'shows compromised password alert'
+        end
 
-      context 'when CompromisedPasswordDetection is resolved' do
-        let(:resolved_at) { 1.month.ago }
+        context 'when CompromisedPasswordDetection is resolved' do
+          let(:resolved_at) { 1.month.ago }
 
-        it_behaves_like 'does not show compromised password alert'
+          it_behaves_like 'does not show compromised password alert'
+        end
       end
     end
   end
 
-  context 'when user signs in with detected compromised password' do
-    before do
-      allow(Gitlab::Auth::CloudflareExposedCredentialChecker)
-        .to receive(:new)
-        .and_return(
-          instance_double(
-            Gitlab::Auth::CloudflareExposedCredentialChecker,
-            result: :exact_password,
-            exact_password?: true
+  with_and_without_sign_in_form_vue do
+    context 'when user signs in with detected compromised password' do
+      before do
+        allow(Gitlab::Auth::CloudflareExposedCredentialChecker)
+          .to receive(:new)
+          .and_return(
+            instance_double(
+              Gitlab::Auth::CloudflareExposedCredentialChecker,
+              result: :exact_password,
+              exact_password?: true
+            )
           )
-        )
-    end
+      end
 
-    it_behaves_like 'shows compromised password alert'
+      it_behaves_like 'shows compromised password alert'
+    end
   end
 end

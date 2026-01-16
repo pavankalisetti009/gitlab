@@ -11,11 +11,13 @@ RSpec.describe 'Login', feature_category: :system_access do
     stub_licensed_features(extended_audit_events: true)
   end
 
-  it 'creates a security event for an invalid password login' do
-    user = create(:user)
+  with_and_without_sign_in_form_vue do
+    it 'creates a security event for an invalid password login' do
+      user = create(:user)
 
-    expect { gitlab_sign_in(user, password: 'incorrect-password') }
-      .to change { AuditEvent.count }.by(1)
+      expect { gitlab_sign_in(user, password: 'incorrect-password') }
+        .to change { AuditEvent.count }.by(1)
+    end
   end
 
   it 'creates a security event for an invalid OAuth login', :with_current_organization do
@@ -32,14 +34,16 @@ RSpec.describe 'Login', feature_category: :system_access do
       .to change { AuditEvent.where(entity_id: -1).count }.from(0).to(1)
   end
 
-  it 'creates a security event for an invalid one-time code' do
-    user = create(:user, :two_factor)
-    gitlab_sign_in(user)
+  with_and_without_sign_in_form_vue do
+    it 'creates a security event for an invalid one-time code' do
+      user = create(:user, :two_factor)
+      gitlab_sign_in(user)
 
-    expect do
-      fill_in 'user_otp_attempt', with: 'invalid_code'
-      click_button 'Verify code'
-    end.to change { AuditEvent.count }.by(1)
+      expect do
+        fill_in 'user_otp_attempt', with: 'invalid_code'
+        click_button 'Verify code'
+      end.to change { AuditEvent.count }.by(1)
+    end
   end
 
   describe 'smartcard authentication' do
@@ -304,10 +308,12 @@ RSpec.describe 'Login', feature_category: :system_access do
       stub_application_setting(disable_password_authentication_for_users_with_sso_identities: true)
     end
 
-    it 'does not allow password authentication' do
-      gitlab_sign_in(user, password: user.password)
+    with_and_without_sign_in_form_vue do
+      it 'does not allow password authentication' do
+        gitlab_sign_in(user, password: user.password)
 
-      expect(page).to have_content("Invalid login or password")
+        expect(page).to have_content("Invalid login or password")
+      end
     end
   end
 end

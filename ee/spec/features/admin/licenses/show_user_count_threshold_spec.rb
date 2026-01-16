@@ -127,7 +127,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
 
     context 'when regular user is logged in' do
       before do
-        gitlab_sign_in(user)
+        sign_in(user)
       end
 
       it_behaves_like 'a hidden banner'
@@ -139,7 +139,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
 
     context 'when admin is logged in' do
       before do
-        gitlab_sign_in(admin)
+        sign_in(admin)
       end
 
       it_behaves_like 'a hidden banner'
@@ -147,7 +147,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
 
     context 'when regular user is logged in' do
       before do
-        gitlab_sign_in(user)
+        sign_in(user)
       end
 
       it_behaves_like 'a hidden banner'
@@ -158,7 +158,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
     let(:active_user_count) { license_seats_limit + 2 }
 
     before do
-      gitlab_sign_in(admin)
+      sign_in(admin)
     end
 
     it_behaves_like 'a hidden banner'

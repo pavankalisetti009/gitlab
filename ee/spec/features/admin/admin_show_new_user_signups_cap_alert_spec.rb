@@ -14,7 +14,8 @@ RSpec.describe 'displays new user signups cap alert', :js, feature_category: :ac
       stub_feature_flags(hide_incident_management_features: false)
       stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP)
 
-      gitlab_sign_in(admin)
+      sign_in(admin)
+      visit root_path
     end
 
     it 'displays and dismiss alert' do

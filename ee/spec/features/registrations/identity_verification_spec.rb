@@ -471,24 +471,26 @@ RSpec.describe 'Identity Verification', :with_trial_types, :js, :with_current_or
         sign_up(arkose: { risk: :medium })
       end
 
-      it 'verifies the user with email only' do
-        expect_to_see_identity_verification_page
+      with_and_without_sign_in_form_vue do
+        it 'verifies the user with email only' do
+          expect_to_see_identity_verification_page
 
-        verify_email
+          verify_email
 
-        expect_verification_completed
+          expect_verification_completed
 
-        expect_to_see_dashboard_page
+          expect_to_see_dashboard_page
 
-        user_signs_out
+          user_signs_out
 
-        # even though the phone verification application setting is turned back on
-        # when the user logs in next, they will not be asked to do identity verification again
-        stub_application_setting(phone_verification_enabled: true)
+          # even though the phone verification application setting is turned back on
+          # when the user logs in next, they will not be asked to do identity verification again
+          stub_application_setting(phone_verification_enabled: true)
 
-        gitlab_sign_in(user, password: new_user.password)
+          gitlab_sign_in(user, password: new_user.password)
 
-        expect_to_see_dashboard_page
+          expect_to_see_dashboard_page
+        end
       end
     end
   end

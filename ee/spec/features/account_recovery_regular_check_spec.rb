@@ -73,15 +73,17 @@ RSpec.describe 'Account recovery regular check callout', feature_category: :user
         expect(page).not_to have_content(message)
       end
 
-      it 'shows callout on next session if user did not dismissed it', :js do
-        visit dashboard_todos_path
+      with_and_without_sign_in_form_vue do
+        it 'shows callout on next session if user did not dismissed it', :js do
+          visit dashboard_todos_path
 
-        expect(page).to have_content(message)
+          expect(page).to have_content(message)
 
-        start_new_session(user_two_factor_enabled)
-        visit dashboard_todos_path
+          start_new_session(user_two_factor_enabled)
+          visit dashboard_todos_path
 
-        expect(page).to have_content(message)
+          expect(page).to have_content(message)
+        end
       end
 
       it 'hides callout on next session if user dismissed it', :js,
