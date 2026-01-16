@@ -1,7 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlBadge } from '@gitlab/ui';
-import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
 import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
@@ -19,7 +18,6 @@ import SmartInterval from '~/smart_interval';
 import { historyPushState } from '~/lib/utils/common_utils';
 import api from '~/api';
 import Widget from '~/vue_merge_request_widget/components/widget/widget.vue';
-import axios from '~/lib/utils/axios_utils';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
 import {
@@ -42,7 +40,6 @@ jest.mock('~/smart_interval');
 
 describe('MR Widget Security Reports', () => {
   let wrapper;
-  let mockAxios;
   let findingReportsComparerHandler;
 
   const securityConfigurationPath = '/help/user/application_security/_index.md';
@@ -56,16 +53,6 @@ describe('MR Widget Security Reports', () => {
   const apiFuzzingHelp = '/help/user/application_security/api-fuzzing/index';
   const dependencyScanningHelp = '/help/user/application_security/api-fuzzing/index';
   const containerScanningHelp = '/help/user/application_security/container-scanning/index';
-
-  const reportEndpoints = {
-    sastComparisonPathV2: '/my/sast/endpoint?type=sast',
-    dastComparisonPathV2: '/my/dast/endpoint?type=dast',
-    dependencyScanningComparisonPathV2: '/my/dependency-scanning/endpoint?type=dependency_scanning',
-    coverageFuzzingComparisonPathV2: '/my/coverage-fuzzing/endpoint?type=coverage_fuzzing',
-    apiFuzzingComparisonPathV2: '/my/api-fuzzing/endpoint?type=api_fuzzing',
-    secretDetectionComparisonPathV2: '/my/secret-detection/endpoint?type=secret_deteection',
-    containerScanningComparisonPathV2: '/my/container-scanning/endpoint?type=container_scanning',
-  };
 
   const defaultMrPropsData = {
     targetProjectFullPath: 'gitlab-org/gitlab',
@@ -83,7 +70,6 @@ describe('MR Widget Security Reports', () => {
       apiFuzzing: true,
       secretDetection: true,
     },
-    ...reportEndpoints,
     securityConfigurationPath,
     sourceBranch,
     sourceProjectFullPath,
@@ -168,7 +154,7 @@ describe('MR Widget Security Reports', () => {
     });
   };
 
-  const createComponentGraphQL = (mockResponse) => {
+  const createComponentWithMockData = (mockResponse) => {
     findingReportsComparerHandler = jest.fn().mockResolvedValue(mockResponse);
 
     createComponent({
@@ -208,11 +194,6 @@ describe('MR Widget Security Reports', () => {
 
   beforeEach(() => {
     jest.spyOn(api, 'trackRedisCounterEvent').mockImplementation(() => {});
-    mockAxios = new MockAdapter(axios);
-  });
-
-  afterEach(() => {
-    mockAxios.restore();
   });
 
   describe('with active pipeline', () => {
@@ -228,6 +209,40 @@ describe('MR Widget Security Reports', () => {
   describe('with no enabled reports', () => {
     beforeEach(() => {
       createComponent({ propsData: { mr: { isPipelineActive: false, enabledReports: {} } } });
+    });
+
+    it('should not mount the widget component', () => {
+      expect(findWidget().exists()).toBe(false);
+    });
+  });
+
+  describe('with only clusterImageScanning enabled', () => {
+    beforeEach(async () => {
+      const onlyClusterImageScanningEnabled = {
+        sast: false,
+        dast: false,
+        dependencyScanning: false,
+        containerScanning: false,
+        coverageFuzzing: false,
+        apiFuzzing: false,
+        secretDetection: false,
+        clusterImageScanning: true,
+      };
+      createComponent({
+        propsData: { mr: { isPipelineActive: false, enabledReports: {} } },
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(
+              enabledScansQueryResult({
+                full: { ...onlyClusterImageScanningEnabled },
+                partial: { ...onlyClusterImageScanningEnabled },
+              }),
+            ),
+          ],
+        ]),
+      });
+      await waitForPromises();
     });
 
     it('should not mount the widget component', () => {
@@ -565,7 +580,7 @@ describe('MR Widget Security Reports', () => {
     `(
       'transforms "$type" GraphQL findings to expected format',
       async ({ type, mockResponse, expectedAdded, expectedFixed }) => {
-        await createComponentGraphQL(mockResponse);
+        await createComponentWithMockData(mockResponse);
         const result = await getFirstScanResult();
 
         const originalFinding =
@@ -587,7 +602,7 @@ describe('MR Widget Security Reports', () => {
   });
 
   describe('error handling', () => {
-    const createComponentWithGraphQLError = async () => {
+    const createComponentWithError = async () => {
       const graphqlError = {
         graphQLErrors: [
           {
@@ -610,7 +625,7 @@ describe('MR Widget Security Reports', () => {
     };
 
     it('handles GraphQL errors', async () => {
-      await createComponentWithGraphQLError();
+      await createComponentWithError();
 
       const result = await getFirstScanResult();
       expect(result.status).toBe(500);
@@ -618,7 +633,7 @@ describe('MR Widget Security Reports', () => {
     });
 
     it('displays parsing error message in DOM', async () => {
-      await createComponentWithGraphQLError();
+      await createComponentWithError();
       await getFirstScanResult(); // Trigger the error
 
       expect(
@@ -645,7 +660,7 @@ describe('MR Widget Security Reports', () => {
 
     describe('when status is PARSED', () => {
       beforeEach(async () => {
-        await createComponentGraphQL(mockFindingReportsComparerSuccessResponse);
+        await createComponentWithMockData(mockFindingReportsComparerSuccessResponse);
       });
 
       it('returns parsed data without polling headers', async () => {
@@ -658,7 +673,7 @@ describe('MR Widget Security Reports', () => {
 
     describe('when status is PROCESSING', () => {
       beforeEach(async () => {
-        await createComponentGraphQL(mockFindingReportsComparerParsingResponse);
+        await createComponentWithMockData(mockFindingReportsComparerParsingResponse);
       });
 
       it('returns polling headers with 3 second interval', async () => {

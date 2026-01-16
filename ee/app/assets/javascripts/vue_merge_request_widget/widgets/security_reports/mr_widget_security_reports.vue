@@ -5,8 +5,10 @@ import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import { s__ } from '~/locale';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
-import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
-import { convertToCamelCase } from '~/lib/utils/text_utility';
+import {
+  EXTENSION_ICONS,
+  SECURITY_SCAN_TO_REPORT_TYPE,
+} from '~/vue_merge_request_widget/constants';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import SmartInterval from '~/smart_interval';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
@@ -88,7 +90,7 @@ export default {
         partial: {},
         full: this.mr.enabledReports || {},
       },
-      enabledScansGraphQL: [],
+      enabledScansTransformed: [],
     };
   },
   computed: {
@@ -178,38 +180,15 @@ export default {
       ];
     },
 
-    endpoints() {
-      // TODO: check if gl.mrWidgetData can be safely removed after we migrate to the
-      // widget extension.
-      const items = [
-        [this.mr.sastComparisonPathV2, 'SAST'],
-        [this.mr.dastComparisonPathV2, 'DAST'],
-        [this.mr.secretDetectionComparisonPathV2, 'SECRET_DETECTION'],
-        [this.mr.apiFuzzingComparisonPathV2, 'API_FUZZING'],
-        [this.mr.coverageFuzzingComparisonPathV2, 'COVERAGE_FUZZING'],
-        [this.mr.dependencyScanningComparisonPathV2, 'DEPENDENCY_SCANNING'],
-        [this.mr.containerScanningComparisonPathV2, 'CONTAINER_SCANNING'],
-      ];
+    hasEnabledScans() {
+      // clusterImageScanning is excluded as it scans existing clusters rather than MR-specific changes
+      const scanTypesWithoutClusterImageScanning = Object.keys(SECURITY_SCAN_TO_REPORT_TYPE).filter(
+        (scanType) => scanType !== 'clusterImageScanning',
+      );
 
-      const endpoints = [];
-
-      items.forEach(([path, reportType]) => {
-        if (!path) {
-          return;
-        }
-
-        const enabledReportsKeyName = convertToCamelCase(reportType.toLowerCase());
-
-        if (this.enabledScans.full[enabledReportsKeyName]) {
-          endpoints.push([path.concat('&scan_mode=full'), reportType, { partial: false }]);
-        }
-
-        if (this.enabledScans.partial[enabledReportsKeyName]) {
-          endpoints.push([path.concat('&scan_mode=partial'), reportType, { partial: true }]);
-        }
-      });
-
-      return endpoints;
+      return scanTypesWithoutClusterImageScanning.some(
+        (scanType) => this.enabledScans.full[scanType] || this.enabledScans.partial[scanType],
+      );
     },
 
     pipelineIid() {
@@ -224,7 +203,7 @@ export default {
         return false;
       }
 
-      return !this.mr.isPipelineActive && this.endpoints.length > 0;
+      return !this.mr.isPipelineActive && this.hasEnabledScans;
     },
 
     isLoadingEnabledScans() {
@@ -260,7 +239,7 @@ export default {
           this.$options.pollingInterval = undefined;
         }
 
-        this.enabledScansGraphQL = transformToEnabledScans(scans);
+        this.enabledScansTransformed = transformToEnabledScans(scans);
 
         return {
           full: scans.enabledSecurityScans || {},
@@ -356,12 +335,12 @@ export default {
     },
 
     fetchCollapsedData() {
-      return this.enabledScansGraphQL.map(({ reportType, scanMode }) => () => {
-        return this.fetchCollapsedDataGraphQL(reportType, scanMode);
+      return this.enabledScansTransformed.map(({ reportType, scanMode }) => () => {
+        return this.fetchFindingReports(reportType, scanMode);
       });
     },
 
-    fetchCollapsedDataGraphQL(reportType, scanMode = 'FULL') {
+    fetchFindingReports(reportType, scanMode = 'FULL') {
       const scanModeKey = scanMode === 'PARTIAL' ? 'partial' : 'full';
       const defaultReportStructure = {
         reportType,
