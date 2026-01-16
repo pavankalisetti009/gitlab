@@ -39,17 +39,15 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
       },
       stubs: {
         GlTabs: true,
-        GlTab,
         UpstreamsList: stubComponent(UpstreamsList),
       },
     });
   };
 
-  const findRegistriesTabTitle = () => wrapper.findByTestId('registries-tab-title');
-  const findRegistriesCount = () => wrapper.findByTestId('registries-tab-counter-badge');
+  const findTabs = () => wrapper.findAllComponents(GlTab);
+  const findRegistriesTab = () => findTabs().at(0);
+  const findUpstreamsTab = () => findTabs().at(1);
   const findRegistriesList = () => wrapper.findComponent(RegistriesList);
-  const findUpstreamsTabTitle = () => wrapper.findByTestId('upstreams-tab-title');
-  const findUpstreamsCount = () => wrapper.findByTestId('upstreams-tab-counter-badge');
   const findUpstreamsList = () => wrapper.findComponent(UpstreamsList);
   const findCleanupPolicyStatus = () => wrapper.findComponent(CleanupPolicyStatus);
   const findUserCalloutDismisser = () => wrapper.findComponent(UserCalloutDismisser);
@@ -59,11 +57,21 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
   });
 
   it('renders registries tab', () => {
-    expect(findRegistriesTabTitle().text()).toBe('Registries');
+    expect(findRegistriesTab().attributes('title')).toBe('Registries');
+    expect(findRegistriesTab().props()).toMatchObject({
+      queryParamValue: 'registries',
+      tabCount: null,
+      tabCountSrText: '0 registries',
+    });
   });
 
   it('renders upstreams tab', () => {
-    expect(findUpstreamsTabTitle().text()).toBe('Upstreams');
+    expect(findUpstreamsTab().attributes('title')).toBe('Upstreams');
+    expect(findUpstreamsTab().props()).toMatchObject({
+      queryParamValue: 'upstreams',
+      tabCount: null,
+      tabCountSrText: '0 upstreams',
+    });
   });
 
   it('renders MavenRegistriesList component', () => {
@@ -77,14 +85,6 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
       },
       searchTerm: null,
     });
-  });
-
-  it('initially does not render registries count', () => {
-    expect(findRegistriesCount().exists()).toBe(false);
-  });
-
-  it('initially does not render upstreams count', () => {
-    expect(findUpstreamsCount().exists()).toBe(false);
   });
 
   it('renders CleanupPolicyStatus component', () => {
@@ -103,7 +103,10 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     });
 
     it('renders registries count', () => {
-      expect(findRegistriesCount().text()).toBe('5');
+      expect(findRegistriesTab().props()).toMatchObject({
+        tabCount: 5,
+        tabCountSrText: '5 registries',
+      });
     });
   });
 
@@ -183,7 +186,10 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     });
 
     it('renders upstreams count', () => {
-      expect(findUpstreamsCount().text()).toBe('5');
+      expect(findUpstreamsTab().props()).toMatchObject({
+        tabCount: 5,
+        tabCountSrText: '5 upstreams',
+      });
     });
   });
 

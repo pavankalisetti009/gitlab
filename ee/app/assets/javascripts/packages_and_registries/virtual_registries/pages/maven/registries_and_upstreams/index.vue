@@ -1,12 +1,12 @@
 <script>
-import { GlAlert, GlTabs, GlTab, GlBadge } from '@gitlab/ui';
-import { n__, sprintf } from '~/locale';
+import { GlAlert, GlTabs, GlTab } from '@gitlab/ui';
+import { n__ } from '~/locale';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import { getPageParams } from '~/packages_and_registries/shared/utils';
 import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
-import getMavenUpstreamsCount from '../../../graphql/queries/get_maven_upstreams_count.query.graphql';
-import { captureException } from '../../../sentry_utils';
+import getMavenUpstreamsCount from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 const PAGE_SIZE = 20;
 const INITIAL_PAGE_PARAMS = {
@@ -17,7 +17,6 @@ export default {
   name: 'MavenVirtualRegistriesAndUpstreamsApp',
   components: {
     GlAlert,
-    GlBadge,
     GlTabs,
     GlTab,
     RegistriesList,
@@ -53,30 +52,18 @@ export default {
     },
   },
   computed: {
-    showRegistriesCount() {
-      return this.registriesCount !== null;
-    },
-    showUpstreamsCount() {
-      return this.upstreamsCount !== null;
-    },
     screenReaderRegistriesTitle() {
-      return sprintf(
-        n__(
-          'VirtualRegistry|%{count} registry',
-          'VirtualRegistry|%{count} registries',
-          this.registriesCount || 0,
-        ),
-        { count: this.registriesCount },
+      return n__(
+        'VirtualRegistry|%d registry',
+        'VirtualRegistry|%d registries',
+        this.registriesCount || 0,
       );
     },
     screenReaderUpstreamsTitle() {
-      return sprintf(
-        n__(
-          'VirtualRegistry|%{count} upstream',
-          'VirtualRegistry|%{count} upstreams',
-          this.upstreamsCount || 0,
-        ),
-        { count: this.upstreamsCount },
+      return n__(
+        'VirtualRegistry|%d upstream',
+        'VirtualRegistry|%d upstreams',
+        this.upstreamsCount || 0,
       );
     },
   },
@@ -114,36 +101,21 @@ export default {
       </template>
     </user-callout-dismisser>
     <gl-tabs content-class="gl-p-0" sync-active-tab-with-query-params>
-      <gl-tab query-param-value="registries">
-        <template #title>
-          <span aria-hidden="true" data-testid="registries-tab-title">{{
-            s__('VirtualRegistry|Registries')
-          }}</span>
-          <gl-badge
-            v-if="showRegistriesCount"
-            class="gl-tab-counter-badge"
-            data-testid="registries-tab-counter-badge"
-            aria-hidden="true"
-            >{{ registriesCount }}</gl-badge
-          >
-          <span class="gl-sr-only">{{ screenReaderRegistriesTitle }}</span>
-        </template>
+      <gl-tab
+        :title="s__('VirtualRegistry|Registries')"
+        :tab-count="registriesCount"
+        :tab-count-sr-text="screenReaderRegistriesTitle"
+        query-param-value="registries"
+      >
         <registries-list @updateCount="updateRegistriesCount" />
       </gl-tab>
-      <gl-tab query-param-value="upstreams" lazy>
-        <template #title>
-          <span aria-hidden="true" data-testid="upstreams-tab-title">{{
-            s__('VirtualRegistry|Upstreams')
-          }}</span>
-          <gl-badge
-            v-if="showUpstreamsCount"
-            class="gl-tab-counter-badge"
-            data-testid="upstreams-tab-counter-badge"
-            aria-hidden="true"
-            >{{ upstreamsCount }}</gl-badge
-          >
-          <span class="gl-sr-only">{{ screenReaderUpstreamsTitle }}</span>
-        </template>
+      <gl-tab
+        :title="s__('VirtualRegistry|Upstreams')"
+        :tab-count="upstreamsCount"
+        :tab-count-sr-text="screenReaderUpstreamsTitle"
+        query-param-value="upstreams"
+        lazy
+      >
         <upstreams-list
           :search-term="upstreamsSearchTerm"
           :page-params="upstreamsPageParams"
