@@ -8,18 +8,18 @@
           }
         },
         {
-          "meta": {
-            "key": "archived",
-            "value": "f"
-          }
-        },
-        {
           "_context": {
             "name": "traversal_ids_for_group"
           },
           "meta": {
             "key": "traversal_ids",
             "value": "^9970-"
+          }
+        },
+        {
+          "meta": {
+            "key": "archived",
+            "value": "f"
           }
         },
         {

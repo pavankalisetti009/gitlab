@@ -8,18 +8,18 @@
           }
         },
         {
-          "meta": {
-            "key": "archived",
-            "value": "f"
-          }
-        },
-        {
           "_context": {
             "name": "project_id_search"
           },
           "repo_ids": [
             1
           ]
+        },
+        {
+          "meta": {
+            "key": "archived",
+            "value": "f"
+          }
         },
         {
           "_context": {

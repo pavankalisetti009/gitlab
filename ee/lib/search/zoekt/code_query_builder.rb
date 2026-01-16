@@ -19,9 +19,9 @@ module Search
 
         children = [base_query]
 
-        children << Filters.by_archived(false) unless filters[:include_archived] == true
-        children << Filters.by_forked(false) if filters[:exclude_forks] == true
-
+        # IMPORTANT: Scoping filters (repo_ids/traversal_ids) must come immediately after query_string.
+        # Placing meta filters (like archived) between query_string and scoping filters causes
+        # significant performance regression (see https://gitlab.com/gitlab-org/gitlab/-/issues/586416).
         case options.fetch(:search_level)
         when :project
           raise ArgumentError, 'Project ID cannot be empty for project search' if project_id.blank?
@@ -37,6 +37,9 @@ module Search
         else
           raise ArgumentError, "Unsupported search level for zoekt search: #{options.fetch(:search_level)}"
         end
+
+        children << Filters.by_archived(false) unless filters[:include_archived] == true
+        children << Filters.by_forked(false) if filters[:exclude_forks] == true
 
         # Add access branch filters at the very end because they are more expensive to evaluate.
         children << Filters.or_filters(*access_branches(auth), context: { name: 'access_branches' })

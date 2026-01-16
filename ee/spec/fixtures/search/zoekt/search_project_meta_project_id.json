@@ -8,18 +8,18 @@
           }
         },
         {
-          "meta": {
-            "key": "archived",
-            "value": "f"
-          }
-        },
-        {
           "_context": {
             "name": "project_id_search"
           },
           "meta": {
             "key": "project_id",
             "value": "^(1)$"
+          }
+        },
+        {
+          "meta": {
+            "key": "archived",
+            "value": "f"
           }
         },
         {
