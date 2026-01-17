@@ -249,6 +249,13 @@ RSpec.describe API::MergeRequestApprovals, :aggregate_failures, feature_category
       expect(rule_response['approved_by'][0]['username']).to eq(approver.username)
       expect(rule_response['source_rule']).to eq(nil)
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_approval_state do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api(url, personal_access_token: pat)
+      end
+    end
   end
 
   describe 'POST :id/merge_requests/:merge_request_iid/approvals' do
