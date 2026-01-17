@@ -164,6 +164,19 @@ module Search
         response.each_file do |file|
           project_id = file[:RepositoryID].to_i
 
+          if file[:LineMatches].nil?
+            parsed_response = response.parsed_response
+            logger.error(
+              build_structured_payload(
+                message: 'LineMatches is missing',
+                error: parsed_response[:Error],
+                failures: parsed_response[:Failures],
+                timed_out: parsed_response[:TimedOut],
+                file: file
+              )
+            )
+          end
+
           file[:LineMatches].each do |match|
             current_page = page / per_page
             break if current_page == page_limit

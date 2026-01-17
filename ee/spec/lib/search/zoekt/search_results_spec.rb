@@ -464,6 +464,43 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
         end
       end
     end
+
+    context 'when LineMatches in zoekt response is nil' do
+      let(:logger) { instance_double(Search::Zoekt::Logger) }
+      let(:file_with_nil_matches) do
+        { RepositoryID: project_1.id.to_s, FileName: 'test.rb', LineMatches: nil }
+      end
+
+      let(:mock_response) do
+        instance_double(
+          ::Gitlab::Search::Zoekt::Response,
+          match_count: 1,
+          file_count: 1,
+          failure?: false,
+          parsed_response: {}
+        )
+      end
+
+      before do
+        allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
+        allow(mock_response).to receive(:each_file).and_yield(file_with_nil_matches)
+        allow(Gitlab::Search::Zoekt::Client).to receive(:search).and_return(mock_response)
+      end
+
+      it 'raises exception and logs error' do
+        expect(logger).to receive(:error).with(
+          hash_including(
+            'class' => described_class.to_s,
+            'message' => 'LineMatches is missing',
+            'error' => mock_response.parsed_response[:Error],
+            'failures' => mock_response.parsed_response[:Failures],
+            'timed_out' => mock_response.parsed_response[:TimedOut],
+            'file' => file_with_nil_matches
+          )
+        )
+        expect { objects }.to raise_error(NoMethodError)
+      end
+    end
   end
 
   describe '#blobs_count' do

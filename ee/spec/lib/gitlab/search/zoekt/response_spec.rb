@@ -20,7 +20,17 @@ RSpec.describe ::Gitlab::Search::Zoekt::Response, feature_category: :global_sear
     end
 
     it 'has the correct result structure' do
-      expect(empty_response.parsed_response).to eq('Result' => { 'FileCount' => 0, 'MatchCount' => 0, 'Files' => [] })
+      expect(empty_response.parsed_response).to eq(
+        'Result' => {
+          'FileCount' => 0,
+          'FileMatchCount' => 0,
+          'LineMatchCount' => 0,
+          'MatchCount' => 0,
+          'NgramMatches' => 0,
+          'TotalFileMatchCount' => 0,
+          'TotalLineMatchCount' => 0
+        }
+      )
     end
 
     context 'as immutable' do
