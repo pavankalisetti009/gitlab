@@ -53,6 +53,7 @@ module EE
               success ::API::Entities::MergeRequestApprovalState
               tags ['merge_request_approvals']
             end
+            route_setting :authorization, permissions: :read_merge_request_approval_state, boundary_type: :project
             get 'approval_state' do
               present_merge_request_approval_state(presenter: ::API::Entities::MergeRequestApprovalState)
             end
