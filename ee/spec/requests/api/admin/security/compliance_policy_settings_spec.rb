@@ -51,6 +51,11 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     it_behaves_like 'GET request permissions for admin mode'
     it_behaves_like 'requires admin authentication', :get
     it_behaves_like 'requires security_orchestration_policies license', :get
+    it_behaves_like 'authorizing granular token permissions', :read_compliance_policy_setting do
+      let(:boundary_object) { :instance }
+      let(:user) { admin }
+      let(:request) { get api(path, personal_access_token: pat) }
+    end
 
     context 'when all requirements are met' do
       let!(:policy_setting) { Security::PolicySetting.in_organization(default_organization) }
@@ -95,6 +100,11 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     it_behaves_like 'PUT request permissions for admin mode'
     it_behaves_like 'requires admin authentication', :put
     it_behaves_like 'requires security_orchestration_policies license', :put
+    it_behaves_like 'authorizing granular token permissions', :update_compliance_policy_setting do
+      let(:boundary_object) { :instance }
+      let(:user) { admin }
+      let(:request) { put api(path, personal_access_token: pat), params: { csp_namespace_id: group.id } }
+    end
 
     context 'when all requirements are met' do
       let!(:policy_setting) { Security::PolicySetting.in_organization(default_organization) }

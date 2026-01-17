@@ -36,6 +36,7 @@ module API
                 ]
                 tags ['compliance_policy_settings']
               end
+              route_setting :authorization, permissions: :read_compliance_policy_setting, boundary_type: :instance
               get do
                 ensure_licensed!
 
@@ -58,6 +59,7 @@ module API
                   type: Integer,
                   desc: 'ID of the group designated to centrally manage security policies and compliance frameworks.'
               end
+              route_setting :authorization, permissions: :update_compliance_policy_setting, boundary_type: :instance
               put do
                 ensure_licensed!
 
