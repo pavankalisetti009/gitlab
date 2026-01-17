@@ -219,7 +219,8 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_
 
         it 'returns an empty response' do
           expect(search.file_count).to eq 0
-          expect(search.result[:Files]).to be_empty
+          expect(search.match_count).to eq 0
+          expect(search.result[:Files]).to be_nil
         end
       end
     end

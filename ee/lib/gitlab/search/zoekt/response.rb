@@ -10,8 +10,12 @@ module Gitlab
           new({
             Result: {
               FileCount: 0,
+              FileMatchCount: 0,
+              LineMatchCount: 0,
               MatchCount: 0,
-              Files: []
+              NgramMatches: 0,
+              TotalFileMatchCount: 0,
+              TotalLineMatchCount: 0
             }
           })
         end
