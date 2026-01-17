@@ -53,6 +53,7 @@ module API
               hidden true
             end
 
+            route_setting :authorization, permissions: :read_virtual_registry_cleanup_policy, boundary_type: :group
             get do
               present policy, with: Entities::VirtualRegistries::Cleanup::Policy
             end
@@ -80,6 +81,7 @@ module API
               end
             end
 
+            route_setting :authorization, permissions: :create_virtual_registry_cleanup_policy, boundary_type: :group
             post do
               policy = ::VirtualRegistries::Cleanup::Policy.new(
                 declared_params(include_missing: false).merge(group:)
@@ -114,6 +116,7 @@ module API
               at_least_one_of :enabled, :keep_n_days_after_download, :cadence, :notify_on_success, :notify_on_failure
             end
 
+            route_setting :authorization, permissions: :update_virtual_registry_cleanup_policy, boundary_type: :group
             patch do
               render_validation_error!(policy) unless policy.update(declared_params(include_missing: false))
 
@@ -128,6 +131,7 @@ module API
               hidden true
             end
 
+            route_setting :authorization, permissions: :delete_virtual_registry_cleanup_policy, boundary_type: :group
             delete do
               destroy_conditionally!(policy)
             end

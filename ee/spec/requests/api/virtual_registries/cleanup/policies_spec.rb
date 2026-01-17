@@ -75,6 +75,13 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'with invalid group_id'
 
+    it_behaves_like 'authorizing granular token permissions', :read_virtual_registry_cleanup_policy do
+      let(:boundary_object) { group }
+      let(:request) do
+        get api(url, personal_access_token: pat)
+      end
+    end
+
     context 'with subgroup' do
       let(:group) { create(:group, parent: super()) }
 
@@ -99,6 +106,13 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
     it_behaves_like 'container and packages virtual registry not available'
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created
     it_behaves_like 'with invalid group_id'
+
+    it_behaves_like 'authorizing granular token permissions', :create_virtual_registry_cleanup_policy do
+      let(:boundary_object) { group }
+      let(:request) do
+        post api(url, personal_access_token: pat), params: {}
+      end
+    end
 
     context 'with invalid params' do
       where(:enabled, :keep_n_days_after_download, :cadence, :notify_on_success, :notify_on_failure, :error_message) do
@@ -154,6 +168,13 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'with invalid group_id'
 
+    it_behaves_like 'authorizing granular token permissions', :update_virtual_registry_cleanup_policy do
+      let(:boundary_object) { group }
+      let(:request) do
+        patch api(url, personal_access_token: pat), params: params
+      end
+    end
+
     context 'with invalid params' do
       where(:enabled, :keep_n_days_after_download, :cadence, :notify_on_success, :notify_on_failure, :error_message) do
         ''   | 30  | 7 | true | true | 'enabled is empty'
@@ -188,5 +209,12 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
 
     it_behaves_like 'container and packages virtual registry not available'
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content
+
+    it_behaves_like 'authorizing granular token permissions', :delete_virtual_registry_cleanup_policy do
+      let(:boundary_object) { group }
+      let(:request) do
+        delete api(url, personal_access_token: pat)
+      end
+    end
   end
 end
