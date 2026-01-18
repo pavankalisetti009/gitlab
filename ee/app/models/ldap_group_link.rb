@@ -26,6 +26,7 @@ class LdapGroupLink < ApplicationRecord
 
   validates :group_access, presence: true
   validates :provider, presence: true
+  validate :cn_or_filter_present, on: :create
 
   scope :with_provider, ->(provider) { where(provider: provider) }
 
@@ -62,5 +63,11 @@ class LdapGroupLink < ApplicationRecord
 
   def nullify_blank_attributes
     BLANK_ATTRIBUTES.each { |attr| self[attr] = nil if self[attr].blank? }
+  end
+
+  def cn_or_filter_present
+    return if cn.present? || filter.present?
+
+    errors.add(:base, 'Either LDAP group cn or LDAP user filter is required')
   end
 end

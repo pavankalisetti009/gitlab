@@ -11,6 +11,40 @@ RSpec.describe LdapGroupLink do
     let(:invalid_cn_length) { 256 }
     let(:invalid_provider_length) { 256 }
 
+    describe 'cn or filter presence' do
+      it 'is invalid on create when both cn and filter are blank' do
+        link = build(:ldap_group_link, cn: '', filter: '', group_id: 1, provider: 'ldapmain')
+
+        expect(link).not_to be_valid(:create)
+        expect(link.errors[:base]).to include('Either LDAP group cn or LDAP user filter is required')
+      end
+
+      it 'is invalid on create when both cn and filter are nil' do
+        link = build(:ldap_group_link, cn: nil, filter: nil, group_id: 1, provider: 'ldapmain')
+
+        expect(link).not_to be_valid(:create)
+        expect(link.errors[:base]).to include('Either LDAP group cn or LDAP user filter is required')
+      end
+
+      it 'is valid on update when both cn and filter are nil' do
+        link = build(:ldap_group_link, cn: nil, filter: nil, group_id: 1, provider: 'ldapmain')
+
+        expect(link).to be_valid(:update)
+      end
+
+      it 'is valid when cn is present' do
+        link = build(:ldap_group_link, cn: 'group1', filter: nil, group_id: 1, provider: 'ldapmain')
+
+        expect(link).to be_valid
+      end
+
+      it 'is valid when filter is present' do
+        link = build(:ldap_group_link, cn: nil, filter: '(a=b)', group_id: 1, provider: 'ldapmain')
+
+        expect(link).to be_valid
+      end
+    end
+
     describe 'cn' do
       it 'validates uniqueness based on group_id and provider' do
         create(:ldap_group_link, cn: 'group1', group_id: 1, provider: 'ldapmain')
