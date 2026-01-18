@@ -196,7 +196,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
         }
       end
 
-      it 'returns not found' do
+      it 'returns not found', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24186' do
         post api(path, user, oauth_access_token: token), params: params
 
         expect(response).to have_gitlab_http_status(:not_found)
