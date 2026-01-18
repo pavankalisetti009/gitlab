@@ -17,6 +17,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
   end
 
+  let_it_be(:foundational_flow) { Ai::Catalog::FoundationalFlow['code_review/v1'] }
   let_it_be(:organization) { create(:common_organization) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
@@ -56,6 +57,12 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
   before_all do
     group.add_developer(user)
     project.add_developer(service_account)
+  end
+
+  before do
+    # Clear memoization to prevent state leakage from other specs that may have
+    # called catalog_item before ai_catalog_items records were created
+    foundational_flow.clear_memoization(:catalog_item)
   end
 
   describe 'POST /ai/duo_workflows/code_review/add_comments' do
