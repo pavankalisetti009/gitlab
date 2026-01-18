@@ -323,6 +323,62 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
 
         it_behaves_like 'tool executed with expected response'
       end
+
+      context 'when exclusion rules filter some results' do
+        let(:project_id) { project.id.to_s }
+        let(:raw_hits) do
+          [
+            {
+              'project_id' => 1000000,
+              'path' => 'ruby/server.rb',
+              'content' => "require 'webrick'",
+              'name' => 'server.rb',
+              'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
+              'start_line' => 0,
+              'start_byte' => 0,
+              'language' => 'ruby'
+            },
+            {
+              'project_id' => 1000000,
+              'path' => 'docs/README.md',
+              'content' => '# Documentation',
+              'name' => 'README.md',
+              'blob_id' => '4b00010b8fa51ffd3fe6f9de3ab47dfbf2f59b8e',
+              'start_line' => 0,
+              'start_byte' => 0,
+              'language' => 'markdown'
+            }
+          ]
+        end
+
+        before do
+          project.create_project_setting unless project.project_setting
+          project.project_setting.update!(
+            duo_context_exclusion_settings: { exclusion_rules: ['*.md'] }
+          )
+
+          allow(query_obj).to receive(:filter).and_return(query_result)
+        end
+
+        it 'excludes filtered files from structured data' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+
+          # Verify filtered content only shows non-excluded file
+          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\n   require 'webrick'")
+
+          # Verify structured data only contains non-excluded file
+          structured = response[:structuredContent]
+          expect(structured[:metadata][:count]).to eq(1)
+          expect(structured[:items].size).to eq(1)
+          expect(structured[:items].first['path']).to eq('ruby/server.rb')
+
+          # Ensure the excluded file is NOT in structured data
+          paths = structured[:items].pluck('path')
+          expect(paths).not_to include('docs/README.md')
+        end
+      end
     end
 
     context 'with missing required field' do
