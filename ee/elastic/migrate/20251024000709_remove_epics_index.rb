@@ -15,3 +15,5 @@ class RemoveEpicsIndex < Elastic::Migration
     !helper.index_exists?(index_name: EPICS_INDEX_NAME)
   end
 end
+
+RemoveEpicsIndex.prepend ::Search::Elastic::MigrationObsolete
