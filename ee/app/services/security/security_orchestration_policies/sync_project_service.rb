@@ -52,7 +52,7 @@ module Security
       end
 
       def should_link_policy?
-        policy_status_changed_and_enabled? || policy_scope_changed_and_scoped?
+        policy_status_changed_and_enabled? || policy_scope_changed_and_scoped? || policy_not_linked_to_project?
       end
 
       def policy_status_changed_and_enabled?
@@ -65,6 +65,10 @@ module Security
 
       def policy_scope_changed_and_scoped?
         policy_diff.scope_changed? && scope_applicable?
+      end
+
+      def policy_not_linked_to_project?
+        scope_applicable? && !security_policy.linked_to_project?(project)
       end
 
       def policy_scope_changed_and_unscoped?
