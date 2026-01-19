@@ -165,6 +165,14 @@ describe('ComplianceReportsApp component', () => {
         expect(findNewFrameworkButton().exists()).toBe(false);
       });
     });
+
+    describe('when in a project', () => {
+      it('does not render the button', () => {
+        wrapper = createComponent(mountExtended, {}, {}, { projectPath: 'project-path' });
+
+        expect(findNewFrameworkButton().exists()).toBe(false);
+      });
+    });
   });
 
   describe('violations report', () => {
