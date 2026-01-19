@@ -17,7 +17,7 @@ import createBoardListMutation from 'ee_else_ce/boards/graphql/board_list_create
 import boardLabelsQuery from '~/boards/graphql/board_labels.query.graphql';
 import usersAutocompleteQuery from '~/graphql_shared/queries/users_autocomplete.query.graphql';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BoardAddNewColumnForm from '~/boards/components/board_add_new_column_form.vue';
 import IterationTitle from 'ee/iterations/components/iteration_title.vue';
 import { ListType } from '~/boards/constants';
@@ -82,6 +82,17 @@ describe('BoardAddNewColumn', () => {
     }
   });
 
+  const createMockApolloClient = (handlers = {}) => {
+    return createMockApollo([
+      [boardLabelsQuery, handlers.labelsHandler || labelsQueryHandler],
+      [usersAutocompleteQuery, handlers.assigneesHandler || assigneesQueryHandler],
+      [projectBoardMilestonesQuery, handlers.milestonesHandler || milestonesQueryHandler],
+      [searchIterationQuery, handlers.iterationHandler || iterationQueryHandler],
+      [namespaceWorkItemTypesQuery, handlers.namespaceHandler || namespaceQueryHandler],
+      [createBoardListMutation, handlers.createHandler || createBoardListQueryHandler],
+    ]);
+  };
+
   const mountComponent = ({
     selectedId,
     provide = {},
@@ -91,14 +102,13 @@ describe('BoardAddNewColumn', () => {
     iterationHandler = iterationQueryHandler,
     namespaceHandler = namespaceQueryHandler,
   } = {}) => {
-    mockApollo = createMockApollo([
-      [boardLabelsQuery, labelsHandler],
-      [usersAutocompleteQuery, assigneesHandler],
-      [projectBoardMilestonesQuery, milestonesHandler],
-      [searchIterationQuery, iterationHandler],
-      [namespaceWorkItemTypesQuery, namespaceHandler],
-      [createBoardListMutation, createBoardListQueryHandler],
-    ]);
+    mockApollo = createMockApolloClient({
+      labelsHandler,
+      milestonesHandler,
+      assigneesHandler,
+      iterationHandler,
+      namespaceHandler,
+    });
 
     wrapper = shallowMountExtended(BoardAddNewColumn, {
       apolloProvider: mockApollo,
@@ -378,11 +388,42 @@ describe('BoardAddNewColumn', () => {
 
   describe('Accessibility features', () => {
     beforeEach(() => {
-      mountComponent();
+      mockApollo = createMockApolloClient();
+
+      wrapper = mountExtended(BoardAddNewColumn, {
+        apolloProvider: mockApollo,
+        propsData: {
+          listQueryVariables: {},
+          boardId: 'gid://gitlab/Board/1',
+          lists: {},
+        },
+        data() {
+          return {
+            selectedId: null,
+          };
+        },
+        provide: {
+          scopedLabelsAvailable: true,
+          milestoneListsAvailable: true,
+          assigneeListsAvailable: true,
+          iterationListsAvailable: true,
+          statusListsAvailable: true,
+          isEpicBoard: false,
+          issuableType: 'issue',
+          fullPath: 'gitlab-org/gitlab',
+          boardType: 'project',
+        },
+      });
+
+      mockApollo.clients.defaultClient.cache.writeQuery = jest.fn();
     });
 
     it('has the dropdown button with correct ID attribute', () => {
       expect(findDropdownButton().attributes('id')).toBe('board-value-dropdown');
+    });
+
+    it('should show dropdown button in a valid state', () => {
+      expect(findDropdownButton().classes()).not.toContain('!gl-shadow-inner-1-red-400');
     });
 
     it('adds proper error styling when field is invalid', async () => {
