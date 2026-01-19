@@ -39,7 +39,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       token: 'test-token-123',
       headers: {
         'Authorization' => 'Bearer test-token-123',
-        'Content-Type' => 'application/json'
+        'Content-Type' => 'application/json',
+        'X-Missing-Header' => nil
       }
     })
   end

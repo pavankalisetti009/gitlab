@@ -166,7 +166,7 @@ module Ai
           gateway_token = params[:token]
 
           headers_string = if gateway_token[:headers].present?
-                             gateway_token[:headers].map { |k, v| "#{k}: #{v}" }.join("\n")
+                             gateway_token[:headers].filter_map { |k, v| "#{k}: #{v}" if v.present? }.join("\n")
                            else
                              ''
                            end
