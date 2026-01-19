@@ -4,6 +4,7 @@ import emptySearchSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-se
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { fetchPolicies } from '~/lib/graphql';
 import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
@@ -61,6 +62,8 @@ export default {
           groupId: convertToGraphQLId(TYPENAME_GROUP, groupId || '0'),
         };
       },
+      // fetchPolicy needed to refresh item after updating triggers
+      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update(data) {
         const item = data?.aiCatalogItem || {};
         if (![AI_CATALOG_TYPE_AGENT, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(item.itemType)) {
