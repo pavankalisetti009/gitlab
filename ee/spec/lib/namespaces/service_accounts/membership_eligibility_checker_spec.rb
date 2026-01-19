@@ -12,7 +12,7 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
     let(:checker) { described_class.new(target_namespace) }
     let(:target_namespace) { root_group }
 
-    subject { checker.eligible?(sa) }
+    subject(:eligible) { checker.eligible?(sa) }
 
     context 'with non-service account user' do
       let(:sa) { create(:user) }
@@ -165,6 +165,37 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
         end
       end
     end
+
+    context 'with personal Namespace (not Group) target' do
+      let_it_be(:owner) { create(:user) }
+      let(:target_namespace) { create(:namespace, owner: owner) }
+
+      context 'for instance-level SA' do
+        let_it_be(:sa) { create(:user, :service_account, provisioned_by_group: nil) }
+
+        it { is_expected.to be true }
+      end
+
+      context 'for root-group SA' do
+        let_it_be(:sa) { create(:user, :service_account, provisioned_by_group: root_group) }
+
+        it { is_expected.to be true }
+      end
+
+      context 'for subgroup SA' do
+        let_it_be(:sa) { create(:user, :service_account, provisioned_by_group: subgroup) }
+
+        it { is_expected.to be false }
+      end
+
+      context 'for composite-id non-related root-group SA on GitLab.com', :saas do
+        let_it_be(:sa) do
+          create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: root_group)
+        end
+
+        it { is_expected.to be false }
+      end
+    end
   end
 
   describe '#filter_users' do
@@ -302,6 +333,29 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
       end
     end
 
+    context 'when target_namespace is personal Namespace (not Group)' do
+      let_it_be(:owner) { create(:user) }
+      let(:target_namespace) { create(:namespace, owner: owner) }
+
+      let_it_be(:instance_sa) do
+        create(:user, :service_account, provisioned_by_group: nil)
+      end
+
+      let_it_be(:root_group_sa) do
+        create(:user, :service_account, provisioned_by_group: root_group)
+      end
+
+      let_it_be(:subgroup_sa) do
+        create(:user, :service_account, provisioned_by_group: subgroup)
+      end
+
+      it 'excludes subgroup-level SAs' do
+        result = checker.filter_users(User.all)
+        expect(result).not_to include(subgroup_sa)
+        expect(result).to include(instance_sa, root_group_sa, owner)
+      end
+    end
+
     context 'when filtering from a subgroup', :saas do
       let(:target_namespace) { subgroup }
 
@@ -401,7 +455,7 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
     let(:checker) { described_class.new(target_namespace) }
     let(:target_namespace) { root_group }
 
-    subject { checker.eligible?(sa) }
+    subject(:eligible) { checker.eligible?(sa) }
 
     context 'when service_accounts_invite_restrictions is disabled' do
       before do
@@ -426,7 +480,7 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
     let(:checker) { described_class.new(target_namespace) }
     let(:target_namespace) { root_group }
 
-    subject { checker.eligible?(sa) }
+    subject(:eligible) { checker.eligible?(sa) }
 
     context 'when both restrictions apply' do
       let_it_be(:sa) do

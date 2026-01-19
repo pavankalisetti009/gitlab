@@ -15,15 +15,15 @@ module EE
       end
       strong_memoize_attr :root_group
 
-      def target_group
+      def target_namespace
         case resource
         when Project
-          resource.group
+          resource.namespace
         when Group
           resource
         end
       end
-      strong_memoize_attr :target_group
+      strong_memoize_attr :target_namespace
 
       override :scope_for_resource
       def scope_for_resource(users)
@@ -34,7 +34,7 @@ module EE
           )
         else
           scoped_users = super
-          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(target_group).filter_users(scoped_users)
+          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(target_namespace).filter_users(scoped_users)
         end
       end
     end
