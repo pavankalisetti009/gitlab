@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['MergeRequestApprovalState'] do
+RSpec.describe GitlabSchema.types['MergeRequestApprovalState'], feature_category: :code_review_workflow do
   let(:fields) { %i[approval_rules_overwritten rules invalid_approvers_rules suggested_approvers] }
 
   it { expect(described_class).to have_graphql_fields(fields) }
