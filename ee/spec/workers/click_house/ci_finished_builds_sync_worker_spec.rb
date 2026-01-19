@@ -20,6 +20,10 @@ RSpec.describe ClickHouse::CiFinishedBuildsSyncWorker, :click_house, :freeze_tim
     )
   end
 
+  it 'instructs sidekiq not to retry on failure' do
+    expect(described_class.get_sidekiq_options['retry']).to be(false)
+  end
+
   include_examples 'an idempotent worker' do
     it 'calls CiFinishedBuildsSyncService and returns its response payload' do
       expect(worker).to receive(:log_extra_metadata_on_done)
