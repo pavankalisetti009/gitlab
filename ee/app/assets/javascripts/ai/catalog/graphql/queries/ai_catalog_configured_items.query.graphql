@@ -5,6 +5,7 @@ query aiCatalogConfiguredItems(
   $itemTypes: [AiCatalogItemType!]
   $groupId: GroupID
   $projectId: ProjectID
+  $configurableForProjectId: ProjectID
   $includeInherited: Boolean
   $before: String
   $after: String
@@ -15,6 +16,7 @@ query aiCatalogConfiguredItems(
     itemTypes: $itemTypes
     groupId: $groupId
     projectId: $projectId
+    configurableForProjectId: $configurableForProjectId
     includeInherited: $includeInherited
     before: $before
     after: $after
