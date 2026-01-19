@@ -84,14 +84,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
       end
     end
 
-    context 'when querying widgets' do
+    context 'when querying features' do
       describe 'iteration widget' do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetIteration {
+            features {
+              iteration {
                 iteration {
                   id
                 }
@@ -110,14 +109,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           it 'returns widget information' do
             expect(work_item_data).to include(
               'id' => work_item.to_gid.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'ITERATION',
+              'features' => {
+                'iteration' => {
                   'iteration' => {
                     'id' => work_item.iteration.to_global_id.to_s
                   }
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -130,9 +128,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
 
           it 'returns without iteration' do
-            expect(work_item_data['widgets']).not_to include(
-              hash_including('type' => 'ITERATION')
-            )
+            expect(work_item_data['features']['iteration']).to be_nil
           end
         end
       end
@@ -145,9 +141,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetProgress {
+            features {
+              progress {
                 progress
                 updatedAt
                 currentValue
@@ -169,16 +164,15 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             expect(objective&.work_item_type&.base_type).to match('objective')
             expect(work_item_data).to include(
               'id' => objective.to_gid.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'PROGRESS',
+              'features' => {
+                'progress' => {
                   'progress' => objective.progress.progress,
                   'updatedAt' => objective.progress.updated_at&.iso8601,
                   'currentValue' => objective.progress.current_value,
                   'startValue' => objective.progress.start_value,
                   'endValue' => objective.progress.end_value
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -192,11 +186,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
           it 'returns without progress' do
             expect(objective&.work_item_type&.base_type).to match('objective')
-            expect(work_item_data['widgets']).not_to include(
-              hash_including(
-                'type' => 'PROGRESS'
-              )
-            )
+            expect(work_item_data['features']['progress']).to be_nil
           end
         end
       end
@@ -205,9 +195,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetWeight {
+            features {
+              weight {
                 widgetDefinition {
                   editable
                   rollUp
@@ -229,17 +218,16 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           it 'returns widget information' do
             expect(work_item_data).to include(
               'id' => work_item.to_gid.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'WEIGHT',
+              'features' => {
+                'weight' => {
                   'widgetDefinition' => {
                     'editable' => true,
                     'rollUp' => false
                   },
                   'weight' => work_item.weight,
                   'rolledUpWeight' => nil
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -252,11 +240,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
 
           it 'returns without weight' do
-            expect(work_item_data['widgets']).not_to include(
-              hash_including(
-                'type' => 'WEIGHT'
-              )
-            )
+            expect(work_item_data['features']['weight']).to be_nil
           end
         end
       end
@@ -267,9 +251,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetVerificationStatus {
+            features {
+              verificationStatus {
                 verificationStatus
               }
             }
@@ -287,12 +270,11 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             it 'returns correct data' do
               expect(work_item_data).to include(
                 'id' => work_item.to_gid.to_s,
-                'widgets' => include(
-                  hash_including(
-                    'type' => 'VERIFICATION_STATUS',
+                'features' => {
+                  'verificationStatus' => {
                     'verificationStatus' => verification_status
-                  )
-                )
+                  }
+                }
               )
             end
           end
@@ -328,11 +310,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
 
           it 'returns no verification status information' do
-            expect(work_item_data['widgets']).not_to include(
-              hash_including(
-                'type' => 'VERIFICATION_STATUS'
-              )
-            )
+            expect(work_item_data['features']['verificationStatus']).to be_nil
           end
         end
       end
@@ -344,9 +322,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetStatus {
+            features {
+              status {
                 status {
                   id
                   name
@@ -374,9 +351,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
                   expect(work_item_data).to include(
                     'id' => work_item.to_gid.to_s,
-                    'widgets' => include(
-                      hash_including(
-                        'type' => 'STATUS',
+                    'features' => {
+                      'status' => {
                         'status' => {
                           'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
                           'name' => 'To do',
@@ -384,8 +360,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                           'color' => "#737278",
                           'position' => 0
                         }
-                      )
-                    )
+                      }
+                    }
                   )
                 end
               end
@@ -408,9 +384,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
                   expect(work_item_data).to include(
                     'id' => work_item.to_gid.to_s,
-                    'widgets' => include(
-                      hash_including(
-                        'type' => 'STATUS',
+                    'features' => {
+                      'status' => {
                         'status' => {
                           'id' => current_status.custom_status.to_gid.to_s,
                           'name' => custom_status.name,
@@ -418,8 +393,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                           'color' => "#737278",
                           'position' => 0
                         }
-                      )
-                    )
+                      }
+                    }
                   )
                 end
 
@@ -448,9 +423,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
                     expect(work_item_data).to include(
                       'id' => work_item.to_gid.to_s,
-                      'widgets' => include(
-                        hash_including(
-                          'type' => 'STATUS',
+                      'features' => {
+                        'status' => {
                           'status' => {
                             'id' => new_custom_status.to_gid.to_s,
                             'name' => new_custom_status.name,
@@ -458,8 +432,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                             'color' => new_custom_status.color,
                             'position' => 0
                           }
-                        )
-                      )
+                        }
+                      }
                     )
                   end
                 end
@@ -472,9 +446,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
                 expect(work_item_data).to include(
                   'id' => work_item.to_gid.to_s,
-                  'widgets' => include(
-                    hash_including(
-                      'type' => 'STATUS',
+                  'features' => {
+                    'status' => {
                       'status' => {
                         'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
                         'name' => 'To do',
@@ -482,8 +455,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                         'color' => "#737278",
                         'position' => 0
                       }
-                    )
-                  )
+                    }
+                  }
                 )
               end
             end
@@ -511,13 +484,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             end
 
             it 'does not return status widget' do
-              expect(work_item_data).not_to include(
-                'widgets' => include(
-                  hash_including(
-                    'type' => 'STATUS'
-                  )
-                )
-              )
+              expect(work_item_data['features']['status']).to be_nil
             end
           end
         end
@@ -544,9 +511,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetHealthStatus {
+            features {
+              healthStatus {
                 healthStatus
                 rolledUpHealthStatus {
                   healthStatus
@@ -572,17 +538,16 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         it 'returns health status widget information' do
           expect(work_item_data).to include(
             'id' => work_item.to_gid.to_s,
-            'widgets' => include(
-              hash_including(
-                'type' => 'HEALTH_STATUS',
+            'features' => {
+              'healthStatus' => {
                 'healthStatus' => 'atRisk',
                 'rolledUpHealthStatus' => match_array([
                   { 'healthStatus' => 'onTrack', 'count' => 0 },
                   { 'healthStatus' => 'needsAttention', 'count' => 1 },
                   { 'healthStatus' => 'atRisk', 'count' => 1 }
                 ])
-              )
-            )
+              }
+            }
           )
         end
       end
@@ -593,9 +558,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetTestReports {
+            features {
+              testReports {
                 testReports {
                   nodes {
                     id
@@ -619,17 +583,16 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           it 'returns correct widget data' do
             expect(work_item_data).to include(
               'id' => work_item.to_gid.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'TEST_REPORTS',
+              'features' => {
+                'testReports' => {
                   'testReports' => {
                     'nodes' => array_including(
                       { 'id' => test_report1.to_global_id.to_s },
                       { 'id' => test_report2.to_global_id.to_s }
                     )
                   }
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -640,11 +603,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
 
           it 'returns empty widget data' do
-            expect(work_item_data['widgets']).not_to include(
-              hash_including(
-                'type' => 'TEST_REPORTS'
-              )
-            )
+            expect(work_item_data['features']['testReports']).to be_nil
           end
         end
       end
@@ -656,9 +615,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetLabels {
+            features {
+              labels {
                 allowsScopedLabels
                 labels {
                   nodes {
@@ -683,17 +641,16 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
             expect(work_item_data).to include(
               'id' => work_item.to_gid.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'LABELS',
+              'features' => {
+                'labels' => {
                   'allowsScopedLabels' => has_scoped_labels_license,
                   'labels' => {
                     'nodes' => match_array(
                       labels.map { |a| { 'id' => a.to_gid.to_s, 'title' => a.title } }
                     )
                   }
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -705,10 +662,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetRequirementLegacy {
-                type
+            features {
+              requirementLegacy {
                 legacyIid
               }
             }
@@ -725,12 +680,11 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           it 'returns correct data' do
             expect(work_item_data).to include(
               'id' => work_item.to_gid.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'REQUIREMENT_LEGACY',
+              'features' => {
+                'requirementLegacy' => {
                   'legacyIid' => work_item.requirement.iid
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -743,12 +697,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
 
           it 'returns no legacy requirement information' do
-            expect(work_item_data['widgets']).not_to include(
-              hash_including(
-                'type' => 'REQUIREMENT_LEGACY',
-                'legacyIid' => work_item.requirement.iid
-              )
-            )
+            expect(work_item_data['features']['requirementLegacy']).to be_nil
           end
         end
       end
@@ -757,9 +706,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetNotes {
+            features {
+              notes {
                 system: discussions(filter: ONLY_ACTIVITY, first: 10) { nodes { id  notes { nodes { id system internal body } } } },
                 comments: discussions(filter: ONLY_COMMENTS, first: 10) { nodes { id  notes { nodes { id system internal body } } } },
                 all_notes: discussions(filter: ALL_NOTES, first: 10) { nodes { id  notes { nodes { id system internal body } } } }
@@ -767,6 +715,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             }
           GRAPHQL
         end
+
+        let(:notes_widget) { graphql_dig_at(work_item_data, :features, :notes) }
 
         it 'fetches notes that require gitaly call to parse note' do
           # this 9 digit long weight triggers a gitaly call when parsing the system note
@@ -785,9 +735,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           let(:work_item_fields) do
             <<~GRAPHQL
               id
-              widgets {
-                type
-                ... on WorkItemWidgetNotes {
+              features {
+                notes {
                   discussions(filter: ONLY_COMMENTS, first: 10) {
                     nodes {
                       id
@@ -821,8 +770,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           it 'returns notes for the group work item' do
             post_graphql(query, current_user: current_user)
 
-            all_widgets = graphql_dig_at(work_item_data, :widgets)
-            notes_widget = all_widgets.find { |x| x['type'] == 'NOTES' }
             notes = graphql_dig_at(notes_widget['discussions'], :nodes).flat_map { |d| d['notes']['nodes'] }
 
             expect(notes).to contain_exactly(
@@ -854,9 +801,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               expect(note.note).to eq('changed the description')
 
               # check that diff is returned
-              all_widgets = graphql_dig_at(work_item_data, :widgets)
-              notes_widget = all_widgets.find { |x| x["type"] == "NOTES" }
-
               system_notes = graphql_dig_at(notes_widget["system"], :nodes)
               description_changed_note = graphql_dig_at(system_notes.first["notes"], :nodes).first
               description_version = graphql_dig_at(description_changed_note['systemNoteMetadata'], :descriptionVersion)
@@ -915,9 +859,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           let(:work_item_fields) do
             <<~GRAPHQL
               id
-              widgets {
-                type
-                ... on WorkItemWidgetNotes {
+              features {
+                notes {
                   system: discussions(filter: ONLY_ACTIVITY, first: 10) {
                     nodes {
                       id
@@ -1019,9 +962,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetLinkedItems {
+            features {
+              linkedItems {
                 blocked
                 blockedByCount
                 blockingCount
@@ -1053,9 +995,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               post_graphql(query, current_user: current_user)
 
               expect(work_item_data).to include(
-                'widgets' => include(
-                  hash_including(
-                    'type' => 'LINKED_ITEMS',
+                'features' => {
+                  'linkedItems' => {
                     'blocked' => true,
                     'blockedByCount' => 1,
                     'blockingCount' => 1,
@@ -1068,8 +1009,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                         )
                       ]
                     ) }
-                  )
-                )
+                  }
+                }
               )
             end
           end
@@ -1102,14 +1043,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             post_graphql(query, current_user: current_user)
 
             expect(work_item_data).to include(
-              'widgets' => include(
-                hash_including(
-                  'type' => 'LINKED_ITEMS',
+              'features' => {
+                'linkedItems' => hash_including(
                   'blocked' => true,
                   'blockedByCount' => 1,
                   'blockingCount' => 1
                 )
-              )
+              }
             )
           end
         end
@@ -1141,8 +1081,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              ... on WorkItemWidgetHierarchy {
+            features {
+              hierarchy {
                 parent {
                   id
                   webUrl
@@ -1173,27 +1113,29 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(105)
           post_graphql(query, current_user: current_user)
 
+          base_url = Gitlab.config.gitlab.url
+
           expect(work_item_data).to include(
             'id' => work_item.to_gid.to_s,
-            'widgets' => include(
-              hash_including(
+            'features' => {
+              'hierarchy' => {
                 'parent' => {
                   'id' => parent_epic.to_gid.to_s,
-                  'webUrl' => "#{Gitlab.config.gitlab.url}/#{project.full_path}/-/work_items/#{parent_epic.iid}"
+                  'webUrl' => "#{base_url}/#{project.full_path}/-/work_items/#{parent_epic.iid}"
                 },
                 'children' => { 'nodes' => match_array(
                   [
                     hash_including(
                       'id' => child_issue.to_gid.to_s,
-                      'webUrl' => "#{Gitlab.config.gitlab.url}/#{project.full_path}/-/issues/#{child_issue.iid}"
+                      'webUrl' => "#{base_url}/#{project.full_path}/-/work_items/#{child_issue.iid}"
                     ),
                     hash_including(
                       'id' => child_epic.to_gid.to_s,
-                      'webUrl' => "#{Gitlab.config.gitlab.url}/#{project.full_path}/-/work_items/#{child_epic.iid}"
+                      'webUrl' => "#{base_url}/#{project.full_path}/-/work_items/#{child_epic.iid}"
                     ),
                     hash_including(
                       'id' => child_epic2.to_gid.to_s,
-                      'webUrl' => "#{Gitlab.config.gitlab.url}/groups/#{group.full_path}/-/epics/#{child_epic2.iid}"
+                      'webUrl' => "#{base_url}/groups/#{group.full_path}/-/work_items/#{child_epic2.iid}"
                     )
                   ]) },
                 'ancestors' => { 'nodes' => match_array(
@@ -1204,8 +1146,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                     hash_including('id' => parent_epic.to_gid.to_s)
                   ]
                 ) }
-              )
-            )
+              }
+            }
           )
         end
 
@@ -1266,15 +1208,15 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             post_graphql(query, current_user: current_user)
 
             expect(work_item_data).to include(
-              'widgets' => include(
-                hash_including(
+              'features' => {
+                'hierarchy' => hash_including(
                   'ancestors' => { 'nodes' => match_array(
                     [
                       hash_including('id' => ancestor.to_gid.to_s)
                     ]
                   ) }
                 )
-              )
+              }
             )
           end
 
@@ -1291,8 +1233,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           let(:current_user) { nil }
           let(:work_item_fields) do
             <<~GRAPHQL
-              widgets {
-                ... on WorkItemWidgetHierarchy {
+              features {
+                hierarchy {
                   ancestors {
                     nodes {
                       id
@@ -1325,8 +1267,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                 post_graphql(query, current_user: current_user)
 
                 expect(work_item_data).to include(
-                  'widgets' => include(
-                    hash_including(
+                  'features' => {
+                    'hierarchy' => {
                       'ancestors' => { 'nodes' => match_array(
                         [
                           hash_including('id' => ancestor2.to_gid.to_s),
@@ -1334,8 +1276,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                           hash_including('id' => parent_epic.to_gid.to_s)
                         ]
                       ) }
-                    )
-                  )
+                    }
+                  }
                 )
               end
             end
@@ -1349,8 +1291,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                 post_graphql(query, current_user: current_user)
 
                 expect(work_item_data).to include(
-                  'widgets' => include(
-                    hash_including(
+                  'features' => {
+                    'hierarchy' => {
                       'ancestors' => { 'nodes' => match_array(
                         [
                           hash_including('id' => ancestor3.to_gid.to_s),
@@ -1360,8 +1302,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                           hash_including('id' => parent_epic.to_gid.to_s)
                         ]
                       ) }
-                    )
-                  )
+                    }
+                  }
                 )
               end
             end
@@ -1377,9 +1319,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id,
-            widgets {
-              type
-              ... on WorkItemWidgetColor {
+            features {
+              color {
                 color
                 textColor
               }
@@ -1397,13 +1338,12 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
             expect(epic&.work_item_type&.base_type).to match('epic')
             expect(work_item_data).to include(
-              'widgets' => include(
-                hash_including(
-                  'type' => 'COLOR',
+              'features' => {
+                'color' => {
                   'color' => epic.color&.color&.to_s,
                   'textColor' => epic.color&.text_color&.to_s
-                )
-              )
+                }
+              }
             )
           end
 
@@ -1435,11 +1375,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             post_graphql(query, current_user: current_user)
 
             expect(epic&.work_item_type&.base_type).to match('epic')
-            expect(work_item_data['widgets']).not_to include(
-              hash_including(
-                'type' => 'COLOR'
-              )
-            )
+            expect(work_item_data['features']['color']).to be_nil
           end
         end
       end
@@ -1457,9 +1393,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                 id
                 name
               }
-              widgets {
-                type
-                ... on WorkItemWidgetStartAndDueDate {
+              features {
+                startAndDueDate {
                   isFixed
                   rollUp
                   dueDate
@@ -1488,9 +1423,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
             expect(work_item_data).to include(
               'id' => epic.to_global_id.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'START_AND_DUE_DATE',
+              'features' => {
+                'startAndDueDate' => {
                   'rollUp' => true,
                   'isFixed' => false,
                   'dueDate' => due_date.to_date.to_s,
@@ -1499,8 +1433,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                   'startDate' => start_date.to_date.to_s,
                   'startDateSourcingMilestone' => nil,
                   'startDateSourcingWorkItem' => nil
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -1518,9 +1452,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                 id
                 name
               }
-              widgets {
-                type
-                ... on WorkItemWidgetStartAndDueDate {
+              features {
+                startAndDueDate {
                   rollUp
                   isFixed
                   dueDate
@@ -1549,9 +1482,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
             expect(work_item_data).to include(
               'id' => epic.to_global_id.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'START_AND_DUE_DATE',
+              'features' => {
+                'startAndDueDate' => {
                   'rollUp' => true,
                   'isFixed' => false,
                   'dueDate' => due_date.to_date.to_s,
@@ -1564,8 +1496,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                   'startDateSourcingWorkItem' => {
                     'id' => child_work_item.to_global_id.to_s
                   }
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -1582,9 +1514,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                 id
                 name
               }
-              widgets {
-                type
-                ... on WorkItemWidgetStartAndDueDate {
+              features {
+                startAndDueDate {
                   rollUp
                   isFixed
                   dueDate
@@ -1613,9 +1544,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
             expect(work_item_data).to include(
               'id' => epic.to_global_id.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'START_AND_DUE_DATE',
+              'features' => {
+                'startAndDueDate' => {
                   'rollUp' => true,
                   'isFixed' => false,
                   'dueDate' => due_date.to_date.to_s,
@@ -1628,8 +1558,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                     'id' => milestone.to_global_id.to_s
                   },
                   'startDateSourcingWorkItem' => nil
-                )
-              )
+                }
+              }
             )
           end
         end
@@ -1641,9 +1571,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           let(:work_item_fields) do
             <<~GRAPHQL
               id
-              widgets {
-                type
-                ... on WorkItemWidgetDevelopment {
+              features {
+                development {
                   featureFlags {
                     nodes {
                       id
@@ -1667,8 +1596,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             let(:current_user) { developer }
 
             it 'returns related feature flags in the response' do
-              expect(work_item_data['widgets']).to include(
-                'type' => 'DEVELOPMENT', 'featureFlags' => {
+              expect(work_item_data['features']['development']).to match(
+                'featureFlags' => {
                   'nodes' => match_array(
                     feature_flags.map { |ff| hash_including('id' => ff.to_gid.to_s, 'name' => ff.name) }
                   )
@@ -1700,8 +1629,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             let(:current_user) { guest }
 
             it 'returns an empty list of feature flags' do
-              expect(work_item_data['widgets']).to include(
-                'type' => 'DEVELOPMENT', 'featureFlags' => {
+              expect(work_item_data['features']['development']).to eq(
+                'featureFlags' => {
                   'nodes' => []
                 }
               )
@@ -1742,9 +1671,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetNotifications {
+            features {
+              notifications {
                 subscribed
               }
             }
@@ -1760,12 +1688,11 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
           expect(work_item_data).to include(
             'id' => work_item.to_gid.to_s,
-            'widgets' => include(
-              hash_including(
-                'type' => 'NOTIFICATIONS',
+            'features' => {
+              'notifications' => {
                 'subscribed' => work_item.subscribed?(current_user, project)
-              )
-            )
+              }
+            }
           )
         end
 
@@ -1781,9 +1708,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetParticipants {
+            features {
+              participants {
                 participants {
                   nodes {
                     id
@@ -1803,12 +1729,11 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
           expect(work_item_data).to include(
             'id' => work_item.to_gid.to_s,
-            'widgets' => include(
-              hash_including(
-                'type' => 'PARTICIPANTS',
+            'features' => {
+              'participants' => {
                 'participants' => { 'nodes' => [{ "id" => "gid://gitlab/User/#{work_item.author.id}" }] }
-              )
-            )
+              }
+            }
           )
         end
 
@@ -1826,9 +1751,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let(:work_item_fields) do
           <<~GRAPHQL
             id
-            widgets {
-              type
-              ... on WorkItemWidgetCustomFields {
+            features {
+              customFields {
                 customFieldValues {
                   customField {
                     id
@@ -1877,9 +1801,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
           expect(work_item_data).to include(
             'id' => work_item.to_gid.to_s,
-            'widgets' => include(
-              hash_including(
-                'type' => 'CUSTOM_FIELDS',
+            'features' => {
+              'customFields' => {
                 'customFieldValues' => [
                   {
                     'customField' => { 'id' => select_field.to_gid.to_s },
@@ -1907,8 +1830,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                     ]
                   }
                 ]
-              )
-            )
+              }
+            }
           )
         end
 
@@ -1916,9 +1839,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           let(:work_item_fields) do
             <<~GRAPHQL
               id
-              widgets {
-                type
-                ... on WorkItemWidgetCustomFields {
+              features {
+                customFields {
                   customFieldValues(customFieldIds: ["#{text_field.to_gid}", "#{number_field.to_gid}"]) {
                     customField {
                       id
@@ -1945,9 +1867,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
             expect(work_item_data).to include(
               'id' => work_item.to_gid.to_s,
-              'widgets' => include(
-                hash_including(
-                  'type' => 'CUSTOM_FIELDS',
+              'features' => {
+                'customFields' => {
                   'customFieldValues' => [
                     {
                       'customField' => { 'id' => number_field.to_gid.to_s },
@@ -1958,8 +1879,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                       'value' => 'text value'
                     }
                   ]
-                )
-              )
+                }
+              }
             )
           end
         end
