@@ -67,14 +67,10 @@ module Projects
     def update_lfs_objects
       return unless project.lfs_enabled?
 
-      if Feature.enabled?(:mirroring_lfs_optimization, project)
-        updated_revisions = branch_changes_calculator.calculate_changed_revisions
-        return if updated_revisions.nil?
+      updated_revisions = branch_changes_calculator.calculate_changed_revisions
+      return if updated_revisions.nil?
 
-        result = Projects::LfsPointers::LfsImportService.new(project, current_user, { updated_revisions: updated_revisions }).execute
-      else
-        result = Projects::LfsPointers::LfsImportService.new(project).execute
-      end
+      result = Projects::LfsPointers::LfsImportService.new(project, current_user, { updated_revisions: updated_revisions }).execute
 
       if result[:status] == :error
         Gitlab::Metrics::Lfs.update_objects_error_rate.increment(error: true, labels: {})
