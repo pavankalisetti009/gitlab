@@ -142,7 +142,7 @@ module ClickHouse
 
       BUILD_FIELD_NAMES = %i[id project_id pipeline_id stage_id status name runner_id].freeze
       BUILD_EPOCH_FIELD_NAMES = %i[created_at queued_at started_at finished_at].freeze
-      BUILD_COMPUTED_FIELD_NAMES = %i[root_namespace_id runner_owner_namespace_id].freeze
+      BUILD_COMPUTED_FIELD_NAMES = %i[root_namespace_id runner_owner_namespace_id group_name].freeze
       RUNNER_FIELD_NAMES = %i[run_untagged type].freeze
       RUNNER_MANAGER_FIELD_NAMES = %i[system_xid version revision platform architecture].freeze
       CI_STAGE_NAMES = %i[name].freeze
