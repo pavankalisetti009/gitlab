@@ -20,7 +20,7 @@ export default {
     GlLink,
     GlSprintf,
   },
-  inject: ['betaModelsEnabled', 'duoConfigurationSettingsPath'],
+  inject: ['betaModelsEnabled', 'duoConfigurationSettingsPath', 'canManageSelfHostedModels'],
   codeSuggestionsHelpPage: helpPagePath('user/project/repository/code_suggestions/_index'),
   duoChatHelpPage: helpPagePath('user/gitlab_duo_chat/_index'),
   mergeRequestsHelpPage: helpPagePath('user/project/merge_requests/duo_in_merge_requests'),
@@ -149,6 +149,9 @@ export default {
       // sort rows by releaseState
       return sortBy(subFeatures, (subFeature) => displayOrder[subFeature.releaseState]);
     },
+    shouldShowBetaAlert(section) {
+      return section.hasBetaFeatures && !this.betaModelsEnabled && this.canManageSelfHostedModels;
+    },
   },
 };
 </script>
@@ -166,7 +169,7 @@ export default {
         <template #content>
           <div>
             <beta-features-alert
-              v-if="section.hasBetaFeatures && !betaModelsEnabled"
+              v-if="shouldShowBetaAlert(section)"
               :duo-configuration-settings-path="duoConfigurationSettingsPath"
             />
             <feature-settings-table
