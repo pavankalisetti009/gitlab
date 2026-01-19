@@ -18,6 +18,9 @@ module Gitlab
         DIFF_CONTEXT_LINE = ' '
         END_OF_DIFF = '\\'
 
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/584980#note_2993374102
+        MAX_CHANGED_PATHS = 3150
+
         LOG_MESSAGES = {
           invalid_encoding: "Could not convert data to UTF-8 from %{encoding}",
           paths_sent_to_scan: "Number of changed paths broken down by their type",
@@ -255,6 +258,8 @@ module Gitlab
           # Reject diff blob objects from paths that are excluded
           # -- TODO: pass changed paths with diff blob objects and move this exclusion process into the gem.
           paths.reject! { |changed_path| exclusions_manager.matches_excluded_path?(changed_path.path) }
+
+          raise TooManyChangedPathsError.new(paths.size, MAX_CHANGED_PATHS) if paths.size > MAX_CHANGED_PATHS
 
           # This map is used later in ResponseHandler to correlate a path to a commit and file path
           populate_lookup_map(paths, lookup_map)

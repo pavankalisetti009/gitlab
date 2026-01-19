@@ -103,6 +103,14 @@ module Gitlab
             secret_detection_logger.error(build_structured_payload(message:))
           rescue ::Gitlab::GitAccess::ForbiddenError => e
             raise e
+          rescue TooManyChangedPathsError => e
+            Gitlab::Checks::SecretPushProtection::PostPushWarning
+              .new(project.repository,
+                changes_access.user_access.user,
+                changes_access.protocol,
+                e.changed_paths_count,
+                e.changed_paths_threshold
+              ).add_message
           rescue StandardError
             Gitlab::Checks::SecretPushProtection::PostPushWarning
               .new(project.repository, changes_access.user_access.user, changes_access.protocol)

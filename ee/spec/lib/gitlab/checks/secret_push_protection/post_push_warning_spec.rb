@@ -56,4 +56,17 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PostPushWarning, :clean_git
       )
     end
   end
+
+  context 'when changed_paths_count and changed_paths_threshold are set' do
+    subject(:post_push_warning) { described_class.new(repository, git_user, protocol, 8000, 1000) }
+
+    describe '#message' do
+      it 'returns the warning message' do
+        expect(post_push_warning.message).to eq(
+          'Secret push protection was skipped: 8000 changed files exceeds ' \
+            'the threshold of 1000. The push has been accepted.'
+        )
+      end
+    end
+  end
 end

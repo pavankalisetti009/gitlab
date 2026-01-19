@@ -394,6 +394,18 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         expect(payload_processor.standardize_payloads).to eq([nil, {}])
       end
     end
+
+    context 'when changed paths exceeds maximum threshold' do
+      before do
+        stub_const('Gitlab::Checks::SecretPushProtection::PayloadProcessor::MAX_CHANGED_PATHS', 1)
+      end
+
+      it 'raises an exception' do
+        expect { payload_processor.standardize_payloads }.to raise_error(
+          Gitlab::Checks::SecretPushProtection::TooManyChangedPathsError
+        )
+      end
+    end
   end
 
   describe '#parse_diffs' do
