@@ -170,7 +170,7 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         stub_ee_application_setting(duo_features_enabled: true)
-        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform, anything).and_return(true)
 
         allow(note).to receive_messages({
           mentioned_users: [mentioned_user],
@@ -327,7 +327,7 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
 
       context 'when author cannot trigger AI flow' do
         before do
-          allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(false)
+          allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform, anything).and_return(false)
         end
 
         it_behaves_like 'not running AI flow trigger service'

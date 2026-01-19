@@ -159,7 +159,7 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(merge_request.project,
         :duo_workflow).and_return(true)
       stub_ee_application_setting(duo_features_enabled: true)
-      allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+      allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform, anything).and_return(true)
     end
 
     context 'when requesting review from this account' do

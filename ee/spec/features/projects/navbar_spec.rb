@@ -120,7 +120,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(kind_of(ProjectPresenter),
           :duo_workflow).and_return(true)
         allow(user).to receive(:allowed_to_use?).and_return(false) # Default to false
-        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform, anything).and_return(true)
 
         insert_after_nav_item(
           _('Plan'),
