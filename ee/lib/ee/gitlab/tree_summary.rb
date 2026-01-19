@@ -7,15 +7,11 @@ module EE
 
       include ::PathLocksHelper
 
-      override :summarize
-      def summarize
-        super.tap { |summary| fill_path_locks!(summary) }
-      end
-
       private
 
+      override :fill_path_locks!
       def fill_path_locks!(entries)
-        return unless project.feature_available?(:file_locks)
+        return super unless project.feature_available?(:file_locks)
 
         finder = ::Gitlab::PathLocksFinder.new(project)
         paths = entries.map { |entry| entry_path(entry) }
@@ -27,10 +23,6 @@ module EE
 
           entry[:lock_label] = path_lock && text_label_for_lock(path_lock, path)
         end
-      end
-
-      def entry_path(entry)
-        File.join(*[path, entry[:file_name]].compact).force_encoding(Encoding::ASCII_8BIT)
       end
     end
   end
