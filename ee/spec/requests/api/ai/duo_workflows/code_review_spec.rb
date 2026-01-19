@@ -308,7 +308,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
           project.add_developer(mismatched_service_account)
         end
 
-        it 'returns forbidden' do
+        it 'returns forbidden',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24189' do
           post api(path, user, oauth_access_token: mismatched_token), params: params
 
           expect(response).to have_gitlab_http_status(:forbidden)
