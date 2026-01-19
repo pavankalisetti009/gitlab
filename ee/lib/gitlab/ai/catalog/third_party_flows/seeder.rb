@@ -31,7 +31,7 @@ module Gitlab
                         oauth2_refresh_token: ""
                         oauth2_expiry_date: "01 Jan 50 00:00 UTC"
                         api_host: $AI_FLOW_GITLAB_HOSTNAME
-                        user: claude-code
+                        user: ClaudeCode
                     check_update: "false"
                     git_protocol: https
                     EOF
@@ -57,9 +57,15 @@ module Gitlab
                     Be thorough in your analysis and provide clear explanations.
 
                     <important>
-                    - Please use the glab CLI to access data from GitLab. The glab CLI has already been authenticated. You can run the corresponding commands.
-                    - If you are asked to summarise an MR or issue or asked to provide more information then please post back a note to the MR/Issue so that the user can see it.
-                    - If you make changes to the repository then please create a duo-edit-<id> branch where <id> is taken from $CI_WORKLOAD_REF. Then commit and push them back to the branch
+                    Use the glab CLI to access data from GitLab. The glab CLI has already been authenticated. You can run the corresponding commands.
+
+                    When you complete your work create a new Git branch, if you aren't already working on a feature branch, with the format of 'feature/<short description of feature>' and check in/push code.
+
+                    When you check in and push code, you will need to use the access token stored in GITLAB_TOKEN and the user ClaudeCode.
+                    Lastly, after pushing the code, if a merge request doesn't already exist, create a new merge request for the branch and link it to the issue using:
+                    glab mr create --title '<title>' --description '<desc>' --source-branch '<branch>'
+
+                    If you are asked to summarize a merge request or issue, or asked to provide more information then please post back a note to the merge request / issue so that the user can see it.
 
                     $ADDITIONAL_INSTRUCTIONS
                     </important>
@@ -93,7 +99,7 @@ module Gitlab
                         oauth2_refresh_token: ""
                         oauth2_expiry_date: "01 Jan 50 00:00 UTC"
                         api_host: $AI_FLOW_GITLAB_HOSTNAME
-                        user: claude-code
+                        user: OpenAICodex
                     check_update: "false"
                     git_protocol: https
                     EOF
@@ -148,9 +154,9 @@ module Gitlab
 
                     When you complete your work create a new Git branch, if you aren't already working on a feature branch, with the format of 'feature/<short description of feature>' and check in/push code.
 
-                    When you check in and push code, you will need to use the access token stored in GITLAB_TOKEN and the user ClaudeCode.
+                    When you check in and push code, you will need to use the access token stored in GITLAB_TOKEN and the user OpenAICodex.
                     Lastly, after pushing the code, if a merge request doesn't already exist, create a new merge request for the branch and link it to the issue using:
-                    glab mr create --title '<title>' --description '<desc>' --source-branch '<branch>' --target-branch '<branch>'
+                    glab mr create --title '<title>' --description '<desc>' --source-branch '<branch>'
 
                     If you are asked to summarize a merge request or issue, or asked to provide more information then please post back a note to the merge request / issue so that the user can see it.
 
