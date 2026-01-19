@@ -71,12 +71,7 @@ module Ai
       end
 
       def self.agentic_chat_feature_name
-        if ::Feature.enabled?(:ai_agentic_chat_feature_setting_split,
-          :instance)
-          :duo_agent_platform_agentic_chat
-        else
-          :duo_agent_platform
-        end
+        :duo_agent_platform_agentic_chat
       end
 
       def self.workflow_feature_name
