@@ -71,7 +71,7 @@ module Security
         def parse_json_response(response)
           return {} if response.body.blank?
 
-          ::Gitlab::Json.parse(response.body)
+          ::Gitlab::Json.safe_parse(response.body)
         rescue JSON::ParserError => e
           raise ResponseError, "Invalid JSON response: #{e.message}"
         end
