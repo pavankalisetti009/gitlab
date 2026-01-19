@@ -47,6 +47,7 @@ module API
         params do
           use :pagination
         end
+        route_setting :authorization, permissions: :read_epic_board, boundary_type: :group
         get '/' do
           authorize! :read_epic_board, user_group
 
@@ -66,6 +67,7 @@ module API
         params do
           requires :board_id, type: Integer, desc: 'The ID of an epic board', documentation: { example: 1 }
         end
+        route_setting :authorization, permissions: :read_epic_board, boundary_type: :group
         get '/:board_id' do
           authorize!(:read_epic_board, user_group)
 
@@ -91,6 +93,7 @@ module API
         params do
           use :pagination
         end
+        route_setting :authorization, permissions: :read_epic_board_list, boundary_type: :group
         get '/lists' do
           authorize!(:read_epic_board, epic_board)
 
@@ -110,6 +113,7 @@ module API
         params do
           requires :list_id, type: Integer, desc: 'The ID of a list', documentation: { example: 1 }
         end
+        route_setting :authorization, permissions: :read_epic_board_list, boundary_type: :group
         get '/lists/:list_id' do
           authorize!(:read_epic_board, epic_board)
 

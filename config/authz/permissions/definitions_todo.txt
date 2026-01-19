@@ -497,8 +497,6 @@ read_emoji
 read_enterprise_ai_analytics
 read_ephemeral_token
 read_epic
-read_epic_board
-read_epic_board_list
 read_epic_iid
 read_epic_link_relation
 read_epic_relation
