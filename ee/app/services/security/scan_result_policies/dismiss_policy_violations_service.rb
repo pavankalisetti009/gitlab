@@ -55,8 +55,6 @@ module Security
       end
 
       def collect_licenses(violations)
-        return {} unless Feature.enabled?(:security_policy_warn_mode_license_scanning, merge_request.project.group)
-
         license_violations(violations).reduce({}) do |result, licenses|
           result.merge(licenses) { |_license_name, existing, new| existing | new }
         end

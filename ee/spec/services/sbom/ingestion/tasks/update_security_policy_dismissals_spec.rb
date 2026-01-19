@@ -204,18 +204,6 @@ RSpec.describe Sbom::Ingestion::Tasks::UpdateSecurityPolicyDismissals, feature_c
           it_behaves_like 'does not update the policy dismissal'
         end
       end
-
-      context 'when the feature flag `security_policy_warn_mode_license_scanning` is disabled' do
-        before do
-          stub_feature_flags(security_policy_warn_mode_license_scanning: false)
-        end
-
-        it 'returns early' do
-          expect(MergeRequest).not_to receive(:by_merge_request_sha)
-
-          update_security_policy_dismissals
-        end
-      end
     end
   end
 end
