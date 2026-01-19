@@ -153,6 +153,7 @@ const MOCK_USER_WORKFLOWS_RESPONSE = {
             title: 'Test workflow goal',
             lastUpdatedAt: '2024-01-01T00:00:00Z',
             aiCatalogItemVersionId: null,
+            agentName: 'GitLab Duo',
           },
         },
       ],
@@ -538,6 +539,7 @@ describe('Duo Agentic Chat', () => {
             lastUpdatedAt: '2024-01-01T00:00:00Z',
             title: 'Test workflow goal',
             aiCatalogItemVersionId: null,
+            agentName: 'GitLab Duo',
           },
         ]);
       });
