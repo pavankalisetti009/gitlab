@@ -13,6 +13,7 @@ import {
   AI_CATALOG_TYPE_AGENT,
   TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_DELETE_AI_CATALOG_ITEM,
   TRACK_EVENT_ITEM_TYPES,
   TRACK_EVENT_ORIGIN_EXPLORE,
   TRACK_EVENT_ORIGIN_PROJECT,
@@ -599,6 +600,58 @@ describe('AiCatalogItemActions', () => {
 
           expect(trackEventSpy).toHaveBeenCalledWith(
             TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
+            {
+              label: TRACK_EVENT_ITEM_TYPES[itemType],
+              origin: expectedOrigin,
+              page: TRACK_EVENT_PAGE_SHOW,
+            },
+            undefined,
+          );
+        });
+      },
+    );
+
+    describe.each`
+      scenario                           | itemType                 | isGlobal | isEnabled | buttonFinder        | expectedOrigin
+      ${'Delete agent at Explore level'} | ${AI_CATALOG_TYPE_AGENT} | ${true}  | ${false}  | ${findDeleteButton} | ${TRACK_EVENT_ORIGIN_EXPLORE}
+      ${'Delete flow at Project level'}  | ${AI_CATALOG_TYPE_FLOW}  | ${false} | ${false}  | ${findDeleteButton} | ${TRACK_EVENT_ORIGIN_PROJECT}
+      ${'Delete agent at Project level'} | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}  | ${findDeleteButton} | ${TRACK_EVENT_ORIGIN_PROJECT}
+    `(
+      'when clicking $scenario',
+      ({ itemType, isGlobal, isEnabled, buttonFinder, expectedOrigin }) => {
+        beforeEach(async () => {
+          isLoggedIn.mockReturnValue(true);
+          createComponent({
+            props: {
+              item: {
+                ...mockAgent,
+                itemType,
+                userPermissions: {
+                  adminAiCatalogItem: true,
+                },
+                configurationForProject: {
+                  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+                  enabled: isEnabled,
+                },
+              },
+            },
+            provide: {
+              isGlobal,
+              projectPath: isGlobal ? undefined : 'gitlab-duo/test',
+            },
+          });
+          await waitForPromises();
+        });
+
+        it(`tracks event  ${TRACK_EVENT_DELETE_AI_CATALOG_ITEM} with correct properties`, async () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+          await buttonFinder().vm.$emit('action');
+
+          await nextTick();
+
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            TRACK_EVENT_DELETE_AI_CATALOG_ITEM,
             {
               label: TRACK_EVENT_ITEM_TYPES[itemType],
               origin: expectedOrigin,
