@@ -82,8 +82,7 @@ module EE
           end
 
           after_transition any => ::Ci::Build.completed_statuses do |build|
-            if ::Feature.enabled?(:ingest_sec_reports_when_sec_jobs_completed, build.project) &&
-                build.security_job?
+            if build.security_job?
               build.run_after_commit do
                 ::Gitlab::EventStore.publish(
                   ::Ci::JobSecurityScanCompletedEvent.new(data: { job_id: build.id })

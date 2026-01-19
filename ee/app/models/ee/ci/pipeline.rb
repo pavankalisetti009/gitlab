@@ -70,25 +70,6 @@ module EE
         end
 
         state_machine :status do
-          before_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
-            if ::Feature.disabled?(:ingest_sec_reports_when_sec_jobs_completed, pipeline.project)
-              ::Vulnerabilities::CompareSecurityReportsService.set_security_mr_widget_to_polling(pipeline_id: pipeline.id)
-            end
-          end
-
-          after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
-            if ::Feature.disabled?(:ingest_sec_reports_when_sec_jobs_completed, pipeline.project)
-              pipeline.run_after_commit do
-                if pipeline.can_store_security_reports?
-                  ::Security::StoreScansWorker.perform_async(pipeline.id)
-                  ::Security::ProcessScanEventsWorker.perform_async(pipeline.id)
-                else
-                  ::Vulnerabilities::CompareSecurityReportsService.set_security_mr_widget_to_ready(pipeline_id: pipeline.id)
-                end
-              end
-            end
-          end
-
           after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
             pipeline.run_after_commit do
               ::Ci::SyncReportsToReportApprovalRulesWorker.perform_async(pipeline.id)
