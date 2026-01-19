@@ -69,6 +69,7 @@ module API
       params do
         use :pagination
       end
+      route_setting :authorization, permissions: :read_webhook, boundary_type: :group
       get ":id/hooks" do
         present paginate(user_group.hooks), with: ::API::Entities::GroupHook
       end
@@ -87,6 +88,7 @@ module API
         use :requires_url
         use :group_hook_properties
       end
+      route_setting :authorization, permissions: :create_webhook, boundary_type: :group
       post ":id/hooks" do
         hook_params = create_hook_params
 
@@ -111,6 +113,7 @@ module API
         params do
           requires :hook_id, type: Integer, desc: 'The ID of a group hook'
         end
+        route_setting :authorization, permissions: :read_webhook, boundary_type: :group
         get do
           hook = find_hook
 
@@ -132,6 +135,7 @@ module API
           use :optional_url
           use :group_hook_properties
         end
+        route_setting :authorization, permissions: :update_webhook, boundary_type: :group
         put do
           update_hook(entity: ::API::Entities::GroupHook)
         end
@@ -147,6 +151,7 @@ module API
         params do
           requires :hook_id, type: Integer, desc: 'The ID of the group hook'
         end
+        route_setting :authorization, permissions: :delete_webhook, boundary_type: :group
         delete do
           hook = find_hook
 
@@ -155,15 +160,16 @@ module API
           end
         end
 
-        mount ::API::Hooks::Events
+        mount ::API::Hooks::Events, with: { boundary_type: :group }
       end
       namespace ':id/hooks' do
-        mount ::API::Hooks::UrlVariables
-        mount ::API::Hooks::CustomHeaders
+        mount ::API::Hooks::UrlVariables, with: { boundary_type: :group }
+        mount ::API::Hooks::CustomHeaders, with: { boundary_type: :group }
         mount ::API::Hooks::TriggerTest, with: {
-          entity: GroupHook
+          entity: GroupHook,
+          boundary_type: :group
         }
-        mount ::API::Hooks::ResendHook
+        mount ::API::Hooks::ResendHook, with: { boundary_type: :group }
       end
     end
   end
