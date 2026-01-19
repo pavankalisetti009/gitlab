@@ -153,6 +153,15 @@ module Gitlab
             self_managed: true,
             internal: true
           },
+          foundational_flows: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_agent_platform,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
           agentic_chat: {
             service_class: nil,
             prompt_class: nil,
@@ -320,7 +329,7 @@ module Gitlab
 
         def self.uses_duo_agent_platform?(feature_name)
           # Features that use duo_agent_platform unit primitive
-          [:agentic_chat, :duo_workflow, :duo_agent_platform, :ai_catalog].include?(feature_name)
+          [:agentic_chat, :duo_workflow, :duo_agent_platform, :ai_catalog, :foundational_flows].include?(feature_name)
         end
       end
     end

@@ -55,6 +55,7 @@ module Ai
 
       scope :for_item, ->(item_id) { where(ai_catalog_item_id: item_id) }
       scope :with_item_type, ->(item_type) { joins(:item).where(item: { item_type: item_type }) }
+      scope :with_items, -> { includes(:item) }
 
       scope :for_catalog_items, ->(item_ids) { where(ai_catalog_item_id: item_ids) }
       scope :for_service_account, ->(service_account_id) { where(service_account_id:) }

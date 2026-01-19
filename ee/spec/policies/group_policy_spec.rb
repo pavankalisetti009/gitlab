@@ -5416,6 +5416,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     let(:ai_catalog_available) { true }
     let(:flows_available) { true }
     let(:third_party_flows_available) { true }
+    let(:foundational_flows_available) { true }
     let(:duo_features_enabled) { true }
 
     shared_examples 'no permissions when StageCheck :ai_catalog is false' do
@@ -5442,6 +5443,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
+    end
+
+    shared_examples 'no foundational flow permissions when StageCheck :foundational_flows is false' do
+      let(:foundational_flows_available) { false }
+
+      it { is_expected.to be_disallowed(:read_foundational_flow) }
     end
 
     shared_examples 'no permissions when Duo features are not available' do
@@ -5474,6 +5481,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :ai_catalog_flows).and_return(flows_available)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
         .with(group, :ai_catalog_third_party_flows).and_return(third_party_flows_available)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(group, :foundational_flows).and_return(foundational_flows_available)
       group.namespace_settings.duo_features_enabled = duo_features_enabled
     end
 
@@ -5486,10 +5495,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_allowed(:read_ai_catalog_flow) }
       it { is_expected.to be_allowed(:create_ai_catalog_third_party_flow_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_allowed(:read_foundational_flow) }
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
       it_behaves_like 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false'
+      it_behaves_like 'no foundational flow permissions when StageCheck :foundational_flows is false'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
@@ -5503,10 +5514,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_allowed(:read_ai_catalog_flow) }
       it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_allowed(:read_foundational_flow) }
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
       it_behaves_like 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false'
+      it_behaves_like 'no foundational flow permissions when StageCheck :foundational_flows is false'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
@@ -5809,6 +5822,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     context 'for read_* permissions' do
       let(:excluded_permissions) do
         [
+          :read_foundational_flow,
           :read_ai_catalog_flow,
           :read_ai_catalog_third_party_flow,
           :read_ai_catalog_item_consumer,

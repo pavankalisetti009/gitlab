@@ -544,6 +544,17 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       end
     end
 
+    describe '.with_items' do
+      it 'preloads the item association' do
+        project = create(:project)
+        create(:ai_catalog_item_consumer, project: project)
+
+        consumers = described_class.with_items
+
+        expect(consumers.first.association(:item)).to be_loaded
+      end
+    end
+
     describe '.for_catalog_items' do
       it 'filters records by the given item ids' do
         project = create(:project)

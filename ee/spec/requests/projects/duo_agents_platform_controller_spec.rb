@@ -165,9 +165,23 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
         end
       end
 
-      context 'when user cannot read flows' do
+      context 'when user can read foundational flows' do
         before do
           allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
+          allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, project).and_return(true)
+        end
+
+        it 'returns successfully' do
+          get project_automate_flows_path(project)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when user cannot read flows or foundational flows' do
+        before do
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
+          allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, project).and_return(false)
         end
 
         it 'returns 404' do

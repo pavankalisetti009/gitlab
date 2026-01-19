@@ -500,6 +500,7 @@ module EE
         enable :read_vulnerability
         enable :update_secret_detection_validity_checks_status
         enable :read_ai_catalog_flow
+        enable :read_foundational_flow
         enable :read_ai_catalog_third_party_flow
         enable :execute_ai_catalog_item
       end
@@ -1417,6 +1418,10 @@ module EE
         ::Feature.enabled?(:ai_catalog_flows, @user)
       end
 
+      condition(:foundational_flows_available, scope: :subject) do
+        ::Gitlab::Llm::StageCheck.available?(@subject, :foundational_flows)
+      end
+
       condition(:flows_available, scope: :subject) do
         ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog_flows)
       end
@@ -1450,6 +1455,10 @@ module EE
         prevent :create_ai_catalog_flow
         prevent :read_ai_catalog_flow
         prevent :create_ai_catalog_flow_item_consumer
+      end
+
+      rule { ~ai_catalog_enabled | ~foundational_flows_available | ~ai_catalog_available_for_user }.policy do
+        prevent :read_foundational_flow
       end
 
       rule { ~third_party_flows_enabled | ~third_party_flows_available }.policy do

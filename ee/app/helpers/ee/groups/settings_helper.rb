@@ -128,9 +128,14 @@ module EE
       def available_foundational_flows_json
         return [].to_json unless @group.root?
 
-        ::Ai::Catalog::FoundationalFlow::ITEMS
+        foundational_flows = ::Ai::Catalog::FoundationalFlow::ITEMS
           .select { |item| item[:foundational_flow_reference].present? }
-          .map do |item|
+
+        unless allow_beta_experimental_ai_features?
+          foundational_flows.reject! { |item| item[:feature_maturity] && item[:feature_maturity] != 'ga' }
+        end
+
+        foundational_flows.map do |item|
           {
             name: item[:display_name],
             description: item[:description],
@@ -178,6 +183,12 @@ module EE
 
       def saas?
         ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      end
+
+      def allow_beta_experimental_ai_features?
+        return @group.experiment_features_enabled if saas?
+
+        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
       end
     end
   end

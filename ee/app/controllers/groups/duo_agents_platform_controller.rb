@@ -12,6 +12,7 @@ module Groups
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
       push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
       push_frontend_ability(ability: :read_ai_catalog_flow, resource: group, user: current_user)
+      push_frontend_ability(ability: :read_foundational_flow, resource: group, user: current_user)
     end
 
     def show; end
@@ -40,7 +41,8 @@ module Groups
         Feature.enabled?(:global_ai_catalog, current_user) &&
           Feature.enabled?(:ai_catalog_agents, current_user)
       when 'flows'
-        current_user.can?(:read_ai_catalog_flow, group)
+        current_user.can?(:read_ai_catalog_flow, group) ||
+          current_user.can?(:read_foundational_flow, group)
       end
     end
 
