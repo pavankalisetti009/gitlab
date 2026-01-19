@@ -208,7 +208,6 @@ create_incident
 create_instance_runners
 create_issue_board
 create_issue_board_list
-create_issue_link
 create_iteration
 create_iteration_cadence
 create_jira_connect_subscription
@@ -553,7 +552,6 @@ read_issue_analytics
 read_issue_board
 read_issue_board_list
 read_issue_iid
-read_issue_link
 read_iteration_cadence
 read_job_artifacts
 read_jobs_statistics
