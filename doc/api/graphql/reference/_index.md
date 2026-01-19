@@ -40745,9 +40745,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="namespaceavailablefeatureshasqualitymanagementfeature"></a>`hasQualityManagementFeature` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.1. **Status**: Experiment. Whether quality management is enabled for the namespace. |
 | <a id="namespaceavailablefeatureshasscopedlabelsfeature"></a>`hasScopedLabelsFeature` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.1. **Status**: Experiment. Whether scoped labels are enabled for the namespace. |
 | <a id="namespaceavailablefeatureshassubepicsfeature"></a>`hasSubepicsFeature` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.1. **Status**: Experiment. Whether subepics are enabled for the namespace. |
-| <a id="namespaceavailablefeatureshasworkitemplanningviewfeature"></a>`hasWorkItemPlanningViewFeature` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.6. **Status**: Experiment. Whether work item planning view is enabled for the namespace. |
 | <a id="namespaceavailablefeatureshasworkitemstatusfeature"></a>`hasWorkItemStatusFeature` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Whether work item statuses are enabled for the namespace. |
-| <a id="namespaceavailablefeatureshasworkitemssavedviewsfeature"></a>`hasWorkItemsSavedViewsFeature` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.8. **Status**: Experiment. Whether work item saved views are enabled for the namespace. |
 
 ### `NamespaceBan`
 
