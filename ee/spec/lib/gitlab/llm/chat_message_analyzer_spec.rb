@@ -9,6 +9,11 @@ RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
 
   subject(:result) { described_class.new(messages).execute }
 
+  before do
+    stub_feature_flags(work_item_planning_view: false)
+    stub_feature_flags(work_item_legacy_url: true)
+  end
+
   describe '#execute', :freeze_time do
     it 'succeeds' do
       expect(result).to match(

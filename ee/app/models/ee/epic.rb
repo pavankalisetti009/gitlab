@@ -234,6 +234,8 @@ module EE
       after_destroy :set_epic_id_to_update_cache
       after_commit :expire_etag_cache
 
+      delegate :use_work_item_url?, :group_level?, to: :work_item
+
       def epic_tree_root?
         parent_id.nil?
       end

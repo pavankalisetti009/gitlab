@@ -406,9 +406,16 @@ module EE
     # - Epics only work with WorkItems views.
     override :show_as_work_item?
     def show_as_work_item?
-      return okr_available_and_enabled? if okr_work_item?
-
       return true if work_item_type&.epic?
+      return okr_available_and_enabled? if okr_work_item? # OKRs
+
+      super
+    end
+
+    override :use_work_item_url?
+    def use_work_item_url?
+      return okr_available_and_enabled? if okr_work_item? # OKRs
+      return true if epic_work_item? && !group_level? # Project epics
 
       super
     end

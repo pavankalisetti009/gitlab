@@ -77,9 +77,10 @@ RSpec.describe 'Query.workItemsByReference (EE)', feature_category: :portfolio_m
       extra_work_items = create_list(:work_item, 3, :epic, namespace: public_group)
       references2 = references1 + extra_work_items.map { |item| item.to_reference(full: true) }
 
+      # Allow threshold for URL determination logic in MR !213411
       expect do
         post_graphql(query(refs: references2), current_user: current_user)
-      end.not_to exceed_all_query_limit(control_count)
+      end.not_to exceed_all_query_limit(control_count).with_threshold(3)
 
       expect(graphql_data_at('workItemsByReference', 'nodes').size).to eq(6)
     end

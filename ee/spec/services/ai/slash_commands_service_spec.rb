@@ -12,6 +12,11 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
     ]
   end
 
+  before do
+    stub_feature_flags(work_item_planning_view: false)
+    stub_feature_flags(work_item_legacy_url: true)
+  end
+
   shared_examples 'returns only base commands' do
     it 'returns only base commands' do
       expect(available_commands).to eq(base_commands)

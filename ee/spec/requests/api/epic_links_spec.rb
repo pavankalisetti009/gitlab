@@ -127,7 +127,7 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
 
         allow(Gitlab::WorkItems::Instrumentation::TrackingService).to receive(:new).and_return(
           tracking_service_double)
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(108)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(110)
       end
 
       context 'and group is public and user is not a member' do
