@@ -41,11 +41,11 @@ class Projects::CommitController < Projects::ApplicationController
           @files_changed_count = @commit.stats.files
           @rapid_diffs_presenter = RapidDiffs::CommitPresenter.new(
             @commit,
-            diff_view,
-            commit_diff_options,
-            nil,
-            current_user,
-            define_environment
+            diff_view: diff_view,
+            diff_options: commit_diff_options,
+            request_params: nil,
+            current_user: current_user,
+            environment: define_environment
           )
           render action: :rapid_diffs
         else
