@@ -16,6 +16,7 @@ RSpec.describe API::GroupHooks, :aggregate_failures, feature_category: :webhooks
   end
 
   it_behaves_like 'web-hook API endpoints', '/groups/:id' do
+    let(:resource) { group }
     let(:user) { group_admin }
     let(:unauthorized_user) { non_admin_user }
 
