@@ -158,7 +158,7 @@ module ClickHouse
 
       INSERT_FINISHED_BUILDS_QUERY = <<~SQL.squish
         INSERT INTO ci_finished_builds (#{CSV_MAPPING.keys.join(',')})
-        SETTINGS async_insert=1, wait_for_async_insert=1 FORMAT CSV
+        FORMAT CSV
       SQL
 
       def keyset_iterator_scope
