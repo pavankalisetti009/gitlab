@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::GlobalIDType do
+RSpec.describe Types::GlobalIDType, feature_category: :api do
   context 'where we declare an argument as GlobalIDType[a] where a is prepended in EE' do
     def query(doc, vars)
       GraphQL::Query.new(GitlabSchema, document: doc, context: {}, variables: vars)
