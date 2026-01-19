@@ -63,6 +63,9 @@ export default {
     },
   },
   computed: {
+    isGroup() {
+      return !this.projectPath;
+    },
     isTopLevelGroup() {
       return isTopLevelGroup(this.groupPath, this.rootAncestor.path);
     },
@@ -189,7 +192,7 @@ export default {
             </template>
           </gl-sprintf>
         </gl-popover>
-        <span ref="newFrameworkButton">
+        <span v-if="isGroup" ref="newFrameworkButton">
           <gl-button
             v-if="canAdminComplianceFramework"
             variant="confirm"
