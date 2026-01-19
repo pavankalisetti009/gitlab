@@ -44,6 +44,8 @@ RSpec.describe 'Reposition and move issue within board lists', feature_category:
 
   before do
     stub_licensed_features(epics: true)
+    stub_feature_flags(work_item_planning_view: false)
+    stub_feature_flags(work_item_legacy_url: true)
   end
 
   context 'when user can admin issue' do

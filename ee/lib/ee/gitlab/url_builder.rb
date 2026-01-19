@@ -21,12 +21,6 @@ module EE
             instance.project_security_vulnerability_url(object.project, object, **options)
           when ::Vulnerabilities::RelatedIssuesDecorator
             instance.issue_url(object, **options)
-          when WorkItem
-            if object.epic_work_item? && object.project_id.nil?
-              instance.group_epic_url(object.namespace, object, **options)
-            else
-              super
-            end
           when ::ComplianceManagement::Projects::ComplianceViolation
             instance.project_security_compliance_violation_url(object.project, object, **options)
           when ::Ai::Catalog::Item
@@ -59,7 +53,7 @@ module EE
           noteable = note.noteable
 
           if note.for_epic?
-            instance.group_epic_url(noteable.group, noteable, anchor: dom_id(note), **options)
+            instance.work_item_url(noteable, anchor: dom_id(note), **options)
           elsif note.for_vulnerability?
             instance.project_security_vulnerability_url(noteable.project, noteable, anchor: dom_id(note), **options)
           elsif note.for_group_wiki?

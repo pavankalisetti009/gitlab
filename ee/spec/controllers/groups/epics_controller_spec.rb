@@ -104,46 +104,52 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
         group.add_developer(user)
       end
 
-      context 'when issue note is returned' do
+      context 'when work_item_planning_view: false' do
         before do
-          SystemNoteService.epic_issue(epic, issue, user, :added)
+          stub_feature_flags(work_item_planning_view: false)
         end
 
-        shared_examples 'issue link presence' do
-          let(:issue) { create(:issue, project: project, description: "Project Issue") }
+        context 'when issue note is returned' do
+          before do
+            SystemNoteService.epic_issue(epic, issue, user, :added)
+          end
 
-          it 'the link to the issue is included' do
-            get :discussions, params: { group_id: group, id: epic.to_param }
+          shared_examples 'issue link presence' do
+            let(:issue) { create(:issue, project: project, description: "Project Issue") }
 
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response.size).to eq(1)
-            discussion = json_response[0]
-            notes = discussion["notes"]
-            expect(notes.size).to eq(1)
-            expect(notes[0]["note_html"]).to include(project_issue_path(project, issue))
+            it 'the link to the issue is included' do
+              get :discussions, params: { group_id: group, id: epic.to_param }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.size).to eq(1)
+              discussion = json_response[0]
+              notes = discussion["notes"]
+              expect(notes.size).to eq(1)
+              expect(notes[0]["note_html"]).to include(project_issue_path(project, issue))
+            end
+          end
+
+          describe 'project default namespace' do
+            it_behaves_like 'issue link presence' do
+              let(:project) { create(:project, :public) }
+            end
+          end
+
+          describe 'project group namespace' do
+            it_behaves_like 'issue link presence' do
+              let(:project) { create(:project, namespace: group) }
+            end
           end
         end
 
-        describe 'project default namespace' do
-          it_behaves_like 'issue link presence' do
-            let(:project) { create(:project, :public) }
-          end
+        context 'setting notes filter' do
+          let(:issuable) { epic }
+          let(:issuable_parent) { group }
+          let!(:discussion_note) { create(:note, :system, noteable: issuable) }
+          let!(:discussion_comment) { create(:note, noteable: issuable) }
+
+          it_behaves_like 'issuable notes filter'
         end
-
-        describe 'project group namespace' do
-          it_behaves_like 'issue link presence' do
-            let(:project) { create(:project, namespace: group) }
-          end
-        end
-      end
-
-      context 'setting notes filter' do
-        let(:issuable) { epic }
-        let(:issuable_parent) { group }
-        let!(:discussion_note) { create(:note, :system, noteable: issuable) }
-        let!(:discussion_comment) { create(:note, noteable: issuable) }
-
-        it_behaves_like 'issuable notes filter'
       end
     end
 

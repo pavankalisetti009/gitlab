@@ -1531,4 +1531,35 @@ RSpec.describe Issue, feature_category: :team_planning do
       expect(issue.namespace_traversal_ids).to eq([root_group.id, group.id])
     end
   end
+
+  describe '#show_as_work_item?' do
+    subject(:issue_as_work_item) { issue.show_as_work_item? }
+
+    where(:factory, :okr_ff, :okr_license, :result) do
+      [:work_item, :epic]       | false | false | true
+      [:work_item, :objective]  | false | false | false
+      [:work_item, :key_result] | false | false | false
+      [:work_item, :epic]       | false | true  | true
+      [:work_item, :objective]  | false | true  | false
+      [:work_item, :key_result] | false | true  | false
+      [:work_item, :epic]       | true  | false | true
+      [:work_item, :objective]  | true  | false | false
+      [:work_item, :key_result] | true  | false | false
+      [:work_item, :epic]       | true  | true  | true
+      [:work_item, :objective]  | true  | true  | true
+      [:work_item, :key_result] | true  | true  | true
+    end
+
+    with_them do
+      let(:issue) { build_stubbed(*Array(factory)) }
+
+      before do
+        stub_feature_flags(okrs_mvc: okr_ff)
+
+        stub_licensed_features(okrs: okr_license)
+      end
+
+      it { is_expected.to be result }
+    end
+  end
 end
