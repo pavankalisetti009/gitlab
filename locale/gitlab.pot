@@ -61852,6 +61852,9 @@ msgstr ""
 msgid "SecurityOrchestration|Inherited policy"
 msgstr ""
 
+msgid "SecurityOrchestration|Input only one value. Wildcards are supported."
+msgstr ""
+
 msgid "SecurityOrchestration|Invalid Compliance Framework ID(s)"
 msgstr ""
 
@@ -62299,6 +62302,9 @@ msgid "SecurityOrchestration|Select frameworks"
 msgstr ""
 
 msgid "SecurityOrchestration|Select list type"
+msgstr ""
+
+msgid "SecurityOrchestration|Select one of the criteria"
 msgstr ""
 
 msgid "SecurityOrchestration|Select policies"
