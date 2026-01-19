@@ -36,6 +36,12 @@ describe('VulnerabilitiesByAgePanel', () => {
       expect(findExtendedDashboardPanel().props('title')).toBe('Vulnerabilities by age');
     });
 
+    it('passes the correct tooltip to the panels base', () => {
+      expect(findExtendedDashboardPanel().props('tooltip')).toEqual({
+        description: 'Open vulnerabilities by the amount of time since they were opened.',
+      });
+    });
+
     it('passes severity value to PanelGroupBy by default', () => {
       expect(findPanelGroupBy().props('value')).toBe('severity');
     });

@@ -1,5 +1,6 @@
 <script>
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
+import { s__ } from '~/locale';
 import { readFromUrl, writeToUrl } from 'ee/security_dashboard/utils/panel_state_url_sync';
 import PanelSeverityFilter from './panel_severity_filter.vue';
 import PanelGroupBy from './panel_group_by.vue';
@@ -46,11 +47,19 @@ export default {
       });
     },
   },
+  tooltip: {
+    description: s__(
+      'SecurityReports|Open vulnerabilities by the amount of time since they were opened.',
+    ),
+  },
 };
 </script>
 
 <template>
-  <extended-dashboard-panel :title="s__('SecurityReports|Vulnerabilities by age')">
+  <extended-dashboard-panel
+    :title="s__('SecurityReports|Vulnerabilities by age')"
+    :tooltip="$options.tooltip"
+  >
     <template #filters>
       <panel-severity-filter v-model="severity" class="gl-mr-2" />
       <panel-group-by v-model="groupedBy" />
