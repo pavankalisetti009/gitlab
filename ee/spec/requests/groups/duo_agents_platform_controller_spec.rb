@@ -94,9 +94,23 @@ RSpec.describe 'Groups::DuoAgentsPlatform', feature_category: :duo_agent_platfor
         expect(response).to have_gitlab_http_status(:ok)
       end
 
-      context 'when user does not have access to read_ai_catalog_flow' do
+      context 'when user can read foundational flows' do
         before do
           allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(false)
+          allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(true)
+        end
+
+        it 'returns successfully' do
+          get group_automate_flows_path(group)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when user does not have access to read flows or foundational flows' do
+        before do
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(false)
+          allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(false)
         end
 
         it 'does not render' do

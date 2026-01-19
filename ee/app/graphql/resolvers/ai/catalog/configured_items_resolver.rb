@@ -50,7 +50,7 @@ module Resolvers
         def resolve(**args)
           return none unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
-          ::Ai::Catalog::ItemConsumersFinder.new(current_user, params: args).execute
+          ::Ai::Catalog::ItemConsumersFinder.new(current_user, params: args).execute.with_items
         end
 
         private

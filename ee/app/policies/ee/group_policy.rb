@@ -696,6 +696,7 @@ module EE
         enable :read_vulnerability_statistics
         enable :read_security_inventory
         enable :read_ai_catalog_flow
+        enable :read_foundational_flow
         enable :read_ai_catalog_third_party_flow
       end
 
@@ -1192,6 +1193,10 @@ module EE
         ::Feature.enabled?(:ai_catalog_third_party_flows, @user)
       end
 
+      condition(:foundational_flows_available, scope: :subject) do
+        ::Gitlab::Llm::StageCheck.available?(@subject, :foundational_flows)
+      end
+
       condition(:flows_available, scope: :subject) do
         ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog_flows)
       end
@@ -1209,7 +1214,11 @@ module EE
         prevent :read_ai_catalog_third_party_flow
       end
 
-      rule { ~flows_enabled | ~flows_available }.policy do
+      rule { ~foundational_flows_available | ~ai_catalog_available_for_user }.policy do
+        prevent :read_foundational_flow
+      end
+
+      rule { ~ai_catalog_enabled | ~flows_enabled | ~flows_available }.policy do
         prevent :read_ai_catalog_flow
         prevent :create_ai_catalog_flow_item_consumer
       end

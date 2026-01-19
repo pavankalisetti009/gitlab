@@ -8,6 +8,7 @@ module Gitlab
           root_ancestor = container.root_ancestor
 
           return false if personal_namespace?(root_ancestor)
+
           return false unless root_ancestor.licensed_feature_available?(license_feature_name(feature))
 
           available_on_experimental_stage?(root_ancestor, feature) ||
@@ -53,7 +54,7 @@ module Gitlab
             :agentic_chat
           when :ai_catalog, :ai_catalog_flows, :ai_catalog_third_party_flows
             :ai_catalog
-          when :duo_workflow
+          when :duo_workflow, :foundational_flows
             :ai_workflows
           when :glab_ask_git_command
             :glab_ask_git_command

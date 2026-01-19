@@ -28,6 +28,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
         stub_feature_flags(ai_catalog_agents: ai_catalog_agents_ff)
         allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(duo_workflow_permission)
         allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(read_flow_permission)
+        allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(read_flow_permission)
       end
 
       it "returns correct configure result" do
@@ -57,6 +58,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
     before do
       allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(true)
       allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(true)
+      allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(true)
 
       menu.configure_menu_items
     end
@@ -77,6 +79,44 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
 
     it 'has correct item id' do
       expect(flows_menu_item.item_id).to eq(:ai_flows)
+    end
+
+    context 'when user has read_foundational_flow but not read_ai_catalog_flow permission' do
+      before do
+        stub_feature_flags(global_ai_catalog: true)
+        allow(user).to receive(:can?).and_call_original
+        allow(user).to receive(:can?).with(:duo_workflow, group).and_return(true)
+        allow(user).to receive(:can?).with(:read_ai_catalog_flow, group).and_return(false)
+        allow(user).to receive(:can?).with(:read_foundational_flow, group).and_return(true)
+
+        menu.configure_menu_items
+      end
+
+      it 'still shows the flows menu item' do
+        flows_menu_item = menu.renderable_items.find { |item| item.item_id == :ai_flows }
+        expect(flows_menu_item).not_to be_nil
+        expect(flows_menu_item.title).to eq('Flows')
+      end
+    end
+
+    context 'when user has neither read_foundational_flow nor read_ai_catalog_flow permission' do
+      let(:configured_menu) { described_class.new(context) }
+
+      before do
+        stub_feature_flags(global_ai_catalog: true)
+        stub_feature_flags(ai_catalog_agents: false)
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(true)
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(false)
+        allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(false)
+
+        configured_menu.configure_menu_items
+      end
+
+      it 'does not show the flows menu item' do
+        flows_menu_item = configured_menu.renderable_items.find { |item| item.item_id == :ai_flows }
+        expect(flows_menu_item).to be_nil
+      end
     end
   end
 end

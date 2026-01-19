@@ -254,11 +254,110 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
   end
 
   context 'when foundational_flow_reference is provided' do
+    let(:custom_flow) { create(:ai_catalog_flow) }
+    let!(:custom_flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: custom_flow) }
     let(:flow_with_ref) { create(:ai_catalog_flow, foundational_flow_reference: 'gitlab/foo_maker') }
     let!(:flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: flow_with_ref) }
     let(:params) { { project_id: project.id, foundational_flow_reference: 'gitlab/foo_maker' } }
 
     it { is_expected.to contain_exactly(flow_consumer) }
+
+    context 'when user is not allowed to read custom flows' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
+      end
+
+      # Custom flows doesn't interfer with foundational flows
+      it { is_expected.to contain_exactly(flow_consumer) }
+    end
+
+    context 'when user is not allowed to read foundational flows' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, project).and_return(false)
+      end
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when searching for beta foundational flow' do
+      let(:beta_flow) { create(:ai_catalog_flow, foundational_flow_reference: 'sast_fp_detection/v1') }
+      let!(:beta_flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: beta_flow) }
+      let(:params) { { project_id: project.id, foundational_flow_reference: 'sast_fp_detection/v1' } }
+
+      context 'when beta features are disabled on SaaS' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+          project.root_ancestor.namespace_settings.update!(experiment_features_enabled: false)
+        end
+
+        it 'does not return beta flow consumers' do
+          is_expected.to be_empty
+        end
+      end
+
+      context 'when beta features are enabled on SaaS' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+          project.root_ancestor.namespace_settings.update!(experiment_features_enabled: true)
+        end
+
+        it 'returns beta flow consumers' do
+          is_expected.to contain_exactly(beta_flow_consumer)
+        end
+      end
+
+      context 'when beta features are disabled on self-managed' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+          stub_application_setting(instance_level_ai_beta_features_enabled: false)
+        end
+
+        it 'does not return beta flow consumers' do
+          is_expected.to be_empty
+        end
+      end
+
+      context 'when beta features are enabled on self-managed' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+          stub_application_setting(instance_level_ai_beta_features_enabled: true)
+        end
+
+        it 'returns beta flow consumers' do
+          is_expected.to contain_exactly(beta_flow_consumer)
+        end
+      end
+    end
+
+    context 'when searching for GA foundational flow' do
+      let(:ga_flow) { create(:ai_catalog_flow, foundational_flow_reference: 'code_review/v1') }
+      let!(:ga_flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: ga_flow) }
+      let(:params) { { project_id: project.id, foundational_flow_reference: 'code_review/v1' } }
+
+      context 'when beta features are disabled on SaaS' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+          project.root_ancestor.namespace_settings.update!(experiment_features_enabled: false)
+        end
+
+        it 'still returns GA flow consumers' do
+          is_expected.to contain_exactly(ga_flow_consumer)
+        end
+      end
+
+      context 'when beta features are disabled on self-managed' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+          stub_application_setting(instance_level_ai_beta_features_enabled: false)
+        end
+
+        it 'still returns GA flow consumers' do
+          is_expected.to contain_exactly(ga_flow_consumer)
+        end
+      end
+    end
 
     context 'when no items match the reference' do
       let(:params) { { project_id: project.id, foundational_flow_reference: 'nonexistent/reference' } }

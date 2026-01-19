@@ -25,6 +25,28 @@ RSpec.describe Ai::Catalog::FoundationalFlow, feature_category: :duo_agent_platf
     end
   end
 
+  describe '.beta?' do
+    subject(:beta?) { described_class.beta?(foundational_flow_reference) }
+
+    context 'when foundational flow is beta' do
+      let(:foundational_flow_reference) { 'sast_fp_detection/v1' }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when foundational flow is GA' do
+      let(:foundational_flow_reference) { 'code_review/v1' }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when foundational flow does not exist' do
+      let(:foundational_flow_reference) { 'non_existent/v1' }
+
+      it { is_expected.to be false }
+    end
+  end
+
   describe '#agent_privileges' do
     subject(:agent_privileges) { definition.agent_privileges }
 

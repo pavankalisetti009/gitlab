@@ -94,11 +94,20 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
     let(:add_on_purchase) { nil }
     let(:root_ancestor) { group }
     let(:test_workflows) do
-      [{
-        foundational_flow_reference: 'test_flow/v1',
-        display_name: 'Test Flow',
-        description: 'Test Description'
-      }]
+      [
+        {
+          foundational_flow_reference: 'test_flow/v1',
+          display_name: 'Test Flow',
+          description: 'Test Description',
+          feature_maturity: 'ga'
+        },
+        {
+          foundational_flow_reference: 'beta_flow/v1',
+          display_name: 'Beta Flow',
+          description: 'Beta Flow Description',
+          feature_maturity: 'beta'
+        }
+      ]
     end
 
     let(:subgroup1) { build_stubbed(:group, parent: group) }
@@ -208,6 +217,50 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           parent_path: group.full_path
         }
       )
+    end
+
+    context 'when SaaS group has enabled experimental/beta AI features' do
+      before do
+        namespace_settings.experiment_features_enabled = true
+      end
+
+      it 'also contains beta/experimental foundational flow data' do
+        expect(settings[:available_foundational_flows]).to eq(
+          Gitlab::Json.generate([
+            { name: 'Test Flow', description: 'Test Description', reference: 'test_flow/v1' },
+            { name: 'Beta Flow', description: 'Beta Flow Description', reference: 'beta_flow/v1' }
+          ])
+        )
+      end
+    end
+
+    context 'when not SaaS' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it 'only contains GA foundational flow data' do
+        expect(settings[:available_foundational_flows]).to eq(
+          Gitlab::Json.generate([
+            { name: 'Test Flow', description: 'Test Description', reference: 'test_flow/v1' }
+          ])
+        )
+      end
+
+      context 'when instance has enabled experimental/beta AI features' do
+        before do
+          stub_application_setting(instance_level_ai_beta_features_enabled: true)
+        end
+
+        it 'also contains beta/experimental foundational flow data' do
+          expect(settings[:available_foundational_flows]).to eq(
+            Gitlab::Json.generate([
+              { name: 'Test Flow', description: 'Test Description', reference: 'test_flow/v1' },
+              { name: 'Beta Flow', description: 'Beta Flow Description', reference: 'beta_flow/v1' }
+            ])
+          )
+        end
+      end
     end
 
     context 'with duo_access_through_namespaces disabled' do

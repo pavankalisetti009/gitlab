@@ -116,6 +116,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :read_duo_usage_analytics,
             :read_enterprise_ai_analytics,
             :read_external_emails,
+            :read_foundational_flow,
             :read_freeze_period,
             :read_google_cloud_artifact_registry,
             :read_grafana,

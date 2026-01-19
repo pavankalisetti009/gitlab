@@ -108,7 +108,18 @@ module Ai
       def get_filtered_item_types
         types = (item_types.presence || all_types).map(&:to_sym)
 
-        types -= [Ai::Catalog::Item::FLOW_TYPE] unless Ability.allowed?(current_user, :read_ai_catalog_flow, container)
+        # (Foundational flows)
+        if foundational_flow_reference.present?
+          return [] unless Ability.allowed?(current_user, :read_foundational_flow, container)
+          return [] if beta_foundational_flow_without_beta_features?
+
+          return [Ai::Catalog::Item::FLOW_TYPE]
+        end
+
+        # (Custom flows)
+        if foundational_flow_reference.blank? && !Ability.allowed?(current_user, :read_ai_catalog_flow, container)
+          types -= [Ai::Catalog::Item::FLOW_TYPE]
+        end
 
         unless Ability.allowed?(current_user, :read_ai_catalog_third_party_flow, container)
           types -= [Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE]
@@ -119,6 +130,17 @@ module Ai
 
       def all_types
         Ai::Catalog::Item.item_types.keys
+      end
+
+      def beta_foundational_flow_without_beta_features?
+        return false unless foundational_flow_reference.present?
+        return false unless ::Ai::Catalog::FoundationalFlow.beta?(foundational_flow_reference)
+
+        if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+          !container.root_ancestor.experiment_features_enabled
+        else
+          !::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
+        end
       end
     end
   end

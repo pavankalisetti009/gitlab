@@ -15,6 +15,7 @@ module Ai
           description: "Streamline code reviews by analyzing code changes, comments, and linked issues.",
           avatar: "code-review-flow.png",
           foundational_flow_reference: "code_review/v1",
+          feature_maturity: "ga",
           ai_feature: "review_merge_request",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
@@ -30,6 +31,7 @@ module Ai
           description: "Analyze critical SAST vulnerabilities.",
           avatar: "security-flow.png",
           foundational_flow_reference: "sast_fp_detection/v1",
+          feature_maturity: "beta",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
@@ -45,6 +47,7 @@ module Ai
           name: "resolve_sast_vulnerability/v1",
           display_name: "Resolve SAST Vulnerability",
           workflow_definition: "resolve_sast_vulnerability/v1",
+          feature_maturity: "ga",
           description: "GitLab resolve SAST vulnerability",
           avatar: "security-flow.png",
           pre_approved_agent_privileges: [
@@ -62,6 +65,7 @@ module Ai
           name: "developer/v1",
           display_name: "Developer",
           foundational_flow_reference: "developer/v1",
+          feature_maturity: "ga",
           description: "Convert issues into actionable merge requests.",
           avatar: "gitlab-duo-flow.png",
           pre_approved_agent_privileges: [
@@ -78,6 +82,7 @@ module Ai
           name: "fix_pipeline/v1",
           display_name: "Fix CI/CD Pipeline",
           foundational_flow_reference: "fix_pipeline/v1",
+          feature_maturity: "ga",
           description: "Diagnose and fix issues in your GitLab CI/CD pipeline.",
           avatar: "fix-pipeline-flow.png",
           pre_approved_agent_privileges: [
@@ -95,6 +100,7 @@ module Ai
           name: "convert_to_gl_ci/v1",
           display_name: "Convert to GitLab CI/CD",
           foundational_flow_reference: "convert_to_gl_ci/v1",
+          feature_maturity: "ga",
           description: "Migrate your Jenkins pipelines to GitLab CI/CD.",
           avatar: "convert-ci-flow.png",
           pre_approved_agent_privileges: [
@@ -117,6 +123,7 @@ module Ai
       attribute :allow_agent_to_request_user, :boolean, default: false
       attribute :environment, :string, default: "ambient"
       attribute :foundational_flow_reference, :string
+      attribute :feature_maturity, :string
       attribute :description, :string
       attribute :triggers, default: []
       attribute :avatar, :string
@@ -129,6 +136,11 @@ module Ai
         definition&.tap do |def_obj|
           def_obj.agent_privileges = def_obj.pre_approved_agent_privileges if def_obj.agent_privileges.empty?
         end
+      end
+
+      def self.beta?(foundational_flow_reference)
+        flow = find_by(foundational_flow_reference: foundational_flow_reference)
+        flow&.feature_maturity == 'beta'
       end
 
       def agent_privileges
