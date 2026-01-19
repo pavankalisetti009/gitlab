@@ -45,6 +45,7 @@ describe('FeatureSettings', () => {
       provide: {
         betaModelsEnabled: true,
         duoConfigurationSettingsPath,
+        canManageSelfHostedModels: true,
         ...injectedProps,
       },
     });
@@ -151,24 +152,34 @@ describe('FeatureSettings', () => {
     });
   });
 
-  describe('when beta features are enabled', () => {
-    it('does not display a beta models info alert', () => {
-      expect(findBetaAlert().exists()).toBe(false);
-    });
-  });
+  describe('beta features alert', () => {
+    describe.each`
+      betaModelsEnabled | canManageSelfHostedModels | visible
+      ${false}          | ${true}                   | ${true}
+      ${false}          | ${false}                  | ${false}
+      ${true}           | ${true}                   | ${false}
+      ${true}           | ${false}                  | ${false}
+    `(
+      'betaModelsEnabled=$betaModelsEnabled, canManageSelfHostedModels=$canManageSelfHostedModels',
+      ({ betaModelsEnabled, canManageSelfHostedModels, visible }) => {
+        it(`${visible ? 'displays' : 'hides'} beta features alert`, () => {
+          createComponent({
+            injectedProps: {
+              betaModelsEnabled,
+              canManageSelfHostedModels,
+            },
+          });
 
-  describe('when beta features are disabled', () => {
-    it('displays a beta models info alert', () => {
-      createComponent({
-        injectedProps: {
-          betaModelsEnabled: false,
-        },
-      });
-
-      expect(findBetaAlert().props('duoConfigurationSettingsPath')).toBe(
-        duoConfigurationSettingsPath,
-      );
-    });
+          if (visible) {
+            expect(findBetaAlert().props('duoConfigurationSettingsPath')).toBe(
+              duoConfigurationSettingsPath,
+            );
+          } else {
+            expect(findBetaAlert().exists()).toBe(false);
+          }
+        });
+      },
+    );
   });
 
   describe('when the API request is unsuccessful', () => {
