@@ -197,7 +197,6 @@ module EE
         end.to_h
 
         if submitted_flow_refs
-          sync_parent_group_flows(submitted_flow_refs)
           changed_ai_settings[:enabled_foundational_flows] = submitted_flow_refs
         end
 
@@ -212,35 +211,6 @@ module EE
         if previous_changes.include?(:web_based_commit_signing_enabled)
           ::Namespaces::CascadeWebBasedCommitSigningEnabledWorker.perform_async(group.id)
         end
-      end
-
-      def sync_parent_group_flows(flow_references)
-        ::Ai::Catalog::Flows::SeedFoundationalFlowsService.new(
-          current_user: current_user,
-          organization: group.organization
-        ).execute
-
-        catalog_item_ids = convert_flow_references_to_ids(flow_references)
-
-        group.sync_enabled_foundational_flows!(catalog_item_ids)
-
-        ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
-          group,
-          current_user: current_user
-        ).execute
-      rescue StandardError => e
-        ::Gitlab::ErrorTracking.track_exception(
-          e,
-          group_id: group.id,
-          flow_references: flow_references
-        )
-      end
-
-      def convert_flow_references_to_ids(flow_references)
-        return [] if flow_references.blank?
-
-        reference_to_id_map = ::Ai::Catalog::Item.foundational_flow_ids_for_references(flow_references)
-        flow_references.filter_map { |ref| reference_to_id_map[ref] }
       end
 
       def handle_pending_members

@@ -380,6 +380,9 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
       create(:ai_catalog_item, :with_foundational_flow_reference, public: true, organization: group.organization)
     end
 
+    let_it_be(:subgroup) { create(:group, parent: group) }
+    let_it_be(:project) { create(:project, group: group) }
+
     let(:params) do
       { enabled_foundational_flows: [flow1.foundational_flow_reference, flow2.foundational_flow_reference] }
     end
@@ -400,7 +403,7 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
       update_group(group, user, params)
     end
 
-    context 'when flow selection is cleared' do
+    context 'when flow selection is cleared', :sidekiq_inline do
       let(:params) { { enabled_foundational_flows: [] } }
 
       before do
@@ -415,22 +418,95 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
       end
     end
 
-    context 'when sync fails' do
-      let(:params) do
-        { enabled_foundational_flows: [flow1.foundational_flow_reference] }
-      end
+    context 'when verifying no duplicate service calls', :sidekiq_inline do
+      it 'calls SeedFoundationalFlowsService exactly once' do
+        seed_call_count = 0
 
-      it 'tracks the exception and continues' do
-        allow_next_instance_of(Ai::Catalog::Flows::SyncFoundationalFlowsService) do |service|
-          allow(service).to receive(:execute).and_raise(StandardError, 'sync failed')
+        allow(Ai::Catalog::Flows::SeedFoundationalFlowsService).to receive(:new).and_wrap_original do |method, **args|
+          seed_call_count += 1
+          method.call(**args)
         end
 
-        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-          instance_of(StandardError),
-          hash_including(group_id: group.id, flow_references: [flow1.foundational_flow_reference])
-        )
+        update_group(group, user, params)
+
+        expect(seed_call_count).to eq(1),
+          "Expected SeedFoundationalFlowsService to be called once, but was called #{seed_call_count} times"
+      end
+
+      it 'calls sync_enabled_foundational_flows! on parent group exactly once' do
+        parent_sync_count = 0
+
+        allow_any_instance_of(Group).to receive(:sync_enabled_foundational_flows!).and_wrap_original do |method, *args|
+          parent_sync_count += 1 if method.receiver.id == group.id
+          method.call(*args)
+        end
 
         update_group(group, user, params)
+
+        expect(parent_sync_count).to eq(1),
+          "Expected parent group sync to be called once, but was called #{parent_sync_count} times"
+      end
+
+      it 'calls sync_enabled_foundational_flows! on each descendant group exactly once' do
+        subgroup_sync_count = 0
+
+        allow_any_instance_of(Group).to receive(:sync_enabled_foundational_flows!).and_wrap_original do |method, *args|
+          subgroup_sync_count += 1 if method.receiver.id == subgroup.id
+          method.call(*args)
+        end
+
+        update_group(group, user, params)
+
+        expect(subgroup_sync_count).to eq(1),
+          "Expected subgroup sync to be called once, but was called #{subgroup_sync_count} times"
+      end
+
+      it 'calls SyncFoundationalFlowsService for parent group exactly once' do
+        parent_service_count = 0
+
+        allow(Ai::Catalog::Flows::SyncFoundationalFlowsService).to receive(:new)
+          .and_wrap_original do |method, container, **args|
+            parent_service_count += 1 if container.is_a?(Group) && container.id == group.id
+            method.call(container, **args)
+          end
+
+        update_group(group, user, params)
+
+        expect(parent_service_count).to eq(1),
+          "Expected SyncFoundationalFlowsService for parent to be called once, " \
+            "but was called #{parent_service_count} times"
+      end
+
+      it 'calls SyncFoundationalFlowsService for each descendant group exactly once' do
+        subgroup_service_count = 0
+
+        allow(Ai::Catalog::Flows::SyncFoundationalFlowsService).to receive(:new)
+          .and_wrap_original do |method, container, **args|
+            subgroup_service_count += 1 if container.is_a?(Group) && container.id == subgroup.id
+            method.call(container, **args)
+          end
+
+        update_group(group, user, params)
+
+        expect(subgroup_service_count).to eq(1),
+          "Expected SyncFoundationalFlowsService for subgroup to be called once, " \
+            "but was called #{subgroup_service_count} times"
+      end
+
+      it 'calls SyncFoundationalFlowsService for each project exactly once' do
+        project_service_count = 0
+
+        allow(Ai::Catalog::Flows::SyncFoundationalFlowsService).to receive(:new)
+          .and_wrap_original do |method, container, **args|
+            project_service_count += 1 if container.is_a?(Project) && container.id == project.id
+            method.call(container, **args)
+          end
+
+        update_group(group, user, params)
+
+        expect(project_service_count).to eq(1),
+          "Expected SyncFoundationalFlowsService for project to be called once, " \
+            "but was called #{project_service_count} times"
       end
     end
   end

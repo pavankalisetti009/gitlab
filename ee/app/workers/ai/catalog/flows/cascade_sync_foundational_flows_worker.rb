@@ -27,7 +27,7 @@ module Ai
 
           convert_references_to_ids(flow_references) if flow_references
 
-          sync_groups(group, user, skip_parent: true)
+          sync_groups(group, user)
 
           sync_projects(group, user)
         end
@@ -49,13 +49,11 @@ module Ai
           references.filter_map { |ref| reference_to_id[ref] }
         end
 
-        def sync_groups(group, user, skip_parent: false)
-          unless skip_parent
-            ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
-              group,
-              current_user: user
-            ).execute
-          end
+        def sync_groups(group, user)
+          ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
+            group,
+            current_user: user
+          ).execute
 
           group.descendants.each_batch(of: BATCH_SIZE) do |batch|
             batch.each do |descendant_group|
