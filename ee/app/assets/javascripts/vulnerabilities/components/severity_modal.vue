@@ -111,8 +111,10 @@ export default {
           data-testid="severity"
           @select="selectSeverity"
         >
-          <template #toggle>
+          <template #toggle="{ accessibilityAttributes }">
             <gl-button
+              v-bind="accessibilityAttributes"
+              id="severity"
               :category="severityValid ? 'primary' : 'secondary'"
               :variant="severityValid ? 'default' : 'danger'"
             >

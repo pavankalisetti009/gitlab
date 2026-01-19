@@ -542,9 +542,10 @@ export default {
         @search="onSearch"
         @hidden="onHide"
       >
-        <template #toggle>
+        <template #toggle="{ accessibilityAttributes }">
           <gl-button
             id="board-value-dropdown"
+            v-bind="accessibilityAttributes"
             class="gl-flex gl-max-w-full gl-items-center gl-truncate"
             :class="{ '!gl-shadow-inner-1-red-400': !selectedIdValid }"
             button-text-classes="gl-flex"

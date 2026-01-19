@@ -1,7 +1,7 @@
 <script>
 import { GlFormGroup, GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
-import { intersectionBy } from 'lodash';
+import { intersectionBy, uniqueId } from 'lodash';
 
 import { createAlert } from '~/alert';
 import { s__, __ } from '~/locale';
@@ -33,6 +33,7 @@ export default {
   },
   data() {
     return {
+      statusToggleId: uniqueId('wi-status-toggle-'),
       workItemTypes: [],
       searchTerm: '',
     };
@@ -179,7 +180,7 @@ export default {
 </script>
 
 <template>
-  <gl-form-group :label="__('Status')">
+  <gl-form-group :label="__('Status')" :label-for="statusToggleId">
     <gl-collapsible-listbox
       ref="listbox"
       block
@@ -190,6 +191,7 @@ export default {
       :reset-button-label="__('Reset')"
       :selected="value"
       :item-value="value"
+      :toggle-id="statusToggleId"
       :toggle-text="toggleText"
       :disabled="!hasItemsSelected"
       :no-results-text="noResultsText"

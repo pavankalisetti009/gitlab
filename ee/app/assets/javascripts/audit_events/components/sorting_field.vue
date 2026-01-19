@@ -59,15 +59,16 @@ export default {
     :selected="selectedItem.value"
     @select="onItemSelect"
   >
-    <template #toggle>
+    <template #toggle="{ accessibilityAttributes: { id, ...accessibilityAttributes } }">
       <gl-button
         v-gl-tooltip="$options.i18n.sorting_title"
+        v-bind="accessibilityAttributes"
         data-testid="selected-date-range"
         :aria-label="$options.i18n.ariaLabel(selectedItem.text)"
         :title="$options.i18n.sorting_title"
         class="gl-w-full"
         button-text-classes="gl-mr-[-4px] !gl-flex !gl-justify-between gl-w-full"
-        ><span class="gl-flex-grow-1 gl-text-left">{{ selectedItem.text }}</span>
+        ><span :id="id" class="gl-flex-grow-1 gl-text-left">{{ selectedItem.text }}</span>
         <gl-icon
           aria-hidden="true"
           name="chevron-down"

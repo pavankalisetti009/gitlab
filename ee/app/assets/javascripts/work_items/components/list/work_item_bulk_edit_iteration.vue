@@ -1,6 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlFormGroup } from '@gitlab/ui';
-import { debounce, unionBy } from 'lodash';
+import { debounce, unionBy, uniqueId } from 'lodash';
 import { groupOptionsByIterationCadences, getIterationPeriod } from 'ee/iterations/utils';
 import { createAlert } from '~/alert';
 import projectIterationsQuery from 'ee/work_items/graphql/project_iterations.query.graphql';
@@ -39,6 +39,7 @@ export default {
   },
   data() {
     return {
+      iterationToggleId: uniqueId('wi-iteration-toggle-'),
       searchStarted: false,
       searchTerm: '',
       selectedId: this.value,
@@ -144,7 +145,7 @@ export default {
 </script>
 
 <template>
-  <gl-form-group :label="__('Iteration')">
+  <gl-form-group :label="__('Iteration')" :label-for="iterationToggleId">
     <gl-collapsible-listbox
       ref="listbox"
       block
@@ -156,6 +157,7 @@ export default {
       searchable
       :searching="isLoading"
       :selected="selectedId"
+      :toggle-id="iterationToggleId"
       :toggle-text="toggleText"
       :disabled="disabled"
       @reset="reset"
