@@ -7,3 +7,5 @@ class ReindexWorkItemsToUpdateIntegerWithLongTypeThirdAttempt < Elastic::Migrati
     %w[WorkItem]
   end
 end
+
+ReindexWorkItemsToUpdateIntegerWithLongTypeThirdAttempt.prepend ::Search::Elastic::MigrationObsolete
