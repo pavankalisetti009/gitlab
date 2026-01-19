@@ -12,7 +12,7 @@ module QA
           def open_duo_chat
             dismiss_duo_chat_popup if respond_to?(:dismiss_duo_chat_popup)
 
-            click_button('GitLab Duo Chat', match: :first)
+            click_element('ai-chat-toggle')
           end
 
           def send_duo_chat_prompt(prompt)
@@ -67,6 +67,31 @@ module QA
 
           def wait_for_response
             QA::Support::Waiter.wait_until { find_all('.duo-chat-message').present? }
+          end
+
+          def agentic_mode_toggle_visible?
+            has_element?('toggle-label', text: /Agentic/i)
+          end
+
+          def agentic_mode_enabled?
+            toggle_wrapper = find_element("toggle-wrapper", text: /Agentic/i)
+            toggle_button = toggle_wrapper.find('button[role="switch"]')
+            toggle_button['aria-checked'] == 'true'
+          end
+
+          def switch_to_classic_mode
+            return unless agentic_mode_enabled?
+
+            within_element("toggle-wrapper", text: /Agentic/i) do
+              click_element('button[role="switch"]')
+            end
+            wait_for_requests
+          end
+
+          def ensure_classic_mode!
+            raise 'Agentic mode toggle is not visible - cannot verify chat mode' unless agentic_mode_toggle_visible?
+
+            switch_to_classic_mode
           end
         end
       end

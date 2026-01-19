@@ -12,6 +12,7 @@ module QA
         it 'a valid response is returned', testcase: testcase do
           QA::EE::Page::Component::DuoChat.perform do |duo_chat|
             duo_chat.open_duo_chat
+            duo_chat.ensure_classic_mode!
             duo_chat.clear_chat_history
             duo_chat.send_duo_chat_prompt('hi')
 
@@ -33,11 +34,7 @@ module QA
 
       context "when asking 'hi'" do
         context 'on GitLab.com', :external_ai_provider,
-          only: { pipeline: %i[staging staging-canary canary production] },
-          quarantine: {
-            issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/14196',
-            type: :investigating
-          } do
+          only: { pipeline: %i[staging staging-canary canary production] } do
           include_examples 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/441192'
         end
 
