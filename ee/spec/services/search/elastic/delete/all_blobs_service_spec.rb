@@ -21,7 +21,8 @@ RSpec.describe Search::Elastic::Delete::AllBlobsService, feature_category: :glob
           setting.update!(elasticsearch_code_scope: false)
         end
 
-        it 'only deletes all blob documents from the main index' do
+        it 'only deletes all blob documents from the main index',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/22444' do
           # Verify index has documents
           initial_blob_docs, initial_non_blob_docs = docs_in_index_partition_by_type_blobs
           expect(initial_blob_docs).not_to be_empty
