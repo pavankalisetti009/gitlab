@@ -99,12 +99,12 @@ module GitlabSubscriptions
       if gitlab_com_subscription?
         saas_billable_role_change?(
           target_namespace: target_namespace,
-          role: ::Gitlab::Access.sym_options[role],
+          role: ::Gitlab::Access.sym_options_with_owner[role],
           member_role_id: member_role_id
         )
       else
         sm_billable_role_change?(
-          role: ::Gitlab::Access.sym_options[role],
+          role: ::Gitlab::Access.sym_options_with_owner[role],
           member_role_id: member_role_id
         )
       end
