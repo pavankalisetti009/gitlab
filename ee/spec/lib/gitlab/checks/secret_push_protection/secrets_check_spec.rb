@@ -159,6 +159,34 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
               end
             end
 
+            context 'when TooManyChangedPathsError is raised during scanning' do
+              let(:changed_paths_count) { 1500 }
+              let(:threshold) { 1000 }
+              let(:too_many_paths_error) do
+                Gitlab::Checks::SecretPushProtection::TooManyChangedPathsError.new(changed_paths_count, threshold)
+              end
+
+              before do
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
+                  allow(instance).to receive(:standardize_payloads).and_raise(too_many_paths_error,
+                    'Unexpected error during payload processing')
+                end
+              end
+
+              it 'adds a warning message to be displayed to the user' do
+                warning_instance = instance_double(Gitlab::Checks::SecretPushProtection::PostPushWarning)
+
+                expect(Gitlab::Checks::SecretPushProtection::PostPushWarning)
+                  .to receive(:new)
+                  .with(project.repository, user, changes_access.protocol, changed_paths_count, threshold)
+                  .and_return(warning_instance)
+
+                expect(warning_instance).to receive(:add_message)
+
+                expect { secrets_check.validate! }.not_to raise_error
+              end
+            end
+
             context 'when SDS should be called (on SaaS)' do
               before do
                 stub_saas_features(secret_detection_service: true)
