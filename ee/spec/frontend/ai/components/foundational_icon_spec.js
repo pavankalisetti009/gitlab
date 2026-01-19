@@ -35,7 +35,7 @@ describe('FoundationalIcon', () => {
   });
 
   it('renders icon with correct id based on resourceId', () => {
-    expect(findIcon().attributes('id')).toBe('gid://gitlab/Ai::Catalog::Item/1-foundational-icon');
+    expect(findIcon().attributes('id')).toBe('1-foundational-icon');
   });
 
   it('renders with custom size', () => {
@@ -49,9 +49,7 @@ describe('FoundationalIcon', () => {
 
   describe('popover', () => {
     it('renders popover with correct target', () => {
-      expect(findPopover().props('target')).toBe(
-        'gid://gitlab/Ai::Catalog::Item/1-foundational-icon',
-      );
+      expect(findPopover().props('target')).toBe('1-foundational-icon');
     });
 
     it('renders popover content with GitLab text', () => {
