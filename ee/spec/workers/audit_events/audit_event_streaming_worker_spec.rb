@@ -11,6 +11,12 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
     stub_feature_flags(disable_audit_event_streaming: false)
   end
 
+  describe 'STREAMING_COUNTER' do
+    it 'defines a Prometheus counter with the correct name and description' do
+      expect(described_class::STREAMING_COUNTER).to be_a(Prometheus::Client::Counter)
+    end
+  end
+
   shared_context 'a successful audit event stream' do
     let(:event_name) { 'event_type_filters_created' }
 
@@ -68,6 +74,16 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
 
         subject
       end
+
+      it 'increments the streaming counter with streamable: false' do
+        expect(described_class::STREAMING_COUNTER).to receive(:increment).with(
+          hash_including(
+            streamable: false
+          )
+        )
+
+        subject
+      end
     end
 
     context 'when the group has a destination' do
@@ -78,6 +94,18 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
       it 'makes one HTTP call and logs the event type' do
         expect(Gitlab::HTTP).to receive(:post).once
         expect(worker).to receive(:log_extra_metadata_on_done).with(:audit_event_type, "event_type_filters_created")
+
+        subject
+      end
+
+      it 'increments the streaming counter with correct labels' do
+        allow(Gitlab::HTTP).to receive(:post)
+
+        expect(described_class::STREAMING_COUNTER).to receive(:increment).with(
+          hash_including(
+            streamable: true
+          )
+        )
 
         subject
       end
@@ -230,6 +258,12 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         expect(worker.perform('audit_operation', nil, audit_event.to_json)).to be_nil
         expect(Gitlab::HTTP).not_to receive(:post)
       end
+
+      it 'does not increment the streaming counter' do
+        expect(described_class::STREAMING_COUNTER).not_to receive(:increment)
+
+        worker.perform('audit_operation', nil, audit_event.to_json)
+      end
     end
   end
 
@@ -301,6 +335,12 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
 
     it 'does not create ExternalDestinationStreamer object' do
       expect(AuditEvents::ExternalDestinationStreamer).not_to receive(:new)
+
+      subject
+    end
+
+    it 'does not increment the streaming counter' do
+      expect(described_class::STREAMING_COUNTER).not_to receive(:increment)
 
       subject
     end
@@ -419,6 +459,18 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
 
           subject
         end
+
+        it 'increments the streaming counter' do
+          allow(Gitlab::HTTP).to receive(:post)
+
+          expect(described_class::STREAMING_COUNTER).to receive(:increment).with(
+            hash_including(
+              streamable: true
+            )
+          )
+
+          subject
+        end
       end
 
       context 'when the gitlab instance does not have any external destination' do
@@ -483,6 +535,15 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
           result = worker.perform(audit_operation, group_audit_event.id, nil, invalid_model_class)
           expect(result).to be_nil
         end
+
+        it 'does not increment the streaming counter' do
+          allow(AuditEvents::Processor).to receive(:fetch).and_return(nil)
+          allow(worker).to receive(:log_extra_metadata_on_done)
+
+          expect(described_class::STREAMING_COUNTER).not_to receive(:increment)
+
+          worker.perform(audit_operation, group_audit_event.id, nil, invalid_model_class)
+        end
       end
 
       context 'when record is not found' do
@@ -499,6 +560,15 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
 
           result = worker.perform(audit_operation, non_existent_id, nil, 'AuditEvents::GroupAuditEvent')
           expect(result).to be_nil
+        end
+
+        it 'does not increment the streaming counter' do
+          allow(AuditEvents::Processor).to receive(:fetch).and_return(nil)
+          allow(worker).to receive(:log_extra_metadata_on_done)
+
+          expect(described_class::STREAMING_COUNTER).not_to receive(:increment)
+
+          worker.perform(audit_operation, non_existent_id, nil, 'AuditEvents::GroupAuditEvent')
         end
       end
     end
@@ -517,6 +587,15 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
 
         result = worker.perform('audit_operation', nil, invalid_json)
         expect(result).to be_nil
+      end
+
+      it 'does not increment the streaming counter' do
+        allow(AuditEvents::Processor).to receive(:fetch).and_return(nil)
+        allow(worker).to receive(:log_extra_metadata_on_done)
+
+        expect(described_class::STREAMING_COUNTER).not_to receive(:increment)
+
+        worker.perform('audit_operation', nil, invalid_json)
       end
     end
 
@@ -542,6 +621,66 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
 
         result = worker.perform('audit_operation', nil, audit_event_json)
         expect(result).to be_nil
+      end
+
+      it 'does not increment the streaming counter' do
+        allow(AuditEvents::Processor).to receive(:fetch).and_return(nil)
+        allow(worker).to receive(:log_extra_metadata_on_done)
+
+        expect(described_class::STREAMING_COUNTER).not_to receive(:increment)
+
+        worker.perform('audit_operation', nil, audit_event_json)
+      end
+    end
+
+    describe 'streaming counter labels' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:audit_event) { create(:audit_event, :group_event, entity_id: group.id) }
+      let(:audit_operation) { 'test_audit_operation' }
+      let(:definition) { instance_double(Gitlab::Audit::Type::Definition, streamed: true, saved_to_database: false) }
+
+      before do
+        allow(::Gitlab::Audit::Type::Definition).to receive(:get).with(audit_operation).and_return(definition)
+        group.external_audit_event_destinations.create!(destination_url: 'http://example.com')
+        allow(Gitlab::HTTP).to receive(:post)
+      end
+
+      it 'increments counter with should_stream from definition' do
+        expect(described_class::STREAMING_COUNTER).to receive(:increment).with(
+          hash_including(should_stream: true)
+        )
+
+        worker.perform(audit_operation, audit_event.id)
+      end
+
+      it 'increments counter with should_persist from definition' do
+        expect(described_class::STREAMING_COUNTER).to receive(:increment).with(
+          hash_including(should_persist: false)
+        )
+
+        worker.perform(audit_operation, audit_event.id)
+      end
+
+      context 'when definition is nil' do
+        before do
+          allow(::Gitlab::Audit::Type::Definition).to receive(:get).with(audit_operation).and_return(nil)
+        end
+
+        it 'defaults should_stream to false' do
+          expect(described_class::STREAMING_COUNTER).to receive(:increment).with(
+            hash_including(should_stream: false)
+          )
+
+          worker.perform(audit_operation, audit_event.id)
+        end
+
+        it 'defaults should_persist to false' do
+          expect(described_class::STREAMING_COUNTER).to receive(:increment).with(
+            hash_including(should_persist: false)
+          )
+
+          worker.perform(audit_operation, audit_event.id)
+        end
       end
     end
   end
