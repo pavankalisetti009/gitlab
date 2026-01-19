@@ -1393,7 +1393,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     context 'visual review bot' do
-      let(:current_user) { Users::Internal.visual_review_bot }
+      let(:current_user) { Users::Internal.in_organization(project.organization).visual_review_bot }
 
       it { expect_disallowed(:create_note) }
       it { expect_disallowed(:read_note) }
@@ -4624,7 +4624,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
           allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(stage_check_available)
           stub_ee_application_setting(duo_features_enabled: duo_features_enabled)
-          allow(current_user).to receive(:allowed_to_use?).and_return(false)
+          allow(current_user).to receive(:allowed_to_use?)
+            .with(:duo_agent_platform, root_namespace: project.root_ancestor)
+            .and_return(false)
         end
 
         context 'when user is not allowed to use duo_agent_platform' do
@@ -4633,11 +4635,40 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         context 'when user is allowed to use duo_agent_platform' do
           before do
-            allow(current_user).to receive(:allowed_to_use?).and_return(true)
+            allow(current_user).to receive(:allowed_to_use?)
+              .with(:duo_agent_platform, root_namespace: project.root_ancestor)
+              .and_return(true)
           end
 
           it { is_expected.to match_expected_result }
         end
+      end
+
+      context 'when duo_workflow conditions are met but user not allowed to use duo_agent_platform' do
+        let(:current_user) { developer }
+
+        before do
+          stub_feature_flags(duo_workflow: true)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+          stub_ee_application_setting(duo_features_enabled: true)
+          allow(current_user).to receive(:allowed_to_use?)
+            .with(:duo_agent_platform, root_namespace: project.root_ancestor)
+            .and_return(false)
+        end
+
+        it { is_expected.to be_disallowed(:duo_workflow) }
+      end
+
+      context 'when user is nil' do
+        let(:current_user) { nil }
+
+        before do
+          stub_feature_flags(duo_workflow: true)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+          stub_ee_application_setting(duo_features_enabled: true)
+        end
+
+        it { is_expected.to be_disallowed(:duo_workflow) }
       end
     end
 
@@ -4741,6 +4772,41 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             it { is_expected.to be_allowed(:create_duo_workflow_for_ci) }
           end
         end
+      end
+    end
+
+    describe 'access_ai_review_mr permission' do
+      let(:current_user) { developer }
+
+      before do
+        stub_licensed_features(ai_features: true)
+        stub_ee_application_setting(duo_features_enabled: true)
+      end
+
+      it 'calls allowed_to_use? with correct root_namespace parameter' do
+        expect(current_user).to receive(:allowed_to_use?).with(
+          :review_merge_request,
+          licensed_feature: :review_merge_request,
+          root_namespace: project.root_ancestor
+        ).and_return(true)
+
+        is_expected.to be_allowed(:access_ai_review_mr)
+      end
+
+      context 'when user is not allowed' do
+        before do
+          allow(current_user).to receive(:allowed_to_use?)
+            .with(:review_merge_request, licensed_feature: :review_merge_request, root_namespace: project.root_ancestor)
+            .and_return(false)
+        end
+
+        it { is_expected.to be_disallowed(:access_ai_review_mr) }
+      end
+
+      context 'when user is nil' do
+        let(:current_user) { nil }
+
+        it { is_expected.to be_disallowed(:access_ai_review_mr) }
       end
     end
 
@@ -5010,7 +5076,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           allow(project).to receive(:duo_features_enabled).and_return(duo_features_enabled)
 
           allow(current_user).to receive(:allowed_to_use?)
-            .with(:review_merge_request, licensed_feature: :review_merge_request).and_return(allowed_to_use)
+            .with(:review_merge_request, licensed_feature: :review_merge_request, root_namespace: project.root_ancestor)
+            .and_return(allowed_to_use)
         end
 
         it { is_expected.to enabled_for_user }
@@ -5690,6 +5757,15 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         )
       end
 
+      it 'calls allowed_to_use_through_namespace? with correct root_namespace parameter' do
+        expect(current_user).to receive(:allowed_to_use_through_namespace?).with(
+          :ai_catalog,
+          project.root_ancestor
+        ).and_return(true)
+
+        is_expected.to be_allowed(:read_ai_catalog_item_consumer)
+      end
+
       context 'when catalog is available for user' do
         before do
           membership_rule.through_namespace.add_guest(current_user)
@@ -5816,7 +5892,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         stub_ee_application_setting(duo_features_enabled: true)
-        allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:duo_agent_platform, root_namespace: project.root_ancestor)
+          .and_return(true)
       end
 
       describe 'manage_ai_flow_triggers permission' do

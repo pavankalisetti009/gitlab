@@ -370,12 +370,9 @@ module EE
         ::Feature.enabled?(:global_ai_catalog, @user)
       end
 
-      condition(:ai_catalog_available_for_user, scope: :user) do
-        # Currently this maps to duo_agent_platform, but makes it easier to implement granular controls down the road
-        # We could also add one for ai_catalog_flows, but since it's not granular if the user does not have access to
-        # duo agent platform, they won't have access to anything
+      condition(:ai_catalog_available_for_user) do
         # When anonymous user, delegates to the other setting controls.
-        @user.nil? || @user.allowed_to_use_through_namespace?(:ai_catalog)
+        @user.nil? || @user.allowed_to_use_through_namespace?(:ai_catalog, @subject.root_ancestor)
       end
 
       condition(:ai_catalog_available) do
@@ -508,7 +505,11 @@ module EE
       end
 
       condition(:user_allowed_to_use_ai_review_mr) do
-        @user&.allowed_to_use?(:review_merge_request, licensed_feature: :review_merge_request)
+        @user&.allowed_to_use?(
+          :review_merge_request,
+          licensed_feature: :review_merge_request,
+          root_namespace: @subject.root_ancestor
+        )
       end
 
       rule do
@@ -1152,7 +1153,7 @@ module EE
       condition(:duo_workflow_available) do
         @subject.duo_features_enabled &&
           ::Gitlab::Llm::StageCheck.available?(@subject, :duo_workflow) &&
-          @user&.allowed_to_use?(:duo_agent_platform)
+          @user&.allowed_to_use?(:duo_agent_platform, root_namespace: @subject.root_ancestor)
       end
 
       rule { duo_workflow_enabled & duo_agent_platform_enabled & duo_workflow_available & can?(:developer_access) }.policy do

@@ -1091,7 +1091,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
 
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         stub_ee_application_setting(duo_features_enabled: true)
-        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform, anything).and_return(true)
       end
 
       context 'when assigning multiple users with flow triggers' do

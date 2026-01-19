@@ -1903,6 +1903,41 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'access_ai_review_mr permission' do
+    let(:current_user) { developer }
+
+    before do
+      stub_licensed_features(ai_features: true)
+      group.namespace_settings.update!(duo_features_enabled: true)
+    end
+
+    it 'calls allowed_to_use? with correct root_namespace parameter' do
+      expect(current_user).to receive(:allowed_to_use?).with(
+        :review_merge_request,
+        licensed_feature: :review_merge_request,
+        root_namespace: group.root_ancestor
+      ).and_return(true)
+
+      is_expected.to be_allowed(:access_ai_review_mr)
+    end
+
+    context 'when user is not allowed to use review_merge_request' do
+      before do
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:review_merge_request, licensed_feature: :review_merge_request, root_namespace: group.root_ancestor)
+          .and_return(false)
+      end
+
+      it { is_expected.to be_disallowed(:access_ai_review_mr) }
+    end
+
+    context 'when user is nil' do
+      let(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(:access_ai_review_mr) }
+    end
+  end
+
   describe ':read_dependency' do
     let(:policy) { :read_dependency }
 
@@ -4883,7 +4918,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         allow(group).to receive(:duo_features_enabled).and_return(duo_features_enabled)
 
         allow(current_user).to receive(:allowed_to_use?)
-          .with(:review_merge_request, licensed_feature: :review_merge_request).and_return(allowed_to_use)
+          .with(:review_merge_request, licensed_feature: :review_merge_request, root_namespace: group.root_ancestor)
+          .and_return(allowed_to_use)
       end
 
       it { is_expected.to enabled_for_user }
@@ -5021,7 +5057,9 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(stage_check_available)
         allow(group).to receive(:duo_features_enabled).and_return(duo_features_enabled)
-        allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:duo_agent_platform, root_namespace: group.root_ancestor)
+          .and_return(true)
       end
 
       it { is_expected.to match_expected_result }
@@ -5029,10 +5067,24 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context 'when user is not allowed to use duo_agent_platform' do
       before do
-        allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(false)
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:duo_agent_platform, root_namespace: group.root_ancestor)
+          .and_return(false)
       end
 
       let(:current_user) { developer }
+
+      it { is_expected.to be_disallowed(:duo_workflow) }
+    end
+
+    context 'when user is nil' do
+      let(:current_user) { nil }
+
+      before do
+        stub_feature_flags(duo_workflow: true)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(true)
+        allow(group).to receive(:duo_features_enabled).and_return(true)
+      end
 
       it { is_expected.to be_disallowed(:duo_workflow) }
     end
@@ -5533,6 +5585,15 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           :ai_instance_accessible_entity_rules,
           :duo_agent_platform
         )
+      end
+
+      it 'calls allowed_to_use_through_namespace? with correct root_namespace parameter' do
+        expect(current_user).to receive(:allowed_to_use_through_namespace?).with(
+          :ai_catalog,
+          group.root_ancestor
+        ).and_return(true)
+
+        is_expected.to be_allowed(:read_ai_catalog_item_consumer)
       end
 
       context 'when catalog is available for user' do
