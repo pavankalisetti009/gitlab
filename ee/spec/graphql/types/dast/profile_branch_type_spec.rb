@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['DastProfileBranch'] do
+RSpec.describe GitlabSchema.types['DastProfileBranch'], feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
   specify { expect(described_class.graphql_name).to eq('DastProfileBranch') }

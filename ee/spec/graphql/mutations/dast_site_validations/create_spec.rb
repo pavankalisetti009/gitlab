@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::DastSiteValidations::Create do
+RSpec.describe Mutations::DastSiteValidations::Create, feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
   let(:project) { create(:project, :repository) }

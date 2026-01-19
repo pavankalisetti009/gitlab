@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::DastSiteProfileResolver do
+RSpec.describe Resolvers::DastSiteProfileResolver, feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
   before do

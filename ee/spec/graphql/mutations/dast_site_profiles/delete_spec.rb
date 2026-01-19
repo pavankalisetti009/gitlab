@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::DastSiteProfiles::Delete do
+RSpec.describe Mutations::DastSiteProfiles::Delete, feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
   let(:group) { create(:group) }
   let(:project) { create(:project, group: group) }

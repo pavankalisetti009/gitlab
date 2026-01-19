@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DastSiteProfilesFinder do
+RSpec.describe DastSiteProfilesFinder, feature_category: :dynamic_application_security_testing do
   let!(:current_user) { create(:user) }
   let!(:dast_site_profile1) { create(:dast_site_profile) }
   let!(:project1) { dast_site_profile1.project }

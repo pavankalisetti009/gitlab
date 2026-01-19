@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::DastSiteValidationResolver do
+RSpec.describe Resolvers::DastSiteValidationResolver, feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
   let_it_be(:target_url) { generate(:url) }
