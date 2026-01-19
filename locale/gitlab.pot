@@ -31481,6 +31481,9 @@ msgstr ""
 msgid "Git LFS status:"
 msgstr ""
 
+msgid "Git SSH operations"
+msgstr ""
+
 msgid "Git global setup"
 msgstr ""
 
@@ -55508,6 +55511,9 @@ msgstr ""
 msgid "Rate limits can help reduce request volume (like from crawlers or abusive bots)."
 msgstr ""
 
+msgid "Rate limits for Repository files API endpoints."
+msgstr ""
+
 msgid "Rate limits for specific Groups API endpoints."
 msgstr ""
 
@@ -56719,6 +56725,12 @@ msgid "Repository cleanup has started. You will receive an email once the cleanu
 msgstr ""
 
 msgid "Repository clone URL"
+msgstr ""
+
+msgid "Repository files API (Authenticated)"
+msgstr ""
+
+msgid "Repository files API (Unauthenticated)"
 msgstr ""
 
 msgid "Repository files count over the limit"
