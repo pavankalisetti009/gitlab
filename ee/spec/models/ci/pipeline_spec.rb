@@ -206,79 +206,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
-  describe 'Security MR Widget' do
-    shared_examples_for 'manages the MR security widget polling status' do |transition|
-      subject(:transition_pipeline) { pipeline.update!(status_event: transition) }
-
-      let(:redis_spy) { instance_spy(Redis) }
-      let(:pipeline_id) { pipeline.id }
-      let(:cache_key) { Vulnerabilities::CompareSecurityReportsService.transition_cache_key(pipeline_id: pipeline_id) }
-
-      before do
-        allow(redis_spy).to receive(:ttl).and_return(10) # to allow event tracking Redis call
-      end
-
-      context "when ingest_sec_reports_when_sec_jobs_completed set to true" do
-        before do
-          stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: true)
-        end
-
-        it "does not set the polling redis key for mr security widget when transitioning to: #{transition}" do
-          expect(Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_polling)
-          transition_pipeline
-        end
-
-        context 'when the security scans can not be stored for the pipeline' do
-          before do
-            allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
-          end
-
-          it 'does not deletes the polling cache key' do
-            expect(::Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_polling)
-            transition_pipeline
-
-            expect(::Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_ready)
-          end
-        end
-      end
-
-      context "when ingest_sec_reports_when_sec_jobs_completed set to false" do
-        before do
-          stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: false)
-        end
-
-        it "sets the polling redis key for mr security widget when transitioning to: #{transition}" do
-          expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:once)
-
-          transition_pipeline
-
-          expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer))
-        end
-
-        context 'when the security scans can not be stored for the pipeline' do
-          before do
-            allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
-          end
-
-          it 'deletes the polling cache key' do
-            expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:twice)
-
-            transition_pipeline
-
-            expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer)).once
-            expect(redis_spy).to have_received(:del).with(cache_key).once
-          end
-        end
-      end
-    end
-
-    it_behaves_like 'manages the MR security widget polling status', :block
-    it_behaves_like 'manages the MR security widget polling status', :cancel
-    it_behaves_like 'manages the MR security widget polling status', :drop
-    it_behaves_like 'manages the MR security widget polling status', :skip
-    it_behaves_like 'manages the MR security widget polling status', :succeed
-  end
-
   describe '::Security::StoreScansWorker' do
     shared_examples_for 'storing the security scans' do |transition|
       subject(:transition_pipeline) { pipeline.update!(status_event: transition) }
@@ -288,55 +215,23 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         allow(pipeline).to receive(:can_store_security_reports?).and_return(can_store_security_reports)
       end
 
-      context 'when ingest_sec_reports_when_sec_jobs_completed flag is disabled' do
-        before do
-          stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: false)
-        end
+      context 'when the security scans can be stored for the pipeline' do
+        let(:can_store_security_reports) { true }
 
-        context 'when the security scans can be stored for the pipeline' do
-          let(:can_store_security_reports) { true }
+        it 'does not schedule store security scans job' do
+          transition_pipeline
 
-          it 'schedules store security scans job' do
-            transition_pipeline
-
-            expect(::Security::StoreScansWorker).to have_received(:perform_async).with(pipeline.id)
-          end
-        end
-
-        context 'when the security scans can not be stored for the pipeline' do
-          let(:can_store_security_reports) { false }
-
-          it 'does not schedule store security scans job' do
-            transition_pipeline
-
-            expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
-          end
+          expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
         end
       end
 
-      context 'when ingest_sec_reports_when_sec_jobs_completed flag is enabled' do
-        before do
-          stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: true)
-        end
+      context 'when the security scans can not be stored for the pipeline' do
+        let(:can_store_security_reports) { false }
 
-        context 'when the security scans can be stored for the pipeline' do
-          let(:can_store_security_reports) { true }
+        it 'does not schedule store security scans job' do
+          transition_pipeline
 
-          it 'does not schedule store security scans job' do
-            transition_pipeline
-
-            expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
-          end
-        end
-
-        context 'when the security scans can not be stored for the pipeline' do
-          let(:can_store_security_reports) { false }
-
-          it 'does not schedule store security scans job' do
-            transition_pipeline
-
-            expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
-          end
+          expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
         end
       end
     end
