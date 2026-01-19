@@ -152,6 +152,11 @@ RSpec.describe API::EpicBoards, feature_category: :portfolio_management do
             .not_to exceed_all_query_limit(control)
           expect(response).to have_gitlab_http_status(:ok)
         end
+
+        it_behaves_like 'authorizing granular token permissions', :read_epic_board do
+          let(:boundary_object) { group }
+          let(:request) { get api(url, personal_access_token: pat) }
+        end
       end
     end
   end
@@ -183,6 +188,11 @@ RSpec.describe API::EpicBoards, feature_category: :portfolio_management do
 
         it 'matches the response schema' do
           expect(response).to match_response_schema('public_api/v4/epic_board', dir: 'ee')
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :read_epic_board do
+          let(:boundary_object) { group }
+          let(:request) { get api(url, personal_access_token: pat) }
         end
       end
     end
@@ -238,6 +248,11 @@ RSpec.describe API::EpicBoards, feature_category: :portfolio_management do
             .not_to exceed_all_query_limit(control)
           expect(response).to have_gitlab_http_status(:ok)
         end
+
+        it_behaves_like 'authorizing granular token permissions', :read_epic_board_list do
+          let(:boundary_object) { group }
+          let(:request) { get api(url, personal_access_token: pat) }
+        end
       end
     end
   end
@@ -272,6 +287,11 @@ RSpec.describe API::EpicBoards, feature_category: :portfolio_management do
 
         it 'matches the response schema' do
           expect(response).to match_response_schema('public_api/v4/epic_list', dir: 'ee')
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :read_epic_board_list do
+          let(:boundary_object) { group }
+          let(:request) { get api(url, personal_access_token: pat) }
         end
       end
     end
