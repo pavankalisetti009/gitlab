@@ -16,9 +16,16 @@
 #     related_pipeline_ids: Array<Integer>
 #     false_positive:       Boolean
 #     fix_available:        Boolean
+#     known_exploited:      Boolean
+#     epss_score:           Float
+#     enrichment_data_unavailable_action: String
+#     check_dismissed: Boolean
+
 module Security
   module ScanResultPolicies
     class FindingsFinder
+      include CveEnrichmentFilters
+
       def initialize(project, pipeline, params = {})
         @project = project
         @pipeline = pipeline
@@ -39,6 +46,7 @@ module Security
         findings = findings.fix_available if params[:fix_available] == true
         findings = findings.no_fix_available if params[:fix_available] == false
         findings = findings.with_scan_partition_number.by_uuid(params[:uuids]) if params[:uuids].present?
+        findings = apply_cve_enrichment_filters(findings) if valid_cve_enrichment_params?
 
         findings
       end

@@ -23,6 +23,12 @@ module Security
     ALLOWED_ROLES = %w[developer maintainer owner].freeze
     VALID_EPSS_SCORE_OPERATORS = %i[greater_than_or_equal_to greater_than less_than_or_equal_to less_than].freeze
 
+    def self.epss_score_valid?(epss_score)
+      return false unless epss_score.is_a?(Hash) && epss_score.present?
+
+      epss_score[:operator]&.to_sym&.in?(VALID_EPSS_SCORE_OPERATORS) && epss_score[:value].is_a?(Numeric)
+    end
+
     included do
       has_many :scan_result_policy_reads,
         class_name: 'Security::ScanResultPolicyRead',

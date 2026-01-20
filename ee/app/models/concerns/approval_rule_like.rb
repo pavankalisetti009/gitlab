@@ -110,6 +110,10 @@ module ApprovalRuleLike
     epss_score&.symbolize_keys
   end
 
+  def vulnerability_attribute_enrichment_data_unavailable_action
+    vulnerability_attributes&.dig('enrichment_data_unavailable', 'action')
+  end
+
   def audit_add(_model)
     raise NotImplementedError
   end

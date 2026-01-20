@@ -290,6 +290,9 @@ module Security
           scanners: approval_rule.scanners,
           fix_available: approval_rule.vulnerability_attribute_fix_available,
           false_positive: approval_rule.vulnerability_attribute_false_positive,
+          known_exploited: approval_rule.vulnerability_attribute_known_exploited,
+          epss_score: approval_rule.vulnerability_attribute_epss_score,
+          enrichment_data_unavailable_action: approval_rule.vulnerability_attribute_enrichment_data_unavailable_action,
           check_dismissed: check_dismissed
         }
 

@@ -6,7 +6,7 @@ module Ai
       class CascadeSyncFoundationalFlowsWorker
         include ApplicationWorker
 
-        BATCH_SIZE = 10
+        BATCH_SIZE = 100
 
         data_consistency :delayed
         feature_category :ai_abstraction_layer
@@ -49,14 +49,24 @@ module Ai
           references.filter_map { |ref| reference_to_id[ref] }
         end
 
+        def namespace_iterator(group)
+          cursor = { current_id: group.id, depth: [group.id] }
+          Gitlab::Database::NamespaceEachBatch.new(namespace_class: Group, cursor: cursor)
+        end
+
+        def project_namespace_iterator(group)
+          cursor = { current_id: group.id, depth: [group.id] }
+          Gitlab::Database::NamespaceEachBatch.new(namespace_class: Namespaces::ProjectNamespace, cursor: cursor)
+        end
+
         def sync_groups(group, user)
           ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
             group,
             current_user: user
           ).execute
 
-          group.descendants.each_batch(of: BATCH_SIZE) do |batch|
-            batch.each do |descendant_group|
+          namespace_iterator(group).each_batch(of: BATCH_SIZE) do |namespace_ids|
+            Group.id_in(namespace_ids - [group.id]).each do |descendant_group|
               ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
                 descendant_group,
                 current_user: user
@@ -66,8 +76,8 @@ module Ai
         end
 
         def sync_projects(group, user)
-          group.all_projects.each_batch(of: BATCH_SIZE) do |batch|
-            batch.each do |project|
+          project_namespace_iterator(group).each_batch(of: BATCH_SIZE) do |project_namespace_ids|
+            Project.by_project_namespace(project_namespace_ids).find_each do |project|
               ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
                 project,
                 current_user: user

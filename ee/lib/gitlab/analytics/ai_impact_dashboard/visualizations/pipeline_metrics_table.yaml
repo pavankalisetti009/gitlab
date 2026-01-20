@@ -10,4 +10,5 @@ data:
         - pipeline_duration_median
         - pipeline_success_rate
         - pipeline_failed_rate
+        - pipeline_other_rate
 options: {}

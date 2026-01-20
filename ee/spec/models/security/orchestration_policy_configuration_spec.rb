@@ -331,6 +331,108 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '.epss_score_valid?' do
+    subject { Security::ScanResultPolicy.epss_score_valid?(epss_score) }
+
+    context 'when epss_score is nil' do
+      let(:epss_score) { nil }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score is not a hash' do
+      let(:epss_score) { 'invalid' }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score is an empty hash' do
+      let(:epss_score) { {} }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score has valid operator and numeric value' do
+      context 'with greater_than_or_equal_to operator' do
+        let(:epss_score) { { operator: 'greater_than_or_equal_to', value: 5.5 } }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'with greater_than operator' do
+        let(:epss_score) { { operator: 'greater_than', value: 3.0 } }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'with less_than_or_equal_to operator' do
+        let(:epss_score) { { operator: 'less_than_or_equal_to', value: 7.5 } }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'with less_than operator' do
+        let(:epss_score) { { operator: 'less_than', value: 2.0 } }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'with integer value' do
+        let(:epss_score) { { operator: 'greater_than', value: 5 } }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'with operator as symbol' do
+        let(:epss_score) { { operator: :greater_than, value: 5.5 } }
+
+        it { is_expected.to be_truthy }
+      end
+    end
+
+    context 'when epss_score has invalid operator' do
+      let(:epss_score) { { operator: 'invalid_operator', value: 5.5 } }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score has missing operator' do
+      let(:epss_score) { { value: 5.5 } }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score has nil operator' do
+      let(:epss_score) { { operator: nil, value: 5.5 } }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score has non-numeric value' do
+      let(:epss_score) { { operator: 'greater_than', value: 'not_a_number' } }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score has missing value' do
+      let(:epss_score) { { operator: 'greater_than' } }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score has nil value' do
+      let(:epss_score) { { operator: 'greater_than', value: nil } }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when epss_score has extra keys' do
+      let(:epss_score) { { operator: 'greater_than', value: 5.5, extra_key: 'extra_value' } }
+
+      it { is_expected.to be_truthy }
+    end
+  end
+
   describe '#configuration_sha' do
     let(:last_commit) { instance_double(Commit, id: 'abc123') }
 

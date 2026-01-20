@@ -15,6 +15,7 @@ module Security
     include Presentable
     include PartitionedTable
     include ::Vulnerabilities::PolicyAutoDismissable
+    include Security::CveEnrichmentFilterable
 
     MAX_PARTITION_SIZE = 100.gigabytes
     ATTRIBUTES_DELEGATED_TO_FINDING_DATA = %i[name description solution location identifiers links false_positive?

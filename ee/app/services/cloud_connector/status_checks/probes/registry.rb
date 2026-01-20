@@ -29,7 +29,12 @@ module CloudConnector
           if Feature.enabled?(:ai_self_hosted_vendored_features, :instance) && at_least_one_vendored_feature?
             probes_for_vendored_features + self_hosted_only_probes
           else
-            self_hosted_only_probes
+            probes = self_hosted_only_probes
+            if Gitlab::DuoWorkflow::Client.self_hosted_url.present?
+              probes << ::CloudConnector::StatusChecks::Probes::DuoAgentPlatformProbe.new(@user)
+            end
+
+            probes
           end
         end
 

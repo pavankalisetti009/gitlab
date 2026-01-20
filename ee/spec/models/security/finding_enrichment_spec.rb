@@ -153,5 +153,67 @@ RSpec.describe Security::FindingEnrichment, feature_category: :vulnerability_man
         end
       end
     end
+
+    describe '.without_enrichment_data' do
+      let_it_be(:enrichment_with_data) do
+        create(:security_finding_enrichment, project: project, security_finding: security_finding,
+          cve_enrichment_id: create(:pm_cve_enrichment).id)
+      end
+
+      let_it_be(:enrichment_without_data) do
+        create(:security_finding_enrichment, project: project,
+          cve_enrichment_id: nil)
+      end
+
+      it 'returns enrichments without enrichment data' do
+        expect(described_class.without_enrichment_data).to contain_exactly(enrichment_without_data)
+      end
+    end
+
+    describe '.with_enrichment_filters' do
+      let_it_be(:enrichment_exploited_high_score) do
+        create(:security_finding_enrichment, project: project,
+          is_known_exploit: true, epss_score: 0.95)
+      end
+
+      let_it_be(:enrichment_not_exploited_low_score) do
+        create(:security_finding_enrichment, project: project,
+          is_known_exploit: false, epss_score: 0.2)
+      end
+
+      let_it_be(:enrichment_unknown_medium_score) do
+        create(:security_finding_enrichment, project: project,
+          is_known_exploit: nil, epss_score: 0.5)
+      end
+
+      it 'filters by known exploit status with known_exploited filter' do
+        result = described_class.with_enrichment_filters(known_exploited: true)
+        expect(result).to contain_exactly(enrichment_exploited_high_score)
+      end
+
+      it 'filters by EPSS score with epss_score filter' do
+        result = described_class.with_enrichment_filters(epss_operator: :greater_than_or_equal_to, epss_value: 0.5)
+        expect(result).to contain_exactly(enrichment_exploited_high_score, enrichment_unknown_medium_score)
+      end
+
+      it 'applies both filters with both epss and kev filter' do
+        result = described_class.with_enrichment_filters(
+          known_exploited: true,
+          epss_operator: :greater_than,
+          epss_value: 0.9
+        )
+        expect(result).to contain_exactly(enrichment_exploited_high_score)
+      end
+
+      it 'returns none when known_exploited is false (filter not applied)' do
+        result = described_class.with_enrichment_filters(known_exploited: false)
+        expect(result).to eq(described_class.none)
+      end
+
+      it 'returns none with no filters' do
+        result = described_class.with_enrichment_filters
+        expect(result).to eq(described_class.none)
+      end
+    end
   end
 end

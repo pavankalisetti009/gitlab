@@ -594,7 +594,8 @@ export const mockContributorCountResponseData = {
 export const mockAggregatedPipelineMetricsResponseData = {
   pipelineCount: 100,
   pipelineSuccessCount: 50,
-  pipelineFailedCount: 25,
+  pipelineFailedCount: 35,
+  pipelineOtherCount: 15,
   durationStatistics: {
     pipelineDurationMedian: 39600,
     __typename: 'CiDurationStatistics',
