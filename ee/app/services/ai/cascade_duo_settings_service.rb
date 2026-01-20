@@ -2,7 +2,7 @@
 
 module Ai
   class CascadeDuoSettingsService
-    BATCH_SIZE = 10
+    BATCH_SIZE = 100
     DUO_SETTINGS = %w[
       duo_features_enabled
       duo_remote_flows_enabled
@@ -52,19 +52,27 @@ module Ai
         "Invalid key in #{@setting_attributes}. Only the following Duo Settings can cascade: #{DUO_SETTINGS}"
     end
 
+    def namespace_iterator(group)
+      cursor = { current_id: group.id, depth: [group.id] }
+      Gitlab::Database::NamespaceEachBatch.new(namespace_class: Group, cursor: cursor)
+    end
+
+    def project_namespace_iterator(group)
+      cursor = { current_id: group.id, depth: [group.id] }
+      Gitlab::Database::NamespaceEachBatch.new(namespace_class: Namespaces::ProjectNamespace, cursor: cursor)
+    end
+
     def update_subgroups(group)
-      group.self_and_descendants.each_batch(of: BATCH_SIZE) do |batch|
-        namespace_ids = batch.pluck_primary_key
+      namespace_iterator(group).each_batch(of: BATCH_SIZE) do |namespace_ids|
         ::NamespaceSetting.for_namespaces(namespace_ids)
                           .update_all(@setting_attributes)
       end
     end
 
     def update_projects(group)
-      group.all_projects.each_batch(of: BATCH_SIZE) do |batch|
-        project_ids_to_update = batch.pluck_primary_key
-        ProjectSetting.for_projects(project_ids_to_update)
-                      .update_all(@setting_attributes)
+      project_namespace_iterator(group).each_batch(of: BATCH_SIZE) do |project_namespace_ids|
+        project_ids = Project.by_project_namespace(project_namespace_ids).select(:id)
+        ProjectSetting.for_projects(project_ids).update_all(@setting_attributes)
       end
     end
 
@@ -74,14 +82,14 @@ module Ai
 
       group.sync_enabled_foundational_flows!(target_ids)
 
-      group.descendants.each_batch(of: BATCH_SIZE) do |batch|
-        batch.each do |descendant_group|
+      namespace_iterator(group).each_batch(of: BATCH_SIZE) do |namespace_ids|
+        Group.id_in(namespace_ids).id_not_in(group.id).find_each do |descendant_group|
           descendant_group.sync_enabled_foundational_flows!(target_ids)
         end
       end
 
-      group.all_projects.each_batch(of: BATCH_SIZE) do |batch|
-        batch.each do |project|
+      project_namespace_iterator(group).each_batch(of: BATCH_SIZE) do |project_namespace_ids|
+        Project.by_project_namespace(project_namespace_ids).find_each do |project|
           project.sync_enabled_foundational_flows!(target_ids)
         end
       end
