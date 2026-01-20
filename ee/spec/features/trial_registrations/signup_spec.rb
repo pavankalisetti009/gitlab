@@ -52,7 +52,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         stub_application_setting(recaptcha_enabled: true)
       end
 
-      it 'creates the user' do
+      it 'creates the user', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7605' do
         visit new_trial_registration_path
 
         expect { fill_in_sign_up_form(new_user) }.to change { User.count }
