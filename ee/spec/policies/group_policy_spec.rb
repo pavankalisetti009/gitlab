@@ -5757,6 +5757,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           :read_counts,
           :read_crm_contact,
           :read_crm_organization,
+          :read_custom_attribute,
           :read_customizable_dashboards,
           :read_dedicated_hosted_runner_usage,
           :read_deploy_token,
