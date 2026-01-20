@@ -120,7 +120,7 @@ RSpec.describe GitlabSubscriptions::GroupsController, feature_category: :subscri
     end
   end
 
-  describe 'POST #create', :with_current_organization do
+  describe 'POST #create' do
     subject(:post_create) do
       post gitlab_subscriptions_groups_path, params: params
       response

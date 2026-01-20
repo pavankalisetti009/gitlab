@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feature_category: :user_profile do
+RSpec.describe API::Users, :aggregate_failures, feature_category: :user_profile do
   let(:user)  { create(:user) }
   let(:admin) { create(:admin) }
 
@@ -516,7 +516,7 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
     end
   end
 
-  describe 'POST /users/:user_id/personal_access_tokens', :with_current_organization do
+  describe 'POST /users/:user_id/personal_access_tokens' do
     context 'when the user is a service account' do
       let(:service_account) { create(:user, :service_account) }
       let(:path) { "/users/#{service_account.id}/personal_access_tokens" }
@@ -589,7 +589,7 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
     end
   end
 
-  describe 'POST /user/personal_access_tokens', :with_current_organization do
+  describe 'POST /user/personal_access_tokens' do
     let(:name) { 'new pat' }
     let(:description) { 'description' }
     let(:expires_at) { 3.days.from_now }

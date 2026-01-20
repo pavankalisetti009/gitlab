@@ -996,7 +996,7 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
     end
   end
 
-  describe 'POST /internal/personal_access_token', :system_access, :with_current_organization do
+  describe 'POST /internal/personal_access_token', :system_access do
     let_it_be(:key) { create(:key, user: user) }
 
     let(:instance_level_max_personal_access_token_lifetime) { nil }

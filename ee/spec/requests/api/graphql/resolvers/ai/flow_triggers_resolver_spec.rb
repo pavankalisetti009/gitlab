@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Ai::FlowTriggersResolver, :with_current_organization, feature_category: :workflow_catalog do
+RSpec.describe Resolvers::Ai::FlowTriggersResolver, feature_category: :workflow_catalog do
   include GraphqlHelpers
 
   let_it_be(:maintainer) { create(:user) }
