@@ -647,6 +647,69 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         end
       end
     end
+
+    context 'when beta features are disabled' do
+      before do
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).with(anything, :ai_catalog).and_return(true)
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).with(anything, :ai_catalog_flows).and_return(false)
+      end
+
+      context 'when the item is a custom flow' do
+        let(:item) { flow_item }
+
+        it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+      end
+
+      context 'when the item is a foundational flow' do
+        let_it_be(:beta_disabled_group_foundational_flow_item) do
+          create(:ai_catalog_flow, public: true, project: item_project, name: 'beta_disabled_group_foundational_flow',
+            foundational_flow_reference: 'code_review/v1')
+        end
+
+        let_it_be(:beta_disabled_group_released_foundational_flow_version) do
+          create(:ai_catalog_flow_version, :released,
+            item: beta_disabled_group_foundational_flow_item, version: '1.0.0')
+        end
+
+        let(:item) { beta_disabled_group_foundational_flow_item }
+
+        before do
+          allow(Gitlab::Llm::StageCheck).to receive(:available?)
+            .with(anything, :foundational_flows).and_return(true)
+        end
+
+        it 'is successful because foundational flows are GA' do
+          expect(execute).to be_success
+        end
+
+        it 'creates the item consumer and service account' do
+          expect { execute }.to change { Ai::Catalog::ItemConsumer.count }.by(1)
+            .and change { User.count }.by(1)
+        end
+      end
+    end
+
+    context 'when beta features are enabled' do
+      before do
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).with(anything, :ai_catalog).and_return(true)
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).with(anything, :ai_catalog_flows).and_return(true)
+      end
+
+      context 'when the item is a custom flow' do
+        let(:item) { flow_item }
+
+        it 'is successful' do
+          expect(execute).to be_success
+        end
+
+        it 'creates the item consumer and service account' do
+          expect { execute }.to change { Ai::Catalog::ItemConsumer.count }.by(1)
+            .and change { User.count }.by(1)
+        end
+      end
+    end
   end
 
   context 'when user is not authorized to create a consumer item in the consumer project' do
@@ -671,6 +734,113 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     end
 
     it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+  end
+
+  context 'when beta features are disabled' do
+    before do
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).with(anything, :ai_catalog).and_return(true)
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).with(anything, :ai_catalog_flows).and_return(false)
+    end
+
+    context 'when the item is a custom flow' do
+      let(:item) { flow_item }
+
+      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+    end
+
+    context 'when the item is a foundational flow' do
+      let_it_be(:beta_disabled_project_foundational_flow_item) do
+        create(:ai_catalog_flow, public: true, project: item_project, name: 'beta_disabled_project_foundational_flow',
+          foundational_flow_reference: 'code_review/v1')
+      end
+
+      let_it_be(:beta_disabled_project_released_foundational_flow_version) do
+        create(:ai_catalog_flow_version, :released,
+          item: beta_disabled_project_foundational_flow_item, version: '1.0.0')
+      end
+
+      let_it_be(:beta_disabled_project_foundational_flow_service_account) do
+        create(:user, :service_account, provisioned_by_group: consumer_group)
+      end
+
+      let_it_be(:beta_disabled_project_foundational_flow_parent_item_consumer) do
+        create(:ai_catalog_item_consumer, pinned_version_prefix: '1.0.0', group: consumer_group,
+          item: beta_disabled_project_foundational_flow_item,
+          service_account: beta_disabled_project_foundational_flow_service_account)
+      end
+
+      let(:item) { beta_disabled_project_foundational_flow_item }
+      let(:parent_item_consumer) { beta_disabled_project_foundational_flow_parent_item_consumer }
+
+      before do
+        allow(Gitlab::Llm::StageCheck).to receive(:available?)
+          .with(anything, :foundational_flows).and_return(true)
+      end
+
+      it 'is successful because foundational flows are GA' do
+        expect(execute).to be_success
+      end
+
+      it 'creates the item consumer' do
+        expect { execute }.to change { Ai::Catalog::ItemConsumer.count }.by(1)
+      end
+    end
+  end
+
+  context 'when beta features are enabled' do
+    before do
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).with(anything, :ai_catalog).and_return(true)
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).with(anything, :ai_catalog_flows).and_return(true)
+    end
+
+    context 'when the item is a custom flow' do
+      let(:item) { flow_item }
+
+      it 'is successful' do
+        expect(execute).to be_success
+      end
+
+      it 'creates the item consumer' do
+        expect { execute }.to change { Ai::Catalog::ItemConsumer.count }.by(1)
+      end
+    end
+
+    context 'when the item is a foundational flow' do
+      let_it_be(:beta_enabled_project_foundational_flow_item) do
+        create(:ai_catalog_flow, public: true, project: item_project, name: 'beta_enabled_project_foundational_flow',
+          foundational_flow_reference: 'code_review/v1')
+      end
+
+      let_it_be(:beta_enabled_project_released_foundational_flow_version) do
+        create(:ai_catalog_flow_version, :released,
+          item: beta_enabled_project_foundational_flow_item, version: '1.0.0')
+      end
+
+      let_it_be(:beta_enabled_project_foundational_flow_service_account) do
+        create(:user, :service_account, provisioned_by_group: consumer_group)
+      end
+
+      let_it_be(:beta_enabled_project_foundational_flow_parent_item_consumer) do
+        create(:ai_catalog_item_consumer, pinned_version_prefix: '1.0.0', group: consumer_group,
+          item: beta_enabled_project_foundational_flow_item,
+          service_account: beta_enabled_project_foundational_flow_service_account)
+      end
+
+      let(:item) { beta_enabled_project_foundational_flow_item }
+      let(:parent_item_consumer) { beta_enabled_project_foundational_flow_parent_item_consumer }
+
+      context 'when user lacks create_foundational_flow_item_consumer permission' do
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?)
+            .with(user, :create_foundational_flow_item_consumer, container).and_return(false)
+        end
+
+        it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+      end
+    end
   end
 
   context 'when the item is an agent' do
