@@ -35,7 +35,7 @@ describe('UsageByUserTab', () => {
       propsData: { hasCommitment: true, ...propsData },
       provide: {
         namespacePath: null,
-        userUsagePath: '/path/to/user/:username',
+        userUsagePath: '/path/to/user/__USERNAME__',
         ...provide,
       },
     });
