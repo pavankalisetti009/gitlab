@@ -16,7 +16,7 @@ module EE
       end
 
       def pipl_compliance_notification(user, deadline)
-        @deadline = deadline.strftime("%d-%m-%Y")
+        @deadline = deadline.strftime("%B %d, %Y")
 
         ::Gitlab::I18n.with_locale(user.preferred_language) do
           mail(to: user.notification_email_or_default, subject: subject(s_("PIPL|Important Change to Your GitLab.com Account")))

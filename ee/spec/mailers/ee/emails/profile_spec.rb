@@ -54,7 +54,7 @@ RSpec.describe EE::Emails::Profile do
     end
 
     it 'includes the correctly formatted date' do
-      is_expected.to have_body_text(pipl_user.pipl_access_end_date.strftime('%d-%m-%Y').to_s)
+      is_expected.to have_body_text(pipl_user.pipl_access_end_date.strftime('%B %d, %Y').to_s)
     end
   end
 end
