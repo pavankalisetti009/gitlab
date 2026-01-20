@@ -3,6 +3,7 @@
 module Mcp
   module Tools
     class SemanticCodeSearchService < CustomService
+      include ::Gitlab::Utils::StrongMemoize
       extend ::Gitlab::Utils::Override
 
       ACTIVE_CONTEXT_QUERY = ::Ai::ActiveContext::Queries
@@ -74,8 +75,22 @@ module Mcp
         }
       }
 
+      SCORE_DESCRIPTION = <<~DESC.strip
+        - Each result includes a score field (0.0 to 1.0) indicating semantic similarity to your query
+          - Higher scores mean the code is more relevant; results are sorted by score descending
+          - Scores above 0.8 typically indicate strong matches; below 0.5 may be tangentially related
+      DESC
+
       def available?
         current_user.present? && ACTIVE_CONTEXT_QUERY::Code.available?
+      end
+
+      override :description
+      def description
+        base_description = super
+        return base_description unless include_score_in_response?
+
+        "#{base_description}\n#{SCORE_DESCRIPTION}"
       end
 
       override :ability
@@ -101,10 +116,10 @@ module Mcp
         semantic_query = arguments[:semantic_query]
         project_id = arguments[:project_id]
         directory_path = arguments[:directory_path]
-
         project = find_project(project_id)
 
         exclude_fields = %w[id source type embeddings_v1 reindexing]
+        exclude_fields << 'score' unless include_score_in_response?
 
         result = codebase_query(semantic_query).filter(
           project_or_id: project,
@@ -123,7 +138,9 @@ module Mcp
 
         lines = filtered_results.map.with_index(1) do |hit, idx|
           snippet = hit['content']
-          "#{idx}. #{hit['path']}\n   #{snippet}"
+          score_str = hit['score'] ? format(' (score: %.4f)', hit['score']) : ''
+
+          "#{idx}. #{hit['path']}#{score_str}\n   #{snippet}"
         end
 
         formatted_content = [{ type: 'text', text: lines.join("\n") }]
@@ -151,6 +168,11 @@ module Mcp
       def codebase_query(semantic_query)
         @codebase_query ||= ACTIVE_CONTEXT_QUERY::Code.new(search_term: semantic_query, user: current_user)
       end
+
+      def include_score_in_response?
+        ::Feature.enabled?(:post_process_semantic_code_search_add_score, current_user)
+      end
+      strong_memoize_attr :include_score_in_response?
 
       def filter_excluded_results(results, project)
         return results if results.empty?
