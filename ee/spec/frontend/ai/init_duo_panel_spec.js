@@ -60,6 +60,19 @@ describe('initDuoPanel', () => {
     return element;
   };
 
+  const createDuoPanelEmptyStateElement = (dataset = {}) => {
+    cleanEl();
+    const element = document.createElement('div');
+    element.id = 'duo-chat-panel-empty-state';
+    Object.assign(element.dataset, {
+      canStartTrial: 'true',
+      newTrialPath: 'newTrialPath',
+      ...dataset,
+    });
+    document.body.appendChild(element);
+    return element;
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Create a mock page layout element
@@ -77,9 +90,39 @@ describe('initDuoPanel', () => {
   });
 
   describe('when duo-chat-panel element does not exist', () => {
-    it('returns false', () => {
-      const result = initDuoPanel();
-      expect(result).toBe(false);
+    describe('when duo-chat-panel-empty-state element exists', () => {
+      beforeEach(createDuoPanelEmptyStateElement);
+
+      it('returns a Vue instance', () => {
+        const vueInstance = initDuoPanel();
+
+        expect(vueInstance.$options.name).toBe('AIPanelEmptyStateApp');
+      });
+
+      it('extracts all required data attributes', () => {
+        const vueInstance = initDuoPanel();
+
+        expect(vueInstance.$options.provide.newTrialPath).toBe('newTrialPath');
+      });
+    });
+
+    describe('when the user cannot start a trial', () => {
+      beforeEach(() => {
+        createDuoPanelEmptyStateElement({ newTrialPath: '' });
+      });
+
+      it('returns false', () => {
+        const result = initDuoPanel();
+
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('when duo-chat-panel-empty-state does not exist', () => {
+      it('returns false', () => {
+        const result = initDuoPanel();
+        expect(result).toBe(false);
+      });
     });
   });
 

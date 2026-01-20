@@ -25933,6 +25933,12 @@ msgstr ""
 msgid "DuoAgenticChat|Select default namespace"
 msgstr ""
 
+msgid "DuoAgenticChat|Start a Free Trial"
+msgstr ""
+
+msgid "DuoAgenticChat|Start your free %{strongStart}%{trialDuration}-day trial%{strongEnd} to collaborate with agents and automate workflows across your development process."
+msgstr ""
+
 msgid "DuoAgenticChat|The agent associated with this conversation is no longer available. You can view the conversation history but cannot send new messages."
 msgstr ""
 
@@ -25943,6 +25949,9 @@ msgid "DuoAgenticChat|To use Agentic Chat, select a default namespace in your %{
 msgstr ""
 
 msgid "DuoAgenticChat|To use Agentic Chat, select a default namespace in your user profile preferences. Alternatively, turn off the Agentic toggle to return to Classic Chat."
+msgstr ""
+
+msgid "DuoAgenticChat|Try GitLab Duo Agent Platform"
 msgstr ""
 
 msgid "DuoAgenticChat|Turn off Agentic mode"
@@ -25969,6 +25978,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|An error occurred while fetching users."
 msgstr ""
 
+msgid "DuoAgentsPlatform|Analyze pipeline failures and get fix suggestions"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Are you sure you want to cancel this session? This action cannot be undone."
 msgstr ""
 
@@ -25982,6 +25994,12 @@ msgid "DuoAgentsPlatform|Cancel session"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Cancel session?"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Chat with a specialized agent"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Complete multi-step tasks with flows"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Concise view"
@@ -26062,6 +26080,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Failed to fetch workflows"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Fix a failing pipeline"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Fix pipeline"
 msgstr ""
 
@@ -26075,6 +26096,9 @@ msgid "DuoAgentsPlatform|Get issue"
 msgstr ""
 
 msgid "DuoAgentsPlatform|GitLab Duo can autonomously change code. Responses and changes can be inaccurate. Review carefully."
+msgstr ""
+
+msgid "DuoAgentsPlatform|Identify code improvements"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Issue to merge request"
@@ -26116,7 +26140,13 @@ msgstr ""
 msgid "DuoAgentsPlatform|Path to configuration file"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Planning Agent"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Read file"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Review a merge request"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Save changes"
@@ -26132,6 +26162,9 @@ msgid "DuoAgentsPlatform|Search for a session"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Search issues"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Security Agent"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Select a service account user"
@@ -26186,6 +26219,9 @@ msgid "DuoAgentsPlatform|Triggers"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Unknown"
+msgstr ""
+
+msgid "DuoAgentsPlatform|With a trial you can chat with AI agents tailored to your development workflow, such as the following agents:"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Write file"

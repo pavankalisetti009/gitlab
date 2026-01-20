@@ -211,6 +211,141 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
     end
   end
 
+  describe '#duo_chat_panel_empty_state_data' do
+    let(:user_namespace) { build_stubbed(:namespace) }
+    let(:user) { build_stubbed(:user, namespace: user_namespace) }
+    let(:group) { build(:group) }
+    let(:project_owned_by_user) { build(:project, namespace: user_namespace) }
+    let(:project_owned_by_group) { build(:project, namespace: group) }
+    let(:source) { nil }
+
+    subject(:duo_chat_panel_empty_state_data) { helper.duo_chat_panel_empty_state_data(source: source) }
+
+    before do
+      allow(helper).to receive(:current_user) { user }
+      allow(Ability).to receive(:allowed?).and_call_original
+    end
+
+    context 'on .com', :saas_gitlab_com_subscriptions do
+      before do
+        allow(group).to receive(:has_free_or_no_subscription?).and_return(has_free_or_no_subscription?)
+        allow(Ability).to receive(:allowed?).with(user, :admin_namespace, group).and_return(can_admin_namespace?)
+      end
+
+      context 'when user cannot start a trial due to lack of permissions in the namespace' do
+        let(:can_admin_namespace?) { false }
+        let(:has_free_or_no_subscription?) { true }
+        let(:source) { group }
+
+        it 'returns the correct data' do
+          is_expected.to eq({})
+        end
+      end
+
+      context 'when user cannot start a trial due to the namespace already having some sort of subscription' do
+        let(:can_admin_namespace?) { true }
+        let(:has_free_or_no_subscription?) { false }
+        let(:source) { group }
+
+        it 'returns the correct data' do
+          is_expected.to eq({})
+        end
+      end
+
+      context 'when user can start a trial' do
+        let(:can_admin_namespace?) { true }
+        let(:has_free_or_no_subscription?) { true }
+
+        context 'when there is no namespace' do
+          it 'returns the correct data' do
+            is_expected.to eq({
+              new_trial_path: new_trial_path(glm_source: 'gitlab.com', glm_content: 'chat panel'),
+              trial_duration: 30
+            })
+          end
+        end
+
+        context 'when within a project owned by a user' do
+          let(:source) { project_owned_by_user }
+
+          it 'returns the correct data' do
+            is_expected.to eq({
+              new_trial_path: new_trial_path(glm_source: 'gitlab.com', glm_content: 'chat panel'),
+              trial_duration: 30
+            })
+          end
+        end
+
+        context 'when within a project owned by a group' do
+          let(:source) { project_owned_by_group }
+
+          it 'returns the correct data' do
+            is_expected.to eq({
+              new_trial_path: new_trial_path(source.root_ancestor, glm_source: 'gitlab.com',
+                glm_content: 'chat panel'),
+              trial_duration: 30
+            })
+          end
+        end
+
+        context 'when within a group' do
+          let(:source) { group }
+
+          it 'returns the correct data' do
+            is_expected.to eq({
+              new_trial_path: new_trial_path(source.root_ancestor, glm_source: 'gitlab.com',
+                glm_content: 'chat panel'),
+              trial_duration: 30
+            })
+          end
+        end
+
+        context 'when the trial duration is not the default' do
+          before do
+            stub_saas_features(subscriptions_trials: true)
+            allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |service|
+              allow(service).to receive(:execute).and_return(20)
+            end
+          end
+
+          it 'returns the correct data' do
+            is_expected.to eq({
+              new_trial_path: new_trial_path(glm_source: 'gitlab.com', glm_content: 'chat panel'),
+              trial_duration: 20
+            })
+          end
+        end
+      end
+    end
+
+    context 'on Self-Managed' do
+      let(:source) { group }
+      let(:manage_subscription?) { false }
+
+      before do
+        allow(helper).to receive_messages(self_managed_new_trial_url: 'subscription_portal_trial_url')
+        allow(Ability).to receive(:allowed?).with(user, :manage_subscription).and_return(manage_subscription?)
+      end
+
+      context 'when user cannot start a trial' do
+        it 'returns the correct data' do
+          is_expected.to eq({})
+        end
+      end
+
+      context 'when user can start a trial' do
+        let(:manage_subscription?) { true }
+
+        it 'returns the correct data' do
+          is_expected.to eq({
+            new_trial_path: 'subscription_portal_trial_url',
+            trial_duration: 30
+          })
+        end
+      end
+    end
+  end
+
   describe '#agentic_unavailable_message' do
     let(:user) { build(:user) }
     let(:container) { build(:project) }

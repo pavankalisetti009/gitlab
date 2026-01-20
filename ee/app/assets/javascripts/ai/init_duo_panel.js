@@ -10,12 +10,37 @@ import { activeWorkItemIds } from '~/work_items/utils';
 import { setAgenticMode } from 'ee/ai/utils';
 import store from './tanuki_bot/store';
 import AIPanel from './components/ai_panel.vue';
+import AIPanelEmptyState from './components/ai_panel_empty_state.vue';
+
+function initDuoPanelEmptyState() {
+  const el = document.getElementById('duo-chat-panel-empty-state');
+
+  if (!el) {
+    return false;
+  }
+
+  const { newTrialPath, trialDuration } = el.dataset;
+  const canStartTrial = Boolean(newTrialPath);
+
+  if (!canStartTrial) {
+    return false;
+  }
+
+  return new Vue({
+    el,
+    name: 'AIPanelEmptyStateApp',
+    provide: { newTrialPath, trialDuration },
+    render(renderElement) {
+      return renderElement(AIPanelEmptyState);
+    },
+  });
+}
 
 export function initDuoPanel() {
   const el = document.getElementById('duo-chat-panel');
 
   if (!el) {
-    return false;
+    return initDuoPanelEmptyState();
   }
 
   const {

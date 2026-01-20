@@ -1,0 +1,176 @@
+<script>
+import { GlButton, GlCard, GlIcon, GlAvatarLabeled, GlSprintf } from '@gitlab/ui';
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax -- GlBreakpointInstance is used intentionally here. In this case we must obtain viewport breakpoints
+import tanukiAiSvgUrl from '@gitlab/svgs/dist/illustrations/tanuki-ai-sm.svg?url';
+import { s__ } from '~/locale';
+import Cookies from '~/lib/utils/cookies';
+import { helpPagePath } from '~/helpers/help_page_helper';
+
+const COOKIE_NAME = 'ai_panel_empty_state';
+const COOKIE_VALUE_OPEN = 'AI_PANEL_EMPTY_STATE_OPEN';
+const COOKIE_VALUE_CLOSED = 'AI_PANEL_EMPTY_STATE_CLOSED';
+
+export default {
+  name: 'AiPanelEmptyState',
+  components: {
+    GlButton,
+    GlCard,
+    GlIcon,
+    GlAvatarLabeled,
+    GlSprintf,
+  },
+  inject: ['newTrialPath', 'trialDuration'],
+  data() {
+    const isDesktop = GlBreakpointInstance.isDesktop();
+    const isExpanded =
+      {
+        [COOKIE_VALUE_OPEN]: true,
+        [COOKIE_VALUE_CLOSED]: false,
+      }[Cookies.get(COOKIE_NAME)] ?? isDesktop;
+
+    return {
+      isDesktop,
+      isExpanded,
+    };
+  },
+  watch: {
+    isExpanded(isExpanded) {
+      const value = isExpanded ? COOKIE_VALUE_OPEN : COOKIE_VALUE_CLOSED;
+      Cookies.set(COOKIE_NAME, value);
+    },
+  },
+  mounted() {
+    window.addEventListener('resize', this.handleWindowResize);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleWindowResize);
+  },
+  methods: {
+    togglePanel() {
+      this.isExpanded = !this.isExpanded;
+    },
+    closePanel() {
+      this.isExpanded = false;
+    },
+    handleWindowResize() {
+      const currentIsDesktop = GlBreakpointInstance.isDesktop();
+
+      // This check ensures that the panel is collapsed only when resizing
+      // from desktop to mobile/tablet, not the other way around
+      if (this.isDesktop && !currentIsDesktop) {
+        this.closePanel();
+      }
+
+      this.isDesktop = currentIsDesktop;
+    },
+  },
+  tanukiAiSvgUrl,
+  learnMoreLink: helpPagePath('/user/permissions.md'),
+  workflowExamples: [
+    {
+      icon: 'merge-request',
+      title: s__('DuoAgentsPlatform|Review a merge request'),
+      subtitle: s__('DuoAgentsPlatform|Identify code improvements'),
+    },
+    {
+      icon: 'pipeline',
+      title: s__('DuoAgentsPlatform|Fix a failing pipeline'),
+      subtitle: s__('DuoAgentsPlatform|Analyze pipeline failures and get fix suggestions'),
+    },
+  ],
+};
+</script>
+
+<!-- eslint-disable @gitlab/vue-tailwind-no-max-width-media-queries -->
+<template>
+  <div class="gl-flex gl-h-full gl-gap-[var(--ai-panels-gap)]">
+    <aside
+      v-if="isExpanded"
+      data-testid="panel-content"
+      class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-justify-center gl-overflow-auto gl-rounded-[1rem] gl-bg-default gl-px-5 [contain:strict] lg:gl-mr-2"
+    >
+      <div class="ai-panel-body gl-flex gl-w-full gl-flex-col gl-items-start gl-gap-5">
+        <img :src="$options.tanukiAiSvgUrl" class="gl-h-10 gl-w-10" />
+        <h2 class="gl-my-0 gl-text-size-h2">
+          {{ s__('DuoAgenticChat|Try GitLab Duo Agent Platform') }}
+        </h2>
+        <p class="gl-m-0 gl-text-subtle" data-testid="empty-state-text">
+          <gl-sprintf
+            :message="
+              s__(
+                'DuoAgenticChat|Start your free %{strongStart}%{trialDuration}-day trial%{strongEnd} to collaborate with agents and automate workflows across your development process.',
+              )
+            "
+          >
+            <template #strong="{ content }">
+              <strong>{{ sprintf(content, { trialDuration }) }}</strong>
+            </template>
+          </gl-sprintf>
+        </p>
+        <div class="gl-flex gl-gap-3">
+          <gl-button
+            variant="confirm"
+            category="primary"
+            :href="newTrialPath"
+            target="_blank"
+            data-testid="start-trial-link"
+          >
+            {{ s__('DuoAgenticChat|Start a Free Trial') }}
+          </gl-button>
+          <gl-button variant="default" data-testid="learn-more-link" :href="$options.learnMoreLink">
+            {{ __('Learn more') }}
+          </gl-button>
+        </div>
+        <gl-card class="gl-mt-3 gl-w-full">
+          <template #header>
+            <span class="gl-font-bold">{{
+              s__('DuoAgentsPlatform|Complete multi-step tasks with flows')
+            }}</span>
+          </template>
+          <div class="gl-flex gl-flex-col gl-gap-4">
+            <div
+              v-for="(example, i) in $options.workflowExamples"
+              :key="i"
+              class="gl-flex gl-gap-x-2"
+              data-testid="workflow-example"
+            >
+              <div><gl-icon :name="example.icon" /></div>
+              <div>
+                <div class="gl-font-bold gl-text-strong">
+                  {{ example.title }}
+                </div>
+                <div class="gl-text-subtle">{{ example.subtitle }}</div>
+              </div>
+            </div>
+          </div>
+        </gl-card>
+        <h3 class="gl-heading-5 gl-m-0">
+          {{ s__('DuoAgentsPlatform|Chat with a specialized agent') }}
+        </h3>
+        <p class="gl-m-0">
+          {{
+            s__(
+              'DuoAgentsPlatform|With a trial you can chat with AI agents tailored to your development workflow, such as the following agents:',
+            )
+          }}
+        </p>
+        <div class="gl-flex gl-w-full gl-justify-evenly gl-pb-5">
+          <gl-avatar-labeled :size="32" :label="s__('DuoAgentsPlatform|Security Agent')" />
+          <gl-avatar-labeled :size="32" :label="s__('DuoAgentsPlatform|Planning Agent')" />
+        </div>
+      </div>
+    </aside>
+    <div
+      class="gl-ml-3 gl-flex gl-items-center gl-gap-5 gl-bg-transparent max-lg:gl-h-[var(--ai-navigation-rail-size)] max-lg:gl-flex-1 max-lg:gl-px-3 max-sm:gl-px-0 sm:gl-ml-0 lg:gl-mt-2 lg:gl-w-[var(--ai-navigation-rail-size)] lg:gl-flex-col lg:gl-gap-4 lg:gl-py-3"
+      role="tablist"
+      aria-orientation="vertical"
+    >
+      <gl-button
+        icon="duo-chat"
+        :class="['ai-nav-icon', { 'ai-nav-icon-active': isExpanded }]"
+        data-testid="toggle-panel-content-button"
+        @click="togglePanel"
+      />
+    </div>
+  </div>
+</template>
