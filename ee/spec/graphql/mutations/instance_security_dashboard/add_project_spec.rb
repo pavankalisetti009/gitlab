@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Mutations::InstanceSecurityDashboard::AddProject do
+RSpec.describe Mutations::InstanceSecurityDashboard::AddProject, feature_category: :vulnerability_management do
   include GraphqlHelpers
   let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 

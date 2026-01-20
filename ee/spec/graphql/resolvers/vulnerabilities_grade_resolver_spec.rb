@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::VulnerabilitiesGradeResolver do
+RSpec.describe Resolvers::VulnerabilitiesGradeResolver, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   subject(:result) do

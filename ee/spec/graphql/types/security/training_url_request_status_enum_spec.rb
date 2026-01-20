@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['TrainingUrlRequestStatus'] do
+RSpec.describe GitlabSchema.types['TrainingUrlRequestStatus'], feature_category: :vulnerability_management do
   specify { expect(described_class.graphql_name).to eq('TrainingUrlRequestStatus') }
 
   describe 'statuses' do
