@@ -441,7 +441,7 @@ export const mockUpdateAiCatalogItemConsumerSuccess = {
       errors: [],
       itemConsumer: {
         id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',
-        pinnedVersionPrefix: '1.0.0-draft',
+        pinnedVersionPrefix: '2.0.0',
       },
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_UPDATE,
     },
@@ -450,9 +450,10 @@ export const mockUpdateAiCatalogItemConsumerSuccess = {
 
 export const mockUpdateAiCatalogItemConsumerError = {
   data: {
-    aiCatalogAgentUpdate: {
+    aiCatalogItemConsumerUpdate: {
       errors: ['Some error'],
-      item: null,
+      itemConsumer: null,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_UPDATE,
     },
   },
 };
