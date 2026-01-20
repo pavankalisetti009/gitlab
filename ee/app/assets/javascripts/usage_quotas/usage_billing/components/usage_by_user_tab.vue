@@ -93,7 +93,7 @@ export default {
       return `${used} / ${total}`;
     },
     getUserUsagePath(username) {
-      return this.userUsagePath.replace(':username', username);
+      return this.userUsagePath.replace('__USERNAME__', username);
     },
     /** @param { Usage } usage */
     getProgressBarValue(usage) {

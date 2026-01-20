@@ -32,7 +32,8 @@ constraints(::Namespaces::GroupUrlConstraint.new) do
       resources :gitlab_credits_dashboard, only: [:index]
       scope '/gitlab_credits_dashboard' do
         resources :users, only: [:show], controller: 'gitlab_credits_dashboard/users', param: :username,
-          as: :gitlab_credits_dashboard_users
+          as: :gitlab_credits_dashboard_users, format: false,
+          constraints: { username: Gitlab::PathRegex.root_namespace_route_regex }
       end
 
       get '/gitlab_duo_usage', to: redirect('groups/%{group_id}/-/settings/gitlab_duo/seat_utilization')

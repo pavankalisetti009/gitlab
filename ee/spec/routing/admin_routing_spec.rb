@@ -67,6 +67,11 @@ RSpec.describe 'EE-specific admin routing' do
       expect(get('/admin/gitlab_credits_dashboard/users/john_doe')).to route_to(
         'admin/gitlab_credits_dashboard/users#show', username: 'john_doe')
     end
+
+    it 'routes correctly when username contains a period' do
+      expect(get('/admin/gitlab_credits_dashboard/users/john.doe')).to route_to(
+        'admin/gitlab_credits_dashboard/users#show', username: 'john.doe')
+    end
   end
 
   describe Admin::Geo::SettingsController, 'routing' do

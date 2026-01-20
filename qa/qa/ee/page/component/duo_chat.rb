@@ -5,7 +5,7 @@ module QA
     module Page
       module Component
         class DuoChat < QA::Page::Base
-          view 'ee/app/assets/javascripts/ai/tanuki_bot/components/app.vue' do
+          view 'ee/app/assets/javascripts/ai/components/new_chat_button.vue' do
             # components are derived from gitlab/ui
           end
 
