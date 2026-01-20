@@ -110,9 +110,9 @@ module API
             disabled =
               case params[:workflow_definition]
               when 'chat'
-                Feature.disabled?(:duo_agentic_chat, current_user)
+                false
               when nil
-                Feature.disabled?(:duo_workflow, current_user) && Feature.disabled?(:duo_agentic_chat, current_user)
+                false
               else
                 Feature.disabled?(:duo_workflow, current_user)
               end

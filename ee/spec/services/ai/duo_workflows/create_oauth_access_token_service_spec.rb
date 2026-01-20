@@ -65,15 +65,6 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
         end
       end
 
-      context 'when the user does not have the duo_workflow feature flag enabled' do
-        it 'returns an error' do
-          stub_feature_flags(duo_workflow: false)
-          stub_feature_flags(duo_agentic_chat: false)
-
-          expect(execute).to be_error
-        end
-      end
-
       context 'when the application is missing mcp scope' do
         let_it_be(:oauth_application) do
           create(
@@ -102,13 +93,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
       context 'when workflow_definition is chat' do
         let(:workflow_definition) { 'chat' }
 
-        it 'returns error when duo_agentic_chat feature flag is disabled' do
-          stub_feature_flags(duo_agentic_chat: false)
-
-          expect(execute).to be_error
-        end
-
-        it 'creates token when duo_agentic_chat feature flag is enabled' do
+        it 'creates token' do
           expect { execute }.to change { OauthAccessToken.count }.by(1)
         end
       end
