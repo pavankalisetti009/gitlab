@@ -119,8 +119,7 @@ module EE
       end
 
       condition(:self_hosted_models_allowed) do
-        next false if ::Feature.disabled?(:allow_self_hosted_features_for_com, :instance) &&
-          ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        next false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         next false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
 

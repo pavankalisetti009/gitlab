@@ -864,29 +864,27 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         # rubocop:disable Layout/LineLength -- Table syntax requires long lines for readability
         where(
           :is_licensed, :is_active_duo_add_on, :is_active_dap_add_on, :is_duo_enterprise, :is_saas,
-          :with_saas_flag_enabled, :dedicated_instance, :amazon_q_enabled, :is_offline_license,
+          :dedicated_instance, :amazon_q_enabled, :is_offline_license,
           :testing_terms_accepted, :can_manage_self_hosted_settings
         ) do
           # Both add-on types available
-          true  | true  | true  | true  | false | false | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | true  | true  | false | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
           # Only Duo Core/Pro/Enterprise add-on
-          true  | true  | false | true  | false | false | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | false | true  | false | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
           # Only DAP add-on with offline license
-          true  | false | true  | false | false | false | false | false | true  | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | false | true  | false | false | false | false | true  | false | be_allowed(:manage_self_hosted_models_settings)
           # Only DAP add-on with online license (no Duo Enterprise)
-          true  | false | true  | false | false | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | false | true  | false | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # No add-ons
-          true  | false | false | true  | false | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | false | false | true  | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # Amazon Q enabled
-          true  | true  | false | false | false | false | false | true  | false | false | be_disallowed(:manage_self_hosted_models_settings)
-          # SaaS without flag
-          true  | true  | false | true  | true  | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
-          # SaaS with flag
-          true  | true  | false | true  | true  | true  | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | false | false | false | false | true  | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          # Is SaaS
+          true  | true  | true  | true  | true  | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # Dedicated instance
-          true  | true  | false | true  | false | false | true  | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | true  | false | true  | false | true  | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
           # No license
-          false | true  | false | true  | false | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          false | true  | false | true  | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
         end
         # rubocop:enable Layout/LineLength
 
@@ -911,7 +909,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(testing_terms_accepted)
 
             stub_saas_features(gitlab_com_subscriptions: is_saas)
-            stub_feature_flags(allow_self_hosted_features_for_com: with_saas_flag_enabled)
 
             allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(dedicated_instance)
           end
