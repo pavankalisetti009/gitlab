@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Admin updates EE-only settings', :with_current_organization, feature_category: :shared do
+RSpec.describe 'Admin updates EE-only settings', :with_current_organization, feature_category: :settings do
   include Spec::Support::Helpers::ModalHelpers
   include ListboxHelpers
 
