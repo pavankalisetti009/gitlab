@@ -15,3 +15,5 @@ class RemoveIssuesIndex < Elastic::Migration
     !helper.index_exists?(index_name: ISSUES_INDEX_NAME)
   end
 end
+
+RemoveIssuesIndex.prepend ::Search::Elastic::MigrationObsolete

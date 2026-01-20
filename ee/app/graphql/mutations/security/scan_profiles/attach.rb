@@ -78,7 +78,8 @@ module Mutations
 
           ::Security::ScanProfiles::ProjectAttachService.execute(
             profile: profile,
-            projects: projects
+            projects: projects,
+            current_user: current_user
           )
         end
 
