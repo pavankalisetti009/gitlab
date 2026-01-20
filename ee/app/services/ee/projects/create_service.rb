@@ -152,11 +152,15 @@ module EE
 
         return if default_compliance_framework_id.blank?
 
-        ::ComplianceManagement::UpdateDefaultFrameworkWorker.perform_async(
-          current_user.id,
-          project.id,
-          default_compliance_framework_id
-        )
+        user_id = current_user.id
+
+        project.run_after_commit_or_now do
+          ::ComplianceManagement::UpdateDefaultFrameworkWorker.perform_async(
+            user_id,
+            id,
+            default_compliance_framework_id
+          )
+        end
       end
 
       def run_compliance_standards_checks
