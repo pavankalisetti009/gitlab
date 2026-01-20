@@ -582,6 +582,7 @@ describe('AiCatalogItemActions', () => {
                   enabled: isEnabled,
                 },
               },
+              disableConfirmMessage: 'Are you sure you want to disable this agent?',
             },
             provide: {
               isGlobal,

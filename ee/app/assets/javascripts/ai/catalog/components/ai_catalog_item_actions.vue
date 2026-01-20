@@ -227,7 +227,7 @@ export default {
               itemType: this.itemTypeLabel,
             },
           )
-        : null;
+        : '';
     },
     useAddProjectModal() {
       return !this.isGlobal;
@@ -315,7 +315,11 @@ export default {
     >
       {{ s__('AICatalog|Enable in project') }}
     </gl-button>
-    <span v-else-if="showEnable" v-gl-tooltip="!hasParentConsumer" :title="pendingMessage">
+    <span
+      v-else-if="showEnable"
+      v-gl-tooltip="!hasParentConsumer && showEnable"
+      :title="pendingMessage"
+    >
       <gl-button
         v-gl-modal="'enable-item-modal'"
         :disabled="!hasParentConsumer"
