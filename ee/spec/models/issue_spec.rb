@@ -1032,60 +1032,6 @@ RSpec.describe Issue, feature_category: :team_planning do
 
   it_behaves_like 'having health status'
 
-  describe '#can_assign_epic?' do
-    let(:user)    { create(:user) }
-    let(:group)   { create(:group) }
-    let(:project) { create(:project, group: group) }
-    let(:issue)   { create(:issue, project: project) }
-
-    subject { issue.can_assign_epic?(user) }
-
-    context 'when epics feature is available' do
-      before do
-        stub_licensed_features(epics: true)
-      end
-
-      context 'when a user is not a project member' do
-        it 'returns false' do
-          expect(subject).to be_falsey
-        end
-      end
-
-      context 'when a user is a project member' do
-        before do
-          project.add_reporter(user)
-        end
-
-        it { is_expected.to be_truthy }
-      end
-    end
-
-    context 'when epics feature is not available' do
-      it 'returns false' do
-        group.add_developer(user)
-
-        expect(subject).to be_falsey
-      end
-    end
-
-    describe '#update_blocking_issues_count' do
-      it 'updates blocking issues count' do
-        issue = create(:issue, project: project)
-        blocked_issue_1 = create(:issue, project: project)
-        blocked_issue_2 = create(:issue, project: project)
-        blocked_issue_3 = create(:issue, project: project)
-        create(:issue_link, source: issue, target: blocked_issue_1, link_type: IssueLink::TYPE_BLOCKS)
-        create(:issue_link, source: issue, target: blocked_issue_2, link_type: IssueLink::TYPE_BLOCKS)
-        create(:issue_link, source: issue, target: blocked_issue_3, link_type: IssueLink::TYPE_BLOCKS)
-        # Set to 0 for proper testing, this is being set by IssueLink callbacks.
-        issue.update!(blocking_issues_count: 0)
-
-        expect { issue.update_blocking_issues_count! }
-          .to change { issue.blocking_issues_count }.from(0).to(3)
-      end
-    end
-  end
-
   context 'when changing state of blocking issues' do
     let_it_be(:project) { create(:project) }
     let_it_be(:blocking_issue1) { create(:issue, project: project) }

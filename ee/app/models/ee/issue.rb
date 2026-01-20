@@ -258,10 +258,6 @@ module EE
       true
     end
 
-    def can_assign_epic?(user)
-      user&.can?(:read_epic, project.group) && user.can?(:admin_issue, project)
-    end
-
     def can_be_promoted_to_epic?(user, group = nil)
       group ||= project.group
 
