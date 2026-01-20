@@ -833,6 +833,50 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       end
     end
 
+    describe '.with_cve_enrichment_filters' do
+      let_it_be(:pm_cve_enrichment) { create(:pm_cve_enrichment) }
+      let_it_be(:security_finding_with_exploit) { create(:security_finding) }
+      let_it_be(:security_finding_no_exploit) { create(:security_finding) }
+
+      let_it_be(:record_with_enrichment) do
+        create(:vulnerabilities_finding, uuid: security_finding_with_exploit.uuid).tap do
+          create(
+            :security_finding_enrichment,
+            finding_uuid: security_finding_with_exploit.uuid,
+            cve_enrichment_id: pm_cve_enrichment.id,
+            is_known_exploit: true,
+            epss_score: 0.75
+          )
+        end
+      end
+
+      let_it_be(:record_with_enrichment_no_exploit) do
+        create(:vulnerabilities_finding, uuid: security_finding_no_exploit.uuid).tap do
+          create(
+            :security_finding_enrichment,
+            finding_uuid: security_finding_no_exploit.uuid,
+            cve_enrichment_id: pm_cve_enrichment.id,
+            is_known_exploit: false,
+            epss_score: 0.30
+          )
+        end
+      end
+
+      let_it_be(:record_without_enrichment) do
+        create(:vulnerabilities_finding)
+      end
+
+      let_it_be(:record_with_unenriched_cves) do
+        create(:vulnerabilities_finding).tap do |vf|
+          security_finding = create(:security_finding)
+          vf.update!(uuid: security_finding.uuid)
+          create(:security_finding_enrichment, finding_uuid: security_finding.uuid, cve_enrichment_id: nil)
+        end
+      end
+
+      it_behaves_like 'CVE enrichment filters model spec'
+    end
+
     describe '.with_token_status' do
       let_it_be(:finding_with_status) { create(:vulnerabilities_finding) }
       let_it_be(:token_status) do

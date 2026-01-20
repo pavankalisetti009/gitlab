@@ -43,9 +43,9 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
   end
 
   describe '#execute' do
-    subject { described_class.new(project, pipeline, params).execute }
+    subject(:security_findings) { described_class.new(project, pipeline, params).execute }
 
-    let(:all_findings) { pipeline.security_findings }
+    let(:all_findings) { pipeline.security_findings.reload }
 
     context 'with severity_levels' do
       let(:params) { { severity_levels: ['high'] } }
@@ -165,6 +165,40 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
 
         it { is_expected.to match_array(all_findings) }
       end
+    end
+
+    context 'with CVE enrichment filters' do
+      let_it_be(:pm_cve_enrichment) { create(:pm_cve_enrichment) }
+
+      let_it_be(:finding_with_enrichment) do
+        create(:security_finding, :with_finding_data, scan: dependency_scan).tap do |finding|
+          create(:security_finding_enrichment, finding_uuid: finding.uuid,
+            cve_enrichment_id: pm_cve_enrichment.id, is_known_exploit: true, epss_score: 0.8)
+        end
+      end
+
+      let_it_be(:finding_with_enrichment_no_exploit) do
+        create(:security_finding, :with_finding_data, scan: dependency_scan).tap do |finding|
+          create(:security_finding_enrichment, finding_uuid: finding.uuid,
+            cve_enrichment_id: pm_cve_enrichment.id, is_known_exploit: false, epss_score: 0.3)
+        end
+      end
+
+      let_it_be(:finding_without_enrichment) do
+        create(:security_finding, :with_finding_data, scan: dependency_scan)
+      end
+
+      let_it_be(:finding_with_unenriched_cve) do
+        create(:security_finding, :with_finding_data, scan: dependency_scan).tap do |finding|
+          create(:security_finding_enrichment, finding_uuid: finding.uuid, cve_enrichment_id: nil)
+        end
+      end
+
+      let(:all_records) { all_findings }
+      let(:model_class) { Security::Finding }
+      let(:params) { filter_params }
+
+      it_behaves_like 'CVE enrichment filters finder spec'
     end
 
     context 'with multiple security_scans for a report_type' do

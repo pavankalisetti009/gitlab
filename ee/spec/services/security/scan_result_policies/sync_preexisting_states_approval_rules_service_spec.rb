@@ -215,6 +215,55 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
           end
         end
       end
+
+      context 'when the approval rule has vulnerability attributes' do
+        context 'when vulnerability_attributes include CVE enrichment filters' do
+          before do
+            scan_result_policy_read.update!(vulnerability_attributes: {
+              known_exploited: true,
+              epss_score: { operator: 'greater_than', value: 0.5 },
+              enrichment_data_unavailable: { action: 'block' }
+            })
+          end
+
+          specify do
+            expect(Security::ScanResultPolicies::VulnerabilitiesFinder).to receive(:new).at_least(:once).with(
+              anything,
+              hash_including(
+                fix_available: nil,
+                false_positive: nil,
+                known_exploited: true,
+                epss_score: { operator: 'greater_than', value: 0.5 },
+                enrichment_data_unavailable_action: 'block'
+              )
+            ).and_call_original
+
+            execute
+          end
+        end
+
+        context 'when vulnerability_attributes include other attributes',
+          pending: 'TODO: https://gitlab.com/gitlab-org/gitlab/-/work_items/585656' do
+          before do
+            scan_result_policy_read.update!(vulnerability_attributes: {
+              fix_available: false,
+              false_positive: false
+            })
+          end
+
+          specify do
+            expect(Security::ScanResultPolicies::VulnerabilitiesFinder).to receive(:new).at_least(:once).with(
+              anything,
+              hash_including(
+                fix_available: false,
+                false_positive: false
+              )
+            ).and_call_original
+
+            execute
+          end
+        end
+      end
     end
   end
 end

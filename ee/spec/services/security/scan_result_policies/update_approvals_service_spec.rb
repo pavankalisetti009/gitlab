@@ -1139,7 +1139,9 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         expect(Security::ScanResultPolicies::FindingsFinder).to receive(:new).at_least(:once).with(
           anything,
           anything,
-          hash_including(fix_available: true, false_positive: nil)
+          hash_including(fix_available: true, false_positive: nil, known_exploited: nil, epss_score: nil,
+            enrichment_data_unavailable_action: nil
+          )
         ).and_call_original
 
         execute
@@ -1154,7 +1156,36 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           expect(Security::ScanResultPolicies::FindingsFinder).to receive(:new).at_least(:once).with(
             anything,
             anything,
-            hash_including(fix_available: nil, false_positive: nil)
+            hash_including(fix_available: nil, false_positive: nil, known_exploited: nil, epss_score: nil,
+              enrichment_data_unavailable_action: nil
+            )
+          ).and_call_original
+
+          execute
+        end
+      end
+
+      context 'when vulnerability_attributes include CVE enrichment filters' do
+        before do
+          policy.update!(vulnerability_attributes: {
+            fix_available: true,
+            known_exploited: true,
+            epss_score: { operator: 'greater_than', value: 0.5 },
+            enrichment_data_unavailable: { action: 'block' }
+          })
+        end
+
+        specify do
+          expect(Security::ScanResultPolicies::FindingsFinder).to receive(:new).at_least(:once).with(
+            anything,
+            anything,
+            hash_including(
+              fix_available: true,
+              false_positive: nil,
+              known_exploited: true,
+              epss_score: { operator: 'greater_than', value: 0.5 },
+              enrichment_data_unavailable_action: 'block'
+            )
           ).and_call_original
 
           execute

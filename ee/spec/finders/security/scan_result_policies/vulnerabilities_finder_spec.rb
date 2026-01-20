@@ -30,10 +30,12 @@ RSpec.describe Security::ScanResultPolicies::VulnerabilitiesFinder, feature_cate
 
   let(:filters) { {} }
 
+  let(:all_vulnerabilities) { project.vulnerabilities.reload }
+
   subject(:vulnerabilities) { described_class.new(project, filters).execute }
 
   it 'returns vulnerabilities of a project' do
-    expect(vulnerabilities).to match_array(project.vulnerabilities)
+    expect(vulnerabilities).to match_array(all_vulnerabilities)
     expect(vulnerabilities).to contain_exactly(vulnerability1, vulnerability2, vulnerability3)
   end
 
@@ -224,5 +226,58 @@ RSpec.describe Security::ScanResultPolicies::VulnerabilitiesFinder, feature_cate
     it 'only returns vulnerabilities on the default branch by default' do
       is_expected.to contain_exactly(vulnerability3)
     end
+  end
+
+  context 'when filtered by CVE enrichment attributes' do
+    def create_finding_with_enrichment(
+      project:, cve_identifier: nil, cve_enrichment: nil,
+      is_known_exploit: nil, epss_score: nil, without_enrichment: false
+    )
+      security_finding = create(:security_finding)
+
+      create(:vulnerability, project: project).tap do |vulnerability|
+        create(:vulnerabilities_finding, vulnerability: vulnerability, uuid: security_finding.uuid,
+          cve_identifiers: Array(cve_identifier).compact
+        )
+
+        unless without_enrichment
+          create(
+            :security_finding_enrichment, finding_uuid: security_finding.uuid, cve_enrichment_id: cve_enrichment&.id,
+            is_known_exploit: is_known_exploit, epss_score: epss_score
+          )
+        end
+      end
+    end
+
+    let_it_be(:cve_identifier) { create(:vulnerabilities_identifier, external_type: 'cve', name: 'CVE-2023-12345') }
+    let_it_be(:pm_cve_enrichment) { create(:pm_cve_enrichment) }
+
+    let_it_be(:finding_with_enrichment) do
+      create_finding_with_enrichment(
+        project: project, cve_identifier: cve_identifier,
+        cve_enrichment: pm_cve_enrichment, is_known_exploit: true, epss_score: 0.8
+      )
+    end
+
+    let_it_be(:finding_with_enrichment_no_exploit) do
+      create_finding_with_enrichment(
+        project: project, cve_identifier: cve_identifier,
+        cve_enrichment: pm_cve_enrichment, is_known_exploit: false, epss_score: 0.3
+      )
+    end
+
+    let_it_be(:finding_with_unenriched_cve) do
+      create_finding_with_enrichment(project: project, cve_identifier: cve_identifier)
+    end
+
+    let_it_be(:finding_without_enrichment) do
+      create_finding_with_enrichment(project: project, cve_identifier: cve_identifier, without_enrichment: true)
+    end
+
+    let(:all_records) { all_vulnerabilities }
+    let(:model_class) { Vulnerabilities::Finding }
+    let(:filters) { filter_params }
+
+    it_behaves_like 'CVE enrichment filters finder spec'
   end
 end
