@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe PushRulesHelper, feature_category: :source_code_management do
   let_it_be(:project) { create(:project) }
+  let(:global_push_rule) { create(:organization_push_rule, organization_id: project.organization.id) }
   let_it_be(:admin) { create(:admin) }
   let_it_be(:project_owner) { project.first_owner }
 
@@ -73,22 +74,7 @@ RSpec.describe PushRulesHelper, feature_category: :source_code_management do
     end
   end
 
-  context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
-    before do
-      stub_feature_flags(read_organization_push_rules: false)
-      stub_feature_flags(update_organization_push_rules: false)
-    end
-
-    let(:global_push_rule) { create(:push_rule_sample) }
-
-    it_behaves_like 'validates push rule help text'
-  end
-
-  context 'with read_organization_push_rules feature flag enabled' do
-    let(:global_push_rule) { create(:organization_push_rule, organization_id: project.organization.id) }
-
-    it_behaves_like 'validates push rule help text'
-  end
+  it_behaves_like 'validates push rule help text'
 
   describe '#commit_committer_name_check_description' do
     it 'returns the right description' do

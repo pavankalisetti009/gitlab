@@ -127,18 +127,7 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
   end
 
   describe '#commit_validation?' do
-    context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
-      before do
-        stub_feature_flags(read_organization_push_rules: false)
-        stub_feature_flags(update_organization_push_rules: false)
-      end
-
-      include_examples 'commit validated push rule', :push_rule_sample
-    end
-
-    context 'with read_organization_push_rules feature flag enabled' do
-      include_examples 'commit validated push rule', :organization_push_rule
-    end
+    include_examples 'commit validated push rule', :organization_push_rule
   end
 
   shared_examples 'commit signature allowed push rule' do |factory_name|
@@ -233,21 +222,7 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
   end
 
   describe '#commit_signature_allowed?' do
-    context 'with read_organization_push_rules feature flag disabled' do
-      before do
-        stub_feature_flags(read_organization_push_rules: false)
-      end
-
-      include_examples 'commit signature allowed push rule', :push_rule_sample
-    end
-
-    context 'with read_organization_push_rules feature flag enabled' do
-      before do
-        stub_feature_flags(read_organization_push_rules: true)
-      end
-
-      include_examples 'commit signature allowed push rule', :organization_push_rule
-    end
+    include_examples 'commit signature allowed push rule', :organization_push_rule
   end
 
   context 'with caching', :request_store do

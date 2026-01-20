@@ -43,25 +43,12 @@ RSpec.describe Groups::PushRulesController, feature_category: :source_code_manag
       end
 
       context "when global setting #{rule_attr} is enabled" do
-        context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
-          before do
-            stub_feature_flags(read_organization_push_rules: false)
-            stub_feature_flags(update_organization_push_rules: false)
-            stub_licensed_features(rule_attr => true)
-            create(:push_rule_sample, rule_attr => true)
-          end
-
-          it_behaves_like 'updateable setting', rule_attr, true
+        before do
+          stub_licensed_features(rule_attr => true)
+          create(:organization_push_rule, organization_id: group.organization.id, rule_attr => true)
         end
 
-        context 'with read_organization_push_rules feature flag enabled' do
-          before do
-            stub_licensed_features(rule_attr => true)
-            create(:organization_push_rule, organization_id: group.organization.id, rule_attr => true)
-          end
-
-          it_behaves_like 'updateable setting', rule_attr, true
-        end
+        it_behaves_like 'updateable setting', rule_attr, true
       end
     end
 
@@ -83,24 +70,12 @@ RSpec.describe Groups::PushRulesController, feature_category: :source_code_manag
       end
 
       context "when global setting #{rule_attr} is enabled" do
-        context 'with read_organization_push_rules feature flag disabled' do
-          before do
-            stub_feature_flags(read_organization_push_rules: false)
-            stub_licensed_features(rule_attr => true)
-            create(:push_rule_sample, rule_attr => true)
-          end
-
-          it_behaves_like 'not updateable setting', rule_attr, true
+        before do
+          stub_licensed_features(rule_attr => true)
+          create(:organization_push_rule, organization_id: group.organization.id, rule_attr => true)
         end
 
-        context 'with read_organization_push_rules feature flag enabled' do
-          before do
-            stub_licensed_features(rule_attr => true)
-            create(:organization_push_rule, organization_id: group.organization.id, rule_attr => true)
-          end
-
-          it_behaves_like 'not updateable setting', rule_attr, true
-        end
+        it_behaves_like 'not updateable setting', rule_attr, true
       end
     end
 
@@ -274,41 +249,15 @@ RSpec.describe Groups::PushRulesController, feature_category: :source_code_manag
               end
 
               it_behaves_like 'updateable setting', rule_attr, true
-
-              context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
-                let(:global_push_rule) { create(:push_rule_sample, rule_attr => true) }
-                let(:push_rule) { global_push_rule.reload }
-
-                before do
-                  stub_feature_flags(read_organization_push_rules: false)
-                  stub_feature_flags(update_organization_push_rules: false)
-                  stub_licensed_features(rule_attr => false)
-                end
-
-                it_behaves_like 'updateable setting', rule_attr, true
-              end
             end
 
             context "when global setting #{rule_attr} is enabled" do
-              context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
-                before do
-                  stub_feature_flags(read_organization_push_rules: false)
-                  stub_feature_flags(update_organization_push_rules: false)
-                  stub_licensed_features(rule_attr => true)
-                  create(:push_rule_sample, rule_attr => true)
-                end
-
-                it_behaves_like 'not updateable setting', rule_attr, true
+              before do
+                stub_licensed_features(rule_attr => true)
+                create(:organization_push_rule, organization_id: group.organization.id, rule_attr => true)
               end
 
-              context 'with read_organization_push_rules feature flag enabled' do
-                before do
-                  stub_licensed_features(rule_attr => true)
-                  create(:organization_push_rule, organization_id: group.organization.id, rule_attr => true)
-                end
-
-                it_behaves_like 'not updateable setting', rule_attr, true
-              end
+              it_behaves_like 'not updateable setting', rule_attr, true
             end
           end
 
