@@ -201,6 +201,7 @@ describe('Metric table', () => {
     ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${PIPELINE_ANALYTICS_METRICS.FAILURE_RATE}     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${PIPELINE_ANALYTICS_METRICS.OTHER_RATE}       | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
   `('for the $identifier table row', ({ identifier, requestPath, trackingProperty }) => {
     beforeEach(() => {
       createWrapper([identifier]);
@@ -241,6 +242,7 @@ describe('Metric table', () => {
     ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${'Median duration'}
     ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${'Success rate'}
     ${PIPELINE_ANALYTICS_METRICS.FAILURE_RATE}     | ${'Failure rate'}
+    ${PIPELINE_ANALYTICS_METRICS.OTHER_RATE}       | ${'Other'}
   `('for the $identifier table row', ({ identifier, name }) => {
     describe('when loading data', () => {
       beforeEach(() => {
