@@ -1,5 +1,6 @@
 <script>
 import { GlLink, GlToken, GlTruncateText } from '@gitlab/ui';
+import { s__ } from '~/locale';
 import { getByVersionKey } from '../utils';
 import {
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
@@ -55,6 +56,15 @@ export default {
     isThirdPartyFlow() {
       return this.item.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
+    typeField() {
+      if (this.isThirdPartyFlow) {
+        return s__('AICatalog|External');
+      }
+      if (this.item.foundational) {
+        return s__('AICatalog|Foundational');
+      }
+      return s__('AICatalog|Custom');
+    },
     hasProjectConfiguration() {
       return Boolean(this.item.configurationForProject);
     },
@@ -79,18 +89,14 @@ export default {
         />
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')" is-display>
+        <ai-catalog-item-field :title="s__('AICatalog|Type')" :value="typeField" />
         <template v-if="isThirdPartyFlow">
-          <ai-catalog-item-field
-            :title="s__('AICatalog|Type')"
-            :value="s__('AICatalog|External')"
-          />
           <trigger-field v-if="hasProjectConfiguration" :item="item" />
           <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
             <form-flow-definition :value="definition" read-only class="gl-mt-3" />
           </ai-catalog-item-field>
         </template>
         <template v-else>
-          <ai-catalog-item-field :title="s__('AICatalog|Type')" :value="s__('AICatalog|Custom')" />
           <ai-catalog-item-field :title="s__('AICatalog|Tools')">
             <span v-if="toolTitles.length === 0" class="gl-text-subtle">
               {{ __('None') }}

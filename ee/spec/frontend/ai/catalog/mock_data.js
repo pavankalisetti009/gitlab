@@ -119,7 +119,6 @@ export const mockToolsIds = [
   'gid://gitlab/Ai::Catalog::BuiltInTool/2',
   'gid://gitlab/Ai::Catalog::BuiltInTool/3',
 ];
-export const mockToolsTitles = ['Run Git Command', 'Gitlab Blob Search', 'Ci Linter'];
 
 export const mockAiCatalogBuiltInToolsNodes = [
   {
@@ -197,7 +196,6 @@ export const mockAgentVersion = {
   },
 };
 
-export const mockToolsNodes = mockAiCatalogBuiltInToolsNodes;
 export const mockAgentPinnedVersion = {
   ...mockVersionFactory({ id: 'gid://gitlab/Ai::Catalog::ItemVersion/2' }),
   humanVersionName: 'v0.9.0',

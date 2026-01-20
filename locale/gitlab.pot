@@ -2902,6 +2902,9 @@ msgstr ""
 msgid "AICatalog|Flows use multiple agents to complete tasks automatically."
 msgstr ""
 
+msgid "AICatalog|Foundational"
+msgstr ""
+
 msgid "AICatalog|Foundational agent"
 msgstr ""
 
