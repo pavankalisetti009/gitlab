@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Ci::CodeCoverageSummaryResolver do
+RSpec.describe Resolvers::Ci::CodeCoverageSummaryResolver, feature_category: :code_testing do
   include GraphqlHelpers
 
   describe '#resolve' do
