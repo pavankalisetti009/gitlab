@@ -216,7 +216,7 @@ module Ai
         def allowed?
           if item.flow?
             if item.foundational_flow
-              return false unless Ability.allowed?(current_user, :create_foundational_flow_item_consumer, container)
+              return false unless Ability.allowed?(current_user, :create_ai_foundational_flow_item_consumer, container)
             else
               return false unless Ability.allowed?(current_user, :create_ai_catalog_flow_item_consumer, container)
             end

@@ -12,7 +12,7 @@ module Projects
       push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
       push_frontend_feature_flag(:ai_flow_trigger_pipeline_hooks, project.root_group)
       push_frontend_ability(ability: :read_ai_catalog_flow, resource: project, user: current_user)
-      push_frontend_ability(ability: :read_foundational_flow, resource: project, user: current_user)
+      push_frontend_ability(ability: :read_ai_foundational_flow, resource: project, user: current_user)
       push_frontend_ability(ability: :read_ai_catalog_third_party_flow, resource: project, user: current_user)
       push_frontend_ability(ability: :create_ai_catalog_third_party_flow, resource: project, user: current_user)
     end
@@ -45,7 +45,7 @@ module Projects
       when 'flows'
         Feature.enabled?(:global_ai_catalog, current_user) &&
           (current_user.can?(:read_ai_catalog_flow, project) ||
-           current_user.can?(:read_foundational_flow, project))
+           current_user.can?(:read_ai_foundational_flow, project))
       end
     end
 

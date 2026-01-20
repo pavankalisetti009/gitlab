@@ -25,7 +25,8 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
         stub_feature_flags(global_ai_catalog: ai_catalog)
         allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(duo_workflow_permission)
         allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(read_flow_permission)
-        allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(read_flow_permission)
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_foundational_flow,
+          group).and_return(read_flow_permission)
       end
 
       it "returns correct configure result" do
@@ -55,7 +56,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
     before do
       allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(true)
       allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(true)
-      allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(true)
+      allow(Ability).to receive(:allowed?).with(user, :read_ai_foundational_flow, group).and_return(true)
 
       menu.configure_menu_items
     end
@@ -78,13 +79,13 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
       expect(flows_menu_item.item_id).to eq(:ai_flows)
     end
 
-    context 'when user has read_foundational_flow but not read_ai_catalog_flow permission' do
+    context 'when user has read_ai_foundational_flow but not read_ai_catalog_flow permission' do
       before do
         stub_feature_flags(global_ai_catalog: true)
         allow(user).to receive(:can?).and_call_original
         allow(user).to receive(:can?).with(:duo_workflow, group).and_return(true)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, group).and_return(false)
-        allow(user).to receive(:can?).with(:read_foundational_flow, group).and_return(true)
+        allow(user).to receive(:can?).with(:read_ai_foundational_flow, group).and_return(true)
 
         menu.configure_menu_items
       end
@@ -96,7 +97,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
       end
     end
 
-    context 'when user has neither read_foundational_flow nor read_ai_catalog_flow permission' do
+    context 'when user has neither read_ai_foundational_flow nor read_ai_catalog_flow permission' do
       let(:configured_menu) { described_class.new(context) }
 
       before do
@@ -104,7 +105,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(true)
         allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(false)
-        allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(false)
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_foundational_flow, group).and_return(false)
 
         configured_menu.configure_menu_items
       end

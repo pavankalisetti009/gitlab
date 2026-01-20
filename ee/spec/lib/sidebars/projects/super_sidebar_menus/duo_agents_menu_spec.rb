@@ -38,7 +38,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         )
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(can_manage_ai_flow_triggers)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_return(read_flow_permission)
-        allow(user).to receive(:can?).with(:read_foundational_flow, project).and_return(read_flow_permission)
+        allow(user).to receive(:can?).with(:read_ai_foundational_flow, project).and_return(read_flow_permission)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
         allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
       end
@@ -79,7 +79,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       )
       allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
       allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_return(false)
-      allow(user).to receive(:can?).with(:read_foundational_flow, project).and_return(true)
+      allow(user).to receive(:can?).with(:read_ai_foundational_flow, project).and_return(true)
       allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
       allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
     end
@@ -106,7 +106,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
       allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
       allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
-      allow(user).to receive(:can?).with(:read_foundational_flow, project).and_call_original
+      allow(user).to receive(:can?).with(:read_ai_foundational_flow, project).and_call_original
       allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
 
       project.project_setting.update!(duo_remote_flows_enabled: true, duo_features_enabled: true)
@@ -139,7 +139,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(true)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
-        allow(user).to receive(:can?).with(:read_foundational_flow, project).and_call_original
+        allow(user).to receive(:can?).with(:read_ai_foundational_flow, project).and_call_original
         allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
         menu.configure_menu_items
       end
@@ -169,7 +169,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
-        allow(user).to receive(:can?).with(:read_foundational_flow, project).and_call_original
+        allow(user).to receive(:can?).with(:read_ai_foundational_flow, project).and_call_original
         allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
         menu.configure_menu_items
       end
@@ -211,13 +211,13 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       expect(flows_menu_item.item_id).to eq(:ai_flows)
     end
 
-    context 'when user has read_foundational_flow but not read_ai_catalog_flow permission' do
+    context 'when user has read_ai_foundational_flow but not read_ai_catalog_flow permission' do
       before do
         project.project_setting.update!(duo_features_enabled: true)
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_return(false)
-        allow(user).to receive(:can?).with(:read_foundational_flow, project).and_return(true)
+        allow(user).to receive(:can?).with(:read_ai_foundational_flow, project).and_return(true)
         allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
         stub_feature_flags(global_ai_catalog: true)
 
@@ -231,7 +231,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       end
     end
 
-    context 'when user has neither read_foundational_flow nor read_ai_catalog_flow permission' do
+    context 'when user has neither read_ai_foundational_flow nor read_ai_catalog_flow permission' do
       let(:configured_menu) { described_class.new(context) }
 
       before do
@@ -240,7 +240,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
         allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_return(false)
-        allow(user).to receive(:can?).with(:read_foundational_flow, project).and_return(false)
+        allow(user).to receive(:can?).with(:read_ai_foundational_flow, project).and_return(false)
         allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
         stub_feature_flags(global_ai_catalog: true)
 

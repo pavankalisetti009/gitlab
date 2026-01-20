@@ -168,7 +168,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       context 'when user can read foundational flows' do
         before do
           allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
-          allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, project).and_return(true)
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_foundational_flow, project).and_return(true)
         end
 
         it 'returns successfully' do
@@ -181,7 +181,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       context 'when user cannot read flows or foundational flows' do
         before do
           allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
-          allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, project).and_return(false)
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_foundational_flow, project).and_return(false)
         end
 
         it 'returns 404' do
