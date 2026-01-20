@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['IncidentManagementOncallSchedule'] do
+RSpec.describe GitlabSchema.types['IncidentManagementOncallSchedule'], feature_category: :on_call_schedule_management do
   specify { expect(described_class.graphql_name).to eq('IncidentManagementOncallSchedule') }
 
   specify { expect(described_class).to require_graphql_authorizations(:read_incident_management_oncall_schedule) }

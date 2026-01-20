@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe IncidentManagement::OncallSchedulesFinder do
+RSpec.describe IncidentManagement::OncallSchedulesFinder, feature_category: :on_call_schedule_management do
   let_it_be(:current_user) { create(:user) }
   let_it_be_with_refind(:project) { create(:project) }
   let_it_be(:oncall_schedule) { create(:incident_management_oncall_schedule, project: project) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::IncidentManagement::OncallRotation::Destroy do
+RSpec.describe Mutations::IncidentManagement::OncallRotation::Destroy, feature_category: :on_call_schedule_management do
   include GraphqlHelpers
   let_it_be(:current_user) { create(:user) }
   let_it_be_with_refind(:project) { create(:project) }

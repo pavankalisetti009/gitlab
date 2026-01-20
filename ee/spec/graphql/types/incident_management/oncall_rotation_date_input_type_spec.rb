@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Types::IncidentManagement::OncallRotationDateInputType do
+RSpec.describe ::Types::IncidentManagement::OncallRotationDateInputType, feature_category: :on_call_schedule_management do
   let(:date) { '2021-02-17' }
   let(:time) { '07:25' }
 

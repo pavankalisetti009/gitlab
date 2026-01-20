@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe IncidentManagement::MemberOncallRotationsFinder do
+RSpec.describe IncidentManagement::MemberOncallRotationsFinder, feature_category: :on_call_schedule_management do
   let_it_be(:user) { create(:user) }
 
   describe '#execute' do
