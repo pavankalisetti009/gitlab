@@ -232,7 +232,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
     end
   end
 
-  describe 'POST #create', :with_current_organization do
+  describe 'POST #create' do
     let(:user_attrs) { attributes_for(:user).slice(:name, :username, :email) }
 
     subject(:request) { post admin_users_path, params: { user: user_attrs } }

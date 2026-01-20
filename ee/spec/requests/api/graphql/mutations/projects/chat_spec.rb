@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe 'AiAction for chat', :saas, :with_current_organization, feature_category: :shared do
+RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
   include GraphqlHelpers
 
   let_it_be_with_reload(:group) { create(:group_with_plan, :public, plan: :ultimate_plan) }

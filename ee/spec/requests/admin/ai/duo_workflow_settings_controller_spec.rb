@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :with_current_organization, :enable_admin_mode, feature_category: :ai_abstraction_layer do
+RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, feature_category: :ai_abstraction_layer do
   let_it_be(:admin) { create(:admin, organizations: [current_organization]) }
 
   let(:actual_view_model) do
