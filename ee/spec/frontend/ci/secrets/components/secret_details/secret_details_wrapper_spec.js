@@ -12,7 +12,8 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { EDIT_ROUTE_NAME, PROJECT_EVENTS, SECRET_ROTATION_STATUS } from 'ee/ci/secrets/constants';
+import { EDIT_ROUTE_NAME, ENTITY_PROJECT, SECRET_ROTATION_STATUS } from 'ee/ci/secrets/constants';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
 import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import SecretDetailsWrapper from 'ee/ci/secrets/components/secret_details/secret_details_wrapper.vue';
@@ -32,9 +33,9 @@ describe('SecretDetailsWrapper component', () => {
   };
 
   const defaultProps = {
+    contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
     fullPath: '/path/to/project',
     secretName: 'SECRET_KEY',
-    eventTracking: PROJECT_EVENTS,
   };
 
   const createComponent = async ({

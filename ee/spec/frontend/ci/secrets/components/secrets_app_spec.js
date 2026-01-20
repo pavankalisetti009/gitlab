@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createRouter from 'ee/ci/secrets/router';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SecretsApp from 'ee/ci/secrets/components/secrets_app.vue';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
 import {
   POLL_INTERVAL,
@@ -39,7 +40,7 @@ describe('SecretsApp', () => {
       router,
       propsData: {
         fullPath: '/path/to/project',
-        context: ENTITY_PROJECT,
+        contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
         ...props,
       },
       stubs,
@@ -194,7 +195,7 @@ describe('SecretsApp', () => {
     beforeEach(async () => {
       await createComponent({
         router: createRouter('/-/secrets', {
-          context: ENTITY_PROJECT,
+          contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
           fullPath: '/path/to/project',
         }),
       });
@@ -212,7 +213,7 @@ describe('SecretsApp', () => {
     beforeEach(async () => {
       await createComponent({
         stubs: { RouterView: true },
-        props: { context: ENTITY_GROUP },
+        props: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP] },
       });
     });
 

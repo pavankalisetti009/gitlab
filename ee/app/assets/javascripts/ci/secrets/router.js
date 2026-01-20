@@ -1,15 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { __, s__ } from '~/locale';
-import {
-  DETAILS_ROUTE_NAME,
-  EDIT_ROUTE_NAME,
-  ENTITY_GROUP,
-  GROUP_EVENTS,
-  INDEX_ROUTE_NAME,
-  NEW_ROUTE_NAME,
-  PROJECT_EVENTS,
-} from './constants';
+import { DETAILS_ROUTE_NAME, EDIT_ROUTE_NAME, INDEX_ROUTE_NAME, NEW_ROUTE_NAME } from './constants';
 import SecretDetailsWrapper from './components/secret_details/secret_details_wrapper.vue';
 import SecretFormWrapper from './components/secret_form/secret_form_wrapper.vue';
 import SecretsTable from './components/secrets_table/secrets_table.vue';
@@ -17,8 +9,7 @@ import SecretsTable from './components/secrets_table/secrets_table.vue';
 Vue.use(VueRouter);
 
 export default (base, props) => {
-  const { context, fullPath } = props;
-  const eventTracking = context === ENTITY_GROUP ? GROUP_EVENTS : PROJECT_EVENTS;
+  const { contextConfig, fullPath } = props;
 
   const router = new VueRouter({
     base,
@@ -28,7 +19,7 @@ export default (base, props) => {
         path: '/',
         component: SecretsTable,
         props: () => {
-          return { context, eventTracking, fullPath };
+          return { contextConfig, fullPath };
         },
         meta: {
           getBreadcrumbText: () => s__('SecretsManager|Secrets'),
@@ -40,7 +31,7 @@ export default (base, props) => {
         path: '/new',
         component: SecretFormWrapper,
         props: () => {
-          return { context, eventTracking, fullPath };
+          return { contextConfig, fullPath };
         },
         meta: {
           getBreadcrumbText: () => s__('SecretsManager|New secret'),
@@ -51,7 +42,7 @@ export default (base, props) => {
         path: '/:secretName/details',
         component: SecretDetailsWrapper,
         props: ({ params: { secretName } }) => {
-          return { eventTracking, fullPath, secretName };
+          return { contextConfig, fullPath, secretName };
         },
         meta: {
           getBreadcrumbText: ({ id }) => id,
@@ -64,8 +55,7 @@ export default (base, props) => {
         component: SecretFormWrapper,
         props: ({ params: { secretName } }) => {
           return {
-            context,
-            eventTracking,
+            contextConfig,
             fullPath,
             isEditing: true,
             secretName,

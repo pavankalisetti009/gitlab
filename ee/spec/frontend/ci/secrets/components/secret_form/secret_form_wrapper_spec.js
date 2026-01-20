@@ -11,7 +11,8 @@ import CiEnvironmentsDropdown, {
   getProjectEnvironments,
 } from '~/ci/common/private/ci_environments_dropdown';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { ENTITY_GROUP, ENTITY_PROJECT, PROJECT_EVENTS } from 'ee/ci/secrets/constants';
+import { ENTITY_GROUP, ENTITY_PROJECT } from 'ee/ci/secrets/constants';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretFormWrapper from 'ee/ci/secrets/components/secret_form/secret_form_wrapper.vue';
@@ -36,8 +37,7 @@ describe('SecretFormWrapper component', () => {
   let mockSecretQuery;
 
   const defaultProps = {
-    context: ENTITY_GROUP,
-    eventTracking: PROJECT_EVENTS,
+    contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
     fullPath: 'full/path/to/entity',
     isEditing: false,
   };
@@ -153,7 +153,7 @@ describe('SecretFormWrapper component', () => {
   describe('environments dropdown', () => {
     it('uses group environments query for group secrets app', async () => {
       await createComponent({
-        props: { context: ENTITY_GROUP },
+        props: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP] },
         stubs: { SecretForm, CiEnvironmentsDropdown },
       });
 
@@ -169,7 +169,7 @@ describe('SecretFormWrapper component', () => {
 
     it('uses project environments query for project secrets app', async () => {
       await createComponent({
-        props: { context: ENTITY_PROJECT },
+        props: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT] },
         stubs: { SecretForm, CiEnvironmentsDropdown },
       });
 
@@ -205,7 +205,7 @@ describe('SecretFormWrapper component', () => {
       });
 
       it('query is called with the correct variables', () => {
-        expect(mockGroupEnvQuery).toHaveBeenLastCalledWith({
+        expect(mockProjectEnvQuery).toHaveBeenLastCalledWith({
           first: 30,
           fullPath: defaultProps.fullPath,
           search: '',
@@ -217,7 +217,7 @@ describe('SecretFormWrapper component', () => {
       const error = new Error('GraphQL error');
 
       beforeEach(async () => {
-        mockGroupEnvQuery.mockRejectedValue(error);
+        mockProjectEnvQuery.mockRejectedValue(error);
         await createComponent({ isLoading: false });
       });
 
@@ -233,13 +233,13 @@ describe('SecretFormWrapper component', () => {
     it('refetches environments when search term is present', async () => {
       await createComponent();
 
-      expect(mockGroupEnvQuery).toHaveBeenCalledTimes(1);
-      expect(mockGroupEnvQuery).toHaveBeenCalledWith(expect.objectContaining({ search: '' }));
+      expect(mockProjectEnvQuery).toHaveBeenCalledTimes(1);
+      expect(mockProjectEnvQuery).toHaveBeenCalledWith(expect.objectContaining({ search: '' }));
 
       await findSecretForm().vm.$emit('search-environment', 'staging');
 
-      expect(mockGroupEnvQuery).toHaveBeenCalledTimes(2);
-      expect(mockGroupEnvQuery).toHaveBeenCalledWith(
+      expect(mockProjectEnvQuery).toHaveBeenCalledTimes(2);
+      expect(mockProjectEnvQuery).toHaveBeenCalledWith(
         expect.objectContaining({ search: 'staging' }),
       );
     });
