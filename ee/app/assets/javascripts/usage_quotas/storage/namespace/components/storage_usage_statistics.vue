@@ -56,6 +56,9 @@ export default {
         ...data.subscription,
         reason: data.userActionAccess?.limitedAccessReason,
       }),
+      skip() {
+        return !this.$apollo.provider.clients.customersDotClient;
+      },
     },
   },
   props: {
