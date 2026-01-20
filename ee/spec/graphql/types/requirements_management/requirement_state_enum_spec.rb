@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['RequirementState'] do
+RSpec.describe GitlabSchema.types['RequirementState'], feature_category: :requirements_management do
   it { expect(described_class.graphql_name).to eq('RequirementState') }
 
   it 'exposes all the existing requirement states' do
