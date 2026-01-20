@@ -380,6 +380,10 @@ module EE
         mount_mutation ::Mutations::VirtualRegistries::Container::Registry::Update, experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::VirtualRegistries::Container::Upstream::Destroy,
           experiment: { milestone: '18.9' }
+        mount_mutation ::Mutations::VirtualRegistries::Container::Registry::Cache::Destroy,
+          experiment: { milestone: '18.9' }
+        mount_mutation ::Mutations::VirtualRegistries::Container::Upstream::Cache::Destroy,
+          experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Upstream::Create,
           experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Registry::Destroy,
