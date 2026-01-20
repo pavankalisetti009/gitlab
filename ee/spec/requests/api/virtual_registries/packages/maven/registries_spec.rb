@@ -199,6 +199,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
 
     context 'with valid registry_id' do
       it_behaves_like 'successful response'
+
+      it_behaves_like 'authorizing granular token permissions', :read_maven_virtual_registry do
+        let(:boundary_object) { :instance }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
 
     context 'with invalid registry_id' do
@@ -276,6 +283,14 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
         it_behaves_like 'returning response status', params[:status]
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :update_maven_virtual_registry do
+      let(:params) { { name: 'foo', description: 'description' } }
+      let(:boundary_object) { :instance }
+      let(:request) do
+        patch api(url, personal_access_token: pat), params: params
+      end
+    end
   end
 
   describe 'DELETE /api/v4/virtual_registries/packages/maven/registries/:id' do
@@ -331,6 +346,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
       before_all do
         group.add_maintainer(user)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_maven_virtual_registry do
+      let(:boundary_object) { :instance }
+      let(:request) do
+        delete api(url, personal_access_token: pat)
       end
     end
   end
@@ -391,6 +413,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
       before_all do
         group.add_maintainer(user)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :purge_maven_virtual_registry_cache do
+      let(:boundary_object) { :instance }
+      let(:request) do
+        delete api(url, personal_access_token: pat)
       end
     end
   end
