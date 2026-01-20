@@ -81,7 +81,7 @@ export default {
       return this.showValidations === true ? variable.valid : null;
     },
     addVariable() {
-      this.$emit('addVariable');
+      this.$emit('add-variable');
       this.$emit(
         'input',
         this.variables.concat([

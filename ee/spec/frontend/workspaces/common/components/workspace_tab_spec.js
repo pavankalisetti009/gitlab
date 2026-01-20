@@ -103,7 +103,7 @@ describe('workspaces/common/components/workspace_tab.vue', () => {
 
   describe('when pagination component emits events', () => {
     it.each(['active', 'terminated'])(
-      'emits onPaginationInput event with correct variables for %s tab when input event is emitted',
+      'emits on-pagination-input event with correct variables for %s tab when input event is emitted',
       async (tab) => {
         const pageVariables = {
           after: 'end',
@@ -118,8 +118,8 @@ describe('workspaces/common/components/workspace_tab.vue', () => {
 
         await waitForPromises();
 
-        expect(wrapper.emitted('onPaginationInput')).toHaveLength(1);
-        expect(wrapper.emitted('onPaginationInput')[0]).toEqual([
+        expect(wrapper.emitted('on-pagination-input')).toHaveLength(1);
+        expect(wrapper.emitted('on-pagination-input')[0]).toEqual([
           { tab, paginationVariables: pageVariables },
         ]);
       },

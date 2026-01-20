@@ -225,7 +225,7 @@ export default {
             :workspaces="active.workspaces"
             :page-info="active.pageInfo"
             @error="onError"
-            @onPaginationInput="onPaginationInput"
+            @on-pagination-input="onPaginationInput"
           />
           <workspace-tab
             tab-name="terminated"
@@ -233,7 +233,7 @@ export default {
             :workspaces="terminated.workspaces"
             :page-info="terminated.pageInfo"
             @error="onError"
-            @onPaginationInput="onPaginationInput"
+            @on-pagination-input="onPaginationInput"
           />
         </gl-tabs>
         <monitor-terminating-workspace

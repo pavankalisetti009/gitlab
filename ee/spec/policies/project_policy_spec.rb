@@ -156,7 +156,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :read_usage_quotas,
             :read_web_hook,
             :read_work_item_lifecycle,
-            :read_work_item_status
+            :read_work_item_status,
+            :read_service_account
           ]
         end
 
@@ -5588,6 +5589,165 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     context 'for self-managed' do
       include_examples 'duo agentic chat access control'
+    end
+  end
+
+  describe 'project service accounts' do
+    let(:service_account_permissions) do
+      %i[
+        create_service_account
+        delete_service_account
+        read_service_account
+        admin_service_account_member
+        admin_service_accounts
+      ]
+    end
+
+    context 'when the feature is not enabled' do
+      let(:current_user) { owner }
+
+      before do
+        stub_licensed_features(service_accounts: false)
+      end
+
+      it { is_expected.to be_disallowed(*service_account_permissions) }
+    end
+
+    context 'when feature is enabled' do
+      before do
+        stub_licensed_features(service_accounts: true)
+      end
+
+      context 'when feature flag is disabled' do
+        let(:current_user) { owner }
+
+        before do
+          stub_feature_flags(allow_projects_to_create_service_accounts: false)
+        end
+
+        it { is_expected.to be_disallowed(*service_account_permissions) }
+      end
+
+      context 'when feature flag is enabled' do
+        before do
+          stub_feature_flags(allow_projects_to_create_service_accounts: true)
+        end
+
+        describe 'role-based access' do
+          where(:role, :allowed) do
+            :guest      | false
+            :planner    | false
+            :reporter   | false
+            :developer  | false
+            :maintainer | true
+            :owner      | true
+          end
+
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            if params[:allowed]
+              it { is_expected.to be_allowed(*service_account_permissions) }
+            else
+              it { is_expected.to be_disallowed(*service_account_permissions) }
+            end
+          end
+
+          context 'with admin' do
+            let(:current_user) { admin }
+
+            context 'when admin mode is enabled', :enable_admin_mode do
+              it { is_expected.to be_allowed(*service_account_permissions) }
+            end
+
+            context 'when admin mode is disabled' do
+              it { is_expected.to be_disallowed(*service_account_permissions) }
+            end
+          end
+        end
+
+        context 'when trial is active', :saas do
+          let_it_be(:trial_group) { create(:group_with_plan, plan: :ultimate_trial_plan) }
+          let_it_be(:project_in_trial_group) { create(:project, :public, namespace: trial_group) }
+
+          let(:project) { project_in_trial_group }
+
+          before_all do
+            project_in_trial_group.add_guest(guest)
+            project_in_trial_group.add_planner(planner)
+            project_in_trial_group.add_reporter(reporter)
+            project_in_trial_group.add_developer(developer)
+            project_in_trial_group.add_maintainer(maintainer)
+            project_in_trial_group.add_owner(owner)
+          end
+
+          before do
+            allow(project.group.root_ancestor).to receive(:trial_active?).and_return(true)
+          end
+
+          describe 'identity verification requirement' do
+            where(:role, :identity_verified, :allowed) do
+              :owner      | true  | true
+              :owner      | false | false
+              :maintainer | true  | true
+              :maintainer | false | false
+            end
+
+            with_them do
+              let(:current_user) { public_send(role) }
+
+              before do
+                allow(current_user).to receive(:identity_verified?).and_return(identity_verified)
+              end
+
+              if params[:allowed]
+                it { is_expected.to be_allowed(*service_account_permissions) }
+              else
+                it { is_expected.to be_disallowed(:admin_service_accounts, :admin_service_account_member, :create_service_account, :delete_service_account) }
+                it { is_expected.to be_allowed(:read_service_account) }
+              end
+            end
+          end
+
+          context 'when user is admin with admin mode enabled', :enable_admin_mode do
+            let(:current_user) { admin }
+
+            before do
+              allow(admin).to receive(:identity_verified?).and_return(false)
+            end
+
+            it { is_expected.to be_allowed(*service_account_permissions) }
+          end
+        end
+
+        context 'when trial is not active' do
+          let_it_be(:project) { public_project_in_group }
+
+          where(:role) do
+            [[:owner], [:maintainer]]
+          end
+
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            it { is_expected.to be_allowed(*service_account_permissions) }
+          end
+        end
+
+        context 'for project in personal namespace' do
+          let_it_be(:project) { private_project }
+
+          where(:role) do
+            [[:owner], [:maintainer]]
+          end
+
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            it { is_expected.to be_allowed(*service_account_permissions) }
+          end
+        end
+      end
     end
   end
 
