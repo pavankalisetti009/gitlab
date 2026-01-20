@@ -3,22 +3,27 @@
 module Security
   module ScanProfiles
     class ProjectDetachService
+      include Gitlab::Utils::StrongMemoize
+
+      AUDIT_EVENT_NAME = 'security_scan_profile_detached_from_project'
       MAX_PROJECTS = 500
 
       def self.execute(...)
         new(...).execute
       end
 
-      def initialize(profile:, projects: [])
+      def initialize(profile:, current_user:, projects: [])
         @profile = profile
         @projects = projects
+        @current_user = current_user
         @errors = []
       end
 
       def execute
         return { errors: errors } unless valid_projects?
 
-        delete_profile_projects
+        detached_project_ids = delete_and_return_project_ids
+        create_audit_events(detached_project_ids)
 
         { errors: errors }
       rescue StandardError => e
@@ -27,7 +32,7 @@ module Security
 
       private
 
-      attr_reader :profile, :projects, :errors
+      attr_reader :profile, :projects, :current_user, :errors
 
       def valid_projects?
         errors << 'At least one project must be provided' if projects.empty?
@@ -35,12 +40,63 @@ module Security
         errors.empty?
       end
 
-      def delete_profile_projects
+      def delete_and_return_project_ids
         Security::ScanProfileProject
           .by_project_id(projects.map(&:id))
           .for_scan_profile(profile.id)
-          .delete_all
+          .delete_all_returning(:project_id)
+          .pluck('project_id') # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- pluck on Array, not AR relation
       end
+
+      def create_audit_events(detached_project_ids)
+        return if current_user.blank? || detached_project_ids.empty?
+
+        detached_ids_set = detached_project_ids.to_set
+        detached_projects = projects.select { |p| detached_ids_set.include?(p.id) }
+        return if detached_projects.empty?
+
+        # Preload routes to avoid N+1 queries when accessing project.full_path
+        ActiveRecord::Associations::Preloader.new(records: detached_projects, associations: [:route]).call
+
+        ::Gitlab::Audit::Auditor.audit(audit_context) do
+          detached_projects.each do |project|
+            event = build_audit_event(project)
+            ::Gitlab::Audit::EventQueue.push(event)
+          end
+        end
+      end
+
+      def audit_context
+        {
+          author: current_user,
+          scope: profile.namespace,
+          target: profile,
+          name: AUDIT_EVENT_NAME
+        }
+      end
+
+      def build_audit_event(project)
+        AuditEvents::BuildService.new(
+          author: current_user,
+          scope: project,
+          target: profile,
+          created_at: now,
+          message: "Detached security scan profile '#{profile.name}' from project '#{project.full_path}'",
+          additional_details: {
+            event_name: AUDIT_EVENT_NAME,
+            profile_id: profile.id,
+            profile_name: profile.name,
+            scan_type: profile.scan_type,
+            project_id: project.id,
+            project_path: project.full_path
+          }
+        ).execute
+      end
+
+      def now
+        Time.zone.now
+      end
+      strong_memoize_attr :now
 
       def error_result(message)
         {

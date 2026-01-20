@@ -3,15 +3,19 @@
 module Security
   module ScanProfiles
     class ProjectAttachService
+      include Gitlab::Utils::StrongMemoize
+
+      AUDIT_EVENT_NAME = 'security_scan_profile_attached_to_project'
       MAX_PROJECTS = 500
 
       def self.execute(...)
         new(...).execute
       end
 
-      def initialize(profile:, projects: [])
+      def initialize(profile:, current_user:, projects: [])
         @profile = profile
         @projects = projects
+        @current_user = current_user
         @errors = []
       end
 
@@ -20,6 +24,7 @@ module Security
 
         inserted_ids = insert_under_limit
         handle_errors(inserted_ids)
+        create_audit_events(inserted_ids)
 
         { errors: errors }
       rescue StandardError => e
@@ -28,7 +33,7 @@ module Security
 
       private
 
-      attr_reader :profile, :projects, :errors
+      attr_reader :profile, :projects, :current_user, :errors
 
       def valid_projects?
         errors << 'At least one project must be provided' if projects.empty?
@@ -76,6 +81,56 @@ module Security
           errors << "Project #{id} has reached the maximum limit of scan profiles."
         end
       end
+
+      def create_audit_events(attached_project_ids)
+        return if current_user.blank? || attached_project_ids.empty?
+
+        attached_ids_set = attached_project_ids.to_set
+        attached_projects = projects.select { |p| attached_ids_set.include?(p.id) }
+        return if attached_projects.empty?
+
+        # Preload routes to avoid N+1 queries when accessing project.full_path
+        ActiveRecord::Associations::Preloader.new(records: attached_projects, associations: [:route]).call
+
+        ::Gitlab::Audit::Auditor.audit(audit_context) do
+          attached_projects.each do |project|
+            event = build_audit_event(project)
+            ::Gitlab::Audit::EventQueue.push(event)
+          end
+        end
+      end
+
+      def audit_context
+        {
+          author: current_user,
+          scope: profile.namespace,
+          target: profile,
+          name: AUDIT_EVENT_NAME
+        }
+      end
+
+      def build_audit_event(project)
+        AuditEvents::BuildService.new(
+          author: current_user,
+          scope: project,
+          target: profile,
+          created_at: now,
+          message: "Attached security scan profile '#{profile.name}' to project '#{project.full_path}'",
+          additional_details: {
+            event_name: AUDIT_EVENT_NAME,
+            profile_id: profile.id,
+            profile_name: profile.name,
+            scan_type: profile.scan_type,
+            project_id: project.id,
+            project_path: project.full_path
+          }
+        ).execute
+      end
+
+      def now
+        Time.zone.now
+      end
+      strong_memoize_attr :now
 
       def error_result(message)
         {

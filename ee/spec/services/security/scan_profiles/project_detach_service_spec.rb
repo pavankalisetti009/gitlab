@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :security_asset_inventories do
   let_it_be(:root_group) { create(:group) }
+  let_it_be(:user) { create(:user) }
   let_it_be(:project1) { create(:project, namespace: root_group) }
   let_it_be(:project2) { create(:project, namespace: root_group) }
   let_it_be(:project3) { create(:project, namespace: root_group) }
@@ -16,7 +17,9 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
   end
 
   describe '.execute' do
-    subject(:result) { described_class.execute(profile: profile, projects: projects) }
+    subject(:result) { described_class.execute(profile: profile, current_user: current_user, projects: projects) }
+
+    let(:current_user) { user }
 
     context 'when projects is empty' do
       let(:projects) { [] }
@@ -108,6 +111,59 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
 
       it 'returns the error message' do
         expect(result[:errors]).to include('Database error')
+      end
+    end
+
+    context 'with audit events', :request_store do
+      let(:projects) { [project1, project2] }
+
+      before do
+        create(:security_scan_profile_project, scan_profile: profile, project: project1)
+        create(:security_scan_profile_project, scan_profile: profile, project: project2)
+      end
+
+      it 'creates audit events for detached projects' do
+        expect { result }.to change { AuditEvent.count }.by(2)
+      end
+
+      it 'creates audit events with correct attributes' do
+        result
+
+        audit_event = AuditEvent.last
+        expect(audit_event.details).to include(
+          event_name: 'security_scan_profile_detached_from_project',
+          author_name: user.name,
+          profile_id: profile.id,
+          profile_name: profile.name,
+          scan_type: profile.scan_type
+        )
+        expect(audit_event.details[:project_id]).to be_in([project1.id, project2.id])
+        expect(audit_event.details[:project_path]).to be_in([project1.full_path, project2.full_path])
+        expect(audit_event.details[:custom_message]).to start_with("Detached security scan profile '#{profile.name}'")
+      end
+
+      context 'when no projects have the profile attached' do
+        before do
+          Security::ScanProfileProject.where(scan_profile: profile).delete_all
+        end
+
+        it 'does not create audit events' do
+          expect { result }.not_to change { AuditEvent.count }
+        end
+      end
+
+      context 'when detached project IDs do not match provided projects' do
+        before do
+          Security::ScanProfileProject.where(scan_profile: profile).delete_all
+          # Simulate a scenario where the delete returns IDs that don't match the provided projects
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:delete_and_return_project_ids).and_return([999_999])
+          end
+        end
+
+        it 'does not create audit events' do
+          expect { result }.not_to change { AuditEvent.count }
+        end
       end
     end
   end

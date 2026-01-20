@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :security_asset_inventories do
   let_it_be(:root_group) { create(:group) }
+  let_it_be(:user) { create(:user) }
   let_it_be(:project1) { create(:project, namespace: root_group) }
   let_it_be(:project2) { create(:project, namespace: root_group) }
   let_it_be(:project_at_limit) { create(:project, namespace: root_group) }
@@ -30,8 +31,10 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
 
   describe '.execute' do
     subject(:execute_service) do
-      described_class.execute(profile: profile, projects: projects)
+      described_class.execute(profile: profile, current_user: current_user, projects: projects)
     end
+
+    let(:current_user) { user }
 
     context 'when no projects are provided' do
       let(:projects) { [] }
@@ -133,6 +136,53 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
         result = execute_service
 
         expect(result[:errors]).to eq(['DB connection failed'])
+      end
+    end
+
+    context 'with audit events', :request_store do
+      let(:projects) { [project1, project2] }
+
+      it 'creates audit events for attached projects' do
+        expect { execute_service }.to change { AuditEvent.count }.by(2)
+      end
+
+      it 'creates audit events with correct attributes' do
+        execute_service
+
+        audit_event = AuditEvent.last
+        expect(audit_event.details).to include(
+          event_name: 'security_scan_profile_attached_to_project',
+          author_name: user.name,
+          profile_id: profile.id,
+          profile_name: profile.name,
+          scan_type: profile.scan_type
+        )
+        expect(audit_event.details[:project_id]).to be_in([project1.id, project2.id])
+        expect(audit_event.details[:project_path]).to be_in([project1.full_path, project2.full_path])
+        expect(audit_event.details[:custom_message]).to start_with("Attached security scan profile '#{profile.name}'")
+      end
+
+      context 'when no projects are successfully attached' do
+        let(:projects) { [project_at_limit] }
+
+        it 'does not create audit events' do
+          expect { execute_service }.not_to change { AuditEvent.count }
+        end
+      end
+
+      context 'when attached project IDs do not match provided projects' do
+        let(:projects) { [project1] }
+
+        before do
+          # Simulate a scenario where the insert returns IDs that don't match the provided projects
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:insert_under_limit).and_return([999_999])
+          end
+        end
+
+        it 'does not create audit events' do
+          expect { execute_service }.not_to change { AuditEvent.count }
+        end
       end
     end
   end
