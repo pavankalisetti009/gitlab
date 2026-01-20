@@ -355,6 +355,46 @@ module EE
           (merge_requests_is_a_private_feature? && custom_role_enables_admin_merge_request?))
       end
 
+      condition(:service_accounts_enabled) { License.feature_available?(:service_accounts) }
+
+      condition(:project_service_accounts_feature_available) do
+        ::Feature.enabled?(:allow_projects_to_create_service_accounts, @subject)
+      end
+
+      condition(:trial_and_identity_verified) do
+        if @subject.group&.root_ancestor&.trial_active?
+          @user.identity_verified?
+        else
+          true
+        end
+      end
+
+      # Enable service account permissions for admins, owners and maintainers
+      # rule { admin | owner | maintainer }.policy do
+      #   enable :create_service_account
+      #   enable :delete_service_account
+      #   enable :read_service_account
+      #   enable :admin_service_account_member
+      #   enable :admin_service_accounts
+      # end
+
+      # Prevent if feature flag is disabled (applies to everyone including admins)
+      rule { ~service_accounts_enabled | ~project_service_accounts_feature_available }.policy do
+        prevent :create_service_account
+        prevent :delete_service_account
+        prevent :read_service_account
+        prevent :admin_service_account_member
+        prevent :admin_service_accounts
+      end
+
+      # Prevent in case parent group belongs to trial subscription
+      rule { ~admin & ~trial_and_identity_verified }.policy do
+        prevent :admin_service_accounts
+        prevent :admin_service_account_member
+        prevent :create_service_account
+        prevent :delete_service_account
+      end
+
       rule { custom_role_enables_admin_cicd_variables }.policy do
         enable :admin_cicd_variables
       end
@@ -775,6 +815,11 @@ module EE
         enable :create_ai_catalog_third_party_flow_item_consumer
         enable :manage_ai_flow_triggers
         enable :apply_security_scan_profiles
+        enable :create_service_account
+        enable :delete_service_account
+        enable :read_service_account
+        enable :admin_service_account_member
+        enable :admin_service_accounts
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
