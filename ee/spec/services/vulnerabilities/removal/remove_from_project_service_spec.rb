@@ -40,13 +40,13 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
       before do
         stub_const("#{described_class}::BATCH_SIZE", 1)
 
-        allow(Vulnerability).to receive(:transaction).and_call_original
+        allow(Vulnerability).to receive(:feature_flagged_transaction_for).and_call_original
       end
 
       it 'deletes records in batches' do
         remove_vulnerabilities
 
-        expect(Vulnerability).to have_received(:transaction).exactly(3).times
+        expect(Vulnerability).to have_received(:feature_flagged_transaction_for).exactly(3).times
       end
     end
 

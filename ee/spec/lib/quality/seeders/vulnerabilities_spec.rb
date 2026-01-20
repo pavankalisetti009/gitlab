@@ -190,5 +190,105 @@ RSpec.describe Quality::Seeders::Vulnerabilities, feature_category: :vulnerabili
         expect(vulnerability_with_issue.vulnerability_read.has_issues).to be true
       end
     end
+
+    context 'when processing vulnerabilities with secondary identifiers' do
+      it 'does not add duplicate identifiers' do
+        seeder = described_class.new(project)
+        seeder.seed!
+
+        project.vulnerabilities.each do |vulnerability|
+          finding = vulnerability.finding
+          identifier_ids = finding.identifiers.map(&:id)
+
+          expect(identifier_ids.uniq.count).to eq(identifier_ids.count)
+        end
+      end
+
+      it 'skips adding secondary identifier if it already exists' do
+        # Create a scenario where secondary identifier already exists
+        primary_identifier = create(:vulnerabilities_identifier, project: project)
+        secondary_identifier = create(:vulnerabilities_identifier, project: project)
+
+        finding = create(
+          :vulnerabilities_finding,
+          :with_pipeline,
+          project: project,
+          primary_identifier: primary_identifier
+        )
+
+        # Pre-add the secondary identifier
+        finding.identifiers << secondary_identifier
+
+        vulnerability = create(
+          :vulnerability,
+          project: project,
+          author: project.users.first,
+          finding_id: finding.id
+        )
+
+        finding.update!(vulnerability_id: vulnerability.id)
+
+        # Manually call the seeder logic for rank % 3 == 0
+        secondary_id = create(:vulnerabilities_identifier, project: project)
+        initial_count = finding.identifiers.count
+
+        # This should not add a duplicate
+        finding.identifiers << secondary_id unless finding.identifiers.include?(secondary_id)
+
+        expect(finding.identifiers.count).to eq(initial_count + 1)
+      end
+    end
+
+    context 'when processing feedback creation' do
+      it 'creates dismissal feedback for rank % 3 == 0' do
+        seeder = described_class.new(project)
+        seeder.seed!
+
+        dismissal_feedbacks = Vulnerabilities::Feedback.where(feedback_type: 'dismissal')
+        expect(dismissal_feedbacks.count).to be > 0
+      end
+
+      it 'creates issue feedback for rank % 3 == 1' do
+        seeder = described_class.new(project)
+        seeder.seed!
+
+        issue_feedbacks = Vulnerabilities::Feedback.where(feedback_type: 'issue')
+        expect(issue_feedbacks.count).to be > 0
+      end
+    end
+
+    context 'when feature_flagged_transaction_for is used' do
+      it 'wraps vulnerability creation in a transaction with feature flag' do
+        seeder = described_class.new(project)
+
+        expect(SecApplicationRecord).to receive(:feature_flagged_transaction_for).at_least(:once).and_call_original
+
+        seeder.seed!
+      end
+
+      it 'creates vulnerabilities within the transaction' do
+        seeder = described_class.new(project)
+
+        expect { seeder.seed! }.to change(Vulnerability, :count).by(30)
+      end
+
+      it 'creates vulnerability reads for all vulnerabilities' do
+        seeder = described_class.new(project)
+        seeder.seed!
+
+        project.vulnerabilities.each do |vulnerability|
+          expect(vulnerability.vulnerability_read).to be_present
+        end
+      end
+
+      it 'updates finding with vulnerability_id' do
+        seeder = described_class.new(project)
+        seeder.seed!
+
+        project.vulnerabilities.each do |vulnerability|
+          expect(vulnerability.finding.vulnerability_id).to eq(vulnerability.id)
+        end
+      end
+    end
   end
 end

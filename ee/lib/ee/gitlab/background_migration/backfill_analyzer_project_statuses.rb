@@ -187,7 +187,7 @@ module EE
 
           values_sql = build_values_list(project_statuses)
           sql = build_upsert_sql(values_sql)
-          SecApplicationRecord.connection.execute(sql)
+          connection.execute(sql)
         end
 
         def analyzer_status_columns
