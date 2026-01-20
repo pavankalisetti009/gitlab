@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: :acquisition do
   let_it_be(:user, reload: true) do
     create(
       :user,

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: :acquisition do
   describe 'POST /-/gitlab_subscriptions/hand_raise_leads' do
     let_it_be(:user) { create(:user, :with_namespace) }
     let_it_be(:namespace) { create(:group, developers: user) }

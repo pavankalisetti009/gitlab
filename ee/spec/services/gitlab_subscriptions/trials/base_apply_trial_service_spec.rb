@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::BaseApplyTrialService, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::Trials::BaseApplyTrialService, feature_category: :acquisition do
   let(:apply_trial_params) do
     {
       uid: 'uid',

@@ -112,7 +112,6 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       allow(Ai::FeatureAccessRule).to receive(:duo_root_namespace_access_rules).and_return namespace_access_rules
 
       stub_feature_flags(duo_foundational_agents_per_agent_availability: false)
-      stub_feature_flags(self_hosted_agent_platform: true)
     end
 
     specify do
@@ -201,14 +200,6 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     context 'when user cannot update DAP self-hosted models' do
       before do
         allow(Ability).to receive(:allowed?).with(current_user, :update_dap_self_hosted_model).and_return(false)
-      end
-
-      it { expect(settings).to include(expose_duo_agent_platform_service_url: 'false') }
-    end
-
-    context 'when self_hosted_agent_platform feature flag is disabled' do
-      before do
-        stub_feature_flags(self_hosted_agent_platform: false)
       end
 
       it { expect(settings).to include(expose_duo_agent_platform_service_url: 'false') }

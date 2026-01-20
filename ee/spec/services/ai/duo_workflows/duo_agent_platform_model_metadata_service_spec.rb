@@ -41,9 +41,8 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
     context 'for self-hosted Duo instances' do
       let(:root_namespace) { nil }
 
-      context 'when self_hosted_agent_platform feature flag is enabled' do
+      context 'for self hosted duo agent platform' do
         before do
-          stub_feature_flags(self_hosted_agent_platform: true)
           stub_feature_flags(duo_agent_platform_model_selection: false)
         end
 
@@ -80,19 +79,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
           it_behaves_like 'returns empty headers'
         end
       end
-
-      context 'when self_hosted_agent_platform feature flag is disabled' do
-        before do
-          stub_feature_flags(self_hosted_agent_platform: false)
-          stub_feature_flags(duo_agent_platform_model_selection: false)
-          create(:ai_feature_setting,
-            feature: :duo_agent_platform_agentic_chat,
-            provider: :disabled,
-            self_hosted_model: nil)
-        end
-
-        it_behaves_like 'returns empty headers'
-      end
     end
 
     context 'for cloud-connected self-managed instances' do
@@ -100,7 +86,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
       before do
         stub_feature_flags(duo_agent_platform_model_selection: false)
-        stub_feature_flags(self_hosted_agent_platform: false)
       end
 
       context 'with instance model selection setting (priority 1)' do
@@ -320,7 +305,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
       context 'when duo_agent_platform_model_selection feature flag is enabled' do
         before do
           stub_feature_flags(duo_agent_platform_model_selection: group)
-          stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         context 'with a model pinned for namespace-level model selection' do
@@ -526,7 +510,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
       context 'when duo_agent_platform_model_selection feature flag is not enabled' do
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         it_behaves_like 'returns empty headers'
@@ -536,7 +519,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
           stub_saas_features(gitlab_com_subscriptions: false)
-          stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         it_behaves_like 'uses the gitlab default model'
@@ -551,7 +533,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
     before do
       stub_feature_flags(duo_agent_platform_model_selection: group)
-      stub_feature_flags(self_hosted_agent_platform: false)
 
       stub_request(:get, fetch_service_endpoint_url)
         .to_return(
@@ -603,7 +584,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
     before do
       stub_feature_flags(duo_agent_platform_model_selection: group)
-      stub_feature_flags(self_hosted_agent_platform: false)
     end
 
     context 'when feature_name is provided' do
@@ -619,8 +599,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
       end
 
       it 'uses the provided feature_name when finding instance feature settings' do
-        stub_feature_flags(self_hosted_agent_platform: false)
-
         expect(::Ai::ModelSelection::InstanceModelSelectionFeatureSetting)
           .to receive(:find_or_initialize_by_feature)
           .with(:duo_agent_platform)
@@ -630,8 +608,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
       end
 
       it 'uses the provided feature_name when finding self-hosted feature settings' do
-        stub_feature_flags(self_hosted_agent_platform: true)
-
         expect(::Ai::FeatureSetting)
           .to receive(:find_by_feature)
           .with(:duo_agent_platform)

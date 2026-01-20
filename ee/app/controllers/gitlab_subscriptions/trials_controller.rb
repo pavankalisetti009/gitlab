@@ -9,7 +9,7 @@ module GitlabSubscriptions
     prepend_before_action :authenticate_user! # must run before other before_actions that expect current_user to be set
     before_action :eligible_namespaces # needed when namespace_id isn't provided or is 0(new group)
 
-    feature_category :plan_provisioning
+    feature_category :acquisition
     urgency :low
 
     def new

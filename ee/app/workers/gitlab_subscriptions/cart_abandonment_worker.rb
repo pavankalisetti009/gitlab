@@ -7,7 +7,7 @@ module GitlabSubscriptions
     data_consistency :sticky
     idempotent!
     urgency :low
-    feature_category :subscription_management
+    feature_category :acquisition
     defer_on_database_health_signal :gitlab_main, [:users, :namespaces], 2.minutes
     deduplicate :until_executing, including_scheduled: true, if_deduplicated: :reschedule_once
     loggable_arguments 0, 1, 2, 3

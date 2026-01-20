@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, :saas, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, :saas, feature_category: :acquisition do
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
 

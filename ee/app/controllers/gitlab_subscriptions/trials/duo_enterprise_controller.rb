@@ -5,7 +5,7 @@ module GitlabSubscriptions
     class DuoEnterpriseController < ApplicationController
       include GitlabSubscriptions::Trials::DuoCommon
 
-      feature_category :subscription_management
+      feature_category :acquisition
       urgency :low
 
       def new

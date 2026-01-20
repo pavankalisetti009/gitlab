@@ -6,7 +6,7 @@ module GitlabSubscriptions
     before_action :authenticate_user!
     before_action :verify_namespace!
 
-    feature_category :subscription_management
+    feature_category :acquisition
     urgency :low
 
     def create
