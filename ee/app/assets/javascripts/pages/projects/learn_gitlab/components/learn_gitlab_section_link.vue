@@ -48,7 +48,7 @@ export default {
   methods: {
     openModalIfIsInviteLink() {
       if (this.action === 'userAdded') {
-        eventHub.$emit('openModal', { source: LEARN_GITLAB });
+        eventHub.$emit('open-modal', { source: LEARN_GITLAB });
       }
     },
     actionLabelValue(value) {

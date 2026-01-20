@@ -29,7 +29,7 @@ export default {
   methods: {
     handleActionClick() {
       if (this.action.urlType === INVITE_URL_TYPE) {
-        eventHub.$emit('openModal', { source: LEARN_GITLAB });
+        eventHub.$emit('open-modal', { source: LEARN_GITLAB });
       }
 
       this.track('click_link', { label: this.action.trackLabel });

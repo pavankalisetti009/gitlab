@@ -85,7 +85,7 @@ export default {
       return value;
     },
     openInviteMembersModal(mode, source) {
-      eventHub.$emit('openModal', { mode, source });
+      eventHub.$emit('open-modal', { mode, source });
     },
     hideDuoChatPromoCalloutPopover() {
       this.observer = new MutationObserver(() => {
