@@ -649,18 +649,6 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
               end
             end
           end
-
-          context 'with mirroring_lfs_optimization feature flag disabled' do
-            before do
-              stub_feature_flags(mirroring_lfs_optimization: false)
-            end
-
-            it 'uses original LFS import behavior without updated_revisions parameter' do
-              expect(Projects::LfsPointers::LfsImportService).to receive(:new).with(project).and_call_original
-
-              service.execute
-            end
-          end
         end
       end
     end
