@@ -119,6 +119,26 @@ RSpec.describe CloudConnector::StatusChecks::Probes::Registry, feature_category:
           expect(probes.size).to eq(3)
           expect(probes).to match(self_hosted_only_probe_types)
         end
+
+        it 'excludes Duo Agent Platform probe' do
+          probes = registry.self_hosted_probes
+          expect(probes).not_to include(an_instance_of(CloudConnector::StatusChecks::Probes::DuoAgentPlatformProbe))
+        end
+      end
+    end
+
+    context 'when Duo Agent Platform URL is set up' do
+      before do
+        Ai::Setting.instance.update!(duo_agent_platform_service_url: 'localhost:50052')
+      end
+
+      it 'returns self-hosted probes with Duo Agent Platform probe' do
+        probes = registry.self_hosted_probes
+
+        expect(probes).to match(
+          self_hosted_only_probe_types +
+          [an_instance_of(CloudConnector::StatusChecks::Probes::DuoAgentPlatformProbe)]
+        )
       end
     end
   end
