@@ -27,6 +27,11 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
           upstream2.registry_upstreams.last.as_json.except('group_id', 'created_at', 'updated_at')
         )
       end
+
+      it_behaves_like 'authorizing granular token permissions', :associate_maven_virtual_registry_upstream do
+        let(:boundary_object) { :instance }
+        let(:request) { post api(url, personal_access_token: pat), params: params }
+      end
     end
 
     it { is_expected.to have_request_urgency(:low) }
@@ -143,6 +148,11 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :update_maven_virtual_registry_upstream do
+      let(:boundary_object) { :instance }
+      let(:request) { patch api(url, personal_access_token: pat), params: { position: 5 } }
+    end
   end
 
   describe 'DELETE /api/v4/virtual_registries/packages/maven/registry_upstreams/:id' do
@@ -157,6 +167,11 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
           .and not_change { ::VirtualRegistries::Packages::Maven::Upstream.count }
 
         expect(response).to have_gitlab_http_status(:no_content)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :disassociate_maven_virtual_registry_upstream do
+        let(:boundary_object) { :instance }
+        let(:request) { delete api(url, personal_access_token: pat) }
       end
     end
 

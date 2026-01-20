@@ -49,7 +49,8 @@ module API
                 requires :registry_id, type: Integer, allow_blank: false, desc: 'The ID of the maven registry'
                 requires :upstream_id, type: Integer, allow_blank: false, desc: 'The ID of the maven upstream'
               end
-
+              route_setting :authorization, permissions: :associate_maven_virtual_registry_upstream,
+                boundary_type: :instance
               post do
                 authorize! :create_virtual_registry, registry
 
@@ -83,7 +84,8 @@ module API
                   requires :position, type: Integer, values: 1..20,
                     desc: 'The priority order of an upstream within a maven virtual registry'
                 end
-
+                route_setting :authorization, permissions: :update_maven_virtual_registry_upstream,
+                  boundary_type: :instance
                 patch do
                   authorize! :update_virtual_registry, upstream
 
@@ -106,7 +108,8 @@ module API
                   tags %w[maven_virtual_registries]
                   hidden true
                 end
-
+                route_setting :authorization, permissions: :disassociate_maven_virtual_registry_upstream,
+                  boundary_type: :instance
                 delete do
                   authorize! :destroy_virtual_registry, upstream
 
