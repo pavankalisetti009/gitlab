@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'DAST profiles (GraphQL fixtures)' do
+RSpec.describe 'DAST profiles (GraphQL fixtures)', feature_category: :dynamic_application_security_testing do
   describe GraphQL::Query, type: :request do
     include ApiHelpers
     include GraphqlHelpers
