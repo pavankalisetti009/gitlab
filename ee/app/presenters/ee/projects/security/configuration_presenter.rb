@@ -57,6 +57,27 @@ module EE
           project_settings&.license_configuration_source&.upcase ||
             ::Enums::Security::DEFAULT_CONFIGURATION_SOURCE.to_s.upcase
         end
+
+        override :upgrade_path
+        def upgrade_path
+          return super unless show_discover_project_security?
+
+          project_security_discover_path(project)
+        end
+
+        override :group_manage_attributes_path
+        def group_manage_attributes_path
+          return unless root_group
+
+          group_security_configuration_path(root_group)
+        end
+
+        def show_discover_project_security?
+          current_user &&
+            ::Gitlab.com? && # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Matching legacy code for consistency
+            !project.licensed_feature_available?(:security_dashboard) &&
+            can?(current_user, :admin_namespace, project.root_ancestor)
+        end
       end
     end
   end

@@ -175,6 +175,49 @@ RSpec.describe Projects::Security::ConfigurationPresenter, feature_category: :so
         end
       end
     end
+
+    describe 'upgrade_path' do
+      it 'includes the promo pricing url by default' do
+        expect(result[:upgrade_path]).to eq(promo_pricing_url)
+      end
+
+      context 'on GitLab.com without security_dashboard license', :saas do
+        let_it_be(:root_namespace) { create(:group) }
+        let_it_be(:project) { create(:project, namespace: root_namespace, maintainers: current_user) }
+
+        before_all do
+          root_namespace.add_owner(current_user)
+        end
+
+        before do
+          stub_licensed_features(security_dashboard: false)
+        end
+
+        it 'returns the project security discover path' do
+          expect(result[:upgrade_path]).to eq(project_security_discover_path(project))
+        end
+      end
+    end
+
+    describe 'group_manage_attributes_path' do
+      context 'when project has root group' do
+        let_it_be(:parent) { create(:group) }
+        let_it_be(:project) { create(:project, namespace: parent) }
+
+        it 'returns the group security configuration path' do
+          expect(result[:group_manage_attributes_path]).to eq(group_security_configuration_path(parent))
+        end
+      end
+
+      context 'when project is under a user namespace' do
+        let_it_be(:parent) { create(:user_namespace) }
+        let_it_be(:project) { create(:project, namespace: parent) }
+
+        it 'returns nil' do
+          expect(result[:group_manage_attributes_path]).to be_nil
+        end
+      end
+    end
   end
 
   describe '#to_html_data_attribute' do
