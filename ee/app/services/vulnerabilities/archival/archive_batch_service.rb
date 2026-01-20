@@ -24,7 +24,7 @@ module Vulnerabilities
       delegate :project, to: :vulnerability_archive, private: true
 
       def archive_vulnerabilities
-        Vulnerability.transaction do
+        Vulnerability.feature_flagged_transaction_for(project) do
           create_archived_records
           update_archived_records_count
           delete_records

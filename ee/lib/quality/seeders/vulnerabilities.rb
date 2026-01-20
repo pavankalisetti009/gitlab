@@ -17,27 +17,31 @@ module Quality
         30.times do |rank|
           primary_identifier = create_identifier(rank)
           finding = create_finding(rank, primary_identifier)
-          vulnerability = create_vulnerability(finding: finding)
 
-          # The primary identifier is already associated via the finding creation
-          # Only add additional identifier if rank % 3 == 0 and it's different from primary
-          if rank % 3 == 0
-            secondary_identifier = create_identifier(rank + 1000) # Ensure it's different
-            finding.identifiers << secondary_identifier unless finding.identifiers.include?(secondary_identifier)
+          # This transaction is only necessary to attach the feature flag for the database trigger
+          SecApplicationRecord.feature_flagged_transaction_for(project) do
+            vulnerability = create_vulnerability(finding: finding)
+
+            # The primary identifier is already associated via the finding creation
+            # Only add additional identifier if rank % 3 == 0 and it's different from primary
+            if rank % 3 == 0
+              secondary_identifier = create_identifier(rank + 1000) # Ensure it's different
+              finding.identifiers << secondary_identifier unless finding.identifiers.include?(secondary_identifier)
+            end
+
+            finding.update!(vulnerability_id: vulnerability.id)
+
+            create_vulnerability_read(vulnerability, finding)
+
+            case rank % 3
+            when 0
+              create_feedback(finding, 'dismissal')
+            when 1
+              create_feedback(finding, 'issue', vulnerability: vulnerability)
+            end
+
+            print '.'
           end
-
-          finding.update!(vulnerability_id: vulnerability.id)
-
-          create_vulnerability_read(vulnerability, finding)
-
-          case rank % 3
-          when 0
-            create_feedback(finding, 'dismissal')
-          when 1
-            create_feedback(finding, 'issue', vulnerability: vulnerability)
-          end
-
-          print '.'
         end
       end
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 module Vulnerabilities
   class MergeRequestLink < ::SecApplicationRecord
+    extend EnforceVulnerabilityReadDbTriggerFf
     include EachBatch
 
     MAX_MERGE_REQUEST_LINKS_PER_VULNERABILITY = 100

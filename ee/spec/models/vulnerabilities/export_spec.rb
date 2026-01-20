@@ -103,7 +103,9 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
     subject(:vulnerability_export) { create(:vulnerability_export, :csv) }
 
     around do |example|
-      freeze_time { example.run }
+      SecApplicationRecord.feature_flagged_transaction_for(vulnerability_export.project) do
+        freeze_time { example.run }
+      end
     end
 
     context 'when the export is new' do

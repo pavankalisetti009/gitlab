@@ -33,7 +33,7 @@ module Vulnerabilities
         end
 
         def execute
-          Vulnerability.transaction do
+          ::SecApplicationRecord.transaction do
             disable_triggers
             restore
             delete_backups

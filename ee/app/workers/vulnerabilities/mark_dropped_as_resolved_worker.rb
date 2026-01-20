@@ -30,7 +30,7 @@ module Vulnerabilities
 
         state_transitions = build_state_transitions(vulnerabilities, current_time, bot_user)
 
-        ::Vulnerability.transaction do
+        ::Vulnerability.feature_flagged_transaction_for(nil) do
           vulnerabilities.update_all(
             resolved_by_id: bot_user.id,
             resolved_at: current_time,

@@ -46,7 +46,7 @@ module Vulnerabilities
     strong_memoize_attr :rules
 
     def update_transaction(vulnerabilities_to_resolve, rules_by_vulnerability)
-      Vulnerability.transaction do
+      Vulnerability.feature_flagged_transaction_for(project) do
         Vulnerabilities::StateTransition.insert_all!(
           state_transition_attrs(vulnerabilities_to_resolve, rules_by_vulnerability)
         )
