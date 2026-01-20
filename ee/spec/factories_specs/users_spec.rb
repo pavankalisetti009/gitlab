@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'EE User factory', feature_category: :shared do
+RSpec.describe 'EE User factory', feature_category: :user_management do
   describe 'trait group_managed' do
     subject(:created_user) { create(:user, :group_managed) }
 

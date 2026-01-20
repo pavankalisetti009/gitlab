@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe UsersFinder do
+RSpec.describe UsersFinder, feature_category: :user_management do
   describe '#execute' do
     include_context 'UsersFinder#execute filter by project context'
 
