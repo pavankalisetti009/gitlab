@@ -68,7 +68,7 @@ describe('EEInviteMembersModal', () => {
   const clickInviteButton = emitClickFromModal(findActionButton);
 
   const triggerOpenModal = ({ mode = 'default', source } = {}) => {
-    eventHub.$emit('openModal', { mode, source });
+    eventHub.$emit('open-modal', { mode, source });
   };
 
   const triggerMembersTokenSelect = async (val) => {

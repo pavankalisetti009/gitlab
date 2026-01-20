@@ -134,19 +134,19 @@ describe('Learn GitLab', () => {
       Cookies.remove(INVITE_MODAL_OPEN_COOKIE);
     });
 
-    it('emits openModal', () => {
+    it('emits open-modal', () => {
       Cookies.set(INVITE_MODAL_OPEN_COOKIE, true);
 
       createWrapper();
 
-      expect(spy).toHaveBeenCalledWith('openModal', {
+      expect(spy).toHaveBeenCalledWith('open-modal', {
         mode: 'celebrate',
         source: ON_CELEBRATION_TRACK_LABEL,
       });
       expect(cookieSpy).toHaveBeenCalledWith(INVITE_MODAL_OPEN_COOKIE);
     });
 
-    it('does not emit openModal when cookie is not set', () => {
+    it('does not emit open-modal when cookie is not set', () => {
       createWrapper();
 
       expect(spy).not.toHaveBeenCalled();

@@ -90,18 +90,18 @@ describe('ActionItem', () => {
       });
     });
 
-    it('emits openModal event when action urlType is "invite"', async () => {
+    it('emits open-modal event when action urlType is "invite"', async () => {
       createComponent({ urlType: 'invite' });
       await actionLink().vm.$emit('click');
 
-      expect(eventHub.$emit).toHaveBeenCalledWith('openModal', { source: LEARN_GITLAB });
+      expect(eventHub.$emit).toHaveBeenCalledWith('open-modal', { source: LEARN_GITLAB });
     });
 
-    it('does not emit openModal event when action urlType is not "invite"', async () => {
+    it('does not emit open-modal event when action urlType is not "invite"', async () => {
       createComponent({ urlType: 'other' });
       await actionLink().vm.$emit('click');
 
-      expect(eventHub.$emit).not.toHaveBeenCalledWith('openModal', expect.anything());
+      expect(eventHub.$emit).not.toHaveBeenCalledWith('open-modal', expect.anything());
     });
   });
 
