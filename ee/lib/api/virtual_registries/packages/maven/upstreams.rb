@@ -68,6 +68,7 @@ module API
               params do
                 optional :upstream_name, type: String, desc: 'Return upstreams with this name'
               end
+              route_setting :authorization, permissions: :read_maven_virtual_registry_upstream, boundary_type: :group
               get do
                 upstreams = ::VirtualRegistries::UpstreamsFinder.new(
                   upstream_class: ::VirtualRegistries::Packages::Maven::Upstream,
@@ -99,6 +100,7 @@ module API
                 optional :password, type: String, desc: 'The password of the maven virtual registry upstream'
                 all_or_none_of :username, :password
               end
+              route_setting :authorization, permissions: :test_maven_virtual_registry_upstream, boundary_type: :group
               post :test do
                 upstream = ::VirtualRegistries::Packages::Maven::Upstream.new(
                   declared_params(include_missing: false).merge(group: group, name: 'test')
@@ -130,6 +132,8 @@ module API
                     tags %w[maven_virtual_registries]
                     hidden true
                   end
+                  route_setting :authorization, permissions: :read_maven_virtual_registry_upstream,
+                    boundary_type: :instance
                   get do
                     authorize! :read_virtual_registry, registry
 
@@ -234,6 +238,8 @@ module API
                   at_least_one_of :name, :description, :url, :username, :password, :cache_validity_hours,
                     :metadata_cache_validity_hours
                 end
+                route_setting :authorization, permissions: :update_maven_virtual_registry_upstream,
+                  boundary_type: :instance
                 patch do
                   authorize! :update_virtual_registry, upstream
 
@@ -256,6 +262,8 @@ module API
                   tags %w[maven_virtual_registries]
                   hidden true
                 end
+                route_setting :authorization, permissions: :delete_maven_virtual_registry_upstream,
+                  boundary_type: :instance
                 delete do
                   authorize! :destroy_virtual_registry, upstream
 
@@ -276,6 +284,8 @@ module API
                   tags %w[maven_virtual_registries]
                   hidden true
                 end
+                route_setting :authorization, permissions: :purge_maven_virtual_registry_upstream_cache,
+                  boundary_type: :instance
                 delete :cache do
                   authorize! :destroy_virtual_registry, upstream
 
@@ -296,6 +306,8 @@ module API
                   tags %w[maven_virtual_registries]
                   hidden true
                 end
+                route_setting :authorization, permissions: :test_maven_virtual_registry_upstream,
+                  boundary_type: :instance
                 get :test do
                   authorize! :read_virtual_registry, upstream
 
@@ -322,6 +334,8 @@ module API
                   optional :username, type: String, desc: 'The username of the Maven virtual registry upstream'
                   optional :password, type: String, desc: 'The password of the Maven virtual registry upstream'
                 end
+                route_setting :authorization, permissions: :test_maven_virtual_registry_upstream,
+                  boundary_type: :instance
                 post :test do
                   authorize! :read_virtual_registry, upstream
 
