@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['AlertManagementHttpIntegration'] do
+RSpec.describe GitlabSchema.types['AlertManagementHttpIntegration'], feature_category: :incident_management do
   specify { expect(described_class.graphql_name).to eq('AlertManagementHttpIntegration') }
 
   specify { expect(described_class).to require_graphql_authorizations(:admin_operations) }

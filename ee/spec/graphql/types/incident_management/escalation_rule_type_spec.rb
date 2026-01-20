@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['EscalationRuleType'] do
+RSpec.describe GitlabSchema.types['EscalationRuleType'], feature_category: :incident_management do
   specify { expect(described_class.graphql_name).to eq('EscalationRuleType') }
 
   it 'exposes the expected fields' do

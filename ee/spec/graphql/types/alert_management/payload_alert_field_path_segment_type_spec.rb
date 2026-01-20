@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['PayloadAlertFieldPathSegment'] do
+RSpec.describe GitlabSchema.types['PayloadAlertFieldPathSegment'], feature_category: :incident_management do
   specify { expect(described_class.graphql_name).to eq('PayloadAlertFieldPathSegment') }
 
   describe '.coerce_input' do

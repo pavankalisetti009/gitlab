@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['EscalationRuleInput'] do
+RSpec.describe GitlabSchema.types['EscalationRuleInput'], feature_category: :incident_management do
   context 'mutually exclusive arguments' do
     let(:input) do
       {

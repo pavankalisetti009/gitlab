@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['IssuableResourceLink'] do
+RSpec.describe GitlabSchema.types['IssuableResourceLink'], feature_category: :incident_management do
   specify { expect(described_class.graphql_name).to eq('IssuableResourceLink') }
 
   specify { expect(described_class).to require_graphql_authorizations(:admin_issuable_resource_link) }

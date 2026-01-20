@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['AlertManagementPayloadAlertFieldName'] do
+RSpec.describe GitlabSchema.types['AlertManagementPayloadAlertFieldName'], feature_category: :incident_management do
   it 'exposes all alert field names' do
     expect(described_class.values.keys).to match_array(
       %w[TITLE DESCRIPTION START_TIME END_TIME SERVICE MONITORING_TOOL HOSTS SEVERITY FINGERPRINT GITLAB_ENVIRONMENT_NAME]

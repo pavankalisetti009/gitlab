@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::IncidentManagement::IssuableResourceLinksResolver do
+RSpec.describe Resolvers::IncidentManagement::IssuableResourceLinksResolver, feature_category: :incident_management do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
