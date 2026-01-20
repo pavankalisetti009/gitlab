@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::ComplianceManagement::Frameworks::Destroy do
+RSpec.describe Mutations::ComplianceManagement::Frameworks::Destroy, feature_category: :compliance_management do
   include GraphqlHelpers
 
   let_it_be(:namespace) { create(:group) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ComplianceViolationSeverity'] do
+RSpec.describe GitlabSchema.types['ComplianceViolationSeverity'], feature_category: :compliance_management do
   let_it_be(:fields) do
     ::Enums::MergeRequests::ComplianceViolation.severity_levels.keys.map { |s| s.to_s.upcase }
   end

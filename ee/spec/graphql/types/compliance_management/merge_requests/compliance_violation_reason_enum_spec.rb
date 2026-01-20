@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ComplianceViolationReason'] do
+RSpec.describe GitlabSchema.types['ComplianceViolationReason'], feature_category: :compliance_management do
   let_it_be(:fields) do
     ::Enums::MergeRequests::ComplianceViolation.reasons.keys.map { |r| r.to_s.upcase }
   end

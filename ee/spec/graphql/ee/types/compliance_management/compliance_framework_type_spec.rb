@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ComplianceFramework'] do
+RSpec.describe GitlabSchema.types['ComplianceFramework'], feature_category: :compliance_management do
   subject { described_class }
 
   fields = %w[
