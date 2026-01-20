@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['AssetType'] do
+RSpec.describe GitlabSchema.types['AssetType'], feature_category: :release_orchestration do
   let_it_be(:project) { create(:project) }
   let(:fields) do
     %i[name type url]
