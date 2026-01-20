@@ -533,6 +533,97 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
       end
     end
 
+    describe '#vulnerability_attribute_enrichment_data_unavailable_action' do
+      shared_examples_for 'returns nil' do
+        it 'returns nil' do
+          expect(subject.vulnerability_attribute_enrichment_data_unavailable_action).to be_nil
+        end
+      end
+
+      context 'when scan_result_policy_read is nil' do
+        before do
+          subject.scan_result_policy_read = nil
+        end
+
+        it_behaves_like 'returns nil'
+      end
+
+      context 'when scan_result_policy_read exists' do
+        let(:scan_result_policy_read) do
+          build(:scan_result_policy_read, vulnerability_attributes: vulnerability_attributes)
+        end
+
+        before do
+          subject.scan_result_policy_read = scan_result_policy_read
+        end
+
+        context 'when vulnerability_attributes is nil' do
+          let(:vulnerability_attributes) { nil }
+
+          it_behaves_like 'returns nil'
+        end
+
+        context 'when enrichment_data_unavailable is not set' do
+          let(:vulnerability_attributes) { { 'fix_available' => true } }
+
+          it_behaves_like 'returns nil'
+        end
+
+        context 'when enrichment_data_unavailable action is block' do
+          let(:vulnerability_attributes) do
+            {
+              'enrichment_data_unavailable' => {
+                'action' => 'block'
+              }
+            }
+          end
+
+          it 'returns block' do
+            expect(subject.vulnerability_attribute_enrichment_data_unavailable_action).to eq('block')
+          end
+        end
+
+        context 'when enrichment_data_unavailable action is ignore' do
+          let(:vulnerability_attributes) do
+            {
+              'enrichment_data_unavailable' => {
+                'action' => 'ignore'
+              }
+            }
+          end
+
+          it 'returns ignore' do
+            expect(subject.vulnerability_attribute_enrichment_data_unavailable_action).to eq('ignore')
+          end
+        end
+
+        context 'when enrichment_data_unavailable is empty hash' do
+          let(:vulnerability_attributes) do
+            {
+              'enrichment_data_unavailable' => {}
+            }
+          end
+
+          it_behaves_like 'returns nil'
+        end
+
+        context 'when combined with other vulnerability attributes' do
+          let(:vulnerability_attributes) do
+            {
+              'fix_available' => true,
+              'known_exploited' => true,
+              'epss_score' => { 'operator' => 'greater_than', 'value' => 0.5 },
+              'enrichment_data_unavailable' => { 'action' => 'block' }
+            }
+          end
+
+          it 'returns the enrichment_data_unavailable action' do
+            expect(subject.vulnerability_attribute_enrichment_data_unavailable_action).to eq('block')
+          end
+        end
+      end
+    end
+
     describe 'validation' do
       context 'when value is too big' do
         it 'is invalid' do

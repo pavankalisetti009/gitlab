@@ -607,6 +607,36 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
   end
 
+  describe '.with_cve_enrichment_filters' do
+    let_it_be(:pm_cve_enrichment) { create(:pm_cve_enrichment) }
+
+    let_it_be(:record_with_enrichment) do
+      create(:security_finding, :with_finding_data, scan: scan_1).tap do |finding|
+        create(:security_finding_enrichment, finding_uuid: finding.uuid,
+          cve_enrichment_id: pm_cve_enrichment.id, epss_score: 0.75, is_known_exploit: true)
+      end
+    end
+
+    let_it_be(:record_with_enrichment_no_exploit) do
+      create(:security_finding, :with_finding_data, scan: scan_1).tap do |finding|
+        create(:security_finding_enrichment, finding_uuid: finding.uuid,
+          cve_enrichment_id: pm_cve_enrichment.id, epss_score: 0.30, is_known_exploit: false)
+      end
+    end
+
+    let_it_be(:record_without_enrichment) do
+      create(:security_finding, :with_finding_data, scan: scan_1)
+    end
+
+    let_it_be(:record_with_unenriched_cves) do
+      create(:security_finding, :with_finding_data, scan: scan_1).tap do |finding|
+        create(:security_finding_enrichment, finding_uuid: finding.uuid, cve_enrichment_id: nil)
+      end
+    end
+
+    it_behaves_like 'CVE enrichment filters model spec'
+  end
+
   describe '#state' do
     subject { finding_1.state }
 

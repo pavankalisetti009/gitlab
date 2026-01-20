@@ -8,6 +8,7 @@ module Vulnerabilities
     include ::VulnerabilityFindingHelpers
     include EachBatch
     include PolicyAutoDismissable
+    include Security::CveEnrichmentFilterable
 
     # https://gitlab.com/groups/gitlab-org/-/epics/3148
     # https://gitlab.com/gitlab-org/gitlab/-/issues/214563#note_370782508 is why the table names are not renamed

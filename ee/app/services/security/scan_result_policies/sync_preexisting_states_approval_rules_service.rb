@@ -61,7 +61,10 @@ module Security
           report_type: approval_rule.scanners,
           fix_available: approval_rule.vulnerability_attribute_fix_available,
           false_positive: approval_rule.vulnerability_attribute_false_positive,
-          vulnerability_age: approval_rule.scan_result_policy_read&.vulnerability_age
+          vulnerability_age: approval_rule.scan_result_policy_read&.vulnerability_age,
+          known_exploited: approval_rule.vulnerability_attribute_known_exploited,
+          epss_score: approval_rule.vulnerability_attribute_epss_score,
+          enrichment_data_unavailable_action: approval_rule.vulnerability_attribute_enrichment_data_unavailable_action
         }
         ::Security::ScanResultPolicies::VulnerabilitiesFinder.new(project, finder_params).execute
       end

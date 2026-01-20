@@ -5,6 +5,8 @@
 module Security
   module ScanResultPolicies
     class VulnerabilitiesFinder
+      include CveEnrichmentFilters
+
       INTERVAL_IN_DAYS = {
         day: 1,
         week: 7,
@@ -29,6 +31,7 @@ module Security
         vulnerabilities = vulnerabilities.by_age(vulnerability_age[:operator], age_in_days) if vulnerability_age_valid?
         vulnerabilities = vulnerabilities.with_fix_available(params[:fix_available]) unless params[:fix_available].nil?
         vulnerabilities = vulnerabilities.with_findings_by_uuid(params[:uuids]) if params[:uuids].present?
+        vulnerabilities = apply_cve_enrichment_filters(vulnerabilities) if valid_cve_enrichment_params?
 
         unless params[:false_positive].nil?
           vulnerabilities = vulnerabilities.with_false_positive(params[:false_positive])

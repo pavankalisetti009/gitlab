@@ -44,5 +44,16 @@ module Security
 
       where(condition)
     end
+
+    scope :without_enrichment_data, -> { where(cve_enrichment_id: nil) }
+
+    scope :with_enrichment_filters, ->(known_exploited: nil, epss_operator: nil, epss_value: nil) do
+      return none unless known_exploited == true || (epss_operator && epss_value)
+
+      scope = all
+      scope = scope.with_known_exploited(known_exploited) if known_exploited == true
+      scope = scope.with_epss_score(epss_operator, epss_value) if epss_operator && epss_value
+      scope
+    end
   end
 end
