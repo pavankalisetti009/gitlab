@@ -143,7 +143,7 @@ describe('BoardList Component', () => {
 
         expect(block.exists()).toBe(true);
         expect(block.attributes('class').split(' ')).toEqual(
-          expect.arrayContaining(['gl-rounded-bl-base', 'gl-rounded-br-base']),
+          expect.arrayContaining(['gl-rounded-bl-lg', 'gl-rounded-br-lg']),
         );
       });
       it('shows cut line', () => {

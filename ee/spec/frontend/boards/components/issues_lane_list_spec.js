@@ -238,7 +238,7 @@ describe('IssuesLaneList', () => {
         createComponent({ listProps: { maxIssueCount: 3 }, totalIssuesCount: 4 });
         const block = wrapper.find(maxIssueCountWarningClass);
         expect(block.exists()).toBe(true);
-        expect(block.attributes('class')).toContain('gl-rounded-base');
+        expect(block.attributes('class')).toContain('gl-rounded-lg');
       });
     });
 
