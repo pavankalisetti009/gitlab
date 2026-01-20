@@ -395,12 +395,9 @@ To upgrade your subscription from GitLab Duo Pro to GitLab Duo Enterprise, submi
 If configured correctly, in the **Admin** > **GitLab Duo Pro** settings, the message,
 **No health problems detected.** is displayed.
 
-{{< alert type="note" >}}
-
-While using GitLab Duo Chat, if you see the `Error code: A9999` response, clear and reset the chat until it succeeds.
-It is a common error response from the GitLab Duo API when using the staging gateway.
-
-{{< /alert >}}
+> [!note]
+> While using GitLab Duo Chat, if you see the `Error code: A9999` response, clear and reset the chat until it succeeds.
+> It is a common error response from the GitLab Duo API when using the staging gateway.
 
 ## IDE Setup
 
@@ -617,12 +614,9 @@ Run commands in the workspace container (example with log tailing):
 PODNAME=$(kubectl get po -o name | cut -d/ -f2) && CONTAINER_NAME=$(kubectl get pod $PODNAME -o jsonpath='{range .spec.containers[*]}{.name}{"\t"}{range .env[*]}{.name}{","}{end}{"\n"}{end}' | grep GL_TOOLS_DIR | cut -f 1) && kubectl exec $PODNAME -c $CONTAINER_NAME -it -- /bin/bash -c "tail -n 100 -f /tmp/*.log"
 ```
 
-{{< alert type="note" >}}
-
-These commands run in the current namespace. Use `kubens` to switch to the workspace namespace before
-running them.
-
-{{< /alert >}}
+> [!note]
+> These commands run in the current namespace. Use `kubens` to switch to the workspace namespace before
+> running them.
 
 #### Cleanup operations
 
