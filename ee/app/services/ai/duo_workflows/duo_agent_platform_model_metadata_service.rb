@@ -55,8 +55,6 @@ module Ai
       # 1. Self-hosted feature setting (admin-configured models only)
       # Note: No user model selection - limited to what admin sets up
       def resolve_self_hosted_duo_model_metadata
-        return {} unless Feature.enabled?(:self_hosted_agent_platform, :instance)
-
         feature_setting = duo_agent_platform
 
         return {} if feature_setting.nil? || feature_setting.disabled?

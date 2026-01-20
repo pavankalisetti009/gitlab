@@ -77,8 +77,6 @@ module Admin
     end
 
     def expose_duo_agent_platform_service_url?
-      return false unless ::Feature.enabled?(:self_hosted_agent_platform, :instance)
-
       ::Ability.allowed?(@current_user, :update_dap_self_hosted_model)
     end
 
