@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['DeploymentApprovalSummary'] do
+RSpec.describe GitlabSchema.types['DeploymentApprovalSummary'], feature_category: :continuous_delivery do
   specify { expect(described_class.graphql_name).to eq('DeploymentApprovalSummary') }
 
   it 'includes the expected fields' do
