@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require File.expand_path('ee/db/active_context/migrate/20250508151423_set_code_search_version.rb')
+require File.expand_path('ee/active_context/migrate/20250508151423_set_code_search_version.rb')
 
 RSpec.describe SetCodeSearchVersion, feature_category: :code_suggestions do
   let(:version) { 20250508151423 }

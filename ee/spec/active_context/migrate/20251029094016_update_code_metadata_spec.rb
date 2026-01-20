@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require File.expand_path('ee/db/active_context/migrate/20251029094016_update_code_metadata.rb')
+require File.expand_path('ee/active_context/migrate/20251029094016_update_code_metadata.rb')
 
 RSpec.describe UpdateCodeMetadata, feature_category: :code_suggestions do
   let(:version) { 20251029094016 }
