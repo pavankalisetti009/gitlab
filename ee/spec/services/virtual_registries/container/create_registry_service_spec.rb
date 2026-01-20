@@ -76,7 +76,7 @@ RSpec.describe ::VirtualRegistries::Container::CreateRegistryService, feature_ca
       end
 
       it 'returns max registry error message' do
-        expect(result.message[0]).to include('5 registries is the maximum allowed per group.')
+        expect(result.message[0]).to include('5 registries is the maximum allowed per top-level group.')
       end
 
       it 'does not create another registry' do

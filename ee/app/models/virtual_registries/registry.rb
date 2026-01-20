@@ -47,8 +47,15 @@ module VirtualRegistries
       return if self.class.for_group(group).count < self.class::MAX_REGISTRY_COUNT
 
       errors.add(
-        :group,
-        format(_('%{count} registries is the maximum allowed per group.'), count: self.class::MAX_REGISTRY_COUNT)
+        :base,
+        format(
+          n_(
+            '%{count} registry is the maximum allowed per top-level group.',
+            '%{count} registries is the maximum allowed per top-level group.',
+            self.class::MAX_REGISTRY_COUNT
+          ),
+          count: self.class::MAX_REGISTRY_COUNT
+        )
       )
     end
   end
