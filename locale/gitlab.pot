@@ -21543,9 +21543,6 @@ msgstr ""
 msgid "Current"
 msgstr ""
 
-msgid "Current Chat"
-msgstr ""
-
 msgid "Current GitLab Duo Chat"
 msgstr ""
 
