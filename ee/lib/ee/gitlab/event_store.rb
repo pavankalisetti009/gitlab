@@ -34,8 +34,6 @@ module EE
             to: ::MergeRequests::ExternalStatusCheckPassedEvent
           store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker, to: ::MergeRequests::UnblockedStateEvent
           store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker,
-            to: ::MergeRequests::JiraTitleDescriptionUpdateEvent
-          store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker,
             to: ::MergeRequests::OverrideRequestedChangesStateEvent
           store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker, to: ::MergeRequests::ApprovedEvent
           store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker, to: ::MergeRequests::ViolationsUpdatedEvent

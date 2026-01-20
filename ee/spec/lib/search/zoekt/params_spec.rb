@@ -45,15 +45,18 @@ RSpec.describe Search::Zoekt::Params, feature_category: :global_search do
   end
 
   describe '#max_line_match_results_per_file' do
-    it 'returns multi_match.max_chunks_size when multi_match is present' do
-      params = described_class.new(limit: 10, multi_match: multi_match_double)
-      expect(params.max_line_match_results_per_file).to eq(42)
+    context 'when multi_match is passed' do
+      it 'factors the max_chunks_size passed in the multi_match' do
+        result = described_class.new(limit: 10, multi_match: multi_match_double).max_line_match_results_per_file
+        expect(result).to eq(multi_match_double.max_chunks_size * described_class::LINE_MATCHES_FACTOR)
+      end
     end
 
-    it 'returns DEFAULT_REQUESTED_CHUNK_SIZE when multi_match is not present' do
-      stub_const('Search::Zoekt::MultiMatch::MAX_CHUNKS_PER_FILE', 99)
-      params = described_class.new(limit: 10)
-      expect(params.max_line_match_results_per_file).to eq(99)
+    context 'when multi_match is not passed' do
+      it 'factors the MAX_CHUNKS_PER_FILE' do
+        result = described_class.new(limit: 10).max_line_match_results_per_file
+        expect(result).to eq(Search::Zoekt::MultiMatch::MAX_CHUNKS_PER_FILE * described_class::LINE_MATCHES_FACTOR)
+      end
     end
   end
 end

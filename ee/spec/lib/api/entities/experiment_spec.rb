@@ -29,6 +29,10 @@ RSpec.describe ::API::Entities::Experiment, feature_category: :acquisition do
           {
             key: :boolean,
             value: false
+          },
+          {
+            key: :expression,
+            value: nil
           }
         ]
       }
@@ -44,6 +48,10 @@ RSpec.describe ::API::Entities::Experiment, feature_category: :acquisition do
         {
           key: :boolean,
           value: false
+        },
+        {
+          key: :expression,
+          value: nil
         },
         {
           key: :percentage_of_time,
@@ -62,6 +70,10 @@ RSpec.describe ::API::Entities::Experiment, feature_category: :acquisition do
         {
           key: :boolean,
           value: false
+        },
+        {
+          key: :expression,
+          value: nil
         },
         {
           key: :percentage_of_time,

@@ -51,10 +51,8 @@ module ProductAnalytics
     end
 
     def funnels
-      funnels_to_send = []
-
-      funnel_names_to_delete.each do |funnel_name|
-        funnels_to_send << {
+      funnels_to_send = funnel_names_to_delete.map do |funnel_name|
+        {
           state: 'deleted',
           name: funnel_name
         }
