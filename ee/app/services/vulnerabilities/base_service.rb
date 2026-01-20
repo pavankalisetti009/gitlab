@@ -13,7 +13,7 @@ module Vulnerabilities
     private
 
     def update_vulnerability_with(params)
-      @vulnerability.transaction do
+      Vulnerability.feature_flagged_transaction_for(@project) do
         yield if block_given?
 
         raise ActiveRecord::Rollback unless @vulnerability.update(params)

@@ -39,7 +39,7 @@ module Vulnerabilities
         def execute
           return false if batch_size == 0
 
-          Vulnerability.transaction do
+          Vulnerability.feature_flagged_transaction_for(project) do
             # Loading these records to memory before deleting so that we can sync
             # the deletion to ES
             vulns_to_delete = Vulnerability.id_in(vulnerability_ids).to_a
