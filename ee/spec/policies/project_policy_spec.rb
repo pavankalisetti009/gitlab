@@ -5595,6 +5595,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     let(:ai_catalog_available) { true }
     let(:flows_available) { true }
     let(:third_party_flows_available) { true }
+    let(:foundational_flows_available) { true }
     let(:duo_features_enabled) { true }
 
     shared_examples 'no permissions when StageCheck :ai_catalog is false' do
@@ -5632,6 +5633,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
     end
 
+    shared_examples 'no foundational flow permissions when StageCheck :foundational_flows is false' do
+      let(:foundational_flows_available) { false }
+
+      it { is_expected.to be_disallowed(:read_foundational_flow) }
+      it { is_expected.to be_disallowed(:create_foundational_flow_item_consumer) }
+    end
+
     shared_examples 'no permissions when Duo features are not available' do
       let(:duo_features_enabled) { false }
 
@@ -5666,6 +5674,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog_flows).and_return(flows_available)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
         .with(project, :ai_catalog_third_party_flows).and_return(third_party_flows_available)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(project, :foundational_flows).and_return(foundational_flows_available)
       project.duo_features_enabled = duo_features_enabled
     end
 
@@ -5680,10 +5690,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:execute_ai_catalog_item) }
+      it { is_expected.to be_allowed(:read_foundational_flow) }
+      it { is_expected.to be_allowed(:create_foundational_flow_item_consumer) }
+      it { is_expected.to be_allowed(:create_ai_catalog_flow_item_consumer) }
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
       it_behaves_like 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false'
+      it_behaves_like 'no foundational flow permissions when StageCheck :foundational_flows is false'
       it_behaves_like 'no create third party flow permission when ai_catalog_create_third_party_flows flag disabled'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
@@ -5694,16 +5708,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
       it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
+      it { is_expected.to be_disallowed(:create_foundational_flow_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_flow) }
       it { is_expected.to be_allowed(:read_ai_catalog_third_party_flow) }
+      it { is_expected.to be_allowed(:read_foundational_flow) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:execute_ai_catalog_item) }
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
       it_behaves_like 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false'
+      it_behaves_like 'no foundational flow permissions when StageCheck :foundational_flows is false'
       it_behaves_like 'no create third party flow permission when ai_catalog_create_third_party_flows flag disabled'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
