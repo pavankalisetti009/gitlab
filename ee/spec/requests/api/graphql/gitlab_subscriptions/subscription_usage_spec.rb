@@ -139,12 +139,17 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     {
       success: true,
       subscriptionUsage: {
-        startDate: "2025-10-01",
-        endDate: "2025-10-31",
-        enabled: true,
-        isOutdatedClient: false,
-        lastEventTransactionAt: "2025-10-01T16:19:59Z",
-        purchaseCreditsPath: '/mock/path'
+        gitlabCreditsUsage: {
+          startDate: "2025-10-01",
+          endDate: "2025-10-31",
+          enabled: true,
+          isOutdatedClient: false,
+          lastEventTransactionAt: "2025-10-01T16:19:59Z"
+        },
+        purchasePaths: [{
+          planType: 'gitlab_credits',
+          newPath: '/mock/path'
+        }]
       }
     }
   end
@@ -339,7 +344,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                enabled: false
+                gitlabCreditsUsage: {
+                  enabled: false
+                }
               }
             }
           end
@@ -359,10 +366,12 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                overageTermsAccepted: false,
-                canAcceptOverageTerms: true,
-                dapPromoEnabled: false,
-                usageDashboardPath: "/subscriptions/A-S00012345/usage"
+                gitlabCreditsUsage: {
+                  overageTermsAccepted: false,
+                  canAcceptOverageTerms: true,
+                  dapPromoEnabled: false,
+                  usageDashboardPath: "/subscriptions/A-S00012345/usage"
+                }
               }
             }
           end
@@ -387,8 +396,10 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                canAcceptOverageTerms: false,
-                usageDashboardPath: '/subscriptions/A-S00012345/usage'
+                gitlabCreditsUsage: {
+                  canAcceptOverageTerms: false,
+                  usageDashboardPath: '/subscriptions/A-S00012345/usage'
+                }
               }
             }
           end
@@ -406,8 +417,10 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                canAcceptOverageTerms: true,
-                usageDashboardPath: nil
+                gitlabCreditsUsage: {
+                  canAcceptOverageTerms: true,
+                  usageDashboardPath: nil
+                }
               }
             }
           end
@@ -426,7 +439,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                dapPromoEnabled: true
+                gitlabCreditsUsage: {
+                  dapPromoEnabled: true
+                }
               }
             }
           end
@@ -445,7 +460,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                dapPromoEnabled: false
+                gitlabCreditsUsage: {
+                  dapPromoEnabled: false
+                }
               }
             }
           end
@@ -464,7 +481,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                overageTermsAccepted: true
+                gitlabCreditsUsage: {
+                  overageTermsAccepted: true
+                }
               }
             }
           end
@@ -483,7 +502,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                overageTermsAccepted: false
+                gitlabCreditsUsage: {
+                  overageTermsAccepted: false
+                }
               }
             }
           end
@@ -622,7 +643,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               {
                 success: true,
                 subscriptionUsage: {
-                  enabled: false
+                  gitlabCreditsUsage: {
+                    enabled: false
+                  }
                 }
               }
             end
