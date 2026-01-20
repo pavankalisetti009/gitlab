@@ -271,6 +271,13 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
   },
   {
     "metric": {
+      "identifier": "pipeline_other_rate",
+      "value": "Other pipelines rate",
+    },
+    "trendStyle": "NONE",
+  },
+  {
+    "metric": {
       "identifier": "duo_used_count",
       "value": "Duo features usage",
     },

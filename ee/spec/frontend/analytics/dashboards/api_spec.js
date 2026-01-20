@@ -234,6 +234,7 @@ describe('Analytics Dashboards api', () => {
         'pipeline_count',
         'pipeline_success_rate',
         'pipeline_failed_rate',
+        'pipeline_other_rate',
         'pipeline_duration_median',
       ]);
     });
@@ -250,13 +251,18 @@ describe('Analytics Dashboards api', () => {
         },
         pipeline_failed_rate: {
           identifier: 'pipeline_failed_rate',
-          tooltip: '25/100',
-          value: 25,
+          tooltip: '35/100',
+          value: 35,
         },
         pipeline_success_rate: {
           identifier: 'pipeline_success_rate',
           tooltip: '50/100',
           value: 50,
+        },
+        pipeline_other_rate: {
+          identifier: 'pipeline_other_rate',
+          tooltip: '15/100',
+          value: 15,
         },
       });
     });

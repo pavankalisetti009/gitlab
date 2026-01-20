@@ -3,6 +3,7 @@ fragment PipelineAggregateMetricItem on PipelineAnalytics {
     pipelineCount: count
     pipelineSuccessCount: count(status: SUCCESS)
     pipelineFailedCount: count(status: FAILED)
+    pipelineOtherCount: count(status: OTHER)
     durationStatistics {
       pipelineDurationMedian: p50
     }

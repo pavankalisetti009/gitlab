@@ -148,7 +148,16 @@ export const mockAiMetricsResponse = (fixtures = []) =>
 
 export const mockAggregatedPipelineMetricsResponse = (values = []) =>
   values.reduce(
-    (acc, { pipelineCount, pipelineSuccessCount, pipelineFailedCount, pipelineDurationMedian }) =>
+    (
+      acc,
+      {
+        pipelineCount,
+        pipelineSuccessCount,
+        pipelineFailedCount,
+        pipelineOtherCount,
+        pipelineDurationMedian,
+      },
+    ) =>
       acc.mockResolvedValueOnce({
         data: {
           project: null,
@@ -159,6 +168,7 @@ export const mockAggregatedPipelineMetricsResponse = (values = []) =>
                 pipelineCount,
                 pipelineSuccessCount,
                 pipelineFailedCount,
+                pipelineOtherCount,
                 durationStatistics: {
                   pipelineDurationMedian,
                   __typename: 'CiDurationStatistics',

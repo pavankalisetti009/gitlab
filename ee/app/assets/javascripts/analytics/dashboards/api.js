@@ -68,6 +68,7 @@ export const extractAggregatedPipelineMetricsData = (rawAggregatedPipelineMetric
     pipelineCount,
     pipelineSuccessCount,
     pipelineFailedCount,
+    pipelineOtherCount,
     durationStatistics: { pipelineDurationMedian = null } = {},
   } = rawAggregatedPipelineMetricsData;
 
@@ -89,6 +90,14 @@ export const extractAggregatedPipelineMetricsData = (rawAggregatedPipelineMetric
       value: calculatePipelineCountPercentage(pipelineFailedCount, pipelineCount) || '-',
       tooltip: generateMetricTableTooltip({
         numerator: pipelineFailedCount,
+        denominator: pipelineCount,
+      }),
+    },
+    [PIPELINE_ANALYTICS_METRICS.OTHER_RATE]: {
+      identifier: PIPELINE_ANALYTICS_METRICS.OTHER_RATE,
+      value: calculatePipelineCountPercentage(pipelineOtherCount, pipelineCount) || '-',
+      tooltip: generateMetricTableTooltip({
+        numerator: pipelineOtherCount,
         denominator: pipelineCount,
       }),
     },
