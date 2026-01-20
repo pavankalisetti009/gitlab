@@ -96,24 +96,6 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
 
       handle_event
     end
-
-    context 'when security_policies_batched_sync_delay is disabled' do
-      before do
-        stub_feature_flags(security_policies_batched_sync_delay: false)
-      end
-
-      it 'calls Security::SyncProjectPolicyWorker without delays' do
-        expect(::Security::SyncProjectPolicyWorker)
-          .to receive(:bulk_perform_async_with_contexts)
-          .with(
-            match_array(project_ids),
-            arguments_proc: kind_of(Proc),
-            context_proc: kind_of(Proc)
-          )
-
-        handle_event
-      end
-    end
   end
 
   shared_examples 'batches projects correctly' do |batch_count, batch_sizes|
@@ -457,41 +439,6 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
           .with(1.second, match_array(projects.map(&:id)), arguments_proc: kind_of(Proc), context_proc: kind_of(Proc))
 
         handle_event
-      end
-    end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(security_policies_batched_sync_delay: false)
-      end
-
-      context 'when policy_configuration affects multiple projects' do
-        let_it_be(:namespace) { create(:namespace) }
-        let_it_be(:projects) { create_list(:project, 10, namespace: namespace) }
-        let_it_be(:policy_configuration) do
-          create(:security_orchestration_policy_configuration, namespace: namespace, project: nil)
-        end
-
-        let_it_be(:policy) do
-          create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
-        end
-
-        before do
-          stub_csp_group(nil)
-        end
-
-        it 'calls bulk_perform_async_with_contexts without delays' do
-          expect(::Security::SyncProjectPolicyWorker)
-            .to receive(:bulk_perform_async_with_contexts)
-            .once
-            .with(
-              match_array(projects.map(&:id)),
-              arguments_proc: kind_of(Proc),
-              context_proc: kind_of(Proc)
-            )
-
-          handle_event
-        end
       end
     end
   end
