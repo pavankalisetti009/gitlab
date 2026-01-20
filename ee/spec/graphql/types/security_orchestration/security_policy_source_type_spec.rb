@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['SecurityPolicySource'] do
+RSpec.describe GitlabSchema.types['SecurityPolicySource'], feature_category: :security_policy_management do
   let(:source) { {} }
 
   it 'returns all possible types' do

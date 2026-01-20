@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::SecurityPolicy::UnassignSecurityPolicyProject do
+RSpec.describe Mutations::SecurityPolicy::UnassignSecurityPolicyProject, feature_category: :security_policy_management do
   include GraphqlHelpers
   let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 

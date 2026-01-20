@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Mutations::SecurityPolicy::CommitScanExecutionPolicy do
+RSpec.describe Mutations::SecurityPolicy::CommitScanExecutionPolicy, feature_category: :security_policy_management do
   include GraphqlHelpers
   let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
