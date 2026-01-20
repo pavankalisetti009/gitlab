@@ -134,5 +134,130 @@ RSpec.describe Security::Scans::IngestReportsService, :clean_gitlab_redis_shared
         expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
       end
     end
+
+    context 'with parent and child pipelines' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:parent_pipeline) { create(:ci_pipeline, project: project, user: user) }
+      let_it_be(:child_pipeline) { create(:ci_pipeline, project: project, user: user, child_of: parent_pipeline) }
+
+      context 'when only the child pipeline has security reports' do
+        let_it_be(:child_job) { create(:ci_build, :sast, pipeline: child_pipeline, status: 'success') }
+
+        let(:service_object) { described_class.new(child_pipeline) }
+
+        before do
+          allow(child_pipeline.project).to receive(:can_store_security_reports?).and_return(true)
+        end
+
+        it 'only processes the child pipeline' do
+          expect(::Vulnerabilities::CompareSecurityReportsService).to receive(:set_security_mr_widget_to_polling)
+            .with(pipeline_id: child_pipeline.id).once
+          expect(::Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_polling)
+            .with(pipeline_id: parent_pipeline.id)
+
+          ingest_security_scans
+
+          expect(::Security::StoreScansWorker).to have_received(:perform_async).with(child_pipeline.id).once
+          expect(::Security::StoreScansWorker).not_to have_received(:perform_async).with(parent_pipeline.id)
+        end
+
+        context 'when feature flag show_child_security_reports_in_mr_widget is disabled' do
+          before do
+            stub_feature_flags(show_child_security_reports_in_mr_widget: false)
+          end
+
+          it 'does not process due to parent pipeline not having reports' do
+            ingest_security_scans
+
+            expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
+          end
+        end
+      end
+
+      context 'when only the parent pipeline has security reports' do
+        let_it_be(:parent_job) { create(:ci_build, :sast, pipeline: parent_pipeline, status: 'success') }
+
+        let(:service_object) { described_class.new(parent_pipeline) }
+
+        before do
+          allow(parent_pipeline.project).to receive(:can_store_security_reports?).and_return(true)
+        end
+
+        it 'only processes the parent pipeline' do
+          expect(::Vulnerabilities::CompareSecurityReportsService).to receive(:set_security_mr_widget_to_polling)
+            .with(pipeline_id: parent_pipeline.id).once
+          expect(::Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_polling)
+            .with(pipeline_id: child_pipeline.id)
+
+          ingest_security_scans
+
+          expect(::Security::StoreScansWorker).to have_received(:perform_async).with(parent_pipeline.id).once
+          expect(::Security::StoreScansWorker).not_to have_received(:perform_async).with(child_pipeline.id)
+        end
+
+        context 'when feature flag show_child_security_reports_in_mr_widget is disabled' do
+          before do
+            stub_feature_flags(show_child_security_reports_in_mr_widget: false)
+          end
+
+          it 'processes the parent' do
+            ingest_security_scans
+
+            expect(::Security::StoreScansWorker).to have_received(:perform_async)
+          end
+        end
+      end
+
+      context 'when both parent and child pipelines have security reports' do
+        let_it_be(:parent_job) { create(:ci_build, :sast, pipeline: parent_pipeline, status: 'success') }
+        let_it_be(:child_job) { create(:ci_build, :dast, pipeline: child_pipeline, status: 'success') }
+
+        let(:service_object) { described_class.new(child_pipeline) }
+
+        before do
+          allow(child_pipeline.project).to receive(:can_store_security_reports?).and_return(true)
+        end
+
+        it 'processes both pipelines' do
+          expect(::Vulnerabilities::CompareSecurityReportsService).to receive(:set_security_mr_widget_to_polling)
+            .with(pipeline_id: parent_pipeline.id).once
+          expect(::Vulnerabilities::CompareSecurityReportsService).to receive(:set_security_mr_widget_to_polling)
+            .with(pipeline_id: child_pipeline.id).once
+
+          ingest_security_scans
+
+          expect(::Security::StoreScansWorker).to have_received(:perform_async).with(parent_pipeline.id).once
+          expect(::Security::StoreScansWorker).to have_received(:perform_async).with(child_pipeline.id).once
+        end
+
+        context 'when feature flag show_child_security_reports_in_mr_widget is disabled' do
+          before do
+            stub_feature_flags(show_child_security_reports_in_mr_widget: false)
+          end
+
+          it 'processes the parent' do
+            ingest_security_scans
+
+            expect(::Security::StoreScansWorker).to have_received(:perform_async).with(parent_pipeline.id).once
+            expect(::Security::StoreScansWorker).not_to have_received(:perform_async).with(child_pipeline.id)
+          end
+        end
+      end
+
+      context 'when child pipeline security job is not complete' do
+        let_it_be(:parent_job) { create(:ci_build, :sast, pipeline: parent_pipeline, status: 'success') }
+        let_it_be(:child_job) { create(:ci_build, :dast, pipeline: child_pipeline, status: 'running') }
+
+        let(:service_object) { described_class.new(parent_pipeline) }
+
+        it 'does not start ingestion until all jobs complete' do
+          expect(::Vulnerabilities::CompareSecurityReportsService).not_to receive(:set_security_mr_widget_to_polling)
+
+          ingest_security_scans
+
+          expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
+        end
+      end
+    end
   end
 end
