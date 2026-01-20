@@ -12,11 +12,10 @@
 #     report_type:  Array<String>
 #     scan_mode:    String
 #     scope:        String
-#     limit:        Int
 
 module Security
   class FindingsFinder
-    DEFAULT_LIMIT = 20
+    DEFAULT_PER_PAGE = 20
 
     def initialize(pipeline, params: {})
       @pipeline = pipeline
@@ -30,10 +29,11 @@ module Security
       #   FROM security_scans
       #   LATERAL (
       #     SELECT * FROM security_findings
-      #     LIMIT n
+      #     WHERE ...
       #   )
       #   WHERE security_scans.x = 'y'
-      #   ...
+      #   ORDER BY ...
+      #   LIMIT n
       #
       # This is done for performance reasons to reduce the amount of data loaded
       # in the query compared to a more conventional
@@ -44,11 +44,6 @@ module Security
       #
       # The latter form can end up reading a very large number of rows on projects
       # with high numbers of findings.
-      #
-      # Note the inner query needs the LIMIT incremented by 1 because of the
-      # way the Kaminari gem implements pagination without total counts.
-      # Kaminari increments the LIMIT on the outer relation query by 1 to
-      # determine if there are further pages to load. See https://github.com/kaminari/kaminari/blob/13b59ce7ab4e3d0e3072272251de734f918d5f8f/kaminari-activerecord/lib/kaminari/activerecord/active_record_relation_methods.rb#L83-L101
 
       return Security::Finding.none unless pipeline
 
@@ -67,7 +62,7 @@ module Security
         .then { |relation| by_state(relation) }
         .then { |relation| by_include_dismissed(relation) }
         .then { |relation| by_scan_mode(relation) }
-        .limit(limit + 1)
+        .keyset_paginate(cursor: params[:cursor], per_page: params[:limit] || DEFAULT_PER_PAGE)
 
       from_sql = <<~SQL.squish
           "security_scans",
@@ -88,8 +83,8 @@ module Security
         .with_vulnerability
         .merge(::Security::Scan.by_pipeline_ids(pipeline_ids))
         .merge(::Security::Scan.latest_successful)
-        .ordered(params[:sort])
         .then { |relation| by_report_types(relation) }
+        .ordered(params[:sort])
     end
 
     private
@@ -97,10 +92,6 @@ module Security
     attr_reader :pipeline, :params
 
     delegate :project, :security_findings_partition_number, to: :pipeline, private: true
-
-    def limit
-      @limit ||= params[:limit] || DEFAULT_LIMIT
-    end
 
     def pipeline_ids
       if Feature.enabled?(:show_child_security_reports_in_mr_widget, project)

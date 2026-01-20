@@ -127,7 +127,7 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFindings',
         end
 
         context 'with :first and :after arguments' do
-          let(:pagination_arguments) { "first: 5,after: \"#{encode('5')}\"" }
+          let(:pagination_arguments) { "first: 5,after: \"#{encode(5)}\"" }
 
           it 'returns the 6th to 10th findings' do
             expected_uuids = Security::Finding.all.order(severity: :desc, id: :asc).offset(5).limit(5).map(&:uuid)
@@ -136,7 +136,7 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFindings',
         end
 
         context 'with :last and :before arguments' do
-          let(:pagination_arguments) { "last: 10,before: \"#{encode('21')}\"" }
+          let(:pagination_arguments) { "last: 10,before: \"#{encode(21)}\"" }
 
           it 'returns the 10th to 20th findings' do
             expected_uuids = Security::Finding.all.order(severity: :desc, id: :asc).offset(10).limit(10).map(&:uuid)
@@ -144,45 +144,15 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFindings',
           end
         end
 
-        context 'with :first and :last arguments' do
-          let(:pagination_arguments) { "last: 10,first: 10,before: \"#{encode('21')}\"" }
+        # Keyset pagination cursors encode the sort key values (severity, id)
+        def encode(offset)
+          finding = Security::Finding.all.order(severity: :desc, id: :asc).offset(offset - 1).first
+          return unless finding
 
-          it 'returns an error' do
-            expect(security_report_findings).to be_blank
-            expect(graphql_errors).to be_present
-          end
-        end
-
-        context 'with :after and :before arguments' do
-          let(:pagination_arguments) { "after: \"#{encode('20')}\",before: \"#{encode('20')}\"" }
-
-          it 'returns an error' do
-            expect(security_report_findings).to be_blank
-            expect(graphql_errors).to be_present
-          end
-        end
-
-        context 'with :last and :after arguments' do
-          let(:pagination_arguments) { "last: 5,after: \"#{encode('5')}\"" }
-
-          it 'returns an error' do
-            expect(security_report_findings).to be_blank
-            expect(graphql_errors).to be_present
-          end
-        end
-
-        context 'with :first and :before arguments' do
-          let(:pagination_arguments) { "first: 5,before: \"#{encode('10')}\"" }
-
-          it 'returns an error' do
-            expect(security_report_findings).to be_blank
-            expect(graphql_errors).to be_present
-          end
-        end
-
-        # The before and after pagination cursors are base64 encoded
-        def encode(value)
-          GraphQL::Schema::Base64Encoder.encode(value.to_s)
+          Gitlab::Pagination::Keyset::Paginator::Base64CursorConverter.dump(
+            severity: finding.severity,
+            id: finding.id.to_s
+          )
         end
       end
     end

@@ -17,6 +17,8 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
   let(:scanner) { nil }
   let(:state) { nil }
   let(:sort) { nil }
+  let(:first) { nil }
+  let(:after) { nil }
   let(:service_object) { described_class.new(pipeline, params: params) }
   let(:params) do
     {
@@ -25,7 +27,9 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
       scope: scope,
       scanner: scanner,
       state: state,
-      sort: sort
+      sort: sort,
+      first: first,
+      after: after
     }
   end
 
