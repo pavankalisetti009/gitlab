@@ -42,11 +42,11 @@ RSpec.describe 'AI Catalog Flow Delete', :js, feature_category: :workflow_catalo
         find_by_testid('more-actions-dropdown').click
         find_by_testid('delete-button').click
 
-        expect(page).to have_content('Delete flow')
-        expect(page).to have_content('Are you sure you want to delete flow Flow to Delete?')
+        expect(page).to have_content('Hide flow')
+        expect(page).to have_content('Are you sure you want to hide flow Flow to Delete?')
 
         within('.gl-modal') do
-          click_button 'Delete'
+          click_button 'Confirm'
         end
 
         wait_for_requests
@@ -92,7 +92,7 @@ RSpec.describe 'AI Catalog Flow Delete', :js, feature_category: :workflow_catalo
         within('.gl-modal') do
           # Select soft delete option
           choose 'Hide from the AI Catalog'
-          click_button 'Delete'
+          click_button 'Confirm'
         end
 
         wait_for_requests
@@ -124,7 +124,7 @@ RSpec.describe 'AI Catalog Flow Delete', :js, feature_category: :workflow_catalo
         within('.gl-modal') do
           # Select hard delete option (default)
           choose 'Delete permanently'
-          click_button 'Delete'
+          click_button 'Confirm'
         end
 
         wait_for_requests
