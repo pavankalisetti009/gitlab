@@ -74,7 +74,8 @@ module Mutations
 
           ::Security::ScanProfiles::ProjectDetachService.execute(
             profile: profile,
-            projects: projects
+            projects: projects,
+            current_user: current_user
           )
         end
 
