@@ -50,6 +50,7 @@ describe('SubscriptionGroupSelector component', () => {
     wrapper.findAllByTestId('group-path').wrappers.map((w) => w.text());
   const findGroupNameInput = () => wrapper.findByTestId('subscription-group-name-input');
   const findCreateNewGroupButton = () => wrapper.findByTestId('show-new-group-form-button');
+  const findContinueButton = () => wrapper.findByTestId('continue-button');
   const findGroupUrl = () => wrapper.findByTestId('group-url');
   const findErrorAlert = () => wrapper.findComponent(GlAlert);
   const findHeader = () => wrapper.find('h2');
@@ -183,6 +184,7 @@ describe('SubscriptionGroupSelector component', () => {
       await submitForm();
 
       expect(visitUrl).not.toHaveBeenCalled();
+      expect(findContinueButton().props('loading')).toBe(false);
     });
 
     it('shows appropriate toggle text when a group is selected', async () => {
@@ -201,6 +203,7 @@ describe('SubscriptionGroupSelector component', () => {
       await submitForm();
 
       expect(visitUrl).toHaveBeenCalledWith(expectedUrl);
+      expect(findContinueButton().props('loading')).toBe(false);
     });
 
     it('includes promo_code in purchase URL when provided', async () => {
@@ -216,6 +219,7 @@ describe('SubscriptionGroupSelector component', () => {
       await submitForm();
 
       expect(visitUrl).toHaveBeenCalledWith(expectedUrl);
+      expect(findContinueButton().props('loading')).toBe(false);
     });
 
     it('does not call create group API when continuing with existing group', async () => {
@@ -237,6 +241,7 @@ describe('SubscriptionGroupSelector component', () => {
       await submitForm();
 
       expect(visitUrl).not.toHaveBeenCalled();
+      expect(findContinueButton().props('loading')).toBe(false);
       expect(Sentry.captureException).toHaveBeenCalledWith(error, {
         tags: { vue_component: 'SubscriptionGroupSelector' },
       });
@@ -303,6 +308,7 @@ describe('SubscriptionGroupSelector component', () => {
 
       it('does not redirect', () => {
         expect(visitUrl).not.toHaveBeenCalled();
+        expect(findContinueButton().props('loading')).toBe(false);
       });
 
       it('does not show validation message for group selection', () => {
@@ -467,6 +473,7 @@ describe('SubscriptionGroupSelector component', () => {
           expect(visitUrl).toHaveBeenCalledWith(
             `${plansData.purchaseLink.href}&gl_namespace_id=123`,
           );
+          expect(findContinueButton().props('loading')).toBe(false);
         });
       });
 
@@ -491,6 +498,7 @@ describe('SubscriptionGroupSelector component', () => {
           expect(visitUrl).toHaveBeenCalledWith(
             `${plansData.purchaseLink.href}&gl_namespace_id=456&promo_code=${promoCode}`,
           );
+          expect(findContinueButton().props('loading')).toBe(false);
         });
       });
 
@@ -504,6 +512,7 @@ describe('SubscriptionGroupSelector component', () => {
 
         it('does not redirect to purchase page', () => {
           expect(visitUrl).not.toHaveBeenCalled();
+          expect(findContinueButton().props('loading')).toBe(false);
         });
 
         it('shows an error message', () => {
@@ -531,6 +540,7 @@ describe('SubscriptionGroupSelector component', () => {
 
         it('does not redirect to purchase page', () => {
           expect(visitUrl).not.toHaveBeenCalled();
+          expect(findContinueButton().props('loading')).toBe(false);
         });
 
         it('shows an error message', () => {
@@ -556,6 +566,7 @@ describe('SubscriptionGroupSelector component', () => {
 
         it('does not redirect to purchase page', () => {
           expect(visitUrl).not.toHaveBeenCalled();
+          expect(findContinueButton().props('loading')).toBe(false);
         });
 
         it('shows an error message', () => {
@@ -573,6 +584,7 @@ describe('SubscriptionGroupSelector component', () => {
 
         it('does not redirect to purchase page', () => {
           expect(visitUrl).not.toHaveBeenCalled();
+          expect(findContinueButton().props('loading')).toBe(false);
         });
 
         it('shows an error message', () => {
