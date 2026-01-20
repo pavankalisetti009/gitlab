@@ -485,7 +485,7 @@ export default {
             v-model="workspaceVariables"
             class="!gl-mb-5"
             :show-validations="showWorkspaceVariableValidations"
-            @addVariable="showWorkspaceVariableValidations = false"
+            @add-variable="showWorkspaceVariableValidations = false"
           />
         </template>
       </template>

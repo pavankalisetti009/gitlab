@@ -178,7 +178,7 @@ describe('workspaces/user/pages/list.vue', () => {
     });
   });
 
-  describe('when workspace tab emits onPaginationInput event', () => {
+  describe('when workspace tab emits on-pagination-input event', () => {
     const EXPECTED_ACTIVE_WORKSPACES_PAGINATION_VARIABLES = {
       first: 10,
       activeAfter: 'end',
@@ -211,7 +211,7 @@ describe('workspaces/user/pages/list.vue', () => {
 
         const workspaceTab = findTabs().at(tabIdx);
 
-        workspaceTab.vm.$emit('onPaginationInput', {
+        workspaceTab.vm.$emit('on-pagination-input', {
           tab: tabName,
           paginationVariables: pageVariables,
         });

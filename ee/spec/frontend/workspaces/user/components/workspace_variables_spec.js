@@ -101,7 +101,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
 
     await findAddButton().trigger('click');
     const emittedEvents = wrapper.emitted();
-    expect(emittedEvents.addVariable).toHaveLength(1);
+    expect(emittedEvents['add-variable']).toHaveLength(1);
     expect(emittedEvents.input).toMatchObject([
       [[...variables, { key: '', value: '', valid: false }]],
     ]);
