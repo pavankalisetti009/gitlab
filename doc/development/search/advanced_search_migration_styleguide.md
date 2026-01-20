@@ -136,12 +136,9 @@ Validate that an Elasticsearch query contains the specified fields.
 
 #### `assert_named_queries`
 
-{{< alert type="warning" >}}
-
-This method requires sending a search request to Elasticsearch. Use `assert_names_in_query` to test
-the queries generated directly.
-
-{{< /alert >}}
+> [!warning]
+> This method requires sending a search request to Elasticsearch. Use `assert_names_in_query` to test
+> the queries generated directly.
 
 Validate that a request was made to Elasticsearch with [named queries](https://www.elastic.co/guide/en/elasticsearch/reference/8.18/query-dsl-bool-query.html#named-queries)
 Use `without` to validate the named query was not in the request.

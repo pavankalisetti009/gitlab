@@ -9,12 +9,9 @@ For working with internationalization (i18n),
 [GNU gettext](https://www.gnu.org/software/gettext/) is used given it's the most
 used tool for this task and there are many applications that help us work with it.
 
-{{< alert type="note" >}}
-
-All `rake` commands described on this page must be run on a GitLab instance. This instance is
-usually the GitLab Development Kit (GDK).
-
-{{< /alert >}}
+> [!note]
+> All `rake` commands described on this page must be run on a GitLab instance. This instance is
+> usually the GitLab Development Kit (GDK).
 
 ## Setting up the GitLab Development Kit (GDK)
 

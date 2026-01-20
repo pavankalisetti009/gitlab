@@ -39,12 +39,9 @@ The visibility level of a group can be changed only if all subgroups and
 sub-projects have the same or lower visibility level. For example, a group can be set
 to internal only if all subgroups and projects are internal or private.
 
-{{< alert type="warning" >}}
-
-If you migrate an existing group to a lower visibility level, that action does not migrate subgroups
-in the same way. This is a [known issue](https://gitlab.com/gitlab-org/gitlab/-/issues/22406).
-
-{{< /alert >}}
+> [!warning]
+> If you migrate an existing group to a lower visibility level, that action does not migrate subgroups
+> in the same way. This is a [known issue](https://gitlab.com/gitlab-org/gitlab/-/issues/22406).
 
 Visibility levels can be found in the `Gitlab::VisibilityLevel` module.
 
