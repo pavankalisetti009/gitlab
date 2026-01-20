@@ -51,6 +51,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
           end
         end
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_maven_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
 
     context 'with invalid group_id' do
@@ -110,6 +117,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response).to eq({ 'success' => true })
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :test_maven_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api(url, personal_access_token: pat), params: params
+        end
       end
     end
 
@@ -211,6 +225,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'logging access through project membership'
+
+    it_behaves_like 'authorizing granular token permissions', :read_maven_virtual_registry_upstream do
+      let(:boundary_object) { :instance }
+      let(:request) do
+        get api(url, personal_access_token: pat)
+      end
+    end
   end
 
   describe 'POST /api/v4/virtual_registries/packages/maven/registries/:id/upstreams' do
@@ -425,6 +446,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
           group.add_maintainer(user)
         end
       end
+
+      it_behaves_like 'authorizing granular token permissions', :update_maven_virtual_registry_upstream do
+        let(:boundary_object) { :instance }
+        let(:request) do
+          patch api(url, personal_access_token: pat), params: params
+        end
+      end
     end
 
     context 'for params' do
@@ -534,6 +562,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         expect { api_request }.to change { upstream_2.registry_upstreams.take.position }.by(-1)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_maven_virtual_registry_upstream do
+      let(:boundary_object) { :instance }
+      let(:request) do
+        delete api(url, personal_access_token: pat)
+      end
+    end
   end
 
   describe 'DELETE /api/v4/virtual_registries/packages/maven/upstreams/:id/cache', :sidekiq_inline do
@@ -588,6 +623,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         group.add_maintainer(user)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :purge_maven_virtual_registry_upstream_cache do
+      let(:boundary_object) { :instance }
+      let(:request) do
+        delete api(url, personal_access_token: pat)
+      end
+    end
   end
 
   describe 'GET /api/v4/virtual_registries/packages/maven/upstreams/:id/test' do
@@ -621,6 +663,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
 
       it_behaves_like 'successful response'
+
+      it_behaves_like 'authorizing granular token permissions', :test_maven_virtual_registry_upstream do
+        let(:boundary_object) { :instance }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
 
     context 'for different user roles' do
@@ -681,6 +730,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       it { is_expected.to have_request_urgency(:low) }
 
       it_behaves_like 'an authenticated virtual registry REST API'
+
+      it_behaves_like 'authorizing granular token permissions', :test_maven_virtual_registry_upstream do
+        let(:boundary_object) { :instance }
+        let(:request) do
+          post api(url, personal_access_token: pat), params: params
+        end
+      end
     end
 
     context 'with override params' do
