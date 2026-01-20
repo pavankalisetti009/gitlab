@@ -193,12 +193,29 @@ export default {
       });
     },
     deleteConfirmTitle() {
-      return sprintf(s__('AICatalog|Delete %{itemType}'), {
-        itemType: this.itemTypeLabel,
-      });
+      return this.canHardDelete
+        ? sprintf(s__('AICatalog|Delete %{itemType}'), {
+            itemType: this.itemTypeLabel,
+          })
+        : sprintf(s__('AICatalog|Hide %{itemType}'), {
+            itemType: this.itemTypeLabel,
+          });
     },
     deleteConfirmMessage() {
-      return s__('AICatalog|Are you sure you want to delete %{itemType} %{name}?');
+      return this.canHardDelete
+        ? s__('AICatalog|Are you sure you want to delete %{itemType} %{name}?')
+        : s__('AICatalog|Are you sure you want to hide %{itemType} %{name}?');
+    },
+    deleteConfirmAdditionalMessage() {
+      if (!this.canHardDelete) {
+        return sprintf(
+          s__(
+            'AICatalog|Users can continue to use the %{itemType} in the groups and projects it is enabled in.',
+          ),
+          { itemType: this.itemTypeLabel },
+        );
+      }
+      return null;
     },
     pendingMessage() {
       return !this.hasParentConsumer
@@ -364,8 +381,12 @@ export default {
       >
         <template #list-item>
           <span class="gl-flex gl-gap-2">
-            <gl-icon name="remove" variant="current" aria-hidden="true" />
-            {{ __('Delete') }}
+            <gl-icon
+              :name="canHardDelete ? 'remove' : 'eye-slash'"
+              variant="current"
+              aria-hidden="true"
+            />
+            {{ canHardDelete ? __('Delete') : __('Hide') }}
           </span>
         </template>
       </gl-disclosure-dropdown-item>
@@ -377,7 +398,7 @@ export default {
       variant="danger"
       :title="deleteConfirmTitle"
       :action-fn="() => deleteFn(forceHardDelete)"
-      :action-text="__('Delete')"
+      :action-text="__('Confirm')"
       @close="showDeleteModal = false"
     >
       <gl-sprintf :message="deleteConfirmMessage">
@@ -386,6 +407,9 @@ export default {
         </template>
         <template #itemType>{{ itemTypeLabel }}</template>
       </gl-sprintf>
+      <p v-if="deleteConfirmAdditionalMessage" class="gl-mb-0 gl-mt-3 gl-text-subtle">
+        {{ deleteConfirmAdditionalMessage }}
+      </p>
       <div v-if="canHardDelete">
         <label for="delete-method" class="gl-mb-0 gl-mt-4 gl-block">
           {{ s__('AICatalog|Deletion method') }}

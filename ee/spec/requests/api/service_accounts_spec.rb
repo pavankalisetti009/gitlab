@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::ServiceAccounts, :with_current_organization, :aggregate_failures, feature_category: :user_management do
+RSpec.describe API::ServiceAccounts, :aggregate_failures, feature_category: :user_management do
   let_it_be(:user)  { create(:user, organizations: [current_organization]) }
   let_it_be(:admin) { create(:admin, organizations: [current_organization]) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }

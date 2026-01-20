@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Chat, :saas, :with_current_organization, feature_category: :duo_chat do
+RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
   let_it_be(:authorized_user) { create(:user, organizations: [current_organization]) }
   let_it_be(:tokens) do
     {

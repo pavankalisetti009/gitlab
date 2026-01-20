@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SmartcardController, :with_current_organization, type: :request, feature_category: :system_access do
+RSpec.describe SmartcardController, type: :request, feature_category: :system_access do
   include LdapHelpers
 
   let_it_be(:organization) { current_organization }

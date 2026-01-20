@@ -325,6 +325,14 @@ describe('AiCatalogFlowsShow', () => {
         deleteFlow();
         await waitForPromises();
 
+        expect(mockToast.show).toHaveBeenCalledWith('Flow hidden.');
+      });
+
+      it('shows toast reading "Flow deleted" when forceHardDelete is true', async () => {
+        const deleteAgentWithHardDelete = () => findItemActions().props('deleteFn')(true);
+        deleteAgentWithHardDelete();
+        await waitForPromises();
+
         expect(mockToast.show).toHaveBeenCalledWith('Flow deleted.');
       });
     });

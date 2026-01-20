@@ -38,11 +38,11 @@ RSpec.describe 'AI Catalog Agent Show', :js, feature_category: :workflow_catalog
         find_by_testid('more-actions-dropdown').click
         find_by_testid('delete-button').click
 
-        expect(page).to have_content('Delete agent')
-        expect(page).to have_content('Are you sure you want to delete agent Agent to Delete?')
+        expect(page).to have_content('Hide agent')
+        expect(page).to have_content('Are you sure you want to hide agent Agent to Delete?')
 
         within('.gl-modal') do
-          click_button 'Delete'
+          click_button 'Confirm'
         end
 
         wait_for_requests
@@ -79,7 +79,7 @@ RSpec.describe 'AI Catalog Agent Show', :js, feature_category: :workflow_catalog
         within('.gl-modal') do
           # Select soft delete option
           choose 'Hide from the AI Catalog'
-          click_button 'Delete'
+          click_button 'Confirm'
         end
 
         wait_for_requests
@@ -102,7 +102,7 @@ RSpec.describe 'AI Catalog Agent Show', :js, feature_category: :workflow_catalog
         within('.gl-modal') do
           # Select hard delete option (default)
           choose 'Delete permanently'
-          click_button 'Delete'
+          click_button 'Confirm'
         end
 
         wait_for_requests

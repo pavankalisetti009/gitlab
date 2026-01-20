@@ -21,44 +21,54 @@ module GitlabSubscriptions
 
     attr_reader :namespace, :subscription_usage_client, :subscription_target
 
+    def gitlab_credits_usage_data
+      usage_metadata[:gitlabCreditsUsage] || {}
+    end
+
     def enabled?
-      !!usage_metadata[:enabled]
+      !!gitlab_credits_usage_data[:enabled]
     end
 
     def outdated_client?
-      usage_metadata[:isOutdatedClient]
+      gitlab_credits_usage_data[:isOutdatedClient]
     end
 
     def start_date
-      usage_metadata[:startDate]
+      gitlab_credits_usage_data[:startDate]
     end
 
     def end_date
-      usage_metadata[:endDate]
+      gitlab_credits_usage_data[:endDate]
     end
 
     def last_event_transaction_at
-      usage_metadata[:lastEventTransactionAt]
+      gitlab_credits_usage_data[:lastEventTransactionAt]
     end
 
     def purchase_credits_path
-      usage_metadata[:purchaseCreditsPath]
+      credits_paths = usage_metadata[:purchasePaths]&.find do |path_obj|
+        path_obj[:planType] == 'gitlab_credits'
+      end
+
+      return unless credits_paths.present?
+
+      credits_paths[:editPath] || credits_paths[:newPath]
     end
 
     def overage_terms_accepted
-      !!usage_metadata[:overageTermsAccepted]
+      !!gitlab_credits_usage_data[:overageTermsAccepted]
     end
 
     def can_accept_overage_terms
-      !!usage_metadata[:canAcceptOverageTerms]
+      !!gitlab_credits_usage_data[:canAcceptOverageTerms]
     end
 
     def dap_promo_enabled
-      !!usage_metadata[:dapPromoEnabled]
+      !!gitlab_credits_usage_data[:dapPromoEnabled]
     end
 
     def usage_dashboard_path
-      usage_metadata[:usageDashboardPath]
+      gitlab_credits_usage_data[:usageDashboardPath]
     end
 
     def monthly_waiver

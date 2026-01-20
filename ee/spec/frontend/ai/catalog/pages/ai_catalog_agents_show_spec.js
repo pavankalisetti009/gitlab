@@ -326,6 +326,14 @@ describe('AiCatalogAgentsShow', () => {
         deleteAgent();
         await waitForPromises();
 
+        expect(mockToast.show).toHaveBeenCalledWith('Agent hidden.');
+      });
+
+      it('shows toast reading "Agent deleted" when forceHardDelete is true', async () => {
+        const deleteAgentWithHardDelete = () => findItemActions().props('deleteFn')(true);
+        deleteAgentWithHardDelete();
+        await waitForPromises();
+
         expect(mockToast.show).toHaveBeenCalledWith('Agent deleted.');
       });
     });

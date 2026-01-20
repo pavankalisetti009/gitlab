@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Create a custom dashboard', feature_category: :custom_dashboards_foundation do
+RSpec.describe 'Create a custom dashboard', :without_current_organization, feature_category: :custom_dashboards_foundation do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

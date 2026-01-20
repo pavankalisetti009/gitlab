@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting an AI catalog item', :with_current_organization, feature_category: :workflow_catalog do
+RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 

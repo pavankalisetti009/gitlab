@@ -148,12 +148,18 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
               enabled: true,
               isOutdatedClient: false,
               lastEventTransactionAt: "2025-10-01T16:19:59Z",
-              purchaseCreditsPath: '/mock/path',
               overageTermsAccepted: true,
               canAcceptOverageTerms: true,
               dapPromoEnabled: false,
               usageDashboardPath: "/subscriptions/A-S00012345/usage"
-            }
+            },
+            purchasePaths: [
+              {
+                planType: "gitlab_credits",
+                newPath: "/mock/new/path",
+                editPath: "/mock/edit/path"
+              }
+            ]
           }
         }
       }
@@ -163,26 +169,34 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
       {
         success: true,
         subscriptionUsage: {
-          startDate: "2025-10-01",
-          endDate: "2025-10-31",
-          enabled: true,
-          isOutdatedClient: false,
-          lastEventTransactionAt: "2025-10-01T16:19:59Z",
-          purchaseCreditsPath: '/mock/path',
-          overageTermsAccepted: true,
-          canAcceptOverageTerms: true,
-          dapPromoEnabled: false,
-          usageDashboardPath: "/subscriptions/A-S00012345/usage"
+          gitlabCreditsUsage: {
+            startDate: "2025-10-01",
+            endDate: "2025-10-31",
+            enabled: true,
+            isOutdatedClient: false,
+            lastEventTransactionAt: "2025-10-01T16:19:59Z",
+            overageTermsAccepted: true,
+            canAcceptOverageTerms: true,
+            dapPromoEnabled: false,
+            usageDashboardPath: "/subscriptions/A-S00012345/usage"
+          },
+          purchasePaths: [
+            {
+              planType: "gitlab_credits",
+              newPath: "/mock/new/path",
+              editPath: "/mock/edit/path"
+            }
+          ]
         }
       }
     end
 
     include_context 'for self-managed request' do
-      let(:variables) { { licenseKey: license_key, gitlabVersion: Gitlab::VERSION } }
+      let(:variables) { { licenseKey: license_key, gitlabVersion: Gitlab::VERSION, planTypes: ["gitlab_credits"] } }
     end
 
     include_context 'for gitlab.com request' do
-      let(:variables) { { namespaceId: namespace_id, gitlabVersion: Gitlab::VERSION } }
+      let(:variables) { { namespaceId: namespace_id, gitlabVersion: Gitlab::VERSION, planTypes: ["gitlab_credits"] } }
     end
   end
 

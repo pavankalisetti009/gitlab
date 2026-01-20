@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Registrations::TrialWelcomeController, :with_current_organization, :saas, feature_category: :onboarding do
+RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :onboarding do
   let_it_be(:user, reload: true) { create(:user, organizations: [current_organization]) }
   let_it_be(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
   let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
