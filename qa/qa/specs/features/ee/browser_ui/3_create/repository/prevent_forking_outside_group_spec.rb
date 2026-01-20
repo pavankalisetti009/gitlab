@@ -49,7 +49,7 @@ module QA
 
         it 'does not allow forking outside of group',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347872' do
-          project.visit!
+          project.visit!(reload_page: true)
 
           Page::Project::Show.perform(&:fork_project)
 
