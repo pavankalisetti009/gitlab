@@ -128,7 +128,7 @@ describe('Learn GitLab Section Link', () => {
     it('calls the eventHub', () => {
       findActionLink().vm.$emit('click');
 
-      expect(eventHub.$emit).toHaveBeenCalledWith('openModal', { source: LEARN_GITLAB });
+      expect(eventHub.$emit).toHaveBeenCalledWith('open-modal', { source: LEARN_GITLAB });
     });
 
     it('tracks the click', () => {
