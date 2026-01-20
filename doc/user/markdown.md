@@ -621,12 +621,9 @@ Fruits
 : orange
 ```
 
-{{< alert type="note" >}}
-
-The rich text editor does not support inserting new description lists. To insert a new description list, use the
-plain text editor. For more information, see [issue 535956](https://gitlab.com/gitlab-org/gitlab/-/issues/535956).
-
-{{< /alert >}}
+> [!note]
+> The rich text editor does not support inserting new description lists. To insert a new description list, use the
+> plain text editor. For more information, see [issue 535956](https://gitlab.com/gitlab-org/gitlab/-/issues/535956).
 
 ### Task lists
 
@@ -1628,12 +1625,9 @@ When rendered, the example looks like:
 
 ![Example of math in GitLab](img/markdown_math_v17_2.png)
 
-{{< alert type="note" >}}
-
-The rich text editor does not support inserting new math blocks. To insert a new math block, use the
-plain text editor. For more information, see [issue 366527](https://gitlab.com/gitlab-org/gitlab/-/issues/366527).
-
-{{< /alert >}}
+> [!note]
+> The rich text editor does not support inserting new math blocks. To insert a new math block, use the
+> plain text editor. For more information, see [issue 366527](https://gitlab.com/gitlab-org/gitlab/-/issues/366527).
 
 ## Table of contents
 
@@ -2189,6 +2183,10 @@ numbering.
 
 Regardless where you put the note, it's always shown at the bottom of the rendered file.
 
+> [!note]
+> The rich text editor does not support inserting new footnotes. To insert a new footnote, use the
+> plain text editor. For more information, see [issue 365265](https://gitlab.com/gitlab-org/gitlab/-/issues/365265).
+
 For example:
 
 - Referencing footnotes:
@@ -2215,13 +2213,6 @@ When rendered, footnotes look similar to:
 > [^1]: This text is inside a footnote.
 >
 > [^footnote-42]: This text is another footnote.
-
-{{< alert type="note" >}}
-
-The rich text editor does not support inserting new footnotes. To insert a new footnote, use the
-plain text editor. For more information, see [issue 365265](https://gitlab.com/gitlab-org/gitlab/-/issues/365265).
-
-{{< /alert >}}
 
 ## Inline HTML
 

@@ -502,12 +502,9 @@ You can still independently configure [project sharing for the group and its sub
 
 {{< /history >}}
 
-{{< alert type="flag" >}}
-
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
-
-{{< /alert >}}
+> [!flag]
+> The availability of this feature is controlled by a feature flag.
+> For more information, see the history.
 
 When restricted access is enabled and no subscription seats are available, users provisioned through SAML, SCIM, or LDAP are assigned the Minimal Access role instead of their configured access level.
 This behavior ensures that synchronization can continue without consuming billable seats on GitLab.com and Self-Managed Ultimate.
@@ -814,12 +811,9 @@ To view the activity feed in Atom format, select the
 
 {{< /history >}}
 
-{{< alert type="flag" >}}
-
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
-
-{{< /alert >}}
+> [!flag]
+> The availability of this feature is controlled by a feature flag.
+> For more information, see the history.
 
 {{< details >}}
 
