@@ -5,7 +5,14 @@ module Security
     class AnalyzePipelineExecutionPolicyConfigService < BaseProjectService
       def execute
         content = YAML.dump(params[:content])
-        config = Gitlab::Ci::Config.new(content, project: project, user: current_user)
+        default_branch = project.default_branch_or_main
+        default_sha = project.repository.root_ref_sha
+        config = Gitlab::Ci::Config.new(content,
+          project: project,
+          user: current_user,
+          ref: default_branch,
+          sha: default_sha
+        )
 
         unless config.valid?
           return ServiceResponse.error(
