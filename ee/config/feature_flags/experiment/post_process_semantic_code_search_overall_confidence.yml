@@ -1,0 +1,10 @@
+---
+name: post_process_semantic_code_search_overall_confidence
+description: Adds overall confidence level (high/medium/low) to semantic code search results based on score distribution to guide LLM response behavior
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/579851
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219658
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/587064
+milestone: '18.9'
+group: group::code creation
+type: experiment
+default_enabled: false
