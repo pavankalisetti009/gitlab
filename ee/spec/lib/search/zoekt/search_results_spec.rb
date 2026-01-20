@@ -510,17 +510,17 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
 
     where(:query, :source, :regex_mode, :expected_count) do
       'use.*egex' | nil   | false | 0
-      'use.*egex' | nil   | true  | 4
+      'use.*egex' | nil   | true  | 5
       'use.*egex' | :api  | false | 0
       'use.*egex' | :api  | true  | 5
       'asdfg'     | nil   | false | 0
       'asdfg'     | nil   | true  | 0
       'asdfg'     | :api  | false | 0
       'asdfg'     | :api  | true  | 0
-      '# good'    | nil   | false | 3
-      '# good'    | nil   | true  | 9
-      '# good'    | :api  | false | 50
-      '# good'    | :api  | true  | 105
+      '# good'    | nil   | false | 30
+      '# good'    | nil   | true  | 75
+      '# good'    | :api  | false | 134
+      '# good'    | :api  | true  | 555
     end
 
     with_them do

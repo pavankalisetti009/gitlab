@@ -4,6 +4,7 @@ module Search
   module Zoekt
     class Params
       UNLIMITED = 0
+      LINE_MATCHES_FACTOR = 10
 
       def initialize(options)
         @options = options
@@ -26,7 +27,7 @@ module Search
       end
 
       def max_line_match_results_per_file
-        multi_match? ? options[:multi_match].max_chunks_size : MultiMatch::MAX_CHUNKS_PER_FILE
+        (multi_match? ? options[:multi_match].max_chunks_size : MultiMatch::MAX_CHUNKS_PER_FILE) * LINE_MATCHES_FACTOR
       end
 
       private
