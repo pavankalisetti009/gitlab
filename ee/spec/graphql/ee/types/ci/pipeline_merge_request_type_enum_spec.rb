@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['PipelineMergeRequestEventType'] do
+RSpec.describe GitlabSchema.types['PipelineMergeRequestEventType'], feature_category: :continuous_integration do
   it 'has specific values' do
     expect(described_class.values).to match a_hash_including(
       'MERGE_TRAIN' => have_attributes(value: :merge_train)
