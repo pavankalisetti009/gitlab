@@ -107,35 +107,17 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
   describe 'healthStatus' do
     let_it_be(:object) { create(:epic) }
 
-    context 'when lazy_aggregate_epic_health_statuses enabled' do
-      before do
-        stub_feature_flags(lazy_aggregate_epic_health_statuses: true)
-      end
+    it 'uses lazy calculation' do
+      expect_next_instance_of(
+        Gitlab::Graphql::Aggregations::Epics::LazyEpicAggregate,
+        anything,
+        object.id,
+        HEALTH_STATUS_SUM
+      ) {}
 
-      it 'uses lazy calculation' do
-        expect_next_instance_of(
-          Gitlab::Graphql::Aggregations::Epics::LazyEpicAggregate,
-          anything,
-          object.id,
-          HEALTH_STATUS_SUM
-        ) {}
+      resolved_field = resolve_field(:health_status, object)
 
-        resolved_field = resolve_field(:health_status, object)
-
-        expect(resolved_field).to be_kind_of(GraphQL::Execution::Lazy)
-      end
-    end
-
-    context 'when lazy_aggregate_epic_health_statuses disabled' do
-      before do
-        stub_feature_flags(lazy_aggregate_epic_health_statuses: false)
-      end
-
-      it 'uses DescendantCountService' do
-        resolved_field = resolve_field(:health_status, object)
-
-        expect(resolved_field).to be_kind_of(Epics::DescendantCountService)
-      end
+      expect(resolved_field).to be_kind_of(GraphQL::Execution::Lazy)
     end
   end
 

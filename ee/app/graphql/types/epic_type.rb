@@ -235,11 +235,7 @@ module Types
     end
 
     def health_status
-      if Feature.enabled?(:lazy_aggregate_epic_health_statuses)
-        ::Gitlab::Graphql::Aggregations::Epics::LazyEpicAggregate.new(context, object.id, HEALTH_STATUS_SUM)
-      else
-        ::Epics::DescendantCountService.new(object, context[:current_user])
-      end
+      ::Gitlab::Graphql::Aggregations::Epics::LazyEpicAggregate.new(context, object.id, HEALTH_STATUS_SUM)
     end
 
     def blocked
