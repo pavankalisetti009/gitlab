@@ -199,5 +199,14 @@ RSpec.describe 'Group routing', "routing" do
         username: 'john_doe'
       )
     end
+
+    it 'routes correctly when username contains a period' do
+      expect(get('/groups/gitlabhq/-/settings/gitlab_credits_dashboard/users/john.doe')).to route_to(
+        controller: 'groups/settings/gitlab_credits_dashboard/users',
+        action: 'show',
+        group_id: 'gitlabhq',
+        username: 'john.doe'
+      )
+    end
   end
 end
