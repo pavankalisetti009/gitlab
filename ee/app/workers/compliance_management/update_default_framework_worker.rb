@@ -25,7 +25,7 @@ module ComplianceManagement
         raise "Failed to assign default compliance framework: #{result.message}" unless result.success?
       end
     rescue ActiveRecord::RecordNotFound => e
-      Gitlab::ErrorTracking.log_exception(e)
+      Gitlab::ErrorTracking.track_and_raise_exception(e)
     end
 
     private

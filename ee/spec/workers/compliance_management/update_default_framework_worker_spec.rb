@@ -65,18 +65,26 @@ RSpec.describe ComplianceManagement::UpdateDefaultFrameworkWorker, feature_categ
     end
 
     context 'when project does not exist' do
-      it 'logs the exception' do
-        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(instance_of(ActiveRecord::RecordNotFound))
+      it 'logs the exception and re-raises for retry' do
+        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception)
+          .with(instance_of(ActiveRecord::RecordNotFound))
+          .and_call_original
 
-        worker.perform(user.id, non_existing_record_id, framework.id)
+        expect do
+          worker.perform(user.id, non_existing_record_id, framework.id)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
 
     context 'when framework does not exist' do
-      it 'logs the exception' do
-        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(instance_of(ActiveRecord::RecordNotFound))
+      it 'logs the exception and re-raises for retry' do
+        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception)
+          .with(instance_of(ActiveRecord::RecordNotFound))
+          .and_call_original
 
-        worker.perform(user.id, project.id, non_existing_record_id)
+        expect do
+          worker.perform(user.id, project.id, non_existing_record_id)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
 
