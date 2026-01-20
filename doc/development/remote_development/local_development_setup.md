@@ -406,11 +406,8 @@ It is a common error response from the GitLab Duo API when using the staging gat
 
 ### RubyMine
 
-{{< alert type="note" >}}
-
-It is planned to move some of the information in this section to the [RubyMine](https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/individual-ides/rubymine/) handbook section, or ideally shared with SCM.
-
-{{< /alert >}}
+> [!note]
+> It is planned to move some of the information in this section to the [RubyMine](https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/individual-ides/rubymine/) handbook section, or ideally shared with SCM.
 
 #### Scopes
 
@@ -577,11 +574,8 @@ To do this:
 | Get pod details             | `kubectl -n NAMESPACE get pods POD_NAME -o yaml` |
 | List API resources          | `kubectl api-resources` |
 
-{{< alert type="note" >}}
-
-If you omit `-n NAMESPACE` from commands, `kubectl` uses the current namespace.
-
-{{< /alert >}}
+> [!note]
+> If you omit `-n NAMESPACE` from commands, `kubectl` uses the current namespace.
 
 #### Logs and debugging
 
@@ -650,11 +644,8 @@ Delete all workspace namespaces:
 kubectl get namespace | grep gl- | cut -f1 -d" " | xargs -I {} kubectl delete namespace {}
 ```
 
-{{< alert type="note" >}}
-
-This cleanup may take time. If it stalls, restart Rancher Desktop and try again.
-
-{{< /alert >}}
+> [!note]
+> This cleanup may take time. If it stalls, restart Rancher Desktop and try again.
 
 #### Additional resources
 
