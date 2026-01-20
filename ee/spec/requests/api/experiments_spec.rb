@@ -75,6 +75,10 @@ RSpec.describe API::Experiments, feature_category: :acquisition do
                 {
                   key: :boolean,
                   value: false
+                },
+                {
+                  key: :expression,
+                  value: nil
                 }
               ]
             }
@@ -95,6 +99,10 @@ RSpec.describe API::Experiments, feature_category: :acquisition do
                 {
                   key: :boolean,
                   value: false
+                },
+                {
+                  key: :expression,
+                  value: nil
                 },
                 {
                   key: :percentage_of_actors,
