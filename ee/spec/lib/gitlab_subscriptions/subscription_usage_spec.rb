@@ -26,7 +26,9 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client returns a successful response' do
-        let(:client_response) { { success: true, subscriptionUsage: { startDate: "2025-10-01" } } }
+        let(:client_response) do
+          { success: true, subscriptionUsage: { gitlabCreditsUsage: { startDate: "2025-10-01" } } }
+        end
 
         it 'returns the start date' do
           expect(start_date).to be("2025-10-01")
@@ -42,7 +44,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client response is missing startDate' do
-        let(:client_response) { { success: true, subscriptionUsage: { startDate: nil } } }
+        let(:client_response) { { success: true, subscriptionUsage: { gitlabCreditsUsage: { startDate: nil } } } }
 
         it 'returns nil' do
           expect(start_date).to be_nil
@@ -59,7 +61,9 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) { { success: true, subscriptionUsage: { startDate: "2025-10-01" } } }
+      let(:client_response) do
+        { success: true, subscriptionUsage: { gitlabCreditsUsage: { startDate: "2025-10-01" } } }
+      end
 
       before do
         allow(License).to receive(:current).and_return(license)
@@ -88,7 +92,9 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client returns a successful response' do
-        let(:client_response) { { success: true, subscriptionUsage: { endDate: "2025-10-31" } } }
+        let(:client_response) do
+          { success: true, subscriptionUsage: { gitlabCreditsUsage: { endDate: "2025-10-31" } } }
+        end
 
         it 'returns the end date' do
           expect(end_date).to be("2025-10-31")
@@ -104,7 +110,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client response is missing endDate' do
-        let(:client_response) { { success: true, subscriptionUsage: { endDate: nil } } }
+        let(:client_response) { { success: true, subscriptionUsage: { gitlabCreditsUsage: { endDate: nil } } } }
 
         it 'returns nil' do
           expect(end_date).to be_nil
@@ -121,7 +127,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) { { success: true, subscriptionUsage: { endDate: "2025-10-31" } } }
+      let(:client_response) { { success: true, subscriptionUsage: { gitlabCreditsUsage: { endDate: "2025-10-31" } } } }
 
       before do
         allow(License).to receive(:current).and_return(license)
@@ -149,11 +155,44 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         )
       end
 
-      context 'when the client returns a successful response' do
-        let(:client_response) { { success: true, subscriptionUsage: { purchaseCreditsPath: "/mock/path" } } }
+      context 'when the client returns a successful response with editPath' do
+        let(:client_response) do
+          {
+            success: true,
+            subscriptionUsage: {
+              purchasePaths: [
+                {
+                  planType: "gitlab_credits",
+                  newPath: "/mock/new/path",
+                  editPath: "/mock/edit/path"
+                }
+              ]
+            }
+          }
+        end
 
-        it 'returns the end date' do
-          expect(purchase_credits_path).to be("/mock/path")
+        it 'returns the editPath' do
+          expect(purchase_credits_path).to eq("/mock/edit/path")
+        end
+      end
+
+      context 'when the client returns a successful response with only newPath' do
+        let(:client_response) do
+          {
+            success: true,
+            subscriptionUsage: {
+              purchasePaths: [
+                {
+                  planType: "gitlab_credits",
+                  newPath: "/mock/new/path"
+                }
+              ]
+            }
+          }
+        end
+
+        it 'returns the newPath' do
+          expect(purchase_credits_path).to eq("/mock/new/path")
         end
       end
 
@@ -165,8 +204,29 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         end
       end
 
-      context 'when the client response is missing purchaseCreditsPath' do
-        let(:client_response) { { success: true, subscriptionUsage: { purchaseCreditsPath: nil } } }
+      context 'when the client response is missing purchasePaths' do
+        let(:client_response) { { success: true, subscriptionUsage: { gitlabCreditsUsage: { purchasePaths: nil } } } }
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
+        end
+      end
+
+      context 'when purchasePaths does not contain gitlab_credits plan' do
+        let(:client_response) do
+          {
+            success: true,
+            subscriptionUsage: {
+              purchasePaths: [
+                {
+                  planType: "other_plan",
+                  newPath: "/mock/new/path",
+                  editPath: "/mock/edit/path"
+                }
+              ]
+            }
+          }
+        end
 
         it 'returns nil' do
           expect(purchase_credits_path).to be_nil
@@ -183,14 +243,50 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) { { success: true, subscriptionUsage: { purchaseCreditsPath: "/mock/path" } } }
 
       before do
         allow(License).to receive(:current).and_return(license)
       end
 
-      it 'returns the end date' do
-        expect(purchase_credits_path).to be("/mock/path")
+      context 'when the client returns a successful response with editPath' do
+        let(:client_response) do
+          {
+            success: true,
+            subscriptionUsage: {
+              purchasePaths: [
+                {
+                  planType: "gitlab_credits",
+                  newPath: "/mock/new/path",
+                  editPath: "/mock/edit/path"
+                }
+              ]
+            }
+          }
+        end
+
+        it 'returns the editPath' do
+          expect(purchase_credits_path).to eq("/mock/edit/path")
+        end
+      end
+
+      context 'when the client returns a successful response with only newPath' do
+        let(:client_response) do
+          {
+            success: true,
+            subscriptionUsage: {
+              purchasePaths: [
+                {
+                  planType: "gitlab_credits",
+                  newPath: "/mock/new/path"
+                }
+              ]
+            }
+          }
+        end
+
+        it 'returns the newPath' do
+          expect(purchase_credits_path).to eq("/mock/new/path")
+        end
       end
     end
   end
@@ -216,7 +312,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         end
 
         let(:client_response) do
-          { success: true, subscriptionUsage: { enabled: cdot_enabled_value } }
+          { success: true, subscriptionUsage: { gitlabCreditsUsage: { enabled: cdot_enabled_value } } }
         end
 
         it "returns #{params[:return_value]} for enabled?" do
@@ -243,7 +339,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         end
 
         let(:client_response) do
-          { success: true, subscriptionUsage: { isOutdatedClient: outdated_client } }
+          { success: true, subscriptionUsage: { gitlabCreditsUsage: { isOutdatedClient: outdated_client } } }
         end
 
         it "returns #{params[:outdated_client]} for outdated_client?" do
@@ -271,7 +367,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
 
       context 'when the client returns a successful response' do
         let(:client_response) do
-          { success: true, subscriptionUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } }
+          { success: true,
+            subscriptionUsage: { gitlabCreditsUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } } }
         end
 
         it 'returns the last updated time' do
@@ -288,7 +385,9 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client response is missing lastEventTransactionAt' do
-        let(:client_response) { { success: true, subscriptionUsage: { lastEventTransactionAt: nil } } }
+        let(:client_response) do
+          { success: true, subscriptionUsage: { gitlabCreditsUsage: { lastEventTransactionAt: nil } } }
+        end
 
         it 'returns nil' do
           expect(last_event_transaction_at).to be_nil
@@ -305,7 +404,9 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) { { success: true, subscriptionUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } } }
+      let(:client_response) do
+        { success: true, subscriptionUsage: { gitlabCreditsUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } } }
+      end
 
       before do
         allow(License).to receive(:current).and_return(license)
@@ -699,7 +800,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
 
     let(:client_response) do
-      { success: true, subscriptionUsage: { overageTermsAccepted: value } }
+      { success: true, subscriptionUsage: { gitlabCreditsUsage: { overageTermsAccepted: value } } }
     end
 
     before do
@@ -731,7 +832,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:client_response) do
-        { success: true, subscriptionUsage: { canAcceptOverageTerms: cdot_value } }
+        { success: true, subscriptionUsage: { gitlabCreditsUsage: { canAcceptOverageTerms: cdot_value } } }
       end
 
       before do
@@ -753,7 +854,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
 
     let(:client_response) do
-      { success: true, subscriptionUsage: { dapPromoEnabled: value } }
+      { success: true, subscriptionUsage: { gitlabCreditsUsage: { dapPromoEnabled: value } } }
     end
 
     before do
