@@ -109,11 +109,8 @@ track_internal_event(
 )
 ```
 
-{{< alert type="warning" >}}
-
-Make sure the additional properties don't contain any sensitive information. For more information, see the [Data Classification Standard](https://about.gitlab.com/handbook/security/data-classification-standard/).
-
-{{< /alert >}}
+> [!warning]
+> Make sure the additional properties don't contain any sensitive information. For more information, see the [Data Classification Standard](https://about.gitlab.com/handbook/security/data-classification-standard/).
 
 #### Controller and API helpers
 

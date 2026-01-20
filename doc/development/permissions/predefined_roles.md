@@ -95,11 +95,8 @@ can still view the groups and their entities (like epics).
 Project membership (where the group membership is already taken into account)
 is stored in the `project_authorizations` table.
 
-{{< alert type="note" >}}
-
-Projects in personal namespaces have a maximum role of Owner.
-
-{{< /alert >}}
+> [!note]
+> Projects in personal namespaces have a maximum role of Owner.
 
 #### Guest role
 
