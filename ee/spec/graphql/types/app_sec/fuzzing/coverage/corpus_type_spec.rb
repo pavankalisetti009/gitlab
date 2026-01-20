@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['CoverageFuzzingCorpus'] do
+RSpec.describe GitlabSchema.types['CoverageFuzzingCorpus'], feature_category: :fuzz_testing do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project, :repository) }

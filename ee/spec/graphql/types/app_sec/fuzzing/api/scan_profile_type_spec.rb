@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ApiFuzzingScanProfile'] do
+RSpec.describe GitlabSchema.types['ApiFuzzingScanProfile'], feature_category: :fuzz_testing do
   let_it_be(:fields) { %i[name description yaml] }
 
   it { expect(described_class).to have_graphql_fields(fields) }
