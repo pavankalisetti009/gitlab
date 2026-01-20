@@ -10,6 +10,7 @@ import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.v
 import createRouter from 'ee/ci/secrets/router';
 import SecretsApp from 'ee//ci/secrets/components/secrets_app.vue';
 import { getMatchedComponents } from '~/lib/utils/vue3compat/vue_router';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
 import {
   SECRET_MANAGER_STATUS_ACTIVE,
@@ -38,13 +39,13 @@ describe('Secrets router', () => {
   const base = '/-/secrets';
 
   const groupProps = {
-    context: ENTITY_GROUP,
+    contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP],
     eventTracking: GROUP_EVENTS,
     fullPath: '/path/to/group',
   };
 
   const projectProps = {
-    context: ENTITY_PROJECT,
+    contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
     eventTracking: PROJECT_EVENTS,
     fullPath: '/path/to/project',
   };
@@ -102,14 +103,15 @@ describe('Secrets router', () => {
   });
 
   describe.each`
-    context      | props           | fullPath              | isGroup
-    ${'group'}   | ${groupProps}   | ${'/path/to/group'}   | ${true}
-    ${'project'} | ${projectProps} | ${'/path/to/project'} | ${false}
-  `('$context secrets form', ({ props, fullPath }) => {
+    context      | props           | fullPath              | isGroup  | contextConfig
+    ${'group'}   | ${groupProps}   | ${'/path/to/group'}   | ${true}  | ${SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP]}
+    ${'project'} | ${projectProps} | ${'/path/to/project'} | ${false} | ${SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT]}
+  `('$context secrets form', ({ props, fullPath, contextConfig }) => {
     it('provides the correct props when visiting the index', async () => {
       await createSecretsApp({ route: '/', props });
 
       expect(wrapper.findComponent(SecretsTable).props()).toMatchObject({
+        contextConfig,
         fullPath,
       });
     });
@@ -118,6 +120,7 @@ describe('Secrets router', () => {
       await createSecretsApp({ route: '/new', props });
 
       expect(wrapper.findComponent(SecretFormWrapper).props()).toMatchObject({
+        contextConfig,
         fullPath,
       });
     });
@@ -126,6 +129,7 @@ describe('Secrets router', () => {
       await createSecretsApp({ route: editRoute, props });
 
       expect(wrapper.findComponent(SecretFormWrapper).props()).toMatchObject({
+        contextConfig,
         fullPath,
         isEditing: true,
         secretName: 'SECRET_KEY',

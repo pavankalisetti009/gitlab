@@ -3,6 +3,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from './context_config';
 import createRouter from './router';
 import SecretsApp from './components/secrets_app.vue';
 import SecretsBreadcrumbs from './components/secrets_breadcrumbs.vue';
@@ -43,7 +44,12 @@ export const initGroupSecretsApp = () => {
 
   const { groupPath, basePath } = el.dataset;
 
-  return initSecretsApp(el, SecretsApp, { context: ENTITY_GROUP, fullPath: groupPath }, basePath);
+  return initSecretsApp(
+    el,
+    SecretsApp,
+    { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP], fullPath: groupPath },
+    basePath,
+  );
 };
 
 export const initProjectSecretsApp = () => {
@@ -58,7 +64,7 @@ export const initProjectSecretsApp = () => {
   return initSecretsApp(
     el,
     SecretsApp,
-    { context: ENTITY_PROJECT, fullPath: projectPath },
+    { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT], fullPath: projectPath },
     basePath,
   );
 };

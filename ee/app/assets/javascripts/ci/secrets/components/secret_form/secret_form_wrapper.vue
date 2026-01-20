@@ -3,8 +3,6 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { sprintf, s__ } from '~/locale';
 import {
-  getGroupEnvironments,
-  getProjectEnvironments,
   ENVIRONMENT_FETCH_ERROR,
   ENVIRONMENT_QUERY_LIMIT,
   mapEnvironmentNames,
@@ -18,7 +16,6 @@ import {
   PAGE_VISIT_EDIT,
   PAGE_VISIT_NEW,
 } from 'ee/ci/secrets/constants';
-import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretForm from './secret_form.vue';
 
 const i18n = {
@@ -39,12 +36,7 @@ export default {
   },
   mixins: [InternalEvents.mixin()],
   props: {
-    context: {
-      type: String,
-      required: true,
-      validator: (value) => ACCEPTED_CONTEXTS.includes(value),
-    },
-    eventTracking: {
+    contextConfig: {
       type: Object,
       required: true,
     },
@@ -73,10 +65,10 @@ export default {
   apollo: {
     environments: {
       skip() {
-        return ![ENTITY_PROJECT, ENTITY_GROUP].includes(this.context);
+        return !ACCEPTED_CONTEXTS.includes(this.contextType);
       },
       query() {
-        return this.context === ENTITY_PROJECT ? getProjectEnvironments : getGroupEnvironments;
+        return this.contextConfig.environments.query;
       },
       variables() {
         return {
@@ -86,11 +78,8 @@ export default {
         };
       },
       update(data) {
-        if (this.context === ENTITY_PROJECT) {
-          return mapEnvironmentNames(data.project?.environments?.nodes || []);
-        }
-
-        return mapEnvironmentNames(data.group?.environmentScopes?.nodes || []);
+        const contextLookupData = this.contextConfig.environments.lookup(data);
+        return mapEnvironmentNames(contextLookupData?.nodes || []);
       },
       error(e) {
         createAlert({
@@ -102,9 +91,11 @@ export default {
     },
     secretData: {
       skip() {
-        return !this.isEditing;
+        return !this.isEditing || this.contextType === ENTITY_GROUP;
       },
-      query: getSecretDetailsQuery,
+      query() {
+        return this.contextConfig.getSecretDetails.query;
+      },
       variables() {
         return {
           fullPath: this.fullPath,
@@ -112,7 +103,7 @@ export default {
         };
       },
       update(data) {
-        return data.projectSecret || null;
+        return this.contextConfig.getSecretDetails.lookup(data) || null;
       },
       error(e) {
         createAlert({
@@ -127,11 +118,14 @@ export default {
     areEnvironmentsLoading() {
       return this.$apollo.queries.environments.loading;
     },
+    contextType() {
+      return this.contextConfig.type;
+    },
     isSecretLoading() {
       return this.isEditing && this.$apollo.queries.secretData.loading;
     },
     pageDescription() {
-      if (this.context === ENTITY_PROJECT) {
+      if (this.contextType === ENTITY_PROJECT) {
         return this.$options.i18n.descriptionProject;
       }
 
@@ -146,8 +140,9 @@ export default {
     },
   },
   mounted() {
+    const { eventTracking } = this.contextConfig;
     const label = this.isEditing ? PAGE_VISIT_EDIT : PAGE_VISIT_NEW;
-    this.trackEvent(this.eventTracking.pageVisit, { label });
+    this.trackEvent(eventTracking.pageVisit, { label });
   },
   methods: {
     searchEnvironment(searchTerm) {

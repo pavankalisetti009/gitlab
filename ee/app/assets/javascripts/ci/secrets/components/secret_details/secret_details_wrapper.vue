@@ -11,7 +11,6 @@ import {
   PAGE_VISIT_SECRET_DETAILS,
   SECRET_ROTATION_STATUS,
 } from 'ee/ci/secrets/constants';
-import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import SecretDetails from './secret_details.vue';
 
@@ -27,7 +26,7 @@ export default {
   },
   mixins: [InternalEvents.mixin()],
   props: {
-    eventTracking: {
+    contextConfig: {
       type: Object,
       required: true,
     },
@@ -46,7 +45,9 @@ export default {
       skip() {
         return !this.secretName;
       },
-      query: getSecretDetailsQuery,
+      query() {
+        return this.contextConfig.getSecretDetails.query;
+      },
       variables() {
         return {
           fullPath: this.fullPath,
@@ -54,7 +55,7 @@ export default {
         };
       },
       update(data) {
-        return data.projectSecret || null;
+        return this.contextConfig.getSecretDetails.lookup(data) || null;
       },
       error(e) {
         createAlert({
@@ -115,7 +116,8 @@ export default {
     },
   },
   mounted() {
-    this.trackEvent(this.eventTracking.pageVisit, { label: PAGE_VISIT_SECRET_DETAILS });
+    const { eventTracking } = this.contextConfig;
+    this.trackEvent(eventTracking.pageVisit, { label: PAGE_VISIT_SECRET_DETAILS });
   },
   methods: {
     goToEdit() {
