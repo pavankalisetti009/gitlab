@@ -848,20 +848,19 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
         context 'approval_rules_attributes _destroy param is set' do
           let(:approval_rules_attributes) { [id: existing_v2_rule.id, _destroy: 1] }
 
-          it 'deletes existing v1 and v2 approval rules' do
-            expect { execute }.to change { v1_rules.count }.from(2).to(1).and change { v2_rules.count }.from(2).to(1)
+          it 'deletes only v2 approval rules, not v1' do
+            expect { execute }.to change { v2_rules.count }.from(2).to(1).and not_change { v1_rules.count }
           end
         end
 
         context 'new approval_rules_attribute is provided' do
           let(:approval_rules_attributes) { [{ name: 'New Rule', approvals_required: 1 }] }
 
-          it 'creates a new v1 and v2 rule' do
+          it 'creates only v2 rule, not v1' do
             execute
 
-            expect(v1_rules.size).to eq(3)
+            expect(v1_rules.size).to eq(2)
             expect(v2_rules.size).to eq(3)
-            expect(v1_rules.last.name).to eq('New Rule')
             expect(v2_rules.last.name).to eq('New Rule')
           end
         end
@@ -869,10 +868,10 @@ RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_ca
         context 'approval_rule name updated' do
           let(:approval_rules_attributes) { [{ id: existing_v2_rule.id, name: "updated name" }] }
 
-          it 'updates the name of the v1 and v2 rule' do
+          it 'updates only the v2 rule, not v1' do
             execute
 
-            expect(existing_v1_rule.reload.name).to eq('updated name')
+            expect(existing_v1_rule.reload.name).to eq('rule 1')
             expect(existing_v2_rule.reload.name).to eq('updated name')
           end
         end
