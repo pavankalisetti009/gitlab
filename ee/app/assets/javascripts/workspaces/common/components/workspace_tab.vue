@@ -72,7 +72,7 @@ export default {
       this.$emit('error', error);
     },
     onPaginationInput(paginationVariables) {
-      this.$emit('onPaginationInput', { tab: this.tabName, paginationVariables });
+      this.$emit('on-pagination-input', { tab: this.tabName, paginationVariables });
     },
   },
   i18n,
