@@ -304,4 +304,45 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       end
     end
   end
+
+  describe 'initialization with root_namespace' do
+    let_it_be(:specific_namespace) { create(:group) }
+    let_it_be(:project_in_namespace) { create(:project, group: specific_namespace) }
+
+    context 'when root_namespace is provided' do
+      let(:model_details) { described_class.new(current_user: user, root_namespace: specific_namespace) }
+
+      it 'initializes with the provided root_namespace' do
+        expect(model_details.instance_variable_get(:@root_namespace)).to eq(specific_namespace)
+      end
+
+      it 'passes root_namespace to FeatureSettingSelectionService' do
+        expect(Ai::FeatureSettingSelectionService).to receive(:new).with(
+          user,
+          'code_completions',
+          specific_namespace
+        ).and_call_original
+
+        model_details.feature_setting
+      end
+    end
+
+    context 'when root_namespace is not provided' do
+      let(:model_details) { described_class.new(current_user: user) }
+
+      it 'initializes with nil root_namespace' do
+        expect(model_details.instance_variable_get(:@root_namespace)).to be_nil
+      end
+
+      it 'passes nil root_namespace to FeatureSettingSelectionService' do
+        expect(Ai::FeatureSettingSelectionService).to receive(:new).with(
+          user,
+          'code_completions',
+          nil
+        ).and_call_original
+
+        model_details.feature_setting
+      end
+    end
+  end
 end

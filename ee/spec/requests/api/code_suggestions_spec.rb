@@ -1674,6 +1674,39 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'message' => { 'error' => msg }
           })
         end
+
+        context 'when project_path is provided' do
+          let_it_be(:project_namespace) { create(:group) }
+          let_it_be(:project_with_duo) { create(:project, group: project_namespace) }
+
+          let(:params) { { project_path: project_with_duo.full_path } }
+
+          before_all do
+            project_with_duo.add_developer(authorized_user)
+          end
+
+          it 'passes root_namespace to ModelDetails::CodeCompletion' do
+            expect(CodeSuggestions::ModelDetails::CodeCompletion).to receive(:new).with(
+              current_user: authorized_user,
+              root_namespace: project_namespace
+            )
+
+            post_api
+          end
+
+          context 'without project_path' do
+            let(:params) { { project_path: nil } }
+
+            it 'passes nil for root_namespace' do
+              expect(CodeSuggestions::ModelDetails::CodeCompletion).to receive(:new).with(
+                current_user: authorized_user,
+                root_namespace: nil
+              )
+
+              post_api
+            end
+          end
+        end
       end
     end
   end

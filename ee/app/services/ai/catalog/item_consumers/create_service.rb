@@ -200,8 +200,12 @@ module Ai
         end
 
         def allowed?
-          if item.flow? && !Ability.allowed?(current_user, :create_ai_catalog_flow_item_consumer, container)
-            return false
+          if item.flow?
+            if item.foundational_flow
+              return false unless Ability.allowed?(current_user, :create_foundational_flow_item_consumer, container)
+            else
+              return false unless Ability.allowed?(current_user, :create_ai_catalog_flow_item_consumer, container)
+            end
           end
 
           if item.third_party_flow? &&

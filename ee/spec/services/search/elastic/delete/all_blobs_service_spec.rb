@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Search::Elastic::Delete::AllBlobsService, feature_category: :global_search do
   let(:main_index) { Elastic::Latest::Config.index_name }
 
-  describe 'integration', :elastic_delete_by_query, :elasticsearch_settings_enabled do
-    context 'when blobs are present in index', :sidekiq_inline do
+  describe 'integration', :elasticsearch_settings_enabled do
+    context 'when blobs are present in index', :elastic_delete_by_query, :sidekiq_inline do
       let_it_be(:project) { create(:project, :small_repo) }
       let_it_be_with_reload(:setting) { create(:application_setting) }
 
@@ -21,8 +21,7 @@ RSpec.describe Search::Elastic::Delete::AllBlobsService, feature_category: :glob
           setting.update!(elasticsearch_code_scope: false)
         end
 
-        it 'only deletes all blob documents from the main index',
-          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/22444' do
+        it 'only deletes all blob documents from the main index' do
           # Verify index has documents
           initial_blob_docs, initial_non_blob_docs = docs_in_index_partition_by_type_blobs
           expect(initial_blob_docs).not_to be_empty
@@ -64,7 +63,7 @@ RSpec.describe Search::Elastic::Delete::AllBlobsService, feature_category: :glob
       end
     end
 
-    context 'when no blobs are present in index' do
+    context 'when no blobs are present in index', :elastic do
       it 'completes successfully without errors' do
         # Verify index has no documents
         initial_blobs_docs, initial_non_blobs_docs = docs_in_index_partition_by_type_blobs
