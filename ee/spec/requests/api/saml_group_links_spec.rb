@@ -573,6 +573,26 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
             end
           end
         end
+
+        context "when group link contains a period" do
+          let_it_be(:saml_group_name) { "saml-group-with.period" }
+
+          before do
+            group_with_saml_group_links.saml_group_links.create!(saml_group_name: saml_group_name,
+              access_level: ::Gitlab::Access::GUEST)
+          end
+
+          it "returns the saml group link" do
+            subject
+
+            aggregate_failures "testing response" do
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['name']).to eq(saml_group_name)
+              expect(json_response['access_level']).to eq(::Gitlab::Access::GUEST)
+              expect(json_response['provider']).to be_nil
+            end
+          end
+        end
       end
     end
 
@@ -741,6 +761,23 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
                 saml_group_name: saml_group_name)
               expect(remaining_links.pluck(:provider)).to match_array(%w[provider1 provider2])
             end
+          end
+        end
+
+        context "when group link contains a period" do
+          let_it_be(:saml_group_name) { "saml-group-with.period" }
+
+          before do
+            group_with_saml_group_links.saml_group_links.create!(saml_group_name: saml_group_name,
+              access_level: ::Gitlab::Access::GUEST)
+          end
+
+          it "removes saml group link" do
+            expect do
+              subject
+
+              expect(response).to have_gitlab_http_status(:no_content)
+            end.to change { group_with_saml_group_links.saml_group_links.count }.by(-1)
           end
         end
       end

@@ -104,7 +104,8 @@ module API
           desc: 'Provider string to disambiguate when multiple links exist with same name'
       end
       route_setting :authorization, permissions: :read_saml_group_link, boundary_type: :group
-      get ":id/saml_group_links/:saml_group_name" do
+      get ":id/saml_group_links/:saml_group_name", format: false,
+        requirements: { saml_group_name: API::NO_SLASH_URL_PART_REGEX } do
         group = find_group(params[:id])
 
         unauthorized! unless can?(current_user, :admin_saml_group_links, group)
@@ -129,7 +130,8 @@ module API
           desc: 'Provider string to disambiguate when multiple links exist with same name'
       end
       route_setting :authorization, permissions: :delete_saml_group_link, boundary_type: :group
-      delete ":id/saml_group_links/:saml_group_name" do
+      delete ":id/saml_group_links/:saml_group_name", format: false,
+        requirements: { saml_group_name: API::NO_SLASH_URL_PART_REGEX } do
         group = find_group(params[:id])
 
         unauthorized! unless can?(current_user, :admin_saml_group_links, group)
