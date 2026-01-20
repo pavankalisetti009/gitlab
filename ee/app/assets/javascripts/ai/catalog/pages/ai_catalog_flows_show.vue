@@ -276,7 +276,10 @@ export default {
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Flow deleted.'));
+        const toastMessage = forceHardDelete
+          ? s__('AICatalog|Flow deleted.')
+          : s__('AICatalog|Flow hidden.');
+        this.$toast.show(toastMessage);
         this.$router.push({
           name: AI_CATALOG_FLOWS_ROUTE,
         });

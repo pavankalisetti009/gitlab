@@ -285,7 +285,10 @@ export default {
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Agent deleted.'));
+        const toastMessage = forceHardDelete
+          ? s__('AICatalog|Agent deleted.')
+          : s__('AICatalog|Agent hidden.');
+        this.$toast.show(toastMessage);
         this.$router.push({
           name: AI_CATALOG_AGENTS_ROUTE,
         });
