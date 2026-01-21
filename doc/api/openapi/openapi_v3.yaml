@@ -8233,6 +8233,9 @@ paths:
                     properties:
                       op:
                         type: string
+                        enum:
+                        - add
+                        - remove
                         description: Operation type
                       path:
                         type: string
@@ -15922,6 +15925,7 @@ paths:
               properties:
                 number_of_replicas_override:
                   type: integer
+                  minimum: 1
                   description: The number of replicas override to set (nil to unset)
   "/api/v4/admin/zoekt/shards":
     get:
@@ -66105,6 +66109,8 @@ paths:
                   description: Strategy for behavior on timeouts
                 pagination_limit:
                   type: integer
+                  minimum: 1
+                  maximum: 100
                   description: Pagination limit
               required:
               - personal_access_token
@@ -69233,12 +69239,14 @@ paths:
         description: The first line of the range to blame
         schema:
           type: integer
+          minimum: 1
         in: query
       - name: range[end]
         required: true
         description: The last line of the range to blame
         schema:
           type: integer
+          minimum: 1
         in: query
   "/api/v4/projects/{id}/repository/files/{file_path}/raw":
     get:

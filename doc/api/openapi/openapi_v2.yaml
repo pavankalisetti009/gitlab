@@ -19766,12 +19766,14 @@ paths:
         description: The first line of the range to blame
         type: integer
         format: int32
+        minimum: 1
         required: true
       - in: query
         name: range[end]
         description: The last line of the range to blame
         type: integer
         format: int32
+        minimum: 1
         required: true
       responses:
         '200':
@@ -68426,7 +68428,7 @@ definitions:
         enum:
         - banner
         - notification
-        default: {}
+        default: banner
       dismissable:
         type: boolean
         description: Is dismissable
@@ -72670,6 +72672,8 @@ definitions:
         type: integer
         format: int32
         description: Pagination limit
+        minimum: 1
+        maximum: 100
     required:
     - personal_access_token
     - repo_id

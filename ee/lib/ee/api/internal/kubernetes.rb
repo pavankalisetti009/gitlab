@@ -145,9 +145,9 @@ module EE
                     desc: 'Vulnerability details matching the `vulnerability` object on the security report schema' do
                     requires :name, type: String, desc: 'Name of the security vulnerability'
                     requires :severity, type: String, desc: 'Severity level of the vulnerability',
-                      coerce_with: ->(s) { s.downcase }
+                      coerce_with: :downcase
                     optional :confidence, type: String, desc: 'Confidence level of the vulnerability detection',
-                      coerce_with: ->(c) { c.downcase }
+                      coerce_with: :downcase
 
                     requires :location, type: Hash, desc: 'Object that contains location information for the
                       vulnerability' do

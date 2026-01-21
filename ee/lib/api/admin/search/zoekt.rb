@@ -68,7 +68,8 @@ module API
               optional :number_of_replicas_override,
                 type: Integer,
                 desc: 'The number of replicas override to set (nil to unset)',
-                values: ->(v) { v.nil? || v > 0 }
+                values: 1..,
+                allow_blank: true
             end
             patch ':id' do
               ensure_zoekt_indexing_enabled!
