@@ -2,16 +2,11 @@
 import { GlAlert, GlTabs, GlTab } from '@gitlab/ui';
 import { n__ } from '~/locale';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
-import { getPageParams } from '~/packages_and_registries/shared/utils';
 import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
-import getMavenUpstreamsCount from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
-import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-
-const PAGE_SIZE = 20;
-const INITIAL_PAGE_PARAMS = {
-  first: PAGE_SIZE,
-};
+import upstreamsFetchMixin, {
+  INITIAL_UPSTREAMS_PARAMS,
+} from 'ee/packages_and_registries/virtual_registries/mixins/upstreams/fetch';
 
 export default {
   name: 'MavenVirtualRegistriesAndUpstreamsApp',
@@ -22,34 +17,15 @@ export default {
     RegistriesList,
     CleanupPolicyStatus,
     UpstreamsList: () =>
-      import(
-        'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_list.vue'
-      ),
+      import('ee/packages_and_registries/virtual_registries/components/common/upstreams/list.vue'),
     UserCalloutDismisser,
   },
+  mixins: [upstreamsFetchMixin],
   inject: ['fullPath'],
   data() {
     return {
       registriesCount: null,
-      upstreamsCount: null,
-      upstreamsSearchTerm: null,
-      upstreamsPageParams: INITIAL_PAGE_PARAMS,
     };
-  },
-  apollo: {
-    upstreamsCount: {
-      query: getMavenUpstreamsCount,
-      variables() {
-        return {
-          groupPath: this.fullPath,
-          upstreamName: this.upstreamsSearchTerm,
-        };
-      },
-      update: (data) => data.group?.virtualRegistriesPackagesMavenUpstreams?.count ?? 0,
-      error(error) {
-        captureException({ error, component: this.$options.name });
-      },
-    },
   },
   computed: {
     screenReaderRegistriesTitle() {
@@ -59,28 +35,15 @@ export default {
         this.registriesCount || 0,
       );
     },
-    screenReaderUpstreamsTitle() {
-      return n__(
-        'VirtualRegistry|%d upstream',
-        'VirtualRegistry|%d upstreams',
-        this.upstreamsCount || 0,
-      );
-    },
   },
   methods: {
     updateRegistriesCount(newCount) {
       this.registriesCount = newCount;
     },
     handleUpstreamDeleted() {
-      this.upstreamsPageParams = INITIAL_PAGE_PARAMS;
+      this.upstreamsPageParams = INITIAL_UPSTREAMS_PARAMS;
+      this.$apollo.queries.upstreams.refetch();
       this.$apollo.queries.upstreamsCount.refetch();
-    },
-    updateUpstreamsSearch(searchTerm) {
-      this.upstreamsSearchTerm = searchTerm;
-      this.upstreamsPageParams = INITIAL_PAGE_PARAMS;
-    },
-    updatePageParams(params) {
-      this.upstreamsPageParams = getPageParams(params, PAGE_SIZE);
     },
   },
 };
@@ -112,15 +75,16 @@ export default {
       <gl-tab
         :title="s__('VirtualRegistry|Upstreams')"
         :tab-count="upstreamsCount"
-        :tab-count-sr-text="screenReaderUpstreamsTitle"
+        :tab-count-sr-text="upstreamsTabCountSRText"
         query-param-value="upstreams"
         lazy
       >
         <upstreams-list
+          :upstreams="upstreams"
+          :loading="$apollo.queries.upstreams.loading"
           :search-term="upstreamsSearchTerm"
-          :page-params="upstreamsPageParams"
-          @submit="updateUpstreamsSearch"
-          @page-change="updatePageParams"
+          @submit="handleUpstreamsSearch"
+          @page-change="handleUpstreamsPagination"
           @upstream-deleted="handleUpstreamDeleted"
         />
       </gl-tab>

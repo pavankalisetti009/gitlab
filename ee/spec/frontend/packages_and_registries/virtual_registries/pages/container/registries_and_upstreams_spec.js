@@ -1,12 +1,25 @@
 import { GlTabs, GlTab } from '@gitlab/ui';
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import getUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstreams.query.graphql';
+import getUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstreams_count.query.graphql';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
 import ContainerRegistriesAndUpstreams from 'ee/packages_and_registries/virtual_registries/pages/container/registries_and_upstreams.vue';
 import {
   CONTAINER_REGISTRIES_INDEX,
   CONTAINER_UPSTREAMS_INDEX,
 } from 'ee/packages_and_registries/virtual_registries/pages/container/routes';
+import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/list.vue';
+import {
+  groupContainerUpstreams,
+  groupContainerUpstreamsCount,
+} from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
+
+Vue.use(VueApollo);
 
 describe('ContainerRegistriesAndUpstreams', () => {
   let wrapper;
@@ -18,6 +31,7 @@ describe('ContainerRegistriesAndUpstreams', () => {
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
   const findRegistriesTab = () => findAllTabs().at(0);
   const findUpstreamsTab = () => findAllTabs().at(1);
+  const findUpstreamsList = () => wrapper.findComponent(UpstreamsList);
 
   const createComponent = (route = { name: CONTAINER_REGISTRIES_INDEX }) => {
     mockRouter = {
@@ -26,6 +40,18 @@ describe('ContainerRegistriesAndUpstreams', () => {
     };
 
     wrapper = shallowMountExtended(ContainerRegistriesAndUpstreams, {
+      apolloProvider: createMockApollo([
+        [getUpstreamsQuery, jest.fn().mockResolvedValue({ data: { ...groupContainerUpstreams } })],
+        [
+          getUpstreamsCountQuery,
+          jest.fn().mockResolvedValue({ data: { ...groupContainerUpstreamsCount } }),
+        ],
+      ]),
+      provide: {
+        getUpstreamsQuery,
+        getUpstreamsCountQuery,
+        fullPath: 'gitlab-org',
+      },
       mocks: {
         $router: mockRouter,
         $route: route,
@@ -33,8 +59,10 @@ describe('ContainerRegistriesAndUpstreams', () => {
     });
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     createComponent();
+
+    await waitForPromises();
   });
 
   describe('rendering', () => {
@@ -96,6 +124,15 @@ describe('ContainerRegistriesAndUpstreams', () => {
       await findUpstreamsTab().vm.$emit('click');
 
       expect(mockRouter.push).toHaveBeenCalledWith({ name: CONTAINER_UPSTREAMS_INDEX });
+    });
+
+    it('renders upstreams list', () => {
+      expect(findUpstreamsList().exists()).toBe(true);
+      expect(findUpstreamsList().props('upstreams')).toEqual(
+        expect.objectContaining({
+          nodes: groupContainerUpstreams.group.upstreams.nodes,
+        }),
+      );
     });
   });
 });

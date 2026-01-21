@@ -124,7 +124,8 @@ RSpec.describe 'Maven virtual registries and upstreams', :aggregate_failures, fe
 
           expect(page).to have_current_path(group_virtual_registries_maven_registries_and_upstreams_path(group,
             { tab: 'upstreams' }))
-          expect(page).to have_content('Maven upstream has been deleted.')
+          expect(page).to have_content('Upstream has been deleted.')
+          expect(page).to have_content('Upstreams 0')
         end
       end
     end

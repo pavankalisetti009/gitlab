@@ -2,6 +2,8 @@
 import { GlTabs, GlTab } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
+import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/list.vue';
+import upstreamsFetchMixin from 'ee/packages_and_registries/virtual_registries/mixins/upstreams/fetch';
 import { CONTAINER_REGISTRIES_INDEX, CONTAINER_UPSTREAMS_INDEX } from './routes';
 
 export default {
@@ -11,7 +13,10 @@ export default {
     GlTab,
     CleanupPolicyStatus,
     PageHeading,
+    UpstreamsList,
   },
+  mixins: [upstreamsFetchMixin],
+  inject: ['fullPath'],
   computed: {
     isRegistriesRoute() {
       return this.$route.name === CONTAINER_REGISTRIES_INDEX;
@@ -53,12 +58,19 @@ export default {
       </gl-tab>
       <gl-tab
         :title="s__('VirtualRegistry|Upstreams')"
+        :tab-count="upstreamsCount"
+        :tab-count-sr-text="upstreamsTabCountSRText"
         :active="isUpstreamsRoute"
         :title-link-attributes="upstreamsTabAttributes"
         @click="handleUpstreamsTabClick"
       >
-        <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
-        {{ 'upstreams tab coming soon' }}
+        <upstreams-list
+          :upstreams="upstreams"
+          :loading="$apollo.queries.upstreams.loading"
+          :search-term="upstreamsSearchTerm"
+          @submit="handleUpstreamsSearch"
+          @page-change="handleUpstreamsPagination"
+        />
       </gl-tab>
     </gl-tabs>
   </div>

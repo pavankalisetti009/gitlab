@@ -6,13 +6,14 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
-import getMavenUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
+import getUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams.query.graphql';
+import getUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
 import MavenRegistriesAndUpstreamsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/registries_and_upstreams/index.vue';
 import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
-import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_list.vue';
+import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/list.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import { groupMavenUpstreamsCountResponse } from '../../../mock_data';
+import { groupMavenUpstreams, groupMavenUpstreamsCount } from '../../../mock_data';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
@@ -26,15 +27,31 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
   };
 
   const mockError = new Error('GraphQL error');
-  const mavenUpstreamsCountHandler = jest.fn().mockResolvedValue(groupMavenUpstreamsCountResponse);
+  const mavenUpstreamsHandler = jest.fn().mockResolvedValue({ data: { ...groupMavenUpstreams } });
+  const mavenUpstreamsCountHandler = jest
+    .fn()
+    .mockResolvedValue({ data: { ...groupMavenUpstreamsCount } });
   const errorHandler = jest.fn().mockRejectedValue(mockError);
 
   const createComponent = ({
-    handlers = [[getMavenUpstreamsCountQuery, mavenUpstreamsCountHandler]],
+    handlers = [
+      [getUpstreamsQuery, mavenUpstreamsHandler],
+      [getUpstreamsCountQuery, mavenUpstreamsCountHandler],
+    ],
   } = {}) => {
     wrapper = shallowMountExtended(MavenRegistriesAndUpstreamsApp, {
-      apolloProvider: createMockApollo(handlers),
+      apolloProvider: createMockApollo(
+        handlers,
+        {},
+        {
+          typePolicies: {
+            MavenUpstreamConnection: { merge: true },
+          },
+        },
+      ),
       provide: {
+        getUpstreamsQuery,
+        getUpstreamsCountQuery,
         ...defaultProvide,
       },
       stubs: {
@@ -70,7 +87,7 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     expect(findUpstreamsTab().props()).toMatchObject({
       queryParamValue: 'upstreams',
       tabCount: null,
-      tabCountSrText: '0 upstreams',
+      tabCountSrText: '',
     });
   });
 
@@ -79,12 +96,7 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
   });
 
   it('renders MavenUpstreamsList component', () => {
-    expect(findUpstreamsList().props()).toStrictEqual({
-      pageParams: {
-        first: 20,
-      },
-      searchTerm: null,
-    });
+    expect(findUpstreamsList().exists()).toBe(true);
   });
 
   it('renders CleanupPolicyStatus component', () => {
@@ -110,14 +122,6 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     });
   });
 
-  it('calls upstreams count query with group path', () => {
-    expect(mavenUpstreamsCountHandler).toHaveBeenCalledTimes(1);
-    expect(mavenUpstreamsCountHandler).toHaveBeenCalledWith({
-      groupPath: 'gitlab-org',
-      upstreamName: null,
-    });
-  });
-
   describe('when UpstreamsList emits `submit` event with search term', () => {
     beforeEach(async () => {
       await findUpstreamsList().vm.$emit('submit', 'test');
@@ -128,25 +132,13 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     });
 
     it('calls upstreams count query with upstream name', () => {
-      expect(mavenUpstreamsCountHandler).toHaveBeenCalledTimes(2);
-      expect(mavenUpstreamsCountHandler).toHaveBeenLastCalledWith({
-        groupPath: 'gitlab-org',
-        upstreamName: 'test',
-      });
-    });
-  });
-
-  describe('when UpstreamsList emits `page-change` event with next page params', () => {
-    beforeEach(async () => {
-      await findUpstreamsList().vm.$emit('page-change', { after: 'cursor' });
-    });
-
-    it('sets page params for MavenUpstreamsList component', () => {
-      expect(findUpstreamsList().props('pageParams')).toMatchObject({ after: 'cursor', first: 20 });
-    });
-
-    it('does not refetch upstreams count query', () => {
-      expect(mavenUpstreamsCountHandler).toHaveBeenCalledTimes(1);
+      expect(mavenUpstreamsHandler).toHaveBeenCalledTimes(2);
+      expect(mavenUpstreamsHandler).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          groupPath: 'gitlab-org',
+          upstreamName: 'test',
+        }),
+      );
     });
   });
 
@@ -156,27 +148,12 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     });
 
     it('sets page params for MavenUpstreamsList component', () => {
-      expect(findUpstreamsList().props('pageParams')).toMatchObject({ before: 'cursor', last: 20 });
-    });
-
-    it('does not refetch upstreams count query', () => {
-      expect(mavenUpstreamsCountHandler).toHaveBeenCalledTimes(1);
-    });
-
-    describe('when UpstreamsList emits `upstream-deleted` event', () => {
-      it('resets page params', async () => {
-        await findUpstreamsList().vm.$emit('upstream-deleted');
-
-        expect(findUpstreamsList().props('pageParams')).toStrictEqual({ first: 20 });
-      });
-    });
-
-    describe('when UpstreamsList emits `search` event', () => {
-      it('resets page params', async () => {
-        await findUpstreamsList().vm.$emit('submit');
-
-        expect(findUpstreamsList().props('pageParams')).toStrictEqual({ first: 20 });
-      });
+      expect(mavenUpstreamsHandler).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          before: 'cursor',
+          last: 20,
+        }),
+      );
     });
   });
 
@@ -196,7 +173,10 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
   describe('when upstreams count query fails', () => {
     it('renders upstreams count', async () => {
       createComponent({
-        handlers: [[getMavenUpstreamsCountQuery, errorHandler]],
+        handlers: [
+          [getUpstreamsQuery, errorHandler],
+          [getUpstreamsCountQuery, mavenUpstreamsCountHandler],
+        ],
       });
 
       await waitForPromises();
@@ -214,7 +194,7 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
 
       await findUpstreamsList().vm.$emit('upstream-deleted');
 
-      expect(mavenUpstreamsCountHandler).toHaveBeenCalledTimes(2);
+      expect(mavenUpstreamsHandler).toHaveBeenCalledTimes(2);
     });
   });
 });

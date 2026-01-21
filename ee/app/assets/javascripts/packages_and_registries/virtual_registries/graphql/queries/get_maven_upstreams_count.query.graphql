@@ -1,7 +1,7 @@
 query getMavenUpstreamsCount($groupPath: ID!, $upstreamName: String) {
   group(fullPath: $groupPath) {
     id
-    virtualRegistriesPackagesMavenUpstreams(upstreamName: $upstreamName) {
+    upstreams: virtualRegistriesPackagesMavenUpstreams(upstreamName: $upstreamName) {
       count
     }
   }

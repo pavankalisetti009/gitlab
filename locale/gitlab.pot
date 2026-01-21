@@ -75093,7 +75093,13 @@ msgstr ""
 msgid "VirtualRegistry|Clearing the cache deletes all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs might fail. Are you sure you want to continue?"
 msgstr ""
 
+msgid "VirtualRegistry|Configure an upstream registry to manage Container artifacts and cache entries."
+msgstr ""
+
 msgid "VirtualRegistry|Configure an upstream registry to manage Maven artifacts and cache entries."
+msgstr ""
+
+msgid "VirtualRegistry|Connect Container virtual registry to an upstream"
 msgstr ""
 
 msgid "VirtualRegistry|Connect Maven virtual registry to an upstream"
@@ -75192,10 +75198,10 @@ msgstr ""
 msgid "VirtualRegistry|Failed to fetch cache entries."
 msgstr ""
 
-msgid "VirtualRegistry|Failed to fetch list of maven upstream registries."
+msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
 msgstr ""
 
-msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
+msgid "VirtualRegistry|Failed to fetch list of upstreams."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to fetch upstream summary."
@@ -75387,6 +75393,9 @@ msgid "VirtualRegistry|Upstream cache cleared successfully."
 msgstr ""
 
 msgid "VirtualRegistry|Upstream created successfully."
+msgstr ""
+
+msgid "VirtualRegistry|Upstream has been deleted."
 msgstr ""
 
 msgid "VirtualRegistry|Upstream summary"

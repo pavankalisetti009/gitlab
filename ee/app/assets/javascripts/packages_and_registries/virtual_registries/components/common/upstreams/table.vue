@@ -13,11 +13,12 @@ import { s__, n__, sprintf } from '~/locale';
 import { deleteMavenUpstreamCache } from 'ee/api/virtual_registries_api';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import DeleteUpstreamWithModal from '../shared/delete_upstream_with_modal.vue';
+import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
 
 export default {
-  name: 'MavenUpstreamsTable',
+  name: 'UpstreamsTable',
   components: {
     GlButton,
     GlDisclosureDropdown,
@@ -33,7 +34,10 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [glAbilitiesMixin()],
-  inject: ['editUpstreamPathTemplate', 'showUpstreamPathTemplate'],
+  inject: {
+    editUpstreamPathTemplate: { default: '' },
+    showUpstreamPathTemplate: { default: '' },
+  },
   props: {
     upstreams: {
       type: Array,
@@ -45,6 +49,7 @@ export default {
       default: false,
     },
   },
+  emits: ['upstream-deleted', 'upstream-delete-failed'],
   data() {
     return {
       selectedUpstream: null,
@@ -79,7 +84,7 @@ export default {
       ].filter((field) => !field.hide);
     },
     selectedUpstreamId() {
-      return this.selectedUpstream?.id ?? null;
+      return getIdFromGraphQLId(this.selectedUpstream?.id ?? null);
     },
     selectedUpstreamName() {
       return this.selectedUpstream?.name ?? '';
@@ -107,18 +112,18 @@ export default {
       return error.response?.data?.error || error.message;
     },
     handleSuccess() {
-      this.$emit('upstreamDeleted');
+      this.$emit('upstream-deleted');
       this.hideUpstreamDeleteModal();
     },
     handleError(error) {
-      this.$emit('upstreamDeleteFailed', this.parseError(error));
+      this.$emit('upstream-delete-failed', this.parseError(error));
       this.hideUpstreamDeleteModal();
     },
     async clearUpstreamCache() {
       const { id } = this.selectedUpstream;
       this.hideUpstreamClearCacheModal();
       try {
-        await deleteMavenUpstreamCache({ id });
+        await deleteMavenUpstreamCache({ id: getIdFromGraphQLId(id) });
         this.$toast.show(s__('VirtualRegistry|Upstream cache cleared successfully.'));
       } catch (error) {
         this.$toast.show(s__('VirtualRegistry|Failed to clear upstream cache. Try again.'));
@@ -126,10 +131,10 @@ export default {
       }
     },
     getShowUpstreamURL(id) {
-      return this.showUpstreamPathTemplate.replace(':id', id);
+      return this.showUpstreamPathTemplate.replace(':id', getIdFromGraphQLId(id));
     },
     getEditUpstreamURL(id) {
-      return this.editUpstreamPathTemplate.replace(':id', id);
+      return this.editUpstreamPathTemplate.replace(':id', getIdFromGraphQLId(id));
     },
     getEditUpstreamLabel(name) {
       return sprintf(s__('VirtualRegistry|Edit upstream %{name}'), { name });
@@ -193,10 +198,12 @@ export default {
             <div data-testid="cache-validity-hours">
               {{ getCacheValidityHoursLabel(item.cacheValidityHours) }}
             </div>
-            <div>&middot;</div>
-            <div data-testid="metadata-cache-validity-hours">
-              {{ getMetadataCacheValidityHoursLabel(item.metadataCacheValidityHours) }}
-            </div>
+            <template v-if="item.metadataCacheValidityHours">
+              <div>&middot;</div>
+              <div data-testid="metadata-cache-validity-hours">
+                {{ getMetadataCacheValidityHoursLabel(item.metadataCacheValidityHours) }}
+              </div>
+            </template>
           </div>
         </div>
       </template>
