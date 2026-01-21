@@ -2,7 +2,7 @@ import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
-import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/header.vue';
+import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/show/header.vue';
 import { mockUpstream } from '../../../../mock_data';
 
 describe('UpstreamDetailsHeader', () => {
@@ -26,6 +26,9 @@ describe('UpstreamDetailsHeader', () => {
       },
       provide: {
         ...provide,
+        i18n: {
+          registryType: 'Maven',
+        },
       },
       stubs: {
         TitleArea,

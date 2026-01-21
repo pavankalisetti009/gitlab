@@ -6,7 +6,7 @@ import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 
 export default {
-  name: 'MavenUpstreamDetailsHeader',
+  name: 'UpstreamDetailsHeader',
   components: {
     GlButton,
     TitleArea,
@@ -17,6 +17,7 @@ export default {
     editUpstreamPath: {
       default: '',
     },
+    i18n: { default: {} },
   },
   props: {
     upstream: {
@@ -60,7 +61,7 @@ export default {
       </gl-button>
     </template>
     <template #metadata-registry-type>
-      <metadata-item icon="infrastructure-registry" :text="s__('VirtualRegistry|Maven')" />
+      <metadata-item icon="infrastructure-registry" :text="i18n.registryType" />
     </template>
     <template #metadata-count>
       <metadata-item data-testid="artifacts-count" icon="doc-text" :text="artifactsCountText" />

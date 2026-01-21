@@ -9,5 +9,7 @@ export default {
     emptyStateDescription: s__(
       'VirtualRegistry|Configure an upstream registry to manage Maven artifacts and cache entries.',
     ),
+    deleteCacheModalTitle: s__('VirtualRegistry|Delete Maven upstream cache entry?'),
   },
+  registryType: s__('VirtualRegistry|Maven'),
 };

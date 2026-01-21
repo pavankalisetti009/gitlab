@@ -2,6 +2,7 @@ query getMavenUpstreamSummary($id: VirtualRegistriesPackagesMavenUpstreamID!) {
   virtualRegistriesPackagesMavenUpstream(id: $id) {
     id
     url
+    name
     description
     cacheValidityHours
     metadataCacheValidityHours

@@ -15,7 +15,7 @@ import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
 
 export default {
-  name: 'MavenUpstreamDetails',
+  name: 'UpstreamCacheEntriesTable',
   components: {
     GlBadge,
     GlButton,
@@ -30,6 +30,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [glAbilitiesMixin()],
+  inject: ['i18n'],
   props: {
     cacheEntries: {
       type: Array,
@@ -41,6 +42,7 @@ export default {
       default: false,
     },
   },
+  emits: ['delete'],
   data() {
     return {
       cacheEntryToBeDeleted: null,
@@ -161,7 +163,7 @@ export default {
       size="sm"
       :action-primary="$options.modal.primaryAction"
       :action-cancel="$options.modal.cancelAction"
-      :title="s__('VirtualRegistry|Delete Maven upstream cache entry?')"
+      :title="i18n.upstreams.deleteCacheModalTitle"
       @primary="$emit('delete', { id: cacheEntryToBeDeleted.id })"
       @canceled="hideModal"
     >

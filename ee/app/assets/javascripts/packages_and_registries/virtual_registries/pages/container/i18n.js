@@ -10,6 +10,8 @@ export default {
     emptyStateDescription: s__(
       'VirtualRegistry|Configure an upstream registry to manage Container artifacts and cache entries.',
     ),
+    deleteCacheModalTitle: s__('VirtualRegistry|Delete Container upstream cache entry?'),
   },
   newRegistryPageTitle: s__('VirtualRegistry|New container virtual registry'),
+  registryType: s__('VirtualRegistry|Container'),
 };

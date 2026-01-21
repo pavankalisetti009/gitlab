@@ -4,13 +4,12 @@ import mavenUpstreamCacheEntriesFixture from 'test_fixtures/ee/graphql/packages_
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
-import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/cache_entries_table.vue';
+import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/show/cache_entries_table.vue';
 
 describe('CacheEntriesTable', () => {
   let wrapper;
 
-  const mockCacheEntries =
-    mavenUpstreamCacheEntriesFixture.data.virtualRegistriesPackagesMavenUpstream.cacheEntries.nodes;
+  const mockCacheEntries = mavenUpstreamCacheEntriesFixture.data.upstream.cacheEntries.nodes;
   const [mockCacheEntry] = mockCacheEntries;
 
   const defaultProps = {
@@ -34,6 +33,9 @@ describe('CacheEntriesTable', () => {
       },
       provide: {
         glAbilities: { destroyVirtualRegistry: canDelete },
+        i18n: {
+          upstreams: { deleteCacheModalTitle: 'Delete Maven upstream cache entry?' },
+        },
       },
     });
   };

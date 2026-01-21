@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlFilteredSearch, GlKeysetPagination } from '@gitlab/ui';
+import { GlEmptyState, GlFilteredSearch, GlKeysetPagination } from '@gitlab/ui';
 import mavenUpstreamCacheEntriesCountFixture from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_cache_entries_count.query.graphql.json';
 import mavenUpstreamCacheEntriesFixture from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_cache_entries.query.graphql.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -10,9 +10,10 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { deleteMavenUpstreamCacheEntry } from 'ee/api/virtual_registries_api';
 import getMavenUpstreamCacheEntriesCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_cache_entries_count.query.graphql';
 import getMavenUpstreamCacheEntriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_cache_entries.query.graphql';
-import UpstreamDetailsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/upstreams/show.vue';
-import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/header.vue';
-import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/cache_entries_table.vue';
+import getUpstreamSummaryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_summary.query.graphql';
+import UpstreamDetailsApp from 'ee/packages_and_registries/virtual_registries/pages/common/upstream/show.vue';
+import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/show/header.vue';
+import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/show/cache_entries_table.vue';
 import { createAlert } from '~/alert';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
@@ -25,20 +26,25 @@ jest.mock('ee/api/virtual_registries_api', () => ({
 
 Vue.use(VueApollo);
 
-describe('UpstreamDetailsApp', () => {
+describe('UpstreamShow', () => {
   let wrapper;
 
   const defaultProvide = {
-    upstream: mockUpstream,
+    initialUpstream: mockUpstream,
+    getUpstreamCacheEntriesCountQuery: getMavenUpstreamCacheEntriesCountQuery,
+    getUpstreamCacheEntriesQuery: getMavenUpstreamCacheEntriesQuery,
+    i18n: {
+      registryType: 'Maven',
+    },
+    ids: {
+      baseUpstream: 'VirtualRegistries::Packages::Maven::Upstream',
+    },
   };
 
   const upstreamId = `gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/${mockUpstream.id}`;
-  const mockCacheEntries =
-    mavenUpstreamCacheEntriesFixture.data.virtualRegistriesPackagesMavenUpstream.cacheEntries.nodes;
+  const mockCacheEntries = mavenUpstreamCacheEntriesFixture.data.upstream.cacheEntries.nodes;
   const [mockCacheEntry] = mockCacheEntries;
-  const mockPageInfo =
-    mavenUpstreamCacheEntriesFixture.data.virtualRegistriesPackagesMavenUpstream.cacheEntries
-      .pageInfo;
+  const mockPageInfo = mavenUpstreamCacheEntriesFixture.data.upstream.cacheEntries.pageInfo;
 
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findTable = () => wrapper.findComponent(CacheEntriesTable);
@@ -57,10 +63,16 @@ describe('UpstreamDetailsApp', () => {
       [getMavenUpstreamCacheEntriesQuery, mavenUpstreamCacheEntriesQueryResolver],
       [getMavenUpstreamCacheEntriesCountQuery, mavenUpstreamCacheEntriesCountQueryResolver],
     ],
+    provide = {},
+    propsData = {},
   } = {}) => {
     wrapper = shallowMountExtended(UpstreamDetailsApp, {
       apolloProvider: createMockApollo(handlers),
-      provide: defaultProvide,
+      propsData,
+      provide: {
+        ...defaultProvide,
+        ...provide,
+      },
     });
   };
 
@@ -81,9 +93,9 @@ describe('UpstreamDetailsApp', () => {
     describe('when URL params exist', () => {
       it.each`
         params                              | expectedEntriesArgs                                                   | expectedCountArgs
-        ${'?search=foo'}                    | ${{ id: upstreamId, search: 'foo', first: 20 }}                       | ${{ id: upstreamId, search: 'foo' }}
-        ${'?search=foo&after=some_cursor'}  | ${{ id: upstreamId, search: 'foo', after: 'some_cursor', first: 20 }} | ${{ id: upstreamId, search: 'foo' }}
-        ${'?search=foo&before=some_cursor'} | ${{ id: upstreamId, search: 'foo', before: 'some_cursor', last: 20 }} | ${{ id: upstreamId, search: 'foo' }}
+        ${'?search=foo'}                    | ${{ id: upstreamId, search: 'foo', first: 20 }}                       | ${{ id: upstreamId }}
+        ${'?search=foo&after=some_cursor'}  | ${{ id: upstreamId, search: 'foo', after: 'some_cursor', first: 20 }} | ${{ id: upstreamId }}
+        ${'?search=foo&before=some_cursor'} | ${{ id: upstreamId, search: 'foo', before: 'some_cursor', last: 20 }} | ${{ id: upstreamId }}
         ${'?after=some_cursor'}             | ${{ id: upstreamId, after: 'some_cursor', first: 20 }}                | ${{ id: upstreamId }}
         ${'?before=some_cursor'}            | ${{ id: upstreamId, before: 'some_cursor', last: 20 }}                | ${{ id: upstreamId }}
       `(
@@ -162,7 +174,6 @@ describe('UpstreamDetailsApp', () => {
       jest.spyOn(urlUtils, 'updateHistory');
       await findFilteredSearch().vm.$emit('submit', ['foo']);
 
-      expect(findHeader().props('loading')).toBe(true);
       expect(findTable().props('loading')).toBe(true);
 
       await waitForPromises();
@@ -175,7 +186,6 @@ describe('UpstreamDetailsApp', () => {
       });
       expect(mavenUpstreamCacheEntriesCountQueryResolver).toHaveBeenLastCalledWith({
         id: upstreamId,
-        search: 'foo',
       });
       expect(urlUtils.updateHistory).toHaveBeenCalledWith({
         url: `${TEST_HOST}/?search=foo`,
@@ -242,7 +252,6 @@ describe('UpstreamDetailsApp', () => {
           first: 20,
           after: mockPageInfo.endCursor,
         });
-        expect(mavenUpstreamCacheEntriesCountQueryResolver).toHaveBeenCalledTimes(2);
         expect(urlUtils.updateHistory).toHaveBeenCalledWith({
           url: `${TEST_HOST}/?after=${mockPageInfo.endCursor}&search=foo`,
         });
@@ -271,6 +280,27 @@ describe('UpstreamDetailsApp', () => {
   });
 
   describe('error state', () => {
+    it('shows empty state when upstream is not found', async () => {
+      createComponent({
+        handlers: [
+          [getMavenUpstreamCacheEntriesQuery, mavenUpstreamCacheEntriesQueryResolver],
+          [getMavenUpstreamCacheEntriesCountQuery, mavenUpstreamCacheEntriesCountQueryResolver],
+          [getUpstreamSummaryQuery, jest.fn().mockResolvedValue({ data: { upstream: null } })],
+        ],
+        provide: {
+          initialUpstream: {},
+          getUpstreamSummaryQuery,
+        },
+        propsData: {
+          id: 1,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(wrapper.findComponent(GlEmptyState).exists()).toBe(true);
+    });
+
     it('shows error message on failed attempt to get cached entries', async () => {
       const error = new Error('API Error');
 

@@ -53,6 +53,20 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
       end
     end
 
+    context 'when visiting upstreams detail page' do
+      before do
+        visit group_virtual_registries_container_upstream_path(group, upstream.id)
+      end
+
+      it 'renders upstreams' do
+        expect(find_by_testid('page-heading')).to have_text(upstream.name)
+      end
+
+      it 'passes axe automated accessibility testing' do
+        expect(page).to be_axe_clean
+      end
+    end
+
     it 'sidebar menu is open' do
       visit url
       wait_for_requests
