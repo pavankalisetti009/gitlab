@@ -18,7 +18,7 @@ module Gitlab
         @ai_response = if ai_response.respond_to?(:keys)
                          ai_response
                        else
-                         Gitlab::Json.parse(ai_response)
+                         ::Gitlab::Json.safe_parse(ai_response)
                        end&.with_indifferent_access
       end
 
