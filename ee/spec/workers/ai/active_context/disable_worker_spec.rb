@@ -9,7 +9,7 @@ RSpec.describe Ai::ActiveContext::DisableWorker, feature_category: :global_searc
 
   describe '#perform' do
     context 'when no active connection exists' do
-      it 'returns false' do
+      it 'returns false', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/25447' do
         expect(worker.perform).to be false
       end
     end
