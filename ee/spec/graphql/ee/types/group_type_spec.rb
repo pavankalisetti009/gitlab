@@ -44,6 +44,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:value_stream_analytics) }
   it { expect(described_class).to have_graphql_field(:duo_features_enabled) }
   it { expect(described_class).to have_graphql_field(:lock_duo_features_enabled) }
+  it { expect(described_class).to have_graphql_field(:duo_settings_path) }
   it { expect(described_class).to have_graphql_field(:ai_metrics) }
   it { expect(described_class).to have_graphql_field(:ai_usage_data) }
   it { expect(described_class).to have_graphql_field(:ai_user_metrics) }

@@ -327,6 +327,10 @@ module EE
           experiment: { milestone: '16.10' },
           description: 'Indicates if the GitLab Duo features enabled setting is enforced for all subgroups.'
 
+        field :duo_settings_path, GraphQL::Types::String,
+          experiment: { milestone: '18.9' },
+          description: 'Path of the group Duo settings page.'
+
         field :pending_member_approvals,
           EE::Types::GitlabSubscriptions::MemberManagement::MemberApprovalType.connection_type,
           null: true,

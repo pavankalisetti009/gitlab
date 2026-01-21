@@ -2387,6 +2387,26 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#duo_settings_path' do
+    subject { group.duo_settings_path }
+
+    context 'when GitLab.com (SaaS)', :saas_gitlab_com_subscriptions do
+      it { is_expected.to eq("/groups/#{group.full_path}/-/settings/gitlab_duo/configuration") }
+
+      context 'when the group is a subgroup' do
+        let(:subgroup) { create(:group, :private, parent: group) }
+
+        subject { subgroup.duo_settings_path }
+
+        it { is_expected.to eq("/groups/#{subgroup.full_path}/-/edit#js-gitlab-duo-settings") }
+      end
+    end
+
+    context 'when self-managed' do
+      it { is_expected.to eq("/groups/#{group.full_path}/-/edit#js-gitlab-duo-settings") }
+    end
+  end
+
   describe '#capacity_left_for_user?' do
     let_it_be(:group) { create(:group) }
     let_it_be(:user) { create(:user) }
