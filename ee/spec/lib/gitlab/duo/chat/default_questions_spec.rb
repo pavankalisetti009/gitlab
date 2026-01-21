@@ -11,43 +11,82 @@ RSpec.describe Gitlab::Duo::Chat::DefaultQuestions, feature_category: :duo_chat 
     let(:url) { nil }
 
     context "with allowed resource" do
-      before do
-        allow(user).to receive(:allowed_to_use?).and_return(true)
-      end
-
       context "with issue resource" do
-        let(:resource) { ::Ai::AiResource::Issue.new(user, build_stubbed(:issue)) }
+        let(:issue) { build_stubbed(:issue, project: project) }
+        let(:resource) { ::Ai::AiResource::Issue.new(user, issue) }
+
+        before do
+          allow(user).to receive(:allowed_to_use?)
+            .with(:ask_issue, root_namespace: project.root_ancestor)
+            .and_return(true)
+        end
 
         it { is_expected.to include("What key decisions were made in this issue?") }
       end
 
       context "with merge request resource" do
-        let(:resource) { ::Ai::AiResource::MergeRequest.new(user, build_stubbed(:merge_request)) }
+        let(:merge_request) { build_stubbed(:merge_request, source_project: project) }
+        let(:resource) { ::Ai::AiResource::MergeRequest.new(user, merge_request) }
+
+        before do
+          allow(user).to receive(:allowed_to_use?)
+            .with(:ask_merge_request, root_namespace: project.root_ancestor)
+            .and_return(true)
+        end
 
         it { is_expected.to include("What changed in this diff?") }
       end
 
       context "with ci job resource" do
-        let(:resource) { ::Ai::AiResource::Ci::Build.new(user, build_stubbed(:ci_build)) }
+        let(:ci_build) { build_stubbed(:ci_build, project: project) }
+        let(:resource) { ::Ai::AiResource::Ci::Build.new(user, ci_build) }
+
+        before do
+          allow(user).to receive(:allowed_to_use?)
+            .with(:ask_build, root_namespace: project.root_ancestor)
+            .and_return(true)
+        end
 
         it { is_expected.to include("What was each stage's final status?") }
       end
 
       context "with epic resource" do
-        let(:resource) { ::Ai::AiResource::Epic.new(user, build_stubbed(:epic)) }
+        let(:group) { create(:group) }
+        let(:epic) { build_stubbed(:epic, group: group) }
+        let(:resource) { ::Ai::AiResource::Epic.new(user, epic) }
+
+        before do
+          allow(user).to receive(:allowed_to_use?)
+            .with(:ask_epic, root_namespace: group.root_ancestor)
+            .and_return(true)
+        end
 
         it { is_expected.to include("What key features are planned?") }
       end
 
       context "with commit resource" do
-        let(:resource) { ::Ai::AiResource::Commit.new(user, build_stubbed(:commit)) }
+        let(:commit) { build_stubbed(:commit, project: project) }
+        let(:resource) { ::Ai::AiResource::Commit.new(user, commit) }
+
+        before do
+          allow(user).to receive(:allowed_to_use?)
+            .with(:ask_commit, root_namespace: project.root_ancestor)
+            .and_return(true)
+        end
 
         it { is_expected.to include("How can I test these changes?") }
       end
     end
 
     context "without allowed resource" do
-      let(:resource) { ::Ai::AiResource::Issue.new(user, build_stubbed(:issue)) }
+      let(:issue) { build_stubbed(:issue, project: project) }
+      let(:resource) { ::Ai::AiResource::Issue.new(user, issue) }
+
+      before do
+        allow(user).to receive(:allowed_to_use?)
+          .with(:ask_issue, root_namespace: project.root_ancestor)
+          .and_return(false)
+      end
 
       it "returns default questions" do
         is_expected.to include("How do I estimate story points?")

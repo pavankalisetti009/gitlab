@@ -41,6 +41,10 @@ module Ai
       def default_content_limit
         DEFAULT_CONTENT_LIMIT
       end
+
+      def root_namespace
+        resource.try(:project)&.root_namespace || resource.try(:group)&.root_ancestor
+      end
     end
   end
 end
