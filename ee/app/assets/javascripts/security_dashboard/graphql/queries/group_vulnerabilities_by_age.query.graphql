@@ -1,0 +1,25 @@
+# @feature_category: vulnerability_management
+query groupVulnerabilitiesByAge(
+  $fullPath: ID!
+  $projectId: [ID!]
+  $reportType: [VulnerabilityReportType!]
+  $severity: [VulnerabilitySeverity!]
+) {
+  group(fullPath: $fullPath) {
+    id
+    securityMetrics(projectId: $projectId, reportType: $reportType) {
+      __typename
+      vulnerabilitiesByAge(severity: $severity) @client {
+        name
+        bySeverity {
+          count
+          severity
+        }
+        byReportType {
+          count
+          reportType
+        }
+      }
+    }
+  }
+}

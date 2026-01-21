@@ -1,17 +1,100 @@
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import setWindowLocation from 'helpers/set_window_location_helper';
+import waitForPromises from 'helpers/wait_for_promises';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import VulnerabilitiesByAgePanel from 'ee/security_dashboard/components/shared/vulnerabilities_by_age_panel.vue';
+import groupVulnerabilitiesByAge from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_by_age.query.graphql';
 import * as panelStateUrlSync from 'ee/security_dashboard/utils/panel_state_url_sync';
 import PanelGroupBy from 'ee/security_dashboard/components/shared/panel_group_by.vue';
 import PanelSeverityFilter from 'ee/security_dashboard/components/shared/panel_severity_filter.vue';
 
+Vue.use(VueApollo);
+
 describe('VulnerabilitiesByAgePanel', () => {
   let wrapper;
+  let vulnerabilitiesByAgeHandler;
 
-  const createComponent = () => {
-    wrapper = shallowMountExtended(VulnerabilitiesByAgePanel);
+  const mockGroupFullPath = 'group/subgroup';
+  const mockFilters = { projectId: ['gid://gitlab/Project/123'] };
+  const defaultMockVulnerabilitiesByAge = {
+    data: {
+      group: {
+        id: 'gid://gitlab/Group/1',
+        securityMetrics: {
+          vulnerabilitiesByAge: [
+            {
+              name: '<7 days',
+              bySeverity: [
+                {
+                  severity: 'CRITICAL',
+                  count: 10,
+                },
+                {
+                  severity: 'HIGH',
+                  count: 5,
+                },
+              ],
+              byReportType: [
+                {
+                  reportType: 'SAST',
+                  count: 1,
+                },
+                {
+                  reportType: 'DAST',
+                  count: 2,
+                },
+              ],
+            },
+            {
+              name: '7-14 days',
+              bySeverity: [
+                {
+                  severity: 'CRITICAL',
+                  count: 2,
+                },
+                {
+                  severity: 'HIGH',
+                  count: 7,
+                },
+              ],
+              byReportType: [
+                {
+                  reportType: 'SAST',
+                  count: 5,
+                },
+                {
+                  reportType: 'DAST',
+                  count: 8,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  };
+
+  const createComponent = ({ props, mockVulnerabilitiesByAgeHandler = null } = {}) => {
+    vulnerabilitiesByAgeHandler =
+      mockVulnerabilitiesByAgeHandler ||
+      jest.fn().mockResolvedValue(defaultMockVulnerabilitiesByAge);
+    const apolloProvider = createMockApollo([
+      [groupVulnerabilitiesByAge, vulnerabilitiesByAgeHandler],
+    ]);
+
+    wrapper = shallowMountExtended(VulnerabilitiesByAgePanel, {
+      apolloProvider,
+      provide: {
+        fullPath: mockGroupFullPath,
+      },
+      propsData: {
+        filters: mockFilters,
+        ...props,
+      },
+    });
   };
 
   const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
@@ -23,11 +106,15 @@ describe('VulnerabilitiesByAgePanel', () => {
     await nextTick();
   };
 
-  describe('component rendering', () => {
-    beforeEach(() => {
-      createComponent();
-    });
+  beforeEach(() => {
+    createComponent();
+  });
 
+  afterEach(() => {
+    setWindowLocation('');
+  });
+
+  describe('component rendering', () => {
     it('renders the extended dashboard panel', () => {
       expect(findExtendedDashboardPanel().exists()).toBe(true);
     });
@@ -52,6 +139,32 @@ describe('VulnerabilitiesByAgePanel', () => {
     });
   });
 
+  describe('Apollo query', () => {
+    it('fetches vulnerabilities by age when component is created', () => {
+      expect(vulnerabilitiesByAgeHandler).toHaveBeenCalledWith({
+        fullPath: mockGroupFullPath,
+        projectId: mockFilters.projectId,
+        severity: [],
+      });
+    });
+
+    it('passes page level filters to the GraphQL query', () => {
+      createComponent({
+        props: {
+          filters: { projectId: ['gid://gitlab/Project/99'] },
+        },
+      });
+
+      expect(vulnerabilitiesByAgeHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fullPath: mockGroupFullPath,
+          projectId: ['gid://gitlab/Project/99'],
+          severity: [],
+        }),
+      );
+    });
+  });
+
   describe('filters', () => {
     it('initializes severity if URL parameter is set', () => {
       setWindowLocation('?vulnerabilitiesByAge.severity=HIGH%2CLOW');
@@ -72,13 +185,19 @@ describe('VulnerabilitiesByAgePanel', () => {
         defaultValue: [],
       });
     });
+
+    it('passes correct severity to the GraphQL query', async () => {
+      await findSeverityFilter().vm.$emit('input', ['CRITICAL', 'MEDIUM']);
+
+      expect(vulnerabilitiesByAgeHandler).toHaveBeenCalledWith({
+        fullPath: mockGroupFullPath,
+        projectId: mockFilters.projectId,
+        severity: ['CRITICAL', 'MEDIUM'],
+      });
+    });
   });
 
   describe('group by functionality', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
     it('switches to report type grouping when report type button is clicked', async () => {
       await clickToggleButtonBy('reportType');
 
@@ -110,6 +229,44 @@ describe('VulnerabilitiesByAgePanel', () => {
         value: 'reportType',
         defaultValue: 'severity',
       });
+    });
+  });
+
+  describe('loading state', () => {
+    it('shows loading state initially', () => {
+      createComponent();
+
+      expect(findExtendedDashboardPanel().props('loading')).toBe(true);
+    });
+
+    it('hides loading state after data is loaded', async () => {
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('loading')).toBe(false);
+    });
+  });
+
+  describe('error handling', () => {
+    it('shows error state when GraphQL query fails', async () => {
+      createComponent({
+        mockVulnerabilitiesByAgeHandler: jest.fn().mockRejectedValue(new Error('GraphQL error')),
+      });
+
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+    });
+
+    it('shows error state when server returns error response', async () => {
+      createComponent({
+        mockVulnerabilitiesByAgeHandler: jest.fn().mockResolvedValue({
+          errors: [{ message: 'Internal server error' }],
+        }),
+      });
+
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
     });
   });
 });
