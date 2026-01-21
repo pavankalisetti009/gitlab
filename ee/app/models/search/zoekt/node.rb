@@ -48,8 +48,6 @@ module Search
       validates :schema_version, presence: true
       validate :valid_services
 
-      ignore_column :knowledge_graph_schema_version, remove_with: '18.9', remove_after: '2026-01-15'
-
       attribute :metadata, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
 
       scope :by_name, ->(*names) { where("metadata->>'name' IN (?)", names) }
