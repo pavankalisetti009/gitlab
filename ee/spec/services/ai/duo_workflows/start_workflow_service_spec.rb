@@ -865,9 +865,18 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       ]
     end
 
+    let(:cli_install_command) do
+      [
+        "command -v duo > /dev/null 2>&1 && ",
+        "echo \"duo-cli already present, skipping installation\" || ",
+        "{ echo \"Installing @gitlab/duo-cli@#{duo_cli_version}...\" && ",
+        "npm install -g @gitlab/duo-cli@#{duo_cli_version}; }"
+      ].join
+    end
+
     let(:cli_install_commands) do
       [
-        %(npm install -g @gitlab/duo-cli@#{duo_cli_version}),
+        cli_install_command,
         %(ls -la $(npm root -g)/@gitlab/duo-cli || echo "GitLab Duo package not found"),
         %(export PATH="$(npm bin -g):$PATH"),
         %(which duo || echo "duo not in PATH")
