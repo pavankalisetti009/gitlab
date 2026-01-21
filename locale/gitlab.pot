@@ -26136,9 +26136,6 @@ msgstr ""
 msgid "DuoChat|Agentic mode (Beta)"
 msgstr ""
 
-msgid "DuoChat|An administrator has turned off GitLab Duo for this %{reason}"
-msgstr ""
-
 msgid "DuoChat|Ask a question about GitLab"
 msgstr ""
 
@@ -26149,9 +26146,6 @@ msgid "DuoChat|For example, %{linkStart}what is a fork%{linkEnd}?"
 msgstr ""
 
 msgid "DuoChat|GitLab Duo Chat"
-msgstr ""
-
-msgid "DuoChat|GitLab Duo with Amazon Q"
 msgstr ""
 
 msgid "DuoChat|Give feedback"
@@ -26179,12 +26173,6 @@ msgid "DuoChat|There was an error communicating with GitLab Duo Chat. Please try
 msgstr ""
 
 msgid "DuoChat|What is a fork?"
-msgstr ""
-
-msgid "DuoChat|group"
-msgstr ""
-
-msgid "DuoChat|project"
 msgstr ""
 
 msgid "DuoCodeReview|:warning: Code Review Flow is not enabled. Contact your group administrator to enable the Code Review foundational flow in the top-level group."
