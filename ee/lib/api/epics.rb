@@ -125,6 +125,7 @@ module API
             use :negatable_epic_filter_params
           end
         end
+        route_setting :authorization, permissions: :read_epic, boundary_type: :group
         get path, urgency: :low do
           validate_search_rate_limit! if declared_params[:search].present?
           epics = paginate(find_epics(finder_params: { group_id: user_group.id }))
@@ -153,6 +154,7 @@ module API
         params do
           requires :epic_iid, type: Integer, desc: 'The internal ID of an epic', documentation: { example: 5 }
         end
+        route_setting :authorization, permissions: :read_epic, boundary_type: :group
         get path, urgency: :low do
           authorize_can_read!
 
@@ -222,6 +224,7 @@ module API
           desc: 'The ID of a parent epic',
           documentation: { example: 12 }
       end
+      route_setting :authorization, permissions: :create_epic, boundary_type: :group
       post ':id/(-/)epics' do
         authorize_can_create!
 
@@ -322,6 +325,7 @@ module API
           :parent_id, :remove_labels, :start_date_fixed, :start_date_is_fixed, :state_event, :title,
           :start_date, :end_date
       end
+      route_setting :authorization, permissions: :update_epic, boundary_type: :group
       put ':id/(-/)epics/:epic_iid', urgency: :low do
         authorize_can_admin_epic!
 
@@ -366,6 +370,7 @@ module API
       params do
         requires :epic_iid, type: Integer, desc: 'The internal ID of an epic', documentation: { example: 5 }
       end
+      route_setting :authorization, permissions: :delete_epic, boundary_type: :group
       delete ':id/(-/)epics/:epic_iid' do
         authorize_can_destroy!
 

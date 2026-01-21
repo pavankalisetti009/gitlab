@@ -97,6 +97,15 @@ RSpec.describe API::EpicIssues, feature_category: :portfolio_management do
           expect(response.parsed_body.size).to eq(1)
         end
 
+        it_behaves_like 'authorizing granular token permissions', :read_epic_issue do
+          let(:boundary_object) { group }
+          let(:request) { get api(url, personal_access_token: pat) }
+
+          before do
+            group.add_developer(user)
+          end
+        end
+
         context 'returns multiple issues without performing N + 1' do
           it 'returns multiple issues without performing N + 1' do
             perform_request
@@ -170,6 +179,11 @@ RSpec.describe API::EpicIssues, feature_category: :portfolio_management do
           expect(response).to match_response_schema('public_api/v4/epic_issue_link', dir: 'ee')
           expect(epic_issue.issue).to eq(issue)
           expect(epic_issue.epic).to eq(epic)
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :create_epic_issue do
+          let(:boundary_object) { group }
+          let(:request) { post api(url, personal_access_token: pat) }
         end
 
         context 'when issue project is not under the epic group' do
@@ -274,6 +288,11 @@ RSpec.describe API::EpicIssues, feature_category: :portfolio_management do
         it 'removes the association' do
           expect { delete api(url, user) }.to change { EpicIssue.count }.from(1).to(0)
         end
+
+        it_behaves_like 'authorizing granular token permissions', :delete_epic_issue do
+          let(:boundary_object) { group }
+          let(:request) { delete api(url, personal_access_token: pat) }
+        end
       end
     end
   end
@@ -357,6 +376,11 @@ RSpec.describe API::EpicIssues, feature_category: :portfolio_management do
 
         it 'matches the response schema' do
           expect(response).to match_response_schema('public_api/v4/epic_issues', dir: 'ee')
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :update_epic_issue do
+          let(:boundary_object) { group }
+          let(:request) { put api(url, personal_access_token: pat) }
         end
       end
     end

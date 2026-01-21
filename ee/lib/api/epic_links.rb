@@ -55,6 +55,7 @@ module API
         ]
         tags ['epics']
       end
+      route_setting :authorization, permissions: :read_epic_link, boundary_type: :group
       get ':id/(-/)epics/:epic_iid/epics' do
         authorize_epics_feature!
         authorize_can_read!
@@ -75,6 +76,7 @@ module API
       params do
         use :child_epic_id
       end
+      route_setting :authorization, permissions: :create_epic_link, boundary_type: :group
       post ':id/(-/)epics/:epic_iid/epics/:child_epic_id' do
         authorize_create_epic_tree_relation!
 
@@ -108,6 +110,7 @@ module API
           desc: "Whether the epic should be confidential. Parameter is ignored if `confidential_epics`` feature flag is disabled. Defaults to the confidentiality state of the parent epic.",
           documentation: { example: true }
       end
+      route_setting :authorization, permissions: :create_epic_link, boundary_type: :group
       post ':id/(-/)epics/:epic_iid/epics' do
         authorize_can_create!
         authorize_create_epic_tree_relation!
@@ -135,6 +138,7 @@ module API
       params do
         use :child_epic_id
       end
+      route_setting :authorization, permissions: :delete_epic_link, boundary_type: :group
       delete ':id/(-/)epics/:epic_iid/epics/:child_epic_id' do
         authorize!(:read_epic_relation, epic)
 
@@ -166,6 +170,7 @@ module API
           desc: 'The ID of the epic that should be positioned after the child epic',
           documentation: { example: 1 }
       end
+      route_setting :authorization, permissions: :update_epic_link, boundary_type: :group
       put ':id/(-/)epics/:epic_iid/epics/:child_epic_id' do
         authorize_admin_epic_tree_relation!
 

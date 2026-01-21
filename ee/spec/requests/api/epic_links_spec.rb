@@ -65,6 +65,14 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
         expect(json_response.map { |epic| epic["id"] }).to contain_exactly(child_epic2.id, child_epic1.id)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :read_epic_link do
+        let(:boundary_object) { group }
+        let(:request) { get api(url, personal_access_token: pat) }
+        before do
+          group.add_guest(user)
+        end
+      end
+
       context 'with group hierarchy' do
         let_it_be(:subgroup) { create(:group, parent: group) }
         let_it_be(:other_child) { create(:epic, group: other_group, parent: epic) }
@@ -127,7 +135,7 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
 
         allow(Gitlab::WorkItems::Instrumentation::TrackingService).to receive(:new).and_return(
           tracking_service_double)
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(110)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(111)
       end
 
       context 'and group is public and user is not a member' do
@@ -139,14 +147,21 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
       end
 
       context 'when user is guest' do
-        it 'returns 201 status' do
+        before do
           group.add_guest(user)
+        end
 
+        it 'returns 201 status' do
           subject
 
           expect(response).to have_gitlab_http_status(:created)
           expect(response).to match_response_schema('public_api/v4/epic', dir: 'ee')
           expect(epic.reload.children).to include(child_epic)
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :create_epic_link do
+          let(:boundary_object) { group }
+          let(:request) { post api(url, personal_access_token: pat) }
         end
       end
 
@@ -223,6 +238,11 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           expect(child_epic.notes.last&.note).to eq("added #{epic.work_item.to_reference} as parent epic")
         end
 
+        it_behaves_like 'authorizing granular token permissions', :create_epic_link do
+          let(:boundary_object) { group }
+          let(:request) { post api(url, personal_access_token: pat), params: { title: 'child epic' } }
+        end
+
         context 'when the parent epic is confidential' do
           let_it_be(:epic) { create(:epic, group: group, confidential: true) }
 
@@ -279,6 +299,14 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to match_response_schema('public_api/v4/epics', dir: 'ee')
           expect(json_response.map { |epic| epic['id'] }).to eq([sibling_1.id, child_epic.id, sibling_2.id])
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :update_epic_link do
+          let(:boundary_object) { group }
+          let(:request) do
+            put api(url, personal_access_token: pat), params: { move_before_id: sibling_1.id,
+                                                                move_after_id: sibling_2.id }
+          end
         end
 
         context 'when child belongs to a different group hierarchy' do
@@ -341,14 +369,21 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
       end
 
       context 'when user is guest' do
-        it 'returns 200 status' do
+        before do
           group.add_guest(user)
+        end
 
+        it 'returns 200 status' do
           subject
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to match_response_schema('public_api/v4/epic', dir: 'ee')
           expect(epic.reload.children).not_to include(child_epic)
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :delete_epic_link do
+          let(:boundary_object) { group }
+          let(:request) { delete api(url, personal_access_token: pat) }
         end
 
         context 'with confidential epic' do

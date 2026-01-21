@@ -173,6 +173,14 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
         let(:expected_status) { :ok }
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_epic do
+        let(:boundary_object) { group }
+        let(:request) do
+          group.add_developer(user)
+          get api(url, personal_access_token: pat), params: params
+        end
+      end
     end
 
     context 'with a parent epic' do
@@ -665,6 +673,14 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
         let(:expected_status) { :ok }
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_epic do
+        let(:boundary_object) { group }
+        let(:request) do
+          group.add_developer(user)
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
   end
 
@@ -854,6 +870,13 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           subject(:epic_action) { post api(url, oauth_access_token: oauth_token), params: { title: 'new epic' } }
 
           let(:expected_status) { :created }
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :create_epic do
+          let(:boundary_object) { group }
+          let(:request) do
+            post api(url, personal_access_token: pat), params: { title: 'new epic' }
+          end
         end
       end
 
@@ -1236,6 +1259,13 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
             expect(json['message']['base']).to include("Something went wrong")
           end
         end
+
+        it_behaves_like 'authorizing granular token permissions', :update_epic do
+          let(:boundary_object) { group }
+          let(:request) do
+            put api(url, personal_access_token: pat), params: { title: 'updated title' }
+          end
+        end
       end
     end
   end
@@ -1275,6 +1305,13 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           epic
 
           expect { delete api(url, user) }.to change { Epic.count }.from(1).to(0)
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :delete_epic do
+          let(:boundary_object) { group }
+          let(:request) do
+            delete api(url, personal_access_token: pat)
+          end
         end
       end
     end
