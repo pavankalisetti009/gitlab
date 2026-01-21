@@ -5,4 +5,4 @@
     = s_('ModelSelection|Model Selection is enabled for GitLab Duo, which requires a default namespace to be set. You must select a default namespace in profile preferences to continue using GitLab Duo features.')
   - c.with_actions do
     = link_button_to s_('ModelSelection|Update profile preferences'), profile_preferences_path(anchor: 'behavior'), variant: :confirm, class: 'gl-mr-3'
-    = link_button_to _('Learn more'), help_page_path('user/gitlab_duo/model_selection.md', anchor: 'assign-a-default-gitlab-duo-namespace'), category: :secondary, target: '_blank', rel: 'noopener noreferrer'
+    = link_button_to _('Learn more'), help_page_path('user/profile/preferences.md', anchor: 'set-a-default-gitlab-duo-namespace'), category: :secondary, target: '_blank', rel: 'noopener noreferrer'
