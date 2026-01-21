@@ -55,7 +55,10 @@ module Gitlab
         attr_reader :user, :resource, :page_url
 
         def questions_from_resource
-          return DEFAULT unless user.allowed_to_use?(resource.chat_unit_primitive)
+          return DEFAULT unless user.allowed_to_use?(
+            resource.chat_unit_primitive,
+            root_namespace: resource.root_namespace
+          )
 
           resource.chat_questions
         end
