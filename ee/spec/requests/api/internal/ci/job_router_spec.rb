@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integration do
   let_it_be(:runner) { create(:ci_runner, :instance) }
-  let_it_be(:runner_controllers) { create_list(:ci_runner_controller, 3, :enabled) }
+  let_it_be(:enabled_runner_controllers) { create_list(:ci_runner_controller, 2, :enabled) }
+  let_it_be(:dry_run_runner_controllers) { create_list(:ci_runner_controller, 2, :dry_run) }
   let_it_be(:disabled_runner_controllers) { create_list(:ci_runner_controller, 2) }
 
   let(:jwt_secret) { SecureRandom.random_bytes(Gitlab::Kas::SECRET_LENGTH) }
@@ -75,32 +76,69 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
   describe 'GET /internal/ci/job_router/runner_controllers/job_admission' do
     subject(:perform_request) { get api('/internal/ci/job_router/runner_controllers/job_admission'), headers: headers }
 
-    shared_examples 'returns enabled runner controller ids' do
-      it 'returns 200 with enabled runner controller ids' do
+    shared_examples 'returns active runner controllers with state' do
+      it 'returns 200 with active runner controllers (enabled and dry_run) including state' do
         perform_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response).to eq(
-          'runner_controllers' => runner_controllers.map { |c| { 'id' => c.id } }
-        )
+
+        expected_controllers = (enabled_runner_controllers + dry_run_runner_controllers).map do |c|
+          { 'id' => c.id, 'state' => c.state }
+        end
+
+        expect(json_response['runner_controllers']).to match_array(expected_controllers)
       end
     end
 
     context 'when authenticated' do
-      it_behaves_like 'returns enabled runner controller ids'
+      it_behaves_like 'returns active runner controllers with state'
 
-      context 'when no runner controllers exist' do
-        let_it_be(:runner_controllers) { [] }
-
+      context 'when no active runner controllers exist' do
         before do
-          Ci::RunnerController.delete_all
+          Ci::RunnerController.active.delete_all
         end
+
+        specify { expect(Ci::RunnerController.disabled).not_to be_empty }
 
         it 'returns empty array' do
           perform_request
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response).to eq({ 'runner_controllers' => [] })
+          expect(json_response).to eq('runner_controllers' => [])
+        end
+      end
+
+      context 'when only enabled controllers exist' do
+        before do
+          Ci::RunnerController.delete_all
+        end
+
+        let!(:enabled_only) { create_list(:ci_runner_controller, 2, :enabled) }
+
+        it 'returns only enabled controllers' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['runner_controllers']).to match_array(
+            enabled_only.map { |c| { 'id' => c.id, 'state' => 'enabled' } }
+          )
+        end
+      end
+
+      context 'when only dry_run controllers exist' do
+        before do
+          Ci::RunnerController.delete_all
+        end
+
+        let!(:dry_run_only) { create_list(:ci_runner_controller, 2, :dry_run) }
+
+        it 'returns only dry_run controllers' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['runner_controllers']).to match_array(
+            dry_run_only.map { |c| { 'id' => c.id, 'state' => 'dry_run' } }
+          )
         end
       end
     end
@@ -204,7 +242,7 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
       context 'with instance runner' do
         let_it_be(:runner) { create(:ci_runner, :instance) }
 
-        it_behaves_like 'returns enabled runner controller ids'
+        it_behaves_like 'returns active runner controllers with state'
 
         context 'when job_router and job_router_instance_runners feature flags are disabled' do
           before do
@@ -222,7 +260,7 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
       context 'with group runner' do
         let_it_be(:runner) { create(:ci_runner, :group, groups: [group]) }
 
-        it_behaves_like 'returns enabled runner controller ids'
+        it_behaves_like 'returns active runner controllers with state'
 
         context 'when job_router is disabled for the group' do
           before do
@@ -240,7 +278,7 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
       context 'with project runner' do
         let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
-        it_behaves_like 'returns enabled runner controller ids'
+        it_behaves_like 'returns active runner controllers with state'
 
         context 'when job_router is disabled for the project' do
           before do

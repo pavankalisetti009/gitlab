@@ -65,13 +65,14 @@ module API
         params do
           optional :description, type: String, desc: 'Description of the runner controller',
             documentation: { example: 'Controller for managing runner' }
-          optional :enabled, type: Boolean, default: false, desc: 'Enable or disable the runner controller',
-            documentation: { example: true }
+          optional :state, type: String, values: ::Ci::RunnerController.states.keys, default: 'disabled',
+            desc: 'State of the runner controller (disabled, enabled, dry_run)',
+            documentation: { example: 'enabled' }
         end
         post do
           controller = ::Ci::RunnerController.new(
             description: params[:description],
-            enabled: params[:enabled]
+            state: params[:state]
           )
 
           if controller.save
@@ -95,15 +96,16 @@ module API
           requires :id, type: Integer, desc: 'ID of the runner controller'
           optional :description, type: String, desc: 'Description of the runner controller',
             documentation: { example: 'Controller for managing runner' }
-          optional :enabled, type: Boolean, desc: 'Enable or disable the runner controller',
-            documentation: { example: true }
+          optional :state, type: String, values: ::Ci::RunnerController.states.keys,
+            desc: 'State of the runner controller (disabled, enabled, dry_run)',
+            documentation: { example: 'dry_run' }
         end
         put ':id' do
           controller = ::Ci::RunnerController.find_by_id(params[:id])
 
           not_found! unless controller
 
-          update_params = params.slice(:description, :enabled)
+          update_params = params.slice(:description, :state)
 
           if controller.update(update_params)
             present controller, with: Entities::Ci::RunnerController

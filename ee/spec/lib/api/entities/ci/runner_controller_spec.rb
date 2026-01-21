@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe API::Entities::Ci::RunnerController, feature_category: :continuous_integration do
-  let_it_be(:controller) { create(:ci_runner_controller, enabled: true) }
+  let_it_be(:controller) { create(:ci_runner_controller, :enabled) }
 
   subject(:entity) { described_class.new(controller).as_json }
 
@@ -11,23 +11,29 @@ RSpec.describe API::Entities::Ci::RunnerController, feature_category: :continuou
     is_expected.to include(
       id: controller.id,
       description: controller.description,
-      enabled: controller.enabled,
+      state: controller.state,
       created_at: controller.created_at,
       updated_at: controller.updated_at
     )
   end
 
-  it 'exposes the enabled field' do
-    expect(entity[:enabled]).to be true
+  it 'exposes the state field' do
+    expect(entity[:state]).to eq('enabled')
   end
 
-  context 'when enabled is false' do
-    let_it_be(:disabled_controller) { create(:ci_runner_controller, enabled: false) }
+  context 'when state is disabled' do
+    let_it_be(:controller) { create(:ci_runner_controller) }
 
-    subject(:entity) { described_class.new(disabled_controller).as_json }
+    it 'exposes the state field as disabled' do
+      expect(entity[:state]).to eq('disabled')
+    end
+  end
 
-    it 'exposes the enabled field as false' do
-      expect(entity[:enabled]).to be false
+  context 'when state is dry_run' do
+    let_it_be(:controller) { create(:ci_runner_controller, :dry_run) }
+
+    it 'exposes the state field as dry_run' do
+      expect(entity[:state]).to eq('dry_run')
     end
   end
 end
