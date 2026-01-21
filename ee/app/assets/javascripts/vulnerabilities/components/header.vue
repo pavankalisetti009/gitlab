@@ -448,8 +448,20 @@ export default {
             return;
           }
 
-          toast(s__('AI|GitLab Duo False Positive Detection workflow started successfully'), {
-            autoHideDelay: 4000,
+          createAlert({
+            variant: VARIANT_SUCCESS,
+            message: s__('AI|GitLab Duo False Positive Detection workflow started successfully'),
+            primaryButton: {
+              text: s__('VulnerabilityManagement|View agent session'),
+              link: joinPaths(
+                '/',
+                gon.relative_url_root,
+                this.vulnerability.project.fullPath,
+                '-',
+                'automate/agent-sessions',
+                data.id.toString(),
+              ),
+            },
           });
         })
         .catch((error) => {

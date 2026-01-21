@@ -914,17 +914,21 @@ describe('Vulnerability Header', () => {
       expect(Api.triggerFalsePositiveDetection).toHaveBeenCalledWith(vulnerability.id, 456, null);
     });
 
-    it('shows success toast when API call succeeds', async () => {
-      const apiResponse = { workload: { id: 'workflow-123', status: 'running' } };
+    it('shows success alert when API call succeeds', async () => {
+      const apiResponse = { id: 'workflow-123', status: 'running' };
       jest.spyOn(Api, 'triggerFalsePositiveDetection').mockResolvedValue({ data: apiResponse });
 
       findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
       await waitForPromises();
 
-      expect(toast).toHaveBeenCalledWith(
-        'GitLab Duo False Positive Detection workflow started successfully',
-        { autoHideDelay: 4000 },
-      );
+      expect(createAlert).toHaveBeenCalledWith({
+        variant: 'success',
+        message: 'GitLab Duo False Positive Detection workflow started successfully',
+        primaryButton: {
+          text: 'View agent session',
+          link: '/-/automate/agent-sessions/workflow-123',
+        },
+      });
     });
 
     it('shows error alert when API call fails', async () => {
