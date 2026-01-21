@@ -6346,6 +6346,33 @@ Input type: `DeleteDuoWorkflowsWorkflowInput`
 | <a id="mutationdeleteduoworkflowsworkflowerrors"></a>`errors` | [`[String!]!`](#string) | List of errors that occurred whilst trying to delete the workflow. |
 | <a id="mutationdeleteduoworkflowsworkflowsuccess"></a>`success` | [`Boolean!`](#boolean) | Returns true if workflow was successfully deleted. |
 
+### `Mutation.deleteGroupCustomAttribute`
+
+{{< details >}}
+**Introduced** in GitLab 18.9.
+**Status**: Experiment.
+{{< /details >}}
+
+Deletes a custom attribute from a group. Only available to admins.
+
+Input type: `DeleteGroupCustomAttributeInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationdeletegroupcustomattributeclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationdeletegroupcustomattributegrouppath"></a>`groupPath` | [`ID!`](#id) | Full path of the group. |
+| <a id="mutationdeletegroupcustomattributekey"></a>`key` | [`String!`](#string) | Key of the custom attribute to delete. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationdeletegroupcustomattributeclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationdeletegroupcustomattributecustomattribute"></a>`customAttribute` | [`CustomAttribute`](#customattribute) | Deleted custom attribute. |
+| <a id="mutationdeletegroupcustomattributeerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+
 ### `Mutation.deletePackagesProtectionRule`
 
 Deletes a protection rule for packages.
