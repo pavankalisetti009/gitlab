@@ -7,8 +7,8 @@ module EE
 
       override :project_members_app_data
       def project_members_app_data(
-        project, members:, invited:, access_requests:, include_relations:, search:,
-        pending_members_count:
+        project, members:, invited:, links:, access_requests:, include_relations:,
+        search:, pending_members_count:
       )
         super.merge(
           manage_member_roles_path: manage_member_roles_path(project),
