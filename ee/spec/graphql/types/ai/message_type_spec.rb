@@ -13,7 +13,7 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
 
   it 'has the expected fields' do
     expected_fields = %w[
-      id request_id content content_html role timestamp errors type chunk_id agent_version_id thread_id
+      id request_id content content_html role timestamp errors error_code type chunk_id agent_version_id thread_id
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -56,7 +56,7 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
 
     context 'when message contains an error' do
       before do
-        message.error_details = { details: 'An unexpected error has occurred' }
+        message.error_details = ['An unexpected error has occurred'].to_json
       end
 
       after do
@@ -87,6 +87,48 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
     end
   end
 
+  describe '#error_code' do
+    context 'when message has error code in new format' do
+      before do
+        message.error_details = { 'messages' => ['error'], 'code' => 'G3001' }.to_json
+      end
+
+      after do
+        message.error_details = nil
+      end
+
+      it 'returns error code' do
+        resolved_field = resolve_field(:error_code, message, current_user: current_user)
+
+        expect(resolved_field).to eq('G3001')
+      end
+    end
+
+    context 'when message has error code in old format' do
+      before do
+        message.error_details = ['error message Error code: [A1000](url)'].to_json
+      end
+
+      after do
+        message.error_details = nil
+      end
+
+      it 'extracts error code from markdown link' do
+        resolved_field = resolve_field(:error_code, message, current_user: current_user)
+
+        expect(resolved_field).to eq('A1000')
+      end
+    end
+
+    context 'when message has no error code' do
+      it 'returns nil' do
+        resolved_field = resolve_field(:error_code, message, current_user: current_user)
+
+        expect(resolved_field).to be_nil
+      end
+    end
+  end
+
   describe '.authorization' do
     it 'allows ai_features scope token' do
       expect(described_class.authorization.permitted_scopes).to include(:ai_features)
@@ -98,7 +140,7 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
 
     it 'has the expected fields' do
       expected_fields = %w[
-        id request_id content content_html role timestamp errors type chunk_id agent_version_id thread_id
+        id request_id content content_html role timestamp errors error_code type chunk_id agent_version_id thread_id
       ]
 
       expect(described_class).to include_graphql_fields(*expected_fields)
@@ -169,6 +211,28 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
         resolved_field = resolve_field(:errors, message.to_h, current_user: current_user)
 
         expect(resolved_field).to eq(['foo'])
+      end
+    end
+
+    describe '#error_code' do
+      context 'when message has error code' do
+        let(:message) { build(:ai_message, error_code: 'G3001', errors: ['error']) }
+
+        it 'returns error code' do
+          resolved_field = resolve_field(:error_code, message.to_h, current_user: current_user)
+
+          expect(resolved_field).to eq('G3001')
+        end
+      end
+
+      context 'when message has no error code' do
+        let(:message) { build(:ai_message, error_code: nil) }
+
+        it 'returns nil' do
+          resolved_field = resolve_field(:error_code, message.to_h, current_user: current_user)
+
+          expect(resolved_field).to be_nil
+        end
       end
     end
 

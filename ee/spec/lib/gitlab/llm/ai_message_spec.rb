@@ -14,6 +14,7 @@ RSpec.describe Gitlab::Llm::AiMessage, feature_category: :duo_chat do
       id: 'uuid',
       request_id: 'original_request_id',
       errors: ['some error1', 'another error'],
+      error_code: 'G3001',
       extras: {},
       role: 'user',
       content: content,
@@ -114,6 +115,26 @@ RSpec.describe Gitlab::Llm::AiMessage, feature_category: :duo_chat do
   describe '#to_h' do
     it 'returns hash with all attributes' do
       expect(subject.to_h).to eq(data.stringify_keys)
+    end
+
+    it 'includes error_code in hash' do
+      expect(subject.to_h).to include('error_code' => 'G3001')
+    end
+  end
+
+  describe '#error_code' do
+    it 'includes error_code in attributes' do
+      expect(subject.error_code).to eq('G3001')
+    end
+
+    context 'when error_code is nil' do
+      before do
+        data[:error_code] = nil
+      end
+
+      it 'returns nil' do
+        expect(subject.error_code).to be_nil
+      end
     end
   end
 

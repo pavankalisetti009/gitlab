@@ -77,15 +77,43 @@ module Ai
       end
 
       def error_details
-        errors_array = self[:error_details] || []
+        error_data = self[:error_details] || []
 
         begin
-          errors_array = ::Gitlab::Json.parse(errors_array) if errors_array.is_a?(String)
+          error_data = ::Gitlab::Json.parse(error_data) if error_data.is_a?(String)
+
+          # Handle new structured format
+          return error_data['messages'] || [] if error_data.is_a?(Hash)
+
+          # Handle old format (array)
+          return error_data if error_data.is_a?(Array)
         rescue JSON::ParserError
-          errors_array = []
+          return []
         end
 
-        errors_array
+        []
+      end
+
+      def error_code
+        error_data = self[:error_details]
+        return if error_data.blank?
+
+        begin
+          error_data = ::Gitlab::Json.parse(error_data) if error_data.is_a?(String)
+
+          # New structured format
+          return error_data['code'] if error_data.is_a?(Hash) && error_data['code'].present?
+
+          # Old format: extract from markdown link [G3001](url)
+          if error_data.is_a?(Array) && error_data.first.is_a?(String)
+            match = error_data.first.match(/\[([A-Z]\d+)\]\(/)
+            return match[1] if match
+          end
+        rescue JSON::ParserError
+          # Return nil on error
+        end
+
+        nil
       end
 
       private

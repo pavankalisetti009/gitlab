@@ -8,6 +8,7 @@ subscription aiCompletionResponseStream($userId: UserID, $clientSubscriptionId: 
     requestId
     content
     errors
+    errorCode
     role
     timestamp
     threadId

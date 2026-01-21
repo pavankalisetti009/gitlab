@@ -62,6 +62,7 @@ describe('Summarize review', () => {
           ...subscriptionResponsePartial,
           content: 'This is a summary',
           errors: [],
+          errorCode: null,
         },
       },
     });
@@ -104,6 +105,7 @@ describe('Summarize review', () => {
         aiCompletionResponse: {
           ...subscriptionResponsePartial,
           errors: ['Error'],
+          errorCode: null,
         },
       },
     });
