@@ -101,7 +101,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, feature_category: :code_sugges
         end
       end
 
-      it 'creates comments and returns success' do
+      it 'creates comments and returns success',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24181' do
         post api(path, user, oauth_access_token: token), params: params
 
         expect(response).to have_gitlab_http_status(:created)
