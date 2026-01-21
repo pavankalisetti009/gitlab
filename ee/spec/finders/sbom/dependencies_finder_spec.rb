@@ -233,14 +233,6 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
           it 'returns only records dismissed by security policies' do
             expect(dependencies.map(&:id)).to match_array([occurrence_1.id])
           end
-
-          context 'when feature flag `security_policy_warn_mode_license_scanning` is disabled' do
-            before do
-              stub_feature_flags(security_policy_warn_mode_license_scanning: false)
-            end
-
-            it_behaves_like 'returns an empty list'
-          end
         end
 
         context 'when there are no dependencies dismissed by policies' do

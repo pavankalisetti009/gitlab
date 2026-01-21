@@ -202,20 +202,6 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
         )
       end
 
-      context 'when the feature flag `security_policy_warn_mode_license_scanning` is disabled' do
-        before do
-          stub_feature_flags(security_policy_warn_mode_license_scanning: false)
-        end
-
-        it 'creates a policy dismissal without the licenses data' do
-          expect { service.execute }.to change { Security::PolicyDismissal.count }.by(1)
-
-          dismissal = Security::PolicyDismissal.last
-
-          expect(dismissal.licenses).to be_empty
-        end
-      end
-
       context 'with multiple license scanning violations for the policy' do
         let_it_be(:violation_2) do
           create(:scan_result_policy_violation,
