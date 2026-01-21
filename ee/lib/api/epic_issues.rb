@@ -54,6 +54,7 @@ module API
         optional :move_after_id, types: [Integer, String], desc: 'The ID of the epic-issue association that should be positioned after the actual issue', documentation: { example: 25 }
         use :pagination
       end
+      route_setting :authorization, permissions: :update_epic_issue, boundary_type: :group
       put ':id/(-/)epics/:epic_iid/issues/:epic_issue_id' do
         authorize_can_assign_to_epic!(link.issue)
 
@@ -89,6 +90,7 @@ module API
           requires :epic_iid, types: [Integer, String], desc: 'The internal ID of the epic', documentation: { example: 5 }
           use :pagination
         end
+        route_setting :authorization, permissions: :read_epic_issue, boundary_type: :group
         get path do
           authorize_can_read!
 
@@ -114,6 +116,7 @@ module API
         requires :epic_iid, types: [Integer, String], desc: 'The internal ID of the epic', documentation: { example: 5 }
         requires :issue_id, types: [Integer, String], desc: 'The ID of the issue', documentation: { example: 55 }
       end
+      route_setting :authorization, permissions: :create_epic_issue, boundary_type: :group
       # rubocop: disable CodeReuse/ActiveRecord
       post ':id/(-/)epics/:epic_iid/issues/:issue_id' do
         authorize_can_read!
@@ -148,6 +151,7 @@ module API
         requires :epic_iid, types: [Integer, String], desc: 'The internal ID of the epic', documentation: { example: 5 }
         requires :epic_issue_id, types: [Integer, String], desc: 'The ID of the association', documentation: { example: 11 }
       end
+      route_setting :authorization, permissions: :delete_epic_issue, boundary_type: :group
       delete ':id/(-/)epics/:epic_iid/issues/:epic_issue_id' do
         authorize_can_assign_to_epic!(link.issue)
         result = ::WorkItems::LegacyEpics::EpicIssues::DestroyService.new(link, current_user).execute
