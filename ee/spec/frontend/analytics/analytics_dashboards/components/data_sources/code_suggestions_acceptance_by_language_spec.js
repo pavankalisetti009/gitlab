@@ -106,6 +106,91 @@ describe('`Code suggestion acceptance by language` Data Source', () => {
           }),
         });
       });
+
+      describe('with multiple language variants', () => {
+        it('should merge metrics for language variants into single entry and sum counts', async () => {
+          mockResolvedCodeSuggestionsLanguagesQuery(['js', 'javascript', 'php'])
+            .mockResolvedValueOnce(
+              mockCodeSuggestionsResponse({ acceptedCount: 4, shownCount: 8, languages: ['js'] }),
+            )
+            .mockResolvedValueOnce(
+              mockCodeSuggestionsResponse({
+                acceptedCount: 12,
+                shownCount: 24,
+                languages: ['javascript'],
+              }),
+            )
+            .mockResolvedValueOnce(
+              mockCodeSuggestionsResponse({
+                acceptedCount: 4,
+                shownCount: 10,
+                languages: ['php'],
+              }),
+            );
+
+          await fetch();
+
+          expect(res).toEqual({
+            'Suggestions accepted': [
+              [4, 'PHP'],
+              [16, 'JavaScript'],
+            ],
+            contextualData: {
+              JavaScript: {
+                acceptanceRate: 0.5,
+                shownCount: 32,
+              },
+              PHP: {
+                acceptanceRate: 0.4,
+                shownCount: 10,
+              },
+            },
+          });
+        });
+
+        it('should exclude variants with a null count', async () => {
+          mockResolvedCodeSuggestionsLanguagesQuery(['kt', 'kts', 'cpp', 'cc'])
+            .mockResolvedValueOnce(
+              mockCodeSuggestionsResponse({ acceptedCount: 3, shownCount: 12, languages: ['kt'] }),
+            )
+            .mockResolvedValueOnce(
+              mockCodeSuggestionsResponse({
+                acceptedCount: null,
+                shownCount: 18,
+                languages: ['kts'],
+              }),
+            )
+            .mockResolvedValueOnce(
+              mockCodeSuggestionsResponse({ acceptedCount: 5, shownCount: 10, languages: ['cpp'] }),
+            )
+            .mockResolvedValueOnce(
+              mockCodeSuggestionsResponse({
+                acceptedCount: null,
+                shownCount: null,
+                languages: ['cc'],
+              }),
+            );
+
+          await fetch();
+
+          expect(res).toEqual({
+            'Suggestions accepted': [
+              [3, 'Kotlin'],
+              [5, 'C++'],
+            ],
+            contextualData: {
+              'C++': {
+                acceptanceRate: 0.5,
+                shownCount: 10,
+              },
+              Kotlin: {
+                acceptanceRate: 0.25,
+                shownCount: 12,
+              },
+            },
+          });
+        });
+      });
     });
 
     describe('with no data available', () => {
