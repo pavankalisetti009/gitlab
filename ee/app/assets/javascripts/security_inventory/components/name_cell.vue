@@ -75,18 +75,20 @@ export default {
 <template>
   <component
     :is="componentName"
-    class="gl-flex gl-items-center !gl-text-default hover:gl-no-underline focus:gl-no-underline focus:gl-outline-none"
+    class="gl-flex gl-items-start !gl-text-default hover:gl-no-underline focus:gl-no-underline focus:gl-outline-none"
     :href="linkHref"
     :aria-label="isSubGroup(item) ? `Open subgroup ${item.name}` : undefined"
   >
-    <gl-icon :name="iconName(item)" variant="subtle" class="gl-mr-4 gl-shrink-0" />
-    <project-avatar
-      class="gl-mr-4"
-      :project-id="item.id"
-      :project-name="item.name"
-      :project-avatar-url="item.avatarUrl"
-    />
-    <div class="gl-flex gl-flex-col gl-overflow-hidden">
+    <div class="gl-flex gl-items-center">
+      <gl-icon :name="iconName(item)" variant="subtle" class="gl-mr-4 gl-shrink-0" />
+      <project-avatar
+        class="gl-mr-4"
+        :project-id="item.id"
+        :project-name="item.name"
+        :project-avatar-url="item.avatarUrl"
+      />
+    </div>
+    <div class="gl-flex gl-flex-col gl-self-center gl-overflow-hidden">
       <span class="gl-text-base gl-font-bold gl-wrap-anywhere" data-testid="name-cell-item-name">{{
         item.name
       }}</span>

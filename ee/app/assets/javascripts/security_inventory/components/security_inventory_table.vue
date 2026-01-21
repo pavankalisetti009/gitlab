@@ -97,7 +97,7 @@ export default {
             key: 'checkbox',
             label: '',
             thClass: 'gl-w-0',
-            tdClass: '!gl-align-middle',
+            tdClass: '!gl-pt-6',
           });
         }
       }
