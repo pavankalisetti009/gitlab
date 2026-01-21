@@ -13,7 +13,8 @@ export default {
   props: {
     fullPath: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     id: {
       type: String,
@@ -21,6 +22,10 @@ export default {
     },
     expanded: {
       type: Boolean,
+      required: true,
+    },
+    config: {
+      type: Object,
       required: true,
     },
   },
@@ -48,7 +53,7 @@ export default {
       </p>
     </template>
     <template #default>
-      <work-item-types-list :full-path="fullPath" />
+      <work-item-types-list :full-path="fullPath" :config="config" />
     </template>
   </settings-block>
 </template>

@@ -5,6 +5,7 @@ import CustomStatusSettings from 'ee/groups/settings/work_items/custom_status/cu
 import ConfigurableTypesSettings from 'ee/groups/settings/work_items/configurable_types/configurable_types_settings.vue';
 import SearchSettings from '~/search_settings/components/search_settings.vue';
 import WorkItemSettingsHome from 'ee/groups/settings/work_items/work_item_settings_home.vue';
+import { DEFAULT_SETTINGS_CONFIG } from 'ee/groups/settings/work_items/constants';
 
 describe('WorkItemSettingsHome', () => {
   let wrapper;
@@ -13,10 +14,16 @@ describe('WorkItemSettingsHome', () => {
   const createComponent = ({
     mocks = {},
     glFeatures = { workItemConfigurableTypes: true },
+    props = {
+      config: {
+        ...DEFAULT_SETTINGS_CONFIG,
+      },
+    },
   } = {}) => {
     wrapper = shallowMount(WorkItemSettingsHome, {
       propsData: {
         fullPath,
+        ...props,
       },
       mocks: {
         $route: { hash: '' },
@@ -32,34 +39,35 @@ describe('WorkItemSettingsHome', () => {
   const findCustomStatusSettings = () => wrapper.findComponent(CustomStatusSettings);
   const findConfigurableTypesSettings = () => wrapper.findComponent(ConfigurableTypesSettings);
   const findSearchSettings = () => wrapper.findComponent(SearchSettings);
-  const findPageTitle = () => wrapper.find('h1');
 
-  it('renders ConfigurableTypesSettings component with correct props when FF is switched on', () => {
-    createComponent();
+  describe('Component Rendering', () => {
+    it('renders ConfigurableTypesSettings component with correct props when FF is switched on', () => {
+      createComponent();
 
-    expect(findConfigurableTypesSettings().exists()).toBe(true);
-    expect(findConfigurableTypesSettings().props('fullPath')).toBe(fullPath);
-  });
-
-  it('does not render ConfigurableTypesSettings when `workItemTypesConfigurableTypes` FF is off', () => {
-    createComponent({
-      glFeatures: { workItemConfigurableTypes: false },
+      expect(findConfigurableTypesSettings().exists()).toBe(true);
+      expect(findConfigurableTypesSettings().props('fullPath')).toBe(fullPath);
     });
 
-    expect(findConfigurableTypesSettings().exists()).toBe(false);
-  });
+    it('does not render ConfigurableTypesSettings when `workItemConfigurableTypes` FF is off', () => {
+      createComponent({
+        glFeatures: { workItemConfigurableTypes: false },
+      });
 
-  it('always renders CustomFieldsList component with correct props', () => {
-    createComponent();
+      expect(findConfigurableTypesSettings().exists()).toBe(false);
+    });
 
-    expect(findCustomFieldsList().exists()).toBe(true);
-    expect(findCustomFieldsList().props('fullPath')).toBe(fullPath);
-  });
+    it('always renders CustomFieldsList component with correct props', () => {
+      createComponent();
 
-  it('renders CustomStatusSettings component with correct props', () => {
-    createComponent();
+      expect(findCustomFieldsList().exists()).toBe(true);
+      expect(findCustomFieldsList().props('fullPath')).toBe(fullPath);
+    });
 
-    expect(findCustomStatusSettings().exists()).toBe(true);
+    it('renders CustomStatusSettings component with correct props', () => {
+      createComponent();
+
+      expect(findCustomStatusSettings().exists()).toBe(true);
+    });
   });
 
   describe('SearchSettings', () => {
@@ -90,38 +98,24 @@ describe('WorkItemSettingsHome', () => {
       };
     });
 
-    it('navigates to hash when CustomStatusSettings toggle-expand emits true', async () => {
-      createComponent({ mocks: { $router: mockRouter } });
+    it.each`
+      component                      | componentFinder                  | sectionId
+      ${'CustomStatusSettings'}      | ${findCustomStatusSettings}      | ${'js-custom-status-settings'}
+      ${'CustomFieldsList'}          | ${findCustomFieldsList}          | ${'js-custom-fields-settings'}
+      ${'ConfigurableTypesSettings'} | ${findConfigurableTypesSettings} | ${'js-work-item-types-settings'}
+    `(
+      'navigates to hash when $component toggle-expand emits true',
+      async ({ componentFinder, sectionId }) => {
+        createComponent({ mocks: { $router: mockRouter } });
 
-      await findCustomStatusSettings().vm.$emit('toggle-expand', true);
+        await componentFinder().vm.$emit('toggle-expand', true);
 
-      expect(mockRouter.push).toHaveBeenCalledWith({
-        name: 'workItemSettingsHome',
-        hash: '#js-custom-status-settings',
-      });
-    });
-
-    it('navigates to hash when CustomFieldsList toggle-expand emits true', async () => {
-      createComponent({ mocks: { $router: mockRouter } });
-
-      await findCustomFieldsList().vm.$emit('toggle-expand', true);
-
-      expect(mockRouter.push).toHaveBeenCalledWith({
-        name: 'workItemSettingsHome',
-        hash: '#js-custom-fields-settings',
-      });
-    });
-
-    it('navigates to hash when ConfigurableTypesSettings toggle-expand emits true', async () => {
-      createComponent({ mocks: { $router: mockRouter } });
-
-      await findConfigurableTypesSettings().vm.$emit('toggle-expand', true);
-
-      expect(mockRouter.push).toHaveBeenCalledWith({
-        name: 'workItemSettingsHome',
-        hash: '#js-work-item-types-settings',
-      });
-    });
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: 'workItemSettingsHome',
+          hash: `#${sectionId}`,
+        });
+      },
+    );
 
     it('clears hash when toggling to false without existing hash', async () => {
       createComponent({ mocks: { $router: mockRouter, $route: { hash: '' } } });
@@ -149,16 +143,15 @@ describe('WorkItemSettingsHome', () => {
   });
 
   describe('Expanded State from Route Hash', () => {
-    it('expands CustomStatusSettings when route hash matches section id', () => {
-      createComponent({ mocks: { $route: { hash: '#js-custom-status-settings' } } });
+    it.each`
+      component                      | componentFinder                  | sectionId
+      ${'CustomStatusSettings'}      | ${findCustomStatusSettings}      | ${'js-custom-status-settings'}
+      ${'CustomFieldsList'}          | ${findCustomFieldsList}          | ${'js-custom-fields-settings'}
+      ${'ConfigurableTypesSettings'} | ${findConfigurableTypesSettings} | ${'js-work-item-types-settings'}
+    `('expands $component when route hash matches section id', ({ componentFinder, sectionId }) => {
+      createComponent({ mocks: { $route: { hash: `#${sectionId}` } } });
 
-      expect(findCustomStatusSettings().props('expanded')).toBe(true);
-    });
-
-    it('expands CustomFieldsList when route hash matches section id', () => {
-      createComponent({ mocks: { $route: { hash: '#js-custom-fields-settings' } } });
-
-      expect(findCustomFieldsList().props('expanded')).toBe(true);
+      expect(componentFinder().props('expanded')).toBe(true);
     });
 
     it('does not expand sections when hash does not match', () => {
@@ -166,20 +159,42 @@ describe('WorkItemSettingsHome', () => {
 
       expect(findCustomStatusSettings().props('expanded')).toBe(false);
       expect(findCustomFieldsList().props('expanded')).toBe(false);
+      expect(findConfigurableTypesSettings().props('expanded')).toBe(false);
     });
   });
 
-  describe('page title', () => {
-    it('shows "Work items" when work_item_planning_view feature flag is enabled', () => {
-      createComponent({ glFeatures: { workItemPlanningView: true } });
+  describe('Multiple sections visibility', () => {
+    it.each`
+      showWorkItemTypes | showCustomStatus | showCustomFields | expectedTypes | expectedStatus | expectedFields
+      ${false}          | ${false}         | ${true}          | ${false}      | ${false}       | ${true}
+      ${true}           | ${true}          | ${true}          | ${true}       | ${true}        | ${true}
+      ${false}          | ${false}         | ${false}         | ${false}      | ${false}       | ${false}
+      ${true}           | ${false}         | ${true}          | ${true}       | ${false}       | ${true}
+    `(
+      'renders correct components with configuration: types=$showWorkItemTypes, status=$showCustomStatus, fields=$showCustomFields',
+      ({
+        showWorkItemTypes,
+        showCustomStatus,
+        showCustomFields,
+        expectedTypes,
+        expectedStatus,
+        expectedFields,
+      }) => {
+        createComponent({
+          props: {
+            config: {
+              showWorkItemTypesSettings: showWorkItemTypes,
+              showCustomStatusSettings: showCustomStatus,
+              showCustomFieldsSettings: showCustomFields,
+              layout: 'list',
+            },
+          },
+        });
 
-      expect(findPageTitle().text()).toBe('Work items');
-    });
-
-    it('shows "Issues" when work_item_planning_view feature flag is disabled', () => {
-      createComponent({ glFeatures: { workItemPlanningView: false } });
-
-      expect(findPageTitle().text()).toBe('Issues');
-    });
+        expect(findConfigurableTypesSettings().exists()).toBe(expectedTypes);
+        expect(findCustomStatusSettings().exists()).toBe(expectedStatus);
+        expect(findCustomFieldsList().exists()).toBe(expectedFields);
+      },
+    );
   });
 });

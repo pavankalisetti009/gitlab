@@ -5,12 +5,15 @@ import SearchSettings from '~/search_settings/components/search_settings.vue';
 import CustomFieldsList from './custom_fields/custom_fields_list.vue';
 import CustomStatusSettings from './custom_status/custom_status_settings.vue';
 import ConfigurableTypesSettings from './configurable_types/configurable_types_settings.vue';
-
-const STATUS_SECTION_ID = 'js-custom-status-settings';
-const CUSTOM_FIELD_SECTION_ID = 'js-custom-fields-settings';
-const WORK_ITEM_TYPES_SECTION_ID = 'js-work-item-types-settings';
+import {
+  DEFAULT_SETTINGS_CONFIG,
+  STATUS_SECTION_ID,
+  CUSTOM_FIELD_SECTION_ID,
+  WORK_ITEM_TYPES_SECTION_ID,
+} from './constants';
 
 export default {
+  name: 'WorkItemSettings',
   components: {
     CustomFieldsList,
     CustomStatusSettings,
@@ -21,7 +24,25 @@ export default {
   props: {
     fullPath: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
+    },
+    config: {
+      type: Object,
+      required: false,
+      default: () => DEFAULT_SETTINGS_CONFIG,
+      validator: (config) => {
+        const validLayoutValues = ['list'];
+
+        return (
+          typeof config === 'object' &&
+          config !== null &&
+          typeof config.showWorkItemTypesSettings === 'boolean' &&
+          typeof config.showCustomFieldsSettings === 'boolean' &&
+          typeof config.showCustomStatusSettings === 'boolean' &&
+          validLayoutValues.includes(config.layout)
+        );
+      },
     },
   },
   STATUS_SECTION_ID,
@@ -75,13 +96,13 @@ export default {
         return;
       }
 
-      this.$router.push({
+      this.$router?.push({
         name: 'workItemSettingsHome',
         hash: state ? `#${sectionId}` : '',
       });
     },
     expandedProp(sectionId) {
-      return this.sectionsExpandedState[sectionId] || this.$route.hash === `#${sectionId}`;
+      return this.sectionsExpandedState[sectionId] || this.$route?.hash === `#${sectionId}`;
     },
   },
 };
@@ -111,19 +132,22 @@ export default {
 
     <div ref="searchRoot">
       <configurable-types-settings
-        v-if="workItemConfigurableTypesEnabled"
+        v-if="workItemConfigurableTypesEnabled && config.showWorkItemTypesSettings"
         :id="$options.WORK_ITEM_TYPES_SECTION_ID"
+        :config="config"
         :full-path="fullPath"
         :expanded="expandedProp($options.WORK_ITEM_TYPES_SECTION_ID)"
         @toggle-expand="onToggleExpand($options.WORK_ITEM_TYPES_SECTION_ID, $event)"
       />
       <custom-status-settings
+        v-if="config.showCustomStatusSettings"
         :id="$options.STATUS_SECTION_ID"
         :full-path="fullPath"
         :expanded="expandedProp($options.STATUS_SECTION_ID)"
         @toggle-expand="onToggleExpand($options.STATUS_SECTION_ID, $event)"
       />
       <custom-fields-list
+        v-if="config.showCustomFieldsSettings"
         :id="$options.CUSTOM_FIELD_SECTION_ID"
         :full-path="fullPath"
         :expanded="expandedProp($options.CUSTOM_FIELD_SECTION_ID)"
