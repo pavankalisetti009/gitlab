@@ -9,25 +9,20 @@ RSpec.describe EE::NavHelper, feature_category: :navigation do
     allow(helper).to receive(:current_user).and_return(user)
   end
 
-  describe '#extra_top_bar_classes' do
-    context 'when top_bar_duo_button_enabled? returns true' do
-      before do
-        allow(helper).to receive(:top_bar_duo_button_enabled?).and_return(true)
-      end
-
-      it 'returns the correct CSS classes' do
-        expect(helper.extra_top_bar_classes).to eq('gl-group top-bar-duo-button-present')
-      end
+  describe '#page_has_markdown?' do
+    before do
+      allow(helper).to receive(:current_path?).and_call_original
     end
 
-    context 'when top_bar_duo_button_enabled? returns false' do
-      before do
-        allow(helper).to receive(:top_bar_duo_button_enabled?).and_return(false)
-      end
+    it 'returns true for epic show page' do
+      allow(helper).to receive(:current_path?).with('epics#show').and_return(true)
+      expect(helper.page_has_markdown?).to be_truthy
+    end
 
-      it 'returns nil' do
-        expect(helper.extra_top_bar_classes).to be_nil
-      end
+    it 'returns false for non-markdown pages' do
+      allow(helper).to receive(:current_path?).with('epics#show').and_return(false)
+
+      expect(helper.page_has_markdown?).to be_falsey
     end
   end
 end
