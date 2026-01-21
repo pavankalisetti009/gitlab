@@ -129,7 +129,7 @@ describe('ActionCell', () => {
     it('emits "openScannersDrawer" event when scanners action is clicked', () => {
       findDropdownItems().at(0).props('item').action();
 
-      expect(wrapper.emitted('openScannersDrawer')[0][0]).toEqual([mockGroup.id]);
+      expect(wrapper.emitted('openScannersDrawer')[0][0]).toEqual(mockGroup.id);
     });
   });
 
