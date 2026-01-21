@@ -86,7 +86,21 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     context 'when container is nil' do
       let(:container) { nil }
 
-      it { is_expected.to be(true) }
+      context 'when there are no search nodes online' do
+        before do
+          allow(Search::Zoekt::Node).to receive_message_chain(:for_search, :online, :exists?).and_return false
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'when there are search nodes online' do
+        before do
+          allow(Search::Zoekt::Node).to receive_message_chain(:for_search, :online, :exists?).and_return true
+        end
+
+        it { is_expected.to be(true) }
+      end
     end
 
     context 'when passed an unsupported class' do

@@ -232,7 +232,7 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
         end
       end
 
-      context 'when elasticsearch_search is enabled and zoekt is disabled' do
+      context 'when elasticsearch_search is enabled and zoekt is not available' do
         before do
           stub_ee_application_setting(elasticsearch_search: true)
           allow(::Search::Zoekt).to receive(:enabled?).and_return(false)
@@ -243,10 +243,11 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
         end
       end
 
-      context 'when elasticsearch_search is disabled and zoekt is enabled' do
+      context 'when elasticsearch_search is disabled and zoekt is available' do
         before do
           stub_ee_application_setting(elasticsearch_search: false)
           allow(::Search::Zoekt).to receive(:enabled?).and_return(true)
+          allow(Search::Zoekt::Node).to receive_message_chain(:for_search, :online, :exists?).and_return(true)
         end
 
         it 'includes blobs scope' do

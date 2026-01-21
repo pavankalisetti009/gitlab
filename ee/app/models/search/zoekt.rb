@@ -12,16 +12,13 @@ module Search
 
       def search?(container)
         return false unless enabled?
-        return true if container.nil?
+        return Node.for_search.online.exists? if container.nil?
 
         root_namespace_id = fetch_root_namespace_id(container)
         return false unless root_namespace_id
+        return Replica.search_enabled?(root_namespace_id) if search_with_replica?(container, root_namespace_id)
 
-        if search_with_replica?(container, root_namespace_id)
-          Replica.search_enabled?(root_namespace_id)
-        else
-          Index.for_root_namespace_id_with_search_enabled(root_namespace_id).ready.exists?
-        end
+        Index.for_root_namespace_id_with_search_enabled(root_namespace_id).ready.exists?
       end
 
       def index?(container)
