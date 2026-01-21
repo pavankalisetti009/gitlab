@@ -106,8 +106,22 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
             tracing_comment_start = update_query.index('/*')
             query_without_comment = update_query[0..(tracing_comment_start - 2)]
+            where_clause_match = query_without_comment.match(/WHERE "vulnerabilities"\."id" = (\d+)/)
+            updated_vulnerability_id = where_clause_match[1]
 
-            expect(query_without_comment).not_to include(no_longer_detected.id.to_s)
+            expect(updated_vulnerability_id).not_to eq(no_longer_detected.id.to_s)
+          end
+
+          it 'updates vulnerability with resolved_on_default_branch: true and updated_at with correct time',
+            :aggregate_failures do
+            freeze_time do
+              current_time = Time.current
+              command.execute
+
+              updated_vulnerability = vulnerability.reload
+              expect(updated_vulnerability.resolved_on_default_branch).to be_truthy
+              expect(updated_vulnerability.updated_at).to eq(current_time)
+            end
           end
         end
 

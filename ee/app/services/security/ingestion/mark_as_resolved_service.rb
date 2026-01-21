@@ -88,7 +88,7 @@ module Security
         vulnerabilities_relation = Vulnerability.id_in(no_longer_detected_vulnerability_ids)
 
         ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute do |relation|
-          relation.update_all(resolved_on_default_branch: true)
+          relation.update_all(resolved_on_default_branch: true, updated_at: Time.current)
           create_detection_transitions(no_longer_detected_vulnerability_ids)
         end
 
