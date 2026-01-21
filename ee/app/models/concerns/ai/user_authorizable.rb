@@ -266,7 +266,7 @@ module Ai
         # is being executed. For further details, see https://gitlab.com/gitlab-org/gitlab/-/issues/580901
         #
         # use_billable_namespace
-        authority_namespace = if root_namespace && root_namespace.member?(self)
+        authority_namespace = if root_namespace && GroupMember.member_of_group?(root_namespace, self)
                                 root_namespace
                               else
                                 user_preference.duo_default_namespace_with_fallback
