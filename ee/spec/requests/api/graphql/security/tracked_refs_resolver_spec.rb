@@ -59,6 +59,24 @@ RSpec.describe 'Query.project.securityTrackedRefs', feature_category: :vulnerabi
           hasPreviousPage
         }
       FIELDS
+    when :comprehensive
+      <<~FIELDS
+        nodes {
+          id
+          name
+          refType
+          state
+          isDefault
+          isProtected
+          commit {
+            id
+            sha
+            title
+          }
+          vulnerabilitiesCount
+          trackedAt
+        }
+      FIELDS
     end
   end
 
@@ -196,6 +214,47 @@ RSpec.describe 'Query.project.securityTrackedRefs', feature_category: :vulnerabi
     it 'returns null for non-existent project' do
       execute_query(project_path: 'non-existent/project')
       expect(graphql_data['project']).to be_nil
+    end
+  end
+
+  describe 'comprehensive field implementations' do
+    let_it_be(:vulnerability_reads) do
+      create_list(:vulnerability_read, 2, tracked_context: tracked_branch)
+    end
+
+    before_all do
+      unless project.repository.branch_exists?('main')
+        project.repository.create_branch('main', project.default_branch)
+        project.repository.expire_branches_cache
+      end
+
+      create(:protected_branch, project: project, name: 'main')
+    end
+
+    where(:ref_name, :ref_type, :is_default, :is_protected, :vuln_count) do
+      'main'   | 'BRANCH' | true  | true  | 2
+      'v1.1.0' | 'TAG'    | false | false | 0
+    end
+
+    with_them do
+      it 'returns correct field implementations' do
+        execute_query(query_args: { state: :TRACKED }, fields: :comprehensive)
+
+        expect(graphql_errors).to be_blank
+
+        ref_node = tracked_refs_nodes.find { |ref| ref['name'] == ref_name }
+
+        expect(ref_node).to include(
+          'name' => ref_name,
+          'refType' => ref_type,
+          'state' => 'TRACKED',
+          'isDefault' => is_default,
+          'isProtected' => is_protected,
+          'vulnerabilitiesCount' => vuln_count
+        )
+
+        expect(ref_node['commit']).to include('sha' => be_present) if ref_name == 'main'
+      end
     end
   end
 end
