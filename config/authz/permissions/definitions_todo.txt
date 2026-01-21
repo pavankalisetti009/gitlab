@@ -571,7 +571,6 @@ read_operations_dashboard
 read_organization
 read_organization_cluster_agent_mapping
 read_organization_user
-read_package
 read_package_within_public_registries
 read_pages
 read_pages_content
