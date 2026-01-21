@@ -164,8 +164,11 @@ module EE
 
     override :custom_notification_target_name
     def custom_notification_target_name
+      # Keep epic here because we have a dedicated `new_epic` category.
+      # Notifications will be sent for `new_issue` and `new_epic` categories.
       return 'epic' if work_item_type.epic?
 
+      # Everything else is `work_item`
       super
     end
 
