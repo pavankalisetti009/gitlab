@@ -107,7 +107,7 @@ describe('Project Security Dashboard (new version) - Component', () => {
           operators: OPERATORS_OR,
         },
         {
-          type: 'trackedRefIds',
+          type: 'trackedRefs',
           title: 'Tracked ref',
           multiSelect: false,
           unique: true,
