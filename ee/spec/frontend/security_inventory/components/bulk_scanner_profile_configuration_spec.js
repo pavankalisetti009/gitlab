@@ -66,7 +66,7 @@ describe('BulkScannerProfileConfiguration', () => {
 
   it('renders scanner type label and name', () => {
     expect(findScanTypeCell().text()).toContain('SD');
-    expect(findScanTypeCell().text()).toContain('Secret detection');
+    expect(findScanTypeCell().text()).toContain('Secret push protection');
   });
 
   it('applies status classes to icon', () => {
