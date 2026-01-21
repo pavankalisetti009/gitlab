@@ -24,5 +24,11 @@ RSpec.shared_examples 'group and project milestone burndowns' do |route_definiti
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_milestone_burndown_event do
+      let(:request) do
+        get api(resource_route, personal_access_token: pat)
+      end
+    end
   end
 end

@@ -25,6 +25,7 @@ RSpec.describe API::GroupMilestones, feature_category: :team_planning do
   end
 
   it_behaves_like 'group and project milestone burndowns', '/groups/:id/milestones/:milestone_id/burndown_events' do
+    let(:boundary_object) { group }
     let(:route) { "/groups/#{group.id}/milestones" }
   end
 end

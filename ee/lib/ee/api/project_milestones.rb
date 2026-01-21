@@ -16,6 +16,7 @@ module EE
             detail 'This feature was introduced in GitLab 12.1.'
             tags ['project_milestones']
           end
+          route_setting :authorization, permissions: :read_milestone_burndown_event, boundary_type: :project
           get ':id/milestones/:milestone_id/burndown_events' do
             authorize! :read_milestone, user_project
 
