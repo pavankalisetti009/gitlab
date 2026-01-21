@@ -1008,6 +1008,14 @@ module EE
       billed_user_ids_including_guests[:user_ids]
     end
 
+    def duo_settings_path
+      if ::GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription? && root?
+        ::Gitlab::Routing.url_helpers.group_settings_gitlab_duo_configuration_index_path(self)
+      else
+        ::Gitlab::Routing.url_helpers.edit_group_path(self, anchor: 'js-gitlab-duo-settings')
+      end
+    end
+
     def parent_epic_ids_in_ancestor_groups
       ids = Set.new
       epics.has_parent.each_batch(of: EPIC_BATCH_SIZE, column: :iid) do |batch|
