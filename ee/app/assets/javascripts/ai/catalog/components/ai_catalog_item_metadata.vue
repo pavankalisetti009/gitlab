@@ -78,9 +78,8 @@ export default {
 </script>
 
 <template>
-  <aside>
-    <h3 class="gl-heading-3 gl-mb-4 gl-mt-0 gl-font-semibold">{{ __('About') }}</h3>
-    <ul class="gl-flex gl-list-none gl-flex-col gl-gap-3 gl-pl-0">
+  <div>
+    <ul class="gl-flex gl-list-none gl-flex-row gl-flex-wrap gl-gap-x-5 gl-gap-y-3 gl-pl-0">
       <li
         v-for="metaItem in metaData"
         :key="metaItem.testId"
@@ -91,5 +90,5 @@ export default {
         <span>{{ formatText(metaItem.text, metaItem.value) }}</span>
       </li>
     </ul>
-  </aside>
+  </div>
 </template>

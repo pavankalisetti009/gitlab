@@ -110,9 +110,7 @@ export default {
         </span>
       </template>
       <template #description>
-        <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Manage flow settings.') }}
-        </div>
+        {{ s__('AICatalog|Manage flow settings.') }}
       </template>
     </page-heading>
     <gl-alert

@@ -11,6 +11,7 @@ import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actio
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
 import VersionAlert from 'ee/ai/catalog/components/version_alert.vue';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
+import AiCatalogItemMetadata from 'ee/ai/catalog/components/ai_catalog_item_metadata.vue';
 import {
   TRACK_EVENT_TYPE_AGENT,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
@@ -121,6 +122,7 @@ describe('AiCatalogAgentsShow', () => {
   const findItemView = () => wrapper.findComponent(AiCatalogItemView);
   const findVersionAlert = () => wrapper.findComponent(VersionAlert);
   const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
+  const findMetadataComponent = () => wrapper.findComponent(AiCatalogItemMetadata);
 
   beforeEach(() => {
     createComponent();
@@ -132,6 +134,12 @@ describe('AiCatalogAgentsShow', () => {
       configurationForProject: mockAgentConfigurationForProject,
       configurationForGroup: mockItemConfigurationForGroup,
     });
+  });
+
+  it('renders AiCatalogItemMetadata component', () => {
+    createComponent({ props: { aiCatalogAgent: mockAgent } });
+
+    expect(findMetadataComponent().props('item')).toEqual(mockAgent);
   });
 
   it('renders item view', () => {

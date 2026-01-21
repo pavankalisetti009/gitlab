@@ -31,10 +31,12 @@ import {
   AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
 } from '../router/constants';
+import AiCatalogItemMetadata from '../components/ai_catalog_item_metadata.vue';
 
 export default {
   name: 'AiCatalogFlowsShow',
   components: {
+    AiCatalogItemMetadata,
     GlExperimentBadge,
     FoundationalIcon,
     ErrorsAlert,
@@ -289,7 +291,7 @@ export default {
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
     <page-heading>
       <template #heading>
-        <div class="gl-flex gl-gap-3">
+        <div class="gl-flex">
           <span class="gl-line-clamp-1 gl-wrap-anywhere">
             {{ aiCatalogFlow.name }}
           </span>
@@ -301,14 +303,15 @@ export default {
           />
         </div>
       </template>
-      <template v-if="version.isUpdateAvailable" #description>
+      <template #description>
+        <ai-catalog-item-metadata :item="aiCatalogFlow" :version-key="version.activeVersionKey" />
+        <p v-if="aiCatalogFlow.description">{{ aiCatalogFlow.description }}</p>
         <version-alert
+          v-if="version.isUpdateAvailable"
           :configuration="configuration"
           :item-type="aiCatalogFlow.itemType"
           :latest-version="aiCatalogFlow.latestVersion"
           :version="version"
-          class="gl-mt-4"
-          @error="setErrors"
         />
       </template>
       <template #actions>

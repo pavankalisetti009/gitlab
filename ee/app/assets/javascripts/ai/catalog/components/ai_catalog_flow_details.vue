@@ -57,11 +57,7 @@ export default {
       {{ s__('AICatalog|Flow configuration') }}
     </h3>
     <dl class="gl-flex gl-flex-col gl-gap-5">
-      <form-section :title="s__('AICatalog|Basic information')">
-        <ai-catalog-item-field :title="s__('AICatalog|Display name')" :value="item.name" />
-        <ai-catalog-item-field :title="s__('AICatalog|Description')" :value="item.description" />
-      </form-section>
-      <form-section :title="s__('AICatalog|Visibility & access')">
+      <form-section :title="s__('AICatalog|Visibility & access')" is-display>
         <ai-catalog-item-field v-if="projectName" :title="s__('AICatalog|Managed by')">
           <gl-link :href="item.project.webUrl">{{ projectName }}</gl-link>
         </ai-catalog-item-field>
@@ -70,7 +66,7 @@ export default {
           :description-texts="$options.FLOW_VISIBILITY_LEVEL_DESCRIPTIONS"
         />
       </form-section>
-      <form-section :title="s__('AICatalog|Configuration')">
+      <form-section :title="s__('AICatalog|Configuration')" is-display>
         <ai-catalog-item-field
           v-if="serviceAccount"
           :title="s__('AICatalog|Service account')"
@@ -104,7 +100,7 @@ export default {
         </ai-catalog-item-field>
         <trigger-field v-if="hasProjectConfiguration" :item="item" />
         <ai-catalog-item-field
-          :title="s__('AICatalog|Configuration')"
+          :title="s__('AICatalog|YAML configuration')"
           data-testid="configuration-field"
         >
           <form-flow-definition :value="definition" read-only class="gl-mt-3" />

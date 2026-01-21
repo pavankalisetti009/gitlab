@@ -46,28 +46,15 @@ describe('AiCatalogFlowDetails', () => {
   });
 
   it('renders sections', () => {
-    expect(findAllSections()).toHaveLength(3);
-    expect(findSection(0).attributes('title')).toBe('Basic information');
-    expect(findSection(1).attributes('title')).toBe('Visibility & access');
-    expect(findSection(2).attributes('title')).toBe('Configuration');
-  });
-
-  it('renders "Basic information" details', () => {
-    const basicInformationDetails = findAllFieldsForSection(0);
-    expect(basicInformationDetails.at(0).props()).toMatchObject({
-      title: 'Display name',
-      value: mockFlow.name,
-    });
-    expect(basicInformationDetails.at(1).props()).toMatchObject({
-      title: 'Description',
-      value: mockFlow.description,
-    });
+    expect(findAllSections()).toHaveLength(2);
+    expect(findSection(0).attributes('title')).toBe('Visibility & access');
+    expect(findSection(1).attributes('title')).toBe('Configuration');
   });
 
   describe('renders "Visibility & access" details', () => {
     let accessRightsDetails;
     beforeEach(() => {
-      accessRightsDetails = findAllFieldsForSection(1);
+      accessRightsDetails = findAllFieldsForSection(0);
     });
 
     it('renders "Visibility & access" details', () => {
@@ -87,16 +74,15 @@ describe('AiCatalogFlowDetails', () => {
 
   describe('renders "Configuration" details', () => {
     it('renders latestVersion flow definition', () => {
-      expect(findConfigurationField().props('title')).toBe('Configuration');
+      expect(findConfigurationField().props('title')).toBe('YAML configuration');
       expect(findConfigurationField().findComponent(FormFlowDefinition).props('value')).toBe(
         mockFlow.latestVersion.definition,
       );
     });
 
     it('does not render triggers field', () => {
-      const configurationFields = findAllFieldsForSection(2);
+      const configurationFields = findAllFieldsForSection(1);
       expect(configurationFields).toHaveLength(1);
-      expect(configurationFields.at(0).props('title')).toBe('Configuration');
     });
 
     describe('when configurationForProject exists', () => {

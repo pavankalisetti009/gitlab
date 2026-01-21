@@ -211,7 +211,7 @@ export default {
     },
     definition: {
       id: 'flow-form-configuration',
-      label: s__('AICatalog|Configuration'),
+      label: s__('AICatalog|YAML configuration'),
       validations: {
         requiredLabel: s__('AICatalog|Configuration is required.'),
       },

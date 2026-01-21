@@ -111,9 +111,7 @@ export default {
         </span>
       </template>
       <template #description>
-        <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Duplicate this flow with all its settings and configuration.') }}
-        </div>
+        {{ s__('AICatalog|Duplicate this flow with all its settings and configuration.') }}
       </template>
     </page-heading>
     <ai-catalog-flow-form

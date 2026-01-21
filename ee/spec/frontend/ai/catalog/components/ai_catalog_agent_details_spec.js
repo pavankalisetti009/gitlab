@@ -56,28 +56,15 @@ describe('AiCatalogAgentDetails', () => {
   });
 
   it('renders sections', () => {
-    expect(findAllSections()).toHaveLength(3);
-    expect(findSection(0).attributes('title')).toBe('Basic information');
-    expect(findSection(1).attributes('title')).toBe('Visibility & access');
-    expect(findSection(2).attributes('title')).toBe('Configuration');
-  });
-
-  it('renders "Basic information" details', () => {
-    const basicInformationDetails = findAllFieldsForSection(0);
-    expect(basicInformationDetails.at(0).props()).toMatchObject({
-      title: 'Display name',
-      value: mockAgent.name,
-    });
-    expect(basicInformationDetails.at(1).props()).toMatchObject({
-      title: 'Description',
-      value: mockAgent.description,
-    });
+    expect(findAllSections()).toHaveLength(2);
+    expect(findSection(0).attributes('title')).toBe('Visibility & access');
+    expect(findSection(1).attributes('title')).toBe('Configuration');
   });
 
   describe('renders "Visibility & access" details', () => {
     let accessRightsDetails;
     beforeEach(() => {
-      accessRightsDetails = findAllFieldsForSection(1);
+      accessRightsDetails = findAllFieldsForSection(0);
     });
 
     it('renders Visibility', () => {
@@ -121,7 +108,7 @@ describe('AiCatalogAgentDetails', () => {
     let configurationDetails;
 
     beforeEach(() => {
-      configurationDetails = findAllFieldsForSection(2);
+      configurationDetails = findAllFieldsForSection(1);
     });
 
     it('renders "Type" field with "Custom" value', () => {
@@ -176,7 +163,7 @@ describe('AiCatalogAgentDetails', () => {
         },
       });
 
-      configurationDetails = findAllFieldsForSection(2);
+      configurationDetails = findAllFieldsForSection(1);
     });
 
     it('renders the trigger field', () => {

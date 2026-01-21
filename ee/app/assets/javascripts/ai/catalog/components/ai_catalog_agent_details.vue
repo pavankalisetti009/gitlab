@@ -65,15 +65,11 @@ export default {
 
 <template>
   <div>
-    <h3 class="gl-heading-3 gl-mb-4 gl-mt-0 gl-font-semibold">
+    <h2 class="gl-heading-3">
       {{ s__('AICatalog|Agent configuration') }}
-    </h3>
+    </h2>
     <dl class="gl-flex gl-flex-col gl-gap-5">
-      <form-section :title="s__('AICatalog|Basic information')">
-        <ai-catalog-item-field :title="s__('AICatalog|Display name')" :value="item.name" />
-        <ai-catalog-item-field :title="s__('AICatalog|Description')" :value="item.description" />
-      </form-section>
-      <form-section :title="s__('AICatalog|Visibility & access')">
+      <form-section :title="s__('AICatalog|Visibility & access')" is-display>
         <ai-catalog-item-field v-if="projectName" :title="s__('AICatalog|Managed by')">
           <gl-link :href="item.project.webUrl">{{ projectName }}</gl-link>
         </ai-catalog-item-field>
@@ -82,7 +78,7 @@ export default {
           :description-texts="$options.AGENT_VISIBILITY_LEVEL_DESCRIPTIONS"
         />
       </form-section>
-      <form-section :title="s__('AICatalog|Configuration')">
+      <form-section :title="s__('AICatalog|Configuration')" is-display>
         <template v-if="isThirdPartyFlow">
           <ai-catalog-item-field
             :title="s__('AICatalog|Type')"
