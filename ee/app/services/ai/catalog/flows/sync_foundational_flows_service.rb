@@ -4,6 +4,8 @@ module Ai
   module Catalog
     module Flows
       class SyncFoundationalFlowsService
+        include ::Gitlab::Utils::StrongMemoize
+
         def initialize(container, current_user: nil)
           @container = container
           @current_user = current_user
@@ -36,6 +38,11 @@ module Ai
 
         def sync_flows
           target_ids = enabled_flow_catalog_item_ids
+
+          unless admin_consumer_allowed?
+            remove_consumers_not_in(target_ids)
+            return
+          end
 
           target_ids.each do |catalog_item_id|
             item = Item.find(catalog_item_id)
@@ -71,11 +78,15 @@ module Ai
         end
 
         def authorized_to_create_consumer?(item)
+          admin_consumer_allowed? && Ability.allowed?(current_user, :read_ai_catalog_item, item)
+        end
+
+        def admin_consumer_allowed?
           return false unless current_user
 
-          Ability.allowed?(current_user, :admin_ai_catalog_item_consumer, container) &&
-            Ability.allowed?(current_user, :read_ai_catalog_item, item)
+          Ability.allowed?(current_user, :admin_ai_catalog_item_consumer, container)
         end
+        strong_memoize_attr :admin_consumer_allowed?
 
         def create_or_find_consumer(item)
           params = build_consumer_params(item)
