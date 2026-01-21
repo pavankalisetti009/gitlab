@@ -7774,7 +7774,6 @@
 - './spec/workers/snippets/update_repository_storage_worker_spec.rb'
 - './spec/workers/ssh_keys/expired_notification_worker_spec.rb'
 - './spec/workers/ssh_keys/expiring_soon_notification_worker_spec.rb'
-- './spec/workers/stage_update_worker_spec.rb'
 - './spec/workers/stuck_ci_jobs_worker_spec.rb'
 - './spec/workers/stuck_export_jobs_worker_spec.rb'
 - './spec/workers/stuck_merge_jobs_worker_spec.rb'
