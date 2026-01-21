@@ -9,5 +9,9 @@ FactoryBot.define do
     trait :duo_agent_platform do
       add_attribute(:feature) { :duo_agent_platform }
     end
+
+    trait :duo_agent_platform_agentic_chat do
+      add_attribute(:feature) { :duo_agent_platform_agentic_chat }
+    end
   end
 end
