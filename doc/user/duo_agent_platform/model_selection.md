@@ -3,13 +3,12 @@ stage: AI-powered
 group: Custom Models
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: Configure large language models for GitLab Duo features.
-title: GitLab Duo (Classic) model selection
+title: Agent Platform model selection
 ---
 
 {{< details >}}
 
 - Tier: Premium, Ultimate
-- Add-on: GitLab Duo Core, Pro or Enterprise
 - Offering: GitLab.com
 
 {{< /details >}}
@@ -29,10 +28,19 @@ If you select a specific model for a feature, the feature uses that model until 
 - [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/17570) for top-level groups in GitLab 18.1 with a [flag](../../administration/feature_flags/_index.md) named `ai_model_switching`. Disabled by default.
 - [Changed](https://gitlab.com/gitlab-org/gitlab/-/issues/526307) to beta in GitLab 18.4.
 - [Enabled](https://gitlab.com/gitlab-org/gitlab/-/issues/526307) in GitLab 18.4.
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/568112) model selection for GitLab Duo Agent Platform in GitLab 18.4 with a [flag](../../administration/feature_flags/_index.md) called `duo_agent_platform_model_selection`. Disabled by default.
 - [Generally available](https://gitlab.com/groups/gitlab-org/-/epics/18818) in GitLab 18.5. Feature flag `ai_model_switching` enabled.
+- Feature flag `duo_agent_platform_model_selection` [enabled](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/212051) in GitLab 18.6.
 - Feature flag `ai_model_switching` [removed](https://gitlab.com/gitlab-org/gitlab/-/issues/526307) in GitLab 18.7.
 
 {{< /history >}}
+
+{{< alert type="flag" >}}
+
+The availability of this feature is controlled by a feature flag.
+For more information, see the history.
+
+{{< /alert >}}
 
 You can select a model for a feature in a top-level group. The model that you select
 applies to that feature for all child groups and projects.
@@ -48,19 +56,26 @@ To select a model for a feature:
 1. On the top bar, select **Search or go to** and find your group.
 1. Select **Settings** > **GitLab Duo**.
 1. Select **Configure features**.
-1. For the feature you want to configure, select a model from the dropdown list.
+1. Go to the **GitLab Duo Agent Platform** section.
+1. Select a model from the dropdown list.
 1. Optional. To apply the model to all features in the section, select **Apply to all**.
+
+{{< alert type="note" >}}
+
+- In the IDE, model selection for GitLab Duo Chat (Agentic) is applied only when the connection type is set to WebSocket.
+
+- The OpenAI models used in GitLab Duo Chat (Agentic) have experimental support, specifically for GPT-5, GPT-5 mini, and GPT-5-Codex.
+  Please leave your feedback about using OpenAI models in GitLab Duo Chat (Agentic) in this [issue](https://gitlab.com/gitlab-org/gitlab/-/issues/572864).
+
+{{< /alert >}}
 
 ### Assign a default GitLab Duo namespace
 
 If you belong to multiple GitLab Duo namespaces, you must choose one as your default namespace.
-When GitLab Duo cannot automatically detect your namespace, the default namespace is used to determine what models to use.
 
-If you do not set a default namespace, GitLab Duo Chat (Agentic) and the GitLab Duo Agent Platform are disabled.
-For projects you're not a member of, your default namespace determines your
-[GitLab Credits](../../subscriptions/gitlab_credits.md) and available GitLab Duo features.
+When GitLab Duo can't automatically detect the namespace you are working in, it uses the default namespace to determine what models to use.
 
-For more information, see [set a default GitLab Duo namespace](../../user/profile/preferences.md#set-a-default-gitlab-duo-namespace).
+Learn how to [set a default GitLab Duo namespace](../../user/profile/preferences.md#set-a-default-gitlab-duo-namespace).
 
 ## Troubleshooting
 
