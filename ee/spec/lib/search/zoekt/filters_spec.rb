@@ -32,6 +32,14 @@ RSpec.describe Search::Zoekt::Filters, feature_category: :global_search do
     it 'returns repo_ids as integers' do
       expect(described_class.by_repo_ids(['1', 2])).to eq({ repo_ids: [1, 2] })
     end
+
+    context 'when a project ID exceeds 32-bit integer limit' do
+      it 'returns a meta filter with regex pattern combining all project IDs' do
+        expect(described_class.by_repo_ids([1, 2**32])).to eq(
+          { meta: { key: 'project_id', value: '^(1|4294967296)$' } }
+        )
+      end
+    end
   end
 
   describe '.by_regexp' do
@@ -98,27 +106,29 @@ RSpec.describe Search::Zoekt::Filters, feature_category: :global_search do
     end
   end
 
-  describe '.by_project_ids' do
+  describe '.by_project_ids_through_meta' do
     it 'returns a meta filter with regex pattern combining all project IDs' do
-      expect(described_class.by_project_ids([1, 2])).to eq(
+      expect(described_class.by_project_ids_through_meta([1, 2])).to eq(
         { meta: { key: 'project_id', value: '^(1|2)$' } }
       )
     end
 
     it 'returns correct pattern for single project ID' do
-      expect(described_class.by_project_ids([123])).to eq(
+      expect(described_class.by_project_ids_through_meta([123])).to eq(
         { meta: { key: 'project_id', value: '^(123)$' } }
       )
     end
 
     it 'returns correct pattern for multiple project IDs' do
-      expect(described_class.by_project_ids([1, 2, 3])).to eq(
+      expect(described_class.by_project_ids_through_meta([1, 2, 3])).to eq(
         { meta: { key: 'project_id', value: '^(1|2|3)$' } }
       )
     end
 
     it 'raises error if ids is empty' do
-      expect { described_class.by_project_ids([]) }.to raise_error(ArgumentError, 'Project IDs cannot be empty')
+      expect do
+        described_class.by_project_ids_through_meta([])
+      end.to raise_error(ArgumentError, 'Project IDs cannot be empty')
     end
   end
 end
