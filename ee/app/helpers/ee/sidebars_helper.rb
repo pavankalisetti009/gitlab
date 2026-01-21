@@ -85,6 +85,17 @@ module EE
       end
     end
 
+    override :super_sidebar_logged_out_context
+    def super_sidebar_logged_out_context(panel:, panel_type:)
+      context = super
+
+      return context unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+      context.merge({
+        trial_registration_path: new_trial_registration_path
+      })
+    end
+
     private
 
     # Avoid duplicating "Work Items" on the frontend now that
