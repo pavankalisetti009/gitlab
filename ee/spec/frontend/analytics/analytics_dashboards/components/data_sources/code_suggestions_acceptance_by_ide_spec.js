@@ -81,8 +81,8 @@ describe('`Code suggestion acceptance rate by IDE` Data Source', () => {
       it('fetches metrics for valid requested code suggestion IDEs', () => {
         const variables = {
           fullPath: 'test-namespace',
-          startDate: new Date('2020-04-07'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-04-07',
+          endDate: '2020-07-06',
         };
 
         expect(defaultClient.query).toHaveBeenCalledTimes(3);
@@ -192,8 +192,8 @@ describe('`Code suggestion acceptance rate by IDE` Data Source', () => {
 
         expectQueryWithVariables({
           fullPath: 'test-namespace',
-          startDate: new Date('2020-06-06'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-06-06',
+          endDate: '2020-07-06',
         });
       });
     });
@@ -208,8 +208,8 @@ describe('`Code suggestion acceptance rate by IDE` Data Source', () => {
 
         expectQueryWithVariables({
           fullPath: 'test-namespace',
-          startDate: new Date('2020-01-08'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-01-08',
+          endDate: '2020-07-06',
         });
       });
 
@@ -222,8 +222,8 @@ describe('`Code suggestion acceptance rate by IDE` Data Source', () => {
 
         expectQueryWithVariables({
           fullPath: 'cool-namespace',
-          startDate: new Date('2020-04-07'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-04-07',
+          endDate: '2020-07-06',
         });
       });
     });

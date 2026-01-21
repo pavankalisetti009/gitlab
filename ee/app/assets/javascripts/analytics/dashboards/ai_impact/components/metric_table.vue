@@ -321,8 +321,8 @@ export default {
         query: AiMetricsQuery,
         variables: {
           fullPath: this.namespace,
-          startDate,
-          endDate,
+          startDate: toYmd(startDate),
+          endDate: toYmd(endDate),
         },
       });
 

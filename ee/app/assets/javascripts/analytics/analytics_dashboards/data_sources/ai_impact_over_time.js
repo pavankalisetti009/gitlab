@@ -9,6 +9,7 @@ import {
   DATE_RANGE_OPTION_LAST_30_DAYS,
   DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import { AI_METRICS } from '~/analytics/shared/constants';
 import { scaledValueForDisplay, extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { defaultClient } from '../graphql/client';
@@ -121,8 +122,8 @@ export default async function fetch({
     : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_30_DAYS];
 
   const { rate, tooltip } = await fetchAiImpactQuery({
-    startDate,
-    endDate,
+    startDate: toISODateFormat(startDate, true),
+    endDate: toISODateFormat(endDate, true),
     metric,
     namespace,
     ...overridesRest,

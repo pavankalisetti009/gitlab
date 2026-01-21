@@ -1,5 +1,6 @@
 import truncate from 'lodash/truncate';
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { s__, __, sprintf } from '~/locale';
 import {
@@ -92,8 +93,8 @@ export default async function fetch({
 
   const { successful, failed } = await fetchAllCodeSuggestionsIdeMetrics({
     fullPath: namespaceOverride ?? namespace,
-    startDate,
-    endDate,
+    startDate: toISODateFormat(startDate, true),
+    endDate: toISODateFormat(endDate, true),
   });
 
   if (failed.length > 0 && successful.length === 0) {

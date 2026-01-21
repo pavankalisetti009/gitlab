@@ -1,4 +1,5 @@
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { __, s__, sprintf } from '~/locale';
 import {
@@ -132,8 +133,8 @@ export default async function fetch({
 
   const { successfulLanguages, failedLanguages } = await fetchAllCodeSuggestionsLanguagesMetrics({
     fullPath: namespaceOverride ?? namespace,
-    startDate,
-    endDate,
+    startDate: toISODateFormat(startDate, true),
+    endDate: toISODateFormat(endDate, true),
   });
 
   const { chartData, contextualData } = extractAcceptanceMetricsByLanguage(successfulLanguages);

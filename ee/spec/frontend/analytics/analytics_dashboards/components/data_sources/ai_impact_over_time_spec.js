@@ -42,8 +42,8 @@ describe('AI Impact Over Time Data Source', () => {
         res = await fetch({ namespace, query });
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-06'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-06-06',
+          endDate: '2020-07-06',
           fullPath: namespace,
         });
       });
@@ -114,8 +114,8 @@ describe('AI Impact Over Time Data Source', () => {
         res = await mockQuery(DATE_RANGE_OPTION_LAST_7_DAYS);
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-29'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-06-29',
+          endDate: '2020-07-06',
           fullPath: namespace,
         });
       });
@@ -130,8 +130,8 @@ describe('AI Impact Over Time Data Source', () => {
         res = await mockQuery(DATE_RANGE_OPTION_LAST_7_DAYS, { metric });
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-29'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-06-29',
+          endDate: '2020-07-06',
           fullPath: namespace,
         });
 
@@ -144,8 +144,8 @@ describe('AI Impact Over Time Data Source', () => {
         });
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-29'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-06-29',
+          endDate: '2020-07-06',
           fullPath: 'cool-namespace/sub-namespace',
         });
       });
@@ -154,8 +154,8 @@ describe('AI Impact Over Time Data Source', () => {
         res = await mockQuery(INVALID_DATE_RANGE);
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-06'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-06-06',
+          endDate: '2020-07-06',
           fullPath: namespace,
         });
 
