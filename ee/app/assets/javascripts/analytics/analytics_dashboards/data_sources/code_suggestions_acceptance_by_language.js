@@ -7,6 +7,7 @@ import {
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { getLanguageDisplayName } from 'ee/analytics/analytics_dashboards/code_suggestions_languages';
 import { truncate } from '~/lib/utils/text_utility';
+import { calculateRate } from 'ee/analytics/dashboards/ai_impact/utils';
 import { defaultClient } from '../graphql/client';
 
 const extractAiMetricsResponse = (result) =>
@@ -54,29 +55,66 @@ const fetchAllCodeSuggestionsLanguagesMetrics = async (variables) => {
   return { successfulLanguages, failedLanguages };
 };
 
+// Merges language variants into single entries by canonical name, summing counts.
+const mergeMetricsByLanguage = (results = []) => {
+  return results.reduce((acc, result) => {
+    const { codeSuggestions: { acceptedCount = null, shownCount = null, languages = [] } = {} } =
+      extractAiMetricsResponse(result);
+
+    const [languageId] = languages ?? [];
+    const language = getLanguageDisplayName(languageId);
+
+    if (acceptedCount === null || shownCount <= 0 || !language) return acc;
+
+    if (!acc[language]) {
+      acc[language] = { acceptedCount: 0, shownCount: 0 };
+    }
+
+    acc[language].acceptedCount += acceptedCount;
+    acc[language].shownCount += shownCount;
+
+    return acc;
+  }, {});
+};
+
+const calculateAcceptanceRates = (metricsByLanguage = {}) => {
+  return Object.entries(metricsByLanguage).reduce((acc, [language, metrics]) => {
+    acc[language] = {
+      ...metrics,
+      acceptanceRate: calculateRate({
+        numerator: metrics.acceptedCount,
+        denominator: metrics.shownCount,
+        asDecimal: true,
+      }),
+    };
+    return acc;
+  }, {});
+};
+
+const filterAndSortMetrics = (metricsWithRates) => {
+  return Object.entries(metricsWithRates)
+    .filter(([, { acceptanceRate }]) => acceptanceRate !== null)
+    .sort((a, b) => a[1].acceptedCount - b[1].acceptedCount);
+};
+
+const formatChartData = (sortedResults) => {
+  return {
+    chartData: sortedResults.map(([language, { acceptedCount }]) => [acceptedCount, language]),
+    contextualData: Object.fromEntries(
+      sortedResults.map(([language, { acceptanceRate, shownCount }]) => [
+        language,
+        { acceptanceRate, shownCount },
+      ]),
+    ),
+  };
+};
+
 const extractAcceptanceMetricsByLanguage = (results = []) => {
-  const extractedResults = results
-    .map((result) => {
-      const { codeSuggestions: { acceptedCount, shownCount, languages = [] } = {} } =
-        extractAiMetricsResponse(result);
-      const acceptanceRate = shownCount > 0 ? acceptedCount / shownCount : null;
-      const [languageId] = languages ?? [];
-      const language = getLanguageDisplayName(languageId);
+  const mergedMetricsByLanguage = mergeMetricsByLanguage(results);
+  const metricsWithRates = calculateAcceptanceRates(mergedMetricsByLanguage);
+  const sortedResults = filterAndSortMetrics(metricsWithRates);
 
-      return { acceptanceRate, language, acceptedCount, shownCount };
-    })
-    .filter(({ acceptanceRate }) => acceptanceRate !== null)
-    .sort((a, b) => a.acceptedCount - b.acceptedCount);
-
-  return extractedResults.reduce(
-    (acc, { acceptanceRate, language, acceptedCount, shownCount }) => {
-      acc.chartData.push([acceptedCount, language]);
-      acc.contextualData[language] = { acceptanceRate, shownCount };
-
-      return acc;
-    },
-    { chartData: [], contextualData: {} },
-  );
+  return formatChartData(sortedResults);
 };
 
 export default async function fetch({
