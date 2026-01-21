@@ -10,6 +10,7 @@ permissions:
   - read_epic_state_event
   - read_issue
   - read_issue_closing_merge_request
+  - read_issue_iteration_event
   - read_issue_link
   - read_issue_merge_request
   - read_issue_milestone_event
@@ -25,10 +26,10 @@ permissions:
   - read_merge_request_time_statistic
   - read_merge_request_state_event
   - read_milestone
+  - read_milestone_burndown_event
   - read_milestone_issue
   - read_milestone_merge_request
-  - read_milestone_burndown_event
-  - read_issue_iteration_event
+  - read_related_epic_link
 boundaries:
   - group
   - project

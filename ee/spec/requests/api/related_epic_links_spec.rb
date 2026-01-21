@@ -131,6 +131,11 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
 
         it_behaves_like 'endpoint with features check'
 
+        it_behaves_like 'authorizing granular token permissions', :read_related_epic_link do
+          let(:boundary_object) { group }
+          let(:request) { get api("/groups/#{group.id}/related_epic_links", personal_access_token: pat) }
+        end
+
         it 'returns only related epics links the user has access to' do
           perform_request(user)
 
@@ -293,6 +298,11 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
 
         it_behaves_like 'endpoint with features check'
 
+        it_behaves_like 'authorizing granular token permissions', :read_related_epic_link do
+          let(:boundary_object) { group }
+          let(:request) { get api("/groups/#{group.id}/epics/#{epic.iid}/related_epics", personal_access_token: pat) }
+        end
+
         it 'returns related epics' do
           perform_request(user)
 
@@ -359,6 +369,11 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
           it_behaves_like 'successful response', :created
           it_behaves_like 'endpoint with features check'
 
+          it_behaves_like 'authorizing granular token permissions', :create_related_epic_link do
+            let(:boundary_object) { source_group }
+            let(:request) { post api("/groups/#{source_group.id}/epics/#{source_epic.iid}/related_epics", personal_access_token: pat), params: { target_group_id: target_group.id, target_epic_iid: target_epic.iid } }
+          end
+
           it 'returns 201 when sending full path of target group' do
             perform_request(user, target_group_id: target_group.full_path, target_epic_iid: target_epic.iid, link_type: 'blocks')
 
@@ -423,6 +438,11 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
         context 'when user can access target group' do
           it_behaves_like 'successful response', :ok
           it_behaves_like 'endpoint with features check'
+
+          it_behaves_like 'authorizing granular token permissions', :delete_related_epic_link do
+            let(:boundary_object) { source_group }
+            let(:request) { delete api("/groups/#{source_group.id}/epics/#{source_epic.iid}/related_epics/#{related_epic_link.id}", personal_access_token: pat) }
+          end
 
           context 'when related_epic_link_id belongs to a different epic' do
             let_it_be(:other_epic) { create(:epic, group: target_group) }

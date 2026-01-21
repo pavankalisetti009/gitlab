@@ -64,6 +64,7 @@ module API
         is_array true
         tags ['epics']
       end
+      route_setting :authorization, permissions: :read_related_epic_link, boundary_type: :group
       get ':id/related_epic_links' do
         accessible_epics = EpicsFinder.new(current_user, group_id: user_group.id).execute
 
@@ -108,6 +109,7 @@ module API
         requires :epic_iid, type: Integer, desc: 'The internal ID of a group epic', documentation: { example: 1 }
       end
 
+      route_setting :authorization, permissions: :read_related_epic_link, boundary_type: :group
       get ':id/epics/:epic_iid/related_epics' do
         authorize_can_read!
 
@@ -148,6 +150,7 @@ module API
           desc: 'The type of the relation',
           documentation: { example: 'relates_to' }
       end
+      route_setting :authorization, permissions: :create_related_epic_link, boundary_type: :group
       post ':id/epics/:epic_iid/related_epics' do
         source_epic = find_permissioned_epic!(params[:epic_iid])
         target_epic = find_permissioned_epic!(
@@ -186,6 +189,7 @@ module API
           desc: 'Internal ID of a related epic link',
           documentation: { example: 1 }
       end
+      route_setting :authorization, permissions: :delete_related_epic_link, boundary_type: :group
       delete ':id/epics/:epic_iid/related_epics/:related_epic_link_id' do
         epic = find_permissioned_epic!(params[:epic_iid])
         epic_link = ::Epic::RelatedEpicLink

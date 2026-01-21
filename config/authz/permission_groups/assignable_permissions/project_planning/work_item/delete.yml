@@ -9,6 +9,7 @@ permissions:
   - delete_issue_link
   - delete_label
   - delete_milestone
+  - delete_related_epic_link
 boundaries:
   - group
   - project
