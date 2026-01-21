@@ -193,8 +193,15 @@ module Ai
       end
 
       def set_up_executor_commands
-        cli_install_commands = [
-          %(npm install -g @gitlab/duo-cli@#{DUO_CLI_VERSION}),
+        cli_install_command = [
+          "command -v duo > /dev/null 2>&1 && ",
+          "echo \"duo-cli already present, skipping installation\" || ",
+          "{ echo \"Installing @gitlab/duo-cli@#{DUO_CLI_VERSION}...\" && ",
+          "npm install -g @gitlab/duo-cli@#{DUO_CLI_VERSION}; }"
+        ].join
+
+        cli_setup_commands = [
+          cli_install_command,
           %(ls -la $(npm root -g)/@gitlab/duo-cli || echo "GitLab Duo package not found"),
           %(export PATH="$(npm bin -g):$PATH"),
           %(which duo || echo "duo not in PATH")
@@ -203,7 +210,7 @@ module Ai
         cli_command = %(duo run --existing-session-id #{@workflow.id} --connection-type websocket)
         wrapped_commands = sandbox_enabled? ? sandbox.wrap_command(cli_command) : [cli_command]
 
-        cli_install_commands + wrapped_commands
+        cli_setup_commands + wrapped_commands
       end
 
       def workflow_metadata
