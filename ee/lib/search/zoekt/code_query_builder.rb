@@ -3,8 +3,6 @@
 module Search
   module Zoekt
     class CodeQueryBuilder < QueryBuilder
-      MAX_32BIT_INTEGER = (2**32) - 1
-
       def build
         { query: build_payload }
       end
@@ -26,7 +24,7 @@ module Search
         when :project
           raise ArgumentError, 'Project ID cannot be empty for project search' if project_id.blank?
 
-          children << by_repo_ids([project_id], context: { name: 'project_id_search' })
+          children << Filters.by_repo_ids([project_id], context: { name: 'project_id_search' })
         when :group
           children << Filters.by_traversal_ids(
             auth.get_traversal_ids_for_group(group_id),
@@ -50,27 +48,15 @@ module Search
       def build_repo_ids_payload(base_query)
         raise ArgumentError, 'Repo ids cannot be empty' if options[:repo_ids].blank?
 
-        Filters.and_filters(base_query, by_repo_ids(options[:repo_ids]))
+        Filters.and_filters(base_query, Filters.by_repo_ids(options[:repo_ids]))
       end
 
       def access_branches(auth)
         @access_branches ||= AccessBranchBuilder.new(current_user, auth, options).build
       end
 
-      def by_repo_ids(ids, context: nil)
-        return Filters.by_project_ids(ids, context: context) if use_meta_project_ids?(ids)
-
-        Filters.by_repo_ids(ids, context: context)
-      end
-
       def use_zoekt_traversal_id_query?
         options.fetch(:use_traversal_id_queries)
-      end
-
-      def use_meta_project_ids?(ids)
-        return true if Feature.enabled?(:zoekt_search_meta_project_ids, current_user)
-
-        ids.any? { |id| id > MAX_32BIT_INTEGER }
       end
     end
   end

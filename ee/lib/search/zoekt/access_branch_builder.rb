@@ -127,7 +127,7 @@ module Search
       def project_filters_for_ids(project_ids)
         return [] if project_ids.blank?
 
-        [by_repo_ids(project_ids)]
+        [Filters.by_repo_ids(project_ids)]
       end
 
       def authorized_traversal_ids_for_groups(groups)
@@ -197,16 +197,6 @@ module Search
           Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
           context: { name: 'private_authorized_branch' }
         )
-      end
-
-      def by_repo_ids(ids, context: nil)
-        return Filters.by_project_ids(ids, context: context) if use_meta_project_ids?
-
-        Filters.by_repo_ids(ids, context: context)
-      end
-
-      def use_meta_project_ids?
-        Feature.enabled?(:zoekt_search_meta_project_ids, current_user)
       end
     end
   end

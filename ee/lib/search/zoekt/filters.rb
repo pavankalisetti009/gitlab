@@ -3,6 +3,8 @@
 module Search
   module Zoekt
     module Filters
+      MAX_32BIT_INTEGER = (2**32) - 1
+
       class << self
         def by_substring(pattern:, case_sensitive: nil, file_name: nil, content: nil, context: nil)
           filter = {
@@ -20,12 +22,14 @@ module Search
         def by_repo_ids(ids, context: nil)
           raise ArgumentError, "ids must be an Array, got #{ids.class}" unless ids.is_a?(Array)
 
+          return by_project_ids_through_meta(ids, context: context) if ids.any? { |id| id.to_i > MAX_32BIT_INTEGER }
+
           with_context(context) do
             { repo_ids: ids.map(&:to_i) }
           end
         end
 
-        def by_project_ids(ids, context: nil)
+        def by_project_ids_through_meta(ids, context: nil)
           raise ArgumentError, "ids must be an Array, got #{ids.class}" unless ids.is_a?(Array)
           raise ArgumentError, 'Project IDs cannot be empty' if ids.empty?
 

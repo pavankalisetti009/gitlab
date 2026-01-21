@@ -25,7 +25,7 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
 
   describe '#build' do
     context 'when project search' do
-      let(:extracted_result_path) { 'search_project_meta_project_id.json' }
+      let(:extracted_result_path) { 'search_project.json' }
 
       let(:options) do
         {
@@ -40,23 +40,14 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
       it 'builds the correct object' do
         expect(result).to eq(expected_extracted_result)
       end
-
-      context 'when zoekt_search_meta_project_ids is disabled' do
-        let(:extracted_result_path) { 'search_project.json' }
-
-        before do
-          stub_feature_flags(zoekt_search_meta_project_ids: false)
-        end
-
-        it 'builds the correct object' do
-          expect(result).to eq(expected_extracted_result)
-        end
-      end
     end
 
     context 'when group search' do
       let(:extracted_result_path) { 'search_group_meta_project_id.json' }
       let_it_be(:group) { create(:group) }
+      let(:large_project_id_1) { ::Search::Zoekt::Filters::MAX_32BIT_INTEGER + 1 }
+      let(:large_project_id_2) { ::Search::Zoekt::Filters::MAX_32BIT_INTEGER + 2 }
+      let(:large_project_id_3) { ::Search::Zoekt::Filters::MAX_32BIT_INTEGER + 3 }
 
       let(:options) do
         {
@@ -69,7 +60,11 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
       end
 
       before do
-        guest_projects = class_double(ApplicationRecord, exists?: true, pluck_primary_key: [1, 56, 99])
+        guest_projects = class_double(
+          ApplicationRecord,
+          exists?: true,
+          pluck_primary_key: [large_project_id_1, large_project_id_2, large_project_id_3]
+        )
         allow(auth).to receive(:get_projects_for_user)
           .with(hash_including(search_level: :group, group_ids: [group.id]))
           .and_return(guest_projects)
@@ -128,10 +123,6 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
           }
         end
 
-        before do
-          stub_feature_flags(zoekt_search_meta_project_ids: false)
-        end
-
         context 'and repo ids are not provided' do
           let(:repo_ids) { nil }
 
@@ -148,22 +139,13 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
           end
         end
       end
-
-      context 'when zoekt_search_meta_project_ids is disabled' do
-        let(:extracted_result_path) { 'search_group_user_access.json' }
-
-        before do
-          stub_feature_flags(zoekt_search_meta_project_ids: false)
-        end
-
-        it 'builds the correct object' do
-          expect(result).to eq(expected_extracted_result)
-        end
-      end
     end
 
     context 'when global search' do
       let(:extracted_result_path) { 'search_global_meta_project_id.json' }
+      let(:large_project_id_1) { ::Search::Zoekt::Filters::MAX_32BIT_INTEGER + 1 }
+      let(:large_project_id_2) { ::Search::Zoekt::Filters::MAX_32BIT_INTEGER + 2 }
+      let(:large_project_id_3) { ::Search::Zoekt::Filters::MAX_32BIT_INTEGER + 3 }
 
       let(:options) do
         {
@@ -175,13 +157,22 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
       end
 
       before do
-        guest_projects = class_double(ApplicationRecord, exists?: true, pluck_primary_key: [1])
+        guest_projects = class_double(ApplicationRecord, exists?: true, pluck_primary_key: [large_project_id_1])
         allow(auth).to receive(:get_projects_for_user)
-          .with(hash_including(min_access_level: ::Gitlab::Access::GUEST, group_ids: [],
-            project_ids: [], search_level: :global))
-          .and_return(guest_projects)
+          .with(
+            hash_including(
+              min_access_level: ::Gitlab::Access::GUEST,
+              group_ids: [],
+              project_ids: [],
+              search_level: :global
+            )
+          ).and_return(guest_projects)
 
-        reporter_projects = class_double(ApplicationRecord, exists?: true, pluck_primary_key: [56, 99])
+        reporter_projects = class_double(
+          ApplicationRecord,
+          exists?: true,
+          pluck_primary_key: [large_project_id_2, large_project_id_3]
+        )
         allow(auth).to receive(:get_projects_for_user)
           .with(hash_including(min_access_level: ::Gitlab::Access::REPORTER, group_ids: [],
             project_ids: [], search_level: :global))
@@ -231,18 +222,6 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
       it 'builds the correct object' do
         expect(result).to eq(expected_extracted_result)
       end
-
-      context 'when zoekt_search_meta_project_ids is disabled' do
-        let(:extracted_result_path) { 'search_global.json' }
-
-        before do
-          stub_feature_flags(zoekt_search_meta_project_ids: false)
-        end
-
-        it 'builds the correct object' do
-          expect(result).to eq(expected_extracted_result)
-        end
-      end
     end
 
     context 'when search_level is not recognized' do
@@ -264,7 +243,7 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
     end
 
     context 'when project IDs exceed uint32' do
-      let(:large_project_id) { described_class::MAX_32BIT_INTEGER + 1 }
+      let(:large_project_id) { ::Search::Zoekt::Filters::MAX_32BIT_INTEGER + 1 }
       let(:extracted_result_path) { 'search_project_meta_project_id.json' }
 
       let(:options) do
@@ -286,26 +265,10 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
         expect(project_filter).to have_key(:meta)
         expect(project_filter[:meta][:key]).to eq('project_id')
       end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(zoekt_search_meta_project_ids: false)
-        end
-
-        it 'uses meta project_id filter even when feature flag is disabled' do
-          result_query = result[:query]
-          project_filter = result_query[:and][:children].find do |child|
-            child.dig(:_context, :name) == 'project_id_search'
-          end
-
-          expect(project_filter).to have_key(:meta)
-          expect(project_filter[:meta][:key]).to eq('project_id')
-        end
-      end
     end
 
     context 'when project ID is within uint32 range' do
-      let(:extracted_result_path) { 'search_project_meta_project_id.json' }
+      let(:extracted_result_path) { 'search_project.json' }
       let(:options) do
         {
           features: 'repository',
@@ -316,32 +279,14 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
         }
       end
 
-      it 'uses meta project_id filter' do
+      it 'uses repo_ids filter' do
         result_query = result[:query]
         project_filter = result_query[:and][:children].find do |child|
           child.dig(:_context, :name) == 'project_id_search'
         end
 
-        expect(project_filter).to have_key(:meta)
-        expect(project_filter[:meta][:key]).to eq('project_id')
-      end
-
-      context 'when feature flag is disabled' do
-        let(:extracted_result_path) { 'search_project.json' }
-
-        before do
-          stub_feature_flags(zoekt_search_meta_project_ids: false)
-        end
-
-        it 'uses repo_ids filter' do
-          result_query = result[:query]
-          project_filter = result_query[:and][:children].find do |child|
-            child.dig(:_context, :name) == 'project_id_search'
-          end
-
-          expect(project_filter).to have_key(:repo_ids)
-          expect(project_filter[:repo_ids]).to eq([1])
-        end
+        expect(project_filter).to have_key(:repo_ids)
+        expect(project_filter[:repo_ids]).to eq([1])
       end
     end
 
