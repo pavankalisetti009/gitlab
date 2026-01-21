@@ -8,6 +8,12 @@ module API
         include APIGuard
 
         HEADERS_TO_FORWARD_AS_GRPC_METADATA = %w[X-Gitlab-Language-Server-Version X-Gitlab-Client-Type].freeze
+        WORKFLOW_EVENTS = {
+          ::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::WORKFLOW_DEFINITION =>
+            'trigger_sast_vulnerability_fp_detection_workflow',
+          ::Vulnerabilities::TriggerResolutionWorkflowWorker::WORKFLOW_DEFINITION =>
+            'trigger_sast_vulnerability_resolution_workflow'
+        }.freeze
 
         helpers ::API::Helpers::DuoWorkflowHelpers
         helpers Gitlab::InternalEventsTracking
@@ -257,14 +263,13 @@ module API
           end
 
           def track_event(params)
-            return unless params[:workflow_definition] ==
-              ::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::WORKFLOW_DEFINITION
+            return unless WORKFLOW_EVENTS.key?(params[:workflow_definition])
 
             vulnerability = Vulnerability.find_by_id(params[:goal])
             return unless vulnerability
 
             track_internal_event(
-              'trigger_sast_vulnerability_fp_detection_workflow',
+              WORKFLOW_EVENTS[params[:workflow_definition]],
               project: vulnerability.project,
               additional_properties: {
                 label: 'manual',

@@ -17,7 +17,6 @@ module Mutations
 
       argument :merge_request_id, ::Types::GlobalIDType[::MergeRequest],
         required: true, description: 'ID of the merge request.'
-
       argument :readiness_score, GraphQL::Types::Float,
         required: false,
         description: 'Confidence rating representing the estimated accuracy of the fix in the AI generated ' \

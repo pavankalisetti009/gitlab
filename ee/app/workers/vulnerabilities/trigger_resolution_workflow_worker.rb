@@ -3,6 +3,7 @@
 module Vulnerabilities
   class TriggerResolutionWorkflowWorker
     include ApplicationWorker
+    include Gitlab::InternalEventsTracking
 
     StartWorkflowServiceError = Class.new(StandardError)
 
@@ -14,7 +15,7 @@ module Vulnerabilities
     sidekiq_options retry: 10
 
     CONFIDENCE_THRESHOLD = 0.6
-    WORKFLOW_DEFINITION = ::Ai::Catalog::FoundationalFlow['resolve_sast_vulnerability/v1']
+    WORKFLOW_DEFINITION = 'resolve_sast_vulnerability/v1'
 
     def perform(vulnerability_flag_id)
       vulnerability_flag = find_vulnerability_flag(vulnerability_flag_id)
@@ -26,7 +27,7 @@ module Vulnerabilities
 
       result = trigger_workflow(finding)
       if result.success?
-        create_triggered_workflow_record(finding, result)
+        track_event(finding) if create_triggered_workflow_record(finding, result)
       else
         handle_error(result, vulnerability_flag, finding)
       end
@@ -46,7 +47,7 @@ module Vulnerabilities
       ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
         container: finding.project,
         current_user: vulnerability.author,
-        workflow_definition: WORKFLOW_DEFINITION,
+        workflow_definition: ::Ai::Catalog::FoundationalFlow[WORKFLOW_DEFINITION],
         goal: vulnerability.id.to_s,
         source_branch: finding.project.default_branch
       ).execute
@@ -66,6 +67,8 @@ module Vulnerabilities
         vulnerability_id: finding.vulnerability_id,
         workflow_id: workflow_id
       )
+
+      nil
     end
 
     def handle_error(result, vulnerability_flag, finding)
@@ -84,6 +87,20 @@ module Vulnerabilities
       Gitlab::ErrorTracking.log_and_raise_exception(
         error,
         vulnerability_flag_id: vulnerability_flag_id
+      )
+    end
+
+    def track_event(finding)
+      vulnerability = finding.vulnerability
+
+      track_internal_event(
+        'trigger_sast_vulnerability_resolution_workflow',
+        project: finding.project,
+        additional_properties: {
+          label: 'automatic',
+          value: vulnerability.id,
+          property: vulnerability.severity
+        }
       )
     end
   end

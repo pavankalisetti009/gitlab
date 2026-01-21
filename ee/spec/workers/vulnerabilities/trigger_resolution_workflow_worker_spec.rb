@@ -76,6 +76,19 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
               expect(triggered_workflow.workflow_name).to eq("resolve_sast_vulnerability")
             end
 
+            it 'tracks the internal event' do
+              expect { worker.perform(vulnerability_flag_id) }
+                .to trigger_internal_events('trigger_sast_vulnerability_resolution_workflow')
+                      .with(project: project,
+                        additional_properties: {
+                          label: 'automatic',
+                          value: vulnerability.id,
+                          property: vulnerability.severity
+                        }
+                      )
+                      .and increment_usage_metrics('counts.count_total_trigger_sast_vulnerability_resolution_workflow')
+            end
+
             context 'when creating triggered workflow record fails' do
               let(:error) { ActiveRecord::RecordInvalid.new }
 
@@ -95,6 +108,11 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
 
               it 'does not raise the exception' do
                 expect { worker.perform(vulnerability_flag_id) }.not_to raise_error
+              end
+
+              it 'does not track the event' do
+                expect { worker.perform(vulnerability_flag_id) }
+                  .not_to trigger_internal_events('trigger_sast_vulnerability_resolution_workflow')
               end
             end
           end
@@ -125,6 +143,14 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
               rescue StandardError
                 described_class::StartWorkflowServiceError
               end.not_to change { Vulnerabilities::TriggeredWorkflow.count }
+            end
+
+            it 'does not track the event' do
+              expect(worker).not_to receive(:track_internal_event)
+
+              expect { worker.perform(vulnerability_flag_id) }.to raise_error(
+                described_class::StartWorkflowServiceError
+              )
             end
           end
         end
