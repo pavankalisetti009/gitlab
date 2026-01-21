@@ -28,9 +28,16 @@ module Gitlab
 
       def allowed?
         return false unless user
+        return false unless container
         return false unless Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(feature_name)
-        return false unless user.allowed_to_use?(feature_name, licensed_feature: licensed_feature)
-        return false unless container&.duo_features_enabled
+
+        return false unless user.allowed_to_use?(
+          feature_name,
+          licensed_feature: licensed_feature,
+          root_namespace: container.root_ancestor
+        )
+
+        return false unless container.duo_features_enabled
 
         ::Gitlab::Llm::StageCheck.available?(container, feature_name)
       end

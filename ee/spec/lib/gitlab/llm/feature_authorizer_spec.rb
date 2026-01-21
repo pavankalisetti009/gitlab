@@ -19,7 +19,9 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
 
   describe '#allowed?' do
     before do
-      allow(user).to receive(:allowed_to_use?).and_return(true)
+      allow(user).to receive(:allowed_to_use?)
+        .with(feature_name, licensed_feature: :ai_features, root_namespace: group.root_ancestor)
+        .and_return(true)
     end
 
     context 'when container has correct setting and license' do
@@ -50,7 +52,9 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
 
     context 'when user is not allowed to use feature' do
       before do
-        allow(user).to receive(:allowed_to_use?).and_return(false)
+        allow(user).to receive(:allowed_to_use?)
+          .with(feature_name, licensed_feature: :ai_features, root_namespace: group.root_ancestor)
+          .and_return(false)
       end
 
       it 'returns false' do
@@ -113,8 +117,54 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
         end
 
         it 'uses the specified licensed_feature' do
-          expect(user).to receive(:allowed_to_use?).with(feature_name,
-            licensed_feature: :custom_feature).and_return(true)
+          expect(user).to receive(:allowed_to_use?).with(
+            feature_name,
+            licensed_feature: :custom_feature,
+            root_namespace: group.root_ancestor
+          ).and_return(true)
+          expect(allowed?).to be true
+        end
+      end
+    end
+
+    context 'when verifying root_namespace parameter is passed correctly' do
+      before do
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+        group.namespace_settings.update!(duo_features_enabled: true)
+      end
+
+      it 'calls allowed_to_use? with root_namespace from container.root_ancestor' do
+        expect(user).to receive(:allowed_to_use?).with(
+          feature_name,
+          licensed_feature: :ai_features,
+          root_namespace: group.root_ancestor
+        ).and_return(true)
+
+        expect(allowed?).to be true
+      end
+
+      context 'with nested group' do
+        let(:subgroup) { create(:group, parent: group) }
+        let(:instance) do
+          described_class.new(
+            container: subgroup,
+            feature_name: feature_name,
+            user: user
+          )
+        end
+
+        before do
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+          subgroup.namespace_settings.update!(duo_features_enabled: true)
+        end
+
+        it 'uses root_ancestor of the container' do
+          expect(user).to receive(:allowed_to_use?).with(
+            feature_name,
+            licensed_feature: :ai_features,
+            root_namespace: subgroup.root_ancestor
+          ).and_return(true)
+
           expect(allowed?).to be true
         end
       end
