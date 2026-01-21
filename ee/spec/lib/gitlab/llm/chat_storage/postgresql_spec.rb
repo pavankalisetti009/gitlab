@@ -93,6 +93,42 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
         end.to raise_error('thread_absent')
       end
     end
+
+    context 'when message has no additional_context' do
+      it 'stores extras without additional_context key' do
+        message = build(:ai_chat_message, payload.merge(additional_context: nil))
+
+        storage.add(message)
+
+        last = storage.messages.last
+        extras = ::Gitlab::Json.safe_parse(last[:extras])
+        expect(extras.key?('additional_context')).to be false
+      end
+    end
+
+    context 'when message has error_code but no errors' do
+      it 'stores error_details with only code' do
+        message = build(:ai_chat_message, payload.merge(errors: [], error_code: 'G3001'))
+
+        storage.add(message)
+
+        last = storage.messages.last
+        error_details = ::Gitlab::Json.safe_parse(last[:error_details])
+        expect(error_details['code']).to eq('G3001')
+        expect(error_details.key?('messages')).to be false
+      end
+    end
+
+    context 'when message has no request_id' do
+      it 'stores message without request_xid field' do
+        message = build(:ai_chat_message, payload.merge(request_id: nil))
+
+        storage.add(message)
+
+        last = storage.messages.last
+        expect(last.request_id).to be_nil
+      end
+    end
   end
 
   describe '#messages' do

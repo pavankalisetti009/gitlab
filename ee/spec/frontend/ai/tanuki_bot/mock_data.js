@@ -51,6 +51,7 @@ export const MOCK_TANUKI_MESSAGE = {
   },
   requestId: '987',
   errors: [],
+  errorCode: null,
   timestamp: '2021-04-21T12:00:00.000Z',
 };
 
@@ -61,6 +62,7 @@ export const MOCK_USER_MESSAGE = {
   role: MESSAGE_TYPES.USER,
   requestId: '987',
   errors: [],
+  errorCode: null,
   timestamp: '2021-04-21T12:00:00.000Z',
   extras: null,
 };
@@ -70,6 +72,7 @@ export const MOCK_FAILING_USER_MESSAGE = {
   role: MESSAGE_TYPES.USER,
   requestId: null,
   errors: ['Oh darn, you are not allowed to use AI!'],
+  errorCode: 'G3001',
 };
 
 export const MOCK_CHUNK_MESSAGE = (content = '', chunkId = 0, requestId = 1) => {
@@ -78,6 +81,7 @@ export const MOCK_CHUNK_MESSAGE = (content = '', chunkId = 0, requestId = 1) => 
     requestId,
     content,
     errors: [],
+    errorCode: null,
     role: 'ASSISTANT',
     timestamp: '2024-05-29T17:17:06Z',
     type: null,
@@ -97,6 +101,7 @@ export const GENERATE_MOCK_TANUKI_RES = (
     content: body,
     contentHtml: `<p>${body}</p>`,
     errors: [],
+    errorCode: null,
     requestId,
     role: MOCK_TANUKI_MESSAGE.role,
     timestamp: '2021-04-21T12:00:00.000Z',
@@ -116,6 +121,7 @@ export const MOCK_TANUKI_ERROR_RES = (body = JSON.stringify(MOCK_TANUKI_MESSAGE)
         content: body,
         contentHtml: body,
         errors: ['error'],
+        errorCode: 'A1000',
       },
     },
   };

@@ -30,6 +30,10 @@ module Gitlab
         raise NotImplementedError
       end
 
+      def error_code
+        nil
+      end
+
       def extras
         nil
       end

@@ -18,6 +18,7 @@ subscription aiCompletionResponse(
     content
     contentHtml @include(if: $htmlResponse)
     errors
+    errorCode
     role
     threadId
     timestamp

@@ -127,6 +127,7 @@ export const getAiSubscriptionResponse = (content = 'response text') => ({
   content,
   contentHtml: `<p>${content}</p>`,
   errors: [],
+  errorCode: null,
   requestId: '123',
   role: 'assistant',
   timestamp: '2021-05-26T14:00:00.000Z',

@@ -22,7 +22,14 @@ module Gitlab
           data['extras'] = extras.to_json if extras
           data['content'] = message.content[0, MAX_TEXT_LIMIT] if message.content
           data['message_xid'] = message.id if message.id
-          data['error_details'] = message.errors.to_json if message.errors
+
+          if message.errors.present? || message.error_code.present?
+            error_data = {}
+            error_data['messages'] = message.errors if message.errors.present?
+            error_data['code'] = message.error_code if message.error_code.present?
+            data['error_details'] = error_data.to_json
+          end
+
           data['request_xid'] = message.request_id if message.request_id
 
           data.compact!

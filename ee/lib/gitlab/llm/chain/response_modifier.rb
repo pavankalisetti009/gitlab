@@ -22,6 +22,10 @@ module Gitlab
           @errors ||= ai_response.status == :error ? [error_message] : []
         end
 
+        def error_code
+          @error_code ||= ai_response.status == :error ? ai_response.error_code : nil
+        end
+
         private
 
         def error_message

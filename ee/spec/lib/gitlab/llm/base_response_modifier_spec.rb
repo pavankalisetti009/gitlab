@@ -53,4 +53,12 @@ RSpec.describe Gitlab::Llm::BaseResponseModifier, feature_category: :duo_chat do
       expect(subject.extras).to be_nil
     end
   end
+
+  describe '#error_code' do
+    let(:response_json) { nil }
+
+    it 'is empty by default' do
+      expect(subject.error_code).to be_nil
+    end
+  end
 end

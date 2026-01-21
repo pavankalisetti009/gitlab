@@ -12,6 +12,7 @@ FactoryBot.define do
     timestamp { Time.current }
     extras { nil }
     errors { nil }
+    error_code { nil }
     ai_action { :explain_code }
     client_subscription_id { nil }
     type { nil }
@@ -38,6 +39,7 @@ FactoryBot.define do
         timestamp: timestamp,
         extras: extras,
         errors: errors,
+        error_code: error_code,
         ai_action: ai_action,
         client_subscription_id: client_subscription_id,
         context: Gitlab::Llm::AiMessageContext.new(context),

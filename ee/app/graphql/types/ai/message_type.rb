@@ -54,6 +54,11 @@ module Types
         scopes: [:api, :read_api, :ai_features],
         description: 'Message errors.'
 
+      field :error_code, GraphQL::Types::String,
+        null: true,
+        scopes: [:api, :read_api, :ai_features],
+        description: 'Error code for troubleshooting.'
+
       field :type, Types::Ai::MessageTypeEnum,
         null: true,
         scopes: [:api, :read_api, :ai_features],
@@ -102,6 +107,15 @@ module Types
           object.error_details
         else # Hash-like
           object['errors']
+        end
+      end
+
+      def error_code
+        case object
+        when ::Ai::Conversation::Message
+          object.error_code
+        else # Hash-like
+          object['error_code']
         end
       end
 
