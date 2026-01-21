@@ -23,7 +23,7 @@ module Ai
           # - user has duo_agent_platform access (checks user's add-on assignments)
           # - GA rollout is enabled OR experimental features are enabled
           # - DWS is configured (for self-managed)
-          user.allowed_to_use?(:duo_agent_platform) &&
+          user.allowed_to_use?(:duo_agent_platform, root_namespace: container.root_ancestor) &&
             container.duo_code_review_dap_available? &&
             duo_agent_platform_configured?
         end

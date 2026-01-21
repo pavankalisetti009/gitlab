@@ -257,7 +257,7 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
               before do
                 project.project_setting.update!(duo_features_enabled: true, duo_foundational_flows_enabled: true)
                 create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
-                allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+                allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform, anything).and_return(true)
                 allow(::Gitlab::Llm::StageCheck).to receive(:available?)
                   .with(merge_request.project, :duo_workflow).and_return(true)
                 allow(::Ai::Catalog::FoundationalFlow).to receive(:[])
