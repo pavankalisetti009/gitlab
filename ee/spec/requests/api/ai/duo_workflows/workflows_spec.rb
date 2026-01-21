@@ -621,6 +621,81 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         end
       end
 
+      context 'when tracking internal events for SAST vulnerability resolution' do
+        let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: vulnerability.id.to_s,
+            workflow_definition: ::Vulnerabilities::TriggerResolutionWorkflowWorker::WORKFLOW_DEFINITION
+          }
+        end
+
+        it 'tracks the event with correct properties' do
+          expect { post api(path, user), params: params }
+            .to trigger_internal_events('trigger_sast_vulnerability_resolution_workflow')
+                  .with(project: project,
+                    category: 'InternalEventTracking',
+                    additional_properties: {
+                      label: 'manual',
+                      value: vulnerability.id,
+                      property: vulnerability.severity
+                    }
+                  )
+                  .and increment_usage_metrics('counts.count_total_trigger_sast_vulnerability_resolution_workflow')
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+
+        context 'when vulnerability does not exist' do
+          let(:params) do
+            {
+              project_id: project.id,
+              start_workflow: true,
+              goal: non_existing_record_id.to_s,
+              workflow_definition: ::Vulnerabilities::TriggerResolutionWorkflowWorker::WORKFLOW_DEFINITION
+            }
+          end
+
+          it 'does not track the event' do
+            expect { post api(path, user), params: params }
+              .not_to trigger_internal_events('trigger_sast_vulnerability_resolution_workflow')
+          end
+        end
+
+        context 'when workflow_definition is not for SAST resolution' do
+          let(:params) do
+            {
+              project_id: project.id,
+              start_workflow: true,
+              goal: vulnerability.id.to_s,
+              workflow_definition: 'software_development'
+            }
+          end
+
+          it 'does not track the event' do
+            expect { post api(path, user), params: params }
+              .not_to trigger_internal_events('trigger_sast_vulnerability_resolution_workflow')
+          end
+        end
+
+        context 'when start_workflow is not present' do
+          let(:params) do
+            {
+              project_id: project.id,
+              goal: vulnerability.id.to_s,
+              workflow_definition: ::Vulnerabilities::TriggerResolutionWorkflowWorker::WORKFLOW_DEFINITION
+            }
+          end
+
+          it 'does not track the event' do
+            expect { post api(path, user), params: params }
+              .not_to trigger_internal_events('trigger_sast_vulnerability_resolution_workflow')
+          end
+        end
+      end
+
       context 'when duo_remote_flows_enabled settings is turned off' do
         before do
           project.project_setting.update!(duo_remote_flows_enabled: false)
