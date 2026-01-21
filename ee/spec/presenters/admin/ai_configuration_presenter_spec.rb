@@ -29,18 +29,19 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       }
     end
 
-    let(:ai_settings_attributes) do
-      {
-        ai_gateway_url: 'http://localhost:3000',
-        duo_agent_platform_service_url: 'localhost:50052',
-        ai_gateway_timeout_seconds: 60,
-        duo_core_features_enabled?: true,
-        duo_agent_platform_enabled: true,
-        foundational_agents_default_enabled: true
-      }
+    let(:ai_settings) do
+      Ai::Setting.instance.tap do |settings|
+        allow(settings).to receive_messages(
+          ai_gateway_url: 'http://localhost:3000',
+          duo_agent_platform_service_url: 'localhost:50052',
+          ai_gateway_timeout_seconds: 60,
+          duo_core_features_enabled?: true,
+          duo_agent_platform_enabled: true,
+          foundational_agents_default_enabled: true
+        )
+      end
     end
 
-    let(:ai_settings) { instance_double(Ai::Setting, **ai_settings_attributes) }
     let(:beta_self_hosted_models_enabled) { true }
     let(:active_duo_add_ons_exist?) { true }
     let(:namespace_access_rules) do
@@ -144,7 +145,9 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         show_foundational_agents_availability: 'true',
         show_foundational_agents_per_agent_availability: 'false',
         show_duo_agent_platform_enablement_setting: 'true',
-        namespace_access_rules: Gitlab::Json.dump(transformed_namespace_access_rules)
+        namespace_access_rules: Gitlab::Json.dump(transformed_namespace_access_rules),
+        ai_minimum_access_level_to_execute: '10',
+        ai_minimum_access_level_to_execute_async: '30'
       )
     end
 
@@ -165,13 +168,17 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     end
 
     context 'with foundational_agents_default_enabled false' do
-      let(:ai_settings_attributes) { super().merge(foundational_agents_default_enabled: false) }
+      before do
+        allow(ai_settings).to receive_messages(foundational_agents_default_enabled: false)
+      end
 
       it { expect(settings).to include(foundational_agents_default_enabled: 'false') }
     end
 
     context 'with another ai_gateway_url' do
-      let(:ai_settings_attributes) { super().merge(ai_gateway_url: 'https://example.com') }
+      before do
+        allow(ai_settings).to receive_messages(ai_gateway_url: 'https://example.com')
+      end
 
       it { expect(settings).to include(ai_gateway_url: 'https://example.com') }
     end
@@ -230,7 +237,9 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     end
 
     context 'without Duo Core features disabled' do
-      let(:ai_settings_attributes) { super().merge(duo_core_features_enabled?: false) }
+      before do
+        allow(ai_settings).to receive_messages(duo_core_features_enabled?: false)
+      end
 
       it { expect(settings).to include(duo_core_features_enabled: 'false') }
     end
@@ -251,6 +260,18 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       let(:application_setting_attributes) { super().merge(model_prompt_cache_enabled?: false) }
 
       it { expect(settings).to include(prompt_cache_enabled: 'false') }
+    end
+
+    context 'with different AI minimum access levels' do
+      before do
+        allow(ai_settings).to receive_messages(
+          ai_minimum_access_level_to_execute: 40,
+          ai_minimum_access_level_to_execute_async: 50
+        )
+      end
+
+      it { expect(settings).to include(ai_minimum_access_level_to_execute: '40') }
+      it { expect(settings).to include(ai_minimum_access_level_to_execute_async: '50') }
     end
 
     describe 'foundational_agent_statuses' do

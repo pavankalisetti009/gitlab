@@ -6,30 +6,34 @@ import {
   ACCESS_LEVEL_MAINTAINER_INTEGER,
   ACCESS_LEVEL_OWNER_INTEGER,
   ACCESS_LEVEL_ADMIN_INTEGER,
+  ACCESS_LEVEL_GUEST_INTEGER,
+  ACCESS_LEVEL_REPORTER_INTEGER,
+  ACCESS_LEVEL_PLANNER_INTEGER,
 } from '~/access_level/constants';
 
 describe('AiRolePermissions', () => {
-  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const findMainFormGroup = () => wrapper.findComponent(GlFormGroup);
-  const findEnableRoleFormGroup = () => wrapper.find('[label-for="enable-role-selector"]');
-  const findExecuteRoleFormGroup = () => wrapper.find('[label-for="execute-role-selector"]');
-  const findManageRoleFormGroup = () => wrapper.find('[label-for="manage-role-selector"]');
-  const findEnableRoleSelect = () => wrapper.findByTestId('enable-role-selector');
-  const findExecuteRoleSelect = () => wrapper.findByTestId('execute-role-selector');
-  const findManageRoleSelect = () => wrapper.findByTestId('manage-role-selector');
+
+  const findMinimumAccessLevelExecuteAsyncFormGroup = () =>
+    wrapper.find('[label-for="minimum-access-level-execute-async-selector"]');
+  const findMinimumAccessLevelExecuteSyncFormGroup = () =>
+    wrapper.find('[label-for="minimum-access-level-execute-sync-selector"]');
+  const findMinimumAccessLevelExecuteAsyncSelect = () =>
+    wrapper.findByTestId('minimum-access-level-execute-async-selector');
+  const findMinimumAccessLevelExecuteSyncSelect = () =>
+    wrapper.findByTestId('minimum-access-level-execute-sync-selector');
 
   const createWrapper = ({ props = {}, provide = {}, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(AiRolePermissions, {
       propsData: {
-        enableOnProjectsMinimumRole: ACCESS_LEVEL_OWNER_INTEGER,
-        manageMinimumRole: ACCESS_LEVEL_MAINTAINER_INTEGER,
-        executeMinimumRole: ACCESS_LEVEL_DEVELOPER_INTEGER,
+        initialMinimumAccessLevelExecuteAsync: ACCESS_LEVEL_DEVELOPER_INTEGER,
+        initialMinimumAccessLevelExecuteSync: ACCESS_LEVEL_GUEST_INTEGER,
         ...props,
       },
       provide: {
-        duoAgentPlatformRolePermissionsEnabled: true,
+        isAdminInstanceDuoHome: false,
         ...provide,
       },
       stubs: {
@@ -45,234 +49,140 @@ describe('AiRolePermissions', () => {
     });
 
     it('renders the main form group with correct title', () => {
-      expect(findMainFormGroup().attributes('label')).toBe('Agent & Flow Permissions');
+      expect(findMainFormGroup().attributes('label')).toBe('Duo Agent Platform Permissions');
     });
 
     it('renders the section description', () => {
       createWrapper({ stubs: { GlFormGroup } });
 
       expect(findMainFormGroup().text()).toContain(
-        'Define the minimum role level to perform each of the following actions',
+        'Define the minimum role for the following actions',
       );
-    });
-
-    it('renders enable role form group with correct label and description', () => {
-      const enableFormGroup = findEnableRoleFormGroup();
-
-      expect(enableFormGroup.attributes('label')).toBe('Enable');
-      expect(enableFormGroup.attributes('description')).toBe(
-        'Minimum role required to enable agents and flows on projects.',
-      );
-      expect(enableFormGroup.attributes('label-for')).toBe('enable-role-selector');
-    });
-
-    it('renders manage role form group with correct label and description', () => {
-      const manageFormGroup = findManageRoleFormGroup();
-
-      expect(manageFormGroup.attributes('label')).toBe('Manage');
-      expect(manageFormGroup.attributes('description')).toBe(
-        'Minimum role required to create, duplicate, edit, delete, and show agents and flows.',
-      );
-      expect(manageFormGroup.attributes('label-for')).toBe('manage-role-selector');
     });
 
     it('renders execute role form group with correct label and description', () => {
-      const executeFormGroup = findExecuteRoleFormGroup();
+      const executeFormGroup = findMinimumAccessLevelExecuteSyncFormGroup();
 
-      expect(executeFormGroup.attributes('label')).toBe('Execute');
+      expect(executeFormGroup.attributes('label')).toBe('Execute Duo Agent Platform');
       expect(executeFormGroup.attributes('description')).toBe(
-        'Minimum role required to execute agents and flows.',
+        'Control who can use AI features that run without using CI/CD pipelines.',
       );
-      expect(executeFormGroup.attributes('label-for')).toBe('execute-role-selector');
+      expect(executeFormGroup.attributes('label-for')).toBe(
+        'minimum-access-level-execute-sync-selector',
+      );
+    });
+
+    it('renders execute async role form group with correct label and description', () => {
+      const executeAsyncFormGroup = findMinimumAccessLevelExecuteAsyncFormGroup();
+
+      expect(executeAsyncFormGroup.attributes('label')).toBe(
+        'Execute Duo Agent Platform with CI/CD pipelines',
+      );
+      expect(executeAsyncFormGroup.attributes('description')).toBe(
+        'Control who can use AI features that run using CI/CD pipelines.',
+      );
+      expect(executeAsyncFormGroup.attributes('label-for')).toBe(
+        'minimum-access-level-execute-async-selector',
+      );
     });
   });
 
-  describe('enable role selector', () => {
-    beforeEach(() => {
+  describe('execute async role selector', () => {
+    it('renders with correct default options', () => {
       createWrapper();
+
+      const expectedOptions = [
+        { text: 'Developer', value: 30 },
+        { text: 'Maintainer', value: 40 },
+        { text: 'Owner', value: 50 },
+      ];
+
+      expect(findMinimumAccessLevelExecuteAsyncSelect().props('options')).toEqual(expectedOptions);
     });
 
-    it('renders enable role select with correct options', () => {
-      const enableSelect = findEnableRoleSelect();
+    it('includes Admin role when isAdminInstanceDuoHome is true', () => {
+      createWrapper({ provide: { isAdminInstanceDuoHome: true } });
 
-      expect(enableSelect.attributes('id')).toBe('enable-role-selector');
-      expect(enableSelect.props('options')).toEqual([
-        { text: 'Maintainer', value: ACCESS_LEVEL_MAINTAINER_INTEGER },
-        { text: 'Owner', value: ACCESS_LEVEL_OWNER_INTEGER },
-      ]);
+      const expectedOptions = [
+        { text: 'Developer', value: 30 },
+        { text: 'Maintainer', value: 40 },
+        { text: 'Owner', value: 50 },
+        { text: 'Admin', value: 60 },
+      ];
+
+      expect(findMinimumAccessLevelExecuteAsyncSelect().props('options')).toEqual(expectedOptions);
     });
 
-    describe('when isAdminInstanceDuoHome is true', () => {
-      beforeEach(() => {
-        createWrapper({ provide: { isAdminInstanceDuoHome: true } });
+    it('displays value from initialMinimumAccessLevelExecuteAsync prop', () => {
+      createWrapper({
+        props: { initialMinimumAccessLevelExecuteAsync: ACCESS_LEVEL_MAINTAINER_INTEGER },
       });
 
-      it('includes Admin role in manage role options', () => {
-        expect(findEnableRoleSelect().props('options')).toEqual([
-          { text: 'Maintainer', value: ACCESS_LEVEL_MAINTAINER_INTEGER },
-          { text: 'Owner', value: ACCESS_LEVEL_OWNER_INTEGER },
-          { text: 'Admin', value: ACCESS_LEVEL_ADMIN_INTEGER },
-        ]);
-      });
+      expect(findMinimumAccessLevelExecuteAsyncSelect().attributes('value')).toBe(
+        String(ACCESS_LEVEL_MAINTAINER_INTEGER),
+      );
     });
 
-    it('sets initial value from enableOnProjectsMinimumRole prop', () => {
-      expect(findEnableRoleSelect().props('value')).toBe(ACCESS_LEVEL_OWNER_INTEGER);
-    });
-
-    it('passes the correct prop', () => {
-      createWrapper({ props: { enableOnProjectsMinimumRole: ACCESS_LEVEL_OWNER_INTEGER } });
-
-      expect(findEnableRoleSelect().props('value')).toBe(ACCESS_LEVEL_OWNER_INTEGER);
-    });
-
-    describe('role selection interactions', () => {
-      beforeEach(() => {
-        createWrapper();
-      });
-
-      it('emits enable-role-change event when enable role is changed', () => {
-        findEnableRoleSelect().vm.$emit('change', ACCESS_LEVEL_OWNER_INTEGER);
-
-        expect(wrapper.emitted('enable-role-change')).toHaveLength(1);
-        expect(wrapper.emitted('enable-role-change')[0]).toEqual([ACCESS_LEVEL_OWNER_INTEGER]);
-      });
-    });
-  });
-
-  describe('manage role selector', () => {
-    beforeEach(() => {
+    it('emits role-change event when selection changes', () => {
       createWrapper();
-    });
 
-    it('renders manage role select with correct options', () => {
-      expect(findManageRoleSelect().props('options')).toEqual([
-        { text: 'Maintainer', value: ACCESS_LEVEL_MAINTAINER_INTEGER },
-        { text: 'Owner', value: ACCESS_LEVEL_OWNER_INTEGER },
+      findMinimumAccessLevelExecuteAsyncSelect().vm.$emit(
+        'change',
+        ACCESS_LEVEL_MAINTAINER_INTEGER,
+      );
+
+      expect(wrapper.emitted('minimum-access-level-execute-async-change')).toEqual([
+        [ACCESS_LEVEL_MAINTAINER_INTEGER],
       ]);
-    });
-
-    describe('when isAdminInstanceDuoHome is true', () => {
-      beforeEach(() => {
-        createWrapper({ provide: { isAdminInstanceDuoHome: true } });
-      });
-
-      it('includes Admin role in manage role options', () => {
-        expect(findManageRoleSelect().props('options')).toEqual([
-          { text: 'Maintainer', value: ACCESS_LEVEL_MAINTAINER_INTEGER },
-          { text: 'Owner', value: ACCESS_LEVEL_OWNER_INTEGER },
-          { text: 'Admin', value: ACCESS_LEVEL_ADMIN_INTEGER },
-        ]);
-      });
-    });
-
-    it('sets initial value from manageMinimumRole prop', () => {
-      expect(findManageRoleSelect().props('value')).toBe(ACCESS_LEVEL_MAINTAINER_INTEGER);
-    });
-
-    describe('role selection interactions', () => {
-      beforeEach(() => {
-        createWrapper();
-      });
-
-      it('emits manage-role-change event when manage role is changed', () => {
-        findManageRoleSelect().vm.$emit('change', ACCESS_LEVEL_OWNER_INTEGER);
-
-        expect(wrapper.emitted('manage-role-change')).toHaveLength(1);
-        expect(wrapper.emitted('manage-role-change')[0]).toEqual([ACCESS_LEVEL_OWNER_INTEGER]);
-      });
-    });
-
-    describe('with custom prop values', () => {
-      beforeEach(() => {
-        createWrapper({
-          props: {
-            manageMinimumRole: ACCESS_LEVEL_OWNER_INTEGER,
-          },
-        });
-      });
-
-      it('sets initial value from custom prop', () => {
-        expect(findManageRoleSelect().props('value')).toBe(ACCESS_LEVEL_OWNER_INTEGER);
-      });
     });
   });
 
   describe('execute role selector', () => {
-    beforeEach(() => {
+    it('renders with correct default options', () => {
       createWrapper();
-    });
 
-    it('renders execute role select with correct options', () => {
-      expect(findExecuteRoleSelect().props('options')).toEqual([
+      expect(findMinimumAccessLevelExecuteSyncSelect().props('options')).toEqual([
+        { text: 'Guest', value: ACCESS_LEVEL_GUEST_INTEGER },
+        { text: 'Planner', value: ACCESS_LEVEL_PLANNER_INTEGER },
+        { text: 'Reporter', value: ACCESS_LEVEL_REPORTER_INTEGER },
         { text: 'Developer', value: ACCESS_LEVEL_DEVELOPER_INTEGER },
         { text: 'Maintainer', value: ACCESS_LEVEL_MAINTAINER_INTEGER },
         { text: 'Owner', value: ACCESS_LEVEL_OWNER_INTEGER },
       ]);
     });
 
-    describe('when isAdminInstanceDuoHome is true', () => {
-      beforeEach(() => {
-        createWrapper({ provide: { isAdminInstanceDuoHome: true } });
-      });
+    it('includes Admin role when isAdminInstanceDuoHome is true', () => {
+      createWrapper({ provide: { isAdminInstanceDuoHome: true } });
 
-      it('includes Admin role in manage role options', () => {
-        expect(findExecuteRoleSelect().props('options')).toEqual([
-          { text: 'Developer', value: ACCESS_LEVEL_DEVELOPER_INTEGER },
-          { text: 'Maintainer', value: ACCESS_LEVEL_MAINTAINER_INTEGER },
-          { text: 'Owner', value: ACCESS_LEVEL_OWNER_INTEGER },
-          { text: 'Admin', value: ACCESS_LEVEL_ADMIN_INTEGER },
-        ]);
-      });
+      expect(findMinimumAccessLevelExecuteSyncSelect().props('options')).toEqual([
+        { text: 'Guest', value: ACCESS_LEVEL_GUEST_INTEGER },
+        { text: 'Planner', value: ACCESS_LEVEL_PLANNER_INTEGER },
+        { text: 'Reporter', value: ACCESS_LEVEL_REPORTER_INTEGER },
+        { text: 'Developer', value: ACCESS_LEVEL_DEVELOPER_INTEGER },
+        { text: 'Maintainer', value: ACCESS_LEVEL_MAINTAINER_INTEGER },
+        { text: 'Owner', value: ACCESS_LEVEL_OWNER_INTEGER },
+        { text: 'Admin', value: ACCESS_LEVEL_ADMIN_INTEGER },
+      ]);
     });
 
-    it('sets initial value from executeMinimumRole prop', () => {
-      expect(findExecuteRoleSelect().props('value')).toBe(ACCESS_LEVEL_DEVELOPER_INTEGER);
-    });
-
-    it('emits execute-role-change event when execute role is changed', () => {
-      findExecuteRoleSelect().vm.$emit('change', ACCESS_LEVEL_MAINTAINER_INTEGER);
-
-      expect(wrapper.emitted('execute-role-change')).toHaveLength(1);
-      expect(wrapper.emitted('execute-role-change')[0]).toEqual([ACCESS_LEVEL_MAINTAINER_INTEGER]);
-    });
-
-    describe('onEnableRoleSelect', () => {
-      it('emits the emits event', () => {
-        findEnableRoleSelect().vm.$emit('change', ACCESS_LEVEL_MAINTAINER_INTEGER);
-
-        expect(wrapper.emitted('enable-role-change')).toEqual([[ACCESS_LEVEL_MAINTAINER_INTEGER]]);
-      });
-    });
-
-    describe('onManageRoleSelect', () => {
-      it('emits the emits event', () => {
-        findManageRoleSelect().vm.$emit('change', ACCESS_LEVEL_OWNER_INTEGER);
-
-        expect(wrapper.emitted('manage-role-change')).toEqual([[ACCESS_LEVEL_OWNER_INTEGER]]);
-      });
-    });
-
-    describe('onExecuteRoleSelect', () => {
-      it('emits the emits event', () => {
-        findExecuteRoleSelect().vm.$emit('change', ACCESS_LEVEL_MAINTAINER_INTEGER);
-
-        expect(wrapper.emitted('execute-role-change')).toEqual([[ACCESS_LEVEL_MAINTAINER_INTEGER]]);
-      });
-    });
-
-    describe('with custom prop values', () => {
-      beforeEach(() => {
-        createWrapper({
-          props: {
-            executeMinimumRole: ACCESS_LEVEL_MAINTAINER_INTEGER,
-          },
-        });
+    it('displays value from initialMinimumAccessLevelExecuteSync prop', () => {
+      createWrapper({
+        props: { initialMinimumAccessLevelExecuteSync: ACCESS_LEVEL_DEVELOPER_INTEGER },
       });
 
-      it('sets initial value from custom prop', () => {
-        expect(findExecuteRoleSelect().props('value')).toBe(ACCESS_LEVEL_MAINTAINER_INTEGER);
-      });
+      expect(findMinimumAccessLevelExecuteSyncSelect().attributes('value')).toBe(
+        String(ACCESS_LEVEL_DEVELOPER_INTEGER),
+      );
+    });
+
+    it('emits role-change event when selection changes', () => {
+      createWrapper();
+
+      findMinimumAccessLevelExecuteSyncSelect().vm.$emit('change', ACCESS_LEVEL_REPORTER_INTEGER);
+
+      expect(wrapper.emitted('minimum-access-level-execute-sync-change')).toEqual([
+        [ACCESS_LEVEL_REPORTER_INTEGER],
+      ]);
     });
   });
 });

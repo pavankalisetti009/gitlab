@@ -203,8 +203,8 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           show_foundational_agents_per_agent_availability: "true",
           show_duo_agent_platform_enablement_setting: "true",
           is_saas: 'true',
-          ai_settings_minimum_access_level_execute: group.ai_minimum_access_level_execute,
-          ai_settings_minimum_access_level_execute_async: group.ai_minimum_access_level_execute_async,
+          ai_minimum_access_level_to_execute: 10,
+          ai_minimum_access_level_to_execute_async: 30,
           ai_settings_minimum_access_level_manage: group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: group.ai_minimum_access_level_enable_on_projects,
           available_foundational_flows: Gitlab::Json.generate([{
@@ -281,8 +281,8 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_workflow_mcp_enabled: 'false',
           foundational_agents_default_enabled: 'true',
           duo_agent_platform_enabled: 'true',
-          ai_settings_minimum_access_level_execute: nil,
-          ai_settings_minimum_access_level_execute_async: nil,
+          ai_minimum_access_level_to_execute: 10,
+          ai_minimum_access_level_to_execute_async: 30,
           ai_settings_minimum_access_level_manage: nil,
           ai_settings_minimum_access_level_enable_on_projects: nil
         )
@@ -300,8 +300,8 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
 
       it 'returns the expected data' do
         is_expected.to include(
-          ai_settings_minimum_access_level_execute: group.ai_minimum_access_level_execute,
-          ai_settings_minimum_access_level_execute_async: group.ai_minimum_access_level_execute_async,
+          ai_minimum_access_level_to_execute: group.ai_minimum_access_level_execute,
+          ai_minimum_access_level_to_execute_async: group.ai_minimum_access_level_execute_async,
           ai_settings_minimum_access_level_manage: group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: group.ai_minimum_access_level_enable_on_projects
         )

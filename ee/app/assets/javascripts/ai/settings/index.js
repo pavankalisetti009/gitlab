@@ -9,6 +9,8 @@ const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),
 });
 
+const sanitizedInt = (value) => parseInt(value, 10) || undefined;
+
 export const initAiSettings = (id, component, options = {}) => {
   const el = document.getElementById(id);
 
@@ -65,6 +67,8 @@ export const initAiSettings = (id, component, options = {}) => {
     duoAgentPlatformEnabled,
     namespaceAccessRules,
     parentPath,
+    aiMinimumAccessLevelToExecute,
+    aiMinimumAccessLevelToExecuteAsync,
   } = el.dataset;
 
   let duoAvailabilityCascadingSettingsParsed;
@@ -180,6 +184,8 @@ export const initAiSettings = (id, component, options = {}) => {
       })(),
       initialNamespaceAccessRules: namespaceAccessRulesParsed,
       parentPath,
+      initialMinimumAccessLevelExecuteSync: sanitizedInt(aiMinimumAccessLevelToExecute),
+      initialMinimumAccessLevelExecuteAsync: sanitizedInt(aiMinimumAccessLevelToExecuteAsync),
     },
     render: (createElement) =>
       createElement(component, {

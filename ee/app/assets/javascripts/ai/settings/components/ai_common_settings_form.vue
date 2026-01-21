@@ -12,6 +12,7 @@ import DuoSastFpDetectionSettings from './duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from './duo_foundational_agents_settings.vue';
 import DuoAgentPlatformSettingsForm from './duo_agent_platform_settings_form.vue';
 import AiNamespaceAccessRules from './ai_namespace_access_rules.vue';
+import AiRolePermissions from './ai_role_permissions.vue';
 
 export default {
   name: 'AiCommonSettingsForm',
@@ -19,6 +20,7 @@ export default {
     GlForm,
     GlAlert,
     GlButton,
+    AiRolePermissions,
     DuoAvailability,
     DuoExperimentBetaFeatures,
     DuoCoreFeaturesForm,
@@ -38,7 +40,13 @@ export default {
     enabled: __('Enabled'),
     disabled: __('Disabled'),
   },
-  inject: ['onGeneralSettingsPage', 'showFoundationalAgentsAvailability'],
+  inject: {
+    onGeneralSettingsPage: { default: undefined },
+    initialMinimumAccessLevelExecuteAsync: { default: undefined },
+    initialMinimumAccessLevelExecuteSync: { default: undefined },
+    showFoundationalAgentsAvailability: { default: undefined },
+    isSaaS: { default: false },
+  },
   props: {
     duoAvailability: {
       type: String,
@@ -112,6 +120,8 @@ export default {
       hasFoundationalAgentsStatusesChanged: false,
       localSelectedFlowIds: this.selectedFoundationalFlowIds,
       namespaceAccessRules: this.initialNamespaceAccessRules,
+      minimumAccessLevelExecuteAsync: this.initialMinimumAccessLevelExecuteAsync,
+      minimumAccessLevelExecuteSync: this.initialMinimumAccessLevelExecuteSync,
     };
   },
   computed: {
@@ -166,6 +176,18 @@ export default {
         return JSON.stringify(currentFeatures) !== JSON.stringify(initialFeatures);
       });
     },
+    hasMinimumAccessLevelExecuteAsyncChanged() {
+      return this.minimumAccessLevelExecuteAsync !== this.initialMinimumAccessLevelExecuteAsync;
+    },
+    hasMinimumAccessLevelExecuteSyncChanged() {
+      return this.minimumAccessLevelExecuteSync !== this.initialMinimumAccessLevelExecuteSync;
+    },
+    hasMinimumAccessLevelExecuteChanged() {
+      return (
+        this.hasMinimumAccessLevelExecuteAsyncChanged ||
+        this.hasMinimumAccessLevelExecuteSyncChanged
+      );
+    },
     hasFormChanged() {
       return (
         this.hasAvailabilityChanged ||
@@ -180,7 +202,8 @@ export default {
         this.hasFoundationalAgentsStatusesChanged ||
         this.hasSelectedFlowIdsChanged ||
         this.hasDuoAgentPlatformEnabledChanged ||
-        this.hasNamespaceAccessRulesChanged
+        this.hasNamespaceAccessRulesChanged ||
+        this.hasMinimumAccessLevelExecuteChanged
       );
     },
     showWarning() {
@@ -207,10 +230,28 @@ export default {
 
       return JSON.stringify(current) !== JSON.stringify(initial);
     },
+    shouldShowAiRolePermissionsForGroup() {
+      return this.isSaaS && this.glFeatures.dapGroupCustomizablePermissions;
+    },
+    shouldShowAiRolePermissionsForInstance() {
+      return !this.isSaaS && this.glFeatures.dapInstanceCustomizablePermissions;
+    },
+    shouldShowAiRolePermissions() {
+      return (
+        (this.shouldShowAiRolePermissionsForGroup || this.shouldShowAiRolePermissionsForInstance) &&
+        !this.onGeneralSettingsPage
+      );
+    },
   },
   methods: {
     submitForm() {
       this.$emit('submit');
+    },
+    onMinimumAccessLevelExecuteAsyncChange(role) {
+      this.minimumAccessLevelExecuteAsync = role;
+    },
+    onMinimumAccessLevelExecuteSyncChange(role) {
+      this.minimumAccessLevelExecuteSync = role;
     },
     onRadioChanged(value) {
       this.availability = value;
@@ -321,7 +362,16 @@ export default {
     <duo-prompt-cache
       :prompt-cache-enabled="cacheEnabled"
       :disabled-checkbox="disableConfigCheckboxes"
+      class="gl-mb-4"
       @change="onCacheCheckboxChanged"
+    />
+
+    <ai-role-permissions
+      v-if="shouldShowAiRolePermissions"
+      :initial-minimum-access-level-execute-async="minimumAccessLevelExecuteAsync"
+      :initial-minimum-access-level-execute-sync="minimumAccessLevelExecuteSync"
+      @minimum-access-level-execute-async-change="onMinimumAccessLevelExecuteAsyncChange"
+      @minimum-access-level-execute-sync-change="onMinimumAccessLevelExecuteSyncChange"
     />
 
     <slot name="ai-common-settings-bottom"></slot>

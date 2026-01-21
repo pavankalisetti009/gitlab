@@ -23,6 +23,8 @@ module Admin
       :duo_agent_platform_enabled,
       :duo_core_features_enabled?,
       :foundational_agents_default_enabled,
+      :ai_minimum_access_level_to_execute,
+      :ai_minimum_access_level_to_execute_async,
       to: :ai_settings
 
     def initialize(current_user)
@@ -59,7 +61,9 @@ module Admin
         show_foundational_agents_availability: true,
         show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?,
         show_duo_agent_platform_enablement_setting: true,
-        foundational_agents_statuses: Gitlab::Json.dump(foundational_agents_statuses)
+        foundational_agents_statuses: Gitlab::Json.dump(foundational_agents_statuses),
+        ai_minimum_access_level_to_execute: ai_minimum_access_level_to_execute,
+        ai_minimum_access_level_to_execute_async: ai_minimum_access_level_to_execute_async
       }
 
       settings_hash[:namespace_access_rules] = Gitlab::Json.dump(namespace_access_rules) if Feature.enabled?(

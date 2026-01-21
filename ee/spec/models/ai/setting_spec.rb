@@ -7,6 +7,7 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
 
   describe 'concerns' do
     it { is_expected.to include_module(Ai::HasRolePermissions) }
+    it { is_expected.to include_module(Ai::CustomizablePermission) }
 
     it_behaves_like 'settings with role permissions'
   end

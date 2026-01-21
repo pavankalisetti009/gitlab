@@ -13,6 +13,7 @@ module Admin
 
       before_action do
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, current_user, type: :beta)
+        push_frontend_feature_flag(:dap_instance_customizable_permissions, :instance, type: :wip)
       end
 
       def index; end

@@ -6,6 +6,7 @@ module Ai
 
     include SingletonRecord
     include HasRolePermissions
+    include CustomizablePermission
 
     ignore_column :duo_nano_features_enabled, remove_with: '18.3', remove_after: '2025-07-15'
     ignore_column :duo_agent_platform_request_count, remove_with: '18.8', remove_after: '2025-12-13'
