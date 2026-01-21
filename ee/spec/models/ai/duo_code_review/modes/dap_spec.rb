@@ -57,7 +57,7 @@ RSpec.describe Ai::DuoCodeReview::Modes::Dap, feature_category: :code_suggestion
       )
 
       allow(user).to receive(:allowed_to_use?)
-        .with(:duo_agent_platform)
+        .with(:duo_agent_platform, root_namespace: container.root_ancestor)
         .and_return(user_allowed_to_use_duo_agent_platform)
 
       allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
