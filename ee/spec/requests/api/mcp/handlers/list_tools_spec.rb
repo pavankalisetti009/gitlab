@@ -417,6 +417,28 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
               }
             }
           }
+        },
+        {
+          "name" => "search_labels",
+          "description" => "Search labels in a GitLab project or group",
+          "inputSchema" => {
+            "type" => "object",
+            "properties" => {
+              "full_path" => {
+                "type" => "string",
+                "description" => "Full path of the project or group. Required."
+              },
+              "is_project" => {
+                "type" => "boolean",
+                "description" => "Whether to search in a project (true) or group (false). Required."
+              },
+              "search" => {
+                "type" => "string",
+                "description" => "Search term to filter labels by title."
+              }
+            },
+            "required" => %w[full_path is_project]
+          }
         }
       )
     end
