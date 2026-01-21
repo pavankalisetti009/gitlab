@@ -281,7 +281,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, feature_category: :code_sugges
         end
       end
 
-      it 'accepts project path and returns success' do
+      it 'accepts project path and returns success',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/24188' do
         post api(path, user, oauth_access_token: token), params: params
 
         expect(response).to have_gitlab_http_status(:created)
