@@ -19500,6 +19500,9 @@ msgstr ""
 msgid "Container scanning"
 msgstr ""
 
+msgid "Container virtual registry not available"
+msgstr ""
+
 msgid "ContainerRegistry| Please visit the %{linkStart}administration settings%{linkEnd} to enable this feature."
 msgstr ""
 
