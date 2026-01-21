@@ -4,37 +4,100 @@ import {
   GlFilteredSearchToken,
   GlDropdownDivider,
   GlDropdownSectionHeader,
+  GlLoadingIcon,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { createAlert } from '~/alert';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
+import securityTrackedRefsQuery from 'ee/security_dashboard/graphql/queries/security_tracked_refs.query.graphql';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import SearchSuggestion from '../components/search_suggestion.vue';
+
+// URL parameter format: {numericId}~{refName}
+// Example: "123~main" or "456~release/v1.0"
+// We use tilde as separator because git prohibits it in ref names (see git-check-ref-format).
+const SEPARATOR = '~';
+const QUERY_PARAM_PATTERN = new RegExp(`^(?<id>[0-9]+)${SEPARATOR}(?<name>.+)$`);
+
+const isNotAll = (value) => value !== ALL_ID;
 
 export default {
   name: 'TrackedRefToken',
-  defaultValues: ({ trackedRefs = [] }) => {
-    const defaultRef = trackedRefs.find((ref) => ref.isDefault);
-    return defaultRef ? [defaultRef.id] : [];
+  defaultValues: ({ defaultBranchContext = null }) => {
+    if (!defaultBranchContext) {
+      return [];
+    }
+
+    return [{ id: defaultBranchContext.id, name: defaultBranchContext.name }];
   },
   transformFilters: (filters) => {
-    const trackedRefIds = filters.filter((value) => value !== ALL_ID);
+    const trackedRefIds = filters.filter(isNotAll).map((value) => value.id);
     return {
       trackedRefIds,
     };
   },
   transformQueryParams: (filters) => {
-    return filters.length > 0 ? filters.join(',') : ALL_ID;
+    const parameterPairs = filters
+      .filter(isNotAll)
+      .map(({ id, name }) => `${getIdFromGraphQLId(id)}${SEPARATOR}${name}`);
+
+    return parameterPairs.length > 0 ? parameterPairs.join(',') : ALL_ID;
+  },
+  parseQueryParams: (urlValues) => {
+    if (urlValues.includes(ALL_ID)) {
+      return [ALL_ID];
+    }
+
+    return urlValues
+      .map((encoded) => encoded.match(QUERY_PARAM_PATTERN)?.groups)
+      .filter(Boolean)
+      .map(({ id, name }) => ({
+        id: convertToGraphQLId('Security::ProjectTrackedContext', id),
+        name,
+      }));
+  },
+  apollo: {
+    fetchedTrackedRefs: {
+      query: securityTrackedRefsQuery,
+      variables() {
+        return { fullPath: this.projectFullPath };
+      },
+      update(data) {
+        return (
+          data?.project?.securityTrackedRefs?.nodes.map((ref) => ({
+            id: ref.id,
+            name: ref.name,
+            refType: ref.refType,
+          })) || []
+        );
+      },
+      result({ data }) {
+        if (data?.project?.securityTrackedRefs) {
+          this.fetchSucceeded = true;
+          this.removeStaleRefs();
+        }
+      },
+      error() {
+        this.fetchSucceeded = false;
+        createAlert({ message: s__('SecurityReports|Failed to load tracked refs.') });
+      },
+    },
   },
   components: {
     GlBadge,
     GlFilteredSearchToken,
     GlDropdownDivider,
     GlDropdownSectionHeader,
+    GlLoadingIcon,
     SearchSuggestion,
   },
   inject: {
-    trackedRefs: {
-      default: () => [],
+    defaultBranchContext: {
+      default: () => null,
+    },
+    projectFullPath: {
+      default: '',
     },
   },
   props: {
@@ -52,31 +115,41 @@ export default {
     },
   },
   data() {
-    const defaultRefId = this.trackedRefs.find((ref) => ref.isDefault)?.id;
-    const hasData = this.value.data?.length > 0;
-
-    if (hasData) {
-      return { selectedRefIds: this.value.data };
-    }
-
-    if (defaultRefId) {
-      return { selectedRefIds: [defaultRefId] };
-    }
-
-    if (this.config.multiSelect) {
-      return { selectedRefIds: [ALL_ID] };
-    }
-
-    return { selectedRefIds: [] };
+    return { selectedRefs: this.value.data, fetchedTrackedRefs: [], fetchSucceeded: false };
   },
   computed: {
+    isLoading() {
+      return this.$apollo.queries.fetchedTrackedRefs.loading;
+    },
+    trackedRefs() {
+      // Start with the default branch (provided synchronously via inject)
+      const defaultRef = this.defaultBranchContext;
+
+      const fetchedRefsWithoutDefault = this.fetchedTrackedRefs.filter(
+        (r) => r.id !== defaultRef?.id,
+      );
+
+      const knownRefs = [defaultRef, ...fetchedRefsWithoutDefault].filter(Boolean);
+
+      // While fetch is pending, include refs parsed from URL params.
+      // This allows the UI to display user-selected refs before the async fetch completes.
+      if (this.isLoading) {
+        const refsFromQueryParams = this.selectedRefs
+          .filter(isNotAll)
+          .filter((ref) => !knownRefs.some((kr) => kr.id === ref.id));
+
+        return [...knownRefs, ...refsFromQueryParams];
+      }
+
+      return knownRefs;
+    },
     isMultiSelect() {
       return this.config.multiSelect;
     },
     tokenValue() {
       return {
         ...this.value,
-        data: this.active ? null : this.selectedRefIds,
+        data: this.active ? null : this.selectedRefs,
       };
     },
     refGroups() {
@@ -116,13 +189,13 @@ export default {
       return groups;
     },
     allRefItems() {
-      const refOptions = this.trackedRefs.map((ref) => ({
+      const trackedRefOptions = this.trackedRefs.map((ref) => ({
         value: ref.id,
         text: ref.name,
       }));
 
       if (!this.isMultiSelect) {
-        return refOptions;
+        return trackedRefOptions;
       }
 
       const allOption = {
@@ -130,7 +203,10 @@ export default {
         text: s__('SecurityReports|All tracked refs'),
       };
 
-      return [allOption, ...refOptions];
+      return [allOption, ...trackedRefOptions];
+    },
+    selectedRefIds() {
+      return this.selectedRefs.map((r) => (r === ALL_ID ? ALL_ID : r.id));
     },
     toggleText() {
       return getSelectedOptionsText({
@@ -144,8 +220,17 @@ export default {
     },
   },
   methods: {
+    removeStaleRefs() {
+      const validIds = new Set(this.trackedRefs.map((r) => r.id));
+      const validSelected = this.selectedRefs.filter((r) => r === ALL_ID || validIds.has(r.id));
+
+      // Only update if something was filtered out
+      if (validSelected.length !== this.selectedRefs.length) {
+        this.selectedRefs = validSelected.length > 0 ? validSelected : [ALL_ID];
+      }
+    },
     getRefByType(type) {
-      return this.trackedRefs.filter((ref) => ref.refType.toLowerCase() === type);
+      return this.trackedRefs.filter((ref) => ref.refType?.toLowerCase() === type);
     },
     createOption(ref) {
       return {
@@ -156,30 +241,32 @@ export default {
     updateSelected(refId) {
       const allRefsSelected = refId === ALL_ID;
       if (allRefsSelected) {
-        this.selectedRefIds = [ALL_ID];
+        this.selectedRefs = [ALL_ID];
         return;
       }
 
+      const ref = this.trackedRefs.find((r) => r.id === refId);
+
       // Single-select mode: replace selection
       if (!this.isMultiSelect) {
-        this.selectedRefIds = [refId];
+        this.selectedRefs = [ref];
         return;
       }
 
       // Multi-select mode: toggle selection
-      const isSelecting = !this.selectedRefIds.includes(refId);
+      const isSelecting = !this.isRefIdSelected(refId);
       if (isSelecting) {
-        this.selectedRefIds = this.selectedRefIds.filter((id) => id !== ALL_ID).concat(refId);
+        this.selectedRefs = this.selectedRefs.filter(isNotAll).concat(ref);
       } else {
-        this.selectedRefIds = this.selectedRefIds.filter((id) => id !== refId);
+        this.selectedRefs = this.selectedRefs.filter((r) => r.id !== refId);
       }
 
-      if (this.selectedRefIds.length === 0) {
-        this.selectedRefIds = [ALL_ID];
+      if (this.selectedRefs.length === 0) {
+        this.selectedRefs = [ALL_ID];
       }
     },
     isRefIdSelected(refId) {
-      return this.selectedRefIds.includes(refId);
+      return this.selectedRefs.some((r) => (r === ALL_ID ? refId === ALL_ID : r.id === refId));
     },
   },
   i18n: {
@@ -192,7 +279,7 @@ export default {
   <gl-filtered-search-token
     :config="config"
     v-bind="{ ...$props, ...$attrs }"
-    :multi-select-values="selectedRefIds"
+    :multi-select-values="selectedRefs"
     :value="tokenValue"
     v-on="$listeners"
     @select="updateSelected"
@@ -201,22 +288,25 @@ export default {
       <span data-testid="toggle-text">{{ toggleText }}</span>
     </template>
     <template #suggestions>
-      <template v-for="(group, index) in refGroups">
-        <gl-dropdown-section-header v-if="group.text" :key="group.text">
-          <div class="gl-flex gl-items-center gl-justify-center">
-            <div class="gl-grow">{{ group.text }}</div>
-            <gl-badge v-if="group.icon" :icon="group.icon" variant="neutral" aria-hidden="true" />
-          </div>
-        </gl-dropdown-section-header>
-        <search-suggestion
-          v-for="ref in group.options"
-          :key="ref.value"
-          :value="ref.value"
-          :text="ref.text"
-          :selected="isRefIdSelected(ref.value)"
-          :data-testid="`suggestion-${ref.value}`"
-        />
-        <gl-dropdown-divider v-if="index < refGroups.length - 1" :key="`divider-${group.text}`" />
+      <gl-loading-icon v-if="isLoading" size="sm" />
+      <template v-else>
+        <template v-for="(group, index) in refGroups">
+          <gl-dropdown-section-header v-if="group.text" :key="group.text">
+            <div class="gl-flex gl-items-center gl-justify-center">
+              <div class="gl-grow">{{ group.text }}</div>
+              <gl-badge v-if="group.icon" :icon="group.icon" variant="neutral" aria-hidden="true" />
+            </div>
+          </gl-dropdown-section-header>
+          <search-suggestion
+            v-for="ref in group.options"
+            :key="ref.value"
+            :value="ref.value"
+            :text="ref.text"
+            :selected="isRefIdSelected(ref.value)"
+            :data-testid="`suggestion-${ref.value}`"
+          />
+          <gl-dropdown-divider v-if="index < refGroups.length - 1" :key="`divider-${group.text}`" />
+        </template>
       </template>
     </template>
   </gl-filtered-search-token>

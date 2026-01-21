@@ -112,7 +112,7 @@ export const VALIDITY_CHECK_TOKEN_DEFINITION = {
 };
 
 export const TRACKED_REF_TOKEN_DEFINITION = {
-  type: 'trackedRefIds',
+  type: 'trackedRefs',
   title: TrackedRefToken.i18n.label,
   multiSelect: true,
   unique: true,
