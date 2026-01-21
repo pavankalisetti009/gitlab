@@ -89,7 +89,7 @@ namespace :admin do
     match :security_and_compliance, via: [:get, :patch]
     match :namespace_storage, via: [:get, :patch]
     match :analytics, via: [:get, :patch]
-    match :work_item, via: [:get, :patch]
+    get :work_item
     get :advanced_search, to: redirect('admin/application_settings/search')
     get :geo, to: "geo/settings#show"
     put :update_microsoft_application

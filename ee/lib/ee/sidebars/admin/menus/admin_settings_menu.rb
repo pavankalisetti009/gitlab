@@ -19,7 +19,7 @@ module EE
             insert_item_after(:security_and_compliance_menu_item, analytics_menu_item)
             insert_item_after(:admin_preferences, usage_quotas_menu_item)
 
-            if ::Feature.enabled?(:work_item_configurable_types, :instance)
+            if ::Feature.enabled?(:work_item_configurable_types, :instance) && self_managed_instance?
               insert_item_after(:admin_security_and_compliance, work_item_settings_menu_item)
             end
 
@@ -128,6 +128,10 @@ module EE
 
           def dedicated?
             ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+          end
+
+          def self_managed_instance?
+            !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
           end
         end
       end

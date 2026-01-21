@@ -22,6 +22,7 @@ module EE
         before_action :search_error_if_version_incompatible, only: [:search], if: -> { es_helper.ping? }
         before_action :search_outdated_code_analyzer_detected, only: [:search], if: -> { es_helper.ping? }
         before_action :check_feature_availability, only: [:work_item]
+        before_action :push_work_item_feature_flags, only: [:work_item]
 
         before_action :new_license, only: [:general]
         before_action :scim_token, only: [:general]
@@ -97,6 +98,11 @@ module EE
           render_404 unless ::Feature.enabled?(:work_item_configurable_types, :instance)
         end
 
+        def push_work_item_feature_flags
+          push_frontend_feature_flag(:work_item_configurable_types, :instance)
+          push_frontend_feature_flag(:work_item_planning_view, current_user)
+        end
+
         def scim_token
           scim_token = ScimOauthAccessToken.find_for_instance
 
@@ -133,7 +139,7 @@ module EE
         end
       end
 
-      EE_VALID_SETTING_PANELS = %w[search templates security_and_compliance namespace_storage].freeze
+      EE_VALID_SETTING_PANELS = %w[search templates security_and_compliance namespace_storage work_item].freeze
 
       EE_VALID_SETTING_PANELS.each do |action|
         define_method(action) { perform_update if submitted? }

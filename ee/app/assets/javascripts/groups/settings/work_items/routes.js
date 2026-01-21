@@ -1,3 +1,4 @@
+import { DEFAULT_SETTINGS_CONFIG } from 'ee/groups/settings/work_items/constants';
 import ChangeLifecycleSteps from './custom_status/change_lifecycle/change_lifecycle_steps.vue';
 import WorkItemSettingsHome from './work_item_settings_home.vue';
 
@@ -7,7 +8,7 @@ export const getRoutes = (fullPath) => {
       path: '/',
       name: 'workItemSettingsHome',
       component: WorkItemSettingsHome,
-      props: { fullPath },
+      props: { fullPath, config: DEFAULT_SETTINGS_CONFIG },
     },
     {
       path: `/lifecycle/:workItemType`,
