@@ -59,9 +59,7 @@ export default {
       </span>
     </template>
     <template #description>
-      <div class="gl-border-b gl-pb-3">
-        {{ description }}
-      </div>
+      {{ description }}
     </template>
   </page-heading>
 </template>

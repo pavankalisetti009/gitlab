@@ -2760,9 +2760,6 @@ msgstr ""
 msgid "AICatalog|Describe any relevant information for your admin"
 msgstr ""
 
-msgid "AICatalog|Description"
-msgstr ""
-
 msgid "AICatalog|Description is required."
 msgstr ""
 
@@ -2773,9 +2770,6 @@ msgid "AICatalog|Disable agent from this %{namespaceType}"
 msgstr ""
 
 msgid "AICatalog|Disable flow from this %{namespaceType}"
-msgstr ""
-
-msgid "AICatalog|Display name"
 msgstr ""
 
 msgid "AICatalog|Duplicate"
@@ -3282,6 +3276,9 @@ msgstr ""
 msgid "AICatalog|Working with sensitive data."
 msgstr ""
 
+msgid "AICatalog|YAML configuration"
+msgstr ""
+
 msgid "AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by..."
 msgstr ""
 
@@ -3661,9 +3658,6 @@ msgid "AWS secret access key (Optional)"
 msgstr ""
 
 msgid "Abort"
-msgstr ""
-
-msgid "About"
 msgstr ""
 
 msgid "About GitLab"

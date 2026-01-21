@@ -61,6 +61,11 @@ describe('AiCatalogListHeader', () => {
       expect(findPageHeading().text()).toContain('AI Catalog');
     });
 
+    it('renders description"', () => {
+      createComponent();
+      expect(findPageHeading().text()).toContain('Explore your GitLab Duo and SDLC trends');
+    });
+
     describe('experiment badge visibility based on feature flag', () => {
       it.each`
         shouldShowBadge | shouldRender | description

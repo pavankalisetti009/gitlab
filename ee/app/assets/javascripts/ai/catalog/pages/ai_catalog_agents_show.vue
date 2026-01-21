@@ -31,10 +31,12 @@ import {
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
 } from '../router/constants';
+import AiCatalogItemMetadata from '../components/ai_catalog_item_metadata.vue';
 
 export default {
   name: 'AiCatalogAgentsShow',
   components: {
+    AiCatalogItemMetadata,
     FoundationalIcon,
     ErrorsAlert,
     PageHeading,
@@ -310,8 +312,11 @@ export default {
           />
         </div>
       </template>
-      <template v-if="version.isUpdateAvailable" #description>
+      <template #description>
+        <ai-catalog-item-metadata :item="aiCatalogAgent" :version-key="version.activeVersionKey" />
+        <p v-if="aiCatalogAgent.description">{{ aiCatalogAgent.description }}</p>
         <version-alert
+          v-if="version.isUpdateAvailable"
           :configuration="configuration"
           :item-type="aiCatalogAgent.itemType"
           :latest-version="aiCatalogAgent.latestVersion"

@@ -1,26 +1,20 @@
 import { shallowMount } from '@vue/test-utils';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
-import AiCatalogItemMetadata from 'ee/ai/catalog/components/ai_catalog_item_metadata.vue';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
-import { mockAgent, mockVersionProp, mockFlow, mockThirdPartyFlow } from '../mock_data';
+import { mockAgent, mockFlow, mockThirdPartyFlow } from '../mock_data';
 
 describe('AiCatalogItemView', () => {
   let wrapper;
-  const defaultProps = {
-    versionKey: mockVersionProp.activeVersionKey,
-  };
 
   const createComponent = ({ props } = {}) => {
     wrapper = shallowMount(AiCatalogItemView, {
       propsData: {
-        ...defaultProps,
         ...props,
       },
     });
   };
 
-  const findMetadataComponent = () => wrapper.findComponent(AiCatalogItemMetadata);
   const findAgentDetails = () => wrapper.findComponent(AiCatalogAgentDetails);
   const findFlowDetails = () => wrapper.findComponent(AiCatalogFlowDetails);
 
@@ -50,10 +44,6 @@ describe('AiCatalogItemView', () => {
       } else {
         expect(findFlowDetails().exists()).toBe(false);
       }
-    });
-
-    it('renders AiCatalogItemMetadata component', () => {
-      expect(findMetadataComponent().props('item')).toEqual(item);
     });
   });
 });

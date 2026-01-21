@@ -81,9 +81,7 @@ export default {
         </span>
       </template>
       <template #description>
-        <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Use flows to automate complex, multi-step tasks.') }}
-        </div>
+        {{ s__('AICatalog|Use flows to automate complex, multi-step tasks.') }}
       </template>
     </page-heading>
 

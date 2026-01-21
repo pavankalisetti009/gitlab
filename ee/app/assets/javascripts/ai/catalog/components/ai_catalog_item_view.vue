@@ -4,7 +4,6 @@ import {
   AI_CATALOG_TYPE_FLOW,
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
 } from '../constants';
-import AiCatalogItemMetadata from './ai_catalog_item_metadata.vue';
 import AiCatalogAgentDetails from './ai_catalog_agent_details.vue';
 import AiCatalogFlowDetails from './ai_catalog_flow_details.vue';
 
@@ -17,7 +16,6 @@ const DETAILS_COMPONENT_MAP = {
 export default {
   name: 'AiCatalogItemView',
   components: {
-    AiCatalogItemMetadata,
     AiCatalogAgentDetails,
     AiCatalogFlowDetails,
   },
@@ -40,8 +38,5 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-flex-col gl-gap-5 @md:gl-flex-row">
-    <component :is="detailsComponent" :item="item" :version-key="versionKey" class="gl-grow" />
-    <ai-catalog-item-metadata :item="item" :version-key="versionKey" class="gl-shrink-0" />
-  </div>
+  <component :is="detailsComponent" :item="item" :version-key="versionKey" class="gl-grow" />
 </template>

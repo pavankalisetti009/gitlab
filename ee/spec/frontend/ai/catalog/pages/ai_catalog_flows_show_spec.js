@@ -12,6 +12,7 @@ import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actio
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
 import VersionAlert from 'ee/ai/catalog/components/version_alert.vue';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
+import AiCatalogItemMetadata from 'ee/ai/catalog/components/ai_catalog_item_metadata.vue';
 import {
   TRACK_EVENT_TYPE_FLOW,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
@@ -119,6 +120,7 @@ describe('AiCatalogFlowsShow', () => {
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
   const findVersionAlert = () => wrapper.findComponent(VersionAlert);
+  const findMetadataComponent = () => wrapper.findComponent(AiCatalogItemMetadata);
 
   beforeEach(() => {
     createComponent();
@@ -130,6 +132,12 @@ describe('AiCatalogFlowsShow', () => {
       configurationForProject: mockFlowConfigurationForProject,
       configurationForGroup: mockItemConfigurationForGroup,
     });
+  });
+
+  it('renders AiCatalogItemMetadata component', () => {
+    createComponent({ props: { aiCatalogFlow: mockFlow } });
+
+    expect(findMetadataComponent().props('item')).toEqual(mockFlow);
   });
 
   it('renders item view', () => {
