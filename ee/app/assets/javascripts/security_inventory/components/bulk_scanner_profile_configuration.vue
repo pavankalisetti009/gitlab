@@ -11,7 +11,7 @@ import {
 import { __ } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import AvailableSecurityScanProfiles from '../graphql/available_security_scan_profiles.query.graphql';
-import { SCANNER_TYPES, SECRET_DETECTION_KEY } from '../constants';
+import { SCANNER_TYPES, SECRET_PUSH_PROTECTION_KEY } from '../constants';
 
 export default {
   name: 'BulkScannerProfileConfiguration',
@@ -79,8 +79,8 @@ export default {
   },
   SCANNER_CATEGORIES: {
     SECRET_DETECTION: {
-      name: SCANNER_TYPES[SECRET_DETECTION_KEY].name,
-      label: SCANNER_TYPES[SECRET_DETECTION_KEY].textLabel,
+      name: SCANNER_TYPES[SECRET_PUSH_PROTECTION_KEY].name,
+      label: SCANNER_TYPES[SECRET_PUSH_PROTECTION_KEY].textLabel,
     },
   },
   fields: [
