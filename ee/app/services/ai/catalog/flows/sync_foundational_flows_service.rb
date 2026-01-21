@@ -38,6 +38,7 @@ module Ai
 
         def sync_flows
           target_ids = enabled_flow_catalog_item_ids
+          items_by_id = Item.with_ids(target_ids).index_by(&:id)
 
           unless admin_consumer_allowed?
             remove_consumers_not_in(target_ids)
@@ -45,14 +46,13 @@ module Ai
           end
 
           target_ids.each do |catalog_item_id|
-            item = Item.find(catalog_item_id)
+            item = items_by_id[catalog_item_id]
+            unless item
+              track_missing_item(catalog_item_id)
+              next
+            end
+
             create_consumer_for_catalog_item(item)
-          rescue ActiveRecord::RecordNotFound => e
-            ::Gitlab::ErrorTracking.track_exception(
-              e,
-              catalog_item_id: catalog_item_id,
-              container_id: container.id
-            )
           end
 
           remove_consumers_not_in(target_ids)
@@ -193,6 +193,14 @@ module Ai
           return false unless event_type
 
           container.ai_flow_triggers.triggered_on(event_type).by_users([service_account]).exists?
+        end
+
+        def track_missing_item(catalog_item_id)
+          ::Gitlab::ErrorTracking.track_exception(
+            ActiveRecord::RecordNotFound.new("Couldn't find Ai::Catalog::Item with id=#{catalog_item_id}"),
+            catalog_item_id: catalog_item_id,
+            container_id: container.id
+          )
         end
       end
     end
