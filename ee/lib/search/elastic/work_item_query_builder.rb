@@ -170,15 +170,6 @@ module Search
         options[:work_item_type_ids].any? { |id| group_work_item_type_ids.include?(id) }
       end
 
-      # the query builder is used for issues (non-epic) work items search in the UI
-      # if no `work_item_type_ids` are provided, default to all work items except epics
-      def work_item_type_ids
-        return options[:work_item_type_ids] if options[:work_item_type_ids].presence
-
-        ::WorkItems::Type.base_types.values - group_work_item_type_ids
-      end
-      strong_memoize_attr :work_item_type_ids
-
       def group_work_item_type_ids
         [::WorkItems::Type.default_by_type(:epic).id].freeze
       end
