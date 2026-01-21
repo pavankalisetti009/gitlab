@@ -445,7 +445,7 @@ export default {
     class="board gl-flex gl-shrink-0 gl-whitespace-normal gl-px-3 gl-align-top"
     :class="{ 'is-collapsed gl-w-10': list.collapsed }"
   >
-    <div class="gl-relative gl-w-full gl-rounded-base gl-bg-strong dark:gl-bg-subtle">
+    <div class="gl-relative gl-w-full gl-rounded-lg gl-bg-strong dark:gl-bg-subtle">
       <board-new-issue
         v-if="showNewIssue"
         :list="list"
@@ -461,7 +461,7 @@ export default {
         class="board-cell gl-m-0 gl-h-full gl-list-none gl-p-2"
         :class="{
           'board-column-highlighted': highlighted,
-          'gl-rounded-base gl-bg-red-50': boardItemsSizeExceedsMax,
+          'gl-rounded-lg gl-bg-red-50': boardItemsSizeExceedsMax,
           'list-empty': !issuesToUse.length,
         }"
         :data-row-index="rowIndex"
