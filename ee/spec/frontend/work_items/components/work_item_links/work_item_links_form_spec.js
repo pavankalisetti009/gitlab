@@ -16,7 +16,7 @@ import {
 import projectWorkItemsQuery from '~/work_items/graphql/project_work_items.query.graphql';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
-import updateWorkItemHierarchyMutation from '~/work_items/graphql/update_work_item_hierarchy.mutation.graphql';
+import workItemHierarchyAddChildrenMutation from '~/work_items/graphql/work_item_hierarchy_add_children.mutation.graphql';
 import namespaceProjectsForLinksWidgetQuery from '~/work_items/graphql/namespace_projects_for_links_widget.query.graphql';
 import {
   availableWorkItemsResponse,
@@ -24,7 +24,7 @@ import {
   mockIterationWidgetResponse,
   namespaceProjectsList,
   namespaceWorkItemTypesQueryResponse,
-  updateWorkItemMutationResponse,
+  workItemHierarchyAddChildrenMutationResponse,
 } from 'jest/work_items/mock_data';
 
 Vue.use(VueApollo);
@@ -35,7 +35,9 @@ describe('WorkItemLinksForm', () => {
    */
   let wrapper;
 
-  const updateMutationResolver = jest.fn().mockResolvedValue(updateWorkItemMutationResponse);
+  const addMutationResolver = jest
+    .fn()
+    .mockResolvedValue(workItemHierarchyAddChildrenMutationResponse);
   const createMutationResolver = jest.fn().mockResolvedValue(createWorkItemMutationResponse);
   const availableWorkItemsResolver = jest.fn().mockResolvedValue(availableWorkItemsResponse);
   const namespaceWorkItemTypesResolver = jest
@@ -65,7 +67,7 @@ describe('WorkItemLinksForm', () => {
     formType = FORM_TYPES.create,
     parentWorkItemType = WORK_ITEM_TYPE_NAME_ISSUE,
     childrenType = WORK_ITEM_TYPE_NAME_TASK,
-    updateMutation = updateMutationResolver,
+    addMutation = addMutationResolver,
     createMutation = createMutationResolver,
     isGroup = false,
     createGroupLevelWorkItems = true,
@@ -75,7 +77,7 @@ describe('WorkItemLinksForm', () => {
         [projectWorkItemsQuery, availableWorkItemsResolver],
         [namespaceWorkItemTypesQuery, namespaceWorkItemTypesResolver],
         [namespaceProjectsForLinksWidgetQuery, namespaceProjectsFormLinksWidgetResolver],
-        [updateWorkItemHierarchyMutation, updateMutation],
+        [workItemHierarchyAddChildrenMutation, addMutation],
         [createWorkItemMutation, createMutation],
       ]),
       propsData: {
