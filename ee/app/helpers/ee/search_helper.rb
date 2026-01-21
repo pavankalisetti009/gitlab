@@ -211,7 +211,7 @@ module EE
       super.merge(
         show_epics: search_service.show_epics?,
         show_elasticsearch_tabs: search_service.show_elasticsearch_tabs?,
-        zoekt_enabled: ::Search::Zoekt.enabled?
+        zoekt_enabled: ::Search::Zoekt.search?(@project.presence || @group.presence)
       )
     end
 
