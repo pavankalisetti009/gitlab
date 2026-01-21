@@ -7,10 +7,6 @@ module Search
 
       private
 
-      def work_item_type_ids
-        [::WorkItems::Type.default_by_type(:epic).id]
-      end
-
       override :get_confidentiality_filter
       def get_confidentiality_filter(query_hash:, options:)
         ::Search::Elastic::Filters.by_group_level_confidentiality(query_hash: query_hash, options: options)
