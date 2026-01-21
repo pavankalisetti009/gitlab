@@ -52,13 +52,12 @@ The external agent:
 
 ## Security considerations
 
-> ![warning]
-> External agents integrate with third-party AI model providers and have different security characteristics than GitLab built-in agents and flows. By using external agents, you accept the following risks:
+External agents integrate with third-party AI model providers and have different security characteristics than GitLab built-in agents and flows. By using external agents, you accept the following risks:
 
-- **Prompt injection vulnerabilities**: GitLab implements third party prompt scanning 
+- **Prompt injection vulnerabilities**: GitLab implements third-party prompt scanning
   to lower the risk of prompt injections. This scanning is not available for external agents.
-- **Third-party provider dependency**: Security controls, including prompt scanning, monitoring,
-  and alerting, are managed by the external AI model provider, not by GitLab.
+- **Third-party provider dependency**: The external AI model provider manages all
+  security controls (including prompt scanning, monitoring, and alerting), not GitLab.
 - **Network access**: External agents make network calls to third-party AI providers.
   Data sent to these providers is subject to their security policies and data handling practices.
 - **Limited isolation**: External agents do not have the same level of network isolation
@@ -67,7 +66,7 @@ The external agent:
 Before enabling external agents in your organization, review your security requirements
 and the security documentation provided by your chosen AI model provider.
 
-For a broader overview of security threats and mitigations in the Duo Agent Platform, see the [Duo Agent Platform security threats documentation](doc/user/duo_agent_platform/security_threats.md).
+For a broader overview of security threats and mitigations in the Duo Agent Platform, see the [Duo Agent Platform security threats documentation](../security_threats.md).
 
 ## Quickstart for GitLab-managed external agents
 
