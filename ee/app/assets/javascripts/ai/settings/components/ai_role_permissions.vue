@@ -9,6 +9,9 @@ import {
   ACCESS_LEVEL_OWNER_INTEGER,
   ACCESS_LEVEL_ADMIN,
   ACCESS_LEVEL_LABELS,
+  ACCESS_LEVEL_GUEST_INTEGER,
+  ACCESS_LEVEL_REPORTER_INTEGER,
+  ACCESS_LEVEL_PLANNER_INTEGER,
 } from '~/access_level/constants';
 
 export default {
@@ -21,47 +24,39 @@ export default {
     isAdminInstanceDuoHome: { default: false },
   },
   props: {
-    enableOnProjectsMinimumRole: {
+    initialMinimumAccessLevelExecuteAsync: {
       type: Number,
-      required: false,
-      default: ACCESS_LEVEL_MAINTAINER_INTEGER,
+      required: true,
     },
-    executeMinimumRole: {
+    initialMinimumAccessLevelExecuteSync: {
       type: Number,
-      required: false,
-      default: ACCESS_LEVEL_DEVELOPER_INTEGER,
-    },
-    manageMinimumRole: {
-      type: Number,
-      required: false,
-      default: ACCESS_LEVEL_MAINTAINER_INTEGER,
+      required: true,
     },
   },
-  emits: ['enable-role-change', 'execute-role-change', 'manage-role-change'],
+  emits: ['minimum-access-level-execute-async-change', 'minimum-access-level-execute-sync-change'],
   data() {
     return {
-      selectedEnableRole: this.enableOnProjectsMinimumRole,
-      selectedManageRole: this.manageMinimumRole,
-      selectedExecuteRole: this.executeMinimumRole,
+      minimumAccessLevelExecuteAsync: this.initialMinimumAccessLevelExecuteAsync,
+      minimumAccessLevelExecuteSync: this.initialMinimumAccessLevelExecuteSync,
     };
   },
   computed: {
-    enableOnProjectsRoleOptions() {
-      const roles = [ACCESS_LEVEL_MAINTAINER_INTEGER, ACCESS_LEVEL_OWNER_INTEGER];
-      if (this.isAdminInstanceDuoHome) {
-        roles.push(ACCESS_LEVEL_ADMIN_INTEGER);
-      }
-      return this.generateSelectOptions(roles);
-    },
-    manageRoleOptions() {
-      const roles = [ACCESS_LEVEL_MAINTAINER_INTEGER, ACCESS_LEVEL_OWNER_INTEGER];
-      if (this.isAdminInstanceDuoHome) {
-        roles.push(ACCESS_LEVEL_ADMIN_INTEGER);
-      }
-      return this.generateSelectOptions(roles);
-    },
-    executeRoleOptions() {
+    minimumAccessLevelExecuteAsyncOptions() {
       const roles = [
+        ACCESS_LEVEL_DEVELOPER_INTEGER,
+        ACCESS_LEVEL_MAINTAINER_INTEGER,
+        ACCESS_LEVEL_OWNER_INTEGER,
+      ];
+      if (this.isAdminInstanceDuoHome) {
+        roles.push(ACCESS_LEVEL_ADMIN_INTEGER);
+      }
+      return this.generateSelectOptions(roles);
+    },
+    minimumAccessLevelExecuteSyncOptions() {
+      const roles = [
+        ACCESS_LEVEL_GUEST_INTEGER,
+        ACCESS_LEVEL_REPORTER_INTEGER,
+        ACCESS_LEVEL_PLANNER_INTEGER,
         ACCESS_LEVEL_DEVELOPER_INTEGER,
         ACCESS_LEVEL_MAINTAINER_INTEGER,
         ACCESS_LEVEL_OWNER_INTEGER,
@@ -81,36 +76,28 @@ export default {
         }),
       );
     },
-    onEnableRoleSelect(roleValue) {
-      this.selectedManageRole = roleValue;
-      this.$emit('enable-role-change', roleValue);
+    changeMinimumAccessLevelExecuteAsync(role) {
+      this.minimumAccessLevelExecuteAsync = role;
+      this.$emit('minimum-access-level-execute-async-change', role);
     },
-    onExecuteRoleSelect(roleValue) {
-      this.selectedExecuteRole = roleValue;
-      this.$emit('execute-role-change', roleValue);
-    },
-    onManageRoleSelect(roleValue) {
-      this.selectedManageRole = roleValue;
-      this.$emit('manage-role-change', roleValue);
+    changeMinimumAccessLevelExecuteSync(role) {
+      this.minimumAccessLevelExecuteSync = role;
+      this.$emit('minimum-access-level-execute-sync-change', role);
     },
   },
   i18n: {
-    enablePermissionDescription: s__(
-      'AiPowered|Minimum role required to enable agents and flows on projects.',
+    minimumAccessLevelExecuteAsyncLabel: s__(
+      'AiPowered|Execute Duo Agent Platform with CI/CD pipelines',
     ),
-    enablePermissionLabel: s__('AiPowered|Enable'),
-    managePermissionDescription: s__(
-      'AiPowered|Minimum role required to create, duplicate, edit, delete, and show agents and flows.',
+    minimumAccessLevelExecuteAsyncDescription: s__(
+      'AiPowered|Control who can use AI features that run using CI/CD pipelines.',
     ),
-    managePermissionLabel: s__('AiPowered|Manage'),
-    executePermissionDescription: s__(
-      'AiPowered|Minimum role required to execute agents and flows.',
+    minimumAccessLevelExecuteSyncLabel: s__('AiPowered|Execute Duo Agent Platform'),
+    minimumAccessLevelExecuteSyncDescription: s__(
+      'AiPowered|Control who can use AI features that run without using CI/CD pipelines.',
     ),
-    executePermissionLabel: s__('AiPowered|Execute'),
-    sectionDescription: s__(
-      'AiPowered|Define the minimum role level to perform each of the following actions',
-    ),
-    sectionTitle: s__('AiPowered|Agent & Flow Permissions'),
+    sectionDescription: s__('AiPowered|Define the minimum role for the following actions'),
+    sectionTitle: s__('AiPowered|Duo Agent Platform Permissions'),
   },
   ALL_ACCESS_LEVELS_LABELS: {
     ...ACCESS_LEVEL_LABELS,
@@ -120,53 +107,39 @@ export default {
 </script>
 <template>
   <div>
-    <gl-form-group :label="$options.i18n.sectionTitle" class="gl-my-4">
+    <gl-form-group :label="$options.i18n.sectionTitle" class="gl-mb-0">
       <template #label-description>
         <p class="gl-mb-3 gl-text-subtle">{{ $options.i18n.sectionDescription }}</p>
       </template>
 
       <div>
         <gl-form-group
-          :label="$options.i18n.enablePermissionLabel"
-          :description="$options.i18n.enablePermissionDescription"
-          label-for="enable-role-selector"
-          class="gl-mb-5"
+          :label="$options.i18n.minimumAccessLevelExecuteSyncLabel"
+          :description="$options.i18n.minimumAccessLevelExecuteSyncDescription"
+          label-for="minimum-access-level-execute-sync-selector"
         >
           <gl-form-select
-            id="enable-role-selector"
-            v-model="selectedEnableRole"
-            :options="enableOnProjectsRoleOptions"
-            data-testid="enable-role-selector"
-            @change="onEnableRoleSelect"
+            id="minimum-access-level-execute-sync-selector"
+            v-model="minimumAccessLevelExecuteSync"
+            :options="minimumAccessLevelExecuteSyncOptions"
+            data-testid="minimum-access-level-execute-sync-selector"
+            class="gl-max-w-26"
+            @change="changeMinimumAccessLevelExecuteSync"
           />
         </gl-form-group>
 
         <gl-form-group
-          :label="$options.i18n.managePermissionLabel"
-          :description="$options.i18n.managePermissionDescription"
-          label-for="manage-role-selector"
-          class="gl-mb-5"
+          :label="$options.i18n.minimumAccessLevelExecuteAsyncLabel"
+          :description="$options.i18n.minimumAccessLevelExecuteAsyncDescription"
+          label-for="minimum-access-level-execute-async-selector"
         >
           <gl-form-select
-            id="manage-role-selector"
-            v-model="selectedManageRole"
-            :options="manageRoleOptions"
-            data-testid="manage-role-selector"
-            @change="onManageRoleSelect"
-          />
-        </gl-form-group>
-
-        <gl-form-group
-          :label="$options.i18n.executePermissionLabel"
-          :description="$options.i18n.executePermissionDescription"
-          label-for="execute-role-selector"
-        >
-          <gl-form-select
-            id="execute-role-selector"
-            v-model="selectedExecuteRole"
-            :options="executeRoleOptions"
-            data-testid="execute-role-selector"
-            @change="onExecuteRoleSelect"
+            id="minimum-access-level-execute-async-selector"
+            v-model="minimumAccessLevelExecuteAsync"
+            :options="minimumAccessLevelExecuteAsyncOptions"
+            data-testid="minimum-access-level-execute-async-selector"
+            class="gl-max-w-26"
+            @change="changeMinimumAccessLevelExecuteAsync"
           />
         </gl-form-group>
       </div>

@@ -11,6 +11,7 @@ import DuoSastFpDetectionSettings from 'ee/ai/settings/components/duo_sast_fp_de
 import DuoFoundationalAgentsSettings from 'ee/ai/settings/components/duo_foundational_agents_settings.vue';
 import DuoAgentPlatformSettingsForm from 'ee/ai/settings/components/duo_agent_platform_settings_form.vue';
 import AiNamespaceAccessRules from 'ee/ai/settings/components/ai_namespace_access_rules.vue';
+import AiRolePermissions from 'ee/ai/settings/components/ai_role_permissions.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import { mockAgentStatuses } from '../../mocks';
 
@@ -37,10 +38,14 @@ describe('AiCommonSettingsForm', () => {
       },
       provide: {
         onGeneralSettingsPage: false,
+        initialMinimumAccessLevelExecuteAsync: 30,
+        initialMinimumAccessLevelExecuteSync: 10,
         showFoundationalAgentsAvailability: false,
         ...provide,
         glFeatures: {
           aiExperimentSastFpDetection: true,
+          dapGroupCustomizablePermissions: false,
+          dapInstanceCustomizablePermissions: false,
           ...(provide.glFeatures || {}),
         },
       },
@@ -58,6 +63,7 @@ describe('AiCommonSettingsForm', () => {
     wrapper.findComponent(DuoFoundationalAgentsSettings);
   const findDuoAgentPlatformSettingsForm = () =>
     wrapper.findComponent(DuoAgentPlatformSettingsForm);
+  const findAiRolePermissions = () => wrapper.findComponent(AiRolePermissions);
   const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
   const findAiNamespaceAccessRules = () => wrapper.findComponent(AiNamespaceAccessRules);
   const findSaveButton = () => wrapper.findComponent(GlButton);
@@ -730,6 +736,174 @@ describe('AiCommonSettingsForm', () => {
       await nextTick();
 
       expect(findSaveButton().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('AI Role Permissions', () => {
+    it('does not render when both feature flags are disabled', () => {
+      createComponent({
+        provide: {
+          isSaaS: true,
+          glFeatures: {
+            dapGroupCustomizablePermissions: false,
+            dapInstanceCustomizablePermissions: false,
+          },
+        },
+      });
+
+      expect(findAiRolePermissions().exists()).toBe(false);
+    });
+
+    it('does not render on SaaS when only instance flag is enabled', () => {
+      createComponent({
+        provide: {
+          isSaaS: true,
+          glFeatures: {
+            dapGroupCustomizablePermissions: false,
+            dapInstanceCustomizablePermissions: true,
+          },
+        },
+      });
+
+      expect(findAiRolePermissions().exists()).toBe(false);
+    });
+
+    it('does not render on Self-Managed when only group flag is enabled', () => {
+      createComponent({
+        provide: {
+          isSaaS: false,
+          glFeatures: {
+            dapGroupCustomizablePermissions: true,
+            dapInstanceCustomizablePermissions: false,
+          },
+        },
+      });
+
+      expect(findAiRolePermissions().exists()).toBe(false);
+    });
+
+    describe('when dapGroupCustomizablePermissions is enabled on SaaS', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            isSaaS: true,
+            initialMinimumAccessLevelExecuteAsync: 30,
+            initialMinimumAccessLevelExecuteSync: 10,
+            glFeatures: {
+              dapGroupCustomizablePermissions: true,
+            },
+          },
+        });
+      });
+
+      it('renders AiRolePermissions component', () => {
+        expect(findAiRolePermissions().exists()).toBe(true);
+      });
+
+      it('passes correct initial props', () => {
+        expect(findAiRolePermissions().props()).toMatchObject({
+          initialMinimumAccessLevelExecuteAsync: 30,
+          initialMinimumAccessLevelExecuteSync: 10,
+        });
+      });
+
+      it('enables save button when minimum access level execute async changes', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        findAiRolePermissions().vm.$emit('minimum-access-level-execute-async-change', 40);
+        await nextTick();
+
+        expect(findSaveButton().props('disabled')).toBe(false);
+      });
+
+      it('enables save button when minimum access level execute sync changes', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        findAiRolePermissions().vm.$emit('minimum-access-level-execute-sync-change', 20);
+        await nextTick();
+
+        expect(findSaveButton().props('disabled')).toBe(false);
+      });
+    });
+
+    describe('when dapInstanceCustomizablePermissions is enabled on Self-Managed', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            isSaaS: false,
+            initialMinimumAccessLevelExecuteAsync: 30,
+            initialMinimumAccessLevelExecuteSync: 10,
+            glFeatures: {
+              dapInstanceCustomizablePermissions: true,
+            },
+          },
+        });
+      });
+
+      it('renders AiRolePermissions component', () => {
+        expect(findAiRolePermissions().exists()).toBe(true);
+      });
+
+      it('passes correct initial props', () => {
+        expect(findAiRolePermissions().props()).toMatchObject({
+          initialMinimumAccessLevelExecuteAsync: 30,
+          initialMinimumAccessLevelExecuteSync: 10,
+        });
+      });
+
+      it('enables save button when minimum access level execute async changes', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        findAiRolePermissions().vm.$emit('minimum-access-level-execute-async-change', 40);
+        await nextTick();
+
+        expect(findSaveButton().props('disabled')).toBe(false);
+      });
+
+      it('enables save button when minimum access level execute sync changes', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        findAiRolePermissions().vm.$emit('minimum-access-level-execute-sync-change', 20);
+        await nextTick();
+
+        expect(findSaveButton().props('disabled')).toBe(false);
+      });
+    });
+
+    describe('when on SaaS and general settings page with enabled FF', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            isSaaS: true,
+            glFeatures: {
+              dapGroupCustomizablePermissions: true,
+            },
+            onGeneralSettingsPage: true,
+          },
+        });
+      });
+
+      it('does not render AiRolePermissions component', () => {
+        expect(findAiRolePermissions().exists()).toBe(false);
+      });
+    });
+
+    describe('when on Self-Managed and general settings page with enabled FF', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            isSaaS: false,
+            glFeatures: {
+              dapInstanceCustomizablePermissions: true,
+            },
+            onGeneralSettingsPage: true,
+          },
+        });
+      });
+
+      it('does not render AiRolePermissions component', () => {
+        expect(findAiRolePermissions().exists()).toBe(false);
+      });
     });
   });
 });
