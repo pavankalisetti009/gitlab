@@ -130,7 +130,7 @@ describe('EE WorkItemDetail component', () => {
         expect(duoWorkflowAction.props()).toMatchObject({
           hoverMessage: 'Generate merge request with Duo',
           goal: workItem.webUrl,
-          workflowDefinition: 'issue_to_merge_request',
+          workflowDefinition: 'developer/v1',
           agentPrivileges: [1, 2, 3, 4, 5],
           size: 'medium',
           workItemId: workItem.iid,
