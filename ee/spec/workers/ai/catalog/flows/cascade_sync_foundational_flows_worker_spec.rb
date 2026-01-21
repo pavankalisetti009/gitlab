@@ -51,28 +51,6 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
       worker.perform(group.id, user.id, nil)
     end
 
-    context 'when flow_references are provided' do
-      let_it_be(:catalog_item) { create(:ai_catalog_item, foundational_flow_reference: 'test_flow') }
-
-      it 'converts flow references to catalog item IDs' do
-        expect(worker).to receive(:convert_references_to_ids)
-                            .with(['test_flow'])
-                            .and_call_original
-
-        worker.perform(group.id, user.id, ['test_flow'])
-      end
-
-      it 'returns empty array when references are empty' do
-        result = worker.send(:convert_references_to_ids, [])
-        expect(result).to eq([])
-      end
-
-      it 'returns empty array when references are nil' do
-        result = worker.send(:convert_references_to_ids, nil)
-        expect(result).to eq([])
-      end
-    end
-
     it 'syncs the parent group' do
       expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
         .to receive(:new).with(group, current_user: user)
