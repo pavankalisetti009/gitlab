@@ -110,8 +110,15 @@ module Ai
           result.error? && result.message.include?("Item already configured")
         end
 
-        def find_existing_consumer(item, container)
-          container.configured_ai_catalog_items.find { |c| c.ai_catalog_item_id == item.id }
+        def find_existing_consumer(item, target_container)
+          existing_consumers_by_item_id(target_container)[item.id]
+        end
+
+        def existing_consumers_by_item_id(target_container)
+          @existing_consumers_cache ||= {}
+          @existing_consumers_cache[target_container.id] ||= target_container
+            .configured_ai_catalog_items
+            .index_by(&:ai_catalog_item_id)
         end
 
         def create_trigger_if_needed(consumer, item)
