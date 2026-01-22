@@ -4124,8 +4124,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       expect(subject).to include(base_new, base_old, start_new, start_old, additional_pipeline_1, additional_pipeline_2)
     end
 
-    it 'uses the new query method for retrieving pipelines' do
-      expect(merge_request).to receive(:recent_target_branch_pipelines_for_shas).and_call_original
+    it 'uses the batch loading method for retrieving pipelines' do
+      expect(merge_request).to receive(:batch_loaded_recent_target_branch_pipelines_for_shas).and_call_original
 
       subject
     end
@@ -4135,6 +4135,23 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         sha: project.commit.id)
 
       expect(subject).not_to include(unrelated)
+    end
+
+    context 'when batch_loaded_recent_target_branch_pipelines_for_shas raises an error' do
+      before do
+        allow(merge_request).to receive(:batch_loaded_recent_target_branch_pipelines_for_shas)
+                                  .and_raise(ActiveRecord::QueryCanceled.new("statement timeout"))
+      end
+
+      it 'falls back to lazy_loaded_recent_target_branch_pipelines_for_shas' do
+        expect(merge_request).to receive(:lazy_loaded_recent_target_branch_pipelines_for_shas).and_call_original
+
+        subject
+      end
+
+      it 'returns pipelines from the lazy loaded query' do
+        expect(subject).to contain_exactly(base_new, base_old, start_new, start_old)
+      end
     end
 
     context 'when target_branch_comparison_pipelines is empty' do
@@ -4206,7 +4223,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     let(:sha_1) { 'abc123' }
     let(:sha_2) { 'def456' }
 
-    subject(:pipelines) { merge_request.recent_target_branch_pipelines_for_shas(shas) }
+    subject(:pipelines) { merge_request.batch_loaded_recent_target_branch_pipelines_for_shas(shas) }
 
     context 'with multiple SHAs' do
       let(:shas) { [sha_1, sha_2] }
