@@ -267,15 +267,9 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
         namespace.namespace_settings.update!(experiment_features_enabled: true)
       end
 
-      context 'when duo_agent_platform_model_selection feature flag is enabled' do
-        before do
-          stub_feature_flags(duo_agent_platform_model_selection: true)
-        end
-
-        it 'includes duo_agent_platform in enabled features' do
-          enabled_features = described_class.enabled_features_for(namespace)
-          expect(enabled_features.keys).to include(:duo_agent_platform)
-        end
+      it 'includes duo_agent_platform in enabled features' do
+        enabled_features = described_class.enabled_features_for(namespace)
+        expect(enabled_features.keys).to include(:duo_agent_platform)
       end
     end
 

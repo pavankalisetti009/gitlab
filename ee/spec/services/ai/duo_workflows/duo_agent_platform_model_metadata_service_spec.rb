@@ -44,10 +44,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
       let(:root_namespace) { nil }
 
       context 'for self hosted duo agent platform' do
-        before do
-          stub_feature_flags(duo_agent_platform_model_selection: false)
-        end
-
         context 'with self-hosted feature setting' do
           let_it_be(:feature_setting) do
             create(:ai_feature_setting,
@@ -111,10 +107,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
     context 'for cloud-connected self-managed instances' do
       let(:root_namespace) { nil }
-
-      before do
-        stub_feature_flags(duo_agent_platform_model_selection: false)
-      end
 
       context 'with instance model selection setting (priority 1)' do
         let!(:instance_setting) do
@@ -330,11 +322,7 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
     context 'for GitLab.com instances', :saas_gitlab_com_subscriptions do
       let(:root_namespace) { group }
 
-      context 'when duo_agent_platform_model_selection feature flag is enabled' do
-        before do
-          stub_feature_flags(duo_agent_platform_model_selection: group)
-        end
-
+      context 'for namesapce model selection' do
         context 'with a model pinned for namespace-level model selection' do
           let(:pinned_model_identifier) { 'claude_sonnet_3_7_20250219' }
           let!(:namespace_setting) do
@@ -535,17 +523,8 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
         end
       end
 
-      context 'when duo_agent_platform_model_selection feature flag is not enabled' do
+      context 'for self managed instances' do
         before do
-          stub_feature_flags(duo_agent_platform_model_selection: false)
-        end
-
-        it_behaves_like 'returns empty headers'
-      end
-
-      context 'when duo_agent_platform_model_selection feature flag is disabled' do
-        before do
-          stub_feature_flags(duo_agent_platform_model_selection: false)
           stub_saas_features(gitlab_com_subscriptions: false)
         end
 
@@ -560,8 +539,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
     let(:root_namespace) { group }
 
     before do
-      stub_feature_flags(duo_agent_platform_model_selection: group)
-
       stub_request(:get, fetch_service_endpoint_url)
         .to_return(
           status: 200,
@@ -609,10 +586,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
   describe 'feature_name parameter' do
     let(:root_namespace) { group }
-
-    before do
-      stub_feature_flags(duo_agent_platform_model_selection: group)
-    end
 
     context 'when feature_name is provided' do
       let(:feature_name) { :duo_agent_platform }
