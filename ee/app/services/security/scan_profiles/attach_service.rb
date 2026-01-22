@@ -17,9 +17,10 @@ module Security
         new(...).execute
       end
 
-      def initialize(group, scan_profile, traverse_hierarchy: true)
+      def initialize(group, scan_profile, current_user:, traverse_hierarchy: true)
         @group = group
         @scan_profile = scan_profile
+        @current_user = current_user
         @traverse_hierarchy = traverse_hierarchy
       end
 
@@ -32,7 +33,7 @@ module Security
 
       private
 
-      attr_reader :group, :scan_profile, :traverse_hierarchy
+      attr_reader :group, :scan_profile, :current_user, :traverse_hierarchy
 
       def valid_namespace?
         scan_profile.namespace_id == group.root_ancestor.id
@@ -65,8 +66,11 @@ module Security
         lease_key = Security::ScanProfiles.update_lease_key(namespace_id)
 
         in_lock(lease_key, ttl: LEASE_TIMEOUT, **lock_retry_options) do
-          batch_ids = batch.pluck_primary_key
-          bulk_insert_profile_projects(batch_ids)
+          Security::ScanProfiles::ProjectAttachService.execute(
+            profile: scan_profile,
+            current_user: current_user,
+            projects: batch.to_a
+          )
         end
       rescue Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError => error
         handle_lock_failure(error, namespace_id)
@@ -81,24 +85,8 @@ module Security
       def handle_lock_failure(error, namespace_id)
         raise error unless traverse_hierarchy
 
-        Security::ScanProfiles::AttachWorker.perform_in(RETRY_DELAY, namespace_id, scan_profile.id, false)
-      end
-
-      def bulk_insert_profile_projects(batch_ids)
-        timestamp = Time.current
-
-        attributes = batch_ids.map do |project_id|
-          {
-            project_id: project_id,
-            security_scan_profile_id: scan_profile.id,
-            created_at: timestamp,
-            updated_at: timestamp
-          }
-        end
-
-        Security::ScanProfileProject.insert_all(
-          attributes,
-          unique_by: [:project_id, :security_scan_profile_id]
+        Security::ScanProfiles::AttachWorker.perform_in(
+          RETRY_DELAY, namespace_id, scan_profile.id, current_user.id, false
         )
       end
     end

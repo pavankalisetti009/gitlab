@@ -89,7 +89,7 @@ module Mutations
           # rubocop:disable CodeReuse/Worker -- This should schedule async workers
           ::Security::ScanProfiles::AttachWorker.bulk_perform_async_with_contexts(
             groups,
-            arguments_proc: ->(group) { [group.id, profile.id] },
+            arguments_proc: ->(group) { [group.id, profile.id, current_user.id] },
             context_proc: ->(group) { { namespace: group, user: current_user } }
           )
           # rubocop:enable CodeReuse/Worker

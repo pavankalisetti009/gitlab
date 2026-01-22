@@ -152,7 +152,7 @@ RSpec.describe 'SecurityScanProfileAttach', feature_category: :security_asset_in
 
         it 'enqueues worker for groups' do
           expect(Security::ScanProfiles::AttachWorker)
-            .to receive(:bulk_perform_async).with([[group1.id, profile.id]])
+            .to receive(:bulk_perform_async).with([[group1.id, profile.id, current_user.id]])
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -172,7 +172,7 @@ RSpec.describe 'SecurityScanProfileAttach', feature_category: :security_asset_in
 
         it 'attaches to projects and enqueues workers for groups' do
           expect(Security::ScanProfiles::AttachWorker)
-            .to receive(:bulk_perform_async).with([[group1.id, profile.id]])
+            .to receive(:bulk_perform_async).with([[group1.id, profile.id, current_user.id]])
 
           expect { post_graphql_mutation(mutation, current_user: current_user) }
             .to change { Security::ScanProfileProject.count }.by(1)

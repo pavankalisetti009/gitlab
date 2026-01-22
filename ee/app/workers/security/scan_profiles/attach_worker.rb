@@ -13,16 +13,20 @@ module Security
 
       feature_category :security_asset_inventories
 
-      def perform(group_id, scan_profile_id, traverse_hierarchy = true)
+      def perform(group_id, scan_profile_id, current_user_id, traverse_hierarchy = true)
         group = Group.find_by_id(group_id)
         return unless group
 
         scan_profile = Security::ScanProfile.find_by_id(scan_profile_id)
         return unless scan_profile
 
+        current_user = User.find_by_id(current_user_id)
+        return unless current_user
+
         Security::ScanProfiles::AttachService.execute(
           group,
           scan_profile,
+          current_user: current_user,
           traverse_hierarchy: traverse_hierarchy
         )
       end
