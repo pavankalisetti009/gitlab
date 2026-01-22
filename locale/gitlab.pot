@@ -78453,6 +78453,9 @@ msgstr ""
 msgid "WorkItem|Save and overwrite"
 msgstr ""
 
+msgid "WorkItem|Save view"
+msgstr ""
+
 msgid "WorkItem|Search by view name or description"
 msgstr ""
 
