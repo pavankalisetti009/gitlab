@@ -155,6 +155,9 @@ export default {
     vulnerabilityGraphqlId() {
       return convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerability.id);
     },
+    vulnerabilityProjectId() {
+      return this.vulnerability.project.id;
+    },
     editVulnerabilityActions() {
       return [
         {
@@ -231,12 +234,12 @@ export default {
       query: getConfiguredFlows,
       variables() {
         return {
-          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.vulnerability.project.id),
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.vulnerabilityProjectId),
           foundationalFlowReference: 'sast_fp_detection/v1',
         };
       },
       skip() {
-        return !this.vulnerability.project.id;
+        return !this.vulnerabilityProjectId;
       },
       update(data) {
         const configuredItems = data.aiCatalogConfiguredItems?.nodes || [];
@@ -402,7 +405,7 @@ export default {
       this.$apollo.subscriptions.aiCompletionResponse.stop();
     },
     triggerResolution() {
-      Api.triggerVulnerabilityResolution(this.vulnerability.id, this.vulnerability.project.id)
+      Api.triggerVulnerabilityResolution(this.vulnerability.id, this.vulnerabilityProjectId)
         .then(({ data }) => {
           createAlert({
             variant: VARIANT_SUCCESS,
@@ -435,7 +438,7 @@ export default {
 
       Api.triggerFalsePositiveDetection(
         this.vulnerability.id,
-        this.vulnerability.project.id,
+        this.vulnerabilityProjectId,
         getIdFromGraphQLId(this.aiCatalogItemConsumerId),
       )
         .then(({ data }) => {
