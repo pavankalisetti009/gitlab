@@ -447,17 +447,18 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
       container.namespace_settings.update!(duo_foundational_flows_enabled: true)
     end
 
-    it 'continues processing after RecordNotFound' do
+    it 'continues processing after missing item' do
       allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([999, flow1.id])
-      allow(Ai::Catalog::Item).to receive(:find).with(999).and_raise(ActiveRecord::RecordNotFound)
-      allow(Ai::Catalog::Item).to receive(:find).with(flow1.id).and_call_original
       allow(Ability).to receive(:allowed?).and_return(true)
 
       create_service = instance_double(Ai::Catalog::ItemConsumers::CreateService)
       allow(create_service).to receive(:execute).and_return(ServiceResponse.success)
       allow(Ai::Catalog::ItemConsumers::CreateService).to receive(:new).and_return(create_service)
 
-      expect(Gitlab::ErrorTracking).to receive(:track_exception)
+      expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+        having_attributes(message: include('999')),
+        hash_including(catalog_item_id: 999, container_id: container.id)
+      )
 
       service.execute
 
