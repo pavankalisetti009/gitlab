@@ -11,8 +11,7 @@ module EE
           root_group_id: root_group_id,
           project_id: project.id,
           project_path: project.full_path,
-          explore_ai_catalog_path: explore_ai_catalog_path,
-          flow_triggers_event_type_options: ai_flow_triggers_event_type_options
+          explore_ai_catalog_path: explore_ai_catalog_path
         }
       end
 

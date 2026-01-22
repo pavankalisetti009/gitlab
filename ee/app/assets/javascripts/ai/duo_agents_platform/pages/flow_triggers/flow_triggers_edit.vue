@@ -20,7 +20,7 @@ export default {
     GlLoadingIcon,
     PageHeading,
   },
-  inject: ['flowTriggersEventTypeOptions', 'projectPath', 'projectId'],
+  inject: ['projectPath', 'projectId'],
   data() {
     return {
       flowTrigger: {},
@@ -137,7 +137,6 @@ export default {
     />
     <flow-trigger-form
       v-else
-      :event-type-options="flowTriggersEventTypeOptions"
       :error-messages="errorMessages"
       :project-path="projectPath"
       :project-id="projectId"

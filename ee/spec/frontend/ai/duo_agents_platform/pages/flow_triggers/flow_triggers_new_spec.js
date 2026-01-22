@@ -9,7 +9,6 @@ import FlowTriggerForm from 'ee/ai/duo_agents_platform/pages/flow_triggers/compo
 import { setPreviousRoute } from 'ee/ai/duo_agents_platform/router/utils';
 import { FLOW_TRIGGERS_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import {
-  eventTypeOptions,
   mockCreateFlowTriggerSuccessMutation,
   mockCreateFlowTriggerErrorMutation,
   mockTrigger,
@@ -40,7 +39,6 @@ describe('FlowTriggersNew', () => {
       provide: {
         projectId,
         projectPath,
-        flowTriggersEventTypeOptions: eventTypeOptions,
       },
       mocks: {
         $router: mockRouter,

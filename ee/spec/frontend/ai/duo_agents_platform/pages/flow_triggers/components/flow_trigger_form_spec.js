@@ -9,7 +9,8 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import FlowTriggerForm from 'ee/ai/duo_agents_platform/pages/flow_triggers/components/flow_trigger_form.vue';
 import getCatalogConsumerItemsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_catalog_consumer_items.query.graphql';
 import AiLegalDisclaimer from 'ee/ai/duo_agents_platform/components/common/ai_legal_disclaimer.vue';
-import { eventTypeOptions, mockCatalogFlowsResponse } from '../mocks';
+import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
+import { mockCatalogFlowsResponse } from '../mocks';
 
 Vue.use(VueApollo);
 
@@ -35,7 +36,6 @@ describe('FlowTriggerForm', () => {
     mode: 'create',
     isLoading: false,
     errorMessages: [],
-    eventTypeOptions,
     projectPath: 'myProject',
     projectId: '123',
   };
@@ -322,7 +322,7 @@ describe('FlowTriggerForm', () => {
         await createWrapper({
           initialValues: {
             description: 'Initial description',
-            eventTypes: [eventTypeOptions[0].value],
+            eventTypes: [FLOW_TRIGGER_TYPES[0].valueInt],
             configPath: 'initial/path',
             user: { id: 'gid://gitlab/User/1', name: 'Initial User' },
             aiCatalogItemConsumer: {
@@ -348,6 +348,7 @@ describe('FlowTriggerForm', () => {
         expect(findFlowSelect().props('toggleText')).toBe(
           'Select an agent or flow from the AI Catalog',
         );
+
         expect(findFlowSelect().props().items).toHaveLength(2);
         expect(findFlowSelect().props().selected).toEqual([]);
       });
@@ -381,10 +382,10 @@ describe('FlowTriggerForm', () => {
     });
 
     it('shows correct toggle text when event types are selected', async () => {
-      const selectedEventTypes = [eventTypeOptions[0].value, eventTypeOptions[1].value];
+      const selectedEventTypes = [FLOW_TRIGGER_TYPES[0].valueInt, FLOW_TRIGGER_TYPES[1].valueInt];
       await findEventTypes().vm.$emit('select', selectedEventTypes);
 
-      const expectedText = `${eventTypeOptions[0].text}, ${eventTypeOptions[1].text}`;
+      const expectedText = `${FLOW_TRIGGER_TYPES[0].text}, ${FLOW_TRIGGER_TYPES[1].text}`;
       expect(findEventTypes().props('toggleText')).toBe(expectedText);
     });
 
@@ -440,7 +441,7 @@ describe('FlowTriggerForm', () => {
   describe('Form Submit', () => {
     describe('when in catalog mode', () => {
       const description = 'My description';
-      const eventTypes = [eventTypeOptions[0].value];
+      const eventTypes = [FLOW_TRIGGER_TYPES[0].valueInt];
       const selectedFlow = 'gid://gitlab/Ai::Catalog::ItemConsumer/1';
       const mockUser = { id: 'gid://gitlab/User/1', name: 'Test User' };
 
@@ -474,7 +475,7 @@ describe('FlowTriggerForm', () => {
 
     describe('when in manual mode', () => {
       const description = 'My description';
-      const eventTypes = [eventTypeOptions[0].value];
+      const eventTypes = [FLOW_TRIGGER_TYPES[0].valueInt];
       const configPath = 'path/to/config.yml';
       const mockUser = { id: 'gid://gitlab/User/1', name: 'Test User' };
 
@@ -512,7 +513,7 @@ describe('FlowTriggerForm', () => {
       });
       it('submits with null userId', async () => {
         await findDescription().vm.$emit('input', 'Test description');
-        await findEventTypes().vm.$emit('select', [eventTypeOptions[0].value]);
+        await findEventTypes().vm.$emit('select', [FLOW_TRIGGER_TYPES[0].valueInt]);
         // Don't select any user
 
         await findForm().vm.$emit('submit', { preventDefault: () => {} });
@@ -535,7 +536,7 @@ describe('FlowTriggerForm', () => {
     beforeEach(async () => {
       const initialValues = {
         description: 'Initial description',
-        eventTypes: [eventTypeOptions[0].value],
+        eventTypes: [FLOW_TRIGGER_TYPES[0].valueInt],
         configPath: 'initial/path',
         user: { id: 'gid://gitlab/User/1', name: 'Initial User' },
         aiCatalogItemConsumer: {},
@@ -546,7 +547,7 @@ describe('FlowTriggerForm', () => {
 
     it('sets initial values correctly', () => {
       expect(findDescription().props('value')).toBe('Initial description');
-      expect(findEventTypes().props('selected')).toEqual([eventTypeOptions[0].value]);
+      expect(findEventTypes().props('selected')).toEqual([FLOW_TRIGGER_TYPES[0].valueInt]);
 
       expect(findUserSelect().props('value')).toEqual([
         { id: 'gid://gitlab/User/1', name: 'Initial User' },

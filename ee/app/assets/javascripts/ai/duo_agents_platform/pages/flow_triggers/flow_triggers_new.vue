@@ -12,7 +12,7 @@ export default {
     FlowTriggerForm,
     PageHeading,
   },
-  inject: ['flowTriggersEventTypeOptions', 'projectPath', 'projectId'],
+  inject: ['projectPath', 'projectId'],
   data() {
     return {
       errorMessages: [],
@@ -78,7 +78,6 @@ export default {
       </template>
     </page-heading>
     <flow-trigger-form
-      :event-type-options="flowTriggersEventTypeOptions"
       :error-messages="errorMessages"
       :project-path="projectPath"
       :project-id="projectId"

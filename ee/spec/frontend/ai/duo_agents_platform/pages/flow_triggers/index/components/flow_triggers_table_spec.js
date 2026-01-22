@@ -2,12 +2,7 @@ import { GlToken, GlAvatar } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/components/flow_triggers_table.vue';
 import { FLOW_TRIGGERS_EDIT_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import {
-  mockTriggers,
-  mockTriggersWithoutUser,
-  mockTriggersConfigPath,
-  eventTypeOptions,
-} from '../../mocks';
+import { mockTriggers, mockTriggersWithoutUser, mockTriggersConfigPath } from '../../mocks';
 
 describe('FlowTriggersTable', () => {
   let wrapper;
@@ -23,7 +18,6 @@ describe('FlowTriggersTable', () => {
     wrapper = mountExtended(FlowTriggersTable, {
       propsData: {
         aiFlowTriggers: mockTriggers,
-        eventTypeOptions,
         ...props,
       },
     });

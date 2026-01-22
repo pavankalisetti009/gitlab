@@ -12,6 +12,7 @@ import {
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
 import { FLOW_TRIGGERS_EDIT_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 
 const thClass = 'gl-whitespace-nowrap';
@@ -37,14 +38,10 @@ export default {
       type: Array,
       required: true,
     },
-    eventTypeOptions: {
-      type: Array,
-      required: true,
-    },
   },
   computed: {
     eventTypes() {
-      return Object.fromEntries(this.eventTypeOptions.map((item) => [item.value, item.text]));
+      return Object.fromEntries(FLOW_TRIGGER_TYPES.map((item) => [item.valueInt, item.text]));
     },
   },
   methods: {
