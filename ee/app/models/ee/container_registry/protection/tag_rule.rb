@@ -60,9 +60,13 @@ module EE
 
         override :validate_access_levels
         def validate_access_levels
-          return unless minimum_access_level_for_delete.present? ^ minimum_access_level_for_push.present?
+          if minimum_access_level_for_delete.present? ^ minimum_access_level_for_push.present?
+            return errors.add(:base, _('Access levels should either both be present or both be nil'))
+          end
 
-          errors.add(:base, _('Access levels should either both be present or both be nil'))
+          return unless immutable? && was_mutable?
+
+          errors.add(:base, _('Cannot create an immutable tag rule from a protection rule'))
         end
 
         override :minimum_level_to_delete_rule
@@ -72,6 +76,10 @@ module EE
 
         def immutable_restriction?
           project.licensed_feature_available?(:container_registry_immutable_tag_rules)
+        end
+
+        def was_mutable?
+          [minimum_access_level_for_push_was, minimum_access_level_for_delete_was].all?(&:present?)
         end
       end
     end

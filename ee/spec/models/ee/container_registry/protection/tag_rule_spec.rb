@@ -39,6 +39,41 @@ RSpec.describe ContainerRegistry::Protection::TagRule, type: :model, feature_cat
           expect(tag_rule).to be_valid
         end
       end
+
+      context 'when only one access level is present' do
+        %i[minimum_access_level_for_delete minimum_access_level_for_push].each do |access_level|
+          context "when #{access_level} is nil" do
+            let(access_level) { nil }
+
+            it 'is not valid' do
+              is_expected.to be_invalid.and have_attributes(
+                errors: match_array(['Access levels should either both be present or both be nil'])
+              )
+            end
+          end
+        end
+      end
+
+      context 'when changing from mutable to immutable' do
+        let_it_be(:tag_rule) do
+          create(
+            :container_registry_protection_tag_rule,
+            minimum_access_level_for_push: Gitlab::Access::OWNER,
+            minimum_access_level_for_delete: Gitlab::Access::MAINTAINER
+          )
+        end
+
+        before do
+          tag_rule.minimum_access_level_for_push = nil
+          tag_rule.minimum_access_level_for_delete = nil
+        end
+
+        it 'is not valid' do
+          expect(tag_rule).to be_invalid.and have_attributes(
+            errors: match_array(['Cannot create an immutable tag rule from a protection rule'])
+          )
+        end
+      end
     end
 
     describe '#tag_name_pattern' do
