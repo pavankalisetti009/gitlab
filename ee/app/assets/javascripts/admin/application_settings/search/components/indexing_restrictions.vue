@@ -3,6 +3,7 @@ import IndexEntitiesSelector from './index_entities_selector.vue';
 import IndexEntitiesList from './index_entities_list.vue';
 
 export default {
+  name: 'IndexingRestrictions',
   components: {
     IndexEntitiesSelector,
     IndexEntitiesList,
