@@ -15861,7 +15861,9 @@ CREATE TABLE ci_partitions (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    status smallint DEFAULT 0 NOT NULL
+    status smallint DEFAULT 0 NOT NULL,
+    current_from timestamp with time zone,
+    current_until timestamp with time zone
 );
 
 CREATE TABLE ci_pending_builds (
