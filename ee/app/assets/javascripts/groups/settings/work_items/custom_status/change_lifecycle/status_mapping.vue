@@ -178,7 +178,7 @@ export default {
           <!-- Current Status Column -->
           <div
             data-testid="current-status"
-            class="gl-border-b gl-inline-flex gl-max-w-full gl-items-center gl-py-1 gl-pl-2 gl-pr-[.375rem] gl-leading-normal gl-text-strong"
+            class="gl-border-b gl-inline-flex gl-max-w-full gl-items-center gl-py-1 gl-pl-2 gl-pr-2-5 gl-leading-normal gl-text-strong"
           >
             <gl-icon
               class="gl-mr-3 gl-shrink-0"
