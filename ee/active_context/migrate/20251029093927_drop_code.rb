@@ -6,4 +6,8 @@ class DropCode < ActiveContext::Migration[1.0]
   def migrate!
     drop_collection :code
   end
+
+  def completed?
+    true
+  end
 end

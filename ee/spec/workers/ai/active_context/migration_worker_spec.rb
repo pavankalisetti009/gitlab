@@ -77,7 +77,7 @@ RSpec.describe Ai::ActiveContext::MigrationWorker, :clean_gitlab_redis_shared_st
         allow(dictionary_instance).to receive(:find_by_version).with('20240101010101').and_return(migration_class)
         allow(migration_class).to receive(:new).and_return(migration_instance)
         allow(migration_instance).to receive(:migrate!)
-        allow(migration_instance).to receive_messages(all_operations_completed?: true, skip?: false)
+        allow(migration_instance).to receive_messages(skip?: false, completed?: true)
       end
 
       it 'creates missing migration records' do
@@ -104,7 +104,11 @@ RSpec.describe Ai::ActiveContext::MigrationWorker, :clean_gitlab_redis_shared_st
           create(:ai_active_context_migration, connection: connection, version: '20240101010101', status: :pending)
         end
 
-        context 'when all operations are completed' do
+        context 'when migration is completed' do
+          before do
+            allow(migration_instance).to receive(:completed?).and_return(true)
+          end
+
           it 'marks the migration as completed' do
             perform
 
@@ -112,9 +116,9 @@ RSpec.describe Ai::ActiveContext::MigrationWorker, :clean_gitlab_redis_shared_st
           end
         end
 
-        context 'when not all operations are completed' do
+        context 'when migration is not completed' do
           before do
-            allow(migration_instance).to receive(:all_operations_completed?).and_return(false)
+            allow(migration_instance).to receive(:completed?).and_return(false)
           end
 
           it 're-enqueues the worker' do

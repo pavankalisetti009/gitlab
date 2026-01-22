@@ -10,6 +10,10 @@ module Ai
             c.vector :embeddings, dimensions: 768
           end
         end
+
+        def completed?
+          true
+        end
       end
     end
   end
