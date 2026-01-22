@@ -14958,7 +14958,8 @@ CREATE TABLE audit_events_group_external_streaming_destinations (
     encrypted_secret_token_iv bytea NOT NULL,
     legacy_destination_ref bigint,
     active boolean DEFAULT true NOT NULL,
-    CONSTRAINT check_97d157fbd0 CHECK ((char_length(name) <= 72))
+    CONSTRAINT check_97d157fbd0 CHECK ((char_length(name) <= 72)),
+    CONSTRAINT check_audit_event_streams_group_secret_token_max_length CHECK ((octet_length(encrypted_secret_token) <= 4112))
 );
 
 CREATE SEQUENCE audit_events_group_external_streaming_destinations_id_seq
@@ -15059,7 +15060,8 @@ CREATE TABLE audit_events_instance_external_streaming_destinations (
     encrypted_secret_token_iv bytea NOT NULL,
     legacy_destination_ref bigint,
     active boolean DEFAULT true NOT NULL,
-    CONSTRAINT check_219decfb51 CHECK ((char_length(name) <= 72))
+    CONSTRAINT check_219decfb51 CHECK ((char_length(name) <= 72)),
+    CONSTRAINT check_audit_event_streams_instance_secret_token_max_length CHECK ((octet_length(encrypted_secret_token) <= 4112))
 );
 
 CREATE SEQUENCE audit_events_instance_external_streaming_destinations_id_seq

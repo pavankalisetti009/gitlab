@@ -36,6 +36,8 @@ module AuditEvents
       validates :config, presence: true,
         json_schema: { filename: 'audit_events_gcp_external_streaming_destination_config' }, if: :gcp?
       validates :secret_token, presence: true, unless: :http?
+      # Database constraint allows encrypted_secret_token up to 8208 bytes (8192 + 16 byte auth tag)
+      validates :secret_token, length: { maximum: 4096 }, allow_blank: true
 
       validates_with AuditEvents::HttpDestinationValidator, if: :http?
       validates_with AuditEvents::AwsDestinationValidator, if: :aws?
