@@ -14,8 +14,8 @@ RSpec.describe 'Updating the container registry tag protection rule', :aggregate
     {
       id: container_protection_tag_rule.to_global_id,
       tag_name_pattern: 'v2*',
-      minimum_access_level_for_delete: nil,
-      minimum_access_level_for_push: nil
+      minimum_access_level_for_delete: 'ADMIN',
+      minimum_access_level_for_push: 'OWNER'
     }
   end
 
@@ -54,8 +54,8 @@ RSpec.describe 'Updating the container registry tag protection rule', :aggregate
 
       expect(container_protection_tag_rule.reset).to have_attributes(
         tag_name_pattern: input[:tag_name_pattern],
-        minimum_access_level_for_push: input[:minimum_access_level_for_push],
-        minimum_access_level_for_delete: input[:minimum_access_level_for_delete]
+        minimum_access_level_for_push: input[:minimum_access_level_for_push].downcase,
+        minimum_access_level_for_delete: input[:minimum_access_level_for_delete].downcase
       )
     end
   end
