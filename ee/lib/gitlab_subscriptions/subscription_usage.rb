@@ -21,54 +21,58 @@ module GitlabSubscriptions
 
     attr_reader :namespace, :subscription_usage_client, :subscription_target
 
-    def gitlab_credits_usage_data
-      usage_metadata[:gitlabCreditsUsage] || {}
-    end
-
     def enabled?
-      !!gitlab_credits_usage_data[:enabled]
+      !!usage_metadata[:enabled]
     end
 
     def outdated_client?
-      gitlab_credits_usage_data[:isOutdatedClient]
+      usage_metadata[:isOutdatedClient]
     end
 
     def start_date
-      gitlab_credits_usage_data[:startDate]
+      usage_metadata[:startDate]
     end
 
     def end_date
-      gitlab_credits_usage_data[:endDate]
+      usage_metadata[:endDate]
     end
 
     def last_event_transaction_at
-      gitlab_credits_usage_data[:lastEventTransactionAt]
+      usage_metadata[:lastEventTransactionAt]
     end
 
     def purchase_credits_path
-      credits_paths = usage_metadata[:purchasePaths]&.find do |path_obj|
-        path_obj[:planType] == 'gitlab_credits'
-      end
+      return unless enabled?
 
-      return unless credits_paths.present?
+      is_gitlab_com = ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      return if is_gitlab_com && namespace.nil?
+      return if !is_gitlab_com && License.current&.subscription_name.nil?
 
-      credits_paths[:editPath] || credits_paths[:newPath]
+      deployment_type = is_gitlab_com ? 'gitlab_com' : 'self_managed'
+      params = {
+        deployment_type: deployment_type,
+        plan_type: 'gitlab_credits',
+        gl_namespace_id: is_gitlab_com ? namespace.root_ancestor&.id : nil,
+        subscription_name: is_gitlab_com ? nil : License.current.subscription_name
+      }.compact
+
+      "/subscriptions/purchases/gitlab?#{params.to_query}"
     end
 
     def overage_terms_accepted
-      !!gitlab_credits_usage_data[:overageTermsAccepted]
+      !!usage_metadata[:overageTermsAccepted]
     end
 
     def can_accept_overage_terms
-      !!gitlab_credits_usage_data[:canAcceptOverageTerms]
+      !!usage_metadata[:canAcceptOverageTerms]
     end
 
     def dap_promo_enabled
-      !!gitlab_credits_usage_data[:dapPromoEnabled]
+      !!usage_metadata[:dapPromoEnabled]
     end
 
     def usage_dashboard_path
-      gitlab_credits_usage_data[:usageDashboardPath]
+      usage_metadata[:usageDashboardPath]
     end
 
     def monthly_waiver

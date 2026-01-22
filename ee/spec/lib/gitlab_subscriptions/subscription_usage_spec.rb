@@ -26,9 +26,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client returns a successful response' do
-        let(:client_response) do
-          { success: true, subscriptionUsage: { gitlabCreditsUsage: { startDate: "2025-10-01" } } }
-        end
+        let(:client_response) { { success: true, subscriptionUsage: { startDate: "2025-10-01" } } }
 
         it 'returns the start date' do
           expect(start_date).to be("2025-10-01")
@@ -44,7 +42,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client response is missing startDate' do
-        let(:client_response) { { success: true, subscriptionUsage: { gitlabCreditsUsage: { startDate: nil } } } }
+        let(:client_response) { { success: true, subscriptionUsage: { startDate: nil } } }
 
         it 'returns nil' do
           expect(start_date).to be_nil
@@ -61,9 +59,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) do
-        { success: true, subscriptionUsage: { gitlabCreditsUsage: { startDate: "2025-10-01" } } }
-      end
+      let(:client_response) { { success: true, subscriptionUsage: { startDate: "2025-10-01" } } }
 
       before do
         allow(License).to receive(:current).and_return(license)
@@ -92,9 +88,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client returns a successful response' do
-        let(:client_response) do
-          { success: true, subscriptionUsage: { gitlabCreditsUsage: { endDate: "2025-10-31" } } }
-        end
+        let(:client_response) { { success: true, subscriptionUsage: { endDate: "2025-10-31" } } }
 
         it 'returns the end date' do
           expect(end_date).to be("2025-10-31")
@@ -110,7 +104,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client response is missing endDate' do
-        let(:client_response) { { success: true, subscriptionUsage: { gitlabCreditsUsage: { endDate: nil } } } }
+        let(:client_response) { { success: true, subscriptionUsage: { endDate: nil } } }
 
         it 'returns nil' do
           expect(end_date).to be_nil
@@ -127,7 +121,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) { { success: true, subscriptionUsage: { gitlabCreditsUsage: { endDate: "2025-10-31" } } } }
+      let(:client_response) { { success: true, subscriptionUsage: { endDate: "2025-10-31" } } }
 
       before do
         allow(License).to receive(:current).and_return(license)
@@ -140,92 +134,108 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
   end
 
   describe '#purchase_credits_path' do
+    let(:client_response) { { success: true, subscriptionUsage: { enabled: true } } }
+    let(:subgroup) { create(:group, parent: group) }
+
     subject(:purchase_credits_path) { subscription_usage.purchase_credits_path }
 
     before do
       allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
     end
 
-    context 'when subscription_target is :namespace' do
-      let(:subscription_usage) do
-        described_class.new(
-          subscription_target: :namespace,
-          subscription_usage_client: subscription_usage_client,
-          namespace: group
-        )
-      end
-
-      context 'when the client returns a successful response with editPath' do
-        let(:client_response) do
-          {
-            success: true,
-            subscriptionUsage: {
-              purchasePaths: [
-                {
-                  planType: "gitlab_credits",
-                  newPath: "/mock/new/path",
-                  editPath: "/mock/edit/path"
-                }
-              ]
-            }
-          }
+    context 'when gitlab_com_subscriptions enabled', :saas_gitlab_com_subscriptions do
+      shared_examples 'returns expected path' do
+        context 'when the client returns enabled' do
+          it 'returns the correct path' do
+            expect(purchase_credits_path).to eq(
+              "/subscriptions/purchases/gitlab?deployment_type=gitlab_com" \
+                "&gl_namespace_id=#{group.id}&plan_type=gitlab_credits"
+            )
+          end
         end
 
-        it 'returns the editPath' do
-          expect(purchase_credits_path).to eq("/mock/edit/path")
+        context 'when the client returns not enabled' do
+          let(:client_response) { { success: false } }
+
+          it 'returns nil' do
+            expect(purchase_credits_path).to be_nil
+          end
+        end
+
+        context 'when the client returns enabled=false' do
+          let(:client_response) { { success: true, subscriptionUsage: { enabled: false } } }
+
+          it 'returns nil' do
+            expect(purchase_credits_path).to be_nil
+          end
         end
       end
 
-      context 'when the client returns a successful response with only newPath' do
-        let(:client_response) do
-          {
-            success: true,
-            subscriptionUsage: {
-              purchasePaths: [
-                {
-                  planType: "gitlab_credits",
-                  newPath: "/mock/new/path"
-                }
-              ]
-            }
-          }
+      context 'when namespace is a subgroup' do
+        let(:subscription_usage) do
+          described_class.new(
+            subscription_target: :namespace,
+            subscription_usage_client: subscription_usage_client,
+            namespace: subgroup
+          )
         end
 
-        it 'returns the newPath' do
-          expect(purchase_credits_path).to eq("/mock/new/path")
+        include_examples 'returns expected path'
+      end
+
+      context 'when namespace is a root' do
+        let(:subscription_usage) do
+          described_class.new(
+            subscription_target: :namespace,
+            subscription_usage_client: subscription_usage_client,
+            namespace: group
+          )
+        end
+
+        include_examples 'returns expected path'
+      end
+
+      context 'when namespace does not return root_ancestor' do
+        before do
+          allow(group).to receive(:root_ancestor).and_return(nil)
+        end
+
+        let(:subscription_usage) do
+          described_class.new(
+            subscription_target: :namespace,
+            subscription_usage_client: subscription_usage_client,
+            namespace: group
+          )
+        end
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to eq(
+            "/subscriptions/purchases/gitlab?deployment_type=gitlab_com&plan_type=gitlab_credits"
+          )
         end
       end
 
-      context 'when the client returns an unsuccessful response' do
-        let(:client_response) { { success: false } }
+      context 'when namespace does not exist' do
+        let(:group) { nil }
+        let(:subscription_usage) do
+          described_class.new(
+            subscription_target: :namespace,
+            subscription_usage_client: subscription_usage_client,
+            namespace: group
+          )
+        end
 
         it 'returns nil' do
           expect(purchase_credits_path).to be_nil
         end
       end
 
-      context 'when the client response is missing purchasePaths' do
-        let(:client_response) { { success: true, subscriptionUsage: { gitlabCreditsUsage: { purchasePaths: nil } } } }
-
-        it 'returns nil' do
-          expect(purchase_credits_path).to be_nil
-        end
-      end
-
-      context 'when purchasePaths does not contain gitlab_credits plan' do
-        let(:client_response) do
-          {
-            success: true,
-            subscriptionUsage: {
-              purchasePaths: [
-                {
-                  planType: "other_plan",
-                  newPath: "/mock/new/path",
-                  editPath: "/mock/edit/path"
-                }
-              ]
-            }
-          }
+      context 'when namespace is not provided' do
+        let(:subscription_usage) do
+          described_class.new(
+            subscription_target: :namespace,
+            subscription_usage_client: subscription_usage_client
+          )
         end
 
         it 'returns nil' do
@@ -234,7 +244,10 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
     end
 
-    context 'when subscription_target is :instance' do
+    context 'when gitlab_com_subscriptions not enabled' do
+      let!(:subscription_name) { 'A-S00000001' }
+      let(:gitlab_license) { build(:gitlab_license, restrictions: { subscription_name: subscription_name }) }
+      let(:license) { create(:license, data: gitlab_license.export) }
       let(:subscription_usage) do
         described_class.new(
           subscription_target: :instance,
@@ -242,50 +255,64 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         )
       end
 
-      let(:license) { build_stubbed(:license) }
-
       before do
         allow(License).to receive(:current).and_return(license)
       end
 
-      context 'when the client returns a successful response with editPath' do
-        let(:client_response) do
-          {
-            success: true,
-            subscriptionUsage: {
-              purchasePaths: [
-                {
-                  planType: "gitlab_credits",
-                  newPath: "/mock/new/path",
-                  editPath: "/mock/edit/path"
-                }
-              ]
-            }
-          }
-        end
-
-        it 'returns the editPath' do
-          expect(purchase_credits_path).to eq("/mock/edit/path")
+      context 'when the client returns enabled' do
+        it 'returns the correct path' do
+          expect(purchase_credits_path).to eq(
+            "/subscriptions/purchases/gitlab?deployment_type=self_managed&" \
+              "plan_type=gitlab_credits&subscription_name=A-S00000001"
+          )
         end
       end
 
-      context 'when the client returns a successful response with only newPath' do
-        let(:client_response) do
-          {
-            success: true,
-            subscriptionUsage: {
-              purchasePaths: [
-                {
-                  planType: "gitlab_credits",
-                  newPath: "/mock/new/path"
-                }
-              ]
-            }
-          }
-        end
+      context 'when the client returns not enabled' do
+        let(:client_response) { { success: false } }
 
-        it 'returns the newPath' do
-          expect(purchase_credits_path).to eq("/mock/new/path")
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
+        end
+      end
+
+      context 'when the client returns enabled=false' do
+        let(:client_response) { { success: true, subscriptionUsage: { enabled: false } } }
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
+        end
+      end
+
+      context 'when license is nil' do
+        let(:license) { nil }
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
+        end
+      end
+
+      context 'when license is not a gitlab license' do
+        let(:license) { create(:license) }
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
+        end
+      end
+
+      context 'when license does not have a subscription' do
+        let(:gitlab_license) { build(:gitlab_license) }
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
+        end
+      end
+
+      context 'when license subscription is nil' do
+        let(:gitlab_license) { build(:gitlab_license, restrictions: { subscription_name: nil }) }
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
         end
       end
     end
@@ -312,7 +339,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         end
 
         let(:client_response) do
-          { success: true, subscriptionUsage: { gitlabCreditsUsage: { enabled: cdot_enabled_value } } }
+          { success: true, subscriptionUsage: { enabled: cdot_enabled_value } }
         end
 
         it "returns #{params[:return_value]} for enabled?" do
@@ -339,7 +366,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         end
 
         let(:client_response) do
-          { success: true, subscriptionUsage: { gitlabCreditsUsage: { isOutdatedClient: outdated_client } } }
+          { success: true, subscriptionUsage: { isOutdatedClient: outdated_client } }
         end
 
         it "returns #{params[:outdated_client]} for outdated_client?" do
@@ -367,8 +394,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
 
       context 'when the client returns a successful response' do
         let(:client_response) do
-          { success: true,
-            subscriptionUsage: { gitlabCreditsUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } } }
+          { success: true, subscriptionUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } }
         end
 
         it 'returns the last updated time' do
@@ -385,9 +411,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client response is missing lastEventTransactionAt' do
-        let(:client_response) do
-          { success: true, subscriptionUsage: { gitlabCreditsUsage: { lastEventTransactionAt: nil } } }
-        end
+        let(:client_response) { { success: true, subscriptionUsage: { lastEventTransactionAt: nil } } }
 
         it 'returns nil' do
           expect(last_event_transaction_at).to be_nil
@@ -404,9 +428,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) do
-        { success: true, subscriptionUsage: { gitlabCreditsUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } } }
-      end
+      let(:client_response) { { success: true, subscriptionUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } } }
 
       before do
         allow(License).to receive(:current).and_return(license)
@@ -800,7 +822,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
 
     let(:client_response) do
-      { success: true, subscriptionUsage: { gitlabCreditsUsage: { overageTermsAccepted: value } } }
+      { success: true, subscriptionUsage: { overageTermsAccepted: value } }
     end
 
     before do
@@ -832,7 +854,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:client_response) do
-        { success: true, subscriptionUsage: { gitlabCreditsUsage: { canAcceptOverageTerms: cdot_value } } }
+        { success: true, subscriptionUsage: { canAcceptOverageTerms: cdot_value } }
       end
 
       before do
@@ -854,7 +876,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
 
     let(:client_response) do
-      { success: true, subscriptionUsage: { gitlabCreditsUsage: { dapPromoEnabled: value } } }
+      { success: true, subscriptionUsage: { dapPromoEnabled: value } }
     end
 
     before do
@@ -866,6 +888,31 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     with_them do
       it 'returns the raw value from metadata' do
         expect(subscription_usage.dap_promo_enabled).to eq(value)
+      end
+    end
+  end
+
+  describe '#usage_dashboard_path' do
+    let(:subscription_usage) do
+      described_class.new(
+        subscription_target: :instance,
+        subscription_usage_client: subscription_usage_client
+      )
+    end
+
+    let(:client_response) do
+      { success: true, subscriptionUsage: { usageDashboardPath: value } }
+    end
+
+    before do
+      allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+    end
+
+    where(:value) { [true, false] }
+
+    with_them do
+      it 'returns the raw value from metadata' do
+        expect(subscription_usage.usage_dashboard_path).to eq(value)
       end
     end
   end

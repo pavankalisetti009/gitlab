@@ -12,7 +12,6 @@ module Gitlab
           $instanceId: String,
           $namespaceId: ID,
           $licenseKey: String,
-          $planTypes: [ZuoraPlanTypeEnum!],
           $gitlabVersion: String!,
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
@@ -26,11 +25,6 @@ module Gitlab
               canAcceptOverageTerms
               dapPromoEnabled
               usageDashboardPath
-            }
-            purchasePaths(planTypes: $planTypes) {
-              planType
-              newPath
-              editPath
             }
           }
         }
@@ -197,10 +191,7 @@ module Gitlab
       def get_metadata
         response = execute_graphql_query(
           query: GET_METADATA_QUERY,
-          extra_variables: {
-            gitlabVersion: Gitlab::VERSION,
-            planTypes: ["gitlab_credits"]
-          }
+          extra_variables: { gitlabVersion: Gitlab::VERSION }
         )
 
         if unsuccessful_response?(response)
@@ -208,7 +199,7 @@ module Gitlab
         else
           {
             success: true,
-            subscriptionUsage: response.dig(:data, :subscription)
+            subscriptionUsage: response.dig(:data, :subscription, :gitlabCreditsUsage)
           }
         end
       end

@@ -139,17 +139,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     {
       success: true,
       subscriptionUsage: {
-        gitlabCreditsUsage: {
-          startDate: "2025-10-01",
-          endDate: "2025-10-31",
-          enabled: true,
-          isOutdatedClient: false,
-          lastEventTransactionAt: "2025-10-01T16:19:59Z"
-        },
-        purchasePaths: [{
-          planType: 'gitlab_credits',
-          newPath: '/mock/path'
-        }]
+        startDate: "2025-10-01",
+        endDate: "2025-10-31",
+        enabled: true,
+        isOutdatedClient: false,
+        lastEventTransactionAt: "2025-10-01T16:19:59Z"
       }
     }
   end
@@ -281,7 +275,12 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
     context 'with admin user' do
       context 'when feature flag is enabled' do
+        let!(:subscription_name) { 'A-S00000001' }
+        let(:gitlab_license) { build(:gitlab_license, restrictions: { subscription_name: subscription_name }) }
+        let(:license) { create(:license, data: gitlab_license.export) }
+
         before do
+          allow(License).to receive(:current).and_return(license)
           post_graphql(query, current_user: admin)
         end
 
@@ -291,7 +290,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           expect(graphql_data_at(:subscription_usage, :lastEventTransactionAt)).to eq("2025-10-01T16:19:59Z")
           expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
           expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
-          expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to eq("/mock/path")
+          expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath))
+              .to eq("/subscriptions/purchases/gitlab?deployment_type=self_managed" \
+                "&plan_type=gitlab_credits&subscription_name=A-S00000001")
 
           expect(graphql_data_at(:subscription_usage, :monthlyWaiver)).to eq({
             totalCredits: 1000.5,
@@ -344,15 +345,15 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                gitlabCreditsUsage: {
-                  enabled: false
-                }
+                enabled: false
               }
             }
           end
 
-          it 'returns subscription usage for the group' do
+          it 'does not return subscription usage data' do
             expect(graphql_data_at(:subscription_usage, :enabled)).to be false
+            expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to be_nil
+            expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to be_nil
           end
         end
 
@@ -366,12 +367,10 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                gitlabCreditsUsage: {
-                  overageTermsAccepted: false,
-                  canAcceptOverageTerms: true,
-                  dapPromoEnabled: false,
-                  usageDashboardPath: "/subscriptions/A-S00012345/usage"
-                }
+                overageTermsAccepted: false,
+                canAcceptOverageTerms: true,
+                dapPromoEnabled: false,
+                usageDashboardPath: "/subscriptions/A-S00012345/usage"
               }
             }
           end
@@ -396,10 +395,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                gitlabCreditsUsage: {
-                  canAcceptOverageTerms: false,
-                  usageDashboardPath: '/subscriptions/A-S00012345/usage'
-                }
+                canAcceptOverageTerms: false,
+                usageDashboardPath: '/subscriptions/A-S00012345/usage'
               }
             }
           end
@@ -417,10 +414,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                gitlabCreditsUsage: {
-                  canAcceptOverageTerms: true,
-                  usageDashboardPath: nil
-                }
+                canAcceptOverageTerms: true,
+                usageDashboardPath: nil
               }
             }
           end
@@ -439,9 +434,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                gitlabCreditsUsage: {
-                  dapPromoEnabled: true
-                }
+                dapPromoEnabled: true
               }
             }
           end
@@ -460,9 +453,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                gitlabCreditsUsage: {
-                  dapPromoEnabled: false
-                }
+                dapPromoEnabled: false
               }
             }
           end
@@ -481,9 +472,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                gitlabCreditsUsage: {
-                  overageTermsAccepted: true
-                }
+                overageTermsAccepted: true
               }
             }
           end
@@ -502,9 +491,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             {
               success: true,
               subscriptionUsage: {
-                gitlabCreditsUsage: {
-                  overageTermsAccepted: false
-                }
+                overageTermsAccepted: false
               }
             }
           end
@@ -574,7 +561,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     end
   end
 
-  context 'when in GitLab.com' do
+  context 'when in GitLab.com', :saas_gitlab_com_subscriptions do
     context 'with root group' do
       let(:namespace_path) { root_group.full_path }
 
@@ -590,7 +577,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             expect(graphql_data_at(:subscription_usage, :lastEventTransactionAt)).to eq("2025-10-01T16:19:59Z")
             expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
             expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
-            expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to eq("/mock/path")
+            expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath))
+              .to eq("/subscriptions/purchases/gitlab?deployment_type=gitlab_com" \
+                "&gl_namespace_id=#{root_group.id}&plan_type=gitlab_credits")
 
             expect(graphql_data_at(:subscription_usage, :monthlyWaiver)).to eq({
               totalCredits: 1000.5,
@@ -643,9 +632,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               {
                 success: true,
                 subscriptionUsage: {
-                  gitlabCreditsUsage: {
-                    enabled: false
-                  }
+                  enabled: false
                 }
               }
             end
@@ -681,6 +668,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               let(:user_arguments) { { username: subgroup_user.username } }
 
               it 'returns user data for the subgroup member' do
+                expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath))
+                  .to eq("/subscriptions/purchases/gitlab?deployment_type=gitlab_com" \
+                    "&gl_namespace_id=#{root_group.id}&plan_type=gitlab_credits")
                 expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array([
                   {
                     id: subgroup_user.to_global_id.to_s,
