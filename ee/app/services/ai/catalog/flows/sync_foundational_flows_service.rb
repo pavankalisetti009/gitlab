@@ -141,11 +141,7 @@ module Ai
         end
 
         def extract_service_account(consumer)
-          if consumer.project.present?
-            consumer.parent_item_consumer&.service_account
-          else
-            consumer.service_account
-          end
+          consumer.parent_item_consumer&.service_account
         end
 
         def build_trigger_params(service_account, consumer, item)
