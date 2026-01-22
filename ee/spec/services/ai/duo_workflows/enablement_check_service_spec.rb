@@ -43,19 +43,6 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         end
       end
 
-      context 'when duo_workflow feature flag is disabled' do
-        before do
-          stub_feature_flags(duo_workflow: false)
-        end
-
-        it "returns status and checks" do
-          expect(result[:enabled]).to be_falsey
-          expect(success_checks(result[:checks])).to match_array([:developer_access, :duo_features_enabled])
-          expect(result[:remote_flows_enabled]).to eq(project.duo_remote_flows_enabled)
-          expect(result[:foundational_flows_enabled]).to eq(project.duo_foundational_flows_enabled)
-        end
-      end
-
       context 'when project has duo features disabled' do
         before do
           project.project_setting.update!(duo_features_enabled: false)

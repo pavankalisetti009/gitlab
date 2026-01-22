@@ -435,14 +435,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         it_behaves_like 'workflow access is forbidden'
       end
 
-      context 'when the duo_workflows feature flag is disabled for the user' do
-        before do
-          stub_feature_flags(duo_workflow: false)
-        end
-
-        it_behaves_like 'workflow access is forbidden'
-      end
-
       context 'when duo_features_enabled settings is turned off' do
         before do
           project.project_setting.update!(duo_features_enabled: false)
@@ -1224,40 +1216,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         executor_version: 'v1.2.3',
         secure: true
       })
-    end
-
-    context 'when the duo_workflows is disabled for the user' do
-      before do
-        stub_feature_flags(duo_workflow: false)
-      end
-
-      context 'when workflow_definition is software_developer' do
-        let(:workflow_definition) { 'software_developer' }
-
-        it 'returns not found' do
-          post_with_definition
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-
-      context 'when workflow_definition is chat' do
-        let(:workflow_definition) { 'chat' }
-
-        it 'process request further' do
-          post_with_definition
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-        end
-      end
-
-      context 'when workflow_definition is omitted' do
-        it 'process request further' do
-          post_without_params
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-        end
-      end
     end
 
     context 'when rate limited' do
@@ -2391,18 +2349,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         end
       end
 
-      context 'when the duo_workflows feature flag is disabled for the user' do
-        before do
-          stub_feature_flags(duo_workflow: false)
-        end
-
-        it 'returns not found' do
-          get_response
-
-          expect(response).to have_gitlab_http_status(:ok)
-        end
-      end
-
       context 'for X-Gitlab-Agent-Platform-Feature-Setting-Name header', :saas do
         context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is provided' do
           let(:custom_feature_name) { 'any_dap_feature' }
@@ -2564,40 +2510,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         service_url: duo_workflow_service_url,
         secure: true
       })
-    end
-
-    context 'when the duo_workflows is disabled for the user' do
-      before do
-        stub_feature_flags(duo_workflow: false)
-      end
-
-      context 'when workflow_definition is software_developer' do
-        let(:workflow_definition) { 'software_developer' }
-
-        it 'returns not found' do
-          get_with_definition
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-
-      context 'when workflow_definition is chat' do
-        let(:workflow_definition) { 'chat' }
-
-        it 'process request further' do
-          get_with_definition
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-        end
-      end
-
-      context 'when workflow_definition is omitted' do
-        it 'process request further' do
-          get_without_params
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-        end
-      end
     end
 
     context 'when rate limited' do

@@ -22,27 +22,6 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
 
     let(:workflow) { duo_workflow }
 
-    context "when workflow feature flag is disabled" do
-      before do
-        stub_feature_flags(duo_workflow: false)
-      end
-
-      it "returns not found", :aggregate_failures do
-        expect(result[:status]).to eq(:error)
-        expect(result[:message]).to eq("Can not update workflow")
-        expect(result[:reason]).to eq(:not_found)
-        expect(workflow.reload.human_status_name).to eq("running")
-      end
-
-      context "for agentic chat" do
-        let(:workflow) { chat_workflow }
-
-        it "skips not found check", :aggregate_failures do
-          expect(result[:reason]).to eq(:unauthorized)
-        end
-      end
-    end
-
     context "when duo workflow is not available" do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(false)

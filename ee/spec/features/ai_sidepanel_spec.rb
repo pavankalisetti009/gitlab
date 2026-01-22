@@ -18,7 +18,6 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
 
     create(:callout, user: user, feature_name: :duo_chat_callout)
 
-    stub_feature_flags(duo_workflow: true)
     stub_licensed_features(ai_workflows: true)
     allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)

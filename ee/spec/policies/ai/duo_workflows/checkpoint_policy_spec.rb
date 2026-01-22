@@ -14,14 +14,6 @@ RSpec.describe Ai::DuoWorkflows::CheckpointPolicy, feature_category: :duo_agent_
   let(:current_user) { guest }
 
   describe "read_duo_workflow_event" do
-    context "when duo_workflow FF is disabled" do
-      before do
-        stub_feature_flags(duo_workflow: false)
-      end
-
-      it { is_expected.to be_disallowed(:read_duo_workflow_event) }
-    end
-
     context "when duo workflow is not available" do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(false)

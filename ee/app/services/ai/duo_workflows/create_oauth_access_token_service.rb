@@ -12,8 +12,6 @@ module Ai
       end
 
       def execute
-        return error('Duo workflow is not enabled for user', :forbidden) if feature_disabled_for_user?
-
         ensure_oauth_application!
         token = create_oauth_access_token
         stick_to_database_load_balancer(token)
@@ -88,17 +86,6 @@ module Ai
       def oauth_callback_url
         # This value is unused but cannot be nil
         Gitlab::Routing.url_helpers.root_url
-      end
-
-      def feature_disabled_for_user?
-        case @workflow_definition
-        when nil
-          false
-        when "chat"
-          false
-        else
-          Feature.disabled?(:duo_workflow, current_user)
-        end
       end
 
       def stick_to_database_load_balancer(token)

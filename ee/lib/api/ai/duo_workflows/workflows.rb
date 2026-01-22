@@ -112,20 +112,6 @@ module API
             not_found!('AI Catalog Item Consumer not found or does not belong to this project')
           end
 
-          def authorize_feature_flag!
-            disabled =
-              case params[:workflow_definition]
-              when 'chat'
-                false
-              when nil
-                false
-              else
-                Feature.disabled?(:duo_workflow, current_user)
-              end
-
-            not_found! if disabled
-          end
-
           def start_workflow_params(workflow_id, container:)
             workflow_context_service = workflow_context_generation_service(container: container)
 
@@ -364,8 +350,6 @@ module API
               end
 
               post do
-                authorize_feature_flag!
-
                 check_rate_limit!(:duo_workflow_direct_access, scope: current_user)
 
                 oauth_token = gitlab_oauth_token
@@ -413,8 +397,6 @@ module API
               end
 
               get do
-                authorize_feature_flag!
-
                 check_rate_limit!(:duo_workflow_direct_access, scope: current_user)
 
                 result = duo_workflow_list_tools
@@ -424,8 +406,6 @@ module API
             end
 
             get :ws do
-              authorize_feature_flag!
-
               require_gitlab_workhorse!
 
               status :ok

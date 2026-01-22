@@ -27,8 +27,6 @@ module Ai
       end
 
       def execute
-        return error_response("Can not update workflow", :not_found) unless feature_flag_enabled?
-
         unless @current_user.can?(:update_duo_workflow, @workflow)
           return error_response("Can not update workflow", :unauthorized)
         end
@@ -127,14 +125,6 @@ module Ai
           ::Gitlab::Audit::Auditor.audit(audit_context)
         rescue StandardError => e
           Gitlab::ErrorTracking.track_exception(e, workflow_id: @workflow.id)
-        end
-      end
-
-      def feature_flag_enabled?
-        if @workflow.chat?
-          true
-        else
-          Feature.enabled?(:duo_workflow, @current_user)
         end
       end
 

@@ -101,15 +101,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
       context 'when workflow_definition is software_developer' do
         let(:workflow_definition) { 'software_developer' }
 
-        it 'returns error when duo_workflow feature flag is disabled' do
-          stub_feature_flags(duo_workflow: false)
-
-          expect(execute).to be_error
-        end
-
         it 'creates token when duo_workflow feature flag is enabled' do
-          stub_feature_flags(duo_workflow: true)
-
           expect { execute }.to change { OauthAccessToken.count }.by(1)
         end
       end
