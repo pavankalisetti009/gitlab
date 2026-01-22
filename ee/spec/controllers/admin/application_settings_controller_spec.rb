@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared do
+RSpec.describe Admin::ApplicationSettingsController, feature_category: :settings do
   include StubENV
 
   let(:admin) { create(:admin) }
@@ -11,7 +11,7 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
     stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
   end
 
-  describe 'PUT #update', feature_category: :shared do
+  describe 'PUT #update', feature_category: :settings do
     before do
       sign_in(admin)
     end
