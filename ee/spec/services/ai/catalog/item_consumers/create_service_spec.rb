@@ -956,9 +956,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
   context 'when the item can be seen by user but is is private to another project' do
     let_it_be(:item) { create(:ai_catalog_flow, public: false, project: item_project) }
+    let_it_be(:service_account) { create(:user, :service_account, provisioned_by_group: consumer_group) }
 
     let_it_be(:parent_item_consumer) do
-      # We get 'Item is private to another project' currently, but we will soon allow this
+      # We get 'Item is private to another project' as the item should not be enabled in another group
       build(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account,
         pinned_version_prefix: '4.4.4').tap { |item| item.save!(validate: false) }
     end
@@ -968,11 +969,11 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
   context 'when the item is private to the project' do
     let_it_be(:item) { create(:ai_catalog_flow, public: false, project: consumer_project) }
+    let_it_be(:service_account) { create(:user, :service_account, provisioned_by_group: consumer_group) }
 
     let_it_be(:parent_item_consumer) do
-      # We get 'Item is private to another project' currently, but we will soon allow this
-      build(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account,
-        pinned_version_prefix: '4.4.4').tap { |item| item.save!(validate: false) }
+      create(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account,
+        pinned_version_prefix: '4.4.4')
     end
 
     it 'creates a catalog item consumer with expected data' do
