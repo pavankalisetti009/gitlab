@@ -42,57 +42,9 @@ RSpec.describe PushRules::CreateOrUpdateService, feature_category: :source_code_
         expect(response).to be_success
         expect(response.payload).to match(push_rule: PushRuleFinder.new(container).execute)
       end
-
-      context 'with read_organization_push_rules feature flag disabled' do
-        before do
-          stub_feature_flags(read_organization_push_rules: false)
-        end
-
-        it 'returns PushRule in a successful service response', :aggregate_failures do
-          response = service.execute
-
-          expect(response).to be_success
-          expect(response.payload).to match(push_rule: push_rule)
-        end
-      end
     end
 
     context 'without existing global push rule' do
-      context 'with read_organization_push_rules feature flag disabled' do
-        before do
-          stub_feature_flags(read_organization_push_rules: false)
-        end
-
-        context "when update_organization_push_rules FF is disabled" do
-          before do
-            stub_feature_flags(update_organization_push_rules: false)
-          end
-
-          it 'creates a new push rule', :aggregate_failures do
-            expect { subject.execute }.to change { PushRule.count }.by(1)
-
-            expect(PushRuleFinder.new(container).execute.max_file_size).to eq(28)
-          end
-        end
-
-        it 'creates a new organization push rule', :aggregate_failures do
-          expect { subject.execute }.to change { OrganizationPushRule.count }.by(1)
-
-          expect(PushRuleFinder.new(container).execute.max_file_size).to eq(28)
-        end
-
-        it 'does not create a new push rule', :aggregate_failures do
-          expect { subject.execute }.not_to change { PushRule.count }
-        end
-
-        it 'responds with a successful service response', :aggregate_failures do
-          response = service.execute
-
-          expect(response).to be_success
-          expect(response.payload).to match(push_rule: PushRuleFinder.new(container).execute)
-        end
-      end
-
       it 'creates a new push rule', :aggregate_failures do
         expect { service.execute }.to change { OrganizationPushRule.count }.by(1)
 

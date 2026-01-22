@@ -8,18 +8,15 @@ module PushRules
 
       log_info(predefined_push_rule)
 
-      if project.group
-        push_rule = container.build_push_rule(
-          predefined_push_rule.dup.attributes.except('id', 'organization_id', 'group_id')
-        )
-      elsif Feature.enabled?(:read_organization_push_rules, Feature.current_request)
-        push_rule = container.build_push_rule(
-          predefined_push_rule.dup.attributes.except('id', 'organization_id')
-        )
-      else
-        push_rule = predefined_push_rule.dup
-        push_rule.is_sample = false
-      end
+      push_rule = if project.group
+                    container.build_push_rule(
+                      predefined_push_rule.dup.attributes.except('id', 'organization_id', 'group_id')
+                    )
+                  else
+                    container.build_push_rule(
+                      predefined_push_rule.dup.attributes.except('id', 'organization_id')
+                    )
+                  end
 
       override_push_rule(push_rule) if override_push_rule
 

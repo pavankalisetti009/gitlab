@@ -69,8 +69,8 @@ module PushRules
       return group_push_rule if group_container?
       return push_rule unless organization_container?
 
-      # load organization push rule and return it when read_organization_push_rules feature flag is on
-      # because the trigger currently syncs writes from push_rules to organization_push_rules
+      # load organization push rule
+      # the trigger currently syncs writes from push_rules to organization_push_rules
       PushRuleFinder.new(container).execute
     end
   end
