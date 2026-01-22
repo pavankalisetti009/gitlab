@@ -106,7 +106,7 @@ export const sidebarData = {
   is_logged_in: true,
   is_admin: false,
   admin_url: '/admin',
-  current_menu_items: [],
+  current_menu_items: [{ text: 'test' }],
   current_context: {},
   current_context_header: 'Your work',
   name: 'Administrator',
