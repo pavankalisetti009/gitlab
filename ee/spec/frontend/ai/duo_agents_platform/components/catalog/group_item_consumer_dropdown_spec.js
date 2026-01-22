@@ -3,7 +3,7 @@ import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
 
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import { PAGE_SIZE } from 'ee/ai/catalog/constants';
 import GroupItemConsumerDropdown from 'ee/ai/duo_agents_platform/components/catalog/group_item_consumer_dropdown.vue';
@@ -19,6 +19,7 @@ describe('GroupItemConsumerDropdown', () => {
   let mockApollo;
 
   const rootGroupId = 123;
+  const projectId = 456;
   const defaultProps = {
     id: 'gl-form-field-item',
     dropdownTexts: {
@@ -29,7 +30,7 @@ describe('GroupItemConsumerDropdown', () => {
   };
   const mockConfiguredItemsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
 
-  const createComponent = ({ props = {}, provide = {} } = {}) => {
+  const createComponent = ({ props = {} } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogConfiguredItemsQuery, mockConfiguredItemsQueryHandler],
     ]);
@@ -42,7 +43,7 @@ describe('GroupItemConsumerDropdown', () => {
       },
       provide: {
         rootGroupId,
-        ...provide,
+        projectId,
       },
     });
   };
@@ -59,6 +60,7 @@ describe('GroupItemConsumerDropdown', () => {
       query: aiCatalogConfiguredItemsQuery,
       queryVariables: {
         groupId: convertToGraphQLId(TYPENAME_GROUP, rootGroupId),
+        configurableForProjectId: convertToGraphQLId(TYPENAME_PROJECT, projectId),
         itemTypes: ['AGENT'],
         first: PAGE_SIZE,
         after: null,

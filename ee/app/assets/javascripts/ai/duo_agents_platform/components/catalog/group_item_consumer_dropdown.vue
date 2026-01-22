@@ -1,7 +1,7 @@
 <script>
 import { sprintf } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import { PAGE_SIZE } from 'ee/ai/catalog/constants';
@@ -15,6 +15,9 @@ export default {
   mixins: [glFeatureFlagsMixin()],
   inject: {
     rootGroupId: {
+      default: null,
+    },
+    projectId: {
       default: null,
     },
   },
@@ -48,6 +51,7 @@ export default {
     queryVariables() {
       return {
         groupId: convertToGraphQLId(TYPENAME_GROUP, this.rootGroupId),
+        configurableForProjectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
         itemTypes: this.itemTypes,
         first: PAGE_SIZE,
         after: null,
