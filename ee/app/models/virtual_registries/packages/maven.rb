@@ -26,12 +26,15 @@ module VirtualRegistries
         feature_enabled?(group) && user_has_access?(group, current_user, permission)
       end
 
+      # TODO: Remove logging after access through project membership is removed
+      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/587915
       def self.log_access_through_project_membership(group, current_user)
         return unless current_user
 
         policy = ::Ability.policy_for(current_user, group.virtual_registry_policy_subject)
 
         return unless policy.runners[:read_virtual_registry]&.steps&.detect(&:pass?)&.rule&.repr == 'group.has_projects'
+        return if caller(1, 5).any? { |line| line.include?('virtual_registry_menu_item') }
 
         Gitlab::AppLogger.info(
           message: 'User granted read_virtual_registry access through project membership',
