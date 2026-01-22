@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['UserMergeRequestInteraction'] do
+RSpec.describe GitlabSchema.types['UserMergeRequestInteraction'], feature_category: :code_review_workflow do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

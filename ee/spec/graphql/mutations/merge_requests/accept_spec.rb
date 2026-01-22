@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::MergeRequests::Accept do
+RSpec.describe Mutations::MergeRequests::Accept, feature_category: :code_review_workflow do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }

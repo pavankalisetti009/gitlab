@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ApprovalRuleType'] do
+RSpec.describe GitlabSchema.types['ApprovalRuleType'], feature_category: :code_review_workflow do
   it 'has the correct members' do
     expect(described_class.values).to match(
       'REGULAR' => have_attributes(

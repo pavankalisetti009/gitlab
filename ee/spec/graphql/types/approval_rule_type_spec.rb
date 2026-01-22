@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ApprovalRule'] do
+RSpec.describe GitlabSchema.types['ApprovalRule'], feature_category: :code_review_workflow do
   let(:fields) do
     %i[
       id name type approvals_required approved overridden section contains_hidden_groups source_rule
