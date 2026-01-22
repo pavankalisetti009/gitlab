@@ -196,8 +196,6 @@ module EE
       def block_issuable(noteable_ref)
         body = block_message(noteable_name, extract_issuable_reference(noteable_ref), 'blocking')
 
-        track_issue_event(:track_issue_related_action)
-
         create_note(NoteSummary.new(noteable, project, author, body, action: 'relate'))
       end
 
@@ -215,8 +213,6 @@ module EE
       # Returns the created Note object
       def blocked_by_issuable(noteable_ref)
         body = block_message(noteable_name, extract_issuable_reference(noteable_ref), 'blocked by')
-
-        track_issue_event(:track_issue_related_action)
 
         create_note(NoteSummary.new(noteable, project, author, body, action: 'relate'))
       end
@@ -249,8 +245,6 @@ module EE
       # Returns the created Note object
       def amazon_q_called(event)
         body = "sent #{event} request to Amazon Q"
-
-        track_issue_event(:track_issue_related_action)
 
         create_note(NoteSummary.new(noteable, project, author, body, action: 'notify_service'))
       end
