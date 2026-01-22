@@ -48,6 +48,7 @@ import RunnerTags from './runner_tags.vue';
 import ScanSchedule from './scan_schedule.vue';
 
 export default {
+  name: 'OnDemandScansForm',
   enabledRefTypes: [REF_TYPE_BRANCHES],
   saveAndRunScanBtnId: 'scan-submit-button',
   saveScanBtnId: 'scan-save-button',

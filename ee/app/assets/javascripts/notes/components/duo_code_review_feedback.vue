@@ -3,6 +3,7 @@ import { GlButton } from '@gitlab/ui';
 import UserFeedback from 'ee/ai/components/user_feedback.vue';
 
 export default {
+  name: 'DuoCodeReviewFeedback',
   components: {
     GlButton,
     UserFeedback,

@@ -20,6 +20,7 @@ import Tracking from '~/tracking';
 import { concatStreamedChunks } from 'ee/ai/utils';
 
 export default {
+  name: 'AiSummary',
   components: {
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
