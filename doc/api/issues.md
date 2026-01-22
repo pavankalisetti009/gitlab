@@ -34,11 +34,9 @@ When requested across groups or projects, it's expected to be the same as the `f
 
 {{< /alert >}}
 
-## List issues
+## List all issues
 
-Get all issues the authenticated user has access to. By default it
-returns only issues created by the current user. To get all issues,
-use parameter `scope=all`.
+Lists all issues the authenticated user has access to. By default, returns only issues created by the current user. To list all issues, use parameter `scope=all`.
 
 ```plaintext
 GET /issues
@@ -271,9 +269,9 @@ The `epic_iid` attribute is deprecated and [scheduled for removal](https://gitla
 Use `iid` of the `epic` attribute instead.
 {{< /alert >}}
 
-## List group issues
+## List all group issues
 
-Get a list of a group's issues.
+Lists all issues for a specified group.
 
 If the group is private, you must provide credentials to authorize.
 The preferred way to do this, is by using [personal access tokens](../user/profile/personal_access_tokens.md).
@@ -480,7 +478,7 @@ The `epic_iid` attribute is deprecated and [scheduled for removal](https://gitla
 Use `iid` of the `epic` attribute instead.
 {{< /alert >}}
 
-## List project issues
+## List all project issues
 
 {{< history >}}
 
@@ -488,7 +486,7 @@ Use `iid` of the `epic` attribute instead.
 
 {{< /history >}}
 
-Get a list of a project's issues.
+Lists all issues for a specified project.
 
 If the project is private, you need to provide credentials to authorize.
 The preferred way to do this, is by using [personal access tokens](../user/profile/personal_access_tokens.md).
@@ -707,11 +705,11 @@ The `epic_iid` attribute is deprecated and [scheduled for removal](https://gitla
 Use `iid` of the `epic` attribute instead.
 {{< /alert >}}
 
-## Single issue
+## Retrieve an issue
 
 Only for administrators.
 
-Get a single issue.
+Retrieves a specified issue.
 
 The preferred way to do this is by using [personal access tokens](../user/profile/personal_access_tokens.md).
 
@@ -884,9 +882,9 @@ The `epic_iid` attribute is deprecated, and [scheduled for removal](https://gitl
 Use `iid` of the `epic` attribute instead.
 {{< /alert >}}
 
-## Single project issue
+## Retrieve a project issue
 
-Get a single project issue.
+Retrieves a specified issue for a project.
 
 If the project is private or the issue is confidential, you need to provide credentials to authorize.
 The preferred way to do this, is by using [personal access tokens](../user/profile/personal_access_tokens.md).
@@ -1051,9 +1049,9 @@ The `epic_iid` attribute is deprecated and [scheduled for removal](https://gitla
 Use `iid` of the `epic` attribute instead.
 {{< /alert >}}
 
-## New issue
+## Create an issue
 
-Creates a new project issue.
+Creates an issue for a specified project.
 
 ```plaintext
 POST /projects/:id/issues
@@ -1077,7 +1075,7 @@ Supported attributes:
 | `issue_type`                              | string         | No       | The type of issue. One of `issue`, `incident`, `test_case` or `task`. Default is `issue`. |
 | `labels`                                  | string         | No       | Comma-separated label names to assign to the new issue. If a label does not already exist, this creates a new project label and assigns it to the issue.  |
 | `merge_request_to_resolve_discussions_of` | integer        | No       | The IID of a merge request in which to resolve all issues. This fills out the issue with a default description and mark all discussions as resolved. When passing a description or title, these values take precedence over the default values.|
-| `milestone_id`                            | integer        | No       | The global ID of a milestone to assign issue. To find the `milestone_id` associated with a milestone, view an issue with the milestone assigned and [use the API](#single-project-issue) to retrieve the issue's details. |
+| `milestone_id`                            | integer        | No       | The global ID of a milestone to assign issue. To find the `milestone_id` associated with a milestone, view an issue with the milestone assigned and [use the API](#retrieve-a-project-issue) to retrieve the issue's details. |
 | `title`                                   | string         | Yes      | The title of an issue. |
 | `weight`                                  | integer        | No       | The weight of the issue. Valid values are greater than or equal to 0. Premium and Ultimate only. |
 
@@ -1219,9 +1217,9 @@ Use `iid` of the `epic` attribute instead.
 To help avoid abuse, users can be limited to a specific number of `Create` requests per minute.
 See [Issues rate limits](../administration/settings/rate_limit_on_issues_creation.md).
 
-## Edit an issue
+## Update an issue
 
-Updates an existing project issue. This request is also used to close or reopen an issue (with `state_event`).
+Updates a specified issue for a project. This request is also used to close or reopen an issue using the `state_event` parameter
 
 At least one of the following parameters is required for the request to be successful:
 
@@ -1403,7 +1401,7 @@ Use `iid` of the `epic` attribute instead.
 
 Only for administrators and project owners.
 
-Deletes an issue.
+Deletes a specified issue from a project.
 
 ```plaintext
 DELETE /projects/:id/issues/:issue_iid
@@ -1428,7 +1426,7 @@ If successful, returns [`204 No Content`](rest/troubleshooting.md#status-codes).
 
 ## Reorder an issue
 
-Reorders an issue. You can see the results when [sorting issues manually](../user/project/issues/sorting_issue_lists.md#manual-sorting).
+Reorders a specified issue within a project. You can see the results when [sorting issues manually](../user/project/issues/sorting_issue_lists.md#manual-sorting).
 
 ```plaintext
 PUT /projects/:id/issues/:issue_iid/reorder
@@ -1453,9 +1451,7 @@ curl --request PUT \
 
 ## Move an issue
 
-Moves an issue to a different project. If the target project
-is the source project or the user has insufficient permissions,
-an error message with status code `400` is returned.
+Moves a specified issue to a different project. If the target project is the source project or the user has insufficient permissions, an error message with status code `400` is returned.
 
 If a given label or milestone with the same name also exists in the target
 project, it's then assigned to the issue being moved.
@@ -1610,9 +1606,7 @@ Use `iid` of the `epic` attribute instead.
 
 ## Clone an issue
 
-Clone the issue to given project.
-Copies as much data as possible as long as the target project contains equivalent
-criteria, such as labels or milestones.
+Clones a specified issue to a given project. Copies as much data as possible as long as the target project contains equivalent criteria, such as labels or milestones.
 
 If you have insufficient permissions, an error message with status code `400` is returned.
 
@@ -1730,9 +1724,7 @@ The following requests are related to [email notifications](../user/profile/noti
 
 ### Subscribe to an issue
 
-Subscribes the authenticated user to an issue to receive notifications.
-If the user is already subscribed to the issue, the status code `304`
-is returned.
+Subscribes the authenticated user to a specified issue to receive notifications. If the user is already subscribed to the issue, status code `304` is returned.
 
 ```plaintext
 POST /projects/:id/issues/:issue_iid/subscribe
@@ -1881,9 +1873,7 @@ Use `iid` of the `epic` attribute instead.
 
 ### Unsubscribe from an issue
 
-Unsubscribes the authenticated user from the issue to not receive notifications
-from it. If the user is not subscribed to the issue, the
-status code `304` is returned.
+Unsubscribes the authenticated user from a specified issue to stop receiving notifications. If the user is not subscribed to the issue, status code `304` is returned.
 
 ```plaintext
 POST /projects/:id/issues/:issue_iid/unsubscribe
@@ -1959,11 +1949,9 @@ Example response:
 }
 ```
 
-## Create a to-do item
+## Create a to-do item for an issue
 
-Manually creates a to-do item for the current user on an issue. If
-there already exists a to-do item for the user on that issue, status code `304` is
-returned.
+Creates a to-do item for the current user on a specified issue. If a to-do item already exists for the user on that issue, status code `304` is returned.
 
 ```plaintext
 POST /projects/:id/issues/:issue_iid/todo
@@ -2092,7 +2080,7 @@ Example response:
 
 {{< /details >}}
 
-Promotes an issue to an epic by adding a comment with the [`/promote_to` quick action](../user/project/quick_actions.md#promote_to).
+Promotes a specified issue to an epic by adding a comment with the [`/promote_to` quick action](../user/project/quick_actions.md#promote_to).
 
 For more information about promoting issues to epics, see
 [Promote an issue to an epic](../user/project/issues/managing_issues.md#promote-an-issue-to-an-epic).
@@ -2153,7 +2141,7 @@ The following requests are related to [time tracking](../user/project/time_track
 
 ### Set a time estimate for an issue
 
-Sets an estimated time of work for this issue.
+Sets an estimated time of work for a specified issue.
 
 ```plaintext
 POST /projects/:id/issues/:issue_iid/time_estimate
@@ -2188,7 +2176,7 @@ Example response:
 
 ### Reset the time estimate for an issue
 
-Resets the estimated time for this issue to 0 seconds.
+Resets the estimated time for a specified issue to 0 seconds.
 
 ```plaintext
 POST /projects/:id/issues/:issue_iid/reset_time_estimate
@@ -2222,7 +2210,7 @@ Example response:
 
 ### Add spent time for an issue
 
-Adds spent time for this issue.
+Adds spent time for a specified issue.
 
 ```plaintext
 POST /projects/:id/issues/:issue_iid/add_spent_time
@@ -2258,7 +2246,7 @@ Example response:
 
 ### Reset spent time for an issue
 
-Resets the total spent time for this issue to 0 seconds.
+Resets the total spent time for a specified issue to 0 seconds.
 
 ```plaintext
 POST /projects/:id/issues/:issue_iid/reset_spent_time
@@ -2290,9 +2278,9 @@ Example response:
 }
 ```
 
-### Get time tracking stats
+### Retrieve time tracking stats for an issue
 
-Gets time tracking stats for an issue in human-readable format (for example, `1h30m`) and in number of seconds.
+Retrieves time tracking stats for a specified issue in human-readable format (for example, `1h30m`) and in number of seconds.
 
 If the project is private or the issue is confidential, you must provide credentials to authorize.
 The preferred way to do this, is by using [personal access tokens](../user/profile/personal_access_tokens.md).
@@ -2330,9 +2318,9 @@ Example response:
 
 The following requests are related to relationships between issues and merge requests.
 
-### List merge requests related to issue
+### List all merge requests related to an issue
 
-Gets all the merge requests that are related to the issue.
+Lists all merge requests that are related to a specified issue.
 
 If the project is private or the issue is confidential, you need to provide credentials to authorize.
 The preferred way to do this, is by using [personal access tokens](../user/profile/personal_access_tokens.md).
@@ -2496,9 +2484,9 @@ Example response:
 ]
 ```
 
-### List merge requests that close a particular issue on merge
+### List all merge requests that close an issue on merge
 
-Gets all merge requests that close a particular issue when merged.
+Lists all merge requests that close a specified issue when merged.
 
 If the project is private or the issue is confidential, you need to provide credentials to authorize.
 The preferred way to do this, is by using [personal access tokens](../user/profile/personal_access_tokens.md).
@@ -2580,9 +2568,9 @@ Example response:
 ]
 ```
 
-## List participants in an issue
+## List all participants in an issue
 
-Lists users that are participants in the issue.
+Lists all users that are participants in a specified issue.
 
 If the project is private or the issue is confidential, you need to provide credentials to authorize.
 The preferred way to do this, is by using [personal access tokens](../user/profile/personal_access_tokens.md).
@@ -2632,12 +2620,11 @@ Example response:
 
 Interact with comments using the [Notes API](notes.md).
 
-## Get user agent details
+## Retrieve user agent details for an issue
 
 Available only for administrators.
 
-Gets the user agent string and IP of the user who created the issue.
-Used for spam tracking.
+Retrieves the user agent string and IP address of the user who created a specified issue. Used for spam tracking.
 
 ```plaintext
 GET /projects/:id/issues/:issue_iid/user_agent_detail
@@ -2676,11 +2663,11 @@ To track which state was set, who did it, and when it happened, use
 
 The following requests are available only for [incidents](../operations/incident_management/incidents.md).
 
-### Upload metric image
+### Upload a metric image for an incident
 
 Available only for [incidents](../operations/incident_management/incidents.md).
 
-Uploads a screenshot of metric charts to show in the incident's **Metrics** tab.
+Uploads a screenshot of metric charts to display in a specified incident's **Metrics** tab.
 When you upload an image, you can associate the image with text or a link to the original graph.
 If you add a URL, you can access the original graph by selecting the hyperlink above the uploaded image.
 
@@ -2721,11 +2708,11 @@ Example response:
 }
 ```
 
-### List metric images
+### List all metric images for an incident
 
 Available only for [incidents](../operations/incident_management/incidents.md).
 
-Lists screenshots of metric charts shown in the incident's **Metrics** tab.
+Lists all screenshots of metric charts shown in a specified incident's **Metrics** tab.
 
 ```plaintext
 GET /projects/:id/issues/:issue_iid/metric_images
@@ -2766,11 +2753,11 @@ Example response:
 ]
 ```
 
-### Update metric image
+### Update a metric image for an incident
 
 Available only for [incidents](../operations/incident_management/incidents.md).
 
-Edits attributes of a screenshot of metric charts shown in the incident's **Metrics** tab.
+Updates attributes of a specified metric image shown in an incident's **Metrics** tab.
 
 ```plaintext
 PUT /projects/:id/issues/:issue_iid/metric_images/:image_id
@@ -2809,11 +2796,11 @@ Example response:
 }
 ```
 
-### Delete metric image
+### Delete a metric image from an incident
 
 Available only for [incidents](../operations/incident_management/incidents.md).
 
-Delete a screenshot of metric charts shown in the incident's **Metrics** tab.
+Deletes a specified metric image from an incident's **Metrics** tab.
 
 ```plaintext
 DELETE /projects/:id/issues/:issue_iid/metric_images/:image_id
