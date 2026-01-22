@@ -280,7 +280,6 @@ app/models/issue.rb:
 - previous_updated_at
 - email_participants_emails
 app/models/jira_import_state.rb:
-- owner_class_attribute_default
 - non_initial?
 app/models/merge_request.rb:
 - head_pipeline_active?
@@ -326,6 +325,5 @@ app/models/todo.rb:
 - for_ssh_key?
 - self_assigned?
 app/models/user.rb:
-- owner_class_attribute_default
 - inactive_message
 - will_save_change_to_login?
