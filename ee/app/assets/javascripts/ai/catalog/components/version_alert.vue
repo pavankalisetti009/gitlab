@@ -11,8 +11,6 @@ import {
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   AI_CATALOG_TYPE_FLOW,
   VERSION_LATEST,
-  VERSION_PINNED,
-  VERSION_PINNED_GROUP,
 } from 'ee/ai/catalog/constants';
 import { prerequisitesError } from '../utils';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
@@ -85,7 +83,7 @@ export default {
       return Boolean(this.projectId);
     },
     pinnedVersionKey() {
-      return this.isProjectNamespace ? VERSION_PINNED : VERSION_PINNED_GROUP;
+      return this.version.baseVersionKey;
     },
     isLatestVersionActive() {
       return this.version.activeVersionKey === VERSION_LATEST;

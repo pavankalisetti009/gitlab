@@ -9,6 +9,8 @@ import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/creat
 import AiCatalogAgentsDuplicate from 'ee/ai/catalog/pages/ai_catalog_agents_duplicate.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
+import { VERSION_PINNED, VERSION_PINNED_GROUP, VERSION_LATEST } from 'ee/ai/catalog/constants';
+import * as utils from 'ee/ai/catalog/utils';
 import {
   mockAgent,
   mockCreateAiCatalogAgentSuccessMutation,
@@ -16,6 +18,9 @@ import {
   mockCreateAiCatalogThirdPartyFlowSuccessMutation,
   mockAgentConfigurationForProject,
   mockItemConfigurationForGroup,
+  mockAgentVersion,
+  mockAgentPinnedVersion,
+  mockAgentGroupPinnedVersion,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -25,6 +30,7 @@ describe('AiCatalogAgentsDuplicate', () => {
   let wrapper;
   let createAiCatalogAgentMock;
   let createAiCatalogThirdPartyFlowMock;
+  let resolveVersionSpy;
 
   const mockToast = {
     show: jest.fn(),
@@ -73,7 +79,15 @@ describe('AiCatalogAgentsDuplicate', () => {
   const findFormInitialValues = () => findForm().props('initialValues');
 
   beforeEach(() => {
+    resolveVersionSpy = jest.spyOn(utils, 'resolveVersion').mockReturnValue({
+      ...mockAgentVersion,
+      key: VERSION_LATEST,
+    });
     createComponent();
+  });
+
+  afterEach(() => {
+    resolveVersionSpy.mockRestore();
   });
 
   describe('Form Initial Values', () => {
@@ -103,6 +117,11 @@ describe('AiCatalogAgentsDuplicate', () => {
     };
 
     it('sets initial item public field and removes project field correctly', async () => {
+      resolveVersionSpy.mockReturnValue({
+        ...mockAgentPinnedVersion,
+        key: VERSION_PINNED,
+      });
+
       createComponent(
         {
           aiCatalogAgent: {
@@ -127,16 +146,32 @@ describe('AiCatalogAgentsDuplicate', () => {
         ...expectedInitialValuesWithProjectPinnedVersion,
         public: false,
       });
+
+      expect(resolveVersionSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: mockAgent.id,
+          name: mockAgent.name,
+          itemType: mockAgent.itemType,
+        }),
+        false,
+      );
     });
 
     describe('being set correctly in global context', () => {
       it('sets initial values to latest version', async () => {
+        resolveVersionSpy.mockReturnValue({
+          ...mockAgentVersion,
+          key: VERSION_LATEST,
+        });
+
+        const aiCatalogAgent = {
+          ...mockAgent,
+          configurationForProject: mockAgentConfigurationForProject, // not expected
+        };
+
         createComponent(
           {
-            aiCatalogAgent: {
-              ...mockAgent,
-              configurationForProject: mockAgentConfigurationForProject, // not expected
-            },
+            aiCatalogAgent,
           },
           {
             isGlobal: true,
@@ -145,11 +180,21 @@ describe('AiCatalogAgentsDuplicate', () => {
         await waitForPromises();
 
         expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
+
+        expect(resolveVersionSpy).toHaveBeenCalledWith(
+          expect.objectContaining(aiCatalogAgent),
+          true,
+        );
       });
     });
 
     describe('being set correctly in project context', () => {
       it('sets initial values to latest version when no configurations are present', async () => {
+        resolveVersionSpy.mockReturnValue({
+          ...mockAgentVersion,
+          key: VERSION_LATEST,
+        });
+
         createComponent(
           {
             aiCatalogAgent: mockAgent,
@@ -162,12 +207,24 @@ describe('AiCatalogAgentsDuplicate', () => {
         await waitForPromises();
 
         expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
+
+        expect(resolveVersionSpy).toHaveBeenCalledWith(expect.objectContaining(mockAgent), false);
       });
 
       it('sets initial values to group-pinned version when only group configuration is present', async () => {
+        resolveVersionSpy.mockReturnValue({
+          ...mockAgentGroupPinnedVersion,
+          key: VERSION_PINNED_GROUP,
+        });
+
+        const aiCatalogAgent = {
+          ...mockAgent,
+          configurationForGroup: mockItemConfigurationForGroup,
+        };
+
         createComponent(
           {
-            aiCatalogAgent: { ...mockAgent, configurationForGroup: mockItemConfigurationForGroup },
+            aiCatalogAgent,
           },
           {
             isGlobal: false,
@@ -177,16 +234,28 @@ describe('AiCatalogAgentsDuplicate', () => {
         await waitForPromises();
 
         expect(findFormInitialValues()).toEqual(expectedInitialValuesWithGroupPinnedVersion);
+
+        expect(resolveVersionSpy).toHaveBeenCalledWith(
+          expect.objectContaining(aiCatalogAgent),
+          false,
+        );
       });
 
       it('sets initial values to project-pinned version even if group- and project-level configurations are present', async () => {
+        resolveVersionSpy.mockReturnValue({
+          ...mockAgentPinnedVersion,
+          key: VERSION_PINNED,
+        });
+
+        const aiCatalogAgent = {
+          ...mockAgent,
+          configurationForGroup: mockItemConfigurationForGroup,
+          configurationForProject: mockAgentConfigurationForProject,
+        };
+
         createComponent(
           {
-            aiCatalogAgent: {
-              ...mockAgent,
-              configurationForGroup: mockItemConfigurationForGroup,
-              configurationForProject: mockAgentConfigurationForProject,
-            },
+            aiCatalogAgent,
           },
           {
             isGlobal: false,
@@ -196,16 +265,28 @@ describe('AiCatalogAgentsDuplicate', () => {
         await waitForPromises();
 
         expect(findFormInitialValues()).toEqual(expectedInitialValuesWithProjectPinnedVersion);
+
+        expect(resolveVersionSpy).toHaveBeenCalledWith(
+          expect.objectContaining(aiCatalogAgent),
+          false,
+        );
       });
 
       it('sets initial values to latest version when neither the group- nor project-level configurations are present', async () => {
+        resolveVersionSpy.mockReturnValue({
+          ...mockAgentVersion,
+          key: VERSION_LATEST,
+        });
+
+        const aiCatalogAgent = {
+          ...mockAgent,
+          configurationForGroup: null,
+          configurationForProject: null,
+        };
+
         createComponent(
           {
-            aiCatalogAgent: {
-              ...mockAgent,
-              configurationForGroup: null,
-              configurationForProject: null,
-            },
+            aiCatalogAgent,
           },
           {
             isGlobal: false,
@@ -215,6 +296,11 @@ describe('AiCatalogAgentsDuplicate', () => {
         await waitForPromises();
 
         expect(findFormInitialValues()).toEqual(expectedInitialValuesWithLatestVersion);
+
+        expect(resolveVersionSpy).toHaveBeenCalledWith(
+          expect.objectContaining(aiCatalogAgent),
+          false,
+        );
       });
     });
   });

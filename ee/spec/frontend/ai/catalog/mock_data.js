@@ -210,6 +210,18 @@ export const mockAgentPinnedVersion = {
   },
 };
 
+export const mockAgentGroupPinnedVersion = {
+  ...mockVersionFactory({ id: 'gid://gitlab/Ai::Catalog::ItemVersion/3' }),
+  humanVersionName: 'v0.8.0',
+  versionName: '0.8.0',
+  __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
+  systemPrompt: 'The system prompt group pinned version',
+  tools: {
+    nodes: mockAiCatalogBuiltInToolsNodes,
+    __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
+  },
+};
+
 export const mockBaseAgent = mockAgentFactory();
 
 export const mockAgent = mockAgentFactory({
@@ -351,7 +363,7 @@ export const mockAgentConfigurationForProject = {
 export const mockItemConfigurationForGroup = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/4',
   enabled: true,
-  pinnedItemVersion: mockAgentPinnedVersion,
+  pinnedItemVersion: mockAgentGroupPinnedVersion,
   userPermissions: mockItemConsumerUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
@@ -473,7 +485,15 @@ export const mockFlowPinnedVersion = {
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/25',
   humanVersionName: 'v0.9.0',
   versionName: '0.9.0',
-  definition: 'version: "v1" pinned',
+  definition: 'version: "v0.9.0" pinned',
+  __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
+};
+
+export const mockFlowGroupPinnedVersion = {
+  ...mockVersionFactory({ id: 'gid://gitlab/Ai::Catalog::ItemVersion/26' }),
+  humanVersionName: 'v0.8.0',
+  versionName: '0.8.0',
+  definition: 'version: "v0.8.0" group pinned',
   __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
 };
 
@@ -580,8 +600,12 @@ export const mockServiceAccount = {
 };
 
 export const mockFlowConfigurationForGroup = {
-  ...mockItemConfigurationForGroup,
+  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/4',
+  enabled: true,
+  pinnedItemVersion: mockFlowGroupPinnedVersion,
+  userPermissions: mockItemConsumerUserPermissions,
   serviceAccount: mockServiceAccount,
+  __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
 export const mockCatalogFlowsResponse = {

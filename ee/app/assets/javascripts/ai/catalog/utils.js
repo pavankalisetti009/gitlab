@@ -44,25 +44,27 @@ export const getByVersionKey = (obj, keys) => {
 };
 
 /**
- * Returns the appropriate version field for an AI catalog item based on available scope configurations.
- *
- * Priority order:
- * 1. Project version
- * 2. Group version
- * 3. Latest version - used when isGlobal is true or no scoped configs exist
+ * @important Project config should always take precedence over group config for pinned versions.
+ */
+const resolveVersionKey = (item, isGlobal) => {
+  if (isGlobal) return VERSION_LATEST;
+  if (item?.configurationForProject) return VERSION_PINNED;
+  if (item?.configurationForGroup) return VERSION_PINNED_GROUP;
+  return VERSION_LATEST;
+};
+
+/**
+ * Determines version based on scope configuration priority:
+ * 1. Project config > VERSION_PINNED
+ * 2. Group config > VERSION_PINNED_GROUP
+ * 3. Global or no configs present > VERSION_LATEST
  */
 export const resolveVersion = (item, isGlobal) => {
-  const hasProjectConfig = Boolean(item.configurationForProject);
-  const hasGroupConfig = Boolean(item.configurationForGroup);
+  const key = resolveVersionKey(item, isGlobal);
+  const data = getByVersionKey(item, key);
 
-  let versionKey;
-  if (isGlobal || (!hasProjectConfig && !hasGroupConfig)) {
-    versionKey = VERSION_LATEST;
-  } else if (hasProjectConfig) {
-    versionKey = VERSION_PINNED;
-  } else {
-    versionKey = VERSION_PINNED_GROUP;
-  }
-
-  return getByVersionKey(item, versionKey);
+  return {
+    ...data,
+    key,
+  };
 };

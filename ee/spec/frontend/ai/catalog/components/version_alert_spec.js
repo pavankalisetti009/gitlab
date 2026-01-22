@@ -129,7 +129,8 @@ describe('VersionAlert', () => {
         const mockVersionWithUpdate = {
           ...mockVersionProp,
           isUpdateAvailable: true,
-          activeVersionKey: versionKey,
+          activeVersionKey: versionKey, // initializes to the baseVersionKey
+          baseVersionKey: versionKey,
           setActiveVersionKey: jest.fn(),
         };
 

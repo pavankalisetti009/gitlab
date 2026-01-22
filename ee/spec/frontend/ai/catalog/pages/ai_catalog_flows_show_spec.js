@@ -29,7 +29,7 @@ import {
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
   mockAiCatalogItemConsumerCreateSuccessGroupResponse,
   mockAiCatalogItemConsumerCreateErrorResponse,
-  mockItemConfigurationForGroup,
+  mockFlowConfigurationForGroup,
   mockCatalogFlowDeleteErrorResponse,
   mockCatalogFlowDeleteResponse,
   mockReportAiCatalogItemSuccessMutation,
@@ -54,7 +54,7 @@ describe('AiCatalogFlowsShow', () => {
     aiCatalogFlow: {
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
-      configurationForGroup: mockItemConfigurationForGroup,
+      configurationForGroup: mockFlowConfigurationForGroup,
     },
   };
 
@@ -130,7 +130,7 @@ describe('AiCatalogFlowsShow', () => {
     expect(findItemActions().props('item')).toEqual({
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
-      configurationForGroup: mockItemConfigurationForGroup,
+      configurationForGroup: mockFlowConfigurationForGroup,
     });
   });
 
@@ -144,7 +144,7 @@ describe('AiCatalogFlowsShow', () => {
     expect(findItemView().props('item')).toEqual({
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
-      configurationForGroup: mockItemConfigurationForGroup,
+      configurationForGroup: mockFlowConfigurationForGroup,
     });
   });
 
@@ -231,7 +231,7 @@ describe('AiCatalogFlowsShow', () => {
   describe('on adding flow to project', () => {
     const addFlowToProject = () =>
       findItemActions().vm.$emit('add-to-target', {
-        parentItemConsumerId: mockItemConfigurationForGroup.id,
+        parentItemConsumerId: mockFlowConfigurationForGroup.id,
         target: { projectId: '1' },
         triggerTypes: ['mention', 'assign', 'assign_reviewer'],
       });
@@ -243,7 +243,7 @@ describe('AiCatalogFlowsShow', () => {
         input: {
           itemId: mockFlow.id,
           target: { projectId: '1' },
-          parentItemConsumerId: mockItemConfigurationForGroup.id,
+          parentItemConsumerId: mockFlowConfigurationForGroup.id,
           triggerTypes: ['mention', 'assign', 'assign_reviewer'],
         },
       });
