@@ -29183,7 +29183,8 @@ CREATE TABLE system_note_metadata (
     description_version_id bigint,
     note_id bigint NOT NULL,
     id bigint NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_9135b6f0b6 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE system_note_metadata_id_seq
@@ -36413,9 +36414,6 @@ ALTER TABLE award_emoji
 
 ALTER TABLE merge_request_context_commit_diff_files
     ADD CONSTRAINT check_90390c308c CHECK ((project_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE system_note_metadata
-    ADD CONSTRAINT check_9135b6f0b6 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE related_epic_links
     ADD CONSTRAINT check_a6d9d7c276 CHECK ((issue_link_id IS NOT NULL)) NOT VALID;
