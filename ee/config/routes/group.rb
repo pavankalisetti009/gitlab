@@ -72,7 +72,6 @@ constraints(::Namespaces::GroupUrlConstraint.new) do
 
       resources :dashboards, only: [:index], path: 'dashboards(/*vueroute)', format: false
 
-      resource :data_explorer, controller: :data_explorer, only: :show
       resource :devops_adoption, controller: :devops_adoption, only: :show
       resource :productivity_analytics, only: :show
       resources :coverage_reports, only: :index
