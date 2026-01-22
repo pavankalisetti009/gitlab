@@ -10,6 +10,11 @@ import {
 } from '@gitlab/ui';
 import { __ } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import {
+  SCAN_PROFILE_STATUS_APPLIED,
+  SCAN_PROFILE_STATUS_MIXED,
+  SCAN_PROFILE_STATUS_DISABLED,
+} from '~/security_configuration/constants';
 import AvailableSecurityScanProfiles from '../graphql/available_security_scan_profiles.query.graphql';
 import { SCANNER_TYPES, SECRET_PUSH_PROTECTION_KEY } from '../constants';
 
@@ -26,6 +31,18 @@ export default {
   },
   directives: { GlTooltip: GlTooltipDirective },
   inject: ['groupFullPath'],
+  props: {
+    statusPatches: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+    lastStatusPatch: {
+      type: String,
+      required: false,
+      default: () => '',
+    },
+  },
   emits: ['attach-profile', 'detach-profile', 'preview-profile'],
   data() {
     return {
@@ -52,26 +69,38 @@ export default {
     scanTypeName() {
       return (scanType) => this.$options.SCANNER_CATEGORIES[scanType]?.name || __('Unknown');
     },
+    availableSecurityScanProfiles() {
+      // eslint-disable-next-line no-unused-expressions -- used to trigger re-render
+      this.lastStatusPatch;
+
+      // apply status patches from parent component to each profile by id
+      return this.group.availableSecurityScanProfiles.map((profile) => {
+        return {
+          ...profile,
+          ...this.statusPatches[profile.id],
+        };
+      });
+    },
   },
   methods: {
     profileText(profile) {
       switch (profile.status) {
-        case 'applied':
-          return profile.name;
-        case 'mixed':
+        case SCAN_PROFILE_STATUS_MIXED:
           return __('Mixed');
-        case 'disabled':
-        default:
+        case SCAN_PROFILE_STATUS_DISABLED:
           return __('No profile applied');
+        case SCAN_PROFILE_STATUS_APPLIED:
+        default:
+          return profile.name;
       }
     },
     statusClasses(status) {
       switch (status) {
-        case 'applied':
+        case SCAN_PROFILE_STATUS_APPLIED:
           return 'gl-bg-feedback-success gl-border-feedback-success gl-text-feedback-success';
-        case 'disabled':
+        case SCAN_PROFILE_STATUS_DISABLED:
           return 'gl-bg-feedback-danger gl-border-feedback-danger gl-text-feedback-danger';
-        case 'mixed':
+        case SCAN_PROFILE_STATUS_MIXED:
         default:
           return 'gl-bg-feedback-neutral gl-border-feedback-neutral gl-text-feedback-neutral';
       }
@@ -89,22 +118,25 @@ export default {
       label: __('Scanner'),
     },
     {
+      key: 'name',
+      label: __('Profile'),
+    },
+    {
       key: 'actions',
       label: '',
       tdClass: '!gl-flex gl-justify-end gl-gap-3 !gl-border-t-0',
     },
   ],
+  SCAN_PROFILE_STATUS_APPLIED,
+  SCAN_PROFILE_STATUS_MIXED,
+  SCAN_PROFILE_STATUS_DISABLED,
 };
 </script>
 
 <template>
   <div>
     <crud-component header-class="gl-hidden">
-      <gl-table-lite
-        :items="group.availableSecurityScanProfiles"
-        :fields="$options.fields"
-        stacked="md"
-      >
+      <gl-table-lite :items="availableSecurityScanProfiles" :fields="$options.fields" stacked="md">
         <template #cell(scanType)="{ item }">
           <div data-testid="scan-type-cell" class="gl-flex gl-items-center">
             <div
@@ -125,13 +157,19 @@ export default {
 
         <template #cell(name)="{ item }">
           <div data-testid="profile-name-cell" class="gl-flex gl-h-7 gl-items-center">
-            <gl-link v-if="item.status === 'applied'" href="#">
+            <gl-link
+              v-if="item.status === $options.SCAN_PROFILE_STATUS_APPLIED"
+              @click="$emit('preview-profile', item)"
+            >
               {{ profileText(item) }}
             </gl-link>
-            <span v-else :class="{ 'gl-italic': item.status === 'mixed' }">
+            <span
+              v-else
+              :class="{ 'gl-italic': item.status === $options.SCAN_PROFILE_STATUS_MIXED }"
+            >
               {{ profileText(item) }}
             </span>
-            <template v-if="item.status === 'mixed'">
+            <template v-if="item.status === $options.SCAN_PROFILE_STATUS_MIXED">
               <gl-icon
                 :id="`${item.id}-profile`"
                 name="information-o"
@@ -145,7 +183,9 @@ export default {
                 }}
               </gl-popover>
             </template>
-            <template v-if="item.status === 'applied' && item.description">
+            <template
+              v-if="item.status === $options.SCAN_PROFILE_STATUS_APPLIED && item.description"
+            >
               <gl-icon
                 :id="`${item.id}-profile`"
                 name="information-o"
@@ -160,7 +200,7 @@ export default {
 
         <template #cell(actions)="{ item }">
           <div data-testid="actions-cell" class="gl-flex gl-flex-wrap gl-justify-end gl-gap-3">
-            <gl-button-group v-if="item.status !== 'applied'">
+            <gl-button-group v-if="item.status !== $options.SCAN_PROFILE_STATUS_APPLIED">
               <gl-button
                 data-testid="apply-default-profile-button"
                 variant="confirm"
@@ -182,7 +222,7 @@ export default {
               />
             </gl-button-group>
             <gl-button
-              v-if="item.status !== 'disabled'"
+              v-if="item.status !== $options.SCAN_PROFILE_STATUS_DISABLED"
               data-testid="disable-for-all-button"
               variant="danger"
               category="secondary"

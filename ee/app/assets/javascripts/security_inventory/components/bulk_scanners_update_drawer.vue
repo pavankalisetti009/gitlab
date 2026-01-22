@@ -5,7 +5,11 @@ import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { createAlert } from '~/alert';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
-import { SCAN_PROFILE_I18N } from '~/security_configuration/constants';
+import {
+  SCAN_PROFILE_I18N,
+  SCAN_PROFILE_STATUS_APPLIED,
+  SCAN_PROFILE_STATUS_DISABLED,
+} from '~/security_configuration/constants';
 import ScanProfileDetailsModal from 'ee/security_configuration/components/scan_profiles/scan_profile_details_modal.vue';
 import SecurityScanProfileAttachMutation from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile_attach.mutation.graphql';
 import SecurityScanProfileDetachMutation from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile_detach.mutation.graphql';
@@ -32,6 +36,8 @@ export default {
       isDrawerOpen: false,
       previewProfileId: '',
       previewModalVisible: false,
+      statusPatches: {},
+      lastStatusPatch: '',
     };
   },
   computed: {
@@ -52,6 +58,10 @@ export default {
     },
     closeDrawer() {
       this.isDrawerOpen = false;
+
+      // clear temporary status patches
+      this.statusPatches = {};
+      this.lastStatusPatch = '';
     },
     openPreview({ id }) {
       this.previewProfileId = id;
@@ -75,11 +85,16 @@ export default {
           },
         })
         .then(() => {
+          // set profile status when attach request succeeds
+          this.statusPatches[id] = { status: SCAN_PROFILE_STATUS_APPLIED };
+          this.lastStatusPatch = `${id}:${SCAN_PROFILE_STATUS_APPLIED}`;
+
           if (name) {
             this.$toast.show(sprintf(s__('SecurityInventory|%{name} applied'), { name }));
           } else {
             this.$toast.show(SCAN_PROFILE_I18N.successApplying);
           }
+          this.closePreview();
         })
         .catch((error) => {
           createAlert({
@@ -121,6 +136,10 @@ export default {
           },
         })
         .then(() => {
+          // set profile status when detach request succeeds
+          this.statusPatches[id] = { status: SCAN_PROFILE_STATUS_DISABLED };
+          this.lastStatusPatch = `${id}:${SCAN_PROFILE_STATUS_DISABLED}`;
+
           this.$toast.show(sprintf(s__('SecurityInventory|%{name} disabled'), { name }));
         })
         .catch((error) => {
@@ -166,6 +185,8 @@ export default {
     <div :class="$options.DRAWER_FLASH_CONTAINER_CLASS" class="!gl-py-0"></div>
 
     <bulk-scanner-profile-configuration
+      :status-patches="statusPatches"
+      :last-status-patch="lastStatusPatch"
       @preview-profile="openPreview"
       @attach-profile="attachProfile"
       @detach-profile="detachProfile"

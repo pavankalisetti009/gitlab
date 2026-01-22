@@ -363,7 +363,7 @@ export default {
 <template>
   <div class="-gl-mb-10 gl-mt-5">
     <div
-      class="gl-flex gl-w-full gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-subtle gl-border-b-solid gl-border-t-solid"
+      class="gl-flex gl-w-full gl-border-b-1 gl-border-t-1 gl-border-default gl-bg-subtle gl-border-b-solid gl-border-t-solid"
     >
       <gl-button
         icon="sidebar"
@@ -389,7 +389,7 @@ export default {
       <div class="gl-w-auto gl-grow" :class="{ 'gl-pl-5': sidebarVisible }">
         <div
           v-if="selectedCount"
-          class="gl-gl-my-4 gl-border-b gl-sticky gl-top-0 gl-z-2 gl-flex gl-flex-row gl-items-center gl-justify-between gl-bg-default gl-p-3"
+          class="gl-border-b gl-sticky gl-top-0 gl-z-2 gl-flex gl-flex-row gl-items-center gl-justify-between gl-bg-default gl-px-3 gl-py-4"
         >
           <span>
             <gl-sprintf :message="selectedCountMessage">

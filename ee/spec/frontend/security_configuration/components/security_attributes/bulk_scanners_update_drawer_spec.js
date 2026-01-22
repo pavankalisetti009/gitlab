@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { cloneDeep } from 'lodash';
 import { createAlert } from '~/alert';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -110,6 +111,11 @@ describe('BulkScannerUpdateDrawer', () => {
         },
       });
       expect($toast.show).toHaveBeenCalledWith('Profile applied successfully.');
+      expect(
+        cloneDeep(wrapper.findComponent(BulkScannerProfileConfiguration).props('statusPatches')),
+      ).toMatchObject({
+        [mockProfile.id]: { status: 'enabled' },
+      });
     });
 
     it('shows an alert when attach fails', async () => {
@@ -145,6 +151,11 @@ describe('BulkScannerUpdateDrawer', () => {
         },
       });
       expect($toast.show).toHaveBeenCalledWith('Secret Detection (default) disabled');
+      expect(
+        cloneDeep(wrapper.findComponent(BulkScannerProfileConfiguration).props('statusPatches')),
+      ).toMatchObject({
+        [mockProfile.id]: { status: 'disabled' },
+      });
     });
 
     it('shows an alert when detach fails', async () => {
