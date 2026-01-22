@@ -28,18 +28,6 @@ Loading.args = {
 
 export const NoData = createStory();
 NoData.args = noData;
-NoData.parameters = {
-  a11y: {
-    config: {
-      rules: [
-        {
-          id: 'role-img-alt',
-          enabled: false,
-        },
-      ],
-    },
-  },
-};
 
 export const WithTitleAndDescription = createStory();
 WithTitleAndDescription.args = {

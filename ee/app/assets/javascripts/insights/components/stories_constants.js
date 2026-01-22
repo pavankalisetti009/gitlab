@@ -48,7 +48,7 @@ export const noData = {
     xAxisTitle: 'Months',
     yAxisTitle: 'Issues',
     labels: ['April 2024', 'May 2024', 'June 2024'],
-    datasets: [],
+    datasets: [{ name: 'all', data: [] }],
     seriesNames: [],
   },
 };
