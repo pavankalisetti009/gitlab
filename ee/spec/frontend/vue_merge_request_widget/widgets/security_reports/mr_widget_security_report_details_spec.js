@@ -392,7 +392,7 @@ describe('MR Widget Security Reports - Finding', () => {
       ${undefined}
       ${null}
     `(
-      'when "matches_auto_dismiss_policy" is set to "$matchesAutoDismissPolicy"',
+      'when "matchesAutoDismissPolicy" is set to "$matchesAutoDismissPolicy"',
       ({ matchesAutoDismissPolicy }) => {
         beforeEach(async () => {
           createComponent({
@@ -406,7 +406,7 @@ describe('MR Widget Security Reports - Finding', () => {
                       severity: 'CRITICAL',
                       title: 'Password leak',
                       state: 'NEW',
-                      matches_auto_dismiss_policy: matchesAutoDismissPolicy,
+                      matchesAutoDismissPolicy,
                     },
                   ],
                 }),
@@ -427,7 +427,7 @@ describe('MR Widget Security Reports - Finding', () => {
       },
     );
 
-    describe('when "matches_auto_dismiss_policy" is set to "true"', () => {
+    describe('when "matchesAutoDismissPolicy" is set to "true"', () => {
       beforeEach(async () => {
         createComponent({
           propsData: {
@@ -440,7 +440,7 @@ describe('MR Widget Security Reports - Finding', () => {
                     severity: 'CRITICAL',
                     title: 'Password leak',
                     state: 'NEW',
-                    matches_auto_dismiss_policy: true,
+                    matchesAutoDismissPolicy: true,
                   },
                 ],
               },
@@ -515,28 +515,28 @@ describe('MR Widget Security Reports - Finding', () => {
                     severity: 'CRITICAL',
                     title: 'Password leak',
                     state: 'NEW',
-                    matches_auto_dismiss_policy: true,
+                    matchesAutoDismissPolicy: true,
                   },
                   {
                     uuid: '2',
                     severity: 'HIGH',
                     title: 'XSS vulnerability',
                     state: 'NEW',
-                    matches_auto_dismiss_policy: false,
+                    matchesAutoDismissPolicy: false,
                   },
                   {
                     uuid: '3',
                     severity: 'MEDIUM',
                     title: 'SQL vulnerability',
                     state: 'NEW',
-                    matches_auto_dismiss_policy: true,
+                    matchesAutoDismissPolicy: true,
                   },
                   {
                     uuid: '4',
                     severity: 'MEDIUM',
                     title: 'SQL vulnerability',
                     state: 'DISMISSED',
-                    matches_auto_dismiss_policy: true,
+                    matchesAutoDismissPolicy: true,
                   },
                 ],
               },
@@ -547,7 +547,7 @@ describe('MR Widget Security Reports - Finding', () => {
         await nextTick();
       });
 
-      it('should show the badge only for not dismissed vulnerabilities with matches_auto_dismiss_policy set to true', () => {
+      it('should show the badge only for not dismissed vulnerabilities with matchesAutoDismissPolicy set to true', () => {
         const badges = wrapper.findAllByTestId('auto-dismiss-policy-badge');
 
         expect(badges).toHaveLength(2);
@@ -555,7 +555,7 @@ describe('MR Widget Security Reports - Finding', () => {
         expect(badges.at(1).attributes('id')).toBe('auto-dismiss-policy-badge-3');
       });
 
-      it('should show popovers only for not dismisssed vulnerabilities with matches_auto_dismiss_policy set to true', () => {
+      it('should show popovers only for not dismisssed vulnerabilities with matchesAutoDismissPolicy set to true', () => {
         expect(findAutoDismissPolicyBadgePopover('1').exists()).toBe(true);
         expect(findAutoDismissPolicyBadgePopover('2').exists()).toBe(false);
         expect(findAutoDismissPolicyBadgePopover('3').exists()).toBe(true);
@@ -581,7 +581,7 @@ describe('MR Widget Security Reports - Finding', () => {
                     severity: 'CRITICAL',
                     title: 'Password leak',
                     state: 'NEW',
-                    matches_auto_dismiss_policy: true,
+                    matchesAutoDismissPolicy: true,
                     aiResolutionEnabled: true,
                   },
                 ],
@@ -615,7 +615,7 @@ describe('MR Widget Security Reports - Finding', () => {
                     severity: 'HIGH',
                     title: 'SQL Injection',
                     state: 'NEW',
-                    matches_auto_dismiss_policy: true,
+                    matchesAutoDismissPolicy: true,
                   },
                 ],
               },

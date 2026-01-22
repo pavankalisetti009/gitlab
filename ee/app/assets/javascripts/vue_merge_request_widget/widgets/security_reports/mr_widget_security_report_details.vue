@@ -188,7 +188,7 @@ export default {
       return vuln.aiResolutionEnabled && this.glAbilities.resolveVulnerabilityWithAi;
     },
     showAutoDismissPolicyBadge(vuln) {
-      return vuln.matches_auto_dismiss_policy && !this.isDismissed(vuln);
+      return vuln.matchesAutoDismissPolicy && !this.isDismissed(vuln);
     },
     getAiResolvableBadgeId(uuid) {
       return `ai-resolvable-badge-${uuid}`;
