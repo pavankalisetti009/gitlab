@@ -28,6 +28,7 @@ module API
         optional :email, type: String, desc: 'Custom email address for the user'
       end
 
+      route_setting :authorization, permissions: :create_service_account, boundary_type: :instance
       post feature_category: :user_management do
         response = ::Users::ServiceAccounts::CreateService.new(
           current_user, declared_params.merge(organization_id: Current.organization.id)
@@ -61,6 +62,7 @@ module API
       end
 
       # rubocop: disable CodeReuse/ActiveRecord -- for the user or reorder
+      route_setting :authorization, permissions: :read_service_account, boundary_type: :instance
       get do
         authorize! :admin_service_accounts
 
@@ -91,6 +93,7 @@ module API
         optional :email, type: String, desc: 'Custom email address for the user'
       end
 
+      route_setting :authorization, permissions: :update_service_account, boundary_type: :instance
       patch ":user_id", feature_category: :user_management do
         authorize! :admin_service_accounts
 
