@@ -219,6 +219,14 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
 
           service.execute
         end
+
+        it 'still removes consumers not in the enabled list' do
+          allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([flow1.id])
+
+          expect(container).to receive(:remove_foundational_flow_consumers).with([flow2.id, flow3.id])
+
+          service.execute
+        end
       end
 
       context 'when current_user is nil' do
@@ -256,6 +264,7 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
       context 'when catalog item is not found' do
         before do
           container.namespace_settings.update!(duo_foundational_flows_enabled: true)
+          allow(Ability).to receive(:allowed?).and_return(true)
         end
 
         it 'tracks the exception and continues' do
@@ -457,6 +466,7 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
 
     it 'tracks container_id in exception' do
       allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([999])
+      allow(Ability).to receive(:allowed?).and_return(true)
 
       expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
         anything,
