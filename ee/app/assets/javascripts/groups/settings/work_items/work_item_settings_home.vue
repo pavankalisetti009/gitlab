@@ -1,16 +1,15 @@
 <script>
 import { __ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { DEFAULT_SETTINGS_CONFIG } from '~/work_items/constants';
 import SearchSettings from '~/search_settings/components/search_settings.vue';
 import CustomFieldsList from './custom_fields/custom_fields_list.vue';
 import CustomStatusSettings from './custom_status/custom_status_settings.vue';
 import ConfigurableTypesSettings from './configurable_types/configurable_types_settings.vue';
-import {
-  DEFAULT_SETTINGS_CONFIG,
-  STATUS_SECTION_ID,
-  CUSTOM_FIELD_SECTION_ID,
-  WORK_ITEM_TYPES_SECTION_ID,
-} from './constants';
+
+export const STATUS_SECTION_ID = 'js-custom-status-settings';
+export const CUSTOM_FIELD_SECTION_ID = 'js-custom-fields-settings';
+export const WORK_ITEM_TYPES_SECTION_ID = 'js-work-item-types-settings';
 
 export default {
   name: 'WorkItemSettings',
