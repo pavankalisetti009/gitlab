@@ -6,6 +6,10 @@ scope module: :gitlab_subscriptions do
     resource :duo_enterprise, only: [:new, :create]
   end
 
+  namespace :self_managed do
+    resources :trials, only: [:new, :create]
+  end
+
   resources :groups, only: [:new, :create], path: 'subscriptions/groups', as: :gitlab_subscriptions_groups
   resources :trials, only: [:new, :create]
   resource :subscriptions, only: [:new] do
