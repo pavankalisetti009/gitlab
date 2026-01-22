@@ -22,6 +22,7 @@ RSpec.describe QueueCleanupSecurityPolicyBotUsers, feature_category: :security_p
 
           migration.after -> {
             expect(batched_migration).to have_scheduled_batched_migration(
+              gitlab_schema: :gitlab_main,
               table_name: :users,
               column_name: :id,
               interval: described_class::DELAY_INTERVAL,
