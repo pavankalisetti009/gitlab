@@ -38,7 +38,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe(`${CUSTOMERS_PORTAL_URL}/contact_us`);
+      expect(button.props('href')).toBe(`${CUSTOMERS_PORTAL_URL}/purchase-monthly-commitment`);
 
       expect(button.text()).toBe('Increase monthly commitment');
     });
@@ -62,7 +62,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe(`${CUSTOMERS_PORTAL_URL}/contact_us`);
+      expect(button.props('href')).toBe(`${CUSTOMERS_PORTAL_URL}/purchase-monthly-commitment`);
       expect(button.text()).toBe('Purchase monthly commitment');
     });
   });

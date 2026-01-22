@@ -169,6 +169,7 @@ describe('UsageBillingApp', () => {
 
       expect(purchaseCommitmentCard.exists()).toBe(true);
       expect(purchaseCommitmentCard.props('hasCommitment')).toBe(true);
+      expect(purchaseCommitmentCard.props('purchaseCreditsPath')).toBe('/purchase-credits-path');
     });
 
     describe.each`
