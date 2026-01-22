@@ -631,19 +631,23 @@ module EE
     def target_branch_comparison_pipelines
       target_shas = [diff_head_pipeline&.target_sha, diff_base_sha, diff_start_sha].compact
       if ::Feature.disabled?(:expand_security_scan_comparison_commits, project)
-        return target_shas.lazy.flat_map do |sha|
-          target_branch_pipelines_for(sha: sha)
-            .order(id: :desc)
-            .limit(MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON)
-        end
+        return lazy_loaded_recent_target_branch_pipelines_for_shas(target_shas)
       end
 
-      target_shas |= additional_target_branch_commit_shas_for_comparison
-      return [] if target_shas.empty?
+      expanded_shas = target_shas | additional_target_branch_commit_shas_for_comparison
+      return [] if expanded_shas.empty?
 
-      pipelines_by_sha = recent_target_branch_pipelines_for_shas(target_shas).group_by(&:sha)
-      target_shas.flat_map do |sha|
-        pipelines_by_sha[sha] || []
+      begin
+        pipelines_by_sha = batch_loaded_recent_target_branch_pipelines_for_shas(expanded_shas).group_by(&:sha)
+      # rubocop:disable Database/RescueQueryCanceled -- Temporary fallback until https://gitlab.com/gitlab-org/gitlab/-/work_items/578926 is implemented
+      rescue ActiveRecord::QueryCanceled, ActiveRecord::StatementInvalid => e
+        ::Gitlab::ErrorTracking.log_exception(e, { merge_request_id: id, comparison_shas: expanded_shas })
+        lazy_loaded_recent_target_branch_pipelines_for_shas(target_shas)
+      # rubocop:enable Database/RescueQueryCanceled
+      else
+        expanded_shas.flat_map do |sha|
+          pipelines_by_sha[sha] || []
+        end
       end
     end
     strong_memoize_attr :target_branch_comparison_pipelines
@@ -656,10 +660,21 @@ module EE
     end
     strong_memoize_attr :additional_target_branch_commit_shas_for_comparison
 
-    def recent_target_branch_pipelines_for_shas(shas)
-      # Retrieves the most recent pipelines for each target commit SHA, limited to
-      # MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON pipelines per SHA for performance.
-      # Uses a LATERAL join to avoid ranking every row, making smaller sorts per SHA.
+    # Should only be used as a fallback if `batch_loaded_recent_target_branch_pipelines_for_shas`
+    # fails or times out. This will fire a query for each SHA when iterating through
+    # the results, making it less efficient but more reliable for SHA sets with many pipelines.
+    def lazy_loaded_recent_target_branch_pipelines_for_shas(shas)
+      shas.lazy.flat_map do |sha|
+        target_branch_pipelines_for(sha: sha)
+          .order(id: :desc)
+          .limit(MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON)
+      end
+    end
+
+    # Retrieves the most recent pipelines for each target commit SHA, limited to
+    # MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON pipelines per SHA for performance.
+    # Uses a LATERAL join to avoid ranking every row, making smaller sorts per SHA.
+    def batch_loaded_recent_target_branch_pipelines_for_shas(shas)
       sha_values = shas.map { |sha| "(#{::Ci::Pipeline.connection.quote(sha)})" }.join(', ')
       sources = ::Enums::Ci::Pipeline.ci_sources.values.compact.join(',')
 
