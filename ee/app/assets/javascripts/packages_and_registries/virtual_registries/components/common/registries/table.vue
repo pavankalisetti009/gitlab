@@ -1,11 +1,12 @@
 <script>
-import { GlButton, GlLink, GlTableLite, GlTooltipDirective } from '@gitlab/ui';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { GlButton, GlTableLite, GlTooltipDirective, GlLink } from '@gitlab/ui';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { s__, sprintf } from '~/locale';
 
 export default {
+  name: 'RegistriesTable',
   components: {
     GlButton,
     GlLink,
@@ -16,7 +17,17 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [glAbilitiesMixin()],
-  inject: ['editRegistryPathTemplate', 'showRegistryPathTemplate'],
+  inject: {
+    editRegistryPathTemplate: {
+      default: '',
+    },
+    showRegistryPathTemplate: {
+      default: '',
+    },
+    routes: {
+      default: {},
+    },
+  },
   props: {
     registries: {
       type: Array,
@@ -56,10 +67,20 @@ export default {
       return sprintf(s__('VirtualRegistry|Edit registry %{name}'), { name });
     },
     getEditRegistryURL(registryId) {
-      return this.editRegistryPathTemplate.replace(':id', getIdFromGraphQLId(registryId));
+      return this.editRegistryPathTemplate
+        ? this.editRegistryPathTemplate.replace(':id', getIdFromGraphQLId(registryId))
+        : this.$router.resolve({
+            name: this.routes.editRegistryRouteName,
+            params: { id: getIdFromGraphQLId(registryId) },
+          }).href;
     },
     getShowRegistryURL(registryId) {
-      return this.showRegistryPathTemplate.replace(':id', getIdFromGraphQLId(registryId));
+      return this.showRegistryPathTemplate
+        ? this.showRegistryPathTemplate.replace(':id', getIdFromGraphQLId(registryId))
+        : this.$router.resolve({
+            name: this.routes.showRegistryRouteName,
+            params: { id: getIdFromGraphQLId(registryId) },
+          }).href;
     },
   },
 };

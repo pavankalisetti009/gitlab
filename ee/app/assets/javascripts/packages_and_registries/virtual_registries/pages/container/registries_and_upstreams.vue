@@ -1,7 +1,9 @@
 <script>
 import { GlTabs, GlTab } from '@gitlab/ui';
+import { n__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
+import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/common/registries/list.vue';
 import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/list.vue';
 import upstreamsFetchMixin from 'ee/packages_and_registries/virtual_registries/mixins/upstreams/fetch';
 import { CONTAINER_REGISTRIES_INDEX, CONTAINER_UPSTREAMS_INDEX } from './routes';
@@ -13,10 +15,16 @@ export default {
     GlTab,
     CleanupPolicyStatus,
     PageHeading,
+    RegistriesList,
     UpstreamsList,
   },
   mixins: [upstreamsFetchMixin],
   inject: ['fullPath'],
+  data() {
+    return {
+      registriesCount: null,
+    };
+  },
   computed: {
     isRegistriesRoute() {
       return this.$route.name === CONTAINER_REGISTRIES_INDEX;
@@ -30,6 +38,15 @@ export default {
     upstreamsTabAttributes() {
       return { href: this.$router.resolve({ name: CONTAINER_UPSTREAMS_INDEX }).href };
     },
+    registriesTabCountSRText() {
+      if (this.registriesCount === null) return '';
+
+      return n__(
+        'VirtualRegistry|%d registry',
+        'VirtualRegistry|%d registries',
+        this.registriesCount,
+      );
+    },
   },
   methods: {
     handleRegistriesTabClick() {
@@ -37,6 +54,9 @@ export default {
     },
     handleUpstreamsTabClick() {
       this.$router.push({ name: CONTAINER_UPSTREAMS_INDEX });
+    },
+    updateRegistriesCount(newCount) {
+      this.registriesCount = newCount;
     },
   },
 };
@@ -49,12 +69,13 @@ export default {
     <gl-tabs content-class="gl-p-0">
       <gl-tab
         :title="s__('VirtualRegistry|Registries')"
+        :tab-count="registriesCount"
+        :tab-count-sr-text="registriesTabCountSRText"
         :active="isRegistriesRoute"
         :title-link-attributes="registriesTabAttributes"
         @click="handleRegistriesTabClick"
       >
-        <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
-        {{ 'registries tab coming soon' }}
+        <registries-list @update-count="updateRegistriesCount" />
       </gl-tab>
       <gl-tab
         :title="s__('VirtualRegistry|Upstreams')"

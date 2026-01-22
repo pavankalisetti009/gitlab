@@ -9,7 +9,7 @@ import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser
 import getUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams.query.graphql';
 import getUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
 import MavenRegistriesAndUpstreamsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/registries_and_upstreams/index.vue';
-import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
+import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/common/registries/list.vue';
 import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/list.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -78,7 +78,7 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     expect(findRegistriesTab().props()).toMatchObject({
       queryParamValue: 'registries',
       tabCount: null,
-      tabCountSrText: '0 registries',
+      tabCountSrText: '',
     });
   });
 
@@ -91,11 +91,11 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     });
   });
 
-  it('renders MavenRegistriesList component', () => {
+  it('renders RegistriesList component', () => {
     expect(findRegistriesList().exists()).toBe(true);
   });
 
-  it('renders MavenUpstreamsList component', () => {
+  it('renders UpstreamsList component', () => {
     expect(findUpstreamsList().exists()).toBe(true);
   });
 
@@ -109,9 +109,9 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
     );
   });
 
-  describe('when MavenRegistriesList emits `updateCount` event', () => {
+  describe('when RegistriesList emits `update-count` event', () => {
     beforeEach(() => {
-      findRegistriesList().vm.$emit('updateCount', 5);
+      findRegistriesList().vm.$emit('update-count', 5);
     });
 
     it('renders registries count', () => {
@@ -127,7 +127,7 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
       await findUpstreamsList().vm.$emit('submit', 'test');
     });
 
-    it('sets searchTerm for MavenUpstreamsList component', () => {
+    it('sets searchTerm for UpstreamsList component', () => {
       expect(findUpstreamsList().props('searchTerm')).toBe('test');
     });
 
