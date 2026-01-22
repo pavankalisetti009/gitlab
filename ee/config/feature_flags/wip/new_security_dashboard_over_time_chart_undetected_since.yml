@@ -1,0 +1,10 @@
+---
+name: new_security_dashboard_over_time_chart_undetected_since
+description: Take into account the `undetected_since` field for the vulnerabilities over time chart.
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/work_items/19780
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219919
+rollout_issue_url:
+milestone: '18.9'
+group: group::security insights
+type: wip
+default_enabled: false
