@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ProtectedEnvironmentDeployAccessLevel'] do
+RSpec.describe GitlabSchema.types['ProtectedEnvironmentDeployAccessLevel'], feature_category: :continuous_delivery do
   specify { expect(described_class.graphql_name).to eq('ProtectedEnvironmentDeployAccessLevel') }
 
   it 'includes the expected fields' do

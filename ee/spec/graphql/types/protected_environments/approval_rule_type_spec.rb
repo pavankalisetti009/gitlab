@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ProtectedEnvironmentApprovalRule'] do
+RSpec.describe GitlabSchema.types['ProtectedEnvironmentApprovalRule'], feature_category: :continuous_delivery do
   specify { expect(described_class.graphql_name).to eq('ProtectedEnvironmentApprovalRule') }
 
   it 'includes the expected fields' do
