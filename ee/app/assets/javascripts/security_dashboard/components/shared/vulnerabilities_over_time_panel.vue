@@ -6,7 +6,7 @@ import { readFromUrl, writeToUrl } from 'ee/security_dashboard/utils/panel_state
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import projectVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_over_time.query.graphql';
 import groupVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_over_time.query.graphql';
-import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
+import { formatVulnerabilitiesBySeries } from 'ee/security_dashboard/utils/chart_utils';
 import PanelSeverityFilter from './panel_severity_filter.vue';
 import PanelGroupBy from './panel_group_by.vue';
 import OverTimePeriodSelector from './over_time_period_selector.vue';
@@ -104,7 +104,9 @@ export default {
         ...this.chartData.thirtyDays,
       ];
 
-      return formatVulnerabilitiesOverTimeData(selectedChartData, this.groupedBy);
+      return formatVulnerabilitiesBySeries(selectedChartData, {
+        groupBy: this.groupedBy,
+      });
     },
     baseQueryVariables() {
       const baseVariables = {
