@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Subscription'], feature_category: :shared do
+RSpec.describe GitlabSchema.types['Subscription'], feature_category: :api do
   it 'has the expected fields' do
     expected_fields = %i[
       issuable_weight_updated

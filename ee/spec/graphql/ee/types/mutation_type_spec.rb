@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::MutationType do
+RSpec.describe Types::MutationType, feature_category: :api do
   describe 'deprecated mutations' do
     using RSpec::Parameterized::TableSyntax
 

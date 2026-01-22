@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['JsonString'] do
+RSpec.describe GitlabSchema.types['JsonString'], feature_category: :api do
   let(:hash) do
     {
       one: { key: 'value one' },
