@@ -6,6 +6,7 @@ import { __, n__, sprintf, formatNumber } from '~/locale';
 import { INSTANCE_TYPE } from '~/ci/runner/constants';
 
 export default {
+  name: 'RunnerPerformanceModal',
   components: {
     GlCard,
     GlIcon,

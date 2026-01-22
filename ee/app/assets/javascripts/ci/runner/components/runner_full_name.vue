@@ -3,6 +3,7 @@ import { getIdFromGraphQLId, getTypeFromGraphQLId } from '~/graphql_shared/utils
 import { TYPENAME_CI_RUNNER } from '~/graphql_shared/constants';
 
 export default {
+  name: 'RunnerFullName',
   props: {
     runner: {
       type: Object,
