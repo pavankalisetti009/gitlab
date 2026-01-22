@@ -49,7 +49,7 @@ describe('IterationCadenceListItem component', () => {
   const endCursor = 'MjA';
   const querySuccessResponse = {
     data: {
-      workspace: {
+      namespace: {
         id: '1',
         iterations: {
           nodes: iterations,
@@ -66,7 +66,7 @@ describe('IterationCadenceListItem component', () => {
   };
   const queryEmptyResponse = {
     data: {
-      workspace: {
+      namespace: {
         id: '1',
         iterations: {
           nodes: [],

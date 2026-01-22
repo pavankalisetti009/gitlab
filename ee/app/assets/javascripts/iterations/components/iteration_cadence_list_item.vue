@@ -50,7 +50,7 @@ export default {
     CrudComponent,
   },
   apollo: {
-    workspace: {
+    namespace: {
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       skip() {
         return !this.expanded;
@@ -101,7 +101,7 @@ export default {
       i18n,
       expanded: false,
       // query response
-      workspace: {
+      namespace: {
         iterations: {
           nodes: [],
           pageInfo: {
@@ -160,16 +160,16 @@ export default {
       };
     },
     pageInfo() {
-      return this.workspace.iterations?.pageInfo || {};
+      return this.namespace.iterations?.pageInfo || {};
     },
     hasNextPage() {
       return this.pageInfo.hasNextPage;
     },
     iterations() {
-      return this.workspace?.iterations?.nodes || [];
+      return this.namespace?.iterations?.nodes || [];
     },
     loading() {
-      return this.$apollo.queries.workspace.loading;
+      return this.$apollo.queries.namespace.loading;
     },
     showAddIteration() {
       return !this.automatic && this.canCreateIteration;
@@ -204,24 +204,24 @@ export default {
       }
 
       // Fetch more data and transform the original result
-      this.$apollo.queries.workspace.fetchMore({
+      this.$apollo.queries.namespace.fetchMore({
         variables: {
           ...this.queryVariables,
           afterCursor: this.pageInfo.endCursor,
         },
         // Transform the previous result with new data
         updateQuery: (previousResult, { fetchMoreResult }) => {
-          const newIterations = fetchMoreResult.workspace?.iterations.nodes || [];
+          const newIterations = fetchMoreResult.namespace?.iterations.nodes || [];
 
           return {
-            workspace: {
-              id: fetchMoreResult.workspace.id,
+            namespace: {
+              id: fetchMoreResult.namespace.id,
               __typename: this.namespaceType,
               iterations: {
                 __typename: 'IterationConnection',
                 // Merging the list
-                nodes: [...previousResult.workspace.iterations.nodes, ...newIterations],
-                pageInfo: fetchMoreResult.workspace?.iterations.pageInfo || {},
+                nodes: [...previousResult.namespace.iterations.nodes, ...newIterations],
+                pageInfo: fetchMoreResult.namespace?.iterations.pageInfo || {},
               },
             },
           };

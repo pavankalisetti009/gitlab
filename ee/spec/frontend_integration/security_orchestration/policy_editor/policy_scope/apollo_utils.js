@@ -152,7 +152,7 @@ const mockUserHandlers = (nodes = []) => {
     }),
     searchGroupMembers: jest.fn().mockResolvedValue({
       data: {
-        workspace: {
+        namespace: {
           id: 'gid://gitlab/Group/6',
           users: {
             nodes,

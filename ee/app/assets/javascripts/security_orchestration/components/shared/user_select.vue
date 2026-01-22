@@ -158,7 +158,7 @@ export default {
     extractUsers(data) {
       const nodes = isProject(this.namespaceType)
         ? data?.project?.projectMembers?.nodes
-        : data?.workspace?.users?.nodes;
+        : data?.namespace?.users?.nodes;
 
       return (nodes || []).filter(({ user }) => user).map(({ user }) => createUserObject(user));
     },

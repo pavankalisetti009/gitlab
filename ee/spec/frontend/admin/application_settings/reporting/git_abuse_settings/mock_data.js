@@ -38,7 +38,7 @@ export const searchUsersResponse = {
 
 export const groupMembersResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       __typename: 'Group',
       users: {
