@@ -242,4 +242,24 @@ RSpec.describe CloudConnector::Keys, :models, feature_category: :system_access d
       expect(payload).to include('iss' => 'test')
     end
   end
+
+  # See https://gitlab.com/gitlab-org/gitlab/-/work_items/585384
+  context 'when accessing keys stored using a different key provider' do
+    let_it_be(:legacy_keys_class) do
+      Class.new(ApplicationRecord) do
+        self.table_name = 'cloud_connector_keys'
+
+        encrypts :secret_key, key_provider: ActiveRecord::Encryption::EnvelopeEncryptionKeyProvider.new
+      end
+    end
+
+    before do
+      # Create a record using the key provider we used in versions prior to GitLab 18.9
+      legacy_keys_class.create!(secret_key: OpenSSL::PKey::RSA.new(2048).to_pem)
+    end
+
+    it 'can decrypt records using default provider when keys were stored using EnvelopeEncryptionProvider' do
+      expect { described_class.first.secret_key }.not_to raise_error
+    end
+  end
 end
