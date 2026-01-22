@@ -139,7 +139,7 @@ RSpec.describe 'admin/application_settings/general.html.haml' do
       expect(rendered).to render_template('admin/application_settings/_amazon_q')
     end
 
-    describe 'Disable group invite members settings', feature_category: :group_management do
+    describe 'Disable group invite members settings', feature_category: :groups_and_projects do
       it 'renders correct partial' do
         render
 
