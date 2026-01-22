@@ -115,9 +115,6 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
   end
 
   before do
-    # Enable necessary feature flags and settings
-    stub_feature_flags(duo_workflow: true)
-
     # Enable duo features on project
     project.project_setting.update!(
       duo_features_enabled: true,

@@ -15,9 +15,10 @@ module Ai
         checks = [
           {
             name: :feature_flag,
-            value: ::Feature.enabled?(:duo_workflow, @current_user),
+            value: true,
             message: _("duo_workflow feature flag must be enabled.")
-          }, {
+          },
+          {
             name: :duo_features_enabled,
             value: @project.duo_features_enabled,
             message: _("Project must have GitLab Duo features enabled.")

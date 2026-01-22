@@ -1347,10 +1347,6 @@ module EE
         enable :read_secret_push_protection_info
       end
 
-      condition(:duo_workflow_enabled) do
-        ::Feature.enabled?(:duo_workflow, @user)
-      end
-
       # This incorrect scope may not be removed for the interim due to the fact that functionality is relying on it.
       # see: https://gitlab.com/gitlab-org/gitlab/-/issues/578561#note_2868029408
       with_scope :subject
@@ -1360,7 +1356,7 @@ module EE
           @user&.allowed_to_use?(:duo_agent_platform, root_namespace: @subject.root_ancestor)
       end
 
-      rule { duo_workflow_enabled & duo_agent_platform_enabled & duo_workflow_available & can?(:developer_access) }.policy do
+      rule { duo_agent_platform_enabled & duo_workflow_available & can?(:developer_access) }.policy do
         enable :duo_workflow
         enable :create_duo_workflow_for_ci
       end

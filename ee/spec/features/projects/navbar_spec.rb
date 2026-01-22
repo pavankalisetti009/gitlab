@@ -114,7 +114,6 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
 
         # Mock the underlying requirements for duo_workflow permission
-        stub_feature_flags(duo_workflow: true)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(false) # Default to false
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(kind_of(ProjectPresenter),
