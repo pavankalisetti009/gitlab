@@ -231,6 +231,13 @@ module EE
           resolver: ::Resolvers::Analytics::AiMetrics::UserMetricsResolver,
           experiment: { milestone: '17.5' }
 
+        field :ai_usage,
+          ::Types::Analytics::AiUsage::AiUsageType,
+          description: 'AI-related data 2.0.',
+          method: :itself,
+          authorize: :read_enterprise_ai_analytics,
+          experiment: { milestone: '18.9' }
+
         field :project_compliance_standards_adherence,
           ::Types::Projects::ComplianceStandards::AdherenceType.connection_type,
           null: true,

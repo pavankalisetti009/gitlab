@@ -364,6 +364,13 @@ module EE
           resolver_method: :object,
           experiment: { milestone: '17.5' }
 
+        field :ai_usage,
+          ::Types::Analytics::AiUsage::AiUsageType,
+          description: 'AI-related data 2.0.',
+          method: :itself,
+          authorize: :read_enterprise_ai_analytics,
+          experiment: { milestone: '18.9' }
+
         field :ai_user_metrics,
           ::Types::Analytics::AiMetrics::UserMetricsType.connection_type,
           null: true,
