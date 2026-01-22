@@ -96,9 +96,16 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
                   allow(checker).to receive(:should_scan?).and_return(true)
                 end
                 allow(Gitlab::Metrics::System).to receive(:monotonic_time).and_return(start_time, end_time)
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |processor|
+                  allow(processor).to receive(:standardize_payloads).and_return(nil)
+                end
               end
 
               it 'logs the duration when validation completes successfully' do
+                expect_next_instance_of(Gitlab::Checks::SecretPushProtection::AuditLogger) do |logger|
+                  expect(logger).to receive(:track_spp_execution_time_in_seconds).with(expected_duration)
+                end
+
                 secrets_check.validate!
 
                 expect(logged_messages[:info]).to include(
@@ -410,9 +417,16 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
 
               before do
                 allow(Gitlab::Metrics::System).to receive(:monotonic_time).and_return(start_time, end_time)
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |processor|
+                  allow(processor).to receive(:standardize_payloads).and_return(nil)
+                end
               end
 
               it 'logs the duration when validation completes successfully' do
+                expect_next_instance_of(Gitlab::Checks::SecretPushProtection::AuditLogger) do |logger|
+                  expect(logger).to receive(:track_spp_execution_time_in_seconds).with(expected_duration)
+                end
+
                 secrets_check.validate!
 
                 expect(logged_messages[:info]).to include(
