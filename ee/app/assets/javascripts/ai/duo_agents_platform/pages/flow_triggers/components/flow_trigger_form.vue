@@ -17,6 +17,7 @@ import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import UserSelect from '~/vue_shared/components/user_select/user_select.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from 'ee/ai/catalog/constants';
+import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
 import getCatalogConsumerItemsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_catalog_consumer_items.query.graphql';
 import projectServiceAccountsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_project_service_accounts.query.graphql';
 import AiLegalDisclaimer from 'ee/ai/duo_agents_platform/components/common/ai_legal_disclaimer.vue';
@@ -50,10 +51,6 @@ export default {
       validator: (mode) => [MODE_CREATE, MODE_EDIT].includes(mode),
     },
     errorMessages: {
-      type: Array,
-      required: true,
-    },
-    eventTypeOptions: {
       type: Array,
       required: true,
     },
@@ -198,6 +195,13 @@ export default {
       return this.isEditMode
         ? s__('DuoAgentsPlatform|Save changes')
         : s__('DuoAgentsPlatform|Create trigger');
+    },
+    eventTypeOptions() {
+      return FLOW_TRIGGER_TYPES.map((item) => ({
+        text: item.text,
+        value: item.valueInt,
+        help: item.help,
+      }));
     },
     selectedEventTypeText() {
       const selectedOptions = this.eventTypeOptions

@@ -27,7 +27,7 @@ export default {
     ResourceListsLoadingStateList,
   },
   mixins: [glAbilitiesMixin()],
-  inject: ['projectPath', 'flowTriggersEventTypeOptions'],
+  inject: ['projectPath'],
   data() {
     return {
       aiFlowTriggers: [],
@@ -139,7 +139,6 @@ export default {
     <template v-else>
       <flow-triggers-table
         :ai-flow-triggers="aiFlowTriggers"
-        :event-type-options="flowTriggersEventTypeOptions"
         class="gl-mt-8"
         @delete-trigger="(id) => (idToBeDeleted = id)"
       />

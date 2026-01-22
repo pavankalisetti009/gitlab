@@ -18,7 +18,6 @@ import {
   mockAiFlowTriggersResponse,
   mockEmptyAiFlowTriggersResponse,
   mockDeleteTriggerResponse,
-  eventTypeOptions,
 } from '../mocks';
 
 Vue.use(VueApollo);
@@ -52,7 +51,6 @@ describe('FlowTriggersIndex', () => {
       apolloProvider: mockApollo,
       provide: {
         projectPath: 'myProject',
-        flowTriggersEventTypeOptions: eventTypeOptions,
         glAbilities: {
           readAiCatalogFlow: true,
           readAiCatalogThirdPartyFlow: true,

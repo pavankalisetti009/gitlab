@@ -74,11 +74,6 @@ export const mockEmptyAiFlowTriggersResponse = {
   },
 };
 
-export const eventTypeOptions = [
-  { value: 0, text: 'Mention' },
-  { value: 1, text: 'Assign' },
-];
-
 export const mockCreateFlowTriggerSuccessMutation = {
   data: {
     aiFlowTriggerCreate: {

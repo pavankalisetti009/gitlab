@@ -25,12 +25,7 @@ RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :duo_age
         root_group_id: project.root_namespace.id,
         project_path: project.full_path,
         project_id: project.id,
-        explore_ai_catalog_path: '/explore/ai-catalog',
-        flow_triggers_event_type_options: [
-          { 'text' => 'Mention', 'value' => 0 },
-          { 'text' => 'Assign', 'value' => 1 },
-          { 'text' => 'Assign reviewer', 'value' => 2 }
-        ].to_json
+        explore_ai_catalog_path: '/explore/ai-catalog'
       }
 
       expect(helper_data).to eq(expected_data)
