@@ -10,6 +10,7 @@ module Ai
       MISSING_WORKFLOW_DEFINITION_ERROR = 'Workflow definition cannot be blank'
       MISSING_SOURCE_BRANCH_ERROR = 'Source branch cannot be blank'
       MISSING_SERVICE_ACCOUNT_ERROR = 'Could not resolve the service account for this flow'
+      FLOW_NOT_ENABLED_ERROR = 'Workflow not enabled for this project/namespace'
 
       def initialize(container:, current_user:, goal:, source_branch:, workflow_definition:)
         @container = container
@@ -42,7 +43,7 @@ module Ai
         workload_id = start_result.payload[:workload_id]
         message = start_result.message
 
-        ServiceResponse.success(message: message, payload: { workflow_id: workflow.id, workload_id: workload_id })
+        ServiceResponse.success(message: message, payload: { workflow: workflow, workload_id: workload_id })
       end
 
       private
@@ -52,13 +53,23 @@ module Ai
       def validation
         return error(MISSING_WORKFLOW_DEFINITION_ERROR, :invalid_workflow_definition) if workflow_definition.blank?
         return error(MISSING_SOURCE_BRANCH_ERROR, :invalid_source_branch) if source_branch.blank?
+        return error(FLOW_NOT_ENABLED_ERROR, :flow_not_enabled) unless flow_configured_for_container?
+        return error(MISSING_SERVICE_ACCOUNT_ERROR, :invalid_service_account) if service_account.nil?
         return error(MISSING_WORKFLOW_TOKEN_ERROR, :invalid_duo_workflow_token) if workflow_service_token.nil?
         return error(MISSING_OAUTH_TOKEN_ERROR, :invalid_oauth_token) if workflow_oauth_token.nil?
-        return error(MISSING_SERVICE_ACCOUNT_ERROR, :invalid_service_account) if service_account.nil?
 
         ServiceResponse.success
       end
       strong_memoize_attr :validation
+
+      def flow_configured_for_container?
+        catalog_item_id = workflow_definition.catalog_item&.id
+
+        return false if catalog_item_id.blank?
+
+        container.duo_foundational_flows_enabled &&
+          container.enabled_flow_catalog_item_ids.include?(catalog_item_id)
+      end
 
       def error(message, reason, payload = {})
         ServiceResponse.error(message: message, reason: reason, payload: payload)

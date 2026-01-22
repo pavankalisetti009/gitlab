@@ -3,6 +3,8 @@
 module EE
   module SystemNotes
     module MergeRequestsService
+      include SafeFormatHelper
+
       # Called when approvals are reset
       #
       # Example Note text:
@@ -26,13 +28,10 @@ module EE
         create_note(NoteSummary.new(noteable, project, author, body, action: 'override'))
       end
 
-      def duo_code_review_started
-        create_note(
-          NoteSummary.new(noteable, project, author,
-            s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished"),
-            action: "duo_code_review_started"
-          )
-        )
+      def duo_code_review_started(workflow = nil)
+        body = duo_code_review_started_message(workflow)
+
+        create_note(NoteSummary.new(noteable, project, author, body, action: "duo_code_review_started"))
       end
 
       def duo_code_review_chat_started(discussion)
@@ -44,6 +43,18 @@ module EE
           note: s_("DuoCodeReview|is working on a reply"),
           system: true
         ))
+      end
+
+      private
+
+      def duo_code_review_started_message(workflow)
+        if workflow
+          message = s_("DuoCodeReview|started %{session_link} and will let you know when it's finished")
+
+          safe_format(message, session_link: "[review session #{workflow.id}](#{workflow.web_url})")
+        else
+          s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished")
+        end
       end
     end
   end

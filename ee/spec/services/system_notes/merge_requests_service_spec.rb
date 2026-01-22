@@ -81,12 +81,26 @@ RSpec.describe SystemNotes::MergeRequestsService, feature_category: :code_review
     subject(:duo_code_review_started) do
       described_class
         .new(noteable: noteable, container: project, author: author)
-        .duo_code_review_started
+        .duo_code_review_started(workflow)
     end
 
-    it 'sets the note text' do
-      expect(duo_code_review_started.note)
-        .to eq("is reviewing your merge request and will let you know when it's finished")
+    context 'when workflow session is passed' do
+      let(:workflow) { build_stubbed(:duo_workflows_workflow) }
+
+      it 'sets the note text with session link' do
+        expect(duo_code_review_started.note).to eq(
+          "started [review session #{workflow.id}](#{workflow.web_url}) and will let you know when it&#39;s finished"
+        )
+      end
+    end
+
+    context 'when no workflow session is passed' do
+      let(:workflow) { nil }
+
+      it 'sets the note text' do
+        expect(duo_code_review_started.note)
+          .to eq("is reviewing your merge request and will let you know when it's finished")
+      end
     end
   end
 

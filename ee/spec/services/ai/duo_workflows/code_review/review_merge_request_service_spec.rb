@@ -3,25 +3,42 @@
 require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_category: :duo_agent_platform do
+  subject(:service) { described_class.new(user: user, merge_request: merge_request) }
+
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
   let_it_be(:project) { create(:project, :in_group) }
   let_it_be(:user) { create(:user, developer_of: project) }
-  let_it_be_with_reload(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
-
-  let(:service) { described_class.new(user: user, merge_request: merge_request) }
-
-  describe '#execute' do
-    let(:create_and_start_service) do
-      instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService, execute: ServiceResponse.success)
+  let_it_be_with_reload(:merge_request) do
+    create(:merge_request, source_project: project, target_project: project) do |mr|
+      mr.merge_request_reviewers.create!(reviewer: duo_code_review_bot)
     end
+  end
 
-    let(:progress_note) { instance_double(Note, id: 123, present?: true, destroy: true) }
+  let_it_be_with_reload(:reviewer) { merge_request.find_reviewer(duo_code_review_bot) }
 
-    before do
-      allow_next_instance_of(::SystemNotes::MergeRequestsService) do |system_notes|
-        allow(system_notes).to receive(:duo_code_review_started).and_return(progress_note)
+  shared_examples_for 'updates merge request status' do |status|
+    it "updates the merge request status to #{status}" do
+      expect { service.execute }.to change { reviewer.reload.state }.to(status)
+    end
+  end
+
+  shared_examples_for 'adds an error note' do |expected_error_message|
+    it 'posts an error comment to the merge request' do
+      expect_next_instance_of(::Notes::CreateService) do |notes_service|
+        expect(notes_service).to receive(:execute).and_call_original
       end
 
+      service.execute
+
+      merge_request.reload
+      error_note = merge_request.notes.non_diff_notes.last
+      expect(error_note.note).to eq(expected_error_message)
+      expect(error_note.author).to eq(duo_code_review_bot)
+    end
+  end
+
+  describe '#execute' do
+    before do
       allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService)
         .to receive(:new)
         .with(
@@ -30,232 +47,169 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
           workflow_definition: ::Ai::Catalog::FoundationalFlow['code_review/v1'],
           goal: merge_request.iid,
           source_branch: merge_request.source_branch
-        ).and_return(create_and_start_service)
-
-      merge_request.merge_request_reviewers.create!(reviewer: duo_code_review_bot)
-    end
-
-    it 'delegates to Duo Agent Platform workflow', :aggregate_failures do
-      service.execute
-
-      expect(create_and_start_service).to have_received(:execute)
-    end
-
-    it 'calls UpdateReviewerStateService with review states' do
-      expect_next_instance_of(
-        MergeRequests::UpdateReviewerStateService,
-        project: project,
-        current_user: duo_code_review_bot
-      ) do |update_service|
-        expect(update_service).to receive(:execute).with(merge_request, 'review_started')
-      end
-
-      service.execute
-    end
-
-    it 'schedules timeout cleanup job for 30 minutes' do
-      expect(::Ai::DuoWorkflows::CodeReview::TimeoutWorker)
-        .to receive(:perform_in)
-        .with(30.minutes, merge_request.id)
-
-      service.execute
-    end
-
-    it 'tracks review request event for author' do
-      merge_request.update!(author: user)
-
-      expect(service).to receive(:track_internal_event).with(
-        'request_review_duo_code_review_on_mr_by_author',
-        user: user,
-        project: project,
-        additional_properties: { property: merge_request.id.to_s }
-      )
-
-      service.execute
-    end
-
-    it 'tracks review request event for non-author' do
-      other_user = create(:user, developer_of: project)
-      merge_request.update!(author: other_user)
-
-      expect(service).to receive(:track_internal_event).with(
-        'request_review_duo_code_review_on_mr_by_non_author',
-        user: user,
-        project: project,
-        additional_properties: { property: merge_request.id.to_s }
-      )
-
-      service.execute
-    end
-
-    context 'when progress_note creation returns nil' do
-      let(:create_and_start_service) do
-        instance_double(
-          ::Ai::DuoWorkflows::CreateAndStartWorkflowService,
-          execute: ServiceResponse.error(message: 'Failed')
+        ).and_return(
+          instance_double(
+            ::Ai::DuoWorkflows::CreateAndStartWorkflowService,
+            execute: create_and_start_service_result
+          )
         )
-      end
-
-      before do
-        allow_next_instance_of(::SystemNotes::MergeRequestsService) do |system_notes|
-          allow(system_notes).to receive(:duo_code_review_started).and_return(nil)
-        end
-
-        allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService)
-          .to receive(:new)
-          .and_return(create_and_start_service)
-      end
-
-      it 'handles nil progress_note in cleanup without errors' do
-        expect { service.execute }.not_to raise_error
-      end
-
-      it 'does not call destroy on nil progress_note' do
-        result = service.execute
-
-        expect(result.success?).to be false
-      end
-
-      it 'skips posting error comment when progress_note is nil' do
-        service.execute
-
-        merge_request.reload
-        # Verify no error note was created since progress_note was nil
-        expect(merge_request.notes.non_diff_notes.where(author: duo_code_review_bot)).to be_empty
-      end
-
-      it 'does not create a todo when progress_note is nil' do
-        expect_any_instance_of(TodoService) do |todo_service|
-          expect(todo_service).not_to receive(:new_review)
-        end
-
-        service.execute
-      end
     end
 
-    shared_examples 'posts error comment and cleans up' do |expected_error_message|
-      it 'posts an error comment to the merge request' do
-        expect_next_instance_of(::Notes::CreateService) do |notes_service|
-          expect(notes_service).to receive(:execute).and_call_original
-        end
-
-        service.execute
-
-        merge_request.reload
-        error_note = merge_request.notes.non_diff_notes.last
-        expect(error_note.note).to eq(expected_error_message)
-        expect(error_note.author).to eq(duo_code_review_bot)
+    context 'when workflow starts successfully' do
+      let(:workflow) do
+        create(:duo_workflows_workflow, project: project, user: user)
       end
 
-      it 'creates a todo for the error' do
-        expect_any_instance_of(TodoService) do |todo_service|
-          expect(todo_service).to receive(:new_review).with(merge_request, duo_code_review_bot)
-        end
-
-        service.execute
+      let(:create_and_start_service_result) do
+        ServiceResponse.success(payload: { workflow: workflow, workload_id: double })
       end
 
-      it 'resets review state' do
-        expect_next_instance_of(MergeRequests::UpdateReviewerStateService) do |instance|
-          expect(instance).to receive(:execute).with(merge_request, 'review_started')
-        end
-        expect_next_instance_of(MergeRequests::UpdateReviewerStateService) do |instance|
-          expect(instance).to receive(:execute).with(merge_request, 'reviewed')
-        end
+      include_examples 'updates merge request status', 'review_started'
 
-        service.execute
-      end
-
-      it 'destroys progress note' do
-        expect(progress_note).to receive(:destroy)
-
-        service.execute
-      end
-
-      it 'does not schedule timeout cleanup job' do
+      it 'schedules timeout cleanup job for 30 minutes' do
         expect(::Ai::DuoWorkflows::CodeReview::TimeoutWorker)
-          .not_to receive(:perform_in)
+          .to receive(:perform_in)
+          .with(30.minutes, merge_request.id)
 
         service.execute
       end
 
-      it 'returns an error result' do
-        result = service.execute
-        expect(result.success?).to be false
+      it 'tracks review request event for author' do
+        merge_request.update!(author: user)
+
+        expect(service).to receive(:track_internal_event).with(
+          'request_review_duo_code_review_on_mr_by_author',
+          user: user,
+          project: project,
+          additional_properties: { property: merge_request.id.to_s }
+        )
+
+        service.execute
+      end
+
+      it 'tracks review request event for non-author' do
+        other_user = create(:user, developer_of: project)
+        merge_request.update!(author: other_user)
+
+        expect(service).to receive(:track_internal_event).with(
+          'request_review_duo_code_review_on_mr_by_non_author',
+          user: user,
+          project: project,
+          additional_properties: { property: merge_request.id.to_s }
+        )
+
+        service.execute
       end
     end
 
     context 'when workflow fails to start' do
-      let(:create_and_start_service) do
-        instance_double(
-          ::Ai::DuoWorkflows::CreateAndStartWorkflowService,
-          execute: ServiceResponse.error(message: 'Workflow start failed')
-        )
-      end
-
-      context 'when foundational flows are disabled' do
-        before do
-          allow(project).to receive(:duo_foundational_flows_enabled).and_return(false)
-        end
-
-        it_behaves_like 'posts error comment and cleans up',
-          ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
-      end
-
-      context 'when code review flow is not enabled' do
-        let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['code_review/v1'] }
-        let(:catalog_item_id) { 123 }
-
-        before do
-          allow(project).to receive_messages(
-            duo_foundational_flows_enabled: true,
-            enabled_flow_catalog_item_ids: []
-          )
-          allow(workflow_definition).to receive_message_chain(:catalog_item, :id).and_return(catalog_item_id)
-        end
-
-        it_behaves_like 'posts error comment and cleans up',
-          ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
-      end
-
-      context 'when foundational flows are properly enabled' do
-        let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['code_review/v1'] }
-        let(:catalog_item) { instance_double(::Ai::Catalog::Item, id: 123) }
-
-        before do
-          allow(workflow_definition).to receive(:catalog_item).and_return(catalog_item)
-          allow(merge_request.project).to receive_messages(
-            duo_foundational_flows_enabled: true,
-            enabled_flow_catalog_item_ids: [123]
+      context 'when code review flow is disabled' do
+        let(:create_and_start_service_result) do
+          ServiceResponse.error(
+            message: 'Workflow not enabled for this project/namespace',
+            reason: :flow_not_enabled
           )
         end
 
-        it_behaves_like 'posts error comment and cleans up',
-          ::Ai::CodeReviewMessages.could_not_start_workflow_error
+        include_examples 'updates merge request status', 'reviewed'
+
+        include_examples 'adds an error note', ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
+      end
+
+      context 'when code review flow is enabled but service account is not available' do
+        let(:create_and_start_service_result) do
+          ServiceResponse.error(
+            message: 'Could not resolve the service account for this flow',
+            reason: :invalid_service_account
+          )
+        end
+
+        include_examples 'updates merge request status', 'reviewed'
+
+        include_examples 'adds an error note', ::Ai::CodeReviewMessages.missing_service_account_error
+      end
+
+      context 'with a generic failure reason' do
+        let(:create_and_start_service_result) do
+          ServiceResponse.error(
+            message: 'Could not obtain Duo Workflow token',
+            reason: :invalid_duo_workflow_token
+          )
+        end
+
+        include_examples 'updates merge request status', 'reviewed'
+
+        include_examples 'adds an error note', ::Ai::CodeReviewMessages.could_not_start_workflow_error
       end
     end
 
-    context 'when workflow raises an exception' do
-      let(:workflow_definition) { ::Ai::Catalog::FoundationalFlow['code_review/v1'] }
-      let(:catalog_item) { instance_double(::Ai::Catalog::Item, id: 123) }
+    context 'when start workflow raises an exception' do
+      let(:create_and_start_service_result) { -> { raise StandardError, 'Unexpected error' } }
+      let(:error) { StandardError.new('Unexpected error') }
 
       before do
-        allow(workflow_definition).to receive(:catalog_item).and_return(catalog_item)
-        allow(merge_request.project).to receive_messages(
-          duo_foundational_flows_enabled: true,
-          enabled_flow_catalog_item_ids: [123]
-        )
-        allow(create_and_start_service).to receive(:execute).and_raise(StandardError.new('Unexpected error'))
+        allow_next_instance_of(::Ai::DuoWorkflows::CreateAndStartWorkflowService) do |start_workflow|
+          allow(start_workflow).to receive(:execute).and_raise(error)
+        end
       end
 
-      it_behaves_like 'posts error comment and cleans up',
-        ::Ai::CodeReviewMessages.could_not_start_workflow_error
+      include_examples 'updates merge request status', 'reviewed'
+
+      include_examples 'adds an error note', ::Ai::CodeReviewMessages.could_not_start_workflow_error
 
       it 'tracks the exception with correct unit primitive' do
         expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-          instance_of(StandardError),
+          error,
           unit_primitive: 'duo_agent_platform'
         )
+
+        service.execute
+      end
+
+      it 'returns error response' do
+        result = service.execute
+
+        expect(result.error?).to be(true)
+        expect(result.message).to eq('Unexpected error')
+      end
+
+      it 'creates a todo for the merge request' do
+        expect { service.execute }
+          .to change { Todo.count }.by(1)
+
+        todo = Todo.last
+        expect(todo.action).to eq(Todo::REVIEW_SUBMITTED)
+        expect(todo.author).to eq(duo_code_review_bot)
+      end
+    end
+
+    context 'when an exception is raised after starting the workflow' do
+      let(:workflow) do
+        create(:duo_workflows_workflow, project: project, user: user)
+      end
+
+      let(:create_and_start_service_result) do
+        ServiceResponse.success(payload: { workflow: workflow, workload_id: double })
+      end
+
+      before do
+        allow(::Ai::DuoWorkflows::CodeReview::TimeoutWorker)
+          .to receive(:perform_in)
+          .and_raise(StandardError, 'Something went wrong')
+      end
+
+      include_examples 'updates merge request status', 'reviewed'
+
+      include_examples 'adds an error note', ::Ai::CodeReviewMessages.could_not_start_workflow_error
+
+      it 'cleans up the progress note' do
+        progress_note = instance_double(::Note)
+
+        expect_next_instance_of(::SystemNotes::MergeRequestsService) do |note_service|
+          expect(note_service).to receive(:duo_code_review_started).and_return(progress_note)
+        end
+
+        expect(progress_note).to receive(:destroy)
 
         service.execute
       end

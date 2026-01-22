@@ -67,6 +67,13 @@ module Ai
       )
     end
 
+    def missing_service_account_error
+      s_(
+        "DuoCodeReview|:warning: Code Review Flow is enabled " \
+          "but the service account needs to be verified. Contact your administrator."
+      )
+    end
+
     def timeout_error
       s_(
         "DuoCodeReview|:warning: Something went wrong and the review request was stopped. " \
