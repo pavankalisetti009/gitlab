@@ -25,7 +25,7 @@ export default {
   i18n: {
     collapseButtonLabel: __('Collapse panel'),
     moreOptionsLabel: __('More options'),
-    copySessionIdTooltip: __('Copy Chat Session ID (%{id})'),
+    copySessionIdTooltip: __('Copy Chat Session ID: %{id}'),
     sessionIdCopiedToast: __('Session ID copied to clipboard'),
     sessionIdCopyFailedToast: __('Could not copy session ID'),
   },
@@ -111,6 +111,9 @@ export default {
     },
     showAgentStatusIcon() {
       return this.$route.name === AGENTS_PLATFORM_SHOW_ROUTE && Boolean(this.agentSessionStatus);
+    },
+    showSessionId() {
+      return this.sessionId && this.activeTab.props.mode === 'active';
     },
     sessionText() {
       return sprintf(this.$options.i18n.copySessionIdTooltip, { id: this.sessionId });
@@ -228,20 +231,6 @@ export default {
       </div>
 
       <div class="ai-panel-header-actions gl-flex gl-gap-x-2 gl-pr-3">
-        <gl-disclosure-dropdown
-          v-if="sessionId"
-          v-gl-tooltip="showSessionDropdownTooltip"
-          icon="ellipsis_v"
-          category="tertiary"
-          text-sr-only
-          size="small"
-          :toggle-text="$options.i18n.moreOptionsLabel"
-          :items="sessionIdItems"
-          no-caret
-          data-testid="content-container-session-menu"
-          @shown="showSessionDropdown"
-          @hidden="hideSessionDropdown"
-        />
         <gl-button
           v-gl-tooltip.bottom
           icon="dash"
@@ -293,7 +282,24 @@ export default {
         @switch-to-active-tab="onSwitchToActiveTab"
         @change-title="handleTitleChange"
         @session-id-changed="handleSessionIdChanged"
-      />
+      >
+        <template #header>
+          <gl-disclosure-dropdown
+            v-if="showSessionId"
+            v-gl-tooltip="showSessionDropdownTooltip"
+            icon="ellipsis_v"
+            category="tertiary"
+            text-sr-only
+            size="small"
+            :toggle-text="$options.i18n.moreOptionsLabel"
+            :items="sessionIdItems"
+            no-caret
+            data-testid="content-container-session-menu"
+            @shown="showSessionDropdown"
+            @hidden="hideSessionDropdown"
+          />
+        </template>
+      </component>
     </div>
   </aside>
 </template>

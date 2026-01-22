@@ -1167,6 +1167,11 @@ export default {
       @back-to-list="onBackToList"
       @delete-thread="onDeleteThread"
     >
+      <template #subheader>
+        <div class="gl-absolute gl-right-5 gl-top-10 gl-pt-2">
+          <slot name="header"></slot>
+        </div>
+      </template>
       <template #agentic-model>
         <div
           v-if="userModelSelectionEnabled && hasCredits"

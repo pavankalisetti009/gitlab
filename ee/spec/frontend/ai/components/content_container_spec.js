@@ -182,9 +182,7 @@ describe('AiContentContainer', () => {
     });
 
     it('does not render string placeholder for non-string components', () => {
-      createComponent({
-        activeTab: mockComponentTab,
-      });
+      createComponent({ activeTab: mockComponentTab });
 
       const placeholderDiv = wrapper.find('.ai-panel-body .gl-self-center');
       expect(placeholderDiv.exists()).toBe(false);
@@ -335,14 +333,10 @@ describe('AiContentContainer', () => {
   });
 
   describe('session ID menu', () => {
-    const MockComponent = {
-      name: 'MockComponent',
-      template: '<div></div>',
-    };
-
     const mockComponentTab = {
       title: 'Test Component',
-      component: MockComponent,
+      component: { name: 'MockComponent', render: (h) => h('div') },
+      props: { mode: 'active', isAgenticAvailable: true },
     };
 
     it('shows session menu when session ID is received from child', async () => {
@@ -351,6 +345,7 @@ describe('AiContentContainer', () => {
 
       const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
       dynamicComponent.vm.$emit('session-id-changed', 'new-session-id');
+      dynamicComponent.vm.$emit('change-title', 'new-chat-title');
       await nextTick();
 
       expect(findSessionMenu().exists()).toBe(true);
@@ -368,6 +363,7 @@ describe('AiContentContainer', () => {
       const sessionId = 'test-session-123';
       const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
       dynamicComponent.vm.$emit('session-id-changed', sessionId);
+      dynamicComponent.vm.$emit('change-title', 'new-chat-title');
       await nextTick();
 
       const menu = findSessionMenu();
@@ -391,6 +387,7 @@ describe('AiContentContainer', () => {
         const sessionId = 'test-session-copy';
         const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
         dynamicComponent.vm.$emit('session-id-changed', sessionId);
+        dynamicComponent.vm.$emit('change-title', 'new-chat-title');
         await nextTick();
 
         const menu = findSessionMenu();
@@ -406,6 +403,7 @@ describe('AiContentContainer', () => {
 
         const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
         dynamicComponent.vm.$emit('session-id-changed', 'test-session-success');
+        dynamicComponent.vm.$emit('change-title', 'new-chat-title');
         await nextTick();
 
         const menu = findSessionMenu();
@@ -422,6 +420,7 @@ describe('AiContentContainer', () => {
 
         const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
         dynamicComponent.vm.$emit('session-id-changed', 'test-session-fail');
+        dynamicComponent.vm.$emit('change-title', 'new-chat-title');
         await nextTick();
 
         const menu = findSessionMenu();
