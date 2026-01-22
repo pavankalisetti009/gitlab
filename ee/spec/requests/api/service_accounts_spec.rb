@@ -107,6 +107,12 @@ RSpec.describe API::ServiceAccounts, :aggregate_failures, feature_category: :use
           expect(response).to have_gitlab_http_status(:forbidden)
         end
       end
+
+      it_behaves_like 'authorizing granular token permissions', :create_service_account do
+        let(:user) { admin }
+        let(:boundary_object) { :instance }
+        let(:request) { post api("/service_accounts", personal_access_token: pat), params: params }
+      end
     end
 
     context 'when licensed feature is not present' do
@@ -190,6 +196,12 @@ RSpec.describe API::ServiceAccounts, :aggregate_failures, feature_category: :use
         let(:first_record) { service_account_auser }
         let(:second_record) { service_account_buser }
         let(:api_call) { api(path, admin, admin_mode: true) }
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_service_account do
+        let(:user) { admin }
+        let(:boundary_object) { :instance }
+        let(:request) { get api(path, personal_access_token: pat) }
       end
     end
 
@@ -315,6 +327,14 @@ RSpec.describe API::ServiceAccounts, :aggregate_failures, feature_category: :use
           perform_request
 
           expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :update_service_account do
+        let(:user) { admin }
+        let(:boundary_object) { :instance }
+        let(:request) do
+          patch api("/service_accounts/#{service_account_user.id}", personal_access_token: pat), params: params
         end
       end
     end

@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category: :user_management do
   include Auth::DpopTokenHelper
 
+  let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   let(:current_user) { create(:user) }
@@ -360,7 +361,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
       let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
 
       context 'when current user is an admin', :enable_admin_mode do
-        let_it_be(:user) { create(:admin) }
+        let_it_be(:user) { admin }
 
         it_behaves_like "service account user creation"
       end
@@ -435,6 +436,15 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             )
           end
         end
+
+        it_behaves_like 'authorizing granular token permissions', :create_service_account do
+          before do
+            stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+          end
+
+          let(:boundary_object) { group }
+          let(:request) { post api("/groups/#{group.id}/service_accounts", personal_access_token: pat), params: params }
+        end
       end
 
       context 'when skip_owner_check is maliciously provided by non-owner' do
@@ -505,6 +515,11 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         service_account_user2.save!
 
         group.add_owner(user)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_service_account do
+        let(:boundary_object) { group }
+        let(:request) { get api(path, personal_access_token: pat), params: params }
       end
 
       it 'returns 200 status and service account users list' do
@@ -613,7 +628,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
       end
 
       context 'when current user is an admin' do
-        let(:user) { create(:admin) }
+        let(:user) { admin }
 
         context 'when admin mode is not enabled' do
           it "returns forbidden error" do
@@ -656,6 +671,14 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             end
           end
         end
+
+        it_behaves_like 'authorizing granular token permissions', :update_service_account do
+          let(:boundary_object) { group }
+          let(:request) do
+            patch api("/groups/#{group_id}/service_accounts/#{service_account_user.id}", personal_access_token: pat),
+              params: params
+          end
+        end
       end
 
       context 'when current user is not a group owner' do
@@ -694,7 +717,6 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     let(:issue) { create(:issue, author: service_account_user) }
     let(:group_id) { group.id }
     let(:path) { "/groups/#{group_id}/service_accounts/#{service_account_user.id}" }
-    let(:admin) { create(:admin) }
 
     before do
       stub_licensed_features(service_accounts: true)
@@ -704,14 +726,24 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
     it_behaves_like "service account user deletion"
 
-    it "is available for group owners when allow top level group owners application setting is enabled",
-      :sidekiq_inline, :saas do
-      group.add_owner(user)
+    context "when allow top level group owners application setting is enabled" do
+      before do
+        stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+        group.add_owner(user)
+      end
 
-      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
-      perform_enqueued_jobs { delete api(path, user) }
-      expect(response).to have_gitlab_http_status(:no_content)
-      expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).to exist
+      it "is available for group owners", :sidekiq_inline, :saas do
+        perform_enqueued_jobs { delete api(path, user) }
+        expect(response).to have_gitlab_http_status(:no_content)
+        expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).to exist
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :delete_service_account do
+        let(:boundary_object) { group }
+        let(:request) do
+          delete api(path, personal_access_token: pat)
+        end
+      end
     end
 
     it "is not available to non group owners" do
@@ -849,6 +881,11 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
           end
 
           it_behaves_like 'an access token GET API with access token params'
+
+          it_behaves_like 'authorizing granular token permissions', :read_service_account_personal_access_token do
+            let(:boundary_object) { group }
+            let(:request) { get api(path, personal_access_token: pat), params: params }
+          end
         end
 
         context 'when the service_account is not provisioned_by the group' do
@@ -946,11 +983,10 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     let(:expires_at) { 3.days.from_now }
     let(:scopes) { %w[api read_user] }
     let(:params) { { name: name, description: description, expires_at: expires_at, scopes: scopes } }
+    let(:path) { "/groups/#{group_id}/service_accounts/#{service_account_user.id}/personal_access_tokens" }
 
     subject(:perform_request) do
-      post(
-        api("/groups/#{group_id}/service_accounts/#{service_account_user.id}/personal_access_tokens", user),
-        params: params)
+      post(api(path, user), params: params)
     end
 
     context 'when the feature is licensed' do
@@ -967,6 +1003,11 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         end
 
         context 'when the group exists' do
+          it_behaves_like 'authorizing granular token permissions', :create_service_account_personal_access_token do
+            let(:boundary_object) { group }
+            let(:request) { post api(path, personal_access_token: pat), params: params }
+          end
+
           it 'creates personal access token for the user' do
             perform_request
 
@@ -985,7 +1026,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
           context 'when an error is thrown by the model' do
             let(:group_id) { group.id }
             let(:error_message) { 'error message' }
-            let!(:admin_personal_access_token) { create(:personal_access_token, :admin_mode, user: create(:admin)) }
+            let!(:admin_personal_access_token) { create(:personal_access_token, :admin_mode, user: admin) }
 
             before do
               allow_next_instance_of(::PersonalAccessTokens::CreateService) do |create_service|
@@ -1085,7 +1126,6 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
   describe 'DELETE /groups/:id/service_accounts/:user_id/personal_access_tokens/:token_id' do
     let(:group) { create(:group) }
     let(:service_account_user) { create(:user, :service_account, provisioned_by_group: group) }
-    let(:admin) { create(:admin) }
 
     let(:token) { create(:personal_access_token, user: service_account_user) }
     let(:group_id) { group.id }
@@ -1136,6 +1176,12 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
         context 'when all parameters are valid' do
           it_behaves_like 'successful token revocation'
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :revoke_service_account_personal_access_token do
+          let(:user) { current_user }
+          let(:boundary_object) { group }
+          let(:request) { delete api(request_path, personal_access_token: pat) }
         end
 
         context 'when the revocation service fails' do
@@ -1279,7 +1325,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
       end
 
       context 'when the user is an admin', :enable_admin_mode do
-        let_it_be(:user) { create(:admin) }
+        let_it_be(:user) { admin }
 
         context 'when the group and token exist' do
           it 'revokes the token' do
@@ -1395,6 +1441,11 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
             expect(response).to have_gitlab_http_status(:not_found)
           end
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :rotate_service_account_personal_access_token do
+          let(:boundary_object) { group }
+          let(:request) { post api(path, personal_access_token: pat), params: params }
         end
       end
 

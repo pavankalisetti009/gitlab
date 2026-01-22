@@ -48,6 +48,7 @@ module API
           optional :email, type: String, desc: 'Custom email address for the user'
         end
 
+        route_setting :authorization, permissions: :create_service_account, boundary_type: :group
         post do
           organization_id = user_group.organization_id
           service_params = declared_params.merge({ organization_id: organization_id, namespace_id: params[:id] })
@@ -83,6 +84,7 @@ module API
         end
 
         # rubocop: disable CodeReuse/ActiveRecord -- for the user or reorder
+        route_setting :authorization, permissions: :read_service_account, boundary_type: :group
         get do
           users = user_group.service_accounts
 
@@ -107,6 +109,7 @@ module API
           optional :hard_delete, type: Boolean, desc: "Whether to remove a user's contributions"
         end
 
+        route_setting :authorization, permissions: :delete_service_account, boundary_type: :group
         delete ":user_id" do
           validate_service_account_user
 
@@ -142,6 +145,7 @@ module API
           optional :email, type: String, desc: 'Custom email address for the user'
         end
 
+        route_setting :authorization, permissions: :update_service_account, boundary_type: :group
         patch ":user_id" do
           validate_service_account_user
 
@@ -176,6 +180,7 @@ module API
             use :pagination
           end
 
+          route_setting :authorization, permissions: :read_service_account_personal_access_token, boundary_type: :group
           get do
             validate_service_account_user
 
@@ -197,6 +202,8 @@ module API
               desc: 'The array of scopes of the personal access token'
           end
 
+          route_setting :authorization, permissions: :create_service_account_personal_access_token,
+            boundary_type: :group
           post do
             validate_service_account_user
 
@@ -223,6 +230,8 @@ module API
             ]
             tags ['personal_access_tokens']
           end
+          route_setting :authorization, permissions: :revoke_service_account_personal_access_token,
+            boundary_type: :group
           delete ':token_id' do
             validate_service_account_user
 
@@ -247,6 +256,8 @@ module API
               desc: "The expiration date of the token",
               documentation: { example: '2021-01-31' }
           end
+          route_setting :authorization, permissions: :rotate_service_account_personal_access_token,
+            boundary_type: :group
           post ':token_id/rotate' do
             validate_service_account_user
 
