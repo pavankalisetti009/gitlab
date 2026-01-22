@@ -2,16 +2,16 @@ import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import { SECURITY_SCAN_TO_REPORT_TYPE } from '~/vue_merge_request_widget/constants';
 
 export function highlightsFromReport(report, highlights = { [HIGH]: 0, [CRITICAL]: 0, other: 0 }) {
-  // The data we receive from the API is something like:
-  // [
-  //  { scanner: "SAST", added: [{ id: 15, severity: 'critical' }] },
-  //  { scanner: "DAST", added: [{ id: 15, severity: 'high' }] },
-  //  ...
-  // ]
+  // The data we receive from GraphQL is something like:
+  // {
+  //   full: { added: [{ severity: 'HIGH' ... }] },
+  //   partial: { added: [{ severity: 'CRITICAL' ... }] }
+  // }
   return [...(report.full?.added || []), ...(report.partial?.added || [])].reduce((acc, vuln) => {
-    if (vuln.severity === HIGH) {
+    const severity = vuln.severity?.toLowerCase();
+    if (severity === HIGH) {
       acc[HIGH] += 1;
-    } else if (vuln.severity === CRITICAL) {
+    } else if (severity === CRITICAL) {
       acc[CRITICAL] += 1;
     } else {
       acc.other += 1;

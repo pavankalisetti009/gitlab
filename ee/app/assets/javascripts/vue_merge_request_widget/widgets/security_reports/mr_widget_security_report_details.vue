@@ -16,18 +16,20 @@ import { s__ } from '~/locale';
 import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
-import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { DynamicScroller, DynamicScrollerItem } from 'vendor/vue-virtual-scroller';
+import { transformKeys } from '~/lib/utils/object_utils';
+import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import SummaryText from './summary_text.vue';
 import { i18n, popovers } from './i18n';
 import { highlightsFromReport } from './utils';
 
 const DIFF_BASED_TAB_INDEX = 0;
 const FULL_SCAN_TAB_INDEX = 1;
+const SEVERITY_LEVELS_UPPERCASE = transformKeys(SEVERITY_LEVELS, (key) => key.toUpperCase());
 
 export default {
-  SEVERITY_LEVELS,
+  SEVERITY_LEVELS_UPPERCASE,
   i18n,
   components: {
     MrWidgetRow,
@@ -172,16 +174,18 @@ export default {
       return Object.keys(this.report?.[key] || {}).length > 0;
     },
     statusIconNameVulnerability(vuln) {
-      return EXTENSION_ICONS[`severity${capitalizeFirstCharacter(vuln.severity)}`];
+      const { severity } = vuln;
+      const severityTitleCase = capitalizeFirstCharacter(severity.toLowerCase());
+      return EXTENSION_ICONS[`severity${severityTitleCase}`];
     },
     isDismissed(vuln) {
-      return vuln.state === 'dismissed';
+      return vuln.state.toLowerCase() === 'dismissed';
     },
     setModalData(finding) {
       this.$emit('modal-data', finding);
     },
     isAiResolvable(vuln) {
-      return vuln.ai_resolution_enabled && this.glAbilities.resolveVulnerabilityWithAi;
+      return vuln.aiResolutionEnabled && this.glAbilities.resolveVulnerabilityWithAi;
     },
     showAutoDismissPolicyBadge(vuln) {
       return vuln.matches_auto_dismiss_policy && !this.isDismissed(vuln);
@@ -322,12 +326,12 @@ export default {
                       class="gl-mt-2"
                     >
                       <template #body>
-                        {{ $options.SEVERITY_LEVELS[vuln.severity] }}:
+                        {{ $options.SEVERITY_LEVELS_UPPERCASE[vuln.severity] }}:
                         <gl-button
                           variant="link"
                           class="gl-ml-2 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
                           @click="setModalData(vuln)"
-                          >{{ vuln.name }}
+                          >{{ vuln.title }}
                         </gl-button>
                         <gl-badge
                           v-if="isDismissed(vuln)"

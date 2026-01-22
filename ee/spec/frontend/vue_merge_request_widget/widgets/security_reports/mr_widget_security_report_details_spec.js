@@ -82,13 +82,13 @@ describe('MR Widget Security Reports - Finding', () => {
     findings: findings || [
       {
         uuid: '1',
-        severity: 'critical',
-        name: 'Password leak',
-        state: 'dismissed',
+        severity: 'CRITICAL',
+        title: 'Password leak',
+        state: 'DISMISSED',
       },
-      { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
-      { uuid: '14abc', severity: 'medium', name: 'SQL vulnerability' },
-      { uuid: 'bc41e', severity: 'low', name: 'SQL vulnerability 2' },
+      { uuid: '2', severity: 'HIGH', title: 'XSS vulnerability', state: 'DETECTED' },
+      { uuid: '14abc', severity: 'MEDIUM', title: 'SQL vulnerability', state: 'DETECTED' },
+      { uuid: 'bc41e', severity: 'LOW', title: 'SQL vulnerability 2', state: 'DETECTED' },
     ],
   });
 
@@ -150,6 +150,27 @@ describe('MR Widget Security Reports - Finding', () => {
     );
   });
 
+  it('displays vulnerability list rows with correct data', async () => {
+    await createComponentWithData({
+      full: mockReportData({
+        numberOfNewFindings: 1,
+        numberOfFixedFindings: 0,
+        findings: [
+          { uuid: '14abc', severity: 'CRITICAL', title: 'SQL vulnerability', state: 'DETECTED' },
+        ],
+      }),
+    });
+
+    const mrWidgetRows = wrapper.findAllComponents(MrWidgetRow);
+    const MrWidgetRowLastLevel = mrWidgetRows.at(1);
+
+    expect(MrWidgetRowLastLevel.text()).toMatchInterpolatedText('Critical: SQL vulnerability');
+    expect(MrWidgetRowLastLevel.props()).toMatchObject({
+      statusIconName: 'severityCritical',
+      level: 3,
+    });
+  });
+
   it('contains new and fixed findings in the dynamic scroller', async () => {
     await createComponentWithData({ full: mockReportData({ numberOfNewFindings: 2 }) });
 
@@ -157,14 +178,14 @@ describe('MR Widget Security Reports - Finding', () => {
       // New findings
       {
         uuid: '1',
-        severity: 'critical',
-        name: 'Password leak',
-        state: 'dismissed',
+        severity: 'CRITICAL',
+        title: 'Password leak',
+        state: 'DISMISSED',
       },
-      { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
+      { uuid: '2', severity: 'HIGH', title: 'XSS vulnerability', state: 'DETECTED' },
       // Fixed findings
-      { uuid: '14abc', severity: 'medium', name: 'SQL vulnerability' },
-      { uuid: 'bc41e', severity: 'low', name: 'SQL vulnerability 2' },
+      { uuid: '14abc', severity: 'MEDIUM', title: 'SQL vulnerability', state: 'DETECTED' },
+      { uuid: 'bc41e', severity: 'LOW', title: 'SQL vulnerability 2', state: 'DETECTED' },
     ]);
 
     expect(wrapper.findByTestId('new-findings-title').text()).toBe('New');
@@ -177,15 +198,15 @@ describe('MR Widget Security Reports - Finding', () => {
         numberOfNewFindings: 0,
         numberOfFixedFindings: 2,
         findings: [
-          { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-          { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
+          { uuid: '14abc', severity: 'HIGH', title: 'SQL vulnerability', state: 'DETECTED' },
+          { uuid: 'bc41e', severity: 'HIGH', title: 'SQL vulnerability 2', state: 'DETECTED' },
         ],
       }),
     });
 
     expect(findDynamicScroller().props('items')).toEqual([
-      { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-      { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
+      { uuid: '14abc', severity: 'HIGH', title: 'SQL vulnerability', state: 'DETECTED' },
+      { uuid: 'bc41e', severity: 'HIGH', title: 'SQL vulnerability 2', state: 'DETECTED' },
     ]);
 
     expect(wrapper.findByTestId('new-findings-title').exists()).toBe(false);
@@ -196,16 +217,16 @@ describe('MR Widget Security Reports - Finding', () => {
     await createComponentWithData({
       full: {
         findings: [
-          { uuid: '5', severity: 'low', name: 'SQL Injection' },
-          { uuid: '3', severity: 'unknown', name: 'Weak password' },
+          { uuid: '5', severity: 'LOW', title: 'SQL Injection', state: 'DETECTED' },
+          { uuid: '3', severity: 'UNKNOWN', title: 'Weak password', state: 'DETECTED' },
         ],
         numberOfNewFindings: 2,
       },
     });
 
     expect(findDynamicScroller().props('items')).toEqual([
-      { uuid: '5', severity: 'low', name: 'SQL Injection' },
-      { uuid: '3', severity: 'unknown', name: 'Weak password' },
+      { uuid: '5', severity: 'LOW', title: 'SQL Injection', state: 'DETECTED' },
+      { uuid: '3', severity: 'UNKNOWN', title: 'Weak password', state: 'DETECTED' },
     ]);
 
     expect(wrapper.findByTestId('new-findings-title').text()).toBe('New');
@@ -223,7 +244,7 @@ describe('MR Widget Security Reports - Finding', () => {
       ${false}                   | ${true}
       ${true}                    | ${false}
     `(
-      'with "resolveVulnerabilityWithAi" ability set to "$resolveVulnerabilityWithAi" and the vulnerability has "ai_resolution_enabled" set to: "$aiResolutionEnabled"',
+      'with "resolveVulnerabilityWithAi" ability set to "$resolveVulnerabilityWithAi" and the vulnerability has "aiResolutionEnabled" set to: "$aiResolutionEnabled"',
       ({ resolveVulnerabilityWithAi, aiResolutionEnabled }) => {
         beforeEach(() =>
           createComponent({
@@ -234,10 +255,10 @@ describe('MR Widget Security Reports - Finding', () => {
                   findings: [
                     {
                       uuid: findingUuid,
-                      severity: 'critical',
-                      name: 'Password leak',
-                      state: 'dismissed',
-                      ai_resolution_enabled: aiResolutionEnabled,
+                      severity: 'CRITICAL',
+                      title: 'Password leak',
+                      state: 'DISMISSED',
+                      aiResolutionEnabled,
                     },
                   ],
                 }),
@@ -261,7 +282,7 @@ describe('MR Widget Security Reports - Finding', () => {
       },
     );
 
-    describe('with "resolveVulnerabilityWithAi" ability set to "true" and the vulnerability has "ai_resolution_enabled" set to: "true"', () => {
+    describe('with "resolveVulnerabilityWithAi" ability set to "true" and the vulnerability has "aiResolutionEnabled" set to: "true"', () => {
       beforeEach(async () => {
         createComponent({
           provide: {
@@ -276,10 +297,10 @@ describe('MR Widget Security Reports - Finding', () => {
                 findings: [
                   {
                     uuid: findingUuid,
-                    severity: 'critical',
-                    name: 'Password leak',
-                    state: 'dismissed',
-                    ai_resolution_enabled: true,
+                    severity: 'CRITICAL',
+                    title: 'Password leak',
+                    state: 'DISMISSED',
+                    aiResolutionEnabled: true,
                   },
                 ],
               },
@@ -354,9 +375,9 @@ describe('MR Widget Security Reports - Finding', () => {
       wrapper.findByText('Password leak').trigger('click');
 
       expect(wrapper.emitted('modal-data')[0][0]).toEqual({
-        name: 'Password leak',
-        severity: 'critical',
-        state: 'dismissed',
+        title: 'Password leak',
+        severity: 'CRITICAL',
+        state: 'DISMISSED',
         uuid: '1',
       });
     });
@@ -382,9 +403,9 @@ describe('MR Widget Security Reports - Finding', () => {
                   findings: [
                     {
                       uuid: findingUuid,
-                      severity: 'critical',
-                      name: 'Password leak',
-                      state: 'new',
+                      severity: 'CRITICAL',
+                      title: 'Password leak',
+                      state: 'NEW',
                       matches_auto_dismiss_policy: matchesAutoDismissPolicy,
                     },
                   ],
@@ -416,9 +437,9 @@ describe('MR Widget Security Reports - Finding', () => {
                 findings: [
                   {
                     uuid: findingUuid,
-                    severity: 'critical',
-                    name: 'Password leak',
-                    state: 'new',
+                    severity: 'CRITICAL',
+                    title: 'Password leak',
+                    state: 'NEW',
                     matches_auto_dismiss_policy: true,
                   },
                 ],
@@ -491,30 +512,30 @@ describe('MR Widget Security Reports - Finding', () => {
                 findings: [
                   {
                     uuid: '1',
-                    severity: 'critical',
-                    name: 'Password leak',
-                    state: 'new',
+                    severity: 'CRITICAL',
+                    title: 'Password leak',
+                    state: 'NEW',
                     matches_auto_dismiss_policy: true,
                   },
                   {
                     uuid: '2',
-                    severity: 'high',
-                    name: 'XSS vulnerability',
-                    state: 'new',
+                    severity: 'HIGH',
+                    title: 'XSS vulnerability',
+                    state: 'NEW',
                     matches_auto_dismiss_policy: false,
                   },
                   {
                     uuid: '3',
-                    severity: 'medium',
-                    name: 'SQL vulnerability',
-                    state: 'new',
+                    severity: 'MEDIUM',
+                    title: 'SQL vulnerability',
+                    state: 'NEW',
                     matches_auto_dismiss_policy: true,
                   },
                   {
                     uuid: '4',
-                    severity: 'medium',
-                    name: 'SQL vulnerability',
-                    state: 'dismissed',
+                    severity: 'MEDIUM',
+                    title: 'SQL vulnerability',
+                    state: 'DISMISSED',
                     matches_auto_dismiss_policy: true,
                   },
                 ],
@@ -557,11 +578,11 @@ describe('MR Widget Security Reports - Finding', () => {
                 findings: [
                   {
                     uuid: findingUuid,
-                    severity: 'critical',
-                    name: 'Password leak',
-                    state: 'new',
+                    severity: 'CRITICAL',
+                    title: 'Password leak',
+                    state: 'NEW',
                     matches_auto_dismiss_policy: true,
-                    ai_resolution_enabled: true,
+                    aiResolutionEnabled: true,
                   },
                 ],
               },
@@ -591,9 +612,9 @@ describe('MR Widget Security Reports - Finding', () => {
                 findings: [
                   {
                     uuid: findingUuid,
-                    severity: 'high',
-                    name: 'SQL Injection',
-                    state: 'new',
+                    severity: 'HIGH',
+                    title: 'SQL Injection',
+                    state: 'NEW',
                     matches_auto_dismiss_policy: true,
                   },
                 ],
