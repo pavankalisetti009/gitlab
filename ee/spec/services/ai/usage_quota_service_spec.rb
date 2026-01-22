@@ -70,6 +70,29 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
             allow(user).to receive(:allowed_by_namespace_ids).with(ai_feature).and_return([root_namespace.id])
           end
 
+          context 'when the user is a gitlab team member' do
+            before do
+              stub_feature_flags(enable_quota_check_for_team_members: false)
+              allow(user).to receive(:gitlab_team_member?).and_return(true)
+            end
+
+            it 'is successful' do
+              expect(::Gitlab::SubscriptionPortal::Client).not_to receive(:verify_usage_quota)
+              expect(service_call).to be_success
+            end
+
+            context 'when enable_quota_check_for_team_members is enabled' do
+              before do
+                stub_feature_flags(enable_quota_check_for_team_members: true)
+              end
+
+              it 'is verifies usage' do
+                expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota)
+                expect(service_call).to be_success
+              end
+            end
+          end
+
           context 'when usage quota is available' do
             before do
               allow(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(

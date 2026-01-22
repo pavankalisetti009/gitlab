@@ -19,6 +19,7 @@ module Ai
 
       if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         return ServiceResponse.error(message: "Namespace is required", reason: :namespace_missing) unless root_namespace
+        return ServiceResponse.success if skip_quota_check_for_team_members?
 
         params[:root_namespace_id] = root_namespace.id
       else
@@ -58,5 +59,9 @@ module Ai
       end
     end
     strong_memoize_attr :root_namespace
+
+    def skip_quota_check_for_team_members?
+      Feature.disabled?(:enable_quota_check_for_team_members, user) && user.gitlab_team_member?
+    end
   end
 end
