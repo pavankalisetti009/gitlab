@@ -8,18 +8,19 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
   let_it_be(:root_group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: root_group) }
   let_it_be(:nested_subgroup) { create(:group, parent: subgroup) }
+  let_it_be(:user) { create(:user) }
 
-  let_it_be(:project1) { create(:project, namespace: root_group) }
-  let_it_be(:project2) { create(:project, namespace: subgroup) }
-  let_it_be(:project3) { create(:project, namespace: nested_subgroup) }
+  let_it_be_with_reload(:project1) { create(:project, namespace: root_group) }
+  let_it_be_with_reload(:project2) { create(:project, namespace: subgroup) }
+  let_it_be_with_reload(:project3) { create(:project, namespace: nested_subgroup) }
 
-  let_it_be(:scan_profile) do
+  let!(:scan_profile) do # Recreate to avoid association state leak between tests
     create(:security_scan_profile, namespace: root_group, scan_type: :secret_detection)
   end
 
   let(:group) { root_group }
   let(:traverse_hierarchy) { true }
-  let(:service) { described_class.new(group, scan_profile, traverse_hierarchy: traverse_hierarchy) }
+  let(:service) { described_class.new(group, scan_profile, current_user: user, traverse_hierarchy: traverse_hierarchy) }
 
   describe '.execute' do
     let(:mock_instance) { instance_double(described_class, execute: true) }
@@ -29,9 +30,10 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
     end
 
     it 'instantiates a new instance and delegates the call to it' do
-      described_class.execute(root_group.id, scan_profile.id, false)
+      described_class.execute(root_group, scan_profile, current_user: user, traverse_hierarchy: false)
 
-      expect(described_class).to have_received(:new).with(root_group.id, scan_profile.id, false)
+      expect(described_class).to have_received(:new).with(root_group, scan_profile, current_user: user,
+        traverse_hierarchy: false)
       expect(mock_instance).to have_received(:execute)
     end
   end
@@ -108,6 +110,45 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
       end
     end
 
+    context 'with audit events', :request_store do
+      it 'creates audit events for attached projects' do
+        expect { service.execute }.to change { AuditEvent.count }.by(3)
+      end
+
+      it 'creates audit events with correct attributes' do
+        service.execute
+
+        audit_event = AuditEvent.last
+        expect(audit_event.details).to include(
+          event_name: 'security_scan_profile_attached_to_project',
+          author_name: user.name,
+          profile_id: scan_profile.id,
+          profile_name: scan_profile.name,
+          scan_type: scan_profile.scan_type
+        )
+        expect(audit_event.details[:project_id]).to be_in([project1.id, project2.id, project3.id])
+        expect(audit_event.details[:project_path]).to be_in(
+          [project1.full_path, project2.full_path, project3.full_path]
+        )
+        expect(audit_event.details[:custom_message]).to start_with(
+          "Attached security scan profile '#{scan_profile.name}'"
+        )
+      end
+
+      context 'when no projects are attached' do
+        before do
+          # Attach all projects first so nothing new gets attached
+          create(:security_scan_profile_project, project: project1, scan_profile: scan_profile)
+          create(:security_scan_profile_project, project: project2, scan_profile: scan_profile)
+          create(:security_scan_profile_project, project: project3, scan_profile: scan_profile)
+        end
+
+        it 'does not create audit events' do
+          expect { service.execute }.not_to change { AuditEvent.count }
+        end
+      end
+    end
+
     context 'when an error occurs during attachment' do
       let(:error) { StandardError.new }
 
@@ -119,6 +160,42 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
 
       it 'propagates the error to the caller' do
         expect { service.execute }.to raise_error(error)
+      end
+    end
+
+    context 'when projects have reached the profile limit' do
+      let_it_be(:another_profile) { create(:security_scan_profile, namespace: root_group, scan_type: :sast) }
+
+      before do
+        stub_const('Security::ScanProfileProject::MAX_PROFILES_PER_PROJECT', 1)
+        create(:security_scan_profile_project, project: project1, scan_profile: another_profile)
+        create(:security_scan_profile_project, project: project2, scan_profile: another_profile)
+        create(:security_scan_profile_project, project: project3, scan_profile: another_profile)
+      end
+
+      it 'does not attach the scan profile to projects at the limit' do
+        expect { service.execute }.not_to change { Security::ScanProfileProject.count }
+
+        expect(project1.security_scan_profiles).to contain_exactly(another_profile)
+        expect(project2.security_scan_profiles).to contain_exactly(another_profile)
+        expect(project3.security_scan_profiles).to contain_exactly(another_profile)
+      end
+
+      it 'returns a success response' do
+        result = service.execute
+
+        expect(result[:status]).to eq(:success)
+      end
+
+      context 'when some projects are at the limit and others are not' do
+        let_it_be(:project4) { create(:project, namespace: subgroup) }
+
+        it 'only attaches to projects under the limit' do
+          expect { service.execute }.to change { Security::ScanProfileProject.count }.by(1)
+
+          expect(project4.security_scan_profiles.first).to eq(scan_profile)
+          expect(project1.security_scan_profiles).to contain_exactly(another_profile)
+        end
       end
     end
 
@@ -159,7 +236,7 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
 
           it 'schedules a retry worker for the namespace' do
             expect(Security::ScanProfiles::AttachWorker).to receive(:perform_in)
-              .with(described_class::RETRY_DELAY, root_group.id, scan_profile.id, false)
+              .with(described_class::RETRY_DELAY, root_group.id, scan_profile.id, user.id, false)
 
             service.execute
           end
