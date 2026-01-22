@@ -23,7 +23,6 @@ describe('SuperSidebar component', () => {
     wrapper = shallowMountExtended(SuperSidebar, {
       provide: {
         showTrialWidget: false,
-        projectStudioEnabled: false,
         showDuoAgentPlatformWidget: false,
         isAuthorized: false,
         requestCount: 0,
@@ -92,7 +91,6 @@ describe('SuperSidebar component', () => {
 
       it('does not render tier badge when in icon-only mode', async () => {
         createWrapper({
-          provide: { projectStudioEnabled: true },
           sidebarData: {
             ...mockSidebarData,
             tier_badge_href: groupBillingPath,
