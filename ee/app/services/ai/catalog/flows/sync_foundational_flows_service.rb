@@ -59,10 +59,11 @@ module Ai
         end
 
         def create_consumer_for_catalog_item(item)
-          return unless should_create_consumer?(item)
+          parent_consumer = find_parent_consumer_if_needed(item)
+          return unless should_create_consumer?(parent_consumer)
           return unless authorized_to_create_consumer?(item)
 
-          result = create_or_find_consumer(item)
+          result = create_or_find_consumer(item, parent_consumer)
           consumer = extract_consumer_from_result(result, item)
 
           create_trigger_if_needed(consumer, item) if consumer
@@ -70,10 +71,15 @@ module Ai
           result
         end
 
-        def should_create_consumer?(item)
+        def find_parent_consumer_if_needed(item)
+          return unless container.is_a?(Project)
+
+          find_existing_consumer(item, container.root_ancestor)
+        end
+
+        def should_create_consumer?(parent_consumer)
           return true unless container.is_a?(Project)
 
-          parent_consumer = find_existing_consumer(item, container.root_ancestor)
           parent_consumer.present?
         end
 
@@ -88,8 +94,8 @@ module Ai
         end
         strong_memoize_attr :admin_consumer_allowed?
 
-        def create_or_find_consumer(item)
-          params = build_consumer_params(item)
+        def create_or_find_consumer(item, parent_consumer)
+          params = build_consumer_params(item, parent_consumer)
 
           ::Ai::Catalog::ItemConsumers::CreateService.new(
             container: container,
@@ -98,15 +104,9 @@ module Ai
           ).execute
         end
 
-        def build_consumer_params(item)
+        def build_consumer_params(item, parent_consumer)
           params = { item: item }
-
-          if container.is_a?(Project) && item.flow?
-            parent_consumer = find_existing_consumer(item, container.root_ancestor)
-
-            params[:parent_item_consumer] = parent_consumer if parent_consumer
-          end
-
+          params[:parent_item_consumer] = parent_consumer if parent_consumer
           params
         end
 
