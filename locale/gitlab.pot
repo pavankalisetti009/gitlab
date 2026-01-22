@@ -49215,7 +49215,7 @@ msgstr ""
 msgid "PerformanceBar|Frontend resources"
 msgstr ""
 
-msgid "PerformanceBar|GDK running in SaaS mode"
+msgid "PerformanceBar|GitLab running in SaaS mode"
 msgstr ""
 
 msgid "PerformanceBar|Gitaly calls"
