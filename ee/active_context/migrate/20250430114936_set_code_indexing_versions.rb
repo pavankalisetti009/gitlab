@@ -7,6 +7,10 @@ class SetCodeIndexingVersions < ActiveContext::Migration[1.0]
     update_collection_metadata(collection: collection, metadata: metadata)
   end
 
+  def completed?
+    true
+  end
+
   def metadata
     { indexing_embedding_versions: [1] }
   end

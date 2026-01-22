@@ -21,4 +21,8 @@ class CreateCode < ActiveContext::Migration[1.0]
       c.vector :embeddings_v1, dimensions: 768
     end
   end
+
+  def completed?
+    true
+  end
 end

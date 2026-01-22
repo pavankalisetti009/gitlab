@@ -28,6 +28,10 @@ class CreateCode < ActiveContext::Migration[1.0]
     end
   end
 
+  def completed?
+    true
+  end
+
   def number_of_partitions
     return GITLAB_COM_NUMBER_OF_PARTITIONS if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
 

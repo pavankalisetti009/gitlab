@@ -8,6 +8,10 @@ class SetCodeSearchVersion < ActiveContext::Migration[1.0]
     update_collection_metadata(collection: collection, metadata: metadata)
   end
 
+  def completed?
+    true
+  end
+
   def metadata
     { search_embedding_version: 1 }
   end
