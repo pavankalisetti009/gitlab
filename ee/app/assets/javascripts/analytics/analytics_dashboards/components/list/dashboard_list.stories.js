@@ -65,19 +65,3 @@ const defaultArgs = {
 
 export const Default = Template.bind({});
 Default.args = defaultArgs;
-Default.parameters = {
-  a11y: {
-    config: {
-      rules: [
-        {
-          id: 'aria-prohibited-attr',
-          enabled: false,
-        },
-        {
-          id: 'button-name',
-          enabled: false,
-        },
-      ],
-    },
-  },
-};
