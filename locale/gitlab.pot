@@ -77249,6 +77249,9 @@ msgstr ""
 msgid "Wiki|Add custom sidebar"
 msgstr ""
 
+msgid "Wiki|Close sidebar"
+msgstr ""
+
 msgid "Wiki|Commit message"
 msgstr ""
 
