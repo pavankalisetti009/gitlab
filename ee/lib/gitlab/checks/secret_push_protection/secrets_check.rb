@@ -162,6 +162,7 @@ module Gitlab
               duration_s: duration.round(1)
             )
           )
+          audit_logger.track_spp_execution_time_in_seconds(duration.round(1))
         end
 
         def ruleset

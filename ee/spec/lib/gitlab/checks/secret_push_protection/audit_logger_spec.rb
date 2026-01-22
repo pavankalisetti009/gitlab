@@ -336,4 +336,14 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::AuditLogger, feature_catego
         .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
     end
   end
+
+  describe '#track_spp_execution_time_in_seconds' do
+    let(:properties) { { value: 2.3 } }
+
+    it 'triggers the internal event' do
+      expect { audit_logger.track_spp_execution_time_in_seconds(properties[:value]) }
+        .to trigger_internal_events('spp_total_execution_time')
+        .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
+    end
+  end
 end

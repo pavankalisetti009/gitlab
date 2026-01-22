@@ -133,6 +133,18 @@ module Gitlab
           )
         end
 
+        def track_spp_execution_time_in_seconds(number)
+          track_internal_event(
+            'spp_total_execution_time',
+            user: @user,
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              value: number
+            }
+          )
+        end
+
         private
 
         def should_log_audit_events?
