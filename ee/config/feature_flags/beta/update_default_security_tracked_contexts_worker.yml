@@ -1,0 +1,10 @@
+---
+name: update_default_security_tracked_contexts_worker
+description: FF to toggle the UpdateDefaultContextWorker
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/577338
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219760
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/587157
+milestone: '18.9'
+group: group::security infrastructure
+type: beta
+default_enabled: false

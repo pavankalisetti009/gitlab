@@ -17,7 +17,7 @@ module Security
         return unless container_type == 'Project'
 
         Project.find_by_id(container_id).try do |project|
-          next unless Feature.enabled?(:vulnerabilities_across_contexts, project)
+          next unless Feature.enabled?(:update_default_security_tracked_contexts_worker, project)
 
           result = Security::ProjectTrackedContexts::UpdateDefaultContextService.new(project).execute
 

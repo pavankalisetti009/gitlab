@@ -16,9 +16,9 @@ RSpec.describe Security::ProjectTrackedContexts::UpdateDefaultContextWorker, fea
 
       subject(:handle_event) { described_class.new.handle_event(event) }
 
-      context 'when vulnerabilities_across_contexts FF is enabled' do
+      context 'when update_default_security_tracked_contexts_worker FF is enabled' do
         before do
-          stub_feature_flags(vulnerabilities_across_contexts: true)
+          stub_feature_flags(update_default_security_tracked_contexts_worker: true)
         end
 
         context 'when project exists' do
@@ -89,9 +89,9 @@ RSpec.describe Security::ProjectTrackedContexts::UpdateDefaultContextWorker, fea
         end
       end
 
-      context 'when vulnerabilities_across_contexts FF is disabled' do
+      context 'when update_default_security_tracked_contexts_worker FF is disabled' do
         before do
-          stub_feature_flags(vulnerabilities_across_contexts: false)
+          stub_feature_flags(update_default_security_tracked_contexts_worker: false)
         end
 
         context 'when project exists' do
