@@ -14,6 +14,8 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
 
   let!(:organization) { organizations_table.create!(name: 'Organization', path: 'organization') }
   let!(:premium_plan) { plans_table.create!(name: 'premium', title: 'Premium', plan_name_uid: 5) }
+  let!(:silver_plan) { plans_table.create!(name: 'silver', title: 'Silver', plan_name_uid: 4) }
+  let!(:premium_trial_plan) { plans_table.create!(name: 'premium_trial', title: 'Premium Trial', plan_name_uid: 6) }
   let!(:ultimate_plan) { plans_table.create!(name: 'ultimate', title: 'Ultimate', plan_name_uid: 7) }
   let!(:free_plan) { plans_table.create!(name: 'free', title: 'Free', plan_name_uid: 2) }
 
@@ -35,6 +37,15 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     ).tap { |ns| ns.update!(traversal_ids: [ns.id]) }
   end
 
+  let!(:silver_namespace) do
+    namespaces_table.create!(
+      name: 'silver-namespace',
+      path: 'silver-namespace',
+      type: 'Group',
+      organization_id: organization.id
+    ).tap { |ns| ns.update!(traversal_ids: [ns.id]) }
+  end
+
   let!(:free_namespace) do
     namespaces_table.create!(
       name: 'free-namespace',
@@ -42,16 +53,6 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
       type: 'Group',
       organization_id: organization.id
     ).tap { |ns| ns.update!(traversal_ids: [ns.id]) }
-  end
-
-  let!(:ultimate_subgroup) do
-    namespaces_table.create!(
-      name: 'ultimate-subgroup',
-      path: 'ultimate-subgroup',
-      type: 'Group',
-      parent_id: ultimate_namespace.id,
-      organization_id: organization.id
-    ).tap { |ns| ns.update!(traversal_ids: [ultimate_namespace.id, ns.id]) }
   end
 
   let!(:premium_subgroup) do
@@ -76,6 +77,14 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     gitlab_subscriptions_table.create!(
       namespace_id: premium_namespace.id,
       hosted_plan_id: premium_plan.id,
+      seats: 10
+    )
+  end
+
+  let!(:silver_subscription) do
+    gitlab_subscriptions_table.create!(
+      namespace_id: silver_namespace.id,
+      hosted_plan_id: silver_plan.id,
       seats: 10
     )
   end
@@ -108,22 +117,22 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     )
   end
 
+  let!(:silver_project) do
+    projects_table.create!(
+      name: 'silver-project',
+      path: 'silver-project',
+      namespace_id: silver_namespace.id,
+      project_namespace_id: silver_namespace.id,
+      organization_id: organization.id
+    )
+  end
+
   let!(:free_project) do
     projects_table.create!(
       name: 'free-project',
       path: 'free-project',
       namespace_id: free_namespace.id,
       project_namespace_id: free_namespace.id,
-      organization_id: organization.id
-    )
-  end
-
-  let!(:ultimate_subgroup_project) do
-    projects_table.create!(
-      name: 'ultimate-subgroup-project',
-      path: 'ultimate-subgroup-project',
-      namespace_id: ultimate_subgroup.id,
-      project_namespace_id: ultimate_subgroup.id,
       organization_id: organization.id
     )
   end
@@ -158,30 +167,20 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     )
   end
 
+  let!(:policy_bot_with_silver_project) do
+    users_table.create!(
+      username: 'policy-bot-silver',
+      email: 'policy-bot-silver@example.com',
+      user_type: HasUserType::USER_TYPES[:security_policy_bot],
+      projects_limit: 0,
+      organization_id: organization.id
+    )
+  end
+
   let!(:policy_bot_with_free_project) do
     users_table.create!(
       username: 'policy-bot-free',
       email: 'policy-bot-free@example.com',
-      user_type: HasUserType::USER_TYPES[:security_policy_bot],
-      projects_limit: 0,
-      organization_id: organization.id
-    )
-  end
-
-  let!(:policy_bot_with_ultimate_and_free_projects) do
-    users_table.create!(
-      username: 'policy-bot-ultimate-and-free',
-      email: 'policy-bot-ultimate-and-free@example.com',
-      user_type: HasUserType::USER_TYPES[:security_policy_bot],
-      projects_limit: 0,
-      organization_id: organization.id
-    )
-  end
-
-  let!(:policy_bot_with_ultimate_subgroup_project) do
-    users_table.create!(
-      username: 'policy-bot-ultimate-subgroup',
-      email: 'policy-bot-ultimate-subgroup@example.com',
       user_type: HasUserType::USER_TYPES[:security_policy_bot],
       projects_limit: 0,
       organization_id: organization.id
@@ -230,6 +229,16 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     )
 
     members_table.create!(
+      user_id: policy_bot_with_silver_project.id,
+      source_id: silver_project.id,
+      source_type: 'Project',
+      type: 'ProjectMember',
+      access_level: Gitlab::Access::GUEST,
+      notification_level: NotificationSetting.levels[:global],
+      member_namespace_id: silver_project.namespace_id
+    )
+
+    members_table.create!(
       user_id: policy_bot_with_free_project.id,
       source_id: free_project.id,
       source_type: 'Project',
@@ -237,35 +246,6 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
       access_level: Gitlab::Access::GUEST,
       notification_level: NotificationSetting.levels[:global],
       member_namespace_id: free_project.namespace_id
-    )
-
-    members_table.create!(
-      user_id: policy_bot_with_ultimate_and_free_projects.id,
-      source_id: ultimate_project.id,
-      source_type: 'Project',
-      type: 'ProjectMember',
-      access_level: Gitlab::Access::GUEST,
-      notification_level: NotificationSetting.levels[:global],
-      member_namespace_id: ultimate_project.namespace_id
-    )
-    members_table.create!(
-      user_id: policy_bot_with_ultimate_and_free_projects.id,
-      source_id: free_project.id,
-      source_type: 'Project',
-      type: 'ProjectMember',
-      access_level: Gitlab::Access::GUEST,
-      notification_level: NotificationSetting.levels[:global],
-      member_namespace_id: free_project.namespace_id
-    )
-
-    members_table.create!(
-      user_id: policy_bot_with_ultimate_subgroup_project.id,
-      source_id: ultimate_subgroup_project.id,
-      source_type: 'Project',
-      type: 'ProjectMember',
-      access_level: Gitlab::Access::GUEST,
-      notification_level: NotificationSetting.levels[:global],
-      member_namespace_id: ultimate_subgroup_project.namespace_id
     )
 
     members_table.create!(
@@ -291,10 +271,14 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     ).perform
   end
 
-  it 'deletes security policy bots in free and premium projects' do
+  it 'deletes security policy bots in premium projects' do
     expect { perform_migration }
-      .to change { users_table.where(id: policy_bot_with_free_project.id).count }.from(1).to(0)
-      .and change { users_table.where(id: policy_bot_with_premium_project.id).count }.from(1).to(0)
+      .to change { users_table.where(id: policy_bot_with_premium_project.id).count }.from(1).to(0)
+  end
+
+  it 'deletes security policy bots in silver projects (legacy premium)' do
+    expect { perform_migration }
+      .to change { users_table.where(id: policy_bot_with_silver_project.id).count }.from(1).to(0)
   end
 
   it 'deletes security policy bots in projects under premium subgroups' do
@@ -307,14 +291,9 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
       .not_to change { users_table.where(id: policy_bot_with_ultimate_project.id).count }
   end
 
-  it 'keeps security policy bots in projects under ultimate subgroups' do
+  it 'keeps security policy bots in free projects' do
     expect { perform_migration }
-      .not_to change { users_table.where(id: policy_bot_with_ultimate_subgroup_project.id).count }
-  end
-
-  it 'keeps security policy bots that have at least one ultimate project' do
-    expect { perform_migration }
-      .not_to change { users_table.where(id: policy_bot_with_ultimate_and_free_projects.id).count }
+      .not_to change { users_table.where(id: policy_bot_with_free_project.id).count }
   end
 
   it 'does not delete regular users' do
@@ -326,8 +305,12 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     expect(Gitlab::BackgroundMigration::Logger).to receive(:info).with(
       hash_including(
         message: 'Deleted security policy bot users',
-        count: a_value > 0,
-        user_ids: array_including(policy_bot_with_free_project.id)
+        count: 3,
+        user_ids: array_including(
+          policy_bot_with_premium_project.id,
+          policy_bot_with_silver_project.id,
+          policy_bot_with_premium_subgroup_project.id
+        )
       )
     )
 
@@ -337,8 +320,8 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
   context 'when no users are deleted' do
     before do
       users_table.where(id: [
-        policy_bot_with_free_project.id,
         policy_bot_with_premium_project.id,
+        policy_bot_with_silver_project.id,
         policy_bot_with_premium_subgroup_project.id
       ]).delete_all
     end
