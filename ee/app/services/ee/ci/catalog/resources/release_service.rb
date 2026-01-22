@@ -6,6 +6,7 @@ module EE
       module Resources
         module ReleaseService
           extend ::Gitlab::Utils::Override
+          include ::Gitlab::InternalEventsTracking
 
           private
 
@@ -17,7 +18,17 @@ module EE
             return if projects_allowlist.blank?
             return if project_in_allowlist?(projects_allowlist)
 
+            track_publish_blocked
             errors << 'The project is not authorized to publish to the CI/CD catalog'
+          end
+
+          def track_publish_blocked
+            track_internal_event(
+              'ci_catalog_publish_blocked_by_allowlist',
+              user: user,
+              project: project,
+              namespace: project.namespace
+            )
           end
 
           def project_in_allowlist?(allowlist)
