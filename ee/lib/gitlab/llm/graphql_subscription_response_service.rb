@@ -20,7 +20,6 @@ module Gitlab
             user: user,
             content: response_modifier.response_body,
             errors: response_modifier.errors,
-            error_code: response_modifier.error_code,
             extras: response_modifier.extras,
             context: AiMessageContext.new(resource: resource)
           )
