@@ -66,8 +66,7 @@ module Resolvers
           created_before: end_date,
           project_id: project_ids,
           report_type: report_type,
-          severity: args[:severity],
-          exclude_no_longer_detected: Feature.enabled?(:new_security_dashboard_exclude_no_longer_detected, vulnerable)
+          severity: args[:severity]
         }.compact
       end
 

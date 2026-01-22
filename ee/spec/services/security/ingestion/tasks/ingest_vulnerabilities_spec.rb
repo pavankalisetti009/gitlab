@@ -87,5 +87,65 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities, feature_catego
         ingest_vulnerabilities
       end
     end
+
+    context 'when non-resolved vulnerability has a stale detected: false transition' do
+      let!(:stale_detection_transition) do
+        create(:vulnerability_detection_transition,
+          finding: existing_vulnerability.finding,
+          project: existing_vulnerability.project,
+          detected: false
+        )
+      end
+
+      it 'creates a detection transition with detected: true', :aggregate_failures do
+        finding_ids = existing_vulnerability.findings.pluck(:id)
+
+        expect { ingest_vulnerabilities }.to change {
+          Vulnerabilities::DetectionTransition.where(vulnerability_occurrence_id: finding_ids).count
+        }.by(1)
+
+        latest_transition = Vulnerabilities::DetectionTransition
+          .where(vulnerability_occurrence_id: finding_ids)
+          .order(id: :desc)
+          .first
+        expect(latest_transition.detected).to be(true)
+      end
+
+      it 'does not change the state of non-resolved vulnerabilities' do
+        expect { ingest_vulnerabilities }.not_to change { existing_vulnerability.reload.state }.from('detected')
+      end
+    end
+
+    context 'when non-resolved vulnerability does not have a detected: false transition' do
+      it 'does not create detection transitions for vulnerabilities without stale transitions' do
+        finding_ids = existing_vulnerability.findings.pluck(:id)
+
+        expect { ingest_vulnerabilities }.not_to change {
+          Vulnerabilities::DetectionTransition.where(vulnerability_occurrence_id: finding_ids).count
+        }
+      end
+    end
+
+    context 'when new_security_dashboard_exclude_no_longer_detected is disabled' do
+      before do
+        stub_feature_flags(new_security_dashboard_exclude_no_longer_detected: false)
+      end
+
+      let!(:stale_detection_transition) do
+        create(:vulnerability_detection_transition,
+          finding: existing_vulnerability.finding,
+          project: existing_vulnerability.project,
+          detected: false
+        )
+      end
+
+      it 'does not create detection transitions for stale vulnerabilities' do
+        finding_ids = existing_vulnerability.findings.pluck(:id)
+
+        expect { ingest_vulnerabilities }.not_to change {
+          Vulnerabilities::DetectionTransition.where(vulnerability_occurrence_id: finding_ids).count
+        }
+      end
+    end
   end
 end

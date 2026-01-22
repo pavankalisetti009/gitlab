@@ -41879,6 +41879,8 @@ CREATE INDEX idx_vr_cleanup_policies_on_next_run_at_when_runnable ON virtual_reg
 
 CREATE INDEX idx_vreg_container_reg_upst_on_group ON virtual_registries_container_registry_upstreams USING btree (group_id);
 
+CREATE INDEX idx_vuln_detection_transitions_on_occurrence_id_detected_id ON vulnerability_detection_transitions USING btree (vulnerability_occurrence_id, detected, id);
+
 CREATE INDEX idx_vuln_flip_guards_on_project_and_finding_id ON vulnerability_flip_guards USING btree (project_id, vulnerability_finding_id);
 
 CREATE INDEX idx_vuln_reads_for_filtering ON vulnerability_reads USING btree (project_id, state, dismissal_reason, severity DESC, vulnerability_id DESC NULLS LAST);
@@ -46634,8 +46636,6 @@ CREATE INDEX index_vulnerability_archived_records_on_project_id ON ONLY vulnerab
 CREATE UNIQUE INDEX index_vulnerability_archived_records_on_unique_attributes ON ONLY vulnerability_archived_records USING btree (vulnerability_identifier, date);
 
 CREATE UNIQUE INDEX index_vulnerability_archives_on_project_id_and_date ON ONLY vulnerability_archives USING btree (project_id, date);
-
-CREATE INDEX index_vulnerability_detection_transitions_on_finding_id ON vulnerability_detection_transitions USING btree (vulnerability_occurrence_id);
 
 CREATE INDEX index_vulnerability_detection_transitions_on_project_id ON vulnerability_detection_transitions USING btree (project_id);
 

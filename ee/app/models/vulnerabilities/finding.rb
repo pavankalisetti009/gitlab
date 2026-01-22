@@ -218,6 +218,26 @@ module Vulnerabilities
       includes(:detection_transitions).where(detection_transitions: { id: last_detection_transition })
     end
 
+    scope :with_stale_detection_transition, -> do
+      where(
+        'EXISTS (?)',
+        Vulnerabilities::DetectionTransition
+          .select(1)
+          .where('vulnerability_detection_transitions.vulnerability_occurrence_id = vulnerability_occurrences.id')
+          .where('vulnerability_detection_transitions.id = (
+            SELECT id FROM vulnerability_detection_transitions latest_transition
+            WHERE latest_transition.vulnerability_occurrence_id = vulnerability_detection_transitions.vulnerability_occurrence_id
+            ORDER BY id DESC LIMIT 1
+          )')
+          .where(detected: false)
+      )
+    end
+
+    def self.by_vulnerability_with_stale_detection_transition(vulnerability_ids)
+      by_vulnerability(vulnerability_ids)
+        .with_stale_detection_transition
+    end
+
     scope :with_fix_available, ->(fix_available) do
       remediation = ::Vulnerabilities::FindingRemediation.arel_table
       solution_query = where(fix_available ? 'vulnerability_occurrences.solution IS NOT NULL' : 'vulnerability_occurrences.solution IS NULL')
