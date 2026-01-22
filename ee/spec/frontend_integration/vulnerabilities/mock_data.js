@@ -6,6 +6,7 @@ export const mockVulnerability = {
   created_at: new Date(2020, 0, 1).toISOString(),
   severity: 'medium',
   state: 'detected',
+  reportType: 'secret_detection',
   pipeline: {
     id: 2,
     created_at: new Date(2020, 0, 1).toISOString(),
