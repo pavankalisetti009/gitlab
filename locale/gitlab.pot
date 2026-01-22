@@ -20526,7 +20526,7 @@ msgstr ""
 msgid "Copy %{protocol} clone URL"
 msgstr ""
 
-msgid "Copy Chat Session ID (%{id})"
+msgid "Copy Chat Session ID: %{id}"
 msgstr ""
 
 msgid "Copy ID"
