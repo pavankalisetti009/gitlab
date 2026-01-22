@@ -6,7 +6,7 @@ query issueParents(
   $iidStartsWith: String
   $types: [IssueType!]
 ) {
-  workspace: group(fullPath: $fullPath) {
+  namespace: group(fullPath: $fullPath) {
     id
     attributes: workItems(
       search: $title

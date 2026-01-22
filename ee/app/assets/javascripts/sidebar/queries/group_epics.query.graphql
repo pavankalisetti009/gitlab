@@ -7,7 +7,7 @@ query issueEpics(
   $in: [IssuableSearchableField!]
   $iidStartsWith: String
 ) {
-  workspace: group(fullPath: $fullPath) {
+  namespace: group(fullPath: $fullPath) {
     id
     attributes: epics(
       search: $title

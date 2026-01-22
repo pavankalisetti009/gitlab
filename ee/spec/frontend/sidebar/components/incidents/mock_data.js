@@ -14,7 +14,7 @@ export const mockEscalationPolicy2 = {
 
 export const mockEscalationPoliciesResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Project',
       id: 'gid://gitlab/Project/1',
       attributes: {
@@ -37,7 +37,7 @@ export const noParentUpdatedResponse = {
 
 export const mockCurrentEscalationPolicyResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Project',
       id: 'gid://gitlab/Project/1',
       issuable: {
@@ -52,7 +52,7 @@ export const mockCurrentEscalationPolicyResponse = {
 
 export const mockNullEscalationPolicyResponse = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Project',
       id: 'gid://gitlab/Project/1',
       issuable: {

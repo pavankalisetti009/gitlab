@@ -70,7 +70,7 @@ export default {
       skip() {
         return !this.iid;
       },
-      update: (data) => data.workspace?.issuable,
+      update: (data) => data.namespace?.issuable,
       error(error) {
         createAlert({
           message: sprintf(HEALTH_STATUS_I18N_FETCH_ERROR, { issuableType: this.issuableType }),

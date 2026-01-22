@@ -97,12 +97,10 @@ export default {
         };
       },
       update(data) {
-        return data.workspace?.issuable || data.namespace?.issuable || {};
+        return data.namespace?.issuable || {};
       },
       result({ data }) {
-        this.hasWorkItemParent =
-          (data?.workspace?.issuable?.hasParent || data?.namespace?.issuable?.hasParent) &&
-          this.showWorkItemEpics;
+        this.hasWorkItemParent = data?.namespace?.issuable?.hasParent && this.showWorkItemEpics;
       },
       error(error) {
         createAlert({
@@ -124,7 +122,7 @@ export default {
         };
       },
       update(data) {
-        return data.workspace?.workItems?.nodes[0] || {};
+        return data?.workItem || {};
       },
       skip() {
         return !this.hasWorkItemParent;

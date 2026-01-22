@@ -101,7 +101,7 @@ export const mockGroupIterationsResponse = {
 
 export const mockGroupEpicsResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       attributes: {
         nodes: [mockEpic1, mockEpic2],
@@ -114,7 +114,7 @@ export const mockGroupEpicsResponse = {
 
 export const mockGroupWorkItemEpicsResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       attributes: {
         nodes: [mockWorkItemEpic1, mockWorkItemEpic2],
@@ -127,7 +127,7 @@ export const mockGroupWorkItemEpicsResponse = {
 
 export const emptyGroupEpicsResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       attributes: {
         nodes: [],
@@ -170,7 +170,7 @@ export const mockCurrentIterationResponse2 = {
 
 export const noCurrentEpicResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       issuable: {
         id: mockIssueId,
@@ -186,7 +186,7 @@ export const noCurrentEpicResponse = {
 
 export const currentEpicResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       issuable: {
         id: mockIssueId,
@@ -202,7 +202,7 @@ export const currentEpicResponse = {
 
 export const currentEpicHasParentResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       issuable: {
         id: mockIssueId,
@@ -255,7 +255,7 @@ export const noParentUpdatedResponse = {
 
 export const mockNoPermissionEpicResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       issuable: {
         id: mockIssueId,
@@ -351,7 +351,7 @@ export const mockWorkItemEpicMutationResponse = {
 
 export const issueNoWeightResponse = () => ({
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       issuable: { id: mockIssueId, weight: null, __typename: 'Issue' },
       __typename: 'Project',
@@ -361,7 +361,7 @@ export const issueNoWeightResponse = () => ({
 
 export const issueWeightResponse = (weight = 0) => ({
   data: {
-    workspace: {
+    namespace: {
       id: '1',
       issuable: { id: mockIssueId, weight, __typename: 'Issue' },
       __typename: 'Project',
@@ -415,7 +415,7 @@ export const getHealthStatusMutationResponse = ({ healthStatus = null }) => {
 export const getHealthStatusQueryResponse = ({ state = 'opened', healthStatus = null }) => {
   return {
     data: {
-      workspace: {
+      namespace: {
         id: '1',
         issuable: { id: 'gid://gitlab/Issue/1', state, healthStatus, __typename: 'Issue' },
         __typename: 'Project',
