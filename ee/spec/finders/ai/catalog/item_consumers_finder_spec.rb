@@ -371,4 +371,37 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
       it { is_expected.to be_empty }
     end
   end
+
+  context 'when configurable_for_project_id is provided' do
+    let_it_be(:configurable_for_project) { create(:project, group: parent_group) }
+    let_it_be(:public_flow_from_other_project) { create(:ai_catalog_flow, public: true, project: project) }
+
+    let_it_be(:private_agent_owned_by_configurable_for_project) do
+      create(:ai_catalog_agent, public: false, project: configurable_for_project)
+    end
+
+    let_it_be(:public_flow_consumer) do
+      create(:ai_catalog_item_consumer, group: parent_group, item: public_flow_from_other_project)
+    end
+
+    let_it_be(:private_agent_consumer) do
+      create(:ai_catalog_item_consumer, group: parent_group, item: private_agent_owned_by_configurable_for_project)
+    end
+
+    let(:params) { { group_id: parent_group.id, configurable_for_project_id: configurable_for_project.id } }
+
+    it { is_expected.to contain_exactly(public_flow_consumer, private_agent_consumer) }
+
+    context 'when configurable project cannot access private items from other projects' do
+      let(:params) { { group_id: parent_group.id, configurable_for_project_id: project.id } }
+
+      it { is_expected.to contain_exactly(public_flow_consumer) }
+    end
+
+    context 'when item_types is provided' do
+      let(:params) { super().merge(item_types: %i[flow]) }
+
+      it { is_expected.to contain_exactly(public_flow_consumer) }
+    end
+  end
 end
