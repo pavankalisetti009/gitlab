@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
@@ -9,14 +9,16 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogFlow from 'ee/ai/catalog/pages/ai_catalog_flow.vue';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import { VERSION_PINNED, VERSION_PINNED_GROUP, VERSION_LATEST } from 'ee/ai/catalog/constants';
+import * as utils from 'ee/ai/catalog/utils';
 import {
   mockAiCatalogFlowResponse,
   mockAiCatalogFlowNullResponse,
   mockFlow,
-  mockFlowPinnedVersion,
-  mockFlowVersion,
   mockFlowConfigurationForProject,
   mockFlowConfigurationForGroup,
+  mockFlowVersion,
+  mockFlowPinnedVersion,
+  mockFlowGroupPinnedVersion,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -29,9 +31,16 @@ const RouterViewStub = {
   template: '<div />',
 };
 
+const aiCatalogFlowWithBothConfigs = {
+  ...mockFlow,
+  configurationForGroup: mockFlowConfigurationForGroup,
+  configurationForProject: mockFlowConfigurationForProject,
+};
+
 describe('AiCatalogFlow', () => {
   let wrapper;
   let mockApollo;
+
   const flowId = 1;
   const routeParams = { id: flowId };
 
@@ -159,11 +168,25 @@ describe('AiCatalogFlow', () => {
   });
 
   describe('when displaying different flow versions', () => {
+    let resolveVersionSpy;
+
+    beforeEach(() => {
+      resolveVersionSpy = jest
+        .spyOn(utils, 'resolveVersion')
+        .mockReturnValue({ ...mockFlowVersion, key: VERSION_LATEST });
+    });
+
+    afterEach(() => {
+      resolveVersionSpy.mockRestore();
+    });
+
     it('should show latest version when in the explore area', async () => {
       createComponent({
         provide: { isGlobal: true },
       });
       await waitForPromises();
+
+      expect(resolveVersionSpy).toHaveBeenCalledWith(mockFlow, true);
 
       const routerView = findRouterView();
       expect(routerView.props('version')).toMatchObject({
@@ -172,11 +195,23 @@ describe('AiCatalogFlow', () => {
       });
     });
 
-    it('should show pinned version when in the group area', async () => {
+    it('should show group pinned version when in the group area', async () => {
+      resolveVersionSpy.mockReturnValue({
+        ...mockFlowGroupPinnedVersion,
+        key: VERSION_PINNED_GROUP,
+      });
+
+      const aiCatalogFlow = {
+        ...mockFlow,
+        configurationForGroup: mockFlowConfigurationForGroup,
+      };
+
       createComponent({
-        provide: { groupId: 1, projectId: null },
+        provide: { groupId: '1', projectId: null },
       });
       await waitForPromises();
+
+      expect(resolveVersionSpy).toHaveBeenCalledWith(aiCatalogFlow, false);
 
       const routerView = findRouterView();
       expect(routerView.props('version')).toMatchObject({
@@ -185,16 +220,95 @@ describe('AiCatalogFlow', () => {
       });
     });
 
-    it('should show pinned version when in project area', async () => {
+    it('should show project pinned version when in project area', async () => {
+      resolveVersionSpy.mockReturnValue({
+        ...mockFlowPinnedVersion,
+        key: VERSION_PINNED,
+      });
+
+      const mockFlowBothConfigsHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiCatalogItem: aiCatalogFlowWithBothConfigs,
+        },
+      });
+
       createComponent({
-        provide: { projectId: 1, rootGroupId: '1' },
+        provide: { projectId: '1', rootGroupId: '1' },
+        flowQueryHandler: mockFlowBothConfigsHandler,
       });
       await waitForPromises();
+
+      expect(resolveVersionSpy).toHaveBeenCalledWith(aiCatalogFlowWithBothConfigs, false);
 
       const routerView = findRouterView();
       expect(routerView.props('version')).toMatchObject({
         isUpdateAvailable: true,
         activeVersionKey: VERSION_PINNED,
+      });
+    });
+
+    it('should show group pinned version when in the project area without a project configuration', async () => {
+      resolveVersionSpy.mockReturnValue({
+        ...mockFlowGroupPinnedVersion,
+        key: VERSION_PINNED_GROUP,
+      });
+
+      const aiCatalogItem = {
+        ...mockFlow,
+        configurationForProject: null,
+        configurationForGroup: mockFlowConfigurationForGroup,
+      };
+
+      const mockFlowWithGroupConfigOnlyHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiCatalogItem,
+        },
+      });
+
+      createComponent({
+        provide: { groupId: '1', projectId: '1', rootGroupId: '1' },
+        flowQueryHandler: mockFlowWithGroupConfigOnlyHandler,
+      });
+      await waitForPromises();
+
+      expect(resolveVersionSpy).toHaveBeenCalledWith(aiCatalogItem, false);
+
+      const routerView = findRouterView();
+      expect(routerView.props('version')).toMatchObject({
+        isUpdateAvailable: true,
+        activeVersionKey: VERSION_PINNED_GROUP,
+      });
+    });
+
+    it('should show latest version when in the project area without a group nor project configuration', async () => {
+      resolveVersionSpy.mockReturnValue({
+        ...mockFlowVersion,
+        key: VERSION_LATEST,
+      });
+
+      const aiCatalogItem = {
+        ...mockFlow,
+        configurationForProject: null,
+      };
+
+      const mockFlowWithNoConfigHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiCatalogItem,
+        },
+      });
+
+      createComponent({
+        provide: { groupId: '1', projectId: '1' },
+        flowQueryHandler: mockFlowWithNoConfigHandler,
+      });
+      await waitForPromises();
+
+      expect(resolveVersionSpy).toHaveBeenCalledWith(aiCatalogItem, false);
+
+      const routerView = findRouterView();
+      expect(routerView.props('version')).toMatchObject({
+        isUpdateAvailable: false,
+        activeVersionKey: VERSION_LATEST,
       });
     });
   });
@@ -212,113 +326,11 @@ describe('AiCatalogFlow', () => {
       createComponent({
         flowQueryHandler: jest.fn().mockResolvedValue(mockAgentResponse),
       });
+
       await waitForPromises();
 
       expect(findGlEmptyState().exists()).toBe(true);
       expect(findRouterView().exists()).toBe(false);
-    });
-  });
-
-  describe('version update behaviour', () => {
-    const mockHandlerFactory = ({ configurationForProject = {}, permission = {} }) => {
-      return jest.fn().mockResolvedValue({
-        data: {
-          aiCatalogItem: {
-            ...mockFlow,
-            configurationForProject: {
-              ...mockFlowConfigurationForProject,
-              ...configurationForProject,
-              userPermissions: {
-                ...(configurationForProject.userPermissions ??
-                  mockFlowConfigurationForProject.userPermissions),
-                ...permission,
-              },
-            },
-          },
-        },
-      });
-    };
-
-    describe('when viewing explore and group areas', () => {
-      const mockHandler = mockHandlerFactory({
-        permission: {
-          adminAiCatalogItemConsumer: true, // negative test to ensure that despite being allowed to, the update is still not shown
-        },
-      });
-
-      it('does not show update alert when in explore area', async () => {
-        createComponent({
-          flowQueryHandler: mockHandler,
-          provide: { isGlobal: true },
-        });
-        await waitForPromises();
-        const routerView = findRouterView();
-        expect(routerView.props('version').isUpdateAvailable).toBe(false);
-        expect(routerView.props('version').activeVersionKey).toBe(VERSION_LATEST);
-      });
-
-      it('does not show update alert when in group area', async () => {
-        createComponent({
-          provide: { isGlobal: false, projectId: null },
-        });
-        await waitForPromises();
-        const routerView = findRouterView();
-        expect(routerView.props('version').isUpdateAvailable).toBe(false);
-        expect(routerView.props('version').activeVersionKey).toBe(VERSION_LATEST);
-      });
-    });
-
-    describe('when viewing project area', () => {
-      beforeEach(() => {});
-
-      it('should show update alert when a new version is available and user has permissions', async () => {
-        const mockHandler = mockHandlerFactory({
-          permission: { adminAiCatalogItemConsumer: true },
-        });
-        createComponent({
-          flowQueryHandler: mockHandler,
-          provide: { projectId: 1 },
-        });
-        await waitForPromises();
-        const routerView = findRouterView();
-        expect(routerView.props('version').isUpdateAvailable).toBe(true);
-        expect(routerView.props('version').activeVersionKey).toBe(VERSION_PINNED);
-      });
-
-      it('should not show update alert when a new version is available but user does not have permissions', async () => {
-        const mockHandler = mockHandlerFactory({
-          permission: { adminAiCatalogItemConsumer: false },
-        });
-        createComponent({
-          flowQueryHandler: mockHandler,
-          provide: { projectId: 1 },
-        });
-        await waitForPromises();
-        const routerView = findRouterView();
-        expect(routerView.props('version').isUpdateAvailable).toBe(false);
-        expect(routerView.props('version').activeVersionKey).toBe(VERSION_PINNED);
-      });
-
-      it('should not show update alert when no new version is available', async () => {
-        const mockHandler = mockHandlerFactory({
-          configurationForProject: {
-            pinnedItemVersion: {
-              ...mockFlowPinnedVersion,
-              id: 'asd',
-              humanVersionName: mockFlowVersion.humanVersionName, // Same as latest
-            },
-          },
-          permission: { adminAiCatalogItemConsumer: true },
-        });
-        createComponent({
-          flowQueryHandler: mockHandler,
-          provide: { projectId: 1 },
-        });
-        await waitForPromises();
-        const routerView = findRouterView();
-        expect(routerView.props('version').isUpdateAvailable).toBe(false);
-        expect(routerView.props('version').activeVersionKey).toBe(VERSION_PINNED);
-      });
     });
   });
 
@@ -347,6 +359,7 @@ describe('AiCatalogFlow', () => {
           flowQueryHandler: mockFlowGroupConfigQueryHandler,
         });
         await waitForPromises();
+        await nextTick();
       });
 
       it(`passes ${hasParentConsumer} hasParentConsumer to router view`, () => {
