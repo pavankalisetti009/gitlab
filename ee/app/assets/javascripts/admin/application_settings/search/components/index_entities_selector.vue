@@ -12,6 +12,7 @@ import {
 } from '../constants';
 
 export default {
+  name: 'IndexEntitiesSelector',
   components: {
     GlAlert,
     GlCollapsibleListbox,
