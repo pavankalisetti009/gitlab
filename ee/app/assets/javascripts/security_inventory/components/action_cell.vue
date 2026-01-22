@@ -3,11 +3,7 @@ import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlDropdownDivider } fro
 import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { isSubGroup } from '../utils';
-import {
-  PROJECT_SECURITY_CONFIGURATION_PATH,
-  PROJECT_VULNERABILITY_REPORT_PATH,
-  GROUP_VULNERABILITY_REPORT_PATH,
-} from '../constants';
+import { PROJECT_VULNERABILITY_REPORT_PATH, GROUP_VULNERABILITY_REPORT_PATH } from '../constants';
 
 export default {
   components: {
@@ -30,9 +26,6 @@ export default {
       return isSubGroup(item)
         ? `${item.webUrl}${GROUP_VULNERABILITY_REPORT_PATH}`
         : `${item.webUrl}${PROJECT_VULNERABILITY_REPORT_PATH}`;
-    },
-    toolCoveragePath(item) {
-      return item?.webUrl ? `${item.webUrl}${PROJECT_SECURITY_CONFIGURATION_PATH}` : '#';
     },
     firstSectionActions(item) {
       const isGroup = isSubGroup(item);
@@ -69,8 +62,8 @@ export default {
 
       if (!isGroup) {
         items.push({
-          text: s__('SecurityInventory|Manage tool coverage'),
-          href: this.toolCoveragePath(item),
+          text: s__('SecurityInventory|Manage security configuration'),
+          action: () => this.$emit('openSecurityConfigurationDrawer', item),
         });
         if (this.glFeatures.securityContextLabels && this.canManageAttributes) {
           items.push({

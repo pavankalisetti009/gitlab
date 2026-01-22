@@ -11,6 +11,7 @@ module Groups
         push_frontend_feature_flag(:security_context_labels, @group.root_ancestor)
         push_frontend_feature_flag(:security_inventory_filtering, @group.root_ancestor)
         push_frontend_feature_flag(:security_scan_profiles_feature, @group.root_ancestor)
+        push_licensed_feature(:security_attributes, @group.root_ancestor)
       end
 
       feature_category :security_asset_inventories

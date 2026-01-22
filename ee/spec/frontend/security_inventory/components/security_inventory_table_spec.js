@@ -47,15 +47,6 @@ describe('SecurityInventoryTable', () => {
           glFeatures: { securityContextLabels: true, securityScanProfilesFeature: false },
           ...provide,
         },
-        mocks: {
-          $apollo: {
-            queries: {
-              group: {
-                loading: false,
-              },
-            },
-          },
-        },
       });
 
       return wrapper;
@@ -208,7 +199,15 @@ describe('SecurityInventoryTable', () => {
   describe('bulkEdit method with action types', () => {
     beforeEach(() => {
       createFullComponent({
-        stubs: { GlTableLite: false },
+        stubs: {
+          GlTableLite: false,
+          BulkAttributesUpdateDrawer: stubComponent({
+            methods: { openDrawer: jest.fn() },
+          }),
+          BulkScannersUpdateDrawer: stubComponent({
+            methods: { openDrawer: jest.fn() },
+          }),
+        },
         provide: {
           glFeatures: { securityContextLabels: true, securityScanProfilesFeature: true },
           canApplyProfiles: true,
@@ -222,6 +221,8 @@ describe('SecurityInventoryTable', () => {
     });
 
     it('opens attributes drawer when called with attributes action type', async () => {
+      await nextTick(); // Wait for drawer to be rendered after selection
+
       openDrawerSpy = jest.spyOn(wrapper.vm.$refs.bulkAttributesDrawer, 'openDrawer');
 
       wrapper.vm.bulkEdit(ACTION_TYPE_BULK_EDIT_ATTRIBUTES);
@@ -237,6 +238,34 @@ describe('SecurityInventoryTable', () => {
       await nextTick();
 
       expect(openDrawerSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('openSecurityConfigurationDrawer method', () => {
+    let configDrawerSpy;
+
+    beforeEach(() => {
+      createFullComponent({
+        stubs: {
+          GlTableLite: false,
+          ProjectSecurityConfigurationDrawer: stubComponent({
+            methods: { openDrawer: jest.fn() },
+          }),
+        },
+      });
+    });
+
+    it('opens security configuration drawer when called', async () => {
+      wrapper.vm.openSecurityConfigurationDrawer(mockProject);
+      await nextTick();
+
+      configDrawerSpy = jest.spyOn(wrapper.vm.$refs.securityConfigurationDrawer, 'openDrawer');
+
+      wrapper.vm.openSecurityConfigurationDrawer(mockProject);
+      await nextTick();
+
+      expect(wrapper.vm.selectedProjectForConfiguration).toStrictEqual(mockProject);
+      expect(configDrawerSpy).toHaveBeenCalled();
     });
   });
 });

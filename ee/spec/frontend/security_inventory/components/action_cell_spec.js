@@ -3,7 +3,6 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import { isSubGroup } from 'ee/security_inventory/utils';
 import {
-  PROJECT_SECURITY_CONFIGURATION_PATH,
   PROJECT_VULNERABILITY_REPORT_PATH,
   GROUP_VULNERABILITY_REPORT_PATH,
 } from 'ee/security_inventory/constants';
@@ -34,8 +33,6 @@ describe('ActionCell', () => {
 
   const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
   const findDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
-
-  const securityConfigPath = (item) => `${item.webUrl}${PROJECT_SECURITY_CONFIGURATION_PATH}`;
 
   const vulnerabilityPath = (item) =>
     isSubGroup(item)
@@ -73,10 +70,23 @@ describe('ActionCell', () => {
 
       if (showToolCoverage) {
         expect(items[2].props('item')).toMatchObject({
-          text: 'Manage tool coverage',
-          href: securityConfigPath(item),
+          text: 'Manage security configuration',
         });
+        expect(items[2].props('item').action).toBeDefined();
       }
+    });
+  });
+
+  describe('for project items', () => {
+    beforeEach(() => {
+      createComponent({ item: mockProject });
+    });
+
+    it('security configuration action emits "openSecurityConfigurationDrawer"', () => {
+      const items = findDropdownItems().wrappers;
+      items[2].props('item').action();
+
+      expect(wrapper.emitted('openSecurityConfigurationDrawer')).toEqual([[mockProject]]);
     });
   });
 
@@ -136,8 +146,8 @@ describe('ActionCell', () => {
   describe('available actions', () => {
     describe.each`
       type         | item           | securityScanProfilesFeature | securityContextLabels | expectedItems
-      ${'project'} | ${mockProject} | ${true}                     | ${true}               | ${['View project', 'View vulnerability report', 'Manage tool coverage', 'Edit security attributes']}
-      ${'project'} | ${mockProject} | ${true}                     | ${false}              | ${['View project', 'View vulnerability report', 'Manage tool coverage']}
+      ${'project'} | ${mockProject} | ${true}                     | ${true}               | ${['View project', 'View vulnerability report', 'Manage security configuration', 'Edit security attributes']}
+      ${'project'} | ${mockProject} | ${true}                     | ${false}              | ${['View project', 'View vulnerability report', 'Manage security configuration']}
       ${'group'}   | ${mockGroup}   | ${true}                     | ${true}               | ${['Manage security scanners for subgroup projects', 'View subgroup', 'View vulnerability report']}
       ${'group'}   | ${mockGroup}   | ${false}                    | ${true}               | ${['View subgroup', 'View vulnerability report']}
     `(
@@ -164,8 +174,8 @@ describe('ActionCell', () => {
 
     describe.each`
       type         | item           | canApplyProfiles | canManageAttributes | expectedItems
-      ${'project'} | ${mockProject} | ${true}          | ${true}             | ${['View project', 'View vulnerability report', 'Manage tool coverage', 'Edit security attributes']}
-      ${'project'} | ${mockProject} | ${true}          | ${false}            | ${['View project', 'View vulnerability report', 'Manage tool coverage']}
+      ${'project'} | ${mockProject} | ${true}          | ${true}             | ${['View project', 'View vulnerability report', 'Manage security configuration', 'Edit security attributes']}
+      ${'project'} | ${mockProject} | ${true}          | ${false}            | ${['View project', 'View vulnerability report', 'Manage security configuration']}
       ${'group'}   | ${mockGroup}   | ${true}          | ${true}             | ${['Manage security scanners for subgroup projects', 'View subgroup', 'View vulnerability report']}
       ${'group'}   | ${mockGroup}   | ${false}         | ${true}             | ${['View subgroup', 'View vulnerability report']}
     `(

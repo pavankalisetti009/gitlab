@@ -12,6 +12,7 @@ import ToolCoverageCell from './tool_coverage_cell.vue';
 import ActionCell from './action_cell.vue';
 import AttributesCell from './attributes_cell.vue';
 import CheckboxCell from './checkbox_cell.vue';
+import ProjectSecurityConfigurationDrawer from './project_security_configuration_drawer.vue';
 
 const SKELETON_ROW_COUNT = 3;
 
@@ -29,6 +30,7 @@ export default {
     ProjectAttributesUpdateDrawer,
     BulkAttributesUpdateDrawer,
     BulkScannersUpdateDrawer,
+    ProjectSecurityConfigurationDrawer,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -54,6 +56,7 @@ export default {
   data() {
     return {
       selectedProject: null,
+      selectedProjectForConfiguration: null,
       selectedItems: [],
     };
   },
@@ -151,6 +154,12 @@ export default {
       this.selectedItems = [item];
       this.bulkEdit(ACTION_TYPE_BULK_EDIT_SCANNERS);
     },
+    openSecurityConfigurationDrawer(item) {
+      this.selectedProjectForConfiguration = item;
+      this.$nextTick(() => {
+        this.$refs.securityConfigurationDrawer.openDrawer();
+      });
+    },
     refreshDashboard() {
       this.$emit('refetch');
     },
@@ -234,6 +243,7 @@ export default {
           :item="item"
           @openAttributesDrawer="openAttributesDrawer"
           @openScannersDrawer="openScannersDrawer"
+          @openSecurityConfigurationDrawer="openSecurityConfigurationDrawer"
         />
       </template>
     </gl-table-lite>
@@ -255,6 +265,13 @@ export default {
       ref="bulkScannersDrawer"
       :item-ids="selectedItems"
       @refetch="refreshDashboard"
+    />
+    <project-security-configuration-drawer
+      v-if="selectedProjectForConfiguration"
+      ref="securityConfigurationDrawer"
+      :project-id="selectedProjectForConfiguration.id"
+      :project-full-path="selectedProjectForConfiguration.fullPath"
+      :project-name="selectedProjectForConfiguration.name"
     />
   </div>
 </template>
