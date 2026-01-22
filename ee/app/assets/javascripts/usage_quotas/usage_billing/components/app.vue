@@ -234,6 +234,7 @@ export default {
         <purchase-commitment-card
           v-if="subscriptionUsage.purchaseCreditsPath"
           :has-commitment="poolIsAvailable"
+          :purchase-credits-path="subscriptionUsage.purchaseCreditsPath"
         />
       </section>
       <gl-tabs class="gl-mt-5" lazy>
