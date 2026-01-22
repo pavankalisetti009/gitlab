@@ -6,15 +6,15 @@ module Ai
 
     def automatic_error
       s_(
-        "DuoCodeReview|GitLab Duo Code Review was not automatically added because " \
-          "your account requires GitLab Duo Enterprise. Contact your administrator to upgrade your account."
+        "DuoCodeReview|GitLab Duo Code Review was not automatically added. " \
+          "Contact your administrator to verify your account has access to this feature."
       )
     end
 
     def manual_error
       s_(
         "DuoCodeReview|You don't have access to GitLab Duo Code Review. " \
-          "This feature requires GitLab Duo Enterprise. Contact your administrator to upgrade your account."
+          "Contact your administrator to verify your account has access to this feature."
       )
     end
 
