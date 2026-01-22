@@ -5,10 +5,10 @@ import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
-import groupIterationsQuery from 'ee/sidebar/queries/group_iterations.query.graphql';
-import WorkItemBulkEditIteration from 'ee_component/work_items/list/components/work_item_bulk_edit_iteration.vue';
-import { groupIterationsResponse } from 'jest/work_items/mock_data';
+import projectMilestonesQuery from '~/sidebar/queries/project_milestones.query.graphql';
+import WorkItemBulkEditMilestone from '~/work_items/list/components/work_item_bulk_edit_milestone.vue';
 import { BULK_EDIT_NO_VALUE } from '~/work_items/constants';
+import { projectMilestonesResponse } from 'ee_else_ce_jest/work_items/mock_data';
 
 jest.mock('~/alert');
 
@@ -16,51 +16,31 @@ Vue.use(VueApollo);
 
 const listResults = [
   {
-    options: [
-      {
-        text: 'Jul 6 – 19, 2022',
-        title: null,
-        value: 'gid://gitlab/Iteration/1194',
-      },
-    ],
-    text: 'Minima aut consequatur magnam vero doloremque accusamus maxime repellat voluptatem qui.',
+    expired: false,
+    text: 'v4.0',
+    value: 'gid://gitlab/Milestone/5',
   },
   {
-    options: [
-      {
-        text: 'Jul 6 – 19, 2022',
-        title: null,
-        value: 'gid://gitlab/Iteration/1185',
-      },
-    ],
-    text: 'Quo velit perspiciatis saepe aut omnis voluptas ab eos.',
-  },
-  {
-    options: [
-      {
-        text: 'Jun 22 – Jul 19, 2022',
-        title: null,
-        value: 'gid://gitlab/Iteration/1124',
-      },
-    ],
-    text: 'Quod voluptates quidem ea eaque eligendi ex corporis.',
+    expired: false,
+    text: 'v3.0',
+    value: 'gid://gitlab/Milestone/4',
   },
 ];
 
-describe('WorkItemBulkEditIteration component', () => {
+describe('WorkItemBulkEditMilestone component', () => {
   let wrapper;
 
-  const iterationSearchQueryHandler = jest.fn().mockResolvedValue(groupIterationsResponse);
+  const milestoneSearchQueryHandler = jest.fn().mockResolvedValue(projectMilestonesResponse);
 
   const createComponent = ({
     props = {},
-    searchQueryHandler = iterationSearchQueryHandler,
+    searchQueryHandler = milestoneSearchQueryHandler,
   } = {}) => {
-    wrapper = mount(WorkItemBulkEditIteration, {
-      apolloProvider: createMockApollo([[groupIterationsQuery, searchQueryHandler]]),
+    wrapper = mount(WorkItemBulkEditMilestone, {
+      apolloProvider: createMockApollo([[projectMilestonesQuery, searchQueryHandler]]),
       propsData: {
         fullPath: 'group/project',
-        isGroup: true,
+        isGroup: false,
         ...props,
       },
       stubs: {
@@ -82,24 +62,24 @@ describe('WorkItemBulkEditIteration component', () => {
   it('renders the form group', () => {
     createComponent();
 
-    expect(findFormGroup().attributes('label')).toBe('Iteration');
+    expect(findFormGroup().attributes('label')).toBe('Milestone');
   });
 
   it('renders a header and reset button', () => {
     createComponent();
 
     expect(findListbox().props()).toMatchObject({
-      headerText: 'Select iteration',
+      headerText: 'Select milestone',
       resetButtonLabel: 'Reset',
     });
   });
 
-  it('resets the selected iteration when the Reset button is clicked', async () => {
+  it('resets the selected milestone when the Reset button is clicked', async () => {
     createComponent();
 
-    await openListboxAndSelect('gid://gitlab/Iteration/1124');
+    await openListboxAndSelect('gid://gitlab/Milestone/5');
 
-    expect(findListbox().props('selected')).toBe('gid://gitlab/Iteration/1124');
+    expect(findListbox().props('selected')).toBe('gid://gitlab/Milestone/5');
 
     findListbox().vm.$emit('reset');
     await nextTick();
@@ -107,11 +87,11 @@ describe('WorkItemBulkEditIteration component', () => {
     expect(findListbox().props('selected')).toEqual([]);
   });
 
-  describe('iterations query', () => {
+  describe('milestones query', () => {
     it('is not called before dropdown is shown', () => {
       createComponent();
 
-      expect(iterationSearchQueryHandler).not.toHaveBeenCalled();
+      expect(milestoneSearchQueryHandler).not.toHaveBeenCalled();
     });
 
     it('is called when dropdown is shown', async () => {
@@ -120,7 +100,7 @@ describe('WorkItemBulkEditIteration component', () => {
       findListbox().vm.$emit('shown');
       await nextTick();
 
-      expect(iterationSearchQueryHandler).toHaveBeenCalled();
+      expect(milestoneSearchQueryHandler).toHaveBeenCalled();
     });
 
     it('emits an error when there is an error in the call', async () => {
@@ -132,13 +112,13 @@ describe('WorkItemBulkEditIteration component', () => {
       expect(createAlert).toHaveBeenCalledWith({
         captureError: true,
         error: new Error('error!'),
-        message: 'Failed to load iterations. Please try again.',
+        message: 'Failed to load milestones. Please try again.',
       });
     });
   });
 
   describe('listbox items', () => {
-    it('renders all iterations grouped by cadence and "No iteration" by default', async () => {
+    it('renders all milestones and "No milestone" by default', async () => {
       createComponent();
 
       findListbox().vm.$emit('shown');
@@ -146,11 +126,15 @@ describe('WorkItemBulkEditIteration component', () => {
 
       expect(findListbox().props('items')).toEqual([
         {
-          text: 'No iteration',
+          text: 'No milestone',
           textSrOnly: true,
-          options: [{ text: 'No iteration', value: BULK_EDIT_NO_VALUE }],
+          options: [{ text: 'No milestone', value: BULK_EDIT_NO_VALUE }],
         },
-        ...listResults,
+        {
+          text: 'All',
+          textSrOnly: true,
+          options: listResults,
+        },
       ]);
     });
 
@@ -163,9 +147,9 @@ describe('WorkItemBulkEditIteration component', () => {
         await waitForPromises();
 
         expect(findListbox().props('items')).toEqual(listResults);
-        expect(iterationSearchQueryHandler).toHaveBeenCalledWith(
+        expect(milestoneSearchQueryHandler).toHaveBeenCalledWith(
           expect.objectContaining({
-            title: '"search query"',
+            title: 'search query',
           }),
         );
       });
@@ -173,31 +157,31 @@ describe('WorkItemBulkEditIteration component', () => {
   });
 
   describe('listbox text', () => {
-    describe('with no selected iteration', () => {
-      it('renders "Select iteration"', () => {
+    describe('with no selected milestone', () => {
+      it('renders "Select milestone"', () => {
         createComponent();
 
-        expect(findListbox().props('toggleText')).toBe('Select iteration');
+        expect(findListbox().props('toggleText')).toBe('Select milestone');
       });
     });
 
-    describe('with selected iteration', () => {
-      it('renders the iteration cadence period', async () => {
+    describe('with selected milestone', () => {
+      it('renders the milestone title', async () => {
         createComponent();
 
-        await openListboxAndSelect('gid://gitlab/Iteration/1124');
+        await openListboxAndSelect('gid://gitlab/Milestone/5');
 
-        expect(findListbox().props('toggleText')).toBe('Jun 22 – Jul 19, 2022');
+        expect(findListbox().props('toggleText')).toBe('v4.0');
       });
     });
 
-    describe('with "No iteration"', () => {
-      it('renders "No iteration"', async () => {
+    describe('with "No milestone"', () => {
+      it('renders "No milestone"', async () => {
         createComponent();
 
         await openListboxAndSelect(BULK_EDIT_NO_VALUE);
 
-        expect(findListbox().props('toggleText')).toBe('No iteration');
+        expect(findListbox().props('toggleText')).toBe('No milestone');
       });
     });
   });

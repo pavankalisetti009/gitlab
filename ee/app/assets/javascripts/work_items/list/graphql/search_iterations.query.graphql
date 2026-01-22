@@ -1,5 +1,6 @@
 #import "./iteration.fragment.graphql"
 
+# @feature_category: portfolio_management
 query searchIterations(
   $fullPath: ID!
   $search: String
