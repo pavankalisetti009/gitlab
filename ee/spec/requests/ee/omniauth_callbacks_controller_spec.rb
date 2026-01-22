@@ -19,7 +19,7 @@ RSpec.describe OmniauthCallbacksController, feature_category: :system_access do
       with_omniauth_full_host { example.run }
     end
 
-    context 'when user is not registered yet', :clean_gitlab_redis_sessions do
+    context 'when user is not registered yet', :with_current_organization, :clean_gitlab_redis_sessions do
       let(:user) { build_stubbed(:user, email: 'new@example.com') }
       let(:path) { '/user/return/to/path' }
 
