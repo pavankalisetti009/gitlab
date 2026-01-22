@@ -43,4 +43,42 @@ RSpec.describe 'projects/settings/merge_requests/show', feature_category: :code_
       end
     end
   end
+
+  describe 'merge request title regex description' do
+    context 'when merge_request_title_regex feature flag is enabled' do
+      before do
+        stub_feature_flags(merge_request_title_regex: true)
+      end
+
+      it 'displays a placeholder if none is set' do
+        render
+
+        expect(rendered).to have_field(
+          'project[merge_request_title_regex_description]',
+          placeholder: 'Four letters, a dash, and 4-8 numbers followed by a space and any other text.'
+        )
+      end
+
+      it 'displays the user entered value' do
+        project.merge_request_title_regex = '\d+-.*'
+        project.merge_request_title_regex_description = 'Number prefix required'
+
+        render
+
+        expect(rendered).to have_field('project[merge_request_title_regex_description]', with: 'Number prefix required')
+      end
+    end
+
+    context 'when merge_request_title_regex feature flag is disabled' do
+      before do
+        stub_feature_flags(merge_request_title_regex: false)
+      end
+
+      it 'does not display the field' do
+        render
+
+        expect(rendered).not_to have_field('project[merge_request_title_regex_description]')
+      end
+    end
+  end
 end
