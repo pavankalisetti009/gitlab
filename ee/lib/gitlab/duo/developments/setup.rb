@@ -45,6 +45,8 @@ module Gitlab
             # Core already created, nothing more needed
           when 'duo_pro'
             create_add_on_purchase!(group, :code_suggestions, 'C-12345', "Duo Pro add-on added...")
+          when 'self_hosted_dap'
+            create_add_on_purchase!(group, :self_hosted_dap, 'C-27391', "Self Hosted DAP add-on added...")
           else
             # Default to enterprise
             create_add_on_purchase!(group, :duo_enterprise, 'C-98766', "Duo Enterprise add-on added...")
