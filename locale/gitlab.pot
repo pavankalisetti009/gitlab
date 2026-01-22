@@ -74928,6 +74928,9 @@ msgstr ""
 msgid "VirtualRegistries|Container upstreams"
 msgstr ""
 
+msgid "VirtualRegistries|Edit registry"
+msgstr ""
+
 msgid "VirtualRegistries|Virtual Registries"
 msgstr ""
 
@@ -75195,10 +75198,10 @@ msgstr ""
 msgid "VirtualRegistry|Failed to fetch cache entries."
 msgstr ""
 
-msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
+msgid "VirtualRegistry|Failed to fetch list of upstreams."
 msgstr ""
 
-msgid "VirtualRegistry|Failed to fetch list of upstreams."
+msgid "VirtualRegistry|Failed to fetch list of virtual registries."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to fetch upstream summary."
@@ -75354,6 +75357,9 @@ msgid "VirtualRegistry|The cache cleanup policy has completed successfully for %
 msgstr ""
 
 msgid "VirtualRegistry|The scheduled cache cleanup for %{group_link} could not be completed."
+msgstr ""
+
+msgid "VirtualRegistry|There are no container virtual registries yet"
 msgstr ""
 
 msgid "VirtualRegistry|There are no maven virtual registries yet"

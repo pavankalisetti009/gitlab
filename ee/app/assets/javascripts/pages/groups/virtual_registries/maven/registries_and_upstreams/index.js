@@ -3,6 +3,7 @@ import { initSimpleApp } from '~/helpers/init_simple_app_helper';
 import createDefaultClient from '~/lib/graphql';
 import MavenVirtualRegistriesAndUpstreamsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/registries_and_upstreams/index.vue';
 import i18n from 'ee/packages_and_registries/virtual_registries/pages/maven/i18n';
+import getRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registries.query.graphql';
 import getUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams.query.graphql';
 import getUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
 
@@ -25,6 +26,6 @@ initSimpleApp(
   {
     withApolloProvider: apolloProvider,
     name: 'MavenVirtualRegistriesAndUpstreamsRoot',
-    additionalProvide: { i18n, getUpstreamsQuery, getUpstreamsCountQuery },
+    additionalProvide: { i18n, getRegistriesQuery, getUpstreamsQuery, getUpstreamsCountQuery },
   },
 );

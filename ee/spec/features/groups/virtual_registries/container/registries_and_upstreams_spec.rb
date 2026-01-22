@@ -18,11 +18,18 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
   end
 
   shared_examples 'page is rendered', :js do
+    it 'passes accessibility tests' do
+      visit url
+      wait_for_requests
+      expect(page).to be_axe_clean
+    end
+
     it 'redirects to registries' do
       visit url
 
       expect(page).to have_title('Container registries')
       expect(page).to have_selector('h1', text: 'Container virtual registries')
+      expect(page).to have_current_path(/#{group_virtual_registries_container_registries_path(group)}/)
     end
 
     it 'directly visiting registries route renders registries' do
@@ -75,6 +82,19 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
       it_behaves_like 'container virtual registry is unavailable'
 
       it_behaves_like 'page is rendered'
+
+      context 'with existing virtual registry', :js do
+        it 'renders container virtual registries tab without actions to create/edit' do
+          visit url
+
+          expect(page).to have_selector('h1', text: 'Container virtual registries')
+
+          expect(page).not_to have_link('Edit', href:
+            edit_group_virtual_registries_container_registry_path(group, registry))
+          expect(page).to have_link(registry.name, href:
+            /#{group_virtual_registries_container_registry_path(group, registry)}/)
+        end
+      end
     end
 
     context 'when user is maintainer' do
@@ -85,6 +105,19 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
       it_behaves_like 'container virtual registry is unavailable'
 
       it_behaves_like 'page is rendered'
+
+      context 'with existing virtual registry', :js do
+        it 'renders container virtual registries tab without actions to create/edit' do
+          visit url
+
+          expect(page).to have_selector('h1', text: 'Container virtual registries')
+
+          expect(page).to have_link('Edit', href:
+            edit_group_virtual_registries_container_registry_path(group, registry))
+          expect(page).to have_link(registry.name, href:
+            /#{group_virtual_registries_container_registry_path(group, registry)}/)
+        end
+      end
     end
   end
 end

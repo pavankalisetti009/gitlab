@@ -1,6 +1,9 @@
 import { s__ } from '~/locale';
 
 export default {
+  registries: {
+    emptyStateTitle: s__('VirtualRegistry|There are no maven virtual registries yet'),
+  },
   upstreams: {
     emptyStateTitle: s__('VirtualRegistry|Connect Maven virtual registry to an upstream'),
     emptyStateDescription: s__(

@@ -2,7 +2,7 @@
 import { GlAlert, GlTabs, GlTab } from '@gitlab/ui';
 import { n__ } from '~/locale';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
-import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
+import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/common/registries/list.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
 import upstreamsFetchMixin, {
   INITIAL_UPSTREAMS_PARAMS,
@@ -28,11 +28,13 @@ export default {
     };
   },
   computed: {
-    screenReaderRegistriesTitle() {
+    registriesTabCountSRText() {
+      if (this.registriesCount === null) return '';
+
       return n__(
         'VirtualRegistry|%d registry',
         'VirtualRegistry|%d registries',
-        this.registriesCount || 0,
+        this.registriesCount,
       );
     },
   },
@@ -67,10 +69,10 @@ export default {
       <gl-tab
         :title="s__('VirtualRegistry|Registries')"
         :tab-count="registriesCount"
-        :tab-count-sr-text="screenReaderRegistriesTitle"
+        :tab-count-sr-text="registriesTabCountSRText"
         query-param-value="registries"
       >
-        <registries-list @updateCount="updateRegistriesCount" />
+        <registries-list @update-count="updateRegistriesCount" />
       </gl-tab>
       <gl-tab
         :title="s__('VirtualRegistry|Upstreams')"

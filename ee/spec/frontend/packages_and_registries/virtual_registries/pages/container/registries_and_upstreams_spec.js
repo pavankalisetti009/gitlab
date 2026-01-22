@@ -9,6 +9,7 @@ import getUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/gra
 import getUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstreams_count.query.graphql';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
 import ContainerRegistriesAndUpstreams from 'ee/packages_and_registries/virtual_registries/pages/container/registries_and_upstreams.vue';
+import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/common/registries/list.vue';
 import {
   CONTAINER_REGISTRIES_INDEX,
   CONTAINER_UPSTREAMS_INDEX,
@@ -31,6 +32,7 @@ describe('ContainerRegistriesAndUpstreams', () => {
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
   const findRegistriesTab = () => findAllTabs().at(0);
   const findUpstreamsTab = () => findAllTabs().at(1);
+  const findRegistriesList = () => wrapper.findComponent(RegistriesList);
   const findUpstreamsList = () => wrapper.findComponent(UpstreamsList);
 
   const createComponent = (route = { name: CONTAINER_REGISTRIES_INDEX }) => {
@@ -86,6 +88,10 @@ describe('ContainerRegistriesAndUpstreams', () => {
   describe('registries tab', () => {
     it('has correct title', () => {
       expect(findRegistriesTab().attributes('title')).toBe('Registries');
+      expect(findRegistriesTab().props()).toMatchObject({
+        tabCount: null,
+        tabCountSrText: '',
+      });
     });
 
     it('is active when on registries route', () => {
@@ -98,10 +104,27 @@ describe('ContainerRegistriesAndUpstreams', () => {
       expect(findRegistriesTab().attributes('active')).not.toBeDefined();
     });
 
+    it('renders RegistriesList component', () => {
+      expect(findRegistriesList().exists()).toBe(true);
+    });
+
     it('navigates to registries index on click', async () => {
       await findRegistriesTab().vm.$emit('click');
 
       expect(mockRouter.push).toHaveBeenCalledWith({ name: CONTAINER_REGISTRIES_INDEX });
+    });
+
+    describe('when RegistriesList emits `update-count` event', () => {
+      beforeEach(() => {
+        findRegistriesList().vm.$emit('update-count', 5);
+      });
+
+      it('renders registries count', () => {
+        expect(findRegistriesTab().props()).toMatchObject({
+          tabCount: 5,
+          tabCountSrText: '5 registries',
+        });
+      });
     });
   });
 
