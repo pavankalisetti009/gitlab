@@ -17,15 +17,13 @@ module Ai
           [:namespace_settings, :project_settings, :namespaces, :projects],
           1.minute
 
-        def perform(group_id, user_id = nil, flow_references = nil)
+        def perform(group_id, user_id = nil, _flow_references = nil)
           group = Group.find_by_id(group_id)
           return unless group
 
           user = user_id ? User.find_by_id(user_id) : nil
 
           seed_foundational_flows(group, user)
-
-          convert_references_to_ids(flow_references) if flow_references
 
           sync_groups(group, user)
 
@@ -39,14 +37,6 @@ module Ai
             current_user: user,
             organization: group.organization
           ).execute
-        end
-
-        def convert_references_to_ids(flow_references)
-          references = flow_references || []
-          return [] if references.empty?
-
-          reference_to_id = ::Ai::Catalog::Item.foundational_flow_ids_for_references(references)
-          references.filter_map { |ref| reference_to_id[ref] }
         end
 
         def namespace_iterator(group)
