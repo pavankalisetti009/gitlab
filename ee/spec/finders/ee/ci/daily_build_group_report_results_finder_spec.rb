@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::DailyBuildGroupReportResultsFinder do
+RSpec.describe Ci::DailyBuildGroupReportResultsFinder, feature_category: :continuous_integration do
   describe '#execute' do
     let_it_be(:current_user) { create(:user) }
     let_it_be(:group) { create(:group, :private) }
