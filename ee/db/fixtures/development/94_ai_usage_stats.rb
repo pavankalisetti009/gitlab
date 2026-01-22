@@ -213,12 +213,20 @@ Gitlab::Seeder.quiet do
 
     > bundle exec rake gitlab:clickhouse:migrate
 
+    "
+
+    Gitlab::Utils.to_boolean(ENV["SEED_AI_USAGE_STATS"]) ? raise("ClickHouse is not configured") : break
+  end
+
+  unless ::Gitlab::ClickHouse.globally_enabled_for_analytics?
+    puts "
+    WARNING:
+    To use this seed file with ClickHouse, you need to make sure that ClickHouse for analytics is enabled with your GDK.
+
     In a Rails console session, enable ClickHouse for analytics and the feature flags:
 
     Gitlab::CurrentSettings.current_application_settings.update(use_clickhouse_for_analytics: true)
     "
-
-    Gitlab::Utils.to_boolean(ENV["SEED_AI_USAGE_STATS"]) ? raise("ClickHouse is not configured") : break
   end
 
   project = Project.includes(:builds, :users).find_by(id: ENV['PROJECT_ID'])
