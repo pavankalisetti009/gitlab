@@ -91,6 +91,13 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
           expect(json_response[1]["status"]).to eq('pending')
           expect(json_response[2]["status"]).to eq('pending')
         end
+
+        it_behaves_like 'authorizing granular token permissions', :read_external_status_check do
+          let(:boundary_object) { project }
+          let(:request) do
+            get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/status_checks", personal_access_token: pat), params: { external_status_check_id: external_status_check.id, sha: sha }
+          end
+        end
       end
     end
   end
@@ -222,6 +229,13 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
 
         it_behaves_like 'not creating a status check response and returns error', :forbidden, message: '403 Forbidden'
       end
+
+      it_behaves_like 'authorizing granular token permissions', :update_external_status_check do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/status_check_responses", personal_access_token: pat), params: { external_status_check_id: external_status_check.id, sha: sha, status: status }
+        end
+      end
     end
   end
 
@@ -254,6 +268,14 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
 
           expect(response).to have_gitlab_http_status(status)
         end
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_external_status_check_service do
+      let(:boundary_object) { project }
+      let(:user) { project.first_owner }
+      let(:request) do
+        delete api(single_object_url, personal_access_token: pat)
       end
     end
   end
@@ -305,6 +327,14 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
           expect(json_response['protected_branches'].size).to eq(1)
         end
       end
+
+      it_behaves_like 'authorizing granular token permissions', :create_external_status_check_service do
+        let(:boundary_object) { project }
+        let(:user) { project.first_owner }
+        let(:request) do
+          post api("/projects/#{project.id}/external_status_checks", personal_access_token: pat), params: attributes_for(:external_status_check)
+        end
+      end
     end
 
     context 'when feature is disabled, unlicensed or user has permission' do
@@ -338,6 +368,14 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
 
     before do
       stub_licensed_features(external_status_checks: true)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_external_status_check_service do
+      let(:boundary_object) { project }
+      let(:user) { project.first_owner }
+      let(:request) do
+        get api(collection_url, personal_access_token: pat)
+      end
     end
 
     it 'responds with expected JSON', :aggregate_failures do
@@ -454,6 +492,13 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
             )
           end
 
+          it_behaves_like 'authorizing granular token permissions', :retry_external_status_check do
+            let(:boundary_object) { project }
+            let(:request) do
+              post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/status_checks/#{external_status_check.id}/retry", personal_access_token: pat)
+            end
+          end
+
           it 'calls async execute with correct data' do
             expect_next_found_instance_of(::MergeRequests::ExternalStatusCheck) do |instance|
               instance.to receive(:async_execute).with(data)
@@ -518,6 +563,14 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
         subject
 
         expect(response).to have_gitlab_http_status(:success)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :update_external_status_check_service do
+        let(:boundary_object) { project }
+        let(:user) { project.first_owner }
+        let(:request) do
+          put api(single_object_url, personal_access_token: pat), params: params
+        end
       end
 
       context 'when referencing a protected branch outside of the project' do

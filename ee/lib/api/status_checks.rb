@@ -35,6 +35,7 @@ module API
             coerce_with: ::API::Validations::Types::CommaSeparatedToIntegerArray.coerce,
             desc: 'IDs of protected branches to scope the rule by', documentation: { is_array: true }
         end
+        route_setting :authorization, permissions: :create_external_status_check_service, boundary_type: :project
         post do
           service = ::ExternalStatusChecks::CreateService.new(
             container: user_project,
@@ -56,6 +57,7 @@ module API
         params do
           use :pagination
         end
+        route_setting :authorization, permissions: :read_external_status_check_service, boundary_type: :project
         get do
           unauthorized! unless current_user.can?(:manage_merge_request_settings, user_project)
 
@@ -83,6 +85,7 @@ module API
               coerce_with: ::API::Validations::Types::CommaSeparatedToIntegerArray.coerce,
               desc: 'IDs of protected branches to scope the rule by', documentation: { is_array: true }
           end
+          route_setting :authorization, permissions: :update_external_status_check_service, boundary_type: :project
           put do
             service = ::ExternalStatusChecks::UpdateService.new(
               container: user_project,
@@ -104,6 +107,7 @@ module API
           params do
             requires :check_id, type: Integer, desc: 'ID of an external status check'
           end
+          route_setting :authorization, permissions: :delete_external_status_check_service, boundary_type: :project
           delete do
             external_status_check = user_project.external_status_checks.find(params[:check_id])
 
@@ -142,6 +146,7 @@ module API
             values: %w[passed failed pending],
             documentation: { example: 'passed' }
         end
+        route_setting :authorization, permissions: :update_external_status_check, boundary_type: :project
         post 'status_check_responses' do
           merge_request = find_merge_request_with_access(params[:merge_request_iid], :approve_merge_request)
           status_check = merge_request.project.external_status_checks.find(params[:external_status_check_id])
@@ -172,6 +177,7 @@ module API
             tags ['external_status_checks']
             is_array true
           end
+          route_setting :authorization, permissions: :read_external_status_check, boundary_type: :project
           get '/', urgency: :low do
             merge_request = find_merge_request_with_access(params[:merge_request_iid], :read_external_status_check_response)
 
@@ -191,6 +197,7 @@ module API
               documentation: { example: 1 }
             requires :external_status_check_id, type: Integer, desc: 'ID of a failed external status check'
           end
+          route_setting :authorization, permissions: :retry_external_status_check, boundary_type: :project
           post ':external_status_check_id/retry' do
             merge_request = find_merge_request_with_access(params[:merge_request_iid], :retry_failed_status_checks)
             status_check = merge_request.project.external_status_checks.find(params[:external_status_check_id])
