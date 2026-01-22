@@ -10,7 +10,7 @@ module Security
     idempotent!
     deduplicate :until_executed, if_deduplicated: :reschedule_once
 
-    concurrency_limit -> { 200 }
+    concurrency_limit -> { 300 }
 
     feature_category :security_policy_management
 
