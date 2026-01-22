@@ -276,12 +276,6 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
     end
   end
 
-  describe '#ai_action' do
-    it 'returns chat' do
-      expect(message.ai_action).to eq('chat')
-    end
-  end
-
   describe '#extras' do
     let_it_be_with_refind(:message) { create(:ai_conversation_message) }
 
@@ -317,106 +311,6 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
         message.error_details = input
 
         expect(message.error_details).to eq(expected_output)
-      end
-    end
-
-    context 'with new structured format' do
-      it 'extracts messages from hash format' do
-        message.error_details = { 'messages' => %w[error1 error2], 'code' => 'G3001' }.to_json
-
-        expect(message.error_details).to eq(%w[error1 error2])
-      end
-
-      it 'returns empty array when messages key is missing' do
-        message.error_details = { 'code' => 'G3001' }.to_json
-
-        expect(message.error_details).to eq([])
-      end
-    end
-
-    context 'when error_data parses to a string' do
-      it 'returns empty array' do
-        message.error_details = '"just a string"'
-
-        expect(message.error_details).to eq([])
-      end
-    end
-  end
-
-  describe '#error_code' do
-    let_it_be_with_refind(:message) { create(:ai_conversation_message) }
-
-    context 'with new structured format' do
-      it 'extracts error code from hash format' do
-        message.error_details = { 'messages' => ['error message'], 'code' => 'G3001' }.to_json
-
-        expect(message.error_code).to eq('G3001')
-      end
-
-      it 'returns nil when code is missing' do
-        message.error_details = { 'messages' => ['error message'] }.to_json
-
-        expect(message.error_code).to be_nil
-      end
-
-      it 'extracts error code from already parsed hash' do
-        message.error_details = { 'messages' => ['error message'], 'code' => 'G5000' }
-
-        expect(message.error_code).to eq('G5000')
-      end
-    end
-
-    context 'with old array format' do
-      it 'extracts error code from markdown link' do
-        message.error_details = ['Error message Error code: [G3001](https://docs.gitlab.com/)'].to_json
-
-        expect(message.error_code).to eq('G3001')
-      end
-
-      it 'extracts different error codes' do
-        message.error_details = ['Error message Error code: [A1000](https://docs.gitlab.com/)'].to_json
-
-        expect(message.error_code).to eq('A1000')
-      end
-
-      it 'returns nil when no error code pattern found' do
-        message.error_details = ['Error message without code'].to_json
-
-        expect(message.error_code).to be_nil
-      end
-
-      it 'extracts error code from already parsed array' do
-        message.error_details = ['[B2000](https://docs.gitlab.com/)']
-
-        expect(message.error_code).to eq('B2000')
-      end
-    end
-
-    context 'when error_details is nil or empty' do
-      it 'returns nil for nil error_details' do
-        message.error_details = nil
-
-        expect(message.error_code).to be_nil
-      end
-
-      it 'returns nil for empty array' do
-        message.error_details = []
-
-        expect(message.error_code).to be_nil
-      end
-
-      it 'returns nil for blank string' do
-        message.error_details = ''
-
-        expect(message.error_code).to be_nil
-      end
-    end
-
-    context 'with invalid JSON' do
-      it 'returns nil' do
-        message.error_details = '[invalid:json]'
-
-        expect(message.error_code).to be_nil
       end
     end
   end

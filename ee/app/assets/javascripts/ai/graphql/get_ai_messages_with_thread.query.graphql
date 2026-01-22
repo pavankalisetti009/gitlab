@@ -6,7 +6,6 @@ query getAiMessagesWithThread($threadId: AiConversationThreadID!) {
       content
       contentHtml
       errors
-      errorCode
       role
       timestamp
       extras {

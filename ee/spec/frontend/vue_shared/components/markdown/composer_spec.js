@@ -25,7 +25,6 @@ describe('Markdown composer component', () => {
     content: 'AI generated content',
     contentHtml: 'AI generated content',
     errors: [],
-    errorCode: null,
     role: '',
     timestamp: '',
     type: '',

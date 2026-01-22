@@ -22,10 +22,6 @@ RSpec.describe Gitlab::Llm::Chain::ResponseModifier, feature_category: :duo_chat
       expect(subject.response_body).to eq(content)
       expect(subject.extras).to eq(extras)
     end
-
-    it 'returns nil for error_code' do
-      expect(subject.error_code).to be_nil
-    end
   end
 
   context 'on error' do
@@ -43,18 +39,6 @@ RSpec.describe Gitlab::Llm::Chain::ResponseModifier, feature_category: :duo_chat
           "#{Gitlab.doc_url}/ee/user/gitlab_duo_chat/troubleshooting.html#error-#{error_code.downcase}"
         expected_message = "#{content} #{_('Error code')}: [#{error_code}](#{expected_url})"
         expect(subject.errors).to eq([expected_message])
-      end
-
-      it 'returns the error code' do
-        expect(subject.error_code).to eq('A1000')
-      end
-    end
-
-    context 'when answer does not have error code' do
-      let(:error_code) { nil }
-
-      it 'returns nil' do
-        expect(subject.error_code).to be_nil
       end
     end
   end
