@@ -13,7 +13,7 @@ module Gitlab
       private
 
       def parse(json)
-        build_catalogue(Gitlab::Json.parse(json, symbolize_names: true))
+        build_catalogue(::Gitlab::Json.safe_parse(json, symbolize_names: true))
       end
 
       def catalogue
