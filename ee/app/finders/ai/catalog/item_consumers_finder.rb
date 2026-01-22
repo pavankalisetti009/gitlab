@@ -19,6 +19,7 @@ module Ai
         consumers = with_parents(consumers) if container && include_inherited?
         consumers = by_item(consumers) if item_id
         consumers = by_foundational_flow_reference(consumers) if foundational_flow_reference
+        consumers = by_configurable_for_project(consumers) if configurable_for_project_id
         by_item_type(consumers)
       end
 
@@ -45,6 +46,10 @@ module Ai
 
       def item_id
         params[:item_id]
+      end
+
+      def configurable_for_project_id
+        params[:configurable_for_project_id]
       end
 
       def item_types
@@ -126,6 +131,10 @@ module Ai
         end
 
         types
+      end
+
+      def by_configurable_for_project(consumers)
+        consumers.with_items_configurable_for_project(configurable_for_project_id)
       end
 
       def all_types

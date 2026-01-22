@@ -178,4 +178,53 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
       expect(nodes).to be_empty
     end
   end
+
+  context 'when filtering by group_id and configurable_for_project_id' do
+    let_it_be(:group) { create(:group, guests: guest, developers: developer) }
+    let_it_be(:configurable_for_project) do
+      create(:project, :public, guests: guest, developers: developer, group: group)
+    end
+
+    let_it_be(:configurable_for_project_private_flow) do
+      create(:ai_catalog_flow, :private, project: configurable_for_project)
+    end
+
+    let_it_be(:other_project_public_agent) do
+      create(:ai_catalog_agent, :public, project: project)
+    end
+
+    let_it_be(:group_configured_items) do
+      [
+        create(:ai_catalog_item_consumer, group: group, item: catalog_flows[0]),
+        create(:ai_catalog_item_consumer, group: group, item: catalog_agents[0]),
+        create(:ai_catalog_item_consumer, group: group, item: catalog_third_party_flows[0]),
+        create(:ai_catalog_item_consumer, group: group, item: configurable_for_project_private_flow),
+        create(:ai_catalog_item_consumer, group: group, item: other_project_public_agent)
+      ]
+    end
+
+    let(:args) do
+      { groupId: group.to_global_id, configurableForProjectId: configurable_for_project.to_global_id }
+    end
+
+    it 'returns only items that are public or belong to the project' do
+      post_graphql(query, current_user: current_user)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect(nodes).to contain_exactly(
+        a_graphql_entity_for(group_configured_items[3]),
+        a_graphql_entity_for(group_configured_items[4])
+      )
+    end
+
+    context 'when filtering by item_types' do
+      let(:args) { super().merge(item_types: %i[AGENT]) }
+
+      it 'returns the matching items' do
+        post_graphql(query, current_user: current_user)
+
+        expect(nodes).to contain_exactly(a_graphql_entity_for(group_configured_items[4]))
+      end
+    end
+  end
 end

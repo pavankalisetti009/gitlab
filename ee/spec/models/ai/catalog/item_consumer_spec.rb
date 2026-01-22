@@ -575,5 +575,29 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
         expect(described_class.for_catalog_items([])).to be_empty
       end
     end
+
+    describe '.with_items_configurable_for_project' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:other_project) { create(:project) }
+
+      let_it_be(:public_item) { create(:ai_catalog_item, public: true, project: other_project) }
+      let_it_be(:private_item_for_project) { create(:ai_catalog_item, public: false, project: project) }
+      let_it_be(:private_item_for_other_project) { create(:ai_catalog_item, public: false, project: other_project) }
+
+      let_it_be(:public_item_consumer) { create(:ai_catalog_item_consumer, item: public_item, project: other_project) }
+      let_it_be(:private_item_consumer_for_project) do
+        create(:ai_catalog_item_consumer, item: private_item_for_project, project: project)
+      end
+
+      let_it_be(:private_item_consumer_for_other_project) do
+        create(:ai_catalog_item_consumer, item: private_item_for_other_project, project: other_project)
+      end
+
+      it 'returns consumers with public items and items belonging to the given project' do
+        expect(described_class.with_items_configurable_for_project(project.id)).to contain_exactly(
+          public_item_consumer, private_item_consumer_for_project
+        )
+      end
+    end
   end
 end

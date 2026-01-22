@@ -17,6 +17,7 @@ RSpec.describe Resolvers::Ai::Catalog::ConfiguredItemsResolver, feature_category
       :include_inherited,
       :item_id,
       :project_id,
+      :configurable_for_project_id,
       :item_type,
       :item_types,
       :foundational_flow_reference
@@ -38,6 +39,24 @@ RSpec.describe Resolvers::Ai::Catalog::ConfiguredItemsResolver, feature_category
 
         expect(result).to be_a(GraphQL::ExecutionError)
         expect(result.message).to eq('At least one of [groupId, projectId] arguments is required.')
+      end
+    end
+  end
+
+  describe 'argument preparation' do
+    before do
+      allow_next_instance_of(Ai::Catalog::ItemConsumersFinder) do |finder|
+        allow(finder).to receive(:execute).and_return(::Ai::Catalog::ItemConsumer.none)
+      end
+    end
+
+    context 'when configurable_for_project_id, project_id are nil' do
+      it 'prepares the argument as nil' do
+        result = resolve(resolver, args: {
+          group_id: group.to_global_id, configurable_for_project_id: nil, project_id: nil
+        }, ctx: { current_user: user })
+
+        expect(result).to be_a(Gitlab::Graphql::Pagination::Keyset::Connection)
       end
     end
   end

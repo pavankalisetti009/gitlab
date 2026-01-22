@@ -32,6 +32,15 @@ module Resolvers
           required: false,
           description: 'Project ID to retrieve configured AI Catalog items for.'
 
+        argument :configurable_for_project_id,
+          ::Types::GlobalIDType[::Project],
+          prepare: ->(global_id, _ctx) { global_id&.model_id },
+          required: false,
+          description: 'Project ID to filter AI Catalog item consumers. When provided with group_id, returns only ' \
+            'consumers whose associated items are configurable within the project (i.e., group-enabled ' \
+            'items that are public or owned by the project). Excludes consumers for items that are ' \
+            'private to other projects.'
+
         argument :foundational_flow_reference,
           GraphQL::Types::String,
           required: false,
