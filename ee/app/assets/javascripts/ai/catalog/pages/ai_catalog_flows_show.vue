@@ -291,11 +291,11 @@ export default {
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
     <page-heading>
       <template #heading>
-        <div class="gl-flex">
+        <div class="gl-flex gl-gap-3">
           <span class="gl-line-clamp-1 gl-wrap-anywhere">
             {{ aiCatalogFlow.name }}
           </span>
-          <gl-experiment-badge v-if="showBetaBadge" type="beta" class="gl-self-center" />
+          <gl-experiment-badge v-if="showBetaBadge" type="beta" class="!gl-mx-0 gl-self-center" />
           <foundational-icon
             v-if="aiCatalogFlow.foundational"
             :resource-id="aiCatalogFlow.id"
