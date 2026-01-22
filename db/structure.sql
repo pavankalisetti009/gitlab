@@ -14038,6 +14038,29 @@ CREATE SEQUENCE arkose_sessions_id_seq
 
 ALTER SEQUENCE arkose_sessions_id_seq OWNED BY arkose_sessions.id;
 
+CREATE TABLE ascp_scans (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    project_id bigint NOT NULL,
+    base_scan_id bigint,
+    scan_sequence integer NOT NULL,
+    scan_type smallint DEFAULT 0 NOT NULL,
+    commit_sha text NOT NULL,
+    base_commit_sha text,
+    CONSTRAINT check_50c7afc508 CHECK ((char_length(commit_sha) <= 64)),
+    CONSTRAINT check_510aade8e9 CHECK ((char_length(base_commit_sha) <= 64))
+);
+
+CREATE SEQUENCE ascp_scans_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE ascp_scans_id_seq OWNED BY ascp_scans.id;
+
 CREATE TABLE atlassian_identities (
     user_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -33256,6 +33279,8 @@ ALTER TABLE ONLY approvals ALTER COLUMN id SET DEFAULT nextval('approvals_id_seq
 
 ALTER TABLE ONLY arkose_sessions ALTER COLUMN id SET DEFAULT nextval('arkose_sessions_id_seq'::regclass);
 
+ALTER TABLE ONLY ascp_scans ALTER COLUMN id SET DEFAULT nextval('ascp_scans_id_seq'::regclass);
+
 ALTER TABLE ONLY atlassian_identities ALTER COLUMN user_id SET DEFAULT nextval('atlassian_identities_user_id_seq'::regclass);
 
 ALTER TABLE ONLY audit_events ALTER COLUMN id SET DEFAULT nextval('audit_events_id_seq'::regclass);
@@ -36076,6 +36101,9 @@ ALTER TABLE ONLY ar_internal_metadata
 
 ALTER TABLE ONLY arkose_sessions
     ADD CONSTRAINT arkose_sessions_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY ascp_scans
+    ADD CONSTRAINT ascp_scans_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY atlassian_identities
     ADD CONSTRAINT atlassian_identities_pkey PRIMARY KEY (user_id);
@@ -42344,6 +42372,14 @@ CREATE INDEX index_arkose_sessions_on_session_xid ON arkose_sessions USING btree
 CREATE INDEX index_arkose_sessions_on_user_id ON arkose_sessions USING btree (user_id);
 
 CREATE INDEX index_arkose_sessions_on_verified_at ON arkose_sessions USING btree (verified_at);
+
+CREATE INDEX index_ascp_scans_on_base_scan_id ON ascp_scans USING btree (base_scan_id);
+
+CREATE INDEX index_ascp_scans_on_commit_sha ON ascp_scans USING btree (commit_sha);
+
+CREATE UNIQUE INDEX index_ascp_scans_on_project_id_and_scan_sequence ON ascp_scans USING btree (project_id, scan_sequence);
+
+CREATE INDEX index_ascp_scans_on_project_id_and_scan_type ON ascp_scans USING btree (project_id, scan_type);
 
 CREATE UNIQUE INDEX index_atlassian_identities_on_extern_uid ON atlassian_identities USING btree (extern_uid);
 
@@ -51055,6 +51091,8 @@ CREATE TRIGGER ai_conversation_threads_loose_fk_trigger AFTER DELETE ON ai_conve
 
 CREATE TRIGGER approval_policy_rules_loose_fk_trigger AFTER DELETE ON approval_policy_rules REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
+CREATE TRIGGER ascp_scans_loose_fk_trigger AFTER DELETE ON ascp_scans REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
+
 CREATE TRIGGER assign_ci_runner_machines_id_trigger BEFORE INSERT ON ci_runner_machines FOR EACH ROW EXECUTE FUNCTION assign_ci_runner_machines_id_value();
 
 CREATE TRIGGER assign_ci_runner_taggings_id_trigger BEFORE INSERT ON ci_runner_taggings FOR EACH ROW EXECUTE FUNCTION assign_ci_runner_taggings_id_value();
@@ -52035,6 +52073,9 @@ ALTER TABLE ONLY ai_catalog_item_version_dependencies
 
 ALTER TABLE ONLY jira_tracker_data
     ADD CONSTRAINT fk_16ddb573de FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
+
+ALTER TABLE ONLY ascp_scans
+    ADD CONSTRAINT fk_16efa16ef2 FOREIGN KEY (base_scan_id) REFERENCES ascp_scans(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY incident_management_timeline_events
     ADD CONSTRAINT fk_17a5fafbd4 FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
