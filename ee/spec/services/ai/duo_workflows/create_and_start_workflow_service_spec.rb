@@ -9,18 +9,32 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:current_user) { create(:user, developer_of: project) }
   let_it_be(:oauth_token) { create(:oauth_access_token, user: current_user, scopes: [:api]) }
-  let_it_be(:catalog_item) do
-    create(:ai_catalog_item, :with_foundational_flow_reference, :public, :flow, project: project)
-  end
-
-  let_it_be(:instance_wide_duo_developer) do
-    create(:user, :service_account)
-  end
-
   let_it_be(:group_level_service_account) do
     create(:user, :service_account) do |user|
       create(:user_detail, user: user, provisioned_by_group: group)
     end
+  end
+
+  let_it_be(:catalog_item) do
+    create(:ai_catalog_item, :with_foundational_flow_reference, :public, :flow, project: project)
+  end
+
+  let_it_be(:group_catalog_item_consumer) do
+    create(:ai_catalog_item_consumer, group: group, item: catalog_item, service_account: group_level_service_account)
+  end
+
+  let_it_be(:project_catalog_item_consumer) do
+    create(
+      :ai_catalog_item_consumer,
+      project: project,
+      item: catalog_item,
+      service_account: nil,
+      parent_item_consumer: group_catalog_item_consumer
+    )
+  end
+
+  let_it_be(:project_enabled_flow) do
+    create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: catalog_item)
   end
 
   let(:goal) { 'Custom goal' }
@@ -73,10 +87,9 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     it 'creates the workflow and starts a workload to execute with the correct definition', :aggregate_failures do
       expect(result).to be_success
 
-      workflow_id = result.payload[:workflow_id]
+      workflow = result.payload[:workflow]
       workload_id = result.payload[:workload_id]
 
-      workflow = Ai::DuoWorkflows::Workflow.find_by(id: workflow_id)
       expect(workflow).to be_a(Ai::DuoWorkflows::Workflow)
 
       expect(workload_id).not_to be_nil
@@ -115,13 +128,12 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     allow(Ability).to receive(:allowed?).with(current_user, :read_ai_catalog_item_consumer, anything).and_return(true)
 
     project.project_setting.update!(
+      duo_foundational_flows_enabled: true,
       duo_features_enabled: true,
       duo_remote_flows_enabled: true
     )
 
     project.add_member(group_level_service_account, :developer)
-
-    ::Ai::Setting.instance.update!(duo_workflow_service_account_user: instance_wide_duo_developer)
   end
 
   context 'when workflow definition is not provided' do
@@ -152,12 +164,30 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     include_examples 'failure', :invalid_oauth_token, 'Could not obtain authentication token'
   end
 
-  context 'when a flow does not have an associated catalog item' do
-    before do
-      allow(workflow_definition).to receive(:foundational_flow_reference).and_return(nil)
+  context 'when flow is not enabled in the catalog item consumers' do
+    context 'when flow does not have a catalog item' do
+      before do
+        allow(workflow_definition).to receive(:foundational_flow_reference).and_return(nil)
+      end
+
+      include_examples 'failure', :flow_not_enabled, 'Workflow not enabled for this project/namespace'
     end
 
-    include_examples 'failure', :invalid_service_account, 'Could not resolve the service account for this flow'
+    context 'when foundational flows are disabled' do
+      before do
+        allow(project).to receive(:duo_foundational_flows_enabled).and_return(false)
+      end
+
+      include_examples 'failure', :flow_not_enabled, 'Workflow not enabled for this project/namespace'
+    end
+
+    context 'when the flow is disabled' do
+      before do
+        allow(project).to receive(:enabled_flow_catalog_item_ids).and_return([])
+      end
+
+      include_examples 'failure', :flow_not_enabled, 'Workflow not enabled for this project/namespace'
+    end
   end
 
   context 'when service account could not be resolved' do

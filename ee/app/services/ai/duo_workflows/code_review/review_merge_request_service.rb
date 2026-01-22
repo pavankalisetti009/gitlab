@@ -23,8 +23,6 @@ module Ai
         end
 
         def execute
-          progress_note = create_progress_note
-
           track_review_request_event
 
           update_review_state('review_started')
@@ -32,8 +30,11 @@ module Ai
           result = start_workflow
 
           if result.error?
-            cleanup_failed_review(progress_note)
+            cleanup_failed_review(failure_message_for_result(result))
           else
+            workflow = result.payload[:workflow]
+            progress_note = create_progress_note(workflow)
+
             # Schedule timeout cleanup job for 30 minutes from now in case workflow fails midway
             ::Ai::DuoWorkflows::CodeReview::TimeoutWorker.perform_in(TIMEOUT_DURATION, merge_request.id)
           end
@@ -41,7 +42,8 @@ module Ai
           result
         rescue StandardError => error
           Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE.to_s)
-          cleanup_failed_review(progress_note)
+          cleanup_failed_review(::Ai::CodeReviewMessages.could_not_start_workflow_error)
+          progress_note&.destroy
           ServiceResponse.error(message: error.message)
         end
 
@@ -59,32 +61,28 @@ module Ai
           ).execute
         end
 
-        def cleanup_failed_review(progress_note)
-          error_message = if foundational_flow_missing?
-                            ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
-                          else
-                            ::Ai::CodeReviewMessages.could_not_start_workflow_error
-                          end
-
-          update_progress_note(progress_note, error_message)
+        def cleanup_failed_review(message)
+          create_failure_note(message)
           update_review_state('reviewed')
-          progress_note&.destroy
         end
 
-        def foundational_flow_missing?
-          project = merge_request.project
-          return true unless project.duo_foundational_flows_enabled
-
-          workflow_definition = ::Ai::Catalog::FoundationalFlow['code_review/v1']
-          project.enabled_flow_catalog_item_ids.exclude?(workflow_definition&.catalog_item&.id)
+        def failure_message_for_result(result)
+          case result.reason
+          when :flow_not_enabled
+            ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
+          when :invalid_service_account
+            ::Ai::CodeReviewMessages.missing_service_account_error
+          else
+            ::Ai::CodeReviewMessages.could_not_start_workflow_error
+          end
         end
 
-        def create_progress_note
+        def create_progress_note(workflow)
           ::SystemNotes::MergeRequestsService.new(
             noteable: merge_request,
             container: merge_request.project,
             author: review_bot
-          ).duo_code_review_started
+          ).duo_code_review_started(workflow)
         end
 
         def track_review_request_event
@@ -102,9 +100,7 @@ module Ai
           )
         end
 
-        def update_progress_note(note, message)
-          return unless note.present?
-
+        def create_failure_note(message)
           todo_service.new_review(merge_request, review_bot)
 
           ::Notes::CreateService.new(

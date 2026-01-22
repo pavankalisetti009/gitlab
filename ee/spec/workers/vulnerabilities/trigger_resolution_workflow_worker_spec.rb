@@ -16,7 +16,7 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
   describe '#perform' do
     let(:workflow) { create(:duo_workflows_workflow, project: project, user: user) }
     let(:workflow_service) { instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService) }
-    let(:service_result) { ServiceResponse.success(payload: { workflow_id: workflow.id, workload_id: 456 }) }
+    let(:service_result) { ServiceResponse.success(payload: { workflow: workflow, workload_id: 456 }) }
 
     before do
       allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).and_return(workflow_service)

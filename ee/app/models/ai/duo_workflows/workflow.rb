@@ -243,6 +243,12 @@ module Ai
         end&.first
       end
 
+      def web_url
+        return unless project_level?
+
+        "#{Gitlab::Routing.url_helpers.project_automate_agent_sessions_url(project)}/#{id}"
+      end
+
       private
 
       def only_known_pre_approved_agent_privileges

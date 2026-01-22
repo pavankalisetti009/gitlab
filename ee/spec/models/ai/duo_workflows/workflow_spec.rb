@@ -632,4 +632,38 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
       expect(workflow.associated_pipelines).to be_empty
     end
   end
+
+  describe '#web_url' do
+    context 'when workflow is project-level' do
+      let(:project) { build_stubbed(:project) }
+      let(:workflow) { build_stubbed(:duo_workflows_workflow, id: 42, project: project, namespace: nil) }
+
+      it 'returns the full URL by default' do
+        url = workflow.web_url
+
+        expect(url).to eq("http://localhost/#{project.full_path}/-/automate/agent-sessions/#{workflow.id}")
+      end
+    end
+
+    context 'when workflow is namespace-level' do
+      let(:group) { build_stubbed(:group) }
+      let(:workflow) { build_stubbed(:duo_workflows_workflow, namespace: group, project: nil) }
+
+      it 'returns nil' do
+        url = workflow.web_url
+
+        expect(url).to be_nil
+      end
+    end
+
+    context 'when workflow has no project or namespace' do
+      let(:workflow) { build_stubbed(:duo_workflows_workflow, project: nil, namespace: nil) }
+
+      it 'returns nil' do
+        url = workflow.web_url
+
+        expect(url).to be_nil
+      end
+    end
+  end
 end

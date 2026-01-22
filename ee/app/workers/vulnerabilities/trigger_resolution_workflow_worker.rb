@@ -54,18 +54,18 @@ module Vulnerabilities
     end
 
     def create_triggered_workflow_record(finding, response)
-      workflow_id = response.payload[:workflow_id]
+      workflow = response.payload[:workflow]
 
       ::Vulnerabilities::TriggeredWorkflow.create!(
         vulnerability_occurrence_id: finding.id,
-        workflow_id: workflow_id,
+        workflow_id: workflow.id,
         workflow_name: :resolve_sast_vulnerability
       )
     rescue ActiveRecord::RecordInvalid => error
       Gitlab::ErrorTracking.track_exception(
         error,
         vulnerability_id: finding.vulnerability_id,
-        workflow_id: workflow_id
+        workflow_id: workflow.id
       )
 
       nil
