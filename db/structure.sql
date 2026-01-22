@@ -46053,7 +46053,11 @@ CREATE INDEX index_slack_integrations_on_organization_id ON slack_integrations U
 
 CREATE INDEX index_slack_integrations_on_project_id ON slack_integrations USING btree (project_id);
 
-CREATE UNIQUE INDEX index_slack_integrations_on_team_id_and_alias ON slack_integrations USING btree (team_id, alias);
+CREATE UNIQUE INDEX index_slack_integrations_on_team_id_alias_group_id ON slack_integrations USING btree (team_id, alias, group_id);
+
+CREATE UNIQUE INDEX index_slack_integrations_on_team_id_alias_organization_id ON slack_integrations USING btree (team_id, alias, organization_id);
+
+CREATE UNIQUE INDEX index_slack_integrations_on_team_id_alias_project_id ON slack_integrations USING btree (team_id, alias, project_id);
 
 CREATE INDEX index_slack_integrations_scopes_on_group_id ON slack_integrations_scopes USING btree (group_id);
 
