@@ -101,11 +101,6 @@ msgid_plural "%d Modules"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%d Package"
-msgid_plural "%d Packages"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "%d Scanned URL"
 msgid_plural "%d Scanned URLs"
 msgstr[0] ""
@@ -48121,6 +48116,11 @@ msgstr ""
 
 msgid "Package type must be PyPI"
 msgstr ""
+
+msgid "PackageRegistry|%d package"
+msgid_plural "PackageRegistry|%d packages"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "PackageRegistry|%{count} selected"
 msgid_plural "PackageRegistry|%{count} selected"
