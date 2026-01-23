@@ -71,20 +71,12 @@ const securityFindingErrorResponse = {
 describe('ValidityCheck', () => {
   let wrapper;
 
-  const createWrapper = (
-    props = {},
-    { apolloProvider, secretDetectionValidityChecksRefreshToken = true } = {},
-  ) => {
+  const createWrapper = (props = {}, { apolloProvider } = {}) => {
     wrapper = shallowMountExtended(ValidityCheck, {
       apolloProvider,
       propsData: {
         ...defaultProps,
         ...props,
-      },
-      provide: {
-        glFeatures: {
-          secretDetectionValidityChecksRefreshToken,
-        },
       },
     });
   };
@@ -362,21 +354,6 @@ describe('ValidityCheck', () => {
 
       await waitForPromises();
       expect(findTooltip().exists()).toBe(true);
-    });
-  });
-
-  describe('when secretDetectionValidityChecksRefreshToken feature flag is disabled', () => {
-    beforeEach(() => {
-      createWrapper({}, { secretDetectionValidityChecksRefreshToken: false });
-    });
-
-    it('does not render validity refresh UI', () => {
-      expect(findRecheckButton().exists()).toBe(false);
-      expect(findlastVerifiedTimestamp().exists()).toBe(false);
-    });
-
-    it('renders the token validity badge', () => {
-      expect(findTokenValidityBadge().exists()).toBe(true);
     });
   });
 });
