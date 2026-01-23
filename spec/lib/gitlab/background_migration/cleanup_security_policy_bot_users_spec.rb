@@ -46,6 +46,15 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     ).tap { |ns| ns.update!(traversal_ids: [ns.id]) }
   end
 
+  let!(:premium_trial_namespace) do
+    namespaces_table.create!(
+      name: 'premium-trial-namespace',
+      path: 'premium-trial-namespace',
+      type: 'Group',
+      organization_id: organization.id
+    ).tap { |ns| ns.update!(traversal_ids: [ns.id]) }
+  end
+
   let!(:free_namespace) do
     namespaces_table.create!(
       name: 'free-namespace',
@@ -89,6 +98,14 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     )
   end
 
+  let!(:premium_trial_subscription) do
+    gitlab_subscriptions_table.create!(
+      namespace_id: premium_trial_namespace.id,
+      hosted_plan_id: premium_trial_plan.id,
+      seats: 10
+    )
+  end
+
   let!(:free_subscription) do
     gitlab_subscriptions_table.create!(
       namespace_id: free_namespace.id,
@@ -123,6 +140,16 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
       path: 'silver-project',
       namespace_id: silver_namespace.id,
       project_namespace_id: silver_namespace.id,
+      organization_id: organization.id
+    )
+  end
+
+  let!(:premium_trial_project) do
+    projects_table.create!(
+      name: 'premium-trial-project',
+      path: 'premium-trial-project',
+      namespace_id: premium_trial_namespace.id,
+      project_namespace_id: premium_trial_namespace.id,
       organization_id: organization.id
     )
   end
@@ -171,6 +198,16 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     users_table.create!(
       username: 'policy-bot-silver',
       email: 'policy-bot-silver@example.com',
+      user_type: HasUserType::USER_TYPES[:security_policy_bot],
+      projects_limit: 0,
+      organization_id: organization.id
+    )
+  end
+
+  let!(:policy_bot_with_premium_trial_project) do
+    users_table.create!(
+      username: 'policy-bot-premium-trial',
+      email: 'policy-bot-premium-trial@example.com',
       user_type: HasUserType::USER_TYPES[:security_policy_bot],
       projects_limit: 0,
       organization_id: organization.id
@@ -239,6 +276,16 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     )
 
     members_table.create!(
+      user_id: policy_bot_with_premium_trial_project.id,
+      source_id: premium_trial_project.id,
+      source_type: 'Project',
+      type: 'ProjectMember',
+      access_level: Gitlab::Access::GUEST,
+      notification_level: NotificationSetting.levels[:global],
+      member_namespace_id: premium_trial_project.namespace_id
+    )
+
+    members_table.create!(
       user_id: policy_bot_with_free_project.id,
       source_id: free_project.id,
       source_type: 'Project',
@@ -281,6 +328,11 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
       .to change { users_table.where(id: policy_bot_with_silver_project.id).count }.from(1).to(0)
   end
 
+  it 'deletes security policy bots in premium trial projects' do
+    expect { perform_migration }
+      .to change { users_table.where(id: policy_bot_with_premium_trial_project.id).count }.from(1).to(0)
+  end
+
   it 'deletes security policy bots in projects under premium subgroups' do
     expect { perform_migration }
       .to change { users_table.where(id: policy_bot_with_premium_subgroup_project.id).count }.from(1).to(0)
@@ -305,10 +357,11 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     expect(Gitlab::BackgroundMigration::Logger).to receive(:info).with(
       hash_including(
         message: 'Deleted security policy bot users',
-        count: 3,
+        count: 4,
         user_ids: array_including(
           policy_bot_with_premium_project.id,
           policy_bot_with_silver_project.id,
+          policy_bot_with_premium_trial_project.id,
           policy_bot_with_premium_subgroup_project.id
         )
       )
@@ -322,6 +375,7 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
       users_table.where(id: [
         policy_bot_with_premium_project.id,
         policy_bot_with_silver_project.id,
+        policy_bot_with_premium_trial_project.id,
         policy_bot_with_premium_subgroup_project.id
       ]).delete_all
     end
