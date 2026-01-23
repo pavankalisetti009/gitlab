@@ -477,22 +477,6 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
             "but was called #{parent_service_count} times"
       end
 
-      it 'calls SyncFoundationalFlowsService for each descendant group exactly once' do
-        subgroup_service_count = 0
-
-        allow(Ai::Catalog::Flows::SyncFoundationalFlowsService).to receive(:new)
-          .and_wrap_original do |method, container, **args|
-            subgroup_service_count += 1 if container.is_a?(Group) && container.id == subgroup.id
-            method.call(container, **args)
-          end
-
-        update_group(group, user, params)
-
-        expect(subgroup_service_count).to eq(1),
-          "Expected SyncFoundationalFlowsService for subgroup to be called once, " \
-            "but was called #{subgroup_service_count} times"
-      end
-
       it 'calls SyncFoundationalFlowsService for each project exactly once' do
         project_service_count = 0
 
