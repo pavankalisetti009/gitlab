@@ -52,6 +52,7 @@ module Gitlab
         allow_personal_snippets
         cdot_requests
         designated_account_beneficiaries
+        enforce_top_level_group_limits
       ].freeze
 
     CONFIG_FILE_ROOT = 'ee/config/saas_features'

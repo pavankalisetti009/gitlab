@@ -609,7 +609,8 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     it 'returns expected hash' do
       expect(subject).to include({
         identity_verification_required: 'false',
-        identity_verification_path: identity_verification_path
+        identity_verification_path: identity_verification_path,
+        enforce_top_level_group_limit: 'false'
       })
     end
 
@@ -631,6 +632,14 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       end
 
       it { is_expected.to include(identity_verification_required: 'true') }
+    end
+
+    context 'when the enforce top level group limit is exceeded' do
+      before do
+        allow(current_user).to receive(:enforce_top_level_group_limit?).and_return(true)
+      end
+
+      it { is_expected.to include(enforce_top_level_group_limit: 'true') }
     end
   end
 

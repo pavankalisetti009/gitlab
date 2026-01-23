@@ -19,6 +19,9 @@ module EE
     ELASTICSEARCH_TRACKED_FIELDS = %w[id username email public_email name admin state
       user_detail_organization timezone external otp_required_for_login].freeze
 
+    FREE_USER_TOP_LEVEL_GROUP_LIMIT = 3
+    FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE = Date.new(2026, 1, 27)
+
     prepended do
       include UsageStatistics
       include PasswordComplexity
@@ -691,6 +694,23 @@ module EE
       ::Group.unscoped do
         ::Group.from_union([super, available_minimal_access_groups])
       end
+    end
+
+    def exempt_from_top_level_group_limit?
+      return true if created_at <= FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE
+      return true if custom_attributes.by_key(UserCustomAttribute::TOP_LEVEL_GROUP_LIMIT_EXEMPT).exists?
+      return true if enterprise_user?
+      return true if belongs_to_paid_namespace?(exclude_trials: true)
+
+      false
+    end
+
+    def enforce_top_level_group_limit?
+      return false unless ::Gitlab::Saas.feature_available?(:enforce_top_level_group_limits)
+      return false unless ::Feature.enabled?(:enforce_top_level_group_limits, self)
+      return false if exempt_from_top_level_group_limit?
+
+      created_top_level_group_count >= FREE_USER_TOP_LEVEL_GROUP_LIMIT
     end
 
     def find_or_init_board_epic_preference(board_id:, epic_id:)

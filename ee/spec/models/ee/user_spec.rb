@@ -4422,4 +4422,93 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
   end
+
+  describe '#enforce_top_level_group_limit?', :saas_enforce_top_level_group_limits do
+    let(:user) { create(:user) }
+
+    subject { user.enforce_top_level_group_limit? }
+
+    context 'when user was created after the cutoff date', time_travel_to: User::FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE + 1.day do
+      context 'when the user has created the max number of groups' do
+        before do
+          create_list(:group, User::FREE_USER_TOP_LEVEL_GROUP_LIMIT, creator: user)
+        end
+
+        it { is_expected.to eq(true) }
+
+        context 'when the enforce_top_level_group_limits feature flag is disabled' do
+          before do
+            stub_feature_flags(enforce_top_level_group_limits: false)
+          end
+
+          it { is_expected.to eq(false) }
+        end
+
+        context 'when not in SaaS' do
+          before do
+            stub_saas_features(enforce_top_level_group_limits: false)
+          end
+
+          it { is_expected.to eq(false) }
+        end
+      end
+
+      context 'when the user has not created the max number of groups' do
+        before do
+          create_list(:group, User::FREE_USER_TOP_LEVEL_GROUP_LIMIT - 1, creator: user)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+  end
+
+  describe '#exempt_from_top_level_group_limit?', :saas_enforce_top_level_group_limits do
+    let_it_be(:user) { create(:user) }
+
+    subject(:exempt_from_top_level_group_limit) { user.exempt_from_top_level_group_limit? }
+
+    context 'when user was created before the cutoff date', time_travel_to: User::FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE - 1.day do
+      let(:user) { create(:user) }
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when user was created on the cutoff date', time_travel_to: User::FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE do
+      let(:user) { create(:user) }
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when user was created after the cutoff date', time_travel_to: User::FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE + 1.day do
+      let(:user) { create(:user) }
+
+      it { is_expected.to eq(false) }
+
+      context 'when user has the top_level_group_limit_exempt custom attribute' do
+        before do
+          create(
+            :user_custom_attribute,
+            key: UserCustomAttribute::TOP_LEVEL_GROUP_LIMIT_EXEMPT,
+            value: 'true',
+            user_id: user.id
+          )
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user is an enterprise user' do
+        let(:user) { create(:enterprise_user) }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when user belongs to a paid namespace (excluding trials)', :saas do
+        let!(:group) { create(:group_with_plan, plan: :ultimate_plan, developers: [user]) }
+
+        it { is_expected.to eq(true) }
+      end
+    end
+  end
 end
