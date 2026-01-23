@@ -20,6 +20,7 @@ import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { InternalEvents } from '~/tracking';
 import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
@@ -62,7 +63,7 @@ import {
   resetThreadContent,
 } from '../utils/thread_utils';
 import { formatErrorMessage } from '../utils/error_handler';
-import { WORKFLOW_NOT_FOUND_CODE } from '../constants';
+import { WORKFLOW_NOT_FOUND_CODE, FEEDBACK_TRACKING_EVENT } from '../constants';
 import {
   saveThreadSnapshot,
   loadThreadSnapshot,
@@ -82,7 +83,7 @@ export default {
     GlTooltip: GlTooltipDirective,
     SafeHtml,
   },
-  mixins: [glFeatureFlagsMixin()],
+  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   inject: {
     chatConfiguration: {
       default: () => ({
@@ -1108,6 +1109,12 @@ export default {
         return false;
       }
     },
+    trackBinaryFeedbackEvent(event) {
+      this.trackEvent(FEEDBACK_TRACKING_EVENT, {
+        label: event.feedbackType,
+        property: this.workflowId,
+      });
+    },
   },
 };
 </script>
@@ -1144,7 +1151,7 @@ export default {
       :is-multithreaded="true"
       :enable-code-insertion="false"
       :should-render-resizable="!isEmbedded"
-      :with-feedback="false"
+      :with-feedback="glFeatures.duoChatBinaryFeedback"
       :show-header="true"
       :show-studio-header="isEmbedded"
       :session-id="workflowId"
@@ -1155,6 +1162,7 @@ export default {
       :is-chat-available="isChatAvailable"
       :error="showErrorBannerMessage"
       :should-auto-focus-input="!isEmbedded"
+      :is-binary-feedback-enabled="glFeatures.duoChatBinaryFeedback"
       class="gl-h-full gl-w-full"
       @new-chat="onNewChat"
       @send-chat-prompt="onSendChatPrompt"
@@ -1166,6 +1174,7 @@ export default {
       @thread-selected="onThreadSelected"
       @back-to-list="onBackToList"
       @delete-thread="onDeleteThread"
+      @track-feedback="trackBinaryFeedbackEvent"
     >
       <template #subheader>
         <div class="gl-absolute gl-right-5 gl-top-10 gl-pt-2">

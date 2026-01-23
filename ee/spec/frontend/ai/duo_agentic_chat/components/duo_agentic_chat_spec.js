@@ -52,6 +52,8 @@ import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { getCookie } from '~/lib/utils/common_utils';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { FEEDBACK_TRACKING_EVENT } from 'ee/ai/duo_agentic_chat/constants';
 import {
   MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE,
   MOCK_MODEL_LIST_ITEMS,
@@ -4027,6 +4029,32 @@ describe('Duo Agentic Chat', () => {
           expect(modelSelector.exists()).toBe(false);
         });
       });
+    });
+  });
+
+  describe('trackBinaryFeedbackEvent', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+    it('calls trackEvent with correct parameters when track-feedback is emitted', async () => {
+      getStorageValue.mockReturnValueOnce({
+        exists: true,
+        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+      });
+      createComponent();
+      await waitForPromises();
+
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      const feedbackEvent = { feedbackType: 'thumbs_up' };
+      findDuoChat().vm.$emit('track-feedback', feedbackEvent);
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        FEEDBACK_TRACKING_EVENT,
+        expect.objectContaining({
+          label: 'thumbs_up',
+          property: '456',
+        }),
+        undefined,
+      );
     });
   });
 });
