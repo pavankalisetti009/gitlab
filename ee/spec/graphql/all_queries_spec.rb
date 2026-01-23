@@ -7,7 +7,6 @@ RSpec.describe 'graphql queries', feature_category: :api do
     # Project management: https://gitlab.com/gitlab-org/gitlab/-/issues/584292
     'app/assets/javascripts/boards/graphql/lists_issues.query.graphql' => 370,
     'app/assets/javascripts/work_items/graphql/notes/work_item_notes_by_iid.query.graphql' => 410,
-    'ee/app/assets/javascripts/boards/graphql/lists_epics.query.graphql' => 350,
     'ee/app/assets/javascripts/boards/graphql/lists_epics_with_color.query.graphql' => 350,
     'ee/app/assets/javascripts/iterations/queries/iteration_issues_with_label_filter.query.graphql' => 290,
 
