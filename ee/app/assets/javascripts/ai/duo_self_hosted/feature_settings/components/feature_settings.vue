@@ -97,7 +97,7 @@ export default {
           id: 'duo-agent-platform',
           title: s__('AdminAIPoweredFeatures|GitLab Duo Agent Platform'),
           description: s__(
-            'AdminAIPoweredFeatures|AI agents, such as Agentic Chat and agent flows, that work in parallel to accomplish tasks simultaneously. %{linkStart}Learn more.%{linkEnd}',
+            'AdminAIPoweredFeatures|Multiple AI agents that work in parallel to help you create code, research results, and perform tasks simultaneously. %{linkStart}Learn more.%{linkEnd}',
           ),
           link: this.$options.duoAgentPlatformHelpPage,
           features: duoAgentPlatformFeatures,

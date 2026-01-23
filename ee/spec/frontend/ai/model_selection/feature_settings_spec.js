@@ -56,13 +56,13 @@ describe('FeatureSettings', () => {
   });
 
   describe.each`
-    section                         | index | expectedTitle                      | expectedDescription                                                                                             | findSectionTableFn           | expectedFeatureSettings
-    ${'Code Suggestions'}           | ${0}  | ${'Code Suggestions'}              | ${'Assists developers by generating and completing code in real-time.'}                                         | ${findCodeSuggestionsTable}  | ${mockCodeSuggestionsFeatureSettings}
-    ${'Duo Chat'}                   | ${1}  | ${'GitLab Duo Chat'}               | ${'An AI assistant that helps users accelerate software development using real-time conversational AI.'}        | ${findDuoChatTable}          | ${mockDuoChatFeatureSettings}
-    ${'Duo merge request features'} | ${2}  | ${'GitLab Duo for merge requests'} | ${'AI-native features that help users accomplish tasks during the lifecycle of a merge request.'}               | ${findDuoMergeRequestTable}  | ${mockMergeRequestFeatureSettings}
-    ${'Duo issues'}                 | ${3}  | ${'GitLab Duo for issues'}         | ${'An AI-native feature that generates a summary of discussions on an issue.'}                                  | ${findDuoIssuesTable}        | ${mockIssueFeatureSettings}
-    ${'GitLab Duo Agent Platform'}  | ${4}  | ${'GitLab Duo Agent Platform'}     | ${'AI agents, such as Agentic Chat and agent flows, that work in parallel to accomplish tasks simultaneously.'} | ${findDuoAgentPlatformTable} | ${mockDuoAgentPlatformSettings}
-    ${'Other Duo features'}         | ${5}  | ${'Other GitLab Duo features'}     | ${'AI-native features that support users outside of Chat or Code Suggestions.'}                                 | ${findOtherDuoFeaturesTable} | ${mockOtherDuoFeaturesSettings}
+    section                         | index | expectedTitle                      | expectedDescription                                                                                                        | findSectionTableFn           | expectedFeatureSettings
+    ${'Code Suggestions'}           | ${0}  | ${'Code Suggestions'}              | ${'Assists developers by generating and completing code in real-time.'}                                                    | ${findCodeSuggestionsTable}  | ${mockCodeSuggestionsFeatureSettings}
+    ${'Duo Chat'}                   | ${1}  | ${'GitLab Duo Chat'}               | ${'An AI assistant that helps users accelerate software development using real-time conversational AI.'}                   | ${findDuoChatTable}          | ${mockDuoChatFeatureSettings}
+    ${'Duo merge request features'} | ${2}  | ${'GitLab Duo for merge requests'} | ${'AI-native features that help users accomplish tasks during the lifecycle of a merge request.'}                          | ${findDuoMergeRequestTable}  | ${mockMergeRequestFeatureSettings}
+    ${'Duo issues'}                 | ${3}  | ${'GitLab Duo for issues'}         | ${'An AI-native feature that generates a summary of discussions on an issue.'}                                             | ${findDuoIssuesTable}        | ${mockIssueFeatureSettings}
+    ${'GitLab Duo Agent Platform'}  | ${4}  | ${'GitLab Duo Agent Platform'}     | ${'Multiple AI agents that work in parallel to help you create code, research results, and perform tasks simultaneously.'} | ${findDuoAgentPlatformTable} | ${mockDuoAgentPlatformSettings}
+    ${'Other Duo features'}         | ${5}  | ${'Other GitLab Duo features'}     | ${'AI-native features that support users outside of Chat or Code Suggestions.'}                                            | ${findOtherDuoFeaturesTable} | ${mockOtherDuoFeaturesSettings}
   `(
     '$section',
     ({
