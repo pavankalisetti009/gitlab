@@ -1,4 +1,4 @@
-import { GlTabs, GlTab } from '@gitlab/ui';
+import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -15,6 +15,7 @@ import {
   CONTAINER_UPSTREAMS_INDEX,
 } from 'ee/packages_and_registries/virtual_registries/pages/container/routes';
 import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/list.vue';
+import ContainerI18n from 'ee/packages_and_registries/virtual_registries/pages/container/i18n';
 import {
   groupContainerUpstreams,
   groupContainerUpstreamsCount,
@@ -27,6 +28,7 @@ describe('ContainerRegistriesAndUpstreams', () => {
   let mockRouter;
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findButton = () => wrapper.findComponent(GlButton);
   const findCleanupPolicyStatus = () => wrapper.findComponent(CleanupPolicyStatus);
   const findTabs = () => wrapper.findComponent(GlTabs);
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
@@ -35,7 +37,7 @@ describe('ContainerRegistriesAndUpstreams', () => {
   const findRegistriesList = () => wrapper.findComponent(RegistriesList);
   const findUpstreamsList = () => wrapper.findComponent(UpstreamsList);
 
-  const createComponent = (route = { name: CONTAINER_REGISTRIES_INDEX }) => {
+  const createComponent = ({ route = { name: CONTAINER_REGISTRIES_INDEX }, provide = {} } = {}) => {
     mockRouter = {
       push: jest.fn(),
       resolve: jest.fn().mockReturnValue({ href: '/' }),
@@ -50,9 +52,15 @@ describe('ContainerRegistriesAndUpstreams', () => {
         ],
       ]),
       provide: {
+        i18n: ContainerI18n,
         getUpstreamsQuery,
         getUpstreamsCountQuery,
         fullPath: 'gitlab-org',
+        glAbilities: {
+          createVirtualRegistry: true,
+        },
+        maxRegistriesCount: 5,
+        ...provide,
       },
       mocks: {
         $router: mockRouter,
@@ -70,6 +78,45 @@ describe('ContainerRegistriesAndUpstreams', () => {
   describe('rendering', () => {
     it('renders the page heading', () => {
       expect(findPageHeading().props('heading')).toBe('Container virtual registries');
+    });
+
+    describe('page heading', () => {
+      it('renders the page heading', () => {
+        expect(findPageHeading().text()).toBe(
+          'You can add up to 5 registries per top-level group.',
+        );
+      });
+    });
+
+    describe('when user does not have permission', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: {
+            glAbilities: {
+              createVirtualRegistry: false,
+            },
+          },
+        });
+
+        await waitForPromises();
+        await findRegistriesList().vm.$emit('update-count', 2);
+      });
+
+      it('does not render create registry button', () => {
+        expect(findButton().exists()).toBe(false);
+        expect(findPageHeading().text()).not.toContain('Maximum number of registries reached.');
+      });
+    });
+
+    describe('when maxRegistriesCount limit has been reached', () => {
+      beforeEach(async () => {
+        await findRegistriesList().vm.$emit('update-count', 5);
+      });
+
+      it('does not render create registry button', () => {
+        expect(findButton().exists()).toBe(false);
+        expect(findPageHeading().text()).toContain('Maximum number of registries reached.');
+      });
     });
 
     it('renders the cleanup policy status component', () => {
@@ -99,7 +146,7 @@ describe('ContainerRegistriesAndUpstreams', () => {
     });
 
     it('is not active when on upstreams route', () => {
-      createComponent({ name: CONTAINER_UPSTREAMS_INDEX });
+      createComponent({ route: { name: CONTAINER_UPSTREAMS_INDEX } });
 
       expect(findRegistriesTab().attributes('active')).not.toBeDefined();
     });
@@ -116,14 +163,20 @@ describe('ContainerRegistriesAndUpstreams', () => {
 
     describe('when RegistriesList emits `update-count` event', () => {
       beforeEach(() => {
-        findRegistriesList().vm.$emit('update-count', 5);
+        findRegistriesList().vm.$emit('update-count', 2);
       });
 
       it('renders registries count', () => {
         expect(findRegistriesTab().props()).toMatchObject({
-          tabCount: 5,
-          tabCountSrText: '5 registries',
+          tabCount: 2,
+          tabCountSrText: '2 registries',
         });
+      });
+
+      it('renders create registry button if user has permission', () => {
+        expect(findButton().text()).toBe('Create registry');
+        expect(findButton().props('to')).toStrictEqual({ name: 'REGISTRY_NEW' });
+        expect(findPageHeading().text()).not.toContain('Maximum number of registries reached.');
       });
     });
   });
@@ -138,7 +191,7 @@ describe('ContainerRegistriesAndUpstreams', () => {
     });
 
     it('is active when on upstreams route', () => {
-      createComponent({ name: CONTAINER_UPSTREAMS_INDEX });
+      createComponent({ route: { name: CONTAINER_UPSTREAMS_INDEX } });
 
       expect(findUpstreamsTab().attributes('active')).toBe('true');
     });

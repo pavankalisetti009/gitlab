@@ -49,7 +49,7 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
       end
 
       it 'passes axe automated accessibility testing' do
-        expect(page).to be_axe_clean.within('#content-body')
+        expect(page).to be_axe_clean
       end
     end
 
@@ -89,6 +89,9 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
 
           expect(page).to have_selector('h1', text: 'Container virtual registries')
 
+          expect(page).not_to have_link('Create registry',
+            href: new_group_virtual_registries_container_registry_path(group))
+
           expect(page).not_to have_link('Edit', href:
             edit_group_virtual_registries_container_registry_path(group, registry))
           expect(page).to have_link(registry.name, href:
@@ -112,6 +115,8 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
 
           expect(page).to have_selector('h1', text: 'Container virtual registries')
 
+          expect(page).to have_link('Create registry',
+            href: new_group_virtual_registries_container_registry_path(group))
           expect(page).to have_link('Edit', href:
             edit_group_virtual_registries_container_registry_path(group, registry))
           expect(page).to have_link(registry.name, href:

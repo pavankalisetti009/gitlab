@@ -16,7 +16,7 @@ Vue.use(VueApollo);
 
 export default () => {
   const el = document.getElementById('js-vue-container-virtual-registries');
-  const { basePath, fullPath } = el.dataset;
+  const { basePath, fullPath, maxRegistriesCount } = el.dataset;
 
   const router = createRouter(basePath);
 
@@ -48,6 +48,7 @@ export default () => {
       getUpstreamsCountQuery,
       routes,
       createRegistryMutation,
+      maxRegistriesCount: Number(maxRegistriesCount),
     },
     render(createElement) {
       return createElement(SpaRoot);

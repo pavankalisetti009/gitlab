@@ -3,6 +3,7 @@ import { s__ } from '~/locale';
 export default {
   registries: {
     emptyStateTitle: s__('VirtualRegistry|There are no container virtual registries yet'),
+    pageHeading: s__('VirtualRegistry|Container virtual registries'),
   },
   upstreams: {
     emptyStateTitle: s__('VirtualRegistry|Connect Container virtual registry to an upstream'),
