@@ -62,7 +62,32 @@ RSpec.describe Groups::CreateService, '#execute', feature_category: :groups_and_
     end
   end
 
-  context 'when user has exceed the group creation limit' do
+  context 'when user has exceed the top-level group creation limit', :saas_enforce_top_level_group_limits,
+    time_travel_to: User::FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE + 1.day do
+    let(:user) { create(:user) }
+    let(:extra_params) { { parent_id: nil } }
+
+    before do
+      organization.add_owner(user) # rubocop:disable RSpec/BeforeAllRoleAssignment -- org is let_it_be and user is let (for time travel)
+      create_list(:group, User::FREE_USER_TOP_LEVEL_GROUP_LIMIT, creator: user)
+    end
+
+    it 'does not create the group', :aggregate_failures do
+      expect(Gitlab::AppLogger).to receive(:info).with({
+        message: 'User has reached group creation limit',
+        reason: 'Top-level group limit exceeded',
+        class: 'Groups::CreateService',
+        username: user.username
+      })
+      expect { response }.not_to change { Group.count }
+      expect(response).to be_error
+      expect(response[:group].errors[:base].first)
+        .to eq(s_("CreateGroup|You have reached the limit of three top-level groups. " \
+          "To create another group, reduce the number of groups you have, or upgrade to a paid tier."))
+    end
+  end
+
+  context 'when user has exceed the identity verification top-level group creation limit' do
     before do
       allow(user).to receive(:requires_identity_verification_to_create_group?).and_return(true)
     end

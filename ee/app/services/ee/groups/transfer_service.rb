@@ -13,12 +13,18 @@ module EE
         super
 
         raise_transfer_error(:saml_provider_or_scim_token_present) if saml_provider_or_scim_token_present?
+        raise_transfer_error(:user_exceeded_top_level_group_limit) if user_exceeded_top_level_group_limit?
       end
 
       override :localized_error_messages
       def localized_error_messages
-        { saml_provider_or_scim_token_present:
-          s_('TransferGroup|SAML Provider or SCIM Token is configured for this group.') }
+        {
+          saml_provider_or_scim_token_present:
+            s_('TransferGroup|SAML Provider or SCIM Token is configured for this group.'),
+          user_exceeded_top_level_group_limit:
+            s_('TransferGroup|You have reached the limit of three top-level groups. To transfer this group ' \
+              'to the top-level, reduce the number of top-level groups you have, or upgrade to a paid tier.')
+        }
           .merge(super).freeze
       end
 
@@ -33,6 +39,17 @@ module EE
 
       def saml_provider_or_scim_token_present?
         group.saml_provider.present? || group.scim_auth_access_token.present?
+      end
+
+      def user_exceeded_top_level_group_limit?
+        return false if current_user.exempt_from_top_level_group_limit?
+        return false if new_parent_group
+
+        if group.namespace_details.creator.present?
+          group.namespace_details.creator.enforce_top_level_group_limit?
+        else
+          current_user.enforce_top_level_group_limit?
+        end
       end
 
       override :post_update_hooks

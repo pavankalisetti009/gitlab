@@ -17,7 +17,8 @@ module EE
     def subgroup_creation_data(group)
       super.merge({
         identity_verification_required: current_user.requires_identity_verification_to_create_group?(group).to_s,
-        identity_verification_path: identity_verification_path
+        identity_verification_path: identity_verification_path,
+        enforce_top_level_group_limit: current_user.enforce_top_level_group_limit?.to_s
       })
     end
 

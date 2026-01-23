@@ -81,6 +81,76 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
       end
     end
 
+    context 'when creator has reached their top-level group creation limit', :saas_enforce_top_level_group_limits,
+      time_travel_to: User::FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE + 1.day do
+      let(:user) { create(:user) }
+      let(:creator) { create(:user) }
+
+      before do
+        create_list(:group, User::FREE_USER_TOP_LEVEL_GROUP_LIMIT, creator: creator)
+      end
+
+      context 'when group is a subgroup' do
+        let(:parent_group) { create(:group_with_plan, :private, plan: :free_plan, creator: creator) }
+        let(:group) { create(:group, :private, parent: parent_group, creator: creator) }
+
+        it 'adds an error on the group' do
+          transfer_service.execute(nil)
+
+          expect(transfer_service.error)
+            .to eq('Transfer failed: You have reached the limit of three top-level groups. To transfer this ' \
+              'group to the top-level, reduce the number of top-level groups you have, or upgrade to a paid tier.')
+        end
+
+        context 'when group creator account no longer exists' do
+          before do
+            group
+            creator.destroy!
+            group.reload
+          end
+
+          context 'when current user has not reached limit' do
+            it 'does not add an error' do
+              transfer_service.execute(new_group)
+
+              expect(transfer_service.error).to be_nil
+            end
+          end
+
+          context 'when current user has reached limit' do
+            before do
+              create_list(:group, User::FREE_USER_TOP_LEVEL_GROUP_LIMIT, creator: user)
+            end
+
+            it 'adds an error' do
+              transfer_service.execute(nil)
+
+              expect(transfer_service.error)
+                .to eq('Transfer failed: You have reached the limit of three top-level groups. To transfer this ' \
+                  'group to the top-level, reduce the number of top-level groups you have, or upgrade to a paid tier.')
+            end
+          end
+        end
+
+        context 'when current user is exempt from top-level group creation limits',
+          time_travel_to: User::FREE_USER_TOP_LEVEL_GROUP_LIMIT_FROM_DATE do
+          it 'does not add an error' do
+            transfer_service.execute(new_group)
+
+            expect(transfer_service.error).to be_nil
+          end
+        end
+
+        context 'when new parent group provided' do
+          it 'does not add an error' do
+            transfer_service.execute(new_group)
+
+            expect(transfer_service.error).to be_nil
+          end
+        end
+      end
+    end
+
     context 'with free user cap enforced', :saas do
       before do
         stub_ee_application_setting(dashboard_limit: 1)

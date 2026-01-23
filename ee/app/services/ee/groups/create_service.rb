@@ -13,11 +13,19 @@ module EE
       override :valid?
       def valid?
         return false unless super
-        return true unless current_user.requires_identity_verification_to_create_group?(group)
+        return true if group.subgroup?
 
-        identity_verification_error
+        if current_user.requires_identity_verification_to_create_group?(group)
+          identity_verification_error
+          return false
+        end
 
-        false
+        if current_user.enforce_top_level_group_limit?
+          top_level_group_limit_error
+          return false
+        end
+
+        true
       end
 
       def ensure_runner_registration_token_disabled_on_com
@@ -85,6 +93,21 @@ module EE
         group.errors.add(
           :identity_verification,
           s_('CreateGroup|You have reached the group limit until you verify your account.')
+        )
+      end
+
+      def top_level_group_limit_error
+        ::Gitlab::AppLogger.info(
+          message: 'User has reached group creation limit',
+          reason: 'Top-level group limit exceeded',
+          class: self.class.name,
+          username: current_user.username
+        )
+
+        group.errors.add(
+          :base,
+          s_("CreateGroup|You have reached the limit of three top-level groups. " \
+            "To create another group, reduce the number of groups you have, or upgrade to a paid tier.")
         )
       end
     end
