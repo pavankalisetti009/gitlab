@@ -165,10 +165,6 @@ module EE
         group.ai_feature_rules = ai_feature_rules
 
         audit_duo_namespace_access_rules_update(ai_feature_rules)
-
-        Rails.cache.delete_matched(
-          "users/*/#{::Ai::UserAuthorizable::DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY}/#{group.id}/*"
-        )
       rescue ArgumentError, ActiveRecord::RecordInvalid => e
         group.errors.add(:duo_namespace_access_rules, e.message)
       end
