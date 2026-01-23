@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { namespaceWorkItemTypesQueryResponse } from 'ee_else_ce_jest/work_items/mock_data';
+import { getRoutes } from 'ee/groups/settings/work_items/routes';
 import organisationWorkItemTypesQuery from '~/work_items/graphql/organisation_work_item_types.query.graphql';
 import AdminWorkItemSettings from './admin_work_item_settings.vue';
 
@@ -19,6 +20,8 @@ export const initAdminWorkItemSettings = () => {
     return false;
   }
 
+  const { basePath } = el.dataset;
+
   apolloProvider.clients.defaultClient.cache.writeQuery({
     query: organisationWorkItemTypesQuery,
     data: {
@@ -33,7 +36,11 @@ export const initAdminWorkItemSettings = () => {
 
   return new Vue({
     el,
-    router: new VueRouter({ mode: 'history' }),
+    router: new VueRouter({
+      mode: 'history',
+      base: basePath,
+      routes: getRoutes(''),
+    }),
     apolloProvider,
     name: 'AdminWorkItemSettings',
     render(createElement) {
