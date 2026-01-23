@@ -29,6 +29,13 @@ RSpec.describe API::ResourceIterationEvents, feature_category: :team_planning do
         expect(json_response.first['action']).to eq(event.action)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :"read_#{eventable_type.singularize}_iteration_event" do
+        let(:boundary_object) { parent }
+        let(:request) do
+          get api("/#{parent_type}/#{parent.id}/#{eventable_type}/#{eventable[id_name]}/resource_iteration_events", personal_access_token: pat)
+        end
+      end
+
       it 'returns a 404 error when eventable id not found' do
         get api("/#{parent_type}/#{parent.id}/#{eventable_type}/#{non_existing_record_id}/resource_iteration_events", user)
 
@@ -55,6 +62,13 @@ RSpec.describe API::ResourceIterationEvents, feature_category: :team_planning do
         expect(json_response['id']).to eq(event.id)
         expect(json_response['iteration']['id']).to eq(event.iteration.id)
         expect(json_response['action']).to eq(event.action)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :"read_#{eventable_type.singularize}_iteration_event" do
+        let(:boundary_object) { parent }
+        let(:request) do
+          get api("/#{parent_type}/#{parent.id}/#{eventable_type}/#{eventable[id_name]}/resource_iteration_events/#{event.id}", personal_access_token: pat)
+        end
       end
 
       it 'returns 404 when not authorized' do
