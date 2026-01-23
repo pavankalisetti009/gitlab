@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Releases::Update do
+RSpec.describe Mutations::Releases::Update, feature_category: :release_orchestration do
   include GraphqlHelpers
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :public, :repository, group: group) }

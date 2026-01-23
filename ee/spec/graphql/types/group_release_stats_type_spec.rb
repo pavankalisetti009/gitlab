@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['GroupReleaseStats'] do
+RSpec.describe GitlabSchema.types['GroupReleaseStats'], feature_category: :release_orchestration do
   it { expect(described_class).to require_graphql_authorizations(:read_group_release_stats) }
 
   it 'has the expected fields' do
