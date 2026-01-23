@@ -203,5 +203,46 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, :saas, feature_category
         )
       end
     end
+
+    context 'when tracking hosted_plan_name_uid' do
+      let_it_be(:premium_plan) { create(:premium_plan) }
+      let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+
+      it 'captures hosted_plan_name_uid in the history record' do
+        record = described_class.create_from_change(
+          :gitlab_subscription_updated,
+          {
+            'id' => 1,
+            'namespace_id' => group1.id,
+            'hosted_plan_id' => premium_plan.id,
+            'hosted_plan_name_uid' => Plan::PLAN_NAME_UID_LIST[:premium],
+            'seats' => 10
+          }
+        )
+
+        expect(record).to be_persisted
+        expect(record.hosted_plan_name_uid).to eq(Plan::PLAN_NAME_UID_LIST[:premium])
+      end
+
+      it 'captures nil hosted_plan_name_uid when hosted_plan_id is nil' do
+        record = described_class.create_from_change(
+          :gitlab_subscription_updated,
+          {
+            'id' => 1,
+            'namespace_id' => group1.id,
+            'hosted_plan_id' => nil,
+            'hosted_plan_name_uid' => nil,
+            'seats' => 10
+          }
+        )
+
+        expect(record).to be_persisted
+        expect(record.hosted_plan_name_uid).to be_nil
+      end
+
+      it 'includes hosted_plan_name_uid in TRACKED_ATTRIBUTES' do
+        expect(GitlabSubscriptions::SubscriptionHistory::TRACKED_ATTRIBUTES).to include('hosted_plan_name_uid')
+      end
+    end
   end
 end
