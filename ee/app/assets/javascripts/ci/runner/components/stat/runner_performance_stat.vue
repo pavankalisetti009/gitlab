@@ -4,6 +4,7 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import RunnerPerformanceModal from './runner_performance_modal.vue';
 
 export default {
+  name: 'RunnerPerformanceStat',
   components: {
     GlLink,
     GlIcon,

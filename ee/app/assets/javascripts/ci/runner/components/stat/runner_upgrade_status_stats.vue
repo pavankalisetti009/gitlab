@@ -5,6 +5,7 @@ import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mi
 import { UPGRADE_STATUS_AVAILABLE, UPGRADE_STATUS_RECOMMENDED } from '../../constants';
 
 export default {
+  name: 'RunnerUpgradeStatusStats',
   components: {
     GlPopover,
     RunnerSingleStat,

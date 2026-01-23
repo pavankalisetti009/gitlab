@@ -4,6 +4,7 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import RunnerDetail from '~/ci/runner/components/runner_detail.vue';
 
 export default {
+  name: 'RunnerMaintenanceNoteDetail',
   components: {
     RunnerDetail,
   },

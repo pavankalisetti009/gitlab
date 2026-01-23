@@ -3,6 +3,7 @@ import { GlFormGroup, GlFormInputGroup } from '@gitlab/ui';
 import { INSTANCE_TYPE, RUNNER_TYPES } from '~/ci/runner/constants';
 
 export default {
+  name: 'RunnerUpdateCostFactorFields',
   components: {
     GlFormGroup,
     GlFormInputGroup,

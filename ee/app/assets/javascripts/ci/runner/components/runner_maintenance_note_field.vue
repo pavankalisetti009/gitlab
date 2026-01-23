@@ -3,6 +3,7 @@ import { GlFormGroup, GlFormTextarea } from '@gitlab/ui';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 export default {
+  name: 'RunnerMaintenanceNoteField',
   components: {
     GlFormGroup,
     GlFormTextarea,
