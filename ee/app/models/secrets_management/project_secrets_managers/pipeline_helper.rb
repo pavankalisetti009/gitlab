@@ -123,11 +123,13 @@ module SecretsManagement
       end
 
       def ci_policy_template_combined_glob_environment_glob_branch(env_glob, branch_glob)
+        # rubocop:disable Layout/LineLength -- expression readability
         env_glob_hex = hex(env_glob)
         branch_glob_hex = hex(branch_glob)
-        "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) (ne \"\" .environment) " \
+        "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) (ne nil (index . \"environment\")) (ne \"\" .environment) " \
           "(eq \"#{env_glob_hex}\" (.environment | hex)) (eq \"#{branch_glob_hex}\" (.ref | hex)) }}" \
           "#{ci_policy_name_combined(env_glob, branch_glob)}{{ end }}"
+        # rubocop:enable Layout/LineLength
       end
     end
   end

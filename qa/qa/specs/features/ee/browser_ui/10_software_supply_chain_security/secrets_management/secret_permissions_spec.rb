@@ -70,6 +70,30 @@ module QA
       end
 
       context 'when an owner creates permissions for a project-group' do
+        # rubocop:disable RSpec/InstanceVariable -- before(:context) requires instance variable to share state across examples
+        def new_group
+          @new_group
+        end
+
+        before(:context) do
+          @new_group = create(:group)
+          new_group.add_member(owner, Resource::Members::AccessLevel::OWNER)
+
+          Support::Waiter.wait_until(max_duration: 10, sleep_interval: 1) do
+            new_group.reload!
+            new_group.find_member(owner.username).present?
+          end
+
+          Support::API.post(
+            Runtime::API::Request.new(Runtime::User::Store.admin_api_client, "/projects/#{project.id}/share").url,
+            { group_id: new_group.id, group_access: 30 } # 30 = Developer
+          )
+          Support::Waiter.wait_until(max_duration: 10, sleep_interval: 1) do
+            project.reload!
+          end
+        end
+        # rubocop:enable RSpec/InstanceVariable
+
         it 'successfully creates permissions',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579570' do
           Page::Main::Menu.perform(&:sign_out)
@@ -80,8 +104,8 @@ module QA
           Page::Project::Settings::Main.perform do |settings|
             settings.expand_visibility_project_features_permissions do |permissions_page|
               scopes = %w[read write delete]
-              permissions_page.add_group_permission(group_path: group.full_path, scopes: scopes)
-              expect(permissions_page).to have_group_permission(group_name: group.name, scopes: scopes)
+              permissions_page.add_group_permission(group_path: new_group.full_path, scopes: scopes)
+              expect(permissions_page).to have_group_permission(group_name: new_group.name, scopes: scopes)
             end
           end
         end
