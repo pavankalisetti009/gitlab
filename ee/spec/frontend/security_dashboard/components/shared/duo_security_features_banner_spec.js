@@ -55,8 +55,9 @@ describe('Duo security features banner component', () => {
 
         expect(findBanner().exists()).toBe(true);
         expect(findBanner().props('title')).toBe('GitLab Duo security features are here!');
-        expect(findBanner().text()).toContain('identify false positives');
-        expect(findBanner().text()).toContain('generate fixes for vulnerabilities');
+        expect(findBanner().text()).toBe(
+          'GitLab Duo can automatically scan security findings to identify false positives and generate fixes for vulnerabilities. GitLab Duo can assign each finding a GitLab Duo confidence score. You can adjust or disable these features in the GitLab Duo Settings.',
+        );
         expect(findBanner().props('buttonText')).toBe('Manage settings');
         expect(findBanner().props('buttonLink')).toBe('/edit#js-gitlab-duo-settings');
         expect(findBanner().props('variant')).toBe('introduction');
@@ -127,12 +128,8 @@ describe('Duo security features banner component', () => {
         expect(findBanner().props('title')).toBe(
           'GitLab Duo SAST false positive detection - available for a limited time in free Beta',
         );
-        expect(findBanner().text()).toContain(
-          'GitLab Duo can automatically review new critical and high severity',
-        );
-        expect(findBanner().text()).toContain('identify potential false positives');
-        expect(findBanner().text()).toContain(
-          'you can bulk dismiss the identified false positives',
+        expect(findBanner().text()).toBe(
+          'GitLab Duo can automatically review new critical and high severity SAST vulnerabilities on the default branch to identify potential false positives. GitLab Duo can assign each false positive a confidence score and you can bulk dismiss the identified false positives in the vulnerability report. The feature is available as a free beta for a limited time and is disabled by default. You can turn on this feature in the GitLab Duo settings.',
         );
         expect(findBanner().props('buttonText')).toBe('Manage settings');
         expect(findBanner().props('buttonLink')).toBe('/edit#js-gitlab-duo-settings');
