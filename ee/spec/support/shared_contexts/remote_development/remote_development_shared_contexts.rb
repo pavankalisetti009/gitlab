@@ -14,7 +14,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # @return [Array<Hash>]
   def create_desired_config_array
-    Gitlab::Json.parse(create_desired_config_json).map(&:deep_symbolize_keys)
+    Gitlab::Json.safe_parse(create_desired_config_json).map(&:deep_symbolize_keys)
   end
 
   # @param [RemoteDevelopment::Workspace] workspace
