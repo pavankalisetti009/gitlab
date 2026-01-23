@@ -16,7 +16,7 @@ RSpec.describe CounterAttribute, :counter_attribute, feature_category: :shared d
     end
 
     context 'with a model that has a group_id' do
-      let(:model) { create(:virtual_registries_packages_maven_cache_entry) }
+      let(:model) { create(:virtual_registries_packages_maven_cache_remote_entry) }
 
       it { is_expected.to eq("group:{#{model.group_id}}") }
     end

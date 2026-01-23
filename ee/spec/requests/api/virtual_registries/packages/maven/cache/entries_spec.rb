@@ -12,10 +12,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
 
     let_it_be(:processing_cache_entry) do
       create(
-        :virtual_registries_packages_maven_cache_entry,
+        :virtual_registries_packages_maven_cache_remote_entry,
         :processing,
         upstream: upstream,
-        group: upstream.group,
         relative_path: cache_entry.relative_path
       )
     end
@@ -30,8 +29,8 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
         expect(Gitlab::Json.parse(response.body)).to contain_exactly(
           cache_entry
             .as_json
-            .merge('id' => Base64.urlsafe_encode64("#{upstream.id} #{cache_entry.relative_path}"))
-            .except('object_storage_key', 'file', 'file_store', 'status')
+            .merge('id' => cache_entry.generate_id)
+            .except('object_storage_key', 'file', 'file_store', 'status', 'iid')
         )
       end
     end
@@ -82,15 +81,14 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
   end
 
   describe 'DELETE /api/v4/virtual_registries/packages/maven/cache_entries/:id' do
-    let(:id) { Base64.urlsafe_encode64("#{upstream.id} #{cache_entry.relative_path}") }
-    let(:url) { "/virtual_registries/packages/maven/cache_entries/#{id}" }
+    let(:url) { "/virtual_registries/packages/maven/cache_entries/#{cache_entry.generate_id}" }
 
     subject(:api_request) { delete api(url), headers: headers }
 
     shared_examples 'successful response' do
       it 'returns a successful response' do
         expect { api_request }.to change {
-          VirtualRegistries::Packages::Maven::Cache::Entry.last.status
+          VirtualRegistries::Packages::Maven::Cache::Remote::Entry.last.status
         }.from('default').to('pending_destruction')
 
         expect(response).to have_gitlab_http_status(:no_content)
@@ -137,16 +135,12 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
       before do
         allow_next_found_instance_of(cache_entry.class) do |instance|
           errors = ActiveModel::Errors.new(instance).tap { |e| e.add(:cache_entry, 'error message') }
-          allow(instance).to receive_messages(mark_as_pending_destruction: false, errors: errors)
+          allow(instance).to receive_messages(pending_destruction!: false, errors: errors)
         end
       end
 
-      it 'returns an error' do
-        api_request
-
-        expect(response).to have_gitlab_http_status(:bad_request)
-        expect(json_response).to eq({ 'message' => { 'cache_entry' => ['error message'] } })
-      end
+      it_behaves_like 'returning response status with message', status: :bad_request,
+        message: { 'cache_entry' => ['error message'] }
     end
   end
 end

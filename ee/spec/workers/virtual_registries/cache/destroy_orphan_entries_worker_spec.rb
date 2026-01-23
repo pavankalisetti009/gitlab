@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe VirtualRegistries::Cache::DestroyOrphanEntriesWorker, feature_category: :virtual_registry do
   let(:worker) { described_class.new }
-  let(:model) { ::VirtualRegistries::Packages::Maven::Cache::Entry }
+  let(:model) { ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry }
 
   it_behaves_like 'an idempotent worker' do
     let(:job_args) { [model.name] }
@@ -24,14 +24,14 @@ RSpec.describe VirtualRegistries::Cache::DestroyOrphanEntriesWorker, feature_cat
     end
 
     context 'with work to do' do
-      let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_entry) }
+      let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_remote_entry) }
       let_it_be(:orphan_cache_entry) do
-        create(:virtual_registries_packages_maven_cache_entry, :pending_destruction)
+        create(:virtual_registries_packages_maven_cache_remote_entry, :pending_destruction)
       end
 
       it 'destroys orphan cache entries' do
         expect(worker).to receive(:log_extra_metadata_on_done).with(:cache_entry_id,
-          [orphan_cache_entry.upstream_id, orphan_cache_entry.relative_path, 'processing'])
+          [orphan_cache_entry.group_id, orphan_cache_entry.iid])
         expect(worker).to receive(:log_extra_metadata_on_done).with(:group_id, orphan_cache_entry.group_id)
         expect(model).to receive(:next_pending_destruction).and_call_original
         expect { perform_work }.to change { model.count }.by(-1)
@@ -117,7 +117,7 @@ RSpec.describe VirtualRegistries::Cache::DestroyOrphanEntriesWorker, feature_cat
 
     context 'with orphan entries' do
       let_it_be(:orphan_entries) do
-        create_list(:virtual_registries_packages_maven_cache_entry, 3, :pending_destruction)
+        create_list(:virtual_registries_packages_maven_cache_remote_entry, 3, :pending_destruction)
       end
 
       it { is_expected.to eq(3) }
@@ -125,7 +125,7 @@ RSpec.describe VirtualRegistries::Cache::DestroyOrphanEntriesWorker, feature_cat
 
     context 'when count exceeds max_running_jobs' do
       let_it_be(:orphan_entries) do
-        create_list(:virtual_registries_packages_maven_cache_entry, 5, :pending_destruction)
+        create_list(:virtual_registries_packages_maven_cache_remote_entry, 5, :pending_destruction)
       end
 
       it { is_expected.to eq(worker.max_running_jobs + 1) }

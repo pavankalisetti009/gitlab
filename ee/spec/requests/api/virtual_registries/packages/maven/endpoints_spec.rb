@@ -164,7 +164,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
       context 'with successful handle request service responses' do
         let_it_be(:cache_entry) do
           create(
-            :virtual_registries_packages_maven_cache_entry,
+            :virtual_registries_packages_maven_cache_remote_entry,
             content_type: 'text/xml',
             upstream: upstream,
             group_id: upstream.group_id,
@@ -322,7 +322,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
     let_it_be(:url) { "/virtual_registries/packages/maven/#{registry.id}/#{path}/upload" }
     let_it_be(:processing_cache_entries) do
       create(
-        :virtual_registries_packages_maven_cache_entry,
+        :virtual_registries_packages_maven_cache_remote_entry,
         :processing,
         upstream: upstream,
         group: upstream.group,
@@ -346,7 +346,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
 
     shared_examples 'returning successful response' do
       it 'accepts the upload', :freeze_time do
-        expect { request }.to change { upstream.cache_entries.count }.by(1)
+        expect { request }.to change { upstream.cache_remote_entries.count }.by(1)
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(response.body).to eq('')
@@ -392,7 +392,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
 
       context 'with a persistence error' do
         before do
-          allow(::VirtualRegistries::Packages::Maven::Cache::Entry)
+          allow(::VirtualRegistries::Packages::Maven::Cache::Remote::Entry)
             .to receive(:create_or_update_by!).and_raise(ActiveRecord::RecordInvalid)
         end
 

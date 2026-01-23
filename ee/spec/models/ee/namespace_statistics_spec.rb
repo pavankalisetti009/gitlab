@@ -105,10 +105,14 @@ RSpec.describe NamespaceStatistics, type: :model, feature_category: :consumables
 
   describe '#update_dependency_proxy_size' do
     let_it_be(:statistics) { create(:namespace_statistics, namespace: group) }
-    let_it_be(:vreg_maven_cache_entry) { create(:virtual_registries_packages_maven_cache_entry, group: group, size: 50) }
+
+    before do
+      create(:virtual_registries_packages_maven_cache_entry, group: group, size: 50)
+      create(:virtual_registries_packages_maven_cache_remote_entry, group: group, size: 50)
+    end
 
     subject { statistics.update_dependency_proxy_size }
 
-    it { is_expected.to eq 50 }
+    it { is_expected.to eq 100 }
   end
 end

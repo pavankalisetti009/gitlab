@@ -38972,6 +38972,10 @@ CREATE INDEX index_0e98daa03c ON gitlab_partitions_static.analytics_cycle_analyt
 
 CREATE INDEX index_0f28a65451 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_09 USING btree (stage_event_hash_id, group_id, start_event_timestamp, merge_request_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
+CREATE INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ON ONLY virtual_registries_packages_maven_cache_remote_entries USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
+CREATE INDEX index_0fc6617161 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_06 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE UNIQUE INDEX i_v_container_cache_entries_on_uniq_object_storage_key_group_id ON ONLY virtual_registries_container_cache_entries USING btree (relative_path, object_storage_key, group_id);
 
 CREATE UNIQUE INDEX index_1004c7b0c8 ON gitlab_partitions_static.virtual_registries_container_cache_entries_07 USING btree (relative_path, object_storage_key, group_id);
@@ -39003,6 +39007,8 @@ CREATE UNIQUE INDEX index_161d562e07 ON gitlab_partitions_static.virtual_registr
 CREATE INDEX index_16627b455e ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_27 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
 
 CREATE UNIQUE INDEX index_1714ba4053 ON gitlab_partitions_static.virtual_registries_container_cache_entries_09 USING btree (relative_path, object_storage_key, group_id);
+
+CREATE INDEX index_1718fc2cc6 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_04 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
 
 CREATE INDEX index_17fa2812c5 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_17 USING btree (stage_event_hash_id, group_id, end_event_timestamp, issue_id);
 
@@ -39072,6 +39078,8 @@ CREATE INDEX index_25e2aaee9b ON gitlab_partitions_static.analytics_cycle_analyt
 
 CREATE INDEX index_2653e7eeb8 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_06 USING btree (stage_event_hash_id, project_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
 
+CREATE INDEX index_2680cdd4ec ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_08 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE INDEX index_27371c023a ON gitlab_partitions_static.virtual_registries_container_cache_entries_14 USING btree (upstream_id, created_at) WHERE (status = 0);
 
 CREATE INDEX index_2745f5a388 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_31 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
@@ -39117,6 +39125,8 @@ CREATE INDEX index_2fc271c673 ON gitlab_partitions_static.analytics_cycle_analyt
 CREATE INDEX index_2fcfd0dc70 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_16 USING btree (stage_event_hash_id, group_id, end_event_timestamp, issue_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
 
 CREATE INDEX index_3005c75335 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_23 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
+
+CREATE INDEX index_30764715b9 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_02 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
 
 CREATE INDEX index_3206c1e6af ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_29 USING btree (stage_event_hash_id, project_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
 
@@ -39178,6 +39188,8 @@ CREATE INDEX index_4537e7023a ON gitlab_partitions_static.virtual_registries_pac
 
 CREATE INDEX index_453a659cb6 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_16 USING btree (stage_event_hash_id, project_id, start_event_timestamp, merge_request_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
+CREATE INDEX index_4585d1a955 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_07 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE INDEX index_46b989b294 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_02 USING btree (stage_event_hash_id, group_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
 CREATE INDEX index_4717e7049b ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_05 USING btree (stage_event_hash_id, group_id, end_event_timestamp, issue_id);
@@ -39224,6 +39236,8 @@ CREATE INDEX index_50272372ba ON gitlab_partitions_static.analytics_cycle_analyt
 
 CREATE INDEX index_5034eae5ff ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_05 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id);
 
+CREATE INDEX index_5051c3468f ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_12 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE UNIQUE INDEX index_5079dc225c ON gitlab_partitions_static.virtual_registries_container_cache_entries_04 USING btree (relative_path, object_storage_key, group_id);
 
 CREATE INDEX index_50c09f6e04 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_06 USING btree (stage_event_hash_id, project_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
@@ -39256,6 +39270,8 @@ CREATE INDEX index_59ce40fcc4 ON gitlab_partitions_static.analytics_cycle_analyt
 
 CREATE INDEX index_59cfd5bc9a ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_12 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id);
 
+CREATE INDEX index_5a527bd324 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_03 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE INDEX index_5a5f39d824 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_19 USING btree (stage_event_hash_id, project_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
 CREATE INDEX index_5b613b5fcf ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_25 USING btree (stage_event_hash_id, project_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
@@ -39277,6 +39293,8 @@ CREATE INDEX index_5e78c2eac1 ON gitlab_partitions_static.analytics_cycle_analyt
 CREATE INDEX index_5ee060202f ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_20 USING btree (stage_event_hash_id, group_id, start_event_timestamp, merge_request_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
 CREATE INDEX index_5f24f6ead2 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_05 USING btree (stage_event_hash_id, project_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
+
+CREATE INDEX index_5f9468d857 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_09 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
 
 CREATE INDEX index_5f96b344e2 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_14 USING btree (stage_event_hash_id, project_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
@@ -39362,6 +39380,8 @@ CREATE INDEX index_71c2b26944 ON gitlab_partitions_static.analytics_cycle_analyt
 
 CREATE INDEX index_72027c157f ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_27 USING btree (stage_event_hash_id, project_id, start_event_timestamp, merge_request_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
+CREATE INDEX index_72c169b8b9 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_14 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE INDEX index_737197bd05 ON gitlab_partitions_static.virtual_registries_container_cache_entries_01 USING btree (group_id, upstream_etag);
 
 CREATE INDEX index_739845f617 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_31 USING btree (stage_event_hash_id, project_id, start_event_timestamp, merge_request_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
@@ -39399,6 +39419,8 @@ CREATE INDEX index_7ead2300ca ON gitlab_partitions_static.analytics_cycle_analyt
 CREATE INDEX index_7ecb5b68b4 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_07 USING btree (stage_event_hash_id, project_id, start_event_timestamp, merge_request_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
 CREATE INDEX index_7f2722013e ON gitlab_partitions_static.virtual_registries_container_cache_entries_13 USING btree (group_id, upstream_etag);
+
+CREATE INDEX index_7f4901535d ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_01 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
 
 CREATE INDEX index_7f543eed8d ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_13 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id);
 
@@ -39521,6 +39543,8 @@ CREATE INDEX index_a3feed3097 ON gitlab_partitions_static.analytics_cycle_analyt
 CREATE INDEX index_a46b7b7f26 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_02 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id);
 
 CREATE INDEX index_a4f5106804 ON gitlab_partitions_static.issue_search_data_11 USING btree (namespace_id);
+
+CREATE INDEX index_a54c7a846a ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_13 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
 
 CREATE INDEX index_a6999c65c9 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_09 USING btree (stage_event_hash_id, group_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
@@ -39648,6 +39672,8 @@ CREATE INDEX index_c17dae3605 ON gitlab_partitions_static.analytics_cycle_analyt
 
 CREATE INDEX index_c1cdd90d0d ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_15 USING btree (stage_event_hash_id, project_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
 
+CREATE INDEX index_c23ed308be ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_15 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE INDEX index_c2b951bf20 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_20 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
 
 CREATE INDEX index_c2cd6c0784 ON gitlab_partitions_static.virtual_registries_container_cache_entries_13 USING btree (upstream_id, created_at) WHERE (status = 0);
@@ -39726,6 +39752,8 @@ CREATE INDEX index_d2fe918e83 ON gitlab_partitions_static.analytics_cycle_analyt
 
 CREATE INDEX index_d35c969634 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_09 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
 
+CREATE INDEX index_d384a99971 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_05 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE INDEX index_d3b6418940 ON gitlab_partitions_static.issue_search_data_17 USING btree (namespace_id);
 
 CREATE INDEX index_d493a5c171 ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_21 USING btree (stage_event_hash_id, group_id, end_event_timestamp, merge_request_id);
@@ -39755,6 +39783,8 @@ CREATE INDEX index_de0334da63 ON gitlab_partitions_static.analytics_cycle_analyt
 CREATE UNIQUE INDEX index_de3cae661c ON gitlab_partitions_static.virtual_registries_container_cache_entries_10 USING btree (relative_path, object_storage_key, group_id);
 
 CREATE INDEX index_df62a8c50e ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_07 USING btree (stage_event_hash_id, project_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
+
+CREATE INDEX index_e12e0bea20 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_10 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
 
 CREATE INDEX index_e184323900 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_entries_12 USING btree (upstream_id, status, relative_path, downloaded_at);
 
@@ -39858,11 +39888,15 @@ CREATE INDEX index_fbf2d3310b ON gitlab_partitions_static.analytics_cycle_analyt
 
 CREATE INDEX index_fccbe45c32 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_03 USING btree (stage_event_hash_id, group_id, start_event_timestamp, issue_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
+CREATE INDEX index_fe07d85fc4 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_11 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
+
 CREATE INDEX index_fee429223e ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_07 USING btree (stage_event_hash_id, project_id, end_event_timestamp, merge_request_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
 
 CREATE INDEX index_ff00c038cc ON gitlab_partitions_static.analytics_cycle_analytics_merge_request_stage_events_03 USING btree (stage_event_hash_id, project_id, start_event_timestamp, merge_request_id) WHERE ((end_event_timestamp IS NULL) AND (state_id = 1));
 
 CREATE INDEX index_ff39be5400 ON gitlab_partitions_static.analytics_cycle_analytics_issue_stage_events_04 USING btree (stage_event_hash_id, project_id, end_event_timestamp, issue_id, start_event_timestamp) WHERE (end_event_timestamp IS NOT NULL);
+
+CREATE INDEX index_ff3e09d808 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_remote_entries_00 USING btree (group_id, iid, downloaded_at) WHERE (status = 0);
 
 CREATE INDEX index_ff740d3db5 ON gitlab_partitions_static.virtual_registries_packages_maven_cache_entries_06 USING btree (upstream_id, status, relative_path, downloaded_at);
 
@@ -47938,6 +47972,8 @@ ALTER INDEX index_issue_stage_events_for_consistency_check ATTACH PARTITION gitl
 
 ALTER INDEX index_merge_request_stage_events_group_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_0f28a65451;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_0fc6617161;
+
 ALTER INDEX i_v_container_cache_entries_on_uniq_object_storage_key_group_id ATTACH PARTITION gitlab_partitions_static.index_1004c7b0c8;
 
 ALTER INDEX index_issue_stage_events_group_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_10588dbff0;
@@ -47963,6 +47999,8 @@ ALTER INDEX i_v_container_cache_entries_on_uniq_object_storage_key_group_id ATTA
 ALTER INDEX index_merge_request_stage_events_group_duration ATTACH PARTITION gitlab_partitions_static.index_16627b455e;
 
 ALTER INDEX i_v_container_cache_entries_on_uniq_object_storage_key_group_id ATTACH PARTITION gitlab_partitions_static.index_1714ba4053;
+
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_1718fc2cc6;
 
 ALTER INDEX index_issue_stage_events_for_consistency_check ATTACH PARTITION gitlab_partitions_static.index_17fa2812c5;
 
@@ -48028,6 +48066,8 @@ ALTER INDEX index_issue_stage_events_group_duration ATTACH PARTITION gitlab_part
 
 ALTER INDEX index_merge_request_stage_events_project_duration ATTACH PARTITION gitlab_partitions_static.index_2653e7eeb8;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_2680cdd4ec;
+
 ALTER INDEX idx_vregs_container_cache_entries_on_pending_upt_id_created_at ATTACH PARTITION gitlab_partitions_static.index_27371c023a;
 
 ALTER INDEX index_merge_request_stage_events_group_duration ATTACH PARTITION gitlab_partitions_static.index_2745f5a388;
@@ -48073,6 +48113,8 @@ ALTER INDEX index_merge_request_stage_events_group_in_progress_duration ATTACH P
 ALTER INDEX index_issue_stage_events_group_duration ATTACH PARTITION gitlab_partitions_static.index_2fcfd0dc70;
 
 ALTER INDEX index_merge_request_stage_events_group_duration ATTACH PARTITION gitlab_partitions_static.index_3005c75335;
+
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_30764715b9;
 
 ALTER INDEX index_merge_request_stage_events_project_duration ATTACH PARTITION gitlab_partitions_static.index_3206c1e6af;
 
@@ -48134,6 +48176,8 @@ ALTER INDEX idx_maven_cache_entries_requiring_cleanup_columns ATTACH PARTITION g
 
 ALTER INDEX index_merge_request_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_453a659cb6;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_4585d1a955;
+
 ALTER INDEX index_issue_stage_events_group_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_46b989b294;
 
 ALTER INDEX index_issue_stage_events_for_consistency_check ATTACH PARTITION gitlab_partitions_static.index_4717e7049b;
@@ -48180,6 +48224,8 @@ ALTER INDEX index_issue_stage_events_for_consistency_check ATTACH PARTITION gitl
 
 ALTER INDEX index_mr_stage_events_for_consistency_check ATTACH PARTITION gitlab_partitions_static.index_5034eae5ff;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_5051c3468f;
+
 ALTER INDEX i_v_container_cache_entries_on_uniq_object_storage_key_group_id ATTACH PARTITION gitlab_partitions_static.index_5079dc225c;
 
 ALTER INDEX index_issue_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_50c09f6e04;
@@ -48212,6 +48258,8 @@ ALTER INDEX index_issue_stage_events_group_duration ATTACH PARTITION gitlab_part
 
 ALTER INDEX index_mr_stage_events_for_consistency_check ATTACH PARTITION gitlab_partitions_static.index_59cfd5bc9a;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_5a527bd324;
+
 ALTER INDEX index_issue_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_5a5f39d824;
 
 ALTER INDEX index_issue_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_5b613b5fcf;
@@ -48233,6 +48281,8 @@ ALTER INDEX index_mr_stage_events_for_consistency_check ATTACH PARTITION gitlab_
 ALTER INDEX index_merge_request_stage_events_group_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_5ee060202f;
 
 ALTER INDEX index_issue_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_5f24f6ead2;
+
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_5f9468d857;
 
 ALTER INDEX index_issue_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_5f96b344e2;
 
@@ -48318,6 +48368,8 @@ ALTER INDEX index_issue_stage_events_group_duration ATTACH PARTITION gitlab_part
 
 ALTER INDEX index_merge_request_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_72027c157f;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_72c169b8b9;
+
 ALTER INDEX idx_vregs_container_cache_entries_on_group_id_upstream_etag ATTACH PARTITION gitlab_partitions_static.index_737197bd05;
 
 ALTER INDEX index_merge_request_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_739845f617;
@@ -48355,6 +48407,8 @@ ALTER INDEX index_issue_stage_events_group_duration ATTACH PARTITION gitlab_part
 ALTER INDEX index_merge_request_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_7ecb5b68b4;
 
 ALTER INDEX idx_vregs_container_cache_entries_on_group_id_upstream_etag ATTACH PARTITION gitlab_partitions_static.index_7f2722013e;
+
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_7f4901535d;
 
 ALTER INDEX index_mr_stage_events_for_consistency_check ATTACH PARTITION gitlab_partitions_static.index_7f543eed8d;
 
@@ -48477,6 +48531,8 @@ ALTER INDEX index_merge_request_stage_events_group_in_progress_duration ATTACH P
 ALTER INDEX index_mr_stage_events_for_consistency_check ATTACH PARTITION gitlab_partitions_static.index_a46b7b7f26;
 
 ALTER INDEX index_issue_search_data_on_namespace_id ATTACH PARTITION gitlab_partitions_static.index_a4f5106804;
+
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_a54c7a846a;
 
 ALTER INDEX index_issue_stage_events_group_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_a6999c65c9;
 
@@ -48604,6 +48660,8 @@ ALTER INDEX index_merge_request_stage_events_project_duration ATTACH PARTITION g
 
 ALTER INDEX index_merge_request_stage_events_project_duration ATTACH PARTITION gitlab_partitions_static.index_c1cdd90d0d;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_c23ed308be;
+
 ALTER INDEX index_merge_request_stage_events_group_duration ATTACH PARTITION gitlab_partitions_static.index_c2b951bf20;
 
 ALTER INDEX idx_vregs_container_cache_entries_on_pending_upt_id_created_at ATTACH PARTITION gitlab_partitions_static.index_c2cd6c0784;
@@ -48682,6 +48740,8 @@ ALTER INDEX index_merge_request_stage_events_group_duration ATTACH PARTITION git
 
 ALTER INDEX index_merge_request_stage_events_group_duration ATTACH PARTITION gitlab_partitions_static.index_d35c969634;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_d384a99971;
+
 ALTER INDEX index_issue_search_data_on_namespace_id ATTACH PARTITION gitlab_partitions_static.index_d3b6418940;
 
 ALTER INDEX index_mr_stage_events_for_consistency_check ATTACH PARTITION gitlab_partitions_static.index_d493a5c171;
@@ -48711,6 +48771,8 @@ ALTER INDEX index_issue_stage_events_for_consistency_check ATTACH PARTITION gitl
 ALTER INDEX i_v_container_cache_entries_on_uniq_object_storage_key_group_id ATTACH PARTITION gitlab_partitions_static.index_de3cae661c;
 
 ALTER INDEX index_issue_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_df62a8c50e;
+
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_e12e0bea20;
 
 ALTER INDEX idx_maven_cache_entries_requiring_cleanup_columns ATTACH PARTITION gitlab_partitions_static.index_e184323900;
 
@@ -48814,11 +48876,15 @@ ALTER INDEX index_issue_stage_events_group_in_progress_duration ATTACH PARTITION
 
 ALTER INDEX index_issue_stage_events_group_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_fccbe45c32;
 
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_fe07d85fc4;
+
 ALTER INDEX index_merge_request_stage_events_project_duration ATTACH PARTITION gitlab_partitions_static.index_fee429223e;
 
 ALTER INDEX index_merge_request_stage_events_project_in_progress_duration ATTACH PARTITION gitlab_partitions_static.index_ff00c038cc;
 
 ALTER INDEX index_issue_stage_events_project_duration ATTACH PARTITION gitlab_partitions_static.index_ff39be5400;
+
+ALTER INDEX index_vr_pkg_maven_cache_rem_entries_on_requiring_cleanup ATTACH PARTITION gitlab_partitions_static.index_ff3e09d808;
 
 ALTER INDEX idx_maven_cache_entries_requiring_cleanup_columns ATTACH PARTITION gitlab_partitions_static.index_ff740d3db5;
 

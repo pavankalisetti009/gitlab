@@ -9,7 +9,6 @@ module VirtualRegistries
 
           belongs_to :upstream,
             class_name: 'VirtualRegistries::Packages::Maven::Upstream',
-            inverse_of: :cache_entries,
             optional: false
 
           update_namespace_statistics namespace_statistics_name: :dependency_proxy_size

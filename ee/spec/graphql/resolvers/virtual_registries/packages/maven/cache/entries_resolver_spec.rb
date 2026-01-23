@@ -10,11 +10,15 @@ RSpec.describe Resolvers::VirtualRegistries::Packages::Maven::Cache::EntriesReso
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
   let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
   let_it_be(:entry1) do
-    create(:virtual_registries_packages_maven_cache_entry, upstream: upstream, relative_path: 'com/example/app.jar')
+    create(
+      :virtual_registries_packages_maven_cache_remote_entry,
+      upstream: upstream,
+      relative_path: 'com/example/app.jar'
+    )
   end
 
   let_it_be(:entry2) do
-    create(:virtual_registries_packages_maven_cache_entry, upstream: upstream, relative_path: 'org/test/lib.jar')
+    create(:virtual_registries_packages_maven_cache_remote_entry, upstream: upstream, relative_path: 'org/test/lib.jar')
   end
 
   let(:virtual_registry_available) { true }

@@ -8,7 +8,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::Counters::BufferedCounter, :clean_gitlab_redis_shared_state, feature_category: :groups_and_projects do
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:counter_record) { create(:virtual_registries_packages_maven_cache_entry) }
+  let_it_be(:counter_record) { create(:virtual_registries_packages_maven_cache_remote_entry) }
 
   let(:attribute) { :downloads_count }
 

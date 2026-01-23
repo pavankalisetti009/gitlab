@@ -59,7 +59,7 @@ module VirtualRegistries
         end
 
         def cache_entry
-          VirtualRegistries::Packages::Maven::Cache::Entry
+          VirtualRegistries::Packages::Maven::Cache::Remote::Entry
             .default
             .for_group(registry.group)
             .for_upstream(registry.upstreams)

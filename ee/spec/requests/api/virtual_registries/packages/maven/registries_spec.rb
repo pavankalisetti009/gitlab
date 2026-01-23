@@ -363,12 +363,14 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     subject(:api_request) { delete api(url), headers: headers }
 
     before_all do
-      create_list(:virtual_registries_packages_maven_cache_entry, 2, upstream:) # 2 default
-      create(:virtual_registries_packages_maven_cache_entry, :pending_destruction, upstream:) # 1 pending destruction
-      create(:virtual_registries_packages_maven_cache_entry) # 1 default in another upstream
+      create_list(:virtual_registries_packages_maven_cache_remote_entry, 2, upstream:) # 2 default
+      # 1 pending destruction
+      create(:virtual_registries_packages_maven_cache_remote_entry, :pending_destruction, upstream:)
+      create(:virtual_registries_packages_maven_cache_remote_entry) # 1 default in another upstream
       create(:virtual_registries_packages_maven_registry).tap do |registry2|
         create(:virtual_registries_packages_maven_upstream, registries: [registry, registry2]).tap do |upstream2|
-          create(:virtual_registries_packages_maven_cache_entry, upstream: upstream2) # 1 default in a shared upstream
+          # 1 default in a shared upstream
+          create(:virtual_registries_packages_maven_cache_remote_entry, upstream: upstream2)
         end
       end
     end
@@ -376,7 +378,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     shared_examples 'successful response' do
       it 'returns a successful response' do
         expect { api_request }.to change {
-          ::VirtualRegistries::Packages::Maven::Cache::Entry.pending_destruction.count
+          ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry.pending_destruction.count
         }.by(3) # 2 created in `before_all` + 1 from 'for maven virtual registry api setup' shared context
 
         expect(response).to have_gitlab_http_status(:no_content)

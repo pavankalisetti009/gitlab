@@ -27,8 +27,8 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
         expect(service).to receive(:can?).and_call_original
 
         if action.in?(%i[download_file download_digest])
-          expect_next_found_instance_of(::VirtualRegistries::Packages::Maven::Cache::Entry) do |expected_cache_entry|
-            expect(expected_cache_entry).to receive(:bump_downloads_count)
+          expect_next_found_instance_of(::VirtualRegistries::Packages::Maven::Cache::Remote::Entry) do |cache_entry|
+            expect(cache_entry).to receive(:bump_downloads_count)
           end
         end
 
@@ -75,12 +75,11 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
     context 'with a User' do
       let_it_be(:processing_cache_entry) do
         create(
-          :virtual_registries_packages_maven_cache_entry,
+          :virtual_registries_packages_maven_cache_remote_entry,
           :upstream_checked,
           :processing,
           relative_path: "/#{request_path}",
-          upstream: upstream,
-          group: registry.group
+          upstream: upstream
         )
       end
 
@@ -128,7 +127,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
         # `stale_cache_entry`) and aliases it to `cache_entry` for compatibility with shared
         # examples that reference `cache_entry`.
         let(:fresh_cache_entry) do
-          create(:virtual_registries_packages_maven_cache_entry,
+          create(:virtual_registries_packages_maven_cache_remote_entry,
             :upstream_checked,
             upstream: upstream,
             relative_path: "/#{path}",
@@ -146,7 +145,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
 
         context 'and is too old' do
           let(:stale_cache_entry) do
-            create(:virtual_registries_packages_maven_cache_entry,
+            create(:virtual_registries_packages_maven_cache_remote_entry,
               :upstream_checked,
               upstream: upstream,
               relative_path: "/#{path}",
@@ -202,7 +201,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
 
           context 'when the cache entry does not exist' do
             before do
-              VirtualRegistries::Packages::Maven::Cache::Entry.delete_all
+              VirtualRegistries::Packages::Maven::Cache::Remote::Entry.delete_all
 
               stub_external_registry_request(etag: etag_returned_by_upstream)
             end
@@ -227,7 +226,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
 
           context 'when the cache entry does not exist' do
             before do
-              VirtualRegistries::Packages::Maven::Cache::Entry.delete_all
+              VirtualRegistries::Packages::Maven::Cache::Remote::Entry.delete_all
 
               stub_external_registry_request(etag: etag_returned_by_upstream)
             end

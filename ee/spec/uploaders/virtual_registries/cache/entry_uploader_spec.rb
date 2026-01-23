@@ -6,7 +6,7 @@ RSpec.describe ::VirtualRegistries::Cache::EntryUploader, feature_category: :vir
   let(:object_storage_key) { 'object/storage/key' }
   let(:cache_entry) do
     build_stubbed(
-      :virtual_registries_packages_maven_cache_entry,
+      :virtual_registries_packages_maven_cache_remote_entry,
       object_storage_key: object_storage_key,
       relative_path: 'relative/path/test.txt'
     )

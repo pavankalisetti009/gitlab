@@ -36,7 +36,7 @@ RSpec.describe ::VirtualRegistries::Cache::EntriesFinder, feature_category: :vir
 
       context 'when cache entry is marked for destruction' do
         before do
-          cache_entries.first.mark_as_pending_destruction
+          cache_entries.first.pending_destruction!
         end
 
         it { is_expected.to match_array([cache_entries.last]) }
@@ -46,7 +46,7 @@ RSpec.describe ::VirtualRegistries::Cache::EntriesFinder, feature_category: :vir
 
   describe 'Maven cache entries' do
     it_behaves_like 'cache entries finder',
-      cache_entry_factory: :virtual_registries_packages_maven_cache_entry,
+      cache_entry_factory: :virtual_registries_packages_maven_cache_remote_entry,
       upstream_factory: :virtual_registries_packages_maven_upstream
   end
 

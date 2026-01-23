@@ -72,7 +72,6 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
       is_expected.to belong_to(:upstream)
         .class_name('VirtualRegistries::Packages::Maven::Upstream')
         .required
-        .inverse_of(:cache_entries)
     end
   end
 

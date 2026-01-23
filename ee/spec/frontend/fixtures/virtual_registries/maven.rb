@@ -14,7 +14,7 @@ RSpec.describe 'Maven Virtual Registries (JavaScript fixtures)', feature_categor
   end
 
   let_it_be(:cache_entry) do
-    create(:virtual_registries_packages_maven_cache_entry, upstream:)
+    create(:virtual_registries_packages_maven_cache_remote_entry, upstream:)
   end
 
   describe GraphQL::Query, type: :request do

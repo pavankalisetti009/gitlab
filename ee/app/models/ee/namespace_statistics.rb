@@ -22,6 +22,9 @@ module EE
       super
 
       self.dependency_proxy_size += ::VirtualRegistries::Packages::Maven::Cache::Entry.for_group(namespace).sum(:size)
+      self.dependency_proxy_size += ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry
+                                      .for_group(namespace)
+                                      .sum(:size)
     end
 
     class_methods do
