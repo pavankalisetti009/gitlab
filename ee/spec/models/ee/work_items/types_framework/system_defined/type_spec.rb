@@ -929,7 +929,7 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
         end
 
         context 'when a custom lifecycle exists for a different work item type' do
-          let_it_be(:other_work_item_type_system_defined) { create(:work_item_system_defined_type, base_type: :task) }
+          let_it_be(:other_work_item_type_system_defined) { build(:work_item_system_defined_type, base_type: :task) }
 
           # TODO: Remove the `work_item_type` once we switch to system defined work item types.
           let_it_be(:other_work_item_type) do

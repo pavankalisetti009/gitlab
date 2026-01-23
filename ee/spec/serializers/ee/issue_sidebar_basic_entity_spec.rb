@@ -53,7 +53,7 @@ RSpec.describe EE::IssueSidebarBasicEntity do
   describe 'can_update_escalation_policy' do
     before do
       issue.update!(
-        work_item_type: WorkItems::Type.default_by_type(:incident)
+        work_item_type_id: build(:work_item_system_defined_type, :incident).id
       )
       stub_licensed_features(oncall_schedules: true, escalation_policies: true)
       project.add_developer(user)

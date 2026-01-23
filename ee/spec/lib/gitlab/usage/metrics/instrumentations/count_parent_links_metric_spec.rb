@@ -20,11 +20,12 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountParentLinksMetric,
 
   context 'when parent_type is epic' do
     let(:expected_value) { 2 }
+    let(:work_item_type) { build(:work_item_system_defined_type, :epic) }
     let(:expected_query) do
       <<~SQL.squish
         SELECT COUNT("work_item_parent_links"."id") FROM "work_item_parent_links"
         INNER JOIN "issues" "work_item_parent" ON "work_item_parent"."id" = "work_item_parent_links"."work_item_parent_id"
-        WHERE "work_item_parent"."work_item_type_id" = #{WorkItems::Type.default_by_type(:epic).id}
+        WHERE "work_item_parent"."work_item_type_id" = #{work_item_type.id}
       SQL
     end
 
@@ -34,11 +35,12 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountParentLinksMetric,
 
   context 'when parent_type is issue' do
     let(:expected_value) { 1 }
+    let(:work_item_type) { build(:work_item_system_defined_type, :issue) }
     let(:expected_query) do
       <<~SQL.squish
         SELECT COUNT("work_item_parent_links"."id") FROM "work_item_parent_links"
         INNER JOIN "issues" "work_item_parent" ON "work_item_parent"."id" = "work_item_parent_links"."work_item_parent_id"
-        WHERE "work_item_parent"."work_item_type_id" = #{WorkItems::Type.default_by_type(:issue).id}
+        WHERE "work_item_parent"."work_item_type_id" = #{work_item_type.id}
       SQL
     end
 

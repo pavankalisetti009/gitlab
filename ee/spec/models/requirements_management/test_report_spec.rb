@@ -78,6 +78,8 @@ RSpec.describe RequirementsManagement::TestReport, feature_category: :requiremen
 
     context 'if the CI report contains some entries' do
       context 'and the entries are valid' do
+        let(:requirement_type_id) { FactoryBot.build(:work_item_system_defined_type, :requirement).id }
+
         context 'and legacy is false' do
           let_it_be(:build) { create(:ee_ci_build, :requirements_v2_report, project: project) }
           let_it_be(:requirement1) { create(:work_item, :requirement, iid: 11, state: :opened, project: project) }
@@ -101,7 +103,6 @@ RSpec.describe RequirementsManagement::TestReport, feature_category: :requiremen
 
             reports = described_class.where(build: build)
 
-            requirement_type_id = WorkItems::Type.requirement.first.id
             expect(reports).to match_array(
               [
                 have_attributes(
@@ -129,7 +130,6 @@ RSpec.describe RequirementsManagement::TestReport, feature_category: :requiremen
 
               reports = described_class.where(build: build)
 
-              requirement_type_id = WorkItems::Type.requirement.first.id
               expect(reports).to match_array(
                 [
                   have_attributes(
@@ -170,7 +170,6 @@ RSpec.describe RequirementsManagement::TestReport, feature_category: :requiremen
 
             reports = described_class.where(build: build)
 
-            requirement_type_id = WorkItems::Type.requirement.first.id
             expect(reports).to match_array(
               [
                 have_attributes(

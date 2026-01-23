@@ -329,9 +329,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     let_it_be(:author) { create(:user) }
     let_it_be(:assignee) { create(:user) }
     let_it_be(:project) { create(:project, :private, group: group) }
-    let_it_be(:project_epic) do
-      create(:issue, work_item_type: WorkItems::Type.default_by_type(:epic), project: project)
-    end
+    let_it_be(:project_epic) { create(:issue, :epic, project: project) }
 
     context 'when epics feature is available' do
       before do

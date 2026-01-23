@@ -14,8 +14,8 @@ RSpec.describe WorkItems::ImportCsvService, feature_category: :team_planning do
     described_class.new(user, project, uploader)
   end
 
-  let_it_be(:issue_type) { ::WorkItems::Type.default_issue_type }
-  let_it_be(:requirement_type) { ::WorkItems::Type.default_by_type(:requirement) }
+  let_it_be(:issue_type) { build(:work_item_system_defined_type, :issue) }
+  let_it_be(:requirement_type) { build(:work_item_system_defined_type, :requirement) }
 
   let(:work_items) { ::WorkItems::WorkItemsFinder.new(user, project: project).execute }
 

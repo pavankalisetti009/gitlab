@@ -18,11 +18,12 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountRelatedWorkItemLin
   end
 
   let(:expected_value) { 2 }
+  let(:work_item_type) { build(:work_item_system_defined_type, :epic) }
   let(:expected_query) do
     <<~SQL.squish
       SELECT COUNT("issue_links"."id") FROM "issue_links"
       INNER JOIN "issues" "target" ON "target"."id" = "issue_links"."target_id"
-      WHERE "target"."work_item_type_id" = #{WorkItems::Type.default_by_type(:epic).id}
+      WHERE "target"."work_item_type_id" = #{work_item_type.id}
     SQL
   end
 

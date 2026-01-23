@@ -140,7 +140,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
       context 'on an incident' do
         before do
-          issue.update!(work_item_type: WorkItems::Type.default_by_type(:incident))
+          issue.update!(work_item_type_id: build(:work_item_system_defined_type, :incident).id)
         end
 
         it 'leaves the note empty' do
@@ -234,7 +234,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
       context 'on an incident' do
         before do
-          issue.assign_attributes(work_item_type: WorkItems::Type.default_by_type(:incident))
+          issue.assign_attributes(work_item_type_id: build(:work_item_system_defined_type, :incident).id)
           issue.save!(validate: false)
         end
 
@@ -245,7 +245,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
       context 'on a test case' do
         before do
-          issue.assign_attributes(work_item_type: WorkItems::Type.default_by_type(:test_case))
+          issue.assign_attributes(work_item_type_id: build(:work_item_system_defined_type, :test_case).id)
           issue.save!(validate: false)
         end
 
@@ -744,7 +744,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
         context 'on an incident' do
           before do
-            issue.update!(work_item_type: WorkItems::Type.default_by_type(:incident))
+            issue.update!(work_item_type_id: build(:work_item_system_defined_type, :incident).id)
           end
 
           it 'does not promote to an epic' do
@@ -879,7 +879,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
         end
 
         before do
-          epic_type = WorkItems::Type.default_by_type(:epic)
+          epic_type = build(:work_item_system_defined_type, :epic)
 
           allow(WorkItems::TypesFramework::SystemDefined::HierarchyRestriction).to receive(:find_by).with(
             parent_type_id: epic_type.id,
