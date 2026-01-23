@@ -24815,9 +24815,6 @@ msgstr ""
 msgid "DesignManagement|The maximum number of designs allowed to be uploaded is %{upload_limit}. Please try again."
 msgstr ""
 
-msgid "DesignManagement|To upload designs, you'll need to enable LFS and have an admin enable hashed storage. %{linkStart}More information%{linkEnd}"
-msgstr ""
-
 msgid "DesignManagement|Unselect the design"
 msgstr ""
 
