@@ -145,6 +145,7 @@ module QA
                     input.dispatchEvent(new Event('change', { bubbles: true }));
                   }
                 ")
+                wait_for_requests
               else
                 page.execute_script("document.querySelector('#secret-permission-principal button').click()")
                 wait_for_requests
