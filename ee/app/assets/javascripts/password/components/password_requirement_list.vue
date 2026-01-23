@@ -20,6 +20,7 @@ import {
 } from '../constants';
 
 export default {
+  name: 'PasswordRequirementList',
   components: {
     GlIcon,
   },
