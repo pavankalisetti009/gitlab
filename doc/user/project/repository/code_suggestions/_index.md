@@ -55,12 +55,9 @@ To use Code Suggestions:
 - If you have the GitLab Duo Core add-on, [turn on IDE features](../../../gitlab_duo/turn_on_off.md#turn-gitlab-duo-core-on-or-off).
 - [Set up Code Suggestions](set_up.md).
 
-{{< alert type="note" >}}
-
-GitLab Duo requires GitLab 17.2 or later. For GitLab Duo Core access, and for the best user experience and results,
-[upgrade to GitLab 18.0 or later](../../../../update/_index.md). Earlier versions might continue to work, however the experience might be degraded.
-
-{{< /alert >}}
+> [!note]
+> GitLab Duo requires GitLab 17.2 or later. For GitLab Duo Core access, and for the best user experience and results,
+> [upgrade to GitLab 18.0 or later](../../../../update/_index.md). Earlier versions might continue to work, however the experience might be degraded.
 
 ## Use Code Suggestions
 
