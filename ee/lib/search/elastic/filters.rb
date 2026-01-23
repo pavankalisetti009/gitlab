@@ -893,15 +893,6 @@ module Search
           query_hash
         end
 
-        def by_knn(query_hash:, options:)
-          return query_hash unless options[:embeddings]
-          return query_hash unless options[:vectors_supported] == :elasticsearch
-
-          filters = query_hash.dig(:query, :bool, :filter)
-
-          query_hash.deep_merge(knn: { filter: filters })
-        end
-
         def by_search_level_and_group_membership(query_hash:, options:)
           raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
 

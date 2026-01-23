@@ -9,13 +9,6 @@ module Search
       ADVANCED_QUERY_SYNTAX_REGEX = /#{BASIC_OPERATORS_REGEX}|#{INCLUDE_EXCLUDE_REGEX}/
 
       DEFAULT_RELATED_ID_BOOST = 0.7
-      UNIT_PRIMITIVE = 'semantic_search_issue'
-      KNN_K = 25
-      KNN_NUM_CANDIDATES = 100
-      DEFAULT_HYBRID_SIMILARITY = 0.6
-      DEFAULT_HYBRID_BOOST = 5
-      SIMPLE_QUERY_STRING_BOOST = 0.2
-      ALLOWED_SEARCH_CLIENTS = %i[elasticsearch opensearch].freeze
 
       class << self
         include ::Elastic::Latest::QueryContext::Aware
@@ -63,20 +56,6 @@ module Search
           query_hash[:highlight] = apply_highlight(query_fields) unless options[:count_only]
 
           query_hash
-        end
-
-        def by_knn(query:, options:)
-          return by_full_text(query: query, options: options) unless options[:vectors_supported]
-
-          embedding = get_embedding_for_hybrid_query(query: query, options: options)
-          return by_full_text(query: query, options: options) unless embedding
-          raise ArgumentError, 'Invalid search client' if ALLOWED_SEARCH_CLIENTS.exclude?(options[:vectors_supported])
-
-          if options[:vectors_supported] == :opensearch
-            build_opensearch_knn_query(query: query, options: options, embedding: embedding)
-          else
-            build_elasticsearch_knn_query(query: query, options: options, embedding: embedding)
-          end
         end
 
         private
@@ -141,51 +120,6 @@ module Search
           else
             bool_expr.must << query
           end
-        end
-
-        def get_embedding_for_hybrid_query(query:, options:)
-          return options[:embeddings] if options[:embeddings]
-
-          options[:embeddings] = embedding(query, options)
-        rescue StandardError => e
-          Gitlab::ErrorTracking.track_exception(e)
-          nil
-        end
-
-        def build_opensearch_knn_query(query:, options:, embedding:)
-          options[:simple_query_string_boost] = SIMPLE_QUERY_STRING_BOOST
-          options[:keyword_match_clause] = :should
-
-          knn_query = {
-            knn: {
-              options[:embedding_field] => {
-                k: KNN_K,
-                vector: embedding
-              }
-            }
-          }
-
-          query_hash = by_full_text(query: query, options: options)
-          query_hash[:query][:bool][:should].append(knn_query)
-
-          query_hash
-        end
-
-        def build_elasticsearch_knn_query(query:, options:, embedding:)
-          query_hash = by_full_text(query: query, options: options)
-
-          knn_query = {
-            knn: {
-              field: options[:embedding_field].to_s,
-              query_vector: embedding,
-              boost: options[:hybrid_boost] || DEFAULT_HYBRID_BOOST,
-              k: KNN_K,
-              num_candidates: KNN_NUM_CANDIDATES,
-              similarity: options[:hybrid_similarity] || DEFAULT_HYBRID_SIMILARITY
-            }
-          }
-
-          query_hash.merge(knn_query)
         end
 
         def remove_fields_boost(fields)
@@ -258,20 +192,6 @@ module Search
             pre_tags: [::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG],
             post_tags: [::Elastic::Latest::GitClassProxy::HIGHLIGHT_END_TAG]
           }
-        end
-
-        def embedding(query, options)
-          tracking_context = { action: 'hybrid_issue_search_embedding' }
-          user = options[:current_user]
-          model = options[:model]
-
-          if embeddings_throttled_after_increment?
-            raise StandardError, "Rate limited endpoint '#{ENDPOINT}' is throttled"
-          end
-
-          Gitlab::Llm::VertexAi::Embeddings::Text
-            .new(query, user: user, tracking_context: tracking_context, unit_primitive: UNIT_PRIMITIVE, model: model)
-            .execute
         end
       end
     end

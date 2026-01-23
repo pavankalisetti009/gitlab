@@ -565,42 +565,6 @@ RSpec.describe ::Search::Elastic::Filters, :elastic_helpers, feature_category: :
     end
   end
 
-  describe '.by_knn' do
-    let_it_be(:query_hash) do
-      { query: { bool: { filter: [
-        { term: { archived: { value: false } } }
-      ] } } }
-    end
-
-    let_it_be(:embedding) { [0.1, 0.2, 0.3] }
-
-    subject(:by_knn) { described_class.by_knn(query_hash: query_hash, options: options) }
-
-    context 'when embedding is present and vectors are supported' do
-      let_it_be(:options) { { embeddings: embedding, vectors_supported: :elasticsearch } }
-
-      it 'merges the knn filter into the query_hash' do
-        expect(by_knn).to eq(query_hash.deep_merge(knn: { filter: [{ term: { archived: { value: false } } }] }))
-      end
-    end
-
-    context 'when embedding is not present' do
-      let_it_be(:options) { { embeddings: nil } }
-
-      it 'returns the original query_hash' do
-        expect(by_knn).to eq(query_hash)
-      end
-    end
-
-    context 'when vectors are not supported' do
-      let_it_be(:options) { { embeddings: embedding, vectors_supported: false } }
-
-      it 'returns the original query_hash' do
-        expect(by_knn).to eq(query_hash)
-      end
-    end
-  end
-
   describe '.by_label_ids' do
     let_it_be(:label_title) { 'My label' }
     let_it_be(:group) { create(:group) }

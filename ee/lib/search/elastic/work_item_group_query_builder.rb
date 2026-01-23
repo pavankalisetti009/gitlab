@@ -17,11 +17,6 @@ module Search
         ::Search::Elastic::Filters.by_search_level_and_group_membership(query_hash: query_hash, options: options)
       end
 
-      override :hybrid_work_item_search?
-      def hybrid_work_item_search?
-        false
-      end
-
       override :extra_options
       def extra_options
         # reference for epic visibility: https://docs.gitlab.com/user/group/epics/manage_epics/#who-can-view-an-epic
