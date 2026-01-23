@@ -1,6 +1,6 @@
 <script>
 import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
-import { n__ } from '~/locale';
+import { n__, s__, sprintf } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
@@ -21,13 +21,24 @@ export default {
     UpstreamsList,
   },
   mixins: [upstreamsFetchMixin, glAbilitiesMixin()],
-  inject: ['fullPath'],
+  inject: ['fullPath', 'i18n', 'maxRegistriesCount'],
   data() {
     return {
       registriesCount: null,
     };
   },
   computed: {
+    pageHeadingDescription() {
+      return sprintf(
+        s__('VirtualRegistry|You can add up to %{count} registries per top-level group.'),
+        {
+          count: this.maxRegistriesCount,
+        },
+      );
+    },
+    maxRegistriesReached() {
+      return this.registriesCount === this.maxRegistriesCount;
+    },
     isRegistriesRoute() {
       return this.$route.name === CONTAINER_REGISTRIES_INDEX;
     },
@@ -49,6 +60,9 @@ export default {
         this.registriesCount,
       );
     },
+    canCreateRegistry() {
+      return this.registriesCount !== null && this.glAbilities.createVirtualRegistry;
+    },
   },
   methods: {
     handleRegistriesTabClick() {
@@ -66,13 +80,15 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('VirtualRegistry|Container virtual registries')">
-      <template #actions>
-        <gl-button
-          v-if="glAbilities.createVirtualRegistry"
-          :to="{ name: 'REGISTRY_NEW' }"
-          variant="confirm"
-        >
+    <page-heading :heading="i18n.registries.pageHeading">
+      <template #description>
+        {{ pageHeadingDescription }}
+      </template>
+      <template v-if="canCreateRegistry" #actions>
+        <span v-if="maxRegistriesReached" role="status" aria-live="polite">{{
+          s__('VirtualRegistry|Maximum number of registries reached.')
+        }}</span>
+        <gl-button v-else :to="{ name: 'REGISTRY_NEW' }" variant="confirm">
           {{ s__('VirtualRegistry|Create registry') }}
         </gl-button>
       </template>

@@ -43,6 +43,9 @@ export default function createRouter(base) {
                 name: 'REGISTRY_NEW',
                 path: 'new',
                 component: RegistriesNewPage,
+                meta: {
+                  text: s__('VirtualRegistries|New registry'),
+                },
                 beforeEnter(to, from, next) {
                   if (window.gon?.abilities?.createVirtualRegistry) {
                     next();

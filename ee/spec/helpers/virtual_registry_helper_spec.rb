@@ -263,7 +263,8 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
     it 'returns container template data' do
       is_expected.to eq({
         full_path: group.full_path,
-        base_path: group_virtual_registries_container_path(group)
+        base_path: group_virtual_registries_container_path(group),
+        max_registries_count: VirtualRegistries::Container::Registry::MAX_REGISTRY_COUNT
       })
     end
   end
