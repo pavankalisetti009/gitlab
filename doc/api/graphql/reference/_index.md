@@ -9807,6 +9807,27 @@ Input type: `MergeRequestSetAssigneesInput`
 | <a id="mutationmergerequestsetassigneeserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationmergerequestsetassigneesmergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge request after mutation. |
 
+### `Mutation.mergeRequestSetBlockingMergeRequests`
+
+Input type: `MergeRequestSetBlockingMergeRequestsInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmergerequestsetblockingmergerequestsblockingmergerequestreferences"></a>`blockingMergeRequestReferences` | [`[String!]!`](#string) | Array of blocking merge request references (e.g., "!123", "project!456"). |
+| <a id="mutationmergerequestsetblockingmergerequestsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmergerequestsetblockingmergerequestsiid"></a>`iid` | [`String!`](#string) | IID of the merge request to mutate. |
+| <a id="mutationmergerequestsetblockingmergerequestsprojectpath"></a>`projectPath` | [`ID!`](#id) | Project the merge request to mutate is in. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmergerequestsetblockingmergerequestsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmergerequestsetblockingmergerequestserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationmergerequestsetblockingmergerequestsmergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge request after mutation. |
+
 ### `Mutation.mergeRequestSetDraft`
 
 Input type: `MergeRequestSetDraftInput`
