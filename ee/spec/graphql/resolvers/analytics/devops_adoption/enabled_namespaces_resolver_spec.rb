@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Analytics::DevopsAdoption::EnabledNamespacesResolver do
+RSpec.describe Resolvers::Analytics::DevopsAdoption::EnabledNamespacesResolver, feature_category: :devops_reports do
   include GraphqlHelpers
 
   let_it_be(:admin_user) { create(:user, :admin) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::DevopsAdoption::SnapshotsFinder do
+RSpec.describe Analytics::DevopsAdoption::SnapshotsFinder, feature_category: :devops_reports do
   let_it_be(:enabled_namespace) { create(:devops_adoption_enabled_namespace) }
   let_it_be(:first_end_time) { 1.year.ago.end_of_month }
   let_it_be(:snapshot1) { create(:devops_adoption_snapshot, namespace_id: enabled_namespace.namespace_id, end_time: first_end_time) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::DevopsAdoption::EnabledNamespacesFinder do
+RSpec.describe Analytics::DevopsAdoption::EnabledNamespacesFinder, feature_category: :devops_reports do
   let_it_be(:admin_user) { create(:user, :admin) }
   let(:params) { {} }
 
