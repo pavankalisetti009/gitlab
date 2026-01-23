@@ -180,23 +180,6 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
           end
         end
       end
-
-      context 'when restrict_namespace_api_billing_fields feature flag is disabled' do
-        before do
-          stub_feature_flags(restrict_namespace_api_billing_fields: false)
-        end
-
-        it 'includes billing fields when guest' do
-          get api("/namespaces", user)
-
-          guest_group = json_response.find { |resource| resource['id'] == group1.id }
-
-          expect(guest_group['max_seats_used']).to be_present
-          expect(guest_group['max_seats_used_changed_at']).to be_present
-          expect(guest_group['seats_in_use']).to be_present
-          expect(guest_group['end_date']).to be_present
-        end
-      end
     end
 
     context 'without gitlab subscription' do
