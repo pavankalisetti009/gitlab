@@ -6453,6 +6453,9 @@ msgstr ""
 msgid "AdminUsers|Can create top-level group"
 msgstr ""
 
+msgid "AdminUsers|Cannot be nil."
+msgstr ""
+
 msgid "AdminUsers|Cannot sign in or access instance information"
 msgstr ""
 
@@ -6472,6 +6475,9 @@ msgid "AdminUsers|Confirm user"
 msgstr ""
 
 msgid "AdminUsers|Confirm user %{username}?"
+msgstr ""
+
+msgid "AdminUsers|Control when a user will need to enter an OTP during sign in."
 msgstr ""
 
 msgid "AdminUsers|Could not load custom admin roles."
@@ -6529,6 +6535,9 @@ msgid "AdminUsers|Edit"
 msgstr ""
 
 msgid "AdminUsers|Edit service account"
+msgstr ""
+
+msgid "AdminUsers|Email OTP required after"
 msgstr ""
 
 msgid "AdminUsers|Export permissions as CSV (max 100,000 users)"
