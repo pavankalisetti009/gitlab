@@ -193,5 +193,11 @@ RSpec.describe Types::Security::TrackedRefType, feature_category: :vulnerability
         end
       end
     end
+
+    describe 'connection type' do
+      it 'uses CountableConnectionType for pagination with count' do
+        expect(described_class.connection_type_class).to eq(Types::CountableConnectionType)
+      end
+    end
   end
 end

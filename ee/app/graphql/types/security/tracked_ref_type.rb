@@ -6,6 +6,8 @@ module Types
       graphql_name 'SecurityTrackedRef'
       description 'Represents a ref (branch or tag) tracked for security vulnerabilities'
 
+      connection_type_class Types::CountableConnectionType
+
       authorize :read_security_project_tracked_refs
 
       field :id, GraphQL::Types::ID, null: false,
