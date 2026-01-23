@@ -170,22 +170,13 @@ RSpec.describe Ai::Catalog::FoundationalFlow, feature_category: :duo_agent_platf
         item[:foundational_flow_reference].present?
       end
 
-      expect(foundational_workflows.size).to be >= 3
+      expect(foundational_workflows.size).to be >= 6
 
       foundational_workflows.each do |workflow|
         expect(workflow[:foundational_flow_reference]).to be_present
         expect(workflow[:description]).to be_present
         expect(workflow[:name]).to be_present
       end
-    end
-
-    it 'includes non-foundational workflow with workflow_definition' do
-      non_foundational_workflow = described_class::ITEMS.find do |item|
-        item[:foundational_flow_reference].blank?
-      end
-
-      expect(non_foundational_workflow).to be_present
-      expect(non_foundational_workflow[:workflow_definition]).to eq('resolve_sast_vulnerability/v1')
     end
 
     it 'allows workflows without foundational_flow_reference' do

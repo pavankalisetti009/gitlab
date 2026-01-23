@@ -113,14 +113,15 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
         expect(Ai::Catalog::Item.foundational_flows.count).to eq(workflows_with_reference)
       end
 
-      it 'does not seed non-foundational workflows' do
+      it 'seeds resolve_sast_vulnerability as a foundational workflow' do
         service.execute
 
-        non_foundational_item = Ai::Catalog::Item.find_by(
+        resolve_sast_item = Ai::Catalog::Item.find_by(
           foundational_flow_reference: 'resolve_sast_vulnerability/v1'
         )
 
-        expect(non_foundational_item).to be_nil
+        expect(resolve_sast_item).to be_present
+        expect(resolve_sast_item.name).to eq('Resolve SAST Vulnerability')
       end
     end
 
@@ -181,11 +182,11 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
         )
       end
 
-      it 'seeds exactly 5 foundational workflows' do
+      it 'seeds exactly 6 foundational workflows' do
         service.execute
 
-        # We have 5 foundational workflows and 1 non-foundational
-        expect(Ai::Catalog::Item.foundational_flows.count).to eq(5)
+        # We have 6 foundational workflows
+        expect(Ai::Catalog::Item.foundational_flows.count).to eq(6)
       end
 
       it 'ensures all seeded items have descriptions' do

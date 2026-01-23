@@ -43,18 +43,59 @@ module Vulnerabilities
 
     def trigger_workflow(finding)
       vulnerability = finding.vulnerability
+      project = finding.project
+      user = project.first_owner || vulnerability.author
 
-      ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
-        container: finding.project,
-        current_user: vulnerability.author,
-        workflow_definition: ::Ai::Catalog::FoundationalFlow[WORKFLOW_DEFINITION],
-        goal: vulnerability.id.to_s,
-        source_branch: finding.project.default_branch
+      consumer = find_consumer(user, project)
+      log_consumer_not_found(finding) unless consumer
+
+      service_account = find_service_account(consumer)
+
+      flow_params = {
+        item_consumer: consumer,
+        service_account: service_account,
+        execute_workflow: true,
+        event_type: 'sidekiq_worker',
+        user_prompt: vulnerability.id.to_s
+      }
+
+      ::Ai::Catalog::Flows::ExecuteService.new(
+        project: project,
+        current_user: user,
+        params: flow_params
       ).execute
+    end
+
+    def find_consumer(user, project)
+      ::Ai::Catalog::ItemConsumersFinder.new(user, params: {
+        project_id: project.id,
+        item_type: Ai::Catalog::Item::FLOW_TYPE,
+        foundational_flow_reference: WORKFLOW_DEFINITION
+      }).execute.first
+    end
+
+    def find_service_account(consumer)
+      return unless consumer
+
+      if consumer.project.present?
+        consumer.parent_item_consumer&.service_account
+      else
+        consumer.service_account
+      end
+    end
+
+    def log_consumer_not_found(finding)
+      Gitlab::AppLogger.error(
+        message: 'No consumer configured for vulnerability resolution workflow',
+        finding_id: finding.id,
+        project_id: finding.project_id,
+        workflow_definition: WORKFLOW_DEFINITION
+      )
     end
 
     def create_triggered_workflow_record(finding, response)
       workflow = response.payload[:workflow]
+      return unless workflow
 
       ::Vulnerabilities::TriggeredWorkflow.create!(
         vulnerability_occurrence_id: finding.id,
@@ -65,7 +106,7 @@ module Vulnerabilities
       Gitlab::ErrorTracking.track_exception(
         error,
         vulnerability_id: finding.vulnerability_id,
-        workflow_id: workflow.id
+        workflow_id: workflow&.id
       )
 
       nil

@@ -50,6 +50,7 @@ module Ai
           feature_maturity: "ga",
           description: "GitLab resolve SAST vulnerability",
           avatar: "security-flow.png",
+          foundational_flow_reference: "resolve_sast_vulnerability/v1",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
