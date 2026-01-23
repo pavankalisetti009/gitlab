@@ -388,9 +388,33 @@ describe('workspaces/user/pages/create.vue', () => {
       });
     });
 
+    describe('when devfile is null', () => {
+      beforeEach(async () => {
+        fetchBlobContentQueryHandler.mockResolvedValueOnce({
+          data: {
+            project: {
+              id: 'gid://gitlab/Project/1',
+              repository: { blobs: { nodes: [{ id: 'blob-1', rawBlob: '' }] } },
+            },
+          },
+        });
+        selectDevfile();
+        await waitForPromises();
+      });
+
+      it('displays error popover', () => {
+        expect(findErrorPopover().attributes('title')).toBe('Error processing the Devfile.');
+        expect(findErrorPopover().text()).toBe("Devfile can't be empty.");
+        expect(findCreateWorkspaceButton().props().loading).toBe(false);
+      });
+
+      it("doesn't call the validation mutation", () => {
+        expect(devfileValidateMutationHandler).not.toHaveBeenCalled();
+      });
+    });
+
     describe('when devfile validation is invalid', () => {
       it('displays error popover with single error in devfile', async () => {
-        devfileValidateMutationHandler.mockReset();
         devfileValidateMutationHandler.mockResolvedValueOnce({
           data: {
             devfileValidate: {
@@ -408,7 +432,6 @@ describe('workspaces/user/pages/create.vue', () => {
       });
 
       it('displays error popover with multiple errors in devfile', async () => {
-        devfileValidateMutationHandler.mockReset();
         devfileValidateMutationHandler.mockResolvedValueOnce({
           data: {
             devfileValidate: {
@@ -443,7 +466,6 @@ describe('workspaces/user/pages/create.vue', () => {
       });
 
       it('alerts indicating system error while attempting to validate a devfile', async () => {
-        devfileValidateMutationHandler.mockReset();
         devfileValidateMutationHandler.mockRejectedValueOnce(new Error());
         selectDevfile();
         await waitForPromises();

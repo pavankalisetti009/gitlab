@@ -217,13 +217,16 @@ export default {
       if (path === null || path === DEFAULT_DEVFILE_OPTION) {
         return;
       }
-
       try {
         const yaml = await this.fetchBlobContent(
           this.selectedProjectFullPath,
           path,
           this.devfileRef,
         );
+        if (yaml === null) {
+          this.devfileValidateErrors = [s__("Workspaces|Devfile can't be empty.")];
+          return;
+        }
         const result = await this.$apollo.mutate({
           mutation: devfileValidateMutation,
           variables: {
