@@ -24,6 +24,8 @@ class QueueCleanupSecurityPolicyBotUsers < Gitlab::Database::Migration[2.3]
   end
 
   def down
+    return unless Gitlab.com?
+
     delete_batched_background_migration(MIGRATION, :users, :id, [])
   end
 end
