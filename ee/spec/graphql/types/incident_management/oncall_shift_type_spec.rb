@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['IncidentManagementOncallShift'] do
+RSpec.describe GitlabSchema.types['IncidentManagementOncallShift'], feature_category: :on_call_schedule_management do
   specify { expect(described_class.graphql_name).to eq('IncidentManagementOncallShift') }
 
   it 'exposes the expected fields' do

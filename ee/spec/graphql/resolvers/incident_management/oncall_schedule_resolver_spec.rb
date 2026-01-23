@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::IncidentManagement::OncallScheduleResolver do
+RSpec.describe Resolvers::IncidentManagement::OncallScheduleResolver, feature_category: :on_call_schedule_management do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }

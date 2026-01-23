@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['OncallParticipantType'] do
+RSpec.describe GitlabSchema.types['OncallParticipantType'], feature_category: :on_call_schedule_management do
   specify { expect(described_class.graphql_name).to eq('OncallParticipantType') }
 
   it 'exposes the expected fields' do
