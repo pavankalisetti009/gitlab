@@ -21,7 +21,7 @@ RSpec.describe ::API::Entities::Issue, feature_category: :team_planning do
       :merge_requests_count, :upvotes, :downvotes, :due_date, :confidential, :discussion_locked,
       :issue_type, :web_url, :time_stats, :task_completion_status, :weight, :blocking_issues_count,
       :has_tasks, :task_status, :_links, :references, :severity, :subscribed, :moved_to_id,
-      :imported, :imported_from, :service_desk_reply_to, :iteration
+      :imported, :imported_from, :service_desk_reply_to, :iteration, :start_date
     ]
   end
 
