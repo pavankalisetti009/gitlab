@@ -4,6 +4,7 @@ import EventItem from 'ee/vue_shared/security_reports/components/event_item.vue'
 import { __ } from '~/locale';
 
 export default {
+  name: 'MergeRequestNoteGraphql',
   components: {
     EventItem,
     GlSprintf,

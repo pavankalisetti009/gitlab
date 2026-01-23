@@ -10,6 +10,7 @@ export const i18n = {
 };
 
 export default {
+  name: 'CreateJiraIssue',
   i18n,
   components: {
     GlButton,

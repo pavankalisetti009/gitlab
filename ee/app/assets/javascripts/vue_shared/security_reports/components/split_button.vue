@@ -10,6 +10,7 @@ import { __ } from '~/locale';
 import { visitUrl } from '~/lib/utils/url_utility';
 
 export default {
+  name: 'SplitButton',
   components: {
     GlButtonGroup,
     GlButton,

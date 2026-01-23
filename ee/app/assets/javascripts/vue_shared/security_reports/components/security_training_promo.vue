@@ -8,6 +8,7 @@ import {
 } from '~/security_configuration/constants';
 
 export default {
+  name: 'SecurityTrainingPromo',
   components: {
     UserCalloutDismisser,
   },

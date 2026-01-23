@@ -12,6 +12,7 @@ import {
 import { s__, sprintf } from '~/locale';
 
 export default {
+  name: 'SummaryHighlights',
   components: {
     GlSprintf,
   },
