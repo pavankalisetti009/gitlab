@@ -1364,9 +1364,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get_response
 
           if with_self_hosted_setting
-            expect(json_response['DuoWorkflow']['ServiceURI']).to eq(self_hosted_duo_workflow_service_url)
+            expect(json_response['DuoWorkflow']['Service']['URI']).to eq(self_hosted_duo_workflow_service_url)
           else
-            expect(json_response['DuoWorkflow']['ServiceURI']).to eq(duo_workflow_service_url)
+            expect(json_response['DuoWorkflow']['Service']['URI']).to eq(duo_workflow_service_url)
           end
         end
       end
@@ -1378,9 +1378,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get_response
 
           if with_self_hosted_setting
-            expect(json_response['DuoWorkflow']['ServiceURI']).to eq(self_hosted_duo_workflow_service_url)
+            expect(json_response['DuoWorkflow']['Service']['URI']).to eq(self_hosted_duo_workflow_service_url)
           else
-            expect(json_response['DuoWorkflow']['ServiceURI']).to eq(default_duo_workflow_service_url)
+            expect(json_response['DuoWorkflow']['Service']['URI']).to eq(default_duo_workflow_service_url)
           end
         end
       end
@@ -1395,7 +1395,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         enabled_mcp_tools = ::Ai::DuoWorkflows::McpConfigService::GITLAB_ENABLED_TOOLS
         preapproved_mcp_tools = ::Ai::DuoWorkflows::McpConfigService::GITLAB_PREAPPROVED_TOOLS
-        expect(json_response['DuoWorkflow']['Headers']).to include(
+        expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
           'x-gitlab-oauth-token' => 'oauth_token',
           'authorization' => 'Bearer token',
           'x-gitlab-authentication-type' => 'oidc',
@@ -1407,7 +1407,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           'x-gitlab-model-prompt-cache-enabled' => 'false'
         )
 
-        expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+        expect(json_response['DuoWorkflow']['Service']['Secure']).to eq(true)
         expect(json_response['DuoWorkflow']['LockConcurrentFlow']).to eq(true)
         expect(json_response['DuoWorkflow']['McpServers']).to eq({
           "gitlab" => {
@@ -1426,7 +1426,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['DuoWorkflow']['McpServers']).to be_present
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-enabled-mcp-server-tools']).to be_present
+          expect(json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-enabled-mcp-server-tools']).to be_present
         end
       end
 
@@ -1436,7 +1436,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['DuoWorkflow']['McpServers']).to be_nil
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-enabled-mcp-server-tools']).to eq('')
+          expect(json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-enabled-mcp-server-tools']).to eq('')
         end
       end
 
@@ -1478,7 +1478,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-project-id' => project.id.to_s
           )
         end
@@ -1487,7 +1487,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers, params: { project_id: '' }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-project-id']).to be_nil
+          expect(json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-project-id']).to be_nil
         end
       end
 
@@ -1497,7 +1497,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             params: { project_id: project.id }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-language-server-version' => "8.22.0"
           )
         end
@@ -1506,7 +1506,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-language-server-version']).to be_nil
+          expect(json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-language-server-version']).to be_nil
         end
       end
 
@@ -1516,7 +1516,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             params: { project_id: project.id }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-client-type' => "node-websocket"
           )
         end
@@ -1526,7 +1526,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             params: { project_id: project.id, client_type: 'browser' }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-client-type' => "browser"
           )
         end
@@ -1535,7 +1535,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-client-type']).to be_nil
+          expect(json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-client-type']).to be_nil
         end
       end
 
@@ -1544,7 +1544,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-namespace-id' => group.id.to_s
           )
         end
@@ -1554,7 +1554,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             params: { namespace_id: '' }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-namespace-id' => group.id.to_s,
             'x-gitlab-root-namespace-id' => group.id.to_s
           )
@@ -1566,7 +1566,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-root-namespace-id' => group.id.to_s,
             'x-gitlab-namespace-id' => group.id.to_s
           )
@@ -1576,7 +1576,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers, params: { root_namespace_id: 99999 }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-root-namespace-id' => group.id.to_s,
             'x-gitlab-namespace-id' => group.id.to_s
           )
@@ -1591,7 +1591,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-project-id' => project.id.to_s,
             'x-gitlab-namespace-id' => group.id.to_s
           )
@@ -1603,7 +1603,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id)
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-namespace-id' => group.id.to_s
           )
         end
@@ -1622,7 +1622,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-root-namespace-id' => group.id.to_s,
             'x-gitlab-namespace-id' => child_group.id.to_s
           )
@@ -1634,7 +1634,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-namespace-id' => child_group.id.to_s,
             'x-gitlab-root-namespace-id' => child_group.root_ancestor.id.to_s
           )
@@ -1644,7 +1644,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id)
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-namespace-id' => group.id.to_s,
             'x-gitlab-root-namespace-id' => group.id.to_s
           )
@@ -1656,7 +1656,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-root-namespace-id' => group.id.to_s,
             'x-gitlab-namespace-id' => group.id.to_s
           )
@@ -1720,7 +1720,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
               }
 
               expect(response).to have_gitlab_http_status(:ok)
-              expect(json_response['DuoWorkflow']['Headers']).to include(
+              expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
                 'x-gitlab-root-namespace-id' => group.id.to_s
               )
             end
@@ -1770,7 +1770,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                 }
 
                 expect(response).to have_gitlab_http_status(:ok)
-                expect(json_response['DuoWorkflow']['Headers']).to include(
+                expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
                   'x-gitlab-project-id' => project.id.to_s,
                   'x-gitlab-root-namespace-id' => group.id.to_s
                 )
@@ -1803,7 +1803,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                 }
 
                 expect(response).to have_gitlab_http_status(:ok)
-                expect(json_response['DuoWorkflow']['Headers']).to include(
+                expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
                   'x-gitlab-project-id' => nested_project_2.id.to_s,
                   'x-gitlab-root-namespace-id' => parent_group_2.id.to_s
                 )
@@ -1842,7 +1842,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                 }
 
                 expect(response).to have_gitlab_http_status(:ok)
-                expect(json_response['DuoWorkflow']['Headers']).to include(
+                expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
                   'x-gitlab-namespace-id' => group.id.to_s,
                   'x-gitlab-root-namespace-id' => group.id.to_s
                 )
@@ -1866,7 +1866,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                 }
 
                 expect(response).to have_gitlab_http_status(:ok)
-                expect(json_response['DuoWorkflow']['Headers']).to include(
+                expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
                   'x-gitlab-namespace-id' => child_group_3.id.to_s,
                   'x-gitlab-root-namespace-id' => parent_group_3.id.to_s
                 )
@@ -1890,7 +1890,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             get api(path, user), headers: workhorse_headers
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['DuoWorkflow']['Headers']['x-gitlab-root-namespace-id']).to be_nil
+            expect(json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-root-namespace-id']).to be_nil
           end
         end
 
@@ -1958,7 +1958,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(response).to have_gitlab_http_status(:ok)
           expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
 
-          expect(json_response['DuoWorkflow']['Headers']).to include(
+          expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
             'x-gitlab-base-url' => Gitlab.config.gitlab.url,
             'x-gitlab-oauth-token' => 'oauth_token',
             'authorization' => 'Bearer token',
@@ -1969,7 +1969,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             'x-gitlab-unidirectional-streaming' => 'enabled'
           )
 
-          expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+          expect(json_response['DuoWorkflow']['Service']['Secure']).to eq(true)
         end
 
         it_behaves_like 'ServiceURI has the right value', false
@@ -1981,7 +1981,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['DuoWorkflow']['Headers']).to include(
+            expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
               'x-gitlab-project-id' => project.id.to_s
             )
           end
@@ -1992,7 +1992,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             get api(path, user), headers: workhorse_headers, params: { project_id: '' }
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['DuoWorkflow']['Headers']['x-gitlab-project-id']).to be_nil
+            expect(json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-project-id']).to be_nil
           end
         end
 
@@ -2003,7 +2003,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['DuoWorkflow']['Headers']).to include(
+            expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
               'x-gitlab-namespace-id' => group.id.to_s
             )
           end
@@ -2015,7 +2015,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
               params: { namespace_id: '' }
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['DuoWorkflow']['Headers']).to include(
+            expect(json_response['DuoWorkflow']['Service']['Headers']).to include(
               'x-gitlab-namespace-id' => group.id.to_s,
               'x-gitlab-root-namespace-id' => group.id.to_s
             )
@@ -2045,7 +2045,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(response).to have_gitlab_http_status(:ok)
 
-          headers = json_response['DuoWorkflow']['Headers']
+          headers = json_response['DuoWorkflow']['Service']['Headers']
           expect(headers).to include(
             'x-gitlab-oauth-token' => 'oauth_token',
             'x-gitlab-unidirectional-streaming' => 'enabled',
@@ -2070,7 +2070,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(response).to have_gitlab_http_status(:ok)
 
-          headers = json_response['DuoWorkflow']['Headers']
+          headers = json_response['DuoWorkflow']['Service']['Headers']
           expect(headers).to include(
             'x-gitlab-self-hosted-dap-billing-enabled' => 'true'
           )
@@ -2084,7 +2084,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(response).to have_gitlab_http_status(:ok)
 
-          headers = json_response['DuoWorkflow']['Headers']
+          headers = json_response['DuoWorkflow']['Service']['Headers']
           expect(headers).to include(
             'x-gitlab-self-hosted-dap-billing-enabled' => 'false'
           )
@@ -2115,7 +2115,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
             expect(response).to have_gitlab_http_status(:ok)
 
-            headers = json_response['DuoWorkflow']['Headers']
+            headers = json_response['DuoWorkflow']['Service']['Headers']
             expect(headers).to include(
               'x-gitlab-oauth-token' => 'oauth_token',
               'x-gitlab-unidirectional-streaming' => 'enabled'
@@ -2143,7 +2143,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(response).to have_gitlab_http_status(:ok)
 
-          headers = json_response['DuoWorkflow']['Headers']
+          headers = json_response['DuoWorkflow']['Service']['Headers']
 
           metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
           expect(metadata).to include(
@@ -2182,7 +2182,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(response).to have_gitlab_http_status(:ok)
 
-          headers = json_response['DuoWorkflow']['Headers']
+          headers = json_response['DuoWorkflow']['Service']['Headers']
           expect(headers).to include(
             'x-gitlab-oauth-token' => 'oauth_token',
             'x-gitlab-unidirectional-streaming' => 'enabled'
@@ -2212,7 +2212,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                 expect(response).to have_gitlab_http_status(:ok)
 
-                headers = json_response['DuoWorkflow']['Headers']
+                headers = json_response['DuoWorkflow']['Service']['Headers']
                 expect(headers).to have_key('x-gitlab-agent-platform-model-metadata')
 
                 metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
@@ -2241,7 +2241,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                     expect(response).to have_gitlab_http_status(:ok)
 
-                    headers = json_response['DuoWorkflow']['Headers']
+                    headers = json_response['DuoWorkflow']['Service']['Headers']
                     metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                     expect(metadata).to include(
                       'provider' => 'gitlab',
@@ -2266,7 +2266,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                 expect(response).to have_gitlab_http_status(:ok)
 
-                headers = json_response['DuoWorkflow']['Headers']
+                headers = json_response['DuoWorkflow']['Service']['Headers']
                 metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                 expect(metadata).to include(
                   'provider' => 'gitlab',
@@ -2290,7 +2290,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                 expect(response).to have_gitlab_http_status(:ok)
 
-                headers = json_response['DuoWorkflow']['Headers']
+                headers = json_response['DuoWorkflow']['Service']['Headers']
 
                 metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                 expect(metadata).to include(
@@ -2319,7 +2319,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                   expect(response).to have_gitlab_http_status(:ok)
 
-                  headers = json_response['DuoWorkflow']['Headers']
+                  headers = json_response['DuoWorkflow']['Service']['Headers']
                   metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                   expect(metadata).to include(
                     'provider' => 'gitlab',
@@ -2339,7 +2339,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                   expect(response).to have_gitlab_http_status(:ok)
 
-                  headers = json_response['DuoWorkflow']['Headers']
+                  headers = json_response['DuoWorkflow']['Service']['Headers']
                   metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                   expect(metadata).to include(
                     'provider' => 'gitlab',
@@ -2359,7 +2359,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                   expect(response).to have_gitlab_http_status(:ok)
 
-                  headers = json_response['DuoWorkflow']['Headers']
+                  headers = json_response['DuoWorkflow']['Service']['Headers']
                   metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                   expect(metadata).to include(
                     'provider' => 'gitlab',
@@ -2467,7 +2467,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         it 'returns false in x-gitlab-model-prompt-cache-enabled header' do
           get api(path, user), headers: workhorse_headers
 
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-model-prompt-cache-enabled']).to eq('false')
+          expect(
+            json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-model-prompt-cache-enabled']
+          ).to eq('false')
         end
       end
 
@@ -2477,7 +2479,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
 
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-model-prompt-cache-enabled']).to eq('true')
+          expect(
+            json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-model-prompt-cache-enabled']
+          ).to eq('true')
         end
 
         it 'returns false in x-gitlab-model-prompt-cache-enabled header' do
@@ -2485,7 +2489,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
 
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-model-prompt-cache-enabled']).to eq('false')
+          expect(
+            json_response['DuoWorkflow']['Service']['Headers']['x-gitlab-model-prompt-cache-enabled']
+          ).to eq('false')
         end
       end
     end
