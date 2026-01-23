@@ -131,7 +131,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
 
     expect(reconcile_post_response.code).to eq(HTTP::Status::CREATED)
 
-    json_response = Gitlab::Json.parse(reconcile_post_response.body)
+    json_response = Gitlab::Json.safe_parse(reconcile_post_response.body)
 
     # noinspection RubyMismatchedReturnType -- Typing is wrong, RubyMine doesn't think this returns a Hash
     json_response.deep_symbolize_keys

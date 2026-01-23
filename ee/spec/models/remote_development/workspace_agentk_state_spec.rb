@@ -10,7 +10,7 @@ RSpec.describe RemoteDevelopment::WorkspaceAgentkState, feature_category: :works
     described_class.new(
       workspace: workspace,
       project: workspace.project,
-      desired_config: Gitlab::Json.parse(
+      desired_config: Gitlab::Json.safe_parse(
         RemoteDevelopment::FixtureFileHelpers.read_fixture_file("example.desired_config.json")
       )
     )
