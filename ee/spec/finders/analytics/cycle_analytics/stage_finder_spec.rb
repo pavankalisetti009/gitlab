@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::CycleAnalytics::StageFinder do
+RSpec.describe Analytics::CycleAnalytics::StageFinder, feature_category: :value_stream_management do
   let_it_be(:group) { create(:group) }
 
   let(:stage_id) { { id: Gitlab::Analytics::CycleAnalytics::DefaultStages.names.first } }

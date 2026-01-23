@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductivityAnalyticsFinder do
+RSpec.describe ProductivityAnalyticsFinder, feature_category: :value_stream_management do
   subject { described_class.new(current_user, search_params.merge(state: :merged)) }
 
   let_it_be(:project) { create(:project) }

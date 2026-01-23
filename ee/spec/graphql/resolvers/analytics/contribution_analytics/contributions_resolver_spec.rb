@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Analytics::ContributionAnalytics::ContributionsResolver do
+RSpec.describe Resolvers::Analytics::ContributionAnalytics::ContributionsResolver, feature_category: :value_stream_management do
   include GraphqlHelpers
 
   def resolve_contributions(args = {}, context = { current_user: current_user })
