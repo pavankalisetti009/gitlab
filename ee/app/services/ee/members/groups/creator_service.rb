@@ -52,7 +52,8 @@ module EE
         end
 
         def service_account_eligible_for_membership?
-          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(member.group).eligible?(member.user)
+          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(
+            target_group: member.group).eligible?(member.user)
         end
 
         def ignore_user_limits

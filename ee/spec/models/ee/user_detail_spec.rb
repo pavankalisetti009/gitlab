@@ -57,7 +57,7 @@ RSpec.describe UserDetail, feature_category: :system_access do
   context 'with loose foreign key on user_details.provisioned_by_project_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let(:lfk_column) { :provisioned_by_project_id }
-      let(:parent) { create(:project) }
+      let_it_be(:parent) { create(:project) }
       let(:model) { create(:project_provisioned_user, project: parent).user_detail }
     end
   end
