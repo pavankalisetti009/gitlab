@@ -88,12 +88,40 @@ module Security
       # rubocop: enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit
 
       def create_violations
-        # If the same policy is marked as both skipped and failed, it's persisted as failed
-        attrs = violated_policies.map { |policy| policy_to_violation(policy, :failed) } +
-          (skipped_policies - violated_policies).map { |policy| policy_to_violation(policy, :skipped) }
+        attrs = failed_violations_attributes_to_upsert + skipped_violations_attributes_to_upsert
+
         return unless attrs.any?
 
         Security::ScanResultPolicyViolation.upsert_all(attrs, unique_by: %w[scan_result_policy_id merge_request_id])
+      end
+
+      def failed_violations_attributes_to_upsert
+        violated_policies.filter_map do |policy|
+          attrs = policy_to_violation(policy, :failed)
+          record = Security::ScanResultPolicyViolation.new(violation_data: attrs[:violation_data])
+
+          unless record.valid?
+            log_invalid_violation_record(policy, record)
+            next
+          end
+
+          attrs
+        end
+      end
+
+      def skipped_violations_attributes_to_upsert
+        # If the same policy is marked as both skipped and failed, it's persisted as failed
+        (skipped_policies - violated_policies).filter_map do |policy|
+          policy_to_violation(policy, :skipped)
+        end
+      end
+
+      def log_invalid_violation_record(policy, record)
+        Gitlab::AppLogger.warn(
+          message: "Skipping invalid ScanResultPolicyViolation: #{record.errors.full_messages}",
+          policy_id: policy.id,
+          merge_request_id: merge_request.id
+        )
       end
 
       def policy_to_violation(policy, default_status)

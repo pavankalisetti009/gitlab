@@ -64,6 +64,28 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
     end
 
+    shared_examples_for 'when violation data is invalid' do
+      context 'when violation data is invalid' do
+        before do
+          service.add_violation(policy, :any_merge_request, { commits: "invalid_value" })
+        end
+
+        it 'does not persist invalid violation data' do
+          expect { service.execute }.not_to change { violations.count }
+        end
+
+        it 'logs invalid violation data' do
+          expect(::Gitlab::AppLogger).to receive(:warn).with(
+            message: 'Skipping invalid ScanResultPolicyViolation: ["Violation data must be a valid json schema"]',
+            policy_id: policy.id,
+            merge_request_id: merge_request.id
+          )
+
+          service.execute
+        end
+      end
+    end
+
     context 'without pre-existing violations' do
       before do
         service.add([policy_b], [])
@@ -91,6 +113,20 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         expect(last_violation.violation_data)
           .to eq({ "violations" => { "scan_finding" => { "uuid" => { "newly_detected" => [123] } } } })
         expect(last_violation).to be_valid
+      end
+
+      it_behaves_like 'when violation data is invalid' do
+        let(:policy) { policy_b }
+      end
+
+      context 'when policy approval_policy_rule is nil' do
+        before do
+          allow(policy_b).to receive(:approval_policy_rule).and_return(nil)
+        end
+
+        it_behaves_like 'when violation data is invalid' do
+          let(:policy) { policy_b }
+        end
       end
 
       it 'publishes MergeRequests::ViolationsUpdatedEvent' do
@@ -123,6 +159,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
               'errors' => [{ 'error' => 'SCAN_REMOVED', 'missing_scans' => ['sast'] }] }
           )
         expect(last_violation).to be_valid
+      end
+
+      it_behaves_like 'when violation data is invalid' do
+        let(:policy) { policy_a }
       end
 
       it 'stores the correct status' do
