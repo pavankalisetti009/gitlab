@@ -40,6 +40,7 @@ module EE
         push_frontend_feature_flag(:duo_ui_next, current_user)
         push_frontend_feature_flag(:agentic_chat_ga, current_user)
         push_frontend_feature_flag(:dap_use_foundational_flows_setting, current_user)
+        push_frontend_feature_flag(:duo_chat_binary_feedback, current_user)
       end
 
       # Exposes if a licensed feature is available.
