@@ -8,6 +8,7 @@ import BranchSelection from 'ee/security_orchestration/components/policy_editor/
 import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
 import NumberRangeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/number_range_select.vue';
 import GlobalSettings from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/global_settings.vue';
+import DependencyScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/dependency_scanner.vue';
 
 import { REPORT_TYPES_DEFAULT_KEYS } from 'ee/security_dashboard/constants';
 
@@ -41,6 +42,7 @@ describe('SecurityScanRuleBuilder', () => {
   const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
   const findNumberRangeSelect = () => wrapper.findComponent(NumberRangeSelect);
   const findGlobalSettings = () => wrapper.findComponent(GlobalSettings);
+  const findDependencyScanner = () => wrapper.findComponent(DependencyScanner);
 
   describe('rendering', () => {
     beforeEach(() => {
@@ -69,6 +71,11 @@ describe('SecurityScanRuleBuilder', () => {
 
     it('renders global settings', () => {
       expect(findGlobalSettings().exists()).toBe(true);
+    });
+
+    it('renders dependency scanner', () => {
+      expect(findDependencyScanner().exists()).toBe(true);
+      expect(findDependencyScanner().props('initRule')).toEqual(defaultRule);
     });
   });
 
@@ -163,6 +170,19 @@ describe('SecurityScanRuleBuilder', () => {
       };
 
       findGlobalSettings().vm.$emit('changed', updatedRule);
+
+      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+    });
+
+    it('updates rule when dependency scanner changes', () => {
+      const updatedRule = {
+        ...defaultRule,
+        vulnerability_attributes: {
+          fix_available: true,
+        },
+      };
+
+      findDependencyScanner().vm.$emit('changed', updatedRule);
 
       expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
     });

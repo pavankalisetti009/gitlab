@@ -17,6 +17,7 @@ import { enforceIntValue } from 'ee/security_orchestration/components/policy_edi
 import { getDefaultRule } from '../lib';
 import ScanTypeSelect from './scan_type_select.vue';
 import NumberRangeSelect from './number_range_select.vue';
+import DependencyScanner from './scanners/dependency_scanner.vue';
 import GlobalSettings from './scanners/global_settings.vue';
 import { selectEmptyArrayWhenAllSelected } from './scanners/utils';
 
@@ -24,17 +25,18 @@ export default {
   REPORT_TYPES_DEFAULT,
   VULNERABILITIES_ALLOWED_OPERATORS,
   i18n: {
-    scanners: s__('ScanResultPolicy|scanners'),
+    scanners: s__('SecurityOrchestration|scanners'),
     scanResultRuleCopy: s__(
-      'ScanResultPolicy|When a %{scanType} with %{scanners} runs against %{branches} %{branchExceptions} and finds %{vulnerabilitiesNumber} vulnerability type that matches all the following criteria:',
+      'SecurityOrchestration|When a %{scanType} with %{scanners} runs against %{branches} %{branchExceptions} and finds %{vulnerabilitiesNumber} vulnerability type that matches all the following criteria:',
     ),
-    vulnerabilitiesAllowed: s__('ScanResultPolicy|vulnerabilities allowed'),
+    vulnerabilitiesAllowed: s__('SecurityOrchestration|vulnerabilities allowed'),
   },
   name: 'SecurityScanRuleBuilder',
   components: {
     NumberRangeSelect,
     BranchExceptionSelector,
     BranchSelection,
+    DependencyScanner,
     GlobalSettings,
     GlSprintf,
     RuleMultiSelect,
@@ -126,6 +128,7 @@ export default {
                 class="!gl-inline gl-align-middle"
                 :item-type-name="$options.i18n.scanners"
                 :items="$options.REPORT_TYPES_DEFAULT"
+                :show-reset-button="false"
                 data-testid="scanners-select"
                 @error="$emit('error', $event)"
                 @input="setScanners"
@@ -167,6 +170,8 @@ export default {
       <div class="gl-w-full gl-rounded-base gl-bg-white gl-p-4">
         <global-settings :init-rule="initRule" @changed="updateGlobalSettings" />
       </div>
+
+      <dependency-scanner :init-rule="initRule" @changed="triggerChanged" />
     </template>
   </section-layout>
 </template>

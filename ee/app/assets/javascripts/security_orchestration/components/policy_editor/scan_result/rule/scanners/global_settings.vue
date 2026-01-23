@@ -34,8 +34,10 @@ import {
 export default {
   FILTERS,
   i18n: {
-    title: s__('ScanResultPolicy|Global Settings'),
-    description: s__('ScanResultPolicy|Severity and status settings will apply to all scan rules'),
+    title: s__('SecurityOrchestration|Global Settings'),
+    description: s__(
+      'SecurityOrchestration|Severity and status settings will apply to all scan rules',
+    ),
   },
   name: 'GlobalSettings',
   components: {

@@ -33,6 +33,11 @@ export default {
       required: false,
       default: false,
     },
+    showResetButton: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   data() {
     return {
@@ -47,6 +52,9 @@ export default {
       return sprintf(this.$options.i18n.selectPolicyListboxHeader, {
         itemTypeName: this.itemTypeName,
       });
+    },
+    resetButtonLabel() {
+      return this.showResetButton ? this.$options.i18n.clearAllLabel : '';
     },
     selectAllLabel() {
       return this.includeSelectAll ? this.$options.i18n.selectAllLabel : '';
@@ -97,7 +105,7 @@ export default {
     :items="listBoxItems"
     :selected="selected"
     :show-select-all-button-label="selectAllLabel"
-    :reset-button-label="$options.i18n.clearAllLabel"
+    :reset-button-label="resetButtonLabel"
     :toggle-text="text"
     @reset="setSelected([])"
     @select="setSelected"

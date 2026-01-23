@@ -42,6 +42,10 @@ describe('Rule Multi Select', () => {
       expect(findDropdown().props('toggleText')).toBe('Select demo items');
     });
 
+    it('renders reset button by default', () => {
+      expect(findDropdown().props('resetButtonLabel')).toBe('Clear all');
+    });
+
     it('updates the selected property when the value prop updates', async () => {
       await wrapper.setProps({ value: ['start'] });
       expect(findDropdown().props('selected')).toEqual(['start']);
@@ -198,6 +202,14 @@ describe('Rule Multi Select', () => {
       createComponent({ lowercase: true });
 
       expect(findDropdown().props('toggleText')).toBe('select demo items');
+    });
+  });
+
+  describe('reset button', () => {
+    it('hides reset button', () => {
+      createComponent({ showResetButton: false });
+
+      expect(findDropdown().props('resetButtonLabel')).toBe('');
     });
   });
 });
