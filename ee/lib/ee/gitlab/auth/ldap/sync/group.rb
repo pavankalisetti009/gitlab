@@ -289,7 +289,7 @@ module EE
 
             # rubocop: disable CodeReuse/ActiveRecord
             def select_and_preload_group_members(group)
-              group.members.select(:id, :access_level, :user_id, :ldap, :override)
+              group.all_group_members.select(:id, :access_level, :user_id, :ldap, :override)
                 .with_identity_provider(provider).preload(:user)
                 .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/422405")
             end

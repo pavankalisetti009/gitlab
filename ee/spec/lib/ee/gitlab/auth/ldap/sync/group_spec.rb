@@ -300,6 +300,30 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
           expect(group.members.find_by(user_id: user.id).access_level)
             .to eq(::Gitlab::Access::MAINTAINER)
         end
+
+        context 'when access level is manually changed to minimal access' do
+          let!(:member) do
+            group.members.create!(
+              user: user,
+              access_level: ::Gitlab::Access::DEVELOPER,
+              ldap: true,
+              override: false
+            )
+          end
+
+          before do
+            stub_licensed_features(minimal_access_role: true)
+          end
+
+          it 'keeps the access level as minimal access' do
+            member.update!(override: true, access_level: ::Gitlab::Access::MINIMAL_ACCESS)
+
+            sync_group.update_permissions
+            member.reload
+
+            expect(member.access_level).to eq(::Gitlab::Access::MINIMAL_ACCESS)
+          end
+        end
       end
 
       context 'when existing user is no longer in LDAP group' do
