@@ -16,9 +16,6 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
   let(:scope) { nil }
   let(:scanner) { nil }
   let(:state) { nil }
-  let(:sort) { nil }
-  let(:first) { nil }
-  let(:after) { nil }
   let(:service_object) { described_class.new(pipeline, params: params) }
   let(:params) do
     {
@@ -27,9 +24,9 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
       scope: scope,
       scanner: scanner,
       state: state,
-      sort: sort,
-      first: first,
-      after: after
+      sort: nil,
+      first: nil,
+      after: nil
     }
   end
 
@@ -130,7 +127,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
       end
 
       describe 'N+1 queries' do
-        let(:query_limit) { 9 }
+        let(:query_limit) { 10 }
 
         it 'does not cause N+1 queries' do
           expect { findings }.not_to exceed_query_limit(query_limit)
@@ -388,6 +385,68 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
 
           it 'returns findings belonging to that scanner' do
             expect(finding_uuids).to include(*Security::Finding.by_build_ids(child_sast_build).map(&:uuid))
+          end
+        end
+
+        context 'when child pipeline findings are in a different partition than active_partition_number' do
+          let_it_be(:parent_pipeline) { create(:ci_pipeline) }
+          let_it_be(:child_pipeline) { create(:ci_pipeline, child_of: parent_pipeline) }
+          let_it_be(:child_build) { create(:ci_build, :success, name: 'sast', pipeline: child_pipeline) }
+          let(:bumped_partition_number) { Security::Finding.active_partition_number + 1 }
+
+          let(:service_object) { described_class.new(parent_pipeline, params: {}) }
+
+          before_all do
+            scan = create(
+              :security_scan,
+              :latest_successful,
+              scan_type: :sast,
+              build: child_build,
+              findings_partition_number: Security::Finding.active_partition_number
+            )
+
+            scanner = create(:vulnerabilities_scanner, project: child_pipeline.project,
+              external_id: 'test_scanner')
+
+            create(
+              :security_finding,
+              severity: :high,
+              uuid: SecureRandom.uuid,
+              deduplicated: true,
+              scan: scan,
+              scanner: scanner,
+              partition_number: Security::Finding.active_partition_number
+            )
+          end
+
+          before do
+            allow(Security::Finding).to receive(:active_partition_number)
+              .and_return(bumped_partition_number)
+          end
+
+          it 'returns child pipeline findings by using partition number from scans' do
+            expect(parent_pipeline.security_scans).to be_empty
+            expect(child_pipeline.security_scans).not_to be_empty
+
+            expect(service_object.send(:partition_numbers)).to include(1)
+
+            child_finding_uuids = Security::Finding.by_build_ids(child_build).pluck(:uuid)
+            expect(finding_uuids).to include(*child_finding_uuids)
+          end
+
+          context 'with FF show_child_security_reports_in_mr_widget disabled' do
+            before do
+              stub_feature_flags(show_child_security_reports_in_mr_widget: false)
+            end
+
+            it 'disregards child finding partition number' do
+              expect(service_object.send(:partition_numbers)).to eq(bumped_partition_number)
+            end
+
+            it 'does not find child pipeline findings' do
+              child_finding_uuids = Security::Finding.by_build_ids(child_build).pluck(:uuid)
+              expect(findings.map(&:uuid)).not_to include(*child_finding_uuids)
+            end
           end
         end
       end
