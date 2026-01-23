@@ -86,6 +86,7 @@ export const TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED = 'view_ai_catalog_proj
 export const TRACK_EVENT_ENABLE_AI_CATALOG_ITEM = 'click_enable_ai_catalog_item_button';
 export const TRACK_EVENT_DISABLE_AI_CATALOG_ITEM = 'click_disable_ai_catalog_item_button';
 export const TRACK_EVENT_DELETE_AI_CATALOG_ITEM = 'click_delete_ai_catalog_item_button';
+export const TRACK_EVENT_DUPLICATE_AI_CATALOG_ITEM = 'click_duplicate_ai_catalog_item_button';
 export const TRACK_EVENT_TYPE_AGENT = AI_CATALOG_TYPE_AGENT.toLowerCase();
 export const TRACK_EVENT_TYPE_FLOW = AI_CATALOG_TYPE_FLOW.toLowerCase();
 export const TRACK_EVENT_TYPE_THIRD_PARTY_FLOW = AI_CATALOG_TYPE_THIRD_PARTY_FLOW.toLowerCase();

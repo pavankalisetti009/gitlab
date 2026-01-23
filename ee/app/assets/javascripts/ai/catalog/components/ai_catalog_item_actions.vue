@@ -24,6 +24,7 @@ import {
   TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DELETE_AI_CATALOG_ITEM,
+  TRACK_EVENT_DUPLICATE_AI_CATALOG_ITEM,
   TRACK_EVENT_ITEM_TYPES,
   TRACK_EVENT_ORIGIN_EXPLORE,
   TRACK_EVENT_ORIGIN_PROJECT,
@@ -177,15 +178,6 @@ export default {
         !this.item.foundational
       );
     },
-    duplicateItemProps() {
-      return {
-        text: s__('AICatalog|Duplicate'),
-        to: {
-          name: this.itemRoutes.duplicate,
-          params: { id: this.$route.params.id },
-        },
-      };
-    },
     itemTypeLabel() {
       return AI_CATALOG_ITEM_LABELS[this.item.itemType];
     },
@@ -279,6 +271,17 @@ export default {
         page: TRACK_EVENT_PAGE_SHOW,
       });
     },
+    onClickDuplicate() {
+      this.trackEvent(TRACK_EVENT_DUPLICATE_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_ITEM_TYPES[this.item.itemType],
+        origin: this.origin,
+        page: TRACK_EVENT_PAGE_SHOW,
+      });
+      this.$router.push({
+        name: this.itemRoutes.duplicate,
+        params: { id: this.$route.params.id },
+      });
+    },
   },
   adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
     anchor: 'admin-mode',
@@ -346,8 +349,8 @@ export default {
     >
       <gl-disclosure-dropdown-item
         v-if="showDuplicate"
-        :item="duplicateItemProps"
         data-testid="duplicate-button"
+        @action="onClickDuplicate"
       >
         <template #list-item>
           <span class="gl-flex gl-gap-2">
