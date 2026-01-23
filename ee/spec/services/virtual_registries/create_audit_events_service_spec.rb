@@ -7,7 +7,7 @@ RSpec.describe VirtualRegistries::CreateAuditEventsService, feature_category: :v
   let(:group) { build_stubbed(:group) }
   let(:upstream) { build_stubbed(:virtual_registries_packages_maven_upstream, group:) }
   let(:entries) { [] }
-  let(:event_name) { 'virtual_registries_packages_maven_cache_entry_deleted' }
+  let(:event_name) { 'virtual_registries_packages_maven_cache_remote_entry_deleted' }
   let(:service) { described_class.new(entries:, event_name:) }
 
   describe '#execute' do
@@ -29,11 +29,11 @@ RSpec.describe VirtualRegistries::CreateAuditEventsService, feature_category: :v
 
     context 'when entries are provided', :request_store do
       let(:entries) do
-        build_list(:virtual_registries_packages_maven_cache_entry, 3, upstream:)
+        build_list(:virtual_registries_packages_maven_cache_remote_entry, 3, upstream:)
       end
 
       let(:operation) { execute }
-      let(:event_type) { 'virtual_registries_packages_maven_cache_entry_deleted' }
+      let(:event_type) { event_name }
       let(:event_count) { entries.size }
       let(:fail_condition!) { allow(entries).to receive(:empty?).and_return(true) }
 

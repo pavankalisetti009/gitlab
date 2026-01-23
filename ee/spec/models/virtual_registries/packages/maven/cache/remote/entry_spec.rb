@@ -8,7 +8,6 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Remote::Entry, :aggreg
   it { is_expected.to include_module(FileStoreMounter) }
   it { is_expected.to include_module(::UpdateNamespaceStatistics) }
   it { is_expected.to include_module(::Auditable) }
-  it { is_expected.to include_module(::Packages::Destructible) }
 
   it_behaves_like 'having unique enum values'
   it_behaves_like 'updates namespace statistics' do
@@ -126,10 +125,16 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Remote::Entry, :aggreg
 
       it { is_expected.to include(old_downloaded_entry).and not_include(recent_downloaded_entry) }
     end
+
+    describe '.order_iid_desc' do
+      subject { described_class.order_iid_desc }
+
+      it { is_expected.to eq([cache_entry3, cache_entry2, cache_entry1].sort_by(&:iid).reverse) }
+    end
   end
 
   describe '.next_pending_destruction' do
-    subject { described_class.next_pending_destruction(order_by: nil) }
+    subject { described_class.next_pending_destruction }
 
     let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_remote_entry) }
     let_it_be(:pending_destruction_cache_entry) do
@@ -377,7 +382,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Remote::Entry, :aggreg
     end
   end
 
-  context 'with loose foreign key on virtual_registries_container_cache_remote_entries.upstream_id' do
+  context 'with loose foreign key on virtual_registries_packages_maven_cache_remote_entries.upstream_id' do
     it_behaves_like 'update by a loose foreign key' do
       let_it_be(:parent) { create(:virtual_registries_packages_maven_upstream) }
       let_it_be(:model) { create(:virtual_registries_packages_maven_cache_remote_entry, upstream: parent) }

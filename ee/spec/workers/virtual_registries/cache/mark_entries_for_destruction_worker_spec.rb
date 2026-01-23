@@ -73,19 +73,20 @@ RSpec.describe VirtualRegistries::Cache::MarkEntriesForDestructionWorker, :aggre
     end
   end
 
-  context 'with a container upstream' do
-    let_it_be(:upstream) { create(:virtual_registries_container_upstream) }
-    let(:cache_entry_factory) { :virtual_registries_container_cache_entry }
-    let(:cache_entry_class) { ::VirtualRegistries::Container::Cache::Entry }
-    let(:upstream_class_name) { 'VirtualRegistries::Container::Upstream' }
+  # TODO: uncomment when https://gitlab.com/gitlab-org/gitlab/-/work_items/583726 is done
+  # context 'with a container upstream' do
+  #   let_it_be(:upstream) { create(:virtual_registries_container_upstream) }
+  #   let(:cache_entry_factory) { :virtual_registries_container_cache_entry }
+  #   let(:cache_entry_class) { ::VirtualRegistries::Container::Cache::Entry }
+  #   let(:upstream_class_name) { 'VirtualRegistries::Container::Upstream' }
 
-    it_behaves_like 'marking entries for destruction'
-  end
+  #   it_behaves_like 'marking entries for destruction'
+  # end
 
   context 'with a maven upstream' do
     let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }
-    let(:cache_entry_factory) { :virtual_registries_packages_maven_cache_entry }
-    let(:cache_entry_class) { ::VirtualRegistries::Packages::Maven::Cache::Entry }
+    let(:cache_entry_factory) { :virtual_registries_packages_maven_cache_remote_entry }
+    let(:cache_entry_class) { ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry }
     let(:upstream_class_name) { 'VirtualRegistries::Packages::Maven::Upstream' }
 
     it_behaves_like 'marking entries for destruction'

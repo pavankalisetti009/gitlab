@@ -17,12 +17,6 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
   end
 
   describe 'associations' do
-    it 'has many cache entries' do
-      is_expected.to have_many(:cache_entries)
-        .class_name('VirtualRegistries::Packages::Maven::Cache::Entry')
-        .inverse_of(:upstream)
-    end
-
     it 'has many cache remote entries' do
       is_expected.to have_many(:cache_remote_entries)
         .class_name('VirtualRegistries::Packages::Maven::Cache::Remote::Entry')
@@ -43,11 +37,11 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
     end
 
     context 'with an upstream with remote cache entries' do
-      let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_entry) }
+      let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_remote_entry) }
       let_it_be(:upstream) { cache_entry.upstream }
 
       it 'has the remote cache entries' do
-        expect(upstream.cache_entries).to contain_exactly(cache_entry)
+        expect(upstream.cache_remote_entries).to contain_exactly(cache_entry)
       end
 
       it 'has no cache local entries' do
@@ -598,13 +592,10 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
 
   describe '#default_cache_entries' do
     let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }
-
-    let_it_be(:default_cache_entry) do
-      create(:virtual_registries_packages_maven_cache_entry, upstream: upstream)
-    end
+    let_it_be(:default_cache_entry) { create(:virtual_registries_packages_maven_cache_remote_entry, upstream:) }
 
     let_it_be(:pending_destruction_cache_entry) do
-      create(:virtual_registries_packages_maven_cache_entry, :pending_destruction, upstream: upstream)
+      create(:virtual_registries_packages_maven_cache_remote_entry, :pending_destruction, upstream:)
     end
 
     subject { upstream.default_cache_entries }
@@ -735,7 +726,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
       before do
         upstream.save!
         create(
-          :virtual_registries_packages_maven_cache_entry,
+          :virtual_registries_packages_maven_cache_remote_entry,
           upstream: upstream,
           relative_path: 'dummy/path/maven-metadata.xml'
         )

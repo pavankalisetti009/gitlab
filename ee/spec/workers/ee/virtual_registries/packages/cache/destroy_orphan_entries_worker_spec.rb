@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe VirtualRegistries::Packages::Cache::DestroyOrphanEntriesWorker, type: :worker, feature_category: :virtual_registry do
   let(:worker) { described_class.new }
-  let(:model) { ::VirtualRegistries::Packages::Maven::Cache::Entry }
+  let(:model) { ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry }
 
   describe '#perform_work' do
     subject(:perform_work) { worker.perform_work('') }

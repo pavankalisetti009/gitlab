@@ -99,7 +99,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           end
 
           context 'with composite ids' do
-            let_it_be(:list) { create_list(:virtual_registries_packages_maven_cache_entry, 9) }
+            let_it_be(:list) { create_list(:virtual_registries_packages_maven_cache_remote_entry, 9) }
             let_it_be(:ids_list) { list.map { |model| record_identifier(model) } }
             # We're using this Entry model because it will be the first model with composite PKs supported by Geo.
             # The model isn't Geo-ready yet, so we need to mock its interface in this test to simulate its future
@@ -111,7 +111,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             end
 
             before do
-              # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list yet.
+              # The VirtualRegistries::Packages::Maven::Cache::Remote::Entry model is not in the allowed list yet.
               # This is why we need to force the ModelMapper to return the stubbed class instead of the model
               # passed as parameters.
               allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name)
@@ -576,7 +576,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
         end
 
         context 'with valid base64 id' do
-          let_it_be(:model) { create(:virtual_registries_packages_maven_cache_entry) }
+          let_it_be(:model) { create(:virtual_registries_packages_maven_cache_remote_entry) }
           # We're using this Entry model because it will be the first model with composite PKs supported by Geo.
           # The model isn't Geo-ready yet, so we need to mock its interface in this test to simulate its future
           # implementation.
@@ -593,7 +593,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           end
 
           before do
-            # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list.
+            # The VirtualRegistries::Packages::Maven::Cache::Remote::Entry model is not in the allowed list.
             # This is why the url matches`project` but I force the ModelMapper to return the stubbed class instead.
             allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(stubbed_class)
           end
@@ -621,14 +621,14 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
         end
 
         context 'with invalid base64 id' do
-          let(:model) { create(:virtual_registries_packages_maven_cache_entry) }
+          let(:model) { create(:virtual_registries_packages_maven_cache_remote_entry) }
           let(:base64_id) do
             expected_id = model.class.primary_key.map { |field| model[field.to_sym].to_s }
             Base64.urlsafe_encode64(expected_id.join('-'))
           end
 
           before do
-            # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list.
+            # The VirtualRegistries::Packages::Maven::Cache::Remote::Entry model is not in the allowed list.
             # This is why the url matches`project` but I force the ModelMapper to return
             # the MavenCacheEntry double instead of the normally expected `Project`.
             allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(model.class)

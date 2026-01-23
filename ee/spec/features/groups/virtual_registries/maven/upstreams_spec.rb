@@ -9,7 +9,7 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
   let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
-  let_it_be(:cache_entries) { create_list(:virtual_registries_packages_maven_cache_entry, 2, upstream:) }
+  let_it_be(:cache_entries) { create_list(:virtual_registries_packages_maven_cache_remote_entry, 2, upstream:) }
 
   before do
     stub_config(dependency_proxy: { enabled: true })

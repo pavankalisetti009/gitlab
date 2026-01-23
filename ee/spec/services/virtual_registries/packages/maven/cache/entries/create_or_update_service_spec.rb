@@ -30,14 +30,14 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
     shared_examples 'returning a service response success response' do
       shared_examples 'creating a new cache entry' do |with_md5: 'd8e8fca2dc0f896fd7cb4cb0031ba249'|
         it 'returns a success service response', :freeze_time do
-          expect_next_instance_of(::VirtualRegistries::Packages::Maven::Cache::Entry) do |expected_cache_entry|
+          expect_next_instance_of(::VirtualRegistries::Packages::Maven::Cache::Remote::Entry) do |expected_cache_entry|
             expect(expected_cache_entry).to receive(:bump_downloads_count)
           end
 
-          expect { execute }.to change { upstream.cache_entries.count }.by(1)
+          expect { execute }.to change { upstream.cache_remote_entries.count }.by(1)
           expect(execute).to be_success
 
-          last_cache_entry = upstream.cache_entries.last
+          last_cache_entry = upstream.cache_remote_entries.last
           expect(execute.payload).to eq(cache_entry: last_cache_entry)
 
           expect(last_cache_entry).to have_attributes(
@@ -58,16 +58,16 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
         let(:params) { super().merge(content_type: nil) }
 
         it 'creates a cache entry with a default content_type' do
-          expect { execute }.to change { upstream.cache_entries.count }.by(1)
+          expect { execute }.to change { upstream.cache_remote_entries.count }.by(1)
           expect(execute).to be_success
 
-          expect(upstream.cache_entries.last).to have_attributes(content_type: 'application/octet-stream')
+          expect(upstream.cache_remote_entries.last).to have_attributes(content_type: 'application/octet-stream')
         end
       end
 
       context 'with an error' do
         it 'returns an error response and log the error' do
-          expect(::VirtualRegistries::Packages::Maven::Cache::Entry)
+          expect(::VirtualRegistries::Packages::Maven::Cache::Remote::Entry)
             .to receive(:create_or_update_by!).and_raise(ActiveRecord::RecordInvalid)
           expect(::Gitlab::ErrorTracking).to receive(:track_exception)
             .with(
@@ -76,7 +76,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
               group_id: upstream.group_id,
               class: described_class.name
             )
-          expect { execute }.not_to change { upstream.cache_entries.count }
+          expect { execute }.not_to change { upstream.cache_remote_entries.count }
         end
       end
 
@@ -91,7 +91,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
       context 'with an existing cache entry' do
         let_it_be(:cache_entry) do
           create(
-            :virtual_registries_packages_maven_cache_entry,
+            :virtual_registries_packages_maven_cache_remote_entry,
             group: upstream.group,
             upstream: upstream,
             relative_path: "/#{path}"
@@ -99,9 +99,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
         end
 
         it 'updates it', :freeze_time do
-          last_cache_entry = upstream.cache_entries.last
+          last_cache_entry = upstream.cache_remote_entries.last
 
-          expect { execute }.to not_change { upstream.cache_entries.count }
+          expect { execute }.to not_change { upstream.cache_remote_entries.count }
             .and change { last_cache_entry.reset.downloads_count }.by(1)
             .and change { last_cache_entry.downloaded_at }.to(Time.current)
 

@@ -12,7 +12,6 @@ module VirtualRegistries
             include ShaAttribute
             include CounterAttribute
             include ::Auditable
-            include ::Packages::Destructible
 
             self.primary_key = %i[group_id iid]
 
@@ -62,9 +61,14 @@ module VirtualRegistries
             scope :for_group, ->(group) { where(group:) }
             scope :for_upstream, ->(upstream) { where(upstream:) }
             scope :order_created_desc, -> { reorder(created_at: :desc) }
+            scope :order_iid_desc, -> { reorder(iid: :desc) }
             scope :requiring_cleanup, ->(n_days_to_keep) {
               where(downloaded_at: ...(Time.current - n_days_to_keep.days))
             }
+
+            def self.next_pending_destruction
+              pending_destruction.lock('FOR UPDATE SKIP LOCKED').take
+            end
 
             # create or update a cached response identified by the upstream, group_id and relative_path
             # Given that we have chances that this function is not executed in isolation, we can't use

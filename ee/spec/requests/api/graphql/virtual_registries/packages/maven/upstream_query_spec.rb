@@ -9,7 +9,7 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group, name: 'test registry') }
   let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
-  let_it_be(:cache_entries) { create_list(:virtual_registries_packages_maven_cache_entry, 5, upstream:) }
+  let_it_be(:cache_entries) { create_list(:virtual_registries_packages_maven_cache_remote_entry, 5, upstream:) }
 
   let(:global_id) { upstream.to_gid }
   let(:query) do

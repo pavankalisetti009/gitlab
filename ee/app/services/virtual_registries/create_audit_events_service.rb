@@ -5,7 +5,7 @@ module VirtualRegistries
     EVENT_MESSAGE = 'Marked cache entry for deletion'
     EVENT_NAMES = %w[
       virtual_registries_container_cache_entry_deleted
-      virtual_registries_packages_maven_cache_entry_deleted
+      virtual_registries_packages_maven_cache_remote_entry_deleted
     ].freeze
 
     def initialize(entries:, event_name:, source: 'cleanup policy')

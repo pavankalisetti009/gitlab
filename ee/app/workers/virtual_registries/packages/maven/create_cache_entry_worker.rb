@@ -12,7 +12,8 @@ module VirtualRegistries
         feature_category :virtual_registry
         urgency :low
 
-        defer_on_database_health_signal :gitlab_main, [:virtual_registries_packages_maven_cache_entries], 5.minutes
+        defer_on_database_health_signal :gitlab_main, [:virtual_registries_packages_maven_cache_remote_entries],
+          5.minutes
         deduplicate :until_executed
         idempotent!
 

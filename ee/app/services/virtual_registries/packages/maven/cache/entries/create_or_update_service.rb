@@ -34,7 +34,7 @@ module VirtualRegistries
               }.compact_blank
               updates[:file_md5] = file.md5 unless Gitlab::FIPS.enabled?
 
-              ce = ::VirtualRegistries::Packages::Maven::Cache::Entry.create_or_update_by!(
+              ce = ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry.create_or_update_by!(
                 group_id: upstream.group_id,
                 upstream: upstream,
                 relative_path: relative_path,

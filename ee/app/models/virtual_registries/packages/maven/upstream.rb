@@ -22,9 +22,6 @@ module VirtualRegistries
           inverse_of: :upstream,
           autosave: true
         has_many :registries, class_name: 'VirtualRegistries::Packages::Maven::Registry', through: :registry_upstreams
-        has_many :cache_entries,
-          class_name: 'VirtualRegistries::Packages::Maven::Cache::Entry',
-          inverse_of: :upstream
         has_many :cache_remote_entries,
           class_name: 'VirtualRegistries::Packages::Maven::Cache::Remote::Entry',
           inverse_of: :upstream
@@ -77,7 +74,7 @@ module VirtualRegistries
         scope :for_id_and_group, ->(id:, group:) { where(id:, group:) }
         scope :search_by_name, ->(query) { fuzzy_search(query, [:name], use_minimum_char_limit: false) }
 
-        def cache_entries
+        def cache_remote_entries
           remote? ? super : super.none
         end
 
@@ -102,7 +99,7 @@ module VirtualRegistries
         end
 
         def default_cache_entries
-          cache_entries.default
+          cache_remote_entries.for_group(group_id).default
         end
 
         def object_storage_key

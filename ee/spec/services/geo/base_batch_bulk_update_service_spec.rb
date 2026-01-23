@@ -45,9 +45,9 @@ RSpec.describe Geo::BaseBatchBulkUpdateService, feature_category: :geo_replicati
 
       context 'when class contains FromUnion' do
         let(:model_to_update) do
-          Class.new(VirtualRegistries::Packages::Maven::Cache::Entry) do
+          Class.new(VirtualRegistries::Packages::Maven::Cache::Remote::Entry) do
             def self.name
-              "VirtualRegistries::Packages::Maven::Cache::Entry"
+              "VirtualRegistries::Packages::Maven::Cache::Remote::Entry"
             end
             include Geo::VerificationStateDefinition
             include FromUnion
@@ -59,9 +59,9 @@ RSpec.describe Geo::BaseBatchBulkUpdateService, feature_category: :geo_replicati
 
       context 'when class does not contain FromUnion' do
         let(:model_to_update) do
-          Class.new(VirtualRegistries::Packages::Maven::Cache::Entry) do
+          Class.new(VirtualRegistries::Packages::Maven::Cache::Remote::Entry) do
             def self.name
-              "VirtualRegistries::Packages::Maven::Cache::Entry"
+              "VirtualRegistries::Packages::Maven::Cache::Remote::Entry"
             end
             include Geo::VerificationStateDefinition
           end

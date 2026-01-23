@@ -36,12 +36,12 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
     upstream.update_column(:url, external_server.base_url) # avoids guard that rejects local urls
     stub_config(dependency_proxy: { enabled: true })
     stub_licensed_features(packages_virtual_registry: true)
-    allow(Gitlab::CurrentSettings).to receive(:allow_local_requests_from_web_hooks_and_services?).and_return(true)
+    stub_application_setting(allow_local_requests_from_web_hooks_and_services: true)
   end
 
   context 'with no cache entry' do
     it 'returns the file contents and create the cache entry' do
-      expect { request }.to change { upstream.cache_entries.count }.by(1)
+      expect { request }.to change { upstream.cache_remote_entries.count }.by(1)
       expect_headers(request)
     end
 
@@ -66,8 +66,8 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
       end
 
       it 'returns the file contents and create the cache entry' do
-        expect { request }.to change { upstream2.cache_entries.count }.by(1)
-          .and not_change { upstream.cache_entries.count }
+        expect { request }.to change { upstream2.cache_remote_entries.count }.by(1)
+          .and not_change { upstream.cache_remote_entries.count }
         expect(request.body).to eq('File contents 2')
         expect_headers(request)
       end
@@ -77,7 +77,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
   context 'with a cache entry' do
     let_it_be_with_reload(:cache_entry) do
       create(
-        :virtual_registries_packages_maven_cache_entry,
+        :virtual_registries_packages_maven_cache_remote_entry,
         :upstream_checked,
         upstream: upstream,
         relative_path: '/file',
@@ -88,7 +88,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
 
     it 'returns the file contents from the cache' do
       expect(::Gitlab::HTTP).not_to receive(:head)
-      expect { request }.not_to change { upstream.cache_entries.count }
+      expect { request }.not_to change { upstream.cache_remote_entries.count }
       expect(request.headers[::API::VirtualRegistries::Packages::Maven::Endpoints::SHA1_CHECKSUM_HEADER])
         .to be_an_instance_of(String)
       expect(request.headers[::API::VirtualRegistries::Packages::Maven::Endpoints::MD5_CHECKSUM_HEADER])
@@ -104,7 +104,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
       it 'returns the file contents and refresh the cache entry' do
         expect(::Gitlab::HTTP).to receive(:head).and_call_original
 
-        expect { request }.to not_change { upstream.cache_entries.count }
+        expect { request }.to not_change { upstream.cache_remote_entries.count }
           .and change { cache_entry.reload.upstream_checked_at }
         expect_headers(request)
       end
@@ -117,7 +117,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
         it 'returns the file contents and updates the cache entry' do
           expect(::Gitlab::HTTP).to receive(:head).and_call_original
 
-          expect { request }.to not_change { upstream.cache_entries.count }
+          expect { request }.to not_change { upstream.cache_remote_entries.count }
             .and change { cache_entry.reload.upstream_checked_at }
             .and change { cache_entry.reload.upstream_etag }.from('wrong').to('"etag"')
           expect_headers(request)

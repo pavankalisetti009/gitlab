@@ -77,7 +77,7 @@ RSpec.describe API::Entities::Admin::Model, feature_category: :geo_replication d
   end
 
   context 'with a model which has a composite primary key' do
-    let(:model) { create(:virtual_registries_packages_maven_cache_entry) }
+    let(:model) { create(:virtual_registries_packages_maven_cache_remote_entry) }
     let(:entity) { described_class.new(model, request: double) }
     let(:expected_id) do
       Base64.urlsafe_encode64(model.class.primary_key.map do |field|
