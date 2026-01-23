@@ -9,6 +9,7 @@ RSpec.describe 'Querying a container virtual registry', :aggregate_failures, fea
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:registry) { create(:virtual_registries_container_registry, group: group) }
   let_it_be(:upstream) { create(:virtual_registries_container_upstream, group: group, registries: [registry]) }
+  let_it_be(:cache_entries) { create_list(:virtual_registries_container_cache_entry, 2, upstream:) }
 
   let(:global_id) { upstream.to_gid }
   let(:query) do
@@ -26,6 +27,12 @@ RSpec.describe 'Querying a container virtual registry', :aggregate_failures, fea
             position
             registry {
               name
+            }
+          }
+          cacheEntries {
+            count
+            nodes {
+              id
             }
           }
         }
@@ -78,6 +85,12 @@ RSpec.describe 'Querying a container virtual registry', :aggregate_failures, fea
           expect(registry_upstreams[0]['position']).to be 1
           expect(registry_upstreams[0]['registry']).to include('name' => registry.name)
         end
+      end
+
+      it 'returns cache entries and count' do
+        expect(container_upstream_response['cacheEntries']['count']).to eq(2)
+        expect(container_upstream_response['cacheEntries']['nodes'].pluck('id'))
+            .to match_array(cache_entries.map(&:generate_id))
       end
 
       context 'when multiple upstreams exist' do

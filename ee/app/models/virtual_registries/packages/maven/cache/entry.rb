@@ -20,10 +20,6 @@ module VirtualRegistries
 
           attribute :file_store, default: -> { VirtualRegistries::Cache::EntryUploader.default_store }
 
-          def generate_id
-            Base64.urlsafe_encode64("#{upstream_id} #{relative_path}")
-          end
-
           def stale?
             return true unless upstream
 

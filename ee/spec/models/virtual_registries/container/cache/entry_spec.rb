@@ -374,4 +374,42 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
       it_behaves_like 'updating the status and relative_path properly'
     end
   end
+
+  describe '#generate_id' do
+    let_it_be(:cache_entry) { create(:virtual_registries_container_cache_entry) }
+
+    subject { cache_entry.generate_id }
+
+    describe 'returns a base64 encoded string of upstream_id and relative_path' do
+      let(:expected) { Base64.urlsafe_encode64("#{cache_entry.upstream_id} #{cache_entry.relative_path}") }
+
+      it { is_expected.to eq(expected) }
+    end
+
+    context 'for different upstream_id generates different ids' do
+      let(:cache_entry2) do
+        create(:virtual_registries_packages_maven_cache_entry, relative_path: cache_entry.relative_path)
+      end
+
+      it { is_expected.not_to eq(cache_entry2.generate_id) }
+    end
+
+    context 'for different relative_path generates different ids' do
+      let(:cache_entry2) { create(:virtual_registries_container_cache_entry) }
+
+      it { is_expected.not_to eq(cache_entry2.generate_id) }
+    end
+
+    context 'for the same upstream_id and relative_path generates the same id' do
+      let(:cache_entry2) do
+        build(
+          :virtual_registries_container_cache_entry,
+          upstream: cache_entry.upstream,
+          relative_path: cache_entry.relative_path
+        )
+      end
+
+      it { is_expected.to eq(cache_entry2.generate_id) }
+    end
+  end
 end

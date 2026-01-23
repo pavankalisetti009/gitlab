@@ -15,6 +15,13 @@ module Types
           description: 'Represents the connected upstream registry for an upstream ' \
             'and the upstream position data.',
           experiment: { milestone: '18.8' }
+
+        field :cache_entries,
+          ::Types::VirtualRegistries::Container::Cache::EntryType.connection_type,
+          null: true,
+          description: 'Represents cache entries for the upstream container registry.',
+          resolver: ::Resolvers::VirtualRegistries::Container::Cache::EntriesResolver,
+          experiment: { milestone: '18.9' }
       end
     end
   end

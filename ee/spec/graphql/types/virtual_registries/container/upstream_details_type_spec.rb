@@ -8,7 +8,7 @@ RSpec.describe GitlabSchema.types['ContainerUpstreamDetails'], feature_category:
   subject { described_class }
 
   let_it_be(:fields) do
-    %i[id name description url cacheValidityHours username registryUpstreams registriesCount]
+    %i[id name description url cacheValidityHours username registryUpstreams registriesCount cacheEntries]
   end
 
   it { is_expected.to require_graphql_authorizations(:read_virtual_registry) }
