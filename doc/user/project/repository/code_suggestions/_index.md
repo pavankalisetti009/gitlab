@@ -190,11 +190,11 @@ When using Code Suggestions, code review best practices still apply.
 
 Different language models can be the source for Code Suggestions.
 
-- On GitLab.com: GitLab hosts the models and connects to them through the cloud-based AI gateway.
+- On GitLab.com: GitLab hosts the models and connects to them through the cloud-based AI Gateway.
 - On GitLab Self-Managed, two options exist:
-  - GitLab can [host the models and connects to them through the cloud-based AI gateway](set_up.md).
+  - GitLab can [host the models and connects to them through the cloud-based AI Gateway](set_up.md).
   - Your organization can [use GitLab Duo Self-Hosted](../../../../administration/gitlab_duo_self_hosted/_index.md),
-    which means you host the AI gateway and language models. You can use GitLab AI vendor models,
+    which means you host the AI Gateway and language models. You can use GitLab AI vendor models,
     other supported language models, or to bring your own compatible model.
 
 ## How the prompt is built
@@ -251,7 +251,7 @@ Code Suggestions is powered by a generative AI model.
 - For code generation, algorithms or large code blocks might take more than five seconds to generate.
 
 Your personal access token enables a secure API connection to GitLab.com or to your GitLab instance.
-This API connection securely transmits a context window from your IDE/editor to the [GitLab AI gateway](https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist), a GitLab hosted service. The gateway calls the large language model APIs, and then the generated suggestion is transmitted back to your IDE/editor.
+This API connection securely transmits a context window from your IDE/editor to the [GitLab AI Gateway](https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist), a GitLab hosted service. The gateway calls the large language model APIs, and then the generated suggestion is transmitted back to your IDE/editor.
 
 ### Streaming
 
@@ -269,11 +269,11 @@ Streaming is not enabled for code completion.
 
 {{< /history >}}
 
-By default, code completion requests are sent from the IDE directly to the AI gateway to minimize the latency.
+By default, code completion requests are sent from the IDE directly to the AI Gateway to minimize the latency.
 For this direct connection to work, the IDE must be able to connect to `https://cloud.gitlab.com:443`. If this is not
 possible (for example, because of network restrictions), you can disable direct connections for all users. If you do this,
 code completion requests are sent indirectly through the GitLab Self-Managed instance, which in turn sends the requests
-to the AI gateway. This might result in your requests having higher latency.
+to the AI Gateway. This might result in your requests having higher latency.
 
 #### Configure direct or indirect connections
 
