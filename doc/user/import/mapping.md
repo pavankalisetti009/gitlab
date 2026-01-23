@@ -75,7 +75,7 @@ When you reassign contributions to a user on the destination instance, the user 
 ### Deleted users
 
 Contributions on the source instance that were made by a now deleted user are mapped on the destination instance to
-the ["Ghost User"](../../administration/internal_users.md), except when:
+[a ghost user](../../administration/internal_users.md), except when:
 
 - The contribution was never properly detached from the deleted user on the source instance.
 - Migrating from Bitbucket Server.
