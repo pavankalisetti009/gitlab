@@ -96,7 +96,10 @@ module QA
 
         merge_request = create_test_mr
         Flow::Pipeline.wait_for_latest_pipeline(status: 'Passed', wait: 90)
-        merge_request.visit!
+
+        # Wait for the approval policy to be evaluated after pipeline completion
+        # The policy evaluation is async and may take a moment to update the MR status
+        wait_for_merge_request_approval_status(merge_request)
 
         Page::MergeRequest::Show.perform do |mr|
           expect(mr).not_to be_mergeable
@@ -120,7 +123,10 @@ module QA
 
         merge_request = create_test_mr
         Flow::Pipeline.wait_for_latest_pipeline(status: 'Passed')
-        merge_request.visit!
+
+        # Wait for the approval policy to be evaluated after pipeline completion
+        # The policy evaluation is async and may take a moment to update the MR status
+        wait_for_merge_request_approval_status(merge_request)
 
         Page::MergeRequest::Show.perform do |mr|
           expect(mr).to be_mergeable
@@ -158,6 +164,11 @@ module QA
           project: policy_project,
           target_new_branch: false,
           source_branch: branch_name).merge_via_api!
+
+        # Wait for the policy to be propagated after merging
+        # Policy sync is async and may take a moment to become active
+        # The policy evaluation happens asynchronously, so we wait for it to complete
+        sleep 2
       end
 
       def create_test_mr
@@ -166,6 +177,15 @@ module QA
           project: project,
           target_new_branch: false,
           source_branch: commit_branch)
+      end
+
+      def wait_for_merge_request_approval_status(merge_request)
+        merge_request.visit!
+
+        QA::Support::Waiter.wait_until(max_duration: 30, sleep_interval: 2, reload_page: merge_request,
+          message: "Waiting for MR approval status to be determined") do
+          Page::MergeRequest::Show.perform(&:approval_status_loaded?)
+        end
       end
 
       def report_file(report_name:, report_path:, severity:, action:)
