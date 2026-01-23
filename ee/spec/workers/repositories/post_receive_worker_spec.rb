@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Repositories::PostReceiveWorker, feature_category: :shared do
+RSpec.describe Repositories::PostReceiveWorker, feature_category: :source_code_management do
   include AfterNextHelpers
   include ::EE::GeoHelpers
 

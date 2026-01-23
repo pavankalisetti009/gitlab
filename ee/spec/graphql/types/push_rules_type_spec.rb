@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['PushRules'] do
+RSpec.describe GitlabSchema.types['PushRules'], feature_category: :source_code_management do
   it { expect(described_class.graphql_name).to eq('PushRules') }
 
   it { expect(described_class).to require_graphql_authorizations(:read_project) }

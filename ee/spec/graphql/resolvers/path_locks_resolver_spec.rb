@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::PathLocksResolver do
+RSpec.describe Resolvers::PathLocksResolver, feature_category: :source_code_management do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }

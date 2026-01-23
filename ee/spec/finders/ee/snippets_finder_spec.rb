@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SnippetsFinder do
+RSpec.describe SnippetsFinder, feature_category: :source_code_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:project) { create(:project, :public, group: group) }

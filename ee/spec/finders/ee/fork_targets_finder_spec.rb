@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ForkTargetsFinder do
+RSpec.describe ForkTargetsFinder, feature_category: :source_code_management do
   subject(:finder) { described_class.new(project, user) }
 
   let(:project) { create :project, namespace: project_group }

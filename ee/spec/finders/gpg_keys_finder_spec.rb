@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GpgKeysFinder do
+RSpec.describe GpgKeysFinder, feature_category: :source_code_management do
   let(:params) { {} }
 
   let_it_be(:gpg_key_1) { create(:gpg_key) }
