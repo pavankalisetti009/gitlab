@@ -16,7 +16,7 @@ RSpec.describe 'graphql queries', feature_category: :api do
     'ee/app/assets/javascripts/analytics/merge_request_analytics/graphql/queries/throughput_table.query.graphql' => 320,
 
     # Package registry: https://gitlab.com/gitlab-org/gitlab/-/issues/584294
-    'app/assets/javascripts/packages_and_registries/package_registry/graphql/queries/get_packages.query.graphql' => 281,
+    'app/assets/javascripts/packages_and_registries/package_registry/graphql/queries/get_packages.query.graphql' => 277,
 
     # Compliance: https://gitlab.com/gitlab-org/gitlab/-/issues/584295
     'ee/app/assets/javascripts/compliance_dashboard/components/frameworks_report/edit_framework/graphql/' \
