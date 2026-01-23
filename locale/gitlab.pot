@@ -64270,6 +64270,9 @@ msgstr ""
 msgid "Send notifications for the default branch."
 msgstr ""
 
+msgid "Send notifications only when the pipeline status changes."
+msgstr ""
+
 msgid "Send report"
 msgstr ""
 
