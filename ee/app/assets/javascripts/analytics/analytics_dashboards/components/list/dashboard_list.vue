@@ -145,12 +145,12 @@ export default {
         v-gl-tooltip.hover
         icon="ellipsis_v"
         category="tertiary"
-        text-sr-only
         :title="field.label"
-        :aria-label="field.label"
         no-caret
         left
         data-testid="dashboard-actions"
+        toggle-text="More actions"
+        text-sr-only
       >
         <gl-disclosure-dropdown-group :group="$options.actions" />
         <gl-disclosure-dropdown-group bordered :group="$options.additionalActions" />
