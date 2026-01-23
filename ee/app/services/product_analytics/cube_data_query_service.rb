@@ -49,7 +49,7 @@ module ProductAnalytics
                      )
                    end
 
-        body = Gitlab::Json.parse(response.body)
+        body = Gitlab::Json.safe_parse(response.body)
       rescue Gitlab::Json.parser_error, *Gitlab::HTTP::HTTP_ERRORS => e
         return ServiceResponse.error(message: e.message, reason: :bad_gateway)
       end
