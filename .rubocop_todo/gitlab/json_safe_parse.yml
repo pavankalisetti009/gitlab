@@ -297,7 +297,6 @@ Gitlab/JsonSafeParse:
     - 'lib/gitlab/graphql/pagination/click_house_connection.rb'
     - 'lib/gitlab/graphql/pagination/keyset/connection.rb'
     - 'lib/gitlab/health_checks/puma_check.rb'
-    - 'lib/gitlab/import/user_from_mention.rb'
     - 'lib/gitlab/import_export/json/ndjson_reader.rb'
     - 'lib/gitlab/import_export/lfs_restorer.rb'
     - 'lib/gitlab/jira_import.rb'
