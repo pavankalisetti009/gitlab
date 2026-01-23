@@ -9,18 +9,6 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
   let_it_be(:subgroup) { create(:group, parent: root_group) }
   let_it_be(:project) { create(:project, namespace: root_group, creator: current_user) }
 
-  let_it_be(:regular_user) { create(:user) }
-  let_it_be(:admin_user) { create(:user, :admin) }
-  let_it_be(:banned_user) { create(:user, :banned) }
-  let_it_be(:blocked_user) { create(:user, :blocked) }
-  let_it_be(:ldap_blocked_user) { create(:user, :ldap_blocked) }
-  let_it_be(:external_user) { create(:user, :external) }
-  let_it_be(:unconfirmed_user) { create(:user, confirmed_at: nil) }
-  let_it_be(:omniauth_user) { create(:omniauth_user) }
-  let_it_be(:internal_user) { Users::Internal.alert_bot }
-  let_it_be(:project_bot_user) { create(:user, :project_bot) }
-  let_it_be(:service_account_user) { create(:user, :service_account) }
-
   before_all do
     root_group.add_owner(current_user)
   end
@@ -30,9 +18,65 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
   end
 
   describe '#execute' do
-    context 'for SSO enforcement requirements' do
-      let_it_be(:resource) { project }
+    describe 'MembershipEligibilityChecker integration' do
+      context 'when resource is a group' do
+        let(:resource) { root_group }
 
+        it 'passes target_group to MembershipEligibilityChecker' do
+          expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+            .to receive(:new).with(target_group: root_group).and_call_original
+
+          finder.execute
+        end
+      end
+
+      context 'when resource is a project' do
+        let(:resource) { project }
+
+        it 'passes target_project to MembershipEligibilityChecker' do
+          expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+            .to receive(:new).with(target_project: project).and_call_original
+
+          finder.execute
+        end
+      end
+
+      context 'when resource is neither Group nor Project' do
+        let(:resource) do
+          double(root_ancestor: double(group_namespace?: false)) # rubocop:disable RSpec/VerifiedDoubles -- mock only
+        end
+
+        it 'passes no arguments to MembershipEligibilityChecker' do
+          expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+            .to receive(:new).with(no_args).and_call_original
+
+          finder.execute
+        end
+      end
+
+      context 'when MembershipEligibilityChecker filters users' do
+        let(:resource) { root_group }
+        let_it_be(:regular_user) { create(:user) }
+        let_it_be(:admin_user) { create(:user, :admin) }
+
+        before do
+          filtered_users = User.where(id: [regular_user.id, admin_user.id])
+          checker_instance = instance_double(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+          allow(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+            .to receive(:new).with(target_group: root_group).and_return(checker_instance)
+          allow(checker_instance).to receive(:filter_users).and_return(filtered_users)
+        end
+
+        it 'returns filtered users from MembershipEligibilityChecker' do
+          result = finder.execute
+
+          expect(result.map(&:id)).to match_array([regular_user.id, admin_user.id])
+        end
+      end
+    end
+
+    describe 'SSO enforcement' do
+      let_it_be(:resource) { project }
       let_it_be_with_reload(:saml_provider) { create(:saml_provider, group: root_group, enforced_sso: true) }
 
       let_it_be(:user_with_group_saml_identity) do
@@ -49,36 +93,17 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
 
       let_it_be(:group_service_account) { create(:service_account, provisioned_by_group: root_group) }
       let_it_be(:blocked_group_service_account) { create(:service_account, :blocked, provisioned_by_group: root_group) }
-      let_it_be(:another_group_service_account) { create(:service_account, provisioned_by_group: create(:group)) }
-
-      let(:searchable_group_users_ordered_by_id_desc) do
-        [
-          user_with_group_saml_identity,
-          group_service_account
-        ].sort_by(&:id).reverse
-      end
-
-      let(:searchable_users_ordered_by_id_desc) do
-        [
-          current_user,
-          regular_user,
-          admin_user,
-          external_user,
-          unconfirmed_user,
-          omniauth_user,
-          service_account_user,
-          *searchable_group_users_ordered_by_id_desc,
-          another_group_service_account
-        ].sort_by(&:id).reverse
-      end
 
       before do
         stub_licensed_features(group_saml: true)
       end
 
       context 'when SSO enforcement is enabled' do
-        it 'returns searchable users scoped for the resource and ordered by id descending' do
-          expect(finder.execute).to eq(searchable_group_users_ordered_by_id_desc)
+        it 'returns only users with SAML identity and group service accounts' do
+          result = finder.execute
+
+          expect(result).to include(user_with_group_saml_identity, group_service_account)
+          expect(result).not_to include(blocked_user_with_group_saml_identity, blocked_group_service_account)
         end
       end
 
@@ -87,162 +112,210 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
           saml_provider.update!(enforced_sso: false)
         end
 
-        it 'returns searchable users ordered by id descending' do
-          expect(finder.execute).to eq(searchable_users_ordered_by_id_desc)
+        it 'returns all searchable users' do
+          result = finder.execute
+
+          expect(result).to include(user_with_group_saml_identity, group_service_account, current_user)
         end
       end
     end
 
-    context 'for MembershipEligibilityChecker filtering' do
-      let_it_be(:resource) { root_group }
+    describe 'service account invite restrictions' do
+      let_it_be(:other_group) { create(:group) }
+      let_it_be(:instance_sa) { create(:user, :service_account, provisioned_by_group: nil) }
+      let_it_be(:root_group_sa) { create(:user, :service_account, provisioned_by_group: root_group) }
+      let_it_be(:subgroup_sa) { create(:user, :service_account, provisioned_by_group: subgroup) }
+      let_it_be(:other_group_sa) { create(:user, :service_account, provisioned_by_group: other_group) }
 
-      before do
-        filtered_users = User.where(id: [regular_user.id, admin_user.id])
-        checker_instance = instance_double(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
-        allow(::Namespaces::ServiceAccounts::MembershipEligibilityChecker).to receive(:new).with(root_group)
-                                                                                           .and_return(checker_instance)
-        allow(checker_instance).to receive(:filter_users).and_return(filtered_users)
-      end
+      describe 'composite identity restrictions', :saas do
+        before do
+          stub_saas_features(service_accounts_invite_restrictions: true)
+        end
 
-      it 'calls MembershipEligibilityChecker and returns filtered users' do
-        result = finder.execute
+        context 'when inviting to root group' do
+          let(:resource) { root_group }
 
-        expect(result.map(&:id)).to match_array([regular_user.id, admin_user.id])
-      end
-    end
+          it 'includes instance-level SA with composite identity' do
+            sa = create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: nil)
 
-    context 'when resource is neither Group or Project' do
-      let(:resource) do
-        double(root_ancestor: double(group_namespace?: false)) # rubocop:disable RSpec/VerifiedDoubles -- mock only
-      end
+            expect(finder.execute).to include(sa)
+          end
 
-      it 'calls MembershipEligibilityChecker with nil' do
-        expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker).to receive(:new).with(nil).and_call_original
+          it 'includes SA from same group with composite identity' do
+            sa = create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: root_group)
 
-        finder.execute
-      end
-    end
+            expect(finder.execute).to include(sa)
+          end
 
-    context 'for service account invite restrictions', :saas do
-      let_it_be(:resource) { root_group }
+          it 'excludes SA from other group with composite identity' do
+            sa = create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: other_group)
 
-      let_it_be(:instance_wide_sa) do
-        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: nil)
-      end
+            expect(finder.execute).not_to include(sa)
+          end
 
-      let_it_be(:root_group_sa) do
-        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: root_group)
-      end
+          it 'includes SA without composite identity from any group' do
+            sa = create(:user, :service_account, composite_identity_enforced: false, provisioned_by_group: other_group)
 
-      let_it_be(:root_group_non_comp_id_sa) do
-        create(:user, :service_account, composite_identity_enforced: false, provisioned_by_group: root_group)
-      end
-
-      let_it_be(:subgroup_sa) do
-        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: subgroup)
-      end
-
-      let_it_be(:other_group_sa) do
-        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: create(:group))
-      end
-
-      let(:searchable_users_ordered_by_id_desc) do
-        [
-          current_user,
-          regular_user,
-          admin_user,
-          external_user,
-          unconfirmed_user,
-          omniauth_user,
-          service_account_user,
-          instance_wide_sa,
-          root_group_sa,
-          root_group_non_comp_id_sa
-        ].sort_by(&:id).reverse
-      end
-
-      before do
-        stub_saas_features(service_accounts_invite_restrictions: true)
-      end
-
-      it 'excludes service accounts from subgroups and other groups' do
-        result = finder.execute
-
-        expect(result).to include(instance_wide_sa, root_group_sa, root_group_non_comp_id_sa)
-        expect(result).not_to include(subgroup_sa, other_group_sa)
-      end
-
-      it 'returns searchable users ordered by id descending' do
-        expect(finder.execute).to eq(searchable_users_ordered_by_id_desc)
-      end
-
-      context 'when resource is a project' do
-        context 'when project created in a group' do
-          let_it_be(:resource) { create(:project, namespace: root_group, creator: current_user) }
-
-          it 'filters service accounts based on project group hierarchy' do
-            result = finder.execute
-
-            expect(result).to include(instance_wide_sa, root_group_sa, root_group_non_comp_id_sa)
-            expect(result).not_to include(subgroup_sa, other_group_sa)
+            expect(finder.execute).to include(sa)
           end
         end
 
-        context 'when project created in a personal namespace' do
-          let_it_be(:resource) do
+        context 'when inviting to subgroup' do
+          let(:resource) { subgroup }
+
+          it 'includes SAs from ancestor groups with composite identity' do
+            root_sa = create(:user, :service_account, composite_identity_enforced: true,
+              provisioned_by_group: root_group)
+            sub_sa = create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: subgroup)
+
+            result = finder.execute
+
+            expect(result).to include(root_sa, sub_sa)
+          end
+
+          it 'excludes SAs from other groups with composite identity' do
+            sa = create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: other_group)
+
+            expect(finder.execute).not_to include(sa)
+          end
+        end
+
+        context 'when inviting to project in personal namespace' do
+          let_it_be(:personal_project) do
             create(:project, creator: current_user, namespace: create(:namespace, owner: current_user))
           end
 
-          it 'filters service accounts based on project group hierarchy' do
-            result = finder.execute
+          let(:resource) { personal_project }
 
-            expect(result).to include(instance_wide_sa, root_group_non_comp_id_sa)
-            expect(result).not_to include(root_group_sa, subgroup_sa, other_group_sa)
+          it 'excludes composite-ID SAs from any group' do
+            sa = create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: root_group)
+
+            expect(finder.execute).not_to include(sa)
+          end
+
+          it 'includes SAs without composite identity' do
+            sa = create(:user, :service_account, composite_identity_enforced: false, provisioned_by_group: root_group)
+
+            expect(finder.execute).to include(sa)
           end
         end
       end
 
-      context 'when resource is a subgroup' do
-        let_it_be(:resource) { subgroup }
-
-        let(:searchable_users_ordered_by_id_desc) do
-          [
-            current_user,
-            regular_user,
-            admin_user,
-            external_user,
-            unconfirmed_user,
-            omniauth_user,
-            service_account_user,
-            instance_wide_sa,
-            root_group_sa,
-            root_group_non_comp_id_sa,
-            subgroup_sa
-          ].sort_by(&:id).reverse
+      describe 'subgroup hierarchy restrictions' do
+        before do
+          stub_feature_flags(allow_subgroups_to_create_service_accounts: true)
         end
 
-        it 'excludes service accounts from other groups only' do
-          result = finder.execute
+        context 'when inviting to root group' do
+          let(:resource) { root_group }
 
-          expect(result).to include(instance_wide_sa, root_group_sa, root_group_non_comp_id_sa, subgroup_sa)
-          expect(result).not_to include(other_group_sa)
+          it 'excludes SAs provisioned by subgroups' do
+            expect(finder.execute).not_to include(subgroup_sa)
+          end
+
+          it 'includes instance-level and root group SAs' do
+            expect(finder.execute).to include(instance_sa, root_group_sa)
+          end
         end
 
-        it 'returns searchable users ordered by id descending' do
-          expect(finder.execute).to eq(searchable_users_ordered_by_id_desc)
+        context 'when inviting to subgroup' do
+          let(:resource) { subgroup }
+
+          it 'includes SAs from the subgroup and its ancestors' do
+            expect(finder.execute).to include(instance_sa, root_group_sa, subgroup_sa)
+          end
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
+          end
+
+          let(:resource) { root_group }
+
+          it 'does not apply subgroup hierarchy restrictions' do
+            expect(finder.execute).to include(subgroup_sa)
+          end
         end
       end
 
-      context 'when feature is not available' do
-        before do
-          stub_saas_features(service_accounts_invite_restrictions: false)
-          stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
+      describe 'project-provisioned service account restrictions' do
+        let_it_be(:project_in_root) { create(:project, namespace: root_group) }
+
+        let_it_be(:project_sa) do
+          create(:user, :service_account).tap do |user|
+            user.user_detail.update!(provisioned_by_project_id: project_in_root.id)
+          end
         end
 
-        it 'does not filter service accounts' do
+        before do
+          stub_feature_flags(allow_projects_to_create_service_accounts: true)
+        end
+
+        context 'when inviting to the origin project' do
+          let(:resource) { project_in_root }
+
+          it 'includes the project-provisioned SA' do
+            expect(finder.execute).to include(project_sa)
+          end
+        end
+
+        context 'when inviting to a different project' do
+          let_it_be(:resource) { create(:project, namespace: root_group) }
+
+          it 'excludes the project-provisioned SA' do
+            expect(finder.execute).not_to include(project_sa)
+          end
+        end
+
+        context 'when inviting to a group (including parent of origin project)' do
+          let(:resource) { root_group }
+
+          it 'excludes the project-provisioned SA' do
+            expect(finder.execute).not_to include(project_sa)
+          end
+        end
+
+        context 'when inviting to a subgroup' do
+          let(:resource) { subgroup }
+
+          it 'excludes the project-provisioned SA' do
+            expect(finder.execute).not_to include(project_sa)
+          end
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(allow_projects_to_create_service_accounts: false)
+          end
+
+          let(:resource) { root_group }
+
+          it 'does not apply project provisioning restrictions' do
+            expect(finder.execute).to include(project_sa)
+          end
+        end
+      end
+
+      describe 'when no restrictions are enabled' do
+        before do
+          stub_saas_features(service_accounts_invite_restrictions: false)
+          stub_feature_flags(
+            allow_subgroups_to_create_service_accounts: false,
+            allow_projects_to_create_service_accounts: false
+          )
+        end
+
+        let(:resource) { root_group }
+
+        it 'does not filter any service accounts' do
+          project_sa = create(:user, :service_account).tap do |user|
+            user.user_detail.update!(provisioned_by_project_id: project.id)
+          end
+
           result = finder.execute
 
-          expect(result).to include(subgroup_sa, other_group_sa, root_group_sa, root_group_non_comp_id_sa)
+          expect(result).to include(instance_sa, root_group_sa, subgroup_sa, other_group_sa, project_sa)
         end
       end
     end

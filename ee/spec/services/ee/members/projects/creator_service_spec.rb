@@ -115,9 +115,9 @@ RSpec.describe Members::Projects::CreatorService, feature_category: :groups_and_
       let_it_be(:project_namespace) { source.namespace }
 
       context 'and the service account is eligible for membership' do
-        it 'creates the member successfully and calls MembershipEligibilityChecker with the project namespace' do
+        it 'creates the member successfully and calls MembershipEligibilityChecker with target_project' do
           allow(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
-            .to receive(:new).with(project_namespace).and_call_original
+            .to receive(:new).with(target_project: source).and_call_original
           expect_next_instance_of(::Namespaces::ServiceAccounts::MembershipEligibilityChecker) do |instance|
             expect(instance).to receive(:eligible?).with(service_account_user).and_return(true)
           end

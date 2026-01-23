@@ -333,12 +333,13 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
         it 'calls MembershipEligibilityChecker to check eligibility' do
           checker_instance = instance_double(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
           allow(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
-            .to receive(:new).with(source).and_return(checker_instance)
+            .to receive(:new).with(target_group: source).and_return(checker_instance)
           allow(checker_instance).to receive(:eligible?).and_return(true)
 
           described_class.add_member(source, user, :maintainer, current_user: group_owner)
 
-          expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker).to have_received(:new).with(source)
+          expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+            .to have_received(:new).with(target_group: source)
           expect(checker_instance).to have_received(:eligible?).with(user)
         end
       end

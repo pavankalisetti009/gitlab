@@ -15,16 +15,6 @@ module EE
       end
       strong_memoize_attr :root_group
 
-      def target_namespace
-        case resource
-        when Project
-          resource.namespace
-        when Group
-          resource
-        end
-      end
-      strong_memoize_attr :target_namespace
-
       override :scope_for_resource
       def scope_for_resource(users)
         if root_group && root_group.enforced_sso?
@@ -34,9 +24,22 @@ module EE
           )
         else
           scoped_users = super
-          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(target_namespace).filter_users(scoped_users)
+          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(**checker_args).filter_users(scoped_users)
         end
       end
+
+      def checker_args
+        case resource
+        when Project
+          { target_project: resource }
+        when Group
+          { target_group: resource }
+        else
+          {}
+        end
+      end
+
+      strong_memoize_attr :checker_args
     end
   end
 end
