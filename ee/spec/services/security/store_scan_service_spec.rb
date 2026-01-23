@@ -212,6 +212,28 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
       end
     end
 
+    context 'when the security report has no scanner information' do
+      let_it_be(:artifact) { create(:ee_ci_job_artifact, :sast_with_missing_scanner) }
+
+      before do
+        artifact.job.update!(status: :success)
+      end
+
+      it 'marks the scan as preparation_failed' do
+        expect { store_scan }.to change { Security::Scan.preparation_failed.count }.by(1)
+
+        expect(Security::StoreFindingsService).not_to have_received(:execute)
+
+        security_scan = Security::Scan.last
+        expect(security_scan.processing_errors).to include(
+          hash_including(
+            'type' => 'ScanIngestionError',
+            'message' => 'Ingestion failed for security scan'
+          )
+        )
+      end
+    end
+
     context 'when storing the findings raises an error' do
       let(:error) { RuntimeError.new }
       let(:expected_errors) { [{ 'type' => 'ScanIngestionError', 'message' => 'Ingestion failed for security scan' }] }

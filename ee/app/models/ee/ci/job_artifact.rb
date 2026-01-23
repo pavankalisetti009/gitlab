@@ -166,6 +166,11 @@ module EE
 
     def parse_security_report(signatures_enabled:, validate:)
       base_security_report.tap do |report|
+        unless size.to_i > 0
+          report.add_error('EmptyFile', 'Report file is empty')
+          next
+        end
+
         each_blob do |blob|
           ::Gitlab::Ci::Parsers.fabricate!(file_type, blob, report, signatures_enabled: signatures_enabled, validate: validate).parse!
         rescue StandardError

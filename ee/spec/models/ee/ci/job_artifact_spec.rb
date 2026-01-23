@@ -516,6 +516,26 @@ RSpec.describe Ci::JobArtifact, feature_category: :job_artifacts do
       end
     end
 
+    context 'when the artifact file is empty' do
+      let(:job_artifact) { create(:ee_ci_job_artifact, :empty_sast_report) }
+
+      it 'returns a report with an error' do
+        report = job_artifact.security_report
+
+        expect(report).to be_errored
+        expect(report.errors).to include(
+          hash_including(
+            type: 'EmptyFile',
+            message: 'Report file is empty'
+          )
+        )
+      end
+
+      it 'does not have a scanner' do
+        expect(job_artifact.security_report.scanner).to be_nil
+      end
+    end
+
     context 'with cyclonedx' do
       let(:job_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: job) }
 
