@@ -194,13 +194,10 @@ You cannot restrict the most popular public email domains, such as:
 
 When you share a group, both the source and target namespaces must allow the domains of the members' email addresses.
 
-{{< alert type="note" >}}
-
-Removing a domain from the **Restrict membership by email domain** list does not remove existing users with that domain from the group or its projects.
-Also, if you share a group or project with another group, the target group can add more email domains to its list that are not in the list of the source group.
-Hence, this feature does not ensure that the current members always conform to the **Restrict membership by email domain** list.
-
-{{< /alert >}}
+> [!note]
+> Removing a domain from the **Restrict membership by email domain** list does not remove existing users with that domain from the group or its projects.
+> Also, if you share a group or project with another group, the target group can add more email domains to its list that are not in the list of the source group.
+> Hence, this feature does not ensure that the current members always conform to the **Restrict membership by email domain** list.
 
 ## Prevent users from requesting access to a group
 
