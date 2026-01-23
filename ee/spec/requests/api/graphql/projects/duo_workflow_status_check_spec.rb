@@ -19,6 +19,7 @@ RSpec.describe 'querying duoWorkflowStatusCheck', feature_category: :duo_agent_p
           project(fullPath: "#{project.full_path}") {
             duoWorkflowStatusCheck {
               enabled
+              createDuoWorkflowForCiAllowed
               checks {
                 name
                 value
@@ -31,6 +32,7 @@ RSpec.describe 'querying duoWorkflowStatusCheck', feature_category: :duo_agent_p
       status = result.dig('data', 'project', 'duoWorkflowStatusCheck')
 
       expect(status['enabled']).to be_falsey
+      expect(status['createDuoWorkflowForCiAllowed']).to be_falsey
       expect(status['checks']).to match_array([
         hash_including('name' => 'feature_flag', 'value' => true),
         hash_including('name' => 'duo_features_enabled', 'value' => true),

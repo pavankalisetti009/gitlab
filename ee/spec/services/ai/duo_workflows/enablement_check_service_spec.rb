@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature_category: :duo_agent_platform do
-  let_it_be_with_reload(:project) { create(:project) }
+  let_it_be(:group) { create(:group) }
+  let_it_be_with_reload(:project) { create(:project, group: group) }
   let_it_be(:user) { create(:user) }
 
   describe '#execute' do
@@ -35,11 +36,24 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         end
 
         it "returns status and checks" do
-          expect(result[:enabled]).to be_truthy
+          expect(result[:enabled]).to be(true)
+          expect(result[:create_duo_workflow_for_ci_allowed]).to be(true)
           expect(success_checks(result[:checks]))
-            .to match_array([:developer_access, :duo_features_enabled, :feature_flag, :feature_available])
+            .to contain_exactly(:developer_access, :duo_features_enabled, :feature_flag, :feature_available)
           expect(result[:remote_flows_enabled]).to eq(project.duo_remote_flows_enabled)
           expect(result[:foundational_flows_enabled]).to eq(project.duo_foundational_flows_enabled)
+        end
+
+        context 'when the user cannot create workflows for ci' do
+          before do
+            stub_feature_flags(dap_instance_customizable_permissions: true)
+            Ai::Setting.instance.update!(minimum_access_level_execute_async: ::Gitlab::Access::MAINTAINER)
+          end
+
+          it 'returns correct values for permissions related fields' do
+            expect(result[:enabled]).to be(true)
+            expect(result[:create_duo_workflow_for_ci_allowed]).to be(false)
+          end
         end
       end
 
@@ -49,8 +63,9 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         end
 
         it "returns status and checks" do
-          expect(result[:enabled]).to be_falsey
-          expect(success_checks(result[:checks])).to match_array([:developer_access, :feature_flag])
+          expect(result[:enabled]).to be(false)
+          expect(result[:create_duo_workflow_for_ci_allowed]).to be(false)
+          expect(success_checks(result[:checks])).to contain_exactly(:developer_access, :feature_flag)
           expect(result[:remote_flows_enabled]).to eq(project.duo_remote_flows_enabled)
           expect(result[:foundational_flows_enabled]).to eq(project.duo_foundational_flows_enabled)
         end
@@ -62,7 +77,7 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         end
 
         it "returns remote_flows_enabled as true" do
-          expect(result[:remote_flows_enabled]).to be_truthy
+          expect(result[:remote_flows_enabled]).to be(true)
         end
       end
 
@@ -72,7 +87,7 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         end
 
         it "returns remote_flows_enabled as false" do
-          expect(result[:remote_flows_enabled]).to be_falsey
+          expect(result[:remote_flows_enabled]).to be(false)
         end
       end
 
@@ -82,7 +97,7 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         end
 
         it "returns foundational_flows_enabled as true" do
-          expect(result[:foundational_flows_enabled]).to be_truthy
+          expect(result[:foundational_flows_enabled]).to be(true)
         end
       end
 
@@ -92,7 +107,7 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         end
 
         it "returns foundational_flows_enabled as false" do
-          expect(result[:foundational_flows_enabled]).to be_falsey
+          expect(result[:foundational_flows_enabled]).to be(false)
         end
       end
     end
@@ -103,8 +118,9 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
       end
 
       it "returns status and checks" do
-        expect(result[:enabled]).to be_falsey
-        expect(success_checks(result[:checks])).to match_array([:duo_features_enabled, :feature_flag])
+        expect(result[:enabled]).to be(false)
+        expect(result[:create_duo_workflow_for_ci_allowed]).to be(false)
+        expect(success_checks(result[:checks])).to contain_exactly(:duo_features_enabled, :feature_flag)
         expect(result[:remote_flows_enabled]).to eq(project.duo_remote_flows_enabled)
         expect(result[:foundational_flows_enabled]).to eq(project.duo_foundational_flows_enabled)
       end

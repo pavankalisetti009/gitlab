@@ -12,6 +12,7 @@ module Ai
         return unless Ability.allowed?(@current_user, :read_project, @project)
 
         enabled = Ability.allowed?(@current_user, :duo_workflow, @project)
+        create_duo_workflow_for_ci_allowed = Ability.allowed?(@current_user, :create_duo_workflow_for_ci, @project)
         checks = [
           {
             name: :feature_flag,
@@ -37,6 +38,7 @@ module Ai
 
         {
           enabled: enabled,
+          create_duo_workflow_for_ci_allowed: create_duo_workflow_for_ci_allowed,
           checks: checks,
           remote_flows_enabled: @project.duo_remote_flows_enabled,
           foundational_flows_enabled: @project.duo_foundational_flows_enabled

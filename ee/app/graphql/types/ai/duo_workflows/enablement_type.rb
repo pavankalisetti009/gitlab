@@ -7,6 +7,10 @@ module Types
         graphql_name 'DuoWorkflowEnablement'
         description 'Duo Agent Platform enablement status checks.'
 
+        field :create_duo_workflow_for_ci_allowed, GraphQL::Types::Boolean,
+          null: false,
+          experiment: { milestone: '18.9' },
+          description: 'Indicates whether the user can create Duo Workflows for CI in the project.'
         field :enabled, GraphQL::Types::Boolean,
           null: false,
           description: 'Indicates whether Duo Agent Platform is enabled for current user and the project.'
