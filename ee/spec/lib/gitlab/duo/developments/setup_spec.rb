@@ -129,6 +129,19 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
       end
     end
 
+    context 'when creating self hosted dap add on' do
+      let(:args) { { add_on: 'self_hosted_dap' } }
+
+      it 'creates duo core and self hosted dap add-on' do
+        setup
+
+        expect(::GitlabSubscriptions::AddOnPurchase.for_self_hosted_dap.count).to eq(1)
+        expect(::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.count).to eq(0)
+        expect(::GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro.count).to eq(0)
+        expect(::GitlabSubscriptions::AddOnPurchase.for_duo_core.count).to eq(1)
+      end
+    end
+
     it_behaves_like 'checks for dev or test env'
     it_behaves_like 'enables all necessary feature flags'
     it_behaves_like 'errors when there is no license'
