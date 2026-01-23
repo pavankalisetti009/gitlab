@@ -1,36 +1,64 @@
 <script>
-import { GlAlert, GlForm, GlFormFields, GlFormTextarea, GlButton } from '@gitlab/ui';
+import { GlForm, GlFormFields, GlFormTextarea, GlButton } from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/src/utils';
+import { produce } from 'immer';
 import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__, sprintf } from '~/locale';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 export default {
   name: 'RegistryForm',
   components: {
-    GlAlert,
     GlForm,
     GlFormFields,
     GlFormTextarea,
     GlButton,
+    ErrorsAlert,
   },
-  inject: ['fullPath', 'createRegistryMutation', 'routes'],
+  inject: [
+    'fullPath',
+    'createRegistryMutation',
+    'updateRegistryMutation',
+    'getRegistryQuery',
+    'routes',
+  ],
+  props: {
+    initialRegistry: {
+      type: Object,
+      required: false,
+      default: () => ({
+        name: '',
+        description: '',
+      }),
+    },
+    registryId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+  },
   data() {
     return {
       submitting: false,
       errorMessages: [],
-      registry: {
-        name: '',
-        description: '',
-      },
+      registry: this.initialRegistry,
     };
   },
   methods: {
     submit() {
       this.submitting = true;
 
-      this.createRegistry()
+      (this.registryId ? this.updateRegistry() : this.createRegistry())
+        .then((registry) => {
+          if (registry) {
+            this.$router.push({
+              name: this.routes.showRegistryRouteName,
+              params: { id: getIdFromGraphQLId(registry.id) },
+            });
+          }
+        })
         .catch((error) => {
           this.errorMessages = [__('Something went wrong. Please try again.')];
 
@@ -40,8 +68,8 @@ export default {
           this.submitting = false;
         });
     },
-    createRegistry() {
-      return this.$apollo.mutate({
+    async createRegistry() {
+      const { data } = await this.$apollo.mutate({
         mutation: this.createRegistryMutation,
         variables: {
           input: {
@@ -49,27 +77,69 @@ export default {
             ...this.registry,
           },
         },
-        update: (_, { data }) => {
-          const { errors, ...result } = data.createRegistry;
+        update: (_, { data: { createRegistry } }) => {
+          const { errors, ...result } = createRegistry;
+
+          if (errors.length) {
+            this.errorMessages = errors;
+          } else {
+            createAlert({
+              message: sprintf(s__('VirtualRegistry|Registry %{name} was successfully created.'), {
+                name: result.registry.name,
+              }),
+              variant: 'success',
+            });
+          }
+        },
+      });
+
+      return data.createRegistry.registry;
+    },
+    async updateRegistry() {
+      const { data } = await this.$apollo.mutate({
+        mutation: this.updateRegistryMutation,
+        variables: {
+          input: {
+            id: this.registryId,
+            ...this.registry,
+          },
+        },
+        update: (store, { data: { updateRegistry } }) => {
+          const { errors, ...result } = updateRegistry;
 
           if (errors.length) {
             this.errorMessages = errors;
           } else {
             const { registry } = result;
 
+            this.updateCache(store, registry);
+
             createAlert({
-              message: sprintf(s__('VirtualRegistry|Registry %{name} was successfully created.'), {
+              message: sprintf(s__('VirtualRegistry|Registry %{name} was successfully updated.'), {
                 name: registry.name,
               }),
               variant: 'success',
             });
-
-            this.$router.push({
-              name: this.routes.showRegistryRouteName,
-              params: { id: getIdFromGraphQLId(registry.id) },
-            });
           }
         },
+      });
+
+      return data.updateRegistry.registry;
+    },
+    updateCache(store, registry) {
+      const query = {
+        query: this.getRegistryQuery,
+        variables: { id: this.registryId },
+      };
+      const data = store.readQuery(query);
+
+      if (!data) return;
+
+      store.writeQuery({
+        ...query,
+        data: produce(data, (draftState) => {
+          Object.assign(draftState.registry, { ...registry });
+        }),
       });
     },
   },
@@ -94,13 +164,7 @@ export default {
 </script>
 <template>
   <gl-form id="registry-form" class="@md/panel:gl-w-9/12">
-    <gl-alert v-if="errorMessages.length" variant="danger" @dismiss="errorMessages = []">
-      <ul class="!gl-mb-0 gl-ml-0 gl-pl-4">
-        <li v-for="error in errorMessages" :key="error" data-testid="registry-error-message">
-          {{ error }}
-        </li>
-      </ul>
-    </gl-alert>
+    <errors-alert :errors="errorMessages" @dismiss="errorMessages = []" />
     <gl-form-fields
       v-model="registry"
       :fields="$options.fields"
@@ -114,7 +178,9 @@ export default {
     </gl-form-fields>
     <div class="gl-flex gl-gap-3">
       <gl-button class="js-no-auto-disable" variant="confirm" type="submit" :loading="submitting">
-        {{ s__('VirtualRegistry|Create registry') }}
+        {{
+          registryId ? s__('VirtualRegistry|Save registry') : s__('VirtualRegistry|Create registry')
+        }}
       </gl-button>
       <gl-button :to="{ path: '/' }">
         {{ __('Cancel') }}

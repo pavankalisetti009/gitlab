@@ -75149,6 +75149,9 @@ msgstr ""
 msgid "Virtual registry"
 msgstr ""
 
+msgid "Virtual registry|Registry not found."
+msgstr ""
+
 msgid "Virtual registry|Upstream not found."
 msgstr ""
 
@@ -75401,6 +75404,9 @@ msgstr ""
 msgid "VirtualRegistry|Disabling removes access. Existing registries are preserved and available again when re-enabled."
 msgstr ""
 
+msgid "VirtualRegistry|Edit container virtual registry"
+msgstr ""
+
 msgid "VirtualRegistry|Edit registry"
 msgstr ""
 
@@ -75450,6 +75456,9 @@ msgid "VirtualRegistry|Failed to fetch list of upstreams."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to fetch list of virtual registries."
+msgstr ""
+
+msgid "VirtualRegistry|Failed to fetch registry details."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to fetch upstream summary."
@@ -75577,6 +75586,9 @@ msgstr ""
 msgid "VirtualRegistry|Registry %{name} was successfully created."
 msgstr ""
 
+msgid "VirtualRegistry|Registry %{name} was successfully updated."
+msgstr ""
+
 msgid "VirtualRegistry|Registry cache cleared successfully."
 msgstr ""
 
@@ -75593,6 +75605,9 @@ msgid "VirtualRegistry|Removed upstream from virtual registry."
 msgstr ""
 
 msgid "VirtualRegistry|Rule:"
+msgstr ""
+
+msgid "VirtualRegistry|Save registry"
 msgstr ""
 
 msgid "VirtualRegistry|Save storage space by automatically deleting caches from the virtual registry and keeping the ones you want."

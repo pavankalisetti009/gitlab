@@ -67,12 +67,13 @@ export default {
       return sprintf(s__('VirtualRegistry|Edit registry %{name}'), { name });
     },
     getEditRegistryURL(registryId) {
-      return this.editRegistryPathTemplate
-        ? this.editRegistryPathTemplate.replace(':id', getIdFromGraphQLId(registryId))
-        : this.$router.resolve({
-            name: this.routes.editRegistryRouteName,
-            params: { id: getIdFromGraphQLId(registryId) },
-          }).href;
+      return this.editRegistryPathTemplate?.replace(':id', getIdFromGraphQLId(registryId));
+    },
+    getEditRegistryRoute(id) {
+      return {
+        name: this.routes.editRegistryRouteName,
+        params: { id: getIdFromGraphQLId(id) },
+      };
     },
     getShowRegistryURL(registryId) {
       return this.showRegistryPathTemplate
@@ -111,6 +112,7 @@ export default {
         icon="pencil"
         data-testid="edit-registry-button"
         :href="getEditRegistryURL(item.id)"
+        :to="getEditRegistryRoute(item.id)"
       />
     </template>
   </gl-table-lite>

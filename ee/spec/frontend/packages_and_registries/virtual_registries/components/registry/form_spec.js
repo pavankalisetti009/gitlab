@@ -4,8 +4,11 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import RegistryForm from 'ee/packages_and_registries/virtual_registries/components/registry/form.vue';
 import createRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_container_registry.mutation.graphql';
+import updateRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/update_container_registry.mutation.graphql';
+import getRegistryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_registry.query.graphql';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
@@ -28,22 +31,44 @@ describe('Virtual registry form component', () => {
       },
     },
   });
+  const updateMutationHandler = jest.fn().mockResolvedValue({
+    data: {
+      updateRegistry: {
+        errors: [],
+        registry: {
+          id: 1,
+          name: 'Registry name',
+          description: 'Registry description',
+        },
+      },
+    },
+  });
   const routerPushMock = jest.fn();
 
   const findFormFields = () => wrapper.findByTestId('registry-form');
-  const findErrorMessages = () => wrapper.findAllByTestId('registry-error-message');
+  const findErrorMessage = () => wrapper.findComponent(ErrorsAlert);
 
-  function factory(handler = createMutationHandler) {
-    const apolloProvider = createMockApollo([[createRegistryMutation, handler]]);
+  function factory({
+    createHandler = createMutationHandler,
+    updateHandler = updateMutationHandler,
+    propsData = {},
+  } = {}) {
+    const apolloProvider = createMockApollo([
+      [createRegistryMutation, createHandler],
+      [updateRegistryMutation, updateHandler],
+    ]);
 
     wrapper = mountExtended(RegistryForm, {
       apolloProvider,
       provide: {
         fullPath: 'gitlab-org',
         createRegistryMutation,
-        routes: {
-          showRegistryRouteName: 'show',
-        },
+        updateRegistryMutation,
+        getRegistryQuery,
+        routes: { showRegistryRouteName: 'show' },
+      },
+      propsData: {
+        ...propsData,
       },
       stubs: {
         RouterLink: true,
@@ -135,15 +160,13 @@ describe('Virtual registry form component', () => {
           },
         });
 
-        factory(errorHandler);
+        factory({ createHandler: errorHandler });
 
         findFormFields().vm.$emit('submit');
 
         await waitForPromises();
 
-        expect(findErrorMessages()).toHaveLength(2);
-        expect(findErrorMessages().at(0).text()).toBe('Error!');
-        expect(findErrorMessages().at(1).text()).toBe('Another error');
+        expect(findErrorMessage().props('errors')).toEqual(['Error!', 'Another error']);
       });
     });
 
@@ -158,7 +181,7 @@ describe('Virtual registry form component', () => {
           },
         });
 
-        factory(errorHandler);
+        factory({ createHandler: errorHandler });
       });
 
       it('renders error message', async () => {
@@ -166,8 +189,110 @@ describe('Virtual registry form component', () => {
 
         await waitForPromises();
 
-        expect(findErrorMessages()).toHaveLength(1);
-        expect(findErrorMessages().at(0).text()).toBe('Something went wrong. Please try again.');
+        expect(findErrorMessage().props('errors')).toEqual([
+          'Something went wrong. Please try again.',
+        ]);
+      });
+
+      it('captures exception', async () => {
+        findFormFields().vm.$emit('submit');
+
+        await waitForPromises();
+
+        expect(captureException).toHaveBeenCalledWith({
+          component: 'RegistryForm',
+          error: expect.anything(),
+        });
+      });
+    });
+  });
+
+  describe('when update mutation is submitted', () => {
+    const registryId = '1';
+    const initialRegistry = { name: 'Test name', description: 'Test description' };
+
+    it('sends registry data on submit', async () => {
+      factory({ propsData: { registryId, initialRegistry } });
+
+      findFormFields().vm.$emit('input', {
+        name: 'Registry name',
+        description: 'Registry description',
+      });
+      findFormFields().vm.$emit('submit');
+
+      await waitForPromises();
+
+      expect(updateMutationHandler).toHaveBeenCalledWith({
+        input: {
+          description: 'Registry description',
+          name: 'Registry name',
+          id: registryId,
+        },
+      });
+    });
+
+    it('pushes new route', async () => {
+      factory({ propsData: { registryId, initialRegistry } });
+
+      findFormFields().vm.$emit('input', {
+        name: 'Registry name',
+        description: 'Registry description',
+      });
+      findFormFields().vm.$emit('submit');
+
+      await waitForPromises();
+
+      expect(routerPushMock).toHaveBeenCalledWith({
+        params: {
+          id: 1,
+        },
+        name: expect.any(String),
+      });
+    });
+
+    describe('when mutation returns error', () => {
+      it('renders error message', async () => {
+        const errorHandler = jest.fn().mockResolvedValue({
+          data: {
+            updateRegistry: {
+              errors: ['Error!', 'Another error'],
+              registry: null,
+            },
+          },
+        });
+
+        factory({ updateHandler: errorHandler, propsData: { registryId, initialRegistry } });
+
+        findFormFields().vm.$emit('submit');
+
+        await waitForPromises();
+
+        expect(findErrorMessage().props('errors')).toEqual(['Error!', 'Another error']);
+      });
+    });
+
+    describe('when server returns error', () => {
+      beforeEach(() => {
+        const errorHandler = jest.fn().mockRejectedValue({
+          data: {
+            updateRegistry: {
+              errors: [],
+              registry: null,
+            },
+          },
+        });
+
+        factory({ updateHandler: errorHandler, propsData: { registryId, initialRegistry } });
+      });
+
+      it('renders error message', async () => {
+        findFormFields().vm.$emit('submit');
+
+        await waitForPromises();
+
+        expect(findErrorMessage().props('errors')).toEqual([
+          'Something went wrong. Please try again.',
+        ]);
       });
 
       it('captures exception', async () => {

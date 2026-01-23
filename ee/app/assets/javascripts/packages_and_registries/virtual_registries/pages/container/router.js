@@ -4,8 +4,8 @@ import { s__ } from '~/locale';
 import SpaRouterView from '~/vue_shared/spa/components/router_view.vue';
 import UpstreamShow from 'ee/packages_and_registries/virtual_registries/pages/common/upstream/show.vue';
 import RegistriesNewPage from '../common/registry/new.vue';
+import RegistriesEdit from '../common/registry/edit.vue';
 import RegistriesAndUpstreams from './registries_and_upstreams.vue';
-import RegistriesEdit from './registries_edit.vue';
 import RegistriesShow from './registries_show.vue';
 import {
   CONTAINER_REGISTRIES_INDEX,
@@ -78,6 +78,15 @@ export default function createRouter(base) {
                     props: true,
                     meta: {
                       text: s__('VirtualRegistries|Edit registry'),
+                    },
+                    beforeEnter(to, from, next) {
+                      if (window.gon?.abilities?.updateVirtualRegistry) {
+                        next();
+                      } else {
+                        next({
+                          name: CONTAINER_REGISTRIES_INDEX,
+                        });
+                      }
                     },
                   },
                 ],
