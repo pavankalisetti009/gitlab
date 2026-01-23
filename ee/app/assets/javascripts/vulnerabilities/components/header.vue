@@ -91,6 +91,7 @@ export default {
       user: undefined,
       errorAlert: null,
       aiCatalogItemConsumerId: null,
+      resolutionAiCatalogItemConsumerId: null,
     };
   },
   computed: {
@@ -252,6 +253,33 @@ export default {
         Sentry.captureException(error);
       },
     },
+    resolutionAiCatalogItemConsumerId: {
+      query: getConfiguredFlows,
+      variables() {
+        return {
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.vulnerability.project.id),
+          foundationalFlowReference: 'resolve_sast_vulnerability/v1',
+        };
+      },
+      skip() {
+        return !this.vulnerability.project.id;
+      },
+      update(data) {
+        const configuredItems = data.aiCatalogConfiguredItems?.nodes || [];
+        if (configuredItems.length > 0) {
+          return data.aiCatalogConfiguredItems.nodes[0].id;
+        }
+        return null;
+      },
+      error(error) {
+        Sentry.captureException(error);
+        createAlert({
+          message: s__(
+            'VulnerabilityManagement|Something went wrong, could not fetch AI resolution configuration.',
+          ),
+        });
+      },
+    },
   },
   methods: {
     async changeVulnerabilityState({ action, dismissalReason, comment }) {
@@ -405,7 +433,13 @@ export default {
       this.$apollo.subscriptions.aiCompletionResponse.stop();
     },
     triggerResolution() {
-      Api.triggerVulnerabilityResolution(this.vulnerability.id, this.vulnerabilityProjectId)
+      Api.triggerVulnerabilityResolution(
+        this.vulnerability.id,
+        this.vulnerabilityProjectId,
+        this.resolutionAiCatalogItemConsumerId
+          ? getIdFromGraphQLId(this.resolutionAiCatalogItemConsumerId)
+          : null,
+      )
         .then(({ data }) => {
           createAlert({
             variant: VARIANT_SUCCESS,

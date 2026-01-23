@@ -75949,6 +75949,9 @@ msgstr ""
 msgid "VulnerabilityManagement|Something went wrong while trying to unlink the issue. Please try again later."
 msgstr ""
 
+msgid "VulnerabilityManagement|Something went wrong, could not fetch AI resolution configuration."
+msgstr ""
+
 msgid "VulnerabilityManagement|Something went wrong, could not get user."
 msgstr ""
 

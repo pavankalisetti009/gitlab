@@ -142,21 +142,17 @@ export default {
     return axios.post(url);
   },
 
-  triggerVulnerabilityResolution(vulnerabilityId, projectId) {
+  triggerVulnerabilityResolution(vulnerabilityId, projectId, aiCatalogItemConsumerId) {
     const url = Api.buildUrl(this.duoWorkflowsPath);
 
     return axios.post(url, {
       project_id: projectId,
-      agent_privileges: VULNERABILITY_RESOLUTION_AGENT_PRIVILEGES,
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      goal: `Fix vulnerability ID: ${vulnerabilityId}`,
+      goal: vulnerabilityId.toString(),
+      ai_catalog_item_consumer_id: aiCatalogItemConsumerId,
       start_workflow: true,
       workflow_definition: 'resolve_sast_vulnerability/v1',
+      agent_privileges: VULNERABILITY_RESOLUTION_AGENT_PRIVILEGES,
       environment: 'web',
-      source_branch: `security/sast/resolve-vulnerability-${vulnerabilityId}`,
-      context: {
-        vulnerability_id: vulnerabilityId,
-      },
     });
   },
 

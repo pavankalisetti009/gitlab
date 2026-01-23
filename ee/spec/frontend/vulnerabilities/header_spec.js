@@ -127,8 +127,21 @@ describe('Vulnerability Header', () => {
     ...otherProperties,
   });
 
+  const getConfiguredFlowsSuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiCatalogConfiguredItems: {
+        nodes: [],
+      },
+    },
+  });
+
   const createApolloProvider = (...queries) => {
-    return createMockApollo([...queries]);
+    // Provide default mock for getConfiguredFlows to prevent unwanted error alerts
+    const hasConfiguredFlowsHandler = queries.some(([query]) => query === getConfiguredFlows);
+    const defaultQueries = hasConfiguredFlowsHandler
+      ? queries
+      : [[getConfiguredFlows, getConfiguredFlowsSuccessHandler], ...queries];
+    return createMockApollo(defaultQueries);
   };
 
   const createRandomUser = () => {
@@ -690,7 +703,7 @@ describe('Vulnerability Header', () => {
         mockSubscription = createMockSubscription();
         subscriptionSpy = jest.fn().mockReturnValue(mockSubscription);
 
-        const apolloProvider = createMockApollo([[aiResolveVulnerability, mutationResponse]]);
+        const apolloProvider = createApolloProvider([aiResolveVulnerability, mutationResponse]);
         apolloProvider.defaultClient.setRequestHandler(aiResponseSubscription, subscriptionSpy);
 
         createWrapper({
@@ -831,6 +844,7 @@ describe('Vulnerability Header', () => {
         expect(Api.triggerVulnerabilityResolution).toHaveBeenCalledWith(
           defaultVulnerability.id,
           456,
+          null,
         );
       });
 
@@ -1094,6 +1108,9 @@ describe('Vulnerability Header', () => {
       await waitForPromises();
 
       expect(sentryCaptureException).toHaveBeenCalledWith(expect.any(Error));
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Something went wrong, could not fetch AI resolution configuration.',
+      });
     });
   });
 });
