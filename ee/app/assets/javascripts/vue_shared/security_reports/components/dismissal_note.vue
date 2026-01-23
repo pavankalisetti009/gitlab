@@ -6,6 +6,7 @@ import { DISMISSAL_REASONS } from 'ee/vulnerabilities/constants';
 import { getDismissalNoteEventText } from './helpers';
 
 export default {
+  name: 'DismissalNote',
   components: {
     EventItem,
     GlSprintf,

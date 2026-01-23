@@ -4,6 +4,7 @@ import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { s__ } from '~/locale';
 
 export default {
+  name: 'SolutionCard',
   directives: {
     SafeHtml,
   },

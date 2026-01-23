@@ -11,6 +11,7 @@ export const VARIANTS = {
 };
 
 export default {
+  name: 'StatusBadge',
   components: {
     GlBadge,
     GlLoadingIcon,

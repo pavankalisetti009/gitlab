@@ -3,6 +3,7 @@ import { GlModal, GlIcon, GlSprintf, GlTruncate, GlLink } from '@gitlab/ui';
 import { n__, __ } from '~/locale';
 
 export default {
+  name: 'DastModal',
   components: { GlModal, GlIcon, GlSprintf, GlTruncate, GlLink },
   props: {
     scannedUrls: {
