@@ -10,6 +10,7 @@ import {
   GlModalDirective,
   GlTooltipDirective,
   GlSprintf,
+  GlTooltip,
 } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
@@ -44,6 +45,7 @@ export default {
     GlIcon,
     GlLink,
     GlSprintf,
+    GlTooltip,
     ConfirmActionModal,
     AiCatalogItemConsumerModal,
     AiCatalogItemReportModal,
@@ -281,6 +283,7 @@ export default {
   adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
     anchor: 'admin-mode',
   }),
+  toggleId: 'more-actions-dropdown',
 };
 </script>
 
@@ -333,6 +336,7 @@ export default {
     </span>
     <gl-disclosure-dropdown
       v-if="showDropdown"
+      :toggle-id="$options.toggleId"
       :toggle-text="__('More actions')"
       category="tertiary"
       icon="ellipsis_v"
@@ -395,6 +399,10 @@ export default {
         </template>
       </gl-disclosure-dropdown-item>
     </gl-disclosure-dropdown>
+    <gl-tooltip :target="$options.toggleId" boundary="viewport" placement="top" triggers="hover">{{
+      __('More actions')
+    }}</gl-tooltip>
+
     <confirm-action-modal
       v-if="canAdmin && showDeleteModal"
       modal-id="delete-item-modal"

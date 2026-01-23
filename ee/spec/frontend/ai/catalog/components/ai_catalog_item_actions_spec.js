@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlModal, GlFormRadioGroup } from '@gitlab/ui';
+import { GlModal, GlFormRadioGroup, GlTooltip } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { isLoggedIn } from '~/lib/utils/common_utils';
@@ -94,11 +94,22 @@ describe('AiCatalogItemActions', () => {
   const findReportButton = () => wrapper.findByTestId('report-button');
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
   const findDeleteModal = () => wrapper.findByTestId('delete-item-modal');
+  const findDropdownTooltip = () => wrapper.findComponent(GlTooltip);
 
   const openDeleteModal = async () => {
     findDeleteButton().vm.$emit('action');
     await nextTick();
   };
+
+  describe('component rendering', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders "More actions" tooltip', () => {
+      expect(findDropdownTooltip().text()).toBe('More actions');
+    });
+  });
 
   describe('when user can report item', () => {
     beforeEach(() => {
