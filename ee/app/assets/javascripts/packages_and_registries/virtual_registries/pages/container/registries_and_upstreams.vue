@@ -1,6 +1,7 @@
 <script>
-import { GlTabs, GlTab } from '@gitlab/ui';
+import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
 import { n__ } from '~/locale';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
 import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/common/registries/list.vue';
@@ -13,12 +14,13 @@ export default {
   components: {
     GlTabs,
     GlTab,
+    GlButton,
     CleanupPolicyStatus,
     PageHeading,
     RegistriesList,
     UpstreamsList,
   },
-  mixins: [upstreamsFetchMixin],
+  mixins: [upstreamsFetchMixin, glAbilitiesMixin()],
   inject: ['fullPath'],
   data() {
     return {
@@ -64,7 +66,17 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('VirtualRegistry|Container virtual registries')" />
+    <page-heading :heading="s__('VirtualRegistry|Container virtual registries')">
+      <template #actions>
+        <gl-button
+          v-if="glAbilities.createVirtualRegistry"
+          :to="{ name: 'REGISTRY_NEW' }"
+          variant="confirm"
+        >
+          {{ s__('VirtualRegistry|Create registry') }}
+        </gl-button>
+      </template>
+    </page-heading>
     <cleanup-policy-status batch-key="ContainerVirtualRegistries" />
     <gl-tabs content-class="gl-p-0">
       <gl-tab

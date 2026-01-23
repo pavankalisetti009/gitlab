@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
 import SpaRoot from '~/vue_shared/spa/components/spa_root.vue';
+import RegistriesNewPage from '../common/registry/new.vue';
 import RegistriesAndUpstreams from './registries_and_upstreams.vue';
 import RegistriesEdit from './registries_edit.vue';
 import RegistriesShow from './registries_show.vue';
@@ -30,12 +31,27 @@ export default function createRouter(base) {
             component: SpaRoot,
             meta: {
               text: s__('VirtualRegistries|Container registries'),
+              defaultRoute: CONTAINER_REGISTRIES_INDEX,
             },
             children: [
               {
                 name: CONTAINER_REGISTRIES_INDEX,
                 path: '',
                 component: RegistriesAndUpstreams,
+              },
+              {
+                name: 'REGISTRY_NEW',
+                path: 'new',
+                component: RegistriesNewPage,
+                beforeEnter(to, from, next) {
+                  if (window.gon?.abilities?.createVirtualRegistry) {
+                    next();
+                  } else {
+                    next({
+                      name: CONTAINER_REGISTRIES_INDEX,
+                    });
+                  }
+                },
               },
               {
                 path: ':id(\\d+)',
