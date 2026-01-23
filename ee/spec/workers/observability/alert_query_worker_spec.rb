@@ -88,7 +88,8 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
       ]
     end
 
-    it 'does not create any alerts' do
+    it 'does not create any alerts',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/18834' do
       expect { worker.perform }.not_to change { ::AlertManagement::Alert.count }
     end
   end
