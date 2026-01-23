@@ -5046,9 +5046,6 @@ msgstr ""
 msgid "Admin notes"
 msgstr ""
 
-msgid "AdminAIPoweredFeatures|AI agents, such as Agentic Chat and agent flows, that work in parallel to accomplish tasks simultaneously. %{linkStart}Learn more.%{linkEnd}"
-msgstr ""
-
 msgid "AdminAIPoweredFeatures|AI-native features"
 msgstr ""
 
@@ -5110,6 +5107,9 @@ msgid "AdminAIPoweredFeatures|GitLab managed model"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Model"
+msgstr ""
+
+msgid "AdminAIPoweredFeatures|Multiple AI agents that work in parallel to help you create code, research results, and perform tasks simultaneously. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Other GitLab Duo features"
