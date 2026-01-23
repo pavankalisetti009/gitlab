@@ -4207,6 +4207,9 @@ msgstr ""
 msgid "AccessTokens|Grant permissions only to specific resources in your groups or projects."
 msgstr ""
 
+msgid "AccessTokens|Grant permissions to resources in your GitLab user account."
+msgstr ""
+
 msgid "AccessTokens|Group and project access"
 msgstr ""
 
@@ -4453,6 +4456,9 @@ msgid "AccessTokens|Use Demonstrating Proof of Possession (DPoP)"
 msgstr ""
 
 msgid "AccessTokens|User permissions"
+msgstr ""
+
+msgid "AccessTokens|User resources"
 msgstr ""
 
 msgid "AccessTokens|View details"
