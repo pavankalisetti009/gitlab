@@ -252,6 +252,11 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
       ['Unknown', 'UNKNOWN', mockSeverityColors.unknown],
       ['ApiFuzzing', 'API_FUZZING', REPORT_TYPE_COLORS.apiFuzzing],
       ['ContainerScanning', 'CONTAINER_SCANNING', REPORT_TYPE_COLORS.containerScanning],
+      [
+        'ContainerScanningForRegistry',
+        'CONTAINER_SCANNING_FOR_REGISTRY',
+        REPORT_TYPE_COLORS.containerScanningForRegistry,
+      ],
       ['CoverageFuzzing', 'COVERAGE_FUZZING', REPORT_TYPE_COLORS.coverageFuzzing],
       ['Dast', 'DAST', REPORT_TYPE_COLORS.dast],
       ['DependencyScanning', 'DEPENDENCY_SCANNING', REPORT_TYPE_COLORS.dependencyScanning],
