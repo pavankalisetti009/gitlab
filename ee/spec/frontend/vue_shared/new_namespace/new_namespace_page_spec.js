@@ -5,8 +5,6 @@ import { GlBreadcrumb } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { sidebarState } from '~/super_sidebar/constants';
-import SuperSidebarToggle from '~/super_sidebar/components/super_sidebar_toggle.vue';
 import NewTopLevelGroupAlert from '~/groups/components/new_top_level_group_alert.vue';
 import getUserCalloutsQuery from '~/graphql_shared/queries/get_user_callouts.query.graphql';
 import WelcomePage from '~/vue_shared/new_namespace/components/welcome.vue';
@@ -19,7 +17,6 @@ jest.mock('~/lib/logger');
 describe('Experimental new project creation app', () => {
   let wrapper;
 
-  const findSuperSidebarToggle = () => wrapper.findComponent(SuperSidebarToggle);
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
   const findActivePanelTemplate = () => wrapper.findByTestId('active-panel-template');
   const findTopLevelGroupAlert = () => wrapper.findComponent(NewTopLevelGroupAlert);
@@ -56,26 +53,6 @@ describe('Experimental new project creation app', () => {
       }),
     );
   };
-
-  describe('SuperSidebarToggle', () => {
-    describe('when collapsed', () => {
-      it('shows sidebar toggle', () => {
-        sidebarState.isCollapsed = true;
-        createComponent();
-
-        expect(findSuperSidebarToggle().exists()).toBe(true);
-      });
-    });
-
-    describe('when not collapsed', () => {
-      it('does not show sidebar toggle', () => {
-        sidebarState.isCollapsed = false;
-        createComponent();
-
-        expect(findSuperSidebarToggle().exists()).toBe(false);
-      });
-    });
-  });
 
   it('shows breadcrumbs', () => {
     createComponent();
