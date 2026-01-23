@@ -12,7 +12,8 @@ module API
 
     { Issue => :team_planning }.each do |eventable_type, feature_category|
       parent_type = eventable_type.parent_class.to_s.underscore
-      eventables_str = eventable_type.to_s.underscore.pluralize
+      eventable_str = eventable_type.to_s.underscore
+      eventables_str = eventable_str.pluralize
 
       params do
         requires :id, types: [String, Integer], desc: "The ID or URL-encoded path the #{parent_type}"
@@ -29,6 +30,7 @@ module API
           use :pagination
         end
 
+        route_setting :authorization, permissions: :"read_#{eventable_str}_iteration_event", boundary_type: :project
         get ":id/#{eventables_str}/:eventable_id/resource_iteration_events", feature_category: feature_category do
           eventable = find_noteable(eventable_type, params[:eventable_id])
           events = eventable.resource_iteration_events.with_api_entity_associations
@@ -45,6 +47,7 @@ module API
           requires :event_id, type: String, desc: 'The ID of a resource iteration event'
           requires :eventable_id, types: [Integer, String], desc: 'The ID of the eventable'
         end
+        route_setting :authorization, permissions: :"read_#{eventable_str}_iteration_event", boundary_type: :project
         get ":id/#{eventables_str}/:eventable_id/resource_iteration_events/:event_id", feature_category: feature_category do
           eventable = find_noteable(eventable_type, params[:eventable_id])
           event = eventable.resource_iteration_events.find(params[:event_id])
