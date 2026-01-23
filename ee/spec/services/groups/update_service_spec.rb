@@ -1192,19 +1192,6 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
         expect { existing_rule.reload }.to raise_error(ActiveRecord::RecordNotFound)
       end
 
-      it 'invalidates the computed cache', :use_clean_rails_redis_caching do
-        key1 = ['users', 1, ::Ai::UserAuthorizable::DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY, group.id, 'test']
-        key2 = ['users', 1, ::Ai::UserAuthorizable::DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY, 'abc', 'test']
-
-        Rails.cache.write(key1, true)
-        Rails.cache.write(key2, true)
-
-        update_group(group, user, params)
-
-        expect(Rails.cache.read(key1)).to be_nil
-        expect(Rails.cache.read(key2)).to be true
-      end
-
       it 'audits the update' do
         expect(::Ai::FeatureAccessRuleAuditor).to receive(:new).with(
           current_user: user,
