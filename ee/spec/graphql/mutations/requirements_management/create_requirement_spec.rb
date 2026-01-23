@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::RequirementsManagement::CreateRequirement do
+RSpec.describe Mutations::RequirementsManagement::CreateRequirement, feature_category: :requirements_management do
   include GraphqlHelpers
   let_it_be(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }

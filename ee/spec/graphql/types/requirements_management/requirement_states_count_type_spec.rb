@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['RequirementStatesCount'] do
+RSpec.describe GitlabSchema.types['RequirementStatesCount'], feature_category: :requirements_management do
   it { expect(described_class.graphql_name).to eq('RequirementStatesCount') }
 
   it 'has specific fields' do
