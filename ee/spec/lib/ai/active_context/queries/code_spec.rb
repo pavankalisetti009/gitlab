@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project) }
   let(:search_term) { 'dummy search term' }
 
   subject(:codebase_query) { described_class.new(search_term: search_term, user: user) }
@@ -52,7 +53,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       let(:expected_error_class) { Ai::ActiveContext::Queries::Code::NotAvailable }
 
       it 'raises the expected error' do
-        expect { codebase_query.filter(project_id: 123) }.to raise_error(
+        expect { codebase_query.filter(project_or_id: project) }.to raise_error(
           expected_error_class, "Semantic search on Code collection is not available."
         )
       end
@@ -125,8 +126,8 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
                 'id' => 1,
                 'project_id' => project.id,
                 'content' => "test content 1-1",
-                'path' => 'some/path/to/test.rb',
-                'name' => 'test.rb',
+                'path' => 'path/p1/one.rb',
+                'name' => 'one.rb',
                 'language' => 'ruby',
                 'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d1::0:546::0',
                 'embeddings_v1' => Array.new(768, 0.0)
@@ -137,8 +138,8 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
                 'id' => 1,
                 'project_id' => project.id,
                 'content' => "test content 1-2",
-                'path' => 'some/path/to/test.rb',
-                'name' => 'test.rb',
+                'path' => 'path/p1/two.rb',
+                'name' => 'two.rb',
                 'language' => 'ruby',
                 'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f5910d1::600:546::10',
                 'embeddings_v1' => Array.new(768, 0.0)
@@ -151,7 +152,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
                 'id' => 2,
                 'project_id' => project_2.id,
                 'content' => "test content 2-1",
-                'path' => 'some/path/to/test.rb',
+                'path' => 'path/p2/test.rb',
                 'name' => 'test.rb',
                 'language' => 'ruby',
                 'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f5911d1::0:546::0',
@@ -165,23 +166,23 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       it 'generates embeddings only once for multiple filters' do
         expect(ActiveContext::Embeddings).to receive(:generate_embeddings).once
 
-        codebase_query.filter(project_id: project.id)
-        codebase_query.filter(project_id: project_2.id)
+        codebase_query.filter(project_or_id: project)
+        codebase_query.filter(project_or_id: project_2)
       end
 
       it 'calls a search on the Code collection class for each filter' do
         expect(::Ai::ActiveContext::Collections::Code).to receive(:search).twice
 
-        codebase_query.filter(project_id: project.id)
-        codebase_query.filter(project_id: project_2.id)
+        codebase_query.filter(project_or_id: project)
+        codebase_query.filter(project_or_id: project_2)
       end
 
       it 'returns the expected results' do
-        project_1_result = codebase_query.filter(project_id: project.id)
+        project_1_result = codebase_query.filter(project_or_id: project)
         expect(project_1_result.success?).to be(true)
         expect(project_1_result.to_a).to eq(elasticsearch_docs[project.id].pluck('_source'))
 
-        project_2_result = codebase_query.filter(project_id: project_2.id)
+        project_2_result = codebase_query.filter(project_or_id: project_2)
         expect(project_2_result.success?).to be(true)
         expect(project_2_result.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
       end
@@ -194,7 +195,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
         end
 
         it 'updates the last queried timestamp of the active_context repository records', :freeze_time do
-          expect { codebase_query.filter(project_id: project.id) }
+          expect { codebase_query.filter(project_or_id: project) }
             .to change { ac_repository.reload.last_queried_at }.to(Time.current)
             .and not_change { project_2.reload.ready_active_context_code_repository.last_queried_at }
         end
@@ -206,7 +207,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
             end
 
             it 'updates the last_queried_at', :freeze_time do
-              expect { codebase_query.filter(project_id: project.id) }
+              expect { codebase_query.filter(project_or_id: project) }
                 .to change { ac_repository.reload.last_queried_at }.to(Time.current)
                 .and not_change { project_2.reload.ready_active_context_code_repository.last_queried_at }
             end
@@ -218,7 +219,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
             end
 
             it 'does not update the last_queried_at' do
-              expect { codebase_query.filter(project_id: project.id) }
+              expect { codebase_query.filter(project_or_id: project) }
                 .not_to change { ac_repository.reload.last_queried_at }
             end
           end
@@ -248,43 +249,47 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
               "project_id" => project.id
             })
 
-            expect { codebase_query.filter(project_id: project.id) }.not_to raise_error
+            expect { codebase_query.filter(project_or_id: project) }.not_to raise_error
           end
         end
       end
 
-      context 'when exclude_fields and extract_source_segments is provided' do
+      context 'when exclude_fields, extract_source_segments, and build_file_url are provided' do
         it 'returns the expected results' do
           project_1_result = codebase_query.filter(
-            project_id: project.id,
+            project_or_id: project,
             exclude_fields: %w[id source type embeddings_v1 reindexing],
-            extract_source_segments: true
+            extract_source_segments: true,
+            build_file_url: true
           )
 
           expect(project_1_result.success?).to be(true)
 
+          base_file_url = "http://localhost/#{project.full_path}/-/blob/master/"
           expect(project_1_result).to match_array([
             {
               'project_id' => project.id,
-              'path' => 'some/path/to/test.rb',
-              'name' => 'test.rb',
+              'path' => 'path/p1/one.rb',
+              'name' => 'one.rb',
               'language' => 'ruby',
               'content' => "test content 1-1",
               'blob_id' => "a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d1",
               'start_byte' => 0,
               'length' => 546,
-              'start_line' => 0
+              'start_line' => 0,
+              'file_url' => File.join(base_file_url, 'path/p1/one.rb')
             },
             {
               'project_id' => project.id,
-              'path' => 'some/path/to/test.rb',
-              'name' => 'test.rb',
+              'path' => 'path/p1/two.rb',
+              'name' => 'two.rb',
               'language' => 'ruby',
               'content' => "test content 1-2",
               'blob_id' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f5910d1',
               'start_byte' => 600,
               'length' => 546,
-              'start_line' => 10
+              'start_line' => 10,
+              'file_url' => File.join(base_file_url, 'path/p1/two.rb')
             }
           ])
         end
@@ -298,7 +303,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
                 'id' => 1,
                 'project_id' => project.id,
                 'content' => "test content in path",
-                'path' => 'some/path/to/test.rb',
+                'path' => 'path/p1/test.rb',
                 'name' => 'test.rb',
                 'language' => 'ruby',
                 'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d::0:546::0',
@@ -318,15 +323,52 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
             expect(first_query.value).to eq({ project_id: project.id })
 
             expect(second_query.type).to eq(:prefix)
-            expect(second_query.value).to eq({ path: 'some/path/' })
+            expect(second_query.value).to eq({ path: 'path/p1/' })
 
             # make sure to return query results
             build_es_query_result(project_es_docs_in_path)
           end
 
-          result = codebase_query.filter(project_id: project.id, path: 'some/path')
+          result = codebase_query.filter(project_or_id: project, path: 'path/p1')
           expect(result.success?).to be(true)
           expect(result.each.to_a).to eq(project_es_docs_in_path.pluck('_source'))
+        end
+      end
+
+      context 'when an existing project ID is used as project parameter' do
+        it 'calls a search on the project and returns the expected results' do
+          expect(::Ai::ActiveContext::Collections::Code).to receive(:search).twice
+
+          project_1_result = codebase_query.filter(project_or_id: project.id)
+          expect(project_1_result.success?).to be(true)
+          expect(project_1_result.to_a).to eq(elasticsearch_docs[project.id].pluck('_source'))
+
+          project_2_result = codebase_query.filter(project_or_id: project_2.id.to_s)
+          expect(project_2_result.success?).to be(true)
+          expect(project_2_result.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
+        end
+      end
+
+      context 'when invalid project parameters are used' do
+        context 'when project with given ID does not exist' do
+          it 'raises an error' do
+            expect(::Ai::ActiveContext::Collections::Code).not_to receive(:search)
+
+            expect { codebase_query.filter(project_or_id: 0) }.to raise_error(
+              described_class::ProjectNotFound, "Could not find project: 0."
+            )
+          end
+        end
+
+        context 'with unexpected project parameter type' do
+          it 'raises an error' do
+            expect(::Ai::ActiveContext::Collections::Code).not_to receive(:search)
+
+            expect { codebase_query.filter(project_or_id: false) }.to raise_error(
+              described_class::ProjectNotFound,
+              "Project parameter must be a Project object or ID, got FalseClass."
+            )
+          end
         end
       end
 
@@ -342,7 +384,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
           end
         end
 
-        let(:result) { codebase_query.filter(project_id: project_id) }
+        let(:result) { codebase_query.filter(project_or_id: project_id) }
 
         context 'when project has no ActiveContext repository record' do
           before do
@@ -451,12 +493,6 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
               it_behaves_like 'returns no code embeddings error result' do
                 let(:expected_error_detail) { described_class::MESSAGE_USE_ANOTHER_SOURCE }
               end
-            end
-
-            context 'when project does not exist' do
-              let(:project_id) { 0 }
-
-              it_behaves_like 'returns an error result with "use another source" message'
             end
 
             context 'when project has duo_features_enabled setting = false' do

@@ -107,12 +107,13 @@ module Mcp
         exclude_fields = %w[id source type embeddings_v1 reindexing]
 
         result = codebase_query(semantic_query).filter(
-          project_id: project.id,
+          project_or_id: project,
           path: directory_path,
           knn_count: knn,
           limit: limit,
           exclude_fields: exclude_fields,
-          extract_source_segments: true
+          extract_source_segments: true,
+          build_file_url: true
         )
 
         return failure_response(result, project_id) unless result.success?

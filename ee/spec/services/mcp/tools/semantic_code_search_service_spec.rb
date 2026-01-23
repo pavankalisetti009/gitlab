@@ -223,7 +223,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
             'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
             'start_line' => 0,
             'start_byte' => 0,
-            'language' => 'ruby'
+            'language' => 'ruby',
+            'file_url' => 'http://project/-/blob/master/ruby/server.rb'
           }
         ]
       end
@@ -249,12 +250,13 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           expect(query_obj)
             .to receive(:filter)
             .with(
-              project_id: project.id,
+              project_or_id: project,
               path: 'app/services/',
               knn_count: 64,
               limit: 20,
               exclude_fields: %w[id source type embeddings_v1 reindexing],
-              extract_source_segments: true)
+              extract_source_segments: true,
+              build_file_url: true)
             .and_return(query_result)
 
           response = service.execute(request: nil, params: arguments)
@@ -278,7 +280,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
               'language' => 'ruby',
               'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
               'start_line' => 0,
-              'start_byte' => 0
+              'start_byte' => 0,
+              'file_url' => 'http://project/-/blob/master/ruby/server.rb'
             }
           )
         end

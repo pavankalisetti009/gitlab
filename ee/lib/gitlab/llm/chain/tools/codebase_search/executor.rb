@@ -106,7 +106,7 @@ module Gitlab
 
               return "" if category == 'directory' && path.blank?
 
-              result = codebase_query.filter(project_id: project_id, path: path)
+              result = codebase_query.filter(project_or_id: project_id, path: path)
 
               return failed_search_result_context(result, category, project_id) unless result.success?
 
