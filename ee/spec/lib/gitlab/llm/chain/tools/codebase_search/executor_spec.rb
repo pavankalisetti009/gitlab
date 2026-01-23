@@ -159,11 +159,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             )
 
             # mock codebase query, with different results depending on filters
-            allow(codebase_query).to receive(:filter).with(project_id: project_1.id, path: nil)
+            allow(codebase_query).to receive(:filter).with(project_or_id: project_1.id, path: nil)
               .and_return(build_es_query_result(repository_es_docs[project_1.id]))
-            allow(codebase_query).to receive(:filter).with(project_id: project_2.id, path: nil)
+            allow(codebase_query).to receive(:filter).with(project_or_id: project_2.id, path: nil)
               .and_return(build_es_query_result(repository_es_docs[project_2.id]))
-            allow(codebase_query).to receive(:filter).with(project_id: project_1.id, path: 'some/path')
+            allow(codebase_query).to receive(:filter).with(project_or_id: project_1.id, path: 'some/path')
               .and_return(build_es_query_result(directory_es_docs))
           end
 
@@ -281,7 +281,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
               error_result = Ai::ActiveContext::Queries::Result.no_embeddings_error(
                 error_detail: "initial indexing has been started"
               )
-              allow(codebase_query).to receive(:filter).with(project_id: project_2.id, path: nil)
+              allow(codebase_query).to receive(:filter).with(project_or_id: project_2.id, path: nil)
                 .and_return(error_result)
             end
 
@@ -331,7 +331,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             end
 
             it 'runs successfully but does not perform a semantic search on the directory' do
-              expect(codebase_query).not_to receive(:filter).with(project_id: project_2.id, path: anything)
+              expect(codebase_query).not_to receive(:filter).with(project_or_id: project_2.id, path: anything)
 
               answer = execute_tool
               expect(answer.status).to eq(:ok)

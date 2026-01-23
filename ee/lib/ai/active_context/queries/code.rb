@@ -20,6 +20,7 @@ module Ai
         MESSAGE_USE_ANOTHER_SOURCE = 'please use another tool or context source'
 
         NotAvailable = Class.new(StandardError)
+        ProjectNotFound = Class.new(StandardError)
 
         def self.available?
           COLLECTION_CLASS.indexing? &&
@@ -32,39 +33,68 @@ module Ai
         end
 
         def filter(
-          project_id:,
+          project_or_id:,
           path: nil,
           knn_count: KNN_COUNT,
           limit: SEARCH_RESULTS_LIMIT,
           exclude_fields: [],
-          extract_source_segments: false
+          extract_source_segments: false,
+          build_file_url: false
         )
           check_availability
 
-          ac_repository = find_active_context_repository(project_id)
-          return handle_no_ready_active_context_repository(project_id, ac_repository) unless ac_repository&.ready?
+          project = project_object!(project_or_id)
+
+          ac_repository = find_active_context_repository(project.id)
+          return handle_no_ready_active_context_repository(project.id, ac_repository) unless ac_repository&.ready?
 
           # Update the last queried timestamp so that we can potentially prune inactive data later
           update_last_queried_timestamp(ac_repository)
 
           query = if path.nil?
-                    repository_query(project_id, knn_count, limit)
+                    repository_query(project.id, knn_count, limit)
                   else
-                    directory_query(project_id, path, knn_count, limit)
+                    directory_query(project.id, path, knn_count, limit)
                   end
 
           search_hits = COLLECTION_CLASS.search(query: query, user: user)
 
-          Result.success(
-            prepare_hits(
-              search_hits, exclude_fields: exclude_fields, extract_source_segments: extract_source_segments
-            )
+          prepared_hits = prepare_hits(
+            search_hits,
+            project,
+            exclude_fields: exclude_fields,
+            extract_source_segments: extract_source_segments,
+            build_file_url: build_file_url
           )
+          Result.success(prepared_hits)
         end
 
         private
 
         attr_reader :user, :search_term
+
+        def project_object!(project_or_id)
+          project = case project_or_id
+                    when Project
+                      project_or_id
+                    when Integer, String
+                      Project.find_by_id(project_or_id)
+                    else
+                      raise(
+                        ProjectNotFound,
+                        "Project parameter must be a Project object or ID, got #{project_or_id.class}."
+                      )
+                    end
+
+          if project.nil?
+            raise(
+              ProjectNotFound,
+              "Could not find project: #{project_or_id.inspect}."
+            )
+          end
+
+          project
+        end
 
         def handle_no_ready_active_context_repository(project_id, ac_repository)
           error_detail = nil
@@ -118,7 +148,13 @@ module Ai
           )
         end
 
-        def prepare_hits(search_hits, exclude_fields: [], extract_source_segments: false)
+        def prepare_hits(
+          search_hits,
+          project,
+          exclude_fields: [],
+          extract_source_segments: false,
+          build_file_url: false
+        )
           search_hits.map do |hit|
             item = hit.except(*exclude_fields)
 
@@ -135,6 +171,12 @@ module Ai
                 item['length'] = src_matched_segments[3].to_i
                 item['start_line'] = src_matched_segments[4].to_i
               end
+            end
+
+            if build_file_url
+              item['file_url'] = Gitlab::Routing.url_helpers.project_blob_url(
+                project, File.join(project.default_branch_or_main, item['path'])
+              )
             end
 
             item
