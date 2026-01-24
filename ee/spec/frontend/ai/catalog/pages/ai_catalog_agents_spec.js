@@ -26,6 +26,11 @@ describe('AiCatalogAgents', () => {
 
   const mockRouter = {
     push: jest.fn(),
+    replace: jest.fn(),
+  };
+
+  const mockRoute = {
+    query: {},
   };
 
   const mockToast = {
@@ -36,16 +41,18 @@ describe('AiCatalogAgents', () => {
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const createComponent = ({ provide } = {}) => {
+  const createComponent = ({ provide, routeQuery = {} } = {}) => {
     isLoggedIn.mockReturnValue(true);
 
     mockApollo = createMockApollo([[aiCatalogAgentsQuery, mockCatalogItemsQueryHandler]]);
+    mockRoute.query = routeQuery;
 
     wrapper = shallowMountExtended(AiCatalogAgents, {
       apolloProvider: mockApollo,
       mocks: {
         $toast: mockToast,
         $router: mockRouter,
+        $route: mockRoute,
       },
       provide: {
         glFeatures: {
@@ -193,6 +200,15 @@ describe('AiCatalogAgents', () => {
       });
     });
 
+    it('updates URL query param when searching', async () => {
+      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
+      await waitForPromises();
+
+      expect(mockRouter.replace).toHaveBeenCalledWith({
+        query: { search: 'foo' },
+      });
+    });
+
     it('clears search param when clear-search is emitted', async () => {
       // First set a search term
       findAiCatalogListWrapper().vm.$emit('search', ['foo']);
@@ -210,6 +226,26 @@ describe('AiCatalogAgents', () => {
         last: null,
         search: '',
       });
+    });
+
+    it('removes search param from URL when clearing search', async () => {
+      mockRoute.query = { search: 'foo' };
+      findAiCatalogListWrapper().vm.$emit('clear-search');
+      await waitForPromises();
+
+      expect(mockRouter.replace).toHaveBeenCalledWith({
+        query: {},
+      });
+    });
+
+    it('initializes search term from URL query param', async () => {
+      await createComponent({ routeQuery: { search: 'initial' } });
+      await waitForPromises();
+
+      expect(findAiCatalogListWrapper().props('searchTerm')).toBe('initial');
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith(
+        expect.objectContaining({ search: 'initial' }),
+      );
     });
   });
 

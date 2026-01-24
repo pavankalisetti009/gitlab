@@ -34,7 +34,7 @@ export default {
   methods: {
     navigateTo(route) {
       if (this.$route.path !== route) {
-        this.$router.push({ name: route });
+        this.$router.push({ name: route, query: this.$route.query });
       }
     },
   },

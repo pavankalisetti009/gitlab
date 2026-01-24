@@ -26,7 +26,13 @@ describe('AiCatalogFlows', () => {
 
   const mockRouter = {
     push: jest.fn(),
+    replace: jest.fn(),
   };
+
+  const mockRoute = {
+    query: {},
+  };
+
   const mockToast = {
     show: jest.fn(),
   };
@@ -35,16 +41,18 @@ describe('AiCatalogFlows', () => {
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const createComponent = () => {
+  const createComponent = ({ routeQuery = {} } = {}) => {
     isLoggedIn.mockReturnValue(true);
 
     mockApollo = createMockApollo([[aiCatalogFlowsQuery, mockCatalogItemsQueryHandler]]);
+    mockRoute.query = routeQuery;
 
     wrapper = shallowMountExtended(AiCatalogFlows, {
       apolloProvider: mockApollo,
       mocks: {
         $toast: mockToast,
         $router: mockRouter,
+        $route: mockRoute,
       },
     });
   };
@@ -155,6 +163,35 @@ describe('AiCatalogFlows', () => {
         last: null,
         search: '',
       });
+    });
+
+    it('updates URL query param when searching', async () => {
+      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
+      await waitForPromises();
+
+      expect(mockRouter.replace).toHaveBeenCalledWith({
+        query: { search: 'foo' },
+      });
+    });
+
+    it('removes search param from URL when clearing search', async () => {
+      mockRoute.query = { search: 'foo' };
+      findAiCatalogListWrapper().vm.$emit('clear-search');
+      await waitForPromises();
+
+      expect(mockRouter.replace).toHaveBeenCalledWith({
+        query: {},
+      });
+    });
+
+    it('initializes search term from URL query param', async () => {
+      await createComponent({ routeQuery: { search: 'initial' } });
+      await waitForPromises();
+
+      expect(findAiCatalogListWrapper().props('searchTerm')).toBe('initial');
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith(
+        expect.objectContaining({ search: 'initial' }),
+      );
     });
   });
 
