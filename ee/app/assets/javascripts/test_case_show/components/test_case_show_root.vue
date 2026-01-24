@@ -25,6 +25,7 @@ const stateEvent = {
 };
 
 export default {
+  name: 'TestCaseShowRoot',
   WORKSPACE_PROJECT,
   components: {
     GlLoadingIcon,

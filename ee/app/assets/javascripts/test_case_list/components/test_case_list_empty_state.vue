@@ -6,6 +6,7 @@ import { __ } from '~/locale';
 import { filterStateEmptyMessage } from '../constants';
 
 export default {
+  name: 'TestCaseListEmptyState',
   components: {
     GlEmptyState,
     GlButton,
