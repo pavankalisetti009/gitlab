@@ -30,12 +30,12 @@ module Resolvers
       private
 
       def member_counts
-        selects_field?(:members_count) ? memberships([:id, :access_level]).count_members_by_role : {}
+        selects_field?(:members_count) ? memberships([:access_level]).count_members_by_role : {}
       end
       strong_memoize_attr :member_counts
 
       def user_counts
-        selects_field?(:users_count) ? memberships([:id, :access_level, :user_id]).count_users_by_role : {}
+        selects_field?(:users_count) ? memberships([:access_level, :user_id]).count_users_by_role : {}
       end
       strong_memoize_attr :user_counts
 
