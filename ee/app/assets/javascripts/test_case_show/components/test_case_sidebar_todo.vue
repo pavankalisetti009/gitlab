@@ -5,6 +5,7 @@ import { TYPE_TEST_CASE, WORKSPACE_PROJECT } from '~/issues/constants';
 import TestCaseGraphQL from '../mixins/test_case_graphql';
 
 export default {
+  name: 'TestCaseSidebarTodo',
   TYPE_TEST_CASE,
   WORKSPACE_PROJECT,
   components: {

@@ -10,6 +10,7 @@ import { s__ } from '~/locale';
 import createTestCase from '../queries/create_test_case.mutation.graphql';
 
 export default {
+  name: 'TestCaseCreateRoot',
   TYPE_TEST_CASE,
   components: {
     GlButton,
