@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Admin::Emails', :clean_gitlab_redis_shared_state do
+RSpec.describe 'Admin::Emails', :clean_gitlab_redis_shared_state, feature_category: :notifications do
   include ExclusiveLeaseHelpers
 
   before do
