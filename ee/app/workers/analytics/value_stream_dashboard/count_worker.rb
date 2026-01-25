@@ -60,7 +60,7 @@ module Analytics
         value = Gitlab::Redis::SharedState.with { |redis| redis.get(CURSOR_KEY) }
         return if value.nil?
 
-        raw_cursor = Gitlab::Json.parse(value).symbolize_keys
+        raw_cursor = Gitlab::Json.safe_parse(value).symbolize_keys
         Analytics::ValueStreamDashboard::TopLevelGroupCounterService.load_cursor(raw_cursor: raw_cursor)
       end
 
