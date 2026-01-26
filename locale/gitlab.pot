@@ -25834,6 +25834,9 @@ msgstr ""
 msgid "DuoAgenticChat|GitLab Duo"
 msgstr ""
 
+msgid "DuoAgenticChat|GitLab Duo AI assistant"
+msgstr ""
+
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
 msgstr ""
 
