@@ -19,12 +19,20 @@ import {
 describe('AiCatalogAgentDetails', () => {
   let wrapper;
 
+  // Sorted non-alphabetically to test sorting functionality
+  const mockToolNodes = {
+    nodes: [
+      mockAiCatalogBuiltInToolsNodes[2], // Run Git Command
+      mockAiCatalogBuiltInToolsNodes[1], // Gitlab Blob Search
+      mockAiCatalogBuiltInToolsNodes[0], // Ci Linter
+    ],
+  };
   const defaultProps = {
     item: {
       ...mockAgent,
       latestVersion: {
         ...mockAgentVersion,
-        tools: { nodes: mockAiCatalogBuiltInToolsNodes },
+        tools: mockToolNodes,
       },
     },
     versionKey: VERSION_LATEST,
@@ -112,9 +120,10 @@ describe('AiCatalogAgentDetails', () => {
     });
 
     it('renders "Type" field with "Custom" value', () => {
-      const configurationField = configurationDetails.at(0);
-      expect(configurationField.props('title')).toBe('Type');
-      expect(configurationField.props('value')).toBe('Custom');
+      expect(configurationDetails.at(0).props()).toMatchObject({
+        title: 'Type',
+        value: 'Custom',
+      });
     });
 
     it('renders "System prompt"', () => {
@@ -171,17 +180,54 @@ describe('AiCatalogAgentDetails', () => {
     });
 
     it('renders "Type" field with "External" value', () => {
-      const configurationField = configurationDetails.at(0);
-      expect(configurationField.props('title')).toBe('Type');
-      expect(configurationField.props('value')).toBe('External');
+      expect(configurationDetails.at(0).props()).toMatchObject({
+        title: 'Type',
+        value: 'External',
+      });
     });
 
-    it('renders "Configuration" details', () => {
+    it('renders "Configuration" field', () => {
       const configurationField = configurationDetails.at(1);
       expect(configurationField.props('title')).toBe('Configuration');
       expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
         mockThirdPartyFlowVersion.definition,
       );
+    });
+  });
+
+  describe('when the item is a foundational agent', () => {
+    let configurationDetails;
+
+    beforeEach(() => {
+      createComponent({
+        props: {
+          item: {
+            ...mockAgent,
+            foundational: true,
+          },
+        },
+      });
+
+      configurationDetails = findAllFieldsForSection(1);
+    });
+
+    it('renders "Type" field with "Foundational" value', () => {
+      expect(configurationDetails.at(0).props()).toMatchObject({
+        title: 'Type',
+        value: 'Foundational',
+      });
+    });
+
+    it('renders "Tools" field', () => {
+      const toolsField = configurationDetails.at(1);
+      expect(toolsField.props('title')).toBe('Tools');
+      expect(toolsField.text()).toBe('None');
+    });
+
+    it('renders "System prompt"', () => {
+      expect(configurationDetails.at(2).props()).toMatchObject({
+        title: 'System prompt',
+      });
     });
   });
 });
