@@ -55,6 +55,7 @@ export const initPipelinesIndex = (selector = '#pipelines-list-vue') => {
 
   return new Vue({
     el,
+    name: 'PipelinesRoot',
     apolloProvider,
     provide: {
       artifactsEndpoint,
@@ -133,6 +134,7 @@ export const initPipelinesIndexGraphql = (selector = '#pipelines-list-vue') => {
 
   return new Vue({
     el,
+    name: 'PipelinesGraphqlRoot',
     apolloProvider,
     provide: {
       artifactsEndpoint,
