@@ -1,5 +1,5 @@
 import {
-  formatVulnerabilitiesOverTimeData,
+  formatVulnerabilitiesBySeries,
   constructVulnerabilitiesReportWithFiltersPath,
   generateGrid,
   getSeverityColors,
@@ -60,16 +60,16 @@ describe('Security Dashboard - Chart Utils', () => {
   const getSeriesByName = (name, result) => result.find((series) => series.name === name);
   const getSeriesNames = (result) => result.map((series) => series.name);
 
-  describe('formatVulnerabilitiesOverTimeData', () => {
+  describe('formatVulnerabilitiesBySeries', () => {
     describe('when groupBy is "severity" (default)', () => {
       it.each(severities)('includes the correct id for "%s"', (severity) => {
-        const result = formatVulnerabilitiesOverTimeData(mockVulnerabilitiesData);
+        const result = formatVulnerabilitiesBySeries(mockVulnerabilitiesData);
 
         expect(getSeriesByName(severity, result).id).toEqual(severity.toUpperCase());
       });
 
       it('includes correct data points for all severities', () => {
-        const result = formatVulnerabilitiesOverTimeData(mockVulnerabilitiesData);
+        const result = formatVulnerabilitiesBySeries(mockVulnerabilitiesData);
 
         expect(getSeriesNames(result)).toEqual(severities);
         expect(getSeriesByName('Critical', result).data).toEqual([
@@ -97,7 +97,7 @@ describe('Security Dashboard - Chart Utils', () => {
           },
         ];
 
-        const result = formatVulnerabilitiesOverTimeData(edgeCaseData);
+        const result = formatVulnerabilitiesBySeries(edgeCaseData);
 
         expect(getSeriesByName('Critical', result).data).toEqual([['2024-01-01', 0]]);
         expect(getSeriesByName('nonexistent', result)).toBeUndefined();
@@ -106,7 +106,9 @@ describe('Security Dashboard - Chart Utils', () => {
 
     describe('when groupBy is "reportType"', () => {
       it('includes correct data points for all report types', () => {
-        const result = formatVulnerabilitiesOverTimeData(mockVulnerabilitiesData, 'reportType');
+        const result = formatVulnerabilitiesBySeries(mockVulnerabilitiesData, {
+          groupBy: 'reportType',
+        });
 
         expect(getSeriesNames(result)).toEqual(reportTypes);
         expect(getSeriesByName('SAST', result).data).toEqual([
@@ -131,7 +133,7 @@ describe('Security Dashboard - Chart Utils', () => {
           },
         ];
 
-        const result = formatVulnerabilitiesOverTimeData(edgeCaseData, 'reportType');
+        const result = formatVulnerabilitiesBySeries(edgeCaseData, { groupBy: 'reportType' });
 
         expect(getSeriesByName('SAST', result).data).toEqual([['2024-01-01', 0]]);
         expect(getSeriesByName('nonexistent', result)).toBeUndefined();
@@ -140,20 +142,43 @@ describe('Security Dashboard - Chart Utils', () => {
 
     describe('groupBy parameter behavior', () => {
       it('defaults to "severity" when no groupBy is provided', () => {
-        const result = formatVulnerabilitiesOverTimeData(mockVulnerabilitiesData);
+        const result = formatVulnerabilitiesBySeries(mockVulnerabilitiesData);
         expect(getSeriesNames(result)).toEqual(severities);
       });
 
       it('uses "reportType" when groupBy is set to "reportType"', () => {
-        const result = formatVulnerabilitiesOverTimeData(mockVulnerabilitiesData, 'reportType');
+        const result = formatVulnerabilitiesBySeries(mockVulnerabilitiesData, {
+          groupBy: 'reportType',
+        });
         expect(getSeriesNames(result)).toEqual(reportTypes);
       });
     });
 
     describe('input validation', () => {
       it.each([[], null, undefined])('returns an empty array when the input is "%s"', (input) => {
-        expect(formatVulnerabilitiesOverTimeData(input)).toEqual([]);
-        expect(formatVulnerabilitiesOverTimeData(input, 'reportType')).toEqual([]);
+        expect(formatVulnerabilitiesBySeries(input)).toEqual([]);
+        expect(formatVulnerabilitiesBySeries(input, { group: 'reportType' })).toEqual([]);
+      });
+    });
+
+    describe('when isStacked is true', () => {
+      it('includes correct data points (with only count) for severities', () => {
+        const result = formatVulnerabilitiesBySeries(mockVulnerabilitiesData, { isStacked: true });
+
+        expect(getSeriesNames(result)).toEqual(severities);
+        expect(getSeriesByName('Critical', result).data).toEqual([5, 3]);
+        expect(getSeriesByName('High', result).data).toEqual([10, 8]);
+      });
+
+      it('includes correct data points (with only count) for report types', () => {
+        const result = formatVulnerabilitiesBySeries(mockVulnerabilitiesData, {
+          groupBy: 'reportType',
+          isStacked: true,
+        });
+
+        expect(getSeriesNames(result)).toEqual(reportTypes);
+        expect(getSeriesByName('SAST', result).data).toEqual([8, 6]);
+        expect(getSeriesByName('DAST', result).data).toEqual([5]);
       });
     });
   });

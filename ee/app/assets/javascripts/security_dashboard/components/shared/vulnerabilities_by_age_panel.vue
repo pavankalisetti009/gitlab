@@ -3,8 +3,10 @@ import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboa
 import { s__ } from '~/locale';
 import { readFromUrl, writeToUrl } from 'ee/security_dashboard/utils/panel_state_url_sync';
 import groupVulnerabilityByAge from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_by_age.query.graphql';
+import { formatVulnerabilitiesBySeries } from 'ee/security_dashboard/utils/chart_utils';
 import PanelSeverityFilter from './panel_severity_filter.vue';
 import PanelGroupBy from './panel_group_by.vue';
+import VulnerabilitiesByAgeChart from './charts/vulnerabilities_by_age_chart.vue';
 
 const PANEL_ID = 'vulnerabilitiesByAge';
 const GROUP_BY_DEFAULT = 'severity';
@@ -15,6 +17,7 @@ export default {
     ExtendedDashboardPanel,
     PanelSeverityFilter,
     PanelGroupBy,
+    VulnerabilitiesByAgeChart,
   },
   inject: {
     fullPath: {
@@ -62,6 +65,20 @@ export default {
       },
     },
   },
+  computed: {
+    hasChartData() {
+      return this.bars.length > 0;
+    },
+    bars() {
+      return formatVulnerabilitiesBySeries(this.vulnerabilitiesByAge, {
+        groupBy: this.groupedBy,
+        isStacked: true,
+      });
+    },
+    labels() {
+      return this.vulnerabilitiesByAge.map((bucket) => bucket.name);
+    },
+  },
   watch: {
     severity(value) {
       writeToUrl({
@@ -72,6 +89,9 @@ export default {
       });
     },
     groupedBy(value) {
+      // TODO: remove once we're using actual data. This is to mimic switching between
+      // severity and reportType which triggers a new call
+      this.$apollo.queries.vulnerabilitiesByAge.refetch();
       writeToUrl({
         panelId: PANEL_ID,
         paramName: 'groupBy',
@@ -100,7 +120,21 @@ export default {
       <panel-group-by v-model="groupedBy" />
     </template>
     <template #body>
-      <pre>{{ vulnerabilitiesByAge }}</pre>
+      <vulnerabilities-by-age-chart
+        v-if="!hasFetchError && hasChartData"
+        :bars="bars"
+        :labels="labels"
+      />
+      <p
+        v-else
+        class="gl-m-0 gl-flex gl-h-full gl-w-full gl-items-center gl-justify-center gl-p-0 gl-text-center"
+        data-testid="vulnerabilities-by-age-empty-state"
+      >
+        <template v-if="hasFetchError">{{
+          __('Something went wrong. Please try again.')
+        }}</template>
+        <template v-else>{{ __('No results found') }}</template>
+      </p>
     </template>
   </extended-dashboard-panel>
 </template>

@@ -19,16 +19,16 @@ export const TAB_FILTERS = {
 /**
  * Formats vulnerability data by severity for chart visualization
  *
- * @param {Array} vulnerabilitiesOverTime - Array of vulnerability data nodes
+ * @param {Array} vulnerabilitiesBySeries - Array of vulnerability data nodes
+ * @param {boolean} isStacked - Whether to format for stacked column chart (true) or line chart (false)
  * @returns {Array} Formatted chart series data for severity grouping
  *
  * @note
- *
  * The `id`-property is used to construct the link to the vulnerability report page
  * and must match the filter value that is expected in the vulnerability report page
  * see `constructVulnerabilitiesReportWithFiltersPath` for more details
  */
-const formatVulnerabilitiesBySeverity = (vulnerabilitiesOverTime) => {
+const formatVulnerabilitiesBySeverity = (vulnerabilitiesBySeries, isStacked = false) => {
   const chartSeriesDataBySeverity = {
     CRITICAL: { name: SEVERITY_LEVELS.critical, id: 'CRITICAL', data: [] },
     HIGH: { name: SEVERITY_LEVELS.high, id: 'HIGH', data: [] },
@@ -38,11 +38,12 @@ const formatVulnerabilitiesBySeverity = (vulnerabilitiesOverTime) => {
     UNKNOWN: { name: SEVERITY_LEVELS.unknown, id: 'UNKNOWN', data: [] },
   };
 
-  vulnerabilitiesOverTime.forEach((node) => {
+  vulnerabilitiesBySeries.forEach((node) => {
     const { date, bySeverity = [] } = node;
     bySeverity.forEach(({ severity, count }) => {
       if (chartSeriesDataBySeverity[severity]) {
-        chartSeriesDataBySeverity[severity].data.push([date, count]);
+        // Line chart expects [x, y] tuples, stacked chart expects y values only
+        chartSeriesDataBySeverity[severity].data.push(isStacked ? count : [date, count]);
       }
     });
   });
@@ -53,16 +54,16 @@ const formatVulnerabilitiesBySeverity = (vulnerabilitiesOverTime) => {
 /**
  * Formats vulnerability data by report type for chart visualization
  *
- * @param {Array} vulnerabilitiesOverTime - Array of vulnerability data nodes
+ * @param {Array} vulnerabilitiesBySeries - Array of vulnerability data nodes
+ * @param {boolean} isStacked - Whether to format for stacked column chart (true) or line chart (false)
  * @returns {Array} Formatted chart series data for report type grouping
  *
  * @note
- *
  * The `id`-property is used to construct the link to the vulnerability report page
  * and must match the filter value that is expected in the vulnerability report page
  * see `constructVulnerabilitiesReportWithFiltersPath` for more details
  */
-const formatVulnerabilitiesByReportType = (vulnerabilitiesOverTime) => {
+const formatVulnerabilitiesByReportType = (vulnerabilitiesBySeries, isStacked = false) => {
   const chartSeriesDataByReportType = {
     SAST: { name: s__('reportType|SAST'), id: 'SAST', data: [] },
     DEPENDENCY_SCANNING: {
@@ -100,11 +101,12 @@ const formatVulnerabilitiesByReportType = (vulnerabilitiesOverTime) => {
     GENERIC: { name: s__('reportType|Manually added'), id: 'GENERIC', data: [] },
   };
 
-  vulnerabilitiesOverTime.forEach((node) => {
+  vulnerabilitiesBySeries.forEach((node) => {
     const { date, byReportType = [] } = node;
     byReportType.forEach(({ reportType, count }) => {
       if (chartSeriesDataByReportType[reportType]) {
-        chartSeriesDataByReportType[reportType].data.push([date, count]);
+        // Line chart expects [x, y] tuples, stacked chart expects y values only
+        chartSeriesDataByReportType[reportType].data.push(isStacked ? count : [date, count]);
       }
     });
   });
@@ -113,40 +115,43 @@ const formatVulnerabilitiesByReportType = (vulnerabilitiesOverTime) => {
 };
 
 /**
- * Formats vulnerability data over time for chart visualization
+ * Formats vulnerability data for chart visualization
  *
- * @param {Array} vulnerabilitiesOverTime - Array of vulnerability data nodes
+ * @param {Array} vulnerabilitiesBySeries - Array of vulnerability data nodes
  *   Each node should have the structure:
  *   {
- *     date: string,
- *     bySeverity: [
- *       { severity: string, count: number },
- *       ...
- *     ]
+ *     date?: string,   // Timestamp when grouped by date (trend chart)
+ *     name?: string,   // Label when grouped by age bucket (e.g., "0-30 days")
+ *     bySeverity: Array<{ severity: string, count: number }>,
+ *     byReportType: Array<{ reportType: string, count: number }>
  *   }
  *
- * @param {string} groupBy - The grouping to use for the chart. Can be 'severity' or 'reportType'.
- *   Defaults to 'severity'.
+ * @param {Object} options - Formatting options
+ * @param {string} options.groupBy - The grouping to use for the chart ('severity' or 'reportType')
+ * @param {boolean} options.isStacked - Whether to format for stacked column chart (true) or line chart (false)
  *
  * @returns {Array} Formatted chart series data
- *   Expected data structure: [
- *     { name: 'Critical', data: [[timestamp1, count1], [timestamp2, count2], ...] },
- *     { name: 'High', data: [[timestamp1, count1], [timestamp2, count2], ...] },
+ *   For line chart: [
+ *     { name: 'Critical', id: 'CRITICAL', data: [[timestamp1, count1], [timestamp2, count2], ...] },
+ *     ...
+ *   ]
+ *   For stacked chart: [
+ *     { name: 'Critical', id: 'CRITICAL', data: [count1, count2, ...] },
  *     ...
  *   ]
  */
-export const formatVulnerabilitiesOverTimeData = (
-  vulnerabilitiesOverTime,
-  groupBy = 'severity',
+export const formatVulnerabilitiesBySeries = (
+  vulnerabilitiesBySeries,
+  { groupBy = 'severity', isStacked = false } = {},
 ) => {
-  if (!Array.isArray(vulnerabilitiesOverTime) || vulnerabilitiesOverTime.length === 0) {
+  if (!Array.isArray(vulnerabilitiesBySeries) || vulnerabilitiesBySeries.length === 0) {
     return [];
   }
 
   if (groupBy === 'severity') {
-    return formatVulnerabilitiesBySeverity(vulnerabilitiesOverTime);
+    return formatVulnerabilitiesBySeverity(vulnerabilitiesBySeries, isStacked);
   }
-  return formatVulnerabilitiesByReportType(vulnerabilitiesOverTime);
+  return formatVulnerabilitiesByReportType(vulnerabilitiesBySeries, isStacked);
 };
 
 /**

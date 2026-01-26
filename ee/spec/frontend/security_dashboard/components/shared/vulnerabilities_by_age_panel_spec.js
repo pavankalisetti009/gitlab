@@ -5,7 +5,9 @@ import setWindowLocation from 'helpers/set_window_location_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
+import VulnerabilitiesByAgeChart from 'ee/security_dashboard/components/shared/charts/vulnerabilities_by_age_chart.vue';
 import VulnerabilitiesByAgePanel from 'ee/security_dashboard/components/shared/vulnerabilities_by_age_panel.vue';
+import { formatVulnerabilitiesBySeries } from 'ee/security_dashboard/utils/chart_utils';
 import groupVulnerabilitiesByAge from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_by_age.query.graphql';
 import * as panelStateUrlSync from 'ee/security_dashboard/utils/panel_state_url_sync';
 import PanelGroupBy from 'ee/security_dashboard/components/shared/panel_group_by.vue';
@@ -19,59 +21,61 @@ describe('VulnerabilitiesByAgePanel', () => {
 
   const mockGroupFullPath = 'group/subgroup';
   const mockFilters = { projectId: ['gid://gitlab/Project/123'] };
+  const vulnerabilitiesByAge = [
+    {
+      name: '<7 days',
+      bySeverity: [
+        {
+          severity: 'CRITICAL',
+          count: 10,
+        },
+        {
+          severity: 'HIGH',
+          count: 5,
+        },
+      ],
+      byReportType: [
+        {
+          reportType: 'SAST',
+          count: 1,
+        },
+        {
+          reportType: 'DAST',
+          count: 2,
+        },
+      ],
+    },
+    {
+      name: '7-14 days',
+      bySeverity: [
+        {
+          severity: 'CRITICAL',
+          count: 2,
+        },
+        {
+          severity: 'HIGH',
+          count: 7,
+        },
+      ],
+      byReportType: [
+        {
+          reportType: 'SAST',
+          count: 5,
+        },
+        {
+          reportType: 'DAST',
+          count: 8,
+        },
+      ],
+    },
+  ];
   const defaultMockVulnerabilitiesByAge = {
     data: {
       group: {
         id: 'gid://gitlab/Group/1',
         securityMetrics: {
-          vulnerabilitiesByAge: [
-            {
-              name: '<7 days',
-              bySeverity: [
-                {
-                  severity: 'CRITICAL',
-                  count: 10,
-                },
-                {
-                  severity: 'HIGH',
-                  count: 5,
-                },
-              ],
-              byReportType: [
-                {
-                  reportType: 'SAST',
-                  count: 1,
-                },
-                {
-                  reportType: 'DAST',
-                  count: 2,
-                },
-              ],
-            },
-            {
-              name: '7-14 days',
-              bySeverity: [
-                {
-                  severity: 'CRITICAL',
-                  count: 2,
-                },
-                {
-                  severity: 'HIGH',
-                  count: 7,
-                },
-              ],
-              byReportType: [
-                {
-                  reportType: 'SAST',
-                  count: 5,
-                },
-                {
-                  reportType: 'DAST',
-                  count: 8,
-                },
-              ],
-            },
-          ],
+          __typename: 'SecurityMetrics',
+          vulnerabilitiesByAge,
         },
       },
     },
@@ -98,8 +102,10 @@ describe('VulnerabilitiesByAgePanel', () => {
   };
 
   const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
+  const findVulnerabilitiesByAgeChart = () => wrapper.findComponent(VulnerabilitiesByAgeChart);
   const findPanelGroupBy = () => wrapper.findComponent(PanelGroupBy);
   const findSeverityFilter = () => wrapper.findComponent(PanelSeverityFilter);
+  const findEmptyState = () => wrapper.findByTestId('vulnerabilities-by-age-empty-state');
 
   const clickToggleButtonBy = async (value) => {
     await findPanelGroupBy().vm.$emit('input', value);
@@ -126,6 +132,15 @@ describe('VulnerabilitiesByAgePanel', () => {
     it('passes the correct tooltip to the panels base', () => {
       expect(findExtendedDashboardPanel().props('tooltip')).toEqual({
         description: 'Open vulnerabilities by the amount of time since they were opened.',
+      });
+    });
+
+    it('renders the vulnerabilities by age chart when data is available', async () => {
+      await waitForPromises();
+      const bars = formatVulnerabilitiesBySeries(vulnerabilitiesByAge, { isStacked: true });
+      expect(findVulnerabilitiesByAgeChart().props()).toMatchObject({
+        bars,
+        labels: ['<7 days', '7-14 days'],
       });
     });
 
@@ -234,8 +249,6 @@ describe('VulnerabilitiesByAgePanel', () => {
 
   describe('loading state', () => {
     it('shows loading state initially', () => {
-      createComponent();
-
       expect(findExtendedDashboardPanel().props('loading')).toBe(true);
     });
 
@@ -255,6 +268,8 @@ describe('VulnerabilitiesByAgePanel', () => {
       await waitForPromises();
 
       expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      expect(findVulnerabilitiesByAgeChart().exists()).toBe(false);
+      expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
     });
 
     it('shows error state when server returns error response', async () => {
@@ -267,6 +282,8 @@ describe('VulnerabilitiesByAgePanel', () => {
       await waitForPromises();
 
       expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      expect(findVulnerabilitiesByAgeChart().exists()).toBe(false);
+      expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
     });
   });
 });

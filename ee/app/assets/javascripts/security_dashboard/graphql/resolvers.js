@@ -11,7 +11,18 @@ const BUCKETS = [
 /* eslint-enable @gitlab/require-i18n-strings */
 
 const SEVERITIES = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO', 'UNKNOWN'];
-const REPORT_TYPE = ['SAST', 'DEPENDENCY_SCANNING'];
+const REPORT_TYPE = [
+  'SAST',
+  'DEPENDENCY_SCANNING',
+  'CONTAINER_SCANNING',
+  'DAST',
+  'SECRET_DETECTION',
+  'COVERAGE_FUZZING',
+  'API_FUZZING',
+  'CLUSTER_IMAGE_SCANNING',
+  'CONTAINER_SCANNING_FOR_REGISTRY',
+  'GENERIC',
+];
 
 const randomCount = (max = 50) => Math.floor(Math.random() * max);
 
@@ -45,7 +56,7 @@ const resolvers = {
         : buckets;
 
       await new Promise((resolve) => {
-        setTimeout(resolve, 1000);
+        setTimeout(resolve, 300);
       });
 
       return filteredBuckets;
