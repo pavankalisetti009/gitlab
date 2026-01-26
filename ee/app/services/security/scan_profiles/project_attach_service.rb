@@ -25,6 +25,7 @@ module Security
         inserted_ids = insert_under_limit
         handle_errors(inserted_ids)
         create_audit_events(inserted_ids)
+        schedule_analyzer_status_update_worker(inserted_ids)
 
         { errors: errors }
       rescue StandardError => e
@@ -80,6 +81,12 @@ module Security
         (potential_error_ids - already_attached_ids).each do |id|
           errors << "Project #{id} has reached the maximum limit of scan profiles."
         end
+      end
+
+      def schedule_analyzer_status_update_worker(inserted_ids)
+        return unless inserted_ids.present?
+
+        Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker.perform_async(inserted_ids, profile.scan_type)
       end
 
       def create_audit_events(attached_project_ids)

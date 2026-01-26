@@ -169,6 +169,75 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
         end
       end
 
+      context 'when projects have applicable scan profiles' do
+        let_it_be(:scan_profile) do
+          create(:security_scan_profile, scan_type: analyzer_type_sym, namespace: root_group)
+        end
+
+        context 'when setting is disabled but project has applicable scan profile' do
+          let_it_be(:profile_project_association) do
+            create(:security_scan_profile_project, scan_profile: scan_profile, project: project1)
+          end
+
+          before do
+            project1.security_setting.update!(setting_field => false)
+            project2.security_setting.update!(setting_field => false)
+          end
+
+          it 'creates success status for project with profile and not_configured for project without' do
+            execute
+
+            project1_status = Security::AnalyzerProjectStatus
+              .find_by(project: project1, analyzer_type: expected_analyzer_type)
+            project2_status = Security::AnalyzerProjectStatus
+              .find_by(project: project2, analyzer_type: expected_analyzer_type)
+
+            expect(project1_status).to have_attributes(status: 'success')
+            expect(project2_status).to have_attributes(status: 'not_configured')
+          end
+
+          it 'updates aggregated type status based on profile' do
+            execute
+
+            project1_aggregated = Security::AnalyzerProjectStatus
+              .find_by(project: project1, analyzer_type: analyzer_type_sym)
+
+            expect(project1_aggregated).to have_attributes(status: 'success')
+          end
+
+          include_examples 'calls inventory filters service once'
+        end
+
+        context 'when multiple projects have different profile configurations' do
+          before do
+            # project1: setting disabled, has profile -> success
+            create(:security_scan_profile_project, scan_profile: scan_profile, project: project1)
+            project1.security_setting.update!(setting_field => false)
+
+            # project2: setting enabled, no profile -> success
+            project2.security_setting.update!(setting_field => true)
+
+            # project3: setting disabled, no profile -> not_configured
+            project3.security_setting.update!(setting_field => false)
+          end
+
+          let(:project_ids) { [project1.id, project2.id, project3.id] }
+
+          it 'creates correct statuses based on setting OR profile' do
+            execute
+
+            expect(Security::AnalyzerProjectStatus.find_by(project: project1, analyzer_type: expected_analyzer_type))
+              .to have_attributes(status: 'success')
+            expect(Security::AnalyzerProjectStatus.find_by(project: project2, analyzer_type: expected_analyzer_type))
+              .to have_attributes(status: 'success')
+            expect(Security::AnalyzerProjectStatus.find_by(project: project3, analyzer_type: expected_analyzer_type))
+              .to have_attributes(status: 'not_configured')
+          end
+
+          include_examples 'calls inventory filters service once'
+        end
+      end
+
       context 'when updating existing analyzer status records' do
         let!(:existing_record1) do
           create(:analyzer_project_status, project: project1, analyzer_type: expected_analyzer_type, status: :failed)
@@ -371,6 +440,30 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
         expect(aggregated_record).to have_attributes(status: 'not_configured')
       end
 
+      context 'when project has scan profile' do
+        let!(:scan_profile) do
+          create(:security_scan_profile, scan_type: :secret_detection, namespace: root_group)
+        end
+
+        let!(:profile_project_association) do
+          create(:security_scan_profile_project, scan_profile: scan_profile, project: project_without_settings)
+        end
+
+        it 'creates success status based on profile' do
+          execute
+
+          setting_record = Security::AnalyzerProjectStatus.find_by(
+            project: project_without_settings, analyzer_type: :secret_detection_secret_push_protection
+          )
+          aggregated_record = Security::AnalyzerProjectStatus.find_by(
+            project: project_without_settings, analyzer_type: :secret_detection
+          )
+
+          expect(setting_record).to have_attributes(status: 'success')
+          expect(aggregated_record).to have_attributes(status: 'success')
+        end
+      end
+
       include_examples 'calls inventory filters service once'
     end
 
@@ -469,28 +562,62 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
 
       let(:project_ids) { [project1.id, project_in_another_namespace.id] }
 
-      before do
-        project1.security_setting.update!(secret_push_protection_enabled: true)
-        project_in_another_namespace.security_setting.update!(secret_push_protection_enabled: false)
+      context 'when status is determined by security settings' do
+        before do
+          project1.security_setting.update!(secret_push_protection_enabled: true)
+          project_in_another_namespace.security_setting.update!(secret_push_protection_enabled: false)
+        end
+
+        it 'calls AncestorsUpdateService once for each namespace' do
+          expect(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService)
+            .to receive(:execute).with(hash_including(namespace_id: group.id)).once
+
+          expect(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService).to receive(:execute)
+            .with(hash_including(namespace_id: another_group.id)).once
+
+          execute
+        end
+
+        it 'calls InventoryFilters service with all projects from different namespaces' do
+          expect(inventory_filters_update_service).to receive(:execute).once.with(
+            match_array([project1, project_in_another_namespace]),
+            anything
+          )
+
+          execute
+        end
       end
 
-      it 'calls AncestorsUpdateService once for each namespace' do
-        expect(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService)
-          .to receive(:execute).with(hash_including(namespace_id: group.id)).once
+      context 'when status is determined by scan profiles' do
+        let_it_be(:scan_profile_1) do
+          create(:security_scan_profile, scan_type: :secret_detection, namespace: root_group)
+        end
 
-        expect(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService).to receive(:execute)
-          .with(hash_including(namespace_id: another_group.id)).once
+        let_it_be(:scan_profile_2) do
+          create(:security_scan_profile, scan_type: :secret_detection, namespace: another_root_group)
+        end
 
-        execute
-      end
+        before do
+          create(:security_scan_profile_project, scan_profile: scan_profile_1, project: project1)
+          create(:security_scan_profile_project, scan_profile: scan_profile_2, project: project_in_another_namespace)
 
-      it 'calls InventoryFilters service with all projects from different namespaces' do
-        expect(inventory_filters_update_service).to receive(:execute).once.with(
-          match_array([project1, project_in_another_namespace]),
-          anything
-        )
+          project1.security_setting.update!(secret_push_protection_enabled: false)
+          project_in_another_namespace.security_setting.update!(secret_push_protection_enabled: false)
+        end
 
-        execute
+        it 'creates success status for both projects based on their respective scan profiles' do
+          execute
+
+          project1_status = Security::AnalyzerProjectStatus.find_by(
+            project: project1, analyzer_type: :secret_detection_secret_push_protection
+          )
+          project_in_another_namespace_status = Security::AnalyzerProjectStatus.find_by(
+            project: project_in_another_namespace, analyzer_type: :secret_detection_secret_push_protection
+          )
+
+          expect(project1_status).to have_attributes(status: 'success')
+          expect(project_in_another_namespace_status).to have_attributes(status: 'success')
+        end
       end
     end
 

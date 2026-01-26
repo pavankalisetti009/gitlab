@@ -24,6 +24,7 @@ module Security
 
         detached_project_ids = delete_and_return_project_ids
         create_audit_events(detached_project_ids)
+        schedule_analyzer_status_update_worker(detached_project_ids)
 
         { errors: errors }
       rescue StandardError => e
@@ -46,6 +47,12 @@ module Security
           .for_scan_profile(profile.id)
           .delete_all_returning(:project_id)
           .pluck('project_id') # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- pluck on Array, not AR relation
+      end
+
+      def schedule_analyzer_status_update_worker(detached_ids)
+        return unless detached_ids.present?
+
+        Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker.perform_async(detached_ids, profile.scan_type)
       end
 
       def create_audit_events(detached_project_ids)

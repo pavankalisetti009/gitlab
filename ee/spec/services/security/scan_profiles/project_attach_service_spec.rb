@@ -29,6 +29,14 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
     end
   end
 
+  shared_examples 'does not schedule the analyzer status update worker' do
+    it 'does not schedule the analyzer status update worker' do
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker).not_to receive(:perform_async)
+
+      execute_service
+    end
+  end
+
   describe '.execute' do
     subject(:execute_service) do
       described_class.execute(profile: profile, current_user: current_user, projects: projects)
@@ -64,6 +72,13 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
         expect(Security::ScanProfileProject.where(project: project2, scan_profile: profile)).to exist
       end
 
+      it 'schedules the analyzer status update worker' do
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker).to receive(:perform_async)
+          .with(contain_exactly(project1.id, project2.id), profile.scan_type)
+
+        execute_service
+      end
+
       it_behaves_like 'returns empty errors'
     end
 
@@ -82,6 +97,13 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
           "Project #{project_at_limit.id} has reached the maximum limit of scan profiles."
         )
       end
+
+      it 'schedules the analyzer status update worker only for attached projects' do
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker).to receive(:perform_async)
+          .with([project1.id], profile.scan_type)
+
+        execute_service
+      end
     end
 
     context 'when profile is already attached to a project' do
@@ -95,6 +117,7 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
         expect { execute_service }.not_to change { Security::ScanProfileProject.count }
       end
 
+      it_behaves_like 'does not schedule the analyzer status update worker'
       it_behaves_like 'returns empty errors'
     end
 
@@ -109,6 +132,7 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
         expect { execute_service }.not_to change { Security::ScanProfileProject.count }
       end
 
+      it_behaves_like 'does not schedule the analyzer status update worker'
       it_behaves_like 'returns empty errors'
     end
 
@@ -123,6 +147,8 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
         result = execute_service
         expect(result[:errors]).to include('Cannot attach profile to more than 2 items at once.')
       end
+
+      it_behaves_like 'does not schedule the analyzer status update worker'
     end
 
     context 'when an unexpected error occurs during insertion' do

@@ -36,13 +36,17 @@ module Security
       def projects
         return [] unless project_ids.present?
 
-        @projects ||= Project.id_in(project_ids).with_security_setting.with_namespaces.with_analyzer_statuses
+        @projects ||= Project.id_in(project_ids)
+                             .with_security_setting
+                             .with_namespaces
+                             .with_analyzer_statuses
+                             .with_security_scan_profiles
       end
 
       def analyzers_statuses
         @analyzers_statuses ||= projects.each_with_object({}) do |project, memo|
           setting_field = TYPE_MAPPINGS[@analyzer_type][:setting_field]
-          setting_enabled = project.security_setting&.read_attribute(setting_field) || false
+          setting_enabled = project.security_setting&.read_attribute(setting_field) || has_applicable_profile?(project)
           setting_status = status_to_symbol(setting_enabled)
           setting_type = TYPE_MAPPINGS[@analyzer_type][:setting_type]
 
@@ -76,6 +80,10 @@ module Security
         namespaces_diffs.each do |namespace_diffs|
           Security::AnalyzerNamespaceStatuses::AncestorsUpdateService.execute(namespace_diffs)
         end
+      end
+
+      def has_applicable_profile?(project)
+        project.security_scan_profiles.any? { |profile| profile.scan_type&.to_sym == analyzer_type }
       end
     end
   end
