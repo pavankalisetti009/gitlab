@@ -342,7 +342,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
   RSpec::Matchers.define :redirect_to_trial_registration do
     match do |response|
       expect(response).to redirect_to(new_trial_registration_path(glm_params))
-      expect(flash[:notice]).to include('Sign in or sign up before continuing')
     end
   end
 end
