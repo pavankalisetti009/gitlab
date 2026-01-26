@@ -3,13 +3,15 @@
 - return if request.path == manage_duo_settings_path.split('#').first
 
 - content_for :after_flash_content do
-  = render Users::GroupDismissibleAlertComponent.new(variant: :info,
-    title: s_('AICatalog|New foundational agents and flows now available'),
-    alert_options: { class: 'gl-my-4' },
+  = render Users::GroupDismissibleBannerComponent.new(variant: :introduction,
+    button_text: s_('AICatalog|Configure'),
+    button_link: manage_duo_settings_path,
+    svg_path: 'illustrations/empty-state/empty-ai-catalog-md.svg',
     dismiss_options: { user: current_user,
                        group: group,
-                       feature_id: ::EE::Users::CalloutsHelper::FOUNDATIONAL_ITEMS_AVAILABLE }) do |c|
-    - c.with_body do
+                       feature_id: ::EE::Users::CalloutsHelper::FOUNDATIONAL_ITEMS_AVAILABLE },
+    wrapper_options: { class: 'gl-mt-5' }) do |c|
+    - c.with_title do
+      = s_('AICatalog|New foundational agents and flows now available')
+    %p
       = s_("AICatalog|Foundational agents and flows are built, tested, and supported by GitLab, and can help accelerate your productivity. Get started by configuring them now.")
-    - c.with_actions do
-      = link_button_to s_('AICatalog|Configure'), manage_duo_settings_path, class: 'gl-alert-action'
