@@ -16,9 +16,7 @@ module MergeRequests
           reason: :forbidden)
       end
 
-      # rubocop: disable CodeReuse/ActiveRecord -- Move to a service/function
-      blocking_mr = ::MergeRequest.find_by(id: blocking_merge_request_id)
-      # rubocop: enable CodeReuse/ActiveRecord
+      blocking_mr = ::MergeRequest.find_by_id(blocking_merge_request_id)
 
       if blocking_mr.nil?
         return ::ServiceResponse.error(message: _("Blocking merge request not found"), reason: :not_found)
