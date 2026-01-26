@@ -59,6 +59,13 @@ module Types
           experiment: { milestone: '18.6' },
           description: 'Indicates whether the specific finding can be resolved with AI.'
 
+        field :matches_auto_dismiss_policy,
+          type: GraphQL::Types::Boolean,
+          null: true,
+          experiment: { milestone: '18.9' },
+          description: 'Indicates whether the finding matches an auto-dismiss policy. ' \
+                       'Returns `null` if `auto_dismiss_vulnerability_policies` feature flag is disabled.'
+
         field :identifiers,
           type: [VulnerabilityIdentifierType],
           null: true,

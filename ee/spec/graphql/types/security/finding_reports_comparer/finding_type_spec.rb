@@ -8,6 +8,7 @@ RSpec.describe GitlabSchema.types['ComparedSecurityReportFinding'],
     %i[
       uuid title description state severity found_by_pipeline_iid
       location identifiers scanner details ai_resolution_enabled
+      matches_auto_dismiss_policy
     ]
   end
 

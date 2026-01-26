@@ -47,6 +47,7 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
               }
             ],
             blob_path: '/foo.js#L1',
+            matches_auto_dismiss_policy: true,
             details: {
               code_flows: {
                 name: 'code_flows',
@@ -128,6 +129,7 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
               name
               url
             }
+            matchesAutoDismissPolicy
             details {
               ... on VulnerabilityDetailCodeFlows {
                 name
@@ -250,6 +252,7 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
                     url: 'https://semgrep.dev/r/gitlab.eslint.detect-disable-mustache-escape'
                   }
                 ],
+                matchesAutoDismissPolicy: true,
                 details: [
                   {
                     name: 'code_flows',
