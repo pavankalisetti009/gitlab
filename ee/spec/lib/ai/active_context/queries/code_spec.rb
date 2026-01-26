@@ -131,7 +131,8 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
                 'language' => 'ruby',
                 'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d1::0:546::0',
                 'embeddings_v1' => Array.new(768, 0.0)
-              }
+              },
+              '_score' => 0.95
             },
             {
               '_source' => {
@@ -143,7 +144,8 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
                 'language' => 'ruby',
                 'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f5910d1::600:546::10',
                 'embeddings_v1' => Array.new(768, 0.0)
-              }
+              },
+              '_score' => 0.85
             }
           ],
           project_2.id => [
@@ -157,7 +159,8 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
                 'language' => 'ruby',
                 'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f5911d1::0:546::0',
                 'embeddings_v1' => Array.new(768, 0.0)
-              }
+              },
+              '_score' => 0.80
             }
           ]
         }
@@ -180,11 +183,15 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       it 'returns the expected results' do
         project_1_result = codebase_query.filter(project_or_id: project)
         expect(project_1_result.success?).to be(true)
-        expect(project_1_result.to_a).to eq(elasticsearch_docs[project.id].pluck('_source'))
+        expect(project_1_result.to_a).to eq(
+          elasticsearch_docs[project.id].map { |doc| doc['_source'].merge('score' => doc['_score']) }
+        )
 
         project_2_result = codebase_query.filter(project_or_id: project_2)
         expect(project_2_result.success?).to be(true)
-        expect(project_2_result.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
+        expect(project_2_result.to_a).to eq(
+          elasticsearch_docs[project_2.id].map { |doc| doc['_source'].merge('score' => doc['_score']) }
+        )
       end
 
       describe 'setting last_queried_at', :freeze_time do
@@ -277,6 +284,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
               'start_byte' => 0,
               'length' => 546,
               'start_line' => 0,
+              'score' => 0.95,
               'file_url' => File.join(base_file_url, 'path/p1/one.rb')
             },
             {
@@ -289,6 +297,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
               'start_byte' => 600,
               'length' => 546,
               'start_line' => 10,
+              'score' => 0.85,
               'file_url' => File.join(base_file_url, 'path/p1/two.rb')
             }
           ])
@@ -308,7 +317,8 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
                 'language' => 'ruby',
                 'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d::0:546::0',
                 'embeddings_v1' => Array.new(768, 0.0)
-              }
+              },
+              '_score' => 0.90
             }
           ]
         end
@@ -331,7 +341,9 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
           result = codebase_query.filter(project_or_id: project, path: 'path/p1')
           expect(result.success?).to be(true)
-          expect(result.each.to_a).to eq(project_es_docs_in_path.pluck('_source'))
+          expect(result.each.to_a).to eq(
+            project_es_docs_in_path.map { |doc| doc['_source'].merge('score' => doc['_score']) }
+          )
         end
       end
 
@@ -341,11 +353,15 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
           project_1_result = codebase_query.filter(project_or_id: project.id)
           expect(project_1_result.success?).to be(true)
-          expect(project_1_result.to_a).to eq(elasticsearch_docs[project.id].pluck('_source'))
+          expect(project_1_result.to_a).to eq(
+            elasticsearch_docs[project.id].map { |doc| doc['_source'].merge('score' => doc['_score']) }
+          )
 
           project_2_result = codebase_query.filter(project_or_id: project_2.id.to_s)
           expect(project_2_result.success?).to be(true)
-          expect(project_2_result.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
+          expect(project_2_result.to_a).to eq(
+            elasticsearch_docs[project_2.id].map { |doc| doc['_source'].merge('score' => doc['_score']) }
+          )
         end
       end
 

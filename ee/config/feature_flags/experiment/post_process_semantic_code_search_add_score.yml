@@ -1,0 +1,10 @@
+---
+name: post_process_semantic_code_search_add_score
+description: Add similarity score in results from semantic_code_search mcp tool 
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/579850
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219467
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/586946
+milestone: '18.9'
+group: group::code creation
+type: experiment
+default_enabled: false

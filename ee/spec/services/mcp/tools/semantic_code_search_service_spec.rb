@@ -122,9 +122,10 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
   end
 
   describe '#description' do
-    it 'returns the correct description' do
-      service = described_class.new(name: service_name, version: '0.1.0')
-      expect(service.description).to eq <<~DESC.strip
+    let(:service) { described_class.new(name: service_name, version: '0.1.0') }
+
+    let(:base_description) do
+      <<~DESC.strip
             Code search using natural language.
 
             Returns ranked code snippets with file paths and matching content for natural-language queries.
@@ -147,6 +148,38 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
             Output:
             - Ranked snippets with file paths and the matched content for each hit
       DESC
+    end
+
+    let(:score_description) do
+      <<~DESC.strip
+        - Each result includes a score field (0.0 to 1.0) indicating semantic similarity to your query
+          - Higher scores mean the code is more relevant; results are sorted by score descending
+          - Scores above 0.8 typically indicate strong matches; below 0.5 may be tangentially related
+      DESC
+    end
+
+    before do
+      service.set_cred(current_user: current_user)
+    end
+
+    context 'when post_process_semantic_code_search_add_score feature flag is enabled' do
+      before do
+        stub_feature_flags(post_process_semantic_code_search_add_score: true)
+      end
+
+      it 'returns description with score information' do
+        expect(service.description).to eq("#{base_description}\n#{score_description}")
+      end
+    end
+
+    context 'when post_process_semantic_code_search_add_score feature flag is disabled' do
+      before do
+        stub_feature_flags(post_process_semantic_code_search_add_score: false)
+      end
+
+      it 'returns base description without score information' do
+        expect(service.description).to eq(base_description)
+      end
     end
   end
 
@@ -224,7 +257,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
             'start_line' => 0,
             'start_byte' => 0,
             'language' => 'ruby',
-            'file_url' => 'http://project/-/blob/master/ruby/server.rb'
+            'file_url' => 'http://project/-/blob/master/ruby/server.rb',
+            'score' => 0.9523
           }
         ]
       end
@@ -238,6 +272,7 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           .to receive(:new)
           .and_return(query_obj)
         project.add_developer(current_user)
+        stub_feature_flags(post_process_semantic_code_search_add_score: true)
       end
 
       shared_examples 'tool executed with expected response' do
@@ -265,7 +300,7 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           expect(response[:content]).to be_an(Array)
           expect(response[:content].first[:type]).to eq('text')
 
-          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\n   require 'webrick'")
+          expect(response[:content].first[:text]).to eq("1. ruby/server.rb (score: 0.9523)\n   require 'webrick'")
 
           structured = response[:structuredContent]
           expect(structured).to be_a(Hash)
@@ -281,7 +316,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
               'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
               'start_line' => 0,
               'start_byte' => 0,
-              'file_url' => 'http://project/-/blob/master/ruby/server.rb'
+              'file_url' => 'http://project/-/blob/master/ruby/server.rb',
+              'score' => 0.9523
             }
           )
         end
@@ -380,6 +416,48 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           # Ensure the excluded file is NOT in structured data
           paths = structured[:items].pluck('path')
           expect(paths).not_to include('docs/README.md')
+        end
+      end
+
+      context 'when post_process_semantic_code_search_add_score feature flag is disabled' do
+        let(:project_id) { project.id.to_s }
+        let(:raw_hits_without_score) do
+          [
+            {
+              'project_id' => 1000000,
+              'path' => 'ruby/server.rb',
+              'content' => "require 'webrick'",
+              'name' => 'server.rb',
+              'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
+              'start_line' => 0,
+              'start_byte' => 0,
+              'language' => 'ruby'
+            }
+          ]
+        end
+
+        let(:query_result_without_score) do
+          ::Ai::ActiveContext::Queries::Result.success(raw_hits_without_score)
+        end
+
+        before do
+          stub_feature_flags(post_process_semantic_code_search_add_score: false)
+          allow(query_obj).to receive(:filter).and_return(query_result_without_score)
+        end
+
+        it 'excludes score from text output and structured data' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+
+          # Text output should NOT include score
+          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\n   require 'webrick'")
+
+          # Structured data should NOT include score
+          structured = response[:structuredContent]
+          item = structured[:items].first
+          expect(item).not_to have_key('score')
+          expect(item['path']).to eq('ruby/server.rb')
         end
       end
     end
