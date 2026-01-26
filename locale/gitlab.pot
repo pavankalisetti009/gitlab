@@ -34077,6 +34077,9 @@ msgstr ""
 msgid "Groups are the best way to manage projects and members."
 msgstr ""
 
+msgid "Groups couldn't be loaded. Refresh the page to try again."
+msgstr ""
+
 msgid "GroupsEmptyState|A group is a collection of several projects"
 msgstr ""
 
@@ -34257,6 +34260,12 @@ msgstr ""
 msgid "Groups|Avatar will be removed. Are you sure?"
 msgstr ""
 
+msgid "Groups|Browse groups that are archived or pending deletion."
+msgstr ""
+
+msgid "Groups|Browse groups to learn from and contribute to."
+msgstr ""
+
 msgid "Groups|Cancel, keep group"
 msgstr ""
 
@@ -34282,6 +34291,9 @@ msgid "Groups|Enter a descriptive name for your group."
 msgstr ""
 
 msgid "Groups|Enter a path for your group."
+msgstr ""
+
+msgid "Groups|Explore active groups"
 msgstr ""
 
 msgid "Groups|Group ID"
@@ -34321,6 +34333,9 @@ msgid "Groups|Members, projects, trials, and paid subscriptions are tied to a sp
 msgstr ""
 
 msgid "Groups|Must start with letter, digit, emoji, or underscore. Can also contain periods, dashes, spaces, and parentheses."
+msgstr ""
+
+msgid "Groups|No inactive groups found"
 msgstr ""
 
 msgid "Groups|Remove avatar"
