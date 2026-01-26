@@ -143,7 +143,7 @@ export default {
           </span>
           <span class="gl-mt-2">
             <gl-badge
-              v-if="item.costIndicator && glFeatures.agenticChatGa"
+              v-if="item.costIndicator"
               :class="{
                 /* Make badge darker when item is selected so it's visible */
                 '!gl-bg-gray-200': selected === item.value,

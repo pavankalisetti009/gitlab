@@ -443,11 +443,6 @@ export default {
     hasActiveThread() {
       return this.workflowId && this.activeThread;
     },
-    toggleText() {
-      return this.glFeatures.agenticChatGa
-        ? s__('DuoChat|Agentic')
-        : s__('DuoChat|Agentic mode (Beta)');
-    },
     showErrorBannerMessage() {
       if (this.multithreadedView === DUO_CHAT_VIEWS.CHAT) {
         if (this.agentOrWorkflowDeletedError) {
@@ -1191,7 +1186,7 @@ export default {
       <template v-if="isClassicAvailable && !forceAgenticModeForCoreDuoUsers" #agentic-switch>
         <gl-toggle v-model="duoAgenticModePreference" label-position="left" class="gl-h-5">
           <template #label>
-            <span class="gl-font-normal gl-text-subtle">{{ toggleText }}</span>
+            <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Agentic') }}</span>
           </template>
         </gl-toggle>
       </template>

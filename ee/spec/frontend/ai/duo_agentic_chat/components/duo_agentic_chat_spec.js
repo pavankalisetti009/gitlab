@@ -2409,45 +2409,7 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
-  describe('Agentic Mode Toggle (when agenticChatGa FF is disabled)', () => {
-    const findGlToggle = () => wrapper.findComponent(GlToggle);
-
-    beforeEach(() => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      duoChatGlobalState.chatMode = 'classic';
-      createComponent({
-        propsData: { forceAgenticModeForCoreDuoUsers: false },
-        provide: {
-          chatConfiguration: {
-            title: 'GitLab Duo Agentic Chat',
-            defaultProps: {
-              isClassicAvailable: true,
-            },
-          },
-        },
-      });
-    });
-
-    it('renders the GlToggle component with "Agentic" label', () => {
-      expect(findGlToggle().exists()).toBe(true);
-      expect(findGlToggle().text()).toContain('Agentic mode');
-    });
-
-    it('calls setAgenticMode when toggle value changes', async () => {
-      const toggle = findGlToggle();
-
-      toggle.vm.$emit('change', true);
-      await nextTick();
-
-      expect(setAgenticMode).toHaveBeenCalledWith({
-        agenticMode: true,
-        saveCookie: true,
-        isEmbedded: true,
-      });
-    });
-  });
-
-  describe('Agentic Toggle (when agenticChatGa FF is enabled)', () => {
+  describe('Agentic Toggle', () => {
     const findGlToggle = () => wrapper.findComponent(GlToggle);
 
     beforeEach(() => {
@@ -2462,9 +2424,6 @@ describe('Duo Agentic Chat', () => {
             defaultProps: {
               isClassicAvailable: true,
             },
-          },
-          glFeatures: {
-            agenticChatGa: true,
           },
         },
       });
@@ -2501,9 +2460,6 @@ describe('Duo Agentic Chat', () => {
               defaultProps: {
                 isClassicAvailable: true,
               },
-            },
-            glFeatures: {
-              agenticChatGa: true,
             },
           },
         });
@@ -3540,7 +3496,7 @@ describe('Duo Agentic Chat', () => {
       it('calls setAgenticMode with embedded=true when toggling classic mode', async () => {
         getCookie.mockReturnValue('false');
 
-        // Recreate component with agenticChatGa FF enabled to show Classic toggle
+        // Recreate component to show Classic toggle
         createComponent({
           propsData: { forceAgenticModeForCoreDuoUsers: false },
           provide: {
@@ -3557,9 +3513,6 @@ describe('Duo Agentic Chat', () => {
                 isClassicAvailable: true,
                 userId: null,
               },
-            },
-            glFeatures: {
-              agenticChatGa: true,
             },
           },
         });

@@ -158,12 +158,8 @@ export const initializeChatMode = () => {
   const savedModeStorage = getStorageValue(DUO_AGENTIC_MODE_COOKIE);
   const savedMode = savedModeCookie || (savedModeStorage.exists ? savedModeStorage.value : null);
 
-  // When agenticChatGa FF is enabled, default to agentic unless explicitly disabled
-  // When FF is disabled, default to classic unless explicitly enabled
-  if (
-    (window.gon?.features?.agenticChatGa && savedMode !== 'false') ||
-    (!window.gon?.features?.agenticChatGa && savedMode === 'true')
-  ) {
+  // Default to agentic mode unless explicitly disabled via cookie/storage
+  if (savedMode !== 'false') {
     duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
   } else {
     duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;

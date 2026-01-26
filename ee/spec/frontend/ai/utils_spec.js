@@ -582,9 +582,9 @@ describe('AI Utils', () => {
       window.gon = {};
     });
 
-    describe('when agenticChatGa feature flag is enabled', () => {
+    describe('when agentic chat is always enabled', () => {
       beforeEach(() => {
-        window.gon = { features: { agenticChatGa: true } };
+        window.gon = { features: {} };
       });
 
       it('defaults to agentic mode when no cookie is set', () => {
@@ -617,36 +617,6 @@ describe('AI Utils', () => {
         initializeChatMode();
 
         expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
-      });
-    });
-
-    describe('when agenticChatGa feature flag is disabled', () => {
-      beforeEach(() => {
-        window.gon = { features: { agenticChatGa: false } };
-      });
-
-      it('defaults to classic mode when no cookie is set', () => {
-        getCookie.mockReturnValue(undefined);
-
-        initializeChatMode();
-
-        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
-      });
-
-      it('uses agentic mode when cookie is set to true', () => {
-        getCookie.mockReturnValue('true');
-
-        initializeChatMode();
-
-        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
-      });
-
-      it('uses classic mode when cookie is set to false', () => {
-        getCookie.mockReturnValue('false');
-
-        initializeChatMode();
-
-        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
       });
     });
   });

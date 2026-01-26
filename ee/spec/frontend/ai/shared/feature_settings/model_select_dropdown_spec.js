@@ -17,7 +17,6 @@ describe('ModelSelectDropdown', () => {
       mount(ModelSelectDropdown, {
         provide: {
           glFeatures: {
-            agenticChatGa: true,
             ...features,
           },
         },
@@ -136,22 +135,9 @@ describe('ModelSelectDropdown', () => {
       });
 
       describe('cost indicators', () => {
-        describe('when `agenticChatGa` feature flag is enabled', () => {
-          it('renders model cost indicators', () => {
-            mockModelSelectionItems.forEach((item, index) => {
-              expect(findModelCostIndicators().at(index).text()).toEqual(item.costIndicator);
-            });
-          });
-        });
-
-        describe('when `agenticChatGa` feature flag is disabled', () => {
-          it('does not render model cost indicators', () => {
-            createComponent({
-              features: { agenticChatGa: false },
-              props: { items: mockModelSelectionItems },
-            });
-
-            expect(findModelCostIndicators().exists()).toBe(false);
+        it('renders model cost indicators', () => {
+          mockModelSelectionItems.forEach((item, index) => {
+            expect(findModelCostIndicators().at(index).text()).toEqual(item.costIndicator);
           });
         });
       });

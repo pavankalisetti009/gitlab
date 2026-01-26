@@ -26205,9 +26205,6 @@ msgstr ""
 msgid "DuoChat|Agentic"
 msgstr ""
 
-msgid "DuoChat|Agentic mode (Beta)"
-msgstr ""
-
 msgid "DuoChat|Ask a question about GitLab"
 msgstr ""
 
