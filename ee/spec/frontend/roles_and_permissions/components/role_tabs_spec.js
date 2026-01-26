@@ -125,7 +125,7 @@ describe('RoleTabs component', () => {
 
     it('shows security recommendation alert', () => {
       expect(findSecurityRecommendationAlert().text()).toMatchInterpolatedText(
-        'To enhance security, we recommend enabling Admin Mode and Require administrators to enable 2FA when using custom admin roles. Enabling Admin Mode will require users to re-authenticate in GitLab before accessing the Admin area.',
+        'To enhance security, we recommend enabling Admin Mode and Enforce two-factor authentication for administrators when using custom admin roles. Admin Mode requires users to re-authenticate before accessing the Admin area.',
       );
     });
 
@@ -134,8 +134,10 @@ describe('RoleTabs component', () => {
       expect(findSettingsLinks().at(0).props('href')).toBe('path/to/admin/mode/setting');
     });
 
-    it('shows Require administrators to enable 2FA link', () => {
-      expect(findSettingsLinks().at(1).text()).toBe('Require administrators to enable 2FA');
+    it('shows Enforce two-factor authentication for administrators link', () => {
+      expect(findSettingsLinks().at(1).text()).toBe(
+        'Enforce two-factor authentication for administrators',
+      );
       expect(findSettingsLinks().at(1).props('href')).toBe('path/to/admin/mode/setting');
     });
   });
