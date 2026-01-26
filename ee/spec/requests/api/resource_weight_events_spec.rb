@@ -19,6 +19,14 @@ RSpec.describe ::API::ResourceWeightEvents, feature_category: :team_planning do
       expect(json_response.first['id']).to eq(event.id)
     end
 
+    it_behaves_like 'authorizing granular token permissions', :read_issue_weight_event do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/issues/#{issue.iid}/resource_weight_events",
+          personal_access_token: pat)
+      end
+    end
+
     it "returns a 404 error when issue id not found" do
       get api("/projects/#{project.id}/issues/#{non_existing_record_id}/resource_weight_events", user)
 
@@ -43,6 +51,14 @@ RSpec.describe ::API::ResourceWeightEvents, feature_category: :team_planning do
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(json_response['id']).to eq(event.id)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_issue_weight_event do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/issues/#{issue.iid}/resource_weight_events/#{event.id}",
+          personal_access_token: pat)
+      end
     end
 
     it "returns 404 when not authorized" do
