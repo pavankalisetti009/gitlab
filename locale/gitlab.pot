@@ -78200,6 +78200,9 @@ msgstr ""
 msgid "WorkItem|Edit type name and icon"
 msgstr ""
 
+msgid "WorkItem|Edit view"
+msgstr ""
+
 msgid "WorkItem|Edit work item"
 msgstr ""
 
@@ -79126,6 +79129,9 @@ msgid "WorkItem|Use work items (also known as tickets or stories on other platfo
 msgstr ""
 
 msgid "WorkItem|View current version"
+msgstr ""
+
+msgid "WorkItem|View has been saved."
 msgstr ""
 
 msgid "WorkItem|View on a roadmap"

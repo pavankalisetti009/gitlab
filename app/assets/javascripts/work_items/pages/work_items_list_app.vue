@@ -1864,6 +1864,7 @@ export default {
                   :full-path="rootPageFullPath"
                   :title="s__('WorkItem|Save view')"
                   :sort-key="sortKey"
+                  @hide="isNewViewModalVisible = false"
                 />
               </template>
               <template v-else>
