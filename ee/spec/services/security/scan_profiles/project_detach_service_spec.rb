@@ -16,15 +16,31 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
     create(:security_scan_profile, namespace: root_group, scan_type: :sast, name: 'Other Profile')
   end
 
+  subject(:execute_service) { described_class.execute(profile: profile, current_user: user, projects: projects) }
+
+  shared_examples 'does not schedule the analyzer status update worker' do
+    it 'does not schedule the analyzer status update worker' do
+      expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker).not_to receive(:perform_async)
+
+      execute_service
+    end
+  end
+
+  shared_examples 'returns no errors' do
+    it 'returns no errors' do
+      result = execute_service
+
+      expect(result[:errors]).to be_empty
+    end
+  end
+
   describe '.execute' do
-    subject(:result) { described_class.execute(profile: profile, current_user: current_user, projects: projects) }
-
-    let(:current_user) { user }
-
     context 'when projects is empty' do
       let(:projects) { [] }
 
       it 'returns an error' do
+        result = execute_service
+
         expect(result[:errors]).to include('At least one project must be provided')
       end
     end
@@ -37,6 +53,8 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
       end
 
       it 'returns an error' do
+        result = execute_service
+
         expect(result[:errors]).to include(
           "Cannot detach profile from more than #{described_class::MAX_PROJECTS} items at once."
         )
@@ -52,11 +70,19 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
       end
 
       it 'detaches the profile from all projects' do
-        expect { result }.to change { Security::ScanProfileProject.count }.by(-2)
+        expect { execute_service }.to change { Security::ScanProfileProject.count }.by(-2)
 
-        expect(result[:errors]).to be_empty
         expect(Security::ScanProfileProject.by_project_id(project1).for_scan_profile(profile)).not_to exist
         expect(Security::ScanProfileProject.by_project_id(project2).for_scan_profile(profile)).not_to exist
+      end
+
+      it_behaves_like 'returns no errors'
+
+      it 'schedules the analyzer status update worker' do
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker).to receive(:perform_async)
+          .with(contain_exactly(project1.id, project2.id), profile.scan_type)
+
+        execute_service
       end
     end
 
@@ -68,21 +94,30 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
       end
 
       it 'detaches only from projects that have the profile' do
-        expect { result }.to change { Security::ScanProfileProject.count }.by(-1)
+        expect { execute_service }.to change { Security::ScanProfileProject.count }.by(-1)
 
-        expect(result[:errors]).to be_empty
         expect(Security::ScanProfileProject.by_project_id(project1).for_scan_profile(profile)).not_to exist
       end
+
+      it 'schedules the analyzer status update worker only for detached projects' do
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker).to receive(:perform_async)
+          .with([project1.id], profile.scan_type)
+
+        execute_service
+      end
+
+      it_behaves_like 'returns no errors'
     end
 
     context 'when no projects have the profile attached' do
       let(:projects) { [project1, project2] }
 
-      it 'succeeds without errors' do
-        expect { result }.not_to change { Security::ScanProfileProject.count }
-
-        expect(result[:errors]).to be_empty
+      it 'does not change any record' do
+        expect { execute_service }.not_to change { Security::ScanProfileProject.count }
       end
+
+      it_behaves_like 'returns no errors'
+      it_behaves_like 'does not schedule the analyzer status update worker'
     end
 
     context 'when projects have other profiles attached' do
@@ -94,12 +129,20 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
       end
 
       it 'only detaches the specified profile' do
-        expect { result }.to change { Security::ScanProfileProject.count }.by(-1)
+        expect { execute_service }.to change { Security::ScanProfileProject.count }.by(-1)
 
-        expect(result[:errors]).to be_empty
         expect(Security::ScanProfileProject.by_project_id(project1).for_scan_profile(profile)).not_to exist
         expect(Security::ScanProfileProject.by_project_id(project1).for_scan_profile(other_profile)).to exist
       end
+
+      it 'schedules the analyzer status update worker only for detached projects' do
+        expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker).to receive(:perform_async)
+          .with([project1.id], profile.scan_type)
+
+        execute_service
+      end
+
+      it_behaves_like 'returns no errors'
     end
 
     context 'when an error occurs' do
@@ -110,6 +153,8 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
       end
 
       it 'returns the error message' do
+        result = execute_service
+
         expect(result[:errors]).to include('Database error')
       end
     end
@@ -123,11 +168,11 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
       end
 
       it 'creates audit events for detached projects' do
-        expect { result }.to change { AuditEvent.count }.by(2)
+        expect { execute_service }.to change { AuditEvent.count }.by(2)
       end
 
       it 'creates audit events with correct attributes' do
-        result
+        execute_service
 
         audit_event = AuditEvent.last
         expect(audit_event.details).to include(
@@ -148,7 +193,7 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
         end
 
         it 'does not create audit events' do
-          expect { result }.not_to change { AuditEvent.count }
+          expect { execute_service }.not_to change { AuditEvent.count }
         end
       end
 
@@ -162,7 +207,7 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
         end
 
         it 'does not create audit events' do
-          expect { result }.not_to change { AuditEvent.count }
+          expect { execute_service }.not_to change { AuditEvent.count }
         end
       end
     end
