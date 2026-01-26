@@ -9,6 +9,10 @@ module Ci
       class_name: 'Ci::RunnerControllerToken',
       inverse_of: :runner_controller
 
+    has_one :instance_level_scoping,
+      class_name: 'Ci::RunnerControllerInstanceLevelScoping',
+      inverse_of: :runner_controller
+
     scope :enabled, -> { where(enabled: true) }
   end
 end

@@ -10,6 +10,17 @@ RSpec.describe Ci::RunnerController, feature_category: :continuous_integration d
     it { is_expected.to validate_inclusion_of(:enabled).in_array([true, false]) }
   end
 
+  describe 'associations' do
+    subject { build(:ci_runner_controller) }
+
+    it { is_expected.to have_many(:tokens).class_name('Ci::RunnerControllerToken').inverse_of(:runner_controller) }
+
+    it 'has one instance_level_scoping' do
+      is_expected.to have_one(:instance_level_scoping).class_name('Ci::RunnerControllerInstanceLevelScoping')
+                                                .inverse_of(:runner_controller)
+    end
+  end
+
   describe 'enabled field' do
     it 'defaults to false' do
       controller = described_class.new
