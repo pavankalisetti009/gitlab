@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SitemapController, feature_category: :shared do
+RSpec.describe SitemapController, feature_category: :navigation do
   describe '#show' do
     subject { get :show, format: :xml }
 
