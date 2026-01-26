@@ -28,6 +28,7 @@ module API
         use :pagination
       end
 
+      route_setting :authorization, permissions: :read_issue_weight_event, boundary_type: :project
       get ":id/issues/:eventable_id/resource_weight_events" do
         eventable = find_noteable(Issue, params[:eventable_id])
 
@@ -52,6 +53,7 @@ module API
         requires :event_id, type: String, desc: 'The ID of a resource weight event'
         requires :eventable_id, types: [Integer, String], desc: 'The ID of the eventable'
       end
+      route_setting :authorization, permissions: :read_issue_weight_event, boundary_type: :project
       get ":id/issues/:eventable_id/resource_weight_events/:event_id" do
         eventable = find_noteable(Issue, params[:eventable_id])
 
