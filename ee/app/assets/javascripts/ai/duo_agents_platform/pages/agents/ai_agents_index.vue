@@ -171,9 +171,6 @@ export default {
     exploreHref() {
       return `${this.exploreAiCatalogPath}${AI_CATALOG_AGENTS_ROUTE}`;
     },
-    isAgentsAvailable() {
-      return this.glFeatures.aiCatalogAgents;
-    },
     itemTypes() {
       const types = [AI_CATALOG_TYPE_AGENT];
 
@@ -363,7 +360,7 @@ export default {
       :can-admin="userPermissions.adminAiCatalogItem"
       new-button-variant="default"
     >
-      <template v-if="isAgentsAvailable" #nav-actions>
+      <template #nav-actions>
         <gl-button
           v-if="showAddAgent"
           v-gl-modal="$options.addAgentModalId"

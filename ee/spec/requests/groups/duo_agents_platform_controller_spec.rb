@@ -36,7 +36,6 @@ RSpec.describe 'Groups::DuoAgentsPlatform', feature_category: :duo_agent_platfor
       it 'pushes feature flags to frontend' do
         get group_automate_flows_path(group)
 
-        expect(response.body).to include('aiCatalogAgents')
         expect(response.body).to include('aiCatalogFlows')
         expect(response.body).to include('aiCatalogThirdPartyFlows')
         expect(response.body).to include('gon.ai_duo_agent_platform_ga_rollout')
@@ -62,21 +61,9 @@ RSpec.describe 'Groups::DuoAgentsPlatform', feature_category: :duo_agent_platfor
         expect(response).to have_gitlab_http_status(:ok)
       end
 
-      context 'when ai_catalog_agents is disabled' do
-        before do
-          stub_feature_flags(global_ai_catalog: true, ai_catalog_agents: false)
-        end
-
-        it 'returns 404' do
-          get group_automate_agents_path(group)
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-
       context 'when global_ai_catalog is disabled' do
         before do
-          stub_feature_flags(global_ai_catalog: false, ai_catalog_agents: true)
+          stub_feature_flags(global_ai_catalog: false)
         end
 
         it 'returns 404' do

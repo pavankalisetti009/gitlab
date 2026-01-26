@@ -4,7 +4,6 @@ import { __, s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { useAiBetaBadge } from 'ee/ai/duo_agents_platform/composables/use_ai_beta_badge';
@@ -45,7 +44,7 @@ export default {
     GlExperimentBadge,
     VersionAlert,
   },
-  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin()],
   inject: {
     isGlobal: {
       default: false,
@@ -92,9 +91,6 @@ export default {
     },
     formattedItemId() {
       return getIdFromGraphQLId(this.aiCatalogAgent.id);
-    },
-    isAgentsAvailable() {
-      return this.glFeatures.aiCatalogAgents;
     },
     isProjectNamespace() {
       return Boolean(this.projectId);
@@ -332,7 +328,6 @@ export default {
           v-if="showActions"
           :item="aiCatalogAgent"
           :item-routes="$options.itemRoutes"
-          :is-agents-available="isAgentsAvailable"
           :has-parent-consumer="hasParentConsumer"
           :disable-fn="disableAgent"
           :delete-fn="deleteAgent"

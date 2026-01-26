@@ -41,8 +41,6 @@ describe('AiCatalogItemActions', () => {
       edit: '/items/:id/edit',
       run: '/items/:id/run',
     },
-    isAgentsAvailable: true,
-    isFlowsAvailable: true,
     deleteFn: jest.fn(),
     enableModalTexts: {
       title: 'Enable flow from group',
@@ -91,7 +89,6 @@ describe('AiCatalogItemActions', () => {
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findDisableButton = () => wrapper.findByTestId('disable-button');
   const findEnableButton = () => wrapper.findByTestId('enable-button');
-  const findAddToProjectButton = () => wrapper.findByTestId('add-to-project-button');
   const findAddToGroupButton = () => wrapper.findByTestId('add-to-group-button');
   const findMoreActions = () => wrapper.findByTestId('more-actions-dropdown');
   const findDuplicateButton = () => wrapper.findByTestId('duplicate-button');
@@ -226,10 +223,6 @@ describe('AiCatalogItemActions', () => {
         expect(findAddToGroupButton().exists()).toBe(addBtn);
       });
 
-      it('does not render "Enable in project" button', () => {
-        expect(findAddToProjectButton().exists()).toBe(false);
-      });
-
       it(`${moreActions ? 'renders' : 'does not render'} more actions`, () => {
         expect(findMoreActions().exists()).toBe(moreActions);
       });
@@ -323,10 +316,6 @@ describe('AiCatalogItemActions', () => {
         expect(findAddToGroupButton().exists()).toBe(false);
       });
 
-      it('does not render "Enable in project" button', () => {
-        expect(findAddToProjectButton().exists()).toBe(false);
-      });
-
       it(`${moreActions ? 'renders' : 'does not render'} more actions`, () => {
         expect(findMoreActions().exists()).toBe(moreActions);
       });
@@ -344,30 +333,6 @@ describe('AiCatalogItemActions', () => {
       });
     },
   );
-
-  describe('when isAgentsAvailable and isFlowsAvailable are false', () => {
-    beforeEach(() => {
-      isLoggedIn.mockReturnValue(true);
-
-      createComponent({
-        provide: {
-          isGlobal: true,
-        },
-        props: {
-          isAgentsAvailable: false,
-          isFlowsAvailable: false,
-        },
-      });
-    });
-
-    it('renders "Enable in project" button', () => {
-      expect(findAddToProjectButton().exists()).toBe(true);
-    });
-
-    it('does not render "Enable in group" button', () => {
-      expect(findAddToGroupButton().exists()).toBe(false);
-    });
-  });
 
   describe('at Project level', () => {
     describe('when hasParentConsumer is false', () => {

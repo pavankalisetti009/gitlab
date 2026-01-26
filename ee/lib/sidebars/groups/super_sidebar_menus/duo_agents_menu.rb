@@ -33,8 +33,7 @@ module Sidebars # rubocop:disable Gitlab/BoundedContexts -- Existing module
         private
 
         def show_agents_menu_item?
-          Feature.enabled?(:global_ai_catalog, context.current_user) &&
-            Feature.enabled?(:ai_catalog_agents, context.current_user)
+          Feature.enabled?(:global_ai_catalog, context.current_user)
         end
 
         def show_flows_menu_item?

@@ -2806,9 +2806,6 @@ msgstr ""
 msgid "AICatalog|Enable in group"
 msgstr ""
 
-msgid "AICatalog|Enable in project"
-msgstr ""
-
 msgid "AICatalog|Excessive resource usage"
 msgstr ""
 

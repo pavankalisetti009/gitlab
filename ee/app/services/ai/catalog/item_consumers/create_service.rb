@@ -62,7 +62,7 @@ module Ai
 
           return true if (item.third_party_flow? || item.flow?) && ai_catalog_flows_enabled?
 
-          item.agent? && ai_catalog_agents_enabled?
+          item.agent?
         end
 
         def project_item_without_parent_item_consumer?
@@ -219,10 +219,6 @@ module Ai
 
         def ai_catalog_flows_enabled?
           Feature.enabled?(:ai_catalog_flows, current_user)
-        end
-
-        def ai_catalog_agents_enabled?
-          Feature.enabled?(:ai_catalog_agents, current_user)
         end
 
         def error(message)
