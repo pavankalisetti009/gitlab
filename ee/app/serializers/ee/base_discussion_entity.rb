@@ -15,7 +15,8 @@ module EE
     end
 
     def epic_noteable?(noteable)
-      noteable.try(:work_item_type) == ::WorkItems::Type.default_by_type(:epic)
+      noteable.try(:work_item_type) ==
+        ::WorkItems::TypesFramework::Provider.new(noteable).find_by_base_type(:epic)
     end
   end
 end

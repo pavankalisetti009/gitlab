@@ -38,7 +38,7 @@ module WorkItems
         end
 
         def work_item_types
-          WorkItems::Type.where(base_type: work_item_base_types)
+          ::WorkItems::TypesFramework::Provider.new.by_base_types(work_item_base_types)
         end
 
         def statuses

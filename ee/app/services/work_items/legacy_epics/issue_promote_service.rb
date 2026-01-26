@@ -71,7 +71,7 @@ module WorkItems
           work_item: work_item,
           target_namespace: target_namespace,
           current_user: current_user,
-          target_work_item_type: ::WorkItems::Type.default_by_type(:epic),
+          target_work_item_type: ::WorkItems::TypesFramework::Provider.new(target_namespace).find_by_base_type(:epic),
           params: { operation: :promote },
           overwritten_params: {
             author: current_user, created_at: nil, updated_by: nil, updated_at: nil,

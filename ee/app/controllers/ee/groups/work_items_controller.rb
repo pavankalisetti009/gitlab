@@ -31,7 +31,7 @@ module EE
       strong_memoize_attr :issuable
 
       def epic_work_item?
-        issuable.work_item_type == ::WorkItems::Type.default_by_type(:epic)
+        issuable.work_item_type == ::WorkItems::TypesFramework::Provider.new(group).find_by_base_type(:epic)
       end
 
       def authorize_read_work_item!

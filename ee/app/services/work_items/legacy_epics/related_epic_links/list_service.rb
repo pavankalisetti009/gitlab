@@ -27,7 +27,7 @@ module WorkItems
         private
 
         def epic_type
-          ::WorkItems::Type.default_by_type(:epic)
+          ::WorkItems::TypesFramework::Provider.new(group).find_by_base_type(:epic)
         end
         strong_memoize_attr :epic_type
 

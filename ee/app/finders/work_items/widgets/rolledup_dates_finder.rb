@@ -108,8 +108,8 @@ module WorkItems
               WorkItems::ParentLink.arel_table[:work_item_parent_id].as("parent_id"),
               WorkItem.arel_table[:milestone_id].as("milestone_id"),
               WorkItem.arel_table[:start_date].as("start_date"),
-              WorkItem.arel_table[:due_date].as("due_date"),
-              WorkItems::Type.arel_table[:name].as("work_item_type_name"))
+              WorkItem.arel_table[:due_date].as("due_date")
+            )
         )
       end
     end

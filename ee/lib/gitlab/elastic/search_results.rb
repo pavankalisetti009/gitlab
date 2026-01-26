@@ -347,6 +347,11 @@ module Gitlab
         options
       end
 
+      def work_item_types_provider
+        ::WorkItems::TypesFramework::Provider.new
+      end
+      strong_memoize_attr :work_item_types_provider
+
       def scope_options(scope)
         case scope
         when :projects, :notes, :commits
@@ -365,10 +370,11 @@ module Gitlab
           # from projects with milestones disabled.
           base_options.merge({ features: [:issues, :merge_requests] }, filters.slice(:include_archived))
         when :epics
+
           work_item_scope_options.merge(
             not_work_item_type_ids: nil,
             klass: WorkItem,
-            work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
+            work_item_type_ids: [work_item_types_provider.find_by_base_type(:epic).id]
           ).except(:fields)
         when :users
           user_scope_options
@@ -386,13 +392,13 @@ module Gitlab
           {
             klass: Issue, # For rendering the UI
             index_name: ::Search::Elastic::References::WorkItem.index,
-            not_work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
+            not_work_item_type_ids: [work_item_types_provider.find_by_base_type(:epic).id]
           },
           filters.slice(*::Search::Elastic::References::WorkItem::PERMITTED_FILTER_KEYS)
         )
 
         if filters[:type].present?
-          work_item_type_id = ::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[filters[:type].to_sym])&.id
+          work_item_type_id = work_item_types_provider.find_by_base_type(filters[:type])&.id
           work_item_scope_options[:work_item_type_ids] = [work_item_type_id] unless work_item_type_id.nil?
         end
 

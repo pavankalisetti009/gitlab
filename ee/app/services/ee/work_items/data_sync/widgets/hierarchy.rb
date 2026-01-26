@@ -44,7 +44,7 @@ module EE
             #
             # This will be removed once we remove legacy Epic dependencies,
             # see: https://gitlab.com/groups/gitlab-org/-/epics/13356
-            epic_type = ::WorkItems::Type.default_by_type(:epic)
+            epic_type = ::WorkItems::TypesFramework::Provider.new(work_item.namespace).find_by_base_type(:epic)
             return unless epic_type.id == work_item.work_item_type.id
 
             # handling child epics

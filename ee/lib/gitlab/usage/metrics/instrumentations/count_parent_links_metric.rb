@@ -29,7 +29,7 @@ module Gitlab
           private
 
           def parent_type
-            ::WorkItems::Type.default_by_type(options[:parent_type])
+            ::WorkItems::TypesFramework::Provider.new.find_by_base_type(options[:parent_type])
           end
         end
       end

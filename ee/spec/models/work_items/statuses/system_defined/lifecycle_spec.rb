@@ -40,8 +40,12 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
   end
 
   describe '#work_item_types' do
+    let(:work_items_provider) { instance_double(::WorkItems::TypesFramework::Provider) }
+
     it 'returns work item types for the lifecycle base types' do
-      expect(WorkItems::Type).to receive(:where).with(base_type: [:issue, :task])
+      expect(::WorkItems::TypesFramework::Provider).to receive(:new).and_return(work_items_provider)
+      expect(work_items_provider).to receive(:by_base_types).with([:issue, :task])
+
       lifecycle.work_item_types
     end
   end

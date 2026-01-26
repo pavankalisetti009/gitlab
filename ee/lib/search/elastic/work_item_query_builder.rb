@@ -171,7 +171,7 @@ module Search
       end
 
       def group_work_item_type_ids
-        [::WorkItems::Type.default_by_type(:epic).id].freeze
+        [::WorkItems::TypesFramework::Provider.new.find_by_base_type(:epic).id].freeze
       end
       strong_memoize_attr :group_work_item_type_ids
     end

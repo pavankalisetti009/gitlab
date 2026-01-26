@@ -68,7 +68,8 @@ module WorkItems
         def new_work_item_object
           work_item_attributes = epic_object.attributes.slice(*BASE_ATTRIBUTES)
           work_item_attributes['namespace_id'] = epic_object.group_id
-          work_item_attributes['work_item_type'] = ::WorkItems::Type.default_by_type(:epic)
+          work_item_attributes['work_item_type'] =
+            ::WorkItems::TypesFramework::Provider.new(group).find_by_base_type(:epic)
           work_item_attributes['importing'] = true
 
           work_item_attributes['award_emoji'] = epic_object.award_emoji.map do |award_emoji|

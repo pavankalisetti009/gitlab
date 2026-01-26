@@ -119,7 +119,7 @@ module WorkItems
       # the frontend provides all supported types if we don't filter by type explicitly.
       return [] unless params[:issue_types].present?
 
-      params[:issue_types].filter_map { |type| WorkItems::Type.default_by_type(type) }
+      ::WorkItems::TypesFramework::Provider.new(parent).by_base_types(params[:issue_types])
     end
 
     def build_status_role(work_item_type, status)
