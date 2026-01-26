@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Iteration'] do
+RSpec.describe GitlabSchema.types['Iteration'], feature_category: :team_planning do
   it { expect(described_class.graphql_name).to eq('Iteration') }
 
   it { expect(described_class).to require_graphql_authorizations(:read_iteration) }

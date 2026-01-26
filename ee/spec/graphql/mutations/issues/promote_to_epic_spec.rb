@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Mutations::Issues::PromoteToEpic do
+RSpec.describe Mutations::Issues::PromoteToEpic, feature_category: :team_planning do
   include GraphqlHelpers
   let(:new_epic_group) { nil }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Boards::BoardsFinder do
+RSpec.describe Boards::BoardsFinder, feature_category: :portfolio_management do
   it_behaves_like 'multiple boards list service' do
     let(:parent) { create(:project, :empty_repo) }
 

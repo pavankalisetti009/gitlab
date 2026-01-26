@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Boards::EpicBoardsFinder do
+RSpec.describe Boards::EpicBoardsFinder, feature_category: :portfolio_management do
   describe '#execute' do
     let_it_be(:parent_group) { create(:group) }
     let_it_be(:group) { create(:group, parent: parent_group) }

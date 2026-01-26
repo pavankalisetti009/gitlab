@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Boards::Lists::UpdateLimitMetrics do
+RSpec.describe Mutations::Boards::Lists::UpdateLimitMetrics, feature_category: :team_planning do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group, :private) }

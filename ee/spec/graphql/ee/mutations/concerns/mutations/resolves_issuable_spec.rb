@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::ResolvesIssuable do
+RSpec.describe Mutations::ResolvesIssuable, feature_category: :portfolio_management do
   let_it_be(:mutation_class) do
     Class.new(Mutations::BaseMutation) do
       include Mutations::ResolvesIssuable

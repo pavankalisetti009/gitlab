@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Epics::WithAccessCheck do
+RSpec.describe Epics::WithAccessCheck, feature_category: :portfolio_management do
   let_it_be(:ancestor) { create(:group) }
   let_it_be(:group) { create(:group, parent: ancestor) }
   let_it_be(:subgroup) { create(:group, parent: group) }

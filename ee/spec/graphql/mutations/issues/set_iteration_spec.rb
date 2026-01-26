@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Issues::SetIteration do
+RSpec.describe Mutations::Issues::SetIteration, feature_category: :team_planning do
   include GraphqlHelpers
   let_it_be(:cadence) { create(:iterations_cadence) }
 

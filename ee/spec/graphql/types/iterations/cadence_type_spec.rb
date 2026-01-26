@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['IterationCadence'] do
+RSpec.describe GitlabSchema.types['IterationCadence'], feature_category: :team_planning do
   let(:fields) do
     %i[id title duration_in_weeks iterations_in_advance start_date automatic active roll_over description]
   end

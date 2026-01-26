@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Boards::MilestonesFinder do
+RSpec.describe Boards::MilestonesFinder, feature_category: :portfolio_management do
   describe '#execute' do
     let(:group) { create(:group) }
     let(:nested_group) { create(:group, parent: group) }
