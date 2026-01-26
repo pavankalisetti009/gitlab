@@ -32,14 +32,6 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
       worker.perform(group.id, user.id, nil)
     end
 
-    it 'calls SyncFoundationalFlowsService for all descendant groups' do
-      expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-        .to receive(:new).with(subgroup, current_user: user)
-                         .and_return(sync_service)
-
-      worker.perform(group.id, user.id, nil)
-    end
-
     it 'calls SyncFoundationalFlowsService for all projects in the group hierarchy' do
       expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
         .to receive(:new).with(project, current_user: user)
@@ -67,7 +59,7 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
                            .and_return(seed_service)
 
         expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-          .to receive(:new).with(subgroup, current_user: nil)
+          .to receive(:new).with(group, current_user: nil)
                            .and_return(sync_service)
 
         worker.perform(group.id, nil, nil)
@@ -81,7 +73,7 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
                            .and_return(seed_service)
 
         expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-          .to receive(:new).with(subgroup, current_user: nil)
+          .to receive(:new).with(group, current_user: nil)
                            .and_return(sync_service)
 
         worker.perform(group.id, non_existing_record_id, nil)

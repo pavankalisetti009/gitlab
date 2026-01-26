@@ -39,11 +39,6 @@ module Ai
           ).execute
         end
 
-        def namespace_iterator(group)
-          cursor = { current_id: group.id, depth: [group.id] }
-          Gitlab::Database::NamespaceEachBatch.new(namespace_class: Group, cursor: cursor)
-        end
-
         def project_namespace_iterator(group)
           cursor = { current_id: group.id, depth: [group.id] }
           Gitlab::Database::NamespaceEachBatch.new(namespace_class: Namespaces::ProjectNamespace, cursor: cursor)
@@ -54,15 +49,6 @@ module Ai
             group,
             current_user: user
           ).execute
-
-          namespace_iterator(group).each_batch(of: BATCH_SIZE) do |namespace_ids|
-            Group.id_in(namespace_ids - [group.id]).each do |descendant_group|
-              ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
-                descendant_group,
-                current_user: user
-              ).execute
-            end
-          end
         end
 
         def sync_projects(group, user)
