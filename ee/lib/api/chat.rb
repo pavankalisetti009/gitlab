@@ -78,6 +78,7 @@ module API
               desc: 'Metadata of the additional context.'
           end
         end
+        route_setting :authorization, permissions: :create_chat_completion, boundary_type: :user
         post urgency: :low do # internal use only
           safe_params = declared_params(include_missing: false)
 

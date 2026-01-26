@@ -145,6 +145,12 @@ RSpec.describe API::Chat, :saas, :with_current_organization, feature_category: :
     context 'when user is logged in' do
       let(:current_user) { authorized_user }
 
+      it_behaves_like 'authorizing granular token permissions', :create_chat_completion do
+        let(:boundary_object) { :user }
+        let(:user) { authorized_user }
+        let(:request) { post api('/chat/completions', personal_access_token: pat), params: params }
+      end
+
       context 'when API feature flag is disabled' do
         before do
           stub_feature_flags(access_rest_chat: false)
