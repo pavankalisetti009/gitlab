@@ -128,6 +128,7 @@ export const initPipelinesIndexGraphql = (selector = '#pipelines-list-vue') => {
     usesExternalConfig,
     emptyStateIllustrationPath,
     pipelineEditorPath,
+    projectPipelinesEtagPath,
   } = el.dataset;
 
   return new Vue({
@@ -152,6 +153,7 @@ export const initPipelinesIndexGraphql = (selector = '#pipelines-list-vue') => {
       usesExternalConfig: parseBoolean(usesExternalConfig),
       emptyStateIllustrationPath,
       pipelineEditorPath,
+      projectPipelinesEtagPath,
     },
     created() {
       if (doesHashExistInUrl('delete_success')) {
