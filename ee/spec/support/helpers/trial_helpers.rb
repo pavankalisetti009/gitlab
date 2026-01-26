@@ -55,6 +55,23 @@ module TrialHelpers
     stub_apply_trial(user, namespace_id: group.id, success: true, extra_params: extra_params)
   end
 
+  def expect_apply_ultimate_trial_success(user, group, extra_params: {})
+    trial_user_params = {
+      namespace_id: group.id,
+      gitlab_com_trial: true,
+      sync_to_gl: true
+    }.merge(extra_params)
+
+    service_params = {
+      trial_user_information: trial_user_params,
+      uid: user.id
+    }
+
+    expect_next_instance_of(apply_trial_service_class, service_params) do |instance|
+      expect(instance).to receive(:execute).and_return(ServiceResponse.success)
+    end
+  end
+
   def expect_apply_trial_async(user, namespace: nil, extra_params: {})
     trial_user_information = extra_params.merge({
       namespace_id: be_a(Integer),

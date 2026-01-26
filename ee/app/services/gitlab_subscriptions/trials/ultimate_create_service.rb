@@ -126,10 +126,7 @@ module GitlabSubscriptions
         if result.success?
           track_event('trial_registration_success')
 
-          ServiceResponse.success(
-            message: 'Trial applied',
-            payload: { namespace: namespace, add_on_purchase: result.payload[:add_on_purchase] }
-          )
+          ServiceResponse.success(message: 'Trial applied', payload: { namespace: namespace })
         else
           track_event('trial_registration_failure')
 

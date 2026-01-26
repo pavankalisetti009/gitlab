@@ -125,7 +125,7 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
 
       expect_to_be_in_get_started
 
-      update_with_applied_trials(with_duo: false)
+      update_with_applied_trials
     end
   end
 

@@ -6,10 +6,11 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
   let_it_be(:user, reload: true) { create(:user) }
   let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
   let(:subscriptions_trials_enabled) { true }
+  let(:ultimate_trial_with_dap_enabled) { false }
 
   before do
     stub_saas_features(subscriptions_trials: subscriptions_trials_enabled, marketing_google_tag_manager: false)
-    stub_feature_flags(ultimate_trial_with_dap: false)
+    stub_feature_flags(ultimate_trial_with_dap: ultimate_trial_with_dap_enabled)
   end
 
   shared_examples 'namespace_id is passed' do
@@ -137,7 +138,8 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
     context 'when authenticated', :use_clean_rails_memory_store_caching do
       before do
         Rails.cache.write(
-          "namespaces:eligible_trials:#{group_for_trial.id}", [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE]
+          "namespaces:eligible_trials:#{group_for_trial.id}",
+          [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE, GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2]
         )
         login_as(user)
       end
@@ -168,10 +170,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
         let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
         let_it_be(:ultimate_trial_plan) { create(:ultimate_trial_plan) }
 
-        let(:add_on_purchase) do
-          build(:gitlab_subscription_add_on_purchase, expires_on: 60.days.from_now)
-        end
-
         context 'for basic success cases' do
           before do
             expect_create_success(group_for_trial)
@@ -191,18 +189,38 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
             )
             expect(flash[:success]).to have_content(message)
           end
+
+          context 'when ultimate_trial_with_dap is enabled' do
+            let(:ultimate_trial_with_dap_enabled) { true }
+
+            it 'shows valid flash message', :freeze_time do
+              post_create
+
+              message = format(
+                s_(
+                  'BillingPlans|You have successfully started a GitLab Ultimate trial that will expire on %{exp_date}.'
+                ),
+                exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+              )
+              expect(flash[:success]).to have_content(message)
+            end
+          end
         end
 
         context 'when the namespace applying is on the premium plan' do
-          let_it_be(:premium_group_for_trial) { create(:group_with_plan, plan: :premium_plan, owners: user) }
+          let_it_be(:premium_group_for_trial, reload: true) do
+            create(:group_with_plan, plan: :premium_plan, owners: user)
+          end
+
           let_it_be(:ultimate_trial_paid_customer_plan) { create(:ultimate_trial_paid_customer_plan) }
 
-          context 'when add_on_purchase exists' do
+          context 'when trial is applied' do
             before do
               Rails.cache.write_multi(
-                "namespaces:eligible_trials:#{group_for_trial.id}" => [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE],
+                "namespaces:eligible_trials:#{group_for_trial.id}" =>
+                  [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE, GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2],
                 "namespaces:eligible_trials:#{premium_group_for_trial.id}" =>
-                  [GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE]
+                  [GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE, GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE_V2]
               )
 
               expect_create_with_premium_success(premium_group_for_trial)
@@ -219,6 +237,23 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
                 exp_date: I18n.l(60.days.from_now.to_date, format: :long)
               )
               expect(flash[:success]).to have_content(message)
+            end
+
+            context 'when ultimate_trial_with_dap is enabled' do
+              let(:ultimate_trial_with_dap_enabled) { true }
+
+              it 'shows valid flash message', :freeze_time do
+                post_create
+
+                message = format(
+                  s_(
+                    'BillingPlans|You have successfully started a GitLab Ultimate trial that will ' \
+                      'expire on %{exp_date}.'
+                  ),
+                  exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+                )
+                expect(flash[:success]).to have_content(message)
+              end
             end
           end
         end
@@ -255,10 +290,10 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
 
           expect_next_instance_of(GitlabSubscriptions::Trials::UltimateCreateService, service_params) do |instance|
             expect(instance).to receive(:execute) do
-              namespace.gitlab_subscription.update!(hosted_plan: ultimate_trial_paid_customer_plan)
-            end.and_return(
-              ServiceResponse.success(payload: { namespace: namespace, add_on_purchase: add_on_purchase })
-            )
+              namespace.gitlab_subscription.update!(
+                hosted_plan: ultimate_trial_paid_customer_plan, end_date: Time.current + 60.days
+              )
+            end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
           end
         end
 
@@ -273,7 +308,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
             expect(instance).to receive(:execute) do
               update_with_applied_trials(namespace)
             end.and_return(
-              ServiceResponse.success(payload: { namespace: namespace, add_on_purchase: add_on_purchase })
+              ServiceResponse.success(payload: { namespace: namespace })
             )
           end
         end
@@ -282,6 +317,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
           namespace.gitlab_subscription.update!(
             hosted_plan: ultimate_trial_plan,
             trial: true,
+            end_date: Time.current + 60.days,
             trial_starts_on: Time.current,
             trial_ends_on: Time.current + 60.days
           )
