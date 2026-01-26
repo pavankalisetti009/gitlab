@@ -69,7 +69,7 @@ export default {
       <gl-sprintf
         :message="
           s__(
-            'MemberRole|To enhance security, we recommend enabling %{adminModeLinkStart}Admin Mode%{adminModeLinkEnd} and %{mfaLinkStart}Require administrators to enable 2FA%{mfaLinkEnd} when using custom admin roles. Enabling Admin Mode will require users to re-authenticate in GitLab before accessing the Admin area.',
+            'MemberRole|To enhance security, we recommend enabling %{adminModeLinkStart}Admin Mode%{adminModeLinkEnd} and %{mfaLinkStart}Enforce two-factor authentication for administrators%{mfaLinkEnd} when using custom admin roles. Admin Mode requires users to re-authenticate before accessing the Admin area.',
           )
         "
       >
