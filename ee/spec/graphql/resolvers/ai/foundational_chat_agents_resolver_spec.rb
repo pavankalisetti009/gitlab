@@ -211,28 +211,10 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
     end
 
     describe 'agents behind feature flags' do
-      context 'when foundational_duo_planner feature flag is disabled' do
-        before do
-          stub_feature_flags(foundational_duo_planner: false)
-        end
+      it 'includes duo_planner agent' do
+        agent_references = resolved.map(&:reference)
 
-        it 'filters out duo_planner agent' do
-          agent_references = resolved.map(&:reference)
-
-          expect(agent_references).not_to include('duo_planner')
-        end
-      end
-
-      context 'when foundational_duo_planner feature flag is enabled' do
-        before do
-          stub_feature_flags(foundational_duo_planner: true)
-        end
-
-        it 'includes duo_planner agent' do
-          agent_references = resolved.map(&:reference)
-
-          expect(agent_references).to include('duo_planner')
-        end
+        expect(agent_references).to include('duo_planner')
       end
 
       context 'when foundational_analytics_agent feature flag is disabled' do

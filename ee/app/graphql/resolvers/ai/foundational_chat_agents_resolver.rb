@@ -28,7 +28,6 @@ module Resolvers
                          end
 
         filtered_agents = []
-        filtered_agents << 'duo_planner' if Feature.disabled?(:foundational_duo_planner, current_user)
         filtered_agents << 'analytics_agent' if Feature.disabled?(:foundational_analytics_agent, current_user)
 
         enabled_agents
