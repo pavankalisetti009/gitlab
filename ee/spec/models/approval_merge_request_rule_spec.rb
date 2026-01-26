@@ -54,7 +54,7 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
     end
 
     context 'for report type different than scan_finding' do
-      it 'is invalid when name not unique within rule type,  merge request and applicable_post_merge' do
+      it 'is invalid when name not unique within rule type, merge request and applicable_post_merge' do
         is_expected.to validate_uniqueness_of(:name).scoped_to([:merge_request_id, :rule_type, :section, :applicable_post_merge])
       end
     end

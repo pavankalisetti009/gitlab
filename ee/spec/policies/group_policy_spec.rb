@@ -3629,7 +3629,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           end
         end
 
-        context 'when application setting allow_top_level_group_owners_to_create_service_accounts is enabled ' do
+        context 'when application setting allow_top_level_group_owners_to_create_service_accounts is enabled' do
           before do
             stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
           end

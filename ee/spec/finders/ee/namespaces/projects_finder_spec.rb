@@ -101,7 +101,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
           end
         end
 
-        context 'when compliance_framework_id is nil ' do
+        context 'when compliance_framework_id is nil' do
           let(:framework_id) { nil }
 
           # Issue https://gitlab.com/gitlab-org/gitlab/-/issues/478560 for fixing multiple projects
@@ -141,7 +141,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
           end
         end
 
-        context 'when compliance_framework_id is nil ' do
+        context 'when compliance_framework_id is nil' do
           let(:framework_id) { nil }
 
           it 'returns all projects' do

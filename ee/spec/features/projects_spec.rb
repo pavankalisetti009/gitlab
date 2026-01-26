@@ -109,7 +109,7 @@ RSpec.describe 'Project', :js, :with_current_organization, feature_category: :gr
       end
     end
 
-    context 'when storage is under the notification limit ' do
+    context 'when storage is under the notification limit' do
       before do
         set_notification_limit(group, megabytes: 10_000)
       end

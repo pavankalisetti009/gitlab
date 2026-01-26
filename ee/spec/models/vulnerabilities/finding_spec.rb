@@ -301,7 +301,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
           end
 
           context 'when value of diff field is invalid' do
-            context 'when before field is missing ' do
+            context 'when before field is missing' do
               let(:details) do
                 {
                   "diff example": {
@@ -315,7 +315,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
               it { is_expected.to be_invalid }
             end
 
-            context 'when after field is missing ' do
+            context 'when after field is missing' do
               let(:details) do
                 {
                   "diff example": {
@@ -331,7 +331,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
           end
 
           context 'when value of file-location field is invalid' do
-            context 'when file_name field is missing ' do
+            context 'when file_name field is missing' do
               let(:details) do
                 {
                   "file" => {
@@ -344,7 +344,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
               it { is_expected.to be_invalid }
             end
 
-            context 'when line_start field is missing ' do
+            context 'when line_start field is missing' do
               let(:details) do
                 {
                   "file" => {
@@ -357,7 +357,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
               it { is_expected.to be_invalid }
             end
 
-            context 'when line_start field has wrong type ' do
+            context 'when line_start field has wrong type' do
               let(:details) do
                 {
                   "file" => {

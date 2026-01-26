@@ -4615,7 +4615,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when merge request branch is non applicable ' do
+    context 'when merge request branch is non applicable' do
       let(:status_check) { create(:external_status_check, project: project, protected_branches: []) }
 
       before do

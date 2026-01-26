@@ -410,7 +410,7 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
   end
 
   describe 'GET /api/users?auditors=true' do
-    context 'querying users who are auditors ' do
+    context 'querying users who are auditors' do
       before do
         stub_licensed_features(auditor_user: true)
       end

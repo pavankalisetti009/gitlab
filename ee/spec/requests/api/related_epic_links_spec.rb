@@ -60,7 +60,7 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
         it { is_expected.to eq(403) }
       end
 
-      context 'when related_epics feature is not available ' do
+      context 'when related_epics feature is not available' do
         before do
           stub_licensed_features(epics: true, related_epics: false)
         end

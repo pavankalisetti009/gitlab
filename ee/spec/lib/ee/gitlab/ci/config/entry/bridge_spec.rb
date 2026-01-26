@@ -147,7 +147,7 @@ RSpec.describe Gitlab::Ci::Config::Entry::Bridge, feature_category: :pipeline_co
       end
     end
 
-    context 'when bridge has bridge and cross projects dependencies ' do
+    context 'when bridge has bridge and cross projects dependencies' do
       let(:config) do
         {
           trigger: 'other-project',

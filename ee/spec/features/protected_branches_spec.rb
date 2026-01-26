@@ -163,7 +163,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
           end
         end
 
-        context 'has a protected branch with code owner approval toggled off ' do
+        context 'has a protected branch with code owner approval toggled off' do
           let!(:protected_branch) { create(:protected_branch, project: project, code_owner_approval_required: false) }
 
           it 'displays toggle off' do

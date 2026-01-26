@@ -128,7 +128,7 @@ RSpec.describe Gitlab::Checks::Integrations::GitGuardianCheck, feature_category:
               expect { git_guardian_check.validate! }.not_to raise_error
             end
 
-            it 'does not raise an error  when the flag is skip secret push protection' do
+            it 'does not raise an error when the flag is skip secret push protection' do
               expect(::Gitlab::GitGuardian::Client).not_to receive(:new)
 
               allow(changes_access.commits.first).to receive(:safe_message).and_return(

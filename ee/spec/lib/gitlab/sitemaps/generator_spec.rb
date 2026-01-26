@@ -29,7 +29,7 @@ RSpec.describe Gitlab::Sitemaps::Generator do
         end
       end
 
-      context 'and it is public ' do
+      context 'and it is public' do
         let_it_be(:gitlab_org_group) { create(:group, :public, path: 'gitlab-org', name: "Gitlab Org Group") }
         let_it_be(:public_gitlab_org_project) { create(:project, :public, namespace: gitlab_org_group) }
         let_it_be(:internal_gitlab_org_project) { create(:project, :internal, namespace: gitlab_org_group) }
