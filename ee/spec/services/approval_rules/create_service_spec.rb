@@ -11,7 +11,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
     let(:new_approvers) { create_list(:user, 2) }
     let(:new_groups) { create_list(:group, 2, :private) }
 
-    context 'basic creation action' do
+    context 'for basic creation action' do
       let(:result) do
         described_class.new(target, user, {
           name: 'security',
@@ -121,7 +121,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
         expect(result[:message]).to include('Prohibited')
       end
 
-      context 'but skip_authorization is true' do
+      context 'when skip_authorization is true' do
         it 'does not return error message' do
           result = described_class.new(target, user, {
             approvals_required: 1,
@@ -168,7 +168,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
         expect(result[:status]).to eq(:success)
       end
 
-      context 'validation failure' do
+      context 'when validation fails' do
         let_it_be(:name) { nil }
 
         it 'returns error message' do
@@ -194,7 +194,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
         target.approval_rules.create!(rule_type: :any_approver, name: 'All members')
       end
 
-      context 'multiple approval rules are not enabled' do
+      context 'when multiple approval rules are not enabled' do
         subject { described_class.new(target, user, { user_ids: [1], group_ids: [] }) }
 
         it 'removes the rule if a regular one is created' do
@@ -204,7 +204,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
         end
       end
 
-      context 'multiple approval rules are enabled' do
+      context 'when multiple approval rules are enabled' do
         subject { described_class.new(target, user, { user_ids: [1], group_ids: [] }) }
 
         before do
@@ -354,7 +354,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
           expect(subject[:rule].protected_branches).to eq([protected_branch])
         end
 
-        context 'but user cannot administer project' do
+        context 'when user cannot administer project' do
           before do
             allow(Ability).to receive(:allowed?).and_call_original
             allow(Ability).to receive(:allowed?).with(user, :admin_project, target).and_return(false)
@@ -366,7 +366,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
           end
         end
 
-        context 'but skip_authorization param is true' do
+        context 'when skip_authorization param is true' do
           let(:skip_authorization) { true }
 
           before do
@@ -380,7 +380,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
           end
         end
 
-        context 'but protected branch is for another project' do
+        context 'when protected branch is for another project' do
           let(:another_project) { create(:project) }
           let(:protected_branch) { create(:protected_branch, project: another_project) }
 
@@ -565,7 +565,7 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
     end
   end
 
-  context 'audit event is streamed with correct event type', :request_store do
+  context 'when audit event is streamed with correct event type', :request_store do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, creator: user, group: group) }
