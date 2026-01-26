@@ -3,14 +3,13 @@ stage: AI-powered
 group: Code Creation
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: Customize instructions for AI to use in merge request reviews.
-title: Customize review instructions for GitLab Duo
+title: Customize review instructions for the Agent Platform
 ---
 
 {{< details >}}
 
 - Tier: Premium, Ultimate
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
-- Add-on: GitLab Duo Enterprise
 
 {{< /details >}}
 
@@ -31,7 +30,7 @@ conventions on Go files.
 GitLab Duo appends your custom review instructions to its standard review criteria,
 instead of replacing them.
 
-GitLab Duo Code Review (Classic) supports custom review instructions.
+Code Review Flow supports custom review instructions.
 
 ## Configure custom review instructions
 
@@ -39,6 +38,17 @@ To configure custom merge request review instructions:
 
 1. In the root of your repository, create a `.gitlab/duo` directory if one doesn't already exist.
 1. In the `.gitlab/duo` directory, create a file named `mr-review-instructions.yaml`.
+1. Optional. Ask [GitLab Duo Chat (Agentic)](../../gitlab_duo_chat/agentic_chat.md)
+   to analyze the codebase and documentation, and generate custom review instructions.
+
+   Example prompt:
+
+   ```plaintext
+   I need to create custom rules for GitLab Duo Code Review. When you look at the source code,
+   which languages are missing and need to be added to the mr-review-instructions.yaml
+   file?
+   ```
+
 1. Add your custom instructions using the following format:
 
    ```yaml
@@ -693,5 +703,3 @@ For more custom review instructions use cases, see the following production exam
 ## Related topics
 
 - [GitLab Duo in merge requests](../../project/merge_requests/duo_in_merge_requests.md)
-- [Code Review Flow](../../duo_agent_platform/flows/foundational_flows/code_review.md)
-- [GitLab Duo Code Review (Classic)](../../gitlab_duo/code_review_classic.md)
