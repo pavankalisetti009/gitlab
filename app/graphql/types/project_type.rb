@@ -797,7 +797,8 @@ module Types
       description: "Branch rules configured for the project.",
       resolver: Resolvers::Projects::BranchRulesResolver,
       connection_extension: Gitlab::Graphql::Extensions::ForwardOnlyExternallyPaginatedArrayExtension,
-      max_page_size: 100
+      max_page_size: 100,
+      calls_gitaly: true
 
     field :languages, [Types::Projects::RepositoryLanguageType],
       null: true,
