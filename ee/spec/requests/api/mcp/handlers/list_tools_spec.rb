@@ -37,10 +37,13 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
     it 'returns tools' do
       post_list_tools
 
+      expected_icons = [Mcp::Tools::IconConfig.gitlab_icons.first.stringify_keys]
+
       expect(json_response['result']['tools']).to contain_exactly(
         {
           "name" => "get_pipeline_jobs",
           "description" => "Get pipeline jobs",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -68,6 +71,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "get_issue",
           "description" => "Get a single project issue",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -87,6 +91,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "create_issue",
           "description" => "Create a new project issue",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -133,6 +138,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "create_merge_request",
           "description" => "Create merge request",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -174,6 +180,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "get_merge_request",
           "description" => "Get single merge request",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -193,6 +200,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "get_merge_request_commits",
           "description" => "Get single merge request commits",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -220,6 +228,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "get_merge_request_diffs",
           "description" => "Get the merge request diffs",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -247,6 +256,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "get_merge_request_pipelines",
           "description" => "Get single merge request pipelines",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -264,6 +274,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           }
         },
         { "name" => "search",
+          "icons" => expected_icons,
           "description" => "" \
             "Search across GitLab with automatic selection of the best available search method.\n\n" \
             "**Capabilities:** basic (keywords, file filters)\n\n**Syntax Examples:**\n" \
@@ -325,6 +336,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "get_mcp_server_version",
           "description" => "Get the current version of MCP server.",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {},
@@ -334,6 +346,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "create_workitem_note",
           "description" => "Create a new note (comment) on a GitLab work item",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -376,6 +389,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "get_workitem_notes",
           "description" => "Get all comments (notes) for a specific work item",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -421,6 +435,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         {
           "name" => "search_labels",
           "description" => "Search labels in a GitLab project or group",
+          "icons" => expected_icons,
           "inputSchema" => {
             "type" => "object",
             "properties" => {
@@ -484,10 +499,13 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           - Ranked snippets with file paths and the matched content for each hit
         DESC
 
+        expected_icons = [Mcp::Tools::IconConfig.gitlab_icons.first.stringify_keys]
+
         expect(semantic_code_search).to eq(
           {
             "name" => "semantic_code_search",
             "description" => tool_description,
+            "icons" => expected_icons,
             "inputSchema" => {
               "type" => "object",
               "properties" => {
