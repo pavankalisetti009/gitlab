@@ -59,14 +59,43 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
             it 'does not remove the owner' do
               expect { perform_work }.not_to change { Members::DeletionSchedule.count }
             end
+
+            it 'logs deactivation skip reason' do
+              allow(Gitlab::AppLogger).to receive(:info).and_call_original
+
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                message: 'User deactivation skipped',
+                reason: 'is_owner',
+                user_id: dormant_assignment.user.id,
+                namespace_id: group.id
+              )
+
+              perform_work
+            end
           end
 
           context 'when the dormant member is a bot' do
-            it 'does not remove the bot' do
-              bot_user = create(:user, :project_bot)
-              dormant_assignment.update!(user: bot_user)
+            let_it_be(:bot_user) { create(:user, :project_bot) }
 
+            before_all do
+              dormant_assignment.update!(user: bot_user)
+            end
+
+            it 'does not remove the bot' do
               expect { perform_work }.not_to change { Members::DeletionSchedule.count }
+            end
+
+            it 'logs deactivation skip reason' do
+              allow(Gitlab::AppLogger).to receive(:info).and_call_original
+
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                message: 'User deactivation skipped',
+                reason: 'bot_user',
+                user_id: dormant_assignment.user.id,
+                namespace_id: group.id
+              )
+
+              perform_work
             end
           end
 
@@ -77,6 +106,19 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
 
             it 'does not remove the user' do
               expect { perform_work }.not_to change { Members::DeletionSchedule.count }
+            end
+
+            it 'logs deactivation skip reason' do
+              allow(Gitlab::AppLogger).to receive(:info).and_call_original
+
+              expect(Gitlab::AppLogger).to receive(:info).with(
+                message: 'User deactivation skipped',
+                reason: 'deactivated_user',
+                user_id: dormant_assignment.user.id,
+                namespace_id: group.id
+              )
+
+              perform_work
             end
           end
         end
