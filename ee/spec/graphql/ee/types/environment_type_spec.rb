@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Environment'] do
+RSpec.describe GitlabSchema.types['Environment'], feature_category: :environment_management do
   it 'includes the expected fields' do
     expected_fields = %w[protectedEnvironments]
 
