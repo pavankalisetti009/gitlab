@@ -3327,6 +3327,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: sbom_process_group_archived_events
+  :worker_name: Sbom::ProcessGroupArchivedEventsWorker
+  :feature_category: :dependency_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: sbom_process_transfer_events
   :worker_name: Sbom::ProcessTransferEventsWorker
   :feature_category: :dependency_management

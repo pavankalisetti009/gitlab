@@ -32,7 +32,7 @@ module Sbom
 
     def update_archived_status
       project.sbom_occurrences.each_batch(of: BATCH_SIZE) do |batch|
-        batch.update_all(archived: project.archived)
+        batch.update_all(archived: project.self_or_ancestors_archived?)
       end
     end
 
