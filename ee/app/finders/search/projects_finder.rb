@@ -32,11 +32,7 @@ module Search
     attr_reader :user
 
     def group_membership_source_ids
-      if Feature.enabled?(:search_projects_finder_group_auth_fix, user)
-        user.authorized_groups(include_project_authorizations: false).select(:id)
-      else
-        user.group_members.active.select(:source_id)
-      end
+      user.authorized_groups(include_project_authorizations: false).select(:id)
     end
 
     def project_membership_source_ids
