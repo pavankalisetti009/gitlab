@@ -71,16 +71,6 @@ export default {
       type: Object,
       required: true,
     },
-    isAgentsAvailable: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    isFlowsAvailable: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
     hasParentConsumer: {
       type: Boolean,
       required: false,
@@ -164,16 +154,8 @@ export default {
     showDropdown() {
       return this.canAdmin || this.canAdminConsumer || this.showDuplicate || this.canReport;
     },
-    showAddToProject() {
-      return this.canUse && this.isGlobal && !this.item.foundational;
-    },
     showAddToGroup() {
-      return (
-        this.canUse &&
-        this.isGlobal &&
-        (this.isFlowsAvailable || this.isAgentsAvailable) &&
-        !this.item.foundational
-      );
+      return this.canUse && this.isGlobal && !this.item.foundational;
     },
     duplicateItemProps() {
       return {
@@ -304,16 +286,6 @@ export default {
       @click="onClickEnable"
     >
       {{ s__('AICatalog|Enable in group') }}
-    </gl-button>
-    <gl-button
-      v-else-if="showAddToProject"
-      v-gl-modal="'enable-item-modal'"
-      variant="confirm"
-      category="primary"
-      data-testid="add-to-project-button"
-      @click="onClickEnable"
-    >
-      {{ s__('AICatalog|Enable in project') }}
     </gl-button>
     <span
       v-else-if="showEnable"

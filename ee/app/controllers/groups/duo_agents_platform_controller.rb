@@ -8,7 +8,6 @@ module Groups
     before_action :ensure_root_group
     before_action :check_access
     before_action do
-      push_frontend_feature_flag(:ai_catalog_agents, current_user)
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
       push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
       push_frontend_ability(ability: :read_ai_catalog_flow, resource: group, user: current_user)
@@ -38,8 +37,7 @@ module Groups
     def authorized_for_route?
       case duo_agents_platform_params[:vueroute]
       when 'agents'
-        Feature.enabled?(:global_ai_catalog, current_user) &&
-          Feature.enabled?(:ai_catalog_agents, current_user)
+        Feature.enabled?(:global_ai_catalog, current_user)
       when 'flows'
         current_user.can?(:read_ai_catalog_flow, group) ||
           current_user.can?(:read_foundational_flow, group)

@@ -316,7 +316,6 @@ export default {
           v-if="showActions"
           :item="aiCatalogFlow"
           :item-routes="$options.itemRoutes"
-          :is-flows-available="true"
           :has-parent-consumer="hasParentConsumer"
           :disable-fn="disableFlow"
           :delete-fn="deleteFlow"

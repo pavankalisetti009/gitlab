@@ -283,16 +283,6 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       let(:item) { agent_item }
 
       it_behaves_like 'a failure', "Project item must have a parent item consumer"
-
-      context 'when ai_catalog_agents flag is disabled' do
-        before do
-          stub_feature_flags(ai_catalog_agents: false)
-        end
-
-        it 'creates the item consumer' do
-          expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
-        end
-      end
     end
   end
 
@@ -865,14 +855,6 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     context 'when item has no latest_released_version' do
       let_it_be(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
       let_it_be(:parent_item_consumer) { create(:ai_catalog_item_consumer, item: item, group: consumer_group) }
-
-      context 'when ai_catalog_agents flag is disabled' do
-        before do
-          stub_feature_flags(ai_catalog_agents: false)
-        end
-
-        it_behaves_like 'a failure', 'Item has no latest released version to pin to'
-      end
 
       it_behaves_like 'a failure', 'Parent item consumer has no pinned version prefix'
 

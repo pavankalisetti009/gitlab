@@ -28,7 +28,6 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
         it 'pushes feature flags to frontend' do
           get project_automate_agent_sessions_path(project)
 
-          expect(response.body).to include('aiCatalogAgents')
           expect(response.body).to include('aiCatalogFlows')
           expect(response.body).to include('aiCatalogThirdPartyFlows')
           expect(response.body).to include('gon.ai_duo_agent_platform_ga_rollout')

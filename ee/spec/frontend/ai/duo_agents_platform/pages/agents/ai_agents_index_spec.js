@@ -83,7 +83,6 @@ describe('AiAgentsIndex', () => {
         rootGroupId: mockRootGroupId,
         glFeatures: {
           aiCatalogThirdPartyFlows: true,
-          aiCatalogAgents: true,
         },
         ...provide,
       },

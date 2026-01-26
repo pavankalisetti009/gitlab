@@ -163,16 +163,6 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     end
 
     it_behaves_like 'a successful request', pinned_version_prefix: '3.2.1'
-
-    context 'when ai_catalog_agents feature flag is disabled' do
-      before do
-        stub_feature_flags(ai_catalog_agents: false)
-      end
-
-      let(:params) { super().except(:parent_item_consumer_id) }
-
-      it_behaves_like 'a successful request', pinned_version_prefix: '3.2.1'
-    end
   end
 
   context 'when global_ai_catalog feature flag is disabled' do
