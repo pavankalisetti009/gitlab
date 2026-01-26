@@ -94,7 +94,6 @@ export default {
         ),
         s__("AICatalog|Can't be enabled in other projects."),
         s__("AICatalog|Can't be shared, even within your organization."),
-        s__("AICatalog|Can't be made public if enabled in a project."),
       ],
     },
     {
@@ -112,6 +111,7 @@ export default {
       items: [
         s__('AICatalog|Is visible to all users.'),
         s__('AICatalog|Can be enabled in other projects.'),
+        s__("AICatalog|Can't be made private if enabled in a project."),
       ],
     },
     {
