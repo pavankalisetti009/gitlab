@@ -334,7 +334,7 @@ To subscribe to notifications for releases:
 1. Select **Notification setting** (the bell icon).
 1. In the list, select **Custom**.
 1. Select the **New release** checkbox.
-1. Close the dialog box to save.
+1. Close the dialog to save.
 
 ## Prevent unintentional releases by setting a deploy freeze
 
