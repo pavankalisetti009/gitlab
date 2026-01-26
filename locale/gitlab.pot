@@ -75446,6 +75446,9 @@ msgstr ""
 msgid "VirtualRegistry|Failed to delete cache entry."
 msgstr ""
 
+msgid "VirtualRegistry|Failed to delete registry. Please try again."
+msgstr ""
+
 msgid "VirtualRegistry|Failed to fetch cache entries count."
 msgstr ""
 
@@ -75704,6 +75707,9 @@ msgid "VirtualRegistry|Virtual registry ID copied to clipboard."
 msgstr ""
 
 msgid "VirtualRegistry|Virtual registry cache cleanup policy"
+msgstr ""
+
+msgid "VirtualRegistry|Virtual registry deleted successfully."
 msgstr ""
 
 msgid "VirtualRegistry|When you enable this feature, you accept the %{linkStart}GitLab Testing Agreement.%{linkEnd}"
