@@ -9,11 +9,11 @@ module Mutations
 
         argument :ai_gateway_url, String,
           required: false,
-          description: 'URL for local AI gateway server.'
+          description: 'URL for the local AI Gateway server.'
 
         argument :ai_gateway_timeout_seconds, GraphQL::Types::Int,
           required: false,
-          description: "Timeout for AI gateway request."
+          description: "Timeout for the AI Gateway request."
 
         argument :duo_agent_platform_service_url, String,
           required: false,
