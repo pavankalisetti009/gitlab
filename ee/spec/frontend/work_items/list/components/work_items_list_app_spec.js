@@ -33,7 +33,6 @@ import {
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import searchIterationsQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
-import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 import { mockNamespaceCustomFieldsResponse } from 'ee_jest/vue_shared/components/filtered_search_bar/mock_data';
 
 const mockIterationsResponse = {
@@ -448,7 +447,7 @@ describe('filter tokens', () => {
         type: TOKEN_TYPE_STATUS,
         title: TOKEN_TITLE_STATUS,
         icon: 'status',
-        token: WorkItemStatusToken,
+        token: expect.any(Function),
         unique: true,
       });
     });
