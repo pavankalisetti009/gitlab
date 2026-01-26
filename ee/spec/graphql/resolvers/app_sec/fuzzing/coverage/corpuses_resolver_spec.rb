@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::AppSec::Fuzzing::Coverage::CorpusesResolver do
+RSpec.describe Resolvers::AppSec::Fuzzing::Coverage::CorpusesResolver, feature_category: :fuzz_testing do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }

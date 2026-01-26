@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe AppSec::Fuzzing::Coverage::CorpusesFinder do
+RSpec.describe AppSec::Fuzzing::Coverage::CorpusesFinder, feature_category: :fuzz_testing do
   let_it_be(:corpus1) { create(:corpus) }
   let_it_be(:corpus2) { create(:corpus, project: corpus1.project, user: corpus1.user) }
   let_it_be(:corpus3) { create(:corpus) }
