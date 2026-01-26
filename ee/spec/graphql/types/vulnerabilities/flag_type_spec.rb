@@ -11,6 +11,12 @@ RSpec.describe ::Types::Vulnerabilities::FlagType, feature_category: :vulnerabil
 
   it { expect(described_class).to require_graphql_authorizations(:read_vulnerability) }
 
+  describe '.authorization_scopes' do
+    it 'includes :ai_workflows' do
+      expect(described_class.authorization_scopes).to include(:ai_workflows)
+    end
+  end
+
   describe 'field types' do
     specify { expect(described_class.fields['confidenceScore']).to have_graphql_type(GraphQL::Types::Float) }
     specify { expect(described_class.fields['createdAt']).to have_graphql_type(Types::TimeType, null: false) }
