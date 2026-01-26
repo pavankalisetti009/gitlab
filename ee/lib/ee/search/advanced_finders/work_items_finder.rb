@@ -41,6 +41,8 @@ module EE
   module Search
     module AdvancedFinders
       module WorkItemsFinder
+        include ::Gitlab::Utils::StrongMemoize
+
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
 
@@ -324,12 +326,17 @@ module EE
         def type_ids_from(type_names)
           return all_work_item_type_ids unless type_names.present?
 
-          Array(type_names).filter_map { |type| ::WorkItems::Type::BASE_TYPES.dig(type.to_sym, :id) }
+          types_provider.by_base_types(Array(type_names)).map(&:id)
         end
 
         def all_work_item_type_ids
-          ::WorkItems::Type::BASE_TYPES.values.filter_map { |v| v[:id] }
+          types_provider.all.map(&:id)
         end
+
+        def types_provider
+          ::WorkItems::TypesFramework::Provider.new(resource_parent)
+        end
+        strong_memoize_attr :types_provider
 
         def upcoming_milestone?
           params[:milestone_wildcard_id].to_s.downcase == FILTER_MILESTONE_UPCOMING

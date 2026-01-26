@@ -24,7 +24,7 @@ module Gitlab
         end
 
         def extract
-          work_item_type = ::WorkItems::Type.default_by_type(:epic)
+          work_item_type = ::WorkItems::TypesFramework::Provider.new.find_by_base_type(:epic)
 
           MAPPED_WIDGET_PARAMS.each do |widget_name, widget_param_keys|
             params_for_widget = params.extract!(*widget_param_keys)

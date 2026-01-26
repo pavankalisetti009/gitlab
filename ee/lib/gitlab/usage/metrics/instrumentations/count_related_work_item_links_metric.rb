@@ -29,7 +29,7 @@ module Gitlab
           private
 
           def target_type
-            ::WorkItems::Type.default_by_type(options[:target_type])
+            ::WorkItems::TypesFramework::Provider.new.find_by_base_type(options[:target_type])
           end
         end
       end

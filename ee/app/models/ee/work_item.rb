@@ -88,7 +88,7 @@ module EE
         return super unless work_item.epic_work_item? && !work_item.namespace.licensed_feature_available?(:subepics)
 
         non_epic_children = work_item.work_item_children.where.not(
-          work_item_type_id: ::WorkItems::Type.default_by_type(:epic).id
+          work_item_type_id: ::WorkItems::TypesFramework::Provider.new(work_item.namespace).find_by_base_type(:epic).id
         )
         keyset_order = ::WorkItem.work_item_children_keyset_order_config
 
@@ -191,7 +191,8 @@ module EE
     end
 
     def previous_type_was_epic?
-      changes["work_item_type_id"].first == ::WorkItems::Type.default_by_type(:epic).id
+      provider = ::WorkItems::TypesFramework::Provider.new(namespace)
+      changes["work_item_type_id"].first == provider.find_by_base_type(:epic).id
     end
 
     override :validate_due_date?
