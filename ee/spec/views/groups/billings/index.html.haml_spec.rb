@@ -13,6 +13,7 @@ RSpec.describe 'groups/billings/index', :with_trial_types, :saas, :aggregate_fai
   before do
     stub_signing_key
     allow(view).to receive(:current_user).and_return(user)
+    allow(view).to receive(:targeted_message_data).and_return("{}")
     assign(:group, group)
     assign(:plans_data, plans_data)
   end

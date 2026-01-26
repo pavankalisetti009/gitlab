@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'targeted message interactions' do
+  let_it_be(:targeted_message) { create(:targeted_message) }
+
   before do
-    create(:targeted_message_namespace, namespace: group)
+    create(:targeted_message_namespace, namespace: group, targeted_message: targeted_message)
     sign_in(user)
   end
 
@@ -17,16 +19,6 @@ RSpec.shared_examples 'targeted message interactions' do
     visit path
 
     expect(page).to have_content("Get access to Premium + GitLab Duo for")
-  end
-
-  it 'dismisses when closed', :with_trial_types do
-    visit path
-
-    expect(page).to have_content("Get access to Premium + GitLab Duo for")
-
-    find_by_testid('targeted_message_close_button').click
-
-    expect(page).not_to have_content("Get access to Premium + GitLab Duo for")
   end
 
   context 'with disabled targeted message', :with_trial_types do

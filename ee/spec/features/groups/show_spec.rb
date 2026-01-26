@@ -24,12 +24,4 @@ RSpec.describe 'Group show page', :with_trial_types, :js, :saas, feature_categor
       expect(popover_element.text).to include('This group and all its related projects use the Free GitLab tier.')
     end
   end
-
-  context 'with targeted messages' do
-    let_it_be(:non_owner) { create(:user) }
-
-    it_behaves_like 'targeted message interactions' do
-      let(:path) { group_path(group) }
-    end
-  end
 end

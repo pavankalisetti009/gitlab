@@ -1,5 +1,5 @@
 .gl-max-w-6xl.gl-mx-auto{ data: { track_action: 'render' } }
-  = render 'shared/targeted_message_banner', group: namespace
+  #js-targeted-message-banner{ "data-provide": { namespaceFullPath: namespace.full_path }.to_json }
   #js-free-trial-plan-billing{ "data-view-model": free_trial_plan_billing_attributes(namespace, plans_data).to_json }
 
 .gl-mt-8.gl-text-center
