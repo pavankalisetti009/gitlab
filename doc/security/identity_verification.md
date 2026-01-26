@@ -30,6 +30,9 @@ three stages of verification to register an account:
 
 Users created after signing in with [SAML SSO for GitLab.com groups](../user/group/saml_sso/_index.md) are exempt from identity verification.
 
+If you encounter identity verification errors when running CI/CD pipelines,
+see [debugging pipeline errors](../ci/debugging.md#error-identity-verification-is-required-in-order-to-run-ci-jobs).
+
 ## Email verification
 
 To register an account, you must provide a valid email address.
