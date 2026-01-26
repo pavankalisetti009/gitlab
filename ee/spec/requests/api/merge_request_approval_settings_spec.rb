@@ -311,6 +311,43 @@ RSpec.describe API::MergeRequestApprovalSettings, feature_category: :source_code
       expect(response).to match_response_schema('public_api/v4/group_merge_request_approval_settings', dir: 'ee')
     end
 
+    describe 'preserving unspecified settings' do
+      before do
+        project.update!(
+          merge_requests_author_approval: false,
+          merge_requests_disable_committers_approval: false,
+          disable_overriding_approvers_per_merge_request: false,
+          reset_approvals_on_push: false,
+          require_password_to_approve: true
+        )
+      end
+
+      it 'does not reset unspecified boolean settings to false', :aggregate_failures do
+        put api(url, user), params: { allow_author_approval: true }
+
+        expect(response).to have_gitlab_http_status(:ok)
+
+        project.reload
+
+        expect(project.merge_requests_author_approval).to be true
+        expect(project.merge_requests_disable_committers_approval).to be false
+        expect(project.disable_overriding_approvers_per_merge_request).to be false
+        expect(project.reset_approvals_on_push).to be false
+        expect(project.require_password_to_approve).to be true
+      end
+
+      it 'preserves project_setting attributes when not specified', :aggregate_failures do
+        project.project_setting.update!(require_reauthentication_to_approve: true)
+
+        put api(url, user), params: { allow_author_approval: true }
+
+        expect(response).to have_gitlab_http_status(:ok)
+
+        project.project_setting.reload
+        expect(project.project_setting.require_reauthentication_to_approve).to be true
+      end
+    end
+
     it_behaves_like "authorizing granular token permissions", :update_merge_request_approval_setting do
       let(:boundary_object) { project }
       let(:request) do

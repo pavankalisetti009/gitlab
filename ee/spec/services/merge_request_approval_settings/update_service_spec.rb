@@ -50,6 +50,91 @@ RSpec.describe MergeRequestApprovalSettings::UpdateService, feature_category: :c
         expect(project.reload.merge_requests_author_approval).to be(false)
       end
 
+      describe 'preserving unspecified settings' do
+        before do
+          project.update!(
+            merge_requests_author_approval: false,
+            merge_requests_disable_committers_approval: false,
+            disable_overriding_approvers_per_merge_request: false,
+            reset_approvals_on_push: false,
+            require_password_to_approve: true
+          )
+          project.project_setting.update!(require_reauthentication_to_approve: true)
+        end
+
+        context 'when updating only allow_author_approval' do
+          let(:params) { { allow_author_approval: true } }
+
+          it 'updates only the specified setting and preserves others', :aggregate_failures do
+            subject.execute
+
+            updated_project = Project.find(project.id)
+            expect(updated_project.merge_requests_author_approval).to be(true)
+            expect(updated_project.merge_requests_disable_committers_approval).to be(false)
+            expect(updated_project.disable_overriding_approvers_per_merge_request).to be(false)
+            expect(updated_project.reset_approvals_on_push).to be(false)
+            expect(updated_project.require_password_to_approve).to be(true)
+            expect(updated_project.project_setting.require_reauthentication_to_approve).to be(true)
+          end
+        end
+
+        context 'when updating only allow_committer_approval' do
+          let(:params) { { allow_committer_approval: false } }
+
+          it 'updates only the specified setting and preserves others', :aggregate_failures do
+            subject.execute
+
+            updated_project = Project.find(project.id)
+            expect(updated_project.merge_requests_disable_committers_approval).to be(true)
+            expect(updated_project.merge_requests_author_approval).to be(false)
+            expect(updated_project.disable_overriding_approvers_per_merge_request).to be(false)
+            expect(updated_project.reset_approvals_on_push).to be(false)
+          end
+        end
+
+        context 'when updating only retain_approvals_on_push' do
+          let(:params) { { retain_approvals_on_push: false } }
+
+          it 'updates only the specified setting and preserves others', :aggregate_failures do
+            subject.execute
+
+            updated_project = Project.find(project.id)
+            expect(updated_project.reset_approvals_on_push).to be(true)
+            expect(updated_project.merge_requests_author_approval).to be(false)
+            expect(updated_project.merge_requests_disable_committers_approval).to be(false)
+            expect(updated_project.disable_overriding_approvers_per_merge_request).to be(false)
+          end
+        end
+
+        context 'when updating only project_setting attributes' do
+          let(:params) { { require_reauthentication_to_approve: false } }
+
+          it 'updates only the specified setting and preserves others', :aggregate_failures do
+            subject.execute
+
+            updated_project = Project.find(project.id)
+            expect(updated_project.project_setting.require_reauthentication_to_approve).to be(false)
+            expect(updated_project.merge_requests_author_approval).to be(false)
+          end
+        end
+
+        context 'when updating only allow_author_approval with selective_code_owner_removals enabled' do
+          let(:params) { { allow_author_approval: true } }
+
+          before do
+            project.project_setting.update!(selective_code_owner_removals: true)
+          end
+
+          it 'preserves selective_code_owner_removals setting', :aggregate_failures do
+            subject.execute
+
+            updated_project = Project.find(project.id)
+            expect(updated_project.merge_requests_author_approval).to be(true)
+            expect(updated_project.project_setting.selective_code_owner_removals).to be(true)
+          end
+        end
+      end
+
       context 'run_compliance_standard_checks' do
         let(:params) { { allow_author_approval: false, allow_committer_approval: false } }
 
