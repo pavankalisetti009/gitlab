@@ -68,10 +68,7 @@ module GitlabSubscriptions
     def authenticate_user!
       return if current_user
 
-      redirect_to(
-        new_trial_registration_path(::Onboarding::StatusPresenter.glm_tracking_params(params)), # rubocop:disable Rails/StrongParams -- method performs strong params
-        notice: I18n.t('devise.failure.unauthenticated')
-      )
+      redirect_to new_trial_registration_path(::Onboarding::StatusPresenter.glm_tracking_params(params)) # rubocop:disable Rails/StrongParams -- method performs strong params
     end
 
     def eligible_namespaces
