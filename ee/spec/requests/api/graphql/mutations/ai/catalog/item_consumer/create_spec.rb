@@ -226,4 +226,58 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
         :errors)).to eq(["Foundational agents must be configured in admin settings."])
     end
   end
+
+  context 'when item is a foundational flow' do
+    let_it_be(:foundational_flow) do
+      create(:ai_catalog_flow, :with_foundational_flow_reference, public: true, project: item_project)
+    end
+
+    let_it_be(:foundational_flow_service_account) { create(:user, :service_account) }
+    let_it_be(:foundational_flow_service_account_detail) do
+      create(:user_detail, user: foundational_flow_service_account, provisioned_by_group: consumer_group)
+    end
+
+    let_it_be(:foundational_flow_item_consumer) do
+      create(:ai_catalog_item_consumer, item: foundational_flow, group: consumer_group, pinned_version_prefix: '1.0.0',
+        service_account: foundational_flow_service_account)
+    end
+
+    let(:params) do
+      {
+        target: target,
+        item_id: foundational_flow.to_global_id,
+        parent_item_consumer_id: foundational_flow_item_consumer.to_global_id
+      }
+    end
+
+    before do
+      allow(Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(anything, :foundational_flows).and_return(true)
+    end
+
+    it 'successfully creates an item consumer for foundational flows' do
+      expect { execute }.to change { Ai::Catalog::ItemConsumer.count }.by(1)
+
+      expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
+        'item' => a_hash_including('id' => foundational_flow.to_global_id.to_s),
+        'project' => a_hash_including('id' => consumer_project.to_global_id.to_s)
+      )
+      expect(graphql_data_at(:ai_catalog_item_consumer_create, :errors)).to be_empty
+    end
+
+    context 'when trigger_types are provided' do
+      let(:params) do
+        super().merge(trigger_types: %w[mention assign])
+      end
+
+      it 'returns a validation error' do
+        execute
+
+        expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to be_nil
+        expect(graphql_data_at(:ai_catalog_item_consumer_create, :errors)).to eq(
+          ['Triggers cannot be manually configured for foundational flows']
+        )
+      end
+    end
+  end
 end

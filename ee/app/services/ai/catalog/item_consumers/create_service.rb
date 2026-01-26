@@ -41,6 +41,7 @@ module Ai
           return error_no_permissions unless allowed?
           return error_parent_item_consumer_not_passed if project_item_without_parent_item_consumer?
           return error_no_pinned_version_prefix if pinned_version_prefix.nil?
+          return error_foundational_flow_triggers_not_allowed if foundational_flow_with_user_triggers?
 
           error_flow_triggers_must_be_for_project if flow_triggers_not_for_project?
         end
@@ -71,6 +72,10 @@ module Ai
 
         def flow_triggers_not_for_project?
           params[:trigger_types] && project.nil?
+        end
+
+        def foundational_flow_with_user_triggers?
+          item.flow? && item.foundational_flow && params[:trigger_types].present?
         end
 
         def create_item_consumer(service_account)
@@ -143,9 +148,16 @@ module Ai
         end
 
         def prepare_trigger_params
-          return if params[:trigger_types].nil?
+          if item.foundational_flow
+            flow_definition = ::Ai::Catalog::FoundationalFlow[item.foundational_flow_reference]
+            return unless flow_definition&.triggers&.any?
 
-          trigger_types = params.delete(:trigger_types).map { |type| ::Ai::FlowTrigger::EVENT_TYPES[type.to_sym] }
+            trigger_types = flow_definition.triggers
+          else
+            return if params[:trigger_types].nil?
+
+            trigger_types = params.delete(:trigger_types).map { |type| ::Ai::FlowTrigger::EVENT_TYPES[type.to_sym] }
+          end
 
           params[:flow_trigger_attributes] = {
             project: project,
@@ -231,6 +243,10 @@ module Ai
 
         def error_flow_triggers_must_be_for_project
           error("Triggers can only be set for projects")
+        end
+
+        def error_foundational_flow_triggers_not_allowed
+          error("Triggers cannot be manually configured for foundational flows")
         end
 
         def error_parent_item_consumer_not_passed

@@ -100,7 +100,16 @@ export default {
         this.item?.id !== undefined
       );
     },
+    isFoundationalFlow() {
+      return (
+        this.selectedItemType === AI_CATALOG_TYPE_FLOW &&
+        (this.selectedGroupItemConsumer.item?.foundational || this.item?.foundational)
+      );
+    },
     showTriggers() {
+      if (this.isFoundationalFlow) {
+        return false;
+      }
       return [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(
         this.selectedItemType,
       );
