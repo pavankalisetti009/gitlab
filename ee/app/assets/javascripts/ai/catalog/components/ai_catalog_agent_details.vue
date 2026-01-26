@@ -7,6 +7,7 @@ import {
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
 } from '../constants';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
+import AiCatalogItemFieldServiceAccount from './ai_catalog_item_field_service_account.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
 import FormFlowDefinition from './form_flow_definition.vue';
 import TriggerField from './trigger_field.vue';
@@ -16,6 +17,7 @@ export default {
   name: 'AiCatalogAgentDetails',
   components: {
     AiCatalogItemField,
+    AiCatalogItemFieldServiceAccount,
     AiCatalogItemVisibilityField,
     FormFlowDefinition,
     FormSection,
@@ -68,6 +70,12 @@ export default {
     hasProjectConfiguration() {
       return Boolean(this.item.configurationForProject);
     },
+    serviceAccount() {
+      if (this.hasProjectConfiguration) {
+        return this.item.configurationForProject?.flowTrigger?.user;
+      }
+      return this.item.configurationForGroup?.serviceAccount;
+    },
   },
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
 };
@@ -91,6 +99,12 @@ export default {
       <form-section :title="s__('AICatalog|Configuration')" is-display>
         <ai-catalog-item-field :title="s__('AICatalog|Type')" :value="typeField" />
         <template v-if="isThirdPartyFlow">
+          <ai-catalog-item-field-service-account
+            v-if="serviceAccount"
+            :service-account="serviceAccount"
+            :item-type="item.itemType"
+            data-testid="service-account-field"
+          />
           <trigger-field v-if="hasProjectConfiguration" :item="item" />
           <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
             <form-flow-definition :value="definition" read-only class="gl-mt-3" />

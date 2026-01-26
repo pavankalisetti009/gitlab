@@ -1,6 +1,7 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
 #import "../fragments/ai_catalog_agent_version.fragment.graphql"
 #import "../fragments/ai_catalog_third_party_flow_version.fragment.graphql"
+#import "../fragments/service_account.fragment.graphql"
 
 query aiCatalogAgent(
   $id: AiCatalogItemID!
@@ -31,6 +32,9 @@ query aiCatalogAgent(
       flowTrigger {
         id
         eventTypes
+        user {
+          ...BaseServiceAccount
+        }
       }
       pinnedItemVersion {
         ...BaseAiCatalogAgentVersion
@@ -43,6 +47,9 @@ query aiCatalogAgent(
     configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
       id
       enabled
+      serviceAccount {
+        ...BaseServiceAccount
+      }
       pinnedItemVersion {
         ...BaseAiCatalogAgentVersion
         ...BaseAiCatalogThirdPartyFlowVersion
