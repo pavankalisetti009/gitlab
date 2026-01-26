@@ -42,10 +42,6 @@ constraints(::Projects::ProjectUrlConstraint.new) do
           resources :test_cases, only: [:index, :new, :show]
         end
 
-        namespace :ci do
-          resource :visual_ci_editor, only: [:show], controller: :visual_ci_editor, path: 'visual_ci_editor'
-        end
-
         resources :autocomplete_sources, only: [] do
           collection do
             get 'epics'
