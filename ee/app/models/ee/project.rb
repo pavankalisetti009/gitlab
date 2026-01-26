@@ -814,15 +814,8 @@ module EE
     def remove_foundational_flow_consumers(catalog_item_ids)
       return if catalog_item_ids.empty?
 
-      # Get all foundational flow IDs
-      foundational_flow_ids = ::Ai::Catalog::Item.foundational_flow_ids
-
-      # Only remove consumers that are foundational flows
-      ids_to_remove = catalog_item_ids & foundational_flow_ids
-      return if ids_to_remove.empty?
-
       configured_ai_catalog_items
-        .for_catalog_items(ids_to_remove)
+        .for_catalog_items(catalog_item_ids)
         .delete_all
     end
 
