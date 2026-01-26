@@ -78513,6 +78513,9 @@ msgstr ""
 msgid "WorkItem|New view"
 msgstr ""
 
+msgid "WorkItem|New view created."
+msgstr ""
+
 msgid "WorkItem|No assignees"
 msgstr ""
 
@@ -78910,6 +78913,9 @@ msgid "WorkItem|Something went wrong while promoting the %{workItemType}. Please
 msgstr ""
 
 msgid "WorkItem|Something went wrong while removing child."
+msgstr ""
+
+msgid "WorkItem|Something went wrong while saving the view"
 msgstr ""
 
 msgid "WorkItem|Something went wrong while undoing child removal."
