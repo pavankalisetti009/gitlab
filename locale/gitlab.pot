@@ -78238,6 +78238,9 @@ msgstr ""
 msgid "WorkItem|Development"
 msgstr ""
 
+msgid "WorkItem|Disable list item"
+msgstr ""
+
 msgid "WorkItem|Discard changes"
 msgstr ""
 
@@ -78290,6 +78293,9 @@ msgid "WorkItem|Email work item to this project"
 msgstr ""
 
 msgid "WorkItem|Emoji reactions"
+msgstr ""
+
+msgid "WorkItem|Enable list item"
 msgstr ""
 
 msgid "WorkItem|Enter the work item description"
