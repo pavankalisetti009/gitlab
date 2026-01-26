@@ -16,9 +16,9 @@ Use this API to manage [project milestones](../user/project/milestones/_index.md
 
 For group milestones, use the [group milestones API](group_milestones.md).
 
-## List project milestones
+## List all project milestones
 
-Returns a list of project milestones.
+Lists all milestones for a project.
 
 ```plaintext
 GET /projects/:id/milestones
@@ -70,9 +70,9 @@ Example Response:
 ]
 ```
 
-## Get single milestone
+## Retrieve a milestone
 
-Gets a single project milestone.
+Retrieves a specified project milestone.
 
 ```plaintext
 GET /projects/:id/milestones/:milestone_id
@@ -85,7 +85,7 @@ Parameters:
 | `id`           | integer or string | yes      | The ID or [URL-encoded path of the project](rest/_index.md#namespaced-paths) |
 | `milestone_id` | integer        | yes      | The ID of the project's milestone                                                                               |
 
-## Create new milestone
+## Create a milestone
 
 Creates a new project milestone.
 
@@ -103,9 +103,9 @@ Parameters:
 | `due_date`    | string         | no       | The due date of the milestone (`YYYY-MM-DD`)                                                                    |
 | `start_date`  | string         | no       | The start date of the milestone (`YYYY-MM-DD`)                                                                  |
 
-## Edit milestone
+## Update a milestone
 
-Updates an existing project milestone.
+Updates a specified project milestone.
 
 ```plaintext
 PUT /projects/:id/milestones/:milestone_id
@@ -123,7 +123,7 @@ Parameters:
 | `start_date`   | string         | no       | The start date of the milestone (`YYYY-MM-DD`)                                                                  |
 | `state_event`  | string         | no       | The state event of the milestone (close or activate)                                                            |
 
-## Delete project milestone
+## Delete a milestone
 
 {{< history >}}
 
@@ -131,6 +131,8 @@ Parameters:
 - [Changed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/169256) the minimum user role from Reporter to Planner in GitLab 17.7.
 
 {{< /history >}}
+
+Deletes a specified project milestone.
 
 Only for users with at least the Planner role for the project.
 
@@ -145,9 +147,9 @@ Parameters:
 | `id`           | integer or string | yes      | The ID or [URL-encoded path of the project](rest/_index.md#namespaced-paths) |
 | `milestone_id` | integer        | yes      | The ID of the project's milestone                                                                               |
 
-## Get all issues assigned to a single milestone
+## List all issues for a milestone
 
-Gets all issues assigned to a single project milestone.
+Lists all issues assigned to a specified project milestone.
 
 ```plaintext
 GET /projects/:id/milestones/:milestone_id/issues
@@ -160,9 +162,9 @@ Parameters:
 | `id`           | integer or string | yes      | The ID or [URL-encoded path of the project](rest/_index.md#namespaced-paths) |
 | `milestone_id` | integer        | yes      | The ID of the project's milestone                                                                               |
 
-## Get all merge requests assigned to a single milestone
+## List all merge requests for a milestone
 
-Gets all merge requests assigned to a single project milestone.
+Lists all merge requests assigned to a specified project milestone.
 
 ```plaintext
 GET /projects/:id/milestones/:milestone_id/merge_requests
@@ -175,7 +177,7 @@ Parameters:
 | `id`           | integer or string | yes      | The ID or [URL-encoded path of the project](rest/_index.md#namespaced-paths) |
 | `milestone_id` | integer        | yes      | The ID of the project's milestone                                                                               |
 
-## Promote project milestone to a group milestone
+## Promote a milestone to group milestone
 
 {{< history >}}
 
@@ -183,6 +185,8 @@ Parameters:
 - [Changed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/169256) the minimum user role from Reporter to Planner in GitLab 17.7.
 
 {{< /history >}}
+
+Promotes a project milestone to a group milestone.
 
 Only for users with at least the Planner role for the group.
 
@@ -197,7 +201,7 @@ Parameters:
 | `id`           | integer or string | yes      | The ID or [URL-encoded path of the project](rest/_index.md#namespaced-paths) |
 | `milestone_id` | integer        | yes      | The ID of the project's milestone                                                                               |
 
-## Get all burndown chart events for a single milestone
+## List all burndown chart events for a milestone
 
 {{< details >}}
 
@@ -206,7 +210,7 @@ Parameters:
 
 {{< /details >}}
 
-Gets all burndown chart events for a single milestone.
+Lists all burndown chart events for a specified milestone.
 
 ```plaintext
 GET /projects/:id/milestones/:milestone_id/burndown_events
