@@ -1,5 +1,13 @@
 <script>
+import { camelCase } from 'lodash';
 import { GlStackedColumnChart } from '@gitlab/ui/src/charts';
+import { GRAY_500 } from '@gitlab/ui/src/tokens/build/js/tokens';
+import {
+  listenSystemColorSchemeChange,
+  removeListenerSystemColorSchemeChange,
+} from '~/lib/utils/css_utils';
+import { getSeverityColors } from 'ee/security_dashboard/utils/chart_utils';
+import { REPORT_TYPE_COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
 
 export default {
   name: 'VulnerabilitiesByAgeChart',
@@ -23,6 +31,31 @@ export default {
       default: () => [],
     },
   },
+  data() {
+    return {
+      severityColors: {},
+    };
+  },
+  computed: {
+    customPalette() {
+      return this.bars.map((bar) => {
+        const normalizedId = camelCase(bar.id);
+        return this.severityColors[normalizedId] || REPORT_TYPE_COLORS[normalizedId] || GRAY_500;
+      });
+    },
+  },
+  mounted() {
+    this.setSeverityColors();
+    listenSystemColorSchemeChange(this.setSeverityColors);
+  },
+  destroyed() {
+    removeListenerSystemColorSchemeChange(this.setSeverityColors);
+  },
+  methods: {
+    setSeverityColors() {
+      this.severityColors = getSeverityColors();
+    },
+  },
   chartOptions: {
     animation: false,
     // Note: This is a workaround to remove the extra whitespace when the chart has no title
@@ -44,6 +77,7 @@ export default {
     :bars="bars"
     :option="$options.chartOptions"
     :group-by="labels"
+    :custom-palette="customPalette"
     :include-legend-avg-max="false"
     presentation="stacked"
     x-axis-type="category"

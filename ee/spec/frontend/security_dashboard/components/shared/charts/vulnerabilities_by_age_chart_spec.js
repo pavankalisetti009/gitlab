@@ -1,8 +1,26 @@
+import { nextTick } from 'vue';
 import { GlStackedColumnChart } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
+import { GRAY_500 } from '@gitlab/ui/src/tokens/build/js/tokens';
 import VulnerabilitiesByAgeChart from 'ee/security_dashboard/components/shared/charts/vulnerabilities_by_age_chart.vue';
+import * as ChartUtils from 'ee/security_dashboard/utils/chart_utils';
+import { REPORT_TYPE_COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
+import {
+  listenSystemColorSchemeChange,
+  removeListenerSystemColorSchemeChange,
+} from '~/lib/utils/css_utils';
 
-describe('OpenVulnerabilitiesOverTimeChart', () => {
+const mockSeverityColors = {
+  critical: '#000000',
+  high: '#111111',
+  medium: '#222222',
+  low: '#333333',
+  info: '#444444',
+  unknown: '#555555',
+};
+jest.mock('~/lib/utils/css_utils');
+
+describe('VulnerabilitiesByAgeChart', () => {
   let wrapper;
 
   const mockBars = [
@@ -18,6 +36,10 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
     labels: mockLabels,
   };
 
+  beforeEach(() => {
+    jest.spyOn(ChartUtils, 'getSeverityColors').mockImplementation(() => mockSeverityColors);
+  });
+
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMount(VulnerabilitiesByAgeChart, {
       propsData: {
@@ -27,15 +49,80 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
     });
   };
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   it('passes bars to GlStackedColumnChart', () => {
+    createComponent();
     expect(findStackedColumnChart().props('bars')).toBe(mockBars);
   });
 
   it('passes labels to GlStackedColumnChart', () => {
+    createComponent();
     expect(findStackedColumnChart().props('groupBy')).toBe(mockLabels);
+  });
+
+  describe('customPalette', () => {
+    it.each([
+      ['Critical', 'CRITICAL', mockSeverityColors.critical],
+      ['High', 'HIGH', mockSeverityColors.high],
+      ['Medium', 'MEDIUM', mockSeverityColors.medium],
+      ['Low', 'LOW', mockSeverityColors.low],
+      ['Info', 'INFO', mockSeverityColors.info],
+      ['Unknown', 'UNKNOWN', mockSeverityColors.unknown],
+      ['ApiFuzzing', 'API_FUZZING', REPORT_TYPE_COLORS.apiFuzzing],
+      ['ContainerScanning', 'CONTAINER_SCANNING', REPORT_TYPE_COLORS.containerScanning],
+      [
+        'ContainerScanningForRegistry',
+        'CONTAINER_SCANNING_FOR_REGISTRY',
+        REPORT_TYPE_COLORS.containerScanningForRegistry,
+      ],
+      ['CoverageFuzzing', 'COVERAGE_FUZZING', REPORT_TYPE_COLORS.coverageFuzzing],
+      ['Dast', 'DAST', REPORT_TYPE_COLORS.dast],
+      ['DependencyScanning', 'DEPENDENCY_SCANNING', REPORT_TYPE_COLORS.dependencyScanning],
+      ['Sast', 'SAST', REPORT_TYPE_COLORS.sast],
+      ['SecretDetection', 'SECRET_DETECTION', REPORT_TYPE_COLORS.secretDetection],
+    ])('applies the correct color for "%s" series', async (seriesName, seriesId, expectedColor) => {
+      const bars = [{ name: seriesName, id: seriesId, data: [] }];
+
+      createComponent({ props: { bars } });
+      await nextTick();
+
+      expect(findStackedColumnChart().props('customPalette')).toEqual([expectedColor]);
+    });
+
+    it('uses fallback color for unknown series', () => {
+      const bars = [{ name: 'Unknown Type', id: 'UNKNOWN_TYPE', data: [] }];
+
+      createComponent({ props: { bars } });
+
+      expect(findStackedColumnChart().props('customPalette')).toEqual([GRAY_500]);
+    });
+
+    it('returns colors in the same order as bars', async () => {
+      const bars = [
+        { name: 'High', id: 'HIGH', data: [] },
+        { name: 'Critical', id: 'CRITICAL', data: [] },
+      ];
+
+      createComponent({ props: { bars } });
+      await nextTick();
+
+      expect(findStackedColumnChart().props('customPalette')).toEqual([
+        mockSeverityColors.high,
+        mockSeverityColors.critical,
+      ]);
+    });
+  });
+
+  describe('system color scheme change listener', () => {
+    it('calls "listenSystemColorSchemeChange" when mounted', () => {
+      createComponent();
+      expect(listenSystemColorSchemeChange).toHaveBeenCalled();
+    });
+
+    it('calls "removeListenerSystemColorSchemeChange" when component is destroyed', () => {
+      createComponent();
+      wrapper.destroy();
+
+      expect(removeListenerSystemColorSchemeChange).toHaveBeenCalled();
+    });
   });
 });
