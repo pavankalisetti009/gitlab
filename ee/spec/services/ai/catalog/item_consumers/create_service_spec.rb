@@ -775,6 +775,123 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       it 'creates the item consumer' do
         expect { execute }.to change { Ai::Catalog::ItemConsumer.count }.by(1)
       end
+
+      context 'when foundational flow has defined triggers' do
+        it 'automatically creates triggers based on flow definition' do
+          foundational_flow = create(:ai_catalog_flow, public: true, project: item_project,
+            name: 'developer_flow', foundational_flow_reference: 'developer/v1')
+          create(:ai_catalog_flow_version, :released, item: foundational_flow, version: '1.0.0')
+
+          flow_service_account = create(:user, :service_account, provisioned_by_group: consumer_group)
+          parent_consumer = create(:ai_catalog_item_consumer, pinned_version_prefix: '1.0.0',
+            group: consumer_group, item: foundational_flow, service_account: flow_service_account)
+
+          params = { item: foundational_flow, parent_item_consumer: parent_consumer }
+
+          expect do
+            described_class.new(container: consumer_project, current_user: user, params: params).execute
+          end.to change { Ai::FlowTrigger.count }.by(1)
+
+          expect(Ai::FlowTrigger.last).to have_attributes(
+            project_id: consumer_project.id,
+            event_types: [::Ai::FlowTrigger::EVENT_TYPES[:assign]],
+            user_id: flow_service_account.id
+          )
+        end
+
+        it 'sets flow_trigger_attributes with correct service account and project' do
+          foundational_flow = create(:ai_catalog_flow, public: true, project: item_project,
+            name: 'developer_flow', foundational_flow_reference: 'developer/v1')
+          create(:ai_catalog_flow_version, :released, item: foundational_flow, version: '1.0.0')
+
+          flow_service_account = create(:user, :service_account, provisioned_by_group: consumer_group)
+          parent_consumer = create(:ai_catalog_item_consumer, pinned_version_prefix: '1.0.0',
+            group: consumer_group, item: foundational_flow, service_account: flow_service_account)
+
+          params = { item: foundational_flow, parent_item_consumer: parent_consumer }
+
+          described_class.new(container: consumer_project, current_user: user, params: params).execute
+
+          trigger = Ai::FlowTrigger.last
+          expect(trigger).to have_attributes(
+            project: consumer_project,
+            user: flow_service_account,
+            description: "Auto-created triggers for #{foundational_flow.name}"
+          )
+        end
+      end
+
+      context 'when foundational flow definition is nil' do
+        it 'does not create triggers and succeeds' do
+          foundational_flow = create(:ai_catalog_flow, public: true, project: item_project,
+            name: 'unknown_flow', foundational_flow_reference: 'nonexistent/v1')
+          create(:ai_catalog_flow_version, :released, item: foundational_flow, version: '1.0.0')
+
+          flow_service_account = create(:user, :service_account, provisioned_by_group: consumer_group)
+          parent_consumer = create(:ai_catalog_item_consumer, pinned_version_prefix: '1.0.0',
+            group: consumer_group, item: foundational_flow, service_account: flow_service_account)
+
+          params = { item: foundational_flow, parent_item_consumer: parent_consumer }
+
+          expect do
+            described_class.new(container: consumer_project, current_user: user, params: params).execute
+          end.not_to change { Ai::FlowTrigger.count }
+
+          expect(Ai::Catalog::ItemConsumer.last).to have_attributes(
+            project: consumer_project,
+            item: foundational_flow
+          )
+        end
+      end
+
+      context 'when foundational flow has nil triggers' do
+        it 'does not create triggers and succeeds' do
+          foundational_flow = create(:ai_catalog_flow, public: true, project: item_project,
+            name: 'code_review_flow', foundational_flow_reference: 'code_review/v1')
+          create(:ai_catalog_flow_version, :released, item: foundational_flow, version: '1.0.0')
+
+          flow_service_account = create(:user, :service_account, provisioned_by_group: consumer_group)
+          parent_consumer = create(:ai_catalog_item_consumer, pinned_version_prefix: '1.0.0',
+            group: consumer_group, item: foundational_flow, service_account: flow_service_account)
+
+          params = { item: foundational_flow, parent_item_consumer: parent_consumer }
+
+          mock_flow_def = instance_double(::Ai::Catalog::FoundationalFlow, triggers: nil)
+          allow(::Ai::Catalog::FoundationalFlow).to receive(:[]).with('code_review/v1').and_return(mock_flow_def)
+
+          expect do
+            described_class.new(container: consumer_project, current_user: user, params: params).execute
+          end.not_to change { Ai::FlowTrigger.count }
+
+          expect(Ai::Catalog::ItemConsumer.last).to have_attributes(
+            project: consumer_project,
+            item: foundational_flow
+          )
+        end
+      end
+
+      context 'when foundational flow has empty triggers array' do
+        it 'does not create triggers and succeeds' do
+          foundational_flow = create(:ai_catalog_flow, public: true, project: item_project,
+            name: 'code_review_flow', foundational_flow_reference: 'code_review/v1')
+          create(:ai_catalog_flow_version, :released, item: foundational_flow, version: '1.0.0')
+
+          flow_service_account = create(:user, :service_account, provisioned_by_group: consumer_group)
+          parent_consumer = create(:ai_catalog_item_consumer, pinned_version_prefix: '1.0.0',
+            group: consumer_group, item: foundational_flow, service_account: flow_service_account)
+
+          params = { item: foundational_flow, parent_item_consumer: parent_consumer }
+
+          expect do
+            described_class.new(container: consumer_project, current_user: user, params: params).execute
+          end.not_to change { Ai::FlowTrigger.count }
+
+          expect(Ai::Catalog::ItemConsumer.last).to have_attributes(
+            project: consumer_project,
+            item: foundational_flow
+          )
+        end
+      end
     end
   end
 
@@ -923,6 +1040,35 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       )
     end
 
+    it 'sets flow_trigger_attributes with correct values' do
+      execute
+      item_consumer = Ai::Catalog::ItemConsumer.last
+      trigger = item_consumer.flow_trigger
+
+      expect(trigger).to have_attributes(
+        project: consumer_project,
+        user: service_account,
+        description: "Auto-created triggers for #{item.name}",
+        event_types: [::Ai::FlowTrigger::EVENT_TYPES[:mention]]
+      )
+    end
+
+    context 'with multiple trigger types' do
+      let(:params) { super().merge(trigger_types: %w[mention assign_reviewer]) }
+
+      it 'creates triggers with all specified event types' do
+        expect { execute }.to change { Ai::FlowTrigger.count }.by(1)
+        expect(Ai::FlowTrigger.last).to have_attributes(
+          project_id: consumer_project.id,
+          event_types: [
+            ::Ai::FlowTrigger::EVENT_TYPES[:mention],
+            ::Ai::FlowTrigger::EVENT_TYPES[:assign_reviewer]
+          ],
+          user_id: service_account.id
+        )
+      end
+    end
+
     it_behaves_like 'when container is a group' do
       it_behaves_like 'a failure', "Triggers can only be set for projects"
     end
@@ -932,6 +1078,34 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
       it_behaves_like(
         'a failure', ["Flow trigger ai_catalog_item_consumer is not a flow"]
+      )
+    end
+
+    context 'when item is a foundational flow and user provides trigger_types' do
+      let_it_be(:foundational_flow_with_triggers) do
+        flow = create(:ai_catalog_flow, public: true, project: item_project, name: 'developer_flow',
+          foundational_flow_reference: 'developer/v1')
+        create(:ai_catalog_flow_version, :released, item: flow, version: '1.0.0')
+        flow
+      end
+
+      let_it_be(:foundational_flow_parent_consumer) do
+        service_account = create(:user, :service_account, provisioned_by_group: consumer_group)
+        create(:ai_catalog_item_consumer, group: consumer_group, item: foundational_flow_with_triggers,
+          service_account: service_account, pinned_version_prefix: '1.0.0')
+      end
+
+      let(:item) { foundational_flow_with_triggers }
+      let(:parent_item_consumer) { foundational_flow_parent_consumer }
+      let(:params) { super().merge(trigger_types: %w[mention assign_reviewer]) }
+
+      before do
+        allow(Gitlab::Llm::StageCheck).to receive(:available?)
+          .with(anything, :foundational_flows).and_return(true)
+      end
+
+      it_behaves_like(
+        'a failure', 'Triggers cannot be manually configured for foundational flows'
       )
     end
   end

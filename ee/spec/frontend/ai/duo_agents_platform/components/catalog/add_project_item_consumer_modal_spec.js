@@ -11,6 +11,8 @@ import {
   mockFlowItemConsumer,
   mockThirdPartyFlowItemConsumer,
   mockFlow,
+  mockBaseItemConsumer,
+  mockBaseFlow,
 } from 'ee_jest/ai/catalog/mock_data';
 import {
   AI_CATALOG_TYPE_AGENT,
@@ -283,4 +285,61 @@ describe('AddProjectItemConsumerModal', () => {
       });
     },
   );
+
+  describe('when the selected item is a foundational flow', () => {
+    const mockFoundationalFlowItemConsumer = {
+      ...mockBaseItemConsumer,
+      item: {
+        ...mockBaseFlow,
+        foundational: true,
+      },
+    };
+
+    it('does not render trigger checkboxes', async () => {
+      await findGroupItemConsumerDropdown().vm.$emit('input', mockFoundationalFlowItemConsumer);
+      expect(findFormCheckboxGroup().exists()).toBe(false);
+      expect(findFormCheckboxes()).toHaveLength(0);
+    });
+
+    it('does not pass triggerTypes on form submission', async () => {
+      await findGroupItemConsumerDropdown().vm.$emit('input', mockFoundationalFlowItemConsumer);
+
+      findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+
+      expect(wrapper.emitted('submit')).toHaveLength(1);
+      expect(wrapper.emitted('submit')[0][0]).toStrictEqual({
+        itemId: mockFoundationalFlowItemConsumer.item.id,
+        itemName: mockFoundationalFlowItemConsumer.item.name,
+        parentItemConsumerId: mockFoundationalFlowItemConsumer.id,
+        target: { projectId: null },
+      });
+    });
+  });
+
+  describe('when item prop is a foundational flow', () => {
+    const mockFoundationalFlow = {
+      ...mockFlow,
+      foundational: true,
+    };
+
+    beforeEach(() => {
+      createComponent({
+        props: { item: mockFoundationalFlow, showAddToGroup: false },
+      });
+    });
+
+    it('does not render trigger checkboxes', () => {
+      expect(findFormCheckboxGroup().exists()).toBe(false);
+      expect(findFormCheckboxes()).toHaveLength(0);
+    });
+
+    it('does not pass triggerTypes on form submission', () => {
+      findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+
+      expect(wrapper.emitted('submit')).toHaveLength(1);
+      expect(wrapper.emitted('submit')[0][0]).toEqual({
+        target: { projectId: 'gid://gitlab/Project/1' },
+      });
+    });
+  });
 });
