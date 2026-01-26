@@ -128,43 +128,37 @@ export default {
     isThirdPartyFlow() {
       return this.item.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
-    isPending() {
-      return Boolean(this.item.configurationForGroup) && !this.item.configurationForGroup?.enabled;
-    },
-    showStatusBadge() {
-      return (
-        this.itemTypeConfig.showStatusBadge &&
-        !(this.item.configurationForGroup?.enabled && this.item.configurationForProject?.enabled)
-      );
-    },
-    statusBadgeTitle() {
-      if (this.isPending) {
-        return s__('AICatalog|Pending approval');
+    statusBadge() {
+      if (
+        !this.itemTypeConfig.showStatusBadge ||
+        (this.item.configurationForGroup?.enabled && this.item.configurationForProject?.enabled)
+      ) {
+        return null;
       }
-      return s__('AICatalog|Ready to enable');
-    },
-    statusBadgeVariant() {
-      return this.item.configurationForGroup?.enabled ? 'success' : 'warning';
-    },
-    statusBadgeTooltipText() {
-      if (this.isPending) {
-        return sprintf(
-          s__(
-            'AICatalog|To use this %{itemType}, a user with the Owner role must enable it in the top-level group.',
-          ),
-          {
-            itemType: this.itemTypeLabel,
-          },
-        );
-      }
-      return sprintf(
-        s__(
-          'AICatalog|To use this %{itemType}, a user with at least the Maintainer role must enable it in this project.',
-        ),
-        {
-          itemType: this.itemTypeLabel,
-        },
-      );
+      const isEnabledInGroup = this.item.configurationForGroup?.enabled;
+      return {
+        title: isEnabledInGroup
+          ? s__('AICatalog|Ready to enable')
+          : s__('AICatalog|Pending approval'),
+        variant: isEnabledInGroup ? 'success' : 'warning',
+        tooltipText: isEnabledInGroup
+          ? sprintf(
+              s__(
+                'AICatalog|To use this %{itemType}, a user with at least the Maintainer role must enable it in this project.',
+              ),
+              {
+                itemType: this.itemTypeLabel,
+              },
+            )
+          : sprintf(
+              s__(
+                'AICatalog|To use this %{itemType}, a user with the Owner role must enable it in the top-level group.',
+              ),
+              {
+                itemType: this.itemTypeLabel,
+              },
+            ),
+      };
     },
     softDeletedTooltipText() {
       return sprintf(
@@ -269,12 +263,12 @@ export default {
           </router-link>
         </div>
         <div
-          v-if="showStatusBadge"
+          v-if="statusBadge"
           v-gl-tooltip
-          :title="statusBadgeTooltipText"
+          :title="statusBadge.tooltipText"
           data-testid="ai-catalog-item-status-badge"
         >
-          <gl-badge :variant="statusBadgeVariant">{{ statusBadgeTitle }}</gl-badge>
+          <gl-badge :variant="statusBadge.variant">{{ statusBadge.title }}</gl-badge>
         </div>
         <div
           v-if="item.softDeleted"
