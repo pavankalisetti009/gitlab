@@ -116,7 +116,18 @@ To restrict group access by IP address:
 1. Select **Settings** > **General**.
 1. Expand the **Permissions and group features** section.
 1. In the **Restrict access by IP address** text box, enter a list of IPv4 or IPv6
-   address ranges in CIDR notation. This list:
+   address ranges in CIDR notation:
+
+   ```txt
+   192.168.1.0/24
+   10.0.0.0/8
+   2001:db8::/32
+   203.0.113.5/32
+   ```
+
+   You must manually add each IP address entry. Adding multiple entries separated by a comma or space is not supported. Support for bulk entries is proposed in [issue 468998](https://gitlab.com/gitlab-org/gitlab/-/work_items/468998).
+ 
+   This list:
    - Has no limit on the number of IP address ranges.
    - Applies to both SSH or HTTP authorized IP address ranges. You cannot split
      this list by type of authorization.
