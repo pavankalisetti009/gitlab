@@ -59,6 +59,10 @@ module Types
       calls_gitaly: true,
       experiment: { milestone: '17.10' },
       description: 'Inputs to create a pipeline.' do
+      argument :fail_on_cache_miss, GraphQL::Types::Boolean,
+        required: false,
+        default_value: false,
+        description: 'Whether to throw an error for a cache miss.'
       argument :ref, GraphQL::Types::String,
         required: true,
         description: 'Ref where to create the pipeline.'
@@ -1048,11 +1052,17 @@ module Types
       project.container_repositories.size
     end
 
-    def ci_pipeline_creation_inputs(ref:)
+    def ci_pipeline_creation_inputs(ref:, fail_on_cache_miss: false)
       response = ::Ci::PipelineCreation::FindPipelineInputsService.new(
         current_user: context[:current_user],
         project: object,
         ref: ref).execute
+
+      if response.nil?
+        raise_resource_not_available_error! "Failed to retrieve pipeline inputs from cache." if fail_on_cache_miss
+
+        return
+      end
 
       raise Gitlab::Graphql::Errors::ArgumentError, response.message if response.error?
 
