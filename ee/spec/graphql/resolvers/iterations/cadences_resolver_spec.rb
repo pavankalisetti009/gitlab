@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Iterations::CadencesResolver do
+RSpec.describe Resolvers::Iterations::CadencesResolver, feature_category: :team_planning do
   include GraphqlHelpers
 
   describe '#resolve' do

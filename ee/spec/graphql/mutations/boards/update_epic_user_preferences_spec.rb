@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Boards::UpdateEpicUserPreferences do
+RSpec.describe Mutations::Boards::UpdateEpicUserPreferences, feature_category: :team_planning do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group, :private) }

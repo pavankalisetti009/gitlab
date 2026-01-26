@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Epics::CrossHierarchyAncestorsFinder do
+RSpec.describe Epics::CrossHierarchyAncestorsFinder, feature_category: :portfolio_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:search_user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }

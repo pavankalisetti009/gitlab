@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Mutations::Issues::SetWeight do
+RSpec.describe Mutations::Issues::SetWeight, feature_category: :team_planning do
   include GraphqlHelpers
   let(:issue) { create(:issue, weight: 1) }
   let(:current_user) { create(:user) }

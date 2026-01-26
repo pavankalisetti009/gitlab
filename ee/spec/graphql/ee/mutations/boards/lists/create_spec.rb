@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Boards::Lists::Create do
+RSpec.describe Mutations::Boards::Lists::Create, feature_category: :portfolio_management do
   include GraphqlHelpers
 
   let_it_be(:group)     { create(:group, :private) }

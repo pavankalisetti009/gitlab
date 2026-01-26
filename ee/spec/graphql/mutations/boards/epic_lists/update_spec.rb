@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Boards::EpicLists::Update do
+RSpec.describe Mutations::Boards::EpicLists::Update, feature_category: :team_planning do
   let_it_be(:group)    { create(:group, :private) }
   let_it_be(:board)    { create(:epic_board, group: group) }
   let_it_be(:reporter) { create(:user) }

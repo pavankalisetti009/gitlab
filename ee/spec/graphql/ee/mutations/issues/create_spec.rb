@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Issues::Create do
+RSpec.describe Mutations::Issues::Create, feature_category: :team_planning do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }

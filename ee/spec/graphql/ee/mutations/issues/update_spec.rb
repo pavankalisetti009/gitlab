@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Issues::Update do
+RSpec.describe Mutations::Issues::Update, feature_category: :team_planning do
   include GraphqlHelpers
   let(:current_user) { create(:user) }
 
