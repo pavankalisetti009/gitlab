@@ -6,13 +6,14 @@
     = form.label :merge_request_title_regex, s_('ProjectSettings|Title regex'), class: 'gl-mb-0'
     %p.gl-text-subtle
       %span{ id: :merge_request_title_hint }
-        = s_('ProjectSettings|Regex that all merge request titles must match')
+        - regex_link = link_to('', 'https://github.com/google/re2/wiki/Syntax', target: '_blank', rel: 'noopener noreferrer')
+        = safe_format(s_('ProjectSettings|Regular expression that all merge request titles must match. %{link_start}What is a regex?%{link_end}'), tag_pair(regex_link, :link_start, :link_end))
 
-    = form.text_field :merge_request_title_regex, class: "form-control", placeholder: '\w{4}-\d{4,8}\s.*', aria: { describedby: :merge_request_title_hint }
+    = form.text_field :merge_request_title_regex, class: "form-control", placeholder: '^\[.+\]', aria: { describedby: :merge_request_title_hint }
   .form-group
-    = form.label :merge_request_title_regex_description, s_('ProjectSettings|Regex explanation'), class: 'gl-mb-0'
+    = form.label :merge_request_title_regex_description, s_('ProjectSettings|Title regex description'), class: 'gl-mb-0'
     %p.gl-text-subtle
       %span{ id: :merge_request_title_regex_description_hint }
-        = s_('ProjectSettings|The plain language explanation of what this expression enforces. Consider including examples that will pass.')
+        = s_('ProjectSettings|Describe what this regex enforces. Include examples of valid titles.')
 
-    = form.text_field :merge_request_title_regex_description, class: "form-control", placeholder: 'Four letters, a dash, and 4-8 numbers followed by a space and any other text.', aria: { describedby: :merge_request_title_regex_description_hint }
+    = form.text_field :merge_request_title_regex_description, class: "form-control", placeholder: s_('ProjectSettings|Titles must start with a tag, e.g. [Feature] Add login'), aria: { describedby: :merge_request_title_regex_description_hint }

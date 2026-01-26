@@ -55,7 +55,7 @@ RSpec.describe 'projects/settings/merge_requests/show', feature_category: :code_
 
         expect(rendered).to have_field(
           'project[merge_request_title_regex_description]',
-          placeholder: 'Four letters, a dash, and 4-8 numbers followed by a space and any other text.'
+          placeholder: 'Titles must start with a tag, e.g. [Feature] Add login'
         )
       end
 

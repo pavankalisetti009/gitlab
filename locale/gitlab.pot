@@ -53449,6 +53449,9 @@ msgstr ""
 msgid "ProjectSettings|Delete project"
 msgstr ""
 
+msgid "ProjectSettings|Describe what this regex enforces. Include examples of valid titles."
+msgstr ""
+
 msgid "ProjectSettings|Determine what happens to the commit history when you merge a merge request."
 msgstr ""
 
@@ -53692,10 +53695,7 @@ msgstr ""
 msgid "ProjectSettings|Publish, store, and view packages in a project."
 msgstr ""
 
-msgid "ProjectSettings|Regex explanation"
-msgstr ""
-
-msgid "ProjectSettings|Regex that all merge request titles must match"
+msgid "ProjectSettings|Regular expression that all merge request titles must match. %{link_start}What is a regex?%{link_end}"
 msgstr ""
 
 msgid "ProjectSettings|Relative path:"
@@ -53809,9 +53809,6 @@ msgstr ""
 msgid "ProjectSettings|The host of your data collector instance."
 msgstr ""
 
-msgid "ProjectSettings|The plain language explanation of what this expression enforces. Consider including examples that will pass."
-msgstr ""
-
 msgid "ProjectSettings|These checks must pass before merge requests can be merged."
 msgstr ""
 
@@ -53834,6 +53831,12 @@ msgid "ProjectSettings|This setting will be applied to all projects unless overr
 msgstr ""
 
 msgid "ProjectSettings|Title regex"
+msgstr ""
+
+msgid "ProjectSettings|Title regex description"
+msgstr ""
+
+msgid "ProjectSettings|Titles must start with a tag, e.g. [Feature] Add login"
 msgstr ""
 
 msgid "ProjectSettings|Topics are publicly visible even on private projects. Do not include sensitive information in topic names. %{linkStart}Learn more%{linkEnd}."
