@@ -57,7 +57,7 @@ export default {
         </gl-token>
       </div>
       <gl-link
-        v-if="flowTrigger.id"
+        v-if="flowTrigger.id && !item.foundational"
         :to="triggerEditPath(flowTrigger.id)"
         class="gl-flex gl-items-center gl-gap-2 gl-whitespace-nowrap"
       >

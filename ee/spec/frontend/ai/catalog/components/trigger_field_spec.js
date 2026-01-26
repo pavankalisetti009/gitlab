@@ -26,6 +26,8 @@ describe('TriggerFieldSpec', () => {
     });
   };
 
+  const findEditLink = () => wrapper.findComponent(GlLink);
+
   describe('when flowTrigger is empty', () => {
     beforeEach(() => {
       createComponent({
@@ -71,13 +73,31 @@ describe('TriggerFieldSpec', () => {
     });
 
     it('renders trigger edit link', () => {
-      const editLink = wrapper.findComponent(GlLink);
+      const editLink = findEditLink();
 
       expect(editLink.text()).toBe('Edit');
       expect(editLink.props('to')).toEqual({
         name: FLOW_TRIGGERS_EDIT_ROUTE,
         params: { id: 73 },
       });
+    });
+  });
+
+  describe('when item is foundational', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          item: {
+            ...mockFlow,
+            foundational: true,
+            configurationForProject: mockFlowConfigurationForProject,
+          },
+        },
+      });
+    });
+
+    it('does not render trigger edit link', () => {
+      expect(findEditLink().exists()).toBe(false);
     });
   });
 });

@@ -1,5 +1,6 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
 #import "../fragments/ai_catalog_flow_version.fragment.graphql"
+#import "../fragments/service_account.fragment.graphql"
 
 query aiCatalogFlow(
   $id: AiCatalogItemID!
@@ -29,6 +30,9 @@ query aiCatalogFlow(
       flowTrigger {
         id
         eventTypes
+        user {
+          ...BaseServiceAccount
+        }
       }
       pinnedItemVersion {
         ...BaseAiCatalogFlowVersion
@@ -41,11 +45,7 @@ query aiCatalogFlow(
       id
       enabled
       serviceAccount {
-        id
-        name
-        username
-        avatarUrl
-        webPath
+        ...BaseServiceAccount
       }
       pinnedItemVersion {
         ...BaseAiCatalogFlowVersion

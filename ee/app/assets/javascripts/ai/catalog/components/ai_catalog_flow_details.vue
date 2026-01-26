@@ -1,9 +1,9 @@
 <script>
-import { GlAvatarLabeled, GlAvatarLink, GlLink, GlSprintf } from '@gitlab/ui';
-import { helpPagePath } from '~/helpers/help_page_helper';
+import { GlLink } from '@gitlab/ui';
 import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import { getByVersionKey } from '../utils';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
+import AiCatalogItemFieldServiceAccount from './ai_catalog_item_field_service_account.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
 import TriggerField from './trigger_field.vue';
 import FormFlowDefinition from './form_flow_definition.vue';
@@ -12,11 +12,9 @@ import FormSection from './form_section.vue';
 export default {
   name: 'AiCatalogFlowDetails',
   components: {
-    GlAvatarLabeled,
-    GlAvatarLink,
     GlLink,
-    GlSprintf,
     AiCatalogItemField,
+    AiCatalogItemFieldServiceAccount,
     AiCatalogItemVisibilityField,
     FormFlowDefinition,
     FormSection,
@@ -43,11 +41,13 @@ export default {
       return getByVersionKey(this.item, this.versionKey).definition;
     },
     serviceAccount() {
+      if (this.hasProjectConfiguration && !this.item.foundational) {
+        return this.item.configurationForProject?.flowTrigger?.user;
+      }
       return this.item.configurationForGroup?.serviceAccount;
     },
   },
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
-  serviceAccountsDocsLink: helpPagePath('user/profile/service_accounts'),
 };
 </script>
 
@@ -67,37 +67,12 @@ export default {
         />
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')" is-display>
-        <ai-catalog-item-field
+        <ai-catalog-item-field-service-account
           v-if="serviceAccount"
-          :title="s__('AICatalog|Service account')"
+          :service-account="serviceAccount"
+          :item-type="item.itemType"
           data-testid="service-account-field"
-        >
-          <p class="gl-text-subtle">
-            <gl-sprintf
-              :message="
-                s__(
-                  'AICatalog|%{linkStart}Service accounts%{linkEnd} represent non-human entities. This is the account that you mention or assign to trigger the flow.',
-                )
-              "
-            >
-              <template #link="{ content }">
-                <gl-link :href="$options.serviceAccountsDocsLink">{{ content }}</gl-link>
-              </template>
-            </gl-sprintf>
-          </p>
-          <gl-avatar-link
-            :href="serviceAccount.webPath"
-            :title="serviceAccount.name"
-            class="gl-mt-3"
-          >
-            <gl-avatar-labeled
-              :size="32"
-              :src="serviceAccount.avatarUrl"
-              :label="serviceAccount.name"
-              :sub-label="`@${serviceAccount.username}`"
-            />
-          </gl-avatar-link>
-        </ai-catalog-item-field>
+        />
         <trigger-field v-if="hasProjectConfiguration" :item="item" />
         <ai-catalog-item-field
           :title="s__('AICatalog|YAML configuration')"

@@ -24,6 +24,7 @@ export const TYPENAME_PROJECT = 'Project';
 const TYPENAME_PROJECT_PERMISSIONS = 'ProjectPermissions';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
 const TYPENAME_AI_CATALOG_ITEM_REPORT = 'AiCatalogItemReportPayload';
+const TYPENAME_USER = 'User';
 
 const mockVersionFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
@@ -361,6 +362,7 @@ export const mockAgentConfigurationForProject = {
 export const mockItemConfigurationForGroup = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/4',
   enabled: true,
+  serviceAccount: null,
   pinnedItemVersion: mockAgentGroupPinnedVersion,
   userPermissions: mockItemConsumerUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
@@ -574,9 +576,19 @@ export const mockFlowsWithConfigs = [
   }),
 ];
 
+export const mockServiceAccount = {
+  id: 'gid://gitlab/User/100',
+  name: 'Fix pipeline/v1',
+  username: 'ai-fix-pipeline-v1-group-1',
+  webPath: '/ai-fix-pipeline-v1-group-1',
+  avatarUrl: 'https://example.com/avatar.png',
+  __typename: TYPENAME_USER,
+};
+
 export const mockFlowTrigger = {
   id: 'gid://gitlab/Ai::FlowTrigger/73',
   eventTypes: [0],
+  user: mockServiceAccount,
   __typename: TYPENAME_AI_FLOW_TRIGGER,
 };
 
@@ -587,14 +599,6 @@ export const mockFlowConfigurationForProject = {
   pinnedItemVersion: mockFlowPinnedVersion,
   userPermissions: mockItemConsumerUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
-};
-
-export const mockServiceAccount = {
-  id: 'gid://gitlab/User/100',
-  name: 'Fix pipeline/v1',
-  username: 'ai-fix-pipeline-v1-group-1',
-  webPath: '/ai-fix-pipeline-v1-group-1',
-  avatarUrl: 'https://example.com/avatar.png',
 };
 
 export const mockFlowConfigurationForGroup = {

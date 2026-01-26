@@ -1,5 +1,5 @@
-import { shallowMount } from '@vue/test-utils';
 import { GlBadge, GlLink, GlToken, GlTruncateText } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
@@ -14,6 +14,7 @@ import {
   mockThirdPartyFlowVersion,
   mockThirdPartyFlowConfigurationForProject,
   mockAiCatalogBuiltInToolsNodes,
+  mockServiceAccount,
 } from '../mock_data';
 
 describe('AiCatalogAgentDetails', () => {
@@ -39,7 +40,7 @@ describe('AiCatalogAgentDetails', () => {
   };
 
   const createComponent = ({ props } = {}) => {
-    wrapper = shallowMount(AiCatalogAgentDetails, {
+    wrapper = shallowMountExtended(AiCatalogAgentDetails, {
       propsData: {
         ...defaultProps,
         ...props,
@@ -58,6 +59,7 @@ describe('AiCatalogAgentDetails', () => {
   const findSystemPromptTruncateText = () => wrapper.findComponent(GlTruncateText);
   const findSourceProjectLink = () => wrapper.findComponent(GlLink);
   const findTriggerField = () => wrapper.findComponent(TriggerField);
+  const findServiceAccountField = () => wrapper.findByTestId('service-account-field');
 
   beforeEach(() => {
     createComponent();
@@ -126,6 +128,10 @@ describe('AiCatalogAgentDetails', () => {
       });
     });
 
+    it('does not render "Service account" field', () => {
+      expect(findServiceAccountField().exists()).toBe(false);
+    });
+
     it('renders "System prompt"', () => {
       expect(configurationDetails.at(2).props()).toMatchObject({
         title: 'System prompt',
@@ -183,6 +189,13 @@ describe('AiCatalogAgentDetails', () => {
       expect(configurationDetails.at(0).props()).toMatchObject({
         title: 'Type',
         value: 'External',
+      });
+    });
+
+    it('renders "Service account" field', () => {
+      expect(findServiceAccountField().props()).toMatchObject({
+        serviceAccount: mockServiceAccount,
+        itemType: 'THIRD_PARTY_FLOW',
       });
     });
 
