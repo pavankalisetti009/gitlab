@@ -5,7 +5,13 @@ module QA
     describe 'Pull mirror a repository over HTTP' do
       let(:user) { Runtime::User::Store.test_user }
 
-      it 'configures and syncs a (pull) mirrored repository with password auth', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347764' do
+      it 'configures and syncs a (pull) mirrored repository with password auth',
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347764',
+        quarantine: {
+          only: { condition: -> { Runtime::Env.run_type == 'e2e-test-on-omnibus' } },
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/16436',
+          type: :flaky
+        } do
         Flow::Login.sign_in
 
         source = Resource::Repository::ProjectPush.fabricate! do |project_push|
