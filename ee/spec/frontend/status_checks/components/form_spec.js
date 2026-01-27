@@ -46,6 +46,7 @@ describe('Status checks form', () => {
   const findUrlValidation = () => wrapper.findByTestId('url-group');
   const findBranchesValidation = () => wrapper.findByTestId('branches-group');
   const findSharedSecretInput = () => wrapper.findByTestId('shared-secret');
+  const findSharedSecretValidation = () => wrapper.findByTestId('shared-secret');
   const findHmacEditButton = () => wrapper.findByTestId('override-hmac');
   const findBranchesErrorAlert = () => wrapper.findComponent(GlAlert);
 
@@ -270,6 +271,113 @@ describe('Status checks form', () => {
 
       expect(wrapper.emitted('submit')).toHaveLength(1);
       expect(findSharedSecretInput().props('state')).toBe(false);
+    });
+  });
+
+  describe('shared secret validation', () => {
+    it('shows error when shared secret exceeds 255 characters', async () => {
+      const longSecret = 'a'.repeat(256);
+      createWrapper({
+        statusCheck: { ...statusCheck, sharedSecret: longSecret },
+      });
+
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toBe(undefined);
+      expect(findSharedSecretValidation().props('state')).toBe(false);
+      expect(findSharedSecretValidation().props('invalidFeedback')).toBe(
+        'Shared secret cannot be longer than 255 characters.',
+      );
+    });
+
+    it('allows shared secret with exactly 255 characters', async () => {
+      const validSecret = 'a'.repeat(255);
+      createWrapper({
+        statusCheck: { ...statusCheck, sharedSecret: validSecret },
+      });
+
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toContainEqual([
+        {
+          branches: statusCheck.protectedBranches,
+          name: statusCheck.name,
+          url: statusCheck.externalUrl,
+          sharedSecret: validSecret,
+          overrideHmac: false,
+        },
+      ]);
+      expect(findSharedSecretValidation().props('state')).toBe(true);
+    });
+
+    it('shows length error when editing existing HMAC with secret exceeding 255 characters', async () => {
+      const longSecret = 'a'.repeat(256);
+      createWrapper({
+        statusCheck: { ...statusCheck, sharedSecret: longSecret, hmac: true },
+      });
+
+      await findHmacEditButton().vm.$emit('click');
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toBe(undefined);
+      expect(findSharedSecretValidation().props('state')).toBe(false);
+      expect(findSharedSecretValidation().props('invalidFeedback')).toBe(
+        'Shared secret cannot be longer than 255 characters.',
+      );
+    });
+
+    it('shows error when overriding HMAC with empty shared secret', async () => {
+      createWrapper({
+        statusCheck: { ...statusCheck, sharedSecret: '', hmac: true },
+      });
+
+      await findHmacEditButton().vm.$emit('click');
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toBe(undefined);
+      expect(findSharedSecretValidation().props('state')).toBe(false);
+      expect(findSharedSecretValidation().props('invalidFeedback')).toBe(
+        'Please provide a shared secret.',
+      );
+    });
+
+    it('does not show error when shared secret is empty and not overriding HMAC', async () => {
+      createWrapper({
+        statusCheck: { ...statusCheck, sharedSecret: '' },
+      });
+
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toContainEqual([
+        {
+          branches: statusCheck.protectedBranches,
+          name: statusCheck.name,
+          url: statusCheck.externalUrl,
+          sharedSecret: '',
+          overrideHmac: false,
+        },
+      ]);
+      expect(findSharedSecretValidation().props('state')).toBe(true);
+    });
+
+    it('allows valid shared secret when not overriding HMAC', async () => {
+      const validSecret = 'Test';
+      createWrapper({
+        statusCheck: { ...statusCheck, sharedSecret: validSecret },
+      });
+
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toContainEqual([
+        {
+          branches: statusCheck.protectedBranches,
+          name: statusCheck.name,
+          url: statusCheck.externalUrl,
+          sharedSecret: validSecret,
+          overrideHmac: false,
+        },
+      ]);
+      expect(findSharedSecretValidation().props('state')).toBe(true);
     });
   });
 });
