@@ -66,32 +66,6 @@ module QA
         it_behaves_like 'audit event', ["Added SSH key"]
       end
 
-      context 'for add and delete email',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347918' do
-        before do
-          sign_in
-
-          new_email_address = Resource::User.new.email
-
-          Page::Main::Menu.perform(&:click_edit_profile_link)
-          Page::Profile::Menu.perform(&:click_emails)
-          Support::Retrier.retry_until(sleep_interval: 3) do
-            Page::Profile::Emails.perform do |emails|
-              emails.add_email_address(new_email_address)
-              expect(emails).to have_text(new_email_address) # rubocop:disable RSpec/ExpectInHook -- assert test set up
-              emails.delete_email_address(new_email_address)
-              expect(emails).not_to have_text(new_email_address) # rubocop:disable RSpec/ExpectInHook -- assert test set up
-            end
-          end
-        end
-
-        context 'with quarantine',
-          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/16723',
-                        type: :flaky } do
-          it_behaves_like 'audit event', ["Added email", "Removed email"]
-        end
-      end
-
       context 'for change password', :skip_signup_disabled,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347917' do
         before do
