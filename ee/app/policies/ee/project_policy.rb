@@ -1286,7 +1286,7 @@ module EE
         customizable_permissions_enabled? &&
           @subject.root_ancestor.is_a?(Group) &&
           !can?(:admin_organization, @subject.organization) &&
-          team_access_level < @subject.root_ancestor.ai_minimum_access_level_to_execute_async
+          team_access_level < @subject.root_ancestor.ai_minimum_access_level_execute_async_with_fallback
       end
 
       rule { ai_settings_prevent_execute_async }.prevent :trigger_ai_flow

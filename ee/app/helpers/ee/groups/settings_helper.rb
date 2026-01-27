@@ -99,8 +99,8 @@ module EE
           prompt_injection_protection_available: (::Feature.enabled?(:ai_prompt_scanning, current_user) && current_user.can?(:admin_duo_workflow, @group)).to_s,
           is_saas: saas?.to_s,
           show_duo_agent_platform_enablement_setting: show_duo_agent_platform_enablement_setting?.to_s,
-          ai_minimum_access_level_to_execute: @group.ai_minimum_access_level_to_execute,
-          ai_minimum_access_level_to_execute_async: @group.ai_minimum_access_level_to_execute_async,
+          ai_minimum_access_level_to_execute: @group.ai_minimum_access_level_execute_with_fallback,
+          ai_minimum_access_level_to_execute_async: @group.ai_minimum_access_level_execute_async_with_fallback,
           ai_settings_minimum_access_level_manage: @group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: @group.ai_minimum_access_level_enable_on_projects
         }.merge(foundational_flows_settings_data).merge(foundational_agents_data).merge(namespace_access_rules_data)

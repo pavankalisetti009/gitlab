@@ -146,8 +146,8 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         show_foundational_agents_per_agent_availability: 'false',
         show_duo_agent_platform_enablement_setting: 'true',
         namespace_access_rules: Gitlab::Json.dump(transformed_namespace_access_rules),
-        ai_minimum_access_level_to_execute: '10',
-        ai_minimum_access_level_to_execute_async: '30'
+        ai_minimum_access_level_to_execute: Gitlab::Access::GUEST.to_s,
+        ai_minimum_access_level_to_execute_async: Gitlab::Access::DEVELOPER.to_s
       )
     end
 
@@ -265,13 +265,13 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     context 'with different AI minimum access levels' do
       before do
         allow(ai_settings).to receive_messages(
-          ai_minimum_access_level_to_execute: 40,
-          ai_minimum_access_level_to_execute_async: 50
+          ai_minimum_access_level_execute_with_fallback: Gitlab::Access::MAINTAINER,
+          ai_minimum_access_level_execute_async_with_fallback: Gitlab::Access::OWNER
         )
       end
 
-      it { expect(settings).to include(ai_minimum_access_level_to_execute: '40') }
-      it { expect(settings).to include(ai_minimum_access_level_to_execute_async: '50') }
+      it { expect(settings).to include(ai_minimum_access_level_to_execute: Gitlab::Access::MAINTAINER.to_s) }
+      it { expect(settings).to include(ai_minimum_access_level_to_execute_async: Gitlab::Access::OWNER.to_s) }
     end
 
     describe 'foundational_agent_statuses' do
