@@ -98,6 +98,10 @@ export const DOC_PATH_DISMISSING_FALSE_POSITIVES = helpPagePath(
   { anchor: 'dismissing-false-positives' },
 );
 
+export const DOC_PATH_SAST_VULNERABILITY_RESOLUTION = helpPagePath(
+  '/user/duo_agent_platform/flows/foundational_flows/agentic_sast_vulnerability_resolution',
+);
+
 export const SEVERITY_GROUP_F = 'F';
 export const SEVERITY_GROUP_D = 'D';
 export const SEVERITY_GROUP_C = 'C';

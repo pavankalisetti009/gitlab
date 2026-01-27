@@ -6,6 +6,7 @@ import {
   DOC_PATH_VULNERABILITY_REPORT,
   DOC_PATH_SAST_FALSE_POSITIVE_DETECTION,
   DOC_PATH_DISMISSING_FALSE_POSITIVES,
+  DOC_PATH_SAST_VULNERABILITY_RESOLUTION,
 } from 'ee/security_dashboard/constants';
 
 describe('Duo security features banner component', () => {
@@ -54,9 +55,11 @@ describe('Duo security features banner component', () => {
         });
 
         expect(findBanner().exists()).toBe(true);
-        expect(findBanner().props('title')).toBe('GitLab Duo security features are here!');
+        expect(findBanner().props('title')).toBe(
+          'GitLab Duo security features are here - available for a limited time in free Beta',
+        );
         expect(findBanner().text()).toBe(
-          'GitLab Duo can automatically scan security findings to identify false positives and generate fixes for vulnerabilities. GitLab Duo can assign each finding a GitLab Duo confidence score. You can adjust or disable these features in the GitLab Duo Settings.',
+          'GitLab Duo can automatically scan security findings to identify false positives and generate fixes for vulnerabilities. GitLab Duo can assign each finding a GitLab Duo confidence score. You can adjust or disable these features in the GitLab Duo Settings. These features are available as a free beta for a limited time and are disabled by default.',
         );
         expect(findBanner().props('buttonText')).toBe('Manage settings');
         expect(findBanner().props('buttonLink')).toBe('/edit#js-gitlab-duo-settings');
@@ -79,7 +82,7 @@ describe('Duo security features banner component', () => {
         expect(links.at(0).props('target')).toBe('_blank');
         expect(links.at(0).text()).toBe('identify false positives');
 
-        expect(links.at(1).props('href')).toBe(DOC_PATH_DISMISSING_FALSE_POSITIVES);
+        expect(links.at(1).props('href')).toBe(DOC_PATH_SAST_VULNERABILITY_RESOLUTION);
         expect(links.at(1).props('target')).toBe('_blank');
         expect(links.at(1).text()).toBe('generate fixes for vulnerabilities');
       });

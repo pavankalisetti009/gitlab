@@ -7,6 +7,7 @@ import {
   DOC_PATH_VULNERABILITY_REPORT,
   DOC_PATH_SAST_FALSE_POSITIVE_DETECTION,
   DOC_PATH_DISMISSING_FALSE_POSITIVES,
+  DOC_PATH_SAST_VULNERABILITY_RESOLUTION,
 } from 'ee/security_dashboard/constants';
 
 export default {
@@ -57,16 +58,19 @@ export default {
       ),
     },
     securityFeaturesBanner: {
-      title: s__('SecurityReports|GitLab Duo security features are here!'),
+      title: s__(
+        'SecurityReports|GitLab Duo security features are here - available for a limited time in free Beta',
+      ),
       buttonText: s__('SecurityReports|Manage settings'),
       buttonTextAlt: s__('SecurityReports|Learn more'),
       content: s__(
-        'SecurityReports|GitLab Duo can automatically scan security findings to %{fpLinkStart}identify false positives%{fpLinkEnd} and %{vrLinkStart}generate fixes for vulnerabilities%{vrLinkEnd}. GitLab Duo can assign each finding a GitLab Duo confidence score. You can adjust or disable these features in the GitLab Duo Settings.',
+        'SecurityReports|GitLab Duo can automatically scan security findings to %{fpLinkStart}identify false positives%{fpLinkEnd} and %{vrLinkStart}generate fixes for vulnerabilities%{vrLinkEnd}. GitLab Duo can assign each finding a GitLab Duo confidence score. You can adjust or disable these features in the GitLab Duo Settings. These features are available as a free beta for a limited time and are disabled by default.',
       ),
     },
   },
   DOC_PATH_SAST_FALSE_POSITIVE_DETECTION,
   DOC_PATH_DISMISSING_FALSE_POSITIVES,
+  DOC_PATH_SAST_VULNERABILITY_RESOLUTION,
 };
 </script>
 <template>
@@ -92,7 +96,7 @@ export default {
               }}</gl-link>
             </template>
             <template #vrLink="{ content }">
-              <gl-link :href="$options.DOC_PATH_DISMISSING_FALSE_POSITIVES" target="_blank">{{
+              <gl-link :href="$options.DOC_PATH_SAST_VULNERABILITY_RESOLUTION" target="_blank">{{
                 content
               }}</gl-link>
             </template>
