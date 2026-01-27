@@ -44,7 +44,7 @@ module Geo
 
     def sync_tag(tag)
       manifest = client.repository_raw_manifest(repository_path, tag[:name])
-      manifest_parsed = Gitlab::Json.parse(manifest)
+      manifest_parsed = Gitlab::Json.safe_parse(manifest)
 
       if LIST_MANIFESTS.include? manifest_parsed['mediaType']
         if buildkit_oci_incompatible_index?(manifest_parsed['manifests'])
@@ -52,7 +52,7 @@ module Geo
         else
           manifest_parsed['manifests'].each do |submanifest_ref|
             submanifest_raw = client.repository_raw_manifest(repository_path, submanifest_ref['digest'])
-            submanifest_parsed = Gitlab::Json.parse(submanifest_raw)
+            submanifest_parsed = Gitlab::Json.safe_parse(submanifest_raw)
             sync_manifest_blobs(submanifest_parsed)
 
             container_repository.push_manifest(
