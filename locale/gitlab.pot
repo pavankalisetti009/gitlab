@@ -21810,9 +21810,6 @@ msgstr ""
 msgid "CycleAnalyticsStage|is not available for the selected group"
 msgstr ""
 
-msgid "CycleAnalytics|%{issuableType} time in stage"
-msgstr ""
-
 msgid "CycleAnalytics|%{selectedLabelsCount} label selected (%{maxLabels} max)"
 msgid_plural "CycleAnalytics|%{selectedLabelsCount} labels selected (%{maxLabels} max)"
 msgstr[0] ""
