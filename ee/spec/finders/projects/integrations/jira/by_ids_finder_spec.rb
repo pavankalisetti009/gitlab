@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::Integrations::Jira::ByIdsFinder do
+RSpec.describe Projects::Integrations::Jira::ByIdsFinder, feature_category: :team_planning do
   include ReactiveCachingHelpers
 
   let_it_be(:project) { create(:project) }
