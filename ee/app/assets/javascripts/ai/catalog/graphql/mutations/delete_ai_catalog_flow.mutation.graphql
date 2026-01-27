@@ -1,3 +1,4 @@
+# @feature_category: workflow_catalog
 mutation deleteAiCatalogFlow($id: AiCatalogItemID!, $forceHardDelete: Boolean = false) {
   aiCatalogFlowDelete(input: { id: $id, forceHardDelete: $forceHardDelete }) {
     errors

@@ -1,3 +1,4 @@
+# @feature_category: workflow_catalog
 mutation deleteAiCatalogAgent($id: AiCatalogItemID!, $forceHardDelete: Boolean = false) {
   aiCatalogAgentDelete(input: { id: $id, forceHardDelete: $forceHardDelete }) {
     errors

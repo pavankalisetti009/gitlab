@@ -1,3 +1,4 @@
+# @feature_category: workflow_catalog
 #import "../fragments/ai_catalog_item.fragment.graphql"
 #import "../fragments/ai_catalog_agent_version.fragment.graphql"
 
