@@ -77423,6 +77423,9 @@ msgstr ""
 msgid "Wiki|Create from template"
 msgstr ""
 
+msgid "Wiki|Edit Sidebar"
+msgstr ""
+
 msgid "Wiki|Edit custom sidebar"
 msgstr ""
 
