@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton } from '@gitlab/ui';
+import { GlAlert } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
@@ -45,7 +45,6 @@ export default {
   name: 'VersionAlert',
   components: {
     GlAlert,
-    GlButton,
   },
   inject: {
     projectId: {
@@ -95,19 +94,10 @@ export default {
           })
         : s__('AICatalog|View latest version');
     },
-    primaryButtonAction() {
-      return this.isLatestVersionActive
-        ? () => this.updateVersion()
-        : () => this.version.setActiveVersionKey(VERSION_LATEST);
-    },
     secondaryButtonText() {
       return this.isLatestVersionActive ? s__('AICatalog|View enabled version') : null;
     },
-    secondaryButtonAction() {
-      return this.isLatestVersionActive
-        ? () => this.version.setActiveVersionKey(this.pinnedVersionKey)
-        : null;
-    },
+
     updateMessage() {
       const messages = ITEM_TYPE_MESSAGES[this.itemType];
       return this.groupId ? messages.groupUpdateMessage : messages.projectUpdateMessage;
@@ -123,6 +113,18 @@ export default {
     },
   },
   methods: {
+    primaryButtonAction() {
+      if (this.isLatestVersionActive) {
+        this.updateVersion();
+      } else {
+        this.version.setActiveVersionKey(VERSION_LATEST);
+      }
+    },
+    secondaryButtonAction() {
+      if (this.secondaryButtonText) {
+        this.version.setActiveVersionKey(this.pinnedVersionKey);
+      }
+    },
     async updateVersion() {
       try {
         const { data } = await this.$apollo.mutate({
@@ -175,21 +177,16 @@ export default {
 </script>
 
 <template>
-  <gl-alert :dismissible="false" :title="s__('AICatalog|A new version is available')">
-    <div class="gl-my-3 gl-flex gl-flex-col gl-gap-4">
-      <span>{{ updateMessage }}</span>
-      <div class="gl-flex gl-w-min gl-flex-col gl-gap-4 @sm:gl-flex-row">
-        <gl-button
-          v-if="secondaryButtonText"
-          data-testid="secondary-button"
-          @click="secondaryButtonAction"
-        >
-          {{ secondaryButtonText }}
-        </gl-button>
-        <gl-button variant="confirm" data-testid="primary-button" @click="primaryButtonAction">
-          {{ primaryButtonText }}
-        </gl-button>
-      </div>
-    </div>
+  <!-- eslint-disable vue/v-on-event-hyphenation -->
+  <gl-alert
+    :dismissible="false"
+    :title="s__('AICatalog|A new version is available')"
+    :primary-button-text="primaryButtonText"
+    :secondary-button-text="secondaryButtonText"
+    @primaryAction="primaryButtonAction"
+    @secondaryAction="secondaryButtonAction"
+  >
+    {{ updateMessage }}
   </gl-alert>
+  <!-- eslint-enable vue/v-on-event-hyphenation -->
 </template>
