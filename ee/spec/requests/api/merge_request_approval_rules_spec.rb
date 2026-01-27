@@ -101,7 +101,7 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
         expect(rule['rule_type']).to eq(mr_approval_rule.rule_type)
         expect(rule['report_type']).to be_nil
         expect(rule['section']).to be_nil
-        expect(rule['contains_hidden_groups']).to eq(false)
+        expect(rule['contains_hidden_groups']).to be(false)
         expect(rule['source_rule']).to be_nil
         expect(rule['eligible_approvers']).to match_array([hash_including('id' => approver.id)])
         expect(rule['users']).to match_array([hash_including('id' => approver.id)])
@@ -115,7 +115,7 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
           it 'hides private group' do
             rule = get_rule.call(json_response)
 
-            expect(rule['contains_hidden_groups']).to eq(true)
+            expect(rule['contains_hidden_groups']).to be(true)
             expect(rule['groups']).to be_empty
           end
         end
@@ -126,7 +126,7 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
           it 'shows private group' do
             rule = get_rule.call(json_response)
 
-            expect(rule['contains_hidden_groups']).to eq(false)
+            expect(rule['contains_hidden_groups']).to be(false)
             expect(rule['groups']).to match_array([hash_including('id' => group.id)])
           end
         end
@@ -186,12 +186,12 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
         expect(rule['rule_type']).to eq(mr_approval_rule.rule_type)
         expect(rule['report_type']).to be_nil
         expect(rule['section']).to be_nil
-        expect(rule['contains_hidden_groups']).to eq(false)
+        expect(rule['contains_hidden_groups']).to be(false)
         expect(rule['source_rule']).to be_nil
         expect(rule['eligible_approvers']).to match_array([hash_including('id' => approver.id)])
         expect(rule['users']).to match_array([hash_including('id' => approver.id)])
         expect(rule['groups']).to match_array([hash_including('id' => group.id)])
-        expect(rule['overridden']).to eq(false)
+        expect(rule['overridden']).to be(false)
       end
     end
   end
@@ -298,7 +298,7 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
         expect(rule['name']).to eq(params[:name])
         expect(rule['approvals_required']).to eq(params[:approvals_required])
         expect(rule['rule_type']).to eq('any_approver')
-        expect(rule['contains_hidden_groups']).to eq(false)
+        expect(rule['contains_hidden_groups']).to be(false)
         expect(rule['source_rule']).to be_nil
         expect(rule['eligible_approvers']).to be_empty
         expect(rule['users']).to be_empty
@@ -476,7 +476,7 @@ RSpec.describe API::MergeRequestApprovalRules, feature_category: :source_code_ma
         expect(rule['name']).to eq(params[:name])
         expect(rule['approvals_required']).to eq(params[:approvals_required])
         expect(rule['rule_type']).to eq(approval_rule.rule_type)
-        expect(rule['contains_hidden_groups']).to eq(false)
+        expect(rule['contains_hidden_groups']).to be(false)
         expect(rule['source_rule']).to be_nil
         expect(rule['eligible_approvers']).to be_empty
         expect(rule['users']).to be_empty
