@@ -6,26 +6,22 @@ RSpec.describe 'Trial Sign In', :with_trial_types, feature_category: :subscripti
   let(:user) { create(:user) }
 
   describe 'on GitLab.com', :saas do
-    before do
-      # Feature specs for when sign_in_form_vue is enabled will be added in
-      # https://gitlab.com/gitlab-org/gitlab/-/work_items/574984
-      stub_feature_flags(sign_in_form_vue: false)
-    end
+    with_and_without_sign_in_form_vue do
+      it 'logs the user in' do
+        url_params = { glm_source: 'any-source', glm_content: 'any-content' }
+        visit(new_trial_registration_path(url_params))
 
-    it 'logs the user in' do
-      url_params = { glm_source: 'any-source', glm_content: 'any-content' }
-      visit(new_trial_registration_path(url_params))
+        click_on 'Sign in'
 
-      click_on 'Sign in'
+        within_testid('sign-in-form') do
+          fill_in 'user_login', with: user.email
+          fill_in 'user_password', with: user.password
 
-      within_testid('sign-in-form') do
-        fill_in 'user_login', with: user.email
-        fill_in 'user_password', with: user.password
+          click_button 'Sign in'
+        end
 
-        click_button 'Sign in'
+        expect(page).to have_current_path(new_trial_path(url_params))
       end
-
-      expect(current_url).to eq(new_trial_url(url_params))
     end
   end
 
