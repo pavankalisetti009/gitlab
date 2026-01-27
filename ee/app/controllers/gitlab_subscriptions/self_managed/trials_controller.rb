@@ -18,8 +18,7 @@ module GitlabSubscriptions
       private
 
       def check_feature_available!
-        render_404 if ::Gitlab::Saas.feature_available?(:subscriptions_trials) || ::Feature.disabled?(
-          :automatic_self_managed_trial_activation, current_user)
+        render_404 unless ::Feature.enabled?(:automatic_self_managed_trial_activation, :instance)
       end
     end
   end

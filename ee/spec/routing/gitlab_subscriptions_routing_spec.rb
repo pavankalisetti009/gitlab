@@ -9,4 +9,12 @@ RSpec.describe 'gitlab_subscriptions routing', feature_category: :subscription_m
       action: 'track_cart_abandonment'
     )
   end
+
+  it "routes to TrialsController when constraint matches saas", :saas_subscriptions_trials do
+    expect(get('/-/trials/new')).to route_to('gitlab_subscriptions/trials#new')
+  end
+
+  it "routes to SelfManaged::TrialsController when constraint does not match saas" do
+    expect(get('/-/trials/new')).to route_to('gitlab_subscriptions/self_managed/trials#new')
+  end
 end

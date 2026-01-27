@@ -73,12 +73,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
         end
       end
 
-      context 'when subscriptions_trials is not available' do
-        let(:subscriptions_trials_enabled) { false }
-
-        it { is_expected.to have_gitlab_http_status(:not_found) }
-      end
-
       context 'with an unconfirmed email address present' do
         let(:user) { create(:user, confirmed_at: nil, unconfirmed_email: 'unconfirmed@gitlab.com') }
 
@@ -329,12 +323,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
             expect(instance).to receive(:execute).and_return(response)
           end
         end
-      end
-
-      context 'when subscriptions_trials is not available' do
-        let(:subscriptions_trials_enabled) { false }
-
-        it { is_expected.to have_gitlab_http_status(:not_found) }
       end
     end
   end

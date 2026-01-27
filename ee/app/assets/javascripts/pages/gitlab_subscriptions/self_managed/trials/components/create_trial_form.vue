@@ -50,7 +50,7 @@ export default {
         state: '',
         consent_to_marketing: '',
       },
-      consentToMarketingValue: '0',
+      consentToMarketingValue: '1',
       // eslint-disable-next-line vue/no-unused-properties
       skipCountryStateQueries: false, // used by mixin
       isSubmitDisabled: false,

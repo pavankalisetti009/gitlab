@@ -93,8 +93,12 @@ describe('CreateTrialForm', () => {
       expect(findSubmitButton().text()).toBe('Get started');
     });
 
-    it('renders the consent to marketing checkbox', () => {
+    it('renders the consent to marketing checkbox and defaults it to checked', () => {
       expect(wrapper.findByTestId('consent-checkbox').isVisible()).toBe(true);
+
+      const hiddenInput = wrapper.find('input[name="consent_to_marketing"]');
+      expect(hiddenInput.exists()).toBe(true);
+      expect(hiddenInput.element.value).toBe('1');
     });
 
     it('renders terms and conditions text with links', () => {

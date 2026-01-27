@@ -7,7 +7,7 @@ RSpec.describe GitlabSubscriptions::SelfManaged::TrialsController, feature_categ
 
   describe 'GET new' do
     subject(:get_new) do
-      get '/-/self_managed/trials/new'
+      get '/-/trials/new'
       response
     end
 
@@ -27,12 +27,6 @@ RSpec.describe GitlabSubscriptions::SelfManaged::TrialsController, feature_categ
           it 'renders the trial form' do
             expect(get_new).to have_gitlab_http_status(:ok)
             expect(response.body).to include(_('Start your free Ultimate trial!'))
-          end
-        end
-
-        context 'when on GitLab.com', :saas_subscriptions_trials do
-          it 'returns 404' do
-            expect(get_new).to have_gitlab_http_status(:not_found)
           end
         end
       end

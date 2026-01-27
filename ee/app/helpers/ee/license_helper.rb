@@ -49,12 +49,20 @@ module EE
       end
     end
 
+    def sm_trial_form_path
+      if ::Feature.enabled?(:automatic_self_managed_trial_activation, :instance)
+        new_self_managed_trials_path # gitlab form
+      else
+        self_managed_new_trial_url # marketo form
+      end
+    end
+
     # EE:Self Managed
     def cloud_license_view_data
       {
         buy_subscription_path: promo_pricing_url,
         customers_portal_url: subscription_portal_manage_url,
-        free_trial_path: self_managed_new_trial_url,
+        free_trial_path: sm_trial_form_path,
         has_active_license: (has_active_license? ? 'true' : 'false'),
         license_remove_path: (current_user.can?(:delete_license) ? admin_license_path : ''),
         subscription_sync_path: sync_seat_link_admin_license_path,
