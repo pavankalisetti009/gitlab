@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ExternalIssue'] do
+RSpec.describe GitlabSchema.types['ExternalIssue'], feature_category: :team_planning do
   let(:expected_fields) { %i[title relative_reference status external_tracker web_url created_at updated_at] }
 
   subject { described_class }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ServiceType'] do
+RSpec.describe GitlabSchema.types['ServiceType'], feature_category: :team_planning do
   it 'exposes all the EE project services' do
     expect(described_class.values.keys).to include(*ee_service_enums)
   end
