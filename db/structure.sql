@@ -18630,7 +18630,8 @@ CREATE TABLE deployment_clusters (
     deployment_id bigint NOT NULL,
     cluster_id bigint NOT NULL,
     kubernetes_namespace character varying(255),
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_bb095c4b11 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE TABLE deployment_merge_requests (
