@@ -237,6 +237,7 @@ module GitlabSubscriptions
       custom_roles
       dast
       dependency_scanning
+      dependency_firewall
       dora4_analytics
       description_composer
       enterprise_templates
