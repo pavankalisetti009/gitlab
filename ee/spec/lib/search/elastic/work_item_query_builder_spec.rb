@@ -633,4 +633,141 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     it_behaves_like 'a query formatted for size'
     it_behaves_like 'a query that is paginated'
   end
+
+  describe 'group work items (epics)' do
+    let_it_be(:epics_test_user) { create(:user) }
+    let_it_be(:public_group) { create(:group, :public) }
+    let_it_be(:private_group) { create(:group, :private) }
+    let_it_be(:private_project) { create(:project, :private, namespace: private_group) }
+
+    let(:epic_type_id) { ::WorkItems::Type.default_by_type(:epic).id }
+    let(:current_user) { epics_test_user }
+    let(:base_options) do
+      {
+        current_user: current_user,
+        project_ids: [],
+        group_ids: [],
+        klass: WorkItem,
+        index_name: ::Search::Elastic::References::WorkItem.index,
+        work_item_type_ids: [epic_type_id],
+        public_and_internal_projects: false,
+        search_level: :global
+      }
+    end
+
+    let(:options) { base_options }
+
+    subject(:build) { described_class.build(query: query, options: options) }
+
+    it 'contains group-level filters' do
+      assert_names_in_query(build, with: %w[
+        work_item:multi_match:and:search_terms
+        work_item:multi_match_phrase:search_terms
+        filters:permissions:global
+        filters:permissions:global:namespace_visibility_level:public_and_internal
+        filters:not_hidden
+        filters:work_item_type_ids
+        filters:non_archived
+        filters:confidentiality:groups:non_confidential
+      ])
+    end
+
+    describe 'confidentiality' do
+      context 'when user has role set in min_access_level_non_confidential option' do
+        context 'in group' do
+          it 'applies non-confidential filters and confidential for assignees and authors' do
+            private_group.add_guest(epics_test_user)
+
+            assert_names_in_query(build,
+              with: %w[filters:confidentiality:groups:non_confidential
+                filters:confidentiality:groups:confidential:as_assignee
+                filters:confidentiality:groups:confidential:as_author])
+          end
+        end
+
+        context 'in project' do
+          it 'applies non-confidential and confidential for assignees and authors' do
+            private_project.add_guest(epics_test_user)
+
+            assert_names_in_query(build,
+              with: %w[filters:confidentiality:groups:non_confidential
+                filters:confidentiality:groups:confidential:as_assignee
+                filters:confidentiality:groups:confidential:as_author])
+          end
+        end
+      end
+
+      context 'when user has role set in min_access_level_confidential option' do
+        context 'in group' do
+          it 'applies the expected membership filters' do
+            private_group.add_planner(epics_test_user)
+
+            assert_names_in_query(build,
+              with: %w[filters:confidentiality:groups:non_confidential
+                filters:confidentiality:groups:confidential
+                filters:confidentiality:groups:confidential:as_assignee
+                filters:confidentiality:groups:private:ancestry_filter:descendants],
+              without: %w[filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants
+                filters:confidentiality:groups:public_and_internal:confidential:as_author])
+          end
+        end
+
+        context 'in project' do
+          it 'applies the expected membership filters' do
+            private_project.add_planner(epics_test_user)
+
+            assert_names_in_query(build,
+              with: %w[filters:confidentiality:groups:non_confidential
+                filters:confidentiality:groups:confidential
+                filters:confidentiality:groups:confidential:as_assignee
+                filters:confidentiality:groups:private:ancestry_filter:descendants],
+              without: %w[filters:confidentiality:groups:public_and_internal:confidential:as_author
+                filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants])
+          end
+        end
+      end
+
+      context 'when user does not have role' do
+        it 'only applies the author or assignee confidential filters and non-confidential filters' do
+          assert_names_in_query(build,
+            with: %w[filters:confidentiality:groups:non_confidential
+              filters:confidentiality:groups:confidential
+              filters:confidentiality:groups:confidential:as_assignee],
+            without: %w[filters:confidentiality:groups:private:ancestry_filter:descendants
+              filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants
+              filters:confidentiality:groups:public_and_internal:confidential:as_author])
+        end
+      end
+
+      context 'when there is no user' do
+        let(:current_user) { nil }
+
+        it 'only applies the non-confidential filter' do
+          assert_names_in_query(build,
+            with: %w[filters:confidentiality:groups:non_confidential],
+            without: %w[filters:confidentiality:groups:confidential:as_author
+              filters:confidentiality:groups:confidential:as_assignee
+              filters:confidentiality:groups:confidential
+              filters:confidentiality:groups:private:ancestry_filter:descendants
+              filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants])
+        end
+      end
+
+      context 'when user can read all resources' do
+        before do
+          allow(epics_test_user).to receive(:can_read_all_resources?).and_return(true)
+        end
+
+        it 'applies no confidential filters' do
+          assert_names_in_query(build,
+            without: %w[filters:confidentiality:groups:non_confidential
+              filters:confidentiality:groups:confidential
+              filters:confidentiality:groups:public_and_internal:confidential:as_author
+              filters:confidentiality:groups:public_and_internal:confidential:as_assignee
+              filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants
+              filters:confidentiality:groups:private:ancestry_filter:descendants])
+        end
+      end
+    end
+  end
 end

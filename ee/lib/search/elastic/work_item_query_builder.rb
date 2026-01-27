@@ -16,6 +16,7 @@ module Search
         options[:related_ids] = related_ids
         options[:use_group_authorization] = use_group_authorization?
         options[:use_project_authorization] = use_project_authorization?
+        options[:features] = 'issues' if use_project_authorization?
 
         query_hash = build_query_hash(query: query, options: options)
 
@@ -82,13 +83,9 @@ module Search
       override :extra_options
       def extra_options
         {
-          use_project_authorization: true,
-          use_group_authorization: false,
           authorization_use_traversal_ids: true,
           doc_type: DOC_TYPE,
-          features: 'issues',
           project_visibility_level_field: :project_visibility_level,
-          min_access_level_non_confidential: ::Gitlab::Access::GUEST,
           min_access_level_confidential_public_internal: ::Gitlab::Access::GUEST,
           min_access_level_confidential: ::Gitlab::Access::PLANNER
         }
