@@ -5797,6 +5797,9 @@ msgstr ""
 msgid "AdminSettings|All new projects can use instance runners by default."
 msgstr ""
 
+msgid "AdminSettings|Allow S3 compatible object storage for offline transfer"
+msgstr ""
+
 msgid "AdminSettings|Allow all integrations"
 msgstr ""
 
