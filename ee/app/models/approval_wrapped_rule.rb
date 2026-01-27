@@ -205,10 +205,51 @@ class ApprovalWrappedRule
   end
 
   def filter_approvers(approvers)
-    filtered_approvers =
-      ApprovalState.filter_author(approvers, merge_request)
+    if Feature.enabled?(:approval_policy_rules_individual_approvers_filtering, project)
+      filter_approvers_by_rule(approvers)
+    else
+      filter_approvers_globally(approvers)
+    end
+  end
 
+  def filter_approvers_by_rule(approvers)
+    prevents_author_approval = approval_rule.prevents_author_approval?
+    prevents_committer_approval = approval_rule.prevents_committer_approval?
+
+    return approvers unless prevents_author_approval || prevents_committer_approval
+
+    approvers = filter_author_for_rule(approvers) if prevents_author_approval
+    approvers = filter_committers_for_rule(approvers) if prevents_committer_approval
+    approvers
+  end
+
+  # TODO: Remove with `approval_policy_rules_individual_approvers_filtering` feature flag
+  def filter_approvers_globally(approvers)
+    filtered_approvers = ApprovalState.filter_author(approvers, merge_request)
     ApprovalState.filter_committers(filtered_approvers, merge_request)
+  end
+
+  # Excludes the author if 'author-approval' is explicitly disabled on instance,
+  # group or project settings. For Ultimate projects, a scan result policy may
+  # override this behaviour by its `approval_settings.prevent_approval_by_author` attribute.
+  def filter_author_for_rule(users)
+    return users unless merge_request.author
+
+    if users.is_a?(ActiveRecord::Relation) && !users.loaded?
+      users.where.not(id: merge_request.author_id)
+    else
+      users - [merge_request.author]
+    end
+  end
+
+  # Excludes the author if 'committers-approval' is explicitly disabled on instance, group or
+  # project settings.
+  def filter_committers_for_rule(users)
+    if users.is_a?(ActiveRecord::Relation) && !users.loaded?
+      users.where.not(id: merge_request.committer_ids_to_filter_from_approvers)
+    else
+      users - merge_request.committers_to_filter_from_approvers
+    end
   end
 
   def overall_approver_ids

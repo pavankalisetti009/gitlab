@@ -22,6 +22,8 @@ class ApprovalState
   # Excludes the author if 'author-approval' is explicitly disabled on project settings.
   # For Ultimate projects, a scan result policy may override this behaviour by its
   # `approval_settings.prevent_approval_by_author` attribute.
+  #
+  # TODO: Remove with `approval_policy_rules_individual_approvers_filtering` feature flag
   def self.filter_author(users, merge_request)
     return users if merge_request.merge_requests_author_approval?
 
@@ -33,6 +35,8 @@ class ApprovalState
   end
 
   # Excludes the author if 'committers-approval' is explicitly disabled on project settings.
+  #
+  # TODO: Remove with `approval_policy_rules_individual_approvers_filtering` feature flag
   def self.filter_committers(users, merge_request)
     return users unless merge_request.merge_requests_disable_committers_approval?
 
@@ -280,8 +284,10 @@ class ApprovalState
   def filter_approvers(approvers, unactioned:)
     approvers = approvers.uniq
     approvers -= approved_approvers if unactioned
-    approvers = self.class.filter_author(approvers, merge_request)
 
+    return approvers if Feature.enabled?(:approval_policy_rules_individual_approvers_filtering, project)
+
+    approvers = self.class.filter_author(approvers, merge_request)
     self.class.filter_committers(approvers, merge_request)
   end
 

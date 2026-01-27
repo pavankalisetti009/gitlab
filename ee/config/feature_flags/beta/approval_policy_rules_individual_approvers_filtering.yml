@@ -1,0 +1,10 @@
+---
+name: approval_policy_rules_individual_approvers_filtering
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/574854
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/217325
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/584768
+milestone: '18.9'
+group: group::security policies
+type: beta
+default_enabled: false

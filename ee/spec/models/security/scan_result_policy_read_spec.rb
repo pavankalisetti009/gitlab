@@ -584,4 +584,36 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
       it { is_expected.to be(false) }
     end
   end
+
+  describe '#prevent_approval_by_author?' do
+    subject(:prevent_approval_by_author) { policy_read.prevent_approval_by_author? }
+
+    context 'with approval setting' do
+      let_it_be(:policy_read) { create(:scan_result_policy_read, :prevent_approval_by_author) }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'without approval setting' do
+      let_it_be(:policy_read) { create(:scan_result_policy_read) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
+  describe '#prevent_approval_by_commit_author?' do
+    subject(:prevent_approval_by_commit_author) { policy_read.prevent_approval_by_commit_author? }
+
+    context 'with approval setting' do
+      let_it_be(:policy_read) { create(:scan_result_policy_read, :prevent_approval_by_commit_author) }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'without approval setting' do
+      let_it_be(:policy_read) { create(:scan_result_policy_read) }
+
+      it { is_expected.to be(false) }
+    end
+  end
 end

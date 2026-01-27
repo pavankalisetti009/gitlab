@@ -6,7 +6,13 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
   let_it_be_with_reload(:project) { create_default(:project, :repository) }
   let_it_be_with_reload(:merge_request) { create_default(:merge_request) }
 
-  subject { create(:approval_merge_request_rule, merge_request: merge_request) }
+  subject(:rule) { create(:approval_merge_request_rule, merge_request: merge_request) }
+
+  describe Security::ApprovalPolicyFiltering do
+    include_examples 'approval rules filtering' do
+      let(:approval_rule_project) { merge_request.target_project }
+    end
+  end
 
   describe 'associations' do
     subject { build_stubbed(:approval_merge_request_rule) }
@@ -511,45 +517,108 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
   end
 
   describe '#approvers' do
+    include_context 'with merge request approval settings' do
+      let(:approval_rule_project) { merge_request.target_project }
+    end
+
+    subject(:approvers) { described_class.find(rule.id).approvers }
+
+    before_all do
+      group.add_guest(merge_request.author)
+    end
+
     before do
-      create(:group) do |group|
-        group.add_guest(merge_request.author)
-        subject.groups << group
-      end
+      rule.groups << group
     end
 
-    context 'when project merge_requests_author_approval is true' do
-      it 'contains author' do
-        merge_request.project.update!(merge_requests_author_approval: true)
-
-        expect(described_class.find(subject.id).approvers).to contain_exactly(merge_request.author)
-      end
-    end
-
-    context 'when project merge_requests_author_approval is false' do
-      before do
-        merge_request.project.update!(merge_requests_author_approval: false)
-      end
-
-      it 'does not contain author' do
-        expect(described_class.find(subject.id).approvers).to be_empty
-      end
-
+    shared_examples 'with preloaded users' do
       context 'when the rules users have already been loaded' do
         before do
-          subject.users.to_a
-          subject.group_users.to_a
+          rule.users.to_a
+          rule.group_users.to_a
         end
 
         it 'does not perform any new queries when all users are loaded already' do
           # single query is triggered for license check
-          expect { subject.approvers }.not_to exceed_query_limit(1)
+          expect { rule.approvers }.not_to exceed_query_limit(1)
         end
 
-        it 'does not contain the author' do
-          expect(subject.approvers).to be_empty
-        end
+        it { is_expected.to expected_approvers }
       end
+    end
+
+    context 'when author approval is allowed' do
+      let(:expected_approvers) { contain_exactly(merge_request.author) }
+
+      it { is_expected.to contain_exactly(merge_request.author) }
+
+      it_behaves_like 'with preloaded users'
+    end
+
+    context 'when instance prevents author approval' do
+      let(:instance_prevents_author_approval) { true }
+      let(:expected_approvers) { be_empty }
+
+      it { is_expected.to be_empty }
+
+      it_behaves_like 'with preloaded users'
+    end
+
+    context 'when parent group prevents author approval' do
+      let(:group_prevents_author_approval) { true }
+      let(:expected_approvers) { be_empty }
+
+      it { is_expected.to be_empty }
+
+      it_behaves_like 'with preloaded users'
+    end
+
+    context 'when project prevents author approval' do
+      let(:project_prevents_author_approval) { true }
+      let(:expected_approvers) { be_empty }
+
+      it { is_expected.to be_empty }
+
+      it_behaves_like 'with preloaded users'
+    end
+
+    context 'when approval policy prevents author approval' do
+      let(:approval_policy_prevents_author_approval) { true }
+      let(:expected_approvers) { be_empty }
+
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      it { is_expected.to be_empty }
+
+      it_behaves_like 'with preloaded users'
+
+      context 'without licensed feature' do
+        let(:expected_approvers) { contain_exactly(merge_request.author) }
+
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it { is_expected.to contain_exactly(merge_request.author) }
+
+        it_behaves_like 'with preloaded users'
+      end
+    end
+
+    context 'when project allows author approval but policy prevents it' do
+      let(:approval_policy_prevents_author_approval) { true }
+      let(:project_prevents_author_approval) { false }
+      let(:expected_approvers) { be_empty }
+
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      it { is_expected.to be_empty }
+
+      it_behaves_like 'with preloaded users'
     end
   end
 

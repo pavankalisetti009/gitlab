@@ -840,4 +840,239 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
       end
     end
   end
+
+  describe '#approvers' do
+    include_context 'with merge request approval settings' do
+      let(:approval_rule_project) { merge_request.target_project }
+    end
+
+    let(:author) { merge_request.author }
+    let(:author_relation) { User.id_in(author.id) }
+    let(:committer_relation) { User.id_in(committer.id) }
+
+    let_it_be(:committer) { create(:user) }
+
+    subject(:approvers) { approval_wrapped_rule.approvers }
+
+    before do
+      allow(merge_request).to receive(:committers).and_return(committer_relation)
+
+      rule.users << author
+      rule.users << committer
+    end
+
+    context 'when author and committer approval is allowed' do
+      it { is_expected.to contain_exactly(author, committer) }
+    end
+
+    context 'when instance prevents author approval' do
+      let(:instance_prevents_author_approval) { true }
+
+      it { is_expected.to contain_exactly(committer) }
+    end
+
+    context 'when parent group prevents author approval' do
+      let(:group_prevents_author_approval) { true }
+
+      it { is_expected.to contain_exactly(committer) }
+    end
+
+    context 'when project prevents author approval' do
+      let(:project_prevents_author_approval) { true }
+
+      it { is_expected.to contain_exactly(committer) }
+    end
+
+    context 'when approval policy prevents author approval' do
+      let(:approval_policy_prevents_author_approval) { true }
+
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      it { is_expected.to contain_exactly(committer) }
+
+      context 'without licensed feature' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it { is_expected.to contain_exactly(author, committer) }
+      end
+    end
+
+    context 'when instance prevents committer approval' do
+      let(:instance_prevents_committer_approval) { true }
+
+      it { is_expected.to contain_exactly(author) }
+    end
+
+    context 'when parent group prevents committer approval' do
+      let(:group_prevents_committer_approval) { true }
+
+      it { is_expected.to contain_exactly(author) }
+    end
+
+    context 'when project prevents committer approval' do
+      let(:project_prevents_committer_approval) { true }
+
+      it { is_expected.to contain_exactly(author) }
+    end
+
+    context 'when approval policy prevents committer approval' do
+      let(:approval_policy_prevents_committer_approval) { true }
+
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      it { is_expected.to contain_exactly(author) }
+
+      context 'without licensed feature' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it { is_expected.to contain_exactly(author, committer) }
+      end
+    end
+
+    context 'when both author and committer approval are prevented at project level' do
+      let(:project_prevents_author_approval) { true }
+      let(:project_prevents_committer_approval) { true }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when both author and committer approval are prevented by policy' do
+      let(:approval_policy_prevents_author_approval) { true }
+      let(:approval_policy_prevents_committer_approval) { true }
+
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when author is also a committer' do
+      before do
+        allow(merge_request).to receive(:committers).and_return(author_relation)
+
+        rule.users.delete(committer)
+      end
+
+      context 'when project prevents author approval but allows committer approval' do
+        let(:project_prevents_author_approval) { true }
+        let(:project_prevents_committer_approval) { false }
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when project prevents committer approval but allows author approval' do
+        let(:project_prevents_author_approval) { false }
+        let(:project_prevents_committer_approval) { true }
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when project allows both' do
+        let(:project_prevents_author_approval) { false }
+        let(:project_prevents_committer_approval) { false }
+
+        it { is_expected.to contain_exactly(author) }
+      end
+    end
+
+    context 'with additional non-author, non-committer approvers' do
+      before do
+        rule.users << approver1
+        rule.users << approver2
+      end
+
+      context 'when project prevents author approval' do
+        let(:project_prevents_author_approval) { true }
+
+        it { is_expected.to contain_exactly(committer, approver1, approver2) }
+      end
+
+      context 'when project prevents committer approval' do
+        let(:project_prevents_committer_approval) { true }
+
+        it { is_expected.to contain_exactly(author, approver1, approver2) }
+      end
+
+      context 'when project prevents both author and committer approval' do
+        let(:project_prevents_author_approval) { true }
+        let(:project_prevents_committer_approval) { true }
+
+        it { is_expected.to contain_exactly(approver1, approver2) }
+      end
+    end
+
+    context 'when merge request has no author' do
+      let(:project_prevents_author_approval) { true }
+
+      before do
+        allow(merge_request).to receive(:author).and_return(nil)
+      end
+
+      it 'does not filter author from approvers' do
+        is_expected.to contain_exactly(author, committer)
+      end
+    end
+
+    context 'when approvers are preloaded' do
+      let(:project_prevents_committer_approval) { true }
+
+      before do
+        rule.users.load
+        rule.group_users.load
+      end
+
+      it 'filters committers from the loaded approvers' do
+        is_expected.to contain_exactly(author)
+      end
+    end
+
+    context 'when security_orchestration_policies is licensed but rule has no scan_result_policy_read' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+        rule.update!(scan_result_policy_read: nil)
+      end
+
+      it 'includes author in approvers' do
+        is_expected.to contain_exactly(author, committer)
+      end
+    end
+
+    context 'with multiple rules' do
+      context 'when one rule has policy preventing author approval' do
+        let_it_be(:policy_read_preventing_author) { create(:scan_result_policy_read, :prevent_approval_by_author) }
+        let_it_be(:policy_read_allowing_author) { create(:scan_result_policy_read) }
+        let(:rule1) { create(:approval_merge_request_rule, merge_request: merge_request, scan_result_policy_read: policy_read_preventing_author) }
+        let(:rule2) { create(:approval_merge_request_rule, merge_request: merge_request, scan_result_policy_read: policy_read_allowing_author) }
+        let(:wrapped_rule1) { described_class.new(merge_request, rule1) }
+        let(:wrapped_rule2) { described_class.new(merge_request, rule2) }
+
+        before do
+          stub_licensed_features(security_orchestration_policies: true)
+
+          rule1.users << author
+          rule1.users << committer
+
+          rule2.users << author
+          rule2.users << committer
+        end
+
+        it 'filters author only from the rule with the policy' do
+          # Rule1 should exclude author due to policy
+          expect(wrapped_rule1.approvers).to contain_exactly(committer)
+
+          # Rule2 should include author since its policy allows it
+          expect(wrapped_rule2.approvers).to contain_exactly(author, committer)
+        end
+      end
+    end
+  end
 end
