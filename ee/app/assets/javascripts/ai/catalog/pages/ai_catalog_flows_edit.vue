@@ -61,6 +61,8 @@ export default {
       this.isSubmitting = true;
       this.resetErrorMessages();
       const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[AI_CATALOG_TYPE_FLOW].update;
+      const originalItemUpdatedAt = this.aiCatalogFlow.updatedAt;
+      const originalVersionUpdatedAt = this.aiCatalogFlow.latestVersion.updatedAt;
 
       try {
         const { data } = await this.$apollo.mutate({
@@ -74,13 +76,17 @@ export default {
         });
 
         if (data) {
-          const { errors } = data[config.responseKey];
+          const { errors, item } = data[config.responseKey];
           if (errors.length > 0) {
             this.errors = errors;
             return;
           }
 
-          this.$toast.show(s__('AICatalog|Flow updated.'));
+          const itemWasUpdated = item.updatedAt !== originalItemUpdatedAt;
+          const versionWasUpdated = item.latestVersion.updatedAt !== originalVersionUpdatedAt;
+          if (itemWasUpdated || versionWasUpdated) {
+            this.$toast.show(s__('AICatalog|Flow updated.'));
+          }
           this.$router.push({
             name: AI_CATALOG_FLOWS_SHOW_ROUTE,
             params: { id: this.$route.params.id },

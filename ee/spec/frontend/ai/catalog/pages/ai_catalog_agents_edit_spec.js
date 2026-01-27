@@ -17,6 +17,8 @@ import {
   mockVersionProp,
   mockAgentConfigurationForProject,
   mockUpdateAiCatalogAgentSuccessMutation,
+  mockUpdateAiCatalogAgentNoChangeMutation,
+  mockUpdateAiCatalogAgentMetadataOnlyMutation,
   mockUpdateAiCatalogAgentErrorMutation,
   mockUpdateAiCatalogThirdPartyFlowSuccessMutation,
 } from '../mock_data';
@@ -179,14 +181,40 @@ describe('AiCatalogAgentsEdit', () => {
       expect(findForm().props('isLoading')).toBe(true);
     });
 
-    describe('when request succeeds', () => {
+    describe('when request succeeds with version change', () => {
       beforeEach(async () => {
         submitForm();
         await waitForPromises();
       });
 
-      it('shows toast', () => {
+      it('shows toast when version was updated', () => {
         expect(mockToast.show).toHaveBeenCalledWith('Agent updated.');
+      });
+    });
+
+    describe('when request succeeds with metadata change only', () => {
+      beforeEach(async () => {
+        mockUpdateAiCatalogAgentHandler.mockResolvedValue(
+          mockUpdateAiCatalogAgentMetadataOnlyMutation,
+        );
+        submitForm();
+        await waitForPromises();
+      });
+
+      it('shows toast when metadata was updated', () => {
+        expect(mockToast.show).toHaveBeenCalledWith('Agent updated.');
+      });
+    });
+
+    describe('when request succeeds without any change', () => {
+      beforeEach(async () => {
+        mockUpdateAiCatalogAgentHandler.mockResolvedValue(mockUpdateAiCatalogAgentNoChangeMutation);
+        submitForm();
+        await waitForPromises();
+      });
+
+      it('does not show toast when nothing was updated', () => {
+        expect(mockToast.show).not.toHaveBeenCalled();
       });
 
       it('navigates to agents show page', async () => {
