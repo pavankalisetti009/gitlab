@@ -64,6 +64,12 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
                       .and_return(true)
       end
 
+      it 'returns the correct number of visualizations' do
+        get_graphql(query, current_user: user)
+
+        expect(graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes).count).to eq(18)
+      end
+
       where(:node_idx, :panel_type, :panel_title) do
         0 | 'SingleStat' | 'Assigned GitLab Duo seat engagement'
         1 | 'SingleStat' | 'GitLab Duo Code Suggestions usage'
@@ -82,6 +88,7 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         14 | 'DataTable' | 'GitLab Duo Code Review usage by user (Last 30 days)'
         15 | 'DataTable' | 'GitLab Duo Root Cause Analysis usage by user (Last 30 days)'
         16 | 'DataTable' | 'GitLab Duo usage by user (Last 30 days)'
+        17 | 'DataTable' | 'Flows usage by user (Last 30 days)'
       end
 
       with_them do

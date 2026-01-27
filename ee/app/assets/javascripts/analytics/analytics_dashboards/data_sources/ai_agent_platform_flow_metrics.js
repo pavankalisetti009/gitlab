@@ -6,6 +6,7 @@ import {
   DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import { defaultClient } from '../graphql/client';
 
 const requestFlowMetrics = async ({ namespace, startDate, endDate, sortBy, sortDesc = false }) => {
@@ -54,8 +55,8 @@ export default async function fetch({
     : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_30_DAYS];
 
   const nodes = await requestFlowMetrics({
-    startDate,
-    endDate,
+    startDate: toISODateFormat(startDate, true),
+    endDate: toISODateFormat(endDate, true),
     namespace,
     ...overridesRest,
   });

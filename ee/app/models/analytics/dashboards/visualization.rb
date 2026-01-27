@@ -70,6 +70,7 @@ module Analytics
         pipeline_metrics_table
         code_suggestions_acceptance_by_language_chart
         duo_flow_metrics_table
+        duo_flows_by_user
         code_generation_volume_trends_chart
         duo_code_review_usage_by_user
         duo_code_suggestions_by_user
