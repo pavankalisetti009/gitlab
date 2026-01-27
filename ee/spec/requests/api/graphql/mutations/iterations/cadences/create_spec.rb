@@ -36,16 +36,19 @@ RSpec.describe 'Creating an iteration cadence', feature_category: :team_planning
     graphql_mutation_response(:iteration_cadence_create)
   end
 
+  shared_examples 'does not create the iteration cadence' do
+    it 'does not create the iteration cadence' do
+      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { Iterations::Cadence.count }
+    end
+  end
+
   context 'when the user does not have permission' do
     before do
       stub_licensed_features(iterations: true)
     end
 
     it_behaves_like 'a mutation that returns a top-level access error'
-
-    it 'does not create iteration cadence' do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Iterations::Cadence, :count)
-    end
+    it_behaves_like 'does not create the iteration cadence'
   end
 
   context 'when the user has permission' do
@@ -82,7 +85,7 @@ RSpec.describe 'Creating an iteration cadence', feature_category: :team_planning
         let(:attributes) { { title: 'automatic cadence', duration_in_weeks: 1, active: true, automatic: false } }
 
         it 'creates an iteration cadence' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }.to change(Iterations::Cadence, :count).by(1)
+          expect { post_graphql_mutation(mutation, current_user: current_user) }.to change { Iterations::Cadence.count }.by(1)
         end
       end
 
@@ -92,9 +95,7 @@ RSpec.describe 'Creating an iteration cadence', feature_category: :team_planning
         it_behaves_like 'a mutation that returns errors in the response',
           errors: ["Iterations in advance can't be blank", "Start date can't be blank", "Title can't be blank"]
 
-        it 'does not create the iteration cadence' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Iterations::Cadence, :count)
-        end
+        it_behaves_like 'does not create the iteration cadence'
       end
 
       context 'when required arguments are missing' do
@@ -106,9 +107,7 @@ RSpec.describe 'Creating an iteration cadence', feature_category: :team_planning
           expect_graphql_errors_to_include(/was provided invalid value for automatic \(Expected value to not be null\)/)
         end
 
-        it 'does not create the iteration cadence' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Iterations::Cadence, :count)
-        end
+        it_behaves_like 'does not create the iteration cadence'
       end
     end
   end

@@ -22,16 +22,20 @@ RSpec.describe 'Creating an External Issue Link', feature_category: :vulnerabili
     graphql_mutation_response(:vulnerability_external_issue_link_create)
   end
 
+  shared_examples 'does not create the external issue link' do
+    it 'does not create the external issue link' do
+      expect { post_graphql_mutation(mutation, current_user: current_user) }
+        .not_to change { Vulnerabilities::ExternalIssueLink.count }
+    end
+  end
+
   context 'when the user does not have permission' do
     before do
       stub_licensed_features(security_dashboard: true, jira_vulnerabilities_integration: true)
     end
 
     it_behaves_like 'a mutation that returns a top-level access error'
-
-    it 'does not create external issue link' do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Vulnerabilities::ExternalIssueLink, :count)
-    end
+    it_behaves_like 'does not create the external issue link'
   end
 
   context 'when the user has permission' do
@@ -99,7 +103,9 @@ RSpec.describe 'Creating an External Issue Link', feature_category: :vulnerabili
             let(:external_issue_id) { '10000' }
 
             it 'creates the external issue link and returns nil for external issue to be fetched using query', :aggregate_failures do
-              expect { post_graphql_mutation(mutation, current_user: current_user) }.to change(Vulnerabilities::ExternalIssueLink, :count).by(1)
+              expect { post_graphql_mutation(mutation, current_user: current_user) }
+                .to change { Vulnerabilities::ExternalIssueLink.count }.by(1)
+
               expect(mutation_response['errors']).to be_empty
               expect(mutation_response.dig('externalIssueLink', 'externalIssue')).to be_nil
             end
@@ -108,9 +114,7 @@ RSpec.describe 'Creating an External Issue Link', feature_category: :vulnerabili
           context 'and saving external issue link fails' do
             let(:external_issue_id) { nil }
 
-            it 'creates the external issue link' do
-              expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Vulnerabilities::ExternalIssueLink, :count)
-            end
+            it_behaves_like 'does not create the external issue link'
           end
         end
 
@@ -120,9 +124,7 @@ RSpec.describe 'Creating an External Issue Link', feature_category: :vulnerabili
             stub_request(:post, 'https://jira.example.com/rest/api/2/issue').to_return(status: 400, body: { 'errors' => ['bad request'] }.to_json)
           end
 
-          it 'does not create the external issue link' do
-            expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Vulnerabilities::ExternalIssueLink, :count)
-          end
+          it_behaves_like 'does not create the external issue link'
         end
       end
     end

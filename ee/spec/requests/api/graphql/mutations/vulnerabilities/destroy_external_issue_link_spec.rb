@@ -26,7 +26,7 @@ RSpec.describe 'Creating an External Issue Link', feature_category: :vulnerabili
     it_behaves_like 'a mutation that returns a top-level access error'
 
     it 'does not destroy external issue link' do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Vulnerabilities::ExternalIssueLink, :count)
+      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { Vulnerabilities::ExternalIssueLink.count }
     end
   end
 
@@ -51,7 +51,7 @@ RSpec.describe 'Creating an External Issue Link', feature_category: :vulnerabili
       end
 
       it 'destroys the external issue link' do
-        expect { post_graphql_mutation(mutation, current_user: current_user) }.to change(Vulnerabilities::ExternalIssueLink, :count).by(-1)
+        expect { post_graphql_mutation(mutation, current_user: current_user) }.to change { Vulnerabilities::ExternalIssueLink.count }.by(-1)
       end
     end
   end
