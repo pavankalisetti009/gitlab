@@ -236,7 +236,7 @@ RSpec.describe Mutations::Ai::Action, :with_current_organization, feature_catego
       end
     end
 
-    context 'when chat input is set ' do
+    context 'when chat input is set' do
       let_it_be(:project) { create(:project, :repository, developers: user) }
       let_it_be(:issue) { create(:issue, project: project) }
       let(:input) { { chat: { resource_id: resource_id } } }

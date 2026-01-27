@@ -305,7 +305,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           'files/ruby/version_info.rb')
       end
 
-      context 'when part of the path is used ' do
+      context 'when part of the path is used' do
         let(:query) { 'def extension:rb path:files' }
 
         it 'returns the same results as when the full path is used' do

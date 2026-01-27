@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Create an instance level  external audit event destination', feature_category: :audit_events do
+RSpec.describe 'Create an instance level external audit event destination', feature_category: :audit_events do
   include GraphqlHelpers
 
   let_it_be(:owner) { create(:admin) }

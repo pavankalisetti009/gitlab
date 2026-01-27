@@ -70,7 +70,7 @@ RSpec.describe Groups::UsageQuotasController, feature_category: :consumables_cos
       end
     end
 
-    context 'when user does not have permission for pending members index ' do
+    context 'when user does not have permission for pending members index' do
       before do
         group.add_developer(user)
       end

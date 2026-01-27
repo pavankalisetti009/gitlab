@@ -1328,7 +1328,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           GRAPHQL
         end
 
-        context 'when work item epics available ' do
+        context 'when work item epics available' do
           before do
             stub_licensed_features(epics: true, epic_colors: true)
           end

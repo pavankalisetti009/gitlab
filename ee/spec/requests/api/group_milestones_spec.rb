@@ -17,7 +17,7 @@ RSpec.describe API::GroupMilestones, feature_category: :team_planning do
     project.add_developer(user)
   end
 
-  it 'matches V4 EE-specific  response schema for a list of issues' do
+  it 'matches V4 EE-specific response schema for a list of issues' do
     get api(issues_route, user)
 
     expect(response).to have_gitlab_http_status(:ok)

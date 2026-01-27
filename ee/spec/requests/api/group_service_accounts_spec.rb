@@ -33,7 +33,7 @@ RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate
       let!(:new_group) { create(:group, owners: service_account_user) }
 
       context "when hard delete disabled" do
-        it "does not mark  user for deletion" do
+        it "does not mark user for deletion" do
           perform_enqueued_jobs { delete api(path, admin, admin_mode: true) }
           expect(service_account_user.blocked?).to eq(false)
           expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: admin,
