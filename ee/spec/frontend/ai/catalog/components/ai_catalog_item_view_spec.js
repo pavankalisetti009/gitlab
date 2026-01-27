@@ -26,7 +26,7 @@ describe('AiCatalogItemView', () => {
   `('when item is a $itemType', ({ item, shouldRenderAgent, shouldRenderFlow }) => {
     beforeEach(() => {
       createComponent({
-        props: { item },
+        props: { item, versionKey: 'latestVersion' },
       });
     });
 
