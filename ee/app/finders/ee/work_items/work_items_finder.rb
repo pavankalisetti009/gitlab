@@ -72,7 +72,7 @@ module EE
 
         # If the user is an admin or a member of the root group, they will have read access to all
         # work items in the subgroups so we can skip the expensive permissions check
-        return related_groups if user_can_access_subgroup_work_items?
+        return related_groups if user_can_access_all_subgroup_items?
 
         ::Group.id_in(
           ::Group.groups_user_can(related_groups, current_user, :read_work_item, same_root: true)
