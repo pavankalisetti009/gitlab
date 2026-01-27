@@ -58,6 +58,7 @@ import {
 import { ENFORCE_VALUE, WARN_VALUE } from './lib/enforcement';
 
 export default {
+  name: 'EditorComponent',
   ACTION_LISTBOX_ITEMS: ACTION_LISTBOX_ITEMS(),
   ADD_RULE_LABEL,
   RULES_LABEL,

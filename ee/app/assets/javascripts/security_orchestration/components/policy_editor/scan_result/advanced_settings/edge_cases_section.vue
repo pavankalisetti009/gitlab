@@ -13,6 +13,7 @@ import {
 } from './constants';
 
 export default {
+  name: 'EdgeCasesSection',
   i18n: {
     UNBLOCK_RULES_TEXT,
     TIME_WINDOW_TEXT,

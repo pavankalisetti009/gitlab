@@ -5,6 +5,7 @@ import { ANY_OPERATOR } from '../../constants';
 import { enforceIntValue } from '../../utils';
 
 export default {
+  name: 'NumberRangeSelect',
   components: {
     GlCollapsibleListbox,
     GlFormInput,

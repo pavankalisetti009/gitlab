@@ -12,6 +12,7 @@ import {
 import SettingsItem from './settings_item.vue';
 
 export default {
+  name: 'SettingsSection',
   i18n: {
     emptyMessage: s__('ScanResultPolicy|No settings available for this policy'),
     protectedBranchTitle: s__('ScanResultPolicy|Protected branch settings'),

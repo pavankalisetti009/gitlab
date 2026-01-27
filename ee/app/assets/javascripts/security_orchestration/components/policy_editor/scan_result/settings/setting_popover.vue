@@ -4,6 +4,7 @@ import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser
 import { s__ } from '~/locale';
 
 export default {
+  name: 'SettingPopover',
   i18n: {
     buttonText: s__("ScanResultPolicy|Don't show me this again"),
   },

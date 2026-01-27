@@ -6,6 +6,7 @@ import FallbackSection from 'ee/security_orchestration/components/policy_editor/
 import { CLOSED } from './constants';
 
 export default {
+  name: 'FallbackAndEdgeCasesSection',
   i18n: {
     title: s__('ScanResultPolicy|Fallback behavior and edge case settings'),
     fallbackBehaviorTitle: s__('ScanResultPolicy|Fallback behavior'),

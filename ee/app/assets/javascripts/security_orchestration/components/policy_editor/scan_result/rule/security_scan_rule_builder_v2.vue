@@ -32,7 +32,7 @@ export default {
     ),
     vulnerabilitiesAllowed: s__('SecurityOrchestration|vulnerabilities allowed'),
   },
-  name: 'SecurityScanRuleBuilder',
+  name: 'SecurityScanRuleBuilderV2',
   components: {
     NumberRangeSelect,
     BranchExceptionSelector,

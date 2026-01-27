@@ -10,6 +10,7 @@ import LicenseScanRuleBuilder from './license_scan_rule_builder.vue';
 import DefaultRuleBuilder from './default_rule_builder.vue';
 
 export default {
+  name: 'RuleSection',
   RULE_OR_LABEL,
   components: {
     GlAlert,

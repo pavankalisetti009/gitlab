@@ -5,6 +5,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { ENFORCEMENT_OPTIONS } from '../lib';
 
 export default {
+  name: 'EnforcementType',
   WARN_MODE_HELP_PATH: helpPagePath(
     'user/application_security/policies/merge_request_approval_policies',
     {

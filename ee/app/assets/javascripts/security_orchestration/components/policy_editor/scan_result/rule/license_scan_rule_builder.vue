@@ -30,6 +30,7 @@ import {
 import ScanTypeSelect from './scan_type_select.vue';
 
 export default {
+  name: 'LicenseScanRuleBuilder',
   STATUS,
   ALLOW_DENY,
   TYPE,
