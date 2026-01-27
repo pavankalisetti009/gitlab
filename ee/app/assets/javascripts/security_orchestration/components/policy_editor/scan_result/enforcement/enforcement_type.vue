@@ -2,7 +2,6 @@
 import { GlAlert, GlFormGroup, GlFormRadioGroup, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { ENFORCEMENT_OPTIONS } from '../lib';
 
 export default {
@@ -19,13 +18,7 @@ export default {
     GlLink,
     GlSprintf,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
-    disabledEnforcementOptions: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
     enforcement: {
       type: String,
       required: true,
@@ -44,29 +37,14 @@ export default {
   computed: {
     alertText() {
       if (this.isWarnMode) {
-        return this.isLicenseScanningAllowedInWarnMode
-          ? s__(
-              'SecurityOrchestration|In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. %{linkStart}Learn more%{linkEnd}',
-            )
-          : s__(
-              'SecurityOrchestration|In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. %{linkStart}Learn more%{linkEnd}',
-            );
+        return s__(
+          'SecurityOrchestration|In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. %{linkStart}Learn more%{linkEnd}',
+        );
       }
 
       return s__(
         'SecurityOrchestration|This policy was previously in warn mode, which was an experimental feature. Due to changes in the feature, warn mode is now disabled. To enable the new warn mode setting, update this property.',
       );
-    },
-    isLicenseScanningAllowedInWarnMode() {
-      return this.glFeatures.securityPolicyWarnModeLicenseScanning;
-    },
-    options() {
-      return ENFORCEMENT_OPTIONS.map((option) => ({
-        ...option,
-        disabled: this.isLicenseScanningAllowedInWarnMode
-          ? false
-          : this.disabledEnforcementOptions.includes(option.value),
-      }));
     },
     showAlert() {
       return this.isWarnMode || this.hasLegacyWarnAction;
@@ -77,6 +55,7 @@ export default {
       this.$emit('change', value);
     },
   },
+  ENFORCEMENT_OPTIONS,
 };
 </script>
 
@@ -84,7 +63,7 @@ export default {
   <gl-form-group :label="s__('SecurityOrchestration|Policy enforcement')" class="gl-mt-5">
     <gl-form-radio-group
       class="gl-inline-block"
-      :options="options"
+      :options="$options.ENFORCEMENT_OPTIONS"
       :checked="enforcement"
       @change="handleEnforcementChange"
     />

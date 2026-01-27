@@ -11,7 +11,6 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 import { NAMESPACE_PROJECT, DEPENDENCIES_TABLE_I18N } from '../constants';
 import DependencyLicenseLinks from './dependency_license_links.vue';
@@ -71,7 +70,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
     dependencies: {
@@ -117,10 +115,7 @@ export default {
   },
   methods: {
     hasPolicyViolation(dependency) {
-      return (
-        this.glFeatures.securityPolicyWarnModeLicenseScanning &&
-        dependency.vulnerabilities?.nodes?.some((vuln) => vuln.policyViolations)
-      );
+      return dependency.vulnerabilities?.nodes?.some(({ policyViolations }) => policyViolations);
     },
     // The GlTable component mutates the `_showDetails` property on items
     // passed to it in order to track the visibility of each row's `row-details`

@@ -12,16 +12,12 @@ describe('EnforcementType', () => {
     isWarnMode: false,
   };
 
-  const factory = (
-    propsData = {},
-    provide = { glFeatures: { securityPolicyWarnModeLicenseScanning: true } },
-  ) => {
+  const factory = (propsData = {}) => {
     wrapper = shallowMountExtended(EnforcementType, {
       propsData: {
         ...defaultProps,
         ...propsData,
       },
-      provide,
       stubs: { GlSprintf },
     });
   };
@@ -44,8 +40,8 @@ describe('EnforcementType', () => {
     it('renders the radio group with correct options and checked value', () => {
       expect(findRadioGroup().exists()).toBe(true);
       expect(findRadioGroup().props('options')).toEqual([
-        { disabled: false, text: 'Warn mode', value: 'warn' },
-        { disabled: false, text: 'Strictly enforced', value: 'enforce' },
+        { text: 'Warn mode', value: 'warn' },
+        { text: 'Strictly enforced', value: 'enforce' },
       ]);
       expect(findRadioGroup().attributes('checked')).toBe('enforce');
     });
@@ -65,19 +61,6 @@ describe('EnforcementType', () => {
     it('displays enforce mode when enforcement is enforce', () => {
       factory({ enforcement: 'enforce' });
 
-      expect(findRadioGroup().attributes('checked')).toBe('enforce');
-    });
-  });
-
-  describe('disabled prop', () => {
-    it('disables options', () => {
-      factory({ disabledEnforcementOptions: ['warn'] });
-
-      expect(findRadioGroup().exists()).toBe(true);
-      expect(findRadioGroup().props('options')).toEqual([
-        { disabled: false, text: 'Warn mode', value: 'warn' },
-        { disabled: false, text: 'Strictly enforced', value: 'enforce' },
-      ]);
       expect(findRadioGroup().attributes('checked')).toBe('enforce');
     });
   });
@@ -152,46 +135,6 @@ describe('EnforcementType', () => {
       await findRadioGroup().vm.$emit('change', 'enforce');
 
       expect(wrapper.emitted('change')).toEqual([['warn'], ['enforce']]);
-    });
-  });
-
-  describe('securityPolicyWarnModeLicenseScanning feature flag off', () => {
-    beforeEach(() => {
-      factory(
-        { disabledEnforcementOptions: ['warn'], isWarnMode: true },
-        { glFeatures: { securityPolicyWarnModeLicenseScanning: false } },
-      );
-    });
-
-    describe('disabled prop', () => {
-      it('disables options', () => {
-        expect(findRadioGroup().exists()).toBe(true);
-        expect(findRadioGroup().props('options')).toEqual([
-          { disabled: true, text: 'Warn mode', value: 'warn' },
-          { disabled: false, text: 'Strictly enforced', value: 'enforce' },
-        ]);
-      });
-    });
-
-    describe('alert display', () => {
-      it('shows alert when isWarnMode is true', () => {
-        const alert = findAlert();
-        expect(findAlert().exists()).toBe(true);
-        expect(alert.text()).toBe(
-          'In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. Learn more',
-        );
-        const link = findLink();
-        const expectedPath = helpPagePath(
-          'user/application_security/policies/merge_request_approval_policies',
-          {
-            anchor: 'warn-mode',
-          },
-        );
-
-        expect(link.exists()).toBe(true);
-        expect(link.attributes('href')).toBe(expectedPath);
-        expect(link.attributes('target')).toBe('_blank');
-      });
     });
   });
 });

@@ -53,7 +53,6 @@ import {
   BOT_MESSAGE_TYPE,
   PERMITTED_INVALID_SETTINGS_KEY,
   REQUIRE_APPROVAL_TYPE,
-  LICENSE_FINDING,
   WARN_TYPE,
 } from './lib';
 import { ENFORCE_VALUE, WARN_VALUE } from './lib/enforcement';
@@ -236,20 +235,6 @@ export default {
       const botActions = this.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
       return botActions.filter(({ enabled }) => enabled);
     },
-    disabledRuleTypes() {
-      if (this.isLicenseScanningAllowedInWarnMode) {
-        return [];
-      }
-
-      return this.enforcement === WARN_VALUE ? [LICENSE_FINDING] : [];
-    },
-    disabledEnforcementOptions() {
-      if (this.isLicenseScanningAllowedInWarnMode) {
-        return [];
-      }
-
-      return this.policy.rules.some(({ type }) => type === LICENSE_FINDING) ? [WARN_VALUE] : [];
-    },
     explicitBotActions() {
       const botActions = this.policy.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
       return botActions.filter(({ enabled }) => enabled);
@@ -281,9 +266,6 @@ export default {
     },
     icon() {
       return this.isExpanded ? 'chevron-down' : 'chevron-right';
-    },
-    isLicenseScanningAllowedInWarnMode() {
-      return this.glFeatures?.securityPolicyWarnModeLicenseScanning;
     },
     isProject() {
       return isProject(this.namespaceType);
@@ -587,7 +569,6 @@ export default {
     <template #additional-status>
       <enforcement-type
         v-if="hasWarnModeFeatureFlag"
-        :disabled-enforcement-options="disabledEnforcementOptions"
         :enforcement="enforcement"
         :has-legacy-warn-action="hasLegacyWarnAction"
         :is-warn-mode="isWarnMode"
@@ -614,7 +595,6 @@ export default {
           :key="rule.id"
           class="gl-mb-4"
           :data-testid="`rule-${index}`"
-          :disabled-rule-types="disabledRuleTypes"
           :error-sources="errorSources"
           :index="index"
           :init-rule="rule"

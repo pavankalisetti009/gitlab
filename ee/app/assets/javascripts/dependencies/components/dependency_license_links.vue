@@ -9,7 +9,6 @@ import {
   GlIntersperse,
 } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { sprintf, s__, n__ } from '~/locale';
 
 // If there are more licenses than this count, a counter will be displayed for the remaining licenses
@@ -34,7 +33,6 @@ export default {
     GlModalDirective,
     GlTooltipDirective,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     title: {
       type: String,
@@ -56,10 +54,7 @@ export default {
       return this.unknownLicense ? [...knownLicenses, this.unknownLicense] : knownLicenses;
     },
     hasPolicyViolations() {
-      return (
-        this.glFeatures.securityPolicyWarnModeLicenseScanning &&
-        this.allLicenses.some((lic) => Boolean(lic?.policyViolations?.length))
-      );
+      return this.allLicenses.some((lic) => Boolean(lic?.policyViolations?.length));
     },
     unknownLicense() {
       return this.licenses.find((license) => license.spdxIdentifier === UNKNOWN_SPDX_IDENTIFIER);

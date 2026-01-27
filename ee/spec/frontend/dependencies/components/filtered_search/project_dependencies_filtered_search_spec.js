@@ -12,10 +12,9 @@ import ActivityToken from 'ee/dependencies/components/filtered_search/tokens/act
 describe('ProjectDependenciesFilteredSearch', () => {
   let wrapper;
 
-  const createComponent = ({ provide = {}, glFeatures = {} } = {}) => {
+  const createComponent = ({ provide = {} } = {}) => {
     wrapper = shallowMount(ProjectDependenciesFilteredSearch, {
       provide: {
-        glFeatures,
         ...provide,
       },
     });
@@ -37,6 +36,7 @@ describe('ProjectDependenciesFilteredSearch', () => {
     tokenTitle     | tokenConfig
     ${'Component'} | ${{ title: 'Component', type: 'component_names', multiSelect: true, token: ComponentToken, operators: OPERATORS_IS }}
     ${'Version'}   | ${{ title: 'Version', type: 'component_versions', multiSelect: true, token: VersionToken, operators: OPERATORS_IS_NOT }}
+    ${'Activity'}  | ${{ title: 'Activity', type: 'component_activity', multiSelect: false, token: ActivityToken, operators: OPERATORS_IS }}
   `('contains a "$tokenTitle" search token', ({ tokenConfig }) => {
     expect(findDependenciesFilteredSearch().props('tokens')).toMatchObject(
       expect.arrayContaining([
@@ -45,38 +45,5 @@ describe('ProjectDependenciesFilteredSearch', () => {
         }),
       ]),
     );
-  });
-
-  describe('Activity token', () => {
-    it('does not include Activity token when feature flag is disabled', () => {
-      createComponent({ glFeatures: { securityPolicyWarnModeLicenseScanning: false } });
-
-      const tokens = findDependenciesFilteredSearch().props('tokens');
-      expect(tokens).not.toMatchObject(
-        expect.arrayContaining([
-          expect.objectContaining({
-            type: 'component_activity',
-          }),
-        ]),
-      );
-    });
-
-    it('includes Activity token when feature flag is enabled', () => {
-      createComponent({ glFeatures: { securityPolicyWarnModeLicenseScanning: true } });
-
-      const tokens = findDependenciesFilteredSearch().props('tokens');
-      expect(tokens).toMatchObject(
-        expect.arrayContaining([
-          expect.objectContaining({
-            title: 'Activity',
-            type: 'component_activity',
-            multiSelect: false,
-            unique: true,
-            token: ActivityToken,
-            operators: OPERATORS_IS,
-          }),
-        ]),
-      );
-    });
   });
 });
