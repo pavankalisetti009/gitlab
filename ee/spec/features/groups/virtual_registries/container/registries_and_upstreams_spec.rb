@@ -162,7 +162,7 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
 
           click_button 'Delete registry'
 
-          page.within('#destroy-registry-modal') do
+          within_modal do
             click_button 'Delete'
           end
 
@@ -183,6 +183,29 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
         expect(page).to have_current_path(
           "#{group_virtual_registries_container_registry_path(group, ::VirtualRegistries::Container::Registry.last)}/"
         )
+      end
+
+      context 'with existing virtual registry upstream', :js do
+        before do
+          visit group_virtual_registries_container_upstreams_path(group)
+
+          wait_for_requests
+        end
+
+        it 'deletes upstream' do
+          expect(page).to have_text(upstream.name)
+
+          click_button 'More actions'
+
+          click_button 'Delete upstream'
+
+          within_modal do
+            click_button 'Delete upstream'
+          end
+
+          expect(page).not_to have_text(upstream.name)
+          expect(page).to have_text('Upstream has been deleted.')
+        end
       end
     end
   end

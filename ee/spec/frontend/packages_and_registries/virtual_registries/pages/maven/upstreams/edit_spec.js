@@ -5,7 +5,7 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { updateMavenUpstream } from 'ee/api/virtual_registries_api';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
 import MavenEditUpstreamApp from 'ee/packages_and_registries/virtual_registries/pages/maven/upstreams/edit.vue';
-import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
+import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/delete_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');

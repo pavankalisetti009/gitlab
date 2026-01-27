@@ -15,7 +15,7 @@ import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registri
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
+import DeleteUpstreamWithModal from './delete_modal.vue';
 
 export default {
   name: 'UpstreamsTable',
@@ -109,7 +109,11 @@ export default {
     },
     parseError(error) {
       captureException({ component: this.$options.name, error });
-      return error.response?.data?.error || error.message;
+      return (
+        error.response?.data?.delete?.errors.join(', ') ||
+        error.response?.data?.error ||
+        error.message
+      );
     },
     handleSuccess() {
       this.$emit('upstream-deleted');

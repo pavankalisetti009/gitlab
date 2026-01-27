@@ -9,7 +9,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenUpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/table.vue';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
-import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
+import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/delete_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import { deleteMavenUpstreamCache } from 'ee/api/virtual_registries_api';
 import { groupMavenUpstreams } from '../../../mock_data';
@@ -371,6 +371,17 @@ describe('MavenUpstreamsTable', () => {
 
         expect(wrapper.emitted('upstream-delete-failed')).toHaveLength(1);
         expect(wrapper.emitted('upstream-delete-failed')[0][0]).toBe('API Error');
+        expect(findUpstreamDeleteModal().props('visible')).toBe(false);
+      });
+
+      it('emits `upstream-delete-failed` event with parsed GraphQL error messages and hides the modal', async () => {
+        await findDropdownItem().vm.$emit('action');
+        await findUpstreamDeleteModal().vm.$emit('error', {
+          response: { data: { delete: { errors: ['API Error', 'Error!'] } } },
+        });
+
+        expect(wrapper.emitted('upstream-delete-failed')).toHaveLength(1);
+        expect(wrapper.emitted('upstream-delete-failed')[0][0]).toBe('API Error, Error!');
         expect(findUpstreamDeleteModal().props('visible')).toBe(false);
       });
     });

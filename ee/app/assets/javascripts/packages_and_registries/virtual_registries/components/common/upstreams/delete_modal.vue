@@ -2,16 +2,20 @@
 import { GlModal, GlTruncateText, GlSkeletonLoader } from '@gitlab/ui';
 import { s__, __, n__, sprintf } from '~/locale';
 import { deleteMavenUpstream } from 'ee/api/virtual_registries_api';
-import getMavenUpstreamRegistriesQuery from '../../../graphql/queries/get_maven_upstream_registries.query.graphql';
-import { captureException } from '../../../sentry_utils';
-import { convertToMavenUpstreamGraphQLId } from '../../../utils';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 export default {
-  name: 'DeleteMavenUpstreamWithModal',
+  name: 'DeleteUpstreamWithModal',
   components: {
     GlModal,
     GlTruncateText,
     GlSkeletonLoader,
+  },
+  inject: {
+    deleteUpstreamMutation: { default: null },
+    getUpstreamRegistriesQuery: { default: null },
+    ids: { default: {} },
   },
   model: {
     prop: 'visible',
@@ -37,17 +41,19 @@ export default {
   emits: ['success', 'error', 'canceled', 'change'],
   apollo: {
     registryUpstreams: {
-      query: getMavenUpstreamRegistriesQuery,
+      query() {
+        return this.getUpstreamRegistriesQuery;
+      },
       variables() {
         return {
-          id: this.mavenUpstreamRegistryID,
+          id: this.upstreamRegistryID,
         };
       },
       skip() {
         return !this.visible || !this.upstreamId;
       },
       update(data) {
-        return data.virtualRegistriesPackagesMavenUpstream?.registryUpstreams ?? [];
+        return data.upstream?.registryUpstreams ?? [];
       },
       error(error) {
         captureException({ error, component: this.$options.name });
@@ -63,8 +69,8 @@ export default {
     loading() {
       return this.$apollo.queries.registryUpstreams.loading;
     },
-    mavenUpstreamRegistryID() {
-      return convertToMavenUpstreamGraphQLId(this.upstreamId);
+    upstreamRegistryID() {
+      return convertToGraphQLId(this.ids.baseUpstream, this.upstreamId);
     },
     confirmationMessage() {
       return sprintf(s__('VirtualRegistry|Are you sure you want to delete %{name}?'), {
@@ -109,9 +115,18 @@ export default {
   methods: {
     async deleteUpstream() {
       try {
-        await deleteMavenUpstream({
-          id: this.upstreamId,
-        });
+        if (this.deleteUpstreamMutation) {
+          await this.$apollo.mutate({
+            mutation: this.deleteUpstreamMutation,
+            variables: {
+              id: this.upstreamRegistryID,
+            },
+          });
+        } else {
+          await deleteMavenUpstream({
+            id: this.upstreamId,
+          });
+        }
 
         this.$emit('success');
       } catch (error) {
