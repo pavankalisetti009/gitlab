@@ -27,7 +27,7 @@ export default {
     <gl-sprintf
       :message="
         __(
-          'An administrator has set the maximum expiration date to %{maxDate}. %{helpLinkStart}Learn more%{helpLinkEnd}.',
+          'An administrator has set the %{helpLinkStart}maximum expiration date%{helpLinkEnd} to %{maxDate}.',
         )
       "
     >
