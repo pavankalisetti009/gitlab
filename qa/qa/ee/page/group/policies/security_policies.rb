@@ -30,6 +30,10 @@ module QA
             def click_pipeline_execution_policy
               click_element('select-policy-pipeline_execution_policy')
               wait_for_requests
+              # Wait for the policy form to be fully rendered before interacting with it
+              wait_until(max_duration: 10, reload: false, message: 'Waiting for policy form to load') do
+                has_element?('policy-name-text', wait: 1)
+              end
             end
 
             def set_policy_name(policy_name)
@@ -38,6 +42,7 @@ module QA
 
             def select_strategy(override = false)
               click_element('strategy-selector-dropdown')
+              wait_for_requests
 
               if override
                 click_element('listbox-item-override_project_ci')
@@ -58,11 +63,18 @@ module QA
 
             def select_project(project_id)
               click_element('pipeline-execution-project-dropdown')
+              # Wait for the GraphQL query to fetch projects to complete
+              wait_for_requests
+              # Wait for the specific project item to appear in the dropdown
+              wait_until(max_duration: 15, reload: false, message: 'Waiting for project dropdown to populate') do
+                has_element?(project_listbox_item(project_id), wait: 1)
+              end
               find_element(project_listbox_item(project_id)).click
             end
 
             def save_policy
               click_element('save-policy')
+              wait_for_requests
             end
 
             def project_listbox_item(project_id)

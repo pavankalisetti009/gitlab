@@ -69,20 +69,9 @@ module QA
           end
         end
 
-        project.visit_job('pipeline_exec_policy_build_job')
-
         verify_expected_job_log(job_name: 'pipeline_exec_policy_build_job', expected_text: expected_job_log)
-
-        project.visit_job('pipeline_exec_policy_pre_job')
-
         verify_expected_job_log(job_name: 'pipeline_exec_policy_pre_job', expected_text: expected_job_log)
-
-        project.visit_job('pipeline_exec_policy_post_job')
-
         verify_expected_job_log(job_name: 'pipeline_exec_policy_post_job', expected_text: expected_job_log)
-
-        project.visit_job('project_job')
-
         verify_expected_job_log(job_name: 'project_job', expected_text: 'This is the project job. Colour grey')
       end
 
@@ -105,16 +94,8 @@ module QA
           end
         end
 
-        project.visit_job('pipeline_exec_policy_build_job')
-
         verify_expected_job_log(job_name: 'pipeline_exec_policy_build_job', expected_text: expected_job_log)
-
-        project.visit_job('pipeline_exec_policy_pre_job')
-
         verify_expected_job_log(job_name: 'pipeline_exec_policy_pre_job', expected_text: expected_job_log)
-
-        project.visit_job('pipeline_exec_policy_post_job')
-
         verify_expected_job_log(job_name: 'pipeline_exec_policy_post_job', expected_text: expected_job_log)
       end
 
@@ -152,6 +133,7 @@ module QA
       def verify_expected_job_log(job_name:, expected_text:)
         project.visit_job(job_name)
         Page::Project::Job::Show.perform do |show|
+          show.loaded?
           expect(show.output).to have_content(expected_text),
             "Didn't find '#{expected_text}' within #{job_name}'s log:\n#{show.output}."
         end
