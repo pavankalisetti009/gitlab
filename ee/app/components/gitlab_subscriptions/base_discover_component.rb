@@ -25,27 +25,27 @@ module GitlabSubscriptions
     end
 
     def trial_type
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def trial_active?
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def text_page_title
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def hero_logo
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def hero_logo_dark
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def hero_header_text
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def hero_tagline_text
@@ -53,23 +53,23 @@ module GitlabSubscriptions
     end
 
     def buy_now_link
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def cta_button_text
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def hero_video
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def why_section_header_text
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def core_feature_one_header_text
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def core_feature_two_header_text
@@ -77,15 +77,15 @@ module GitlabSubscriptions
     end
 
     def hero_thumbnail
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def discover_card_collection
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def core_section_one_card_collection
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def core_section_two_card_collection
@@ -124,7 +124,7 @@ module GitlabSubscriptions
     end
 
     def glm_content
-      raise NoMethodError, 'This method must be implemented in a subclass'
+      raise Gitlab::AbstractMethodError
     end
 
     def trial_status_cta_label
