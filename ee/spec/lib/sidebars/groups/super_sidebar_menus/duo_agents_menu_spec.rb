@@ -101,7 +101,6 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
 
       before do
         stub_feature_flags(global_ai_catalog: true)
-        stub_feature_flags(ai_catalog_agents: false)
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(true)
         allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(false)

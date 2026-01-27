@@ -1,3 +1,4 @@
+# @feature_category: workflow_catalog
 query aiCatalogGroupUserPermissions($fullPath: ID!) {
   group(fullPath: $fullPath) {
     id

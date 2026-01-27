@@ -1,3 +1,4 @@
+# @feature_category: workflow_catalog
 mutation reportAiCatalogItem($input: AiCatalogItemReportInput!) {
   aiCatalogItemReport(input: $input) {
     errors
