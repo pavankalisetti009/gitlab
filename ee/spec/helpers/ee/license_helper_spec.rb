@@ -94,16 +94,18 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
     end
 
     context 'when there is a current license' do
-      it 'returns the data for the view' do
+      before do
         custom_plan = 'custom plan'
         license = double('License', plan: custom_plan)
         allow(License).to receive(:current).and_return(license)
+      end
 
+      it 'returns the data for the view' do
         expect(helper.cloud_license_view_data).to eq(
           {
             has_active_license: 'true',
             customers_portal_url: 'subscriptions_manage_url',
-            free_trial_path: 'self_managed_new_trial_url',
+            free_trial_path: new_self_managed_trials_path,
             buy_subscription_path: promo_pricing_url,
             subscription_sync_path: sync_seat_link_admin_license_path,
             license_remove_path: admin_license_path,
@@ -113,6 +115,12 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
             settings_add_license_path: general_admin_application_settings_path(anchor: 'js-add-license-toggle')
           }
         )
+      end
+
+      it 'returns the marketo free_trial_path when FF is disabled' do
+        stub_feature_flags(automatic_self_managed_trial_activation: false)
+
+        expect(helper.cloud_license_view_data).to include({ free_trial_path: 'self_managed_new_trial_url' })
       end
 
       context 'when the current user is not an admin' do
@@ -125,14 +133,16 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
     end
 
     context 'when there is no current license' do
-      it 'returns the data for the view' do
+      before do
         allow(License).to receive(:current).and_return(nil)
+      end
 
+      it 'returns the data for the view' do
         expect(helper.cloud_license_view_data).to eq(
           {
             has_active_license: 'false',
             customers_portal_url: 'subscriptions_manage_url',
-            free_trial_path: 'self_managed_new_trial_url',
+            free_trial_path: new_self_managed_trials_path,
             buy_subscription_path: promo_pricing_url,
             subscription_sync_path: sync_seat_link_admin_license_path,
             license_remove_path: admin_license_path,
@@ -142,6 +152,12 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
             settings_add_license_path: general_admin_application_settings_path(anchor: 'js-add-license-toggle')
           }
         )
+      end
+
+      it 'returns the marketo free_trial_path when FF is disabled' do
+        stub_feature_flags(automatic_self_managed_trial_activation: false)
+
+        expect(helper.cloud_license_view_data).to include({ free_trial_path: 'self_managed_new_trial_url' })
       end
     end
 

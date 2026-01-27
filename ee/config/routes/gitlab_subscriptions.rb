@@ -6,12 +6,14 @@ scope module: :gitlab_subscriptions do
     resource :duo_enterprise, only: [:new, :create]
   end
 
-  namespace :self_managed do
+  constraints(GitlabSubscriptions::TrialTypeConstraint.new) do
+    # saas => GitlabSubscriptions::TrialsController
     resources :trials, only: [:new, :create]
   end
+  # self managed => GitlabSubscriptions::SelfManaged::TrialsController
+  resource :trials, only: [:new, :create], controller: 'self_managed/trials', as: :self_managed_trials
 
   resources :groups, only: [:new, :create], path: 'subscriptions/groups', as: :gitlab_subscriptions_groups
-  resources :trials, only: [:new, :create]
   resource :subscriptions, only: [:new] do
     get :buy_minutes
     get :buy_storage
