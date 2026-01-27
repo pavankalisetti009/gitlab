@@ -360,9 +360,6 @@ module Gitlab
           add_related_ids(work_item_scope_options, Issue.name)
         when :merge_requests
           base_options.merge(add_related_ids(merge_request_scope_options, MergeRequest.name))
-        when :issues
-          base_options.merge(
-            filters.slice(:order_by, :sort, :confidential, :state, :label_name, :include_archived), klass: Issue)
         when :milestones
           # Must pass 'issues' and 'merge_requests' to check
           # if any of the features is available for projects in ApplicationClassProxy#project_ids_query
@@ -469,10 +466,18 @@ module Gitlab
         strong_memoize(memoize_key('epics', count_only: count_only)) do
           options = scope_options(:epics)
             .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
-          search_query = ::Search::Elastic::WorkItemGroupQueryBuilder.build(query: query, options: options)
+          search_query = epics_query_builder.build(query: query, options: options)
           ::Gitlab::Search::Client.execute_search(query: search_query, options: options) do |response|
             ::Search::Elastic::ResponseMapper.new(response, options).paginated_array
           end
+        end
+      end
+
+      def epics_query_builder
+        if Feature.enabled?(:search_scope_work_item, :instance)
+          ::Search::Elastic::WorkItemQueryBuilder
+        else
+          ::Search::Elastic::WorkItemGroupQueryBuilder
         end
       end
 

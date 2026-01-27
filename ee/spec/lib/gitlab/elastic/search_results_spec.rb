@@ -323,4 +323,22 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       end
     end
   end
+
+  describe '#epics_query_builder' do
+    let(:results) { described_class.new(user, query, limit_project_ids) }
+
+    it 'returns WorkItemQueryBuilder' do
+      expect(results.send(:epics_query_builder)).to eq(::Search::Elastic::WorkItemQueryBuilder)
+    end
+
+    context 'when search_scope_work_item feature flag is disabled' do
+      before do
+        stub_feature_flags(search_scope_work_item: false)
+      end
+
+      it 'returns WorkItemGroupQueryBuilder' do
+        expect(results.send(:epics_query_builder)).to eq(::Search::Elastic::WorkItemGroupQueryBuilder)
+      end
+    end
+  end
 end
