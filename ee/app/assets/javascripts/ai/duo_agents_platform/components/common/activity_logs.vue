@@ -114,7 +114,7 @@ export default {
         <non-gfm-markdown
           v-if="isMarkdown(item, index)"
           :markdown="item.content"
-          class="gl-m-0 gl-flex-1 gl-py-2 gl-wrap-anywhere"
+          class="gl-m-0 gl-flex-1 gl-py-2 gl-pr-6 gl-wrap-anywhere"
         />
         <div v-else class="gl-m-0 gl-flex-1 gl-py-2">
           {{ item.content }}
