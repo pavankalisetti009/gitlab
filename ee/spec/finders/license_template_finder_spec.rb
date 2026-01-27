@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe LicenseTemplateFinder do
+RSpec.describe LicenseTemplateFinder, feature_category: :subscription_management do
   let_it_be(:project) { create(:project) }
 
   let(:params) { {} }

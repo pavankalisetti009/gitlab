@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CountryStatesController, feature_category: :shared do
+RSpec.describe CountryStatesController, feature_category: :subscription_management do
   describe 'GET #index' do
     it 'returns a list of states as json' do
       country = 'NL'

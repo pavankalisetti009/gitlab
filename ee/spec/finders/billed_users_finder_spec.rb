@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe BilledUsersFinder do
+RSpec.describe BilledUsersFinder, feature_category: :seat_cost_management do
   let_it_be_with_refind(:group) { create(:group) }
 
   let(:search_term) { nil }
