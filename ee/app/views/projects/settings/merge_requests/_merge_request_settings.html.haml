@@ -8,6 +8,8 @@
 
 = render 'projects/settings/merge_requests/merge_request_merge_checks_settings', project: @project, form: form
 
+= render 'projects/settings/merge_requests/merge_request_title_regex', project: @project, form: form
+
 - if @project.licensed_feature_available?(:external_status_checks)
   = render_if_exists 'projects/settings/merge_requests/merge_request_status_checks_settings'
 
@@ -19,8 +21,6 @@
 
 - if @project.forked?
   = render 'projects/settings/merge_requests/merge_request_target_project_settings', project: @project, form: form
-
-= render 'projects/settings/merge_requests/merge_request_title_regex', project: @project, form: form
 
 - if @project.feature_available?(:issuable_default_templates)
   .form-group
