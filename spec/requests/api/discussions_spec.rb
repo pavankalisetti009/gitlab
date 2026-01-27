@@ -42,7 +42,9 @@ RSpec.describe API::Discussions, feature_category: :team_planning do
 
     context 'with work item without notes widget' do
       before do
-        WorkItems::Type.default_by_type(:issue).widget_definitions.find_by_widget_type(:notes).update!(disabled: true)
+        # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without weight widget
+        allow_any_instance_of(Issue).to receive(:has_widget?).with(:notes).and_return(false)
+        # rubocop:enable RSpec/AnyInstanceOf
       end
 
       context 'when fetching discussions' do

@@ -728,8 +728,8 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
 
     context 'when accounting for notes widget' do
       context 'and notes widget is disabled for issue' do
-        before_all do
-          WorkItems::Type.default_by_type(:issue).widget_definitions.find_by_widget_type(:notes).update!(disabled: true)
+        before do
+          allow(issue).to receive(:has_widget?).with(:notes).and_return(false)
         end
 
         it 'does not allow accessing notes' do

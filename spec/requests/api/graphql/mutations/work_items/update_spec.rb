@@ -384,8 +384,10 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         let(:input) { { 'descriptionWidget' => { 'description' => "Updating labels.\n/labels ~\"#{label1.name}\"" } } }
 
         before do
-          WorkItems::Type.default_by_type(:task).widget_definitions
-            .find_by_widget_type(:labels).update!(disabled: true)
+          # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without labels widget
+          allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
+          allow_any_instance_of(WorkItem).to receive(:get_widget).with(:labels).and_return(false)
+          # rubocop:enable RSpec/AnyInstanceOf
         end
 
         it 'ignores the quick action' do
@@ -503,8 +505,10 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           let(:input) { { 'descriptionWidget' => { 'description' => "Updating due date.\n/due today" } } }
 
           before do
-            WorkItems::Type.default_by_type(:task).widget_definitions
-              .find_by_widget_type(:start_and_due_date).update!(disabled: true)
+            # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without start_and_due_date widget
+            allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
+            allow_any_instance_of(WorkItem).to receive(:get_widget).with(:start_and_due_date).and_return(false)
+            # rubocop:enable RSpec/AnyInstanceOf
           end
 
           it 'ignores the quick action' do
@@ -1107,8 +1111,10 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         end
 
         before do
-          WorkItems::Type.default_by_type(:task).widget_definitions
-            .find_by_widget_type(:assignees).update!(disabled: true)
+          # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without assignees widget
+          allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
+          allow_any_instance_of(WorkItem).to receive(:get_widget).with(:assignees).and_return(false)
+          # rubocop:enable RSpec/AnyInstanceOf
         end
 
         it 'ignores the quick action' do
@@ -1726,8 +1732,10 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             end
 
             before do
-              WorkItems::Type.default_by_type(:issue).widget_definitions
-                .find_by_widget_type(:notes).update!(disabled: true)
+              # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without notes widget
+              allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
+              allow_any_instance_of(WorkItem).to receive(:get_widget).with(:notes).and_return(false)
+              # rubocop:enable RSpec/AnyInstanceOf
             end
 
             it_behaves_like 'work item is not updated' do
@@ -1932,8 +1940,10 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           end
 
           before do
-            WorkItems::Type.default_by_type(:task).widget_definitions
-              .find_by_widget_type(:time_tracking).update!(disabled: true)
+            # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without time_tracking widget
+            allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
+            allow_any_instance_of(WorkItem).to receive(:get_widget).with(:time_tracking).and_return(false)
+            # rubocop:enable RSpec/AnyInstanceOf
           end
 
           it 'ignores the quick action' do

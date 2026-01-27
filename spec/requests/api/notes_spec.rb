@@ -245,7 +245,9 @@ RSpec.describe API::Notes, feature_category: :team_planning do
         let(:request_path) { "/projects/#{ext_proj.id}/issues/#{ext_issue.iid}/notes" }
 
         before do
-          WorkItems::Type.default_by_type(:issue).widget_definitions.find_by_widget_type(:notes).update!(disabled: true)
+          # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without notes widget
+          allow_any_instance_of(Issue).to receive(:has_widget?).with(:notes).and_return(false)
+          # rubocop:enable RSpec/AnyInstanceOf
         end
 
         it 'does not fetch notes' do

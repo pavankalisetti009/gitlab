@@ -681,8 +681,10 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       end
 
       before do
-        WorkItems::Type.default_by_type(:task).widget_definitions
-          .find_by_widget_type(:time_tracking).update!(disabled: true)
+        # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without time tracking widget
+        allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
+        allow_any_instance_of(WorkItem).to receive(:get_widget).with(:time_tracking).and_return(false)
+        # rubocop:enable RSpec/AnyInstanceOf
       end
 
       it 'ignores the quick action' do
