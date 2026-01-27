@@ -230,7 +230,7 @@ module Gitlab
           return int_sync_timeout if int_sync_timeout > 0
         end
 
-        # Default to 8 hours, which matches most Geo sync service lease timeouts
+        # Default to 8 hours for backward compatibility (repository sync uses 3 hours)
         message = "Replicator #{name} does not define sync_timeout, using default 8 hour expiration"
         Gitlab::AppLogger.warn(message)
         Gitlab::ErrorTracking.track_exception(

@@ -2,6 +2,7 @@
 
 RSpec.shared_examples 'a Geo framework registry' do
   let(:registry_class_factory) { described_class.underscore.tr('/', '_').to_sym }
+  let!(:expired_timeout) { described_class.replicator_class.sync_timeout + 1.hour }
 
   it_behaves_like 'a Geo verifiable registry'
 
@@ -21,9 +22,9 @@ RSpec.shared_examples 'a Geo framework registry' do
   context 'scopes' do
     describe 'sync_timed_out' do
       it 'return correct records' do
-        record = create(registry_class_factory, :started, last_synced_at: 9.hours.ago)
+        record = create(registry_class_factory, :started, last_synced_at: expired_timeout.ago)
         create(registry_class_factory, :started, last_synced_at: 1.hour.ago)
-        create(registry_class_factory, :failed, last_synced_at: 9.hours.ago)
+        create(registry_class_factory, :failed, last_synced_at: expired_timeout.ago)
 
         expect(described_class.sync_timed_out).to eq [record]
       end
@@ -134,7 +135,7 @@ RSpec.shared_examples 'a Geo framework registry' do
 
   describe '.fail_sync_timeouts' do
     it 'marks started records as failed if they are expired' do
-      record1 = create(registry_class_factory, :started, last_synced_at: 9.hours.ago)
+      record1 = create(registry_class_factory, :started, last_synced_at: expired_timeout.ago)
       record2 = create(registry_class_factory, :started, last_synced_at: 1.hour.ago) # not yet expired
 
       described_class.fail_sync_timeouts
