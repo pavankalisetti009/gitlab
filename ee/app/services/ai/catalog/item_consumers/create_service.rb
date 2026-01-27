@@ -148,6 +148,8 @@ module Ai
         end
 
         def prepare_trigger_params
+          return if project.nil?
+
           if item.foundational_flow
             flow_definition = ::Ai::Catalog::FoundationalFlow[item.foundational_flow_reference]
             return unless flow_definition&.triggers&.any?
