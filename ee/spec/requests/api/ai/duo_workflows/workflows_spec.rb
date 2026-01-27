@@ -60,7 +60,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         workflow_definition: workflow_definition,
         allow_agent_to_request_user: allow_agent_to_request_user,
         image: "example.com/example-image:latest",
-        environment: "web"
+        environment: "web",
+        ai_catalog_item_consumer_id: nil
       }.merge(container)
     end
 
