@@ -423,14 +423,11 @@ connections):
 
 {{< /tabs >}}
 
-{{< alert type="warning" >}}
-
-If directly copying repository data from a GitLab server to Gitaly, ensure that the metadata file,
-default path `/var/opt/gitlab/git-data/repositories/.gitaly-metadata`, is not included in the transfer.
-Copying this file causes GitLab to use the direct disk access to repositories hosted on the Gitaly server,
-leading to `Error creating pipeline` and `Commit not found` errors, or stale data.
-
-{{< /alert >}}
+> [!warning]
+> If directly copying repository data from a GitLab server to Gitaly, ensure that the metadata file,
+> default path `/var/opt/gitlab/git-data/repositories/.gitaly-metadata`, is not included in the transfer.
+> Copying this file causes GitLab to use the direct disk access to repositories hosted on the Gitaly server,
+> leading to `Error creating pipeline` and `Commit not found` errors, or stale data.
 
 ### Configure Gitaly clients
 
