@@ -10,13 +10,13 @@ module Types
         # rubocop: disable GraphQL/ExtractType -- no value for now
         field :ai_gateway_url, String,
           null: true,
-          description: 'URL for local AI gateway server.',
+          description: 'URL for the local AI Gateway server.',
           authorize: :read_self_hosted_models_settings,
           experiment: { milestone: '17.9' }
 
         field :ai_gateway_timeout_seconds, GraphQL::Types::Int,
           null: true,
-          description: 'Timeout in seconds for requests to the AI gateway server.',
+          description: 'Timeout in seconds for requests to the AI Gateway server.',
           authorize: :read_self_hosted_models_settings
         # rubocop: enable GraphQL/ExtractType
 
