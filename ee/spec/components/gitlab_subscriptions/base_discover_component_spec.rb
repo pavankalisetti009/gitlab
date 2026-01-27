@@ -65,7 +65,7 @@ RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, 
 
       with_them do
         it 'raises an error for the unimplemented method' do
-          expect { component }.to raise_error(NoMethodError, 'This method must be implemented in a subclass')
+          expect { component }.to raise_error(Gitlab::AbstractMethodError)
         end
       end
     end
