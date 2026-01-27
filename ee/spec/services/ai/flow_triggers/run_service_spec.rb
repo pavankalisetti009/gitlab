@@ -588,6 +588,27 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       expect(Note.last.note).to match(/automate.agent.sessions.#{workflow.id}/)
     end
 
+    context 'when resource is nil' do
+      let(:resource) { nil }
+      let(:params) { { input: 'pipeline data', event: :pipeline_hooks } }
+
+      subject(:service) do
+        described_class.new(
+          project: project,
+          current_user: current_user,
+          flow_trigger: flow_trigger
+        )
+      end
+
+      it 'creates workload without creating note' do
+        expect { service.execute(params) }.to change { ::Ci::Workloads::Workload.count }.by(1)
+        expect { service.execute(params) }.not_to change { Note.count }
+
+        response = service.execute(params)
+        expect(response).to be_success
+      end
+    end
+
     it 'updates workflow status to running initially and then to start on success' do
       response = service.execute(params)
       expect(response).to be_success

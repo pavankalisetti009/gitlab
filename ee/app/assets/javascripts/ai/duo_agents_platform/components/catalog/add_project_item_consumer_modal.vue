@@ -3,6 +3,7 @@ import { uniqueId } from 'lodash';
 import { GlForm, GlFormCheckbox, GlFormCheckboxGroup, GlFormGroup, GlModal } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
 import {
   AI_CATALOG_ITEM_LABELS,
@@ -31,6 +32,7 @@ export default {
     AddFlowWarning,
     AddThirdPartyFlowWarning,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     itemTypes: {
       type: Array,
@@ -60,12 +62,17 @@ export default {
       errors: [],
       isDirty: false,
       selectedGroupItemConsumer: {},
-      triggerTypes: FLOW_TRIGGER_TYPES.map((type) => type.value),
+      triggerTypes: [],
       groupId: this.item?.project?.rootGroup?.id || null,
       projectId: this.item?.project?.id || null,
     };
   },
   computed: {
+    availableFlowTriggerTypes() {
+      return FLOW_TRIGGER_TYPES.filter(
+        (type) => this.glFeatures.aiFlowTriggerPipelineHooks || type.value !== 'pipeline_hooks',
+      );
+    },
     formId() {
       return uniqueId('add-project-item-consumer-form-');
     },
@@ -139,6 +146,9 @@ export default {
       return warningComponentMap[this.selectedItemType];
     },
   },
+  mounted() {
+    this.triggerTypes = this.availableFlowTriggerTypes.map((type) => type.value);
+  },
   methods: {
     resetForm() {
       this.selectedGroupItemConsumer = {};
@@ -174,7 +184,6 @@ export default {
       this.errors = [this.modalTexts.error];
     },
   },
-  FLOW_TRIGGER_TYPES,
 };
 </script>
 
@@ -224,7 +233,7 @@ export default {
       >
         <gl-form-checkbox-group id="flow-triggers" v-model="triggerTypes">
           <gl-form-checkbox
-            v-for="triggerType in $options.FLOW_TRIGGER_TYPES"
+            v-for="triggerType in availableFlowTriggerTypes"
             :key="triggerType.value"
             :value="triggerType.value"
           >

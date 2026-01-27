@@ -6,7 +6,7 @@ module Ai
       include ::Gitlab::Utils::StrongMemoize
       include ::Ai::Catalog::Loggable
 
-      def initialize(project:, current_user:, resource:, flow_trigger:)
+      def initialize(project:, current_user:, flow_trigger:, resource: nil)
         @project = project
         @current_user = current_user
         @resource = resource
@@ -24,20 +24,26 @@ module Ai
       def execute(params)
         return validation_error if validation_error
 
+        return execute_flow(params)[0] unless resource
+
         note_service = ::Ai::FlowTriggers::CreateNoteService.new(
           project: project, resource: resource, author: flow_trigger_user, discussion: params[:discussion]
         )
 
         note_service.execute(params) do |updated_params|
-          if catalog_item&.flow?
-            start_catalog_workflow(params)
-          else
-            run_workload(updated_params)
-          end
+          execute_flow(updated_params)
         end
       end
 
       private
+
+      def execute_flow(params)
+        if catalog_item&.flow?
+          start_catalog_workflow(params)
+        else
+          run_workload(params)
+        end
+      end
 
       strong_memoize_attr def validation_error
         return ServiceResponse.error(message: 'cannot be triggered by non-human users') unless current_user.human?
@@ -221,6 +227,8 @@ module Ai
       end
 
       def serialized_resource
+        return unless resource
+
         ::Ai::AiResource::Wrapper.new(current_user, resource).wrap.serialize_for_ai.to_json
       end
 
