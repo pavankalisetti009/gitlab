@@ -154,27 +154,15 @@ module Gitlab
         end
 
         def issuer_and_subject
-          if Feature.enabled?(:smartcard_ad_formats_v2, :instance)
-            "X509:<I>#{issuer_dn}<S>#{subject_dn}"
-          else
-            "X509:<I>#{issuer_dn}<S>#{subject}"
-          end
+          "X509:<I>#{issuer_dn}<S>#{subject_dn}"
         end
 
         def reverse_issuer_and_subject
-          if Feature.enabled?(:smartcard_ad_formats_v2, :instance)
-            "X509:<I>#{reverse_issuer_dn}<S>#{subject_dn}"
-          else
-            "X509:<I>#{reverse_issuer_dn}<S>#{subject}"
-          end
+          "X509:<I>#{reverse_issuer_dn}<S>#{subject_dn}"
         end
 
         def subject_alt_security_id
-          if Feature.enabled?(:smartcard_ad_formats_v2, :instance)
-            "X509:<S>#{subject_dn}"
-          else
-            "X509:<S>#{subject}"
-          end
+          "X509:<S>#{subject_dn}"
         end
 
         def username

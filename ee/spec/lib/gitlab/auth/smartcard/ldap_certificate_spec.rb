@@ -213,18 +213,15 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
             "X509:<S>#{subject_ldap_dn_string_raw}"
           end
 
-          where(:ad_format, :smartcard_ad_formats_v2, :result) do
-            'issuer_and_serial_number'           | true   | ref(:issuer_and_serial_number_formatted)
-            'reverse_issuer_and_serial_number'   | true   | ref(:reverse_issuer_and_serial_number_formatted)
-            'principal_name'                     | true   | ref(:principal_name)
-            'rfc822_name'                        | true   | ref(:rfc822_name)
-            'issuer_and_subject'                 | true   | ref(:issuer_and_subject_formatted)
-            'issuer_and_subject'                 | false  | ref(:issuer_and_subject_legacy_formatted)
-            'reverse_issuer_and_subject'         | true   | ref(:reverse_issuer_and_subject_formatted)
-            'reverse_issuer_and_subject'         | false  | ref(:reverse_issuer_and_subject_legacy_formatted)
-            'reverse_issuer_and_reverse_subject' | true   | ref(:reverse_issuer_and_reverse_subject_formatted)
-            'subject'                            | true   | ref(:subject_string)
-            'subject'                            | false  | ref(:subject_string_legacy)
+          where(:ad_format, :result) do
+            'issuer_and_serial_number'           | ref(:issuer_and_serial_number_formatted)
+            'reverse_issuer_and_serial_number'   | ref(:reverse_issuer_and_serial_number_formatted)
+            'principal_name'                     | ref(:principal_name)
+            'rfc822_name'                        | ref(:rfc822_name)
+            'issuer_and_subject'                 | ref(:issuer_and_subject_formatted)
+            'reverse_issuer_and_subject'         | ref(:reverse_issuer_and_subject_formatted)
+            'reverse_issuer_and_reverse_subject' | ref(:reverse_issuer_and_reverse_subject_formatted)
+            'subject'                            | ref(:subject_string)
           end
 
           with_them do
@@ -234,8 +231,6 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
                 smartcard_ad_cert_field: smartcard_ad_cert_field,
                 smartcard_ad_cert_format: ad_format
               )
-
-              stub_feature_flags(smartcard_ad_formats_v2: smartcard_ad_formats_v2)
 
               expect { find_or_create_user }.to change { User.count }.from(0).to(1)
 
