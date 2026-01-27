@@ -2,7 +2,11 @@
 
 module QA
   RSpec.describe 'Verify', :requires_admin, :external_ai_provider, feature_category: :continuous_integration,
-    only: { pipeline: %i[staging staging-canary] } do
+    only: { pipeline: %i[staging staging-canary] },
+    quarantine: {
+      issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/24570',
+      type: :investigating
+    } do
     describe 'Root Cause Analysis' do
       let(:executor) { "qa-runner-#{SecureRandom.hex(4)}" }
       let(:pipeline_job_name) { 'test-root-cause-analysis' }

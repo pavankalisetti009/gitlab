@@ -3,7 +3,12 @@
 module QA
   RSpec.describe 'Ai-powered', feature_category: :duo_chat do
     describe 'Duo Chat', :external_ai_provider,
-      only: { pipeline: %w[staging-canary staging canary production] } do
+      only: { pipeline: %w[staging-canary staging canary production] },
+      quarantine: {
+        only: { pipeline: %i[staging staging-canary] },
+        issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/24569',
+        type: :investigating
+      } do
       let(:project) { create(:project, :with_readme, name: 'duo-chat-explain-code') }
 
       before do
