@@ -137,5 +137,19 @@ module Security
                   .or(member_roles.where(base_access_level: Gitlab::Access::DEVELOPER..))
                   .pluck_primary_key
     end
+
+    def prevent_approval_by_author?
+      has_approval_setting?("prevent_approval_by_author")
+    end
+
+    def prevent_approval_by_commit_author?
+      has_approval_setting?("prevent_approval_by_commit_author")
+    end
+
+    private
+
+    def has_approval_setting?(key)
+      project_approval_settings.fetch(key, false)
+    end
   end
 end

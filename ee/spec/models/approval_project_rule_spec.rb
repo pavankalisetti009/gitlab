@@ -5,6 +5,12 @@ require 'spec_helper'
 RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
   subject(:rule) { create(:approval_project_rule) }
 
+  describe Security::ApprovalPolicyFiltering do
+    include_examples 'approval rules filtering' do
+      let(:approval_rule_project) { rule.project }
+    end
+  end
+
   describe 'validations' do
     it 'is invalid when name not unique within rule type and project' do
       is_expected.to validate_uniqueness_of(:name).scoped_to([:project_id, :rule_type])

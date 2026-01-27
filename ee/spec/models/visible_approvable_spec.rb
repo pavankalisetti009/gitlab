@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe VisibleApprovable do
+RSpec.describe VisibleApprovable, feature_category: :code_review_workflow do
   let(:resource) { create(:merge_request, source_project: project) }
   let!(:project) { create(:project, :repository) }
   let!(:user) { project.creator }
@@ -44,34 +44,90 @@ RSpec.describe VisibleApprovable do
     context 'when author is an approver' do
       let!(:approver) { resource.author }
 
-      it 'excludes author if author cannot approve' do
-        project.update!(merge_requests_author_approval: false)
-        mr = resource.class.find(resource.id)
+      context 'when approval_policy_rules_individual_approvers_filtering is disabled' do
+        before do
+          stub_feature_flags(approval_policy_rules_individual_approvers_filtering: false)
+        end
 
-        expect(mr.overall_approvers).not_to include(approver)
+        it 'excludes author if author cannot approve' do
+          project.update!(merge_requests_author_approval: false)
+          mr = resource.class.find(resource.id)
+
+          expect(mr.overall_approvers).not_to include(approver)
+        end
+
+        it 'includes author if author is able to approve' do
+          project.update!(merge_requests_author_approval: true)
+          mr = resource.class.find(resource.id)
+
+          expect(mr.overall_approvers).to include(approver)
+        end
       end
 
-      it 'includes author if author is able to approve' do
-        project.update!(merge_requests_author_approval: true)
-        mr = resource.class.find(resource.id)
+      context 'when approval_policy_rules_individual_approvers_filtering is enabled' do
+        before do
+          stub_feature_flags(approval_policy_rules_individual_approvers_filtering: true)
+        end
 
-        expect(mr.overall_approvers).to include(approver)
+        it 'includes author regardless of project setting because filtering happens at rule level' do
+          project.update!(merge_requests_author_approval: false)
+          mr = resource.class.find(resource.id)
+
+          # With the feature flag enabled, filtering is done per-rule in ApprovalWrappedRule,
+          # not globally in ApprovalState. The overall_approvers method returns all potential
+          # approvers without global filtering.
+          expect(mr.overall_approvers).to include(approver)
+        end
+
+        it 'includes author if author is able to approve' do
+          project.update!(merge_requests_author_approval: true)
+          mr = resource.class.find(resource.id)
+
+          expect(mr.overall_approvers).to include(approver)
+        end
       end
     end
 
     context 'when a committer is an approver' do
       let!(:approver) { create(:user, email: resource.commits.without_merge_commits.first.committer_email) }
 
-      it 'excludes the committer if committers cannot approve' do
-        project.update!(merge_requests_disable_committers_approval: true)
+      context 'when approval_policy_rules_individual_approvers_filtering is disabled' do
+        before do
+          stub_feature_flags(approval_policy_rules_individual_approvers_filtering: false)
+        end
 
-        is_expected.not_to include(approver)
+        it 'excludes the committer if committers cannot approve' do
+          project.update!(merge_requests_disable_committers_approval: true)
+
+          is_expected.not_to include(approver)
+        end
+
+        it 'includes the committer if committers are able to approve' do
+          project.update!(merge_requests_disable_committers_approval: false)
+
+          is_expected.to include(approver)
+        end
       end
 
-      it 'includes the committer if committers are able to approve' do
-        project.update!(merge_requests_disable_committers_approval: false)
+      context 'when approval_policy_rules_individual_approvers_filtering is enabled' do
+        before do
+          stub_feature_flags(approval_policy_rules_individual_approvers_filtering: true)
+        end
 
-        is_expected.to include(approver)
+        it 'includes committer regardless of project setting because filtering happens at rule level' do
+          project.update!(merge_requests_disable_committers_approval: true)
+
+          # With the feature flag enabled, filtering is done per-rule in ApprovalWrappedRule,
+          # not globally in ApprovalState. The overall_approvers method returns all potential
+          # approvers without global filtering.
+          is_expected.to include(approver)
+        end
+
+        it 'includes the committer if committers are able to approve' do
+          project.update!(merge_requests_disable_committers_approval: false)
+
+          is_expected.to include(approver)
+        end
       end
     end
   end

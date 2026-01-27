@@ -115,13 +115,17 @@ class ApprovalMergeRequestRule < ApplicationRecord
   # Users who are eligible to approve, including specified group members.
   # Excludes the author if 'self-approval' isn't explicitly
   # enabled on project settings.
+  #
+  # TODO: Consider removing this filtering logic and consolidating it in ApprovalWrappedRule
+  # See: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/217325#note_2982431789
+  #
   # @return [Array<User>]
   def approvers
     strong_memoize(:approvers) do
       scope_or_array = super
 
       next scope_or_array unless merge_request.author
-      next scope_or_array if project.merge_requests_author_approval?
+      next scope_or_array if author_can_approve?
 
       if scope_or_array.respond_to?(:where)
         scope_or_array.where.not(id: merge_request.author)
@@ -190,6 +194,14 @@ class ApprovalMergeRequestRule < ApplicationRecord
       updated_at: updated_at,
       created_at: created_at
     }
+  end
+
+  def author_can_approve?
+    if Feature.enabled?(:approval_policy_rules_individual_approvers_filtering, project)
+      !prevents_author_approval?
+    else
+      project.merge_requests_author_approval?
+    end
   end
 
   private

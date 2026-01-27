@@ -50,11 +50,14 @@ RSpec.describe ApprovalState, feature_category: :code_review_workflow do
 
   subject { merge_request.approval_state }
 
+  # TODO: Remove with `approval_policy_rules_individual_approvers_filtering` feature flag
   shared_examples 'filtering author and committers' do
     let(:committers) { [merge_request.author, create(:user, username: 'commiter')] }
     let(:merge_requests_disable_committers_approval) { nil }
 
     before do
+      stub_feature_flags(approval_policy_rules_individual_approvers_filtering: false)
+
       allow(merge_request).to receive(:committers).and_return(User.where(id: committers))
 
       allow(merge_request.project).to receive(:merge_requests_author_approval?).and_return(merge_requests_author_approval)
