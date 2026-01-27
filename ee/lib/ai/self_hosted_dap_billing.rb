@@ -3,8 +3,8 @@
 module Ai
   module SelfHostedDapBilling
     def self.should_bill?(feature_setting)
-      feature_setting&.self_hosted? &&
-        self_hosted_dap_billing_enabled?
+      !!(feature_setting&.self_hosted? &&
+        self_hosted_dap_billing_enabled?)
     end
 
     def self.self_hosted_dap_billing_enabled?

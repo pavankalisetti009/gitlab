@@ -446,7 +446,9 @@ module API
                 'x-gitlab-oauth-token' => gitlab_token,
                 'x-gitlab-unidirectional-streaming' => 'enabled',
                 'x-gitlab-enabled-mcp-server-tools' => mcp_config_service.gitlab_enabled_tools.join(','),
-                'x-gitlab-model-prompt-cache-enabled' => model_prompt_cache_enabled.to_s
+                'x-gitlab-model-prompt-cache-enabled' => model_prompt_cache_enabled.to_s,
+                'x-gitlab-self-hosted-dap-billing-enabled' =>
+                  ::Ai::SelfHostedDapBilling.should_bill?(feature_setting).to_s
               ).merge(model_metadata_headers)
 
               grpc_headers['x-gitlab-project-id'] ||= params[:project_id].presence
