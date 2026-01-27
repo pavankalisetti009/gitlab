@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe ProjectWiki, :elastic, :sidekiq_inline, feature_category: :global_search do
-  let_it_be(:project) { create(:project, :wiki_repo) }
+  let_it_be(:project) { create(:project, :wiki_repo, :public) }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -24,8 +24,11 @@ RSpec.describe ProjectWiki, :elastic, :sidekiq_inline, feature_category: :global
   end
 
   it 'searches wiki page' do
-    expect(project.wiki.elastic_search('term1', type: 'wiki_blob')[:wiki_blobs][:total_count]).to eq(1)
-    expect(project.wiki.elastic_search('term1 | term2', type: 'wiki_blob')[:wiki_blobs][:total_count]).to eq(2)
+    results = project.wiki.elastic_search('term1', type: 'wiki_blob', options: { search_level: :global })
+    expect(results[:wiki_blobs][:total_count]).to eq(1)
+
+    results = project.wiki.elastic_search('term1 | term2', type: 'wiki_blob', options: { search_level: :global })
+    expect(results[:wiki_blobs][:total_count]).to eq(2)
   end
 
   it 'indexes using ElasticWikiIndexerWorker' do
@@ -35,7 +38,8 @@ RSpec.describe ProjectWiki, :elastic, :sidekiq_inline, feature_category: :global
   end
 
   it 'can delete wiki pages' do
-    expect(project.wiki.elastic_search('term2', type: 'wiki_blob')[:wiki_blobs][:total_count]).to eq(1)
+    results = project.wiki.elastic_search('term2', type: 'wiki_blob', options: { search_level: :global })
+    expect(results[:wiki_blobs][:total_count]).to eq(1)
 
     Sidekiq::Testing.inline! do
       project.wiki.find_page('omega_page').delete
@@ -49,6 +53,7 @@ RSpec.describe ProjectWiki, :elastic, :sidekiq_inline, feature_category: :global
       ensure_elasticsearch_index!
     end
 
-    expect(project.wiki.elastic_search('term2', type: 'wiki_blob')[:wiki_blobs][:total_count]).to eq(0)
+    results = project.wiki.elastic_search('term2', type: 'wiki_blob', options: { search_level: :global })
+    expect(results[:wiki_blobs][:total_count]).to eq(0)
   end
 end

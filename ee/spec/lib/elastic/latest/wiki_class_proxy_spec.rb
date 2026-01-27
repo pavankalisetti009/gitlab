@@ -26,6 +26,74 @@ RSpec.describe Elastic::Latest::WikiClassProxy, feature_category: :global_search
       proxy.elastic_search_as_wiki_page('*', options: options)
       assert_named_queries('wiki_blob:match:search_terms:separate_index')
     end
+
+    describe 'authorization' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be(:user) { create(:user) }
+      let(:query) { 'test' }
+
+      where(:search_level, :group_ids, :project_ids) do
+        'global'  | []  | []
+        'group'   | [1] | []
+        'project' | []  | [1]
+      end
+
+      with_them do
+        let(:options) do
+          {
+            current_user: user,
+            search_level: search_level,
+            group_ids: group_ids,
+            project_ids: project_ids
+          }
+        end
+
+        it 'uses new authorization filter with traversal_ids' do
+          proxy.elastic_search(query, options: options)
+
+          expected_queries = %W[
+            filters:permissions:#{search_level}:visibility_level:public_and_internal
+            filters:permissions:#{search_level}:wiki_access_level:enabled
+          ]
+          assert_named_queries(*expected_queries)
+        end
+      end
+
+      context 'when search_advanced_wiki_new_auth_filter FF is disabled' do
+        before do
+          stub_feature_flags(search_advanced_wiki_new_auth_filter: false)
+        end
+
+        where(:search_level, :group_ids, :project_ids) do
+          'global'  | []  | []
+          'group'   | [1] | []
+          'project' | []  | [1]
+        end
+
+        with_them do
+          let(:options) do
+            {
+              current_user: user,
+              search_level: search_level,
+              group_ids: group_ids,
+              project_ids: project_ids
+            }
+          end
+
+          it 'uses legacy authorization filter' do
+            proxy.elastic_search(query, options: options)
+
+            expected_queries = %w[
+              public_documents_filter
+              internal_documents_filter
+            ]
+
+            assert_named_queries(*expected_queries)
+          end
+        end
+      end
+    end
   end
 
   describe '#routing_options' do

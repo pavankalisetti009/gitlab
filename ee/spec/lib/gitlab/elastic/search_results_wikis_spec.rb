@@ -44,14 +44,33 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'wikis', feature_category: :globa
       expect(results.wiki_blobs_count).to eq 1
     end
 
-    it 'finds wiki blobs from public projects only' do
+    context 'when search_advanced_wiki_new_auth_filter FF is false' do
+      before do
+        stub_feature_flags(search_advanced_wiki_new_auth_filter: false)
+      end
+
+      it 'finds wiki blobs and respects limit_project_ids' do
+        project_2 = create :project, :repository, :private, :wiki_repo
+        project_2.wiki.create_page('index_page', 'term')
+        project_2.wiki.index_wiki_blobs
+        project_2.add_guest(user)
+        ensure_elasticsearch_index!
+
+        expect(results.wiki_blobs_count).to eq 1
+
+        results = described_class.new(user, 'term', [project_1.id, project_2.id])
+        expect(results.wiki_blobs_count).to eq 2
+      end
+    end
+
+    it 'finds wiki blobs and ignores limit_project_ids' do
       project_2 = create :project, :repository, :private, :wiki_repo
       project_2.wiki.create_page('index_page', 'term')
       project_2.wiki.index_wiki_blobs
       project_2.add_guest(user)
       ensure_elasticsearch_index!
 
-      expect(results.wiki_blobs_count).to eq 1
+      expect(results.wiki_blobs_count).to eq 2
 
       results = described_class.new(user, 'term', [project_1.id, project_2.id])
       expect(results.wiki_blobs_count).to eq 2

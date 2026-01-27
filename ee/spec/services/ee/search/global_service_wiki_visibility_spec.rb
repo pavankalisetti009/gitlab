@@ -12,21 +12,25 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
   end
 
   describe 'visibility', :elastic_delete_by_query, :sidekiq_inline do
-    include_context 'ProjectPolicyTable context'
-
+    let_it_be(:committer) { create(:user) }
     let_it_be_with_reload(:group) { create(:group, :wiki_enabled) }
-    let_it_be_with_reload(:project) { create(:project, namespace: group) }
+    let_it_be_with_reload(:project) { create(:project, :wiki_repo, namespace: group) }
+
     let(:projects) { [project] }
 
     let(:user) { create_user_from_membership(project, membership) }
-    let(:user_in_group) { create_user_from_membership(group, membership) }
 
     context 'for wikis' do
       let(:scope) { 'wiki_blobs' }
-      let(:search) { 'term' }
 
       context 'for project wikis' do
-        let_it_be_with_reload(:project) { create(:project, :wiki_repo) }
+        include_context 'ProjectPolicyTable context'
+
+        let(:search) { 'project-term' }
+
+        before_all do
+          Wiki.for_container(project, committer).create_page('test.md', "# project-term", :markdown, 'commit message')
+        end
 
         where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
           permission_table_for_guest_feature_access
@@ -34,48 +38,57 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
 
         with_them do
           before do
-            project.wiki.create_page('test.md', "# #{search}")
             project.wiki.index_wiki_blobs
+            ensure_elasticsearch_index!
           end
 
-          it_behaves_like 'search respects visibility', group_access: false, group_access_shared_group: false
+          it_behaves_like 'search respects visibility'
+
+          context 'when search_advanced_wiki_new_auth_filter FF is false' do
+            before do
+              stub_feature_flags(search_advanced_wiki_new_auth_filter: false)
+            end
+
+            it_behaves_like 'search respects visibility'
+          end
         end
       end
 
       context 'for group wikis' do
-        let_it_be_with_reload(:group2) { create(:group, :wiki_enabled) }
-        let_it_be(:group_wiki) { create(:group_wiki, container: group) }
-        let_it_be(:group_wiki2) { create(:group_wiki, container: group2) }
-        let(:groups) { [group, group2] }
+        include_context 'for GroupPolicyTable context'
 
-        where(:group_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-          permission_table_for_guest_feature_access
+        let(:search) { 'group-term' }
+
+        before_all do
+          Wiki.for_container(group, committer).create_page('test.md', "# group-term", :markdown, 'commit message')
+        end
+
+        where(:project_level, :membership, :admin_mode, :expected_count) do
+          permission_table_for_group_wiki_access
         end
 
         with_them do
           before do
-            [group_wiki, group_wiki2].each do |wiki|
-              wiki.create_page('test.md', "# term")
-              wiki.index_wiki_blobs
-            end
-            group2.add_member(user_in_group, membership) if %i[admin anonymous non_member].exclude?(membership)
-          end
-
-          it 'respects visibility' do
-            enable_admin_mode!(user_in_group) if admin_mode
-
-            groups.each do |g|
-              g.update!(
-                visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s),
-                wiki_access_level: feature_access_level.to_s
-              )
-            end
+            # project associated with group must have visibility_level updated to allow
+            # the shared example to update the group visibility_level setting. projects cannot
+            # have higher visibility than the group to which they belong
+            project.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
+            group.wiki.index_wiki_blobs
 
             ensure_elasticsearch_index!
+          end
 
-            expect_search_results(user_in_group, scope, expected_count: expected_count * 2) do |_user|
-              described_class.new(user_in_group, search: search).execute
+          # project access does not grant group wiki visibility
+          # see https://docs.gitlab.com/user/project/wiki/group/#configure-group-wiki-visibility
+          it_behaves_like 'search respects visibility', project_access: false, project_access_shared_group: false
+
+          context 'when search_advanced_wiki_new_auth_filter FF is false' do
+            before do
+              stub_feature_flags(search_advanced_wiki_new_auth_filter: false)
             end
+
+            it_behaves_like 'search respects visibility', project_access: false,
+              project_access_shared_group: false, group_access_shared_group: false
           end
         end
       end
