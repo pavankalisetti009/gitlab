@@ -4,8 +4,6 @@ module Dast
   class ProfilesPipeline < ::SecApplicationRecord
     include BulkInsertSafe
 
-    extend SuppressCompositePrimaryKeyWarning
-
     self.table_name = 'dast_profiles_pipelines'
 
     belongs_to :ci_pipeline, class_name: 'Ci::Pipeline', optional: false

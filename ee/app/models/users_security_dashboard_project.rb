@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class UsersSecurityDashboardProject < ApplicationRecord
-  extend SuppressCompositePrimaryKeyWarning
-
   SECURITY_DASHBOARD_PROJECTS_LIMIT = 1000
 
   belongs_to :project

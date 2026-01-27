@@ -6,8 +6,6 @@ module AppSec
       extend ::ActiveSupport::Concern
 
       included do
-        extend SuppressCompositePrimaryKeyWarning
-
         validate :project_ids_match
       end
 
