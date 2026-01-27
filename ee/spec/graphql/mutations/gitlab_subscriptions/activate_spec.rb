@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::GitlabSubscriptions::Activate do
+RSpec.describe Mutations::GitlabSubscriptions::Activate, feature_category: :plan_provisioning do
   include AdminModeHelper
   include GraphqlHelpers
 

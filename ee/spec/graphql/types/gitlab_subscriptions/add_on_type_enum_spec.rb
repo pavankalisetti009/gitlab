@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::GitlabSubscriptions::AddOnTypeEnum, feature_category: :shared do
+RSpec.describe Types::GitlabSubscriptions::AddOnTypeEnum, feature_category: :subscription_management do
   specify { expect(described_class.graphql_name).to eq('GitlabSubscriptionsAddOnType') }
 
   it 'exposes all add-on types' do

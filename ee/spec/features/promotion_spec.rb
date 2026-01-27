@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Promotions', :js do
+RSpec.describe 'Promotions', :js, feature_category: :code_review_workflow do
   let_it_be(:user) { create(:user) }
 
   let(:admin) { create(:admin) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['SubscriptionFutureEntry'], :enable_admin_mode do
+RSpec.describe GitlabSchema.types['SubscriptionFutureEntry'], :enable_admin_mode, feature_category: :plan_provisioning do
   include GraphqlHelpers
 
   let_it_be(:admin) { create(:admin) }

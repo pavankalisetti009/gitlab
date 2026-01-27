@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['UserAddOnAssignment'], feature_category: :shared do
+RSpec.describe GitlabSchema.types['UserAddOnAssignment'], feature_category: :subscription_management do
   include GraphqlHelpers
 
   it { expect(described_class.graphql_name).to eq('UserAddOnAssignment') }

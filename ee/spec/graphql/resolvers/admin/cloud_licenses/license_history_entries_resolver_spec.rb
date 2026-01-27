@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Admin::CloudLicenses::LicenseHistoryEntriesResolver do
+RSpec.describe Resolvers::Admin::CloudLicenses::LicenseHistoryEntriesResolver, feature_category: :plan_provisioning do
   include GraphqlHelpers
 
   describe '#resolve' do

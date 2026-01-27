@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CountriesController, feature_category: :shared do
+RSpec.describe CountriesController, feature_category: :subscription_management do
   describe 'GET #index' do
     it 'returns list of countries as json' do
       get :index
