@@ -81,6 +81,18 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
   const findSelectValues = () => wrapper.findAllComponents(GlLink);
 
+  const mockWorkItemConfigGetter = jest.fn().mockImplementation(() => {
+    return {
+      isGroupWorkItemType: null,
+    };
+  });
+
+  const defaultProvide = {
+    issuesListPath: '/flightjs/Flight/-/issues',
+    epicsListPath: '/groups/flightjs/-/epics',
+    getWorkItemTypeConfiguration: mockWorkItemConfigGetter,
+  };
+
   const createComponent = ({
     canUpdate = true,
     workItemType = defaultWorkItemType,
@@ -88,8 +100,7 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
     workItemId = defaultWorkItemId,
     queryHandler = querySuccessHandler,
     mutationHandler = mutationSuccessHandler,
-    issuesListPath = '/flightjs/Flight/-/issues',
-    epicsListPath = '/groups/flightjs/-/epics',
+    provide = {},
   } = {}) => {
     wrapper = shallowMount(WorkItemCustomFieldsMultiSelect, {
       apolloProvider: createMockApollo([
@@ -97,8 +108,8 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
         [updateWorkItemCustomFieldsMutation, mutationHandler],
       ]),
       provide: {
-        issuesListPath,
-        epicsListPath,
+        ...defaultProvide,
+        ...provide,
       },
       propsData: {
         canUpdate,
@@ -410,6 +421,31 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
         ['Something went wrong while updating the issue. Please try again.'],
       ]);
       expect(Sentry.captureException).toHaveBeenCalled();
+    });
+  });
+
+  describe('work item type configuration', () => {
+    describe('isGroupWorkItemType/Epic check', () => {
+      it.each`
+        workItemType | isGroupWorkItemType | expectedListPath
+        ${'Epic'}    | ${true}             | ${'/groups/flightjs/-/epics'}
+        ${'Epic'}    | ${null}             | ${'/groups/flightjs/-/epics'}
+        ${'Issue'}   | ${false}            | ${'/flightjs/Flight/-/issues'}
+        ${'Issue'}   | ${null}             | ${'/flightjs/Flight/-/issues'}
+      `(
+        'generates correct search path when workItemType=$workItemType, isGroupWorkItemType=$isGroupWorkItemType',
+        ({ workItemType, isGroupWorkItemType, expectedListPath }) => {
+          mockWorkItemConfigGetter.mockImplementation(() => {
+            return { isGroupWorkItemType };
+          });
+
+          const provide = { getWorkItemTypeConfiguration: mockWorkItemConfigGetter };
+
+          createComponent({ workItemType, provide });
+
+          expect(findSelectValues().at(0).attributes('href')).toContain(expectedListPath);
+        },
+      );
     });
   });
 });

@@ -23,7 +23,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['issuesListPath', 'epicsListPath'],
+  inject: ['issuesListPath', 'epicsListPath', 'getWorkItemTypeConfiguration'],
   props: {
     workItemId: {
       type: String,
@@ -54,6 +54,9 @@ export default {
     };
   },
   computed: {
+    workItemTypeConfiguration() {
+      return this.getWorkItemTypeConfiguration(this.workItemType);
+    },
     customFieldId() {
       return this.customField.customField?.id;
     },
@@ -105,8 +108,11 @@ export default {
     isLoadingOptionsList() {
       return this.$apollo.queries.selectOptions.loading;
     },
+    isGroupWorkItemType() {
+      return this.workItemTypeConfiguration?.isGroupWorkItemType;
+    },
     isEpic() {
-      return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC;
+      return this.isGroupWorkItemType || this.workItemType === WORK_ITEM_TYPE_NAME_EPIC;
     },
   },
   watch: {
