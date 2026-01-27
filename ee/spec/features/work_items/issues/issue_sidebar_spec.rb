@@ -27,6 +27,9 @@ RSpec.describe 'Issue Sidebar', :js, :saas, feature_category: :team_planning do
     end
 
     subject { project_issue_path(project, issue) }
+
+    let(:container) { project }
+    let(:entity) { issue }
   end
 
   context 'for accessibility' do
