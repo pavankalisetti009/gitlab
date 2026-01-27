@@ -20,9 +20,9 @@ module EE::Groups::GroupMembersHelper
     access_requests:,
     banned:,
     include_relations:,
-    search:,
     pending_members_count:,
-    placeholder_users:
+    placeholder_users:,
+    params: {}
   )
     super.merge!({
       can_export_members: can?(current_user, :export_group_memberships, group),
