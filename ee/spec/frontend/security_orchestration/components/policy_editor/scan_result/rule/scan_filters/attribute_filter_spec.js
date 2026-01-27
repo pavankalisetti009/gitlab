@@ -85,4 +85,18 @@ describe('AttributeFilter', () => {
 
     expect(wrapper.emitted('remove')).toEqual([[FALSE_POSITIVE]]);
   });
+
+  it.each`
+    showRemoveButton | expected
+    ${true}          | ${true}
+    ${false}         | ${false}
+    ${undefined}     | ${true}
+  `(
+    'sets showRemoveButton prop to $expected when showRemoveButton is $showRemoveButton',
+    ({ showRemoveButton, expected }) => {
+      createComponent({ showRemoveButton });
+
+      expect(findSectionLayout().props('showRemoveButton')).toBe(expected);
+    },
+  );
 });

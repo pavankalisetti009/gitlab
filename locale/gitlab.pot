@@ -62301,6 +62301,9 @@ msgstr ""
 msgid "SecurityOrchestration|Runs scans on a schedule for maintenance and continuous monitoring of protected branches"
 msgstr ""
 
+msgid "SecurityOrchestration|SAST Scanning Rule"
+msgstr ""
+
 msgid "SecurityOrchestration|Save allowlist"
 msgstr ""
 

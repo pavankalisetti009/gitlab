@@ -40,6 +40,11 @@ export default {
       required: false,
       default: false,
     },
+    showRemoveButton: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   emits: ['attribute-change', 'input', 'remove'],
   computed: {
@@ -67,7 +72,11 @@ export default {
 </script>
 
 <template>
-  <section-layout class="gl-w-full !gl-bg-default gl-pr-2" @remove="remove">
+  <section-layout
+    class="gl-w-full !gl-bg-default gl-pr-2"
+    :show-remove-button="showRemoveButton"
+    @remove="remove"
+  >
     <template #selector>
       <slot name="label">
         <label class="gl-mb-0" :title="$options.i18n.label">{{ $options.i18n.label }}</label>
