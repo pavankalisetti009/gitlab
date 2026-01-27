@@ -23,7 +23,7 @@ module Ai
         }.freeze
 
         def self.indexing?
-          ::ActiveContext.indexing? && Ai::ActiveContext::Migration.complete?('SetCodeIndexingVersions')
+          ::ActiveContext.indexing? && current_indexing_embedding_versions.present?
         end
 
         def self.collection_name

@@ -52,6 +52,10 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
     context 'when semantic search is not available' do
       let(:expected_error_class) { Ai::ActiveContext::Queries::Code::NotAvailable }
 
+      before do
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(false)
+      end
+
       it 'raises the expected error' do
         expect { codebase_query.filter(project_or_id: project) }.to raise_error(
           expected_error_class, "Semantic search on Code collection is not available."
