@@ -18,14 +18,16 @@ Usage: rake "gitlab:secrets_management:openbao:clone[/installation/dir]")
         binary_target_path = "#{args.dir}/bin/bao"
 
         arch_map = {
+          'aarch64' => 'arm64',
           'x86_64' => 'amd64'
         }
 
         # As per https://gitlab.com/gitlab-org/govern/secrets-management/openbao-internal/-/packages/
         checksums_sha256 = {
-          'bao-darwin-arm64' => '67df73725c198cf3387b73e97829d1a2c58c7af07ba5f3e15b052a0fe20a1086',
-          'bao-darwin-amd64' => '88d8bff43ebcbaa5cfb158d61c0a3d6c69ca8a9f8f2ce20375f4e61cee985f43',
-          'bao-linux-amd64' => 'c128027272ed973486ded9e2b9d1bef0fa72324e67878bdd5ab47c16128ce245'
+          'bao-darwin-amd64' => 'f74e5ba42112b49daaf142e2c077ea854947d7b469c5c5fea26e9e26e9e4cd54',
+          'bao-darwin-arm64' => 'dc0536cc2e0c230c6cf115f63ad4dbbcb3720519bdac6dab6bca8b91ad41a535',
+          'bao-linux-amd64' => 'b3ad07e8441dd7c82da213b0d464f652da029aebbe04fc884c08865005fd81ba',
+          'bao-linux-arm64' => '06988751372a8c8cae045a72e0abb10861d2796001b656fc31a03084a3be7ed0'
         }
 
         os = Gem::Platform.local.os
