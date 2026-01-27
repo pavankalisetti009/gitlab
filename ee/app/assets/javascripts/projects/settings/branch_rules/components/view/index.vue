@@ -51,6 +51,14 @@ export default {
     statusChecksCount() {
       return this.statusChecks.length;
     },
+    // eslint-disable-next-line vue/no-unused-properties -- Used in extended CE template
+    warnModificationBlockedByPolicy() {
+      return this.branchProtection?.warnModificationBlockedByPolicy;
+    },
+    // eslint-disable-next-line vue/no-unused-properties -- Used in extended CE template
+    warnProtectedFromPushBySecurityPolicy() {
+      return this.branchProtection?.warnProtectedFromPushBySecurityPolicy;
+    },
   },
 };
 </script>
