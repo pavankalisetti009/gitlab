@@ -28,10 +28,12 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
       before do
         stub_licensed_features(group_level_devops_adoption: true)
 
-        insert_before_sub_nav_item(
-          s_('DataExplorer|Data explorer'),
-          within: _('Analyze'),
-          new_sub_nav_item_name: _('DevOps adoption')
+        insert_after_nav_item(
+          _('Operate'),
+          new_nav_item: {
+            nav_item: _("Analyze"),
+            nav_sub_items: [_('DevOps adoption')]
+          }
         )
 
         visit group_path(group)
@@ -44,10 +46,12 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
       before do
         stub_licensed_features(productivity_analytics: true)
 
-        insert_before_sub_nav_item(
-          s_('DataExplorer|Data explorer'),
-          within: _('Analyze'),
-          new_sub_nav_item_name: _('Productivity analytics')
+        insert_after_nav_item(
+          _('Operate'),
+          new_nav_item: {
+            nav_item: _("Analyze"),
+            nav_sub_items: [_('Productivity analytics')]
+          }
         )
 
         visit group_path(group)
@@ -60,10 +64,12 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
       before do
         stub_licensed_features(cycle_analytics_for_groups: true)
 
-        insert_before_sub_nav_item(
-          s_('DataExplorer|Data explorer'),
-          within: _('Analyze'),
-          new_sub_nav_item_name: _('Value stream analytics')
+        insert_after_nav_item(
+          _('Operate'),
+          new_nav_item: {
+            nav_item: _("Analyze"),
+            nav_sub_items: [_('Value stream analytics')]
+          }
         )
 
         visit group_path(group)
