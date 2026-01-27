@@ -81,6 +81,18 @@ module Mcp
           - Scores above 0.8 typically indicate strong matches; below 0.5 may be tangentially related
       DESC
 
+      CONFIDENCE_DESCRIPTION = <<~DESC.strip
+        - Results include an overall confidence level (high/medium/low/unknown) based on score distribution:
+          - HIGH: Strong match with clear winner - answer directly with confidence
+          - MEDIUM: Multiple reasonable matches - present results but consider alternatives
+          - LOW: Ambiguous or weak matches - consider asking user for clarification
+          - UNKNOWN: Confidence cannot be determined (e.g., storage backend doesn't provide scores)
+      DESC
+
+      HIGH_SCORE_THRESHOLD = 0.75
+      MEDIUM_SCORE_THRESHOLD = 0.5
+      STEEP_DROPOFF_THRESHOLD = 0.15
+
       def available?
         current_user.present? && ACTIVE_CONTEXT_QUERY::Code.available?
       end
@@ -88,9 +100,12 @@ module Mcp
       override :description
       def description
         base_description = super
-        return base_description unless include_score_in_response?
+        parts = [base_description]
 
-        "#{base_description}\n#{SCORE_DESCRIPTION}"
+        parts << SCORE_DESCRIPTION if include_score_in_response?
+        parts << CONFIDENCE_DESCRIPTION if include_confidence_in_response?
+
+        parts.join("\n")
       end
 
       override :ability
@@ -136,16 +151,9 @@ module Mcp
         # Filter out excluded files based on Duo context exclusion settings
         filtered_results = filter_excluded_results(result.to_a, project)
 
-        lines = filtered_results.map.with_index(1) do |hit, idx|
-          snippet = hit['content']
-          score_str = hit['score'] ? format(' (score: %.4f)', hit['score']) : ''
+        formatted_text_output, structured_data = post_process_results(filtered_results)
 
-          "#{idx}. #{hit['path']}#{score_str}\n   #{snippet}"
-        end
-
-        formatted_content = [{ type: 'text', text: lines.join("\n") }]
-
-        ::Mcp::Tools::Response.success(formatted_content, filtered_results)
+        ::Mcp::Tools::Response.success(formatted_text_output, structured_data)
       end
 
       # Fallback to 0.1.0 behavior for any unimplemented versions
@@ -173,6 +181,65 @@ module Mcp
         ::Feature.enabled?(:post_process_semantic_code_search_add_score, current_user)
       end
       strong_memoize_attr :include_score_in_response?
+
+      def include_confidence_in_response?
+        ::Feature.enabled?(:post_process_semantic_code_search_overall_confidence, current_user)
+      end
+      strong_memoize_attr :include_confidence_in_response?
+
+      def post_process_results(filtered_results)
+        text_output = build_text_output(filtered_results)
+
+        metadata = {
+          count: filtered_results.length,
+          has_more: false
+        }
+
+        # Apply confidence post-processing
+        if include_confidence_in_response?
+          scores = filtered_results.filter_map { |hit| hit['score'] }
+          confidence = compute_confidence_level(scores)
+
+          text_output = "Confidence: #{confidence.to_s.upcase}\n\n#{text_output}"
+          metadata[:confidence] = confidence
+        end
+
+        structured_data = {
+          items: filtered_results,
+          metadata: metadata
+        }
+
+        [[{ type: 'text', text: text_output }], structured_data]
+      end
+
+      def build_text_output(filtered_results)
+        lines = filtered_results.map.with_index(1) do |hit, idx|
+          snippet = hit['content']
+          score_str = hit['score'] ? format(' (score: %.4f)', hit['score']) : ''
+
+          "#{idx}. #{hit['path']}#{score_str}\n   #{snippet}"
+        end
+
+        lines.join("\n")
+      end
+
+      def compute_confidence_level(scores)
+        return :unknown if scores.empty?
+
+        top_score = scores.first
+        return :low if top_score < MEDIUM_SCORE_THRESHOLD
+
+        # Check for steep drop-off (clear winner)
+        if scores.size > 1 && top_score >= HIGH_SCORE_THRESHOLD && top_score - scores[1] >= STEEP_DROPOFF_THRESHOLD
+          return :high
+        end
+
+        # Single result with high score
+        return :high if scores.size <= 1 && top_score >= HIGH_SCORE_THRESHOLD
+
+        # Medium: reasonable top score but no clear winner
+        :medium
+      end
 
       def filter_excluded_results(results, project)
         return results if results.empty?

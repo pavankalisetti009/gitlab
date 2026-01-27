@@ -150,35 +150,61 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
       DESC
     end
 
-    let(:score_description) do
-      <<~DESC.strip
-        - Each result includes a score field (0.0 to 1.0) indicating semantic similarity to your query
-          - Higher scores mean the code is more relevant; results are sorted by score descending
-          - Scores above 0.8 typically indicate strong matches; below 0.5 may be tangentially related
-      DESC
-    end
-
     before do
       service.set_cred(current_user: current_user)
     end
 
     context 'when post_process_semantic_code_search_add_score feature flag is enabled' do
       before do
-        stub_feature_flags(post_process_semantic_code_search_add_score: true)
+        stub_feature_flags(
+          post_process_semantic_code_search_add_score: true,
+          post_process_semantic_code_search_overall_confidence: false
+        )
       end
 
       it 'returns description with score information' do
-        expect(service.description).to eq("#{base_description}\n#{score_description}")
+        expect(service.description).to eq("#{base_description}\n#{described_class::SCORE_DESCRIPTION}")
       end
     end
 
     context 'when post_process_semantic_code_search_add_score feature flag is disabled' do
       before do
-        stub_feature_flags(post_process_semantic_code_search_add_score: false)
+        stub_feature_flags(
+          post_process_semantic_code_search_add_score: false,
+          post_process_semantic_code_search_overall_confidence: false
+        )
       end
 
       it 'returns base description without score information' do
         expect(service.description).to eq(base_description)
+      end
+    end
+
+    context 'when post_process_semantic_code_search_overall_confidence feature flag is enabled' do
+      before do
+        stub_feature_flags(
+          post_process_semantic_code_search_add_score: false,
+          post_process_semantic_code_search_overall_confidence: true
+        )
+      end
+
+      it 'returns description with confidence information' do
+        expect(service.description).to eq("#{base_description}\n#{described_class::CONFIDENCE_DESCRIPTION}")
+      end
+    end
+
+    context 'when both score and confidence feature flags are enabled' do
+      before do
+        stub_feature_flags(
+          post_process_semantic_code_search_add_score: true,
+          post_process_semantic_code_search_overall_confidence: true
+        )
+      end
+
+      it 'returns description with both score and confidence information' do
+        expected = [base_description, described_class::SCORE_DESCRIPTION,
+          described_class::CONFIDENCE_DESCRIPTION].join("\n")
+        expect(service.description).to eq(expected)
       end
     end
   end
@@ -272,7 +298,10 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           .to receive(:new)
           .and_return(query_obj)
         project.add_developer(current_user)
-        stub_feature_flags(post_process_semantic_code_search_add_score: true)
+        stub_feature_flags(
+          post_process_semantic_code_search_add_score: true,
+          post_process_semantic_code_search_overall_confidence: false
+        )
       end
 
       shared_examples 'tool executed with expected response' do
@@ -441,7 +470,10 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
         end
 
         before do
-          stub_feature_flags(post_process_semantic_code_search_add_score: false)
+          stub_feature_flags(
+            post_process_semantic_code_search_add_score: false,
+            post_process_semantic_code_search_overall_confidence: false
+          )
           allow(query_obj).to receive(:filter).and_return(query_result_without_score)
         end
 
@@ -458,6 +490,135 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           item = structured[:items].first
           expect(item).not_to have_key('score')
           expect(item['path']).to eq('ruby/server.rb')
+        end
+      end
+
+      context 'when post_process_semantic_code_search_overall_confidence feature flag is enabled' do
+        let(:project_id) { project.id.to_s }
+
+        before do
+          stub_feature_flags(
+            post_process_semantic_code_search_add_score: false,
+            post_process_semantic_code_search_overall_confidence: true
+          )
+          allow(query_obj).to receive(:filter).and_return(query_result)
+        end
+
+        it 'includes confidence level in text output' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+          # With single high score (0.9523), should be HIGH confidence
+          expect(response[:content].first[:text]).to start_with("Confidence: HIGH\n\n")
+        end
+
+        it 'includes confidence level in structured data metadata' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+          structured = response[:structuredContent]
+          expect(structured[:metadata][:confidence]).to eq(:high)
+          expect(structured[:metadata][:count]).to eq(1)
+          expect(structured[:items]).to be_an(Array)
+        end
+
+        context 'with multiple results showing steep drop-off' do
+          let(:raw_hits) do
+            [
+              { 'path' => 'file1.rb', 'content' => 'code1', 'score' => 0.85 },
+              { 'path' => 'file2.rb', 'content' => 'code2', 'score' => 0.65 }
+            ]
+          end
+
+          it 'returns HIGH confidence' do
+            response = service.execute(request: nil, params: arguments)
+            expect(response[:content].first[:text]).to start_with("Confidence: HIGH\n\n")
+          end
+        end
+
+        context 'with multiple results showing gradual decline' do
+          let(:raw_hits) do
+            [
+              { 'path' => 'file1.rb', 'content' => 'code1', 'score' => 0.75 },
+              { 'path' => 'file2.rb', 'content' => 'code2', 'score' => 0.70 }
+            ]
+          end
+
+          it 'returns MEDIUM confidence' do
+            response = service.execute(request: nil, params: arguments)
+            expect(response[:content].first[:text]).to start_with("Confidence: MEDIUM\n\n")
+          end
+        end
+
+        context 'with low scoring results' do
+          let(:raw_hits) do
+            [
+              { 'path' => 'file1.rb', 'content' => 'code1', 'score' => 0.40 },
+              { 'path' => 'file2.rb', 'content' => 'code2', 'score' => 0.35 }
+            ]
+          end
+
+          it 'returns LOW confidence' do
+            response = service.execute(request: nil, params: arguments)
+            expect(response[:content].first[:text]).to start_with("Confidence: LOW\n\n")
+          end
+        end
+
+        context 'with no results' do
+          let(:raw_hits) { [] }
+
+          it 'returns UNKNOWN confidence' do
+            response = service.execute(request: nil, params: arguments)
+            expect(response[:content].first[:text]).to eq("Confidence: UNKNOWN\n\n")
+          end
+        end
+
+        context 'with results but no scores (e.g., PostgreSQL backend)' do
+          let(:raw_hits) do
+            [
+              { 'path' => 'file1.rb', 'content' => 'code1' },
+              { 'path' => 'file2.rb', 'content' => 'code2' }
+            ]
+          end
+
+          it 'returns UNKNOWN confidence' do
+            response = service.execute(request: nil, params: arguments)
+            expect(response[:content].first[:text]).to start_with("Confidence: UNKNOWN\n\n")
+          end
+
+          it 'includes unknown confidence in structured data metadata' do
+            response = service.execute(request: nil, params: arguments)
+            structured = response[:structuredContent]
+            expect(structured[:metadata][:confidence]).to eq(:unknown)
+          end
+        end
+      end
+
+      context 'when post_process_semantic_code_search_overall_confidence feature flag is disabled' do
+        let(:project_id) { project.id.to_s }
+
+        before do
+          stub_feature_flags(
+            post_process_semantic_code_search_add_score: true,
+            post_process_semantic_code_search_overall_confidence: false
+          )
+          allow(query_obj).to receive(:filter).and_return(query_result)
+        end
+
+        it 'does not include confidence level in text output' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+          expect(response[:content].first[:text]).not_to include("Confidence:")
+        end
+
+        it 'does not include confidence in structured data metadata' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+          structured = response[:structuredContent]
+          # When confidence is disabled, structured data uses default format (items array wrapped by Response)
+          expect(structured[:metadata]).not_to have_key(:confidence)
         end
       end
     end
@@ -717,6 +878,78 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
       it 'returns all results when file_paths is empty' do
         is_expected.to match_array(results)
       end
+    end
+  end
+
+  describe '#compute_confidence_level' do
+    let(:service) { described_class.new(name: service_name, version: '0.1.0') }
+
+    subject(:compute_confidence) { service.send(:compute_confidence_level, scores) }
+
+    context 'with empty scores array' do
+      let(:scores) { [] }
+
+      it { is_expected.to eq(:unknown) }
+    end
+
+    context 'with single high score' do
+      let(:scores) { [0.85] }
+
+      it { is_expected.to eq(:high) }
+    end
+
+    context 'with single medium score' do
+      let(:scores) { [0.60] }
+
+      it { is_expected.to eq(:medium) }
+    end
+
+    context 'with single low score' do
+      let(:scores) { [0.40] }
+
+      it { is_expected.to eq(:low) }
+    end
+
+    context 'with steep drop-off (high confidence)' do
+      let(:scores) { [0.85, 0.65, 0.60] }
+
+      it { is_expected.to eq(:high) }
+    end
+
+    context 'with gradual decline (medium confidence)' do
+      let(:scores) { [0.75, 0.70, 0.65] }
+
+      it { is_expected.to eq(:medium) }
+    end
+
+    context 'with flat distribution of low scores' do
+      let(:scores) { [0.45, 0.43, 0.42] }
+
+      it { is_expected.to eq(:low) }
+    end
+
+    context 'with score exactly at high threshold' do
+      let(:scores) { [0.75, 0.59] }
+
+      it { is_expected.to eq(:high) }
+    end
+
+    context 'with score exactly at medium threshold' do
+      let(:scores) { [0.50, 0.48] }
+
+      it { is_expected.to eq(:medium) }
+    end
+
+    context 'with score just below medium threshold' do
+      let(:scores) { [0.49, 0.48] }
+
+      it { is_expected.to eq(:low) }
+    end
+
+    context 'with high top score but small gap' do
+      let(:scores) { [0.80, 0.78] }
+
+      it { is_expected.to eq(:medium) }
     end
   end
 

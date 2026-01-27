@@ -461,7 +461,10 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
 
     context 'when semantic code search is available' do
       before do
-        stub_feature_flags(post_process_semantic_code_search_add_score: false)
+        stub_feature_flags(
+          post_process_semantic_code_search_add_score: false,
+          post_process_semantic_code_search_overall_confidence: false
+        )
         # We have to use `allow_any_instance_of` since this tool is initialized
         # *on class definition time* in EE::Mcp::Tools::Manager
         allow_any_instance_of(Mcp::Tools::SemanticCodeSearchService).to receive(:available?).and_return(true) # rubocop: disable RSpec/AnyInstanceOf -- see explanation above
