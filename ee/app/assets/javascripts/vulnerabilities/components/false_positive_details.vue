@@ -66,9 +66,7 @@ export default {
       return 'primary';
     },
     shouldShowDescription() {
-      return (
-        this.isAboveFalsePositiveMinimalConfidence && this.vulnerability.latestFlag?.description
-      );
+      return this.vulnerability.latestFlag?.description;
     },
     vulnerabilityGraphqlId() {
       return convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerability.id);

@@ -100,11 +100,10 @@ describe('FalsePositiveDetails', () => {
   });
 
   describe('description display', () => {
-    it('shows description when confidence score is above minimal and description exists', () => {
+    it('shows description when description exists', () => {
       createWrapper({
         latestFlag: {
           description: 'This is a false positive because...',
-          confidenceScore: 0.7,
         },
       });
 
@@ -112,17 +111,6 @@ describe('FalsePositiveDetails', () => {
       expect(wrapper.findComponent(NonGfmMarkdown).props('markdown')).toBe(
         'This is a false positive because...',
       );
-    });
-
-    it('does not show description when confidence score is at or below minimal', () => {
-      createWrapper({
-        latestFlag: {
-          description: 'This is a false positive because...',
-          confidenceScore: 0.15,
-        },
-      });
-
-      expect(wrapper.findComponent(NonGfmMarkdown).exists()).toBe(false);
     });
 
     it('does not show description when description is empty', () => {
@@ -202,19 +190,6 @@ describe('FalsePositiveDetails', () => {
         latestFlag: {
           description: 'This is a false positive because...',
           confidenceScore: 0.7,
-        },
-      });
-
-      expect(findRemoveButton().exists()).toBe(false);
-    });
-
-    it('does not show remove button when confidence score is below minimal (description not shown)', () => {
-      createWrapper({
-        canAdmin: true,
-        falsePositive: true,
-        latestFlag: {
-          description: 'This is a false positive because...',
-          confidenceScore: 0.15,
         },
       });
 
