@@ -17828,6 +17828,9 @@ msgstr ""
 msgid "ComplianceReport|%{percent}%% coverage for %{framework}"
 msgstr ""
 
+msgid "ComplianceReport|%{title} (CSP)"
+msgstr ""
+
 msgid "ComplianceReport|Action"
 msgstr ""
 

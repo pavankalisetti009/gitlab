@@ -165,6 +165,14 @@ module ComplianceManagement
       select('*', sanitize_sql_array([subquery_sql, project_ids]))
     end
 
+    scope :for_coverage_details, ->(framework_ids:, project_ids:) do
+      return none if framework_ids.blank? || project_ids.blank?
+
+      id_in(framework_ids)
+        .with_project_coverage_for(project_ids)
+        .includes(:namespace)
+    end
+
     def self.active_framework_ids
       framework_ids = []
 

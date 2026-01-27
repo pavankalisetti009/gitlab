@@ -42,6 +42,7 @@ const generateFrameworkCoverageQueryMockResponse = (count = 5) => ({
             id: 'gid://gitlab/ComplianceManagement::Framework/79',
             name: 'Blue framework',
             color: '#6699CC',
+            namespaceId: 'gid://gitlab/Group/1',
             __typename: 'ComplianceFramework',
           },
         })),
@@ -154,16 +155,15 @@ describe('Compliance dashboard', () => {
       frameworksNeedsAttentionQueryMock.mockResolvedValue(frameworksNeedsAttention);
       createComponent();
       await waitForPromises();
-
-      await nextTick();
     });
 
     it('contains framework coverage panel', () => {
       expect(getDashboardConfig().panels).toContainEqual(
         expect.objectContaining({
           component: FrameworkCoverage,
-          componentProps: {
+          componentProps: expect.objectContaining({
             summary: {
+              groupId: frameworkCoverage.data.group.id,
               totalProjects:
                 frameworkCoverage.data.group.complianceFrameworkCoverageSummary.totalProjects,
               coveredCount:
@@ -172,7 +172,7 @@ describe('Compliance dashboard', () => {
             },
             isTopLevelGroup: expect.any(Boolean),
             colorScheme: getSystemColorScheme(),
-          },
+          }),
         }),
       );
     });

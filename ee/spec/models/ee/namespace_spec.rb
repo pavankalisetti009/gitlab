@@ -3429,6 +3429,16 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         expect(framework_ids_with_csp).to contain_exactly(direct_framework.id)
       end
     end
+
+    context 'when organization_policy_setting is nil' do
+      before do
+        allow(namespace).to receive(:organization_policy_setting).and_return(nil)
+      end
+
+      it 'returns only direct compliance framework IDs' do
+        expect(framework_ids_with_csp).to contain_exactly(direct_framework.id)
+      end
+    end
   end
 
   describe '#enabled_flow_catalog_item_ids' do

@@ -9,13 +9,18 @@ describe('Framework coverage panel', () => {
   let wrapper;
   const pushMock = jest.fn();
 
-  function createComponent(details = [], totalProjects = 0) {
+  function createComponent(
+    details = [],
+    totalProjects = 0,
+    groupNamespaceId = 'gid://gitlab/Group/1',
+  ) {
     wrapper = shallowMount(FrameworkCoverage, {
       propsData: {
         summary: {
           totalProjects,
           coveredCount: 0,
           details,
+          groupId: groupNamespaceId,
         },
         colorScheme: GL_LIGHT,
         isTopLevelGroup: true,
@@ -34,12 +39,16 @@ describe('Framework coverage panel', () => {
   });
 
   it('renders chart when frameworks are available', () => {
-    createComponent([{ id: 1, coveredCount: 10, framework: {} }]);
+    createComponent([
+      { id: 1, coveredCount: 10, framework: { namespace: { id: 'gid://gitlab/Group/1' } } },
+    ]);
     expect(wrapper.findComponent(GlChart).exists()).toBe(true);
   });
 
   it('takes to projects tab when chart is clicked', () => {
-    createComponent([{ id: 1, coveredCount: 10, framework: {} }]);
+    createComponent([
+      { id: 1, coveredCount: 10, framework: { namespace: { id: 'gid://gitlab/Group/1' } } },
+    ]);
 
     wrapper.findComponent(GlChart).vm.$emit('chartItemClicked');
     expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_PROJECTS });
@@ -48,13 +57,26 @@ describe('Framework coverage panel', () => {
   describe('framework sorting', () => {
     it('sorts frameworks by coveredCount in correct order', () => {
       const totalProjects = 100;
+      const groupNamespaceId = 'gid://gitlab/Group/1';
       const details = [
-        { id: 1, coveredCount: totalProjects * 0.05, framework: { id: 1, name: 'Framework A' } },
-        { id: 2, coveredCount: totalProjects * 0.15, framework: { id: 2, name: 'Framework B' } },
-        { id: 3, coveredCount: totalProjects * 0.1, framework: { id: 3, name: 'Framework C' } },
+        {
+          id: 1,
+          coveredCount: totalProjects * 0.05,
+          framework: { id: 1, name: 'Framework A', namespace: { id: groupNamespaceId } },
+        },
+        {
+          id: 2,
+          coveredCount: totalProjects * 0.15,
+          framework: { id: 2, name: 'Framework B', namespace: { id: groupNamespaceId } },
+        },
+        {
+          id: 3,
+          coveredCount: totalProjects * 0.1,
+          framework: { id: 3, name: 'Framework C', namespace: { id: groupNamespaceId } },
+        },
       ];
 
-      createComponent(details, totalProjects);
+      createComponent(details, totalProjects, groupNamespaceId);
 
       const valuesPassedToChart = wrapper
         .findComponent(GlChart)
@@ -63,6 +85,43 @@ describe('Framework coverage panel', () => {
 
       // Last one is 0 for "all items"
       expect(valuesPassedToChart).toEqual([5, 10, 15, 0]);
+    });
+  });
+
+  describe('centralized framework labels', () => {
+    it('adds (CSP) suffix to centralized frameworks', () => {
+      const groupNamespaceId = 'gid://gitlab/Group/1';
+      const details = [
+        {
+          id: 1,
+          coveredCount: 10,
+          framework: {
+            id: 'gid://gitlab/ComplianceManagement::Framework/1',
+            name: 'Local Framework',
+            namespaceId: groupNamespaceId,
+          },
+        },
+        {
+          id: 2,
+          coveredCount: 20,
+          framework: {
+            id: 'gid://gitlab/ComplianceManagement::Framework/2',
+            name: 'Centralized Framework',
+            namespaceId: 'gid://gitlab/Group/999',
+          },
+        },
+      ];
+
+      createComponent(details, 100, groupNamespaceId);
+
+      const yAxisData = wrapper.findComponent(GlChart).props('options').yAxis.data;
+
+      // Chart data is reversed, so local framework (lower count) comes first, then centralized (higher count)
+      expect(yAxisData).toStrictEqual([
+        '{framework_1|Local Framework}',
+        '{framework_2|Centralized Framework (CSP)}',
+        '{all|All frameworks}',
+      ]);
     });
   });
 });

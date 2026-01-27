@@ -13,6 +13,7 @@ query frameworkCoverage($groupPath: ID!) {
           id
           name
           color
+          namespaceId
         }
       }
     }

@@ -43,7 +43,19 @@ export default {
     },
     chartConfig() {
       const yAxisTitles = this.sortedFrameworkDetails
-        .map(({ framework }) => `{${generateFrameworkChartId(framework)}|${framework.name}}`)
+        .map(({ framework }) => {
+          const label = framework.name;
+          const frameworkNamespaceID = getIdFromGraphQLId(framework.namespaceId);
+          const groupID = getIdFromGraphQLId(this.summary.groupId);
+          const isCentralized = frameworkNamespaceID !== groupID;
+
+          const baseTitle = `${generateFrameworkChartId(framework)}|${label}`;
+          const title = isCentralized
+            ? sprintf(s__('ComplianceReport|%{title} (CSP)'), { title: baseTitle })
+            : baseTitle;
+
+          return `{${title}}`;
+        })
         .reverse();
 
       const TOOLTIP_OPTIONS = {

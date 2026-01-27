@@ -22,8 +22,12 @@ module Resolvers
           return [] unless project_ids.any?
 
           root_group = group.root_ancestor
+          framework_ids = root_group.compliance_framework_ids_with_csp
 
-          frameworks = root_group.compliance_management_frameworks.with_project_coverage_for(project_ids)
+          frameworks = ::ComplianceManagement::FrameworkCoverageDetailsFinder.new(
+            framework_ids: framework_ids,
+            project_ids: project_ids
+          ).execute
 
           paginated_data = offset_pagination(frameworks)
 
