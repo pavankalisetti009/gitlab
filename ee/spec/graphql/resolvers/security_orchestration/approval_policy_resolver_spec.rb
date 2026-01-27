@@ -41,7 +41,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ApprovalPolicyResolver, feature
           bypass_settings: policy[:bypass_settings],
           enforcement_type: policy[:enforcement_type]
         }.compact.deep_stringify_keys),
-        updated_at: policy_last_updated_at,
+        config: policy_configuration,
         action_approvers: [{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }],
         user_approvers: [],
         all_group_approvers: [],

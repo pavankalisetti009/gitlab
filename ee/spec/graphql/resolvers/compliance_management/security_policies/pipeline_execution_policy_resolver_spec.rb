@@ -65,7 +65,7 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecut
               skip_ci: policy[:skip_ci],
               variables_override: policy[:variables_override]
             }.deep_stringify_keys),
-            updated_at: policy_configuration.policy_last_updated_at,
+            config: policy_configuration,
             source: {
               project: project,
               namespace: nil,

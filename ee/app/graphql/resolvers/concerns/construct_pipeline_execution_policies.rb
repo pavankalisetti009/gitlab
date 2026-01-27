@@ -28,7 +28,7 @@ module ConstructPipelineExecutionPolicies
         policy.slice(*POLICY_YAML_ATTRIBUTES, :pipeline_config_strategy, :content, :metadata,
           :suffix, :skip_ci, :variables_override).deep_stringify_keys
       ),
-      updated_at: policy[:config].policy_last_updated_at,
+      config: policy[:config],
       csp: policy[:csp]
     }
 

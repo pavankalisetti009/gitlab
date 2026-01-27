@@ -53,7 +53,7 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanExecutionP
               rules: policy[:rules],
               metadata: policy[:metadata]
             }.compact.deep_stringify_keys),
-            updated_at: policy_configuration.policy_last_updated_at,
+            config: policy_configuration,
             deprecated_properties: [],
             source: {
               project: project,

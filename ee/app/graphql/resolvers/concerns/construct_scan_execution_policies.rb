@@ -24,7 +24,7 @@ module ConstructScanExecutionPolicies
       policy_scope: policy_scope(policy[:policy_scope]),
       yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES, :actions, :rules, :metadata,
         :skip_ci).deep_stringify_keys),
-      updated_at: policy[:config].policy_last_updated_at,
+      config: policy[:config],
       csp: policy[:csp]
     }
 
