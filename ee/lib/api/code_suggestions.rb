@@ -171,6 +171,7 @@ module API
               desc: 'The content of a part of context'
           end
         end
+        route_setting :authorization, permissions: :create_code_suggestion_completion, boundary_type: :user
         post do
           check_rate_limit!(:code_suggestions_api_endpoint, scope: current_user) do
             Gitlab::InternalEvents.track_event('code_suggestions_rate_limit_exceeded', user: current_user)
@@ -243,6 +244,7 @@ module API
           optional :project_path, type: String, desc: 'The path of the project',
             documentation: { example: 'namespace/project' }
         end
+        route_setting :authorization, permissions: :create_code_suggestion_direct_access, boundary_type: :user
         post do
           project_path = declared_params[:project_path]
 
@@ -315,6 +317,8 @@ module API
             documentation: { example: 'namespace/project' }
         end
 
+        route_setting :authorization, permissions: :read_code_suggestion_enabled,
+          boundary_type: :project, boundary_param: :project_path
         post do
           path = declared_params[:project_path]
 
@@ -340,6 +344,7 @@ module API
           ]
         end
 
+        route_setting :authorization, permissions: :read_code_suggestion_connection_detail, boundary_type: :user
         post do
           unauthorized! if completion_model_details.feature_disabled?
 

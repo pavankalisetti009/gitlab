@@ -303,6 +303,15 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           test_project.add_developer(authorized_user)
         end
 
+        it_behaves_like 'authorizing granular token permissions', :create_code_suggestion_completion do
+          let(:boundary_object) { :user }
+          let(:user) { authorized_user }
+          let(:request) do
+            post api('/code_suggestions/completions', personal_access_token: pat),
+              headers: headers, params: body.to_json
+          end
+        end
+
         it_behaves_like 'rate limited and tracked endpoint',
           { rate_limit_key: :code_suggestions_api_endpoint,
             event_name: 'code_suggestions_rate_limit_exceeded',
@@ -1201,6 +1210,12 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             }
           end
 
+          it_behaves_like 'authorizing granular token permissions', :create_code_suggestion_direct_access do
+            let(:boundary_object) { :user }
+            let(:user) { authorized_user }
+            let(:request) { post api('/code_suggestions/direct_access', personal_access_token: pat) }
+          end
+
           it 'returns direct access details', :freeze_time do
             post_api
 
@@ -1726,6 +1741,15 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           disabled_project.add_maintainer(authorized_user)
         end
 
+        it_behaves_like 'authorizing granular token permissions', :read_code_suggestion_enabled do
+          let(:boundary_object) { enabled_project }
+          let(:user) { authorized_user }
+          let(:request) do
+            post api('/code_suggestions/enabled', personal_access_token: pat),
+              params: { project_path: enabled_project.full_path }
+          end
+        end
+
         context 'when enabled' do
           let(:project_path) { enabled_project.full_path }
 
@@ -1796,6 +1820,12 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       end
 
       let(:current_user) { authorized_user }
+
+      it_behaves_like 'authorizing granular token permissions', :read_code_suggestion_connection_detail do
+        let(:boundary_object) { :user }
+        let(:user) { authorized_user }
+        let(:request) { post api('/code_suggestions/connection_details', personal_access_token: pat) }
+      end
 
       context 'when rate limited' do
         include_examples 'rate limited and tracked endpoint',
