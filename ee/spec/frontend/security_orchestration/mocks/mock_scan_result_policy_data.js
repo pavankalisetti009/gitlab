@@ -171,11 +171,6 @@ export const mockDefaultBranchesScanResultObject = {
   },
 };
 
-export const mockWarnTypeScanResultObject = {
-  ...mockDefaultBranchesScanResultObject,
-  enforcement_type: 'warn',
-};
-
 export const mockWarnTypeScanResultManifest =
   mockDefaultBranchesScanResultManifest.concat(`enforcement_type: warn
 `);
@@ -404,32 +399,6 @@ export const mockApprovalSettingsScanResultObject = {
     prevent_pushing_and_force_pushing: true,
     prevent_approval_by_author: true,
   },
-};
-
-export const allowDenyScanResultLicenseObject = {
-  name: 'This policy has license packages with exceptions',
-  description: 'This policy license packages with exceptions',
-  enabled: true,
-  rules: [
-    {
-      type: 'license_finding',
-      id: 'rule_0',
-      match_on_inclusion_license: true,
-      license_types: [],
-      license_states: [],
-      branch_type: 'protected',
-      licenses: {
-        allowed: [],
-      },
-    },
-  ],
-  actions: [
-    {
-      type: 'require_approval',
-      approvals_required: 1,
-      id: 'action_0',
-    },
-  ],
 };
 
 export const mockDisabledApprovalSettingsScanResultObject = {

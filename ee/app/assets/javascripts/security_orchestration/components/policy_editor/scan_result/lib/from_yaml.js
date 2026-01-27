@@ -27,7 +27,7 @@ export const validatePolicy = (policy) => {
   }
 
   const error = {};
-  if (hasInvalidRules(policy.rules, policy.enforcement_type)) {
+  if (hasInvalidRules(policy.rules)) {
     error.rules = true;
   }
 

@@ -264,39 +264,19 @@ describe('DependencyLicenseLinks component', () => {
   );
 
   describe('security policy dismissal badge', () => {
-    describe('with securityPolicyWarnModeLicenseScanning feature flag on', () => {
-      it('does not show the badge if none of the licenses have violated a security policy', () => {
-        factory({
-          numLicenses: 1,
-          provide: { glFeatures: { securityPolicyWarnModeLicenseScanning: true } },
-        });
+    it('does not show the badge if none of the licenses have violated a security policy', () => {
+      factory({ numLicenses: 1 });
 
-        expect(findPolicyViolationBadge().exists()).toBe(false);
-      });
-
-      it('shows the badge if licenses have violated a security policy', () => {
-        factory({
-          numLicenses: 1,
-          numLicensesWithPolicyViolations: 1,
-          provide: { glFeatures: { securityPolicyWarnModeLicenseScanning: true } },
-        });
-
-        expect(findPolicyViolationBadge().exists()).toBe(true);
-      });
+      expect(findPolicyViolationBadge().exists()).toBe(false);
     });
 
-    describe('with securityPolicyWarnModeLicenseScanning feature flag off', () => {
-      it('does not show the badge if none of the licenses have violated a security policy', () => {
-        factory({ numLicenses: 1 });
-
-        expect(findPolicyViolationBadge().exists()).toBe(false);
+    it('shows the badge if licenses have violated a security policy', () => {
+      factory({
+        numLicenses: 1,
+        numLicensesWithPolicyViolations: 1,
       });
 
-      it('shows the badge if licenses have violated a security policy', () => {
-        factory({ numLicenses: 1, numLicensesWithPolicyViolations: 1 });
-
-        expect(findPolicyViolationBadge().exists()).toBe(false);
-      });
+      expect(findPolicyViolationBadge().exists()).toBe(true);
     });
   });
 });

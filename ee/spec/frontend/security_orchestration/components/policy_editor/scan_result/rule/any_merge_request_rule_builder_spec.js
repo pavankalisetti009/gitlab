@@ -110,11 +110,6 @@ describe('AnyMergeRequestRuleBuilder', () => {
     expect(findScanTypeSelect().props('scanType')).toBe(ANY_MERGE_REQUEST);
   });
 
-  it('passes props to scan type select component', () => {
-    createComponent({ props: { disabledRuleTypes: ['test'] } });
-    expect(findScanTypeSelect().props('disabledRuleTypes')).toEqual(['test']);
-  });
-
   describe('adding branch exceptions', () => {
     const exceptions = { branch_exceptions: ['main', 'test'] };
 

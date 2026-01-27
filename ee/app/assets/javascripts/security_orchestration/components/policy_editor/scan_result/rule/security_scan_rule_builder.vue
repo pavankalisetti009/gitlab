@@ -74,11 +74,6 @@ export default {
   mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
-    disabledRuleTypes: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
     initRule: {
       type: Object,
       required: true,
@@ -383,11 +378,7 @@ export default {
           <template #content>
             <gl-sprintf :message="$options.scanResultRuleCopy">
               <template #scanType>
-                <scan-type-select
-                  :disabled-rule-types="disabledRuleTypes"
-                  :scan-type="initRule.type"
-                  @select="setScanType"
-                />
+                <scan-type-select :scan-type="initRule.type" @select="setScanType" />
               </template>
 
               <template #scanners>

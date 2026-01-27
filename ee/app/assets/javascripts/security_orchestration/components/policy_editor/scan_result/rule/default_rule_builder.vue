@@ -27,11 +27,6 @@ export default {
   },
   inject: ['namespaceType'],
   props: {
-    disabledRuleTypes: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
     errorSources: {
       type: Array,
       required: false,
@@ -112,7 +107,6 @@ export default {
             <gl-sprintf :message="$options.emptyRuleCopy">
               <template #scanners>
                 <scan-type-select
-                  :disabled-rule-types="disabledRuleTypes"
                   :error-sources="errorSources"
                   :index="index"
                   @select="selectScanType"

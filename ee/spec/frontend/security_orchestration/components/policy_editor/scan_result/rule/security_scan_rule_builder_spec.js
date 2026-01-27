@@ -120,11 +120,6 @@ describe('SecurityScanRuleBuilder', () => {
         expect.arrayContaining([expect.objectContaining({ includeSelectAll: true })]),
       );
     });
-
-    it('passes props to scan type select component', () => {
-      factory({ disabledRuleTypes: ['test'] });
-      expect(findScanTypeSelect().props('disabledRuleTypes')).toEqual(['test']);
-    });
   });
 
   describe('adding branch exceptions', () => {

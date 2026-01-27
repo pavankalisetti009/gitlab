@@ -27,11 +27,6 @@ export default {
     GlCollapsibleListbox,
   },
   props: {
-    disabledRuleTypes: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
     errorSources: {
       type: Array,
       required: false,
@@ -50,11 +45,6 @@ export default {
   },
   emits: ['select'],
   computed: {
-    items() {
-      return this.$options.scanTypeOptions.filter(
-        ({ value }) => !this.disabledRuleTypes.includes(value),
-      );
-    },
     isErrorSource() {
       return isCauseOfError({
         errorSources: this.errorSources,
@@ -80,7 +70,7 @@ export default {
     id="scanType"
     class="!gl-inline gl-w-auto gl-align-middle"
     :toggle-class="[{ '!gl-shadow-inner-1-red-500': isErrorSource }]"
-    :items="items"
+    :items="$options.scanTypeOptions"
     :selected="scanType"
     :toggle-text="scanRuleTypeToggleText"
     @select="setScanType"

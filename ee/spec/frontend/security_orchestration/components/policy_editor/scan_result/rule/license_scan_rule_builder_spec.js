@@ -92,11 +92,6 @@ describe('LicenseScanRuleBuilder', () => {
 
       expect(wrapper.emitted('set-scan-type')).toEqual([[getDefaultRule(SCAN_FINDING)]]);
     });
-
-    it('passes props to scan type select component', () => {
-      factory({ props: { disabledRuleTypes: ['test'] } });
-      expect(findScanTypeSelect().props('disabledRuleTypes')).toEqual(['test']);
-    });
   });
 
   describe('adding branch exceptions', () => {
