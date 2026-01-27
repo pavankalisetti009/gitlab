@@ -36,6 +36,18 @@ RSpec.describe Ci::Catalog::Resources::ReleaseService, feature_category: :pipeli
           expect(response).to be_error
           expect(response.message).to include('The project is not authorized to publish to the CI/CD catalog')
         end
+
+        it 'tracks the blocked event' do
+          expect { execute }
+            .to trigger_internal_events('ci_catalog_publish_blocked_by_allowlist')
+            .with(user: user, project: project, namespace: project.namespace)
+        end
+      end
+
+      shared_examples 'not tracking the blocked event' do
+        it 'does not track the blocked event' do
+          expect { execute }.not_to trigger_internal_events('ci_catalog_publish_blocked_by_allowlist')
+        end
       end
 
       context 'when allowlist is empty' do
@@ -44,6 +56,7 @@ RSpec.describe Ci::Catalog::Resources::ReleaseService, feature_category: :pipeli
         end
 
         it_behaves_like 'allowing publishing from project'
+        it_behaves_like 'not tracking the blocked event'
       end
 
       context 'when allowlist contains the project path' do
@@ -52,6 +65,7 @@ RSpec.describe Ci::Catalog::Resources::ReleaseService, feature_category: :pipeli
         end
 
         it_behaves_like 'allowing publishing from project'
+        it_behaves_like 'not tracking the blocked event'
       end
 
       context 'when allowlist contains a matching regex pattern' do
@@ -60,6 +74,7 @@ RSpec.describe Ci::Catalog::Resources::ReleaseService, feature_category: :pipeli
         end
 
         it_behaves_like 'allowing publishing from project'
+        it_behaves_like 'not tracking the blocked event'
       end
 
       context 'when allowlist does not contain the project' do
@@ -89,6 +104,8 @@ RSpec.describe Ci::Catalog::Resources::ReleaseService, feature_category: :pipeli
 
           expect(response).to be_success
         end
+
+        it_behaves_like 'not tracking the blocked event'
       end
     end
   end
