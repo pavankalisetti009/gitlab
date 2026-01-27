@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'getting the framework coverage details for a group', feature_category: :compliance_management do
   include GraphqlHelpers
+  include Security::PolicyCspHelpers
 
   let_it_be(:root_group) { create(:group) }
   let_it_be(:sub_group) { create(:group, parent: root_group) }
@@ -137,6 +138,37 @@ RSpec.describe 'getting the framework coverage details for a group', feature_cat
         post_graphql(query(empty_group.full_path), current_user: current_user)
 
         expect(graphql_data_at(:group, :compliance_frameworks_coverage_details, :nodes)).to eq([])
+      end
+    end
+
+    context 'when CSP frameworks are configured' do
+      let_it_be(:csp_group) { create(:group) }
+      let_it_be(:csp_framework) { create(:compliance_framework, namespace: csp_group, name: 'CSP Framework') }
+      let_it_be(:csp_project) { create(:project, group: sub_group) }
+
+      before_all do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: csp_framework,
+          project: csp_project)
+      end
+
+      before do
+        stub_csp_group(csp_group)
+      end
+
+      it 'includes CSP frameworks in the response with correct coverage count' do
+        post_graphql(query(sub_group.full_path), current_user: current_user)
+
+        csp_framework_detail = framework_details.find { |detail| detail["framework"]["name"] == "CSP Framework" }
+        expect(csp_framework_detail).not_to be_nil
+        expect(csp_framework_detail["coveredCount"]).to eq(1)
+      end
+
+      it 'includes both regular and CSP frameworks' do
+        post_graphql(query(sub_group.full_path), current_user: current_user)
+
+        framework_names = framework_details.map { |detail| detail["framework"]["name"] }
+        expect(framework_names).to include("CSP Framework", "GDPR", "SOC2")
       end
     end
   end

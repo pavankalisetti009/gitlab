@@ -71,9 +71,11 @@ export default {
         };
       },
       update(data) {
+        const { id } = data.group;
         const { totalProjects, coveredCount } = data.group.complianceFrameworkCoverageSummary;
         const { nodes: details } = data.group.complianceFrameworksCoverageDetails;
         return {
+          groupId: id,
           totalProjects,
           coveredCount,
           details,

@@ -680,9 +680,14 @@ module EE
 
     def compliance_framework_ids_with_csp
       direct_ids = root_ancestor.compliance_management_frameworks.pluck_primary_key
-      return direct_ids if !csp_enabled?(self) || designated_as_csp?
+      return direct_ids if designated_as_csp?
 
-      [*direct_ids, *organization_policy_setting.csp_namespace.compliance_management_frameworks.pluck_primary_key]
+      # Always try to include CSP frameworks, even if csp_enabled? is false
+      csp_namespace = organization_policy_setting&.csp_namespace
+      return direct_ids unless csp_namespace
+
+      csp_ids = csp_namespace.compliance_management_frameworks.pluck_primary_key
+      [*direct_ids, *csp_ids]
     end
 
     def ancestor_ids_with_csp
