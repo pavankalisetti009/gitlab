@@ -64,24 +64,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::Registry, feature_category:
   end
 
   describe '#self_hosted_probes' do
-    context 'when ai_self_hosted_vendored_features feature flag is disabled' do
-      before do
-        stub_feature_flags(ai_self_hosted_vendored_features: false)
-      end
-
-      it 'returns only self-hosted specific probes' do
-        probes = registry.self_hosted_probes
-
-        expect(probes.size).to eq(3)
-        expect(probes).to match(self_hosted_only_probe_types)
-      end
-    end
-
-    context 'when ai_self_hosted_vendored_features feature flag is enabled' do
-      before do
-        stub_feature_flags(ai_self_hosted_vendored_features: true)
-      end
-
+    context 'for self-hosted probes' do
       context 'when at least one vendored feature exists' do
         before do
           create(:ai_feature_setting, provider: :vendored)

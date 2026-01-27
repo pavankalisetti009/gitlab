@@ -60,30 +60,11 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
           create(:ai_feature_setting, feature: :code_completions, provider: :vendored)
         end
 
-        context 'when the ai_self_hosted_vendored_features feature flag is enabled' do
-          before do
-            stub_feature_flags(ai_self_hosted_vendored_features: true)
-          end
+        it 'adds default probes to the list of probes' do
+          service_probes = service.probes
 
-          it 'adds default probes to the list of probes' do
-            service_probes = service.probes
-
-            expect(service_probes.count).to eq(10)
-            expect(service_probes).to match(default_probes + self_hosted_probes)
-          end
-        end
-
-        context 'when the ai_self_hosted_vendored_features feature flag is disabled' do
-          before do
-            stub_feature_flags(ai_self_hosted_vendored_features: false)
-          end
-
-          it 'does not add default probes to the list of probes' do
-            service_probes = service.probes
-
-            expect(service_probes.count).to eq(3)
-            expect(service_probes).to match(self_hosted_probes)
-          end
+          expect(service_probes.count).to eq(10)
+          expect(service_probes).to match(default_probes + self_hosted_probes)
         end
       end
     end

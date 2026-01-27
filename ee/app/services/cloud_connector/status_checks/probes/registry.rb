@@ -26,7 +26,7 @@ module CloudConnector
         end
 
         def self_hosted_probes
-          if Feature.enabled?(:ai_self_hosted_vendored_features, :instance) && at_least_one_vendored_feature?
+          if at_least_one_vendored_feature?
             probes_for_vendored_features + self_hosted_only_probes
           else
             probes = self_hosted_only_probes
