@@ -22,18 +22,22 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
       expect(described_class.indexing?).to be(false)
     end
 
-    it 'returns false when ActiveContext migration is not complete' do
-      allow(ActiveContext).to receive(:indexing?).and_return(true)
-      allow(Ai::ActiveContext::Migration).to receive(:complete?).and_return(false)
+    context 'when ActiveContext indexing is enabled' do
+      before do
+        allow(ActiveContext).to receive(:indexing?).and_return(true)
+      end
 
-      expect(described_class.indexing?).to be(false)
-    end
+      it 'returns false when the collection does not have a current embedding version' do
+        collection.update!(indexing_embedding_versions: nil)
 
-    it 'returns true when indexing is enabled and migration is complete' do
-      allow(ActiveContext).to receive(:indexing?).and_return(true)
-      allow(Ai::ActiveContext::Migration).to receive(:complete?).and_return(true)
+        expect(described_class.indexing?).to be(false)
+      end
 
-      expect(described_class.indexing?).to be(true)
+      it 'returns true when the collection has a current embedding version' do
+        collection.update!(indexing_embedding_versions: [1])
+
+        expect(described_class.indexing?).to be(true)
+      end
     end
   end
 
@@ -130,8 +134,14 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
   end
 
   describe '.current_indexing_embedding_versions' do
-    it 'is empty' do
-      expect(described_class.current_indexing_embedding_versions).to be_empty
+    context 'when collection has indexing_embedding_versions set to nil' do
+      before do
+        collection.update!(indexing_embedding_versions: nil)
+      end
+
+      it 'is empty' do
+        expect(described_class.current_indexing_embedding_versions).to be_empty
+      end
     end
 
     context 'when collection has indexing_embedding_versions set to [1]' do
