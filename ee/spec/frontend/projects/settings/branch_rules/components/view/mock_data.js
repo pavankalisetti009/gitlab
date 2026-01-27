@@ -239,11 +239,13 @@ export const branchProtectionsMockResponse = {
               allowForcePush: true,
               codeOwnerApprovalRequired: true,
               modificationBlockedByPolicy: false,
+              protectedFromPushBySecurityPolicy: false,
+              warnModificationBlockedByPolicy: false,
+              warnProtectedFromPushBySecurityPolicy: false,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
                 edges: mergeAccessLevelEdges,
               },
-              protectedFromPushBySecurityPolicy: false,
               pushAccessLevels: {
                 __typename: 'PushAccessLevelConnection',
                 edges: pushAccessLevelEdges,
@@ -270,11 +272,13 @@ export const branchProtectionsMockResponse = {
               allowForcePush: true,
               codeOwnerApprovalRequired: true,
               modificationBlockedByPolicy: false,
+              protectedFromPushBySecurityPolicy: false,
+              warnModificationBlockedByPolicy: false,
+              warnProtectedFromPushBySecurityPolicy: false,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
                 edges: [],
               },
-              protectedFromPushBySecurityPolicy: false,
               pushAccessLevels: {
                 __typename: 'PushAccessLevelConnection',
                 edges: [],
@@ -314,11 +318,13 @@ export const branchProtectionsNoPushAccessMockResponse = {
               isGroupLevel: false,
               allowForcePush: false,
               modificationBlockedByPolicy: false,
+              protectedFromPushBySecurityPolicy: false,
+              warnModificationBlockedByPolicy: false,
+              warnProtectedFromPushBySecurityPolicy: false,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
                 edges: mergeAccessLevelEdges,
               },
-              protectedFromPushBySecurityPolicy: false,
               pushAccessLevels: {
                 __typename: 'PushAccessLevelConnection',
                 edges: [],
@@ -445,8 +451,10 @@ export const editBranchRuleMockResponse = {
           allowForcePush: true,
           codeOwnerApprovalRequired: true,
           modificationBlockedByPolicy: false,
-          mergeAccessLevels: mergeAccessLevelsEditResponse,
           protectedFromPushBySecurityPolicy: false,
+          warnModificationBlockedByPolicy: false,
+          warnProtectedFromPushBySecurityPolicy: false,
+          mergeAccessLevels: mergeAccessLevelsEditResponse,
           pushAccessLevels: {
             __typename: 'PushAccessLevelConnection',
             nodes: [],

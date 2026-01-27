@@ -315,6 +315,27 @@ describe('View branch rules in enterprise edition', () => {
         });
       });
 
+      describe('when it warns about deletion (warn mode)', () => {
+        beforeEach(async () => {
+          const mockResponse = structuredClone(branchProtectionsMockResponse);
+          mockResponse.data.project.branchRules.nodes[0].branchProtection.warnModificationBlockedByPolicy = true;
+          await createComponent({ editBranchRules: true }, {}, mockResponse);
+        });
+
+        it('renders enabled delete rule button', () => {
+          expect(findDeleteRuleButton().exists()).toBe(true);
+          expect(findDeleteRuleButton().props('disabled')).toBe(false);
+        });
+
+        it('renders the delete button popover with warn mode message', () => {
+          const popover = findDeleteRuleButtonPopover();
+          expect(popover.exists()).toBe(true);
+          expect(popover.text()).toBe(
+            "If one or more security policies become enforced, you can't unprotect this branch. Learn more.",
+          );
+        });
+      });
+
       describe('when it does not prevent deletion', () => {
         beforeEach(async () => {
           await createComponent();
@@ -345,6 +366,22 @@ describe('View branch rules in enterprise edition', () => {
 
         it('renders the force push toggle with the correct props', () => {
           expect(findAllowForcePushToggle().props('isProtectedByPolicy')).toBe(true);
+        });
+      });
+
+      describe('when it warns about pushing/force pushing to a branch (warn mode)', () => {
+        beforeEach(async () => {
+          const mockResponse = structuredClone(branchProtectionsMockResponse);
+          mockResponse.data.project.branchRules.nodes[0].branchProtection.warnProtectedFromPushBySecurityPolicy = true;
+          await createComponent({ editBranchRules: true }, {}, mockResponse);
+        });
+
+        it('renders the allowed to push button with warn mode props', () => {
+          expect(findAllowedToPush().props('isProtectedByWarnPolicy')).toBe(true);
+        });
+
+        it('renders the force push toggle with warn mode props', () => {
+          expect(findAllowForcePushToggle().props('isProtectedByWarnPolicy')).toBe(true);
         });
       });
 

@@ -48,6 +48,10 @@ export const branchRulesMockResponse = {
             branchProtection: {
               allowForcePush: true,
               codeOwnerApprovalRequired: true,
+              modificationBlockedByPolicy: false,
+              protectedFromPushBySecurityPolicy: false,
+              warnModificationBlockedByPolicy: false,
+              warnProtectedFromPushBySecurityPolicy: false,
               mergeAccessLevels: {
                 edges: [],
                 __typename: 'MergeAccessLevelConnection',
@@ -76,6 +80,10 @@ export const branchRulesMockResponse = {
             branchProtection: {
               allowForcePush: false,
               codeOwnerApprovalRequired: false,
+              modificationBlockedByPolicy: false,
+              protectedFromPushBySecurityPolicy: false,
+              warnModificationBlockedByPolicy: false,
+              warnProtectedFromPushBySecurityPolicy: false,
               mergeAccessLevels: {
                 edges: [],
                 __typename: 'MergeAccessLevelConnection',
@@ -197,6 +205,10 @@ export const branchRulePropsMock = {
   branchProtection: {
     allowForcePush: true,
     codeOwnerApprovalRequired: true,
+    modificationBlockedByPolicy: false,
+    protectedFromPushBySecurityPolicy: false,
+    warnModificationBlockedByPolicy: false,
+    warnProtectedFromPushBySecurityPolicy: false,
     pushAccessLevels: {
       edges: accessLevelsMockResponse,
     },

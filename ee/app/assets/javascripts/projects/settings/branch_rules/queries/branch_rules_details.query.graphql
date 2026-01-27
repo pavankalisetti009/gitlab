@@ -14,7 +14,6 @@ query getBranchRulesDetailsEE($projectPath: ID!, $buildMissing: Boolean = false)
           isGroupLevel
           allowForcePush
           codeOwnerApprovalRequired
-          modificationBlockedByPolicy
           mergeAccessLevels {
             edges {
               node {
@@ -36,7 +35,10 @@ query getBranchRulesDetailsEE($projectPath: ID!, $buildMissing: Boolean = false)
               }
             }
           }
-          protectedFromPushBySecurityPolicy @gl_introduced(version: "18.7.0")
+          modificationBlockedByPolicy
+          protectedFromPushBySecurityPolicy
+          warnModificationBlockedByPolicy @gl_introduced(version: "18.8.0")
+          warnProtectedFromPushBySecurityPolicy @gl_introduced(version: "18.8.0")
           pushAccessLevels {
             edges {
               node {
