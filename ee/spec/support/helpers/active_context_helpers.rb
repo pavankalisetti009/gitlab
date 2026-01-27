@@ -36,6 +36,10 @@ module ActiveContextHelpers
     active_context_client.indices.refresh(index: "#{TEST_INDEX_PREFIX}_*")
   end
 
+  def get_active_context_mappings(index)
+    active_context_client.indices.get_mapping(index: index).each_value.first['mappings']['properties']
+  end
+
   private
 
   def active_context_client
