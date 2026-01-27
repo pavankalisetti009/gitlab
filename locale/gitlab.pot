@@ -15285,6 +15285,9 @@ msgstr ""
 msgid "Close panel"
 msgstr ""
 
+msgid "Close sidebar"
+msgstr ""
+
 msgid "Close sidebar widget"
 msgstr ""
 
@@ -47549,6 +47552,9 @@ msgstr ""
 msgid "Open raw"
 msgstr ""
 
+msgid "Open sidebar"
+msgstr ""
+
 msgid "Open threads must be resolved."
 msgstr ""
 
@@ -77418,9 +77424,6 @@ msgid "WikiPage|{Give this page a title}"
 msgstr ""
 
 msgid "Wiki|Add custom sidebar"
-msgstr ""
-
-msgid "Wiki|Close sidebar"
 msgstr ""
 
 msgid "Wiki|Commit message"
