@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Security::CiConfiguration::ConfigureContainerScanning do
+RSpec.describe Mutations::Security::CiConfiguration::ConfigureContainerScanning, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   let(:service) { ::Security::CiConfiguration::ContainerScanningCreateService }

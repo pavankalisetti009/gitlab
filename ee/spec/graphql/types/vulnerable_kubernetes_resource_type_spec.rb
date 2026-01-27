@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['VulnerableKubernetesResource'] do
+RSpec.describe GitlabSchema.types['VulnerableKubernetesResource'], feature_category: :vulnerability_management do
   it { expect(described_class).to have_graphql_fields(:namespace, :kind, :name, :container_name, :agent, :cluster_id) }
 
   describe '.authorization_scopes' do

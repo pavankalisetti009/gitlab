@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['VulnerableProjectsByGrade'] do
+RSpec.describe GitlabSchema.types['VulnerableProjectsByGrade'], feature_category: :vulnerability_management do
   let(:fields) { %w[grade count projects].freeze }
 
   specify { expect(described_class).to have_graphql_fields(fields) }

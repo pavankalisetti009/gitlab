@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Export::SegmentedExportFinalisationWorker, feature_category: :shared do
+RSpec.describe Gitlab::Export::SegmentedExportFinalisationWorker, feature_category: :vulnerability_management do
   describe '#perform' do
     let(:vulnerability_export) { create(:vulnerability_export) }
     let(:global_id) { vulnerability_export.to_global_id }
