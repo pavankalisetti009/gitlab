@@ -98,7 +98,7 @@ class Groups::EpicsController < Groups::ApplicationController
       :state_event,
       :confidential,
       { label_ids: [],
-        update_task: [:index, :checked, :line_number, :line_source] }
+        update_task: [:checked, :line_source, :line_sourcepos] }
     ]
   end
 

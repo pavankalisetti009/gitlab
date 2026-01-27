@@ -728,7 +728,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
             {
               update_task: {
                 line_source: '- [ ] Task item',
-                line_number: 1,
+                line_sourcepos: '1:4-1:4',
                 checked: true
               }
             }

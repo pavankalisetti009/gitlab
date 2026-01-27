@@ -575,10 +575,9 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :portfol
                     {
                       description: '- [x] Task',
                       update_task: {
-                        index: 1,
                         checked: true,
                         line_source: '- [ ] Task',
-                        line_number: 1
+                        line_sourcepos: '1:4-1:4'
                       }
                     }
                   end
@@ -605,10 +604,9 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :portfol
                     {
                       description: '- [ ] Task',
                       update_task: {
-                        index: 1,
                         checked: false,
                         line_source: '- [x] Task',
-                        line_number: 1
+                        line_sourcepos: '1:4-1:4'
                       }
                     }
                   end
