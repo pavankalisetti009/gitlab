@@ -5,7 +5,7 @@ module Analytics
     class Dashboard
       include SchemaValidator
 
-      attr_reader :title, :description, :schema_version, :status, :panels, :container,
+      attr_reader :title, :description, :schema_version, :status, :panels, :container, :grid_height,
         :config_project, :slug, :path, :user_defined, :category, :errors, :filters
 
       DASHBOARD_ROOT_LOCATION = '.gitlab/analytics/dashboards'
@@ -202,6 +202,7 @@ module Analytics
         @description = @yaml_definition['description']
         @schema_version = @yaml_definition['version']
         @status = @yaml_definition['status']
+        @grid_height = @yaml_definition['gridHeight']
         @panels = Panel.from_data(@yaml_definition['panels'], config_project, container)
         @category = 'analytics'
 
