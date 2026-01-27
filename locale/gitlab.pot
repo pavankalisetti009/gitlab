@@ -2647,7 +2647,7 @@ msgstr ""
 msgid "AICatalog|Can't be enabled in other projects."
 msgstr ""
 
-msgid "AICatalog|Can't be made public if enabled in a project."
+msgid "AICatalog|Can't be made private if enabled in a project."
 msgstr ""
 
 msgid "AICatalog|Can't be shared, even within your organization."
