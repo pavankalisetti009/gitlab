@@ -19,11 +19,6 @@ module EE
 
       override :general_fallback
       def general_fallback(merge_request)
-        if ::Feature.enabled?(:v2_approval_rules, merge_request.project)
-          map_approval_rules_attributes_to_v2
-          update_v1_approval_rule_ids(merge_request)
-        end
-
         if merge_request.merged?
           params.delete(:reset_approval_rules_to_defaults)
           params.delete(:approval_rules_attributes)
@@ -58,12 +53,26 @@ module EE
         end
       end
 
+      override :filter_approval_params
+      def filter_approval_params(merge_request, current_user, params)
+        return super unless update_v2_approval_rules?
+
+        ::MergeRequests::V2ApprovalRules::ParamsFilteringService.new(merge_request, current_user, params).execute
+      end
+
       override :delete_approvals_on_target_branch_change
       def delete_approvals_on_target_branch_change(merge_request)
         delete_approvals(merge_request) if reset_approvals?(merge_request, nil)
         schedule_policy_synchronization(merge_request)
         notify_for_policy_violations(merge_request)
         audit_security_policy_branch_bypass(merge_request)
+      end
+
+      override :filter_params
+      def filter_params(merge_request)
+        map_and_replace_approval_rules_attributes_to_v2 if update_v2_approval_rules?
+
+        super
       end
 
       def reset_approval_rules(merge_request)
@@ -108,6 +117,10 @@ module EE
         return unless ::MergeRequest.draft?(old_title) && !::MergeRequest.draft?(new_title)
 
         assign_duo_as_reviewer(merge_request)
+      end
+
+      def update_v2_approval_rules?
+        ::Feature.enabled?(:v2_approval_rules, project)
       end
     end
   end

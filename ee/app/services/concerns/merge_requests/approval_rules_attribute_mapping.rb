@@ -4,6 +4,15 @@ module MergeRequests
   module ApprovalRulesAttributeMapping
     extend ActiveSupport::Concern
 
+    def map_and_replace_approval_rules_attributes_to_v2
+      return unless params[:approval_rules_attributes]
+
+      map_approval_rules_attributes_to_v2
+      params.delete(:approval_rules_attributes)
+    end
+
+    private
+
     def map_approval_rules_attributes_to_v2
       return unless params[:approval_rules_attributes]
 
@@ -25,28 +34,6 @@ module MergeRequests
           approver_user_ids: [],
           approver_group_ids: []
         )
-      end
-    end
-
-    def map_and_replace_approval_rules_attributes_to_v2
-      v2_approval_rules_attributes = map_approval_rules_attributes_to_v2
-
-      params.delete(:approval_rules_attributes)
-      v2_approval_rules_attributes
-    end
-
-    def update_v1_approval_rule_ids(merge_request)
-      return unless params[:v2_approval_rules_attributes].present? && params[:approval_rules_attributes].present?
-
-      params[:approval_rules_attributes].each do |rule_attrs|
-        next unless rule_attrs[:id].present?
-
-        v2_rule = merge_request.v2_approval_rules.find(rule_attrs[:id])
-        next unless v2_rule.present?
-
-        v1_rule = merge_request.approval_rules.find_by_name(v2_rule.name)
-
-        rule_attrs[:id] = v1_rule.id if v1_rule.present?
       end
     end
   end
