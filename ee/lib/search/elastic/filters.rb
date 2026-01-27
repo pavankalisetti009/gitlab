@@ -9,6 +9,7 @@ module Search
       DEFAULT_RELATED_SIZE = 100
       PROJECT_ID_FIELD = :project_id
       PROJECT_VISIBILITY_FIELD = :visibility_level
+      NAMESPACE_VISIBILITY_FIELD = :namespace_visibility_level
       TRAVERSAL_IDS_FIELD = :traversal_ids
 
       ALLOWED_NOTEABLE_TYPES = ::Elastic::Latest::NoteClassProxy::NOTEABLE_TYPE_TO_FEATURE.keys.map(&:to_s).freeze
@@ -906,62 +907,9 @@ module Search
           return query_hash if user&.can_read_all_resources?
 
           filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
+
           add_filter(query_hash, *filter_path) do
-            context.name(:filters, :permissions, search_level) do
-              permissions_filters = Search::Elastic::BoolExpr.new
-              add_visibility_level_filter(user: user,
-                visibility_level_field: :namespace_visibility_level,
-                filter: permissions_filters)
-
-              should = [{ bool: permissions_filters.to_h }]
-              traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
-
-              authorized_traversal_ids = traversal_ids_for_user(user, options)
-              unless authorized_traversal_ids.empty?
-                membership_filters = Search::Elastic::BoolExpr.new
-
-                add_filter(membership_filters, :must) do
-                  { terms: {
-                    _name: context.name(:namespace_visibility_level, :private),
-                    namespace_visibility_level: [::Gitlab::VisibilityLevel::PRIVATE]
-                  } }
-                end
-
-                membership_filters.should += ancestry_filter(authorized_traversal_ids,
-                  traversal_id_field: traversal_ids_prefix)
-
-                should << membership_filters.to_bool_query
-              end
-
-              authorized_project_ancestry_namespace_ids = authorized_namespace_ids_for_project_group_ancestry(user)
-              unless authorized_project_ancestry_namespace_ids.empty?
-                membership_filters = Search::Elastic::BoolExpr.new
-
-                add_filter(membership_filters, :must) do
-                  { terms: {
-                    _name: context.name(:namespace_visibility_level, :private),
-                    namespace_visibility_level: [::Gitlab::VisibilityLevel::PRIVATE]
-                  } }
-                end
-
-                add_filter(membership_filters, :must) do
-                  { terms: {
-                    _name: context.name(:project, :membership),
-                    namespace_id: authorized_project_ancestry_namespace_ids
-                  } }
-                end
-
-                should << membership_filters.to_bool_query
-              end
-
-              {
-                bool: {
-                  _name: context.name,
-                  should: should,
-                  minimum_should_match: 1
-                }
-              }
-            end
+            build_group_membership_filter(user:, search_level:, options:)
           end
         end
 
@@ -1845,6 +1793,72 @@ module Search
           # Follows the existing pattern of SCOPED_LABEL_SEPARATOR in ee/app/models/ee/label.rb
           # and SCOPED_LABEL_WILDCARD in ee/app/finders/ee/issuables/label_filter.rb#extract_scoped_label_wildcards
           label_name.end_with?('::*')
+        end
+
+        def build_group_membership_filter(user:, search_level:, options:)
+          context.name(:filters, :permissions, search_level) do
+            filter = Search::Elastic::BoolExpr.new
+
+            namespace_visibility_field = options.fetch(:namespace_visibility_field, NAMESPACE_VISIBILITY_FIELD)
+            traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
+
+            add_visibility_level_filter(user: user, visibility_level_field: namespace_visibility_field, filter: filter)
+
+            should = [{ bool: filter.to_h }]
+            should << build_private_group_membership_filters(user:, namespace_visibility_field:, traversal_ids_prefix:,
+              options:)
+            should << build_private_project_ancestry_filters(user:, namespace_visibility_field:)
+            should.compact!
+
+            {
+              bool: {
+                _name: context.name,
+                should: should,
+                minimum_should_match: 1
+              }
+            }
+          end
+        end
+
+        def build_private_group_membership_filters(user:, namespace_visibility_field:, traversal_ids_prefix:, options:)
+          authorized_traversal_ids = traversal_ids_for_user(user, options)
+          return if authorized_traversal_ids.empty?
+
+          membership_filters = Search::Elastic::BoolExpr.new
+
+          add_filter(membership_filters, :must) do
+            { terms: {
+              _name: context.name(namespace_visibility_field, :private),
+              "#{namespace_visibility_field}": [::Gitlab::VisibilityLevel::PRIVATE]
+            } }
+          end
+
+          membership_filters.should += ancestry_filter(authorized_traversal_ids,
+            traversal_id_field: traversal_ids_prefix)
+          membership_filters.to_bool_query
+        end
+
+        def build_private_project_ancestry_filters(user:, namespace_visibility_field:)
+          authorized_ids = authorized_namespace_ids_for_project_group_ancestry(user)
+          return if authorized_ids.empty?
+
+          membership_filters = Search::Elastic::BoolExpr.new
+
+          add_filter(membership_filters, :must) do
+            { terms: {
+              _name: context.name(namespace_visibility_field, :private),
+              "#{namespace_visibility_field}": [::Gitlab::VisibilityLevel::PRIVATE]
+            } }
+          end
+
+          add_filter(membership_filters, :must) do
+            { terms: {
+              _name: context.name(:project, :membership),
+              namespace_id: authorized_ids
+            } }
+          end
+
+          membership_filters.to_bool_query
         end
       end
     end
