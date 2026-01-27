@@ -36,12 +36,13 @@ describe('AddProjectItemConsumerModal', () => {
     },
   };
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({ props = {}, aiFlowTriggerPipelineHooks = true } = {}) => {
     wrapper = shallowMount(AddProjectItemConsumerModal, {
       propsData: {
         ...defaultProps,
         ...props,
       },
+      provide: { glFeatures: { aiFlowTriggerPipelineHooks } },
       stubs: {
         GlModal: GlModalStub,
       },
@@ -86,14 +87,27 @@ describe('AddProjectItemConsumerModal', () => {
 
     it('does not render pre-selected trigger type checkboxes by default', () => {
       expect(findFormCheckboxGroup().attributes('checked')).toEqual(
-        'mention,assign,assign_reviewer',
+        'mention,assign,assign_reviewer,pipeline_hooks',
       );
 
       const checkboxes = findFormCheckboxes();
-      expect(checkboxes).toHaveLength(3);
+      expect(checkboxes).toHaveLength(4);
       expect(checkboxes.at(0).props('value')).toBe('mention');
       expect(checkboxes.at(1).props('value')).toBe('assign');
       expect(checkboxes.at(2).props('value')).toBe('assign_reviewer');
+      expect(checkboxes.at(3).props('value')).toBe('pipeline_hooks');
+    });
+
+    describe('when the aiFlowTriggerPipelineHooks feature flag is disabled', () => {
+      it('excludes the pipeline_hooks checkbox', () => {
+        createComponent({
+          aiFlowTriggerPipelineHooks: false,
+          props: { item: mockFlow, showAddToGroup: false },
+        });
+
+        expect(findFormCheckboxGroup().attributes('checked')).not.toContain('pipeline_hooks');
+        expect(findFormCheckboxes()).toHaveLength(3);
+      });
     });
   });
 
@@ -140,7 +154,7 @@ describe('AddProjectItemConsumerModal', () => {
       await findGroupItemConsumerDropdown().vm.$emit('input', mockFlowItemConsumer);
 
       expect(findFormCheckboxGroup().attributes('checked')).toEqual(
-        'mention,assign,assign_reviewer',
+        'mention,assign,assign_reviewer,pipeline_hooks',
       );
     });
   });
@@ -167,7 +181,7 @@ describe('AddProjectItemConsumerModal', () => {
       // Need to set a flow type consumer again to check the trigger types are reset
       await findGroupItemConsumerDropdown().vm.$emit('input', mockFlowItemConsumer);
       expect(findFormCheckboxGroup().attributes('checked')).toEqual(
-        'mention,assign,assign_reviewer',
+        'mention,assign,assign_reviewer,pipeline_hooks',
       );
     });
   });
@@ -198,14 +212,15 @@ describe('AddProjectItemConsumerModal', () => {
     it('renders trigger checkboxes', async () => {
       await findGroupItemConsumerDropdown().vm.$emit('input', mockThirdPartyFlowItemConsumer);
       expect(findFormCheckboxGroup().attributes('checked')).toEqual(
-        'mention,assign,assign_reviewer',
+        'mention,assign,assign_reviewer,pipeline_hooks',
       );
 
       const checkboxes = findFormCheckboxes();
-      expect(checkboxes).toHaveLength(3);
+      expect(checkboxes).toHaveLength(4);
       expect(checkboxes.at(0).props('value')).toBe('mention');
       expect(checkboxes.at(1).props('value')).toBe('assign');
       expect(checkboxes.at(2).props('value')).toBe('assign_reviewer');
+      expect(checkboxes.at(3).props('value')).toBe('pipeline_hooks');
     });
 
     it('passes triggerTypes on form submission', async () => {
@@ -219,7 +234,7 @@ describe('AddProjectItemConsumerModal', () => {
         itemName: mockThirdPartyFlowItemConsumer.item.name,
         parentItemConsumerId: mockThirdPartyFlowItemConsumer.id,
         target: { projectId: null },
-        triggerTypes: ['mention', 'assign', 'assign_reviewer'],
+        triggerTypes: ['mention', 'assign', 'assign_reviewer', 'pipeline_hooks'],
       });
     });
   });
@@ -240,7 +255,7 @@ describe('AddProjectItemConsumerModal', () => {
         expect(wrapper.emitted('submit')).toHaveLength(1);
         expect(wrapper.emitted('submit')[0][0]).toEqual({
           target: { projectId: 'gid://gitlab/Project/1' },
-          triggerTypes: ['mention', 'assign', 'assign_reviewer'],
+          triggerTypes: ['mention', 'assign', 'assign_reviewer', 'pipeline_hooks'],
         });
       });
     });
@@ -260,7 +275,7 @@ describe('AddProjectItemConsumerModal', () => {
         expect(wrapper.emitted('submit')).toHaveLength(1);
         expect(wrapper.emitted('submit')[0][0]).toEqual({
           target: { groupId: 'gid://gitlab/Group/1' },
-          triggerTypes: ['mention', 'assign', 'assign_reviewer'],
+          triggerTypes: ['mention', 'assign', 'assign_reviewer', 'pipeline_hooks'],
         });
       });
     });

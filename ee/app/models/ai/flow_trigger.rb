@@ -9,7 +9,8 @@ module Ai
     EVENT_TYPES = {
       mention: 0,
       assign: 1,
-      assign_reviewer: 2
+      assign_reviewer: 2,
+      pipeline_hooks: 3
     }.freeze
 
     belongs_to :project, optional: false

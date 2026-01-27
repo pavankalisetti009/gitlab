@@ -3184,6 +3184,9 @@ msgstr ""
 msgid "AICatalog|Triage Issue, Generate Release Notes, Update Docs"
 msgstr ""
 
+msgid "AICatalog|Trigger this %{itemType} when a pipeline status changes."
+msgstr ""
+
 msgid "AICatalog|Trigger this %{itemType} when the service account user is assigned as a reviewer to a merge request."
 msgstr ""
 
@@ -49495,6 +49498,9 @@ msgid "Pipeline durations for the last 30 commits"
 msgstr ""
 
 msgid "Pipeline editor"
+msgstr ""
+
+msgid "Pipeline events"
 msgstr ""
 
 msgid "Pipeline job"

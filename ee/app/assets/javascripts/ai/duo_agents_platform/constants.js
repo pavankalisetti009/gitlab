@@ -116,6 +116,15 @@ export const FLOW_TRIGGER_TYPES = [
     value: 'assign_reviewer',
     valueInt: 2,
   },
+  {
+    text: __('Pipeline events'),
+    createHelp: (itemType) =>
+      sprintf(s__('AICatalog|Trigger this %{itemType} when a pipeline status changes.'), {
+        itemType,
+      }),
+    value: 'pipeline_hooks',
+    valueInt: 3,
+  },
 ];
 
 export const DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES = {

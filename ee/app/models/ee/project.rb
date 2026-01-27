@@ -1020,6 +1020,24 @@ module EE
       end
     end
 
+    override :execute_flow_triggers
+    def execute_flow_triggers(data, hook_scope)
+      current_user_id = data.dig(:user, :id)
+      return unless current_user_id
+
+      flow_triggers = ai_flow_triggers.triggered_on(hook_scope)
+      return unless flow_triggers.any?
+
+      current_user = ::User.find(current_user_id)
+      flow_triggers.each do |flow_trigger|
+        ::Ai::FlowTriggers::RunService.new(
+          project: self,
+          current_user: current_user,
+          flow_trigger: flow_trigger
+        ).execute({ input: data.to_json, event: hook_scope })
+      end
+    end
+
     override :has_active_hooks?
     def has_active_hooks?(hooks_scope = :push_hooks)
       super || has_group_hooks?(hooks_scope)

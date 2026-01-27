@@ -5965,5 +5965,58 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#execute_flow_triggers' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
+
+    let(:data) { { user: { id: user.id } } }
+    let(:hook_scope) { :pipeline_hooks }
+
+    subject(:execute_flow_triggers) { project.execute_flow_triggers(data, hook_scope) }
+
+    describe 'with a flow trigger' do
+      let_it_be(:flow_triggers) do
+        Array.new(2) { create(:ai_flow_trigger, project: project, event_types: [::Ai::FlowTrigger::EVENT_TYPES[:pipeline_hooks]]) }
+      end
+
+      it 'initializes ::Ai::FlowTriggers::RunService with expected args' do
+        flow_triggers.each do |flow_trigger|
+          expect(::Ai::FlowTriggers::RunService).to receive(:new)
+            .with(project: project, current_user: user, flow_trigger: flow_trigger).and_call_original
+        end
+
+        execute_flow_triggers
+      end
+
+      it 'executes ::Ai::FlowTriggers::RunService with expected args' do
+        run_service = instance_double(::Ai::FlowTriggers::RunService, execute: nil)
+        allow(::Ai::FlowTriggers::RunService).to receive(:new).and_return(run_service)
+        expect(run_service).to receive(:execute).twice.with({ input: data.to_json, event: hook_scope })
+
+        execute_flow_triggers
+      end
+
+      describe 'when the hook data contains no user id' do
+        let(:data) { {} }
+
+        it 'does not initialize ::Ai::FlowTriggers::RunService' do
+          expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+
+          execute_flow_triggers
+        end
+      end
+    end
+
+    describe 'with no matching flow trigger' do
+      let_it_be(:flow_trigger) { create(:ai_flow_trigger, event_types: [::Ai::FlowTrigger::EVENT_TYPES[:mention]]) }
+
+      it 'does not initialize ::Ai::FlowTriggers::RunService' do
+        expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+
+        execute_flow_triggers
+      end
+    end
+  end
+
   it_behaves_like 'a resource that has custom roles', :project
 end
