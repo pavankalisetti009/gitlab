@@ -45,10 +45,45 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
     end
   end
 
+  describe '#context_aware_uuid' do
+    subject(:uuid) { finding_map.context_aware_uuid }
+
+    it 'generates a context-aware UUID using VulnerabilityUUID.generate_v2' do
+      expected_uuid = ::Security::VulnerabilityUUID.generate_v2(
+        report_type: report_finding.report_type,
+        primary_identifier_fingerprint: identifier.fingerprint,
+        location_fingerprint: report_finding.location.fingerprint,
+        project_id: pipeline.project_id,
+        context_id: tracked_context.id
+      )
+
+      expect(uuid).to eq(expected_uuid)
+    end
+
+    context 'when tracked context is nil' do
+      let(:finding_map) { described_class.new(pipeline, nil, security_finding, report_finding) }
+
+      it 'returns nil' do
+        expect(uuid).to be_nil
+      end
+    end
+  end
+
   describe '#to_hash' do
+    let(:expected_new_uuid) do
+      ::Security::VulnerabilityUUID.generate_v2(
+        report_type: report_finding.report_type,
+        primary_identifier_fingerprint: identifier.fingerprint,
+        location_fingerprint: report_finding.location.fingerprint,
+        project_id: pipeline.project_id,
+        context_id: tracked_context.id
+      )
+    end
+
     let(:expected_hash) do
       {
         uuid: security_finding.uuid,
+        new_uuid: expected_new_uuid,
         security_project_tracked_context_id: tracked_context.id,
         scanner_id: security_finding.scanner_id,
         primary_identifier_id: nil,
@@ -79,10 +114,14 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
     it { is_expected.to eq(expected_hash) }
 
     context 'when tracked context is nil' do
-      let_it_be(:tracked_context) { nil }
+      let(:finding_map) { described_class.new(pipeline, nil, security_finding, report_finding) }
 
       it 'returns nil for security_project_tracked_context_id' do
         expect(hash[:security_project_tracked_context_id]).to be_nil
+      end
+
+      it 'returns nil for new_uuid' do
+        expect(hash[:new_uuid]).to be_nil
       end
     end
 
