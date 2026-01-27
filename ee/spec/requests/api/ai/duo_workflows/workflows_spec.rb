@@ -2062,6 +2062,34 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           )
         end
 
+        it 'sets x-gitlab-self-hosted-dap-billing-enabled header to true when billing should occur' do
+          allow(Ai::SelfHostedDapBilling).to receive(:should_bill?)
+            .with(duo_agent_platform_setting).and_return(true)
+
+          get_response
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          headers = json_response['DuoWorkflow']['Headers']
+          expect(headers).to include(
+            'x-gitlab-self-hosted-dap-billing-enabled' => 'true'
+          )
+        end
+
+        it 'sets x-gitlab-self-hosted-dap-billing-enabled header to false when billing should not occur' do
+          allow(Ai::SelfHostedDapBilling).to receive(:should_bill?)
+            .with(duo_agent_platform_setting).and_return(false)
+
+          get_response
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          headers = json_response['DuoWorkflow']['Headers']
+          expect(headers).to include(
+            'x-gitlab-self-hosted-dap-billing-enabled' => 'false'
+          )
+        end
+
         it 'creates ModelMetadata with the correct feature setting' do
           expect(::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata).to receive(:new)
             .with(feature_setting: duo_agent_platform_setting)
