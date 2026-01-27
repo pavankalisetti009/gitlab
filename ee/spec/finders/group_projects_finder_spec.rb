@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupProjectsFinder do
+RSpec.describe GroupProjectsFinder, feature_category: :groups_and_projects do
   include_context 'GroupProjectsFinder context'
 
   subject { finder.execute }

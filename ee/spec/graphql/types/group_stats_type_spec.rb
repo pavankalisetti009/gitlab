@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['GroupStats'] do
+RSpec.describe GitlabSchema.types['GroupStats'], feature_category: :groups_and_projects do
   it { expect(described_class).to require_graphql_authorizations(:read_group) }
 
   it 'has the expected fields' do

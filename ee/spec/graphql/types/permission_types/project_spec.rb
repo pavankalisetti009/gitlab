@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::PermissionTypes::Project do
+RSpec.describe Types::PermissionTypes::Project, feature_category: :groups_and_projects do
   specify do
     expected_permissions = %i[
       create_path_lock
