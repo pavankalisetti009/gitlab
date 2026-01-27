@@ -7,7 +7,6 @@ RSpec.describe Ci::RunnerController, feature_category: :continuous_integration d
     subject { build(:ci_runner_controller) }
 
     it { is_expected.to validate_length_of(:description).is_at_most(1024) }
-    it { is_expected.to validate_inclusion_of(:enabled).in_array([true, false]) }
   end
 
   describe 'associations' do
@@ -21,58 +20,83 @@ RSpec.describe Ci::RunnerController, feature_category: :continuous_integration d
     end
   end
 
-  describe 'enabled field' do
-    it 'defaults to false' do
+  describe 'state enum' do
+    it 'defines the correct states' do
+      expect(described_class.states).to eq(
+        'disabled' => 0,
+        'enabled' => 1,
+        'dry_run' => 2
+      )
+    end
+
+    it 'defaults to disabled' do
       controller = described_class.new
 
-      expect(controller.enabled).to be false
+      expect(controller.state).to eq('disabled')
+      expect(controller).to be_disabled
     end
 
-    it 'can be set to true' do
-      controller = build(:ci_runner_controller, enabled: true)
+    it 'can be set to enabled' do
+      controller = build(:ci_runner_controller, state: :enabled)
 
-      expect(controller.enabled).to be true
+      expect(controller.state).to eq('enabled')
+      expect(controller).to be_enabled
     end
 
-    it 'can be set to false' do
-      controller = build(:ci_runner_controller, enabled: false)
+    it 'can be set to dry_run' do
+      controller = build(:ci_runner_controller, state: :dry_run)
 
-      expect(controller.enabled).to be false
+      expect(controller.state).to eq('dry_run')
+      expect(controller).to be_dry_run
     end
   end
 
-  describe '.enabled' do
-    subject(:enabled) { described_class.enabled }
+  describe 'scopes' do
+    let_it_be(:enabled_controller) { create(:ci_runner_controller, :enabled) }
+    let_it_be(:disabled_controller) { create(:ci_runner_controller) }
+    let_it_be(:dry_run_controller) { create(:ci_runner_controller, :dry_run) }
 
-    context 'when enabled and disabled controllers exist' do
-      let!(:enabled_controller) { create(:ci_runner_controller, :enabled) }
-      let!(:disabled_controller) { create(:ci_runner_controller) }
+    describe '.enabled' do
+      subject(:enabled) { described_class.enabled }
 
       it 'returns only enabled runner controllers' do
-        is_expected.to include(enabled_controller)
-        is_expected.not_to include(disabled_controller)
+        is_expected.to contain_exactly(enabled_controller)
       end
     end
 
-    context 'when no enabled controllers exist' do
-      before do
-        create(:ci_runner_controller)
-      end
+    describe '.disabled' do
+      subject(:disabled) { described_class.disabled }
 
-      it 'returns empty collection' do
-        is_expected.to be_empty
+      it 'returns only disabled runner controllers' do
+        is_expected.to contain_exactly(disabled_controller)
       end
     end
 
-    context 'when multiple enabled controllers exist' do
-      let!(:enabled_controllers) { create_list(:ci_runner_controller, 3, :enabled) }
+    describe '.dry_run' do
+      subject(:dry_run) { described_class.dry_run }
 
-      before do
-        create(:ci_runner_controller)
+      it 'returns only dry_run runner controllers' do
+        is_expected.to contain_exactly(dry_run_controller)
+      end
+    end
+
+    describe '.active' do
+      subject(:active) { described_class.active }
+
+      context 'when controllers in different states exist' do
+        it 'returns enabled and dry_run runner controllers' do
+          is_expected.to contain_exactly(enabled_controller, dry_run_controller)
+        end
       end
 
-      it 'returns all enabled controllers' do
-        is_expected.to match_array(enabled_controllers)
+      context 'when no active controllers exist' do
+        before do
+          described_class.active.delete_all
+        end
+
+        it 'returns empty collection' do
+          is_expected.to be_empty
+        end
       end
     end
   end

@@ -29,7 +29,7 @@ RSpec.describe API::Ci::RunnerControllers, feature_category: :continuous_integra
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response.size).to eq(3)
-        expect(json_response.first).to have_key('enabled')
+        expect(json_response.first).to have_key('state')
       end
     end
 
@@ -61,7 +61,7 @@ RSpec.describe API::Ci::RunnerControllers, feature_category: :continuous_integra
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response['id']).to eq(controller.id)
-        expect(json_response['enabled']).to eq(controller.enabled)
+        expect(json_response['state']).to eq(controller.state)
       end
 
       context 'when runner controller does not exist' do
@@ -96,39 +96,57 @@ RSpec.describe API::Ci::RunnerControllers, feature_category: :continuous_integra
 
   describe 'POST /runner_controllers' do
     context 'when user is admin' do
-      it 'creates a new runner controller' do
+      it 'creates a new runner controller with default state' do
         params = { description: 'New Controller' }
 
         post api(path, admin, admin_mode: true), params: params
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['description']).to eq('New Controller')
-        expect(json_response['enabled']).to be false
+        expect(json_response['state']).to eq('disabled')
       end
 
-      it 'creates a new runner controller with enabled set to true' do
-        params = { description: 'New Controller', enabled: true }
+      it 'creates a new runner controller with state set to enabled' do
+        params = { description: 'New Controller', state: 'enabled' }
 
         post api(path, admin, admin_mode: true), params: params
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['description']).to eq('New Controller')
-        expect(json_response['enabled']).to be true
+        expect(json_response['state']).to eq('enabled')
       end
 
-      it 'creates a new runner controller with enabled set to false' do
-        params = { description: 'New Controller', enabled: false }
+      it 'creates a new runner controller with state set to disabled' do
+        params = { description: 'New Controller', state: 'disabled' }
 
         post api(path, admin, admin_mode: true), params: params
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['description']).to eq('New Controller')
-        expect(json_response['enabled']).to be false
+        expect(json_response['state']).to eq('disabled')
+      end
+
+      it 'creates a new runner controller with state set to dry_run' do
+        params = { description: 'New Controller', state: 'dry_run' }
+
+        post api(path, admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response['description']).to eq('New Controller')
+        expect(json_response['state']).to eq('dry_run')
       end
 
       context 'when parameters are invalid' do
-        it 'returns status 400 (bad request)' do
+        it 'returns status 400 (bad request) for invalid description' do
           params = { description: FFaker::Lorem.characters(1025) }
+
+          post api(path, admin, admin_mode: true), params: params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+
+        it 'returns status 400 (bad request) for invalid state' do
+          params = { description: 'New Controller', state: 'invalid_state' }
 
           post api(path, admin, admin_mode: true), params: params
 
@@ -162,7 +180,7 @@ RSpec.describe API::Ci::RunnerControllers, feature_category: :continuous_integra
     let(:user) { admin }
     let(:admin_mode) { true }
     let(:request_params) { {} }
-    let(:controller) { create(:ci_runner_controller, description: 'Initial Description', enabled: false) }
+    let_it_be_with_refind(:controller) { create(:ci_runner_controller, :disabled, description: 'Initial Description') }
     let(:controller_to_update) { controller.id }
 
     subject(:make_request) do
@@ -178,23 +196,56 @@ RSpec.describe API::Ci::RunnerControllers, feature_category: :continuous_integra
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['description']).to eq('Updated Description')
-          expect(json_response['enabled']).to eq(controller.enabled)
+          expect(json_response['state']).to eq(controller.state)
         end
       end
 
-      context 'when updating a runner controller enabled status' do
-        let(:request_params) { { enabled: true } }
+      context 'when updating a runner controller state to enabled' do
+        let(:request_params) { { state: 'enabled' } }
 
         it 'enables the runner controller' do
           make_request
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['enabled']).to be true
+          expect(json_response['state']).to eq('enabled')
+        end
+      end
+
+      context 'when updating a runner controller state to dry_run' do
+        let(:request_params) { { state: 'dry_run' } }
+
+        it 'sets the runner controller to dry_run' do
+          make_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['state']).to eq('dry_run')
+        end
+      end
+
+      context 'when updating a runner controller state to disabled' do
+        let(:controller) { create(:ci_runner_controller, description: 'Initial Description', state: :enabled) }
+        let(:request_params) { { state: 'disabled' } }
+
+        it 'disables the runner controller' do
+          make_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['state']).to eq('disabled')
         end
       end
 
       context 'when parameters are invalid' do
         let(:request_params) { { description: FFaker::Lorem.characters(1025) } }
+
+        it 'returns status 400 (bad request)' do
+          make_request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+
+      context 'when state is invalid' do
+        let(:request_params) { { state: 'invalid_state' } }
 
         it 'returns status 400 (bad request)' do
           make_request
