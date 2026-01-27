@@ -99,6 +99,17 @@ module Elastic
       end
 
       def apply_permission_filters(query_hash, options)
+        if Feature.enabled?(:search_advanced_wiki_new_auth_filter, options[:current_user])
+          return ::Search::Elastic::Filters.by_search_level_and_membership(
+            query_hash: query_hash,
+            options: options.merge({ features: 'wiki' })
+          )
+        end
+
+        legacy_authorization(query_hash, options)
+      end
+
+      def legacy_authorization(query_hash, options)
         return query_hash unless options.key?(:current_user)
 
         user = options[:current_user]

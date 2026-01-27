@@ -305,7 +305,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
     end
 
     context "when indexing a project's wiki", :elastic do
-      let_it_be_with_reload(:project) { create(:project, :wiki_repo) }
+      let_it_be_with_reload(:project) { create(:project, :wiki_repo, :public) }
 
       let(:indexer) { described_class.new(project, wiki: true) }
       let(:to_sha) { project.wiki.repository.commit('master').sha }
@@ -631,7 +631,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
     end
 
     context 'for wiki blobs' do
-      let_it_be(:project) { create(:project, :wiki_repo) }
+      let_it_be(:project) { create(:project, :wiki_repo, :public) }
 
       it 'correctly indexes commits which add and remove files' do
         filename_1 = 'test-1.md'
@@ -719,7 +719,8 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
   end
 
   def indexed_wiki_paths_for(term)
-    blobs = ProjectWiki.elastic_search(term, type: 'wiki_blob')[:wiki_blobs][:results].response
+    results = ProjectWiki.elastic_search(term, type: 'wiki_blob', options: { search_level: :global })
+    blobs = results[:wiki_blobs][:results].response
     blobs.map { |blob| blob['_source']['path'] }
   end
 end
