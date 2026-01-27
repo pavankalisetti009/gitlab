@@ -341,6 +341,9 @@ export default {
       return this.$apollo
         .query({
           query: findingReportsComparerQuery,
+          context: {
+            featureCategory: 'vulnerability_management',
+          },
           variables: {
             fullPath: this.mr.targetProjectFullPath,
             iid: String(this.mr.iid),
