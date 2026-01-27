@@ -66823,6 +66823,9 @@ msgstr ""
 msgid "StatusCheck|Service name"
 msgstr ""
 
+msgid "StatusCheck|Shared secret cannot be longer than 255 characters."
+msgstr ""
+
 msgid "StatusCheck|Status Check ID"
 msgstr ""
 

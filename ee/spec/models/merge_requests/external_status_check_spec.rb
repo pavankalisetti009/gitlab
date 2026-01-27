@@ -14,6 +14,15 @@ RSpec.describe MergeRequests::ExternalStatusCheck, type: :model do
     it { is_expected.to validate_presence_of(:external_url) }
     it { is_expected.to validate_uniqueness_of(:name).scoped_to(:project_id) }
     it { is_expected.to validate_uniqueness_of(:external_url).scoped_to(:project_id) }
+    it { is_expected.to validate_length_of(:shared_secret).is_at_most(255) }
+
+    specify 'shared_secret length validation does not invalidate existing records' do
+      external_status_check = create(:external_status_check)
+      external_status_check.shared_secret = 'A' * 260
+      external_status_check.save!(validate: false)
+
+      expect(external_status_check.reload).to be_valid
+    end
 
     describe 'protected_branches_must_belong_to_project_or_group_hierarchy' do
       let_it_be(:group) { create(:group) }

@@ -6,7 +6,12 @@ import ProtectedBranchesSelector from 'ee/vue_shared/components/branches_selecto
 import { isValidURL } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import { ALL_BRANCHES } from 'ee/vue_shared/components/branches_selector/constants';
-import { EMPTY_STATUS_CHECK, NAME_TAKEN_SERVER_ERROR, URL_TAKEN_SERVER_ERROR } from '../constants';
+import {
+  EMPTY_STATUS_CHECK,
+  NAME_TAKEN_SERVER_ERROR,
+  URL_TAKEN_SERVER_ERROR,
+  SHARED_SECRET_MAX_LENGTH,
+} from '../constants';
 
 export default {
   i18n: {
@@ -42,6 +47,9 @@ export default {
       ),
       invalidUrl: __('Please provide a valid URL.'),
       invalidSharedSecret: __('Please provide a shared secret.'),
+      sharedSecretInvalidMessage: s__(
+        'StatusCheck|Shared secret cannot be longer than 255 characters.',
+      ),
     },
   },
   components: {
@@ -90,6 +98,9 @@ export default {
     };
   },
   computed: {
+    hasSharedSecret() {
+      return Boolean(this.sharedSecret);
+    },
     isValid() {
       return (
         this.isValidName && this.isValidURL && this.isValidBranches && this.isValidSharedSecret
@@ -105,7 +116,10 @@ export default {
       return Boolean(this.url) && isValidURL(this.url);
     },
     isValidSharedSecret() {
-      return !this.overrideHmac || Boolean(this.sharedSecret);
+      return (
+        (!this.overrideHmac && !this.hasSharedSecret) ||
+        (this.hasSharedSecret && this.sharedSecret.length <= SHARED_SECRET_MAX_LENGTH)
+      );
     },
     hmacState() {
       return !this.showValidation || this.isValidSharedSecret;
@@ -138,6 +152,13 @@ export default {
       }
 
       return this.$options.i18n.validations.invalidUrl;
+    },
+    invalidSharedSecretMessage() {
+      if (this.hasSharedSecret && this.sharedSecret.length > SHARED_SECRET_MAX_LENGTH) {
+        return this.$options.i18n.validations.sharedSecretInvalidMessage;
+      }
+
+      return this.$options.i18n.validations.invalidSharedSecret;
     },
     sharedSecretDescription() {
       if (this.overrideHmac) {
@@ -259,7 +280,7 @@ export default {
           :disabled="hmacFieldDisabled"
           :state="hmacState"
           :description="sharedSecretDescription"
-          :invalid-feedback="$options.i18n.validations.invalidSharedSecret"
+          :invalid-feedback="invalidSharedSecretMessage"
           data-testid="shared-secret"
         >
           <gl-form-input

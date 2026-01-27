@@ -28,6 +28,9 @@ module MergeRequests
     after_destroy_commit :audit_deletion
     validates :external_url, presence: true, uniqueness: { scope: :project_id }, addressable_url: true
     validates :name, uniqueness: { scope: :project_id }, presence: true
+    # Shared secrets are user-provided HMAC secrets for webhook signatures.
+    # A limit of 255 is consistent with other similar columns.
+    validates :shared_secret, length: { maximum: 255 }, if: :shared_secret_changed?
     validate :protected_branches_must_belong_to_project_or_group_hierarchy
 
     def async_execute(data)
