@@ -12,7 +12,9 @@ module Geo
 
     delegate :registry, to: :replicator
 
-    LEASE_TIMEOUT    = 8.hours
+    # This timeout matches the expected Git fetch timeout documented in Geo troubleshooting docs for 'context deadline exceeded' errors.
+    # See https://docs.gitlab.com/administration/geo/replication/troubleshooting/synchronization_verification/#error-fetch-remote-signal-terminated-context-deadline-exceeded-at-exactly-3-hours
+    LEASE_TIMEOUT    = 3.hours
     LEASE_KEY_PREFIX = 'geo_sync_ssf_service'
 
     def initialize(replicator)
