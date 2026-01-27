@@ -65,8 +65,8 @@ describe('AI Agent platform flow metrics data source', () => {
       expect.objectContaining({
         variables: expect.objectContaining({
           fullPath: namespace,
-          startDate: new Date('2020-06-06'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-06-06',
+          endDate: '2020-07-06',
         }),
       }),
     );
@@ -83,8 +83,8 @@ describe('AI Agent platform flow metrics data source', () => {
       expect.objectContaining({
         variables: expect.objectContaining({
           fullPath: namespace,
-          startDate: new Date('2020-06-29'),
-          endDate: new Date('2020-07-06'),
+          startDate: '2020-06-29',
+          endDate: '2020-07-06',
         }),
       }),
     );
