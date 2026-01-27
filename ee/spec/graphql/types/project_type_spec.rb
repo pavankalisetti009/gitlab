@@ -3,7 +3,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
+RSpec.describe GitlabSchema.types['Project'], feature_category: :groups_and_projects do
   using RSpec::Parameterized::TableSyntax
   include GraphqlHelpers
 
