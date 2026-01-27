@@ -64,7 +64,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           including_projects: []
         },
         type: "scan_execution_policy",
-        updated_at: policy_configuration.policy_last_updated_at,
+        config: policy_configuration,
         csp: false,
         yaml: YAML.dump({
           name: scan_execution_policy[:name],
@@ -123,7 +123,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           including_projects: []
         },
         type: "approval_policy",
-        updated_at: policy_configuration.policy_last_updated_at,
+        config: policy_configuration,
         csp: false,
         yaml: YAML.dump({
           name: approval_policy[:name],
@@ -184,7 +184,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           including_projects: []
         },
         type: "pipeline_execution_policy",
-        updated_at: policy_configuration.policy_last_updated_at,
+        config: policy_configuration,
         csp: false,
         yaml: YAML.dump({
           name: pipeline_execution_policy[:name],
@@ -245,7 +245,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           including_projects: []
         },
         type: "pipeline_execution_schedule_policy",
-        updated_at: policy_configuration.policy_last_updated_at,
+        config: policy_configuration,
         csp: false,
         yaml: YAML.dump({
           name: pipeline_execution_schedule_policy[:name],
@@ -302,7 +302,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           including_projects: []
         },
         type: "vulnerability_management_policy",
-        updated_at: policy_configuration.policy_last_updated_at,
+        config: policy_configuration,
         csp: false,
         yaml: YAML.dump({
           name: vulnerability_management_policy[:name],

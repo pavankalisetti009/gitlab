@@ -32,7 +32,7 @@ module ConstructPipelineExecutionSchedulePolicies
           :metadata
         ).deep_stringify_keys
       ),
-      updated_at: policy[:config].policy_last_updated_at,
+      config: policy[:config],
       csp: policy[:csp]
     }
 

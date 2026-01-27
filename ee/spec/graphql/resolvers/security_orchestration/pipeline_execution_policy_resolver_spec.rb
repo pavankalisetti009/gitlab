@@ -46,7 +46,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
           skip_ci: policy[:skip_ci],
           variables_override: policy[:variables_override]
         }.deep_stringify_keys),
-        updated_at: policy_last_updated_at,
+        config: policy_configuration,
         source: {
           inherited: false,
           namespace: nil,

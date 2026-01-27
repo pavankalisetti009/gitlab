@@ -56,7 +56,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
           rules: policy[:rules],
           metadata: policy[:metadata]
         }.compact.deep_stringify_keys),
-        updated_at: policy_configuration.policy_last_updated_at,
+        config: policy_configuration,
         deprecated_properties: deprecated_properties,
         source: {
           project: project,
@@ -168,7 +168,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
                     metadata: policy[:metadata]
                   }.compact.deep_stringify_keys),
                   deprecated_properties: deprecated_properties,
-                  updated_at: group_policy_configuration.policy_last_updated_at,
+                  config: group_policy_configuration,
                   source: {
                     project: nil,
                     namespace: group,
@@ -237,7 +237,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
                 rules: policy[:rules],
                 metadata: policy[:metadata]
               }.compact.deep_stringify_keys),
-              updated_at: group_policy_configuration.policy_last_updated_at,
+              config: group_policy_configuration,
               deprecated_properties: deprecated_properties,
               source: {
                 project: nil,

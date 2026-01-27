@@ -41,7 +41,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionSchedulePolicy
           schedules: policy[:schedules],
           metadata: policy[:metadata]
         }.compact.deep_stringify_keys),
-        updated_at: policy_last_updated_at,
+        config: policy_configuration,
         source: {
           inherited: false,
           namespace: nil,
