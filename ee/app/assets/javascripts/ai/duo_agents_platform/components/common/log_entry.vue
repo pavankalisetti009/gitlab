@@ -2,10 +2,10 @@
 import { GlCollapse, GlButton } from '@gitlab/ui';
 import { MessageToolKvSection } from '@gitlab/duo-ui';
 import { s__ } from '~/locale';
-import { getTimeago } from '~/lib/utils/datetime_utility';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { getMessageData } from 'ee/ai/duo_agents_platform/utils';
 import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
+import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 
 export default {
   name: 'LogEntry',
@@ -14,6 +14,7 @@ export default {
     GlButton,
     MessageToolKvSection,
     NonGfmMarkdown,
+    TimeAgoTooltip,
   },
   props: {
     item: {
@@ -40,9 +41,6 @@ export default {
     };
   },
   computed: {
-    timeAgo() {
-      return getTimeago().format(this.item.timestamp);
-    },
     toolInfo() {
       if (!this.item.toolInfo) {
         return null;
@@ -76,7 +74,12 @@ export default {
   <div class="gl-w-full">
     <div class="gl-flex gl-justify-between">
       <strong class="gl-mb-1 gl-text-strong" data-testid="log-entry-title">{{ title }}</strong>
-      <span class="gl-text-subtle" data-testid="log-entry-timestamp">{{ timeAgo }}</span>
+
+      <time-ago-tooltip
+        :time="item.timestamp"
+        css-class="gl-text-subtle"
+        data-testid="log-entry-timestamp"
+      />
     </div>
 
     <div class="gl-mb-1 gl-flex gl-items-start gl-justify-between gl-gap-2">

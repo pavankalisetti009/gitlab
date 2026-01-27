@@ -2,29 +2,24 @@ import { GlButton, GlCollapse } from '@gitlab/ui';
 import { MessageToolKvSection } from '@gitlab/duo-ui';
 import { shallowMount } from '@vue/test-utils';
 import LogEntry from 'ee/ai/duo_agents_platform/components/common/log_entry.vue';
-import { getTimeago } from '~/lib/utils/datetime_utility';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
+import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { mockItems, mockItemsWithFilepath } from './mock';
 
-jest.mock('~/lib/utils/datetime_utility');
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('LogEntry', () => {
   let wrapper;
 
   const findTitle = () => wrapper.find('[data-testid="log-entry-title"]');
-  const findTimestamp = () => wrapper.find('[data-testid="log-entry-timestamp"]');
+  const findTimestamp = () => wrapper.findComponent(TimeAgoTooltip);
   const findMarkdown = () => wrapper.findComponent(NonGfmMarkdown);
   const findPlainText = () => wrapper.find('[data-testid="log-entry-plain-text"]');
   const findCollapseButton = () => wrapper.findComponent(GlButton);
   const findCollapse = () => wrapper.findComponent(GlCollapse);
   const findToolKvSection = () => wrapper.findComponent(MessageToolKvSection);
   const findCodeElement = () => wrapper.find('[data-testid="log-entry-file-path"]');
-
-  const mockTimeago = {
-    format: jest.fn(),
-  };
 
   const createWrapper = (props = {}) => {
     return shallowMount(LogEntry, {
@@ -35,11 +30,6 @@ describe('LogEntry', () => {
       },
     });
   };
-
-  beforeEach(() => {
-    getTimeago.mockReturnValue(mockTimeago);
-    mockTimeago.format.mockReturnValue('2 minutes ago');
-  });
 
   describe('title rendering', () => {
     describe('when index is 0', () => {
@@ -58,10 +48,13 @@ describe('LogEntry', () => {
   });
 
   describe('timestamp rendering', () => {
-    it('renders timestamp with timeago format', () => {
+    it('renders TimeAgoTooltip component with correct props', () => {
       wrapper = createWrapper();
-      expect(findTimestamp().text()).toBe('2 minutes ago');
-      expect(mockTimeago.format).toHaveBeenCalledWith(mockItems[0].timestamp);
+      const timestamp = findTimestamp();
+
+      expect(timestamp.exists()).toBe(true);
+      expect(timestamp.props('time')).toBe(mockItems[0].timestamp);
+      expect(timestamp.props('cssClass')).toBe('gl-text-subtle');
     });
   });
 
