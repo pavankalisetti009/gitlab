@@ -46,6 +46,7 @@ module AuditEvents
       ApplicationRecord.transaction do
         destination.update!(
           name: stream_destination_model.name,
+          active: stream_destination_model.active,
           **extract_legacy_attributes(stream_destination_model)
         )
 

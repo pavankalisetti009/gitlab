@@ -224,6 +224,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
           it 'updates legacy destination with new attributes' do
             source.update!(
               name: 'Updated Name',
+              active: false,
               config: { 'url' => 'https://new-url.com' },
               secret_token: 'a' * 20
             )
@@ -233,6 +234,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
 
             aggregate_failures do
               expect(legacy_destination.name).to eq('Updated Name')
+              expect(legacy_destination.active).to be false
               expect(legacy_destination.destination_url).to eq('https://new-url.com')
               expect(legacy_destination.verification_token).to eq('a' * 20)
               expect(legacy_destination.stream_destination_id).to eq(source.id)
@@ -260,6 +262,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
           it 'updates legacy destination with new attributes' do
             source.update!(
               name: 'Updated Name',
+              active: false,
               config: { 'url' => 'https://new-url.com' },
               secret_token: 'a' * 20
             )
@@ -269,6 +272,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
 
             aggregate_failures do
               expect(legacy_destination.name).to eq('Updated Name')
+              expect(legacy_destination.active).to be false
               expect(legacy_destination.destination_url).to eq('https://new-url.com')
               expect(legacy_destination.verification_token).to eq('a' * 20)
               expect(legacy_destination.namespace_id).to eq(group.id)
@@ -297,6 +301,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
           it 'updates legacy destination with new attributes' do
             source.update!(
               name: 'Updated Name',
+              active: false,
               config: {
                 'bucketName' => 'new-bucket',
                 'awsRegion' => 'us-west-2',
@@ -310,6 +315,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
 
             aggregate_failures do
               expect(legacy_destination.name).to eq('Updated Name')
+              expect(legacy_destination.active).to be false
               expect(legacy_destination.bucket_name).to eq('new-bucket')
               expect(legacy_destination.aws_region).to eq('us-west-2')
               expect(legacy_destination.access_key_xid).to eq('a' * 20)
@@ -339,6 +345,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
           it 'updates legacy destination with new attributes' do
             source.update!(
               name: 'Updated Name',
+              active: false,
               config: {
                 'bucketName' => 'new-bucket',
                 'awsRegion' => 'us-west-2',
@@ -352,6 +359,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
 
             aggregate_failures do
               expect(legacy_destination.name).to eq('Updated Name')
+              expect(legacy_destination.active).to be false
               expect(legacy_destination.bucket_name).to eq('new-bucket')
               expect(legacy_destination.aws_region).to eq('us-west-2')
               expect(legacy_destination.access_key_xid).to eq('a' * 20)
@@ -381,6 +389,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
           it 'updates legacy destination with new attributes' do
             source.update!(
               name: 'Updated Name',
+              active: false,
               config: {
                 'googleProjectIdName' => 'updated-project-id',
                 'clientEmail' => 'test@example.com',
@@ -394,6 +403,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
 
             aggregate_failures do
               expect(legacy_destination.name).to eq('Updated Name')
+              expect(legacy_destination.active).to be false
               expect(legacy_destination.google_project_id_name).to eq('updated-project-id')
               expect(legacy_destination.client_email).to eq('test@example.com')
               expect(legacy_destination.log_id_name).to eq('a' * 20)
@@ -423,6 +433,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
           it 'updates legacy destination with new attributes' do
             source.update!(
               name: 'Updated Name',
+              active: false,
               config: {
                 'googleProjectIdName' => 'updated-project-id',
                 'clientEmail' => 'test@example.com',
@@ -436,6 +447,7 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
 
             aggregate_failures do
               expect(legacy_destination.name).to eq('Updated Name')
+              expect(legacy_destination.active).to be false
               expect(legacy_destination.google_project_id_name).to eq('updated-project-id')
               expect(legacy_destination.client_email).to eq('test@example.com')
               expect(legacy_destination.log_id_name).to eq('a' * 20)
