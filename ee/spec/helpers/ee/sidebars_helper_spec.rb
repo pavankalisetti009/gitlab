@@ -623,4 +623,39 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       end
     end
   end
+
+  describe '#super_sidebar_logged_out_context (EE-specific)' do
+    let(:panel) { {} }
+    let(:panel_type) { 'project' }
+    let(:current_user_mode) { Gitlab::Auth::CurrentUserMode.new(nil) }
+
+    before do
+      allow(panel).to receive_messages(super_sidebar_menu_items: nil, super_sidebar_context_header: nil)
+      allow(helper).to receive_messages(current_user: nil, current_user_mode: current_user_mode)
+    end
+
+    subject(:logged_out_context) do
+      helper.super_sidebar_logged_out_context(panel: panel, panel_type: panel_type)
+    end
+
+    context 'when gitlab_com_subscriptions feature is available', :saas do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it 'includes trial_registration_path' do
+        expect(logged_out_context).to include(trial_registration_path: new_trial_registration_path)
+      end
+    end
+
+    context 'when gitlab_com_subscriptions feature is not available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it 'does not include trial_registration_path' do
+        expect(logged_out_context).not_to have_key(:trial_registration_path)
+      end
+    end
+  end
 end
