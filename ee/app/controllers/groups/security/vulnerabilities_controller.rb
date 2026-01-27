@@ -22,6 +22,7 @@ module Groups
         push_frontend_feature_flag(:policy_violations_es_filter, @group, type: :beta)
         push_frontend_feature_flag(:policy_auto_dismissed_es_filter, @group, type: :beta)
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :beta)
+        push_frontend_feature_flag(:agentic_sast_vr_ui, @group, type: :wip)
         push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: @group, user: current_user)
       end
 
