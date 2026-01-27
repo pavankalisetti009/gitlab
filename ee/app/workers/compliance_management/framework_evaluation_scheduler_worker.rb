@@ -16,37 +16,6 @@ module ComplianceManagement
     PROJECT_BATCH_SIZE = 100
 
     def perform
-      if Feature.enabled?(:optimize_framework_worker_query, type: :gitlab_com_derisk) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- feature flag is for cronjob query optimization so cannot add actor
-        perform_optimized
-      else
-        perform_legacy
-      end
-    end
-
-    private
-
-    def perform_legacy
-      active_control_frameworks.each_batch(of: FRAMEWORK_BATCH_SIZE) do |batch|
-        batch.each do |framework|
-          enqueue_framework_evaluation(framework)
-        end
-      end
-    end
-
-    def active_control_frameworks
-      ComplianceManagement::Framework.with_active_controls
-    end
-
-    def enqueue_framework_evaluation(framework)
-      framework.projects.each_batch(of: PROJECT_BATCH_SIZE) do |projects_batch|
-        ProjectComplianceEvaluatorWorker.perform_async(
-          framework.id,
-          projects_batch.pluck_primary_key
-        )
-      end
-    end
-
-    def perform_optimized
       active_framework_ids = ComplianceManagement::Framework.active_framework_ids
 
       return if active_framework_ids.empty?
@@ -55,6 +24,8 @@ module ComplianceManagement
         enqueue_batch_evaluations(framework_ids_batch)
       end
     end
+
+    private
 
     def enqueue_batch_evaluations(framework_ids)
       framework_project_map = ComplianceManagement::ComplianceFramework::ProjectSettings

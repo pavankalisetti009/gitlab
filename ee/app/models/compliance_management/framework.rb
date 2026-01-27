@@ -117,23 +117,7 @@ module ComplianceManagement
         )
     }
 
-    scope :with_requirements_and_controls, -> {
-      joins(compliance_requirements: :compliance_requirements_controls)
-        .includes(compliance_requirements: :compliance_requirements_controls)
-    }
-
-    scope :with_project_settings, -> {
-      joins(:project_settings)
-        .includes(project_settings: :project)
-    }
-
     scope :with_active_controls, -> {
-      with_requirements_and_controls
-        .with_project_settings
-        .distinct
-    }
-
-    scope :with_active_controls_optimized, -> {
       where(<<~SQL.squish)
         EXISTS (
           SELECT 1
@@ -168,8 +152,7 @@ module ComplianceManagement
     def self.active_framework_ids
       framework_ids = []
 
-      with_active_controls_optimized
-        .each_batch(column: :id, of: 1000) do |batch|
+      with_active_controls.each_batch(column: :id, of: 1000) do |batch|
         framework_ids.concat(batch.pluck_primary_key)
       end
 
