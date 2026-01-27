@@ -13,6 +13,8 @@ import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockFlow,
   mockUpdateAiCatalogFlowSuccessMutation,
+  mockUpdateAiCatalogFlowNoChangeMutation,
+  mockUpdateAiCatalogFlowMetadataOnlyMutation,
   mockUpdateAiCatalogFlowErrorMutation,
   mockFlowConfigurationForProject,
   mockVersionProp,
@@ -178,14 +180,40 @@ describe('AiCatalogFlowsEdit', () => {
       expect(findForm().props('isLoading')).toBe(true);
     });
 
-    describe('when request succeeds', () => {
+    describe('when request succeeds with version change', () => {
       beforeEach(async () => {
         submitForm();
         await waitForPromises();
       });
 
-      it('shows toast', () => {
+      it('shows toast when version was updated', () => {
         expect(mockToast.show).toHaveBeenCalledWith('Flow updated.');
+      });
+    });
+
+    describe('when request succeeds with metadata change only', () => {
+      beforeEach(async () => {
+        mockUpdateAiCatalogFlowHandler.mockResolvedValue(
+          mockUpdateAiCatalogFlowMetadataOnlyMutation,
+        );
+        submitForm();
+        await waitForPromises();
+      });
+
+      it('shows toast when metadata was updated', () => {
+        expect(mockToast.show).toHaveBeenCalledWith('Flow updated.');
+      });
+    });
+
+    describe('when request succeeds without any change', () => {
+      beforeEach(async () => {
+        mockUpdateAiCatalogFlowHandler.mockResolvedValue(mockUpdateAiCatalogFlowNoChangeMutation);
+        submitForm();
+        await waitForPromises();
+      });
+
+      it('does not show toast when nothing was updated', () => {
+        expect(mockToast.show).not.toHaveBeenCalled();
       });
 
       it('navigates to flows show page', async () => {

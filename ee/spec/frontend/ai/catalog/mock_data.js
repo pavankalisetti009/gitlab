@@ -428,11 +428,42 @@ export const mockCreateAiCatalogAgentErrorMutation = {
   },
 };
 
+export const mockUpdatedAgentVersion = {
+  ...mockAgentVersion,
+  updatedAt: '2025-08-22T14:30:00Z',
+};
+
 export const mockUpdateAiCatalogAgentSuccessMutation = {
   data: {
     aiCatalogAgentUpdate: {
       errors: [],
+      item: {
+        ...mockAgent,
+        latestVersion: mockUpdatedAgentVersion,
+      },
+      __typename: TYPENAME_AI_CATALOG_AGENT_UPDATE,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogAgentNoChangeMutation = {
+  data: {
+    aiCatalogAgentUpdate: {
+      errors: [],
       item: mockAgent,
+      __typename: TYPENAME_AI_CATALOG_AGENT_UPDATE,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogAgentMetadataOnlyMutation = {
+  data: {
+    aiCatalogAgentUpdate: {
+      errors: [],
+      item: {
+        ...mockAgent,
+        updatedAt: '2025-08-22T14:30:00Z',
+      },
       __typename: TYPENAME_AI_CATALOG_AGENT_UPDATE,
     },
   },
@@ -637,11 +668,42 @@ export const mockCreateAiCatalogFlowErrorMutation = {
   },
 };
 
+export const mockUpdatedFlowVersion = {
+  ...mockFlowVersion,
+  updatedAt: '2025-08-22T14:30:00Z',
+};
+
 export const mockUpdateAiCatalogFlowSuccessMutation = {
   data: {
     aiCatalogFlowUpdate: {
       errors: [],
+      item: {
+        ...mockFlow,
+        latestVersion: mockUpdatedFlowVersion,
+      },
+      __typename: TYPENAME_AI_CATALOG_FLOW_UPDATE,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogFlowNoChangeMutation = {
+  data: {
+    aiCatalogFlowUpdate: {
+      errors: [],
       item: mockFlow,
+      __typename: TYPENAME_AI_CATALOG_FLOW_UPDATE,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogFlowMetadataOnlyMutation = {
+  data: {
+    aiCatalogFlowUpdate: {
+      errors: [],
+      item: {
+        ...mockFlow,
+        updatedAt: '2025-08-22T14:30:00Z',
+      },
       __typename: TYPENAME_AI_CATALOG_FLOW_UPDATE,
     },
   },
