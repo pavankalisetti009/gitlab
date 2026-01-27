@@ -1,5 +1,6 @@
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlCollapsibleListbox } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -35,7 +36,7 @@ const createMockUser = ({
   name,
 });
 
-function createComponent(adminMergeRequest = true, customUsers = []) {
+function createComponent({ adminMergeRequest = true, customUsers = [] }) {
   autocompleteUsersMock = jest.fn().mockResolvedValue({
     data: {
       namespace: {
@@ -84,24 +85,37 @@ function createComponent(adminMergeRequest = true, customUsers = []) {
 }
 
 const findApprovalRule = () => wrapper.findByTestId('approval-rule');
+const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
+
+const mockUser = createMockUser({
+  mergeRequestInteraction: {
+    applicableApprovalRules: [{ id: 1, name: 'Frontend', type: 'CODE_OWNER' }],
+  },
+});
 
 describe('Reviewer dropdown component', () => {
   it('renders dropdown approval rule', async () => {
-    const mockUser = createMockUser({
-      mergeRequestInteraction: {
-        applicableApprovalRules: [{ id: 1, name: 'Frontend', type: 'CODE_OWNER' }],
-      },
-    });
-
-    createComponent(true, [mockUser]);
+    createComponent({ adminMergeRequest: true, customUsers: [mockUser] });
 
     await waitForPromises();
 
-    wrapper.findByTestId('base-dropdown-toggle').trigger('click');
-
-    await waitForPromises();
-    await nextTick();
+    findDropdown().vm.$emit('shown');
 
     expect(findApprovalRule().text()).toContain('Code Owner');
+  });
+
+  it('fetches autocomplete users when dropdown opens with composite identity filters', async () => {
+    createComponent({ adminMergeRequest: true, customUsers: [] });
+
+    await waitForPromises();
+
+    findDropdown().vm.$emit('shown');
+
+    expect(autocompleteUsersMock).toHaveBeenCalledWith({
+      fullPath: 'gitlab-org/gitlab',
+      mergeRequestId: 'gid://gitlab/MergeRequest/1',
+      search: '',
+      includeServiceAccountsForTriggerEvents: ['ASSIGN_REVIEWER'],
+    });
   });
 });

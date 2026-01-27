@@ -77,54 +77,66 @@ export const AGENT_PLATFORM_STATUS_BADGE = {
   },
 };
 
+export const FLOW_TRIGGER_TYPE_MENTION = {
+  text: __('Mention'),
+  createHelp: (itemType) =>
+    sprintf(
+      s__(
+        'AICatalog|Trigger this %{itemType} when the service account user is mentioned in an issue or merge request.',
+      ),
+      { itemType },
+    ),
+  value: 'mention',
+  valueInt: 0,
+  graphQL: 'MENTION',
+};
+
+export const FLOW_TRIGGER_TYPE_ASSIGN = {
+  text: __('Assign'),
+  createHelp: (itemType) =>
+    sprintf(
+      s__(
+        'AICatalog|Trigger this %{itemType} when the service account user is assigned to issue or merge request.',
+      ),
+      { itemType },
+    ),
+  value: 'assign',
+  valueInt: 1,
+  graphQL: 'ASSIGN',
+};
+
+export const FLOW_TRIGGER_TYPE_ASSIGN_REVIEWER = {
+  text: __('Assign reviewer'),
+  createHelp: (itemType) =>
+    sprintf(
+      s__(
+        'AICatalog|Trigger this %{itemType} when the service account user is assigned as a reviewer to a merge request.',
+      ),
+      { itemType },
+    ),
+  value: 'assign_reviewer',
+  valueInt: 2,
+  graphQL: 'ASSIGN_REVIEWER',
+};
+
+export const FLOW_TRIGGER_TYPE_PIPELINE_HOOKS = {
+  text: __('Pipeline events'),
+  createHelp: (itemType) =>
+    sprintf(s__('AICatalog|Trigger this %{itemType} when a pipeline status changes.'), {
+      itemType,
+    }),
+  value: 'pipeline_hooks',
+  valueInt: 3,
+  graphQL: 'PIPELINE_HOOKS',
+};
+
 // Values match `EVENT_TYPES` in ee/app/models/ai/flow_trigger.rb:
 // https://gitlab.com/gitlab-org/gitlab/-/blob/779eacdc0e752adfe66a477c4fa60dd9fed814eb/ee/app/models/ai/flow_trigger.rb#L7
 export const FLOW_TRIGGER_TYPES = [
-  {
-    text: __('Mention'),
-    createHelp: (itemType) =>
-      sprintf(
-        s__(
-          'AICatalog|Trigger this %{itemType} when the service account user is mentioned in an issue or merge request.',
-        ),
-        { itemType },
-      ),
-    value: 'mention',
-    valueInt: 0,
-  },
-  {
-    text: __('Assign'),
-    createHelp: (itemType) =>
-      sprintf(
-        s__(
-          'AICatalog|Trigger this %{itemType} when the service account user is assigned to issue or merge request.',
-        ),
-        { itemType },
-      ),
-    value: 'assign',
-    valueInt: 1,
-  },
-  {
-    text: __('Assign reviewer'),
-    createHelp: (itemType) =>
-      sprintf(
-        s__(
-          'AICatalog|Trigger this %{itemType} when the service account user is assigned as a reviewer to a merge request.',
-        ),
-        { itemType },
-      ),
-    value: 'assign_reviewer',
-    valueInt: 2,
-  },
-  {
-    text: __('Pipeline events'),
-    createHelp: (itemType) =>
-      sprintf(s__('AICatalog|Trigger this %{itemType} when a pipeline status changes.'), {
-        itemType,
-      }),
-    value: 'pipeline_hooks',
-    valueInt: 3,
-  },
+  FLOW_TRIGGER_TYPE_MENTION,
+  FLOW_TRIGGER_TYPE_ASSIGN,
+  FLOW_TRIGGER_TYPE_ASSIGN_REVIEWER,
+  FLOW_TRIGGER_TYPE_PIPELINE_HOOKS,
 ];
 
 export const DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES = {
