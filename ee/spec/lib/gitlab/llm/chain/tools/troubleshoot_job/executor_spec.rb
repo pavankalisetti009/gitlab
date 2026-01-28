@@ -237,7 +237,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
       context 'when dap_external_trigger_usage_billing flag is enabled' do
         before do
           stub_feature_flags(dap_external_trigger_usage_billing: true)
-          allow(user).to receive(:allowed_to_use?).with(:troubleshoot_job).and_return(false)
+          allow(user).to receive(:allowed_to_use?).with(:troubleshoot_job, root_namespace: build.project.root_ancestor)
+            .and_return(false)
         end
 
         it 'returns not in current plan error message' do
