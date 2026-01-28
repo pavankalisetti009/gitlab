@@ -407,6 +407,31 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
           username: "duo-foundational_flow-group-name"
         )
       end
+
+      context 'when foundational flow has triggers defined' do
+        let_it_be(:foundational_flow_with_triggers) do
+          create(:ai_catalog_flow, public: true, project: item_project, name: 'developer_flow',
+            foundational_flow_reference: 'developer/v1')
+        end
+
+        let_it_be(:released_version_with_triggers) do
+          create(:ai_catalog_flow_version, :released, item: foundational_flow_with_triggers, version: '1.0.0')
+        end
+
+        let(:item) { foundational_flow_with_triggers }
+
+        it 'does not create triggers at group level' do
+          expect { execute }.not_to change { Ai::FlowTrigger.count }
+        end
+
+        it 'successfully creates the item consumer' do
+          expect { execute }.to change { Ai::Catalog::ItemConsumer.count }.by(1)
+          expect(Ai::Catalog::ItemConsumer.last).to have_attributes(
+            group: group,
+            item: foundational_flow_with_triggers
+          )
+        end
+      end
     end
 
     context 'when item has a very long name' do
