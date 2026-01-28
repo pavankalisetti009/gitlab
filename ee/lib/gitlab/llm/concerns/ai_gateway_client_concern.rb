@@ -39,7 +39,7 @@ module Gitlab
 
           return unless response && response.body.present? && response.success?
 
-          body = Gitlab::Json.parse(response.body)
+          body = Gitlab::Json.safe_parse(response.body)
 
           body.is_a?(String) ? body : body["content"]
         end
