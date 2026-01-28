@@ -119,6 +119,10 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:compromised_password_detections).class_name('Users::CompromisedPasswordDetection').inverse_of(:user) }
     it { is_expected.to have_many(:arkose_sessions).class_name('Users::ArkoseSession').inverse_of(:user) }
     it { is_expected.to have_many(:merge_requests_compliance_violations).class_name('MergeRequests::ComplianceViolation').inverse_of(:violating_user) }
+    it { is_expected.to have_many(:ai_catalog_item_consumers).class_name('Ai::Catalog::ItemConsumer').with_foreign_key(:service_account_id).dependent(:nullify) }
+    it { is_expected.to have_many(:ai_catalog_item_versions).class_name('Ai::Catalog::ItemVersion').with_foreign_key(:created_by_id).dependent(:nullify) }
+    it { is_expected.to have_many(:ai_catalog_mcp_servers_users).class_name('Ai::Catalog::McpServersUser').dependent(:destroy) }
+    it { is_expected.to have_many(:created_mcp_servers).class_name('Ai::Catalog::McpServer').with_foreign_key(:created_by_id).dependent(:nullify) }
   end
 
   describe 'nested attributes' do
