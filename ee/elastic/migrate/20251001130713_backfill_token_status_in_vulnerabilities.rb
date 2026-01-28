@@ -25,3 +25,5 @@ class BackfillTokenStatusInVulnerabilities < Elastic::Migration
 
   delegate :saas_with_es?, :dedicated_with_es?, to: :class
 end
+
+BackfillTokenStatusInVulnerabilities.prepend ::Search::Elastic::MigrationObsolete
