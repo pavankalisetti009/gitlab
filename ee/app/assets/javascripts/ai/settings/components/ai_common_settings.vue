@@ -37,6 +37,8 @@ export default {
     'initialSelectedFoundationalFlowIds',
     'initialDuoAgentPlatformEnabled',
     'initialNamespaceAccessRules',
+    'initialMinimumAccessLevelExecuteAsync',
+    'initialMinimumAccessLevelExecuteSync',
   ],
   props: {
     hasParentFormChanged: {
@@ -59,6 +61,8 @@ export default {
       foundationalAgentsStatuses: this.initialFoundationalAgentsStatuses,
       duoAgentPlatformEnabled: this.initialDuoAgentPlatformEnabled,
       namespaceAccessRules: this.initialNamespaceAccessRules,
+      minimumAccessLevelExecuteAsync: this.initialMinimumAccessLevelExecuteAsync,
+      minimumAccessLevelExecuteSync: this.initialMinimumAccessLevelExecuteSync,
     };
   },
   methods: {
@@ -76,6 +80,8 @@ export default {
         selectedFoundationalFlowIds: this.selectedFlowIds,
         duoAgentPlatformEnabled: this.duoAgentPlatformEnabled,
         namespaceAccessRules: this.namespaceAccessRules,
+        minimumAccessLevelExecuteAsync: this.minimumAccessLevelExecuteAsync,
+        minimumAccessLevelExecuteSync: this.minimumAccessLevelExecuteSync,
       });
     },
     onRadioChanged(value) {
@@ -113,6 +119,12 @@ export default {
     },
     onNamespaceAccessRulesChanged(value) {
       this.namespaceAccessRules = value;
+    },
+    onMinimumAccessLevelExecuteAsyncChanged(value) {
+      this.minimumAccessLevelExecuteAsync = value;
+    },
+    onMinimumAccessLevelExecuteSyncChanged(value) {
+      this.minimumAccessLevelExecuteSync = value;
     },
   },
   aiFeaturesHelpPath: helpPagePath('user/gitlab_duo/_index'),
@@ -216,6 +228,8 @@ export default {
         @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
         @change-selected-flow-ids="onSelectedFlowIdsChanged"
         @namespace-access-rules-changed="onNamespaceAccessRulesChanged"
+        @minimum-access-level-execute-async-changed="onMinimumAccessLevelExecuteAsyncChanged"
+        @minimum-access-level-execute-sync-changed="onMinimumAccessLevelExecuteSyncChanged"
       >
         <template #ai-common-settings-top>
           <slot name="ai-common-settings-top"></slot>

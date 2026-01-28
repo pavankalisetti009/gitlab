@@ -221,6 +221,8 @@ describe('AiGroupSettings', () => {
         namespaceAccessRules: [
           { throughNamespace: { id: 1, name: 'Group' }, features: ['duo_classic'] },
         ],
+        minimumAccessLevelExecuteSync: 30,
+        minimumAccessLevelExecuteAsync: 30,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
@@ -238,6 +240,8 @@ describe('AiGroupSettings', () => {
           duo_workflow_mcp_enabled: false,
           prompt_injection_protection_level: 'interrupt',
           foundational_agents_default_enabled: true,
+          minimum_access_level_execute: 30,
+          minimum_access_level_execute_async: 30,
         },
         duo_namespace_access_rules: [{ through_namespace: { id: 1 }, features: ['duo_classic'] }],
       });
@@ -340,6 +344,28 @@ describe('AiGroupSettings', () => {
               duo_workflow_mcp_enabled: false,
               prompt_injection_protection_level: 'log_only',
             },
+          }),
+        );
+      });
+    });
+
+    describe('with minimum access levels', () => {
+      it('maps minimum access levels in ai_settings_attributes correctly', async () => {
+        createComponent();
+
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {
+          minimumAccessLevelExecuteSync: 20,
+          minimumAccessLevelExecuteAsync: 30,
+        });
+
+        expect(updateGroupSettings).toHaveBeenCalledWith(
+          '100',
+          expect.objectContaining({
+            ai_settings_attributes: expect.objectContaining({
+              minimum_access_level_execute: 20,
+              minimum_access_level_execute_async: 30,
+            }),
           }),
         );
       });

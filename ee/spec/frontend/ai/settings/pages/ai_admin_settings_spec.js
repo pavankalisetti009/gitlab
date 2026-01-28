@@ -73,6 +73,8 @@ const createComponent = async ({
       duoChatExpirationDays: 30,
       duoChatExpirationColumn: 'last_updated_at',
       duoCoreFeaturesEnabled: false,
+      initialMinimumAccessLevelExecuteAsync: 30,
+      initialMinimumAccessLevelExecuteSync: 30,
       ...provide,
     },
   });
@@ -123,6 +125,8 @@ describe('AiAdminSettings', () => {
         selectedFoundationalFlowIds: [],
         duoAgentPlatformEnabled: true,
         namespaceAccessRules: [{ throughNamespace: { id: 1 }, features: ['duo_classic'] }],
+        minimumAccessLevelExecuteSync: 30,
+        minimumAccessLevelExecuteAsync: 30,
       });
 
       const transformedFilteredAgentStatuses = expectedFilteredAgentStatuses.map((agent) => ({
@@ -173,6 +177,8 @@ describe('AiAdminSettings', () => {
 
           await findAiCommonSettings().vm.$emit('submit', {
             duoCoreFeaturesEnabled: false,
+            minimumAccessLevelExecuteSync: 30,
+            minimumAccessLevelExecuteAsync: 30,
           });
 
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
@@ -181,6 +187,8 @@ describe('AiAdminSettings', () => {
               aiGatewayTimeoutSeconds: 120,
               duoAgentPlatformServiceUrl: 'localhost:50052',
               duoCoreFeaturesEnabled: false,
+              minimumAccessLevelExecute: 'DEVELOPER',
+              minimumAccessLevelExecuteAsync: 'DEVELOPER',
             },
           });
         });
@@ -194,7 +202,11 @@ describe('AiAdminSettings', () => {
             newDuoAgentPlatformServiceUrl,
           );
 
-          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+          await findAiCommonSettings().vm.$emit('submit', {
+            duoCoreFeaturesEnabled: false,
+            minimumAccessLevelExecuteSync: 30,
+            minimumAccessLevelExecuteAsync: 30,
+          });
 
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
@@ -202,6 +214,8 @@ describe('AiAdminSettings', () => {
               aiGatewayTimeoutSeconds: 120,
               duoAgentPlatformServiceUrl: 'new-duo-agent-platform-url:50052',
               duoCoreFeaturesEnabled: false,
+              minimumAccessLevelExecute: 'DEVELOPER',
+              minimumAccessLevelExecuteAsync: 'DEVELOPER',
             },
           });
         });
@@ -211,7 +225,11 @@ describe('AiAdminSettings', () => {
 
           await findAiGatewayTimeoutInputForm().vm.$emit('change', newTimeout);
 
-          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+          await findAiCommonSettings().vm.$emit('submit', {
+            duoCoreFeaturesEnabled: false,
+            minimumAccessLevelExecuteSync: 30,
+            minimumAccessLevelExecuteAsync: 30,
+          });
 
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
@@ -219,6 +237,8 @@ describe('AiAdminSettings', () => {
               aiGatewayTimeoutSeconds: newTimeout,
               duoAgentPlatformServiceUrl: 'localhost:50052',
               duoCoreFeaturesEnabled: false,
+              minimumAccessLevelExecute: 'DEVELOPER',
+              minimumAccessLevelExecuteAsync: 'DEVELOPER',
             },
           });
         });
@@ -234,7 +254,11 @@ describe('AiAdminSettings', () => {
             newDuoAgentPlatformServiceUrl,
           );
 
-          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+          await findAiCommonSettings().vm.$emit('submit', {
+            duoCoreFeaturesEnabled: false,
+            minimumAccessLevelExecuteSync: 30,
+            minimumAccessLevelExecuteAsync: 30,
+          });
 
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
@@ -242,6 +266,8 @@ describe('AiAdminSettings', () => {
               aiGatewayTimeoutSeconds: 120,
               duoAgentPlatformServiceUrl: 'new-duo-agent-platform-url:50052',
               duoCoreFeaturesEnabled: false,
+              minimumAccessLevelExecute: 'DEVELOPER',
+              minimumAccessLevelExecuteAsync: 'DEVELOPER',
             },
           });
         });
@@ -255,11 +281,17 @@ describe('AiAdminSettings', () => {
         it.each(['aiGatewayUrl', 'duoAgentPlatformServiceUrl', 'aiGatewayTimeoutSeconds'])(
           'does not update %s',
           async () => {
-            await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: true });
+            await findAiCommonSettings().vm.$emit('submit', {
+              duoCoreFeaturesEnabled: true,
+              minimumAccessLevelExecuteSync: 30,
+              minimumAccessLevelExecuteAsync: 30,
+            });
 
             expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
               input: {
                 duoCoreFeaturesEnabled: true,
+                minimumAccessLevelExecute: 'DEVELOPER',
+                minimumAccessLevelExecuteAsync: 'DEVELOPER',
               },
             });
           },
@@ -269,6 +301,8 @@ describe('AiAdminSettings', () => {
       it('updates duoCoreFeaturesEnabled', async () => {
         await findAiCommonSettings().vm.$emit('submit', {
           duoCoreFeaturesEnabled: true,
+          minimumAccessLevelExecuteSync: 30,
+          minimumAccessLevelExecuteAsync: 30,
         });
 
         expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
@@ -277,6 +311,8 @@ describe('AiAdminSettings', () => {
             aiGatewayTimeoutSeconds: 120,
             duoAgentPlatformServiceUrl: 'localhost:50052',
             duoCoreFeaturesEnabled: true,
+            minimumAccessLevelExecute: 'DEVELOPER',
+            minimumAccessLevelExecuteAsync: 'DEVELOPER',
           },
         });
       });
@@ -296,7 +332,11 @@ describe('AiAdminSettings', () => {
 
       it('triggers a post request to persist the change', async () => {
         await findAiModelsForm().vm.$emit('change', false);
-        await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoCoreFeaturesEnabled: false,
+          minimumAccessLevelExecuteSync: 30,
+          minimumAccessLevelExecuteAsync: 30,
+        });
         await waitForPromises();
 
         expect(axios.post).toHaveBeenCalledWith(toggleBetaModelsPath);
@@ -311,6 +351,8 @@ describe('AiAdminSettings', () => {
         duoCoreFeaturesEnabled: false,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        minimumAccessLevelExecuteSync: 30,
+        minimumAccessLevelExecuteAsync: 30,
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -333,6 +375,8 @@ describe('AiAdminSettings', () => {
         duoCoreFeaturesEnabled: false,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        minimumAccessLevelExecuteSync: 30,
+        minimumAccessLevelExecuteAsync: 30,
       });
 
       await waitForPromises();
@@ -529,6 +573,46 @@ describe('AiAdminSettings', () => {
       );
 
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(false);
+    });
+  });
+
+  describe('minimum access level permissions integration', () => {
+    describe('when AI settings change', () => {
+      it('calls mutation with new minimumAccessLevelExecuteAsync value', async () => {
+        await createComponent({
+          provide: { initialMinimumAccessLevelExecuteAsync: 30 },
+        });
+
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoCoreFeaturesEnabled: false,
+          minimumAccessLevelExecuteAsync: 50,
+          minimumAccessLevelExecuteSync: 30,
+        });
+
+        expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: expect.objectContaining({
+            minimumAccessLevelExecute: 'DEVELOPER',
+            minimumAccessLevelExecuteAsync: 'OWNER',
+          }),
+        });
+      });
+
+      it('calls mutation with both values when both change', async () => {
+        await createComponent();
+
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoCoreFeaturesEnabled: false,
+          minimumAccessLevelExecuteAsync: 50,
+          minimumAccessLevelExecuteSync: 10,
+        });
+
+        expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: expect.objectContaining({
+            minimumAccessLevelExecute: 'GUEST',
+            minimumAccessLevelExecuteAsync: 'OWNER',
+          }),
+        });
+      });
     });
   });
 });

@@ -249,9 +249,11 @@ export default {
     },
     onMinimumAccessLevelExecuteAsyncChange(role) {
       this.minimumAccessLevelExecuteAsync = role;
+      this.$emit('minimum-access-level-execute-async-changed', role);
     },
     onMinimumAccessLevelExecuteSyncChange(role) {
       this.minimumAccessLevelExecuteSync = role;
+      this.$emit('minimum-access-level-execute-sync-changed', role);
     },
     onRadioChanged(value) {
       this.availability = value;
