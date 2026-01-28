@@ -145,7 +145,7 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
 
       let(:params) { { related_pipeline_ids: [pipeline_with_scans.id, pipeline_without_scans.id] } }
 
-      it { is_expected.to contain_exactly(*findings) }
+      it { is_expected.to match_array(findings) }
 
       context 'when pipeline is empty' do
         let_it_be(:pipeline) { nil }

@@ -38,7 +38,7 @@ RSpec.describe IncidentManagement::EscalationRulesFinder do
           [project.id],
           Project.where(id: project.id)
         ].each do |project_param|
-          expect(described_class.new(project: project_param).execute).to contain_exactly(*project_rules)
+          expect(described_class.new(project: project_param).execute).to match_array(project_rules)
         end
       end
 

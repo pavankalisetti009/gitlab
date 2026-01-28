@@ -182,7 +182,7 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
             let(:filtering_params) { { not: { label_name: [label1.title, label4.title] } } }
 
             it 'returns correct epics' do
-              is_expected.to contain_exactly(*(group.work_items.to_a - [epic_work_item1, epic_work_item2]))
+              is_expected.to match_array(group.work_items.to_a - [epic_work_item1, epic_work_item2])
             end
           end
 
@@ -190,7 +190,7 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
             let(:filtering_params) { { not: { label_name: [label1.title, label5.title] } } }
 
             it 'returns correct epics' do
-              is_expected.to contain_exactly(*(group.work_items.to_a - [epic_work_item1, epic_work_item2]))
+              is_expected.to match_array(group.work_items.to_a - [epic_work_item1, epic_work_item2])
             end
           end
         end

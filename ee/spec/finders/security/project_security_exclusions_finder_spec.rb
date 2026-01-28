@@ -22,7 +22,7 @@ RSpec.describe Security::ProjectSecurityExclusionsFinder, feature_category: :sec
 
   shared_examples 'returns expected exclusions' do |expected_exclusions|
     it 'returns the correct exclusions' do
-      expect(finder.execute).to contain_exactly(*expected_exclusions.map { |key| exclusions[key] })
+      expect(finder.execute).to match_array(expected_exclusions.map { |key| exclusions[key] })
     end
   end
 

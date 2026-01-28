@@ -79,12 +79,12 @@ RSpec.describe Resolvers::IterationsResolver, feature_category: :team_planning d
 
             with_them do
               it "returns correct items" do
-                expect(resolve_group_iterations({ search: search, in: fields_to_search }).items).to contain_exactly(*expected_iterations)
+                expect(resolve_group_iterations({ search: search, in: fields_to_search }).items).to match_array(expected_iterations)
               end
             end
 
             it "returns correct items when `in` not specified" do
-              expect(resolve_group_iterations({ search: 'iteration' }).items).to contain_exactly(*plan_cadence.iterations)
+              expect(resolve_group_iterations({ search: 'iteration' }).items).to match_array(plan_cadence.iterations)
             end
           end
 
@@ -102,7 +102,7 @@ RSpec.describe Resolvers::IterationsResolver, feature_category: :team_planning d
             end
 
             it "uses 'search' and 'in' arguments to search title" do
-              expect(resolve_group_iterations({ title: 'iteration' }).items).to contain_exactly(*plan_cadence.iterations)
+              expect(resolve_group_iterations({ title: 'iteration' }).items).to match_array(plan_cadence.iterations)
             end
           end
         end

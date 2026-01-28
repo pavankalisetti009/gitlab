@@ -88,7 +88,7 @@ RSpec.describe BilledUsersFinder, feature_category: :seat_cost_management do
 
         it 'returns the correct user ids', :aggregate_failures do
           expect(execute[:group_member_user_ids])
-            .to contain_exactly(*[maria, john_smith, john_doe, sophie].map(&:user_id))
+            .to match_array([maria, john_smith, john_doe, sophie].map(&:user_id))
           expect(execute[:shared_group_user_ids]).to contain_exactly(shared_with_group_member.user_id)
           expect(execute[:shared_project_user_ids]).to contain_exactly(shared_with_project_member.user_id)
         end

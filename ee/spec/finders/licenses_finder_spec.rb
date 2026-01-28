@@ -13,7 +13,7 @@ RSpec.describe LicensesFinder, feature_category: :subscription_management do
     end
 
     it 'returns a collection of licenses' do
-      expect(described_class.new(user).execute).to contain_exactly(*License.all)
+      expect(described_class.new(user).execute).to match_array(License.all)
     end
 
     it 'returns empty relation if the license doesnt exist' do
