@@ -1027,7 +1027,7 @@ Gitaly exports the following Prometheus metrics for monitoring the pack-objects 
 Cache hit rate:
 
 ```promql
-sum(rate(gitaly_pack_objects_cache_lookups_total{result="hit"}[5m])) / 
+sum(rate(gitaly_pack_objects_cache_lookups_total{result="hit"}[5m])) /
 sum(rate(gitaly_pack_objects_cache_lookups_total[5m]))
 ```
 
@@ -1046,7 +1046,7 @@ rate(gitaly_pack_objects_generated_bytes_total[5m])
 Cache efficiency (bytes served vs bytes generated):
 
 ```promql
-rate(gitaly_pack_objects_served_bytes_total[5m]) / 
+rate(gitaly_pack_objects_served_bytes_total[5m]) /
 rate(gitaly_pack_objects_generated_bytes_total[5m])
 ```
 
