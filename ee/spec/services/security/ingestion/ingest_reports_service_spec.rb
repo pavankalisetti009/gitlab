@@ -65,6 +65,77 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
       ingest_reports
     end
 
+    context 'when scanner is SBOM vulnerability scanner' do
+      let_it_be(:sbom_scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
+
+      before do
+        allow(service_object).to receive(:store_reports)
+        allow(service_object).to receive(:ingested_ids_by_scanner).and_return(
+          sbom_scanner => ids_1,
+          sast_scanner => ids_2
+        )
+      end
+
+      it 'does not call MarkAsResolvedService for the SBOM scanner' do
+        allow(Security::Ingestion::MarkAsResolvedService).to receive(:execute)
+        expect(Security::Ingestion::MarkAsResolvedService).not_to receive(:execute).with(pipeline, sbom_scanner, anything)
+
+        ingest_reports
+      end
+    end
+
+    context 'when scanner is nil' do
+      before do
+        allow(service_object).to receive(:store_reports)
+        allow(service_object).to receive(:ingested_ids_by_scanner).and_return(
+          nil => ids_1,
+          sast_scanner => ids_2
+        )
+      end
+
+      it 'calls MarkAsResolvedService for the SBOM scanner' do
+        allow(Security::Ingestion::MarkAsResolvedService).to receive(:execute)
+        expect(Security::Ingestion::MarkAsResolvedService).to receive(:execute).with(pipeline, nil, ids_1)
+
+        ingest_reports
+      end
+    end
+
+    context 'when scanner.vulnerability_scanner? returns false' do
+      before do
+        allow(service_object).to receive(:store_reports)
+        allow(service_object).to receive(:ingested_ids_by_scanner).and_return(
+          sast_scanner => ids_1
+        )
+      end
+
+      it 'calls MarkAsResolvedService for the SBOM scanner' do
+        expect(Security::Ingestion::MarkAsResolvedService).to receive(:execute).with(pipeline, sast_scanner, ids_1)
+
+        ingest_reports
+      end
+    end
+
+    context 'when using the SBOM vulnerability scanner and new_security_dashboard_exclude_no_longer_detected is disabled' do
+      let_it_be(:sbom_scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
+
+      before do
+        stub_feature_flags(new_security_dashboard_exclude_no_longer_detected: false)
+        allow(service_object).to receive(:store_reports)
+        allow(service_object).to receive(:ingested_ids_by_scanner).and_return(
+          sbom_scanner => ids_1,
+          sast_scanner => ids_2
+        )
+      end
+
+      it 'calls MarkAsResolvedService for the SBOM scanner' do
+        allow(Security::Ingestion::MarkAsResolvedService).to receive(:execute)
+        expect(Security::Ingestion::MarkAsResolvedService).to receive(:execute).with(pipeline, sbom_scanner, ids_1)
+
+        ingest_reports
+      end
+    end
+
     context 'when the same scanner is used into separate child pipelines' do
       let_it_be(:parent_pipeline) { create(:ee_ci_pipeline, :success, project: project) }
       let_it_be(:child_pipeline_1) { create(:ee_ci_pipeline, :success, child_of: parent_pipeline, project: project) }
