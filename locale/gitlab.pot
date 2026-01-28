@@ -41522,6 +41522,9 @@ msgstr ""
 msgid "Maximum number of schedule rules per scan execution policy"
 msgstr ""
 
+msgid "Maximum number of secrets (%{limit}) for this %{scope} has been reached. Please delete unused secrets or contact your administrator to increase the limit."
+msgstr ""
+
 msgid "Maximum number of stages per value stream exceeded"
 msgstr ""
 

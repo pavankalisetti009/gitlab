@@ -155,6 +155,13 @@ module EE
       validates :security_and_compliance_settings,
         json_schema: { filename: "security_and_compliance_settings", detail_errors: true }
 
+      jsonb_accessor :secrets_manager_settings,
+        project_secrets_limit: [:integer, { default: 100 }],
+        group_secrets_limit: [:integer, { default: 500 }]
+
+      validates :secrets_manager_settings,
+        json_schema: { filename: "application_setting_secrets_manager_settings" }
+
       encrypts :sdrs_jwt_signing_key
 
       validates :sdrs_jwt_signing_key, json_schema: { filename: 'application_setting_sdrs_jwt_signing_key' },

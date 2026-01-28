@@ -177,7 +177,9 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         zoekt_lost_node_threshold: Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD,
         zoekt_search_enabled: false,
         enforce_pipl_compliance: false,
-        display_gitlab_credits_user_data: false
+        display_gitlab_credits_user_data: false,
+        project_secrets_limit: 100,
+        group_secrets_limit: 500
       )
     end
   end

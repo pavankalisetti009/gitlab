@@ -215,6 +215,21 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
     end
   end
 
+  describe '#secrets_limit' do
+    it 'returns the project secrets limit from application settings' do
+      stub_application_setting(project_secrets_limit: 123)
+
+      expect(secrets_manager.secrets_limit).to eq(123)
+    end
+
+    it 'falls back to the default when application setting is nil' do
+      stub_application_setting(project_secrets_limit: nil)
+
+      expect(secrets_manager.secrets_limit)
+        .to eq(SecretsManagement::ProjectSecretsManager::DEFAULT_SECRETS_LIMIT)
+    end
+  end
+
   describe 'path persistence' do
     context 'on creation' do
       it 'sets namespace_path' do
