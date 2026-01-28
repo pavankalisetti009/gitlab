@@ -14,8 +14,6 @@ module Security
       end
 
       def execute
-        create_security_policy_bot! unless project.security_policy_bot
-
         overrides = ::Security::ScanResultPolicies::ApprovalSettingsOverrides.new(
           project: project,
           warn_mode_policies: applicable_warn_mode_policies,
@@ -23,6 +21,8 @@ module Security
         ).all
 
         return if overrides.empty?
+
+        create_security_policy_bot! unless project.security_policy_bot
 
         ::AuditEvent.transaction do
           ::Gitlab::Audit::Auditor.audit(audit_context) do

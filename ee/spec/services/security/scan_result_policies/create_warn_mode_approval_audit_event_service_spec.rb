@@ -268,6 +268,12 @@ RSpec.describe Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventSer
     end
   end
 
+  context 'without any policies' do
+    it 'does not create security policy bot' do
+      expect { execute }.not_to change { project.reload.security_policy_bot }.from(nil)
+    end
+  end
+
   private
 
   def create_policy(name:, policy_index:, approval_settings: {}, warn_mode: false, configuration: policy_configuration)
