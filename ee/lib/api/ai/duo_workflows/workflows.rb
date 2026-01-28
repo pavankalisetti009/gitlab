@@ -463,9 +463,11 @@ module API
 
               {
                 DuoWorkflow: {
-                  Headers: grpc_headers,
-                  ServiceURI: Gitlab::DuoWorkflow::Client.url_for(feature_setting: feature_setting, user: current_user),
-                  Secure: Gitlab::DuoWorkflow::Client.secure?,
+                  Service: {
+                    Headers: grpc_headers,
+                    URI: Gitlab::DuoWorkflow::Client.url_for(feature_setting: feature_setting, user: current_user),
+                    Secure: Gitlab::DuoWorkflow::Client.secure?
+                  },
                   McpServers: mcp_config_service.execute,
                   LockConcurrentFlow: true
                 }
