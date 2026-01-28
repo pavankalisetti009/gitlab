@@ -229,7 +229,7 @@ By default, this request returns 20 results at a time because the API results [a
 
 This endpoint:
 
-- [Returns data for any pipeline](pipelines.md#get-a-single-pipeline) including [child pipelines](../ci/pipelines/downstream_pipelines.md#parent-child-pipelines).
+- [Returns data for any pipeline](pipelines.md#retrieve-a-single-pipeline) including [child pipelines](../ci/pipelines/downstream_pipelines.md#parent-child-pipelines).
 - Does not return retried jobs in the response by default.
 - Sorts jobs by ID in descending order (newest first).
 
