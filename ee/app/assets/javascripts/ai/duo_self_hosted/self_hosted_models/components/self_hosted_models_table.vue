@@ -43,10 +43,10 @@ export default {
   },
   i18n: {
     emptyStateText: s__(
-      'AdminSelfHostedModels|You do not currently have any self-hosted models. %{linkStart}Add a self-hosted model%{linkEnd} to get started.',
+      'AdminSelfHostedModels|No self-hosted models yet. %{newModelLinkStart}Add a self-hosted model%{newModelLinkEnd} and select it for a feature to start using it.',
     ),
     emptyStateTextWithoutLink: s__(
-      'AdminSelfHostedModels|You do not currently have any self-hosted models. A GitLab Duo Enterprise add-on is required to manage self-hosted models.',
+      'AdminSelfHostedModels|Self-hosted models are available only with the GitLab Duo Enterprise add-on. Contact your administrator.',
     ),
     errorMessage: s__(
       'AdminSelfHostedModels|An error occurred while loading self-hosted models. Please try again.',
@@ -174,7 +174,7 @@ export default {
       <template #empty>
         <p class="gl-m-0 gl-py-4">
           <gl-sprintf v-if="canManageSelfHostedModels" :message="$options.i18n.emptyStateText">
-            <template #link="{ content }">
+            <template #newModelLink="{ content }">
               <gl-link to="/models/new">{{ content }}</gl-link>
             </template>
           </gl-sprintf>

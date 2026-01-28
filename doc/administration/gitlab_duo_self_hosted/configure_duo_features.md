@@ -149,7 +149,7 @@ To add a self-hosted model:
      | [Amazon Bedrock](#set-the-model-identifier-for-amazon-bedrock-models) | `bedrock/<model ID of the model>`                       | `bedrock/mistral.mixtral-8x7b-instruct-v0:1` |
      | Azure OpenAI                                                          | `azure/<model ID of the model>`                         | `azure/gpt-35-turbo` |
 
-1. Select **Create self-hosted model**.
+1. Select **Add self-hosted model**.
 
 ### Set the model identifier for Amazon Bedrock models
 

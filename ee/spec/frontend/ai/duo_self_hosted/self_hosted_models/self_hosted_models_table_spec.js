@@ -190,7 +190,7 @@ describe('SelfHostedModelsTable', () => {
 
         it('renders empty state text with link', () => {
           expect(findTable().text()).toMatch(
-            'You do not currently have any self-hosted models. Add a self-hosted model to get started.',
+            'No self-hosted models yet. Add a self-hosted model and select it for a feature to start using it.',
           );
         });
 
@@ -214,7 +214,7 @@ describe('SelfHostedModelsTable', () => {
 
         it('renders empty state text with Enterprise requirement message', () => {
           expect(findTable().text()).toMatch(
-            'You do not currently have any self-hosted models. A GitLab Duo Enterprise add-on is required to manage self-hosted models.',
+            'Self-hosted models are available only with the GitLab Duo Enterprise add-on. Contact your administrator.',
           );
         });
 

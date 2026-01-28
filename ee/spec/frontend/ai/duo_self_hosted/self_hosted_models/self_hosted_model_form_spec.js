@@ -451,7 +451,7 @@ describe('SelfHostedModelForm', () => {
     it('renders the submit button with the correct text', () => {
       const button = findCreateButton();
 
-      expect(button.text()).toBe('Create self-hosted model');
+      expect(button.text()).toBe('Add self-hosted model');
     });
 
     it('invokes the create mutation with correct input variables', async () => {
@@ -473,7 +473,7 @@ describe('SelfHostedModelForm', () => {
 
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(basePath, [
         expect.objectContaining({
-          message: 'The self-hosted model was successfully created.',
+          message: 'Model added. Select it for a feature to start using it.',
           variant: 'success',
         }),
       ]);
