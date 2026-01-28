@@ -3,7 +3,7 @@
 module WorkItems
   module WidgetHelpers
     # Stubs one or more widgets for a single work item instance.
-    # This mocks the get_widget method to return false for disabled widgets,
+    # This mocks both get_widget and has_widget? methods to return false for disabled widgets,
     # simulating that the work item doesn't have those widgets available.
     #
     # Examples:
@@ -18,12 +18,17 @@ module WorkItems
       widgets.each do |widget, enabled|
         allow(work_item).to receive(:get_widget).and_call_original
         allow(work_item).to receive(:get_widget).with(widget).and_return(enabled ? work_item.get_widget(widget) : false)
+        allow(work_item).to receive(:has_widget?).and_call_original
+        allow(work_item).to receive(:has_widget?).with(widget).and_return(enabled)
       end
     end
 
     # Stubs one or more widgets for all work item instances via allow_any_instance_of.
     # This is useful for testing behavior when widgets are not available across all work items.
-    # Also handles Issue instances which may use has_widget? instead of get_widget.
+    #
+    # Note: We stub Issue instead of WorkItem because WorkItem is a child class of Issue.
+    # When using allow_any_instance_of with a parent class, it automatically applies to all
+    # instances of child classes as well.
     #
     # Examples:
     #   stub_all_work_item_widgets(notes: false)
@@ -34,8 +39,9 @@ module WorkItems
         next if enabled
 
         # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without weight widget
-        allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
-        allow_any_instance_of(WorkItem).to receive(:get_widget).with(widget).and_return(false)
+        allow_any_instance_of(Issue).to receive(:get_widget).and_call_original
+        allow_any_instance_of(Issue).to receive(:get_widget).with(widget).and_return(false)
+        allow_any_instance_of(Issue).to receive(:has_widget?).and_call_original
         allow_any_instance_of(Issue).to receive(:has_widget?).with(widget).and_return(false)
         # rubocop:enable RSpec/AnyInstanceOf
       end
