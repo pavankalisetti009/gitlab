@@ -63,10 +63,12 @@ module Types
       def commit
         return unless ref_exists_in_repository?
 
-        raw_commit = fetch_raw_commit
-        return unless raw_commit
+        qualified_ref = case object.context_type
+                        when 'branch' then "#{Gitlab::Git::BRANCH_REF_PREFIX}#{object.context_name}"
+                        when 'tag' then "#{Gitlab::Git::TAG_REF_PREFIX}#{object.context_name}"
+                        end
 
-        Commit.new(raw_commit, project)
+        project.repository.commit(qualified_ref)
       rescue Gitlab::Git::Repository::NoRepository, Rugged::ReferenceError => e
         Gitlab::ErrorTracking.track_exception(e, project_id: project.id, ref_name: object.context_name)
         nil
@@ -80,16 +82,6 @@ module Types
       end
 
       private
-
-      def fetch_raw_commit
-        case object.context_type
-        when 'branch'
-          project.repository.commit(object.context_name)
-        when 'tag'
-          tag = project.repository.find_tag(object.context_name)
-          tag&.dereferenced_target
-        end
-      end
 
       def project
         @project ||= object.project
