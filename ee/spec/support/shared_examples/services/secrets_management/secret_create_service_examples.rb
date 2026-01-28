@@ -117,6 +117,63 @@ RSpec.shared_examples 'a service for creating a secret' do |resource_type|
           expect(result.message).to include("can contain only letters, digits and '_'")
         end
       end
+
+      context 'when secrets limit is exceeded' do
+        let(:limit) { 10 }
+        let(:secret_count_service) { instance_double(count_service_class) }
+
+        let(:count_service_class) do
+          case resource_type
+          when 'project'
+            SecretsManagement::ProjectSecretsCountService
+          when 'group'
+            SecretsManagement::GroupSecretsCountService
+          else
+            raise ArgumentError, "Unknown secrets manager scope: #{resource_type}"
+          end
+        end
+
+        let(:limit_setting) do
+          case resource_type
+          when 'project'
+            :project_secrets_limit
+          when 'group'
+            :group_secrets_limit
+          else
+            raise ArgumentError, "Unknown secrets manager scope: #{resource_type}"
+          end
+        end
+
+        before do
+          stub_application_setting(limit_setting => limit)
+          allow(count_service_class)
+            .to receive(:new)
+            .with(public_send(resource_type), user)
+            .and_return(secret_count_service)
+          allow(secret_count_service).to receive(:execute).and_return(101)
+        end
+
+        it 'returns secrets_limit_exceeded_response' do
+          expect(result).to be_error
+          expect(result.reason).to eq(:secrets_limit_exceeded)
+          expect(result.message).to eq(
+            "Maximum number of secrets (#{limit}) for this #{resource_type} has been reached. " \
+              'Please delete unused secrets or contact your administrator to increase the limit.'
+          )
+        end
+
+        it 'does not create anything' do
+          expect(result).to be_error
+
+          expect(SecretsManagement::SecretRotationInfo.count).to be_zero if resource_type == 'project'
+
+          expect_kv_secret_not_to_exist(
+            full_namespace_path,
+            secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name)
+          )
+        end
+      end
     end
 
     context "when the #{resource_type} secrets manager is not active" do
