@@ -138,6 +138,23 @@ RSpec.describe VirtualRegistries::Packages::Maven, feature_category: :virtual_re
           expect(Gitlab::AppLogger).not_to have_received(:info)
         end
       end
+
+      context 'when checking the virtual registry sidebar menu item' do
+        before do
+          allow(described_class).to receive(:caller).and_return([
+            'ee/app/models/virtual_registries/packages/maven.rb:26:in `virtual_registry_available?`',
+            'ee/lib/ee/sidebars/groups/menus/packages_registries_menu.rb:38:in `virtual_registry_available?`',
+            'ee/lib/ee/sidebars/groups/menus/packages_registries_menu.rb:22:in `virtual_registry_menu_item`',
+            'ee/lib/ee/sidebars/groups/menus/packages_registries_menu.rb:14:in `configure_menu_items`'
+          ])
+        end
+
+        it 'does not log' do
+          log_access
+
+          expect(Gitlab::AppLogger).not_to have_received(:info)
+        end
+      end
     end
 
     context 'when user has group membership' do
