@@ -46,7 +46,7 @@ export default {
     return {
       aiCatalogFlows: [],
       pageInfo: {},
-      searchTerm: '',
+      searchTerm: this.$route.query.search || '',
     };
   },
   computed: {
@@ -63,6 +63,13 @@ export default {
             FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
         },
       };
+    },
+  },
+  watch: {
+    '$route.query.search': {
+      handler(newSearch) {
+        this.searchTerm = newSearch || '';
+      },
     },
   },
   mounted() {
@@ -91,9 +98,14 @@ export default {
     },
     handleSearch(filters) {
       [this.searchTerm] = filters;
+      this.$router.replace({
+        query: { ...this.$route.query, search: this.searchTerm || undefined },
+      });
     },
     handleClearSearch() {
       this.searchTerm = '';
+      const { search, ...rest } = this.$route.query;
+      this.$router.replace({ query: rest });
     },
   },
 };
@@ -108,6 +120,7 @@ export default {
       :items="aiCatalogFlows"
       :item-type-config="itemTypeConfig"
       :page-info="pageInfo"
+      :search-term="searchTerm"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
       @search="handleSearch"

@@ -13,6 +13,7 @@ describe('AiCatalogNavTabs', () => {
 
   const createComponent = ({
     routePath = '/ai/catalog',
+    routeQuery = {},
     aiCatalogFlows = true,
     readAiCatalogFlow = true,
   } = {}) => {
@@ -20,6 +21,7 @@ describe('AiCatalogNavTabs', () => {
       mocks: {
         $route: {
           path: routePath,
+          query: routeQuery,
         },
         $router: mockRouter,
       },
@@ -146,7 +148,20 @@ describe('AiCatalogNavTabs', () => {
 
       agentsTab.vm.$emit('click');
 
-      expect(mockRouter.push).toHaveBeenCalledWith({ name: AI_CATALOG_AGENTS_ROUTE });
+      expect(mockRouter.push).toHaveBeenCalledWith({ name: AI_CATALOG_AGENTS_ROUTE, query: {} });
+    });
+
+    it('preserves query params when navigating between tabs', () => {
+      createComponent({ routePath: AI_CATALOG_AGENTS_ROUTE, routeQuery: { search: 'test' } });
+
+      const flowsTab = findAllTabs().at(1);
+
+      flowsTab.vm.$emit('click');
+
+      expect(mockRouter.push).toHaveBeenCalledWith({
+        name: AI_CATALOG_FLOWS_ROUTE,
+        query: { search: 'test' },
+      });
     });
 
     it('does not navigate if already on the same route', () => {

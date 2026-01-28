@@ -30,7 +30,7 @@ export default {
     return {
       aiCatalogAgents: [],
       pageInfo: {},
-      searchTerm: '',
+      searchTerm: this.$route.query.search || '',
     };
   },
   apollo: {
@@ -77,6 +77,13 @@ export default {
       };
     },
   },
+  watch: {
+    '$route.query.search': {
+      handler(newSearch) {
+        this.searchTerm = newSearch || '';
+      },
+    },
+  },
   mounted() {
     this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX, {
       label: TRACK_EVENT_TYPE_AGENT,
@@ -103,9 +110,14 @@ export default {
     },
     handleSearch(filters) {
       [this.searchTerm] = filters;
+      this.$router.replace({
+        query: { ...this.$route.query, search: this.searchTerm || undefined },
+      });
     },
     handleClearSearch() {
       this.searchTerm = '';
+      const { search, ...rest } = this.$route.query;
+      this.$router.replace({ query: rest });
     },
   },
 };
@@ -120,6 +132,7 @@ export default {
       :items="aiCatalogAgents"
       :item-type-config="itemTypeConfig"
       :page-info="pageInfo"
+      :search-term="searchTerm"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
       @search="handleSearch"
