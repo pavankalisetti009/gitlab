@@ -335,7 +335,6 @@ export default {
     <ai-catalog-list-header
       :heading="s__('AICatalog|Flows')"
       :can-admin="userPermissions.adminAiCatalogItem"
-      :is-beta="true"
       new-button-variant="default"
     >
       <template #nav-actions>
