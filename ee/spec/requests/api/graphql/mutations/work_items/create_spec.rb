@@ -50,11 +50,12 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       context 'when setting iteration on work item creation' do
         let_it_be(:cadence) { create(:iterations_cadence, group: group) }
         let_it_be(:iteration) { create(:iteration, iterations_cadence: cadence) }
+        let(:task_type) { build(:work_item_system_defined_type, :task) }
 
         let(:input) do
           {
             title: 'new title',
-            workItemTypeId: WorkItems::Type.default_by_type(:task).to_global_id.to_s,
+            workItemTypeId: task_type.to_global_id.to_s,
             iterationWidget: { 'iterationId' => iteration.to_global_id.to_s }
           }
         end
@@ -101,6 +102,8 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       context 'when creating a key result' do
         let_it_be(:parent) { create(:work_item, :objective, **container_params) }
 
+        let(:key_result_type) { build(:work_item_system_defined_type, :key_result) }
+
         let(:fields) do
           <<~FIELDS
             workItem {
@@ -124,7 +127,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:input) do
           {
             title: 'key result',
-            workItemTypeId: WorkItems::Type.default_by_type(:key_result).to_global_id.to_s,
+            workItemTypeId: key_result_type.to_global_id.to_s,
             hierarchyWidget: { 'parentId' => parent.to_global_id.to_s }
           }
         end
@@ -168,10 +171,11 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       end
 
       context 'when group_webhooks feature is available', :aggregate_failures do
+        let(:task_type) { build(:work_item_system_defined_type, :task) }
         let(:input) do
           {
             title: 'new title',
-            workItemTypeId: WorkItems::Type.default_by_type(:task).to_global_id.to_s
+            workItemTypeId: task_type.to_global_id.to_s
           }
         end
 
@@ -191,6 +195,8 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
     end
 
     shared_examples 'creates work item with weight widget' do
+      let(:issue_type) { build(:work_item_system_defined_type, :issue) }
+
       let(:fields) do
         <<~FIELDS
           workItem {
@@ -211,7 +217,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       let(:input) do
         {
           title: 'new title',
-          workItemTypeId: WorkItems::Type.default_by_type(:issue).to_global_id.to_s,
+          workItemTypeId: issue_type.to_global_id.to_s,
           weightWidget: { 'weight' => 5 }
         }
       end
@@ -256,7 +262,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
     shared_examples 'creates work item linked to a vulnerability' do
       let(:vulnerability) { create(:vulnerability, title: "First", project: project) }
-      let_it_be(:issue_work_item_type) { WorkItems::Type.default_by_type(:issue) }
+      let_it_be(:issue_work_item_type) { build(:work_item_system_defined_type, :issue) }
 
       let(:work_item_type) { issue_work_item_type }
 
@@ -298,7 +304,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       end
 
       context 'with other work item types' do
-        let_it_be(:task_work_item_type) { WorkItems::Type.default_by_type(:task) }
+        let_it_be(:task_work_item_type) { build(:work_item_system_defined_type, :task) }
 
         let(:work_item_type) { task_work_item_type }
 
@@ -350,6 +356,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         end
 
         context 'with epic type' do
+          let(:epic_type) { build(:work_item_system_defined_type, :epic) }
           let(:work_item_type) { :epic }
 
           let(:fields) do
@@ -364,7 +371,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
           end
 
           let(:input) do
-            { title: "project epic WI", workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s }
+            { title: "project epic WI", workItemTypeId: epic_type.to_gid.to_s }
           end
 
           context 'when epics licensed feature is available' do
@@ -433,6 +440,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       let_it_be(:container_params) { { namespace: group } }
       let(:mutation) { graphql_mutation(:workItemCreate, input.merge(namespacePath: group.full_path), fields) }
       let(:work_item_type) { :epic }
+      let(:epic_type) { build(:work_item_system_defined_type, work_item_type) }
 
       context 'when using resolve discussion in merge request arguments' do
         let_it_be(:merge_request) { create(:merge_request, source_project: project) }
@@ -441,7 +449,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             :workItemCreate,
             {
               title: 'some WI',
-              workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
+              workItemTypeId: epic_type.to_gid.to_s,
               namespacePath: group.full_path,
               discussions_to_resolve: { noteable_id: merge_request.to_gid.to_s }
             }
@@ -503,7 +511,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
           let(:input) do
             {
               title: "some WI",
-              workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
+              workItemTypeId: build(:work_item_system_defined_type, work_item_type).to_gid.to_s,
               startAndDueDateWidget: {
                 isFixed: true,
                 startDate: start_date.to_s,
@@ -539,7 +547,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:input) do
           {
             title: "some WI",
-            workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
+            workItemTypeId: build(:work_item_system_defined_type, work_item_type).to_gid.to_s,
             healthStatusWidget: { healthStatus: new_status }
           }
         end
@@ -603,7 +611,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:input) do
           {
             title: "some WI",
-            workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
+            workItemTypeId: build(:work_item_system_defined_type, work_item_type).to_gid.to_s,
             colorWidget: { color: new_color }
           }
         end
@@ -696,7 +704,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:input) do
           {
             title: 'some WI',
-            workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
+            workItemTypeId: build(:work_item_system_defined_type, work_item_type).to_gid.to_s,
             assigneesWidget: { 'assigneeIds' => assignees.map(&:to_gid).map(&:to_s) }
           }
         end
@@ -791,7 +799,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:input) do
           {
             title: 'some WI',
-            workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
+            workItemTypeId: build(:work_item_system_defined_type, work_item_type).to_gid.to_s,
             linkedItemsWidget: { 'workItemsIds' => items.map(&:to_gid).map(&:to_s), 'linkType' => link_type }
           }
         end
@@ -867,7 +875,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         context 'when type is not Epic' do
           let(:input) do
-            { title: "task WI", workItemTypeId: WorkItems::Type.default_by_type(:task).to_gid.to_s }
+            { title: "task WI", workItemTypeId: build(:work_item_system_defined_type, :task).to_gid.to_s }
           end
 
           it_behaves_like 'a mutation that returns top-level errors', errors: [
@@ -877,7 +885,8 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         context 'when type is Epic' do
           let(:input) do
-            { title: "task WI", workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s }
+            { title: "task WI",
+              workItemTypeId: build(:work_item_system_defined_type, work_item_type).to_gid.to_s }
           end
 
           it 'creates the work item epic' do
@@ -897,7 +906,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
     let_it_be(:current_user) { create(:user, guest_of: group) }
 
     let(:input) do
-      { title: 'epic WI', workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s }
+      { title: 'epic WI', workItemTypeId: build(:work_item_system_defined_type, :epic).to_gid.to_s }
     end
 
     let(:fields) do
@@ -1004,7 +1013,6 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
   context 'with status widget input' do
     let_it_be(:work_item_type) { create(:work_item_type, :task) }
-
     let(:status) { build(:work_item_system_defined_status, :in_progress) }
     let(:status_gid) { status.to_gid.to_s }
     let(:expected_error_message) do
@@ -1047,10 +1055,6 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
       context 'when work item type does not support status widget' do
         let_it_be(:work_item_type) { create(:work_item_type, :non_default) }
-
-        before do
-          stub_feature_flags(work_item_system_defined_type: false)
-        end
 
         it_behaves_like 'work item mutation with status widget with error'
       end

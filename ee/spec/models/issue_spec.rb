@@ -102,10 +102,12 @@ RSpec.describe Issue, feature_category: :team_planning do
       context 'when issue is of type requirement' do
         let(:iids) { [requirement1.iid, requirement3.iid, requirement4.iid] }
 
+        let(:work_item_type) { build(:work_item_system_defined_type, :issue) }
+
         it 'filters requirement issues by associated requirements iids' do
           issue4 = requirement4.requirement_issue
           issue4.assign_attributes(
-            work_item_type: WorkItems::Type.default_by_type(:issue)
+            work_item_type_id: work_item_type.id
           )
           # there should be no way to update a requirement to issue type, doing this to test the scope
           issue4.save!(validate: false)
@@ -1135,11 +1137,13 @@ RSpec.describe Issue, feature_category: :team_planning do
           group.add_developer(user)
         end
 
+        let(:work_item_type) { build(:work_item_system_defined_type, :incident) }
+
         it { is_expected.to be_truthy }
 
         context 'when issue is an incident' do
           before do
-            issue.update!(work_item_type: WorkItems::Type.default_by_type(:incident))
+            issue.update!(work_item_type_id: work_item_type.id)
           end
 
           it { is_expected.to be_falsey }
@@ -1224,7 +1228,7 @@ RSpec.describe Issue, feature_category: :team_planning do
 
     with_them do
       before do
-        issue.assign_attributes(work_item_type: WorkItems::Type.default_by_type(issue_type))
+        issue.assign_attributes(work_item_type_id: build(:work_item_system_defined_type, issue_type).id)
         issue.save!(validate: false)
       end
 
@@ -1246,7 +1250,7 @@ RSpec.describe Issue, feature_category: :team_planning do
 
     with_them do
       before do
-        issue.assign_attributes(work_item_type: WorkItems::Type.default_by_type(issue_type))
+        issue.assign_attributes(work_item_type_id: build(:work_item_system_defined_type, issue_type).id)
         issue.save!(validate: false)
       end
 
@@ -1431,7 +1435,7 @@ RSpec.describe Issue, feature_category: :team_planning do
     context 'when it is part of an epic' do
       it 'is not possible to change from issue to incident' do
         issue = create(:issue, epic: epic)
-        issue.assign_attributes(work_item_type: WorkItems::Type.default_by_type(:incident))
+        issue.assign_attributes(work_item_type_id: build(:work_item_system_defined_type, :incident).id)
 
         expect(issue).not_to be_valid
         expect(issue.errors[:work_item_type_id])
@@ -1442,7 +1446,7 @@ RSpec.describe Issue, feature_category: :team_planning do
     context 'when it is not part of an epic' do
       it 'is possible to change between types' do
         issue = create(:issue)
-        issue.assign_attributes(work_item_type: WorkItems::Type.default_by_type(:incident))
+        issue.assign_attributes(work_item_type_id: build(:work_item_system_defined_type, :incident).id)
 
         expect(issue).to be_valid
       end

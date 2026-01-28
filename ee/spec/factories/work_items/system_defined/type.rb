@@ -21,5 +21,10 @@ FactoryBot.modify do
       id { 4 }
       base_type { 'requirement' }
     end
+
+    trait :test_case do
+      id { 3 }
+      base_type { 'test_case' }
+    end
   end
 end

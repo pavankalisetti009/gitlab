@@ -7,8 +7,10 @@ RSpec.describe Gitlab::WorkItems::LegacyEpics::WidgetParamsExtractor, feature_ca
     let(:epic_work_item_type) { double }
 
     before do
-      stub_const('::WorkItems::Type', double).tap do |klass|
-        allow(klass).to receive(:default_by_type).with(:epic).and_return(epic_work_item_type)
+      stub_const('::WorkItems::TypesFramework::Provider', double).tap do |klass|
+        instance = double
+        allow(klass).to receive(:new).and_return(instance)
+        allow(instance).to receive(:find_by_base_type).with(:epic).and_return(epic_work_item_type)
       end
     end
 

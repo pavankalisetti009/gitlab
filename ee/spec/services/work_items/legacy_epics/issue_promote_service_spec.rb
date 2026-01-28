@@ -216,7 +216,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
           end
 
           before do
-            epic_type = WorkItems::Type.default_by_type(:epic)
+            epic_type = build(:work_item_system_defined_type, :epic)
 
             allow(WorkItems::TypesFramework::SystemDefined::HierarchyRestriction).to receive(:find_by).with(
               parent_type_id: epic_type.id,
@@ -354,7 +354,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
         context 'on other issue types' do
           shared_examples_for 'raising error' do
             before do
-              issue.update!(work_item_type: WorkItems::Type.default_by_type(issue_type))
+              issue.update!(work_item_type_id: build(:work_item_system_defined_type, issue_type).id)
             end
 
             it 'raises error' do

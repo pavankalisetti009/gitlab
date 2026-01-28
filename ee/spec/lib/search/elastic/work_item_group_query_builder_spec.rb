@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
+  let(:work_item_type) { FactoryBot.build(:work_item_system_defined_type, :epic) }
   let(:base_options) do
     {
       current_user: user,
@@ -11,7 +12,7 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
       group_ids: [],
       klass: WorkItem,
       index_name: ::Search::Elastic::References::WorkItem.index,
-      work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id],
+      work_item_type_ids: [work_item_type.id],
       public_and_internal_projects: false,
       search_level: 'global'
     }
