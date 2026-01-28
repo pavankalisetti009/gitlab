@@ -113,9 +113,7 @@ export default {
     },
   },
   DRAWER_Z_INDEX,
-  relatedIssuesHelpPath: helpPagePath('/development/logs', {
-    anchor: 'create-an-issue-for-a-log',
-  }),
+  relatedIssuesHelpPath: helpPagePath('/development/feature_development'),
   relatedIssuesId: uniqueId('related-issues-'),
   logDrawerId: uniqueId('log-drawer-'),
 };

@@ -704,9 +704,7 @@ describe('MetricsDetails', () => {
       issues: [],
       fetchingIssues: false,
       error: null,
-      helpPath: helpPagePath('/development/metrics', {
-        anchor: 'create-an-issue-for-a-metric',
-      }),
+      helpPath: helpPagePath('/development/feature_development'),
     });
     expect(findRelatedIssues().attributes('id')).toBe('related-issues-1');
   });
