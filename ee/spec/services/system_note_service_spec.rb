@@ -58,62 +58,6 @@ RSpec.describe SystemNoteService, feature_category: :team_planning do
     end
   end
 
-  describe '.epic_issue' do
-    let(:type) { double }
-
-    it 'calls EpicsService' do
-      expect_next_instance_of(SystemNotes::EpicsService) do |service|
-        expect(service).to receive(:epic_issue).with(noteable, type)
-      end
-
-      described_class.epic_issue(epic, noteable, author, type)
-    end
-  end
-
-  describe '.issue_on_epic' do
-    let(:type) { double }
-
-    it 'calls EpicsService' do
-      expect_next_instance_of(SystemNotes::EpicsService) do |service|
-        expect(service).to receive(:issue_on_epic).with(noteable, type)
-      end
-
-      described_class.issue_on_epic(noteable, epic, author, type)
-    end
-  end
-
-  describe '.change_epics_relation' do
-    let(:child_epic) { double }
-    let(:type) { double }
-
-    it 'calls EpicsService' do
-      expect_next_instance_of(SystemNotes::EpicsService) do |service|
-        expect(service).to receive(:change_epics_relation).with(child_epic, type)
-      end
-
-      described_class.change_epics_relation(epic, child_epic, author, type)
-    end
-  end
-
-  describe '.move_child_epic_to_new_parent' do
-    let(:child_epic) { double }
-    let(:new_parent_epic) { double }
-    let(:previous_parent_epic) { double }
-
-    it 'calls EpicService' do
-      expect_next_instance_of(SystemNotes::EpicsService) do |service|
-        expect(service).to receive(:move_child_epic_to_new_parent).with(child_epic, new_parent_epic)
-      end
-
-      described_class.move_child_epic_to_new_parent(
-        previous_parent_epic: previous_parent_epic,
-        child_epic: child_epic,
-        new_parent_epic: new_parent_epic,
-        user: author
-      )
-    end
-  end
-
   describe '.merge_train' do
     let(:merge_train) { double }
 

@@ -16,24 +16,8 @@ module EE
       extend_mod_with('SystemNoteService') # rubocop: disable Cop/InjectEnterpriseEditionModule
     end
 
-    def epic_issue(epic, issue, user, type)
-      epics_service(epic, user).epic_issue(issue, type)
-    end
-
-    def epic_issue_moved(from_epic, issue, to_epic, user)
-      epics_service(from_epic, user).epic_issue_moved(issue, to_epic)
-    end
-
     def issue_promoted(noteable, noteable_ref, author, direction:)
       epics_service(noteable, author).issue_promoted(noteable_ref, direction: direction)
-    end
-
-    def issue_on_epic(issue, epic, user, type)
-      epics_service(epic, user).issue_on_epic(issue, type)
-    end
-
-    def issue_epic_change(issue, epic, user)
-      epics_service(epic, user).issue_epic_change(issue)
     end
 
     # Called when the health_stauts of an Issue is changed
@@ -66,14 +50,6 @@ module EE
     # Returns the created Note object
     def change_epic_date_note(noteable, author, date_type, date)
       epics_service(noteable, author).change_epic_date_note(date_type, date)
-    end
-
-    def change_epics_relation(epic, child_epic, user, type)
-      epics_service(epic, user).change_epics_relation(child_epic, type)
-    end
-
-    def move_child_epic_to_new_parent(previous_parent_epic:, child_epic:, new_parent_epic:, user:)
-      epics_service(previous_parent_epic, user).move_child_epic_to_new_parent(child_epic, new_parent_epic)
     end
 
     # Called when 'merge train' is executed

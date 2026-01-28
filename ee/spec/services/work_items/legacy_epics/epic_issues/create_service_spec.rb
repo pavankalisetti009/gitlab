@@ -155,7 +155,6 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
               pending 'https://gitlab.com/gitlab-org/gitlab/-/issues/438295'
 
               allow(SystemNoteService).to receive(:epic_issue)
-              allow(SystemNoteService).to receive(:issue_on_epic)
 
               params = { issuable_references: [valid_reference] }
               control_count = ActiveRecord::QueryRecorder.new { described_class.new(epic, user, params).execute }.count

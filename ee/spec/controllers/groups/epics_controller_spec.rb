@@ -111,7 +111,8 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
         context 'when issue note is returned' do
           before do
-            SystemNoteService.epic_issue(epic, issue, user, :added)
+            create(:note, :system, noteable: epic, author: user,
+              note: "added issue #{issue.to_reference(full: true)}")
           end
 
           shared_examples 'issue link presence' do
