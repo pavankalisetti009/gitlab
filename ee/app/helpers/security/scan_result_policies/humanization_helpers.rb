@@ -3,6 +3,8 @@
 module Security
   module ScanResultPolicies
     module HumanizationHelpers
+      UNKNOWN = 'Unknown'
+
       def humanized_approval_setting(attribute)
         case attribute
         when :prevent_approval_by_author
@@ -17,6 +19,14 @@ module Security
           s_("ScanResultPolicy|Prevent branch modification")
         when :prevent_pushing_and_force_pushing
           s_("ScanResultPolicy|Prevent pushing and force pushing")
+        end
+      end
+
+      def humanized_boolean(value)
+        case value
+        when true then 'Yes'
+        when false then 'No'
+        else UNKNOWN
         end
       end
     end

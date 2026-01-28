@@ -473,10 +473,31 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       build_violation_details(policy3, violations: { any_merge_request: { commits: true } })
     end
 
+    shared_examples 'with CVE enrichment data' do
+      before do
+        create(:security_finding_enrichment, finding_uuid: finding_uuid)
+      end
+
+      it 'includes CVE enrichments in the violation' do
+        expect(violation.cve_enrichments).not_to be_empty
+        expect(violation.cve_enrichments.first.finding_uuid).to eq(finding_uuid)
+      end
+    end
+
     describe '#new_scan_finding_violations' do
       let(:violation) { new_scan_finding_violations.first }
 
       subject(:new_scan_finding_violations) { details.new_scan_finding_violations }
+
+      context 'with CVE enrichment data' do
+        let(:finding_uuid) { uuid }
+
+        before do
+          create(:security_finding_enrichment, finding_uuid: uuid)
+        end
+
+        it_behaves_like 'with CVE enrichment data'
+      end
 
       context 'with additional unrelated violation' do
         before do
@@ -625,6 +646,16 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       let(:violation) { previous_scan_finding_violations.first }
 
       subject(:previous_scan_finding_violations) { details.previous_scan_finding_violations }
+
+      context 'with CVE enrichment data' do
+        let(:finding_uuid) { uuid_previous }
+
+        before do
+          create(:security_finding, uuid: uuid_previous)
+        end
+
+        it_behaves_like 'with CVE enrichment data'
+      end
 
       context 'with additional unrelated violation' do
         before do

@@ -601,9 +601,42 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
   end
 
+  describe '.distinct_by_uuid' do
+    let_it_be(:scan_a) { create(:security_scan, :latest_successful, scan_type: :sast) }
+    let_it_be(:scan_b) { create(:security_scan, :latest_successful, scan_type: :sast) }
+    let_it_be(:uuid) { SecureRandom.uuid }
+    let_it_be(:finding_a) { create(:security_finding, :with_finding_data, uuid: uuid, scan: scan_a) }
+    let_it_be(:finding_b) { create(:security_finding, :with_finding_data, uuid: uuid, scan: scan_b) }
+    let_it_be(:finding_c) { create(:security_finding, :with_finding_data, scan: scan_a) }
+
+    it 'returns one finding per unique uuid' do
+      result = described_class.by_uuid([uuid, finding_c.uuid]).distinct_by_uuid.order(:uuid).load
+
+      expect(result.map(&:uuid)).to contain_exactly(uuid, finding_c.uuid)
+    end
+  end
+
   describe '.except_scanners' do
     it 'returns findings except the ones associated to scanners as parameter' do
       expect(described_class.except_scanners(finding_1.scanner)).to contain_exactly(finding_2)
+    end
+  end
+
+  describe '.with_finding_enrichments' do
+    let_it_be(:finding_with_enrichment) do
+      create(:security_finding, :with_finding_data, scan: scan_1).tap do |finding|
+        create(:security_finding_enrichment, finding_uuid: finding.uuid)
+      end
+    end
+
+    subject(:findings) { described_class.with_finding_enrichments }
+
+    it 'eager loads finding enrichments' do
+      expect do
+        findings.each do |f|
+          f.finding_enrichments.each(&:id)
+        end
+      end.not_to exceed_query_limit(2)
     end
   end
 
