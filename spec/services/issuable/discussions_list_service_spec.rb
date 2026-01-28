@@ -23,7 +23,7 @@ RSpec.describe Issuable::DiscussionsListService, feature_category: :team_plannin
       let(:issuable) { create(:work_item, project: project) }
 
       before do
-        allow(issuable).to receive(:has_widget?).with(:notes).and_return(false)
+        stub_work_item_widget(issuable, notes: false)
       end
 
       it "returns no notes" do

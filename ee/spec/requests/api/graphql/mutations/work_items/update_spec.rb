@@ -310,10 +310,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             end
 
             before do
-              # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without weight widget
-              allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
-              allow_any_instance_of(WorkItem).to receive(:get_widget).with(:weight).and_return(false)
-              # rubocop:enable RSpec/AnyInstanceOf
+              stub_all_work_item_widgets(weight: false)
             end
 
             it_behaves_like 'work item is not updated' do
@@ -877,10 +874,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             end
 
             before do
-              # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without weight widget
-              allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
-              allow_any_instance_of(WorkItem).to receive(:get_widget).with(:health_status).and_return(false)
-              # rubocop:enable RSpec/AnyInstanceOf
+              stub_all_work_item_widgets(health_status: false)
             end
 
             it_behaves_like 'work item is not updated' do

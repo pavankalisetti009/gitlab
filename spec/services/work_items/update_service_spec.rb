@@ -110,10 +110,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
 
       context 'when work item labels, assignees & milestone widgets are disabled' do
         before do
-          allow(work_item).to receive(:get_widget).and_call_original
-          allow(work_item).to receive(:get_widget).with(:labels).and_return(false)
-          allow(work_item).to receive(:get_widget).with(:assignees).and_return(false)
-          allow(work_item).to receive(:get_widget).with(:milestone).and_return(false)
+          stub_work_item_widget(work_item, labels: false, assignees: false, milestone: false)
         end
 
         it_behaves_like 'issuable record that does not supports quick actions' do

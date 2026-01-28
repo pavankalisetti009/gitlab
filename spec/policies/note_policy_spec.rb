@@ -293,7 +293,7 @@ RSpec.describe NotePolicy, feature_category: :team_planning do
             let(:noteable_issue) { create(:work_item, project: project) }
 
             before do
-              allow(noteable_task).to receive(:has_widget?).with(:notes).and_return(false)
+              stub_work_item_widget(noteable_task, notes: false)
             end
 
             context 'when noteable is task' do

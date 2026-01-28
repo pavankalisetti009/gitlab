@@ -45,10 +45,8 @@ RSpec.describe 'Query.synthetic_note(noteable_id, sha)', feature_category: :team
     context 'and notes widget is not available' do
       let(:issue) { create(:issue, project: project) }
 
-      before do # -- To simulate work item without notes widget
-        # allow_any_instance_of(Issue).to receive(:get_widget).and_call_original
-        # allow_any_instance_of(Issue).to receive(:has_widget?).with(:notes).and_return(false)
-        allow(issue).to receive(:has_widget?).with(:notes).and_return(false)
+      before do
+        stub_work_item_widget(issue, notes: false)
       end
 
       it 'returns nil' do

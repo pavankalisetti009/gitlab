@@ -104,10 +104,7 @@ RSpec.describe 'Query.note(id)', feature_category: :team_planning do
 
     context 'and notes widget is not available' do
       before do
-        # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without notes widget
-        allow_any_instance_of(Issue).to receive(:has_widget?).and_call_original
-        allow_any_instance_of(Issue).to receive(:has_widget?).with(:notes).and_return(false)
-        # rubocop:enable RSpec/AnyInstanceOf
+        stub_all_work_item_widgets(notes: false)
       end
 
       it 'returns nil' do
