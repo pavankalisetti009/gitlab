@@ -412,7 +412,7 @@ signed DPoP header requires your corresponding private SSH key.
 
 > [!note]
 > If you enable this feature, all API requests without a valid DPoP header return a `DpopValidationError` error.
-> 
+>
 > DPoP header is not required for Git operations over HTTPS that include an access token.
 
 Prerequisites:

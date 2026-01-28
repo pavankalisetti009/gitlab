@@ -28,7 +28,7 @@ The most widely supported method is to inject an SSH key into the build environm
 such as Docker or shell.
 
 > [!note]
-> When using SSH keys in CI/CD, store private keys securely and avoid reusing personal SSH keys for automated jobs. 
+> When using SSH keys in CI/CD, store private keys securely and avoid reusing personal SSH keys for automated jobs.
 > Rotate keys regularly to reduce the risk of unauthorized access.
 
 ## Create and use an SSH key
