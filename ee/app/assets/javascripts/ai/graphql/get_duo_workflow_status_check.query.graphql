@@ -6,6 +6,7 @@ query getDuoWorkflowStatusCheck($projectPath: ID!) {
       enabled
       remoteFlowsEnabled
       foundationalFlowsEnabled
+      createDuoWorkflowForCiAllowed @gl_introduced(version: "18.9.0")
     }
   }
 }

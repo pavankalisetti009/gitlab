@@ -204,6 +204,7 @@ export const mockDuoWorkflowStatusCheckEnabled = {
         enabled: true,
         remoteFlowsEnabled: true,
         foundationalFlowsEnabled: true,
+        createDuoWorkflowForCiAllowed: true,
       },
     },
   },
@@ -217,7 +218,17 @@ export const mockDuoWorkflowStatusCheckDisabled = {
         enabled: false,
         remoteFlowsEnabled: false,
         foundationalFlowsEnabled: false,
+        createDuoWorkflowForCiAllowed: false,
       },
+    },
+  },
+};
+
+export const mockDuoWorkflowStatusCheckIsNull = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      duoWorkflowStatusCheck: null,
     },
   },
 };
@@ -230,10 +241,68 @@ export const mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled = {
         enabled: true,
         remoteFlowsEnabled: false,
         foundationalFlowsEnabled: false,
+        createDuoWorkflowForCiAllowed: false,
       },
     },
   },
 };
+
+export const mockDuoWorkflowStatusCheckEnabledButRemoteFlowsIsNull = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      duoWorkflowStatusCheck: {
+        enabled: true,
+        remoteFlowsEnabled: null,
+        foundationalFlowsEnabled: true,
+        createDuoWorkflowForCiAllowed: true,
+      },
+    },
+  },
+};
+
+export const mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiNotAllowed = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      duoWorkflowStatusCheck: {
+        enabled: true,
+        remoteFlowsEnabled: true,
+        foundationalFlowsEnabled: true,
+        createDuoWorkflowForCiAllowed: false,
+      },
+    },
+  },
+};
+
+export const mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiAllowedIsNull = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      duoWorkflowStatusCheck: {
+        enabled: true,
+        remoteFlowsEnabled: true,
+        foundationalFlowsEnabled: true,
+        createDuoWorkflowForCiAllowed: null,
+      },
+    },
+  },
+};
+
+export const mockDuoWorkflowStatusCheckDisabledButRemoveFlowsEnabledAndCreateDuoWorkflowForCiAllowed =
+  {
+    data: {
+      project: {
+        id: 'gid://gitlab/Project/1',
+        duoWorkflowStatusCheck: {
+          enabled: false,
+          remoteFlowsEnabled: true,
+          foundationalFlowsEnabled: true,
+          createDuoWorkflowForCiAllowed: true,
+        },
+      },
+    },
+  };
 
 export const mockConfiguredFlowsResponse = {
   data: {
