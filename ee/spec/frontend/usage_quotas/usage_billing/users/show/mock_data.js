@@ -1,3 +1,5 @@
+import merge from 'lodash/merge';
+
 export const mockDataWithPool = {
   data: {
     subscriptionUsage: {
@@ -171,11 +173,9 @@ export const mockDataWithPool = {
   },
 };
 
-export const mockDataWithoutPool = {
+export const mockDataWithoutPool = merge({}, mockDataWithPool, {
   data: {
     subscriptionUsage: {
-      ...mockDataWithPool.data.subscriptionUsage,
-
       monthlyCommitment: {
         creditsUsed: 0,
         totalCredits: 0,
@@ -183,7 +183,6 @@ export const mockDataWithoutPool = {
 
       usersUsage: {
         users: {
-          ...mockDataWithPool.data.subscriptionUsage.usersUsage.users,
           nodes: [
             {
               ...mockDataWithPool.data.subscriptionUsage.usersUsage.users.nodes[0],
@@ -197,7 +196,7 @@ export const mockDataWithoutPool = {
       },
     },
   },
-};
+});
 
 export const mockEmptyData = {
   data: {
@@ -242,12 +241,9 @@ export const mockEmptyData = {
   },
 };
 
-export const mockNullData = {
+export const mockNullData = merge({}, mockEmptyData, {
   data: {
     subscriptionUsage: {
-      lastEventTransactionAt: '2025-10-31T12:55:21Z',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
       usersUsage: {
         users: {
           nodes: [
@@ -273,7 +269,7 @@ export const mockNullData = {
       __typename: 'GitlabSubscriptionUsage',
     },
   },
-};
+});
 
 export const mockDisabledStateData = {
   data: {
