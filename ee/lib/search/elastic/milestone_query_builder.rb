@@ -15,7 +15,7 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_type(query_hash: query_hash, options: options)
 
         query_hash =
-          if use_new_auth?
+          if ::Elastic::DataMigrationService.migration_has_finished?(:backfill_traversal_ids_for_milestones)
             ::Search::Elastic::Filters.by_search_level_and_membership(
               query_hash: query_hash, options: options
             )
@@ -31,11 +31,6 @@ module Search
       end
 
       private
-
-      def use_new_auth?
-        ::Elastic::DataMigrationService.migration_has_finished?(:backfill_traversal_ids_for_milestones) &&
-          Feature.enabled?(:search_advanced_milestones_new_auth_filter, options[:current_user])
-      end
 
       override :extra_options
       def extra_options

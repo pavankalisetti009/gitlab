@@ -68,18 +68,6 @@ RSpec.describe ::Search::Elastic::MilestoneQueryBuilder, :elastic_helpers, featu
             without: %w[filters:permissions:global:visibility_level:public_and_internal])
         end
       end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(search_advanced_milestones_new_auth_filter: false)
-        end
-
-        it 'uses the old authorization filter' do
-          assert_names_in_query(build,
-            with: %w[filters:project],
-            without: %w[filters:permissions:global:visibility_level:public_and_internal])
-        end
-      end
     end
   end
 
