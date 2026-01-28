@@ -97,7 +97,7 @@ module Vulnerabilities
 
     def create_triggered_workflow_record(vulnerability, response)
       ::Vulnerabilities::TriggeredWorkflow.create!(
-        vulnerability_occurrence_id: vulnerability.finding.id,
+        vulnerability_occurrence_id: vulnerability.finding&.id,
         workflow_id: response.payload[:workflow_id],
         workflow_name: :sast_fp_detection
       )
