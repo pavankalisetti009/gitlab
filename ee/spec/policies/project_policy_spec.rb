@@ -175,13 +175,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'who is not a team member' do
         it do
-          is_expected.to be_disallowed(*(developer_permissions - auditor_permissions))
-          is_expected.to be_disallowed(*maintainer_permissions)
-          is_expected.to be_disallowed(*owner_permissions)
-          is_expected.to be_disallowed(*(guest_permissions - auditor_permissions))
-          is_expected.to be_disallowed(*(planner_permissions - auditor_permissions - [:read_confidential_issues]))
-          is_expected.to be_allowed(*auditor_permission_exclusions)
-          is_expected.to be_allowed(*auditor_permissions)
+          expect_disallowed(*(developer_permissions - auditor_permissions))
+          expect_disallowed(*maintainer_permissions)
+          expect_disallowed(*owner_permissions)
+          expect_disallowed(*(guest_permissions - auditor_permissions))
+          expect_disallowed(*(planner_permissions - auditor_permissions - [:read_confidential_issues]))
+          expect_allowed(*auditor_permission_exclusions)
+          expect_allowed(*auditor_permissions)
         end
 
         context 'with private project' do
@@ -190,13 +190,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           let(:auditor_permission_exclusions) { [:fork_project, :create_merge_request_in, :read_project_for_iids] }
 
           it do
-            is_expected.to be_disallowed(*(developer_permissions - auditor_permissions))
-            is_expected.to be_disallowed(*maintainer_permissions)
-            is_expected.to be_disallowed(*owner_permissions)
-            is_expected.to be_disallowed(*(guest_permissions - auditor_permissions))
-            is_expected.to be_disallowed(*(planner_permissions - auditor_permissions - [:read_confidential_issues]))
-            is_expected.to be_disallowed(*auditor_permission_exclusions)
-            is_expected.to be_allowed(*(auditor_permissions - auditor_permission_exclusions))
+            expect_disallowed(*(developer_permissions - auditor_permissions))
+            expect_disallowed(*maintainer_permissions)
+            expect_disallowed(*owner_permissions)
+            expect_disallowed(*(guest_permissions - auditor_permissions))
+            expect_disallowed(*(planner_permissions - auditor_permissions - [:read_confidential_issues]))
+            expect_disallowed(*auditor_permission_exclusions)
+            expect_allowed(*(auditor_permissions - auditor_permission_exclusions))
           end
         end
       end
@@ -207,12 +207,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         it do
-          is_expected.to be_disallowed(*(developer_permissions - auditor_permissions))
-          is_expected.to be_disallowed(*maintainer_permissions)
-          is_expected.to be_disallowed(*owner_permissions)
-          is_expected.to be_disallowed(*(planner_permissions - auditor_permissions - auditor_as_guest_exclusions))
-          is_expected.to be_allowed(*(guest_permissions - auditor_permissions))
-          is_expected.to be_allowed(*auditor_permissions)
+          expect_disallowed(*(developer_permissions - auditor_permissions))
+          expect_disallowed(*maintainer_permissions)
+          expect_disallowed(*owner_permissions)
+          expect_disallowed(*(planner_permissions - auditor_permissions - auditor_as_guest_exclusions))
+          expect_allowed(*(guest_permissions - auditor_permissions))
+          expect_allowed(*auditor_permissions)
         end
       end
 
@@ -275,7 +275,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(iterations: false)
         end
 
-        it { is_expected.to be_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
+        it { expect_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
       end
 
       context 'when feature is enabled' do
@@ -283,7 +283,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(iterations: true)
         end
 
-        it { is_expected.to be_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
+        it { expect_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
       end
     end
 
@@ -296,7 +296,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(iterations: false)
         end
 
-        it { is_expected.to be_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
+        it { expect_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
       end
 
       context 'when feature is enabled' do
@@ -304,14 +304,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(iterations: true)
         end
 
-        it { is_expected.to be_allowed(:read_iteration, :create_iteration, :admin_iteration) }
+        it { expect_allowed(:read_iteration, :create_iteration, :admin_iteration) }
 
         context 'when issues are disabled but merge requests are enabled' do
           before do
             project.update!(issues_enabled: false)
           end
 
-          it { is_expected.to be_allowed(:read_iteration, :create_iteration, :admin_iteration) }
+          it { expect_allowed(:read_iteration, :create_iteration, :admin_iteration) }
         end
 
         context 'when issues are enabled but merge requests are enabled' do
@@ -319,7 +319,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             project.update!(merge_requests_enabled: false)
           end
 
-          it { is_expected.to be_allowed(:read_iteration, :create_iteration, :admin_iteration) }
+          it { expect_allowed(:read_iteration, :create_iteration, :admin_iteration) }
         end
 
         context 'when both issues and merge requests are disabled' do
@@ -327,7 +327,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             project.update!(issues_enabled: false, merge_requests_enabled: false)
           end
 
-          it { is_expected.to be_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
+          it { expect_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
         end
 
         where(:the_user, :allowed, :disallowed) do
@@ -341,8 +341,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         with_them do
           let(:current_user) { the_user }
 
-          it { is_expected.to be_allowed(*allowed) }
-          it { is_expected.to be_disallowed(*disallowed) }
+          it { expect_allowed(*allowed) }
+          it { expect_disallowed(*disallowed) }
         end
 
         context 'when the project is private' do
@@ -351,13 +351,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           context 'when user is not a member' do
             let(:current_user) { non_member }
 
-            it { is_expected.to be_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
+            it { expect_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
           end
 
           context 'when user is logged out' do
             let(:current_user) { anonymous }
 
-            it { is_expected.to be_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
+            it { expect_disallowed(:read_iteration, :create_iteration, :admin_iteration) }
           end
         end
       end
@@ -404,24 +404,24 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:current_user) { admin }
 
         context 'when admin mode enabled', :enable_admin_mode do
-          it { is_expected.to be_allowed(:admin_mirror) }
+          it { expect_allowed(:admin_mirror) }
         end
 
         context 'when admin mode disabled' do
-          it { is_expected.to be_disallowed(:admin_mirror) }
+          it { expect_disallowed(:admin_mirror) }
         end
       end
 
       context 'with owner' do
         let(:current_user) { owner }
 
-        it { is_expected.to be_allowed(:admin_mirror) }
+        it { expect_allowed(:admin_mirror) }
       end
 
       context 'with developer' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_disallowed(:admin_mirror) }
+        it { expect_disallowed(:admin_mirror) }
       end
     end
 
@@ -434,18 +434,18 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:current_user) { admin }
 
         context 'when admin mode enabled', :enable_admin_mode do
-          it { is_expected.to be_allowed(:admin_mirror) }
+          it { expect_allowed(:admin_mirror) }
         end
 
         context 'when admin mode disabled' do
-          it { is_expected.to be_disallowed(:admin_mirror) }
+          it { expect_disallowed(:admin_mirror) }
         end
       end
 
       context 'with owner' do
         let(:current_user) { owner }
 
-        it { is_expected.to be_disallowed(:admin_mirror) }
+        it { expect_disallowed(:admin_mirror) }
       end
     end
 
@@ -457,13 +457,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'with admin' do
         let(:current_user) { admin }
 
-        it { is_expected.to be_disallowed(:admin_mirror) }
+        it { expect_disallowed(:admin_mirror) }
       end
 
       context 'with owner' do
         let(:current_user) { owner }
 
-        it { is_expected.to be_disallowed(:admin_mirror) }
+        it { expect_disallowed(:admin_mirror) }
       end
     end
 
@@ -476,18 +476,18 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:current_user) { admin }
 
         context 'when admin mode enabled', :enable_admin_mode do
-          it { is_expected.to be_allowed(:admin_mirror) }
+          it { expect_allowed(:admin_mirror) }
         end
 
         context 'when admin mode disabled' do
-          it { is_expected.to be_disallowed(:admin_mirror) }
+          it { expect_disallowed(:admin_mirror) }
         end
       end
 
       context 'with owner' do
         let(:current_user) { owner }
 
-        it { is_expected.to be_allowed(:admin_mirror) }
+        it { expect_allowed(:admin_mirror) }
       end
     end
   end
@@ -683,15 +683,15 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
 
       context 'group without restriction' do
-        it { is_expected.to be_allowed(:read_project) }
-        it { is_expected.to be_allowed(:read_issue) }
-        it { is_expected.to be_allowed(:read_merge_request) }
-        it { is_expected.to be_allowed(:read_milestone) }
-        it { is_expected.to be_allowed(:read_container_image) }
-        it { is_expected.to be_allowed(:read_package) }
-        it { is_expected.to be_allowed(:create_package) }
-        it { is_expected.to be_allowed(:destroy_package) }
-        it { is_expected.to be_allowed(:admin_package) }
+        it { expect_allowed(:read_project) }
+        it { expect_allowed(:read_issue) }
+        it { expect_allowed(:read_merge_request) }
+        it { expect_allowed(:read_milestone) }
+        it { expect_allowed(:read_container_image) }
+        it { expect_allowed(:read_package) }
+        it { expect_allowed(:create_package) }
+        it { expect_allowed(:destroy_package) }
+        it { expect_allowed(:admin_package) }
       end
 
       context 'group with restriction' do
@@ -702,71 +702,71 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context 'address is within the range' do
           let(:range) { '192.168.0.0/24' }
 
-          it { is_expected.to be_allowed(:read_project) }
-          it { is_expected.to be_allowed(:read_issue) }
-          it { is_expected.to be_allowed(:read_merge_request) }
-          it { is_expected.to be_allowed(:read_milestone) }
-          it { is_expected.to be_allowed(:read_container_image) }
-          it { is_expected.to be_allowed(:create_container_image) }
-          it { is_expected.to be_allowed(:read_package) }
-          it { is_expected.to be_allowed(:create_package) }
-          it { is_expected.to be_allowed(:destroy_package) }
-          it { is_expected.to be_allowed(:admin_package) }
+          it { expect_allowed(:read_project) }
+          it { expect_allowed(:read_issue) }
+          it { expect_allowed(:read_merge_request) }
+          it { expect_allowed(:read_milestone) }
+          it { expect_allowed(:read_container_image) }
+          it { expect_allowed(:create_container_image) }
+          it { expect_allowed(:read_package) }
+          it { expect_allowed(:create_package) }
+          it { expect_allowed(:destroy_package) }
+          it { expect_allowed(:admin_package) }
         end
 
         context 'address is outside the range' do
           let(:range) { '10.0.0.0/8' }
 
-          it { is_expected.to be_disallowed(:read_project) }
-          it { is_expected.to be_disallowed(:read_issue) }
-          it { is_expected.to be_disallowed(:read_merge_request) }
-          it { is_expected.to be_disallowed(:read_milestone) }
-          it { is_expected.to be_disallowed(:read_container_image) }
-          it { is_expected.to be_disallowed(:create_container_image) }
-          it { is_expected.to be_disallowed(:read_package) }
-          it { is_expected.to be_disallowed(:create_package) }
-          it { is_expected.to be_disallowed(:destroy_package) }
-          it { is_expected.to be_disallowed(:admin_package) }
+          it { expect_disallowed(:read_project) }
+          it { expect_disallowed(:read_issue) }
+          it { expect_disallowed(:read_merge_request) }
+          it { expect_disallowed(:read_milestone) }
+          it { expect_disallowed(:read_container_image) }
+          it { expect_disallowed(:create_container_image) }
+          it { expect_disallowed(:read_package) }
+          it { expect_disallowed(:create_package) }
+          it { expect_disallowed(:destroy_package) }
+          it { expect_disallowed(:admin_package) }
 
           context 'with admin enabled', :enable_admin_mode do
-            it { is_expected.to be_allowed(:read_project) }
-            it { is_expected.to be_allowed(:read_issue) }
-            it { is_expected.to be_allowed(:read_merge_request) }
-            it { is_expected.to be_allowed(:read_milestone) }
-            it { is_expected.to be_allowed(:read_container_image) }
-            it { is_expected.to be_allowed(:create_container_image) }
-            it { is_expected.to be_allowed(:read_package) }
-            it { is_expected.to be_allowed(:create_package) }
-            it { is_expected.to be_allowed(:destroy_package) }
-            it { is_expected.to be_allowed(:admin_package) }
+            it { expect_allowed(:read_project) }
+            it { expect_allowed(:read_issue) }
+            it { expect_allowed(:read_merge_request) }
+            it { expect_allowed(:read_milestone) }
+            it { expect_allowed(:read_container_image) }
+            it { expect_allowed(:create_container_image) }
+            it { expect_allowed(:read_package) }
+            it { expect_allowed(:create_package) }
+            it { expect_allowed(:destroy_package) }
+            it { expect_allowed(:admin_package) }
           end
 
           context 'with admin disabled' do
-            it { is_expected.to be_disallowed(:read_project) }
-            it { is_expected.to be_disallowed(:read_issue) }
-            it { is_expected.to be_disallowed(:read_merge_request) }
-            it { is_expected.to be_disallowed(:read_milestone) }
-            it { is_expected.to be_disallowed(:read_container_image) }
-            it { is_expected.to be_disallowed(:create_container_image) }
-            it { is_expected.to be_disallowed(:read_package) }
-            it { is_expected.to be_disallowed(:create_package) }
-            it { is_expected.to be_disallowed(:destroy_package) }
-            it { is_expected.to be_disallowed(:admin_package) }
+            it { expect_disallowed(:read_project) }
+            it { expect_disallowed(:read_issue) }
+            it { expect_disallowed(:read_merge_request) }
+            it { expect_disallowed(:read_milestone) }
+            it { expect_disallowed(:read_container_image) }
+            it { expect_disallowed(:create_container_image) }
+            it { expect_disallowed(:read_package) }
+            it { expect_disallowed(:create_package) }
+            it { expect_disallowed(:destroy_package) }
+            it { expect_disallowed(:admin_package) }
           end
 
           context 'with auditor' do
             let(:current_user) { create(:user, :auditor) }
 
-            it { is_expected.to be_allowed(:read_project) }
-            it { is_expected.to be_allowed(:read_issue) }
-            it { is_expected.to be_allowed(:read_merge_request) }
-            it { is_expected.to be_allowed(:read_milestone) }
-            it { is_expected.to be_allowed(:read_container_image) }
-            it { is_expected.to be_allowed(:create_container_image) }
-            it { is_expected.to be_allowed(:read_package) }
-            it { is_expected.to be_allowed(:create_package) }
-            it { is_expected.to be_allowed(:destroy_package) }
-            it { is_expected.to be_allowed(:admin_package) }
+            it { expect_allowed(:read_project) }
+            it { expect_allowed(:read_issue) }
+            it { expect_allowed(:read_merge_request) }
+            it { expect_allowed(:read_milestone) }
+            it { expect_allowed(:read_container_image) }
+            it { expect_allowed(:create_container_image) }
+            it { expect_allowed(:read_package) }
+            it { expect_allowed(:create_package) }
+            it { expect_allowed(:destroy_package) }
+            it { expect_allowed(:admin_package) }
           end
         end
       end
@@ -774,7 +774,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'without group' do
         let(:project) { create(:project, :repository, namespace: current_user.namespace) }
 
-        it { is_expected.to be_allowed(:read_project) }
+        it { expect_allowed(:read_project) }
       end
     end
   end
@@ -788,15 +788,15 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when "Security and compliance" is disabled' do
         let(:access_level) { Featurable::DISABLED }
 
-        it { is_expected.to be_disallowed(:access_security_and_compliance) }
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
-        it { is_expected.to be_disallowed(:read_vulnerability) }
+        it { expect_disallowed(:access_security_and_compliance) }
+        it { expect_disallowed(:admin_vulnerability) }
+        it { expect_disallowed(:read_vulnerability) }
       end
 
       context 'when "Security and compliance" is enabled' do
         let(:access_level) { Featurable::PRIVATE }
 
-        it { is_expected.to be_allowed(:access_security_and_compliance) }
+        it { expect_allowed(:access_security_and_compliance) }
       end
     end
 
@@ -833,10 +833,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'with developer' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_allowed(:read_vulnerability_feedback) }
-        it { is_expected.to be_disallowed(:create_vulnerability_feedback) }
-        it { is_expected.to be_disallowed(:update_vulnerability_feedback) }
-        it { is_expected.to be_disallowed(:destroy_vulnerability_feedback) }
+        it { expect_allowed(:read_vulnerability_feedback) }
+        it { expect_disallowed(:create_vulnerability_feedback) }
+        it { expect_disallowed(:update_vulnerability_feedback) }
+        it { expect_disallowed(:destroy_vulnerability_feedback) }
       end
 
       where(permission: %i[
@@ -851,11 +851,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           let(:current_user) { admin }
 
           context 'when admin mode enabled', :enable_admin_mode do
-            it { is_expected.to be_allowed(permission) }
+            it { expect_allowed(permission) }
           end
 
           context 'when admin mode disabled' do
-            it { is_expected.to be_disallowed(permission) }
+            it { expect_disallowed(permission) }
           end
         end
 
@@ -863,7 +863,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           context "with #{role}" do
             let(:current_user) { send(role) }
 
-            it { is_expected.to be_allowed(permission) }
+            it { expect_allowed(permission) }
           end
         end
 
@@ -871,7 +871,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           context "with #{role}" do
             let(:current_user) { send(role) }
 
-            it { is_expected.to be_disallowed(permission) }
+            it { expect_disallowed(permission) }
           end
         end
       end
@@ -889,7 +889,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         include_context 'when security dashboard feature is not available'
 
-        it { is_expected.to be_disallowed(:read_project_security_dashboard) }
+        it { expect_disallowed(:read_project_security_dashboard) }
       end
     end
 
@@ -899,10 +899,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         include_context 'when security dashboard feature is not available'
 
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
-        it { is_expected.to be_disallowed(:read_vulnerability) }
-        it { is_expected.to be_disallowed(:create_vulnerability_export) }
-        it { is_expected.to be_disallowed(:create_vulnerability_archive_export) }
+        it { expect_disallowed(:admin_vulnerability) }
+        it { expect_disallowed(:read_vulnerability) }
+        it { expect_disallowed(:create_vulnerability_export) }
+        it { expect_disallowed(:create_vulnerability_archive_export) }
       end
     end
 
@@ -929,12 +929,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           project.reload
         end
 
-        it { is_expected.to be_allowed(*permissions) }
+        it { expect_allowed(*permissions) }
 
         context 'with user other than security bot' do
           let_it_be(:current_user) { create(:user) }
 
-          it { is_expected.to be_disallowed(*permissions) }
+          it { expect_disallowed(*permissions) }
         end
       end
     end
@@ -950,8 +950,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         with_them do
           let(:current_user) { public_send(role) }
 
-          it { is_expected.to be_allowed(:read_security_orchestration_policies) }
-          it { is_expected.to be_disallowed(:update_security_orchestration_policy_project) }
+          it { expect_allowed(:read_security_orchestration_policies) }
+          it { expect_disallowed(:update_security_orchestration_policy_project) }
         end
       end
 
@@ -961,9 +961,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         with_them do
           let(:current_user) { public_send(role) }
 
-          it { is_expected.to be_allowed(:read_security_orchestration_policies) }
-          it { is_expected.to be_allowed(:update_security_orchestration_policy_project) }
-          it { is_expected.to be_allowed(:modify_security_policy) }
+          it { expect_allowed(:read_security_orchestration_policies) }
+          it { expect_allowed(:update_security_orchestration_policy_project) }
+          it { expect_allowed(:modify_security_policy) }
 
           context 'when security_orchestration_policy_configuration is present' do
             let_it_be(:security_policy_management_project) { create(:project) }
@@ -972,7 +972,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               create(:security_orchestration_policy_configuration, project: project, security_policy_management_project: security_policy_management_project)
             end
 
-            it { is_expected.to be_disallowed(:modify_security_policy) }
+            it { expect_disallowed(:modify_security_policy) }
           end
         end
       end
@@ -990,8 +990,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           with_them do
             let(:current_user) { public_send(role) }
 
-            it { is_expected.to be_allowed(:read_security_orchestration_policies) }
-            it { is_expected.to be_disallowed(:update_security_orchestration_policy_project) }
+            it { expect_allowed(:read_security_orchestration_policies) }
+            it { expect_disallowed(:update_security_orchestration_policy_project) }
           end
         end
 
@@ -1001,8 +1001,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           with_them do
             let(:current_user) { public_send(role) }
 
-            it { is_expected.to be_disallowed(:read_security_orchestration_policies) }
-            it { is_expected.to be_disallowed(:update_security_orchestration_policy_project) }
+            it { expect_disallowed(:read_security_orchestration_policies) }
+            it { expect_disallowed(:update_security_orchestration_policy_project) }
           end
         end
       end
@@ -1022,8 +1022,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             security_policy_management_project.add_guest(developer)
           end
 
-          it { is_expected.to be_disallowed(:read_security_orchestration_policy_project) }
-          it { is_expected.to be_disallowed(:modify_security_policy) }
+          it { expect_disallowed(:read_security_orchestration_policy_project) }
+          it { expect_disallowed(:modify_security_policy) }
         end
 
         context 'when current_user is reporter of security_policy_management_project' do
@@ -1033,8 +1033,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             security_policy_management_project.add_reporter(developer)
           end
 
-          it { is_expected.to be_allowed(:read_security_orchestration_policy_project) }
-          it { is_expected.to be_disallowed(:modify_security_policy) }
+          it { expect_allowed(:read_security_orchestration_policy_project) }
+          it { expect_disallowed(:modify_security_policy) }
         end
 
         context 'when current_user is developer of security_policy_management_project' do
@@ -1044,14 +1044,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             security_policy_management_project.add_developer(developer)
           end
 
-          it { is_expected.to be_allowed(:modify_security_policy) }
+          it { expect_allowed(:modify_security_policy) }
         end
 
         context 'when current_user is not member of security_policy_management_project' do
           let(:project) { security_policy_management_project }
 
-          it { is_expected.to be_disallowed(:read_security_orchestration_policy_project) }
-          it { is_expected.to be_disallowed(:modify_security_policy) }
+          it { expect_disallowed(:read_security_orchestration_policy_project) }
+          it { expect_disallowed(:modify_security_policy) }
         end
       end
     end
@@ -1068,7 +1068,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           with_them do
             let(:current_user) { public_send(role) }
 
-            it { is_expected.to be_allowed(:read_coverage_fuzzing) }
+            it { expect_allowed(:read_coverage_fuzzing) }
           end
         end
 
@@ -1076,11 +1076,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           let(:current_user) { admin }
 
           context 'when admin mode enabled', :enable_admin_mode do
-            it { is_expected.to be_allowed(:read_coverage_fuzzing) }
+            it { expect_allowed(:read_coverage_fuzzing) }
           end
 
           context 'when admin mode disabled' do
-            it { is_expected.to be_disallowed(:read_coverage_fuzzing) }
+            it { expect_disallowed(:read_coverage_fuzzing) }
           end
         end
 
@@ -1090,20 +1090,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           with_them do
             let(:current_user) { public_send(role) }
 
-            it { is_expected.to be_disallowed(:read_coverage_fuzzing) }
+            it { expect_disallowed(:read_coverage_fuzzing) }
           end
         end
 
         context 'with non member' do
           let(:current_user) { non_member }
 
-          it { is_expected.to be_disallowed(:read_coverage_fuzzing) }
+          it { expect_disallowed(:read_coverage_fuzzing) }
         end
 
         context 'with anonymous' do
           let(:current_user) { anonymous }
 
-          it { is_expected.to be_disallowed(:read_coverage_fuzzing) }
+          it { expect_disallowed(:read_coverage_fuzzing) }
         end
       end
 
@@ -1114,7 +1114,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(coverage_fuzzing: true)
         end
 
-        it { is_expected.to be_disallowed(:read_coverage_fuzzing) }
+        it { expect_disallowed(:read_coverage_fuzzing) }
       end
     end
 
@@ -1127,13 +1127,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context 'when user is maintainer' do
           let(:current_user) { maintainer }
 
-          it { is_expected.to be_allowed(:admin_security_attributes) }
+          it { expect_allowed(:admin_security_attributes) }
         end
 
         context 'when user is developer' do
           let(:current_user) { developer }
 
-          it { is_expected.to be_disallowed(:admin_security_attributes) }
+          it { expect_disallowed(:admin_security_attributes) }
         end
       end
     end
@@ -1177,7 +1177,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             enable_admin_mode!(current_user) if role == :admin
           end
 
-          it { is_expected.to be_disallowed(policy) }
+          it { expect_disallowed(policy) }
         end
       end
     end
@@ -1227,16 +1227,16 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:current_user) { admin }
 
         context 'when admin mode enabled', :enable_admin_mode do
-          it { is_expected.to be_allowed(:remove_project) }
+          it { expect_allowed(:remove_project) }
         end
 
         context 'when admin mode disabled' do
-          it { is_expected.to be_disallowed(:remove_project) }
+          it { expect_disallowed(:remove_project) }
 
           context 'and admin owns the project' do
             let_it_be(:project) { create(:project, :public, namespace: admin.namespace) }
 
-            it { is_expected.to be_disallowed(:remove_project) }
+            it { expect_disallowed(:remove_project) }
           end
         end
       end
@@ -1244,7 +1244,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'with owner' do
         let(:current_user) { owner }
 
-        it { is_expected.to be_disallowed(:remove_project) }
+        it { expect_disallowed(:remove_project) }
       end
     end
 
@@ -1256,7 +1256,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'with maintainer' do
         let(:current_user) { maintainer }
 
-        it { is_expected.to be_allowed(:admin_feature_flags_issue_links) }
+        it { expect_allowed(:admin_feature_flags_issue_links) }
 
         context 'when repository is disabled' do
           before do
@@ -1267,28 +1267,28 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             )
           end
 
-          it { is_expected.to be_disallowed(:admin_feature_flags_issue_links) }
+          it { expect_disallowed(:admin_feature_flags_issue_links) }
         end
       end
 
       context 'with developer' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_allowed(:admin_feature_flags_issue_links) }
+        it { expect_allowed(:admin_feature_flags_issue_links) }
 
         context 'when feature is unlicensed' do
           before do
             stub_licensed_features(feature_flags_related_issues: false)
           end
 
-          it { is_expected.to be_disallowed(:admin_feature_flags_issue_links) }
+          it { expect_disallowed(:admin_feature_flags_issue_links) }
         end
       end
 
       context 'with reporter' do
         let(:current_user) { reporter }
 
-        it { is_expected.to be_disallowed(:admin_feature_flags_issue_links) }
+        it { expect_disallowed(:admin_feature_flags_issue_links) }
       end
     end
 
@@ -1300,18 +1300,18 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         let(:current_user) { admin }
 
-        it { is_expected.to be_disallowed(:admin_software_license_policy) }
+        it { expect_disallowed(:admin_software_license_policy) }
       end
 
       context 'with admin' do
         let(:current_user) { admin }
 
         context 'when admin mode enabled', :enable_admin_mode do
-          it { is_expected.to be_allowed(:admin_software_license_policy) }
+          it { expect_allowed(:admin_software_license_policy) }
         end
 
         context 'when admin mode disabled' do
-          it { is_expected.to be_disallowed(:admin_software_license_policy) }
+          it { expect_disallowed(:admin_software_license_policy) }
         end
       end
 
@@ -1319,7 +1319,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context "with #{role}" do
           let(:current_user) { send(role) }
 
-          it { is_expected.to be_allowed(:admin_software_license_policy) }
+          it { expect_allowed(:admin_software_license_policy) }
         end
       end
 
@@ -1327,7 +1327,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context "with #{role}" do
           let(:current_user) { send(role) }
 
-          it { is_expected.to be_disallowed(:admin_software_license_policy) }
+          it { expect_disallowed(:admin_software_license_policy) }
         end
       end
     end
@@ -1364,7 +1364,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               stub_licensed_features(feature => false)
             end
 
-            it { is_expected.to be_disallowed(policy) }
+            it { expect_disallowed(policy) }
           end
         end
       end
@@ -1376,20 +1376,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when user is auditor' do
         let(:current_user) { create(:user, :auditor) }
 
-        it { is_expected.to be_allowed(policy) }
+        it { expect_allowed(policy) }
       end
 
       context 'when user is not auditor' do
         context 'with developer access' do
           let(:current_user) { developer }
 
-          it { is_expected.to be_allowed(policy) }
+          it { expect_allowed(policy) }
         end
 
         context 'without developer access' do
           let(:current_user) { create(:user) }
 
-          it { is_expected.to be_disallowed(policy) }
+          it { expect_disallowed(policy) }
         end
       end
     end
@@ -1409,7 +1409,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_disallowed(:change_push_rules) }
+      it { expect_disallowed(:change_push_rules) }
     end
 
     context 'when push_rules is enabled by the current license' do
@@ -1422,19 +1422,19 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when the user is an admin', :enable_admin_mode do
         let(:current_user) { admin }
 
-        it { is_expected.to be_allowed(:change_push_rules) }
+        it { expect_allowed(:change_push_rules) }
       end
 
       context 'when the user is a maintainer' do
         let(:current_user) { maintainer }
 
-        it { is_expected.to be_allowed(:change_push_rules) }
+        it { expect_allowed(:change_push_rules) }
       end
 
       context 'when the user is a developer' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_disallowed(:change_push_rules) }
+        it { expect_disallowed(:change_push_rules) }
       end
     end
 
@@ -1457,15 +1457,15 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when the user is an admin', :enable_admin_mode do
         let(:current_user) { admin }
 
-        it { is_expected.to be_allowed(:change_commit_committer_check) }
-        it { is_expected.to be_allowed(:read_commit_committer_check) }
+        it { expect_allowed(:change_commit_committer_check) }
+        it { expect_allowed(:read_commit_committer_check) }
       end
 
       context 'the user is a maintainer' do
         let(:current_user) { maintainer }
 
-        it { is_expected.to be_allowed(:change_commit_committer_check) }
-        it { is_expected.to be_allowed(:read_commit_committer_check) }
+        it { expect_allowed(:change_commit_committer_check) }
+        it { expect_allowed(:read_commit_committer_check) }
       end
 
       context 'the user is a developer' do
@@ -1483,8 +1483,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_disallowed(:read_commit_committer_name_check) }
-      it { is_expected.to be_disallowed(:change_commit_committer_name_check) }
+      it { expect_disallowed(:read_commit_committer_name_check) }
+      it { expect_disallowed(:change_commit_committer_name_check) }
     end
 
     context 'when commit_committer_name_check is enabled by the current license' do
@@ -1495,22 +1495,22 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when the user is an admin', :enable_admin_mode do
         let(:current_user) { admin }
 
-        it { is_expected.to be_allowed(:read_commit_committer_name_check) }
-        it { is_expected.to be_allowed(:change_commit_committer_name_check) }
+        it { expect_allowed(:read_commit_committer_name_check) }
+        it { expect_allowed(:change_commit_committer_name_check) }
       end
 
       context 'when the user is a maintainer' do
         let(:current_user) { maintainer }
 
-        it { is_expected.to be_allowed(:read_commit_committer_name_check) }
-        it { is_expected.to be_allowed(:change_commit_committer_name_check) }
+        it { expect_allowed(:read_commit_committer_name_check) }
+        it { expect_allowed(:change_commit_committer_name_check) }
       end
 
       context 'the user is a developer' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_disallowed(:read_commit_committer_name_check) }
-        it { is_expected.to be_disallowed(:change_commit_committer_name_check) }
+        it { expect_disallowed(:read_commit_committer_name_check) }
+        it { expect_disallowed(:change_commit_committer_name_check) }
       end
     end
 
@@ -1533,15 +1533,15 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when the user is an admin', :enable_admin_mode do
         let(:current_user) { admin }
 
-        it { is_expected.to be_allowed(:change_reject_unsigned_commits) }
-        it { is_expected.to be_allowed(:read_reject_unsigned_commits) }
+        it { expect_allowed(:change_reject_unsigned_commits) }
+        it { expect_allowed(:read_reject_unsigned_commits) }
       end
 
       context 'when the user is a maintainer' do
         let(:current_user) { maintainer }
 
-        it { is_expected.to be_allowed(:change_reject_unsigned_commits) }
-        it { is_expected.to be_allowed(:read_reject_unsigned_commits) }
+        it { expect_allowed(:change_reject_unsigned_commits) }
+        it { expect_allowed(:read_reject_unsigned_commits) }
       end
 
       context 'when the user is a developer' do
@@ -1559,8 +1559,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_disallowed(:read_reject_non_dco_commits) }
-      it { is_expected.to be_disallowed(:change_reject_non_dco_commits) }
+      it { expect_disallowed(:read_reject_non_dco_commits) }
+      it { expect_disallowed(:change_reject_non_dco_commits) }
     end
 
     context 'when reject_non_dco_commits is enabled by the current license' do
@@ -1571,22 +1571,22 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when the user is an admin', :enable_admin_mode do
         let(:current_user) { admin }
 
-        it { is_expected.to be_allowed(:read_reject_non_dco_commits) }
-        it { is_expected.to be_allowed(:change_reject_non_dco_commits) }
+        it { expect_allowed(:read_reject_non_dco_commits) }
+        it { expect_allowed(:change_reject_non_dco_commits) }
       end
 
       context 'when the user is a maintainer' do
         let(:current_user) { maintainer }
 
-        it { is_expected.to be_allowed(:read_reject_non_dco_commits) }
-        it { is_expected.to be_allowed(:change_reject_non_dco_commits) }
+        it { expect_allowed(:read_reject_non_dco_commits) }
+        it { expect_allowed(:change_reject_non_dco_commits) }
       end
 
       context 'when the user is a developer' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_disallowed(:read_reject_non_dco_commits) }
-        it { is_expected.to be_disallowed(:change_reject_non_dco_commits) }
+        it { expect_disallowed(:read_reject_non_dco_commits) }
+        it { expect_disallowed(:change_reject_non_dco_commits) }
       end
     end
 
@@ -1598,13 +1598,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when the user is a developer' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_allowed(:read_dora4_analytics) }
+        it { expect_allowed(:read_dora4_analytics) }
       end
 
       context 'when the user is an admin', :enable_admin_mode do
         let(:current_user) { admin }
 
-        it { is_expected.to be_allowed(:read_dora4_analytics) }
+        it { expect_allowed(:read_dora4_analytics) }
       end
     end
 
@@ -1703,7 +1703,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_licensed_features(code_review_analytics: false)
           end
 
-          it { is_expected.to be_disallowed(:read_code_review_analytics) }
+          it { expect_disallowed(:read_code_review_analytics) }
         end
       end
     end
@@ -1921,14 +1921,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               with_them do
                 let(:current_user) { public_send(role) }
 
-                it { is_expected.to be_allowed(permission) }
+                it { expect_allowed(permission) }
               end
             end
 
             context 'allows admin', :enable_admin_mode do
               let(:current_user) { admin }
 
-              it { is_expected.to be_allowed(permission) }
+              it { expect_allowed(permission) }
             end
           end
 
@@ -1936,7 +1936,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             let(:current_user) { owner }
             let(:project) { public_project }
 
-            it { is_expected.to be_disallowed(permission) }
+            it { expect_disallowed(permission) }
           end
         end
 
@@ -1951,14 +1951,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             with_them do
               let(:current_user) { public_send(role) }
 
-              it { is_expected.to be_disallowed(permission) }
+              it { expect_disallowed(permission) }
             end
           end
 
           context 'disallows admin', :enable_admin_mode do
             let(:current_user) { admin }
 
-            it { is_expected.to be_disallowed(permission) }
+            it { expect_disallowed(permission) }
           end
         end
       end
@@ -2214,14 +2214,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             let_it_be(:project) { create(:project, group: group) }
 
             it { is_expected.not_to be_allowed(:create_resource_access_tokens) }
-            it { is_expected.to be_allowed(:read_resource_access_tokens) }
-            it { is_expected.to be_allowed(:destroy_resource_access_tokens) }
+            it { expect_allowed(:read_resource_access_tokens) }
+            it { expect_allowed(:destroy_resource_access_tokens) }
           end
 
           context 'when project belongs to personal namespace' do
-            it { is_expected.to be_allowed(:create_resource_access_tokens) }
-            it { is_expected.to be_allowed(:read_resource_access_tokens) }
-            it { is_expected.to be_allowed(:destroy_resource_access_tokens) }
+            it { expect_allowed(:create_resource_access_tokens) }
+            it { expect_allowed(:read_resource_access_tokens) }
+            it { expect_allowed(:destroy_resource_access_tokens) }
           end
         end
 
@@ -2263,13 +2263,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it_behaves_like 'GitLab.com Paid plan resource access tokens'
 
           context 'create resource access tokens' do
-            it { is_expected.to be_allowed(:create_resource_access_tokens) }
+            it { expect_allowed(:create_resource_access_tokens) }
 
             context 'with a personal namespace project' do
               let(:namespace) { create(:namespace_with_plan, plan: :bronze_plan) }
               let(:project) { create(:project, namespace: namespace) }
 
-              it { is_expected.to be_allowed(:create_resource_access_tokens) }
+              it { expect_allowed(:create_resource_access_tokens) }
             end
 
             context 'when resource access token creation is not allowed' do
@@ -2294,11 +2294,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           end
 
           context 'read resource access tokens' do
-            it { is_expected.to be_allowed(:read_resource_access_tokens) }
+            it { expect_allowed(:read_resource_access_tokens) }
           end
 
           context 'destroy resource access tokens' do
-            it { is_expected.to be_allowed(:destroy_resource_access_tokens) }
+            it { expect_allowed(:destroy_resource_access_tokens) }
           end
         end
 
@@ -2326,7 +2326,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           let(:current_user) { auditor }
 
           context 'read resource access tokens' do
-            it { is_expected.to be_allowed(:read_resource_access_tokens) }
+            it { expect_allowed(:read_resource_access_tokens) }
           end
 
           context 'cannot create resource access tokens' do
@@ -2370,7 +2370,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             context "for #{role} user" do
               let(:current_user) { send(role) }
 
-              it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
+              it { expect_disallowed(*all_read_analytics_permissions) }
             end
           end
         end
@@ -2382,26 +2382,26 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             context "for #{role} user" do
               let(:current_user) { send(role) }
 
-              it { is_expected.to be_disallowed(*all_read_analytics_permissions) }
+              it { expect_disallowed(*all_read_analytics_permissions) }
             end
           end
 
           context 'for developer' do
             let(:current_user) { developer }
 
-            it { is_expected.to be_allowed(*all_read_analytics_permissions) }
+            it { expect_allowed(*all_read_analytics_permissions) }
           end
 
           context 'for admin', :enable_admin_mode do
             let(:current_user) { admin }
 
-            it { is_expected.to be_allowed(*all_read_analytics_permissions) }
+            it { expect_allowed(*all_read_analytics_permissions) }
           end
 
           context 'for auditor' do
             let(:current_user) { auditor }
 
-            it { is_expected.to be_allowed(*all_read_analytics_permissions) }
+            it { expect_allowed(*all_read_analytics_permissions) }
           end
         end
 
@@ -2412,29 +2412,29 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             context "for #{role} user" do
               let(:current_user) { send(role) }
 
-              it { is_expected.to be_disallowed(:read_project_merge_request_analytics) }
-              it { is_expected.to be_disallowed(:read_code_review_analytics) }
-              it { is_expected.to be_disallowed(:read_cycle_analytics) }
-              it { is_expected.to be_allowed(:read_issue_analytics) }
+              it { expect_disallowed(:read_project_merge_request_analytics) }
+              it { expect_disallowed(:read_code_review_analytics) }
+              it { expect_disallowed(:read_cycle_analytics) }
+              it { expect_allowed(:read_issue_analytics) }
             end
           end
 
           context 'for developer' do
             let(:current_user) { developer }
 
-            it { is_expected.to be_allowed(*all_read_analytics_permissions) }
+            it { expect_allowed(*all_read_analytics_permissions) }
           end
 
           context 'for admin', :enable_admin_mode do
             let(:current_user) { admin }
 
-            it { is_expected.to be_allowed(*all_read_analytics_permissions) }
+            it { expect_allowed(*all_read_analytics_permissions) }
           end
 
           context 'for auditor' do
             let(:current_user) { auditor }
 
-            it { is_expected.to be_allowed(*all_read_analytics_permissions) }
+            it { expect_allowed(*all_read_analytics_permissions) }
           end
         end
       end
@@ -2595,8 +2595,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:current_user) { owner }
 
       context 'for a personal project' do
-        it { is_expected.to be_allowed(:import_project_members_from_another_project) }
-        it { is_expected.to be_allowed(:invite_member) }
+        it { expect_allowed(:import_project_members_from_another_project) }
+        it { expect_allowed(:invite_member) }
       end
 
       context 'for a project in a group' do
@@ -2608,8 +2608,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               project.group.update!(membership_lock: true)
             end
 
-            it { is_expected.to be_disallowed(:import_project_members_from_another_project) }
-            it { is_expected.to be_disallowed(:invite_member) }
+            it { expect_disallowed(:import_project_members_from_another_project) }
+            it { expect_disallowed(:invite_member) }
           end
 
           context 'via LDAP' do
@@ -2617,8 +2617,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               stub_application_setting(lock_memberships_to_ldap: true)
             end
 
-            it { is_expected.to be_disallowed(:import_project_members_from_another_project) }
-            it { is_expected.to be_disallowed(:invite_member) }
+            it { expect_disallowed(:import_project_members_from_another_project) }
+            it { expect_disallowed(:invite_member) }
           end
 
           context 'via SAML' do
@@ -2626,8 +2626,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               stub_application_setting(lock_memberships_to_saml: true)
             end
 
-            it { is_expected.to be_disallowed(:import_project_members_from_another_project) }
-            it { is_expected.to be_disallowed(:invite_member) }
+            it { expect_disallowed(:import_project_members_from_another_project) }
+            it { expect_disallowed(:invite_member) }
           end
         end
       end
@@ -2645,14 +2645,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         create(:namespace_ban, user: current_user, namespace: banned_group)
       end
 
-      it { is_expected.to be_allowed(:read_project) }
+      it { expect_allowed(:read_project) }
 
       context 'when the user is banned from the invited group' do
         before do
           create(:project_group_link, project: project, group: banned_group)
         end
 
-        it { is_expected.to be_disallowed(:read_project) }
+        it { expect_disallowed(:read_project) }
       end
 
       context 'when the user is banned from the invited subgroup' do
@@ -2660,7 +2660,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           create(:project_group_link, project: project, group: banned_subgroup)
         end
 
-        it { is_expected.to be_disallowed(:read_project) }
+        it { expect_disallowed(:read_project) }
       end
     end
 
@@ -2676,7 +2676,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
 
       context 'when user is not banned' do
-        it { is_expected.to be_allowed(:read_project) }
+        it { expect_allowed(:read_project) }
       end
 
       context 'when user is banned' do
@@ -2684,28 +2684,28 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           create(:namespace_ban, user: current_user, namespace: group.root_ancestor)
         end
 
-        it { is_expected.to be_disallowed(*described_class.own_ability_map.map.keys) }
+        it { expect_disallowed(*described_class.own_ability_map.map.keys) }
 
         context 'as an owner of the project' do
           before do
             project.add_owner(current_user)
           end
 
-          it { is_expected.to be_disallowed(*described_class.own_ability_map.map.keys) }
+          it { expect_disallowed(*described_class.own_ability_map.map.keys) }
         end
 
         context 'when project is inside subgroup' do
           let_it_be(:subgroup) { create(:group, :private, parent: group) }
           let_it_be(:project) { create(:project, :private, public_builds: false, group: subgroup) }
 
-          it { is_expected.to be_disallowed(*described_class.own_ability_map.map.keys) }
+          it { expect_disallowed(*described_class.own_ability_map.map.keys) }
         end
 
         context 'as an admin' do
           let_it_be(:current_user) { admin }
 
           context 'when admin mode is enabled', :enable_admin_mode do
-            it { is_expected.to be_allowed(:read_project) }
+            it { expect_allowed(:read_project) }
           end
         end
 
@@ -2713,7 +2713,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           let_it_be(:group) { create(:group, :public) }
           let_it_be(:project) { create(:project, :public, public_builds: false, group: group) }
 
-          it { is_expected.to be_disallowed(:read_project) }
+          it { expect_disallowed(:read_project) }
         end
 
         context 'when licensed feature unique_project_download_limit is not available' do
@@ -2721,7 +2721,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_licensed_features(unique_project_download_limit: false)
           end
 
-          it { is_expected.to be_allowed(:read_project) }
+          it { expect_allowed(:read_project) }
         end
       end
     end
@@ -2757,7 +2757,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_feature_flags(okrs_mvc: false)
           end
 
-          it { is_expected.to be_disallowed(*okr_policies) }
+          it { expect_disallowed(*okr_policies) }
         end
 
         context 'when okrs license feature is not available' do
@@ -2765,7 +2765,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_licensed_features(okrs: false)
           end
 
-          it { is_expected.to be_disallowed(*okr_policies) }
+          it { expect_disallowed(*okr_policies) }
         end
       end
     end
@@ -2815,7 +2815,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_licensed_features(custom_roles: false)
           end
 
-          it { is_expected.to be_disallowed(permission) }
+          it { expect_disallowed(permission) }
         end
       end
     end
@@ -2828,8 +2828,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         project.add_owner(current_user)
       end
 
-      it { is_expected.to be_disallowed(:download_code) }
-      it { is_expected.to be_disallowed(:build_download_code) }
+      it { expect_disallowed(:download_code) }
+      it { expect_disallowed(:build_download_code) }
     end
 
     context 'custom role' do
@@ -3047,7 +3047,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             project.project_feature.update_column(:merge_requests_access_level, ProjectFeature::DISABLED)
           end
 
-          it { is_expected.to be_disallowed(:read_merge_request, :admin_merge_request, :download_code) }
+          it { expect_disallowed(:read_merge_request, :admin_merge_request, :download_code) }
         end
       end
 
@@ -3101,8 +3101,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           create_member_role(project_member_guest, { read_code: true })
         end
 
-        it { is_expected.to be_allowed(:read_dependency) }
-        it { is_expected.to be_allowed(:read_code) }
+        it { expect_allowed(:read_dependency) }
+        it { expect_allowed(:read_code) }
       end
 
       context 'for a member role with the `admin_cicd_variables` ability' do
@@ -3404,7 +3404,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'with auditor' do
         let(:current_user) { auditor }
 
-        it { is_expected.to be_allowed(:read_runners) }
+        it { expect_allowed(:read_runners) }
       end
     end
 
@@ -3431,9 +3431,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         it 'matches expectation' do
           if expected
-            is_expected.to be_allowed(:read_runner_usage)
+            expect_allowed(:read_runner_usage)
           else
-            is_expected.to be_disallowed(:read_runner_usage)
+            expect_disallowed(:read_runner_usage)
           end
         end
       end
@@ -3443,13 +3443,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'with no user' do
         let(:current_user) { nil }
 
-        it { is_expected.to be_disallowed(:create_workspace) }
+        it { expect_disallowed(:create_workspace) }
       end
 
       context 'with an authorized user' do
         let(:current_user) { developer }
 
-        it { is_expected.to be_allowed(:create_workspace) }
+        it { expect_allowed(:create_workspace) }
       end
     end
 
@@ -3472,7 +3472,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               project.add_guest(security_policy_bot)
             end
 
-            it { is_expected.to be_allowed(:create_pipeline) }
+            it { expect_allowed(:create_pipeline) }
           end
 
           context 'and user is a member of the project' do
@@ -3525,7 +3525,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               end
             end
 
-            it { is_expected.to be_allowed(:build_download_code) }
+            it { expect_allowed(:build_download_code) }
           end
         end
       end
@@ -3551,7 +3551,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
                 project.add_guest(security_policy_bot)
               end
 
-              it { is_expected.to be_allowed(:create_bot_pipeline) }
+              it { expect_allowed(:create_bot_pipeline) }
             end
 
             context 'and the project is private' do
@@ -3614,17 +3614,17 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             let(:token_scope_enabled) { false }
 
             context 'when pipeline is executed in project where bot is invited' do
-              it { is_expected.to be_allowed(:create_pipeline) }
-              it { is_expected.to be_allowed(:create_bot_pipeline) }
-              it { is_expected.to be_allowed(:build_download_code) }
+              it { expect_allowed(:create_pipeline) }
+              it { expect_allowed(:create_bot_pipeline) }
+              it { expect_allowed(:build_download_code) }
             end
 
             context 'when pipeline is executed in project where bot is not invited' do
               let(:scope_project) { other_private_project }
 
-              it { is_expected.to be_allowed(:create_pipeline) }
-              it { is_expected.to be_allowed(:create_bot_pipeline) }
-              it { is_expected.to be_allowed(:build_download_code) }
+              it { expect_allowed(:create_pipeline) }
+              it { expect_allowed(:create_bot_pipeline) }
+              it { expect_allowed(:build_download_code) }
             end
           end
 
@@ -3632,17 +3632,17 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             let(:token_scope_enabled) { true }
 
             context 'when pipeline is executed in project where bot is invited' do
-              it { is_expected.to be_allowed(:create_pipeline) }
-              it { is_expected.to be_allowed(:create_bot_pipeline) }
-              it { is_expected.to be_allowed(:build_download_code) }
+              it { expect_allowed(:create_pipeline) }
+              it { expect_allowed(:create_bot_pipeline) }
+              it { expect_allowed(:build_download_code) }
             end
 
             context 'when pipeline is executed in project where bot is not invited' do
               let(:scope_project) { other_private_project }
 
-              it { is_expected.to be_disallowed(:create_pipeline) }
-              it { is_expected.to be_disallowed(:create_bot_pipeline) }
-              it { is_expected.to be_disallowed(:build_download_code) }
+              it { expect_disallowed(:create_pipeline) }
+              it { expect_disallowed(:create_bot_pipeline) }
+              it { expect_disallowed(:build_download_code) }
             end
           end
         end
@@ -3654,17 +3654,17 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             let(:token_scope_enabled) { false }
 
             context 'when pipeline is executed in project where bot is invited' do
-              it { is_expected.to be_allowed(:create_pipeline) }
-              it { is_expected.to be_allowed(:create_bot_pipeline) }
-              it { is_expected.to be_allowed(:build_download_code) }
+              it { expect_allowed(:create_pipeline) }
+              it { expect_allowed(:create_bot_pipeline) }
+              it { expect_allowed(:build_download_code) }
             end
 
             context 'when pipeline is executed in project where bot is not invited' do
               let(:scope_project) { other_private_project }
 
-              it { is_expected.to be_disallowed(:create_pipeline) }
-              it { is_expected.to be_disallowed(:create_bot_pipeline) }
-              it { is_expected.to be_disallowed(:build_download_code) }
+              it { expect_disallowed(:create_pipeline) }
+              it { expect_disallowed(:create_bot_pipeline) }
+              it { expect_disallowed(:build_download_code) }
             end
           end
         end
@@ -3676,7 +3676,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         context 'when security_dashboard is not enabled' do
-          it { is_expected.to be_disallowed(:create_vulnerability_state_transition) }
+          it { expect_disallowed(:create_vulnerability_state_transition) }
         end
 
         context 'when security_dashboard is enabled' do
@@ -3684,7 +3684,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_licensed_features(security_dashboard: true)
           end
 
-          it { is_expected.to be_allowed(:create_vulnerability_state_transition) }
+          it { expect_allowed(:create_vulnerability_state_transition) }
         end
       end
     end
@@ -3704,13 +3704,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         context 'when user can create issue' do
-          it { is_expected.to be_allowed(:generate_description) }
+          it { expect_allowed(:generate_description) }
         end
 
         context 'when user cannot create issue' do
           let(:current_user) { create(:user) }
 
-          it { is_expected.to be_disallowed(:generate_description) }
+          it { expect_disallowed(:generate_description) }
         end
       end
 
@@ -3719,7 +3719,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           allow(authorizer).to receive(:allowed?).and_return(false)
         end
 
-        it { is_expected.to be_disallowed(:generate_description) }
+        it { expect_disallowed(:generate_description) }
       end
     end
 
@@ -3754,7 +3754,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when user is nil' do
         let(:current_user) { nil }
 
-        it { is_expected.to be_disallowed(:summarize_comments) }
+        it { expect_disallowed(:summarize_comments) }
       end
 
       context 'when user is present' do
@@ -3824,7 +3824,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when user is nil' do
         let(:current_user) { nil }
 
-        it { is_expected.to be_disallowed(:read_dap_external_trigger_usage_rule) }
+        it { expect_disallowed(:read_dap_external_trigger_usage_rule) }
       end
 
       context 'when user is present' do
@@ -3857,13 +3857,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(target_branch_rules: false)
         end
 
-        it { is_expected.to be_disallowed(:admin_target_branch_rule) }
+        it { expect_disallowed(:admin_target_branch_rule) }
       end
 
       describe 'when the user does not have permissions' do
         let(:current_user) { auditor }
 
-        it { is_expected.to be_disallowed(:admin_target_branch_rule) }
+        it { expect_disallowed(:admin_target_branch_rule) }
       end
 
       describe 'when the user has permission' do
@@ -3871,7 +3871,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(target_branch_rules: true)
         end
 
-        it { is_expected.to be_allowed(:admin_target_branch_rule) }
+        it { expect_allowed(:admin_target_branch_rule) }
       end
     end
 
@@ -3883,7 +3883,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(target_branch_rules: true)
         end
 
-        it { is_expected.to be_allowed(:read_target_branch_rule) }
+        it { expect_allowed(:read_target_branch_rule) }
       end
     end
 
@@ -3899,7 +3899,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_feature_flags(observability_features: false)
         end
 
-        it { is_expected.to be_disallowed(:read_observability) }
+        it { expect_disallowed(:read_observability) }
       end
 
       describe 'when observability feature flag is enabled for root namespace' do
@@ -3907,7 +3907,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_feature_flags(observability_features: project.root_namespace)
         end
 
-        it { is_expected.to be_allowed(:read_observability) }
+        it { expect_allowed(:read_observability) }
       end
 
       describe 'when the project does not have the correct license' do
@@ -3916,7 +3916,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(observability: false)
         end
 
-        it { is_expected.to be_disallowed(:read_observability) }
+        it { expect_disallowed(:read_observability) }
       end
 
       describe 'when the user does not have permission' do
@@ -3927,7 +3927,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(observability: true)
         end
 
-        it { is_expected.to be_disallowed(:read_observability) }
+        it { expect_disallowed(:read_observability) }
       end
 
       describe 'when the user has permission' do
@@ -3936,7 +3936,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(observability: true)
         end
 
-        it { is_expected.to be_allowed(:read_observability) }
+        it { expect_allowed(:read_observability) }
       end
     end
 
@@ -3952,7 +3952,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_feature_flags(observability_features: false)
         end
 
-        it { is_expected.to be_disallowed(:write_observability) }
+        it { expect_disallowed(:write_observability) }
       end
 
       describe 'when observability feature flag is enabled for root namespace' do
@@ -3960,7 +3960,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_feature_flags(observability_features: project.root_namespace)
         end
 
-        it { is_expected.to be_allowed(:write_observability) }
+        it { expect_allowed(:write_observability) }
       end
 
       describe 'when the project does not have the correct license' do
@@ -3969,7 +3969,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(observability: false)
         end
 
-        it { is_expected.to be_disallowed(:write_observability) }
+        it { expect_disallowed(:write_observability) }
       end
 
       describe 'when the user does not have permission' do
@@ -3980,7 +3980,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(observability: true)
         end
 
-        it { is_expected.to be_disallowed(:write_observability) }
+        it { expect_disallowed(:write_observability) }
       end
 
       describe 'when the user has permission' do
@@ -3989,7 +3989,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(observability: true)
         end
 
-        it { is_expected.to be_allowed(:write_observability) }
+        it { expect_allowed(:write_observability) }
       end
     end
 
@@ -4012,37 +4012,37 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context "with guest" do
         let(:current_user) { guest }
 
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
+        it { expect_disallowed(:admin_vulnerability) }
       end
 
       context "with planner" do
         let(:current_user) { planner }
 
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
+        it { expect_disallowed(:admin_vulnerability) }
       end
 
       context "with reporter" do
         let(:current_user) { reporter }
 
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
+        it { expect_disallowed(:admin_vulnerability) }
       end
 
       context "with developer" do
         let(:current_user) { developer }
 
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
+        it { expect_disallowed(:admin_vulnerability) }
       end
 
       context "with maintainer" do
         let(:current_user) { maintainer }
 
-        it { is_expected.to be_allowed(*expected_permissions) }
+        it { expect_allowed(*expected_permissions) }
       end
 
       context "with owner" do
         let(:current_user) { owner }
 
-        it { is_expected.to be_allowed(*expected_permissions) }
+        it { expect_allowed(*expected_permissions) }
       end
     end
 
@@ -4137,12 +4137,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               group.add_guest(current_user)
             end
 
-            it { is_expected.to be_allowed(:access_duo_classic_chat) }
+            it { expect_allowed(:access_duo_classic_chat) }
 
             context 'when the group does not have an Premium SaaS license' do
               let_it_be(:group) { create(:group) }
 
-              it { is_expected.to be_disallowed(:access_duo_classic_chat) }
+              it { expect_disallowed(:access_duo_classic_chat) }
             end
           end
 
@@ -4150,7 +4150,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             context 'when the user has AI enabled via another group' do
               context 'user can view project' do
                 it 'is allowed' do
-                  is_expected.to be_allowed(:access_duo_classic_chat)
+                  expect_allowed(:access_duo_classic_chat)
                 end
               end
 
@@ -4160,7 +4160,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
                 end
 
                 it 'is not allowed' do
-                  is_expected.to be_disallowed(:access_duo_classic_chat)
+                  expect_disallowed(:access_duo_classic_chat)
                 end
               end
             end
@@ -4173,7 +4173,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
             context 'when the user has AI enabled through parent group' do
               it 'is allowed' do
-                is_expected.to be_allowed(:access_duo_classic_chat)
+                expect_allowed(:access_duo_classic_chat)
               end
             end
           end
@@ -4281,7 +4281,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     describe 'read_runner_cloud_provisioning_info policy' do
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_disallowed(:read_runner_cloud_provisioning_info) }
+      it { expect_disallowed(:read_runner_cloud_provisioning_info) }
 
       context 'when SaaS-only feature is available' do
         before do
@@ -4291,13 +4291,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context 'the user is a maintainer' do
           let(:current_user) { maintainer }
 
-          it { is_expected.to be_allowed(:read_runner_cloud_provisioning_info) }
+          it { expect_allowed(:read_runner_cloud_provisioning_info) }
         end
 
         context 'the user is a guest' do
           let(:current_user) { guest }
 
-          it { is_expected.to be_disallowed(:read_runner_cloud_provisioning_info) }
+          it { expect_disallowed(:read_runner_cloud_provisioning_info) }
         end
       end
     end
@@ -4305,7 +4305,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     describe 'read_runner_gke_provisioning_info policy' do
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_disallowed(:read_runner_gke_provisioning_info) }
+      it { expect_disallowed(:read_runner_gke_provisioning_info) }
 
       context 'when SaaS-only feature is available' do
         before do
@@ -4315,13 +4315,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context 'the user is a maintainer' do
           let(:current_user) { maintainer }
 
-          it { is_expected.to be_allowed(:read_runner_gke_provisioning_info) }
+          it { expect_allowed(:read_runner_gke_provisioning_info) }
         end
 
         context 'the user is a guest' do
           let(:current_user) { guest }
 
-          it { is_expected.to be_disallowed(:read_runner_gke_provisioning_info) }
+          it { expect_disallowed(:read_runner_gke_provisioning_info) }
         end
       end
     end
@@ -4329,7 +4329,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     describe 'provision_cloud_runner policy' do
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_disallowed(:provision_cloud_runner) }
+      it { expect_disallowed(:provision_cloud_runner) }
 
       context 'when SaaS-only feature is available' do
         before do
@@ -4339,13 +4339,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context 'the user is a maintainer' do
           let(:current_user) { maintainer }
 
-          it { is_expected.to be_allowed(:provision_cloud_runner) }
+          it { expect_allowed(:provision_cloud_runner) }
         end
 
         context 'the user is a guest' do
           let(:current_user) { guest }
 
-          it { is_expected.to be_disallowed(:provision_cloud_runner) }
+          it { expect_disallowed(:provision_cloud_runner) }
         end
       end
     end
@@ -4353,7 +4353,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     describe 'provision_gke_runner policy' do
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_disallowed(:provision_gke_runner) }
+      it { expect_disallowed(:provision_gke_runner) }
 
       context 'when SaaS-only feature is available' do
         before do
@@ -4363,13 +4363,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context 'the user is a maintainer' do
           let(:current_user) { maintainer }
 
-          it { is_expected.to be_allowed(:provision_gke_runner) }
+          it { expect_allowed(:provision_gke_runner) }
         end
 
         context 'the user is a guest' do
           let(:current_user) { guest }
 
-          it { is_expected.to be_disallowed(:provision_gke_runner) }
+          it { expect_disallowed(:provision_gke_runner) }
         end
       end
     end
@@ -4426,7 +4426,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(project_saved_replies: false)
         end
 
-        it { is_expected.to be_disallowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+        it { expect_disallowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
       end
 
       context 'with correct license' do
@@ -4434,34 +4434,34 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(project_saved_replies: true)
         end
 
-        it { is_expected.to be_allowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+        it { expect_allowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
 
         context 'when the user is a guest' do
           let(:current_user) { guest }
 
-          it { is_expected.to be_allowed(:read_saved_replies) }
+          it { expect_allowed(:read_saved_replies) }
 
-          it { is_expected.to be_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+          it { expect_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
         end
 
         context 'when the user is a reporter' do
           let(:current_user) { reporter }
 
-          it { is_expected.to be_allowed(:read_saved_replies) }
+          it { expect_allowed(:read_saved_replies) }
 
-          it { is_expected.to be_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+          it { expect_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
         end
 
         context 'when the user is a developer' do
           let(:current_user) { developer }
 
-          it { is_expected.to be_allowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+          it { expect_allowed(:read_saved_replies, :create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
         end
 
         context 'when the user is a guest member of the project' do
           let(:current_user) { guest }
 
-          it { is_expected.to be_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
+          it { expect_disallowed(:create_saved_replies, :update_saved_replies, :destroy_saved_replies) }
         end
       end
     end
@@ -4487,7 +4487,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       describe 'when the project does not have the correct license' do
         let(:current_user) { owner }
 
-        it { is_expected.to be_disallowed(:enable_secret_push_protection) }
+        it { expect_disallowed(:enable_secret_push_protection) }
       end
 
       context 'for public .com projects without Ultimate license' do
@@ -4515,7 +4515,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           let_it_be(:project) { create(:project, :private) }
           let(:current_user) { owner }
 
-          it { is_expected.to be_disallowed(:enable_secret_push_protection) }
+          it { expect_disallowed(:enable_secret_push_protection) }
         end
 
         context 'when feature flag is disabled' do
@@ -4525,7 +4525,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_feature_flags(auto_spp_public_com_projects: false)
           end
 
-          it { is_expected.to be_disallowed(:enable_secret_push_protection) }
+          it { expect_disallowed(:enable_secret_push_protection) }
         end
 
         context 'when not on .com' do
@@ -4535,7 +4535,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_saas_features(auto_enable_secret_push_protection_public_projects: false)
           end
 
-          it { is_expected.to be_disallowed(:enable_secret_push_protection) }
+          it { expect_disallowed(:enable_secret_push_protection) }
         end
       end
     end
@@ -4578,8 +4578,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           context "with #{role}" do
             let(:current_user) { send(role) }
 
-            it { is_expected.to be_disallowed(:configure_secret_detection_validity_checks) }
-            it { is_expected.to be_disallowed(:update_secret_detection_validity_checks_status) }
+            it { expect_disallowed(:configure_secret_detection_validity_checks) }
+            it { expect_disallowed(:update_secret_detection_validity_checks_status) }
           end
         end
       end
@@ -4613,7 +4613,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         context 'when user is not allowed to use duo_agent_platform' do
-          it { is_expected.to be_disallowed(:duo_workflow) }
+          it { expect_disallowed(:duo_workflow) }
         end
 
         context 'when user is allowed to use duo_agent_platform' do
@@ -4638,7 +4638,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             .and_return(false)
         end
 
-        it { is_expected.to be_disallowed(:duo_workflow) }
+        it { expect_disallowed(:duo_workflow) }
       end
 
       context 'when user is nil' do
@@ -4649,7 +4649,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_ee_application_setting(duo_features_enabled: true)
         end
 
-        it { is_expected.to be_disallowed(:duo_workflow) }
+        it { expect_disallowed(:duo_workflow) }
       end
     end
 
@@ -4679,7 +4679,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         context 'when user is not allowed to use duo_agent_platform' do
-          it { is_expected.to be_disallowed(:create_duo_workflow_for_ci) }
+          it { expect_disallowed(:create_duo_workflow_for_ci) }
         end
 
         context 'when user is allowed to use duo_agent_platform' do
@@ -4706,13 +4706,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           context 'when the role requirement is not met' do
             let(:current_user) { developer }
 
-            it { is_expected.to be_disallowed(:create_duo_workflow_for_ci) }
+            it { expect_disallowed(:create_duo_workflow_for_ci) }
           end
 
           context 'when the role requirement is met' do
             let(:current_user) { maintainer }
 
-            it { is_expected.to be_allowed(:create_duo_workflow_for_ci) }
+            it { expect_allowed(:create_duo_workflow_for_ci) }
           end
         end
 
@@ -4724,13 +4724,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           context 'when the role requirement is not met' do
             let(:current_user) { developer }
 
-            it { is_expected.to be_disallowed(:create_duo_workflow_for_ci) }
+            it { expect_disallowed(:create_duo_workflow_for_ci) }
           end
 
           context 'when the role requirement is met' do
             let(:current_user) { maintainer }
 
-            it { is_expected.to be_allowed(:create_duo_workflow_for_ci) }
+            it { expect_allowed(:create_duo_workflow_for_ci) }
           end
         end
       end
@@ -4751,7 +4751,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           root_namespace: project.root_ancestor
         ).and_return(true)
 
-        is_expected.to be_allowed(:access_ai_review_mr)
+        expect_allowed(:access_ai_review_mr)
       end
 
       context 'when user is not allowed' do
@@ -4761,13 +4761,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             .and_return(false)
         end
 
-        it { is_expected.to be_disallowed(:access_ai_review_mr) }
+        it { expect_disallowed(:access_ai_review_mr) }
       end
 
       context 'when user is nil' do
         let(:current_user) { nil }
 
-        it { is_expected.to be_disallowed(:access_ai_review_mr) }
+        it { expect_disallowed(:access_ai_review_mr) }
       end
     end
 
@@ -4983,7 +4983,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           end
 
           it 'is not allowed' do
-            is_expected.to be_disallowed(:access_security_scans_api)
+            expect_disallowed(:access_security_scans_api)
           end
         end
 
@@ -5018,7 +5018,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         it 'is not allowed' do
-          is_expected.to be_disallowed(:access_security_scans_api)
+          expect_disallowed(:access_security_scans_api)
         end
       end
     end
@@ -5081,7 +5081,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(dependency_scanning: false)
         end
 
-        it { is_expected.to be_disallowed(policy) }
+        it { expect_disallowed(policy) }
       end
     end
   end
@@ -5121,7 +5121,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(license_scanning: false)
         end
 
-        it { is_expected.to be_disallowed(*policies) }
+        it { expect_disallowed(*policies) }
       end
     end
   end
@@ -5292,7 +5292,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           project.add_maintainer(current_user)
         end
 
-        it { is_expected.to be_allowed(policy) }
+        it { expect_allowed(policy) }
       end
 
       context 'with owner' do
@@ -5302,14 +5302,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           project.add_owner(current_user)
         end
 
-        it { is_expected.to be_allowed(policy) }
+        it { expect_allowed(policy) }
       end
 
       context 'with admin' do
         let(:current_user) { admin }
 
         context 'when admin mode is enabled', :enable_admin_mode do
-          it { is_expected.to be_allowed(policy) }
+          it { expect_allowed(policy) }
         end
 
         context 'when admin mode is disabled' do
@@ -5343,7 +5343,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:current_user) { admin }
 
         context 'when admin mode is enabled', :enable_admin_mode do
-          it { is_expected.to be_allowed(policy) }
+          it { expect_allowed(policy) }
         end
 
         context 'when admin mode is disabled' do
@@ -5435,7 +5435,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             stub_feature_flags(project_work_item_epics: false)
           end
 
-          it { is_expected.to be_disallowed(:create_epic) }
+          it { expect_disallowed(:create_epic) }
         end
 
         context 'when issues are disabled for the project' do
@@ -5443,7 +5443,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             project.update!(issues_enabled: false)
           end
 
-          it { is_expected.to be_disallowed(:create_epic) }
+          it { expect_disallowed(:create_epic) }
         end
       end
 
@@ -5452,7 +5452,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(epics: false)
         end
 
-        it { is_expected.to be_disallowed(:create_epic) }
+        it { expect_disallowed(:create_epic) }
       end
     end
   end
@@ -5569,7 +5569,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         stub_licensed_features(service_accounts: false)
       end
 
-      it { is_expected.to be_disallowed(*service_account_permissions) }
+      it { expect_disallowed(*service_account_permissions) }
     end
 
     context 'when feature is enabled' do
@@ -5584,7 +5584,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_feature_flags(allow_projects_to_create_service_accounts: false)
         end
 
-        it { is_expected.to be_disallowed(*service_account_permissions) }
+        it { expect_disallowed(*service_account_permissions) }
       end
 
       context 'when feature flag is enabled' do
@@ -5606,9 +5606,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             let(:current_user) { public_send(role) }
 
             if params[:allowed]
-              it { is_expected.to be_allowed(*service_account_permissions) }
+              it { expect_allowed(*service_account_permissions) }
             else
-              it { is_expected.to be_disallowed(*service_account_permissions) }
+              it { expect_disallowed(*service_account_permissions) }
             end
           end
 
@@ -5616,11 +5616,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             let(:current_user) { admin }
 
             context 'when admin mode is enabled', :enable_admin_mode do
-              it { is_expected.to be_allowed(*service_account_permissions) }
+              it { expect_allowed(*service_account_permissions) }
             end
 
             context 'when admin mode is disabled' do
-              it { is_expected.to be_disallowed(*service_account_permissions) }
+              it { expect_disallowed(*service_account_permissions) }
             end
           end
         end
@@ -5660,10 +5660,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               end
 
               if params[:allowed]
-                it { is_expected.to be_allowed(*service_account_permissions) }
+                it { expect_allowed(*service_account_permissions) }
               else
-                it { is_expected.to be_disallowed(:admin_service_accounts, :admin_service_account_member, :create_service_account, :delete_service_account) }
-                it { is_expected.to be_allowed(:read_service_account) }
+                it { expect_disallowed(:admin_service_accounts, :admin_service_account_member, :create_service_account, :delete_service_account) }
+                it { expect_allowed(:read_service_account) }
               end
             end
           end
@@ -5675,7 +5675,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               allow(admin).to receive(:identity_verified?).and_return(false)
             end
 
-            it { is_expected.to be_allowed(*service_account_permissions) }
+            it { expect_allowed(*service_account_permissions) }
           end
         end
 
@@ -5689,7 +5689,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           with_them do
             let(:current_user) { public_send(role) }
 
-            it { is_expected.to be_allowed(*service_account_permissions) }
+            it { expect_allowed(*service_account_permissions) }
           end
         end
 
@@ -5703,7 +5703,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           with_them do
             let(:current_user) { public_send(role) }
 
-            it { is_expected.to be_allowed(*service_account_permissions) }
+            it { expect_allowed(*service_account_permissions) }
           end
         end
       end
@@ -5720,28 +5720,28 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     shared_examples 'no permissions when StageCheck :ai_catalog is false' do
       let(:ai_catalog_available) { false }
 
-      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      it { expect_disallowed(:read_ai_catalog_flow) }
+      it { expect_disallowed(:create_ai_catalog_flow) }
+      it { expect_disallowed(:read_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:admin_ai_catalog_item) }
+      it { expect_disallowed(:admin_ai_catalog_item_consumer) }
+      it { expect_disallowed(:read_ai_catalog_item_consumer) }
+      it { expect_disallowed(:execute_ai_catalog_item) }
     end
 
     shared_examples 'no flow permissions when StageCheck :ai_catalog_flows is false' do
       let(:flows_available) { false }
 
-      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
+      it { expect_disallowed(:read_ai_catalog_flow) }
+      it { expect_disallowed(:create_ai_catalog_flow) }
     end
 
     shared_examples 'no third party flow permissions when StageCheck :ai_catalog_third_party_flows is false' do
       let(:third_party_flows_available) { false }
 
-      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:read_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
     end
 
     shared_examples 'no create third party flow permission when ai_catalog_create_third_party_flows flag disabled' do
@@ -5749,27 +5749,27 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         stub_feature_flags(ai_catalog_create_third_party_flows: false)
       end
 
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
     end
 
     shared_examples 'no foundational flow permissions when StageCheck :foundational_flows is false' do
       let(:foundational_flows_available) { false }
 
-      it { is_expected.to be_disallowed(:read_foundational_flow) }
-      it { is_expected.to be_disallowed(:create_foundational_flow_item_consumer) }
+      it { expect_disallowed(:read_foundational_flow) }
+      it { expect_disallowed(:create_foundational_flow_item_consumer) }
     end
 
     shared_examples 'no permissions when Duo features are not available' do
       let(:duo_features_enabled) { false }
 
-      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      it { expect_disallowed(:read_ai_catalog_flow) }
+      it { expect_disallowed(:create_ai_catalog_flow) }
+      it { expect_disallowed(:read_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:admin_ai_catalog_item) }
+      it { expect_disallowed(:admin_ai_catalog_item_consumer) }
+      it { expect_disallowed(:read_ai_catalog_item_consumer) }
+      it { expect_disallowed(:execute_ai_catalog_item) }
     end
 
     shared_examples 'no permissions when global_ai_catalog feature flag is disabled' do
@@ -5777,14 +5777,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         stub_feature_flags(global_ai_catalog: false)
       end
 
-      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      it { expect_disallowed(:read_ai_catalog_flow) }
+      it { expect_disallowed(:create_ai_catalog_flow) }
+      it { expect_disallowed(:read_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:admin_ai_catalog_item) }
+      it { expect_disallowed(:admin_ai_catalog_item_consumer) }
+      it { expect_disallowed(:read_ai_catalog_item_consumer) }
+      it { expect_disallowed(:execute_ai_catalog_item) }
     end
 
     before do
@@ -5801,17 +5801,17 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'when maintainer' do
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_allowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_allowed(:create_ai_catalog_flow) }
-      it { is_expected.to be_allowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_allowed(:create_ai_catalog_third_party_flow) }
-      it { is_expected.to be_allowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_allowed(:execute_ai_catalog_item) }
-      it { is_expected.to be_allowed(:read_foundational_flow) }
-      it { is_expected.to be_allowed(:create_foundational_flow_item_consumer) }
-      it { is_expected.to be_allowed(:create_ai_catalog_flow_item_consumer) }
+      it { expect_allowed(:read_ai_catalog_flow) }
+      it { expect_allowed(:create_ai_catalog_flow) }
+      it { expect_allowed(:read_ai_catalog_third_party_flow) }
+      it { expect_allowed(:create_ai_catalog_third_party_flow) }
+      it { expect_allowed(:admin_ai_catalog_item) }
+      it { expect_allowed(:admin_ai_catalog_item_consumer) }
+      it { expect_allowed(:read_ai_catalog_item_consumer) }
+      it { expect_allowed(:execute_ai_catalog_item) }
+      it { expect_allowed(:read_foundational_flow) }
+      it { expect_allowed(:create_foundational_flow_item_consumer) }
+      it { expect_allowed(:create_ai_catalog_flow_item_consumer) }
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
@@ -5825,17 +5825,17 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'when developer' do
       let(:current_user) { developer }
 
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:create_foundational_flow_item_consumer) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_allowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_allowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_allowed(:read_foundational_flow) }
-      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_allowed(:execute_ai_catalog_item) }
+      it { expect_disallowed(:create_ai_catalog_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_foundational_flow_item_consumer) }
+      it { expect_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { expect_disallowed(:admin_ai_catalog_item) }
+      it { expect_disallowed(:admin_ai_catalog_item_consumer) }
+      it { expect_allowed(:read_ai_catalog_flow) }
+      it { expect_allowed(:read_ai_catalog_third_party_flow) }
+      it { expect_allowed(:read_foundational_flow) }
+      it { expect_allowed(:read_ai_catalog_item_consumer) }
+      it { expect_allowed(:execute_ai_catalog_item) }
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
       it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
@@ -5849,40 +5849,40 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'when reporter' do
       let(:current_user) { reporter }
 
-      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      it { expect_disallowed(:read_ai_catalog_flow) }
+      it { expect_disallowed(:create_ai_catalog_flow) }
+      it { expect_disallowed(:read_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:admin_ai_catalog_item) }
+      it { expect_disallowed(:admin_ai_catalog_item_consumer) }
+      it { expect_allowed(:read_ai_catalog_item_consumer) }
+      it { expect_disallowed(:execute_ai_catalog_item) }
     end
 
     context 'when guest' do
       let(:current_user) { guest }
 
-      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      it { expect_disallowed(:read_ai_catalog_flow) }
+      it { expect_disallowed(:create_ai_catalog_flow) }
+      it { expect_disallowed(:read_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:admin_ai_catalog_item) }
+      it { expect_disallowed(:admin_ai_catalog_item_consumer) }
+      it { expect_allowed(:read_ai_catalog_item_consumer) }
+      it { expect_disallowed(:execute_ai_catalog_item) }
     end
 
     context 'when anonymous' do
       let(:current_user) { anonymous }
 
-      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_third_party_flow) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
+      it { expect_disallowed(:read_ai_catalog_flow) }
+      it { expect_disallowed(:create_ai_catalog_flow) }
+      it { expect_disallowed(:read_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:create_ai_catalog_third_party_flow) }
+      it { expect_disallowed(:admin_ai_catalog_item) }
+      it { expect_disallowed(:admin_ai_catalog_item_consumer) }
+      it { expect_disallowed(:read_ai_catalog_item_consumer) }
+      it { expect_disallowed(:execute_ai_catalog_item) }
     end
 
     describe 'group-based access control' do
@@ -5901,7 +5901,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           project.root_ancestor
         ).and_return(true)
 
-        is_expected.to be_allowed(:read_ai_catalog_item_consumer)
+        expect_allowed(:read_ai_catalog_item_consumer)
       end
 
       context 'when catalog is available for user' do
@@ -5910,27 +5910,27 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         it 'enables the catalog permissions' do
-          is_expected.to be_allowed(:read_ai_catalog_flow)
-          is_expected.to be_allowed(:create_ai_catalog_flow)
-          is_expected.to be_allowed(:read_ai_catalog_third_party_flow)
-          is_expected.to be_allowed(:create_ai_catalog_third_party_flow)
-          is_expected.to be_allowed(:admin_ai_catalog_item)
-          is_expected.to be_allowed(:admin_ai_catalog_item_consumer)
-          is_expected.to be_allowed(:read_ai_catalog_item_consumer)
-          is_expected.to be_allowed(:execute_ai_catalog_item)
+          expect_allowed(:read_ai_catalog_flow)
+          expect_allowed(:create_ai_catalog_flow)
+          expect_allowed(:read_ai_catalog_third_party_flow)
+          expect_allowed(:create_ai_catalog_third_party_flow)
+          expect_allowed(:admin_ai_catalog_item)
+          expect_allowed(:admin_ai_catalog_item_consumer)
+          expect_allowed(:read_ai_catalog_item_consumer)
+          expect_allowed(:execute_ai_catalog_item)
         end
       end
 
       context 'when catalog is not available for user' do
         it 'disables the catalog permissions' do
-          is_expected.to be_disallowed(:read_ai_catalog_flow)
-          is_expected.to be_disallowed(:create_ai_catalog_flow)
-          is_expected.to be_disallowed(:read_ai_catalog_third_party_flow)
-          is_expected.to be_disallowed(:create_ai_catalog_third_party_flow)
-          is_expected.to be_disallowed(:admin_ai_catalog_item)
-          is_expected.to be_disallowed(:admin_ai_catalog_item_consumer)
-          is_expected.to be_disallowed(:read_ai_catalog_item_consumer)
-          is_expected.to be_disallowed(:execute_ai_catalog_item)
+          expect_disallowed(:read_ai_catalog_flow)
+          expect_disallowed(:create_ai_catalog_flow)
+          expect_disallowed(:read_ai_catalog_third_party_flow)
+          expect_disallowed(:create_ai_catalog_third_party_flow)
+          expect_disallowed(:admin_ai_catalog_item)
+          expect_disallowed(:admin_ai_catalog_item_consumer)
+          expect_disallowed(:read_ai_catalog_item_consumer)
+          expect_disallowed(:execute_ai_catalog_item)
         end
       end
     end
@@ -5948,7 +5948,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context 'with registry disabled' do
           include_context 'registry disabled via project features'
 
-          it { is_expected.to be_disallowed(:create_container_registry_protection_immutable_tag_rule) }
+          it { expect_disallowed(:create_container_registry_protection_immutable_tag_rule) }
         end
       end
     end
@@ -5996,14 +5996,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'when user has a lesser role' do
       let(:current_user) { developer }
 
-      it { is_expected.to be_disallowed(:set_license_information_source) }
+      it { expect_disallowed(:set_license_information_source) }
     end
 
     context 'when user is a maintainer' do
       let(:current_user) { maintainer }
 
       context 'with admin_security_testing enabled' do
-        it { is_expected.to be_allowed(:set_license_information_source) }
+        it { expect_allowed(:set_license_information_source) }
       end
 
       context 'when admin_security_testing is disabled' do
@@ -6012,13 +6012,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           allow(Ability).to receive(:allowed?).with(current_user, :admin_security_testing, project).and_return(false)
         end
 
-        it { is_expected.to be_allowed(:set_license_information_source) }
+        it { expect_allowed(:set_license_information_source) }
       end
 
       context 'when the licensed feature is disabled' do
         let(:license_information_source_feature) { false }
 
-        it { is_expected.to be_disallowed(:set_license_information_source) }
+        it { expect_disallowed(:set_license_information_source) }
       end
     end
   end
@@ -6209,13 +6209,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             context 'when admin mode is on', :enable_admin_mode do
               let(:current_user) { admin }
 
-              it { is_expected.to be_allowed(:trigger_ai_flow) }
+              it { expect_allowed(:trigger_ai_flow) }
             end
 
             context 'when admin mode is off' do
               let(:current_user) { admin }
 
-              it { is_expected.to be_disallowed(:trigger_ai_flow) }
+              it { expect_disallowed(:trigger_ai_flow) }
             end
           end
         end
@@ -6235,8 +6235,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
               enable_admin_mode!(current_user) if role == :admin
             end
 
-            it { is_expected.to be_disallowed(:manage_ai_flow_triggers) }
-            it { is_expected.to be_disallowed(:trigger_ai_flow) }
+            it { expect_disallowed(:manage_ai_flow_triggers) }
+            it { expect_disallowed(:trigger_ai_flow) }
           end
         end
       end
@@ -6256,8 +6256,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           enable_admin_mode!(current_user) if role == :admin
         end
 
-        it { is_expected.to be_disallowed(:manage_ai_flow_triggers) }
-        it { is_expected.to be_disallowed(:trigger_ai_flow) }
+        it { expect_disallowed(:manage_ai_flow_triggers) }
+        it { expect_disallowed(:trigger_ai_flow) }
       end
 
       context 'when Amazon Q is enabled' do
@@ -6292,9 +6292,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     shared_examples 'handling secrets manager permission' do
       it do
         if allowed
-          is_expected.to be_allowed(permission)
+          expect_allowed(permission)
         else
-          is_expected.to be_disallowed(permission)
+          expect_disallowed(permission)
         end
       end
 
@@ -6304,7 +6304,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         it 'disallows the permission' do
-          is_expected.to be_disallowed(permission)
+          expect_disallowed(permission)
         end
       end
     end
