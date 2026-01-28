@@ -117,12 +117,10 @@ describe('AiCatalogListItem', () => {
   const findUpdateUnlistedBadge = () => wrapper.findByTestId('ai-catalog-item-unlisted');
   const findStatusBadge = () => wrapper.findByTestId('ai-catalog-item-status-badge');
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('component rendering', () => {
     it('renders the list item with the correct link URL', () => {
+      createComponent();
+
       const listItemLink = findListItemLink();
 
       expect(listItemLink.exists()).toBe(true);
@@ -130,6 +128,8 @@ describe('AiCatalogListItem', () => {
     });
 
     it('renders the actions passed in a prop in a disclosure dropdown', () => {
+      createComponent();
+
       const items = findDisclosureDropdownItems();
 
       expect(findDisclosureDropdown().exists()).toBe(true);
@@ -187,6 +187,10 @@ describe('AiCatalogListItem', () => {
     });
 
     describe('when the item is private', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
       it('renders the private icon with a tooltip', () => {
         expect(findVisibilityIcon().props('name')).toBe(
           VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PRIVATE_STRING],
@@ -218,6 +222,10 @@ describe('AiCatalogListItem', () => {
   });
 
   describe('renders list item link', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('contains correct link href', () => {
       expect(findListItemLink().props('to')).toEqual({ name: '/items/:id', params: { id: 1 } });
     });
@@ -265,6 +273,10 @@ describe('AiCatalogListItem', () => {
   });
 
   describe('on disable action', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('emits disable event', () => {
       const disableAction = findDisclosureDropdownItems().at(1);
 
@@ -295,6 +307,10 @@ describe('AiCatalogListItem', () => {
     });
 
     describe('when item is not foundational', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
       it('does not render foundational icon', () => {
         expect(findFoundationalIcon().exists()).toBe(false);
       });
@@ -326,6 +342,10 @@ describe('AiCatalogListItem', () => {
     });
 
     describe('when item is not THIRD_PARTY_FLOW', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
       it('does not render external indicator', () => {
         expect(findExternalLabel().exists()).toBe(false);
       });
@@ -339,6 +359,7 @@ describe('AiCatalogListItem', () => {
           item: { ...mockItem, isUpdateAvailable: true },
         });
       });
+
       it('renders Update available label when isUpdateAvailable is true', () => {
         expect(findUpdateAvailableLabel().findComponent(GlBadge).text()).toBe('Update available');
       });
@@ -356,6 +377,7 @@ describe('AiCatalogListItem', () => {
           item: { ...mockItem, isUpdateAvailable: false },
         });
       });
+
       it('does not render Update available label when isUpdateAvailable is false', () => {
         expect(findUpdateAvailableLabel().exists()).toBe(false);
       });
@@ -369,6 +391,7 @@ describe('AiCatalogListItem', () => {
           item: { ...mockItem, softDeleted: true },
         });
       });
+
       it('renders Unlisted badge when softDeleted is true', () => {
         expect(findUpdateUnlistedBadge().findComponent(GlBadge).text()).toBe('Unlisted');
       });
@@ -386,6 +409,7 @@ describe('AiCatalogListItem', () => {
           item: { ...mockItem, isUpdateAvailable: false },
         });
       });
+
       it('does not render Unlisted badge when softDeleted is false', () => {
         expect(findUpdateUnlistedBadge().exists()).toBe(false);
       });

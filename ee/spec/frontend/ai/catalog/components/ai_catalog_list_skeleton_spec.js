@@ -13,17 +13,19 @@ describe('AiCatalogListSkeleton', () => {
   const findSkeleton = () => wrapper.findComponent(AiCatalogListSkeleton);
   const findRightElement = () => wrapper.findByTestId('right-element-placeholder');
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('skeleton loader component', () => {
-    it('renders properly', () => {
-      expect(findSkeleton().exists()).toBe(true);
-    });
+    describe('default', () => {
+      beforeEach(() => {
+        createComponent();
+      });
 
-    it('does not render the right-hand component placeholder', () => {
-      expect(findRightElement().exists()).toBe(false);
+      it('renders properly', () => {
+        expect(findSkeleton().exists()).toBe(true);
+      });
+
+      it('does not render the right-hand component placeholder', () => {
+        expect(findRightElement().exists()).toBe(false);
+      });
     });
 
     it('renders the right-hand component placeholder', () => {
