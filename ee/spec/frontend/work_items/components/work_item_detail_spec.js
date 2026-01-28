@@ -59,7 +59,6 @@ describe('EE WorkItemDetail component', () => {
           ...glFeatures,
         },
         duoRemoteFlowsAvailability: true,
-        hasDesignManagementFeature: true,
         hasSubepicsFeature: true,
         hasLinkedItemsEpicsFeature: true,
         fullPath: 'group/project',
