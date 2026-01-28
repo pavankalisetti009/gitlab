@@ -7,6 +7,7 @@ fragment FindingFields on ComparedSecurityReportFinding {
   aiResolutionEnabled
 }
 
+# @feature_category: vulnerability_management
 query FindingReportsComparer(
   $fullPath: ID!
   $iid: String!
