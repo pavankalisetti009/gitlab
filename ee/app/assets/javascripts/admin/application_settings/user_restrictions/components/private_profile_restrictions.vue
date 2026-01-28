@@ -2,7 +2,7 @@
 import { GlFormCheckbox, GlIcon, GlPopover, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import { PRIVATE_PROFILES_DISABLED_ICON, PRIVATE_PROFILES_DISABLED_HELP_LINK } from '../constants';
 
 export default {
@@ -22,7 +22,7 @@ export default {
     GlLink,
     GlSprintf,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   props: {
     defaultToPrivateProfiles: {
       type: Object,
@@ -41,7 +41,7 @@ export default {
   },
   computed: {
     disablePrivateProfilesFeatureEnabled() {
-      return this.glFeatures.disablePrivateProfiles;
+      return this.glLicensedFeatures.disablePrivateProfiles;
     },
     privateProfilesDisabled() {
       return this.disablePrivateProfilesFeatureEnabled && !this.allowPrivateProfilesValue;

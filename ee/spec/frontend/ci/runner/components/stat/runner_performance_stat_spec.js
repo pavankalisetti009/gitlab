@@ -28,7 +28,7 @@ describe('RunnerPerformanceStat', () => {
     beforeEach(() => {
       createComponent({
         provide: {
-          glFeatures: {
+          glLicensedFeatures: {
             runnerPerformanceInsights: true,
           },
         },
