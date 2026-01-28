@@ -183,6 +183,7 @@ describe('MR Widget Security Reports', () => {
     state: 'DETECTED',
     foundByPipelineIid: '123',
     aiResolutionEnabled: true,
+    matchesAutoDismissPolicy: false,
     __typename: 'ComparedSecurityReportFinding',
     ...overrides,
   });

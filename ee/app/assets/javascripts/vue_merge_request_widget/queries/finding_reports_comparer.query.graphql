@@ -5,6 +5,7 @@ fragment FindingFields on ComparedSecurityReportFinding {
   state
   foundByPipelineIid
   aiResolutionEnabled
+  matchesAutoDismissPolicy @gl_introduced(version: "18.9.0")
 }
 
 # @feature_category: vulnerability_management
