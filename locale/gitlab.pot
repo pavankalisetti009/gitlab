@@ -53422,6 +53422,9 @@ msgstr ""
 msgid "ProjectSettings|Additional settings that influence how and when merges are done."
 msgstr ""
 
+msgid "ProjectSettings|All merge request titles must match this %{link_start}regular expression%{link_end}. If empty, any title is allowed."
+msgstr ""
+
 msgid "ProjectSettings|All merge requests and commits are made against this branch unless you specify a different one."
 msgstr ""
 
@@ -53522,9 +53525,6 @@ msgid "ProjectSettings|Delete immediately"
 msgstr ""
 
 msgid "ProjectSettings|Delete project"
-msgstr ""
-
-msgid "ProjectSettings|Describe what this regex enforces. Include examples of valid titles."
 msgstr ""
 
 msgid "ProjectSettings|Determine what happens to the commit history when you merge a merge request."
@@ -53692,6 +53692,12 @@ msgstr ""
 msgid "ProjectSettings|Merge options"
 msgstr ""
 
+msgid "ProjectSettings|Merge request title example"
+msgstr ""
+
+msgid "ProjectSettings|Merge request title validation pattern"
+msgstr ""
+
 msgid "ProjectSettings|Merge requests"
 msgstr ""
 
@@ -53770,9 +53776,6 @@ msgstr ""
 msgid "ProjectSettings|Publish, store, and view packages in a project."
 msgstr ""
 
-msgid "ProjectSettings|Regular expression that all merge request titles must match. %{link_start}What is a regex?%{link_end}"
-msgstr ""
-
 msgid "ProjectSettings|Relative path:"
 msgstr ""
 
@@ -53831,6 +53834,9 @@ msgid "ProjectSettings|Show default emoji reactions"
 msgstr ""
 
 msgid "ProjectSettings|Show link to create or view a merge request when pushing from the command line"
+msgstr ""
+
+msgid "ProjectSettings|Shown to users when creating merge requests."
 msgstr ""
 
 msgid "ProjectSettings|Snippets"
@@ -53905,15 +53911,6 @@ msgstr ""
 msgid "ProjectSettings|This setting will be applied to all projects unless overridden for a project."
 msgstr ""
 
-msgid "ProjectSettings|Title regex"
-msgstr ""
-
-msgid "ProjectSettings|Title regex description"
-msgstr ""
-
-msgid "ProjectSettings|Titles must start with a tag, e.g. [Feature] Add login"
-msgstr ""
-
 msgid "ProjectSettings|Topics are publicly visible even on private projects. Do not include sensitive information in topic names. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
@@ -53924,6 +53921,9 @@ msgid "ProjectSettings|Transfer project"
 msgstr ""
 
 msgid "ProjectSettings|Upstream project"
+msgstr ""
+
+msgid "ProjectSettings|Usage example: \"Title must match validation pattern `%{pattern}`.\""
 msgstr ""
 
 msgid "ProjectSettings|Use AI-native features in this project."
@@ -53987,6 +53987,9 @@ msgid "ProjectSettings|Work items"
 msgstr ""
 
 msgid "ProjectSettings|Your project is set up. %{instructionsLinkStart}View instrumentation instructions%{instructionsLinkEnd} and %{dashboardsLinkStart}Analytics Dashboards%{dashboardsLinkEnd}."
+msgstr ""
+
+msgid "ProjectSettings|[Feature] Add login"
 msgstr ""
 
 msgid "ProjectSetting|already in use"
