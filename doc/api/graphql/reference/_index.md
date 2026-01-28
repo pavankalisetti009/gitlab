@@ -50697,6 +50697,7 @@ Represents a status with its work item count.
 | <a id="workitemtypearchived"></a>`archived` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.8. **Status**: Experiment. Indicates whether the work item type is archived. |
 | <a id="workitemtypecanpromotetoobjective"></a>`canPromoteToObjective` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.8. **Status**: Experiment. Indicates whether the work item type can be promoted to an objective. |
 | <a id="workitemtypecanusercreateitems"></a>`canUserCreateItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.8. **Status**: Experiment. Indicates whether the work item type is creatable by the API. |
+| <a id="workitemtypeenabled"></a>`enabled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.9. **Status**: Experiment. Indicates whether the work item type is enabled. |
 | <a id="workitemtypeiconname"></a>`iconName` | [`String`](#string) | Icon name of the work item type. |
 | <a id="workitemtypeid"></a>`id` | [`WorkItemsTypeID!`](#workitemstypeid) | Global ID of the work item type. |
 | <a id="workitemtypeisconfigurable"></a>`isConfigurable` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.8. **Status**: Experiment. Indicates whether the work item type is configurable. |
