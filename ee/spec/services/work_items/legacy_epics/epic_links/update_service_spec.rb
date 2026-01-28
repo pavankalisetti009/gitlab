@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_management do
+RSpec.describe WorkItems::LegacyEpics::EpicLinks::UpdateService, feature_category: :portfolio_management do
   let_it_be(:guest) { create(:user) }
   let_it_be(:group) { create(:group).tap { |g| g.add_guest(guest) } }
   let_it_be(:parent_epic) { create(:epic, group: group) }
@@ -74,13 +74,32 @@ RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_man
         end
       end
 
+      context 'when epic is nil' do
+        let(:epic_to_move) { nil }
+
+        it 'returns an error' do
+          result = described_class.new(nil, current_user, params).execute
+
+          expect(result).to eq(message: 'Epic not found for given params', status: :error, http_status: 404)
+        end
+      end
+
+      context 'when epic has no parent' do
+        let(:epic_to_move) { create(:epic, group: group) }
+        let(:params) { { move_before_id: child_epic1.id } }
+
+        it 'returns an error' do
+          expect(reorder_child).to eq(message: 'Epic not found for given params', status: :error, http_status: 404)
+        end
+      end
+
       context 'when params are nil' do
         let(:params) { { move_before_id: nil, move_after_id: nil } }
 
         it 'does not change order of child epics' do
           expect(reorder_child).to include(status: :success)
-          expect(ordered_epics).to match_array([child_epic1, child_epic2, child_epic3, child_epic4])
-          expect(ordered_work_items).to match_array([
+          expect(ordered_epics).to eq([child_epic1, child_epic2, child_epic3, child_epic4])
+          expect(ordered_work_items).to eq([
             child_epic1.work_item, child_epic2.work_item, child_epic3.work_item, child_epic4.work_item
           ])
         end
@@ -93,8 +112,8 @@ RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_man
 
         it 'reorders child epics and sync positions with work items' do
           expect(reorder_child).to include(status: :success)
-          expect(ordered_epics).to match_array([child_epic3, child_epic1, child_epic2, child_epic4])
-          expect(ordered_work_items).to match_array(
+          expect(ordered_epics).to eq([child_epic3, child_epic1, child_epic2, child_epic4])
+          expect(ordered_work_items).to eq(
             [child_epic3.work_item, child_epic1.work_item, child_epic2.work_item, child_epic4.work_item]
           )
         end
@@ -107,8 +126,8 @@ RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_man
 
         it 'reorders child epics and sync positions with work items' do
           expect(reorder_child).to include(status: :success)
-          expect(ordered_epics).to match_array([child_epic1, child_epic2, child_epic4, child_epic3])
-          expect(ordered_work_items).to match_array(
+          expect(ordered_epics).to eq([child_epic1, child_epic2, child_epic4, child_epic3])
+          expect(ordered_work_items).to eq(
             [child_epic1.work_item, child_epic2.work_item, child_epic4.work_item, child_epic3.work_item]
           )
         end
@@ -121,8 +140,8 @@ RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_man
 
         it 'reorders child epics' do
           expect(reorder_child).to include(status: :success)
-          expect(ordered_epics).to match_array([child_epic1, child_epic3, child_epic2, child_epic4])
-          expect(ordered_work_items).to match_array(
+          expect(ordered_epics).to eq([child_epic1, child_epic3, child_epic2, child_epic4])
+          expect(ordered_work_items).to eq(
             [child_epic1.work_item, child_epic3.work_item, child_epic2.work_item, child_epic4.work_item]
           )
         end
@@ -136,8 +155,8 @@ RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_man
             expect(reorder_child).to include(
               message: 'Epic not found for given params', status: :error, http_status: 422
             )
-            expect(ordered_epics).to match_array([child_epic1, child_epic2, child_epic3, child_epic4])
-            expect(ordered_work_items).to match_array(
+            expect(ordered_epics).to eq([child_epic1, child_epic2, child_epic3, child_epic4])
+            expect(ordered_work_items).to eq(
               [child_epic1.work_item, child_epic2.work_item, child_epic3.work_item, child_epic4.work_item]
             )
           end
@@ -156,36 +175,64 @@ RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_man
         end
       end
 
-      context 'when syncing with work items fails' do
+      context 'when reordering fails' do
         let(:params) { { move_before_id: child_epic4.id, move_after_id: nil } }
 
         it 'does not change order of child epics and returns error' do
-          allow(epic_to_move.work_item.parent_link).to receive(:save!).and_return(false)
+          allow_next_instance_of(::WorkItems::ParentLinks::ReorderService) do |service|
+            allow(service).to receive(:execute).and_return(
+              { status: :error, message: "Couldn't re-order due to an internal error.", http_status: 422 }
+            )
+          end
 
-          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-            instance_of(Epics::SyncAsWorkItem::SyncAsWorkItemError), { moving_epic_id: epic_to_move.id }
-          )
           expect(reorder_child).to include(
             message: "Couldn't reorder child due to an internal error.", status: :error, http_status: 422
           )
-          expect(ordered_epics).to match_array([child_epic1, child_epic2, child_epic3, child_epic4])
-          expect(ordered_work_items).to match_array(
+          expect(ordered_epics).to eq([child_epic1, child_epic2, child_epic3, child_epic4])
+          expect(ordered_work_items).to eq(
             [child_epic1.work_item, child_epic2.work_item, child_epic3.work_item, child_epic4.work_item]
           )
         end
-      end
 
-      context 'when work item should not be synced' do
-        let(:params) { { move_before_id: child_epic1.id, move_after_id: child_epic2.id } }
-        let(:expected_work_items) do
-          [child_epic1.work_item, child_epic2.work_item, child_epic3.work_item, child_epic4.work_item]
+        context 'when reorder service returns 404' do
+          it 'returns epic not found error with 422 status' do
+            allow_next_instance_of(::WorkItems::ParentLinks::ReorderService) do |service|
+              allow(service).to receive(:execute).and_return(
+                { status: :error, message: 'Not found', http_status: 404 }
+              )
+            end
+
+            expect(reorder_child).to include(
+              message: 'Epic not found for given params', status: :error, http_status: 422
+            )
+          end
         end
 
-        shared_examples 'reordering without syncing relative positions' do
-          it 'only changes order of child epics and not the order of synced work items' do
-            expect(reorder_child).to include(status: :success)
-            expect(ordered_epics).to match_array([child_epic1, child_epic3, child_epic2, child_epic4])
-            expect(ordered_work_items).to match_array(expected_work_items)
+        context 'when reorder service returns unexpected error' do
+          it 'returns the original error message' do
+            allow_next_instance_of(::WorkItems::ParentLinks::ReorderService) do |service|
+              allow(service).to receive(:execute).and_return(
+                { status: :error, message: 'Unexpected error', http_status: 500 }
+              )
+            end
+
+            expect(reorder_child).to include(
+              message: 'Unexpected error', status: :error, http_status: 500
+            )
+          end
+        end
+
+        context 'when reorder service returns error without http_status' do
+          it 'defaults to 422 status' do
+            allow_next_instance_of(::WorkItems::ParentLinks::ReorderService) do |service|
+              allow(service).to receive(:execute).and_return(
+                { status: :error, message: 'Some error' }
+              )
+            end
+
+            expect(reorder_child).to include(
+              message: 'Some error', status: :error, http_status: 422
+            )
           end
         end
       end
