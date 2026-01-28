@@ -7,5 +7,5 @@ RSpec.describe GitlabSchema.types['AiMessageRole'], feature_category: :duo_chat 
 
   subject { described_class.values.keys }
 
-  it { is_expected.to contain_exactly(*expected_values) }
+  it { is_expected.to match_array(expected_values) }
 end

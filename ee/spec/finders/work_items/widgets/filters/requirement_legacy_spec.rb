@@ -25,7 +25,7 @@ RSpec.describe WorkItems::Widgets::Filters::RequirementLegacy, feature_category:
     context 'when legacy_iids parameter contains multiple items' do
       let(:expected_results) { [work_item, work_item1, work_item2] }
 
-      it { is_expected.to contain_exactly(*expected_results) }
+      it { is_expected.to match_array(expected_results) }
     end
 
     context 'when legacy_iids parameter is nil' do

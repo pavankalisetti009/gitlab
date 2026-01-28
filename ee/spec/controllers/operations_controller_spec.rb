@@ -524,7 +524,7 @@ RSpec.describe OperationsController, feature_category: :release_orchestration do
             actual_ids = json_response['projects'].map { |p| p['id'].to_i }
             expected_ids = public_projects.map(&:id)
 
-            expect(actual_ids).to contain_exactly(*expected_ids)
+            expect(actual_ids).to match_array(expected_ids)
           end
 
           it 'returns a maximum of three environments for a project' do

@@ -9,5 +9,5 @@ RSpec.describe Types::MergeTrains::TrainStatusEnum, feature_category: :merge_tra
 
   subject { described_class.values.keys }
 
-  it { is_expected.to contain_exactly(*expected_values) }
+  it { is_expected.to match_array(expected_values) }
 end

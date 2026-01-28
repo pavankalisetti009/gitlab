@@ -789,9 +789,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
                   let(:filtering_params) { { not: { label_name: [label3.title, label5.title] } } }
 
                   it 'returns correct epics' do
-                    expect(filtered_epics).to contain_exactly(
-                      *(group.epics.to_a - [labeled_epic1, labeled_epic2, labeled_epic3])
-                    )
+                    expect(filtered_epics).to match_array(group.epics.to_a - [labeled_epic1, labeled_epic2, labeled_epic3])
                   end
                 end
 
@@ -799,7 +797,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
                   let(:filtering_params) { { not: { label_name: [label3.title, label4.title] } } }
 
                   it 'returns correct epics' do
-                    expect(filtered_epics).to contain_exactly(*(group.epics.to_a - [labeled_epic1, labeled_epic2]))
+                    expect(filtered_epics).to match_array(group.epics.to_a - [labeled_epic1, labeled_epic2])
                   end
                 end
               end

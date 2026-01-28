@@ -168,7 +168,7 @@ RSpec.describe IterationsFinder, feature_category: :team_planning do
             params.merge!({ search: search, in: fields_to_search })
           end
 
-          it { is_expected.to contain_exactly(*expected_iterations) }
+          it { is_expected.to match_array(expected_iterations) }
         end
 
         context 'filters by title' do

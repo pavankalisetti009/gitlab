@@ -22,7 +22,7 @@ RSpec.describe UsersFinder do
         it 'returns only non-ldap users with skip_ldap: true' do
           users = described_class.new(user, skip_ldap: true).execute
 
-          expect(users).to contain_exactly(*normal_users, *users_visible_to_admin)
+          expect(users).to match_array(normal_users + users_visible_to_admin)
         end
       end
 
@@ -73,7 +73,7 @@ RSpec.describe UsersFinder do
         it 'returns only auditor users when auditors param is supplied' do
           users = described_class.new(user, auditors: true).execute
 
-          expect(users).to contain_exactly(*auditors_visible_to_admin)
+          expect(users).to match_array(auditors_visible_to_admin)
         end
       end
     end
