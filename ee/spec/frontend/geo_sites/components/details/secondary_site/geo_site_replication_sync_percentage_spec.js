@@ -36,14 +36,17 @@ describe('GeoSiteReplicationSyncPercentage', () => {
     });
 
     describe.each`
-      description               | values                                                        | expectedColor        | expectedText
-      ${'with no data'}         | ${[]}                                                         | ${'gl-bg-gray-200'}  | ${'-%'}
-      ${'with all success'}     | ${[{ total: 100, success: 100 }]}                             | ${'gl-bg-green-500'} | ${'100%'}
-      ${'with all failure'}     | ${[{ total: 100, success: 0 }]}                               | ${'gl-bg-red-500'}   | ${'0%'}
-      ${'with multiple data'}   | ${[{ total: 100, success: 100 }, { total: 100, success: 0 }]} | ${'gl-bg-red-500'}   | ${'50%'}
-      ${'with malformed data'}  | ${[{ total: null, success: 0 }]}                              | ${'gl-bg-gray-200'}  | ${'-%'}
-      ${'with Infinity result'} | ${[{ total: null, success: 1 }]}                              | ${'gl-bg-gray-200'}  | ${'-%'}
-      ${'with very small data'} | ${[{ total: 1000, success: 1 }]}                              | ${'gl-bg-red-500'}   | ${'< 1%'}
+      description                                    | values                                                        | expectedColor        | expectedText
+      ${'with no data'}                              | ${[]}                                                         | ${'gl-bg-gray-200'}  | ${'-%'}
+      ${'with disabled (null) data'}                 | ${[null]}                                                     | ${'gl-bg-gray-200'}  | ${'-%'}
+      ${'with all success'}                          | ${[{ total: 100, success: 100 }]}                             | ${'gl-bg-green-500'} | ${'100%'}
+      ${'with all success and disabled (null) data'} | ${[{ total: 100, success: 100 }, null]}                       | ${'gl-bg-green-500'} | ${'100%'}
+      ${'with all failure'}                          | ${[{ total: 100, success: 0 }]}                               | ${'gl-bg-red-500'}   | ${'0%'}
+      ${'with all failure and disabled (null) data'} | ${[null, { total: 100, success: 0 }]}                         | ${'gl-bg-red-500'}   | ${'0%'}
+      ${'with multiple data'}                        | ${[{ total: 100, success: 100 }, { total: 100, success: 0 }]} | ${'gl-bg-red-500'}   | ${'50%'}
+      ${'with malformed data'}                       | ${[{ total: null, success: 0 }]}                              | ${'gl-bg-gray-200'}  | ${'-%'}
+      ${'with Infinity result'}                      | ${[{ total: null, success: 1 }]}                              | ${'gl-bg-gray-200'}  | ${'-%'}
+      ${'with very small data'}                      | ${[{ total: 1000, success: 1 }]}                              | ${'gl-bg-red-500'}   | ${'< 1%'}
     `('conditionally $description', ({ values, expectedColor, expectedText }) => {
       beforeEach(() => {
         createComponent({ values });
