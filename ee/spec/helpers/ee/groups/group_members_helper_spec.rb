@@ -21,7 +21,6 @@ RSpec.describe Groups::GroupMembersHelper, feature_category: :groups_and_project
       access_requests: [],
       banned: banned,
       include_relations: [:inherited, :direct],
-      search: nil,
       pending_members_count: nil,
       placeholder_users: {}
     )
@@ -206,7 +205,6 @@ RSpec.describe Groups::GroupMembersHelper, feature_category: :groups_and_project
           access_requests: [],
           banned: banned,
           include_relations: [:inherited, :direct],
-          search: nil,
           pending_members_count: pending_members_count,
           placeholder_users: {}
         )
