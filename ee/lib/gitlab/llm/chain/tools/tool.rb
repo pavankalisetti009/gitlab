@@ -96,7 +96,6 @@ module Gitlab
               troubleshoot_job
               explain_vulnerability
               summarize_comments
-              explain_code
             ].include?(unit_primitive)
           end
 
