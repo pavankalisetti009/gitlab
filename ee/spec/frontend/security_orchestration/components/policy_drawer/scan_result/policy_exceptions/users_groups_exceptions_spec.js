@@ -271,7 +271,7 @@ describe('UsersGroupsExceptions', () => {
 
       searchGroupMembersHandler.mockResolvedValue({
         data: {
-          workspace: {
+          namespace: {
             users: {
               nodes: mockLoadedUsers,
             },

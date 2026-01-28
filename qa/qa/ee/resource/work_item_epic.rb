@@ -203,7 +203,7 @@ module QA
               '/graphql',
               <<~GQL
                 query getWorkItemTypeId {
-                  workspace: group(fullPath: "#{@group.full_path}") {
+                  namespace(fullPath: "#{@group.full_path}") {
                     workItemTypes(name: EPIC) {
                       edges {
                         node {

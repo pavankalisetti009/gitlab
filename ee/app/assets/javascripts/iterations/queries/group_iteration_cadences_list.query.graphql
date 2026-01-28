@@ -7,7 +7,7 @@ query groupIterationCadences(
   $firstPageSize: Int
   $lastPageSize: Int
 ) {
-  workspace: group(fullPath: $fullPath) {
+  namespace: group(fullPath: $fullPath) {
     id
     iterationCadences(
       includeAncestorGroups: true

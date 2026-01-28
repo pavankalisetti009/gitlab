@@ -100,7 +100,7 @@ export const updateMutationSuccess = {
 
 export const emptyGroupIterationsSuccess = {
   data: {
-    workspace: {
+    namespace: {
       __typename: 'Group',
       id: 'gid://gitlab/Group/114',
       iterations: {
@@ -118,7 +118,7 @@ export const emptyGroupIterationsSuccess = {
 
 export const nonEmptyGroupIterationsSuccess = {
   data: {
-    workspace: {
+    namespace: {
       id: 1,
       iterations: {
         nodes: [

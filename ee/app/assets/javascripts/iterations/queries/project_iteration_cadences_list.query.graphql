@@ -7,7 +7,7 @@ query projectIterationCadences(
   $firstPageSize: Int
   $lastPageSize: Int
 ) {
-  workspace: project(fullPath: $fullPath) {
+  namespace: project(fullPath: $fullPath) {
     id
     iterationCadences(
       includeAncestorGroups: true

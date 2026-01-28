@@ -22,7 +22,7 @@ RSpec.describe Types::WorkItems::Widgets::VulnerabilitiesType, feature_category:
     let(:query) do
       %(
         query {
-          workspace: namespace(fullPath: "#{project.full_path}") {
+          namespace(fullPath: "#{project.full_path}") {
             workItem(iid: "#{issue.iid}") {
               id
               widgets {
@@ -94,7 +94,7 @@ RSpec.describe Types::WorkItems::Widgets::VulnerabilitiesType, feature_category:
     end
 
     def get_related_vulnerabilities(response)
-      widgets = graphql_dig_at(response.to_h, 'data', 'workspace', 'workItem', 'widgets')
+      widgets = graphql_dig_at(response.to_h, 'data', 'namespace', 'workItem', 'widgets')
       widgets.find { |widget| widget['type'] == "VULNERABILITIES" }['relatedVulnerabilities']
     end
   end

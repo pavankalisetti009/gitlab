@@ -49,7 +49,7 @@ const PROJECT_MEMBER_RESPONSE_WITH_DUPLICATE_AND_NULL = createProjectMemberRespo
 
 const GROUP_MEMBER_RESPONSE = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Group/6',
       users: {
         nodes: [

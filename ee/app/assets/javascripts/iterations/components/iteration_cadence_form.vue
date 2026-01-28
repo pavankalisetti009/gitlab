@@ -255,10 +255,10 @@ export default {
           state: STATUS_ALL,
         };
       },
-      update({ workspace } = {}) {
-        if (!workspace) return [];
+      update({ namespace } = {}) {
+        if (!namespace) return [];
 
-        return workspace.iterations?.nodes || [];
+        return namespace.iterations?.nodes || [];
       },
       error(error) {
         this.errorMessage = error;

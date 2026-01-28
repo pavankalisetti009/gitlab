@@ -84,7 +84,7 @@ export default {
       },
       update(data) {
         const users = this.groupFullPath
-          ? data?.workspace?.users?.nodes?.map((groupMember) => groupMember.user)
+          ? data?.namespace?.users?.nodes?.map((groupMember) => groupMember.user)
           : data?.users?.nodes;
 
         return users || [];

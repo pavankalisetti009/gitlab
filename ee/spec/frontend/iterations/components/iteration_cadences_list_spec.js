@@ -54,7 +54,7 @@ describe('Iteration cadences list', () => {
   const querySuccessResponse = (nodes = cadences) => {
     return {
       data: {
-        workspace: {
+        namespace: {
           id: 'id',
           iterationCadences: {
             nodes,
@@ -73,7 +73,7 @@ describe('Iteration cadences list', () => {
 
   const queryEmptyResponse = {
     data: {
-      workspace: {
+      namespace: {
         id: '234',
         iterationCadences: {
           nodes: [],

@@ -160,7 +160,7 @@ export default {
           state: STATUS_ALL,
         },
       });
-      const iteration = data.workspace.iterations?.nodes[0];
+      const iteration = data.namespace.iterations?.nodes[0];
 
       if (iteration) {
         this.startDate = dayAfter(new Date(iteration.dueDate), { utc: true });

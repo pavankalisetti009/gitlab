@@ -137,7 +137,7 @@ export default {
 
         this.allUsers = isProject(this.namespaceType)
           ? get(data, 'project.projectMembers.nodes', [])
-          : get(data, 'workspace.users.nodes', []);
+          : get(data, 'namespace.users.nodes', []);
       } catch {
         this.loadingUsersFailed = true;
         this.allUsers = [];

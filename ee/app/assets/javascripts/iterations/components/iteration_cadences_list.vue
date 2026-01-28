@@ -43,7 +43,7 @@ export default {
     GlEmptyState,
   },
   apollo: {
-    workspace: {
+    namespace: {
       query() {
         return this.query;
       },
@@ -58,7 +58,7 @@ export default {
   inject: ['fullPath', 'cadencesListPath', 'canCreateCadence', 'namespaceType'],
   data() {
     return {
-      workspace: {
+      namespace: {
         iterationCadences: {
           nodes: [],
           pageInfo: {
@@ -98,13 +98,13 @@ export default {
       return vars;
     },
     cadences() {
-      return this.workspace?.iterationCadences?.nodes || [];
+      return this.namespace?.iterationCadences?.nodes || [];
     },
     pageInfo() {
-      return this.workspace?.iterationCadences?.pageInfo || {};
+      return this.namespace?.iterationCadences?.pageInfo || {};
     },
     loading() {
-      return this.$apollo.queries.workspace.loading;
+      return this.$apollo.queries.namespace.loading;
     },
     state() {
       switch (this.tabIndex) {
@@ -121,7 +121,7 @@ export default {
   },
   mounted() {
     if (this.$router.currentRoute.query.createdCadenceId) {
-      this.$apollo.queries.workspace.refetch();
+      this.$apollo.queries.namespace.refetch();
     }
   },
   methods: {
@@ -156,8 +156,8 @@ export default {
             });
 
             const data = produce(sourceData, (draftData) => {
-              draftData.workspace.iterationCadences.nodes =
-                draftData.workspace.iterationCadences.nodes.filter(({ id }) => id !== cadenceId);
+              draftData.namespace.iterationCadences.nodes =
+                draftData.namespace.iterationCadences.nodes.filter(({ id }) => id !== cadenceId);
             });
 
             store.writeQuery({

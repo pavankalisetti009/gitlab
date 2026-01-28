@@ -60,7 +60,7 @@ describe('Iteration cadence form', () => {
   const iterationsResponseMockFactory = (iteration = mockIterationNode) => {
     return jest.fn().mockResolvedValue({
       data: {
-        workspace: {
+        namespace: {
           id: mockGroupId,
           iterations: {
             nodes: [iteration],

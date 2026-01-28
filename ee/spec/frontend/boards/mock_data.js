@@ -1035,7 +1035,7 @@ export const assigneesQueryResponse = {
 
 export const milestonesQueryResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Project/33',
       milestones: {
         nodes: [
@@ -1102,7 +1102,7 @@ export const createEpicMutationResponse = {
 
 export const mockGroupBoardCurrentIterationResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Group/1',
       board: {
         id: 'gid://gitlab/Board/1',
@@ -1128,7 +1128,7 @@ export const mockGroupBoardCurrentIterationResponse = {
 
 export const mockGroupBoardNoIterationResponse = {
   data: {
-    workspace: {
+    namespace: {
       id: 'gid://gitlab/Group/1',
       board: {
         id: 'gid://gitlab/Board/1',
