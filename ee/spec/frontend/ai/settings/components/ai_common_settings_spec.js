@@ -28,6 +28,8 @@ describe('AiCommonSettings', () => {
         initialSelectedFoundationalFlowIds: [],
         initialDuoAgentPlatformEnabled: true,
         initialNamespaceAccessRules: [],
+        initialMinimumAccessLevelExecuteAsync: 30,
+        initialMinimumAccessLevelExecuteSync: 10,
         onGeneralSettingsPage: false,
         glFeatures: {
           aiExperimentSastFpDetection: true,
@@ -87,6 +89,8 @@ describe('AiCommonSettings', () => {
     await findForm().vm.$emit('namespace-access-rules-changed', [
       { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
     ]);
+    await findForm().vm.$emit('minimum-access-level-execute-async-changed', 40);
+    await findForm().vm.$emit('minimum-access-level-execute-sync-changed', 20);
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
@@ -106,6 +110,8 @@ describe('AiCommonSettings', () => {
       namespaceAccessRules: [
         { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
       ],
+      minimumAccessLevelExecuteAsync: 40,
+      minimumAccessLevelExecuteSync: 20,
     });
   });
 
@@ -191,6 +197,38 @@ describe('AiCommonSettings', () => {
 
         const [[{ foundationalAgentsStatuses }]] = wrapper.emitted('submit');
         expect(foundationalAgentsStatuses).toEqual(updatedStatuses);
+      });
+    });
+  });
+
+  describe('minimum access level permissions', () => {
+    it('updates internal state when form emits minimum-access-level-execute-async-changed', async () => {
+      expect(wrapper.vm.minimumAccessLevelExecuteAsync).toBe(30);
+
+      await findForm().vm.$emit('minimum-access-level-execute-async-changed', 40);
+
+      expect(wrapper.vm.minimumAccessLevelExecuteAsync).toBe(40);
+    });
+
+    it('updates internal state when form emits minimum-access-level-execute-sync-changed', async () => {
+      expect(wrapper.vm.minimumAccessLevelExecuteSync).toBe(10);
+
+      await findForm().vm.$emit('minimum-access-level-execute-sync-changed', 20);
+
+      expect(wrapper.vm.minimumAccessLevelExecuteSync).toBe(20);
+    });
+
+    it('includes minimum access levels in submit event', async () => {
+      await findForm().vm.$emit('minimum-access-level-execute-async-changed', 40);
+      await findForm().vm.$emit('minimum-access-level-execute-sync-changed', 20);
+      findForm().vm.$emit('submit', {
+        preventDefault: jest.fn(),
+      });
+
+      const emittedData = wrapper.emitted('submit')[0][0];
+      expect(emittedData).toMatchObject({
+        minimumAccessLevelExecuteAsync: 40,
+        minimumAccessLevelExecuteSync: 20,
       });
     });
   });

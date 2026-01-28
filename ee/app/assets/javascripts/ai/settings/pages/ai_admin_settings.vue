@@ -4,6 +4,7 @@ import axios from '~/lib/utils/axios_utils';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
+import { ACCESS_LEVELS_INTEGER_TO_STRING } from '~/access_level/constants';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import CodeSuggestionsConnectionForm from '../components/code_suggestions_connection_form.vue';
 import DuoExpandedLoggingForm from '../components/duo_expanded_logging_form.vue';
@@ -45,6 +46,8 @@ export default {
     'duoChatExpirationDays',
     'duoChatExpirationColumn',
     'duoCoreFeaturesEnabled',
+    'initialMinimumAccessLevelExecuteAsync',
+    'initialMinimumAccessLevelExecuteSync',
   ],
   provide: {
     isSaaS: false,
@@ -73,6 +76,8 @@ export default {
       chatExpirationDays: this.duoChatExpirationDays,
       chatExpirationColumn: this.duoChatExpirationColumn,
       areDuoCoreFeaturesEnabled: this.duoCoreFeaturesEnabled,
+      minimumAccessLevelExecuteAsync: this.initialMinimumAccessLevelExecuteAsync,
+      minimumAccessLevelExecuteSync: this.initialMinimumAccessLevelExecuteSync,
     };
   },
   computed: {
@@ -94,7 +99,9 @@ export default {
         this.aiGatewayUrlInput !== this.aiGatewayUrl ||
         this.duoAgentPlatformServiceUrlInput !== this.duoAgentPlatformServiceUrl ||
         this.areDuoCoreFeaturesEnabled !== this.duoCoreFeaturesEnabled ||
-        this.aiGatewayTimeoutSecondsInput !== this.aiGatewayTimeoutSeconds
+        this.aiGatewayTimeoutSecondsInput !== this.aiGatewayTimeoutSeconds ||
+        this.minimumAccessLevelExecuteAsync !== this.initialMinimumAccessLevelExecuteAsync ||
+        this.minimumAccessLevelExecuteSync !== this.initialMinimumAccessLevelExecuteSync
       );
     },
     hasExpandedAiLoggingChanged() {
@@ -115,10 +122,15 @@ export default {
       selectedFoundationalFlowIds,
       duoAgentPlatformEnabled,
       namespaceAccessRules,
+      minimumAccessLevelExecuteAsync,
+      minimumAccessLevelExecuteSync,
     }) {
       try {
         this.isLoading = true;
+
         this.areDuoCoreFeaturesEnabled = duoCoreFeaturesEnabled;
+        this.minimumAccessLevelExecuteAsync = minimumAccessLevelExecuteAsync;
+        this.minimumAccessLevelExecuteSync = minimumAccessLevelExecuteSync;
 
         if (this.haveAiSettingsChanged) {
           await this.updateAiSettings();
@@ -180,6 +192,10 @@ export default {
     async updateAiSettings() {
       const input = {
         duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled,
+        minimumAccessLevelExecute:
+          ACCESS_LEVELS_INTEGER_TO_STRING[this.minimumAccessLevelExecuteSync],
+        minimumAccessLevelExecuteAsync:
+          ACCESS_LEVELS_INTEGER_TO_STRING[this.minimumAccessLevelExecuteAsync],
       };
 
       if (this.canManageSelfHostedModels) {

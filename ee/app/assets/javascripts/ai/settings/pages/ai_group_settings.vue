@@ -68,6 +68,8 @@ export default {
       selectedFoundationalFlowIds,
       duoAgentPlatformEnabled,
       namespaceAccessRules,
+      minimumAccessLevelExecuteSync,
+      minimumAccessLevelExecuteAsync,
     }) {
       try {
         const transformedFoundationalAgentsStatuses = foundationalAgentsStatuses?.filter(
@@ -94,6 +96,8 @@ export default {
               prompt_injection_protection_level: this.promptInjectionProtection,
             }),
             foundational_agents_default_enabled: foundationalAgentsEnabled,
+            minimum_access_level_execute: minimumAccessLevelExecuteSync,
+            minimum_access_level_execute_async: minimumAccessLevelExecuteAsync,
           },
         };
 

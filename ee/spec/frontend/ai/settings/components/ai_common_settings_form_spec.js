@@ -824,6 +824,20 @@ describe('AiCommonSettingsForm', () => {
 
         expect(findSaveButton().props('disabled')).toBe(false);
       });
+
+      it('emits minimum-access-level-execute-async-changed event when AiRolePermissions emits change', async () => {
+        findAiRolePermissions().vm.$emit('minimum-access-level-execute-async-change', 40);
+        await nextTick();
+
+        expect(wrapper.emitted('minimum-access-level-execute-async-changed')).toEqual([[40]]);
+      });
+
+      it('emits minimum-access-level-execute-sync-changed event when AiRolePermissions emits change', async () => {
+        findAiRolePermissions().vm.$emit('minimum-access-level-execute-sync-change', 20);
+        await nextTick();
+
+        expect(wrapper.emitted('minimum-access-level-execute-sync-changed')).toEqual([[20]]);
+      });
     });
 
     describe('when dapInstanceCustomizablePermissions is enabled on Self-Managed', () => {
