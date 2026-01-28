@@ -58,6 +58,76 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
     end
   end
 
+  describe 'preventing unnecessary version creation when tools are reordered' do
+    let(:tool_ids) { [9, 1, 5, 2] }
+    let(:system_prompt) { 'Original prompt' }
+    let(:params) do
+      {
+        item: item,
+        tools: Ai::Catalog::BuiltInTool.where(id: tool_ids)
+      }
+    end
+
+    before_all do
+      project.add_maintainer(user)
+    end
+
+    before do
+      latest_version.update!(
+        definition: { 'tools' => [9, 1, 5, 2], 'system_prompt' => 'Original prompt' },
+        release_date: 1.day.ago
+      )
+      item.update!(latest_released_version: latest_version)
+    end
+
+    shared_examples 'creates a new version' do
+      it 'creates a new version and updates with expected tool configuration' do
+        expect { service.execute }.to change { item.reload.versions.count }.by(1)
+        expect(item.latest_version.definition['tools']).to match_array(tool_ids)
+        expect(item.latest_version.definition['system_prompt']).to eq(system_prompt)
+      end
+    end
+
+    shared_examples 'does not create a new version' do
+      it 'does not create a new version and preserves existing configuration' do
+        expect { service.execute }.not_to change { item.reload.versions.count }
+        expect(latest_version.reload.definition['tools']).to match_array(tool_ids)
+        expect(latest_version.definition['system_prompt']).to eq(system_prompt)
+      end
+    end
+
+    context 'when tools are reordered but contain the same IDs' do
+      let(:tool_ids) { [1, 2, 5, 9] }
+
+      it_behaves_like 'does not create a new version'
+    end
+
+    context 'when tools are actually different' do
+      let(:tool_ids) { [2, 3] }
+
+      it_behaves_like 'creates a new version'
+    end
+
+    context 'when tools include additional items but same core set' do
+      let(:tool_ids) { [1, 9, 2] }
+
+      it_behaves_like 'creates a new version'
+    end
+
+    context 'when tools are subset of original' do
+      let(:tool_ids) { [1] }
+
+      it_behaves_like 'creates a new version'
+    end
+
+    context 'when only system_prompt is provided' do
+      let(:system_prompt) { 'Updated system prompt' }
+      let(:params) { { system_prompt: system_prompt, item: item } }
+
+      it_behaves_like 'creates a new version'
+    end
+  end
+
   describe 'audit events' do
     let(:execute_service) do
       service.execute
