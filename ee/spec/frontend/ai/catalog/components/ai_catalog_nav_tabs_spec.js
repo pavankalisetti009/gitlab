@@ -12,7 +12,7 @@ describe('AiCatalogNavTabs', () => {
   };
 
   const createComponent = ({
-    routePath = '/ai/catalog',
+    routeName = '/agents',
     routeQuery = {},
     aiCatalogFlows = true,
     readAiCatalogFlow = true,
@@ -20,7 +20,8 @@ describe('AiCatalogNavTabs', () => {
     wrapper = shallowMountExtended(AiCatalogNavTabs, {
       mocks: {
         $route: {
-          path: routePath,
+          name: routeName,
+          path: routeName,
           query: routeQuery,
         },
         $router: mockRouter,
@@ -132,7 +133,7 @@ describe('AiCatalogNavTabs', () => {
 
   describe('when on Flows route', () => {
     beforeEach(() => {
-      createComponent({ routePath: AI_CATALOG_FLOWS_ROUTE });
+      createComponent({ routeName: AI_CATALOG_FLOWS_ROUTE });
     });
 
     it('renders the Flows tab as active', () => {
@@ -144,11 +145,11 @@ describe('AiCatalogNavTabs', () => {
 
   describe('navigation', () => {
     it('navigates to the correct route when tab is clicked', () => {
-      const agentsTab = findAllTabs().at(0);
+      const agentsTab = findAllTabs().at(1);
 
       agentsTab.vm.$emit('click');
 
-      expect(mockRouter.push).toHaveBeenCalledWith({ name: AI_CATALOG_AGENTS_ROUTE, query: {} });
+      expect(mockRouter.push).toHaveBeenCalledWith({ name: AI_CATALOG_FLOWS_ROUTE, query: {} });
     });
 
     it('preserves query params when navigating between tabs', () => {
@@ -165,7 +166,7 @@ describe('AiCatalogNavTabs', () => {
     });
 
     it('does not navigate if already on the same route', () => {
-      createComponent({ routePath: AI_CATALOG_AGENTS_ROUTE });
+      createComponent({ routeName: AI_CATALOG_AGENTS_ROUTE });
 
       const agentsTab = findAllTabs().at(0);
 
