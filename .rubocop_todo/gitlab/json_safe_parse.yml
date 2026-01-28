@@ -7,7 +7,6 @@ Gitlab/JsonSafeParse:
     - 'app/helpers/icons_helper.rb'
     - 'app/models/active_session.rb'
     - 'app/models/blob_viewer/dependency_manager.rb'
-    - 'app/models/bulk_imports/export_status.rb'
     - 'app/models/clusters/platforms/kubernetes.rb'
     - 'app/models/concerns/diff_positionable_note.rb'
     - 'app/models/concerns/integrations/base/mock_ci.rb'
