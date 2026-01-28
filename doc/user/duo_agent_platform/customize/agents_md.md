@@ -79,10 +79,10 @@ instructions. Previously existing conversations do not.
 
 User-level `AGENTS.md` files apply to all of your projects and workspaces.
 
-1. In your user configuration directory, create an `AGENTS.md` file:
-   - On Linux/macOS, create the file in your home directory at: `~/.gitlab/duo/AGENTS.md`, or on Windows: `%APPDATA%\GitLab\duo\AGENTS.md`.
-   - If you have set the `GLAB_CONFIG_DIR` environment variable, create the file at: `$GLAB_CONFIG_DIR/AGENTS.md`
-   - If you use the `XDG_CONFIG_HOME` environment variable, create the file at: `$XDG_CONFIG_HOME/gitlab/duo/AGENTS.md`
+1. Create an `AGENTS.md` file in your home directory:
+   - On Linux or macOS, create the file at `~/.gitlab/duo/AGENTS.md`.
+   - On Windows, create the file at `%APPDATA%\GitLab\duo\AGENTS.md`.
+
 1. Add instructions to the file. For example:
 
    {{< tabs >}}
@@ -146,6 +146,14 @@ User-level `AGENTS.md` files apply to all of your projects and workspaces.
 1. Save the file.
 1. To apply the instructions, start a new conversation or flow. You must do this every time you
    change the `AGENTS.md` file.
+
+If you have set a specific environment variable, then you create the
+`AGENTS.md` file in a different location:
+
+- If you have set the `GLAB_CONFIG_DIR` environment variable, create the file at
+  `$GLAB_CONFIG_DIR/AGENTS.md`.
+- If you have set the `XDG_CONFIG_HOME` environment variable, create the file at
+  `$XDG_CONFIG_HOME/gitlab/duo/AGENTS.md`.
 
 ### Create workspace-level `AGENTS.md` files
 
