@@ -962,6 +962,41 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           end
         end
 
+        shared_examples 'with CVE enrichment data' do
+          before do
+            create(:security_finding_enrichment, finding_uuid: enrichment_finding_uuid, cve: 'CVE-2024-1234',
+              epss_score: 0.85, is_known_exploit: true)
+            create(:security_finding_enrichment, finding_uuid: enrichment_finding_uuid, cve: 'CVE-2024-6789')
+          end
+
+          it 'includes CVE enrichment information inline' do
+            expect(body).to include('- `CVE-2024-1234` **·** EPSS: 0.85 **·** Known Exploited: Yes')
+            expect(body).to include('- `CVE-2024-6789` **·** EPSS: Unknown **·** Known Exploited: Unknown')
+          end
+
+          context 'when is_known_exploit is false' do
+            before do
+              create(:security_finding_enrichment, finding_uuid: enrichment_finding_uuid, cve: 'CVE-2024-9999',
+                epss_score: 0.50, is_known_exploit: false)
+            end
+
+            it 'includes "No" for Known Exploited when is_known_exploit is false' do
+              expect(body).to include('- `CVE-2024-9999` **·** EPSS: 0.5 **·** Known Exploited: No')
+            end
+          end
+
+          context 'when security_policies_kev_filter is disabled' do
+            before do
+              stub_feature_flags(security_policies_kev_filter: false)
+            end
+
+            it 'does not include CVE enrichment information inline' do
+              expect(body).not_to include('- `CVE-2024-1234` **·** EPSS: 0.85 **·** Known Exploited: Yes')
+              expect(body).not_to include('- `CVE-2024-6789` **·** EPSS: Unknown **·** Known Exploited: Unknown')
+            end
+          end
+        end
+
         describe 'newly_introduced_violations' do
           before do
             build_violation_details(:scan_finding,
@@ -974,6 +1009,12 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           it_behaves_like 'title for detected violations'
 
           it { is_expected.to include 'High', 'Test finding', 'Dependency scanning' }
+
+          context 'with CVE enrichment data' do
+            let(:enrichment_finding_uuid) { uuid }
+
+            it_behaves_like 'with CVE enrichment data'
+          end
         end
 
         describe 'previously_existing_violations' do
@@ -987,6 +1028,12 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           it_behaves_like 'title for detected violations'
 
           it { is_expected.to include 'Critical', 'AWS API key', 'Secret detection' }
+
+          context 'with CVE enrichment data' do
+            let(:enrichment_finding_uuid) { uuid }
+
+            it_behaves_like 'with CVE enrichment data'
+          end
         end
 
         describe 'any_merge_request_violations' do

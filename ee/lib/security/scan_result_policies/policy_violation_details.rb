@@ -8,7 +8,8 @@ module Security
       Violation = Struct.new(:report_type, :name, :scan_result_policy_id, :data, :warning, :status, :warn_mode,
         :security_policy, :security_policy_id, :enforcement_type, :dismissed, keyword_init: true)
       ViolationError = Struct.new(:report_type, :error, :data, :message, :warning, keyword_init: true)
-      ScanFindingViolation = Struct.new(:name, :report_type, :severity, :location, :path, keyword_init: true)
+      ScanFindingViolation = Struct.new(:name, :report_type, :severity, :location, :path, :cve_enrichments,
+        keyword_init: true)
       AnyMergeRequestViolation = Struct.new(:name, :commits, :warn_mode, keyword_init: true)
       LicenseScanningViolation = Struct.new(:license, :dependencies, :url, keyword_init: true)
       ComparisonPipelines = Struct.new(:report_type, :source, :target, keyword_init: true)
@@ -282,14 +283,16 @@ module Security
         return [] if uuids.blank?
 
         Security::ScanResultPolicies::VulnerabilitiesFinder.new(project,
-          { limit: uuids_limit, uuids: uuids.first(uuids_limit) }).execute.map do |vulnerability|
+          { limit: uuids_limit, uuids: uuids.first(uuids_limit) }).execute
+          .with_findings_and_finding_enrichments.map do |vulnerability|
           finding = vulnerability.finding
           ScanFindingViolation.new(
             report_type: finding.report_type,
             severity: finding.severity,
             path: vulnerability.present.location_link,
             location: finding.location.with_indifferent_access,
-            name: finding.name
+            name: finding.name,
+            cve_enrichments: finding.security_finding_enrichments
           )
         end
       end
@@ -299,13 +302,14 @@ module Security
 
         Security::ScanResultPolicies::FindingsFinder.new(project, pipeline,
           { related_pipeline_ids: related_pipeline_ids, uuids: uuids.first(uuids_limit) }).execute
-        .uniq(&:uuid).map do |finding|
+          .distinct_by_uuid.with_severity_overrides.with_finding_enrichments.map do |finding|
           ScanFindingViolation.new(
             report_type: finding.report_type,
             severity: finding.severity,
             path: finding.finding_data.present? ? finding.present.blob_url : nil,
             location: finding.finding_data.present? ? finding.location : nil,
-            name: finding.finding_data.present? ? finding.name : nil
+            name: finding.finding_data.present? ? finding.name : nil,
+            cve_enrichments: finding.finding_enrichments
           )
         end
       end

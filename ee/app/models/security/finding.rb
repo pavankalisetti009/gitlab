@@ -145,6 +145,7 @@ module Security
     scope :with_vulnerability, -> { includes(:vulnerability) }
     scope :with_state_transitions, -> { with_vulnerability.includes(:state_transitions) }
     scope :with_severity_overrides, -> { with_vulnerability.includes(:severity_overrides) }
+    scope :with_finding_enrichments, -> { includes(:finding_enrichments) }
     scope :with_issue_links, -> { with_vulnerability.includes(:issue_links) }
     scope :with_external_issue_links, -> { with_vulnerability.includes(:external_issue_links) }
     scope :with_merge_request_links, -> { with_vulnerability.includes(:merge_request_links) }
@@ -183,6 +184,8 @@ module Security
     scope :with_api_scopes, -> do
       preload(scan: { project: { namespace: :namespace_settings_with_ancestors_inherited_settings } })
     end
+
+    scope :distinct_by_uuid, -> { select('DISTINCT ON (uuid) *') }
 
     delegate :scan_type, :project, :pipeline, :remediations_proxy, to: :scan, allow_nil: true
     delegate :sha, to: :pipeline

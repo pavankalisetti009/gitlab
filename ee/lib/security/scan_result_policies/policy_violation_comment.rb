@@ -390,7 +390,26 @@ module Security
         end
 
         line += " (#{violation.report_type.humanize})" if violation.report_type
+
+        if Feature.enabled?(:security_policies_kev_filter, project)
+          enrichment_info = build_enrichment_info(violation)
+          line += "\n  #{enrichment_info}" if enrichment_info.present?
+        end
+
         line
+      end
+
+      def build_enrichment_info(violation)
+        enrichments = violation.cve_enrichments
+        return if enrichments.blank?
+
+        enrichments.map do |enrichment|
+          epss = enrichment.epss_score || HumanizationHelpers::UNKNOWN
+
+          known_exploited = humanized_boolean(enrichment.is_known_exploit)
+
+          " - `#{enrichment.cve}` **·** EPSS: #{epss} **·** Known Exploited: #{known_exploited}"
+        end.join("\n  ")
       end
 
       def any_merge_request_overview(violations, bypassable: false)
