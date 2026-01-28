@@ -19,7 +19,7 @@ module Groups
       private
 
       def ensure_root_group!
-        return if ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, group)
+        return if ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, group.root_ancestor)
 
         return if group.root?
 
