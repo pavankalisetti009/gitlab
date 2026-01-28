@@ -3,6 +3,7 @@
 class EpicPresenter < Gitlab::View::Presenter::Delegated
   include GitlabRoutingHelper
   include EntityDateHelper
+  include Gitlab::Utils::StrongMemoize
 
   delegator_override_with Gitlab::Utils::StrongMemoize
   presents ::Epic, as: :epic
@@ -40,14 +41,29 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
   # With the new WorkItem structure the logic for the "inherited"/"fixed" dates changed
   # To ensure we're using the same values on the new UI/APIs and on the legacy (like Roadmaps)
   # we overwrite the *_date* methods to use the logic from WorkItems::StartAndDueDate
+  # We also read other attributes from work_item to ensure consistency
   delegator_override :start_date,
     :start_date_fixed,
     :start_date_is_fixed,
     :start_date_is_fixed?,
+    :start_date_from_milestones,
     :due_date,
     :due_date_fixed,
     :due_date_is_fixed,
-    :due_date_is_fixed?
+    :due_date_is_fixed?,
+    :due_date_from_milestones,
+    :created_at,
+    :updated_at,
+    :state,
+    :lock_version,
+    :labels,
+    :author,
+    :confidential,
+    :confidential?,
+    :color,
+    :text_color,
+    :title,
+    :description
 
   def start_date
     rollupable_dates.start_date
@@ -68,14 +84,73 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
     epic.issue_id
   end
 
-  private
-
-  def rollupable_dates
-    @rollupable_dates ||= WorkItems::RollupableDates.new(epic, can_rollup: true)
+  def created_at
+    work_item.created_at
   end
 
+  def state
+    work_item.state
+  end
+
+  def lock_version
+    work_item.lock_version
+  end
+
+  def labels
+    work_item.labels
+  end
+
+  def author
+    work_item.author
+  end
+
+  def updated_at
+    work_item.updated_at
+  end
+
+  def confidential
+    work_item.confidential
+  end
+  alias_method :confidential?, :confidential
+
+  def color
+    work_item.color&.color.to_s
+  end
+
+  def text_color
+    work_item.color&.text_color.to_s
+  end
+
+  def title
+    work_item.title
+  end
+
+  def description
+    work_item.description
+  end
+
+  def start_date_from_milestones
+    rollupable_dates.start_date
+  end
+
+  def due_date_from_milestones
+    rollupable_dates.due_date
+  end
+
+  private
+
+  def work_item
+    epic.work_item
+  end
+  strong_memoize_attr :work_item
+
+  def rollupable_dates
+    work_item.get_widget(:start_and_due_date)
+  end
+  strong_memoize_attr :rollupable_dates
+
   def initial_data
-    { labels: epic.labels }
+    { labels: labels }
   end
 
   def meta_data(author_icon)
@@ -91,14 +166,14 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
     {
       epic_id: epic.id,
       epic_iid: epic.iid,
-      created: epic.created_at,
+      created: created_at,
       author: epic_author(author_icon),
       ancestors: epic_ancestors(epic.ancestors.inc_group),
       reference: epic.to_reference(full: true),
       todo_exists: epic_pending_todo.present?,
       todo_path: group_todos_path(group),
-      lock_version: epic.lock_version,
-      state: epic.state,
+      lock_version: lock_version,
+      state: state,
       scoped_labels: group.licensed_feature_available?(:scoped_labels)
     }
   end
@@ -159,10 +234,10 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
 
   def epic_author(author_icon)
     {
-      id: epic.author.id,
-      name: epic.author.name,
-      url: user_path(epic.author),
-      username: "@#{epic.author.username}",
+      id: author.id,
+      name: author.name,
+      url: user_path(author),
+      username: "@#{author.username}",
       src: author_icon
     }
   end

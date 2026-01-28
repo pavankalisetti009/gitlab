@@ -112,7 +112,7 @@ module Resolvers
     attr_reader :resolver_object
 
     def unconditional_includes
-      [:group, :sync_object]
+      [:group, :sync_object, { work_item: :dates_source }]
     end
 
     def preloads
@@ -121,11 +121,14 @@ module Resolvers
         events: { events: [:target] },
         award_emoji: { award_emoji: [:awardable] },
         participants: Epic.participant_includes,
-        start_date_from_milestones: [:start_date_sourcing_milestone],
         start_date_from_inherited_source: [:start_date_sourcing_milestone, :start_date_sourcing_epic],
-        due_date_from_milestones: [:due_date_sourcing_milestone],
         due_date_from_inherited_source: [:due_date_sourcing_milestone, :due_date_sourcing_epic],
-        linked_work_items: [:work_item]
+        linked_work_items: [:work_item],
+        labels: [{ work_item: [:labels, :label_links] }],
+        author: [{ work_item: :author }],
+        color: [{ work_item: :color }],
+        text_color: [{ work_item: :color }],
+        confidential: [:work_item]
       }
     end
 

@@ -121,35 +121,51 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
     end
   end
 
-  describe 'use work item logic to present dates' do
-    using RSpec::Parameterized::TableSyntax
+  describe 'date attributes read from work item' do
+    context 'with fixed dates' do
+      let_it_be(:epic) { create(:epic, group: group) }
+      let_it_be(:work_item) { epic.work_item }
+      let_it_be(:dates_source) do
+        create(:work_items_dates_source,
+          :fixed,
+          work_item: work_item,
+          start_date: Date.new(2010, 1, 1),
+          due_date: Date.new(2010, 1, 3)
+        )
+      end
 
-    let_it_be(:epic) do
-      build_stubbed(
-        :epic,
-        start_date: Date.new(2024, 1, 15),
-        start_date_fixed: Date.new(2024, 1, 10),
-        start_date_is_fixed: true,
-        due_date: Date.new(2024, 2, 15),
-        due_date_fixed: Date.new(2024, 2, 20),
-        due_date_is_fixed: false
-      )
+      it 'reads dates from work item', :aggregate_failures do
+        expect(resolve_field(:start_date, epic)).to eq(work_item.start_date)
+        expect(resolve_field(:start_date, epic)).to eq(Date.new(2010, 1, 1))
+
+        expect(resolve_field(:start_date_is_fixed, epic)).to be(true)
+        expect(resolve_field(:start_date_fixed, epic)).to eq(Date.new(2010, 1, 1))
+
+        expect(resolve_field(:due_date, epic)).to eq(work_item.due_date)
+        expect(resolve_field(:due_date, epic)).to eq(Date.new(2010, 1, 3))
+
+        expect(resolve_field(:due_date_is_fixed, epic)).to be(true)
+        expect(resolve_field(:due_date_fixed, epic)).to eq(Date.new(2010, 1, 3))
+      end
     end
 
-    where(:field, :result) do
-      :start_date | Date.new(2024, 1, 10)
-      :start_date_fixed | Date.new(2024, 1, 10)
-      :start_date_is_fixed | true
-      :due_date | Date.new(2024, 2, 20)
-      :due_date_fixed | Date.new(2024, 2, 20)
-      :due_date_is_fixed | true
-    end
+    context 'with inherited dates' do
+      let_it_be(:epic) { create(:epic, group: group) }
+      let_it_be(:work_item) { epic.work_item }
+      let_it_be(:dates_source) do
+        create(:work_items_dates_source,
+          work_item: work_item,
+          start_date: Date.new(2010, 1, 2),
+          due_date: Date.new(2010, 1, 4)
+        )
+      end
 
-    with_them do
-      it "presents epic date field using the work item WorkItems::Widgets::StartAndDueDate logic" do
-        value = resolve_field(field, epic)
+      it 'reads the dates from the work item', :aggregate_failures do
+        expect(resolve_field(:start_date_is_fixed, epic)).to be(false)
+        expect(resolve_field(:start_date, epic)).to eq(Date.new(2010, 1, 2))
 
-        expect(value).to eq(result)
+        expect(resolve_field(:due_date_is_fixed, epic)).to be(false)
+        expect(resolve_field(:due_date, epic)).to eq(Date.new(2010, 1, 4))
       end
     end
   end
