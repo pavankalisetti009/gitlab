@@ -1219,12 +1219,9 @@ To configure a notification endpoint for a Linux package installation:
    gitlab_rails['registry_notification_secret'] = '<AUTHORIZATION_EXAMPLE_TOKEN>' # Must match the auth token in registry['notifications']
    ```
 
-  {{< alert type="note" >}}
-
-  Replace `<AUTHORIZATION_EXAMPLE_TOKEN>` with a case-sensitive alphanumeric string
-  that starts with a letter. You can generate one with `< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32 | sed "s/^[0-9]*//"; echo`
-
-  {{< /alert >}}
+   > [!note]
+   > Replace `<AUTHORIZATION_EXAMPLE_TOKEN>` with a case-sensitive alphanumeric string
+   > that starts with a letter. You can generate one with `< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32 | sed "s/^[0-9]*//"; echo`
 
 1. Save the file and [reconfigure GitLab](../restart_gitlab.md#reconfigure-a-linux-package-installation) for the changes to take effect.
 
