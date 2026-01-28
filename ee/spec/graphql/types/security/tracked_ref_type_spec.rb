@@ -81,81 +81,92 @@ RSpec.describe Types::Security::TrackedRefType, feature_category: :vulnerability
         allow(type_instance).to receive(:project).and_return(project)
       end
 
-      where(:context_type, :ref_exists, :raw_commit_result, :expected_result) do
-        'branch' | false | nil           | nil
-        'tag'    | false | nil           | nil
-        'branch' | true  | 'raw_commit'  | 'commit_object'
-        'tag'    | true  | 'raw_commit'  | 'commit_object'
-        'branch' | true  | nil           | nil
-        'tag'    | true  | nil           | nil
-      end
-
-      with_them do
-        it "handles different commit scenarios" do
-          allow(type_instance).to receive(:ref_exists_in_repository?).and_return(ref_exists)
-          allow(tracked_ref).to receive(:context_type).and_return(context_type)
-
-          if ref_exists
-            allow(type_instance).to receive(:fetch_raw_commit).and_return(raw_commit_result)
-
-            if raw_commit_result
-              expect(Commit).to receive(:new).with(raw_commit_result, project).and_return('commit_object')
-            end
-          end
-
-          expect(type_instance.commit).to eq(expected_result)
-        end
-      end
-
-      where(:error_type) do
-        [Gitlab::Git::Repository::NoRepository]
-        [Rugged::ReferenceError]
-      end
-
-      with_them do
-        it "handles repository errors gracefully" do
-          allow(type_instance).to receive(:ref_exists_in_repository?).and_return(true)
-          allow(type_instance).to receive(:fetch_raw_commit).and_raise(error_type)
-
-          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-            an_instance_of(error_type),
-            hash_including(project_id: project.id, ref_name: tracked_ref.context_name)
-          )
-
+      context 'when ref does not exist in repository' do
+        it 'returns nil' do
+          allow(type_instance).to receive(:ref_exists_in_repository?).and_return(false)
           expect(type_instance.commit).to be_nil
         end
       end
-    end
 
-    describe '#fetch_raw_commit' do
-      before do
-        allow(type_instance).to receive(:project).and_return(project)
-      end
+      context 'when ref exists in repository' do
+        before do
+          allow(type_instance).to receive(:ref_exists_in_repository?).and_return(true)
+        end
 
-      where(:context_type, :setup_method, :expected_result) do
-        'branch'       | :setup_branch  | 'branch_commit'
-        'tag'          | :setup_tag     | 'tag_commit'
-        'tag'          | :setup_nil_tag | nil
-        'unknown_type' | nil            | nil
-        'invalid'      | nil            | nil
-        ''             | nil            | nil
-      end
+        where(:context_type, :ref_name, :has_commit, :expected_result) do
+          'branch'  | 'main'    | true  | :commit_object
+          'branch'  | 'main'    | false | nil
+          'tag'     | 'v1.0.0'  | true  | :commit_object
+          'tag'     | 'v1.0.0'  | false | nil
+        end
 
-      with_them do
-        it "handles different context types correctly" do
-          allow(tracked_ref).to receive(:context_type).and_return(context_type)
+        with_them do
+          it "handles #{params[:context_type]} context returning #{params[:expected_result] || 'nil'}" do
+            allow(tracked_ref).to receive_messages(
+              context_type: context_type,
+              context_name: ref_name
+            )
 
-          case setup_method
-          when :setup_branch
-            allow(project).to receive_message_chain(:repository, :commit).and_return('branch_commit')
-          when :setup_tag
-            tag = instance_double(Gitlab::Git::Tag, dereferenced_target: 'tag_commit')
-            allow(project).to receive_message_chain(:repository, :find_tag).and_return(tag)
-          when :setup_nil_tag
-            allow(project).to receive_message_chain(:repository, :find_tag).and_return(nil)
+            qualified_ref = case context_type
+                            when 'branch' then "#{Gitlab::Git::BRANCH_REF_PREFIX}#{ref_name}"
+                            when 'tag' then "#{Gitlab::Git::TAG_REF_PREFIX}#{ref_name}"
+                            end
+
+            commit_result = has_commit ? instance_double(Commit) : nil
+            allow(project).to receive_message_chain(:repository, :commit)
+              .with(qualified_ref).and_return(commit_result)
+
+            result = type_instance.commit
+
+            if expected_result == :commit_object && has_commit
+              expect(result).to be_present
+            else
+              expect(result).to be_nil
+            end
           end
+        end
 
-          expect(type_instance.send(:fetch_raw_commit)).to eq(expected_result)
+        context 'when context type is unknown' do
+          it 'returns nil' do
+            allow(tracked_ref).to receive_messages(
+              context_type: 'unknown',
+              context_name: 'ref'
+            )
+
+            allow(project).to receive_message_chain(:repository, :commit)
+              .with(nil).and_return(nil)
+
+            expect(type_instance.commit).to be_nil
+          end
+        end
+      end
+
+      context 'when repository errors occur' do
+        before do
+          allow(type_instance).to receive(:ref_exists_in_repository?).and_return(true)
+          allow(tracked_ref).to receive_messages(
+            context_type: 'branch',
+            context_name: 'main'
+          )
+        end
+
+        where(:error_type) do
+          [Gitlab::Git::Repository::NoRepository, Rugged::ReferenceError]
+        end
+
+        with_them do
+          it "handles #{params[:error_type]} gracefully" do
+            qualified_ref = "#{Gitlab::Git::BRANCH_REF_PREFIX}main"
+            allow(project).to receive_message_chain(:repository, :commit)
+              .with(qualified_ref).and_raise(error_type)
+
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              an_instance_of(error_type),
+              hash_including(project_id: project.id, ref_name: 'main')
+            )
+
+            expect(type_instance.commit).to be_nil
+          end
         end
       end
     end
