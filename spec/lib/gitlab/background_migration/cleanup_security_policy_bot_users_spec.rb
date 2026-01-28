@@ -352,39 +352,5 @@ RSpec.describe Gitlab::BackgroundMigration::CleanupSecurityPolicyBotUsers, featu
     expect { perform_migration }
       .not_to change { users_table.where(id: regular_user.id).count }
   end
-
-  it 'logs deleted user ids when users are deleted' do
-    expect(Gitlab::BackgroundMigration::Logger).to receive(:info).with(
-      hash_including(
-        message: 'Deleted security policy bot users',
-        count: 4,
-        user_ids: array_including(
-          policy_bot_with_premium_project.id,
-          policy_bot_with_silver_project.id,
-          policy_bot_with_premium_trial_project.id,
-          policy_bot_with_premium_subgroup_project.id
-        )
-      )
-    )
-
-    perform_migration
-  end
-
-  context 'when no users are deleted' do
-    before do
-      users_table.where(id: [
-        policy_bot_with_premium_project.id,
-        policy_bot_with_silver_project.id,
-        policy_bot_with_premium_trial_project.id,
-        policy_bot_with_premium_subgroup_project.id
-      ]).delete_all
-    end
-
-    it 'does not log' do
-      expect(Gitlab::BackgroundMigration::Logger).not_to receive(:info)
-
-      perform_migration
-    end
-  end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers

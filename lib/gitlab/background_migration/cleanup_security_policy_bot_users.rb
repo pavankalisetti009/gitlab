@@ -15,7 +15,7 @@ module Gitlab
 
       def perform
         each_sub_batch do |sub_batch|
-          deleted_ids = connection.select_values(<<~SQL)
+          connection.execute(<<~SQL)
             DELETE FROM users
             WHERE id IN (
               SELECT users.id
@@ -29,17 +29,7 @@ module Gitlab
                 AND members.type = 'ProjectMember'
                 AND plans.name IN (#{PREMIUM_PLANS.map { |plan| connection.quote(plan) }.join(', ')})
             )
-            RETURNING id
           SQL
-
-          next unless deleted_ids.any?
-
-          Gitlab::BackgroundMigration::Logger.info(
-            migrator: self.class.name,
-            message: 'Deleted security policy bot users',
-            count: deleted_ids.size,
-            user_ids: deleted_ids
-          )
         end
       end
     end
