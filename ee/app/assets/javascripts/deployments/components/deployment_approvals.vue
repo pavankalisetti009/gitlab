@@ -20,6 +20,7 @@ const APPROVE_STATUS = 'APPROVED';
 const REJECT_STATUS = 'REJECTED';
 
 export default {
+  name: 'DeploymentApprovals',
   components: {
     MultipleApprovalRulesTable,
     GlAlert,

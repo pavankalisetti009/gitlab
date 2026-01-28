@@ -7,6 +7,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { APPROVAL_STATUSES, ACCESS_LEVEL } from '../constants';
 
 export default {
+  name: 'DeploymentTimeline',
   components: {
     GlAvatarLink,
     GlAvatar,
