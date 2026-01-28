@@ -103,9 +103,7 @@ describe('LogsDrawer', () => {
       issues: [],
       fetchingIssues: false,
       error: null,
-      helpPath: helpPagePath('/development/logs', {
-        anchor: 'create-an-issue-for-a-log',
-      }),
+      helpPath: helpPagePath('/development/feature_development'),
     });
     expect(findRelatedIssues().attributes('id')).toBe('related-issues-1');
   });

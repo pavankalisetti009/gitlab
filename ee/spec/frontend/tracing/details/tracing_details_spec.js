@@ -148,9 +148,7 @@ describe('TracingDetails', () => {
       issues: [],
       fetchingIssues: false,
       error: null,
-      helpPath: helpPagePath('/development/tracing', {
-        anchor: 'create-an-issue-for-a-trace',
-      }),
+      helpPath: helpPagePath('/development/feature_development'),
     });
   });
 
