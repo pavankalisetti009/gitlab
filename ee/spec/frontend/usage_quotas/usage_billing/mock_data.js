@@ -1,11 +1,27 @@
-import produce from 'immer';
+import merge from 'lodash/merge';
+
+const EMPTY_POOL = { totalCredits: 0, creditsUsed: 0 };
+const NO_POOLS = {
+  usersUsage: undefined,
+  monthlyCommitment: null,
+  monthlyWaiver: null,
+  overage: null,
+};
+const USER_NULL_USAGE = {
+  creditsUsed: null,
+  monthlyCommitmentCreditsUsed: null,
+  monthlyWaiverCreditsUsed: null,
+  overageCreditsUsed: null,
+};
 
 export const mockUsersUsageDataWithoutPool = {
   data: {
     subscriptionUsage: {
       enabled: true,
       isOutdatedClient: false,
-      lastEventTransactionAt: '2024-01-15T10:30:00Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
       canAcceptOverageTerms: false,
       subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
       purchaseCreditsPath: '/purchase-credits-path',
@@ -98,20 +114,11 @@ export const mockUsersUsageDataWithoutPool = {
   },
 };
 
-// per user summaries for the month
-export const mockUsersUsageDataWithPool = {
+export const mockUsersUsageDataWithPool = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         // overall statistics
-        totalUsers: 50,
-        totalUsersUsingAllocation: 35,
         totalUsersUsingMonthlyCommitment: 15,
         totalUsersBlocked: 10,
 
@@ -223,32 +230,17 @@ export const mockUsersUsageDataWithPool = {
               },
             },
           ],
-          pageInfo: {
-            hasNextPage: false,
-            hasPreviousPage: false,
-            startCursor: null,
-            endCursor: null,
-          },
         },
       },
     },
   },
-};
+});
 
-export const mockUsersUsageDataWithOverage = {
+export const mockUsersUsageDataWithOverage = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
-        totalUsers: 50,
-        totalUsersUsingAllocation: 35,
         totalUsersUsingMonthlyCommitment: 15,
-        totalUsersBlocked: 10,
 
         users: {
           nodes: [
@@ -357,30 +349,15 @@ export const mockUsersUsageDataWithOverage = {
               },
             },
           ],
-          pageInfo: {
-            hasNextPage: false,
-            hasPreviousPage: false,
-            startCursor: null,
-            endCursor: null,
-          },
         },
       },
     },
   },
-};
+});
 
-export const mockUsersUsageDataWithZeroAllocation = {
+export const mockUsersUsageDataWithZeroAllocation = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      purchaseCreditsPath: '/purchase-credits-path',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
-
       usersUsage: {
         totalUsers: 5,
         totalUsersUsingAllocation: 2,
@@ -395,8 +372,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               username: 'ajohnson',
               avatarUrl: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
               usage: {
-                creditsUsed: 0,
-                totalCredits: 0,
+                ...EMPTY_POOL,
                 monthlyCommitmentCreditsUsed: 0,
                 monthlyWaiverCreditsUsed: 12,
                 overageCreditsUsed: 15,
@@ -408,8 +384,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               username: 'bsmith',
               avatarUrl: 'https://www.gravatar.com/avatar/2?s=80&d=identicon',
               usage: {
-                creditsUsed: 0,
-                totalCredits: 0,
+                ...EMPTY_POOL,
                 monthlyCommitmentCreditsUsed: 0,
                 monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
@@ -421,8 +396,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               username: 'cdavis',
               avatarUrl: 'https://www.gravatar.com/avatar/3?s=80&d=identicon',
               usage: {
-                creditsUsed: 0,
-                totalCredits: 0,
+                ...EMPTY_POOL,
                 monthlyCommitmentCreditsUsed: 0,
                 monthlyWaiverCreditsUsed: 5,
                 overageCreditsUsed: 89,
@@ -434,8 +408,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               username: 'dwilson',
               avatarUrl: 'https://www.gravatar.com/avatar/4?s=80&d=identicon',
               usage: {
-                creditsUsed: 0,
-                totalCredits: 0,
+                ...EMPTY_POOL,
                 monthlyCommitmentCreditsUsed: 0,
                 monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 42,
@@ -447,27 +420,20 @@ export const mockUsersUsageDataWithZeroAllocation = {
               username: 'emartinez',
               avatarUrl: 'https://www.gravatar.com/avatar/5?s=80&d=identicon',
               usage: {
-                creditsUsed: 0,
-                totalCredits: 0,
+                ...EMPTY_POOL,
                 monthlyCommitmentCreditsUsed: 0,
                 monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
             },
           ],
-          pageInfo: {
-            hasNextPage: false,
-            hasPreviousPage: false,
-            startCursor: null,
-            endCursor: null,
-          },
         },
       },
     },
   },
-};
+});
 
-export const mockUsersUsageDataWithNullUsage = {
+export const mockUsersUsageDataWithNullUsage = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
       usersUsage: {
@@ -480,11 +446,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/17c92ab7acbe41a4fd2e243828e5b711b3475526b188aa96c0f5039392d64ad8?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: 24,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -496,11 +459,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/4da03f30b1328ab1bf4ce9cfe88f447af5ad030bc52ef5825ab6bf06301bf39c?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: 24,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -512,11 +472,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/be1b9a030c184bc489faaa8fbb6679874660bbcec5df62bcd8dbd11cec02a4eb?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: null,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -528,11 +485,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/57e70f889048d230e2c7945babbe8bec8cbc90e20cf7b0388cd801a52f2243c6?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: 24,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -544,11 +498,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/97615be7789c22621ed96bc730c6819933fef80b1a7af3f95910c17f0e8615d3?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: 24,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -560,11 +511,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/b4f1716310d4bb11d742604f8dda7ec30cebf0e7eacdbc241d42eb155c54fb03?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: 24,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -576,11 +524,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/d72fd8312645f293d485dfb87a50828c261e535357b6fe4bf4886332db33cd1a?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: 24,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -608,11 +553,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/ef6157f79905c001112efda96ceb98fa1b0524a40ee9148bcf410793333a2614?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: 24,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -624,11 +566,8 @@ export const mockUsersUsageDataWithNullUsage = {
               avatarUrl:
                 'https://secure.gravatar.com/avatar/6156236af081924c152da7bfc5b2ce1110628e2bb7a17ca2239038ec5a4f57bb?s=80&d=identicon',
               usage: {
-                creditsUsed: null,
                 totalCredits: 24,
-                monthlyCommitmentCreditsUsed: null,
-                monthlyWaiverCreditsUsed: null,
-                overageCreditsUsed: null,
+                ...USER_NULL_USAGE,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
               __typename: 'GitlabSubscriptionUsageUser',
@@ -648,19 +587,11 @@ export const mockUsersUsageDataWithNullUsage = {
       __typename: 'GitlabSubscriptionUsage',
     },
   },
-};
+});
 
-export const usageDataWithCommitment = {
+export const usageDataWithCommitment = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      startDate: '2025-10-01',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      endDate: '2025-10-31',
-      purchaseCreditsPath: '/purchase-credits-path',
       monthlyCommitment: {
         creditsUsed: 50.333,
         totalCredits: 100,
@@ -672,19 +603,18 @@ export const usageDataWithCommitment = {
         ],
       },
       overage: {
-        isAllowed: true,
-        creditsUsed: 0,
         dailyUsage: [],
+        ...EMPTY_POOL,
+        isAllowed: true,
       },
 
       monthlyWaiver: {
-        totalCredits: 0,
-        creditsUsed: 0,
         dailyUsage: [],
+        ...EMPTY_POOL,
       },
     },
   },
-};
+});
 
 export const usageDataWithoutLastEventTransactionAt = {
   data: {
@@ -694,29 +624,15 @@ export const usageDataWithoutLastEventTransactionAt = {
       lastEventTransactionAt: null,
       canAcceptOverageTerms: false,
       subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
       purchaseCreditsPath: '/purchase-credits-path',
-
-      monthlyCommitment: null,
-      monthlyWaiver: null,
-      overage: null,
+      ...NO_POOLS,
     },
   },
 };
 
-export const usageDataWithCommitmentWithMonthlyWaiver = {
+export const usageDataWithCommitmentWithMonthlyWaiver = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
-      purchaseCreditsPath: '/purchase-credits-path',
-
       monthlyCommitment: {
         creditsUsed: 50,
         totalCredits: 50,
@@ -739,24 +655,16 @@ export const usageDataWithCommitmentWithMonthlyWaiver = {
       },
       overage: {
         isAllowed: false,
-        creditsUsed: 0,
         dailyUsage: [],
+        ...EMPTY_POOL,
       },
     },
   },
-};
+});
 
-export const usageDataWithCommitmentWithOverage = {
+export const usageDataWithCommitmentWithOverage = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      purchaseCreditsPath: '/purchase-credits-path',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
       monthlyCommitment: {
         creditsUsed: 50,
         totalCredits: 50,
@@ -779,52 +687,39 @@ export const usageDataWithCommitmentWithOverage = {
       },
 
       monthlyWaiver: {
-        totalCredits: 0,
-        creditsUsed: 0,
         dailyUsage: [],
+        ...EMPTY_POOL,
       },
     },
   },
-};
+});
 
-export const usageDataNoCommitmentNoMonthlyWaiverNoOverage = {
-  data: {
-    subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2024-01-15T10:30:00Z',
-      canAcceptOverageTerms: true,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
-      purchaseCreditsPath: '/purchase-credits-path',
-      monthlyCommitment: null,
-      overage: {
-        isAllowed: false,
-        creditsUsed: 0,
-        dailyUsage: [],
-      },
+export const usageDataNoCommitmentNoMonthlyWaiverNoOverage = merge(
+  {},
+  mockUsersUsageDataWithoutPool,
+  {
+    data: {
+      subscriptionUsage: {
+        canAcceptOverageTerms: true,
+        monthlyCommitment: null,
+        overage: {
+          isAllowed: false,
+          dailyUsage: [],
+          ...EMPTY_POOL,
+        },
 
-      monthlyWaiver: {
-        totalCredits: 0,
-        creditsUsed: 0,
-        dailyUsage: [],
+        monthlyWaiver: {
+          dailyUsage: [],
+          ...EMPTY_POOL,
+        },
       },
     },
   },
-};
+);
 
-export const usageDataNoCommitmentWithOverage = {
+export const usageDataNoCommitmentWithOverage = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
-      purchaseCreditsPath: '/purchase-credits-path',
       monthlyCommitment: null,
       overage: {
         isAllowed: true,
@@ -839,36 +734,31 @@ export const usageDataNoCommitmentWithOverage = {
       },
 
       monthlyWaiver: {
-        totalCredits: 0,
-        creditsUsed: 0,
         dailyUsage: [],
+        ...EMPTY_POOL,
       },
     },
   },
-};
+});
 
-export const usageDataNoCommitmentWithOverageWithOverageNotAllowed = produce(
+export const usageDataNoCommitmentWithOverageWithOverageNotAllowed = merge(
+  {},
   usageDataNoCommitmentWithOverage,
-  (clone) => {
-    /* eslint-disable no-param-reassign */
-    clone.data.subscriptionUsage.canAcceptOverageTerms = true;
-    clone.data.subscriptionUsage.overage.isAllowed = false;
-    /* eslint-enable no-param-reassign */
+  {
+    data: {
+      subscriptionUsage: {
+        canAcceptOverageTerms: true,
+        overage: {
+          isAllowed: false,
+        },
+      },
+    },
   },
 );
 
-export const usageDataCommitmentWithMonthlyWaiver = {
+export const usageDataCommitmentWithMonthlyWaiver = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
-      purchaseCreditsPath: '/purchase-credits-path',
-
       monthlyCommitment: {
         creditsUsed: 50,
         totalCredits: 50,
@@ -883,8 +773,8 @@ export const usageDataCommitmentWithMonthlyWaiver = {
 
       overage: {
         isAllowed: true,
-        creditsUsed: 0,
         dailyUsage: [],
+        ...EMPTY_POOL,
       },
 
       monthlyWaiver: {
@@ -900,108 +790,81 @@ export const usageDataCommitmentWithMonthlyWaiver = {
       },
     },
   },
-};
+});
 
-export const usageDataCommitmentWithMonthlyWaiverWithOverage = {
-  data: {
-    subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
-      purchaseCreditsPath: '/purchase-credits-path',
+export const usageDataCommitmentWithMonthlyWaiverWithOverage = merge(
+  {},
+  mockUsersUsageDataWithoutPool,
+  {
+    data: {
+      subscriptionUsage: {
+        monthlyCommitment: {
+          creditsUsed: 100,
+          totalCredits: 100,
+          dailyUsage: [
+            { creditsUsed: 18, date: '2025-10-01' },
+            { creditsUsed: 22, date: '2025-10-02' },
+            { creditsUsed: 20, date: '2025-10-03' },
+            { creditsUsed: 25, date: '2025-10-04' },
+            { creditsUsed: 15, date: '2025-10-05' },
+          ],
+        },
 
-      monthlyCommitment: {
-        creditsUsed: 100,
-        totalCredits: 100,
-        dailyUsage: [
-          { creditsUsed: 18, date: '2025-10-01' },
-          { creditsUsed: 22, date: '2025-10-02' },
-          { creditsUsed: 20, date: '2025-10-03' },
-          { creditsUsed: 25, date: '2025-10-04' },
-          { creditsUsed: 15, date: '2025-10-05' },
-        ],
-      },
+        overage: {
+          isAllowed: true,
+          creditsUsed: 24,
+          dailyUsage: [
+            { creditsUsed: 4.5, date: '2025-10-11' },
+            { creditsUsed: 6.25, date: '2025-10-12' },
+            { creditsUsed: 7.75, date: '2025-10-13' },
+            { creditsUsed: 5.5, date: '2025-10-14' },
+          ],
+        },
 
-      overage: {
-        isAllowed: true,
-        creditsUsed: 24,
-        dailyUsage: [
-          { creditsUsed: 4.5, date: '2025-10-11' },
-          { creditsUsed: 6.25, date: '2025-10-12' },
-          { creditsUsed: 7.75, date: '2025-10-13' },
-          { creditsUsed: 5.5, date: '2025-10-14' },
-        ],
-      },
-
-      monthlyWaiver: {
-        totalCredits: 100,
-        creditsUsed: 100,
-        dailyUsage: [
-          { creditsUsed: 16.5, date: '2025-10-06' },
-          { creditsUsed: 22.25, date: '2025-10-07' },
-          { creditsUsed: 28.125, date: '2025-10-08' },
-          { creditsUsed: 21.125, date: '2025-10-09' },
-          { creditsUsed: 12, date: '2025-10-10' },
-        ],
+        monthlyWaiver: {
+          totalCredits: 100,
+          creditsUsed: 100,
+          dailyUsage: [
+            { creditsUsed: 16.5, date: '2025-10-06' },
+            { creditsUsed: 22.25, date: '2025-10-07' },
+            { creditsUsed: 28.125, date: '2025-10-08' },
+            { creditsUsed: 21.125, date: '2025-10-09' },
+            { creditsUsed: 12, date: '2025-10-10' },
+          ],
+        },
       },
     },
   },
-};
+);
 
-export const usageDataWithOutdatedClient = {
+export const usageDataWithOutdatedClient = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
       isOutdatedClient: true,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
-      purchaseCreditsPath: '/purchase-credits-path',
-      monthlyCommitment: null,
-      monthlyWaiver: null,
-      overage: null,
+      ...NO_POOLS,
     },
   },
-};
+});
 
-export const usageDataWithDisabledState = {
+export const usageDataWithDisabledState = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
       enabled: false,
       isOutdatedClient: null,
       lastEventTransactionAt: null,
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
       startDate: null,
       endDate: null,
       purchaseCreditsPath: null,
-      monthlyCommitment: null,
-      monthlyWaiver: null,
-      overage: null,
+      ...NO_POOLS,
     },
   },
-};
+});
 
-export const usageDataWithoutPurchaseCreditsPath = {
+export const usageDataWithoutPurchaseCreditsPath = merge({}, mockUsersUsageDataWithoutPool, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      startDate: '2025-10-01',
-      endDate: '2025-10-31',
       purchaseCreditsPath: null,
-      monthlyCommitment: null,
-      monthlyWaiver: null,
-      overage: null,
+      ...NO_POOLS,
     },
   },
-};
+});
