@@ -33,17 +33,14 @@ or email OTP.
 
 ### Register an OTP authenticator
 
-{{< alert type="warning" >}}
-
-If you lose access to your OTP authenticator, you might be locked out of your account.
-
-To minimize this risk:
-
-- Enable cloud backup in your authenticator app.
-- Save your backup passwords, secret keys, or recovery credentials in a secure location.
-- Review the documentation for your specific OTP authenticator.
-
-{{< /alert >}}
+> [!warning]
+> If you lose access to your OTP authenticator, you might be locked out of your account.
+> 
+> To minimize this risk:
+> 
+> - Enable cloud backup in your authenticator app.
+> - Save your backup passwords, secret keys, or recovery credentials in a secure location.
+> - Review the documentation for your specific OTP authenticator.
 
 To register an OTP authenticator:
 

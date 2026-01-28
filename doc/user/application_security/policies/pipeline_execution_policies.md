@@ -799,17 +799,14 @@ In this case, the job variable value `Project job variable value` takes preceden
 
 {{< /history >}}
 
-{{< alert type="warning" >}}
-
-This feature does not work with pipeline execution policies created before GitLab 18.5.
-To use this feature with older pipeline execution policies, you can either:
-
-- Make any change to the existing YAML configuration files for the pipeline execution policies.
-- Copy, delete, and recreate the policies.
-
-For more information, see [recreate pipeline execution policies](#recreate-pipeline-execution-policies).
-
-{{< /alert >}}
+> [!warning]
+> This feature does not work with pipeline execution policies created before GitLab 18.5.
+> To use this feature with older pipeline execution policies, you can either:
+> 
+> - Make any change to the existing YAML configuration files for the pipeline execution policies.
+> - Copy, delete, and recreate the policies.
+> 
+> For more information, see [recreate pipeline execution policies](#recreate-pipeline-execution-policies).
 
 You can use the `description`, `value` and `options` keywords to define CI/CD variables
 that are [prefilled when a user runs a pipeline manually](../../../ci/pipelines/_index.md#prefill-variables-in-manual-pipelines).
