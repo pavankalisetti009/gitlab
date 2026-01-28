@@ -138,12 +138,9 @@ Supported configuration formats:
 - OpenAPI
 - Terraform
 
-  {{< alert type="note" >}}
-
-  Terraform modules in a custom registry are not scanned for vulnerabilities.
-  For more information about the proposed feature, see [issue 357004](https://gitlab.com/gitlab-org/gitlab/-/issues/357004).
-
-  {{< /alert >}}
+  > [!note]
+  > Terraform modules in a custom registry are not scanned for vulnerabilities.
+  > For more information about the proposed feature, see [issue 357004](https://gitlab.com/gitlab-org/gitlab/-/issues/357004).
 
 ## Optimization
 
