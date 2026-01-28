@@ -73,6 +73,13 @@ module Security
 
       def mark_resolved_vulnerabilities
         ingested_ids_by_scanner.each do |scanner, ingested_ids|
+          # Skip SBOM scanner - its vulnerabilities are handled separately after SBOM ingestion.
+          # Running MarkAsResolvedService here with empty ingested_ids would incorrectly mark
+          # all existing vulnerabilities as "no longer detected".
+
+          next if scanner&.vulnerability_scanner? && Feature.enabled?(
+            :new_security_dashboard_exclude_no_longer_detected, project)
+
           MarkAsResolvedService.execute(pipeline, scanner, ingested_ids)
         end
       end
