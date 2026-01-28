@@ -17,8 +17,12 @@ module CloudConnector
       if use_self_signed_token?(unit_primitive, feature_setting: feature_setting)
         issue_token(resource, extra_claims)
       else
-        TokenLoader.new.token
+        cloud_connector_token
       end
+    end
+
+    def cloud_connector_token
+      TokenLoader.new.token
     end
 
     private

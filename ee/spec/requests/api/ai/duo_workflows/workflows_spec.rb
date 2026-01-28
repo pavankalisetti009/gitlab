@@ -1420,6 +1420,40 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         })
       end
 
+      context 'when self-hosted DAP billing is enabled for the feature' do
+        before do
+          allow(Ai::SelfHostedDapBilling).to receive(:should_bill?).and_return(true)
+          allow(::CloudConnector::Tokens).to receive(:cloud_connector_token).and_return('cloud_connector_token')
+        end
+
+        it 'populates CloudServiceForSelfHosted with Cloud Connector values' do
+          get_response
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          cloud_service = json_response['DuoWorkflow']['CloudServiceForSelfHosted']
+          expect(cloud_service['URI']).to eq(Gitlab::DuoWorkflow::Client.cloud_connected_url(user: user))
+          expect(cloud_service['Headers']).to be_present
+          expect(cloud_service['Headers']).to include('authorization' => "Bearer cloud_connector_token")
+          expect(cloud_service['Secure']).to be(true)
+        end
+      end
+
+      context 'when self-hosted DAP billing is disabled for the feature' do
+        before do
+          allow(Ai::SelfHostedDapBilling).to receive(:should_bill?).and_return(false)
+        end
+
+        it 'omits CloudServiceForSelfHosted config' do
+          get_response
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          cloud_service = json_response['DuoWorkflow']['CloudServiceForSelfHosted']
+          expect(cloud_service).to be_nil
+        end
+      end
+
       context 'when workflow_definition is for agentic chat' do
         it 'includes MCP server configuration' do
           get api(path, user), headers: workhorse_headers, params: { workflow_definition: 'chat' }
