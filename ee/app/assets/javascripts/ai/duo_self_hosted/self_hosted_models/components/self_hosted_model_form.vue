@@ -111,7 +111,7 @@ export default {
     submitButtonText: {
       type: String,
       required: false,
-      default: s__('AdminSelfHostedModels|Create self-hosted model'),
+      default: s__('AdminSelfHostedModels|Add self-hosted model'),
     },
     mutationData: {
       type: Object,
@@ -131,7 +131,6 @@ export default {
       'AdminSelfHostedModels|Please enter a unique deployment name.',
     ),
     invalidEndpointError: s__('AdminSelfHostedModels|Please add a valid endpoint.'),
-    successMessage: s__('AdminSelfHostedModels|The self-hosted model was successfully %{action}.'),
     awsSetupMessage: s__(
       'AdminSelfHostedModels|To fully set up AWS credentials for this model please refer to the %{linkStart}AWS Bedrock Configuration Guide%{linkEnd}',
     ),
@@ -242,9 +241,11 @@ export default {
       return this.platform === SELF_HOSTED_MODEL_PLATFORMS.API;
     },
     successMessage() {
-      return sprintf(this.$options.i18n.successMessage, {
-        action: this.isEditing ? 'saved' : 'created',
-      });
+      if (this.isEditing) {
+        return s__('AdminSelfHostedModels|The self-hosted model was successfully saved.');
+      }
+
+      return s__('AdminSelfHostedModels|Model added. Select it for a feature to start using it.');
     },
     formValues() {
       /*
