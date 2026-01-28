@@ -233,8 +233,8 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
 
           let(:resource) { root_group }
 
-          it 'does not apply subgroup hierarchy restrictions' do
-            expect(finder.execute).to include(subgroup_sa)
+          it 'still applies subgroup hierarchy restrictions (FF only controls SA creation, not invite restrictions)' do
+            expect(finder.execute).not_to include(subgroup_sa)
           end
         end
       end
@@ -291,31 +291,28 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
 
           let(:resource) { root_group }
 
-          it 'does not apply project provisioning restrictions' do
-            expect(finder.execute).to include(project_sa)
+          it 'still applies project restrictions (FF only controls SA creation, not invite restrictions)' do
+            expect(finder.execute).not_to include(project_sa)
           end
         end
       end
 
-      describe 'when no restrictions are enabled' do
+      describe 'when only composite identity restriction is disabled' do
         before do
           stub_saas_features(service_accounts_invite_restrictions: false)
-          stub_feature_flags(
-            allow_subgroups_to_create_service_accounts: false,
-            allow_projects_to_create_service_accounts: false
-          )
         end
 
         let(:resource) { root_group }
 
-        it 'does not filter any service accounts' do
+        it 'still applies subgroup and project restrictions (FF only controls SA creation, not invite restrictions)' do
           project_sa = create(:user, :service_account).tap do |user|
             user.user_detail.update!(provisioned_by_project_id: project.id)
           end
 
           result = finder.execute
 
-          expect(result).to include(instance_sa, root_group_sa, subgroup_sa, other_group_sa, project_sa)
+          expect(result).to include(instance_sa, root_group_sa, other_group_sa)
+          expect(result).not_to include(subgroup_sa, project_sa)
         end
       end
     end

@@ -75,7 +75,7 @@ module EE
           end
 
           def service_accounts_available?
-            if ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, context.group)
+            if ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, context.group.root_ancestor)
               can?(context.current_user, :read_service_account, context.group)
             else
               context.group.root? &&

@@ -190,8 +190,8 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
 
         let(:sa) { create(:user, :service_account, provisioned_by_group: subgroup) }
 
-        it 'does not apply subgroup hierarchy restrictions' do
-          expect(eligible).to be true
+        it 'still applies subgroup hierarchy restrictions (FF only controls SA creation, not invite restrictions)' do
+          expect(eligible).to be false
         end
       end
     end
@@ -273,8 +273,8 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
           end
         end
 
-        it 'does not apply project provisioning restrictions' do
-          expect(eligible).to be true
+        it 'still applies project provisioning restrictions (FF only controls SA creation, not invite restrictions)' do
+          expect(eligible).to be false
         end
       end
 
@@ -388,20 +388,16 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
       end
     end
 
-    context 'when only composite identity restriction is enabled', :saas do
+    context 'when composite identity restriction is enabled', :saas do
       let(:checker) { described_class.new(target_group: root_group) }
 
-      before do
-        stub_feature_flags(allow_subgroups_to_create_service_accounts: false)
-      end
-
-      it 'includes SAs without composite_identity_enforced' do
+      it 'excludes subgroup SAs without composite_identity_enforced (subgroup hierarchy restriction always applies)' do
         subgroup_sa_no_composite = create(:user, :service_account, composite_identity_enforced: false,
           provisioned_by_group: subgroup)
 
         result = checker.filter_users(User.all)
 
-        expect(result).to include(subgroup_sa_no_composite)
+        expect(result).not_to include(subgroup_sa_no_composite)
       end
 
       it 'includes SAs from allowed hierarchy with composite_identity_enforced' do
@@ -633,14 +629,14 @@ RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, featur
 
         let(:checker) { described_class.new(target_group: root_group) }
 
-        it 'does not filter project-provisioned SAs' do
+        it 'still filters project-provisioned SAs (FF only controls SA creation, not invite restrictions)' do
           project_sa = create(:user, :service_account).tap do |user|
             user.user_detail.update!(provisioned_by_project_id: project_in_root.id)
           end
 
           result = checker.filter_users(User.all)
 
-          expect(result).to include(project_sa)
+          expect(result).not_to include(project_sa)
         end
       end
 

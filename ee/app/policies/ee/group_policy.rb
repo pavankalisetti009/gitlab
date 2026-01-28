@@ -215,7 +215,7 @@ module EE
       end
 
       condition(:service_accounts_enabled_for_subgroups) do
-        ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, @subject)
+        ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, @subject.root_ancestor)
       end
 
       condition(:service_accounts_available) do

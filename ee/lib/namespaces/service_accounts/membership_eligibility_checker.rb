@@ -22,7 +22,6 @@ module Namespaces
       # Filters a User relation to only include users eligible for membership within target_namespace.
       def filter_users(users_relation)
         return users_relation if target_namespace.nil? && target_project.nil? # no-op as a safe default
-        return users_relation unless any_restrictions_enabled?
 
         users_relation
           .left_joins(:user_detail)
@@ -56,8 +55,8 @@ module Namespaces
         conditions = []
 
         conditions << composite_identity_condition if composite_identity_restrictions_enabled?
-        conditions << subgroup_hierarchy_condition if subgroup_restrictions_enabled?
-        conditions << project_provisioning_condition if project_restrictions_enabled?
+        conditions << subgroup_hierarchy_condition
+        conditions << project_provisioning_condition
 
         full_condition = "users.user_type != :sa_type OR (#{conditions.join(' AND ')})"
 
@@ -109,18 +108,6 @@ module Namespaces
         ::Gitlab::Saas.feature_available?(:service_accounts_invite_restrictions)
       end
 
-      def subgroup_restrictions_enabled?
-        ::Feature.enabled?(:allow_subgroups_to_create_service_accounts, target_namespace.root_ancestor)
-      end
-
-      def project_restrictions_enabled?
-        ::Feature.enabled?(:allow_projects_to_create_service_accounts, target_namespace.root_ancestor)
-      end
-
-      def any_restrictions_enabled?
-        composite_identity_restrictions_enabled? || subgroup_restrictions_enabled? || project_restrictions_enabled?
-      end
-
       def restricted_by_composite_identity?(user)
         return false unless composite_identity_restrictions_enabled?
         return false unless user.composite_identity_enforced?
@@ -130,8 +117,6 @@ module Namespaces
       end
 
       def restricted_by_subgroup_hierarchy?(user)
-        return false unless subgroup_restrictions_enabled?
-
         provisioned_group = user.provisioned_by_group
         return false unless provisioned_group&.has_parent?
 
@@ -143,7 +128,6 @@ module Namespaces
       end
 
       def restricted_by_project_provisioning?(user)
-        return false unless project_restrictions_enabled?
         return false if user.provisioned_by_project_id.nil?
 
         # Project-provisioned SAs can only be invited to their origin project
