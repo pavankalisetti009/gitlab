@@ -239,7 +239,7 @@ RSpec.describe Groups::GroupMembersHelper, feature_category: :groups_and_project
   end
 
   describe '#group_member_header_subtext' do
-    let(:base_subtext) { "You're viewing members of <strong>#{group.name}</strong>." }
+    let(:base_subtext) { "You&#39;re viewing members of <strong>#{group.name}</strong>." }
     let(:cannot_invite_subtext_for_com) do
       "You cannot invite a new member to <strong>#{group.name}</strong>. " \
         "User invitations are disabled by the group owner."
