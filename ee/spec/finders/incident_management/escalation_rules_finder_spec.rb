@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe IncidentManagement::EscalationRulesFinder do
+RSpec.describe IncidentManagement::EscalationRulesFinder, feature_category: :incident_management do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:other_project) { create(:project, group: group) }

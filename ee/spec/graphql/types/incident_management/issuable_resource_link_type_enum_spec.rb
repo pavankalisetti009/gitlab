@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::IncidentManagement::IssuableResourceLinkTypeEnum do
+RSpec.describe Types::IncidentManagement::IssuableResourceLinkTypeEnum, feature_category: :incident_management do
   specify { expect(described_class.graphql_name).to eq('IssuableResourceLinkType') }
 
   it 'exposes all the existing issuable resource link types values' do

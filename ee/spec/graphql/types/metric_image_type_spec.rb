@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['MetricImage'] do
+RSpec.describe GitlabSchema.types['MetricImage'], feature_category: :incident_management do
   it { expect(described_class.graphql_name).to eq('MetricImage') }
 
   it { expect(described_class).to require_graphql_authorizations(:read_issuable_metric_image) }

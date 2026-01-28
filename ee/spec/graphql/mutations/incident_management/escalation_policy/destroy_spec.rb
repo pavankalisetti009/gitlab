@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::IncidentManagement::EscalationPolicy::Destroy do
+RSpec.describe Mutations::IncidentManagement::EscalationPolicy::Destroy, feature_category: :incident_management do
   include GraphqlHelpers
   let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project) }
