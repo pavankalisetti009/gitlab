@@ -20,7 +20,14 @@ module Ai
           definition_params = params.slice(*DEFINITION_ATTRIBUTES).stringify_keys
           return {} if definition_params.empty?
 
-          definition_params['tools']&.map!(&:id)
+          if definition_params['tools'].present?
+            new_tool_ids = definition_params['tools'].map!(&:id)
+            old_tool_ids = old_definition['tools'] || []
+
+            # If the tools are the same, but in a different order, it would be considered an update
+            # and bump the version, which we don't want.
+            definition_params['tools'] = old_tool_ids if new_tool_ids.to_set == old_tool_ids.to_set
+          end
 
           {
             definition: latest_version.definition.merge(definition_params)
