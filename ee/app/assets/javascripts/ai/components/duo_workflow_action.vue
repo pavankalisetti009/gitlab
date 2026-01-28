@@ -130,12 +130,12 @@ export default {
       },
       update(data) {
         if (data.project) {
+          const { id, duoWorkflowStatusCheck } = data.project;
+
           return {
-            isDuoActionEnabled:
-              Boolean(data.project?.duoWorkflowStatusCheck?.enabled) &&
-              Boolean(data.project?.duoWorkflowStatusCheck?.remoteFlowsEnabled),
-            projectId: getIdFromGraphQLId(data.project.id),
-            projectGid: data.project.id,
+            isDuoActionEnabled: this.duoActionEnabledFromStatusCheck(duoWorkflowStatusCheck),
+            projectId: getIdFromGraphQLId(id),
+            projectGid: id,
           };
         }
         return null;
@@ -181,6 +181,15 @@ export default {
     },
   },
   methods: {
+    duoActionEnabledFromStatusCheck(duoWorkflowStatusCheck) {
+      if (duoWorkflowStatusCheck) {
+        const { enabled, remoteFlowsEnabled, createDuoWorkflowForCiAllowed } =
+          duoWorkflowStatusCheck;
+
+        return enabled && remoteFlowsEnabled && createDuoWorkflowForCiAllowed !== false;
+      }
+      return false;
+    },
     showSuccessToast(id, workflowDefinition) {
       let message;
       let action;

@@ -15,7 +15,12 @@ import {
   mockCreateFlowResponse,
   mockDuoWorkflowStatusCheckEnabled,
   mockDuoWorkflowStatusCheckDisabled,
+  mockDuoWorkflowStatusCheckIsNull,
   mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled,
+  mockDuoWorkflowStatusCheckEnabledButRemoteFlowsIsNull,
+  mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiNotAllowed,
+  mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiAllowedIsNull,
+  mockDuoWorkflowStatusCheckDisabledButRemoveFlowsEnabledAndCreateDuoWorkflowForCiAllowed,
   mockConfiguredFlowsResponse,
   mockEmptyConfiguredFlowsResponse,
 } from '../mocks';
@@ -90,7 +95,13 @@ describe('DuoWorkflowAction component', () => {
   });
 
   describe('rendering', () => {
-    describe('when duoWorkflowStatusCheck is not enabled', () => {
+    it('calls health checks query', async () => {
+      await createComponent();
+
+      expect(mockGetHealthCheckHandler).toHaveBeenCalled();
+    });
+
+    describe('when duoWorkflowStatusCheck is disabled', () => {
       beforeEach(async () => {
         mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckDisabled);
         await createComponent();
@@ -99,9 +110,16 @@ describe('DuoWorkflowAction component', () => {
       it('does not render button', () => {
         expect(findButton().exists()).toBe(false);
       });
+    });
 
-      it('calls health checks query', () => {
-        expect(mockGetHealthCheckHandler).toHaveBeenCalled();
+    describe('when duoWorkflowStatusCheck is null', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckIsNull);
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
       });
     });
 
@@ -116,9 +134,46 @@ describe('DuoWorkflowAction component', () => {
       it('does not render button', () => {
         expect(findButton().exists()).toBe(false);
       });
+    });
 
-      it('calls health checks query', () => {
-        expect(mockGetHealthCheckHandler).toHaveBeenCalled();
+    describe('when duoWorkflowStatusCheck is enabled but remoteFlowsEnabled is null', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest
+          .fn()
+          .mockResolvedValue(mockDuoWorkflowStatusCheckEnabledButRemoteFlowsIsNull);
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+    });
+
+    describe('when duoWorkflowStatusCheck is enabled but createDuoWorkflowForCiAllowed is false', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest
+          .fn()
+          .mockResolvedValue(mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiNotAllowed);
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+    });
+
+    describe('when duoWorkflowStatusCheck is enabled but createDuoWorkflowForCiAllowed is null', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest
+          .fn()
+          .mockResolvedValue(
+            mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiAllowedIsNull,
+          );
+        await createComponent();
+      });
+
+      it('renders button', () => {
+        expect(findButton().exists()).toBe(true);
       });
     });
 
@@ -168,6 +223,21 @@ describe('DuoWorkflowAction component', () => {
             },
           },
         });
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+    });
+
+    describe('when duoWorkflowStatusCheck is disabled but remote flows is enabled and creating workflows for CI is allowed', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest
+          .fn()
+          .mockResolvedValue(
+            mockDuoWorkflowStatusCheckDisabledButRemoveFlowsEnabledAndCreateDuoWorkflowForCiAllowed,
+          );
         await createComponent();
       });
 
