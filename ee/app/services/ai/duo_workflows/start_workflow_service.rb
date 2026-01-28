@@ -127,6 +127,7 @@ module Ai
         vars = {}
         vars[:GIT_DEPTH] = 1 if @params.fetch(:shallow_clone, true)
         vars[:GIT_FETCH_EXTRA_FLAGS] = "--filter=blob:none"
+        vars[:GIT_LFS_SKIP_SMUDGE] = 1
         vars
       end
 

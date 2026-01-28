@@ -1582,6 +1582,36 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     end
   end
 
+  context 'with Git LFS skip configuration', :aggregate_failures do
+    include_context 'with Duo enabled'
+
+    it 'sets GIT_LFS_SKIP_SMUDGE to skip LFS smudging during clone' do
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
+        workload_definition = kwargs[:workload_definition]
+        variables = workload_definition.variables
+
+        expect(variables[:GIT_LFS_SKIP_SMUDGE]).to eq(1)
+
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+
+    it 'sets GIT_FETCH_EXTRA_FLAGS for partial clone' do
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
+        workload_definition = kwargs[:workload_definition]
+        variables = workload_definition.variables
+
+        expect(variables[:GIT_FETCH_EXTRA_FLAGS]).to eq('--filter=blob:none')
+
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
   context 'when workflows_workload join table fails to create' do
     include_context 'with Duo enabled'
 
