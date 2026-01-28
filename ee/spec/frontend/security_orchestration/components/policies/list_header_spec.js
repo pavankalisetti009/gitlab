@@ -7,7 +7,6 @@ import ExceedingActionsBanner from 'ee/security_orchestration/components/policie
 import ExceedingScheduledRulesBanner from 'ee/security_orchestration/components/policies/banners/exceeding_scheduled_rules_banner.vue';
 import InvalidPoliciesBanner from 'ee/security_orchestration/components/policies/banners/invalid_policies_banner.vue';
 import InvalidPolicyYamlBanner from 'ee/security_orchestration/components/policies/banners/invalid_policy_yaml_banner.vue';
-import WarnModeBanner from 'ee/security_orchestration/components/policies/banners/warn_mode_banner.vue';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ProjectModal from 'ee/security_orchestration/components/policies/project_modal.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
@@ -37,7 +36,6 @@ describe('List Header Component', () => {
   const findExceedingScheduledRulesBanner = () =>
     wrapper.findComponent(ExceedingScheduledRulesBanner);
   const findInvalidPolicyYamlBanner = () => wrapper.findComponent(InvalidPolicyYamlBanner);
-  const findWarnModeBanner = () => wrapper.findComponent(WarnModeBanner);
 
   const linkSecurityPoliciesProject = async () => {
     findScanNewPolicyModal().vm.$emit('project-updated', {
@@ -96,7 +94,6 @@ describe('List Header Component', () => {
       ${'does not'} | ${'invalid policy yaml banner'} | ${findInvalidPolicyYamlBanner} | ${false}
       ${'does not'} | ${'csp banner'}                 | ${findCspBanner}               | ${false}
       ${'does not'} | ${'csp badge'}                  | ${findCspBadge}                | ${false}
-      ${'does not'} | ${'warn mode banner'}           | ${findWarnModeBanner}          | ${false}
     `('$status display the $component', ({ findFn, exists }) => {
       expect(findFn().exists()).toBe(exists);
     });
@@ -277,19 +274,6 @@ describe('List Header Component', () => {
         },
       });
       expect(findExceedingScheduledRulesBanner().exists()).toBe(true);
-    });
-  });
-
-  describe('warn mode banner', () => {
-    it('displays warn mode banner when feature flag is enabled', () => {
-      createWrapper({
-        provide: {
-          glFeatures: {
-            securityPolicyApprovalWarnMode: true,
-          },
-        },
-      });
-      expect(findWarnModeBanner().exists()).toBe(true);
     });
   });
 
