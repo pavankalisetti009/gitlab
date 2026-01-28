@@ -287,14 +287,13 @@ module Features
       wait_for_requests
     end
 
-    def update_with_applied_trials(with_duo: true)
+    def update_with_applied_trials
       group = Group.last
       plan = create(:ultimate_trial_plan)
       group.gitlab_subscription.update!(
-        hosted_plan: plan, trial: true, trial_starts_on: Time.current, trial_ends_on: Time.current + 60.days
+        hosted_plan: plan, trial: true, end_date: Time.current + 60.days, trial_starts_on: Time.current,
+        trial_ends_on: Time.current + 60.days
       )
-
-      update_with_duo_enterprise_trial if with_duo
     end
 
     def stub_duo_landing_page_data
@@ -340,8 +339,8 @@ module Features
       expect_next_instance_of(GitlabSubscriptions::Trials::ApplyTrialService, service_params) do |instance|
         expect(instance).to receive(:execute) do
           if result.success?
-            add_on_purchase = update_with_applied_trials
-            result = ServiceResponse.success(payload: { add_on_purchase: add_on_purchase })
+            update_with_applied_trials
+            result = ServiceResponse.success
           end
 
           result

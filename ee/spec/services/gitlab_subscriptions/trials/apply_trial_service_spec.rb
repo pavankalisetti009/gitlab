@@ -6,6 +6,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
   let_it_be(:namespace) { create(:group_with_plan) }
   let_it_be(:user) { create(:user, owner_of: namespace) }
 
+  let(:ultimate_trial_with_dap_enabled) { true }
   let(:trial_user_information) { { namespace_id: namespace.id } }
   let(:apply_trial_params) do
     {
@@ -16,6 +17,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
 
   before do
     Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
+    stub_feature_flags(ultimate_trial_with_dap: ultimate_trial_with_dap_enabled)
   end
 
   describe '.execute' do
@@ -46,14 +48,17 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
       end
 
       context 'when namespace has a free plan' do
-        it 'with expected parameters' do
-          stub_feature_flags(ultimate_trial_with_dap: false)
-          allow_trial_creation(
-            namespace,
-            trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::FREE_TRIAL_TYPE)
-          )
+        context 'when ultimate_trial_with_dap is disabled' do
+          let(:ultimate_trial_with_dap_enabled) { false }
 
-          expect(execute).to be_success
+          it 'with expected parameters' do
+            allow_trial_creation(
+              namespace,
+              trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::FREE_TRIAL_TYPE)
+            )
+
+            expect(execute).to be_success
+          end
         end
 
         it 'has expected parameters for ultimate_trial_with_dap' do
@@ -69,14 +74,17 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
       context 'when namespace has a premium plan' do
         let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
 
-        it 'with expected parameters' do
-          stub_feature_flags(ultimate_trial_with_dap: false)
-          allow_trial_creation(
-            namespace,
-            trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE)
-          )
+        context 'when ultimate_trial_with_dap is disabled' do
+          let(:ultimate_trial_with_dap_enabled) { false }
 
-          expect(execute).to be_success
+          it 'with expected parameters' do
+            allow_trial_creation(
+              namespace,
+              trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE)
+            )
+
+            expect(execute).to be_success
+          end
         end
 
         it 'has expected parameters for ultimate_trial_with_dap' do
@@ -105,10 +113,20 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
 
         it_behaves_like 'records an onboarding progress action', :trial_started
 
-        it 'auto-assigns a duo seat when trial starts and does not send an email notification' do
-          expect(Onboarding::CreateIterableTriggerWorker).not_to receive(:perform_async)
+        context 'when ultimate_trial_with_dap is enabled' do
+          it 'does not auto-assigns a duo seat' do
+            expect { execute }.not_to change { user.assigned_add_ons.count }
+          end
+        end
 
-          expect { execute }.to change { user.assigned_add_ons.count }.by(1)
+        context 'when ultimate_trial_with_dap is disabled' do
+          let(:ultimate_trial_with_dap_enabled) { false }
+
+          it 'auto-assigns a duo seat when trial starts and does not send an email notification' do
+            expect(Onboarding::CreateIterableTriggerWorker).not_to receive(:perform_async)
+
+            expect { execute }.to change { user.assigned_add_ons.count }.by(1)
+          end
         end
 
         context 'when namespace has already had a trial' do
@@ -223,8 +241,12 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
   end
 
   def allow_trial_creation(namespace, trial_user)
-    allow(Gitlab::SubscriptionPortal::Client)
-      .to receive(:generate_trial) do
+    if ultimate_trial_with_dap_enabled
+      allow(Gitlab::SubscriptionPortal::Client)
+        .to receive(:generate_trial).with(uid: user.id, trial_user: trial_user).and_return(success: true)
+    else
+      allow(Gitlab::SubscriptionPortal::Client)
+        .to receive(:generate_trial) do
         create(
           :gitlab_subscription_add_on_purchase,
           :duo_enterprise,
@@ -233,7 +255,8 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
           namespace: namespace
         )
       end
-      .with(uid: user.id, trial_user: trial_user)
-      .and_return(success: true)
+        .with(uid: user.id, trial_user: trial_user)
+        .and_return(success: true)
+    end
   end
 end

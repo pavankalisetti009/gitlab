@@ -3,6 +3,26 @@
 module GitlabSubscriptions
   module Trials
     class ApplyTrialService < BaseApplyTrialService
+      extend ::Gitlab::Utils::Override
+
+      override :generate_trial
+      def generate_trial
+        response = execute_trial_request
+
+        if response[:success]
+          after_success_hook
+
+          # We need to stick to an up to date replica or primary db here in order
+          # to properly observe the add_on_purchase that CustomersDot created.
+          # See https://gitlab.com/gitlab-org/gitlab/-/issues/499720
+          Namespace.sticking.find_caught_up_replica(:namespace, namespace.id)
+
+          ServiceResponse.success
+        else
+          ServiceResponse.error(message: response.dig(:data, :errors), reason: GENERIC_TRIAL_ERROR)
+        end
+      end
+
       def valid_to_generate_trial?
         namespace.present? && GitlabSubscriptions::Trials.namespace_eligible?(namespace)
       end
@@ -41,6 +61,11 @@ module GitlabSubscriptions
 
       def after_success_hook
         ::Onboarding::ProgressService.new(namespace).execute(action: :trial_started)
+
+        return if Feature.enabled?(:ultimate_trial_with_dap, :instance)
+
+        add_on_purchase = add_on_purchase_finder.any_add_on_purchase_for_namespace(namespace)
+        assign_seat(add_on_purchase, user)
       end
     end
   end

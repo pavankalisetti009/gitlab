@@ -56,20 +56,22 @@ RSpec.describe GitlabSubscriptions::Trials::UltimateCreateService, :saas, featur
       context 'when namespace_id is provided' do
         context 'when lead creation is successful' do
           context 'when trial creation is successful' do
-            let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
-
             it 'creates lead and applies trial successfully' do
               expect_create_lead_success(lead_params)
-              expect_apply_trial_success(user, group, extra_params: glm_params.merge(existing_group_attrs(group)))
+              expect_apply_ultimate_trial_success(
+                user, group, extra_params: glm_params.merge(existing_group_attrs(group))
+              )
 
               expect(execute).to be_success
               expect(execute.message).to eq('Trial applied')
-              expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
+              expect(execute.payload).to eq({ namespace: group })
             end
 
             it 'tracks lead creation success event' do
               expect_create_lead_success(lead_params)
-              expect_apply_trial_success(user, group, extra_params: glm_params.merge(existing_group_attrs(group)))
+              expect_apply_ultimate_trial_success(
+                user, group, extra_params: glm_params.merge(existing_group_attrs(group))
+              )
 
               expect do
                 execute
@@ -220,7 +222,6 @@ RSpec.describe GitlabSubscriptions::Trials::UltimateCreateService, :saas, featur
 
         context 'when group is successfully created' do
           let(:extra_params) { { organization_id: organization.id, with_add_on: true, add_on_name: 'duo_enterprise' } }
-          let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
 
           context 'when lead creation is successful' do
             context 'when trial creation is successful' do
@@ -234,7 +235,7 @@ RSpec.describe GitlabSubscriptions::Trials::UltimateCreateService, :saas, featur
 
                 expect(::Namespace.sticking).to have_received(:stick).with(:namespace, Group.last.id)
                 expect(execute).to be_success
-                expect(execute.payload).to eq({ namespace: Group.last, add_on_purchase: add_on_purchase })
+                expect(execute.payload).to eq({ namespace: Group.last })
               end
             end
 
@@ -290,7 +291,7 @@ RSpec.describe GitlabSubscriptions::Trials::UltimateCreateService, :saas, featur
           def expect_new_group_apply_trial_success
             expect_next_instance_of(apply_trial_service_class) do |instance|
               expect(instance).to receive(:execute).and_return(
-                ServiceResponse.success(payload: { add_on_purchase: add_on_purchase })
+                ServiceResponse.success
               )
             end
           end
@@ -364,15 +365,15 @@ RSpec.describe GitlabSubscriptions::Trials::UltimateCreateService, :saas, featur
       context 'when namespace exists and is eligible' do
         context 'when lead creation is successful' do
           context 'when trial creation is successful' do
-            let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
-
             it 'creates lead and applies trial successfully' do
               expect_create_lead_success(lead_params)
-              expect_apply_trial_success(user, group, extra_params: glm_params.merge(existing_group_attrs(group)))
+              expect_apply_ultimate_trial_success(
+                user, group, extra_params: glm_params.merge(existing_group_attrs(group))
+              )
 
               expect(execute).to be_success
               expect(execute.message).to eq('Trial applied')
-              expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
+              expect(execute.payload).to eq({ namespace: group })
             end
           end
 
@@ -423,20 +424,22 @@ RSpec.describe GitlabSubscriptions::Trials::UltimateCreateService, :saas, featur
 
       context 'when namespace exists and is eligible' do
         context 'when trial creation is successful' do
-          let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
-
           it 'applies trial successfully without creating lead' do
             expect(lead_service_class).not_to receive(:new)
-            expect_apply_trial_success(user, group, extra_params: glm_params.merge(existing_group_attrs(group)))
+            expect_apply_ultimate_trial_success(
+              user, group, extra_params: glm_params.merge(existing_group_attrs(group))
+            )
 
             expect(execute).to be_success
             expect(execute.message).to eq('Trial applied')
-            expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
+            expect(execute.payload).to eq({ namespace: group })
           end
 
           it 'tracks trial registration success event' do
             expect(lead_service_class).not_to receive(:new)
-            expect_apply_trial_success(user, group, extra_params: glm_params.merge(existing_group_attrs(group)))
+            expect_apply_ultimate_trial_success(
+              user, group, extra_params: glm_params.merge(existing_group_attrs(group))
+            )
 
             expect do
               execute

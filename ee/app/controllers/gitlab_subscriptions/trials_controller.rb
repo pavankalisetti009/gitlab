@@ -30,10 +30,9 @@ module GitlabSubscriptions
 
       if @result.success?
         # lead and trial created
-        # We go off the add on here instead of the subscription for the expiration date since
-        # in the premium with ultimate trial case the trial_ends_on does not exist on the
-        # gitlab_subscription record.
-        flash[:success] = success_flash_message(@result.payload[:add_on_purchase])
+        # We go off the gitlab_subscription end_date here since in the premium with ultimate trial case the
+        # trial_ends_on does get populated on the gitlab_subscription record.
+        flash[:success] = success_flash_message(@result.payload[:namespace].reset.gitlab_subscription)
 
         redirect_to trial_success_path(@result.payload[:namespace])
       elsif @result.reason == GitlabSubscriptions::Trials::UltimateCreateService::NOT_FOUND
@@ -89,20 +88,23 @@ module GitlabSubscriptions
       !should_check_eligibility? || namespace_in_params_eligible?
     end
 
-    def success_flash_message(add_on_purchase)
+    def success_flash_message(gitlab_subscription)
       if discover_group_security_flow?
         s_("BillingPlans|Congratulations, your free trial is activated.")
       else
-        safe_format(
-          s_(
-            "BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will " \
-              "expire on %{exp_date}. " \
-              "To give members access to new GitLab Duo Enterprise features, " \
-              "%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats."
-          ),
-          success_doc_link,
-          exp_date: l(add_on_purchase.expires_on.to_date, format: :long)
-        )
+        message =
+          if Feature.enabled?(:ultimate_trial_with_dap, :instance)
+            s_("BillingPlans|You have successfully started a GitLab Ultimate trial that will expire on %{exp_date}.")
+          else
+            s_(
+              "BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will " \
+                "expire on %{exp_date}. " \
+                "To give members access to new GitLab Duo Enterprise features, " \
+                "%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats."
+            )
+          end
+
+        safe_format(message, success_doc_link, exp_date: l(gitlab_subscription.end_date.to_date, format: :long))
       end
     end
   end
