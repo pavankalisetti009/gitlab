@@ -16,8 +16,14 @@ export default {
         return null;
       }
 
-      const total = this.values.map((v) => v.total).reduce((a, b) => a + b);
-      const success = this.values.map((v) => v.success).reduce((a, b) => a + b);
+      const { total, success } = this.values.reduce(
+        (acc, v) => {
+          acc.total += v?.total || 0;
+          acc.success += v?.success || 0;
+          return acc;
+        },
+        { total: 0, success: 0 },
+      );
 
       const percent = roundDownFloat((success / total) * 100, 1);
       if (percent > 0 && percent < 1) {
