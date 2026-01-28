@@ -73,6 +73,24 @@ class ApprovalProjectRule < ApplicationRecord
   validates :severity_levels, inclusion: { in: ::Enums::Vulnerability.severity_levels.keys }
   validates :vulnerability_states, inclusion: { in: APPROVAL_VULNERABILITY_STATES.keys }
 
+  # Prevents race conditions when security policy workers concurrently attempt to
+  # update the same merge request approval rule simultaneously, which is a
+  # Read-Modify-Write operation.
+  # To be removed by https://gitlab.com/gitlab-org/gitlab/-/work_items/588119
+  def self.with_merge_request_rule_lock(approval_project_rule_id, merge_request_id)
+    lock_key = merge_request_rule_lock_key(approval_project_rule_id, merge_request_id)
+
+    ApplicationRecord.transaction do
+      connection.select_value("SELECT pg_advisory_xact_lock(hashtext(#{connection.quote(lock_key)}))")
+
+      yield
+    end
+  end
+
+  def self.merge_request_rule_lock_key(approval_project_rule_id, merge_request_id)
+    "approval_project_rule:#{approval_project_rule_id}:merge_request:#{merge_request_id}"
+  end
+
   override :vulnerability_attribute_false_positive
   def vulnerability_attribute_false_positive
     vulnerability_attributes&.dig('false_positive')
@@ -113,7 +131,7 @@ class ApprovalProjectRule < ApplicationRecord
   end
 
   def apply_report_approver_rules_to(merge_request, &block)
-    rule = ApplicationRecord.transaction do
+    rule = self.class.with_merge_request_rule_lock(id, merge_request.id) do
       update_report_approver_rule_for_merge_request(merge_request, &block)
     end
 
