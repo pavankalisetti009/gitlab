@@ -1,6 +1,5 @@
 import { GlButton, GlSprintf } from '@gitlab/ui';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
-import { CUSTOMERS_PORTAL_URL } from 'jh_else_ce/lib/utils/url_utility';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('PurchaseCommitmentCard', () => {
@@ -20,6 +19,12 @@ describe('PurchaseCommitmentCard', () => {
     });
   };
 
+  beforeEach(() => {
+    window.gon = {
+      subscriptions_url: 'https://example.com',
+    };
+  });
+
   describe('with monthly commmittment', () => {
     beforeEach(() => {
       createComponent({ hasCommitment: true });
@@ -38,7 +43,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe(`${CUSTOMERS_PORTAL_URL}/purchase-monthly-commitment`);
+      expect(button.props('href')).toBe('https://example.com/purchase-monthly-commitment');
 
       expect(button.text()).toBe('Increase monthly commitment');
     });
@@ -62,7 +67,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe(`${CUSTOMERS_PORTAL_URL}/purchase-monthly-commitment`);
+      expect(button.props('href')).toBe('https://example.com/purchase-monthly-commitment');
       expect(button.text()).toBe('Purchase monthly commitment');
     });
   });

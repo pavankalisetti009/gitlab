@@ -1,6 +1,7 @@
 <script>
 import { GlCard, GlButton, GlSprintf, GlLink } from '@gitlab/ui';
-import { PROMO_URL, CUSTOMERS_PORTAL_URL, joinPaths } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
+import { joinPaths } from 'jh_else_ce/lib/utils/url_utility';
 
 export default {
   name: 'PurchaseCommitmentCard',
@@ -22,7 +23,7 @@ export default {
   },
   computed: {
     purchaseLink() {
-      return joinPaths(CUSTOMERS_PORTAL_URL, this.purchaseCreditsPath);
+      return joinPaths(gon.subscriptions_url, this.purchaseCreditsPath);
     },
   },
   pricingLink: `${PROMO_URL}/pricing`,
