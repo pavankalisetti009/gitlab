@@ -491,7 +491,13 @@ Mount this configuration in your Docker Compose setup and make sure GitLab recon
 
 ## Configure storage for the container registry
 
-{{< alert type="note" >}}
+> [!warning]
+> Do not directly modify the files or objects stored by the container registry. Anything other than the registry writing or deleting these entries can lead to instance-wide data consistency and instability issues from which recovery may not be possible.
+
+You can configure the container registry to use various storage backends by
+configuring a storage driver. By default the GitLab container registry
+is configured to use the [file system driver](#use-file-system)
+configuration.
 
 For storage backends that support it, you can use object versioning to preserve, retrieve, and
 restore the non-current versions of every object stored in your buckets. However, this may result in
@@ -501,16 +507,6 @@ and GCS, this transfer is achieved with a copy followed by a delete. With object
 these deleted temporary upload artifacts are kept as non-current versions, therefore increasing the
 storage bucket size. To ensure that non-current versions are deleted after a given amount of time,
 you should configure an object lifecycle policy with your storage provider.
-
-{{< /alert >}}
-
-> [!warning]
-> Do not directly modify the files or objects stored by the container registry. Anything other than the registry writing or deleting these entries can lead to instance-wide data consistency and instability issues from which recovery may not be possible.
-
-You can configure the container registry to use various storage backends by
-configuring a storage driver. By default the GitLab container registry
-is configured to use the [file system driver](#use-file-system)
-configuration.
 
 The different supported drivers are:
 
@@ -703,17 +699,14 @@ registry['storage'] = {
 
 The Azure storage driver integrates with Microsoft Azure Blob Storage.
 
-{{< alert type="warning" >}}
-
-The legacy Azure storage driver was [deprecated](https://gitlab.com/gitlab-org/gitlab/-/issues/523096) in GitLab 17.10 and is planned for removal in GitLab 19.0.
-
-Use the `azure_v2` driver (in Beta) instead. This driver offers improved performance, reliability, and modern authentication methods. While this is a breaking change, the new driver has been extensively tested to ensure a smooth transition for most configurations.
-
-Make sure to test the new driver in non-production environments before deploying to production to identify and address any edge cases specific to your environment and usage patterns.
-
-Report any issues or feedback using [issue 525855](https://gitlab.com/gitlab-org/gitlab/-/issues/525855).
-
-{{< /alert >}}
+> [!warning]
+> The legacy Azure storage driver was [deprecated](https://gitlab.com/gitlab-org/gitlab/-/issues/523096) in GitLab 17.10 and is planned for removal in GitLab 19.0.
+> 
+> Use the `azure_v2` driver (in Beta) instead. This driver offers improved performance, reliability, and modern authentication methods. While this is a breaking change, the new driver has been extensively tested to ensure a smooth transition for most configurations.
+> 
+> Make sure to test the new driver in non-production environments before deploying to production to identify and address any edge cases specific to your environment and usage patterns.
+> 
+> Report any issues or feedback using [issue 525855](https://gitlab.com/gitlab-org/gitlab/-/issues/525855).
 
 For a complete list of configuration parameters for each driver, see [`azure_v1`](https://gitlab.com/gitlab-org/container-registry/-/blob/7b1786d261481a3c69912ad3423225f47f7c8242/docs/storage-drivers/azure_v1.md) and [`azure_v2`](https://gitlab.com/gitlab-org/container-registry/-/blob/7b1786d261481a3c69912ad3423225f47f7c8242/docs/storage-drivers/azure_v2.md).
 
