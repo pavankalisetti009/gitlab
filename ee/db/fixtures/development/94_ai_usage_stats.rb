@@ -178,7 +178,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
   def generate_agent_platform_extras
     {
       project_id: project.id,
-      session_id: SecureRandom.uuid,
+      session_id: rand(1..10000000),
       flow_type: %w[duo_chat code_review troubleshoot].sample,
       environment: %w[production development staging].sample
     }
@@ -193,7 +193,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
     end
 
     {
-      session_id: SecureRandom.uuid,
+      session_id: rand(1..10000000),
       tool_name: %w[get_file search_code list_files execute_command].sample,
       has_tool_call_success: has_tool_call_success
     }
