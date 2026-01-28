@@ -18,7 +18,7 @@ RSpec.describe GitlabSubscriptions::DiscoverPremiumComponent, feature_category: 
     end
 
     it 'has the hero text', :aggregate_failures do
-      is_expected.to have_content(s_('DuoCoreTrialDiscover|Now featuring GitLab Duo'))
+      is_expected.to have_content(s_('DuoCoreTrialDiscover|Now featuring GitLab Duo Agent Platform'))
 
       is_expected.to have_content(
         s_(
