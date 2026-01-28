@@ -51,6 +51,11 @@ module SecretsManagement
     def self.default_openbao_server_url
       "#{Gitlab.config.gitlab.protocol}://#{Gitlab.config.gitlab.host}:8200"
     end
+
+    def scope_name
+      self.class.name.demodulize.delete_suffix('SecretsManager').underscore
+    end
+
     private_class_method :default_openbao_server_url
 
     private

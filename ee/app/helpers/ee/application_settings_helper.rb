@@ -115,7 +115,9 @@ module EE
         :global_search_limited_indexing_enabled,
         :elastic_migration_worker_enabled,
         :enforce_pipl_compliance,
-        :display_gitlab_credits_user_data
+        :display_gitlab_credits_user_data,
+        :project_secrets_limit,
+        :group_secrets_limit
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
         settings.concat(enable_promotion_management_attributes)

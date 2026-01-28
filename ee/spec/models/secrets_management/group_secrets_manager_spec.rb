@@ -192,6 +192,21 @@ RSpec.describe SecretsManagement::GroupSecretsManager, feature_category: :secret
     end
   end
 
+  describe '#secrets_limit' do
+    it 'returns the group secrets limit from application settings' do
+      stub_application_setting(group_secrets_limit: 456)
+
+      expect(secrets_manager.secrets_limit).to eq(456)
+    end
+
+    it 'falls back to the default when application setting is nil' do
+      stub_application_setting(group_secrets_limit: nil)
+
+      expect(secrets_manager.secrets_limit)
+        .to eq(SecretsManagement::GroupSecretsManager::DEFAULT_SECRETS_LIMIT)
+    end
+  end
+
   describe '#ci_jwt' do
     let_it_be(:project) { create(:project, namespace: group) }
     let(:secrets_manager) { build(:group_secrets_manager, group: group) }

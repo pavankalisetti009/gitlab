@@ -5,8 +5,32 @@ module SecretsManagement
     module CreateServiceHelpers
       MAX_SECRET_SIZE = 10000
 
+      def secrets_limit_exceeded?
+        return false if secrets_manager.nil?
+        return false if secrets_limit == 0 # 0 means unlimited
+
+        current_secret_count >= secrets_limit
+      end
+
+      def secrets_limit
+        secrets_manager.secrets_limit
+      end
+
+      def secrets_limit_exceeded_response
+        ServiceResponse.error(
+          message: format(
+            _("Maximum number of secrets (%{limit}) for this %{scope} has been reached. " \
+              "Please delete unused secrets or contact your administrator to increase the limit."),
+            limit: secrets_limit,
+            scope: secrets_manager.scope_name
+          ),
+          reason: :secrets_limit_exceeded
+        )
+      end
+
       def execute_secret_creation(secret:, custom_metadata:, value:)
         return secrets_manager_inactive_response unless secrets_manager&.active?
+        return secrets_limit_exceeded_response if secrets_limit_exceeded?
 
         store_secret(secret, value, custom_metadata)
       end
