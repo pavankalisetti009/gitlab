@@ -77993,6 +77993,9 @@ msgstr ""
 msgid "WorkItem|Change type"
 msgstr ""
 
+msgid "WorkItem|Changes will be applied for anyone else who has access to the view."
+msgstr ""
+
 msgid "WorkItem|Child items"
 msgstr ""
 
@@ -78669,6 +78672,9 @@ msgstr ""
 msgid "WorkItem|Reset template"
 msgstr ""
 
+msgid "WorkItem|Reset to defaults"
+msgstr ""
+
 msgid "WorkItem|Resources"
 msgstr ""
 
@@ -78679,6 +78685,12 @@ msgid "WorkItem|Save"
 msgstr ""
 
 msgid "WorkItem|Save and overwrite"
+msgstr ""
+
+msgid "WorkItem|Save changes"
+msgstr ""
+
+msgid "WorkItem|Save changes to %{viewName}?"
 msgstr ""
 
 msgid "WorkItem|Save view"
