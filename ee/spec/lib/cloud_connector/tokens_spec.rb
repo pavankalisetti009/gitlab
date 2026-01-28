@@ -131,4 +131,15 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
       end
     end
   end
+
+  describe '.cloud_connector_token' do
+    it 'delegates to TokenLoader and returns its token' do
+      token_string = 'ABCDEF'
+      token_provider = instance_double(described_class::TokenLoader, token: token_string)
+
+      allow(described_class::TokenLoader).to receive(:new).and_return(token_provider)
+
+      expect(described_class.cloud_connector_token).to eq(token_string)
+    end
+  end
 end

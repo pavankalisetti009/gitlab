@@ -76,6 +76,18 @@ module API
             forbidden!("Namespace does not match workflow context")
           end
 
+          def cloud_service_for_self_hosted_config(feature_setting)
+            return unless ::Ai::SelfHostedDapBilling.should_bill?(feature_setting)
+
+            {
+              Headers: ::Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
+                'authorization' => "Bearer #{::CloudConnector::Tokens.cloud_connector_token}"
+              ),
+              URI: Gitlab::DuoWorkflow::Client.cloud_connected_url(user: current_user),
+              Secure: true
+            }
+          end
+
           def find_feature_setting_name
             # This header is sent only from the Node Executor.
             feature_setting_name_from_header =
@@ -468,6 +480,7 @@ module API
                     URI: Gitlab::DuoWorkflow::Client.url_for(feature_setting: feature_setting, user: current_user),
                     Secure: Gitlab::DuoWorkflow::Client.secure?
                   },
+                  CloudServiceForSelfHosted: cloud_service_for_self_hosted_config(feature_setting),
                   McpServers: mcp_config_service.execute,
                   LockConcurrentFlow: true
                 }
