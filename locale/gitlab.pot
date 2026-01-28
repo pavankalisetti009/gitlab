@@ -80221,6 +80221,9 @@ msgstr ""
 msgid "You may close the milestone now."
 msgstr ""
 
+msgid "You must %{docs_link} before using Security features."
+msgstr ""
+
 msgid "You must be authenticated to access this path."
 msgstr ""
 
@@ -80398,7 +80401,7 @@ msgstr ""
 msgid "You're receiving this email because you have been mentioned on %{host}. %{unsubscribe_link_start}Unsubscribe%{unsubscribe_link_end} from this thread &middot; %{manage_notifications_link_start}Manage all notifications%{manage_notifications_link_end} &middot; %{help_link_start}Help%{help_link_end}"
 msgstr ""
 
-msgid "You're viewing members of %{strong_start}%{group_name}%{strong_end}."
+msgid "You're viewing members of %{open}%{group_name}%{close}."
 msgstr ""
 
 msgid "You've already registered an OTP authenticator. To register a new OTP authenticator, delete the current one."
