@@ -201,7 +201,7 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
       end
     end
 
-    context 'when rate limit is exceeded' do
+    context 'when rate limit is exceeded', :freeze_time do
       before do
         10.times do
           Gitlab::ApplicationRateLimiter.throttled?(:ai_catalog_item_report, scope: current_user)
@@ -218,7 +218,7 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
       end
     end
 
-    context 'when different users report' do
+    context 'when different users report', :freeze_time do
       let_it_be(:another_user) { create(:user, guest_of: project) }
 
       it 'allows different users to report independently', :aggregate_failures do
