@@ -54,7 +54,7 @@ module Security
         end
 
         def sync_license_scanning_rule(approval_policy_rule, scan_result_policy_read)
-          return unless approval_policy_rule.type_license_finding? && approval_policy_rule.license_types.present?
+          return unless should_sync_license_rules?(approval_policy_rule)
 
           Security::SecurityOrchestrationPolicies::SyncLicensePolicyRuleService.new(
             project: project,
@@ -62,6 +62,11 @@ module Security
             approval_policy_rule: approval_policy_rule,
             scan_result_policy_read: scan_result_policy_read
           ).execute
+        end
+
+        def should_sync_license_rules?(approval_policy_rule)
+          approval_policy_rule.type_license_finding? &&
+            (approval_policy_rule.license_types.present? || approval_policy_rule.licenses.present?)
         end
 
         def project_approval_rules_map

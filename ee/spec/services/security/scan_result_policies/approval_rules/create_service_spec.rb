@@ -137,22 +137,53 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::CreateService, featu
 
       context 'when rule type is license_finding' do
         before do
-          approval_policy_rule.update!(
-            type: Security::ApprovalPolicyRule.types[:license_finding],
-            content: {
+          approval_policy_rule.update!(type: Security::ApprovalPolicyRule.types[:license_finding], content: content)
+        end
+
+        shared_examples_for 'creates scan result policy read, software license policies and approval rule' do
+          it 'creates scan result policy read, software license policies and approval rule' do
+            expect { execute_service }.to change { project.scan_result_policy_reads.count }.by(1)
+              .and change { project.software_license_policies.count }.by(1)
+              .and change { project.approval_rules.count }.by(1)
+          end
+        end
+
+        context 'when using the license_types property' do
+          let(:content) do
+            {
               type: 'license_finding',
               match_on_inclusion_license: true,
               branches: [],
               license_states: ['newly_detected'],
               license_types: ['MIT']
             }
-          )
+          end
+
+          it_behaves_like 'creates scan result policy read, software license policies and approval rule'
         end
 
-        it 'creates scan result policy read, software license policies and approval rule' do
-          expect { execute_service }.to change { project.scan_result_policy_reads.count }.by(1)
-            .and change { project.software_license_policies.count }.by(1)
-            .and change { project.approval_rules.count }.by(1)
+        context 'when using the licenses property' do
+          let(:content) do
+            {
+              type: 'license_finding',
+              match_on_inclusion_license: true,
+              branches: [],
+              license_states: ['newly_detected'],
+              licenses: licenses
+            }
+          end
+
+          context 'when using the denied property' do
+            let(:licenses) { { denied: [{ name: 'MIT' }] } }
+
+            it_behaves_like 'creates scan result policy read, software license policies and approval rule'
+          end
+
+          context 'when using the allowed property' do
+            let(:licenses) { { allowed: [{ name: 'MIT' }] } }
+
+            it_behaves_like 'creates scan result policy read, software license policies and approval rule'
+          end
         end
       end
     end

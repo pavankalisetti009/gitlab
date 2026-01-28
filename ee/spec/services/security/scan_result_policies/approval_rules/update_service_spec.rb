@@ -143,24 +143,55 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::UpdateService, featu
           scan_result_policy_read: scan_result_policy_read
         )
 
-        approval_policy_rule.update!(
-          type: Security::ApprovalPolicyRule.types[:license_finding],
-          content: {
+        approval_policy_rule.update!(type: Security::ApprovalPolicyRule.types[:license_finding], content: content)
+      end
+
+      shared_examples_for 'updates scan result policy read, project approval rule and software license policy' do
+        it 'updates scan result policy read, project approval rule and software license policy' do
+          expect { execute_service }
+            .to change { scan_result_policy_read.reload.updated_at }
+            .and change { project_approval_rule.reload.updated_at }
+
+          expect(SoftwareLicensePolicy.last.approval_policy_rule).to eq(approval_policy_rule)
+        end
+      end
+
+      context 'when using the license_types property' do
+        let(:content) do
+          {
             type: 'license_finding',
             match_on_inclusion_license: true,
             branches: [],
             license_states: ['newly_detected'],
             license_types: ['MIT']
           }
-        )
+        end
+
+        it_behaves_like 'updates scan result policy read, project approval rule and software license policy'
       end
 
-      it 'updates scan result policy read, project approval rule and software license policy' do
-        expect { execute_service }
-          .to change { scan_result_policy_read.reload.updated_at }
-          .and change { project_approval_rule.reload.updated_at }
+      context 'when using the licenses property' do
+        let(:content) do
+          {
+            type: 'license_finding',
+            match_on_inclusion_license: true,
+            branches: [],
+            license_states: ['newly_detected'],
+            licenses: licenses
+          }
+        end
 
-        expect(SoftwareLicensePolicy.last.approval_policy_rule).to eq(approval_policy_rule)
+        context 'when using the denied property' do
+          let(:licenses) { { denied: [{ name: 'MIT' }] } }
+
+          it_behaves_like 'updates scan result policy read, project approval rule and software license policy'
+        end
+
+        context 'when using the allowed property' do
+          let(:licenses) { { allowed: [{ name: 'MIT' }] } }
+
+          it_behaves_like 'updates scan result policy read, project approval rule and software license policy'
+        end
       end
     end
 
