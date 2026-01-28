@@ -65,15 +65,12 @@ target branches.
 Detected vulnerabilities appear in [merge requests](../detect/security_scanning_results.md), the [pipeline security tab](../detect/security_scanning_results.md),
 and the [vulnerability report](../vulnerability_report/_index.md).
 
-{{< alert type="note" >}}
-
-A pipeline may consist of multiple jobs, including SAST and DAST scanning. If any job
-fails to finish for any reason, the security dashboard doesn't show DAST scanner output. For
-example, if the DAST job finishes but the SAST job fails, the security dashboard doesn't show DAST
-results. On failure, the analyzer outputs an
-exit code.
-
-{{< /alert >}}
+> [!note]
+> A pipeline may consist of multiple jobs, including SAST and DAST scanning. If any job
+> fails to finish for any reason, the security dashboard doesn't show DAST scanner output. For
+> example, if the DAST job finishes but the SAST job fails, the security dashboard doesn't show DAST
+> results. On failure, the analyzer outputs an
+> exit code.
 
 ### List URLs scanned
 

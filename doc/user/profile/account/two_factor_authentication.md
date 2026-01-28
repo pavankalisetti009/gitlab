@@ -145,15 +145,12 @@ account if you lose access.
 
 Email OTP allows you to verify your identity by sending a six-digit verification code to your email address.
 
-{{< alert type="note" >}}
-
-You might be unable to use email OTP if:
-
-- Your group policy requires the use of other two-factor authentication methods.
-- Your account uses an external identity provider.
-- Your account is scheduled for automatic enablement at a future date.
-
-{{< /alert >}}
+> [!note]
+> You might be unable to use email OTP if:
+> 
+> - Your group policy requires the use of other two-factor authentication methods.
+> - Your account uses an external identity provider.
+> - Your account is scheduled for automatic enablement at a future date.
 
 To enable email OTP for your account:
 
