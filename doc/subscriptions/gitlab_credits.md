@@ -198,7 +198,7 @@ You are billed for features that are generally available.
 
 | Feature | Requests with one credit |
 |---------|---------------------------|
-| [GitLab Duo Code Suggestions](../user/project/repository/code_suggestions/_index.md) | 50 |
+| [GitLab Duo Code Suggestions](../user/duo_agent_platform/code_suggestions/_index.md) | 50 |
 
 [GitLab Duo Chat (Agentic)](../user/gitlab_duo_chat/agentic_chat.md) doesn't use a fixed model,
 so credit cost varies based on the model selected for the request.
