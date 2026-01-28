@@ -69,7 +69,7 @@ RSpec.describe Gitlab::Email::Handler::ServiceDeskHandler, feature_category: :se
         end
 
         context 'that has quick actions' do
-          context 'assigning issue to epic' do
+          context 'assigning ticket to epic' do
             let_it_be(:user) { create(:user) }
             let_it_be(:settings) { create(:service_desk_setting, project: project) }
 
@@ -80,28 +80,11 @@ RSpec.describe Gitlab::Email::Handler::ServiceDeskHandler, feature_category: :se
             it 'assigns epic' do
               epic = create(:epic, group: group)
               file_content = "/epic #{epic.to_reference}"
-              set_template_file('assign_epic_to_issue_1', file_content)
+              set_template_file('assign_epic_to_ticket', file_content)
 
               receiver.execute
 
               expect(WorkItem.last.epic).to eq(epic)
-            end
-
-            context 'when service_desk_ticket feature flag is disabled' do
-              before do
-                stub_licensed_features(epics: true)
-                stub_feature_flags(service_desk_ticket: false)
-              end
-
-              it 'assigns epic' do
-                epic = create(:epic, group: group)
-                file_content = "/epic #{epic.to_reference}"
-                set_template_file('assign_epic_to_issue_2', file_content)
-
-                receiver.execute
-
-                expect(Issue.last.epic).to eq(epic)
-              end
             end
           end
         end
