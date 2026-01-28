@@ -176,7 +176,7 @@ module API
 
         update_params = params.slice(:move_before_id, :move_after_id)
 
-        result = ::Epics::EpicLinks::UpdateService.new(child_epic, current_user, update_params).execute
+        result = ::WorkItems::LegacyEpics::EpicLinks::UpdateService.new(child_epic, current_user, update_params).execute
 
         if result[:status] == :success
           present child_epics, with: ::API::Entities::Epic
