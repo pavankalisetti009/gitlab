@@ -438,7 +438,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
         end
       end
 
-      context 'when approval_policy_rule does not contains the license_types attribute' do
+      context 'when approval_policy_rule contains the licenses attribute' do
         let_it_be(:approval_policy_rule) do
           create(:approval_policy_rule, :license_finding_with_allowed_licenses, security_policy: security_policy)
         end
@@ -453,8 +453,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
           expect(scan_result_policy_read.rule_idx).to be(approval_policy_rule.rule_index)
         end
 
-        it 'does not creates software_license_policies' do
-          expect { create_rules }.not_to change { project.software_license_policies.count }
+        it 'creates software_license_policies' do
+          expect { create_rules }.to change { project.software_license_policies.count }.by(1)
         end
 
         it_behaves_like 'creates approval_rules with valid params'
