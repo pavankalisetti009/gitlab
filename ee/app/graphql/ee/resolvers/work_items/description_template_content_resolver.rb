@@ -6,8 +6,32 @@ module EE
       module DescriptionTemplateContentResolver
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
+        include ::WorkItems::DescriptionTemplateDefaults
+
+        override :resolve
+        def resolve(template_content_input:)
+          if template_content_input[:name] == DEFAULT_SETTINGS_TEMPLATE_NAME
+            return resolve_settings_default_template(template_content_input)
+          end
+
+          super
+        end
 
         private
+
+        def resolve_settings_default_template(template_content_input)
+          project = ::Project.find_by_id(template_content_input[:project_id])
+          return unless project
+
+          authorize!(project.project_namespace)
+
+          return unless project.issues_template.present?
+
+          SettingsDefaultTemplate.new(
+            content: project.issues_template,
+            project_id: project.id
+          )
+        end
 
         override :authorize_template!
         def authorize_template!(template_project, from_namespace)

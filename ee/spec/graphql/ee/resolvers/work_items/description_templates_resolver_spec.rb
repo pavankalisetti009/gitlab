@@ -62,6 +62,56 @@ RSpec.describe Resolvers::WorkItems::DescriptionTemplatesResolver, feature_categ
         expect(template.project_id).to eq(project.id)
       end
     end
+
+    context 'with project settings default template' do
+      it 'prepends settings default template when project has issues_template configured' do
+        project.update!(issues_template: 'Default template content from settings')
+
+        templates = resolve_templates
+        first_template = templates.items.first
+
+        expect(first_template).to have_attributes(
+          name: 'Default (Project Settings)',
+          category: 'Project Templates',
+          project_id: project.id,
+          content: 'Default template content from settings'
+        )
+        expect(templates.items.size).to eq(3)
+      end
+
+      it 'does not include settings default template when project has no issues_template' do
+        project.update!(issues_template: nil)
+
+        templates = resolve_templates
+
+        expect(templates.items.size).to eq(2)
+        expect(templates.items.map(&:name)).not_to include('Default (Project Settings)')
+      end
+
+      it 'does not include settings default template when issues_template is empty' do
+        project.update!(issues_template: '')
+
+        templates = resolve_templates
+
+        expect(templates.items.size).to eq(2)
+        expect(templates.items.map(&:name)).not_to include('Default (Project Settings)')
+      end
+
+      it 'includes settings default template when project has only issues_template and no file templates' do
+        group.update_columns(file_template_project_id: no_files_project.id)
+        no_files_project.update!(issues_template: 'Default template content from settings')
+
+        templates = resolve_templates(group: sub_group)
+
+        expect(templates.items.size).to eq(1)
+        expect(templates.items.first).to have_attributes(
+          name: 'Default (Project Settings)',
+          category: 'Project Templates',
+          project_id: no_files_project.id,
+          content: 'Default template content from settings'
+        )
+      end
+    end
   end
 
   def resolve_templates(args: {}, current_user: user, group: sub_group)
