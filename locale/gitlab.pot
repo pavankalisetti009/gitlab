@@ -7573,7 +7573,13 @@ msgstr ""
 msgid "AiPowered|Unlock advanced AI-native capabilities with the Premium or Ultimate tier designed for your development needs."
 msgstr ""
 
+msgid "AiPowered|Unlock more credits with Premium"
+msgstr ""
+
 msgid "AiPowered|Upgrade to"
+msgstr ""
+
+msgid "AiPowered|Upgrade to keep using GitLab Duo Agent Platform and access a broad credit allocation. Learn more about %{linkStart}GitLab Credit pricing%{linkEnd}."
 msgstr ""
 
 msgid "AiPowered|Use beta models and features in GitLab Duo Self-Hosted"
@@ -73017,6 +73023,9 @@ msgstr ""
 msgid "UsageBilling|An error occurred while fetching data"
 msgstr ""
 
+msgid "UsageBilling|Contact sales"
+msgstr ""
+
 msgid "UsageBilling|Credit amount"
 msgstr ""
 
@@ -73056,6 +73065,9 @@ msgstr ""
 msgid "UsageBilling|GitLab Credits usage"
 msgstr ""
 
+msgid "UsageBilling|Have questions?"
+msgstr ""
+
 msgid "UsageBilling|Included credits"
 msgstr ""
 
@@ -73072,6 +73084,9 @@ msgid "UsageBilling|Last event transaction at:"
 msgstr ""
 
 msgid "UsageBilling|Learn more about %{helpLinkStart}GitLab Credit pricing%{helpLinkEnd}."
+msgstr ""
+
+msgid "UsageBilling|Learn more about the upgrade process and Credits pricing options by talking to sales."
 msgstr ""
 
 msgid "UsageBilling|Location"

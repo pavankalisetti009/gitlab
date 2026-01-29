@@ -14,6 +14,8 @@ import CurrentOverageUsageCard from './current_overage_usage_card.vue';
 import MonthlyWaiverCard from './monthly_waiver_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
 import OverageOptInCard from './overage_opt_in_card.vue';
+import UpgradeToPremiumCard from './upgrade_to_premium_card.vue';
+import HaveQuestionsCard from './have_questions_card.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -33,6 +35,8 @@ export default {
     HumanTimeframe,
     UsageTrendsChart,
     OverageOptInCard,
+    UpgradeToPremiumCard,
+    HaveQuestionsCard,
   },
   apollo: {
     subscriptionUsage: {
@@ -54,6 +58,10 @@ export default {
   },
   inject: {
     namespacePath: { default: '' },
+    isFree: { default: false },
+    inTrial: { default: false },
+    trialStartDate: { default: '' },
+    trialEndDate: { default: '' },
   },
   data() {
     return {
@@ -110,6 +118,18 @@ export default {
     usageTrendsTabIsAvailable() {
       return this.poolIsAvailable || this.isMonthlyWaiverAvailable || this.overageIsAllowed;
     },
+    fromDate() {
+      if (this.inTrial) {
+        return this.trialStartDate;
+      }
+      return this.subscriptionUsage.startDate;
+    },
+    tillDate() {
+      if (this.inTrial) {
+        return this.trialEndDate;
+      }
+      return this.subscriptionUsage.endDate;
+    },
   },
   LONG_DATE_FORMAT_WITH_TZ,
 };
@@ -128,7 +148,7 @@ export default {
           <span class="gl-font-bold">
             {{ s__('UsageBilling|Usage period:') }}
           </span>
-          <human-timeframe :from="subscriptionUsage.startDate" :till="subscriptionUsage.endDate" />
+          <human-timeframe :from="fromDate" :till="tillDate" />
         </div>
         <div v-if="subscriptionUsage.lastEventTransactionAt" class="gl-text-sm">
           {{ s__('UsageBilling|Last event transaction at:') }}
@@ -203,6 +223,15 @@ export default {
 
     <template v-else>
       <section
+        v-if="isFree && inTrial"
+        class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row"
+        data-testid="cards-during-trial-row"
+      >
+        <upgrade-to-premium-card />
+        <have-questions-card />
+      </section>
+      <section
+        v-else
         class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row"
         data-testid="usage-billing-cards-row"
       >
