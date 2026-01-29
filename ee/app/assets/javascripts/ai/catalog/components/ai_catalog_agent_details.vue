@@ -1,6 +1,7 @@
 <script>
-import { GlLink, GlToken, GlTruncateText } from '@gitlab/ui';
+import { GlLink, GlSprintf, GlToken, GlTooltipDirective, GlTruncateText } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { getByVersionKey } from '../utils';
 import {
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
@@ -22,12 +23,16 @@ export default {
     FormFlowDefinition,
     FormSection,
     GlLink,
+    GlSprintf,
     GlToken,
     GlTruncateText,
     TriggerField,
   },
   truncateTextToggleButtonProps: {
     class: 'gl-font-regular',
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     item: {
@@ -46,8 +51,8 @@ export default {
     version() {
       return getByVersionKey(this.item, this.versionKey);
     },
-    toolTitles() {
-      return (this.version.tools?.nodes ?? []).map((t) => t.title).sort();
+    tools() {
+      return [...(this.version.tools?.nodes ?? [])].sort((a, b) => a.title.localeCompare(b.title));
     },
     systemPrompt() {
       return this.version.systemPrompt;
@@ -78,6 +83,7 @@ export default {
     },
   },
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
+  toolsDocsLink: helpPagePath('user/duo_agent_platform/agents/tools'),
 };
 </script>
 
@@ -112,13 +118,34 @@ export default {
         </template>
         <template v-else>
           <ai-catalog-item-field :title="s__('AICatalog|Tools')">
-            <span v-if="toolTitles.length === 0" class="gl-text-subtle">
+            <p class="gl-text-subtle">
+              <gl-sprintf
+                :message="
+                  s__(
+                    'AICatalog|Tools are built and maintained by GitLab. %{linkStart}What are tools?%{linkEnd}',
+                  )
+                "
+              >
+                <template #link="{ content }">
+                  <gl-link :href="$options.toolsDocsLink">{{ content }}</gl-link>
+                </template>
+              </gl-sprintf>
+            </p>
+            <span v-if="tools.length === 0" class="gl-text-subtle">
               {{ __('None') }}
             </span>
             <div v-else class="gl-mt-3 gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
-              <gl-token v-for="tool in toolTitles" :key="tool" view-only>
-                {{ tool }}
-              </gl-token>
+              <span
+                v-for="tool in tools"
+                :key="tool.title"
+                v-gl-tooltip
+                :title="tool.description"
+                data-testid="tool-description-tooltip"
+              >
+                <gl-token view-only class="gl-cursor-default">
+                  {{ tool.title }}
+                </gl-token>
+              </span>
             </div>
           </ai-catalog-item-field>
           <ai-catalog-item-field :title="s__('AICatalog|System prompt')">

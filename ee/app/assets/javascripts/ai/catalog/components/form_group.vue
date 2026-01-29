@@ -24,6 +24,11 @@ export default {
       invalidFeedback: null,
     };
   },
+  computed: {
+    hasLabelDescription() {
+      return this.$scopedSlots['label-description'];
+    },
+  },
   methods: {
     validate() {
       const { requiredLabel, maxLength } = this.field.validations;
@@ -55,6 +60,9 @@ export default {
     :state="state"
     class="gl-mb-0"
   >
+    <div v-if="hasLabelDescription" data-testid="label-description" class="label-description">
+      <slot name="label-description">{{ field.groupAttrs.labelDescription }}</slot>
+    </div>
     <slot :state="state" :blur="onBlur"></slot>
   </gl-form-group>
 </template>

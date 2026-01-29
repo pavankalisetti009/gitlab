@@ -125,14 +125,17 @@ export const mockAiCatalogBuiltInToolsNodes = [
   {
     id: `gid://gitlab/Ai::Catalog::BuiltInTool/3`,
     title: 'Ci Linter',
+    description: 'Ci Linter Tool description',
   },
   {
     id: `gid://gitlab/Ai::Catalog::BuiltInTool/2`,
     title: 'Gitlab Blob Search',
+    description: 'Gitlab Blob Search Tool description',
   },
   {
     id: `gid://gitlab/Ai::Catalog::BuiltInTool/1`,
     title: 'Run Git Command',
+    description: 'Run Git Command Tool description',
   },
 ];
 

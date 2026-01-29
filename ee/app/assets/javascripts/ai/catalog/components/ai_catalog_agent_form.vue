@@ -1,6 +1,15 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlButton, GlForm, GlFormInput, GlFormTextarea, GlTokenSelector } from '@gitlab/ui';
+import {
+  GlButton,
+  GlLink,
+  GlForm,
+  GlFormInput,
+  GlFormTextarea,
+  GlTokenSelector,
+  GlTooltipDirective,
+} from '@gitlab/ui';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -42,11 +51,15 @@ export default {
     FormSection,
     FormProjectDropdown,
     GlButton,
+    GlLink,
     GlForm,
     GlFormInput,
     GlFormTextarea,
     GlTokenSelector,
     VisibilityLevelRadioGroup,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   inject: {
@@ -60,7 +73,12 @@ export default {
   apollo: {
     availableTools: {
       query: aiCatalogBuiltInToolsQuery,
-      update: (data) => data.aiCatalogBuiltInTools.nodes.map((t) => ({ id: t.id, name: t.title })),
+      update: (data) =>
+        data.aiCatalogBuiltInTools.nodes.map((t) => ({
+          id: t.id,
+          name: t.title,
+          description: t.description,
+        })),
     },
   },
   props: {
@@ -296,7 +314,6 @@ export default {
       label: s__('AICatalog|Tools'),
       groupAttrs: {
         optional: true,
-        labelDescription: s__('AICatalog|Select which tools this agent can use.'),
       },
     },
     definition: {
@@ -313,6 +330,7 @@ export default {
     },
   },
   AI_CATALOG_TYPE_AGENT,
+  toolsDocsLink: helpPagePath('user/duo_agent_platform/agents/tools'),
 };
 </script>
 
@@ -405,6 +423,12 @@ export default {
         </form-group>
         <template v-else>
           <form-group :field="$options.fields.tools" :field-value="formValues.tools">
+            <template #label-description>
+              <span>{{ s__('AICatalog|Tools are built and maintained by GitLab.') }}</span>
+              <gl-link :href="$options.toolsDocsLink" target="_blank">{{
+                s__('AICatalog|What are tools?')
+              }}</gl-link>
+            </template>
             <gl-token-selector
               :id="$options.fields.tools.id"
               :selected-tokens="selectedTools"
@@ -415,7 +439,13 @@ export default {
               @input="handleToolsInput"
               @text-input="handleToolSearch"
               @keydown.enter.prevent
-            />
+            >
+              <template #token-content="{ token }">
+                <span v-gl-tooltip="token.description">
+                  {{ token.name }}
+                </span>
+              </template>
+            </gl-token-selector>
           </form-group>
           <form-group
             #default="{ state, blur }"

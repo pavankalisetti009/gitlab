@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
+import { VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { mockAgent, mockFlow, mockThirdPartyFlow } from '../mock_data';
 
 describe('AiCatalogItemView', () => {
@@ -10,6 +11,7 @@ describe('AiCatalogItemView', () => {
   const createComponent = ({ props } = {}) => {
     wrapper = shallowMount(AiCatalogItemView, {
       propsData: {
+        versionKey: VERSION_LATEST,
         ...props,
       },
     });
