@@ -47,6 +47,7 @@ module EE
         super
 
         @user_params.delete(:provisioned_by_group_id) unless service_account?
+        @user_params.delete(:provisioned_by_project_id) unless service_account?
       end
       # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
@@ -68,7 +69,7 @@ module EE
 
       override :admin_create_params
       def admin_create_params
-        super + [:auditor, :provisioned_by_group_id, :composite_identity_enforced]
+        super + [:auditor, :provisioned_by_group_id, :provisioned_by_project_id, :composite_identity_enforced]
       end
 
       override :identity_attributes
@@ -84,6 +85,7 @@ module EE
         identity_params[:provider] = GROUP_SAML_PROVIDER
 
         user.provisioned_by_group_id = params[:group_id]
+        user.provisioned_by_project_id = params[:project_id]
 
         super
       end

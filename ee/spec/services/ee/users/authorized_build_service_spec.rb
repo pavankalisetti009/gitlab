@@ -51,6 +51,31 @@ RSpec.describe Users::AuthorizedBuildService, feature_category: :user_management
           expect(user.provisioned_by_group_id).to eq(namespace.id)
         end
       end
+
+      context 'when setting provisioned_by_project_id' do
+        let_it_be(:project) { create(:project) }
+        let_it_be(:params) do
+          {
+            name: 'Service account user',
+            email: 'service_account_user@noreply.gitlab.example.com',
+            username: 'service_account',
+            user_type: :service_account,
+            skip_confirmation: true,
+            provisioned_by_project_id: project.id
+          }
+        end
+
+        it 'creates the user and sets provisioned_by_project_id' do
+          service = described_class.new(non_admin, params)
+          user = service.execute
+
+          expect(user).to be_present
+          expect(user).to be_confirmed
+          expect(user).not_to be_external
+
+          expect(user.provisioned_by_project_id).to eq(project.id)
+        end
+      end
     end
 
     context 'with a nil user' do

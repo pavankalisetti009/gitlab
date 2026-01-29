@@ -19,7 +19,7 @@ module EE
 
       override :signup_params
       def signup_params
-        base_params = super + [:provisioned_by_group_id]
+        base_params = super + [:provisioned_by_group_id, :provisioned_by_project_id]
 
         return base_params unless ::Onboarding.enabled?
 

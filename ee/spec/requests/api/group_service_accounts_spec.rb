@@ -231,7 +231,7 @@ RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate
 
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(json_response['message']).to include(
-              s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
+              s_('ServiceAccount|User does not have permission to create a service account in this group.')
             )
           end
         end
@@ -432,7 +432,7 @@ RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate
 
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(json_response['message']).to include(
-              s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
+              s_('ServiceAccount|User does not have permission to create a service account in this group.')
             )
           end
         end

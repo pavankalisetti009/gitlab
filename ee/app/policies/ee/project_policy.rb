@@ -369,15 +369,6 @@ module EE
         end
       end
 
-      # Enable service account permissions for admins, owners and maintainers
-      # rule { admin | owner | maintainer }.policy do
-      #   enable :create_service_account
-      #   enable :delete_service_account
-      #   enable :read_service_account
-      #   enable :admin_service_account_member
-      #   enable :admin_service_accounts
-      # end
-
       # Prevent if feature flag is disabled (applies to everyone including admins)
       rule { ~service_accounts_enabled | ~project_service_accounts_feature_available }.policy do
         prevent :create_service_account

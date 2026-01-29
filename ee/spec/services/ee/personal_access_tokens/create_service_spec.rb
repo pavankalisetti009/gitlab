@@ -65,9 +65,12 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
   describe '#execute' do
     subject(:create_token) { service.execute }
 
-    let(:target_user) { create(:user) }
+    let_it_be(:organization) { create(:organization) }
+    let_it_be(:base_user) { create(:user) }
+
+    let(:target_user) { base_user }
     let(:current_user) { target_user }
-    let(:organization) { create(:organization) }
+
     let(:service) do
       described_class.new(current_user: current_user, target_user: target_user,
         organization_id: organization.id,
@@ -89,8 +92,10 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
     end
 
     context 'when expires_at is nil', :enable_admin_mode do
+      let_it_be(:admin_user) { create(:admin) }
+
       let(:params) { valid_params.merge(expires_at: nil) }
-      let(:current_user) { create(:admin) }
+      let(:current_user) { admin_user }
       let(:instance_level_pat_expiration_date) { 30.days.from_now.to_date }
       let(:group_level_pat_expiration_policy) { 20 }
       let(:group_level_max_expiration_date) { Date.current + group_level_pat_expiration_policy }
@@ -115,7 +120,9 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
         let(:params) { valid_params }
 
         context 'when the current user is an admin' do
-          let(:current_user) { create(:admin) }
+          let_it_be(:admin_user) { create(:admin) }
+
+          let(:current_user) { admin_user }
 
           it_behaves_like 'an unsuccessfully created token'
 
@@ -172,15 +179,18 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
       end
 
       context 'for a group' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:group_owner) { create(:user) }
+        let_it_be(:other_group) { create(:group) }
+
         let(:params) { valid_params.merge(group: group) }
-        let(:group) { create(:group) }
-        let(:current_user) { create(:user) }
+        let(:current_user) { group_owner }
+
+        before_all do
+          group.add_owner(group_owner)
+        end
 
         context 'when current user is a group owner' do
-          before do
-            group.add_owner(current_user)
-          end
-
           context 'when the feature is licensed' do
             before do
               stub_licensed_features(service_accounts: true)
@@ -188,8 +198,7 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
 
             context 'when provisioned by group' do
               before do
-                target_user.provisioned_by_group_id = group.id
-                target_user.save!
+                target_user.update!(provisioned_by_group_id: group.id)
               end
 
               it 'creates a token successfully' do
@@ -240,8 +249,18 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
               end
 
               context 'when provisioned by sub-group (legacy data)' do
-                let(:parent_group) { create(:group, owners: [current_user]) }
-                let(:group) { create(:group, parent: parent_group) }
+                let_it_be(:parent_group) { create(:group) }
+                let_it_be(:sub_group) { create(:group, parent: parent_group) }
+
+                let(:group) { sub_group }
+
+                before_all do
+                  parent_group.add_owner(group_owner)
+                end
+
+                before do
+                  target_user.update!(provisioned_by_group_id: sub_group.id)
+                end
 
                 it 'creates token with root group id' do
                   expect(create_token.success?).to be true
@@ -251,6 +270,14 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
             end
 
             context 'when not provisioned by group' do
+              it_behaves_like 'an unsuccessfully created token'
+            end
+
+            context 'when provisioned by a different group' do
+              before do
+                target_user.update!(provisioned_by_group_id: other_group.id)
+              end
+
               it_behaves_like 'an unsuccessfully created token'
             end
           end
@@ -265,12 +292,134 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
         end
 
         context 'when current user is not a group owner' do
+          let_it_be(:guest_user) { create(:user) }
+
+          let(:current_user) { guest_user }
+
+          before_all do
+            group.add_guest(guest_user)
+          end
+
           before do
-            group.add_guest(current_user)
             stub_licensed_features(service_accounts: true)
           end
 
           it_behaves_like 'an unsuccessfully created token'
+        end
+
+        context 'when service account is provisioned by a different group than the one in params' do
+          before do
+            stub_licensed_features(service_accounts: true)
+            target_user.update!(provisioned_by_group_id: other_group.id)
+          end
+
+          it 'does not permit token creation due to group ID mismatch' do
+            expect(create_token.success?).to be false
+            expect(create_token.message).to eq('Not permitted to create')
+            expect(token).to be_nil
+          end
+        end
+      end
+
+      context 'for a project' do
+        let_it_be(:project) { create(:project) }
+        let_it_be(:project_owner) { create(:user) }
+        let_it_be(:project_maintainer) { create(:user) }
+        let_it_be(:project_developer) { create(:user) }
+        let_it_be(:other_project) { create(:project) }
+
+        let(:params) { valid_params.merge(project: project) }
+        let(:current_user) { project_owner }
+
+        before_all do
+          project.add_owner(project_owner)
+          project.add_maintainer(project_maintainer)
+          project.add_developer(project_developer)
+        end
+
+        context 'when current user is a project owner' do
+          context 'when the feature is licensed' do
+            before do
+              stub_licensed_features(service_accounts: true)
+            end
+
+            context 'when provisioned by project' do
+              before do
+                target_user.update!(provisioned_by_project_id: project.id)
+              end
+
+              it 'creates a token successfully' do
+                expect(create_token.success?).to be true
+                expect(token.user_type).to eq('service_account')
+              end
+            end
+
+            context 'when not provisioned by project' do
+              it_behaves_like 'an unsuccessfully created token'
+            end
+
+            context 'when provisioned by a different project' do
+              before do
+                target_user.update!(provisioned_by_project_id: other_project.id)
+              end
+
+              it_behaves_like 'an unsuccessfully created token'
+            end
+          end
+
+          context 'when feature is not licensed' do
+            before do
+              stub_licensed_features(service_accounts: false)
+            end
+
+            it_behaves_like 'an unsuccessfully created token'
+          end
+        end
+
+        context 'when current user is a project maintainer' do
+          let(:current_user) { project_maintainer }
+
+          before do
+            target_user.update!(provisioned_by_project_id: project.id)
+            stub_licensed_features(service_accounts: true)
+          end
+
+          it 'creates a token successfully' do
+            expect(create_token.success?).to be true
+            expect(token.user_type).to eq('service_account')
+          end
+
+          context 'when provisioned by a different project' do
+            before do
+              target_user.update!(provisioned_by_project_id: other_project.id)
+            end
+
+            it_behaves_like 'an unsuccessfully created token'
+          end
+        end
+
+        context 'when current user is not a project owner or maintainer' do
+          let(:current_user) { project_developer }
+
+          before do
+            target_user.update!(provisioned_by_project_id: project.id)
+            stub_licensed_features(service_accounts: true)
+          end
+
+          it_behaves_like 'an unsuccessfully created token'
+        end
+
+        context 'when service account is provisioned by a different project than the one in params' do
+          before do
+            stub_licensed_features(service_accounts: true)
+            target_user.update!(provisioned_by_project_id: other_project.id)
+          end
+
+          it 'does not permit token creation due to project ID mismatch' do
+            expect(create_token.success?).to be false
+            expect(create_token.message).to eq('Not permitted to create')
+            expect(token).to be_nil
+          end
         end
       end
     end
@@ -311,18 +460,24 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
       let(:params) { valid_params }
 
       context 'when the user is an enterprise user' do
-        let_it_be(:target_user) { create(:enterprise_user) }
+        let_it_be(:enterprise_target_user) { create(:enterprise_user) }
+
+        let(:target_user) { enterprise_target_user }
+        let(:current_user) { enterprise_target_user }
 
         it "creates personal access token record with group_id set to the user's enterprise_group_id" do
-          expect(target_user.enterprise_group_id).not_to be_nil
+          expect(enterprise_target_user.enterprise_group_id).not_to be_nil
 
           expect(create_token.success?).to be true
-          expect(token.group_id).to eq(target_user.enterprise_group_id)
+          expect(token.group_id).to eq(enterprise_target_user.enterprise_group_id)
         end
       end
 
       context 'when the user is a regular user' do
-        let_it_be(:target_user) { create(:user) }
+        let_it_be(:regular_user) { create(:user) }
+
+        let(:target_user) { regular_user }
+        let(:current_user) { regular_user }
 
         it "creates personal access token record with group_id set to nil" do
           expect(create_token.success?).to be true
