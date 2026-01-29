@@ -4,7 +4,7 @@ import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { focusDuoChatInput } from 'ee/ai/utils';
 import { PROMO_URL } from '~/constants';
-import { FEATURE_HIGHLIGHTS } from './constants';
+import { FEATURE_HIGHLIGHTS, getTrialActiveFeatureHighlights } from './constants';
 
 const trackingMixin = InternalEvents.mixin();
 
@@ -46,6 +46,11 @@ export default {
       type: Object,
       required: true,
     },
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     attributes() {
@@ -65,7 +70,7 @@ export default {
 
       if (this.trialActive) {
         return {
-          ...FEATURE_HIGHLIGHTS.trialActive,
+          ...getTrialActiveFeatureHighlights(this.isNewTrialType),
           postScript: s__(
             'BillingPlans|Upgrade before your trial ends to maintain access to these Premium features.',
           ),
@@ -116,7 +121,10 @@ export default {
       });
     },
     featureButtonText(feature) {
-      return sprintf(s__('BillingPlans|Explore %{feature}'), { feature });
+      return (
+        feature.buttonText ||
+        sprintf(s__('BillingPlans|Explore %{feature}'), { feature: feature.title })
+      );
     },
   },
 };
@@ -173,11 +181,11 @@ export default {
             <gl-button
               v-if="exploreLinks[feature.id] || feature.id === 'duoChat'"
               class="gl-mt-3 gl-w-full"
-              :href="exploreLinks[feature.id]"
+              :href="feature.buttonText ? feature.docsLink : exploreLinks[feature.id]"
               variant="confirm"
               @click="handleExploreLinkClick(feature.id)"
             >
-              {{ featureButtonText(feature.title) }}
+              {{ featureButtonText(feature) }}
             </gl-button>
           </gl-popover>
         </div>

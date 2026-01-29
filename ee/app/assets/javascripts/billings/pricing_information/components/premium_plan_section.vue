@@ -1,6 +1,8 @@
 <script>
 import { GlIcon, GlLink } from '@gitlab/ui';
 import { InternalEvents } from '~/tracking';
+import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 export default {
   name: 'PremiumPlanSection',
@@ -9,7 +11,26 @@ export default {
     GlIcon,
     GlLink,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
+  i18n: {
+    defaultPremiumFeatures: [
+      s__('Billings|AI Chat in the IDE'),
+      s__('Billings|AI Code Suggestions in the IDE'),
+      s__('Billings|Release Controls'),
+      s__('Billings|Team Project Management'),
+      s__('Billings|Priority Support'),
+      s__('Billings|10,000 compute minutes per month'),
+      s__('Billings|Unlimited licensed users'),
+    ],
+    dapPremiumFeatures: [
+      s__('Billings|GitLab Duo Agent Platform'),
+      s__('Billings|Release Controls'),
+      s__('Billings|Team Project Management'),
+      s__('Billings|Priority Support'),
+      s__('Billings|10,000 compute minutes per month'),
+      s__('Billings|Unlimited licensed users'),
+    ],
+  },
   props: {
     groupId: {
       type: Number,
@@ -18,6 +39,13 @@ export default {
     groupBillingHref: {
       type: String,
       required: true,
+    },
+  },
+  computed: {
+    premiumFeatures() {
+      return this.glFeatures.ultimateTrialWithDap
+        ? this.$options.i18n.dapPremiumFeatures
+        : this.$options.i18n.defaultPremiumFeatures;
     },
   },
 };
@@ -38,33 +66,13 @@ export default {
       </p>
 
       <div class="gl-list-style-none gl-p-0 gl-text-sm">
-        <div class="gl-display-flex gl-align-items-start gl-mb-3">
+        <div
+          v-for="(feature, index) in premiumFeatures"
+          :key="index"
+          class="gl-display-flex gl-align-items-start gl-mb-3"
+        >
           <gl-icon name="check" class="gl-mr-3 gl-mt-1" />
-          <span>{{ s__('Billings|AI Chat in the IDE') }}</span>
-        </div>
-        <div class="gl-display-flex gl-align-items-start gl-mb-3">
-          <gl-icon name="check" class="gl-mr-3 gl-mt-1" />
-          <span>{{ s__('Billings|AI Code Suggestions in the IDE') }}</span>
-        </div>
-        <div class="gl-display-flex gl-align-items-start gl-mb-3">
-          <gl-icon name="check" class="gl-mr-3 gl-mt-1" />
-          <span>{{ s__('Billings|Release Controls') }}</span>
-        </div>
-        <div class="gl-display-flex gl-align-items-start gl-mb-3">
-          <gl-icon name="check" class="gl-mr-3 gl-mt-1" />
-          <span>{{ s__('Billings|Team Project Management') }}</span>
-        </div>
-        <div class="gl-display-flex gl-align-items-start gl-mb-3">
-          <gl-icon name="check" class="gl-mr-3 gl-mt-1" />
-          <span>{{ s__('Billings|Priority Support') }}</span>
-        </div>
-        <div class="gl-display-flex gl-align-items-start gl-mb-3">
-          <gl-icon name="check" class="gl-mr-3 gl-mt-1" />
-          <span>{{ s__('Billings|10,000 compute minutes per month') }}</span>
-        </div>
-        <div class="gl-display-flex gl-align-items-start gl-mb-3">
-          <gl-icon name="check" class="gl-mr-3 gl-mt-1" />
-          <span>{{ s__('Billings|Unlimited licensed users') }}</span>
+          <span>{{ feature }}</span>
         </div>
       </div>
     </div>

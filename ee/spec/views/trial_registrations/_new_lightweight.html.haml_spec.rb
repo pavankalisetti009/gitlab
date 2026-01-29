@@ -37,6 +37,30 @@ RSpec.describe 'trial_registrations/_new_lightweight', feature_category: :acquis
     expect(rendered).to have_link(s_('InProductMarketing|Start a Self-Managed trial'), href: href)
   end
 
+  context 'when ultimate_trial_with_dap feature flag is enabled' do
+    before do
+      stub_feature_flags(ultimate_trial_with_dap: true)
+    end
+
+    it 'renders Duo Agent Platform copy' do
+      render
+
+      expect(rendered).to have_content('GitLab Duo Agent Platform')
+    end
+  end
+
+  context 'when ultimate_trial_with_dap feature flag is disabled' do
+    before do
+      stub_feature_flags(ultimate_trial_with_dap: false)
+    end
+
+    it 'renders Duo Enterprise copy' do
+      render
+
+      expect(rendered).to have_content('GitLab Duo Enterprise')
+    end
+  end
+
   context 'when social signin is disabled' do
     it 'does not render social signin section' do
       render

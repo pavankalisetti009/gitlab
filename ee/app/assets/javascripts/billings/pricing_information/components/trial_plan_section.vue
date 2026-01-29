@@ -1,13 +1,29 @@
 <script>
+import { s__ } from '~/locale';
+
 export default {
   name: 'TrialPlanSection',
+  props: {
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
+  computed: {
+    trialHeaderText() {
+      return this.isNewTrialType
+        ? s__('Billings|Your group is on a trial of Gitlab Ultimate')
+        : s__('Billings|Your group is on a trial of Ultimate + GitLab Duo Enterprise');
+    },
+  },
 };
 </script>
 
 <template>
   <div>
     <h3 class="gl-heading-3 gl-text-default">
-      {{ s__('Billings|Your group is on a trial of Ultimate + GitLab Duo Enterprise') }}
+      {{ trialHeaderText }}
     </h3>
 
     <div class="gl-mb-5 gl-text-subtle">

@@ -3,7 +3,7 @@ import { GlIcon, GlButton, GlLink, GlPopover } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { focusDuoChatInput } from 'ee/ai/utils';
-import { TRIAL_ACTIVE_FEATURE_HIGHLIGHTS } from 'ee/vue_shared/subscription/components/constants';
+import { getTrialActiveFeatureHighlights } from 'ee/vue_shared/subscription/components/constants';
 
 export default {
   name: 'TrialUpgradeSection',
@@ -31,6 +31,16 @@ export default {
       type: Object,
       required: true,
     },
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
+  computed: {
+    trialActiveFeatureHighlights() {
+      return getTrialActiveFeatureHighlights(this.isNewTrialType);
+    },
   },
   methods: {
     handleExploreLinkClick(id) {
@@ -48,26 +58,28 @@ export default {
       });
     },
     featureButtonText(feature) {
-      return sprintf(s__('BillingPlans|Explore %{feature}'), { feature });
+      return (
+        feature.buttonText ||
+        sprintf(s__('BillingPlans|Explore %{feature}'), { feature: feature.title })
+      );
     },
   },
-  TRIAL_ACTIVE_FEATURE_HIGHLIGHTS,
 };
 </script>
 
 <template>
   <div class="gl-flex gl-flex-col gl-gap-y-5">
     <h3 class="gl-heading-3 gl-m-0 gl-text-default">
-      {{ $options.TRIAL_ACTIVE_FEATURE_HIGHLIGHTS.header }}
+      {{ trialActiveFeatureHighlights.header }}
     </h3>
     <p class="gl-font-weight-semibold gl-m-0 gl-text-subtle">
-      {{ $options.TRIAL_ACTIVE_FEATURE_HIGHLIGHTS.subheader }}
+      {{ trialActiveFeatureHighlights.subheader }}
     </p>
 
     <div>
       <ul class="gl-mb-4 gl-flex gl-list-none gl-flex-col gl-gap-y-4 gl-p-0">
         <li
-          v-for="feature in $options.TRIAL_ACTIVE_FEATURE_HIGHLIGHTS.features"
+          v-for="feature in trialActiveFeatureHighlights.features"
           :key="feature.id"
           class="gl-flex gl-items-center gl-gap-3"
           data-testid="feature-highlight"
@@ -92,11 +104,11 @@ export default {
             <gl-button
               v-if="exploreLinks[feature.id] || feature.id === 'duoChat'"
               class="gl-mt-3 gl-w-full"
-              :href="exploreLinks[feature.id]"
+              :href="feature.buttonText ? feature.docsLink : exploreLinks[feature.id]"
               variant="confirm"
               @click="handleExploreLinkClick(feature.id)"
             >
-              {{ featureButtonText(feature.title) }}
+              {{ featureButtonText(feature) }}
             </gl-button>
           </gl-popover>
         </li>

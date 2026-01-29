@@ -32,8 +32,29 @@ RSpec.describe Onboarding::FreeRegistration, type: :undefined, feature_category:
   describe '.setup_for_company_help_text' do
     subject { described_class.setup_for_company_help_text }
 
-    it 'has combined text' do
-      is_expected.to eq(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
+    context 'when ultimate_trial_with_dap feature flag is enabled' do
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: true)
+      end
+
+      it 'returns DAP copy' do
+        is_expected.to eq(
+          _(
+            'Try GitLab Ultimate for free and automate tasks with GitLab Duo Agent Platform ' \
+              'when you create a new project.'
+          )
+        )
+      end
+    end
+
+    context 'when ultimate_trial_with_dap feature flag is disabled' do
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false)
+      end
+
+      it 'returns Duo Enterprise copy' do
+        is_expected.to eq(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
+      end
     end
   end
 

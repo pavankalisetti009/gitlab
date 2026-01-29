@@ -2,7 +2,7 @@
 import { GlModal, GlSprintf, GlPopover, GlIcon, GlButton } from '@gitlab/ui';
 import GITLAB_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg?url';
 import UserGroupCalloutDismisser from '~/vue_shared/components/user_group_callout_dismisser.vue';
-import { TRIAL_ACTIVE_FEATURE_HIGHLIGHTS } from 'ee/vue_shared/subscription/components/constants';
+import { getTrialActiveFeatureHighlights } from 'ee/vue_shared/subscription/components/constants';
 import { InternalEvents } from '~/tracking';
 import { s__, __ } from '~/locale';
 
@@ -40,6 +40,11 @@ export default {
       type: String,
       required: true,
     },
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   i18n: {
     title: s__('EndOfTrialModal|Your trial has ended'),
@@ -48,8 +53,10 @@ export default {
     ),
   },
   gitlabLogoUrl: GITLAB_LOGO_SVG_URL,
-  features: TRIAL_ACTIVE_FEATURE_HIGHLIGHTS.features,
   computed: {
+    features() {
+      return getTrialActiveFeatureHighlights(this.isNewTrialType).features;
+    },
     actionPrimary() {
       return {
         text: __('Upgrade to Premium'),
@@ -155,7 +162,7 @@ export default {
               }}</span>
             </div>
 
-            <template v-for="feature in $options.features">
+            <template v-for="feature in features">
               <div
                 :key="featureId(feature.id)"
                 class="gl-border-t gl-flex gl-h-11 gl-items-center sm:gl-h-9"
@@ -170,7 +177,7 @@ export default {
                   show-close-button
                   @shown="popoverShow(feature.id)"
                 >
-                  {{ feature.description }}
+                  {{ feature.descriptionWithoutCredits || feature.description }}
 
                   <gl-button
                     target="_blank"
@@ -195,7 +202,7 @@ export default {
               <gl-icon name="check" />
             </div>
 
-            <template v-for="feature in $options.features">
+            <template v-for="feature in features">
               <div
                 :key="featureId(feature.id)"
                 class="gl-border-t gl-flex gl-h-11 gl-items-center gl-justify-center sm:gl-h-9"
@@ -214,7 +221,7 @@ export default {
               <gl-icon name="check" />
             </div>
 
-            <template v-for="feature in $options.features">
+            <template v-for="feature in features">
               <div
                 :key="featureId(feature.id)"
                 class="gl-border-t gl-flex gl-h-11 gl-items-center gl-justify-center sm:gl-h-9"

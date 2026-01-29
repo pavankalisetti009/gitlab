@@ -44,12 +44,22 @@ export default {
       type: Boolean,
       required: true,
     },
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     header() {
-      const planName = this.trialActive
-        ? s__('BillingPlans|a trial of Ultimate + Duo Enterprise')
-        : s__('BillingPlans|GitLab Free');
+      let planName;
+      if (this.trialActive) {
+        planName = this.isNewTrialType
+          ? s__('BillingPlans|a trial of Ultimate')
+          : s__('BillingPlans|a trial of Ultimate + Duo Enterprise');
+      } else {
+        planName = s__('BillingPlans|GitLab Free');
+      }
 
       const platform = this.isSaas ? s__('BillingPlans|group') : s__('BillingPlans|instance');
       return sprintf(s__('BillingPlans|Your %{platform} is on %{planName}'), {

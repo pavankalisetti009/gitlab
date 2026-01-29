@@ -61,4 +61,38 @@ describe('FreeTrialBillingApp', () => {
       expect(findUltimatePlanBillingHeader().props('ctaLabel')).toBe('Choose Ultimate');
     });
   });
+
+  describe('highlightBarText computed property', () => {
+    describe('with ultimate_trial_with_dap feature flag enabled', () => {
+      beforeEach(() => {
+        window.gon = { features: { ultimateTrialWithDap: true } };
+      });
+
+      afterEach(() => {
+        window.gon = {};
+      });
+
+      it('returns DAP messaging', () => {
+        createComponent();
+
+        expect(wrapper.vm.highlightBarText).toBe('Now with GitLab Duo Agent Platform');
+      });
+    });
+
+    describe('with ultimate_trial_with_dap feature flag disabled', () => {
+      beforeEach(() => {
+        window.gon = { features: { ultimateTrialWithDap: false } };
+      });
+
+      afterEach(() => {
+        window.gon = {};
+      });
+
+      it('returns AI features messaging', () => {
+        createComponent();
+
+        expect(wrapper.vm.highlightBarText).toBe('Now with AI features included');
+      });
+    });
+  });
 });

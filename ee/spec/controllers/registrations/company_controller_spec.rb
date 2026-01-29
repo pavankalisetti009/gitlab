@@ -48,6 +48,8 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
   end
 
   describe '#new' do
+    render_views
+
     subject(:get_new) { get :new }
 
     it_behaves_like 'user authentication'
@@ -57,6 +59,12 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
     context 'on render' do
       it { is_expected.to render_template 'layouts/minimal' }
       it { is_expected.to render_template(:new) }
+
+      it 'pushes ultimate_trial_with_dap feature flag' do
+        get_new
+
+        expect(response.body).to have_pushed_frontend_feature_flags(ultimateTrialWithDap: true)
+      end
 
       it 'tracks render event' do
         get_new

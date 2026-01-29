@@ -67,6 +67,40 @@ RSpec.describe 'registrations/company/new', :with_trial_types, feature_category:
     end
   end
 
+  describe 'page title' do
+    before do
+      allow(view).to receive(:page_title)
+    end
+
+    context 'when ultimate_trial_with_dap feature flag is enabled' do
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: true)
+      end
+
+      it 'renders Duo Agent Platform page title' do
+        render
+
+        expect(view).to have_received(:page_title).with(
+          s_('Trial|Start your free Ultimate and GitLab Duo Agent Platform trial')
+        )
+      end
+    end
+
+    context 'when ultimate_trial_with_dap feature flag is disabled' do
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false)
+      end
+
+      it 'renders Duo Enterprise page title' do
+        render
+
+        expect(view).to have_received(:page_title).with(
+          s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial')
+        )
+      end
+    end
+  end
+
   def stub_devise
     allow(view).to receive_messages(devise_mapping: Devise.mappings[:user], resource: spy, resource_name: :user)
   end

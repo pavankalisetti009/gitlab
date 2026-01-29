@@ -6,6 +6,13 @@ export default {
   components: {
     GlIcon,
   },
+  props: {
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
 };
 </script>
 
@@ -64,9 +71,20 @@ export default {
       <span class="gl-text-lg">{{ s__('BillingPlans|Unlimited guest users') }}</span>
     </div>
 
+    <template v-if="isNewTrialType">
+      <div class="gl-mt-6 gl-text-lg gl-font-bold md:gl-mt-4">
+        {{ s__('BillingPlans|GitLab Duo Agent Platform:') }}
+      </div>
+
+      <div class="gl-mt-6 md:gl-mt-4">
+        <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
+        <span class="gl-text-lg">{{ s__('BillingPlans|$24 in GitLab Credits/User/Month') }}</span>
+      </div>
+    </template>
+
     <div class="gl-mt-6 gl-text-lg gl-font-bold md:gl-mt-4">{{ s__('BillingPlans|Add-ons') }}</div>
 
-    <div class="gl-mt-6 md:gl-mt-4">
+    <div v-if="!isNewTrialType" class="gl-mt-6 md:gl-mt-4">
       <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
       <span class="gl-text-lg">{{ s__('BillingPlans|Duo Enterprise') }}</span>
     </div>

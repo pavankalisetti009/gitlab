@@ -36,6 +36,12 @@ RSpec.describe Projects::GetStartedController, :saas, feature_category: :onboard
 
         it { is_expected.to render_template(:show) }
 
+        it 'pushes ultimate_trial_with_dap feature flag' do
+          get_show
+
+          expect(response.body).to have_pushed_frontend_feature_flags(ultimateTrialWithDap: true)
+        end
+
         context 'when onboarding is not available' do
           let(:onboarding_enabled?) { false }
 
