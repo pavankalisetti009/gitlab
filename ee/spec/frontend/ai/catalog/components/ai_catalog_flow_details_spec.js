@@ -38,19 +38,22 @@ describe('AiCatalogFlowDetails', () => {
   const findServiceAccountField = () => wrapper.findByTestId('service-account-field');
   const findConfigurationField = () => wrapper.findByTestId('configuration-field');
 
-  beforeEach(() => {
-    createComponent();
-  });
+  describe('template', () => {
+    beforeEach(() => {
+      createComponent();
+    });
 
-  it('renders sections', () => {
-    expect(findAllSections()).toHaveLength(2);
-    expect(findSection(0).attributes('title')).toBe('Visibility & access');
-    expect(findSection(1).attributes('title')).toBe('Configuration');
+    it('renders sections', () => {
+      expect(findAllSections()).toHaveLength(2);
+      expect(findSection(0).attributes('title')).toBe('Visibility & access');
+      expect(findSection(1).attributes('title')).toBe('Configuration');
+    });
   });
 
   describe('renders "Visibility & access" details', () => {
     let accessRightsDetails;
     beforeEach(() => {
+      createComponent();
       accessRightsDetails = findAllFieldsForSection(0);
     });
 
@@ -70,16 +73,22 @@ describe('AiCatalogFlowDetails', () => {
   });
 
   describe('renders "Configuration" details', () => {
-    it('renders latestVersion flow definition', () => {
-      expect(findConfigurationField().props('title')).toBe('YAML configuration');
-      expect(findConfigurationField().findComponent(FormFlowDefinition).props('value')).toBe(
-        mockFlow.latestVersion.definition,
-      );
-    });
+    describe('default', () => {
+      beforeEach(() => {
+        createComponent();
+      });
 
-    it('does not render triggers field', () => {
-      const configurationFields = findAllFieldsForSection(1);
-      expect(configurationFields).toHaveLength(1);
+      it('renders latestVersion flow definition', () => {
+        expect(findConfigurationField().props('title')).toBe('YAML configuration');
+        expect(findConfigurationField().findComponent(FormFlowDefinition).props('value')).toBe(
+          mockFlow.latestVersion.definition,
+        );
+      });
+
+      it('does not render triggers field', () => {
+        const configurationFields = findAllFieldsForSection(1);
+        expect(configurationFields).toHaveLength(1);
+      });
     });
 
     describe('when configurationForProject exists', () => {

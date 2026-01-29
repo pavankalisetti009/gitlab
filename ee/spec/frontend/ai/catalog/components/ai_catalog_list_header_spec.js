@@ -162,20 +162,22 @@ describe('AiCatalogListHeader', () => {
   });
 
   describe('when isGlobal is false', () => {
-    beforeEach(() => {
-      createComponent({
-        provide: {
-          isGlobal: false,
-        },
+    describe('template', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            isGlobal: false,
+          },
+        });
       });
-    });
 
-    it('does not render AiCatalogNavTabs component', () => {
-      expect(findNavTabs().exists()).toBe(false);
-    });
+      it('does not render AiCatalogNavTabs component', () => {
+        expect(findNavTabs().exists()).toBe(false);
+      });
 
-    it('renders AiCatalogNavActions component in actions slot', () => {
-      expect(findNavActions().exists()).toBe(true);
+      it('renders AiCatalogNavActions component in actions slot', () => {
+        expect(findNavActions().exists()).toBe(true);
+      });
     });
 
     it('passes canAdmin prop to nav actions', () => {

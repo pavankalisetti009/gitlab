@@ -29,10 +29,6 @@ describe('AiCatalogItemMetadata', () => {
   const findModifiedItem = () => wrapper.findByTestId('metadata-modified');
   const findVersionItem = () => wrapper.findByTestId('metadata-version');
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('number of fields', () => {
     it('should display the correct number of metadata tags', () => {
       // Create a component with *all available* tags.
@@ -60,6 +56,8 @@ describe('AiCatalogItemMetadata', () => {
 
   describe('date fields', () => {
     it('should be displayed with correct icons when provided', () => {
+      createComponent();
+
       const createdOn = findCreatedOnItem();
       expect(createdOn.exists()).toBe(true);
       expect(createdOn.text()).toContain('Created on January 15, 2024');
@@ -133,6 +131,10 @@ describe('AiCatalogItemMetadata', () => {
   });
 
   describe('version field', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('should show the human-readable version with correct value and icon', () => {
       const version = findVersionItem();
       expect(version.exists()).toBe(true);
