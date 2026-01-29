@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::InstanceSecurityDashboard::ProjectsResolver do
+RSpec.describe Resolvers::InstanceSecurityDashboard::ProjectsResolver, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   describe '#resolve' do

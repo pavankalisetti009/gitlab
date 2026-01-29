@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::SecurityReportSummaryResolver do
+RSpec.describe Resolvers::SecurityReportSummaryResolver, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   let_it_be(:pipeline) { create(:ci_pipeline) }

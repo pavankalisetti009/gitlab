@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::InstanceSecurityDashboard::RemoveProject do
+RSpec.describe Mutations::InstanceSecurityDashboard::RemoveProject, feature_category: :vulnerability_management do
   include GraphqlHelpers
   let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 

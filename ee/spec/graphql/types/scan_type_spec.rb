@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Scan'] do
+RSpec.describe GitlabSchema.types['Scan'], feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   let(:fields) { %i[name errors warnings status] }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['SecurityScannerType'] do
+RSpec.describe GitlabSchema.types['SecurityScannerType'], feature_category: :vulnerability_management do
   it 'exposes all security scanner types' do
     expect(described_class.values.keys).to match_array(
       %w[

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['InstanceSecurityDashboard'] do
+RSpec.describe GitlabSchema.types['InstanceSecurityDashboard'], feature_category: :vulnerability_management do
   let_it_be(:project) { create(:project) }
   let(:result) { GitlabSchema.execute(query, context: { current_user: current_user }).as_json }
   let_it_be(:other_project) { create(:project) }
