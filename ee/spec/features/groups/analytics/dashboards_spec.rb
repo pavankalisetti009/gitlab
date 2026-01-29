@@ -114,12 +114,6 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
             within find_by_testid('gridstack-grid') do |panel|
               expect(panel).to have_content _('Custom Panel 1')
             end
-
-            within find_by_testid('vsd-feedback-survey') do |feedback_survey|
-              expect(feedback_survey).to be_visible
-              expect(feedback_survey).to have_content _("To help us improve the Value Stream Management Dashboard, " \
-                "please share feedback about your experience in this survey.")
-            end
           end
 
           it 'does not render 404 when refreshing the page' do

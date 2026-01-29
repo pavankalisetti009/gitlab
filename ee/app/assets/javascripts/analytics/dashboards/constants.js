@@ -165,8 +165,6 @@ export const METRICS_WITHOUT_LABEL_FILTERING = Object.keys(TABLE_METRICS).filter
   (metric) => !METRICS_WITH_LABEL_FILTERING.includes(metric),
 );
 
-export const DASHBOARD_SURVEY_LINK =
-  'https://gitlab.fra1.qualtrics.com/jfe/form/SV_50guMGNU2HhLeT4';
 export const DASHBOARD_LOADING_FAILURE = s__('DORA4Metrics|Some metric comparisons failed to load');
 export const DASHBOARD_LABELS_LOAD_ERROR = s__(
   'DORA4Metrics|Failed to load labels matching the filter: %{labels}',
@@ -192,10 +190,6 @@ export const CHART_TOOLTIP_UNITS = {
   [UNITS.PERCENT]: '%',
   [UNITS.MINUTES]: __('minutes'),
 };
-
-export const ALERT_TEXT = s__(
-  'DORA4Metrics|To help us improve the Value Stream Management Dashboard, please share feedback about your experience in this %{linkStart}survey%{linkEnd}.',
-);
 
 export const BACKGROUND_AGGREGATION_WARNING_TITLE = s__(
   'DORA4Metrics|Background aggregation not enabled',

@@ -12,7 +12,6 @@ import { createAlert, VARIANT_WARNING, VARIANT_DANGER } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
-import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import UrlSync, {
   HISTORY_REPLACE_UPDATE_METHOD,
@@ -22,7 +21,6 @@ import { setPageFullWidth, setPageDefaultWidth } from '~/lib/utils/common_utils'
 import {
   AI_IMPACT_DASHBOARD,
   BUILT_IN_VALUE_STREAM_DASHBOARD,
-  CUSTOM_VALUE_STREAM_DASHBOARD,
   EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD,
   EVENT_LABEL_VIEWED_BUILTIN_DASHBOARD,
   EVENT_LABEL_EXCLUDE_ANONYMISED_USERS,
@@ -47,7 +45,6 @@ export default {
     ProjectsFilter: () => import('./filters/projects_filter.vue'),
     FilteredSearchFilter: () => import('./filters/filtered_search_filter.vue'),
     AnalyticsDashboardPanel,
-    ValueStreamFeedbackBanner,
     GlEmptyState,
     GlSkeletonLoader,
     GlAlert,
@@ -93,11 +90,6 @@ export default {
     };
   },
   computed: {
-    showValueStreamFeedbackBanner() {
-      return [BUILT_IN_VALUE_STREAM_DASHBOARD, CUSTOM_VALUE_STREAM_DASHBOARD].includes(
-        this.dashboard?.slug,
-      );
-    },
     showFilters() {
       return [
         this.showProjectsFilter,
@@ -354,7 +346,6 @@ export default {
           </li>
         </ul>
       </gl-alert>
-      <value-stream-feedback-banner v-if="showValueStreamFeedbackBanner" />
 
       <gl-dashboard-layout :config="dashboard">
         <template v-if="hasStatusBadge" #title>
