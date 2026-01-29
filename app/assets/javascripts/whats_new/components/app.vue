@@ -147,7 +147,7 @@ export default {
           :fetching="fetching"
           :drawer-body-height="drawerBodyHeight"
           class="other-updates gl-pt-3"
-          @bottomReached="bottomReached"
+          @bottom-reached="bottomReached"
         />
       </div>
     </gl-drawer>
