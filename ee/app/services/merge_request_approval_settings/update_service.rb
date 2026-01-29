@@ -39,22 +39,31 @@ module MergeRequestApprovalSettings
     def resolved_params
       @resolved_params ||= {
         merge_requests_author_approval: params[:allow_author_approval],
-        merge_requests_disable_committers_approval: !params[:allow_committer_approval],
-        disable_overriding_approvers_per_merge_request: !params[:allow_overrides_to_approver_list_per_merge_request],
-        reset_approvals_on_push: !params[:retain_approvals_on_push],
+        merge_requests_disable_committers_approval: negate_if_present(:allow_committer_approval),
+        disable_overriding_approvers_per_merge_request:
+          negate_if_present(:allow_overrides_to_approver_list_per_merge_request),
+        reset_approvals_on_push: negate_if_present(:retain_approvals_on_push),
         require_password_to_approve: params[:require_password_to_approve],
-        project_setting_attributes: {
-          selective_code_owner_removals: params[:selective_code_owner_removals] || false,
-          require_reauthentication_to_approve: params[:require_reauthentication_to_approve]
-        }
-      }
+        project_setting_attributes: project_setting_params
+      }.compact
+    end
+
+    def negate_if_present(key)
+      !params[key] if params.key?(key)
+    end
+
+    def project_setting_params
+      {
+        selective_code_owner_removals: params[:selective_code_owner_removals],
+        require_reauthentication_to_approve: params[:require_reauthentication_to_approve]
+      }.compact.presence
     end
 
     def approval_removal_settings
       MergeRequest::ApprovalRemovalSettings.new(
         container,
-        !params[:retain_approvals_on_push],
-        params[:selective_code_owner_removals]
+        resolved_params[:reset_approvals_on_push],
+        resolved_params.dig(:project_setting_attributes, :selective_code_owner_removals)
       )
     end
 
