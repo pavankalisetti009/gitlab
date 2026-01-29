@@ -75,11 +75,8 @@ JWT provides you with a secret key for you to use.
    > For more information on each configuration option refer to
    > the [OmniAuth JWT usage documentation](https://github.com/mbleigh/omniauth-jwt#usage).
 
-   {{< alert type="warning" >}}
-
-   Incorrectly configuring these settings can result in an insecure instance.
-
-   {{< /alert >}}
+   > [!warning]
+   > Incorrectly configuring these settings can result in an insecure instance.
 
 1. Change `YOUR_APP_SECRET` to the client secret and set `auth_url` to your redirect URL.
 1. Save the configuration file.
