@@ -60870,12 +60870,6 @@ msgstr ""
 msgid "SecurityConfiguration|Enabled"
 msgstr ""
 
-msgid "SecurityConfiguration|High-level vulnerability statistics across projects and groups"
-msgstr ""
-
-msgid "SecurityConfiguration|Immediately begin risk analysis and remediation with application security features. Start with SAST and Secret Detection, available to all plans. Upgrade to Ultimate to get all features, including:"
-msgstr ""
-
 msgid "SecurityConfiguration|Learn more about our vulnerability data retention policies"
 msgstr ""
 
@@ -60894,9 +60888,6 @@ msgstr ""
 msgid "SecurityConfiguration|Manage profiles for use by DAST scans."
 msgstr ""
 
-msgid "SecurityConfiguration|More scan types, including DAST, Dependency Scanning, Fuzzing"
-msgstr ""
-
 msgid "SecurityConfiguration|Not enabled"
 msgstr ""
 
@@ -60909,16 +60900,10 @@ msgstr ""
 msgid "SecurityConfiguration|Quickly enable all continuous testing and compliance tools by enabling %{linkStart}Auto DevOps%{linkEnd}"
 msgstr ""
 
-msgid "SecurityConfiguration|Runtime security metrics for application environments"
-msgstr ""
-
 msgid "SecurityConfiguration|SAST configuration"
 msgstr ""
 
 msgid "SecurityConfiguration|Secret detection configuration"
-msgstr ""
-
-msgid "SecurityConfiguration|Secure your project"
 msgstr ""
 
 msgid "SecurityConfiguration|Security configuration"
@@ -60945,9 +60930,6 @@ msgstr ""
 msgid "SecurityConfiguration|Toggle secret push protection"
 msgstr ""
 
-msgid "SecurityConfiguration|Upgrade or start a free trial"
-msgstr ""
-
 msgid "SecurityConfiguration|Using custom settings. You won't receive automatic updates on this variable. %{anchorStart}Restore to default%{anchorEnd}"
 msgstr ""
 
@@ -60961,9 +60943,6 @@ msgid "SecurityConfiguration|Vulnerability Management"
 msgstr ""
 
 msgid "SecurityConfiguration|Vulnerability archives"
-msgstr ""
-
-msgid "SecurityConfiguration|Vulnerability details and statistics in the merge request"
 msgstr ""
 
 msgid "SecurityDescription|The linked group refers to the groups that are linked to security policy projects. Security policy projects store your organization's security policies. They are identified when policies are created, or when a project is linked as a security policy project. %{linkStart}Learn more%{linkEnd}."

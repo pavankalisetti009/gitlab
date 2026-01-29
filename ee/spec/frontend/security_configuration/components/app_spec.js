@@ -5,7 +5,6 @@ import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisse
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import SecurityConfigurationApp from '~/security_configuration/components/app.vue';
-import UpgradeBanner from 'ee/security_configuration/components/upgrade_banner.vue';
 import VulnerabilityArchives from 'ee/security_configuration/components/vulnerability_archives.vue';
 import { securityFeaturesMock, provideMock } from 'jest/security_configuration/mock_data';
 import { SERVICE_PING_SECURITY_CONFIGURATION_THREAT_MANAGEMENT_VISIT } from '~/tracking/constants';
@@ -85,7 +84,6 @@ describe('~/security_configuration/components/app', () => {
   };
 
   const findVulnerabilityArchives = () => wrapper.findComponent(VulnerabilityArchives);
-  const findUpgradeBanner = () => wrapper.findComponent(UpgradeBanner);
   const findTabsComponent = () => wrapper.findComponent(GlTabs);
   const findTabAtIndex = (i) => wrapper.findAllComponents(GlTab).at(i);
   const findFeatureCards = () => wrapper.findAllComponents(FeatureCard);
@@ -94,65 +92,6 @@ describe('~/security_configuration/components/app', () => {
   const findLicenseInformationSource = () =>
     wrapper.findComponent(LicenseInformationSourceFeatureCard);
   const findScanProfileConfiguration = () => wrapper.findComponent(ScanProfileConfiguration);
-
-  describe('upgrade banner', () => {
-    const makeAvailable = (available) => (feature) => ({ ...feature, available });
-
-    describe('given at least one unavailable feature', () => {
-      beforeEach(async () => {
-        await createComponent({
-          props: {
-            augmentedSecurityFeatures: [
-              {
-                ...securityFeaturesMock[0],
-                available: false,
-              },
-            ],
-          },
-        });
-      });
-
-      it('renders the banner', () => {
-        expect(findUpgradeBanner().exists()).toBe(true);
-      });
-
-      it('calls the dismiss callback when closing the banner', () => {
-        expect(userCalloutDismissSpy).not.toHaveBeenCalled();
-
-        findUpgradeBanner().vm.$emit('close');
-
-        expect(userCalloutDismissSpy).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    describe('given at least one unavailable feature, but banner is already dismissed', () => {
-      beforeEach(() => {
-        createComponent({
-          props: {
-            shouldShowCallout: false,
-          },
-        });
-      });
-
-      it('does not render the banner', () => {
-        expect(findUpgradeBanner().exists()).toBe(false);
-      });
-    });
-
-    describe('given all features are available', () => {
-      beforeEach(() => {
-        createComponent({
-          props: {
-            augmentedSecurityFeatures: securityFeaturesMock.map(makeAvailable(true)),
-          },
-        });
-      });
-
-      it('does not render the banner', () => {
-        expect(findUpgradeBanner().exists()).toBe(false);
-      });
-    });
-  });
 
   describe('tab change', () => {
     beforeEach(() => {
