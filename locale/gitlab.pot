@@ -20668,6 +20668,9 @@ msgstr ""
 msgid "Copy link URL"
 msgstr ""
 
+msgid "Copy link to the file"
+msgstr ""
+
 msgid "Copy permalink"
 msgstr ""
 
@@ -40491,6 +40494,9 @@ msgid "Link title"
 msgstr ""
 
 msgid "Link title is required"
+msgstr ""
+
+msgid "Link to diff file copied."
 msgstr ""
 
 msgid "Link to go to GitLab pipeline documentation"
