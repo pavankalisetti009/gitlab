@@ -36,7 +36,8 @@ module Elastic
         data['busy'] = target.status&.busy? || false
         data['namespace_ancestry_ids'] = target.search_membership_ancestry
 
-        # Schema version. The format is Date.today.strftime('%y_%m')
+        # Schema version. The format is YYVV (year/version).
+        # YY is the two-digit year, VV is the version number (01-99) within that year.
         # Please update if you're changing the schema of the document
         data['schema_version'] = SCHEMA_VERSION
 

@@ -36,7 +36,8 @@ module Elastic
         data['hidden'] = target.hidden?
         data['archived'] = target.project.self_or_ancestors_archived?
 
-        # Schema version. The format is Date.today.strftime('%y_%w')
+        # Schema version. The format is YYVV (year/version).
+        # YY is the two-digit year, VV is the version number (01-99) within that year.
         # Please update if you're changing the schema of the document
         data['schema_version'] = SCHEMA_VERSION
         data['label_ids'] = target.label_ids.map(&:to_s)
