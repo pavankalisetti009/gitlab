@@ -101,7 +101,10 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
       expect(page).to have_content('I\'m signing up for GitLab because:')
       expect(page).to have_content('Who will be using GitLab?')
       expect(page)
-        .to have_content(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
+        .to have_content(_(
+          'Try GitLab Ultimate for free and automate tasks with GitLab Duo Agent Platform ' \
+            'when you create a new project.'
+        ))
       expect(page).to have_content('What would you like to do?')
       expect(page).not_to have_content('I\'d like to receive updates about GitLab via email')
     end

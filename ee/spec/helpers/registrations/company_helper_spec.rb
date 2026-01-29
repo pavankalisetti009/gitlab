@@ -37,7 +37,8 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
         submitPath: "/users/sign_up/company?#{extra_params.to_query}",
         showFormFooter: true,
         trackActionForErrors: 'trial_registration',
-        trialDuration: trial_duration
+        trialDuration: trial_duration,
+        isNewTrialType: true
       }.deep_stringify_keys
 
       expect(form_data).to match(::Gitlab::Json.generate(attributes))
@@ -61,10 +62,21 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
           submitPath: "/users/sign_up/company?#{extra_params.to_query}",
           showFormFooter: true,
           trackActionForErrors: 'trial_registration',
-          trialDuration: trial_duration
+          trialDuration: trial_duration,
+          isNewTrialType: true
         }.deep_stringify_keys
 
         expect(form_data).to match(::Gitlab::Json.generate(attributes))
+      end
+    end
+
+    context 'when ultimate_trial_with_dap feature flag is disabled' do
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false)
+      end
+
+      it 'returns isNewTrialType as false' do
+        expect(Gitlab::Json.safe_parse(form_data)).to include('isNewTrialType' => false)
       end
     end
   end

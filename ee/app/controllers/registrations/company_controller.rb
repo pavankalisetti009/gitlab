@@ -14,6 +14,10 @@ module Registrations
     before_action :authenticate_user!
     before_action :verify_in_onboarding_flow!
 
+    before_action do
+      push_frontend_feature_flag(:ultimate_trial_with_dap, :instance)
+    end
+
     feature_category :onboarding
     urgency :low, [:create]
 

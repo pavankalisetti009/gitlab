@@ -79,8 +79,23 @@ export default {
       type: Object,
       required: true,
     },
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
+    highlightBarText() {
+      if (this.trialActive) {
+        return this.isNewTrialType
+          ? s__('BillingPlans|Now with GitLab Duo Agent Platform')
+          : s__('BillingPlans|Now with AI features included');
+      }
+      return window.gon?.features?.ultimateTrialWithDap
+        ? s__('BillingPlans|Now with GitLab Duo Agent Platform')
+        : s__('BillingPlans|Now with AI features included');
+    },
     attributes() {
       if (this.trialActive) {
         return {
@@ -108,6 +123,7 @@ export default {
         :trial-active="trialActive"
         :trial-ends-on="trialEndsOn"
         :manage-seats-path="manageSeatsPath"
+        :is-new-trial-type="isNewTrialType"
         is-saas
       />
 
@@ -118,6 +134,7 @@ export default {
         :upgrade-to-premium-url="upgradeToPremiumUrl"
         :can-access-duo-chat="canAccessDuoChat"
         :explore-links="exploreLinks"
+        :is-new-trial-type="isNewTrialType"
         is-saas
       />
     </div>
@@ -129,9 +146,7 @@ export default {
         >
           <div class="gradient-star gl-mr-3 gl-mt-1 gl-h-5 gl-w-5"></div>
 
-          <span class="gl-font-bold gl-text-strong">{{
-            s__('BillingPlans|Now with AI features included')
-          }}</span>
+          <span class="gl-font-bold gl-text-strong">{{ highlightBarText }}</span>
         </div>
       </div>
       <div class="gl-flex gl-bg-subtle">
@@ -161,8 +176,8 @@ export default {
         </div>
 
         <div class="gl-border gl-flex gl-basis-2/3 gl-rounded-br-lg">
-          <premium-plan-billing />
-          <ultimate-plan-billing />
+          <premium-plan-billing :is-new-trial-type="isNewTrialType" />
+          <ultimate-plan-billing :is-new-trial-type="isNewTrialType" />
         </div>
       </div>
     </div>
@@ -189,7 +204,7 @@ export default {
         </div>
 
         <div class="gl-border gl-rounded-b-lg gl-border-t-0">
-          <premium-plan-billing />
+          <premium-plan-billing :is-new-trial-type="isNewTrialType" />
         </div>
       </gl-tab>
 
@@ -204,7 +219,7 @@ export default {
         </div>
 
         <div class="gl-border gl-rounded-b-lg gl-border-t-0">
-          <ultimate-plan-billing />
+          <ultimate-plan-billing :is-new-trial-type="isNewTrialType" />
         </div>
       </gl-tab>
     </gl-tabs>

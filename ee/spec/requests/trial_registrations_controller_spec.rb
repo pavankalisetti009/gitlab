@@ -29,6 +29,12 @@ RSpec.describe TrialRegistrationsController, :with_trial_types, :with_current_or
     context 'when user is not authenticated' do
       it { is_expected.to have_gitlab_http_status(:ok) }
 
+      it 'pushes ultimate_trial_with_dap feature flag' do
+        get_new
+
+        expect(response.body).to have_pushed_frontend_feature_flags(ultimateTrialWithDap: true)
+      end
+
       context 'with tracking' do
         it 'tracks page render' do
           get_new

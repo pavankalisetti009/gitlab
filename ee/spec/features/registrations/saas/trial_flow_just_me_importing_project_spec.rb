@@ -58,7 +58,10 @@ RSpec.describe 'Trial flow for user picking just me and importing a project', :j
       expect(page).to have_content('Who will be using this GitLab trial?')
       expect(page).to have_content('Who will be using this GitLab trial?')
       expect(page)
-        .not_to have_content(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
+        .not_to have_content(_(
+          'Try GitLab Ultimate for free and automate tasks with GitLab Duo Agent Platform ' \
+            'when you create a new project.'
+        ))
     end
   end
 

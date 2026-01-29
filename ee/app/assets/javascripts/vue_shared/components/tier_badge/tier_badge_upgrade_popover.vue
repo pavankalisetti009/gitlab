@@ -1,6 +1,8 @@
 <script>
 import { GlPopover, GlButton } from '@gitlab/ui';
+import { s__ } from '~/locale';
 import Tracking from '~/tracking';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 export default {
   name: 'TierBadgeUpgradePopover',
@@ -8,12 +10,23 @@ export default {
     GlPopover,
     GlButton,
   },
-  mixins: [Tracking.mixin({ label: 'tier_badge_upgrade' })],
+  mixins: [Tracking.mixin({ label: 'tier_badge_upgrade' }), glFeatureFlagsMixin()],
   inject: ['primaryCtaLink'],
   props: {
     target: {
       type: HTMLElement,
       required: true,
+    },
+  },
+  computed: {
+    popoverDescription() {
+      return this.glFeatures.ultimateTrialWithDap
+        ? s__(
+            'TierBadgePopover|Get advanced features like GitLab Duo Agent Platform, merge approvals, epics, and code review analytics.',
+          )
+        : s__(
+            'TierBadgePopover|Get advanced features like merge approvals, epics, and code review analytics.',
+          );
     },
   },
   methods: {
@@ -36,11 +49,7 @@ export default {
     @close-button-clicked="trackPopoverClose"
   >
     <div class="gl-mb-3">
-      {{
-        s__(
-          'TierBadgePopover|Get advanced features like GitLab Duo, merge approvals, epics, and code review analytics.',
-        )
-      }}
+      {{ popoverDescription }}
     </div>
     <gl-button
       :href="primaryCtaLink"

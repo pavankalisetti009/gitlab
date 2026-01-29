@@ -60,6 +60,9 @@ export default {
     trialActive() {
       return this.selectedGroup ? Boolean(this.selectedGroup.trial_active) : false;
     },
+    isNewTrialType() {
+      return Boolean(this.selectedGroup?.is_new_trial_type);
+    },
     groupIds() {
       return JSON.stringify(this.groups.map((group) => group.id));
     },
@@ -111,7 +114,11 @@ export default {
           class="gl-border gl-flex-1 gl-rounded-t-lg gl-bg-default gl-p-6 @md/panel:gl-rounded-l-lg @md/panel:gl-rounded-r-none"
         >
           <free-plan-section v-if="!trialActive" data-testid="free-plan-section" />
-          <trial-plan-section v-else data-testid="trial-plan-section" />
+          <trial-plan-section
+            v-else
+            data-testid="trial-plan-section"
+            :is-new-trial-type="isNewTrialType"
+          />
         </div>
         <div
           class="gl-border gl-flex-1 gl-rounded-b-lg gl-border-t-0 gl-bg-subtle gl-p-6 @md/panel:gl-border-t @md/panel:gl-rounded-l-none @md/panel:gl-rounded-r-lg @md/panel:gl-border-l-0"
@@ -129,6 +136,7 @@ export default {
             :group-billing-href="selectedGroup.group_billings_href"
             :can-access-duo-chat="selectedGroup.can_access_duo_chat"
             :explore-links="selectedGroup.explore_links"
+            :is-new-trial-type="isNewTrialType"
           />
         </div>
       </div>

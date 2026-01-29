@@ -41,6 +41,13 @@ module GitlabSubscriptions
       plans_data.find { |plan| plan.code == plan_code }
     end
 
+    def ultimate_with_dap_trial_type?
+      return true if Feature.enabled?(:ultimate_with_dap_trial_uat, namespace)
+
+      trial_starts_on = namespace.gitlab_subscription&.trial_starts_on
+      trial_starts_on.present? && trial_starts_on >= BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE
+    end
+
     def view_model
       ::Gitlab::Json.generate(
         {
@@ -48,7 +55,8 @@ module GitlabSubscriptions
           groupId: namespace.id,
           groupName: namespace.name,
           explorePlansPath: group_billings_path(namespace),
-          upgradeUrl: plan_purchase_url(find_plan(plans_data, ::Plan::PREMIUM))
+          upgradeUrl: plan_purchase_url(find_plan(plans_data, ::Plan::PREMIUM)),
+          isNewTrialType: ultimate_with_dap_trial_type?
         }
       )
     end

@@ -38,12 +38,110 @@ RSpec.describe GitlabSubscriptions::EndOfTrialModalComponent, :aggregate_failure
                 upgradeUrl: GitlabSubscriptions::PurchaseUrlBuilder.new(
                   plan_id: plans_data.first.id,
                   namespace: group
-                ).build
+                ).build,
+                isNewTrialType: true
               })
             end
 
             it 'has expected modal data attributes' do
               is_expected.to have_css("#js-end-of-trial-modal[data-view-model='#{data_attributes}']")
+            end
+
+            context 'when feature flag is disabled and trial started after DAP date' do
+              let(:trial_start_date) { BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE + 1.day }
+              let(:gitlab_subscription) do
+                build_stubbed(:gitlab_subscription, :expired_trial, :free, trial_starts_on: trial_start_date)
+              end
+
+              before do
+                stub_feature_flags(ultimate_with_dap_trial_uat: false)
+              end
+
+              it 'has expected modal data attributes with isNewTrialType true' do
+                is_expected.to have_css("#js-end-of-trial-modal[data-view-model='#{data_attributes}']")
+              end
+            end
+
+            context 'when feature flag is disabled and trial started before DAP date' do
+              let(:trial_start_date) { BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE - 1.day }
+              let(:gitlab_subscription) do
+                build_stubbed(:gitlab_subscription, :expired_trial, :free, trial_starts_on: trial_start_date)
+              end
+
+              let(:data_attributes) do
+                ::Gitlab::Json.generate({
+                  featureName: feature_name,
+                  groupId: group.id,
+                  groupName: group.name,
+                  explorePlansPath: group_billings_path(group),
+                  upgradeUrl: GitlabSubscriptions::PurchaseUrlBuilder.new(
+                    plan_id: plans_data.first.id,
+                    namespace: group
+                  ).build,
+                  isNewTrialType: false
+                })
+              end
+
+              before do
+                stub_feature_flags(ultimate_with_dap_trial_uat: false)
+              end
+
+              it 'has expected modal data attributes with isNewTrialType false' do
+                is_expected.to have_css("#js-end-of-trial-modal[data-view-model='#{data_attributes}']")
+              end
+            end
+
+            context 'when feature flag is disabled and trial_starts_on is nil' do
+              let(:gitlab_subscription) do
+                build_stubbed(:gitlab_subscription, :expired_trial, :free, trial_starts_on: nil)
+              end
+
+              let(:data_attributes) do
+                ::Gitlab::Json.generate({
+                  featureName: feature_name,
+                  groupId: group.id,
+                  groupName: group.name,
+                  explorePlansPath: group_billings_path(group),
+                  upgradeUrl: GitlabSubscriptions::PurchaseUrlBuilder.new(
+                    plan_id: plans_data.first.id,
+                    namespace: group
+                  ).build,
+                  isNewTrialType: false
+                })
+              end
+
+              before do
+                stub_feature_flags(ultimate_with_dap_trial_uat: false)
+              end
+
+              it 'has expected modal data attributes with isNewTrialType false' do
+                is_expected.to have_css("#js-end-of-trial-modal[data-view-model='#{data_attributes}']")
+              end
+            end
+
+            context 'when feature flag is disabled and namespace has no gitlab_subscription' do
+              let(:data_attributes) do
+                ::Gitlab::Json.generate({
+                  featureName: feature_name,
+                  groupId: group.id,
+                  groupName: group.name,
+                  explorePlansPath: group_billings_path(group),
+                  upgradeUrl: GitlabSubscriptions::PurchaseUrlBuilder.new(
+                    plan_id: plans_data.first.id,
+                    namespace: group
+                  ).build,
+                  isNewTrialType: false
+                })
+              end
+
+              before do
+                stub_feature_flags(ultimate_with_dap_trial_uat: false)
+                allow(group).to receive_messages(gitlab_subscription: nil, plan_name_for_upgrading: 'free')
+              end
+
+              it 'has expected modal data attributes with isNewTrialType false' do
+                is_expected.to have_css("#js-end-of-trial-modal[data-view-model='#{data_attributes}']")
+              end
             end
           end
 

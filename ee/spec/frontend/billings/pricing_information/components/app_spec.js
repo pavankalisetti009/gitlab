@@ -23,6 +23,7 @@ describe('PricingInformationApp', () => {
       id: 2,
       name: 'Group 2',
       trial_active: true,
+      is_new_trial_type: false,
       group_billings_href: '/groups/group-2/-/billings',
       upgrade_to_premium_href: '/groups/group-2/-/billings/purchase',
       can_access_duo_chat: false,
@@ -128,6 +129,7 @@ describe('PricingInformationApp', () => {
         exploreLinks: { mock_explore_link: '/mock/explore/link' },
         groupBillingHref: '/groups/group-2/-/billings',
         groupId: 2,
+        isNewTrialType: false,
       });
     });
 

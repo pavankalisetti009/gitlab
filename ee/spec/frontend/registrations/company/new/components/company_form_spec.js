@@ -360,10 +360,18 @@ describe('CompanyForm', () => {
       expect(findSubmitButton().text()).toBe('Continue with trial');
     });
 
-    it('displays correct footer text', () => {
+    it('displays correct footer text when isNewTrialType is false', () => {
       expect(findFooterDescriptionText().exists()).toBe(true);
       expect(findFooterDescriptionText().text()).toBe(
         'Your free Ultimate & GitLab Duo Enterprise Trial lasts for 30 days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
+      );
+    });
+
+    it('displays correct footer text when isNewTrialType is true', async () => {
+      wrapper = await createComponent({ provideData: { isNewTrialType: true } });
+      expect(findFooterDescriptionText().exists()).toBe(true);
+      expect(findFooterDescriptionText().text()).toBe(
+        'Try GitLab Ultimate and automate tasks with GitLab Duo Agent Platform free for 30 days. After that, continue with free features or upgrade to a paid plan.',
       );
     });
   });

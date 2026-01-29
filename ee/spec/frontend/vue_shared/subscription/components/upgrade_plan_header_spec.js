@@ -105,44 +105,71 @@ describe('UpgradePlanHeader', () => {
         expect(buttons).toHaveLength(7); // explore buttons + upgrade CTA
       });
 
-      it('shows a popover and tracks hover', () => {
-        const popoverTarget = wrapper.find(`#${premiumFeatureId}`);
-        expect(popoverTarget.exists()).toBe(true);
+      describe('with isNewTrialType false', () => {
+        it('shows a popover with DUE copy and tracks hover', () => {
+          const popoverTarget = wrapper.find(`#${premiumFeatureId}`);
+          expect(popoverTarget.exists()).toBe(true);
 
-        const popover = wrapper.findComponent(GlPopover);
-        expect(popover.props('target')).toBe(premiumFeatureId);
-        expect(popover.props('title')).toBe('GitLab Duo');
-        expect(popover.text()).toContain(
-          'AI-powered features that help you write code, understand your work, and automate tasks across your workflow.',
-        );
+          const popover = wrapper.findComponent(GlPopover);
+          expect(popover.props('target')).toBe(premiumFeatureId);
+          expect(popover.props('title')).toBe('GitLab Duo');
+          expect(popover.text()).toContain(
+            'AI-powered features that help you write code, understand your work, and automate tasks across your workflow.',
+          );
 
-        popover.vm.$emit('shown');
-        expect(trackingSpy).toHaveBeenCalledWith(
-          'render_premium_feature_popover_on_billings',
-          { property: premiumFeatureId },
-          undefined,
-        );
+          popover.vm.$emit('shown');
+          expect(trackingSpy).toHaveBeenCalledWith(
+            'render_premium_feature_popover_on_billings',
+            { property: premiumFeatureId },
+            undefined,
+          );
+        });
       });
 
-      it('shows learn more and explore links in popover', () => {
-        const popover = wrapper.findComponent(GlPopover);
-        const link = popover.findComponent(GlLink);
+      describe('with isNewTrialType true', () => {
+        beforeEach(() => {
+          createComponent({ trialActive: true, canAccessDuoChat: false, isNewTrialType: true });
+          trackingSpy = bindInternalEventDocument(wrapper.element).trackEventSpy;
+          trackingSpy.mockClear();
+        });
 
-        expect(link.attributes('href')).toContain('/user/gitlab_duo_chat');
-        expect(link.text()).toBe('Learn more.');
+        it('shows a popover with DAP copy and tracks hover', () => {
+          const popoverTarget = wrapper.find(`#${premiumFeatureId}`);
+          expect(popoverTarget.exists()).toBe(true);
 
-        const exploreButton = popover.findComponent(GlButton);
-        expect(exploreButton.attributes('href')).toBe(
-          mockBillingPageAttributes.exploreLinks.duoChat,
-        );
-        expect(exploreButton.text()).toBe('Explore GitLab Duo');
+          const popover = wrapper.findComponent(GlPopover);
+          expect(popover.props('target')).toBe(premiumFeatureId);
+          expect(popover.props('title')).toBe('GitLab Duo Agent Platform');
+          expect(popover.text()).toContain(
+            'AI agents and automated flows that work alongside you to answer complex questions, automate tasks, and streamline development. Use pre-built options or create custom agents and flows for your team. Powered by GitLab Credits.',
+          );
 
-        exploreButton.vm.$emit('click');
-        expect(trackingSpy).toHaveBeenCalledWith(
-          'click_cta_premium_feature_popover_on_billings',
-          { property: premiumFeatureId },
-          undefined,
-        );
+          popover.vm.$emit('shown');
+          expect(trackingSpy).toHaveBeenCalledWith(
+            'render_premium_feature_popover_on_billings',
+            { property: premiumFeatureId },
+            undefined,
+          );
+        });
+
+        it('shows learn more and explore links in popover', () => {
+          const popover = wrapper.findComponent(GlPopover);
+          const link = popover.findComponent(GlLink);
+
+          expect(link.attributes('href')).toContain('/user/duo_agent_platform');
+          expect(link.text()).toBe('Learn more.');
+
+          const exploreButton = popover.findComponent(GlButton);
+          expect(exploreButton.attributes('href')).toContain('/user/duo_agent_platform');
+          expect(exploreButton.text()).toBe('Learn more');
+
+          exploreButton.vm.$emit('click');
+          expect(trackingSpy).toHaveBeenCalledWith(
+            'click_cta_premium_feature_popover_on_billings',
+            { property: premiumFeatureId },
+            undefined,
+          );
+        });
       });
 
       it('shows duo chat drawer if user can access', () => {

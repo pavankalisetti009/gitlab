@@ -9,7 +9,10 @@
       %h1.gl-text-center.gl-m-0.gl-pb-3
         = s_('InProductMarketing|Get Started with GitLab')
       %p.gl-text-center.gl-m-0.gl-pb-6
-        = format(s_("InProductMarketing|Enjoy %{duration} days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate."), duration: @trial_duration)
+        - if Feature.enabled?(:ultimate_trial_with_dap, :instance)
+          = format(s_("InProductMarketing|Try our most advanced features, including GitLab Duo Agent Platform to automate development tasks with AI agents. After your %{duration}-day trial, continue with free features or upgrade to unlock the full value of GitLab."), duration: @trial_duration)
+        - else
+          = format(s_("InProductMarketing|Try our most advanced features, including GitLab Duo Enterprise to automate development tasks with AI. After your %{duration}-day trial, continue with free features or upgrade to unlock the full value of GitLab."), duration: @trial_duration)
       .signup-box
         = render 'signup_box_form_lightweight',
           url: trial_registrations_path(::Onboarding::StatusPresenter.glm_tracking_params(params)),

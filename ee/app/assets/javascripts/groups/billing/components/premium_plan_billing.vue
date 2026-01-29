@@ -6,6 +6,13 @@ export default {
   components: {
     GlIcon,
   },
+  props: {
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
 };
 </script>
 
@@ -24,15 +31,17 @@ export default {
       {{ s__('BillingPlans|Everything from Free, plus:') }}
     </div>
 
-    <div class="gl-mt-6 md:gl-mt-4">
-      <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
-      <span class="gl-text-lg">{{ s__('BillingPlans|AI Chat in the IDE') }}</span>
-    </div>
+    <template v-if="!isNewTrialType">
+      <div class="gl-mt-6 md:gl-mt-4">
+        <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
+        <span class="gl-text-lg">{{ s__('BillingPlans|AI Chat in the IDE') }}</span>
+      </div>
 
-    <div class="gl-mt-6 md:gl-mt-4">
-      <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
-      <span class="gl-text-lg">{{ s__('BillingPlans|AI Code Suggestions in the IDE') }}</span>
-    </div>
+      <div class="gl-mt-6 md:gl-mt-4">
+        <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
+        <span class="gl-text-lg">{{ s__('BillingPlans|AI Code Suggestions in the IDE') }}</span>
+      </div>
+    </template>
 
     <div class="gl-mt-6 md:gl-mt-4">
       <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
@@ -59,17 +68,30 @@ export default {
       <span class="gl-text-lg">{{ s__('BillingPlans|Unlimited licensed users') }}</span>
     </div>
 
+    <template v-if="isNewTrialType">
+      <div class="gl-mt-6 gl-text-lg gl-font-bold md:gl-mt-4">
+        {{ s__('BillingPlans|GitLab Duo Agent Platform:') }}
+      </div>
+
+      <div class="gl-mt-6 md:gl-mt-4">
+        <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
+        <span class="gl-text-lg">{{ s__('BillingPlans|$12 in GitLab Credits/User/Month') }}</span>
+      </div>
+    </template>
+
     <div class="gl-mt-6 gl-text-lg gl-font-bold md:gl-mt-4">{{ s__('BillingPlans|Add-ons') }}</div>
 
-    <div class="gl-mt-6 md:gl-mt-4">
-      <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
-      <span class="gl-text-lg">{{ s__('BillingPlans|Duo Pro') }}</span>
-    </div>
+    <template v-if="!isNewTrialType">
+      <div class="gl-mt-6 md:gl-mt-4">
+        <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
+        <span class="gl-text-lg">{{ s__('BillingPlans|Duo Pro') }}</span>
+      </div>
 
-    <div class="gl-mt-6 md:gl-mt-4">
-      <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
-      <span class="gl-text-lg">{{ s__('BillingPlans|Duo Enterprise') }}</span>
-    </div>
+      <div class="gl-mt-6 md:gl-mt-4">
+        <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
+        <span class="gl-text-lg">{{ s__('BillingPlans|Duo Enterprise') }}</span>
+      </div>
+    </template>
 
     <div class="gl-mt-6 md:gl-mt-4">
       <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />

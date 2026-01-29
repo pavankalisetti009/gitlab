@@ -33,11 +33,38 @@ describe('CurrentPlanHeader', () => {
     });
 
     describe('when trial is active', () => {
-      it('renders components', () => {
-        createComponent({ isSaas: true, trialActive: true });
+      describe('with ultimate_trial_with_dap feature flag enabled', () => {
+        beforeEach(() => {
+          window.gon = { features: { ultimateTrialWithDap: true } };
+        });
 
-        expect(content()).toContain('Your group is on a trial of Ultimate + Duo Enterprise');
-        expect(content()).toMatch('1 Seats in use');
+        afterEach(() => {
+          window.gon = {};
+        });
+
+        it('renders trial of Ultimate', () => {
+          createComponent({ isSaas: true, trialActive: true });
+
+          expect(content()).toContain('Your group is on a trial of Ultimate');
+          expect(content()).toMatch('1 Seats in use');
+        });
+      });
+
+      describe('with ultimate_trial_with_dap feature flag disabled', () => {
+        beforeEach(() => {
+          window.gon = { features: { ultimateTrialWithDap: false } };
+        });
+
+        afterEach(() => {
+          window.gon = {};
+        });
+
+        it('renders trial of Ultimate + Duo Enterprise', () => {
+          createComponent({ isSaas: true, trialActive: true });
+
+          expect(content()).toContain('Your group is on a trial of Ultimate + Duo Enterprise');
+          expect(content()).toMatch('1 Seats in use');
+        });
       });
     });
   });
@@ -54,11 +81,38 @@ describe('CurrentPlanHeader', () => {
     });
 
     describe('when trial is active', () => {
-      it('renders components', () => {
-        createComponent({ isSaas: false, trialActive: true });
+      describe('with ultimate_trial_with_dap feature flag enabled', () => {
+        beforeEach(() => {
+          window.gon = { features: { ultimateTrialWithDap: true } };
+        });
 
-        expect(content()).toContain('Your instance is on a trial of Ultimate + Duo Enterprise');
-        expect(content()).toMatch('1 users');
+        afterEach(() => {
+          window.gon = {};
+        });
+
+        it('renders trial of Ultimate', () => {
+          createComponent({ isSaas: false, trialActive: true });
+
+          expect(content()).toContain('Your instance is on a trial of Ultimate');
+          expect(content()).toMatch('1 users');
+        });
+      });
+
+      describe('with ultimate_trial_with_dap feature flag disabled', () => {
+        beforeEach(() => {
+          window.gon = { features: { ultimateTrialWithDap: false } };
+        });
+
+        afterEach(() => {
+          window.gon = {};
+        });
+
+        it('renders trial of Ultimate + Duo Enterprise', () => {
+          createComponent({ isSaas: false, trialActive: true });
+
+          expect(content()).toContain('Your instance is on a trial of Ultimate + Duo Enterprise');
+          expect(content()).toMatch('1 users');
+        });
       });
     });
   });

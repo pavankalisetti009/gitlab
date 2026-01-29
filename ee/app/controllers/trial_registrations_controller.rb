@@ -18,6 +18,10 @@ class TrialRegistrationsController < RegistrationsController
   before_action :verify_onboarding_enabled!
   before_action :redirect_to_trial, only: [:new], if: :user_signed_in?
 
+  before_action do
+    push_frontend_feature_flag(:ultimate_trial_with_dap, :instance)
+  end
+
   feature_category :onboarding
 
   override :new

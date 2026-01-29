@@ -16,6 +16,7 @@ describe('EndOfTrialModal', () => {
     groupName: 'Test group',
     explorePlansPath: '/explore',
     upgradeUrl: '/upgrade',
+    isNewTrialType: false,
   };
 
   const createComponent = () => {
@@ -69,31 +70,59 @@ describe('EndOfTrialModal', () => {
   });
 
   describe('premium features popovers', () => {
-    beforeEach(() => {
-      createComponent();
+    describe('with isNewTrialType false', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('renders all popovers and learn more buttons', () => {
+        const popovers = wrapper.findAllComponents(GlPopover);
+        expect(popovers).toHaveLength(6);
+
+        const buttons = wrapper.findAllByText('Learn more');
+        expect(buttons).toHaveLength(6);
+      });
+
+      it('renders correct popover with DUE copy', () => {
+        const popover = wrapper.findComponent(GlPopover);
+
+        expect(popover.props('target')).toBe(`${premiumFeatureId}EndOfTrialModal`);
+        expect(popover.props('title')).toBe('GitLab Duo');
+
+        expect(popover.text()).toContain(
+          'AI-powered features that help you write code, understand your work, and automate tasks across your workflow.',
+        );
+      });
     });
 
-    it('renders all popovers and learn more buttons', () => {
-      const popovers = wrapper.findAllComponents(GlPopover);
-      expect(popovers).toHaveLength(6);
+    describe('with isNewTrialType true', () => {
+      beforeEach(() => {
+        wrapper = shallowMountExtended(EndOfTrialModal, {
+          propsData: { ...propsData, isNewTrialType: true },
+          stubs: {
+            GlModal,
+            GlSprintf,
+            UserGroupCalloutDismisser: makeMockUserGroupCalloutDismisser({
+              dismiss: jest.fn(),
+            }),
+          },
+        });
+      });
 
-      const buttons = wrapper.findAllByText('Learn more');
-      expect(buttons).toHaveLength(6);
-    });
+      it('renders correct popover with DAP copy', () => {
+        const popover = wrapper.findComponent(GlPopover);
 
-    it('renders correct popover', () => {
-      const popover = wrapper.findComponent(GlPopover);
+        expect(popover.props('target')).toBe(`${premiumFeatureId}EndOfTrialModal`);
+        expect(popover.props('title')).toBe('GitLab Duo Agent Platform');
 
-      expect(popover.props('target')).toBe(`${premiumFeatureId}EndOfTrialModal`);
-      expect(popover.props('title')).toBe('GitLab Duo');
+        expect(popover.text()).toContain(
+          'AI agents and automated flows that work alongside you to answer complex questions, automate tasks, and streamline development. Use pre-built options or create custom agents and flows for your team.',
+        );
 
-      expect(popover.text()).toContain(
-        'AI-powered features that help you write code, understand your work, and automate tasks across your workflow.',
-      );
-
-      expect(wrapper.findByText('Learn more').attributes('href')).toContain(
-        '/user/gitlab_duo_chat',
-      );
+        expect(wrapper.findByText('Learn more').attributes('href')).toContain(
+          '/user/duo_agent_platform',
+        );
+      });
     });
   });
 

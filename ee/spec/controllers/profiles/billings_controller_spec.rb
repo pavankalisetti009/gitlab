@@ -28,6 +28,16 @@ RSpec.describe Profiles::BillingsController, feature_category: :subscription_man
       is_expected.to render_template(:index)
     end
 
+    context 'with rendered views' do
+      render_views
+
+      it 'pushes ultimate_trial_with_dap feature flag' do
+        get_index
+
+        expect(response.body).to have_pushed_frontend_feature_flags(ultimateTrialWithDap: true)
+      end
+    end
+
     it 'fetch subscription plans data from customers.gitlab.com' do
       data = double
       expect_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|

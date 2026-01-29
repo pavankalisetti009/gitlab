@@ -10,7 +10,7 @@ import {
   LEADS_PHONE_NUMBER_LABEL,
 } from 'ee/vue_shared/leads/constants';
 import csrf from '~/lib/utils/csrf';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import FormErrorTracker from '~/pages/shared/form_error_tracker';
 import countryStateMixin from 'ee/vue_shared/mixins/country_state_mixin';
 import {
@@ -52,6 +52,11 @@ export default {
       type: String,
       required: true,
     },
+    isNewTrialType: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -67,6 +72,17 @@ export default {
       }
 
       return s__('Trial|Continue');
+    },
+    footerDescriptionText() {
+      const msg = this.isNewTrialType
+        ? s__(
+            'Trial|Try GitLab Ultimate and automate tasks with GitLab Duo Agent Platform free for %{duration} days. After that, continue with free features or upgrade to a paid plan.',
+          )
+        : s__(
+            'Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for %{duration} days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
+          );
+
+      return sprintf(msg, { duration: this.trialDuration });
     },
     fields() {
       const result = {};
@@ -258,14 +274,7 @@ export default {
 
     <div v-if="showFormFooter" class="gl-mt-4">
       <span data-testid="footer_description_text" class="gl-text-sm gl-text-subtle">
-        {{
-          sprintf(
-            s__(
-              'Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for %{duration} days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
-            ),
-            { duration: trialDuration },
-          )
-        }}
+        {{ footerDescriptionText }}
       </span>
     </div>
   </gl-form>

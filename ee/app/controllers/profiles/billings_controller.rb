@@ -3,6 +3,10 @@
 class Profiles::BillingsController < Profiles::ApplicationController
   before_action :verify_subscriptions_available!
 
+  before_action do
+    push_frontend_feature_flag(:ultimate_trial_with_dap, :instance)
+  end
+
   feature_category :subscription_management
   urgency :low
 

@@ -6,6 +6,46 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
   include Devise::Test::ControllerHelpers
   include FreeUserCapHelpers
 
+  describe '#new_trial_type?' do
+    let(:namespace) { build(:group, gitlab_subscription: gitlab_subscription) }
+
+    context 'when feature flag is enabled' do
+      let(:gitlab_subscription) { build(:gitlab_subscription, :active_trial) }
+
+      it 'returns true' do
+        expect(helper.new_trial_type?(namespace)).to be true
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(ultimate_with_dap_trial_uat: false)
+      end
+
+      context 'when trial started on or after DAP start date' do
+        let(:gitlab_subscription) do
+          build(:gitlab_subscription, :active_trial,
+            trial_starts_on: BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE)
+        end
+
+        it 'returns true' do
+          expect(helper.new_trial_type?(namespace)).to be true
+        end
+      end
+
+      context 'when trial started before DAP start date' do
+        let(:gitlab_subscription) do
+          build(:gitlab_subscription, :active_trial,
+            trial_starts_on: BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE - 1.day)
+        end
+
+        it 'returns false' do
+          expect(helper.new_trial_type?(namespace)).to be false
+        end
+      end
+    end
+  end
+
   describe '#subscription_plan_data_attributes' do
     let(:group) { build(:group) }
     let(:customer_portal_url) { ::Gitlab::Routing.url_helpers.subscription_portal_manage_url }
@@ -135,7 +175,8 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
         let(:namespace) { build(:namespace) }
 
         it 'does not return billable_seats_href' do
-          expect(subject).not_to include(billable_seats_href: helper.group_usage_quotas_path(namespace, anchor: 'seats-quota-tab'))
+          expect(subject).not_to include(billable_seats_href: helper.group_usage_quotas_path(namespace,
+            anchor: 'seats-quota-tab'))
         end
       end
 
@@ -143,7 +184,8 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
         let(:namespace) { build(:group) }
 
         it 'returns billable_seats_href for group' do
-          expect(subject).to include(billable_seats_href: helper.group_usage_quotas_path(namespace, anchor: 'seats-quota-tab'))
+          expect(subject).to include(billable_seats_href: helper.group_usage_quotas_path(namespace,
+            anchor: 'seats-quota-tab'))
         end
       end
     end
@@ -151,7 +193,9 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
     context 'when seats_last_updated is being assigned' do
       let(:enqueue_time) { Time.new(2023, 2, 21, 12, 13, 14, "+00:00") }
 
-      subject(:seats_last_updated) { helper.subscription_plan_data_attributes(group, plan, read_only: read_only)[:seats_last_updated] }
+      subject(:seats_last_updated) do
+        helper.subscription_plan_data_attributes(group, plan, read_only: read_only)[:seats_last_updated]
+      end
 
       context 'when the subscription has a last_seat_refresh_at' do
         let(:gitlab_subscription) { build(:gitlab_subscription, namespace: group, last_seat_refresh_at: enqueue_time) }
@@ -195,12 +239,15 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
         trialActive: false,
         trialEndsOn: nil,
         trialExpired: false,
+        isNewTrialType: true,
         upgradeToPremiumUrl: plan_purchase_url(namespace, plans_data[0]),
         upgradeToUltimateUrl: plan_purchase_url(namespace, plans_data[1]),
         upgradeToPremiumTrackingUrl:
-          track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::PREMIUM),
+          track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id,
+            plan: ::Plan::PREMIUM),
         upgradeToUltimateTrackingUrl:
-          track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::ULTIMATE),
+          track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id,
+            plan: ::Plan::ULTIMATE),
         canAccessDuoChat: false,
         exploreLinks: {
           duoChat: group_settings_gitlab_duo_seat_utilization_index_path(namespace),
@@ -208,7 +255,8 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
           epics: group_epics_path(namespace),
           escalationPolicies: project_incident_management_escalation_policies_path(project),
           repositoryPullMirroring: project_settings_repository_path(project, anchor: "js-push-remote-settings"),
-          mergeRequestApprovals: project_settings_merge_requests_path(project, anchor: "js-merge-request-approval-settings")
+          mergeRequestApprovals: project_settings_merge_requests_path(project,
+            anchor: "js-merge-request-approval-settings")
         }
       })
     end
@@ -657,11 +705,13 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
           group_billings_href: group_billings_path(free_group),
           upgrade_to_premium_href: plan_purchase_url(free_group, premium_plan),
           can_access_duo_chat: false,
+          is_new_trial_type: true,
           explore_links: {
             mergeTrains: project_settings_merge_requests_path(free_project),
             escalationPolicies: project_incident_management_escalation_policies_path(free_project),
             repositoryPullMirroring: project_settings_repository_path(free_project, anchor: "js-push-remote-settings"),
-            mergeRequestApprovals: project_settings_merge_requests_path(free_project, anchor: "js-merge-request-approval-settings"),
+            mergeRequestApprovals: project_settings_merge_requests_path(free_project,
+              anchor: "js-merge-request-approval-settings"),
             duoChat: group_settings_gitlab_duo_seat_utilization_index_path(free_group),
             epics: group_epics_path(free_group)
           }
@@ -673,6 +723,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
           group_billings_href: group_billings_path(trial_group),
           upgrade_to_premium_href: plan_purchase_url(trial_group, premium_plan),
           can_access_duo_chat: true,
+          is_new_trial_type: true,
           explore_links: {
             mergeTrains: nil,
             escalationPolicies: nil,
@@ -692,6 +743,19 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       it 'returns empty groups array' do
         expect(subject[:groups]).to be_empty
         expect(subject[:dashboardGroupsHref]).to eq(dashboard_groups_path)
+      end
+    end
+
+    context 'when ultimate_trial_with_dap feature flag is disabled' do
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false, ultimate_with_dap_trial_uat: false)
+        trial_group.gitlab_subscription.update!(
+          trial_starts_on: BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE - 1.day
+        )
+      end
+
+      it 'returns is_new_trial_type as false for groups' do
+        expect(subject[:groups]).to all(include(is_new_trial_type: false))
       end
     end
   end

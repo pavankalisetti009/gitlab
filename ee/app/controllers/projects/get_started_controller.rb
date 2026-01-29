@@ -9,6 +9,10 @@ module Projects
     before_action :authenticate_user!
     before_action :verify_available!
 
+    before_action do
+      push_frontend_feature_flag(:ultimate_trial_with_dap, :instance)
+    end
+
     helper_method :onboarding_progress
 
     feature_category :onboarding
