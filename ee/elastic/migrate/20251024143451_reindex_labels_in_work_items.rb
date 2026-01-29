@@ -10,3 +10,5 @@ class ReindexLabelsInWorkItems < Elastic::Migration
   DOCUMENT_TYPE = WorkItem
   NEW_SCHEMA_VERSION = 25_44
 end
+
+ReindexLabelsInWorkItems.prepend ::Search::Elastic::MigrationObsolete

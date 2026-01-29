@@ -312,7 +312,6 @@ RSpec.describe Resolvers::WorkItemsResolver, feature_category: :team_planning do
 
       before do
         stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-        set_elasticsearch_migration_to(:reindex_labels_in_work_items, including: true)
 
         allow(Gitlab::Search::Client).to receive(:execute_search).and_yield({
           'hits' => {
