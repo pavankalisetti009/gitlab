@@ -12880,9 +12880,6 @@ msgstr ""
 msgid "Branches|Please type the following to confirm: %{codeStart}delete%{codeEnd}."
 msgstr ""
 
-msgid "Branches|See all branch-related settings together with branch rules"
-msgstr ""
-
 msgid "Branches|Show active branches"
 msgstr ""
 
@@ -12935,9 +12932,6 @@ msgid "Branches|Yes, delete protected branch"
 msgstr ""
 
 msgid "Branches|You are about to %{strongStart}delete all branches%{strongEnd} that were merged into %{codeStart}%{defaultBranch}%{codeEnd}."
-msgstr ""
-
-msgid "Branches|You can now find an overview of settings for protected branches, merge request approvals, status checks, and security approvals conveniently in one spot."
 msgstr ""
 
 msgid "Branches|You're about to permanently delete the branch %{branchName}."
