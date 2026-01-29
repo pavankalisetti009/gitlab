@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['DastScanMethodType'] do
+RSpec.describe GitlabSchema.types['DastScanMethodType'], feature_category: :dynamic_application_security_testing do
   it 'exposes all alert field names' do
     expect(described_class.values.keys).to match_array(%w[WEBSITE OPENAPI HAR POSTMAN_COLLECTION GRAPHQL])
   end

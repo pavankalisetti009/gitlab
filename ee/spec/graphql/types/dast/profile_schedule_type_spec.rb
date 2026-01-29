@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['DastProfileSchedule'] do
+RSpec.describe GitlabSchema.types['DastProfileSchedule'], feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
   let_it_be(:fields) { %i[id active startsAt timezone nextRunAt cadence ownerValid] }

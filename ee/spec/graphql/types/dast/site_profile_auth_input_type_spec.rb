@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::Dast::SiteProfileAuthInputType do
+RSpec.describe Types::Dast::SiteProfileAuthInputType, feature_category: :dynamic_application_security_testing do
   specify { expect(described_class.graphql_name).to eq('DastSiteProfileAuthInput') }
 
   it 'has the correct arguments' do

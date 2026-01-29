@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Dast::Profiles::Delete do
+RSpec.describe Mutations::Dast::Profiles::Delete, feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }

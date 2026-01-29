@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['DastProfileCadence'] do
+RSpec.describe GitlabSchema.types['DastProfileCadence'], feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
   let_it_be(:fields) { %i[unit duration] }

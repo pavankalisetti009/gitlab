@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DastScannerProfilesFinder do
+RSpec.describe DastScannerProfilesFinder, feature_category: :dynamic_application_security_testing do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:dast_scanner_profile1) { create(:dast_scanner_profile) }
   let_it_be(:dast_scanner_profile2) { create(:dast_scanner_profile) }

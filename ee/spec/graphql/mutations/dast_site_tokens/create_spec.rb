@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::DastSiteTokens::Create do
+RSpec.describe Mutations::DastSiteTokens::Create, feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
 
   let(:group) { create(:group) }

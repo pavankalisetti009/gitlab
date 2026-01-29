@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DastSiteValidationsFinder do
+RSpec.describe DastSiteValidationsFinder, feature_category: :dynamic_application_security_testing do
   let_it_be(:dast_site_validation_1) { create(:dast_site_validation) }
   let_it_be(:dast_site_validation_2) { create(:dast_site_validation) }
   let_it_be(:dast_site_validation_3) { create(:dast_site_validation, dast_site_token: dast_site_validation_1.dast_site_token) }

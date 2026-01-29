@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Dast::ProfilesFinder do
+RSpec.describe Dast::ProfilesFinder, feature_category: :dynamic_application_security_testing do
   let_it_be(:project1) { create(:project) }
   let_it_be(:project2) { create(:project) }
   let_it_be(:dast_profile1) { create(:dast_profile, project: project1, branch_name: project1.default_branch) }

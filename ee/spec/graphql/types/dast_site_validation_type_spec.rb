@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['DastSiteValidation'] do
+RSpec.describe GitlabSchema.types['DastSiteValidation'], feature_category: :dynamic_application_security_testing do
   let_it_be(:dast_site_validation) { create(:dast_site_validation, state: :passed) }
   let_it_be(:project) { dast_site_validation.dast_site_token.project }
   let_it_be(:user) { create(:user) }

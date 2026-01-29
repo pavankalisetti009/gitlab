@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::DastSiteValidations::Revoke do
+RSpec.describe Mutations::DastSiteValidations::Revoke, feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
   let_it_be(:dast_site_validation1) { create(:dast_site_validation, state: :passed) }
   let_it_be(:dast_site_validation2) { create(:dast_site_validation) }
