@@ -77,5 +77,53 @@ RSpec.describe Authz::PermissionGroups::Assignable, feature_category: :permissio
         end
       end
     end
+
+    describe '#category_name' do
+      subject { assignable.category_name }
+
+      let(:file_path) { "#{described_class::BASE_PATH}/resource_category/resource/action.yml" }
+
+      before do
+        allow(Authz::PermissionGroups::Category).to receive(:get).and_return(nil)
+      end
+
+      context 'when category metadata does not exist' do
+        it 'returns the category directory name titlecases' do
+          is_expected.to eq('Resource Category')
+        end
+      end
+
+      context 'when category metadata exists without a name' do
+        let(:category_definition) do
+          Authz::PermissionGroups::Category.new({}, 'source_file')
+        end
+
+        before do
+          allow(Authz::PermissionGroups::Category).to receive(:get)
+            .with('resource_category')
+            .and_return(category_definition)
+        end
+
+        it 'returns the category directory name titlecased' do
+          is_expected.to eq('Resource Category')
+        end
+      end
+
+      context 'when category metadata exists with a name' do
+        let(:category_definition) do
+          Authz::PermissionGroups::Category.new({ name: 'Resource Category Display Name' }, 'source_file')
+        end
+
+        before do
+          allow(Authz::PermissionGroups::Category).to receive(:get)
+            .with('resource_category')
+            .and_return(category_definition)
+        end
+
+        it 'returns the name from category metadata' do
+          is_expected.to eq('Resource Category Display Name')
+        end
+      end
+    end
   end
 end
