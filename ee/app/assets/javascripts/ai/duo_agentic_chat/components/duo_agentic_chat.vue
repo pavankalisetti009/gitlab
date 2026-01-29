@@ -325,7 +325,7 @@ export default {
       agentOrWorkflowDeletedError: '',
       isChatAvailable: true,
       isFlowLocked: false,
-      isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? false,
+      isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? true,
       // this is required for classic/agentic toggle
       isClassicAvailable: this.chatConfiguration?.defaultProps?.isClassicAvailable ?? false,
       // eslint-disable-next-line vue/no-unused-properties

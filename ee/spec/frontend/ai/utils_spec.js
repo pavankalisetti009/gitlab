@@ -93,7 +93,8 @@ describe('AI Utils', () => {
         const command = { question: '/help', resourceId: '123' };
         sendDuoChatCommand(command);
 
-        expect(duoChatGlobalState.isShown).toBe(true);
+        // In embedded mode, legacy properties are not updated
+        expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
         expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
 
@@ -108,8 +109,9 @@ describe('AI Utils', () => {
         const command = { question: '/help', resourceId: '123' };
         sendDuoChatCommand(command);
 
+        // In embedded mode, legacy properties are not updated
         expect(duoChatGlobalState.isShown).toBe(false);
-        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
         expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
 
         expect(setCookie).not.toHaveBeenCalled();
@@ -191,8 +193,9 @@ describe('AI Utils', () => {
 
           sendDuoChatCommand(command);
 
+          // In embedded mode, legacy properties are not updated
           expect(duoChatGlobalState.isShown).toBe(false);
-          expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+          expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
           expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
         });
 
@@ -249,9 +252,9 @@ describe('AI Utils', () => {
         duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
       });
 
-      it('sets the isShown value to true', () => {
+      it('does not update the isShown value in embedded mode', () => {
         sendDuoChatCommand({ question: 'hello', resourceId: '1' });
-        expect(duoChatGlobalState.isShown).toBe(true);
+        expect(duoChatGlobalState.isShown).toBe(false);
       });
     });
 
@@ -260,26 +263,18 @@ describe('AI Utils', () => {
         duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
       });
 
-      it('sets isAgenticChatShown to true', () => {
+      it('does not update isAgenticChatShown in embedded mode', () => {
         sendDuoChatCommand({ question: 'hello', resourceId: '1' });
         expect(duoChatGlobalState.isShown).toBe(false);
-        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
       });
     });
 
-    describe('when in embedded mode', () => {
-      beforeEach(() => {
-        window.gon = {
-          features: { projectStudioEnabled: true },
-        };
-      });
+    it('sets activeTab to chat', () => {
+      sendDuoChatCommand({ question: 'hello', resourceId: '1' });
 
-      it('sets activeTab to chat', () => {
-        sendDuoChatCommand({ question: 'hello', resourceId: '1' });
-
-        expect(duoChatGlobalState.activeTab).toBe('chat');
-        expect(duoChatGlobalState.isShown).toBe(false);
-      });
+      expect(duoChatGlobalState.activeTab).toBe('chat');
+      expect(duoChatGlobalState.isShown).toBe(false);
     });
   });
 
@@ -293,7 +288,8 @@ describe('AI Utils', () => {
     it('opens duo chat and updates the focusChatInput state to true', () => {
       focusDuoChatInput();
 
-      expect(duoChatGlobalState.isShown).toBe(true);
+      // In embedded mode, legacy isShown is not updated
+      expect(duoChatGlobalState.isShown).toBe(false);
       expect(duoChatGlobalState.focusChatInput).toBe(true);
     });
   });
@@ -385,7 +381,7 @@ describe('AI Utils', () => {
 
     describe('when agenticMode is true', () => {
       it('sets correct state values', () => {
-        setAgenticMode({ agenticMode: true });
+        setAgenticMode({ agenticMode: true, isEmbedded: false });
 
         expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
@@ -409,7 +405,7 @@ describe('AI Utils', () => {
 
     describe('when agenticMode is false', () => {
       it('sets correct state values', () => {
-        setAgenticMode({ agenticMode: false });
+        setAgenticMode({ agenticMode: false, isEmbedded: false });
 
         expect(duoChatGlobalState.isShown).toBe(true);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
@@ -433,7 +429,7 @@ describe('AI Utils', () => {
 
     describe('default parameters', () => {
       it('defaults agenticMode to true when called without arguments', () => {
-        setAgenticMode();
+        setAgenticMode({ isEmbedded: false });
 
         expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
@@ -470,7 +466,7 @@ describe('AI Utils', () => {
           duoChatGlobalState.isShown = initialIsShown;
           duoChatGlobalState.isAgenticChatShown = initialIsAgenticChatShown;
 
-          setAgenticMode({ agenticMode });
+          setAgenticMode({ agenticMode, isEmbedded: false });
 
           expect(duoChatGlobalState.isShown).toBe(expectedIsShown);
           expect(duoChatGlobalState.isAgenticChatShown).toBe(expectedIsAgenticChatShown);
@@ -514,10 +510,11 @@ describe('AI Utils', () => {
         expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
       });
 
-      it('defaults isEmbedded to false', () => {
+      it('defaults isEmbedded to true', () => {
         setAgenticMode({ agenticMode: false });
 
-        expect(duoChatGlobalState.isShown).toBe(true);
+        // In embedded mode, legacy properties are not updated
+        expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
       });
     });
@@ -549,42 +546,7 @@ describe('AI Utils', () => {
       duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
     });
 
-    describe('when projectStudioEnabled is false (drawer mode)', () => {
-      beforeEach(() => {
-        window.gon = { features: { projectStudioEnabled: false } };
-      });
-
-      it('opens drawer mode chat in classic mode', () => {
-        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
-        sendDuoChatCommand({ question: '/help', resourceId: '123' });
-
-        expect(duoChatGlobalState.isShown).toBe(true);
-        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
-        expect(duoChatGlobalState.activeTab).toBeNull();
-      });
-
-      it('opens drawer mode chat in agentic mode', () => {
-        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
-        sendDuoChatCommand({ question: '/help', resourceId: '123' });
-
-        expect(duoChatGlobalState.isShown).toBe(false);
-        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
-        expect(duoChatGlobalState.activeTab).toBeNull();
-      });
-
-      it('preserves the current mode', () => {
-        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
-        sendDuoChatCommand({ question: '/help', resourceId: '123' });
-
-        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
-      });
-    });
-
-    describe('when projectStudioEnabled is true (embedded mode)', () => {
-      beforeEach(() => {
-        window.gon = { features: { projectStudioEnabled: true } };
-      });
-
+    describe('when in embedded mode', () => {
       it('opens embedded panel to chat tab in classic mode', () => {
         duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
         sendDuoChatCommand({ question: '/help', resourceId: '123' });

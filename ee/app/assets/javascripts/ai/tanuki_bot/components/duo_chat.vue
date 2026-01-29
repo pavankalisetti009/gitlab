@@ -101,7 +101,7 @@ export default {
     isEmbedded: {
       type: Boolean,
       required: false,
-      default: false,
+      default: true,
     },
   },
   apollo: {

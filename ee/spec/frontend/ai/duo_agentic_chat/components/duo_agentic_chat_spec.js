@@ -2442,7 +2442,7 @@ describe('Duo Agentic Chat', () => {
       expect(setAgenticMode).toHaveBeenCalledWith({
         agenticMode: true,
         saveCookie: true,
-        isEmbedded: false,
+        isEmbedded: true,
       });
     });
   });
@@ -2485,7 +2485,7 @@ describe('Duo Agentic Chat', () => {
       expect(setAgenticMode).toHaveBeenCalledWith({
         agenticMode: false,
         saveCookie: true,
-        isEmbedded: false,
+        isEmbedded: true,
       });
     });
 
