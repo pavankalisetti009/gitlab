@@ -67,6 +67,22 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
         expect(uuid).to be_nil
       end
     end
+
+    context 'when identifiers are empty' do
+      let(:report_finding) { build(:ci_reports_security_finding, identifiers: []) }
+
+      it 'generates a UUID with nil primary_identifier_fingerprint' do
+        expected_uuid = ::Security::VulnerabilityUUID.generate_v2(
+          report_type: report_finding.report_type,
+          primary_identifier_fingerprint: nil,
+          location_fingerprint: report_finding.location.fingerprint,
+          project_id: pipeline.project_id,
+          context_id: tracked_context.id
+        )
+
+        expect(uuid).to eq(expected_uuid)
+      end
+    end
   end
 
   describe '#to_hash' do
