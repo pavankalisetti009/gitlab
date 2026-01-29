@@ -4,13 +4,13 @@ module Types
   module Analytics
     module AiMetrics
       # rubocop: disable Graphql/AuthorizeTypes -- authorized by parent type
-      class CodeReviewMetricsType < BaseObject
-        graphql_name 'codeReviewMetrics'
+      class DuoChatMetricsType < BaseObject
+        graphql_name 'duoChatMetrics'
         description "Requires ClickHouse. Premium and Ultimate only."
 
         include ::Analytics::AiEventFields
 
-        expose_event_fields_for(:code_review)
+        expose_event_fields_for(:chat)
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end

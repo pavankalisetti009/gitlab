@@ -47,6 +47,20 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           requestReviewDuoCodeReviewOnMrByNonAuthorEventCount
           excludedFilesFromDuoCodeReviewEventCount
         }
+
+        chat {
+          requestDuoChatResponseEventCount
+        }
+
+        troubleshoot {
+          troubleshootJobEventCount
+        }
+
+        mcp {
+          startMcpToolCallEventCount
+          finishMcpToolCallEventCount
+        }
+
         agentPlatform(flowTypes: ["chat"], not: { flowTypes: ["pipeline"]}) {
           createdSessionEventCount
           startedSessionEventCount
@@ -79,7 +93,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
     let(:from) { '2024-05-01'.to_date }
     let(:to) { '2024-05-31'.to_date }
     let(:filter_params) { { startDate: from, endDate: to } }
-    let(:expected_filters) { { from: from, to: to } }
+    let(:expected_filters) { { from: from, to: to, namespace: namespace, fields: an_instance_of(Array) } }
     let(:code_suggestions_expected_filters) { expected_filters.merge(languages: ['ruby'], ide_names: ['ide1']) }
 
     let(:ai_metrics_service_payload) do
@@ -119,7 +133,11 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         react_thumbs_down_on_duo_code_review_comment_event_count: 60,
         request_review_duo_code_review_on_mr_by_author_event_count: 70,
         request_review_duo_code_review_on_mr_by_non_author_event_count: 80,
-        excluded_files_from_duo_code_review_event_count: 90
+        excluded_files_from_duo_code_review_event_count: 90,
+        request_duo_chat_response_event_count: 1,
+        troubleshoot_job_event_count: 2,
+        start_mcp_tool_call_event_count: 3,
+        finish_mcp_tool_call_event_count: 4
       }
     end
 
@@ -188,7 +206,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
       end
 
       allow_next_instance_of(::Analytics::AiAnalytics::AgentPlatform::FlowMetricsService,
-        current_user, hash_including(expected_filters)) do |instance|
+        current_user, hash_including(expected_filters.except(:fields))) do |instance|
         allow(instance).to receive(:execute)
           .and_return(ServiceResponse.success(payload: agent_platform_flow_metrics_service_payload))
       end
@@ -200,7 +218,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
       end
 
       allow_next_instance_of(::Analytics::AiAnalytics::AgentPlatform::UserFlowCountService,
-        current_user, hash_including(expected_filters)) do |instance|
+        current_user, hash_including(expected_filters.except(:fields))) do |instance|
         allow(instance).to receive(:execute)
           .and_return(ServiceResponse.success(payload: agent_platform_user_flow_count_service_payload))
       end
@@ -280,6 +298,16 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           'requestReviewDuoCodeReviewOnMrByAuthorEventCount' => 70,
           'requestReviewDuoCodeReviewOnMrByNonAuthorEventCount' => 80,
           'excludedFilesFromDuoCodeReviewEventCount' => 90
+        },
+        'chat' => {
+          'requestDuoChatResponseEventCount' => 1
+        },
+        'troubleshoot' => {
+          'troubleshootJobEventCount' => 2
+        },
+        'mcp' => {
+          'startMcpToolCallEventCount' => 3,
+          'finishMcpToolCallEventCount' => 4
         }
       }
 
@@ -325,7 +353,8 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
 
       let(:usage_event_count_service_payload) do
         {
-          post_comment_duo_code_review_on_diff_event_count: 99
+          post_comment_duo_code_review_on_diff_event_count: 99,
+          finish_mcp_tool_call_event_count: 5
         }
       end
 
@@ -368,6 +397,16 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
             'requestReviewDuoCodeReviewOnMrByAuthorEventCount' => nil,
             'requestReviewDuoCodeReviewOnMrByNonAuthorEventCount' => nil,
             'excludedFilesFromDuoCodeReviewEventCount' => nil
+          },
+          'chat' => {
+            'requestDuoChatResponseEventCount' => nil
+          },
+          'troubleshoot' => {
+            'troubleshootJobEventCount' => nil
+          },
+          'mcp' => {
+            'startMcpToolCallEventCount' => nil,
+            'finishMcpToolCallEventCount' => 5
           }
         }
 
@@ -388,12 +427,14 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
   context 'for group' do
     let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_metrics_fields) }
     let(:ai_metrics) { graphql_data['group']['aiMetrics'] }
+    let_it_be(:namespace) { group }
 
     it_behaves_like 'common ai metrics'
   end
 
   context 'for project' do
     let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:namespace) { project.project_namespace }
     let(:query) { graphql_query_for(:project, { fullPath: project.full_path }, ai_metrics_fields) }
     let(:ai_metrics) { graphql_data['project']['aiMetrics'] }
 

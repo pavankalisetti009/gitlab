@@ -26545,6 +26545,7 @@ Requires ClickHouse. Premium and Ultimate only.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="aimetricschat"></a>`chat` | [`duoChatMetrics`](#duochatmetrics) | Duo Chat metrics. |
 | <a id="aimetricscodecontributorscount"></a>`codeContributorsCount` | [`Int`](#int) | Number of code contributors. |
 | <a id="aimetricscodereview"></a>`codeReview` | [`codeReviewMetrics`](#codereviewmetrics) | Code review metrics. |
 | <a id="aimetricscodesuggestionsacceptedcount"></a>`codeSuggestionsAcceptedCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated** in GitLab 18.0. moved to codeSuggestions field. |
@@ -26553,7 +26554,9 @@ Requires ClickHouse. Premium and Ultimate only.
 | <a id="aimetricsduoassigneduserscount"></a>`duoAssignedUsersCount` | [`Int`](#int) | Total assigned Duo Pro and Enterprise seats. Ignores time period filter. Returns current data. |
 | <a id="aimetricsduochatcontributorscount"></a>`duoChatContributorsCount` | [`Int`](#int) | Number of contributors who used GitLab Duo Chat features. |
 | <a id="aimetricsduousedcount"></a>`duoUsedCount` | [`Int`](#int) | Number of contributors who used any GitLab Duo feature. |
+| <a id="aimetricsmcp"></a>`mcp` | [`mcpMetrics`](#mcpmetrics) | Model Context Protocol metrics. |
 | <a id="aimetricsrootcauseanalysisuserscount"></a>`rootCauseAnalysisUsersCount` | [`Int`](#int) | Number of users using troubleshoot within a failed pipeline. |
+| <a id="aimetricstroubleshoot"></a>`troubleshoot` | [`troubleshootJobMetrics`](#troubleshootjobmetrics) | Troubleshoot job metrics. |
 
 #### Fields with arguments
 
@@ -51706,6 +51709,27 @@ Code Suggestions user metrics for a user. Requires ClickHouse. Premium and Ultim
 | <a id="codesuggestionsusermetricscodesuggestionsrequestedeventcount"></a>`codeSuggestionsRequestedEventCount` | [`Int`](#int) | Total count of `code_suggestions_requested` event. |
 | <a id="codesuggestionsusermetricstotaleventcount"></a>`totalEventCount` | [`Int`](#int) | Total count of all Code Suggestions events for the user. |
 
+### `duoChatMetrics`
+
+Requires ClickHouse. Premium and Ultimate only.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="duochatmetricsrequestduochatresponseeventcount"></a>`requestDuoChatResponseEventCount` | [`Int`](#int) | Total count of `request_duo_chat_response` event. |
+
+### `mcpMetrics`
+
+Model Context Protocol metrics. Requires ClickHouse. Premium and Ultimate only.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mcpmetricsfinishmcptoolcalleventcount"></a>`finishMcpToolCallEventCount` | [`Int`](#int) | Total count of `finish_mcp_tool_call` event. |
+| <a id="mcpmetricsstartmcptoolcalleventcount"></a>`startMcpToolCallEventCount` | [`Int`](#int) | Total count of `start_mcp_tool_call` event. |
+
 ### `mcpUserMetrics`
 
 Mcp user metrics for a user. Requires ClickHouse. Premium and Ultimate with GitLab Duo Enterprise only.
@@ -51717,6 +51741,16 @@ Mcp user metrics for a user. Requires ClickHouse. Premium and Ultimate with GitL
 | <a id="mcpusermetricsfinishmcptoolcalleventcount"></a>`finishMcpToolCallEventCount` | [`Int`](#int) | Total count of `finish_mcp_tool_call` event. |
 | <a id="mcpusermetricsstartmcptoolcalleventcount"></a>`startMcpToolCallEventCount` | [`Int`](#int) | Total count of `start_mcp_tool_call` event. |
 | <a id="mcpusermetricstotaleventcount"></a>`totalEventCount` | [`Int`](#int) | Total count of all Mcp events for the user. |
+
+### `troubleshootJobMetrics`
+
+Requires ClickHouse. Premium and Ultimate only.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="troubleshootjobmetricstroubleshootjobeventcount"></a>`troubleshootJobEventCount` | [`Int`](#int) | Total count of `troubleshoot_job` event. |
 
 ### `troubleshootJobUserMetrics`
 

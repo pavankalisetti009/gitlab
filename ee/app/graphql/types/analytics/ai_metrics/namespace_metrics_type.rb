@@ -13,6 +13,10 @@ module Types
           resolver: Resolvers::Analytics::AiMetrics::AgentPlatformMetricsResolver,
           null: true,
           description: 'Duo Agent Platform metrics.'
+        field :chat,
+          resolver: Resolvers::Analytics::AiMetrics::DuoChatMetricsResolver,
+          null: true,
+          description: 'Duo Chat metrics.'
         field :code_contributors_count, GraphQL::Types::Int,
           description: 'Number of code contributors.',
           null: true
@@ -45,9 +49,17 @@ module Types
         field :duo_used_count, GraphQL::Types::Int,
           description: 'Number of contributors who used any GitLab Duo feature.',
           null: true
+        field :mcp,
+          resolver: Resolvers::Analytics::AiMetrics::McpMetricsResolver,
+          null: true,
+          description: 'Model Context Protocol metrics.'
         field :root_cause_analysis_users_count, GraphQL::Types::Int,
           description: 'Number of users using troubleshoot within a failed pipeline.',
           null: true
+        field :troubleshoot,
+          resolver: Resolvers::Analytics::AiMetrics::TroubleshootJobMetricsResolver,
+          null: true,
+          description: 'Troubleshoot job metrics.'
       end
       # rubocop: enable GraphQL/ExtractType
       # rubocop: enable Graphql/AuthorizeTypes
