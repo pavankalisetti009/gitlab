@@ -80,16 +80,6 @@ RSpec.describe Search::ProjectsFinder, feature_category: :global_search do
           expect(execute).to contain_exactly(project)
         end
 
-        context 'when search_projects_finder_group_auth_fix is false' do
-          before do
-            stub_feature_flags(search_projects_finder_group_auth_fix: false)
-          end
-
-          it 'returns nothing' do
-            expect(execute).to be_empty
-          end
-        end
-
         context 'and the project group link is expired' do
           it 'returns nothing' do
             project_group_link.update!(expires_at: 1.day.ago)
