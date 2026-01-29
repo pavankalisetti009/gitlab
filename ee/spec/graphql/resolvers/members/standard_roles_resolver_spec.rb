@@ -26,13 +26,10 @@ RSpec.describe Resolvers::Members::StandardRolesResolver, feature_category: :api
         expect(result).to be_present
         expect(result.count).to eq(8)
 
-        roles_with_members = [::Gitlab::Access::MAINTAINER, ::Gitlab::Access::DEVELOPER]
-
         ::Gitlab::Access.options_with_minimal_access.sort_by { |_, v| v }.each_with_index do |(name, value), index|
           role = result[index]
           expect(role[:access_level]).to eq(value)
           expect(role[:name]).to eq(name)
-          expect(role[:members_count]).to eq(roles_with_members.include?(value) ? 1 : 0)
           expect(role[:group]).to eq(group)
         end
       end
@@ -46,7 +43,6 @@ RSpec.describe Resolvers::Members::StandardRolesResolver, feature_category: :api
 
         role = result.first
         expect(role[:access_level]).to eq(::Gitlab::Access::MAINTAINER)
-        expect(role[:members_count]).to eq(1)
       end
     end
   end

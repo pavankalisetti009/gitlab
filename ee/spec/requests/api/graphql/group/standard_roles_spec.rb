@@ -27,7 +27,6 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
             nodes {
               name
               accessLevel
-              membersCount
             }
           }
         }
@@ -58,20 +57,17 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
         expect(graphql_errors(data.to_h)).to be_blank
 
         [
-          [::Gitlab::Access::MINIMAL_ACCESS, 0],
-          [::Gitlab::Access::GUEST, 0],
-          [::Gitlab::Access::PLANNER, 0],
-          [::Gitlab::Access::REPORTER, 0],
-          [::Gitlab::Access::SECURITY_MANAGER, 0],
-          [::Gitlab::Access::DEVELOPER, 2],
-          [::Gitlab::Access::MAINTAINER, 2],
-          [::Gitlab::Access::OWNER, 1 + 2]
-        ].each_with_index do |(access_level, count), index|
+          ::Gitlab::Access::MINIMAL_ACCESS,
+          ::Gitlab::Access::GUEST,
+          ::Gitlab::Access::PLANNER,
+          ::Gitlab::Access::REPORTER,
+          ::Gitlab::Access::SECURITY_MANAGER,
+          ::Gitlab::Access::DEVELOPER,
+          ::Gitlab::Access::MAINTAINER,
+          ::Gitlab::Access::OWNER
+        ].each_with_index do |access_level, index|
           item = graphql_dig_at(data, :data, :group, :standard_roles, :nodes, index)
-          expect(item).to(match(a_hash_including(
-            "accessLevel" => access_level,
-            "membersCount" => count
-          )))
+          expect(item).to(match(a_hash_including("accessLevel" => access_level)))
         end
       end
     end
@@ -88,20 +84,17 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
         expect(graphql_errors(data.to_h)).to be_blank
 
         [
-          [::Gitlab::Access::MINIMAL_ACCESS, 0],
-          [::Gitlab::Access::GUEST, 0],
-          [::Gitlab::Access::PLANNER, 0],
-          [::Gitlab::Access::REPORTER, 0],
-          [::Gitlab::Access::SECURITY_MANAGER, 0],
-          [::Gitlab::Access::DEVELOPER, 2],
-          [::Gitlab::Access::MAINTAINER, 2],
-          [::Gitlab::Access::OWNER, 1 + 2]
-        ].each_with_index do |(access_level, count), index|
+          ::Gitlab::Access::MINIMAL_ACCESS,
+          ::Gitlab::Access::GUEST,
+          ::Gitlab::Access::PLANNER,
+          ::Gitlab::Access::REPORTER,
+          ::Gitlab::Access::SECURITY_MANAGER,
+          ::Gitlab::Access::DEVELOPER,
+          ::Gitlab::Access::MAINTAINER,
+          ::Gitlab::Access::OWNER
+        ].each_with_index do |access_level, index|
           item = graphql_dig_at(data, :data, :group, :standard_roles, :nodes, index)
-          expect(item).to(match(a_hash_including(
-            "accessLevel" => access_level,
-            "membersCount" => count
-          )))
+          expect(item).to(match(a_hash_including("accessLevel" => access_level)))
         end
       end
     end
@@ -121,20 +114,17 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
         expect(graphql_errors(data.to_h)).to be_blank
 
         [
-          [::Gitlab::Access::MINIMAL_ACCESS, 0],
-          [::Gitlab::Access::GUEST, 0],
-          [::Gitlab::Access::PLANNER, 0],
-          [::Gitlab::Access::REPORTER, 0],
-          [::Gitlab::Access::SECURITY_MANAGER, 0],
-          [::Gitlab::Access::DEVELOPER, 2 + 3],
-          [::Gitlab::Access::MAINTAINER, 2 + 3],
-          [::Gitlab::Access::OWNER, 1 + 2 + 3]
-        ].each_with_index do |(access_level, count), index|
+          ::Gitlab::Access::MINIMAL_ACCESS,
+          ::Gitlab::Access::GUEST,
+          ::Gitlab::Access::PLANNER,
+          ::Gitlab::Access::REPORTER,
+          ::Gitlab::Access::SECURITY_MANAGER,
+          ::Gitlab::Access::DEVELOPER,
+          ::Gitlab::Access::MAINTAINER,
+          ::Gitlab::Access::OWNER
+        ].each_with_index do |access_level, index|
           item = graphql_dig_at(data, :data, :group, :standard_roles, :nodes, index)
-          expect(item).to(match(a_hash_including(
-            "accessLevel" => access_level,
-            "membersCount" => count
-          )))
+          expect(item).to(match(a_hash_including("accessLevel" => access_level)))
         end
       end
 

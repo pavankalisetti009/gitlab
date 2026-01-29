@@ -29,11 +29,6 @@ module Resolvers
 
       private
 
-      def member_counts
-        selects_field?(:members_count) ? memberships([:access_level]).count_members_by_role : {}
-      end
-      strong_memoize_attr :member_counts
-
       def selected_fields
         node_selection.selections.map(&:name)
       end
@@ -53,13 +48,8 @@ module Resolvers
         {
           name: name,
           access_level: access_level,
-          members_count: member_counts[access_level] || 0,
           group: object
         }
-      end
-
-      def memberships(columns)
-        Member.with_static_role.for_self_and_descendants(object, columns)
       end
     end
   end
