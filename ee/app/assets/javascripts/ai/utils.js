@@ -61,7 +61,7 @@ export const saveDuoAgenticModePreference = (isAgenticMode) => {
 export const setAgenticMode = ({
   agenticMode = true,
   saveCookie = false,
-  isEmbedded = false,
+  isEmbedded = true,
 } = {}) => {
   // Update the single source of truth for chat mode
   duoChatGlobalState.chatMode = agenticMode ? CHAT_MODES.AGENTIC : CHAT_MODES.CLASSIC;
@@ -78,27 +78,18 @@ export const setAgenticMode = ({
 };
 
 const openChatAndGetState = () => {
-  // Check if project studio (new design with embedded panel) is enabled
-  const isEmbedded = window.gon?.features?.projectStudioEnabled === true;
-
   // Get the current chat mode from global state
   const currentMode = duoChatGlobalState.chatMode;
   const isAgenticMode = currentMode === CHAT_MODES.AGENTIC;
 
   // Set the mode to match current user preference (no change to user's preference)
-  setAgenticMode({ agenticMode: isAgenticMode, saveCookie: false, isEmbedded });
+  setAgenticMode({ agenticMode: isAgenticMode, saveCookie: false, isEmbedded: true });
 
-  if (isEmbedded) {
-    // Embedded mode: Open the AI panel to chat tab
-    duoChatGlobalState.activeTab = 'chat';
-  } else {
-    // Drawer mode: Open the appropriate chat based on current mode
-    duoChatGlobalState.isShown = !isAgenticMode;
-    duoChatGlobalState.isAgenticChatShown = isAgenticMode;
-  }
+  // Embedded mode: Open the AI panel to chat tab
+  duoChatGlobalState.activeTab = 'chat';
 
   return {
-    isEmbedded,
+    isEmbedded: true,
     currentMode,
     isAgenticMode,
   };

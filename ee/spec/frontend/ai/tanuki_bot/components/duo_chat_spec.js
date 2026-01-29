@@ -227,7 +227,9 @@ describe('rendering', () => {
 
   describe('when Duo Chat is not shown', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent({
+        propsData: { isEmbedded: false },
+      });
       duoChatGlobalState.isShown = false;
     });
 
@@ -309,7 +311,9 @@ describe('when new commands are added to the global state', () => {
 describe('events handling', () => {
   beforeEach(() => {
     duoChatGlobalState.activeThread = undefined;
-    createComponent();
+    createComponent({
+      propsData: { isEmbedded: false },
+    });
     duoChatGlobalState.isShown = true;
   });
 
@@ -652,7 +656,9 @@ describe('Subscription Component', () => {
 
   it('does not render AiResponseSubscription component when isShown is false', async () => {
     duoChatGlobalState.isShown = false;
-    createComponent();
+    createComponent({
+      propsData: { isEmbedded: false },
+    });
     await waitForPromises();
 
     expect(findSubscriptions().exists()).toBe(false);
@@ -752,7 +758,9 @@ describe('Resizable Dimensions', () => {
     const setDimensionsSpy = jest
       .spyOn(TanukiBotChatApp.methods, 'setDimensions')
       .mockImplementation(() => {});
-    createComponent();
+    createComponent({
+      propsData: { isEmbedded: false },
+    });
     expect(wrapper.vm.dimensions.left).toBe(null);
     setDimensionsSpy.mockRestore();
   });
@@ -789,7 +797,11 @@ describe('Resizable Dimensions', () => {
   });
 
   it('updates dimensions when the window is resized', async () => {
-    createComponent();
+    createComponent({
+      propsData: {
+        isEmbedded: false,
+      },
+    });
     window.innerWidth = 1200;
     window.innerHeight = 800;
 
@@ -801,7 +813,11 @@ describe('Resizable Dimensions', () => {
   });
 
   it('renders DuoChat with shouldRenderResizable=true by default', () => {
-    createComponent();
+    createComponent({
+      propsData: {
+        isEmbedded: false,
+      },
+    });
     const duoChat = findDuoChat();
     expect(duoChat.exists()).toBe(true);
     expect(duoChat.props('shouldRenderResizable')).toBe(true);
@@ -1099,7 +1115,9 @@ describe('aiConversationThreads query', () => {
     ${true}  | ${false}   | ${'when chat is shown'}
   `('skips query=$shouldSkip $description', async ({ isShown, shouldSkip }) => {
     duoChatGlobalState.isShown = isShown;
-    createComponent();
+    createComponent({
+      propsData: { isEmbedded: false },
+    });
     await waitForPromises();
 
     expect(conversationThreadsQueryHandlerMock).toHaveBeenCalledTimes(shouldSkip ? 0 : 1);
@@ -1256,7 +1274,7 @@ describe('Agentic Mode Toggle (when agenticChatGa FF is disabled)', () => {
     expect(setAgenticMode).toHaveBeenCalledWith({
       agenticMode: true,
       saveCookie: true,
-      isEmbedded: false,
+      isEmbedded: true,
     });
   });
 
@@ -1306,7 +1324,7 @@ describe('Agentic Toggle (when agenticChatGa FF is enabled)', () => {
     expect(setAgenticMode).toHaveBeenCalledWith({
       agenticMode: false,
       saveCookie: true,
-      isEmbedded: false,
+      isEmbedded: true,
     });
   });
 

@@ -155,14 +155,14 @@ describe('UpgradePlanHeader', () => {
           },
         });
 
-        expect(duoChatGlobalState.isShown).toBe(false);
+        expect(duoChatGlobalState.activeTab).toBe(null);
 
         const popover = wrapper.findComponent(GlPopover);
         const exploreButton = popover.findComponent(GlButton);
         expect(exploreButton.attributes('href')).toBe(undefined);
         exploreButton.vm.$emit('click');
 
-        expect(duoChatGlobalState.isShown).toBe(true);
+        expect(duoChatGlobalState.activeTab).toBe('chat');
         expect(duoChatGlobalState.focusChatInput).toBe(true);
       });
 
