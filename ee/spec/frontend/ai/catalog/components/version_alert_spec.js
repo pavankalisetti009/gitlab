@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlAlert } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -114,8 +115,9 @@ describe('VersionAlert', () => {
     });
   };
 
-  const findPrimaryButton = () => wrapper.findByTestId('primary-button');
-  const findSecondaryButton = () => wrapper.findByTestId('secondary-button');
+  const findAlert = () => wrapper.findComponent(GlAlert);
+  const findPrimaryButtonText = () => findAlert().props('primaryButtonText');
+  const findSecondaryButtonText = () => findAlert().props('secondaryButtonText');
 
   describe.each([
     { namespace: 'project', projectId: '1', groupId: null, versionKey: VERSION_PINNED },
@@ -142,11 +144,11 @@ describe('VersionAlert', () => {
         });
 
         it('shows the "View latest version" button', () => {
-          expect(findPrimaryButton().text()).toEqual('View latest version');
+          expect(findPrimaryButtonText()).toEqual('View latest version');
         });
 
         it('does not show the "Update to vXX" or the "View enabled version" button', () => {
-          expect(findSecondaryButton().exists()).toEqual(false);
+          expect(findSecondaryButtonText()).toBe(null);
         });
 
         it(`displays the ${namespace} update message for ${itemName}`, () => {
@@ -165,16 +167,16 @@ describe('VersionAlert', () => {
           });
 
           it('shows the "Update to vXX" button', () => {
-            expect(findPrimaryButton().text()).toEqual('Update to v2.0.0');
+            expect(findPrimaryButtonText()).toEqual('Update to v2.0.0');
           });
 
           it('shows the "View enabled version" button', () => {
-            expect(findSecondaryButton().text()).toEqual('View enabled version');
+            expect(findSecondaryButtonText()).toEqual('View enabled version');
           });
 
           describe('when the user updates to the latest version', () => {
             it('calls the update mutation with correct version prefix', async () => {
-              await findPrimaryButton().vm.$emit('click');
+              await findAlert().vm.$emit('primaryAction');
 
               expect(mockUpdateAiCatalogItemConsumerHandler).toHaveBeenCalledWith({
                 input: {
@@ -186,7 +188,7 @@ describe('VersionAlert', () => {
 
             describe('when the request succeeds', () => {
               beforeEach(async () => {
-                await findPrimaryButton().vm.$emit('click');
+                await findAlert().vm.$emit('primaryAction');
                 await waitForPromises();
               });
 
@@ -204,7 +206,7 @@ describe('VersionAlert', () => {
                 mockUpdateAiCatalogItemConsumerHandler.mockResolvedValueOnce(
                   mockUpdateAiCatalogItemConsumerError,
                 );
-                await findPrimaryButton().vm.$emit('click');
+                await findAlert().vm.$emit('primaryAction');
                 await waitForPromises();
 
                 expect(wrapper.emitted('error')).toHaveLength(1);
@@ -220,7 +222,7 @@ describe('VersionAlert', () => {
             describe('when the request fails', () => {
               it('emits an error message', async () => {
                 mockUpdateAiCatalogItemConsumerHandler.mockRejectedValueOnce();
-                await findPrimaryButton().vm.$emit('click');
+                await findAlert().vm.$emit('primaryAction');
                 await waitForPromises();
 
                 expect(wrapper.emitted('error')).toHaveLength(1);
