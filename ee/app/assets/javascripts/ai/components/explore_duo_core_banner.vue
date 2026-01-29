@@ -2,7 +2,7 @@
 import { GlBanner, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
-import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 import { InternalEvents } from '~/tracking';
 
 export default {

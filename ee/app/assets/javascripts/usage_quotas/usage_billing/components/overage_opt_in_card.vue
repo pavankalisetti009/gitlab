@@ -1,6 +1,7 @@
 <script>
 import { GlSprintf, GlLink, GlCard, GlButton } from '@gitlab/ui';
-import { PROMO_URL, isAbsolute, joinPaths } from '~/lib/utils/url_utility';
+import { isAbsolute, joinPaths } from '~/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 export default {
   name: 'OverageOptInCard',

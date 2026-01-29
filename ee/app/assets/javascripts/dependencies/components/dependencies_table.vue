@@ -11,7 +11,7 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
-import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 import { NAMESPACE_PROJECT, DEPENDENCIES_TABLE_I18N } from '../constants';
 import DependencyLicenseLinks from './dependency_license_links.vue';
 import DependencyLocation from './dependency_location.vue';

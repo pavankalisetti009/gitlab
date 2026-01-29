@@ -14,7 +14,7 @@ import dastSiteValidationsQuery from 'ee/security_configuration/dast_site_valida
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { fetchPolicies } from '~/lib/graphql';
 import { s__ } from '~/locale';
-import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 import { getTimeDifferenceMinutes } from 'ee/security_configuration/utils';
 import { updateSiteProfilesStatuses } from '../graphql/cache_utils';
 import ProfilesList from './dast_profiles_list.vue';

@@ -21,7 +21,7 @@ import {
   mockInternalControls,
   mockExternalControl,
 } from 'ee_jest/compliance_dashboard/mock_data';
-import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import DrawerAccordion from 'ee/compliance_dashboard/components/shared/drawer_accordion.vue';

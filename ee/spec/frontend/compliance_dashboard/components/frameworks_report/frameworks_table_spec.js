@@ -24,7 +24,7 @@ import {
 import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_report/frameworks_table.vue';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import { ROUTE_EDIT_FRAMEWORK, ROUTE_EXPORT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
-import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/delete_modal.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';

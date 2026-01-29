@@ -4,7 +4,7 @@ import {
   identifyLinkType,
 } from 'ee/linked_resources/components/utils';
 import { createAlert } from '~/alert';
-import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL } from '~/constants';
 
 jest.mock('~/alert');
 

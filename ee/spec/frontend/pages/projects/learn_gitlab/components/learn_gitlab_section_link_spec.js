@@ -6,7 +6,7 @@ import eventHub from '~/invite_members/event_hub';
 import LearnGitlabSectionLink from 'ee/pages/projects/learn_gitlab/components/learn_gitlab_section_link.vue';
 import { ACTION_LABELS } from 'ee/pages/projects/learn_gitlab/constants';
 import { LEARN_GITLAB } from 'ee/invite_members/constants';
-import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 
 const defaultAction = 'codeAdded';
 const defaultProps = {

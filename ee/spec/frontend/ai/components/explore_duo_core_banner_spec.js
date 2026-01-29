@@ -5,7 +5,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import ExploreDuoCoreBanner from 'ee/ai/components/explore_duo_core_banner.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
-import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 
 Vue.use(VueApollo);
 

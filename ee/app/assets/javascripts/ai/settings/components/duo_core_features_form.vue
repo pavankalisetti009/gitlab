@@ -8,7 +8,7 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
-import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL } from '~/constants';
 import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 
 export default {

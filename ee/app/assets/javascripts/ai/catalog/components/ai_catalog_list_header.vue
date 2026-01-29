@@ -18,7 +18,7 @@ import {
   TRACKING_LABEL_AI_CATALOG_HEADER,
 } from 'ee/analytics/analytics_dashboards/link_to_dashboards/tracking';
 import { AI_IMPACT_DASHBOARD } from 'ee/analytics/analytics_dashboards/constants';
-import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL } from '~/constants';
 import { useAiBetaBadge } from 'ee/ai/duo_agents_platform/composables/use_ai_beta_badge';
 import AiCatalogNavTabs from './ai_catalog_nav_tabs.vue';
 import AiCatalogNavActions from './ai_catalog_nav_actions.vue';

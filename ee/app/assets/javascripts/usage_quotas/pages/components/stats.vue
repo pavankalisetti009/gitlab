@@ -2,7 +2,7 @@
 import { GlLink, GlTooltipDirective } from '@gitlab/ui';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import SectionedPercentageBar from '~/usage_quotas/components/sectioned_percentage_bar.vue';
-import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 import { s__, sprintf } from '~/locale';
 import { PROJECT_VIEW_TYPE } from '~/usage_quotas/constants';
 
