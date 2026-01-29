@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe UsersController do
+RSpec.describe UsersController, feature_category: :user_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:another_user) { create(:user) }
 
