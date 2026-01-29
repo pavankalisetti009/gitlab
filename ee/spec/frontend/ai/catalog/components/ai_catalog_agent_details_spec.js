@@ -157,6 +157,12 @@ describe('AiCatalogAgentDetails', () => {
       expect(tokens.at(0).text()).toBe('Ci Linter');
       expect(tokens.at(1).text()).toBe('Gitlab Blob Search');
       expect(tokens.at(2).text()).toBe('Run Git Command');
+
+      const tokensTooltips = wrapper.findAllByTestId('tool-description-tooltip');
+      expect(tokensTooltips).toHaveLength(3);
+      expect(tokensTooltips.at(0).attributes('title')).toBe('Ci Linter Tool description');
+      expect(tokensTooltips.at(1).attributes('title')).toBe('Gitlab Blob Search Tool description');
+      expect(tokensTooltips.at(2).attributes('title')).toBe('Run Git Command Tool description');
     });
   });
 

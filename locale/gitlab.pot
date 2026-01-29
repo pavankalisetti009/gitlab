@@ -3088,9 +3088,6 @@ msgstr ""
 msgid "AICatalog|Select at least one trigger."
 msgstr ""
 
-msgid "AICatalog|Select which tools this agent can use."
-msgstr ""
-
 msgid "AICatalog|Selected %{itemType}"
 msgstr ""
 
@@ -3181,6 +3178,12 @@ msgstr ""
 msgid "AICatalog|Tools"
 msgstr ""
 
+msgid "AICatalog|Tools are built and maintained by GitLab."
+msgstr ""
+
+msgid "AICatalog|Tools are built and maintained by GitLab. %{linkStart}What are tools?%{linkEnd}"
+msgstr ""
+
 msgid "AICatalog|Triage Issue, Generate Release Notes, Update Docs"
 msgstr ""
 
@@ -3248,6 +3251,9 @@ msgid "AICatalog|Visibility & access"
 msgstr ""
 
 msgid "AICatalog|Wasting compute or causing performance issues."
+msgstr ""
+
+msgid "AICatalog|What are tools?"
 msgstr ""
 
 msgid "AICatalog|When this agent runs, it will have access to the projects the user who runs it has access to."
