@@ -325,12 +325,9 @@ To use a specific analyzer version:
 1. Add the `SAST_ANALYZER_IMAGE_TAG` CI/CD variable, after the line that includes the
    `SAST-IaC.gitlab-ci.yml` template.
 
-   {{< alert type="note" >}}
-
-   Only set this variable in a specific job. If you set it at the top level, the version you set is
-   used for other SAST analyzers.
-
-   {{< /alert >}}
+   > [!note]
+   > Only set this variable in a specific job. If you set it at the top level, the version you set is
+   > used for other SAST analyzers.
 
    Set the tag to:
 
