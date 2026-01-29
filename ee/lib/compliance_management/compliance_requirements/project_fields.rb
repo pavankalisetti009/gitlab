@@ -14,7 +14,7 @@ module ComplianceManagement
         :secret_detection,
         :dependency_scanning,
         :container_scanning,
-        :license_compliance,
+        :license_scanning,
         :dast,
         :api_fuzzing,
         :fuzz_testing,
@@ -98,7 +98,7 @@ module ComplianceManagement
         end
 
         def scanner_license_compliance_running?(project, context = {})
-          security_scanner_running?(:license_compliance, project, context)
+          security_scanner_running?(:license_scanning, project, context)
         end
 
         def scanner_dast_running?(project, context = {})
