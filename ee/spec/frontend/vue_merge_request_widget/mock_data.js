@@ -273,3 +273,52 @@ export const createMockFindingReportsComparerResponse = (
     },
   },
 });
+
+export const createMockFinding = (overrides = {}) => ({
+  uuid: '1',
+  title: 'Password leak',
+  severity: 'HIGH',
+  state: 'DETECTED',
+  foundByPipelineIid: '123',
+  aiResolutionEnabled: true,
+  matchesAutoDismissPolicy: false,
+  __typename: 'ComparedSecurityReportFinding',
+  ...overrides,
+});
+
+export const createEnabledScansQueryResponse = ({ full = {}, partial = {} } = {}) => ({
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      pipeline: {
+        id: 'gid://gitlab/Ci::Pipeline/1',
+        enabledSecurityScans: {
+          ready: true,
+          sast: false,
+          dast: false,
+          dependencyScanning: false,
+          containerScanning: false,
+          coverageFuzzing: false,
+          apiFuzzing: false,
+          secretDetection: false,
+          clusterImageScanning: false,
+          __typename: 'EnabledSecurityScans',
+          ...full,
+        },
+        enabledPartialSecurityScans: {
+          ready: true,
+          sast: false,
+          dast: false,
+          dependencyScanning: false,
+          containerScanning: false,
+          coverageFuzzing: false,
+          apiFuzzing: false,
+          secretDetection: false,
+          clusterImageScanning: false,
+          __typename: 'EnabledSecurityScans',
+          ...partial,
+        },
+      },
+    },
+  },
+});

@@ -25,6 +25,7 @@ import { i18n, reportTypes } from './i18n';
 import { highlightsFromReport, transformToEnabledScans } from './utils';
 
 const POLL_INTERVAL = 3000;
+const AI_COMMENT_FALLBACK_TIMEOUT_MS = 3000;
 
 export default {
   name: 'WidgetSecurityReports',
@@ -91,21 +92,15 @@ export default {
      */
     reports() {
       return Object.keys(reportTypes)
-        .map((reportType) => {
-          if (
-            !this.reportsByScanType.full[reportType] &&
-            !this.reportsByScanType.partial[reportType]
-          ) {
-            return undefined;
-          }
-
-          return {
-            reportType,
-            full: this.reportsByScanType.full[reportType],
-            partial: this.reportsByScanType.partial[reportType],
-          };
-        })
-        .filter((rt) => rt?.full || rt?.partial);
+        .filter(
+          (reportType) =>
+            this.reportsByScanType.full[reportType] || this.reportsByScanType.partial[reportType],
+        )
+        .map((reportType) => ({
+          reportType,
+          full: this.reportsByScanType.full[reportType],
+          partial: this.reportsByScanType.partial[reportType],
+        }));
     },
 
     isCollapsible() {
@@ -280,11 +275,11 @@ export default {
       }
 
       // as a fallback we set a timeout and then manually do a hard page reload
-      this.commentNotefallBackTimeout = setTimeout(() => {
+      this.commentNoteFallbackTimeout = setTimeout(() => {
         this.cleanUpResolveWithAiHandlers();
         historyPushState(commentUrl);
         window.location.reload();
-      }, 3000);
+      }, AI_COMMENT_FALLBACK_TIMEOUT_MS);
 
       // observe the DOM and scroll to the comment when it's added
       this.commentMutationObserver = new MutationObserver((mutationList) => {
@@ -305,8 +300,8 @@ export default {
     },
 
     cleanUpResolveWithAiHandlers() {
-      if (this.commentNotefallBackTimeout) {
-        clearTimeout(this.commentNotefallBackTimeout);
+      if (this.commentNoteFallbackTimeout) {
+        clearTimeout(this.commentNoteFallbackTimeout);
       }
       if (this.commentMutationObserver) {
         this.commentMutationObserver.disconnect();

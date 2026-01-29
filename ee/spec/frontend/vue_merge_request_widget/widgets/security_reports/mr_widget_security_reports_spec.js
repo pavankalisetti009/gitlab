@@ -25,6 +25,8 @@ import {
   mockFindingReportsComparerSuccessResponseWithFixed,
   mockFindingReportsComparerParsingResponse,
   createMockFindingReportsComparerResponse,
+  createEnabledScansQueryResponse,
+  createMockFinding,
 } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -82,45 +84,11 @@ describe('MR Widget Security Reports', () => {
     apiFuzzingHelp,
   };
 
-  const enabledScansQueryResult = (overrides = { full: {}, partial: {} }) => ({
-    data: {
-      project: {
-        id: 2,
-        pipeline: {
-          id: 11,
-          enabledSecurityScans: {
-            ready: true,
-            sast: true,
-            dast: false,
-            dependencyScanning: false,
-            containerScanning: false,
-            coverageFuzzing: false,
-            apiFuzzing: false,
-            secretDetection: false,
-            clusterImageScanning: false,
-            __typename: 'EnabledSecurityScans',
-            ...overrides?.full,
-          },
-          enabledPartialSecurityScans: {
-            ready: true,
-            sast: false,
-            dast: false,
-            dependencyScanning: false,
-            containerScanning: false,
-            coverageFuzzing: false,
-            apiFuzzing: false,
-            secretDetection: false,
-            clusterImageScanning: false,
-            __typename: 'EnabledSecurityScans',
-            ...overrides?.partial,
-          },
-        },
-      },
-    },
-  });
-
   const defaultMockApollo = createMockApollo([
-    [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+    [
+      enabledScansQuery,
+      jest.fn().mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+    ],
     [
       findingReportsComparerQuery,
       jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse),
@@ -160,7 +128,10 @@ describe('MR Widget Security Reports', () => {
     createComponent({
       mountFn: mountExtended,
       apolloProvider: createMockApollo([
-        [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+        [
+          enabledScansQuery,
+          jest.fn().mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        ],
         [findingReportsComparerQuery, findingReportsComparerHandler],
       ]),
     });
@@ -175,18 +146,6 @@ describe('MR Widget Security Reports', () => {
   const findSummaryHighlights = () => wrapper.findComponent(SummaryHighlights);
   const findDismissedBadge = () => wrapper.findComponent(GlBadge);
   const findStandaloneModal = () => wrapper.findByTestId('vulnerability-finding-modal');
-
-  const createFinding = (overrides = {}) => ({
-    uuid: '1',
-    title: 'Password leak',
-    severity: 'HIGH',
-    state: 'DETECTED',
-    foundByPipelineIid: '123',
-    aiResolutionEnabled: true,
-    matchesAutoDismissPolicy: false,
-    __typename: 'ComparedSecurityReportFinding',
-    ...overrides,
-  });
 
   const getFirstScanResult = () => {
     const fetchFunctions = findWidget().props('fetchCollapsedData')();
@@ -235,7 +194,7 @@ describe('MR Widget Security Reports', () => {
           [
             enabledScansQuery,
             jest.fn().mockResolvedValue(
-              enabledScansQueryResult({
+              createEnabledScansQueryResponse({
                 full: { ...onlyClusterImageScanningEnabled },
                 partial: { ...onlyClusterImageScanningEnabled },
               }),
@@ -311,7 +270,7 @@ describe('MR Widget Security Reports', () => {
           [
             enabledScansQuery,
             jest.fn().mockResolvedValue(
-              enabledScansQueryResult({
+              createEnabledScansQueryResponse({
                 full: {
                   sast: true,
                   dast: true,
@@ -355,8 +314,8 @@ describe('MR Widget Security Reports', () => {
     it('should mount the widget component', async () => {
       const handler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('SAST', {
-          added: [createFinding(), createFinding()],
-          fixed: [createFinding(), createFinding()],
+          added: [createMockFinding(), createMockFinding()],
+          fixed: [createMockFinding(), createMockFinding()],
         }),
       );
 
@@ -366,7 +325,7 @@ describe('MR Widget Security Reports', () => {
           [
             enabledScansQuery,
             jest.fn().mockResolvedValue(
-              enabledScansQueryResult({
+              createEnabledScansQueryResponse({
                 full: {
                   sast: true,
                 },
@@ -392,14 +351,20 @@ describe('MR Widget Security Reports', () => {
     it('computes the total number of new potential vulnerabilities correctly', async () => {
       const sastHandler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('SAST', {
-          added: [createFinding({ severity: 'CRITICAL' }), createFinding({ severity: 'HIGH' })],
-          fixed: [createFinding(), createFinding()],
+          added: [
+            createMockFinding({ severity: 'CRITICAL' }),
+            createMockFinding({ severity: 'HIGH' }),
+          ],
+          fixed: [createMockFinding(), createMockFinding()],
         }),
       );
 
       const dastHandler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('DAST', {
-          added: [createFinding({ severity: 'LOW' }), createFinding({ severity: 'UNKNOWN' })],
+          added: [
+            createMockFinding({ severity: 'LOW' }),
+            createMockFinding({ severity: 'UNKNOWN' }),
+          ],
           fixed: [],
         }),
       );
@@ -410,7 +375,7 @@ describe('MR Widget Security Reports', () => {
           [
             enabledScansQuery,
             jest.fn().mockResolvedValue(
-              enabledScansQueryResult({
+              createEnabledScansQueryResponse({
                 full: {
                   sast: true,
                   dast: true,
@@ -440,7 +405,7 @@ describe('MR Widget Security Reports', () => {
     it('tells the widget to be collapsible only if there is data', async () => {
       const handler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('SAST', {
-          added: [createFinding()],
+          added: [createMockFinding()],
           fixed: [],
         }),
       );
@@ -451,7 +416,7 @@ describe('MR Widget Security Reports', () => {
           [
             enabledScansQuery,
             jest.fn().mockResolvedValue(
-              enabledScansQueryResult({
+              createEnabledScansQueryResponse({
                 full: { sast: true },
               }),
             ),
@@ -469,7 +434,7 @@ describe('MR Widget Security Reports', () => {
       const sastHandler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('SAST', {
           added: [...Array(MAX_NEW_VULNERABILITIES)].map((_, i) =>
-            createFinding({ uuid: `${i}4abc` }),
+            createMockFinding({ uuid: `${i}4abc` }),
           ),
           fixed: [],
         }),
@@ -477,7 +442,7 @@ describe('MR Widget Security Reports', () => {
 
       const dastHandler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('DAST', {
-          added: [...Array(10)].map((_, i) => createFinding({ uuid: `${i}3abc` })),
+          added: [...Array(10)].map((_, i) => createMockFinding({ uuid: `${i}3abc` })),
           fixed: [],
         }),
       );
@@ -488,7 +453,7 @@ describe('MR Widget Security Reports', () => {
           [
             enabledScansQuery,
             jest.fn().mockResolvedValue(
-              enabledScansQueryResult({
+              createEnabledScansQueryResponse({
                 full: {
                   sast: true,
                   dast: true,
@@ -523,14 +488,14 @@ describe('MR Widget Security Reports', () => {
       const belowThreshold = MAX_NEW_VULNERABILITIES - 1;
       const sastHandler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('SAST', {
-          added: [...Array(belowThreshold)].map((_, i) => createFinding({ uuid: `${i}4abc` })),
+          added: [...Array(belowThreshold)].map((_, i) => createMockFinding({ uuid: `${i}4abc` })),
           fixed: [],
         }),
       );
 
       const dastHandler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('DAST', {
-          added: [...Array(10)].map((_, i) => createFinding({ uuid: `${i}3abc` })),
+          added: [...Array(10)].map((_, i) => createMockFinding({ uuid: `${i}3abc` })),
           fixed: [],
         }),
       );
@@ -541,7 +506,7 @@ describe('MR Widget Security Reports', () => {
           [
             enabledScansQuery,
             jest.fn().mockResolvedValue(
-              enabledScansQueryResult({
+              createEnabledScansQueryResponse({
                 full: {
                   sast: true,
                   dast: true,
@@ -609,7 +574,10 @@ describe('MR Widget Security Reports', () => {
       createComponent({
         mountFn: mountExtended,
         apolloProvider: createMockApollo([
-          [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+          ],
           [findingReportsComparerQuery, customHandler],
         ]),
       });
@@ -686,7 +654,12 @@ describe('MR Widget Security Reports', () => {
         createComponent({
           mountFn: mountExtended,
           apolloProvider: createMockApollo([
-            [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+            [
+              enabledScansQuery,
+              jest
+                .fn()
+                .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+            ],
             [findingReportsComparerQuery, customFindingReportsHandler],
           ]),
         });
@@ -710,7 +683,7 @@ describe('MR Widget Security Reports', () => {
     const createComponentAndExpandWidget = async (options = {}) => {
       const handler = jest.fn().mockResolvedValue(
         createMockFindingReportsComparerResponse('SAST', {
-          added: [createFinding({ state: options.state || 'DETECTED' })],
+          added: [createMockFinding({ state: options.state || 'DETECTED' })],
           fixed: [],
         }),
       );
@@ -722,7 +695,7 @@ describe('MR Widget Security Reports', () => {
           [
             enabledScansQuery,
             jest.fn().mockResolvedValue(
-              enabledScansQueryResult({
+              createEnabledScansQueryResponse({
                 full: { sast: true },
               }),
             ),
@@ -888,7 +861,10 @@ describe('MR Widget Security Reports', () => {
       createComponent({
         mountFn: mountExtended,
         mockApolloProvider: createMockApollo([
-          [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+          ],
         ]),
       });
 
@@ -923,7 +899,7 @@ describe('MR Widget Security Reports', () => {
             [
               enabledScansQuery,
               jest.fn().mockResolvedValue(
-                enabledScansQueryResult({
+                createEnabledScansQueryResponse({
                   full: { sast: fullScans },
                   partial: { sast: partialScans },
                 }),
@@ -957,10 +933,13 @@ describe('MR Widget Security Reports', () => {
             jest
               .fn()
               .mockResolvedValueOnce(
-                enabledScansQueryResult({ full: { ready: false }, partial: { ready: false } }),
+                createEnabledScansQueryResponse({
+                  full: { ready: false },
+                  partial: { ready: false },
+                }),
               )
               .mockResolvedValueOnce(
-                enabledScansQueryResult({
+                createEnabledScansQueryResponse({
                   full: { ready: true },
                   partial: { ready: true },
                 }),
