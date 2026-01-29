@@ -20,6 +20,7 @@ import NumberRangeSelect from './number_range_select.vue';
 import DependencyScanner from './scanners/dependency_scanner.vue';
 import SastScanner from './scanners/sast_scanner.vue';
 import SecretDetectionScanner from './scanners/secret_detection_scanner.vue';
+import ContainerScanningScanner from './scanners/container_scanning_scanner.vue';
 import GlobalSettings from './scanners/global_settings.vue';
 import { selectEmptyArrayWhenAllSelected } from './scanners/utils';
 
@@ -41,6 +42,7 @@ export default {
     DependencyScanner,
     SastScanner,
     SecretDetectionScanner,
+    ContainerScanningScanner,
     GlobalSettings,
     GlSprintf,
     RuleMultiSelect,
@@ -189,6 +191,10 @@ export default {
 
       <div class="gl-w-full gl-rounded-base gl-p-4">
         <secret-detection-scanner :init-rule="initRule" @changed="triggerChanged" />
+      </div>
+
+      <div class="gl-w-full gl-rounded-base gl-p-4">
+        <container-scanning-scanner :init-rule="initRule" @changed="triggerChanged" />
       </div>
     </template>
   </section-layout>
