@@ -69947,9 +69947,6 @@ msgstr ""
 msgid "This is an automated message. Please don't reply to this message."
 msgstr ""
 
-msgid "This is an experimental feature developed by GitLab Incubation Engineering."
-msgstr ""
-
 msgid "This is really just a warning"
 msgstr ""
 
@@ -76604,9 +76601,6 @@ msgid "We have detected that your message might be composed against %{linkStart}
 msgstr ""
 
 msgid "We heard back from your device. You have been authenticated."
-msgstr ""
-
-msgid "We invite you to %{featureLinkStart}request a feature%{featureLinkEnd}, %{bugLinkStart}report a bug%{bugLinkEnd} or %{feedbackLinkStart}share feedback%{feedbackLinkEnd}"
 msgstr ""
 
 msgid "We recommend a work email address."
