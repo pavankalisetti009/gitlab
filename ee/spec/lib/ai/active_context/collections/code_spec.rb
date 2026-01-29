@@ -27,6 +27,12 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
         allow(ActiveContext).to receive(:indexing?).and_return(true)
       end
 
+      it 'returns false when the collection record does not exist' do
+        allow(described_class).to receive(:collection_record).and_return(nil)
+
+        expect(described_class.indexing?).to be(false)
+      end
+
       it 'returns false when the collection does not have a current embedding version' do
         collection.update!(indexing_embedding_versions: nil)
 
