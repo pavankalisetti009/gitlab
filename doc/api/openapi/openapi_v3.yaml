@@ -89550,9 +89550,9 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: http://gdk.test:3000/oauth/authorize
-          tokenUrl: http://gdk.test:3000/oauth/token
-          refreshUrl: http://gdk.test:3000/oauth/refresh
+          authorizationUrl: https://gitlab.com/api/oauth/authorize
+          tokenUrl: https://gitlab.com/api/oauth/token
+          refreshUrl: https://gitlab.com/api/oauth/refresh
           scopes:
             api: Grants complete read/write access to the API, including all groups
               and projects, the container registry, the dependency proxy, and the
