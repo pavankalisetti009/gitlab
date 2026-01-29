@@ -1885,14 +1885,11 @@ job:
 Use `artifacts:public` to control whether job artifacts in public pipelines are available for download
 with the GitLab UI and API by anonymous users, or Guest and Reporter roles.
 
-{{< alert type="warning" >}}
-
-This option only affects GitLab UI and API access. CI/CD jobs using job tokens
-could still access artifacts with the runner API, regardless of this setting. To restrict
-job token access, configure your project's [CI/CD visibility settings](../../user/project/settings/_index.md#configure-project-features-and-permissions)
-to **Only project members**.
-
-{{< /alert >}}
+> [!warning]
+> This option only affects GitLab UI and API access. CI/CD jobs using job tokens
+> could still access artifacts with the runner API, regardless of this setting. To restrict
+> job token access, configure your project's [CI/CD visibility settings](../../user/project/settings/_index.md#configure-project-features-and-permissions)
+> to **Only project members**.
 
 **Keyword type**: Job keyword. You can use it only as part of a job or in the
 [`default` section](#default).
@@ -1927,14 +1924,11 @@ or API. This option does not prevent you from forwarding artifacts to downstream
 
 You cannot use [`artifacts:public`](#artifactspublic) and `artifacts:access` in the same job.
 
-{{< alert type="warning" >}}
-
-This option only affects GitLab UI and API access. CI/CD jobs using job tokens
-could still access artifacts with the runner API, regardless of this setting. To restrict
-job token access, configure your project's [CI/CD visibility settings](../../user/project/settings/_index.md#configure-project-features-and-permissions)
-to **Only project members**.
-
-{{< /alert >}}
+> [!warning]
+> This option only affects GitLab UI and API access. CI/CD jobs using job tokens
+> could still access artifacts with the runner API, regardless of this setting. To restrict
+> job token access, configure your project's [CI/CD visibility settings](../../user/project/settings/_index.md#configure-project-features-and-permissions)
+> to **Only project members**.
 
 **Keyword type**: Job keyword. You can use it only as part of a job.
 
