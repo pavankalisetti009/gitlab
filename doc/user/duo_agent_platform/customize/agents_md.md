@@ -25,7 +25,7 @@ providing context and instructions to AI coding assistants.
 
 Use `AGENTS.md` files to document your repository structure, coding conventions, style guidelines,
 build and testing instructions, and project context. When you specify an `AGENTS.md` file, these
-details are available for GitLab Duo and any other AI tool that supports the specification.
+details are available for GitLab Duo Agent Platform and any other AI tool that supports the specification.
 
 Specify `AGENTS.md` files for GitLab Duo to use with:
 
@@ -53,6 +53,7 @@ instructions. Previously existing conversations do not.
 
 ### Prerequisites
 
+- Meet the [Agent Platform prerequisites](../_index.md#prerequisites).
 - For GitLab Duo Chat in your IDE, install the supported extensions:
 
   - For VS Code, [install and configure the GitLab Workflow extension for VS Code](../../../editor_extensions/visual_studio_code/setup.md) 6.60 or later.
