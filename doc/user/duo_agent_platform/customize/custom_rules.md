@@ -67,9 +67,6 @@ User-level custom rules apply to all of your projects and workspaces in your loc
    ```
 
 1. Save the file.
-1. To apply the new custom rules, start a new GitLab Duo Chat conversation, .
-
-   You must do this every time you change the custom rules.
 
 1. To apply the new custom rules, do any of the following as appropriate:
    - Start a new GitLab Duo Chat conversation.
