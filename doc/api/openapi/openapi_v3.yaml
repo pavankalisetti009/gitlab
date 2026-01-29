@@ -19531,13 +19531,10 @@ paths:
         schema:
           type: string
           format: date-time
-          default: !ruby/object:ActiveSupport::TimeWithZone
-            utc: 2025-07-22 09:15:13.160963000 Z
-            zone: !ruby/object:ActiveSupport::TimeZone
-              name: Etc/UTC
-            time: 2025-07-22 09:15:13.160963000 Z
+          default: '2024-08-14T17:26:19.883Z'
         in: query
         example: '2024-08-14T17:26:19.883Z'
+        default: As default, the current time - 6 month will be calculated
       - name: page
         required: false
         description: Current page number
@@ -29527,6 +29524,7 @@ paths:
           type: boolean
         in: query
         example: true
+        default: false
   "/api/v4/feature_flags/unleash/{project_id}":
     get:
       operationId: getApiV4FeatureFlagsUnleashProjectId
@@ -29693,7 +29691,6 @@ paths:
         description: The organization id for the topics
         schema:
           type: integer
-          default: !ruby/object:Proc {}
         in: query
       - name: page
         required: false
@@ -70508,7 +70505,6 @@ paths:
           30 days ago. Expected in ISO 8601 format (`YYYY-MM-DDTHH:MM:SSZ`)
         schema:
           type: Time
-          default: !ruby/object:Proc {}
         in: query
       - name: limit
         required: false
@@ -77365,6 +77361,7 @@ paths:
         schema:
           type: boolean
         in: query
+        default: false
       - name: order_by
         required: false
         description: Values for sorting statuses. Valid values are `id` and `pipeline_id`.
@@ -77375,6 +77372,7 @@ paths:
           - id
           - pipeline_id
         in: query
+        default: id
       - name: sort
         required: false
         description: Sort statuses in ascending or descending order. Valid values
@@ -77385,6 +77383,7 @@ paths:
           - asc
           - desc
         in: query
+        default: asc
       - name: page
         required: false
         description: Current page number
