@@ -13,36 +13,6 @@ RSpec.describe 'Promotions', :js, feature_category: :code_review_workflow do
   let!(:issue) { create(:issue, project: project, author: user) }
   let(:otherproject) { create(:project, :repository, namespace: otherdeveloper.namespace) }
 
-  describe 'for merge request improve', :js, feature_category: :code_review_workflow do
-    before do
-      allow(License).to receive(:current).and_return(nil)
-      stub_saas_features(gitlab_com_subscriptions: false)
-
-      project.add_maintainer(user)
-      sign_in(user)
-    end
-
-    it 'appears in project edit page' do
-      visit project_settings_merge_requests_path(project)
-
-      expect(find('#promote_mr_features')).to have_content 'Improve merge requests'
-    end
-
-    it 'does not show when cookie is set' do
-      visit project_settings_merge_requests_path(project)
-
-      within('#promote_mr_features') do
-        find('.js-close').click
-      end
-
-      wait_for_requests
-
-      visit project_settings_merge_requests_path(project)
-
-      expect(page).not_to have_selector('#promote_mr_features')
-    end
-  end
-
   describe 'for repository features', :js, feature_category: :source_code_management do
     before do
       allow(License).to receive(:current).and_return(nil)
