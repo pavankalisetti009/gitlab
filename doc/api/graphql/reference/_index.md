@@ -25348,6 +25348,7 @@ Permission that belongs to a granular scope.
 | <a id="accesstokenpermissionaction"></a>`action` | [`String!`](#string) | Action of the permission. |
 | <a id="accesstokenpermissionboundaries"></a>`boundaries` | [`[PermissionBoundary!]`](#permissionboundary) | List of resource types that the permission can be applied to. |
 | <a id="accesstokenpermissioncategory"></a>`category` | [`String!`](#string) | Permission category. |
+| <a id="accesstokenpermissioncategoryname"></a>`categoryName` | [`String`](#string) | Display name of the permission category. |
 | <a id="accesstokenpermissiondescription"></a>`description` | [`String!`](#string) | Description of the permission. |
 | <a id="accesstokenpermissionname"></a>`name` | [`String!`](#string) | Name of the permission. |
 | <a id="accesstokenpermissionresource"></a>`resource` | [`String!`](#string) | Resource of the permission. |
