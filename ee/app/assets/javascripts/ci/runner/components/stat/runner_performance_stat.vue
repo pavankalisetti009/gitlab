@@ -1,6 +1,6 @@
 <script>
 import { GlLink, GlIcon, GlModalDirective } from '@gitlab/ui';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import RunnerPerformanceModal from './runner_performance_modal.vue';
 
 export default {
@@ -13,10 +13,10 @@ export default {
   directives: {
     GlModal: GlModalDirective,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   computed: {
     shouldShowPerformanceStat() {
-      return this.glFeatures?.runnerPerformanceInsights;
+      return this.glLicensedFeatures?.runnerPerformanceInsights;
     },
   },
   MODAL_ID: 'runner-performance-modal',

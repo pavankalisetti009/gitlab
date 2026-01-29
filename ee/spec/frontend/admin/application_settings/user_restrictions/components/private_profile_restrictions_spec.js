@@ -23,16 +23,16 @@ describe('PrivateProfileRestrictions', () => {
     },
   };
 
-  const createComponent = ({ props = {}, features = {} } = {}) => {
+  const createComponent = ({ props = {}, licensedFeatures = {} } = {}) => {
     wrapper = shallowMountExtended(PrivateProfileRestrictions, {
       propsData: {
         ...defaultProps,
         ...props,
       },
       provide: {
-        glFeatures: {
+        glLicensedFeatures: {
           disablePrivateProfiles: true,
-          ...features,
+          ...licensedFeatures,
         },
       },
       stubs: {
@@ -65,9 +65,6 @@ describe('PrivateProfileRestrictions', () => {
                 value: 'true',
               },
             },
-            features: {
-              disablePrivateProfiles: true,
-            },
           });
         });
 
@@ -97,9 +94,6 @@ describe('PrivateProfileRestrictions', () => {
                 ...defaultProps.allowPrivateProfiles,
                 value: 'false',
               },
-            },
-            features: {
-              disablePrivateProfiles: true,
             },
           });
         });
@@ -136,7 +130,7 @@ describe('PrivateProfileRestrictions', () => {
               value: 'false',
             },
           },
-          features: {
+          licensedFeatures: {
             disablePrivateProfiles: false,
           },
         });
@@ -185,9 +179,6 @@ describe('PrivateProfileRestrictions', () => {
               ...defaultProps.allowPrivateProfiles,
               value: 'true',
             },
-          },
-          features: {
-            disablePrivateProfiles: true,
           },
         });
       });
