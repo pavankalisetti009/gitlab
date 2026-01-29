@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ComplianceViolationSort'] do
+RSpec.describe GitlabSchema.types['ComplianceViolationSort'], feature_category: :compliance_management do
   let(:fields) do
     %w[
       SEVERITY_LEVEL_DESC SEVERITY_LEVEL_ASC VIOLATION_REASON_DESC VIOLATION_REASON_ASC

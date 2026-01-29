@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Projects::SetComplianceFramework do
+RSpec.describe Mutations::Projects::SetComplianceFramework, feature_category: :compliance_management do
   include GraphqlHelpers
   let_it_be(:group) { create(:group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: group) }
