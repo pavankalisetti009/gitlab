@@ -9,6 +9,11 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
 
   before do
     stub_application_setting(instance_level_ai_beta_features_enabled: true)
+
+    # Stub semantic code search availability to avoid ActiveContext infrastructure dependency
+    # We have to use `allow_any_instance_of` since this tool is initialized
+    # *on class definition time* in EE::Mcp::Tools::Manager
+    allow_any_instance_of(Mcp::Tools::SemanticCodeSearchService).to receive(:available?).and_return(false) # rubocop:disable RSpec/AnyInstanceOf -- tool is initialized at class definition time
   end
 
   describe 'POST /mcp with tools/list method' do
