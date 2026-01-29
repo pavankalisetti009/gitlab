@@ -42,8 +42,7 @@ module Groups::SecurityFeaturesHelper
       group_name: group.name,
       can_manage_attributes: can?(current_user, :admin_security_attributes, group.root_ancestor).to_s,
       can_read_attributes: can?(current_user, :read_security_attribute, group).to_s,
-      # TODO: change can_apply_profiles to do the real permission check once we have that
-      can_apply_profiles: ::Feature.enabled?(:security_scan_profiles_feature, group.root_ancestor).to_s,
+      can_apply_profiles: can?(current_user, :apply_security_scan_profiles, group).to_s,
       group_manage_attributes_path: group_security_configuration_path(group.root_ancestor),
       new_project_path: new_project_path(namespace_id: group.id)
     }
