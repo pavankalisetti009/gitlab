@@ -118,7 +118,7 @@ export default {
     ),
     submitButtonLabel: s__('Trial|Get started'),
     termsText: s__(
-      'Trial|By clicking %{buttonText} or registering through a third party, you accept the %{subscriptionAgreement} and acknowledge the %{privacyStatement}.',
+      'Trial|By clicking %{buttonText} you accept the %{subscriptionAgreement} and acknowledge the %{privacyStatement}.',
     ),
     subscriptionAgreement: {
       text: s__('Trial|GitLab Subscription Agreement'),
