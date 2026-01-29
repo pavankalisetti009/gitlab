@@ -9,7 +9,6 @@ import {
   DEFAULT_CURSOR,
   SORT_OPTIONS,
 } from 'ee/geo_replicable/constants';
-import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
@@ -154,7 +153,6 @@ describe('GeoReplicableApp', () => {
   const findGeoReplicable = () => findGeoReplicableContainer().findComponent(GeoReplicable);
   const findGeoList = () => findGeoReplicableContainer().findComponent(GeoList);
   const findGeoListTopBar = () => findGeoReplicableContainer().findComponent(GeoListTopBar);
-  const findGeoFeedbackBanner = () => wrapper.findComponent(GeoFeedbackBanner);
 
   beforeEach(() => {
     setWindowLocation(MOCK_BASE_LOCATION);
@@ -400,16 +398,6 @@ describe('GeoReplicableApp', () => {
 
         expect(toast).not.toHaveBeenCalled();
       });
-    });
-  });
-
-  describe('banner', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('renders the Geo Feedback Banner', () => {
-      expect(findGeoFeedbackBanner().exists()).toBe(true);
     });
   });
 

@@ -70,8 +70,6 @@ export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
   'administration/geo/replication/troubleshooting/_index.md',
 );
 
-export const GEO_FEEDBACK_BANNER_DISMISSED_KEY = 'geo_feedback_banner_dismissed';
-
 export const GEO_SHARED_STATUS_STATES = {
   PENDING: {
     title: s__('Geo|Pending'),
