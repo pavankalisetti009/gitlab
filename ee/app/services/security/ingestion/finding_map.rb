@@ -45,6 +45,7 @@ module Security
                       .slice(*FINDING_ATTRIBUTES)
                       .merge!(
                         uuid: uuid,
+                        new_uuid: context_aware_uuid,
                         security_project_tracked_context_id: tracked_context&.id,
                         scanner_id: scanner_id,
                         primary_identifier_id: identifier_ids.first,
@@ -54,6 +55,18 @@ module Security
                         initial_pipeline_id: pipeline.id,
                         latest_pipeline_id: pipeline.id
                       )
+      end
+
+      def context_aware_uuid
+        return unless tracked_context
+
+        ::Security::VulnerabilityUUID.generate_v2(
+          report_type: report_finding.report_type,
+          primary_identifier_fingerprint: identifiers.first&.fingerprint,
+          location_fingerprint: report_finding.location_fingerprint,
+          project_id: project.id,
+          context_id: tracked_context.id
+        )
       end
 
       def new_or_transitioned_to_detected?
