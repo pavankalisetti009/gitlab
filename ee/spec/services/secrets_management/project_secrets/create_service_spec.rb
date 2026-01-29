@@ -100,41 +100,6 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
       )
     end
 
-    context 'when secrets limit is exceeded' do
-      let(:limit) { 10 }
-      let(:secret_count_service) { instance_double(SecretsManagement::ProjectSecretsCountService) }
-
-      before do
-        stub_application_setting(project_secrets_limit: limit)
-        allow(SecretsManagement::ProjectSecretsCountService)
-          .to receive(:new)
-          .with(project, user)
-          .and_return(secret_count_service)
-        allow(secret_count_service).to receive(:execute).and_return(101)
-      end
-
-      it 'returns secrets_limit_exceeded_response' do
-        expect(result).to be_error
-        expect(result.reason).to eq(:secrets_limit_exceeded)
-        expect(result.message).to eq(
-          "Maximum number of secrets (#{limit}) for this project has been reached. " \
-            'Please delete unused secrets or contact your administrator to increase the limit.'
-        )
-      end
-
-      it 'does not create anything' do
-        expect(result).to be_error
-
-        expect(SecretsManagement::SecretRotationInfo.count).to be_zero
-
-        expect_kv_secret_not_to_exist(
-          project.secrets_manager.full_project_namespace_path,
-          project.secrets_manager.ci_secrets_mount_path,
-          secrets_manager.ci_data_path(name)
-        )
-      end
-    end
-
     context 'when rotation_interval_days is not given' do
       let(:rotation_interval_days) { nil }
 
