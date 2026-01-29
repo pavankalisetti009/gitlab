@@ -6,7 +6,8 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        # Schema version mappings - format is Date.today.strftime('%y_%w')
+        # Schema version mappings. The format is YYVV (year/version).
+        # YY is the two-digit year, VV is the version number (01-99) within that year.
         # Maps schema versions to their corresponding migration names.
         # Set migration to nil for baseline versions that don't require migration completion.
         # The schema_version method dynamically selects the highest version whose migration

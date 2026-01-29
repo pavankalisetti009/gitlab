@@ -40,7 +40,8 @@ module Elastic
         # ES6 is now single-type per index, so we implement our own typing
         data['type'] = 'project'
 
-        # Schema version. The format is Date.today.strftime('%y_%m')
+        # Schema version. The format is YYVV (year/version).
+        # YY is the two-digit year, VV is the version number (01-99) within that year.
         # Please update if you're changing the schema of the document
         data['schema_version'] = SCHEMA_VERSION
 
