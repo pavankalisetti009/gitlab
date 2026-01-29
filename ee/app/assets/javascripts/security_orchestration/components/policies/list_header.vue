@@ -4,7 +4,6 @@ import { parseBoolean } from '~/lib/utils/common_utils';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { NEW_POLICY_BUTTON_TEXT } from '../constants';
 import CspBanner from './banners/csp_banner.vue';
@@ -32,7 +31,6 @@ export default {
     PageHeading,
     ProjectModal,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: [
     'assignedPolicyProject',
     'designatedAsCsp',

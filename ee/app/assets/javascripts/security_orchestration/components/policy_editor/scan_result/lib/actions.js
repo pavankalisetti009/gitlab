@@ -113,15 +113,11 @@ export const WARN_TYPE_TEXT = s__('SecurityOrchestration|Warn in merge request')
 export const ACTION_OPTIONS = {
   [REQUIRE_APPROVAL_TYPE]: s__('SecurityOrchestration|Require Approvers'),
   [BOT_MESSAGE_TYPE]: s__('SecurityOrchestration|Send bot message'),
+  [WARN_TYPE]: WARN_TYPE_TEXT,
 };
 
 export const ACTION_LISTBOX_ITEMS = () => {
-  const options = {
-    ...ACTION_OPTIONS,
-    ...(gon.features?.securityPolicyApprovalWarnMode && { [WARN_TYPE]: WARN_TYPE_TEXT }),
-  };
-
-  return mapToListboxItems(options);
+  return mapToListboxItems(ACTION_OPTIONS);
 };
 
 export const DISABLED_BOT_MESSAGE_ACTION = { ...buildAction(BOT_MESSAGE_TYPE), enabled: false };

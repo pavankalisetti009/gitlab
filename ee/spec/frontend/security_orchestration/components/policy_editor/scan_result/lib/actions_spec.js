@@ -75,22 +75,12 @@ describe('createActionFromApprovers', () => {
 });
 
 describe('ACTION_LISTBOX_ITEMS', () => {
-  it('contains two actions', () => {
+  it('contains three actions', () => {
     expect(ACTION_LISTBOX_ITEMS()).toEqual([
       { text: 'Require Approvers', value: 'require_approval' },
       { text: 'Send bot message', value: 'send_bot_message' },
+      { value: WARN_TYPE, text: 'Warn in merge request' },
     ]);
-  });
-
-  it('should not include WARN_TYPE when feature flag is off', () => {
-    const warnTypeEntry = ACTION_LISTBOX_ITEMS().find((item) => item.value === WARN_TYPE);
-    expect(warnTypeEntry).toBeUndefined();
-  });
-
-  it('should include WARN_TYPE when feature flag is on', () => {
-    window.gon.features = { securityPolicyApprovalWarnMode: true };
-    const warnTypeEntry = ACTION_LISTBOX_ITEMS().find((item) => item.value === WARN_TYPE);
-    expect(warnTypeEntry).toEqual({ value: WARN_TYPE, text: 'Warn in merge request' });
   });
 });
 

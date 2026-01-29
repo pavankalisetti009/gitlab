@@ -168,7 +168,10 @@ describe('ActivityToken', () => {
       ({ accessAdvancedVulnerabilityManagement, aiExperimentSastFpDetection, expectedOptions }) => {
         createWrapperWithAbility({
           accessAdvancedVulnerabilityManagement,
-          provide: { glFeatures: { aiExperimentSastFpDetection } },
+          provide: {
+            glFeatures: { aiExperimentSastFpDetection },
+            dashboardType: DASHBOARD_TYPE_INSTANCE,
+          },
         });
         const findDropdownOptions = () =>
           wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
@@ -178,19 +181,18 @@ describe('ActivityToken', () => {
     );
 
     it.each`
-      dashboardType              | isPolicyViolationEnabled | expectedOptions
-      ${DASHBOARD_TYPE_PROJECT}  | ${true}                  | ${[...baseOptions, ...policyViolationOptions]}
-      ${DASHBOARD_TYPE_PROJECT}  | ${false}                 | ${baseOptions}
-      ${DASHBOARD_TYPE_GROUP}    | ${true}                  | ${[...baseOptions, ...policyViolationOptions]}
-      ${DASHBOARD_TYPE_INSTANCE} | ${true}                  | ${baseOptions}
+      dashboardType              | accessAdvancedVulnerabilityManagement | expectedOptions
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                               | ${[...baseOptions, ...policyViolationOptions]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                              | ${baseOptions}
+      ${DASHBOARD_TYPE_GROUP}    | ${true}                               | ${[...baseOptions, ...policyViolationOptions]}
+      ${DASHBOARD_TYPE_INSTANCE} | ${true}                               | ${baseOptions}
     `(
-      'shows the dropdown with correct options when dashboardType=$dashboardType and isPolicyViolationEnabled=$isPolicyViolationEnabled',
-      ({ dashboardType, isPolicyViolationEnabled, expectedOptions }) => {
-        jest
-          .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
-          .mockReturnValue(isPolicyViolationEnabled);
-
-        createWrapper({ provide: { dashboardType } });
+      'shows the dropdown with correct options when dashboardType=$dashboardType and accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement',
+      ({ dashboardType, accessAdvancedVulnerabilityManagement, expectedOptions }) => {
+        createWrapperWithAbility({
+          accessAdvancedVulnerabilityManagement,
+          provide: { dashboardType },
+        });
 
         const findDropdownOptions = () =>
           wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
@@ -199,9 +201,9 @@ describe('ActivityToken', () => {
       },
     );
 
-    it('shows the dropdown with correct options when both the resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
-      jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+    it('shows the dropdown with correct options when both the resolveVulnerabilityWithAi and accessAdvancedVulnerabilityManagement are true', () => {
       createWrapperWithAbility({
+        accessAdvancedVulnerabilityManagement: true,
         resolveVulnerabilityWithAi: true,
       });
 
@@ -241,7 +243,10 @@ describe('ActivityToken', () => {
       ({ accessAdvancedVulnerabilityManagement, aiExperimentSastFpDetection, expectedGroups }) => {
         createWrapperWithAbility({
           accessAdvancedVulnerabilityManagement,
-          provide: { glFeatures: { aiExperimentSastFpDetection } },
+          provide: {
+            glFeatures: { aiExperimentSastFpDetection },
+            dashboardType: DASHBOARD_TYPE_INSTANCE,
+          },
         });
         const findDropdownGroupHeaders = () =>
           wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
@@ -251,19 +256,18 @@ describe('ActivityToken', () => {
     );
 
     it.each`
-      dashboardType              | isPolicyViolationEnabled | expectedGroups
-      ${DASHBOARD_TYPE_PROJECT}  | ${true}                  | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
-      ${DASHBOARD_TYPE_PROJECT}  | ${false}                 | ${baseGroupHeaders}
-      ${DASHBOARD_TYPE_GROUP}    | ${true}                  | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
-      ${DASHBOARD_TYPE_INSTANCE} | ${true}                  | ${baseGroupHeaders}
+      dashboardType              | accessAdvancedVulnerabilityManagement | expectedGroups
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                               | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                              | ${baseGroupHeaders}
+      ${DASHBOARD_TYPE_GROUP}    | ${true}                               | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
+      ${DASHBOARD_TYPE_INSTANCE} | ${true}                               | ${baseGroupHeaders}
     `(
-      'shows the correct group headers when dashboardType=$dashboardType and isPolicyViolationEnabled=$isPolicyViolationEnabled',
-      ({ dashboardType, isPolicyViolationEnabled, expectedGroups }) => {
-        jest
-          .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
-          .mockReturnValue(isPolicyViolationEnabled);
-
-        createWrapper({ provide: { dashboardType } });
+      'shows the correct group headers when dashboardType=$dashboardType and accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement',
+      ({ dashboardType, accessAdvancedVulnerabilityManagement, expectedGroups }) => {
+        createWrapperWithAbility({
+          accessAdvancedVulnerabilityManagement,
+          provide: { dashboardType },
+        });
 
         const findDropdownGroupHeaders = () =>
           wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
@@ -294,13 +298,13 @@ describe('ActivityToken', () => {
       },
     );
 
-    it('shows the correct group headers when both resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
-      jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+    it('shows the correct group headers when both resolveVulnerabilityWithAi and accessAdvancedVulnerabilityManagement are true', () => {
       jest
         .spyOn(SecurityDashboardUtils, 'autoDismissVulnerabilityPoliciesEnabled')
         .mockReturnValue(true);
 
       createWrapperWithAbility({
+        accessAdvancedVulnerabilityManagement: true,
         resolveVulnerabilityWithAi: true,
       });
 
@@ -333,17 +337,13 @@ describe('ActivityToken', () => {
       );
 
       it.each`
-        isPolicyViolationEnabled | expectedBadges
-        ${true}                  | ${[...defaultBadges, 'flag']}
-        ${false}                 | ${defaultBadges}
+        accessAdvancedVulnerabilityManagement | expectedBadges
+        ${true}                               | ${[...defaultBadges, 'flag']}
+        ${false}                              | ${defaultBadges}
       `(
-        'shows the correct badges when isPolicyViolationEnabled=$isPolicyViolationEnabled',
-        ({ isPolicyViolationEnabled, expectedBadges }) => {
-          jest
-            .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
-            .mockReturnValue(isPolicyViolationEnabled);
-
-          createWrapper();
+        'shows the correct badges when accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement',
+        ({ accessAdvancedVulnerabilityManagement, expectedBadges }) => {
+          createWrapperWithAbility({ accessAdvancedVulnerabilityManagement });
 
           expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
             expectedBadges,
@@ -370,9 +370,9 @@ describe('ActivityToken', () => {
         },
       );
 
-      it('shows the correct badges when resolveVulnerabilityWithAi and isPolicyViolationEnabled are true', () => {
-        jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+      it('shows the correct badges when resolveVulnerabilityWithAi and accessAdvancedVulnerabilityManagement is true', () => {
         createWrapperWithAbility({
+          accessAdvancedVulnerabilityManagement: true,
           resolveVulnerabilityWithAi: true,
         });
 
@@ -593,9 +593,7 @@ describe('ActivityToken', () => {
       it.each([DASHBOARD_TYPE_PROJECT, DASHBOARD_TYPE_GROUP])(
         'includes policyViolations when DISMISSED_IN_MR is in filters and dashboardType is %s',
         (dashboardType) => {
-          jest
-            .spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled')
-            .mockReturnValue(true);
+          window.gon = { abilities: { accessAdvancedVulnerabilityManagement: true } };
 
           const result = ActivityToken.transformFilters(['DISMISSED_IN_MR'], { dashboardType });
 
@@ -604,7 +602,7 @@ describe('ActivityToken', () => {
       );
 
       it('does not include policyViolations when dashboardType is instance', () => {
-        jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+        window.gon = { abilities: { accessAdvancedVulnerabilityManagement: true } };
 
         const result = ActivityToken.transformFilters(['DISMISSED_IN_MR'], {
           dashboardType: DASHBOARD_TYPE_INSTANCE,
@@ -614,7 +612,7 @@ describe('ActivityToken', () => {
       });
 
       it('does not include policyViolations when feature flags are disabled', () => {
-        jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(false);
+        window.gon = { abilities: { accessAdvancedVulnerabilityManagement: false } };
 
         const result = ActivityToken.transformFilters(['DISMISSED_IN_MR'], defaultOptions);
 
@@ -622,7 +620,7 @@ describe('ActivityToken', () => {
       });
 
       it('does not include policyViolations when DISMISSED_IN_MR is not in filters', () => {
-        jest.spyOn(SecurityDashboardUtils, 'isPolicyViolationFilterEnabled').mockReturnValue(true);
+        window.gon = { abilities: { accessAdvancedVulnerabilityManagement: true } };
 
         const result = ActivityToken.transformFilters(['HAS_ISSUE'], defaultOptions);
 

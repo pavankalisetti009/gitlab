@@ -149,37 +149,19 @@ describe('DetailsDrawer component', () => {
       });
 
       describe('warn mode', () => {
-        it('renders correctly with the feature flag on', () => {
+        it('renders', () => {
           factory({
             props: {
               policy: {
                 ...mockProjectWithAllApproverTypesScanResultPolicy,
                 yaml: mockWarnTypeScanResultManifest,
               },
-            },
-            provide: {
-              glFeatures: { securityPolicyApprovalWarnMode: true },
             },
           });
           expect(findPolicyApprovals().exists()).toBe(true);
           expect(findPolicyApprovals().props('isLastItem')).toBe(false);
           expect(findPolicyApprovals().props('isWarnMode')).toBe(true);
           expect(findBotMessage().exists()).toBe(false);
-        });
-
-        it('renders correctly with the feature flag off', () => {
-          factory({
-            props: {
-              policy: {
-                ...mockProjectWithAllApproverTypesScanResultPolicy,
-                yaml: mockWarnTypeScanResultManifest,
-              },
-            },
-          });
-          expect(findPolicyApprovals().exists()).toBe(true);
-          expect(findPolicyApprovals().props('isLastItem')).toBe(false);
-          expect(findPolicyApprovals().props('isWarnMode')).toBe(false);
-          expect(findBotMessage().exists()).toBe(true);
         });
       });
 

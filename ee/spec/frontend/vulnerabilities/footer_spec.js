@@ -459,24 +459,23 @@ describe('Vulnerability Footer', () => {
   });
 
   describe('security policy bypass', () => {
-    it.each`
-      title                                                                                                      | securityPolicyApprovalWarnMode | policyDismissals | expected
-      ${'does not render the policy violation note if the feature flag is false and there are no policy bypass'} | ${false}                       | ${[]}            | ${false}
-      ${'does not render the policy violation note if the feature flag is true and there are no policy bypass'}  | ${true}                        | ${[]}            | ${false}
-      ${'does not render the policy violation note if the feature flag is false and there are policy bypass'}    | ${false}                       | ${[{ id: 1 }]}   | ${false}
-      ${'renders the policy violation note if the feature flag is true and there are policy bypass'}             | ${true}                        | ${[{ id: 1 }]}   | ${true}
-    `('$title', ({ securityPolicyApprovalWarnMode, policyDismissals, expected }) => {
+    it('does not render the policy violation note when there are no policy bypasses', () => {
       createWrapper({
-        properties: { policyDismissals },
-        mountOptions: { provide: { glFeatures: { securityPolicyApprovalWarnMode } } },
+        properties: { policyDismissals: [] },
       });
-      expect(findSecurityPolicyBypassDescription().exists()).toBe(expected);
+      expect(findSecurityPolicyBypassDescription().exists()).toBe(false);
+    });
+
+    it('renders the policy violation note when there are policy bypasses', () => {
+      createWrapper({
+        properties: { policyDismissals: [{ id: 1 }] },
+      });
+      expect(findSecurityPolicyBypassDescription().exists()).toBe(true);
     });
 
     it('renders the security policy dismissal description correctly', () => {
       createWrapper({
         properties: { policyDismissals: [{ id: 1 }, { id: 2 }] },
-        mountOptions: { provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } },
       });
       expect(findAllSecurityPolicyBypassDescriptions()).toHaveLength(2);
       expect(findAllSecurityPolicyBypassDescriptions().at(0).props('bypass')).toEqual({
