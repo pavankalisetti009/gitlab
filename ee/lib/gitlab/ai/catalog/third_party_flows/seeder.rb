@@ -9,7 +9,8 @@ module Gitlab
           AGENTS = [
             {
               name: 'Claude Agent by GitLab',
-              description: 'Claude Code Agent by GitLab. Uses GitLab managed credentials.',
+              description: "Claude Code Agent by GitLab. Uses GitLab-managed credentials.\n\n" \
+                "Learn more: https://docs.gitlab.com/user/duo_agent_platform/agents/external/",
               definition: <<~YAML
                 injectGatewayToken: true
                 image: node:22-slim
@@ -76,7 +77,8 @@ module Gitlab
             },
             {
               name: 'Codex Agent by GitLab',
-              description: 'Codex Agent by GitLab. Uses GitLab managed credentials.',
+              description: "Codex Agent by GitLab. Uses GitLab-managed credentials.\n\n" \
+                "Learn more: https://docs.gitlab.com/user/duo_agent_platform/agents/external/",
               definition: <<~YAML
                 image: node:22-slim
                 injectGatewayToken: true
