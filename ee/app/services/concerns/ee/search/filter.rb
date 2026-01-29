@@ -17,7 +17,6 @@ module EE
           **milestone_filters,
           **assignee_filters,
           **code_search_filters,
-          **knn_filters,
           **work_item_filters,
           **weight_filters,
           **health_status_filters
@@ -85,13 +84,6 @@ module EE
         {
           language: params[:language],
           num_context_lines: params[:num_context_lines]&.to_i
-        }
-      end
-
-      def knn_filters
-        {
-          hybrid_similarity: params[:hybrid_similarity]&.to_f,
-          hybrid_boost: params[:hybrid_boost]&.to_f
         }
       end
 

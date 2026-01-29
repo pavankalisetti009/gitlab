@@ -108,7 +108,7 @@ module Gitlab
         when :users
           super.merge(project_id: project.id)
         when :work_items
-          super.merge(filters.slice(:hybrid_similarity, :hybrid_boost),
+          super.merge(
             root_ancestor_ids: [project.root_ancestor.id], related_ids: related_ids_for_notes(Issue.name))
         when :merge_requests
           options = super
