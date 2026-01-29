@@ -835,12 +835,9 @@ you can pull from the container registry, but you cannot push.
    sudo aws --endpoint-url <https://your-object-storage-backend.com> s3 sync registry s3://mybucket
    ```
 
-   {{< alert type="note" >}}
-
-   If you have a lot of data, you may be able to improve performance by
-   [running parallel sync operations](https://repost.aws/knowledge-center/s3-improve-transfer-sync-command).
-
-   {{< /alert >}}
+   > [!note]
+   > If you have a lot of data, you may be able to improve performance by
+   > [running parallel sync operations](https://repost.aws/knowledge-center/s3-improve-transfer-sync-command).
 
 1. To perform the final data sync,
    [put the container registry in `read-only` mode](#performing-garbage-collection-without-downtime) and
@@ -855,13 +852,10 @@ you can pull from the container registry, but you cannot push.
    [`--dryrun`](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html)
    flag and run the command.
 
-   {{< alert type="warning" >}}
-
-   The [`--delete`](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html)
-   flag deletes files that exist in the destination but not in the source.
-   If you swap the source and destination, all data in the Registry is deleted.
-
-   {{< /alert >}}
+   > [!warning]
+   > The [`--delete`](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html)
+   > flag deletes files that exist in the destination but not in the source.
+   > If you swap the source and destination, all data in the Registry is deleted.
 
 1. Verify all container registry files have been uploaded to object storage
    by looking at the file count returned by these two commands:
