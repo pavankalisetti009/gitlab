@@ -100,12 +100,14 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :duo_agent_pla
     context 'when using catalog item configuration' do
       let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, :for_flow, project: project) }
 
+      let(:item_consumer_id) { item_consumer.id }
+
       let(:catalog_params) do
         {
           user_id: service_account.id,
           event_types: event_types,
           description: "catalog flow trigger",
-          ai_catalog_item_consumer_id: item_consumer.id
+          ai_catalog_item_consumer_id: item_consumer_id
         }
       end
 
@@ -117,6 +119,53 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :duo_agent_pla
         expect(flow_trigger).to be_persisted
         expect(flow_trigger.ai_catalog_item_consumer).to eq(item_consumer)
         expect(flow_trigger.config_path).to be_nil
+      end
+
+      context 'when ai_catalog_create_third_party_flows is disabled' do
+        before do
+          stub_feature_flags(ai_catalog_create_third_party_flows: false)
+        end
+
+        it 'creates a flow trigger with catalog item' do
+          response = service.execute(catalog_params)
+          expect(response).to be_success
+          flow_trigger = response.payload
+
+          expect(flow_trigger).to be_persisted
+          expect(flow_trigger.ai_catalog_item_consumer).to eq(item_consumer)
+          expect(flow_trigger.config_path).to be_nil
+        end
+
+        context 'when creating a trigger for a third party flow' do
+          let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, :for_third_party_flow, project: project) }
+
+          it 'returns an error' do
+            response = service.execute(catalog_params)
+
+            expect(response).to be_error
+            expect(response.message).to include('You have insufficient permissions')
+          end
+        end
+
+        context 'when the item consumer does not exist' do
+          let(:item_consumer_id) { non_existing_record_id }
+
+          it 'returns an error' do
+            response = service.execute(catalog_params)
+            expect(response).to be_error
+            expect(response.message).to include("Ai catalog item consumer can't be blank")
+          end
+        end
+
+        context 'when the item consumer is nil' do
+          let(:item_consumer_id) { nil }
+
+          it 'returns an error' do
+            response = service.execute(catalog_params)
+            expect(response).to be_error
+            expect(response.message).to include("Ai catalog item consumer can't be blank")
+          end
+        end
       end
     end
 
