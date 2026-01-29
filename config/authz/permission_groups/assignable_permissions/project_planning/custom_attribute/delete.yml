@@ -5,3 +5,5 @@ boundaries:
   - group
   - project
   - instance
+permissions:
+  - delete_custom_attribute
