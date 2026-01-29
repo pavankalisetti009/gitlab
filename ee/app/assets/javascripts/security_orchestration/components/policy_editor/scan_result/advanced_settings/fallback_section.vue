@@ -4,6 +4,7 @@ import { s__ } from '~/locale';
 import { CLOSED, OPEN } from './constants';
 
 export default {
+  name: 'FallbackSection',
   i18n: {
     subtitle: s__(
       "ScanResultPolicy|When this policy's criteria %{strongStart}cannot be met:%{strongEnd}",

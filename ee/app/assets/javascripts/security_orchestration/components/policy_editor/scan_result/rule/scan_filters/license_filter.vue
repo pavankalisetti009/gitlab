@@ -8,6 +8,7 @@ import { EXCEPT, MATCHING } from '../../lib/rules';
 import { UNKNOWN_LICENSE } from './constants';
 
 export default {
+  name: 'LicenseFilter',
   i18n: {
     headerText: __('Choose an option'),
     label: s__('ScanResultPolicy|License is:'),

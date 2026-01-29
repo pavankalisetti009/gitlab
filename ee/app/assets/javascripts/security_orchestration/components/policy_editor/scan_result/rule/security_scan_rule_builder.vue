@@ -45,6 +45,7 @@ import ScanTypeSelect from './scan_type_select.vue';
 import { buildVulnerabilitiesPayload, getVulnerabilityAttribute } from './utils';
 
 export default {
+  name: 'SecurityScanRuleBuilder',
   FILTERS,
   SEVERITY,
   STATUS,
