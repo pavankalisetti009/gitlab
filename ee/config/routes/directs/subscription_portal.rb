@@ -4,10 +4,6 @@ direct :subscription_portal_legacy_sign_in do
   Addressable::URI.join(subscription_portal_url, '/customers/sign_in?legacy=true').to_s
 end
 
-direct :subscription_portal_payment_form do
-  Addressable::URI.join(subscription_portal_url, '/payment_forms/cc_validation').to_s
-end
-
 direct :subscription_portal_manage do
   Addressable::URI.join(subscription_portal_url, '/subscriptions').to_s
 end

@@ -62,14 +62,3 @@ export const mockDataSubscription = {
     },
   },
 };
-
-export const verificationModalDefaultGon = {
-  current_user_id: 300,
-  payment_validation_form_id: 'payment-validation-page-id',
-};
-
-export const verificationModalDefaultProps = {
-  visible: false,
-  iframeUrl: 'https://gitlab.com',
-  allowedOrigin: 'https://gitlab.com',
-};
