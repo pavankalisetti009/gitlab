@@ -66,11 +66,6 @@ export default {
       required: false,
       default: undefined,
     },
-    isBeta: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   computed: {
     title() {
@@ -82,9 +77,6 @@ export default {
     showBetaBadge() {
       const { showBetaBadge } = useAiBetaBadge();
       return showBetaBadge.value;
-    },
-    showBadge() {
-      return this.isBeta || this.showBetaBadge;
     },
   },
   LINK_TO_DASHBOARD_MODAL_ID,
@@ -106,7 +98,7 @@ export default {
       <template #heading>
         <span class="gl-flex">
           <span>{{ title }}</span>
-          <gl-experiment-badge v-if="showBadge" type="beta" class="gl-self-center" />
+          <gl-experiment-badge v-if="showBetaBadge" type="beta" class="gl-self-center" />
         </span>
       </template>
       <template #actions>
