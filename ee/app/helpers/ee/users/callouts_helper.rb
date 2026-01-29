@@ -16,7 +16,6 @@ module EE
       JOINING_A_PROJECT_ALERT = 'joining_a_project_alert'
       PIPL_COMPLIANCE_ALERT = 'pipl_compliance_alert'
       DUO_CORE_RELEASE_DATE = Date.new(2025, 5, 15)
-      EXPLORE_DUO_CORE_BANNER = 'explore_duo_core_banner'
 
       override :render_product_usage_data_collection_changes
       def render_product_usage_data_collection_changes(current_user)
@@ -86,12 +85,6 @@ module EE
       override :show_transition_to_jihu_callout?
       def show_transition_to_jihu_callout?
         !gitlab_com_subscription? && !has_active_license? && super
-      end
-
-      def show_explore_duo_core_banner?(merge_request)
-        merge_request.assignees.include?(current_user) &&
-          current_user.allowed_to_use(:duo_chat).authorized_by_duo_core &&
-          !user_dismissed?(EXPLORE_DUO_CORE_BANNER)
       end
 
       def render_default_duo_namespace_required_alert?

@@ -7381,9 +7381,6 @@ msgstr ""
 msgid "AiPowered|Experiment and beta features"
 msgstr ""
 
-msgid "AiPowered|Explore GitLab Duo Core"
-msgstr ""
-
 msgid "AiPowered|Failed to disable composite identity for GitLab Duo Agent Platform."
 msgstr ""
 
@@ -7406,9 +7403,6 @@ msgid "AiPowered|Features with CI/CD pipelines"
 msgstr ""
 
 msgid "AiPowered|Features without CI/CD pipelines"
-msgstr ""
-
-msgid "AiPowered|Get started with GitLab Duo"
 msgstr ""
 
 msgid "AiPowered|GitLab Credits dashboard"
@@ -7622,9 +7616,6 @@ msgid "AiPowered|When you turn off composite identity for the Agent Platform, ac
 msgstr ""
 
 msgid "AiPowered|When you turn on composite identity for GitLab Duo Agent Platform, a service account is created."
-msgstr ""
-
-msgid "AiPowered|You now have access to GitLab Duo Chat and Code Suggestions in supported IDEs. To start using these features, %{link1Start}install the GitLab extension in your IDE%{link1End}. If you already have this extension installed, %{link2Start}explore what you can do with GitLab Duo Core%{link2End}."
 msgstr ""
 
 msgid "Akismet"
