@@ -517,7 +517,7 @@ In this example, if the `INCLUDE_BUILDS` variable is:
 
 {{< /history >}}
 
-Use `integrity` with `include:remote` to specifiy a SHA256 hash of the included remote file.
+Use `integrity` with `include:remote` to specify a SHA256 hash of the included remote file.
 If `integrity` does not match the actual content, the remote file is not processed
 and the pipeline fails.
 
