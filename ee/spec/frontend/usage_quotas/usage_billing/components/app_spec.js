@@ -6,6 +6,8 @@ import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/cu
 import MonthlyWaiverCard from 'ee/usage_quotas/usage_billing/components/monthly_waiver_card.vue';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import OverageOptInCard from 'ee/usage_quotas/usage_billing/components/overage_opt_in_card.vue';
+import UpgradeToPremiumCard from 'ee/usage_quotas/usage_billing/components/upgrade_to_premium_card.vue';
+import HaveQuestionsCard from 'ee/usage_quotas/usage_billing/components/have_questions_card.vue';
 import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
@@ -50,6 +52,10 @@ describe('UsageBillingApp', () => {
       },
       provide: {
         customersUsageDashboardPath: 'https://gitlab.com/dummy-usage-dashboard-path',
+        isFree: false,
+        inTrial: false,
+        trialStartDate: '',
+        trialEndDate: '',
         ...provide,
       },
     });
@@ -180,7 +186,6 @@ describe('UsageBillingApp', () => {
       beforeEach(async () => {
         createComponent({
           mockQueryHandler: jest.fn().mockResolvedValue({
-            ...usageDataNoCommitmentNoMonthlyWaiverNoOverage,
             data: {
               subscriptionUsage: {
                 ...usageDataNoCommitmentNoMonthlyWaiverNoOverage.data.subscriptionUsage,
@@ -466,6 +471,158 @@ describe('UsageBillingApp', () => {
     it('logs the error to console and Sentry', () => {
       expect(logError).toHaveBeenCalledWith(expect.any(Error));
       expect(captureException).toHaveBeenCalledWith(expect.any(Error));
+    });
+  });
+
+  describe('trial cards visibility', () => {
+    describe('when isFree is true and inTrial is true', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: {
+            isFree: true,
+            inTrial: true,
+            trialStartDate: '2025-09-01',
+            trialEndDate: '2025-09-30',
+          },
+        });
+        await waitForPromises();
+      });
+
+      it('renders upgrade-to-premium-card', () => {
+        const upgradeToPremiumCard = wrapper.findComponent(UpgradeToPremiumCard);
+
+        expect(upgradeToPremiumCard.exists()).toBe(true);
+      });
+
+      it('renders have-questions-card', () => {
+        const haveQuestionsCard = wrapper.findComponent(HaveQuestionsCard);
+
+        expect(haveQuestionsCard.exists()).toBe(true);
+      });
+
+      it('renders cards in the trial section', () => {
+        const trialSection = wrapper.findByTestId('cards-during-trial-row');
+
+        expect(trialSection.exists()).toBe(true);
+        expect(trialSection.findComponent(UpgradeToPremiumCard).exists()).toBe(true);
+        expect(trialSection.findComponent(HaveQuestionsCard).exists()).toBe(true);
+      });
+
+      it('does not render the usage billing cards section', () => {
+        const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
+
+        expect(usageBillingSection.exists()).toBe(false);
+      });
+    });
+
+    describe('when isFree is true and inTrial is false', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: { isFree: true, inTrial: false },
+        });
+        await waitForPromises();
+      });
+
+      it('does not render upgrade-to-premium-card', () => {
+        const upgradeToPremiumCard = wrapper.findComponent(UpgradeToPremiumCard);
+
+        expect(upgradeToPremiumCard.exists()).toBe(false);
+      });
+
+      it('does not render have-questions-card', () => {
+        const haveQuestionsCard = wrapper.findComponent(HaveQuestionsCard);
+
+        expect(haveQuestionsCard.exists()).toBe(false);
+      });
+
+      it('renders the usage billing cards section', () => {
+        const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
+
+        expect(usageBillingSection.exists()).toBe(true);
+      });
+
+      it('does not render the trial section', () => {
+        const trialSection = wrapper.findByTestId('cards-during-trial-row');
+
+        expect(trialSection.exists()).toBe(false);
+      });
+    });
+
+    describe('when isFree is false', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: { isFree: false, inTrial: true },
+        });
+        await waitForPromises();
+      });
+
+      it('does not render upgrade-to-premium-card', () => {
+        const upgradeToPremiumCard = wrapper.findComponent(UpgradeToPremiumCard);
+
+        expect(upgradeToPremiumCard.exists()).toBe(false);
+      });
+
+      it('does not render have-questions-card', () => {
+        const haveQuestionsCard = wrapper.findComponent(HaveQuestionsCard);
+
+        expect(haveQuestionsCard.exists()).toBe(false);
+      });
+
+      it('renders the usage billing cards section', () => {
+        const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
+
+        expect(usageBillingSection.exists()).toBe(true);
+      });
+
+      it('does not render the trial section', () => {
+        const trialSection = wrapper.findByTestId('cards-during-trial-row');
+
+        expect(trialSection.exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('usage period dates', () => {
+    describe('when inTrial is true', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: {
+            inTrial: true,
+            trialStartDate: '2025-09-01',
+            trialEndDate: '2025-09-30',
+          },
+        });
+        await waitForPromises();
+      });
+
+      it('uses trial dates for the usage period', () => {
+        const pageHeading = findPageHeading();
+        const humanTimeframe = pageHeading.findComponent(HumanTimeframe);
+
+        expect(humanTimeframe.props()).toEqual({
+          from: '2025-09-01',
+          till: '2025-09-30',
+        });
+      });
+    });
+
+    describe('when inTrial is false', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: { inTrial: false },
+        });
+        await waitForPromises();
+      });
+
+      it('uses subscription dates for the usage period', () => {
+        const pageHeading = findPageHeading();
+        const humanTimeframe = pageHeading.findComponent(HumanTimeframe);
+
+        expect(humanTimeframe.props()).toEqual({
+          from: '2025-10-01',
+          till: '2025-10-31',
+        });
+      });
     });
   });
 });

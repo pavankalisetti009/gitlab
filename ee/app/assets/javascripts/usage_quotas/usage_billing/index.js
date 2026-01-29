@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createApolloClient from '~/lib/graphql';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import UsageBillingDashboardPage from 'ee/usage_quotas/usage_billing/components/app.vue';
 
 /**
@@ -11,7 +12,17 @@ export function initUsageBillingDashboard(el) {
     return null;
   }
 
-  const { userUsagePath, namespacePath, customersUsageDashboardPath } = el.dataset;
+  const {
+    userUsagePath,
+    isSaas,
+    isFree,
+    inTrial,
+    trialStartDate,
+    trialEndDate,
+    namespacePath,
+    customersUsageDashboardPath,
+    upgradeButtonPath,
+  } = el.dataset;
 
   Vue.use(VueApollo);
   const apolloProvider = new VueApollo({ defaultClient: createApolloClient() });
@@ -22,8 +33,14 @@ export function initUsageBillingDashboard(el) {
     apolloProvider,
     provide: {
       userUsagePath,
+      isSaas: parseBoolean(isSaas),
+      isFree: parseBoolean(isFree),
+      inTrial: parseBoolean(inTrial),
+      trialStartDate,
+      trialEndDate,
       namespacePath,
       customersUsageDashboardPath,
+      upgradeButtonPath,
     },
     render(createElement) {
       return createElement(UsageBillingDashboardPage);
