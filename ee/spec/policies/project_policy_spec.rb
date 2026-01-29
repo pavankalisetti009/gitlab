@@ -33,7 +33,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     let(:additional_developer_permissions) do
       %i[
         access_security_scans_api
-        admin_vulnerability
         admin_vulnerability_external_issue_link
         admin_vulnerability_feedback
         admin_vulnerability_issue_link

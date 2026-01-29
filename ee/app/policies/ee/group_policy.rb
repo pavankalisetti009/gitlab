@@ -429,6 +429,7 @@ module EE
 
       rule { maintainer }.policy do
         enable :maintainer_access
+        enable :admin_vulnerability
         enable :admin_wiki
         enable :modify_product_analytics_settings
         enable :read_jobs_statistics
@@ -742,8 +743,8 @@ module EE
 
       rule { ~license_scanning_enabled }.prevent :read_licenses
 
-      rule { security_dashboard_enabled & can?(:maintainer_access) }.policy do
-        enable :admin_vulnerability
+      rule { ~security_dashboard_enabled }.policy do
+        prevent :admin_vulnerability
       end
 
       rule { can?(:maintainer_access) }.policy do
