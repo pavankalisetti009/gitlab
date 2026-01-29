@@ -418,7 +418,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_license_compliance_running' do
       it 'calls security_scanner_running? with scanner type license_compliance' do
-        expect(described_class).to receive(:security_scanner_running?).with(:license_compliance, project, {})
+        expect(described_class).to receive(:security_scanner_running?).with(:license_scanning, project, {})
 
         described_class.map_field(project, 'scanner_license_compliance_running')
       end
