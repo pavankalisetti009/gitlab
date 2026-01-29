@@ -1,6 +1,6 @@
 import { GlButton } from '@gitlab/ui';
 import HaveQuestionsCard from 'ee/usage_quotas/usage_billing/components/have_questions_card.vue';
-import { PROMO_URL } from '~/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('HaveQuestionsCard', () => {

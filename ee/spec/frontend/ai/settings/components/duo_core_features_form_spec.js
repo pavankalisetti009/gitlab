@@ -2,7 +2,7 @@ import { GlLink, GlSprintf, GlFormGroup, GlFormCheckbox, GlIcon } from '@gitlab/
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import DuoCoreFeaturesForm from 'ee/ai/settings/components/duo_core_features_form.vue';
-import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL } from '~/constants';
 
 const requirementsPath = `${DOCS_URL}/subscriptions/subscription-add-ons#gitlab-duo-core`;
 const mockTermsPath = `/handbook/legal/ai-functionality-terms/`;

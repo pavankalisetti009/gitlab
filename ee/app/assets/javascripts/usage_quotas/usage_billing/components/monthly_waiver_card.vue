@@ -1,6 +1,6 @@
 <script>
 import { GlCard, GlSprintf, GlLink } from '@gitlab/ui';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 import { formatNumber } from '../utils';
 
 export default {

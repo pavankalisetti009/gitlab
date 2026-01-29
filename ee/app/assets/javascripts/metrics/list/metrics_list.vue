@@ -9,7 +9,8 @@ import {
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import { visitUrl, joinPaths, setUrlParams, DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
+import { visitUrl, joinPaths, setUrlParams } from '~/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
 import { isMetaClick, contentTop } from '~/lib/utils/common_utils';
 import { sanitize } from '~/lib/dompurify';
 import FilteredSearch from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';

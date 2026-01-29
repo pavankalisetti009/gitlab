@@ -11,7 +11,7 @@ import {
   TRACKING_LABEL_AI_CATALOG_HEADER,
 } from 'ee/analytics/analytics_dashboards/link_to_dashboards/tracking';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL } from '~/constants';
 
 jest.mock('lodash/uniqueId', () => (x) => x);
 

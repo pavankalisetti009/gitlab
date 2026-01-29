@@ -1,7 +1,7 @@
 import { GlLink, GlButton, GlProgressBar, GlSkeletonLoader } from '@gitlab/ui';
 import StatisticsCard from 'ee/usage_quotas/components/statistics_card.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL } from '~/constants';
 
 describe('StatisticsCard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
