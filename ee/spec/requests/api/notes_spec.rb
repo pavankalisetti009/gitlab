@@ -89,6 +89,46 @@ RSpec.describe API::Notes, :aggregate_failures, feature_category: :portfolio_man
         let(:success_status) { :created }
       end
     end
+
+    describe 'granular token permissions for epic notes' do
+      let(:url) { "/groups/#{group.id}/epics/#{epic.id}/notes" }
+      let(:note_url) { "/groups/#{group.id}/epics/#{epic.id}/notes/#{epic_note.id}" }
+
+      it_behaves_like 'authorizing granular token permissions', :read_epic_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_epic_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(note_url, personal_access_token: pat)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_epic_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api(url, personal_access_token: pat), params: { body: 'Test note' }
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :update_epic_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          put api(note_url, personal_access_token: pat), params: { body: 'Updated note' }
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :delete_epic_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          delete api(note_url, personal_access_token: pat)
+        end
+      end
+    end
   end
 
   context "when noteable is a WikiPage::Meta for a group wiki" do
@@ -99,6 +139,46 @@ RSpec.describe API::Notes, :aggregate_failures, feature_category: :portfolio_man
     before do
       group.add_owner(user)
       stub_licensed_features(group_wikis: true)
+    end
+
+    describe 'granular token permissions for group wiki page notes' do
+      let(:url) { "/groups/#{group.id}/wiki_pages/#{wiki_page_meta.id}/notes" }
+      let(:note_url) { "/groups/#{group.id}/wiki_pages/#{wiki_page_meta.id}/notes/#{wiki_page_meta_note.id}" }
+
+      it_behaves_like 'authorizing granular token permissions', :read_wiki_page_meta_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_wiki_page_meta_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(note_url, personal_access_token: pat)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_wiki_page_meta_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api(url, personal_access_token: pat), params: { body: 'Test note' }
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :update_wiki_page_meta_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          put api(note_url, personal_access_token: pat), params: { body: 'Updated note' }
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :delete_wiki_page_meta_note do
+        let(:boundary_object) { group }
+        let(:request) do
+          delete api(note_url, personal_access_token: pat)
+        end
+      end
     end
 
     it_behaves_like "noteable API", 'groups', 'wiki_pages', 'id' do
