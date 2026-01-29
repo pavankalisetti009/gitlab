@@ -15,6 +15,7 @@ permissions:
   - create_merge_request_time_estimate
   - create_milestone
   - move_issue
+  - create_related_epic_link
   - promote_milestone
   - reorder_issue
   - reset_issue_spent_time
