@@ -8,10 +8,16 @@ permissions:
   - read_epic_link
   - read_epic_issue
   - read_epic_state_event
+  - read_issue
+  - read_issue_closing_merge_request
   - read_issue_link
+  - read_issue_merge_request
   - read_issue_milestone_event
+  - read_issue_participant
   - read_issue_state_event
+  - read_issue_statistic
   - read_issue_time_statistic
+  - read_issue_user_agent_detail
   - read_issue_weight_event
   - read_iteration
   - read_label
