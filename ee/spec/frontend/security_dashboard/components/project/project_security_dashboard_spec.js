@@ -3,7 +3,6 @@ import { GlLineChart } from '@gitlab/ui/src/charts';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import NewSecurityDashboardBanner from 'ee/security_dashboard/components/shared/new_security_dashboard_banner.vue';
 import ProjectSecurityDashboard from 'ee/security_dashboard/components/project/project_security_dashboard.vue';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
@@ -28,7 +27,6 @@ describe('Project Security Dashboard component', () => {
   const findLineChart = () => wrapper.findComponent(GlLineChart);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findExportButton = () => wrapper.findComponent(PdfExportButton);
-  const findBanner = () => wrapper.findComponent(NewSecurityDashboardBanner);
 
   const createApolloProvider = (...queries) => {
     return createMockApollo([...queries]);
@@ -67,12 +65,6 @@ describe('Project Security Dashboard component', () => {
     expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
       '/help/user/application_security/security_dashboard/_index#project-security-dashboard',
     );
-  });
-
-  it('displays upgrade banner', () => {
-    createWrapper();
-
-    expect(findBanner().exists()).toBe(true);
   });
 
   it('should fetch the latest vulnerability count for "detected" and "confirmed" states', () => {
