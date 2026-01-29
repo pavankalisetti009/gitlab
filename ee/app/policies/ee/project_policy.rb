@@ -528,21 +528,29 @@ module EE
       end
 
       rule { can?(:developer_access) }.policy do
-        enable :admin_issue_board
+        enable :access_security_scans_api
         enable :admin_feature_flags_issue_links
-        enable :read_project_audit_events
+        enable :admin_issue_board
+        enable :create_coverage_fuzzing_corpus
+        enable :create_on_demand_dast_scan
         enable :create_workspace
+        enable :edit_on_demand_dast_scan
         enable :enable_continuous_vulnerability_scans
-        enable :read_project_security_exclusions
-        enable :read_security_settings
-        enable :read_vulnerability_statistics
-        enable :read_security_resource
-        enable :read_vulnerability
-        enable :update_secret_detection_validity_checks_status
-        enable :read_ai_catalog_flow
-        enable :read_foundational_flow
-        enable :read_ai_catalog_third_party_flow
         enable :execute_ai_catalog_item
+        enable :read_ai_catalog_flow
+        enable :read_ai_catalog_third_party_flow
+        enable :read_coverage_fuzzing
+        enable :read_foundational_flow
+        enable :read_on_demand_dast_scan
+        enable :read_project_audit_events
+        enable :read_project_security_exclusions
+        enable :read_security_orchestration_policies
+        enable :read_security_resource
+        enable :read_security_scan_profiles
+        enable :read_security_settings
+        enable :read_vulnerability
+        enable :read_vulnerability_statistics
+        enable :update_secret_detection_validity_checks_status
       end
 
       rule { can?(:push_code) }.policy do
@@ -560,8 +568,8 @@ module EE
 
       rule { can?(:read_project) & iterations_available }.enable :read_iteration
 
-      rule { security_orchestration_policies_enabled & can?(:developer_access) }.policy do
-        enable :read_security_orchestration_policies
+      rule { ~security_orchestration_policies_enabled }.policy do
+        prevent :read_security_orchestration_policies
       end
 
       rule { security_orchestration_policies_enabled & can?(:owner_access) }.policy do
@@ -597,19 +605,19 @@ module EE
         prevent :admin_vulnerability
       end
 
-      rule { security_scans_api_enabled & can?(:developer_access) }.policy do
-        enable :access_security_scans_api
+      rule { ~security_scans_api_enabled }.policy do
+        prevent :access_security_scans_api
       end
 
-      rule { coverage_fuzzing_enabled & can?(:developer_access) }.policy do
-        enable :read_coverage_fuzzing
-        enable :create_coverage_fuzzing_corpus
+      rule { ~coverage_fuzzing_enabled }.policy do
+        prevent :read_coverage_fuzzing
+        prevent :create_coverage_fuzzing_corpus
       end
 
-      rule { on_demand_scans_enabled & can?(:developer_access) }.policy do
-        enable :read_on_demand_dast_scan
-        enable :create_on_demand_dast_scan
-        enable :edit_on_demand_dast_scan
+      rule { ~on_demand_scans_enabled }.policy do
+        prevent :read_on_demand_dast_scan
+        prevent :create_on_demand_dast_scan
+        prevent :edit_on_demand_dast_scan
       end
 
       rule { on_demand_scans_enabled & security_policy_bot }.policy do
@@ -648,10 +656,6 @@ module EE
 
       rule { can?(:maintainer_access) }.policy do
         enable :admin_security_attributes
-      end
-
-      rule { can?(:developer_access) }.policy do
-        enable :read_security_scan_profiles
       end
 
       rule { custom_role_enables_read_security_scan_profiles }.enable(:read_security_scan_profiles)

@@ -32,10 +32,26 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     let(:additional_developer_permissions) do
       %i[
-        admin_vulnerability_feedback read_project_audit_events read_project_security_dashboard
-        admin_vulnerability_issue_link admin_vulnerability_external_issue_link
-        read_security_resource read_vulnerability_scanner admin_vulnerability read_vulnerability
-        create_vulnerability_export read_merge_train create_path_locks
+        access_security_scans_api
+        admin_vulnerability
+        admin_vulnerability_external_issue_link
+        admin_vulnerability_feedback
+        admin_vulnerability_issue_link
+        create_coverage_fuzzing_corpus
+        create_on_demand_dast_scan
+        create_path_locks
+        create_vulnerability_export
+        edit_on_demand_dast_scan
+        read_coverage_fuzzing
+        read_merge_train
+        read_on_demand_dast_scan
+        read_project_audit_events
+        read_project_security_dashboard
+        read_security_orchestration_policies
+        read_security_resource
+        read_security_scan_profiles
+        read_vulnerability
+        read_vulnerability_scanner
       ]
     end
 
@@ -85,7 +101,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
 
       before do
-        stub_licensed_features(security_dashboard: true, license_scanning: true)
+        stub_licensed_features(
+          security_dashboard: true,
+          license_scanning: true,
+          security_on_demand_scans: true
+        )
       end
 
       context 'for read_* permissions' do
