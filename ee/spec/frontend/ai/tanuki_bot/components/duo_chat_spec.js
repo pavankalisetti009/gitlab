@@ -1145,25 +1145,19 @@ describe('chatTitle functionality', () => {
   });
 
   it('updates DuoChat title when chatTitle prop changes', async () => {
-    const localWrapper = shallowMountExtended(TanukiBotChatApp, {
+    createComponent({
       propsData: {
         chatTitle: 'Initial Title',
         userId: MOCK_USER_ID,
         resourceId: MOCK_RESOURCE_ID,
       },
-      store: new Vuex.Store({ actions: actionSpies }),
-      apolloProvider: createMockApollo([]),
-      mocks: {
-        $route: { path: '/chat' },
-        $router: { push: jest.fn() },
-      },
     });
     duoChatGlobalState.isShown = true;
     await nextTick();
-    expect(localWrapper.findComponent(DuoChat).props('title')).toBe('Initial Title');
+    expect(wrapper.findComponent(DuoChat).props('title')).toBe('Initial Title');
 
-    await localWrapper.setProps({ chatTitle: 'Updated Title' });
-    expect(localWrapper.findComponent(DuoChat).props('title')).toBe('Updated Title');
+    await wrapper.setProps({ chatTitle: 'Updated Title' });
+    expect(wrapper.findComponent(DuoChat).props('title')).toBe('Updated Title');
   });
 });
 
