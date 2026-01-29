@@ -4127,8 +4127,8 @@ class Project < ApplicationRecord
     import_url.present? && import_url_changed?
   end
 
-  def unique_attribute
-    :path
+  def unique_attributes
+    [:path]
   end
 end
 
