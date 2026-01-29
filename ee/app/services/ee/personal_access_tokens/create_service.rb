@@ -53,10 +53,19 @@ module EE
       end
 
       def can_admin_service_accounts?
-        return Ability.allowed?(current_user, :admin_service_accounts) unless params[:group]
+        return Ability.allowed?(current_user, :admin_service_accounts) unless group_or_project_service_account?
 
-        Ability.allowed?(current_user, :admin_service_accounts, params[:group]) &&
-          target_user.provisioned_by_group_id == params[:group].id
+        if params[:group]
+          Ability.allowed?(current_user, :admin_service_accounts, params[:group]) &&
+            target_user.provisioned_by_group_id == params[:group].id
+        elsif params[:project]
+          Ability.allowed?(current_user, :admin_service_accounts, params[:project]) &&
+            target_user.provisioned_by_project_id == params[:project].id
+        end
+      end
+
+      def group_or_project_service_account?
+        params[:group] || params[:project]
       end
     end
   end

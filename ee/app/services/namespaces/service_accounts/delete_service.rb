@@ -23,7 +23,16 @@ module Namespaces
       private
 
       def can_delete_service_account?
-        can?(current_user, :delete_service_account, user.provisioned_by_group)
+        if project_provisioned?
+          can?(current_user, :delete_service_account, user.provisioned_by_project)
+        else
+          can?(current_user, :delete_service_account, user.provisioned_by_group)
+        end
+      end
+
+      # Determines if this service account was provisioned by a project
+      def project_provisioned?
+        user.provisioned_by_project_id.present?
       end
 
       def delete_user(options)

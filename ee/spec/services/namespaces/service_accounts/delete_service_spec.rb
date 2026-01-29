@@ -106,5 +106,61 @@ RSpec.describe Namespaces::ServiceAccounts::DeleteService, feature_category: :us
         it_behaves_like 'service account deletion failure'
       end
     end
+
+    context 'when deleting project-provisioned service account' do
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:delete_user) { create(:service_account, provisioned_by_project_id: project.id) }
+
+      context 'when current user is an admin', :enable_admin_mode do
+        let_it_be(:current_user) { create(:admin) }
+
+        it_behaves_like 'service account deletion is success'
+      end
+
+      context 'when current user is a project owner' do
+        let_it_be(:current_user) { create(:user, owner_of: project) }
+
+        it_behaves_like 'service account deletion is success'
+
+        context 'when allow_projects_to_create_service_accounts is false' do
+          before do
+            stub_feature_flags(allow_projects_to_create_service_accounts: false)
+          end
+
+          it_behaves_like 'service account deletion failure'
+        end
+      end
+
+      context 'when current user is a project maintainer' do
+        let_it_be(:current_user) { create(:user, maintainer_of: project) }
+
+        it_behaves_like 'service account deletion is success'
+
+        context 'when allow_projects_to_create_service_accounts is false' do
+          before do
+            stub_feature_flags(allow_projects_to_create_service_accounts: false)
+          end
+
+          it_behaves_like 'service account deletion failure'
+        end
+      end
+
+      context 'when current user is a project developer' do
+        let_it_be(:current_user) { create(:user, developer_of: project) }
+
+        it_behaves_like 'service account deletion failure'
+      end
+
+      context 'when user to be deleted is not of type service account' do
+        let_it_be(:delete_user) { create(:user) }
+        let_it_be(:current_user) { create(:user, maintainer_of: project) }
+
+        before_all do
+          project.add_maintainer(delete_user)
+        end
+
+        it_behaves_like 'service account deletion failure'
+      end
+    end
   end
 end

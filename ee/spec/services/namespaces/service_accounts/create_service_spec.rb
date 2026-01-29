@@ -7,7 +7,16 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
     it 'produces an error', :aggregate_failures do
       expect(result.status).to eq(:error)
       expect(result.message).to eq(
-        s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
+        s_('ServiceAccount|User does not have permission to create a service account in this group.')
+      )
+    end
+  end
+
+  shared_examples 'service account creation failure for project' do
+    it 'produces an error', :aggregate_failures do
+      expect(result.status).to eq(:error)
+      expect(result.message).to eq(
+        s_('ServiceAccount|User does not have permission to create a service account in this project.')
       )
     end
   end
@@ -17,6 +26,14 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
       let(:namespace_id) { non_existing_record_id }
 
       it_behaves_like 'service account creation failure'
+    end
+  end
+
+  shared_examples 'invalid project scenarios' do
+    context 'when the project is invalid' do
+      let(:project_id) { non_existing_record_id }
+
+      it_behaves_like 'service account creation failure for project'
     end
   end
 
@@ -61,6 +78,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
   let_it_be(:organization) { create(:organization) }
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, :private, parent: group) }
+  let_it_be(:project) { create(:project, group: group) }
 
   let(:namespace_id) { group.id }
 
@@ -195,6 +213,81 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
         end
 
         it_behaves_like 'invalid namespace scenarios'
+      end
+
+      context 'when namespace_id does not exist' do
+        let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+        let(:namespace_id) { non_existing_record_id }
+
+        it 'returns nil for root_namespace' do
+          expect(service.send(:resource)).to be_nil
+          expect(service.send(:root_namespace)).to be_nil
+        end
+      end
+
+      context 'when namespace_id param is nil' do
+        let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+
+        subject(:service) do
+          described_class.new(current_user, { organization_id: organization.id, namespace_id: nil })
+        end
+
+        it 'fails to create service account due to nil namespace_id' do
+          expect(result.status).to eq(:error)
+          expect(result.message).to include('User does not have permission to create a service account')
+        end
+      end
+    end
+
+    context 'when creating project-level service account' do
+      let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+      let_it_be(:project_id) { project.id }
+      let_it_be(:current_user) { create(:admin) }
+
+      subject(:service) do
+        described_class.new(current_user, { organization_id: organization.id, project_id: project_id })
+      end
+
+      context 'when current user is an admin', :enable_admin_mode do
+        let_it_be(:current_user) { create(:admin) }
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_project_#{project.id}" }
+        end
+
+        it 'sets provisioned by project' do
+          expect(result.payload[:user].provisioned_by_project_id).to eq(project.id)
+        end
+
+        it 'does not set provisioned by group' do
+          expect(result.payload[:user].provisioned_by_group_id).to be_nil
+        end
+
+        it_behaves_like 'invalid project scenarios'
+      end
+
+      context 'when current user is a group owner' do
+        let_it_be(:current_user) { create(:user, owner_of: group) }
+
+        before do
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+        end
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_project_#{project.id}" }
+        end
+      end
+
+      context 'when current user is a project maintainer but not group owner' do
+        let_it_be(:current_user) { create(:user, maintainer_of: project) }
+
+        before do
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+        end
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_project_#{project.id}" }
+        end
       end
     end
 
@@ -368,6 +461,38 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           expect(result.message).to include('No more seats are available to create Service Account User')
         end
       end
+
+      context 'when namespace_id does not exist' do
+        let(:namespace_id) { non_existing_record_id }
+
+        it 'returns an error due to invalid namespace' do
+          expect(result.status).to eq(:error)
+          expect(service.send(:resource)).to be_nil
+          expect(service.send(:root_namespace)).to be_nil
+        end
+      end
+
+      context 'when namespace_id param is not provided' do
+        subject(:service) do
+          described_class.new(current_user, { organization_id: organization.id })
+        end
+
+        it 'fails due to missing namespace' do
+          expect(result.status).to eq(:error)
+          expect(result.message).to include('User does not have permission to create a service account')
+        end
+
+        context 'when counting service accounts in hierarchy' do
+          before do
+            stub_feature_flags(allow_projects_to_create_service_accounts: true)
+          end
+
+          it 'returns 0 for service_accounts_in_hierarchy_count when root_namespace is nil' do
+            expect(service.send(:root_namespace)).to be_nil
+            expect(service.send(:service_accounts_in_hierarchy_count)).to eq(0)
+          end
+        end
+      end
     end
 
     context 'when current user is a group owner' do
@@ -465,6 +590,39 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
                 expect(result.message).to include('No more seats are available to create Service Account User')
               end
             end
+
+            context 'when project provisioned service accounts exist' do
+              let_it_be(:project) { create(:project, group: group_with_composite_identity) }
+
+              before do
+                create_list(:user, 3, :service_account,
+                  provisioned_by_project_id: project.id,
+                  composite_identity_enforced: false)
+                create_list(:user, 2, :service_account,
+                  provisioned_by_project_id: project.id,
+                  composite_identity_enforced: true)
+              end
+
+              it 'still produces an error' do
+                result = service.execute
+
+                expect(result.status).to eq(:error)
+                expect(result.message).to include('No more seats are available to create Service Account User')
+              end
+
+              context 'when feature flag allow_projects_to_create_service_accounts is disabled' do
+                before do
+                  stub_feature_flags(allow_projects_to_create_service_accounts: false)
+                end
+
+                it 'does not consider project provisioned service accounts' do
+                  result = service.execute
+
+                  expect(result.status).to eq(:success)
+                  expect(result.payload[:user].user_type).to eq('service_account')
+                end
+              end
+            end
           end
         end
       end
@@ -524,6 +682,98 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
       it_behaves_like 'service account creation failure'
 
       it_behaves_like 'skip_owner_check bypasses permission checks'
+    end
+
+    context 'when creating project-level service account' do
+      let_it_be(:group_with_ultimate) { create(:group) }
+      let_it_be(:project_in_ultimate) { create(:project, group: group_with_ultimate) }
+      let(:project_id) { project_in_ultimate.id }
+
+      before do
+        create(:gitlab_subscription, :ultimate, namespace: group_with_ultimate, seats: 10)
+      end
+
+      subject(:service) do
+        described_class.new(current_user, { organization_id: organization.id, project_id: project_id })
+      end
+
+      context 'when current user is an admin', :enable_admin_mode do
+        let_it_be(:current_user) { create(:admin) }
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_project_#{project_in_ultimate.id}" }
+        end
+
+        it 'sets provisioned by project' do
+          expect(result.payload[:user].provisioned_by_project_id).to eq(project_in_ultimate.id)
+        end
+
+        it_behaves_like 'invalid project scenarios'
+
+        context 'when project_id does not exist' do
+          let(:project_id) { non_existing_record_id }
+
+          subject(:service) do
+            described_class.new(current_user, { organization_id: organization.id, project_id: project_id })
+          end
+
+          it 'returns nil for root_namespace' do
+            expect(service.send(:resource)).to be_nil
+            expect(service.send(:root_namespace)).to be_nil
+          end
+        end
+      end
+
+      context 'when current user is a group owner' do
+        let_it_be(:current_user) { create(:user, owner_of: group_with_ultimate) }
+
+        before do
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+        end
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_project_#{project_in_ultimate.id}" }
+        end
+      end
+
+      context 'when subscription is on trial with limit' do
+        let_it_be(:group_with_trial) { create(:group) }
+        let_it_be(:project_in_trial) { create(:project, group: group_with_trial) }
+        let_it_be(:current_user) { create(:user, owner_of: group_with_trial) }
+        let(:project_id) { project_in_trial.id }
+
+        before do
+          create(:gitlab_subscription, :active_trial, namespace: group_with_trial, hosted_plan: create(:ultimate_plan))
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+          stub_feature_flags(allow_unlimited_service_account_for_trials: false)
+          stub_const('GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL', 2)
+        end
+
+        context 'when limit is reached with both group and project level service accounts' do
+          before do
+            # Create one group-level service account
+            create(:user, :service_account, provisioned_by_group_id: group_with_trial.id)
+            # Create one project-level service account
+            create(:user, :service_account, provisioned_by_project_id: project_in_trial.id)
+          end
+
+          it 'produces an error' do
+            expect(result.status).to eq(:error)
+            expect(result.message).to include('No more seats are available to create Service Account User')
+          end
+        end
+
+        context 'when under limit counting both group and project level service accounts' do
+          before do
+            # Create only one service account (group-level)
+            create(:user, :service_account, provisioned_by_group_id: group_with_trial.id)
+          end
+
+          it_behaves_like 'service account creation success' do
+            let(:username_prefix) { "service_account_project_#{project_in_trial.id}" }
+          end
+        end
+      end
     end
   end
 

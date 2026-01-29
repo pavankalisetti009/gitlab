@@ -31,9 +31,15 @@ module EE
       def managed_service_account_revocation_allowed?
         return false unless token.present?
 
-        token.user.service_account? &&
+        return false unless token.user.service_account?
+
+        if group
           token.user.provisioned_by_group == group &&
-          current_user.can?(:admin_service_accounts, token.user.provisioned_by_group)
+            current_user.can?(:admin_service_accounts, token.user.provisioned_by_group)
+        else
+          token.user.provisioned_by_project == project &&
+            current_user.can?(:admin_service_accounts, token.user.provisioned_by_project)
+        end
       end
 
       def send_audit_event(token, response)

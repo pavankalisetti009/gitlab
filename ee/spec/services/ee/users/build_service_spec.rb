@@ -49,6 +49,18 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
           it 'marks the user as provisioned by group' do
             expect(service.execute.provisioned_by_group_id).to eq(group.id)
           end
+
+          context 'with project_id param' do
+            let_it_be(:project) { create(:project) }
+
+            before do
+              params.merge!(project_id: project.id)
+            end
+
+            it 'marks the user as provisioned by project' do
+              expect(service.execute.provisioned_by_project_id).to eq(project.id)
+            end
+          end
         end
       end
 
@@ -91,6 +103,30 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
             user = service.execute
 
             expect(user.provisioned_by_group_id).to eq(group.id)
+            expect(user.user_type).to eq('service_account')
+          end
+        end
+      end
+
+      context 'with provisioned by project param' do
+        let(:project) { build_stubbed(:project) }
+        let(:params) { super().merge(provisioned_by_project_id: project.id) }
+
+        it 'does not set provisioned by project' do
+          user = service.execute
+
+          expect(user.provisioned_by_project_id).to eq(nil)
+        end
+
+        context 'with service account user type' do
+          before do
+            params.merge!(user_type: 'service_account')
+          end
+
+          it 'allows provisioned by project id to be set' do
+            user = service.execute
+
+            expect(user.provisioned_by_project_id).to eq(project.id)
             expect(user.user_type).to eq('service_account')
           end
         end
