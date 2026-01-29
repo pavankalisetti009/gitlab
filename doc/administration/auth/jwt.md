@@ -71,9 +71,8 @@ JWT provides you with a secret key for you to use.
      }
    ```
 
-   > [!note]
-   > For more information on each configuration option refer to
-   > the [OmniAuth JWT usage documentation](https://github.com/mbleigh/omniauth-jwt#usage).
+   For more information on each configuration option refer to
+   the [OmniAuth JWT usage documentation](https://github.com/mbleigh/omniauth-jwt#usage).
 
    > [!warning]
    > Incorrectly configuring these settings can result in an insecure instance.
