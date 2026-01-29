@@ -11,6 +11,7 @@ export default (selector = '#js-project-compliance-framework-empty-state') => {
   // eslint-disable-next-line no-new
   new Vue({
     el,
+    name: 'ProjectComplianceFrameworkEmptyStateRoot',
     render(createElement) {
       return createElement(ProjectComplianceFrameworkEmptyState, {
         props: {

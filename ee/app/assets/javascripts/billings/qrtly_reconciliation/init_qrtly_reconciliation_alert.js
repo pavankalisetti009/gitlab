@@ -12,6 +12,7 @@ export const initQrtlyReconciliationAlert = (selector = '#js-qrtly-reconciliatio
 
   return new Vue({
     el,
+    name: 'QrtlyReconciliationAlertRoot',
     render(createElement) {
       return createElement(QrtlyReconciliationAlert, {
         props: {

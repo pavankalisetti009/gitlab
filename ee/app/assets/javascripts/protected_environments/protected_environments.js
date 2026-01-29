@@ -18,6 +18,7 @@ export const initProtectedEnvironments = () => {
   const { entityId, apiLink, docsLink, entityType, tiers } = el.dataset;
   return new Vue({
     el,
+    name: 'ProtectedEnvironmentsAppRoot',
     store: createStore({
       ...el.dataset,
     }),

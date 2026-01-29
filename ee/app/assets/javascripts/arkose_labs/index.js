@@ -18,6 +18,7 @@ export const setupArkoseLabsForSignup = () => {
 
   return new Vue({
     el,
+    name: 'SignUpArkoseAppRoot',
     render(h) {
       return h(SignUpArkoseApp, {
         props: {
@@ -44,6 +45,7 @@ export const setupArkoseLabsForIdentityVerification = () => {
 
   return new Vue({
     el,
+    name: 'IdentityVerificationArkoseAppRoot',
     render(h) {
       return h(IdentityVerificationArkoseApp, {
         props: {

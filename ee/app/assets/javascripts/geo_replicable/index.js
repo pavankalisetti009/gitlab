@@ -25,6 +25,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'GeoReplicableAppRoot',
     apolloProvider,
     provide: {
       replicableBasePath,

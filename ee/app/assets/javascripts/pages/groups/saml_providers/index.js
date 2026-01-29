@@ -14,6 +14,7 @@ function initMembers(el) {
   // eslint-disable-next-line no-new
   new Vue({
     el,
+    name: 'MembersAppRoot',
     store,
     render(createElement) {
       return createElement(MembersApp);

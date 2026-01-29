@@ -27,6 +27,7 @@ function initDescriptionModal({
 
   return new Vue({
     el,
+    name: 'GenerateDescriptionModalRoot',
     apolloProvider,
     render: (createElement) =>
       createElement(GenerateDescriptionModal, {

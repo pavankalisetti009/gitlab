@@ -10,6 +10,7 @@ export default ({ selector, props = {}, testid, customValidator = null }) => {
   // eslint-disable-next-line no-new
   new Vue({
     el,
+    name: 'CommaSeparatedListTokenSelectorRoot',
     components: {
       CommaSeparatedListTokenSelector,
     },

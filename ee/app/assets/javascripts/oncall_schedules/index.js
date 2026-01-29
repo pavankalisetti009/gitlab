@@ -30,6 +30,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'OnCallSchedulesWrapperRoot',
     apolloProvider,
     provide: {
       projectPath,

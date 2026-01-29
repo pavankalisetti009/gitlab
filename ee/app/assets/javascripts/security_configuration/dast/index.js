@@ -28,6 +28,7 @@ export default function init() {
 
   return new Vue({
     el,
+    name: 'DastConfigurationAppRoot',
     apolloProvider,
     provide: {
       securityConfigurationPath,

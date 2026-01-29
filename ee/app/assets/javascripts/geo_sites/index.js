@@ -22,6 +22,7 @@ export const initGeoSites = () => {
 
   return new Vue({
     el,
+    name: 'GeoSitesAppRoot',
     store: createStore({ replicableTypes, searchFilter }),
     provide: {
       geoSitesEmptyStateSvg,

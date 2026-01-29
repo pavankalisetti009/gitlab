@@ -5,6 +5,7 @@ import createStore from 'ee/vue_shared/dashboards/store';
 // eslint-disable-next-line no-new
 new Vue({
   el: '#js-environments',
+  name: 'EnvironmentDashboardComponentRoot',
   store: createStore(),
   components: {
     EnvironmentDashboardComponent,

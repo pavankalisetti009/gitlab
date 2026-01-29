@@ -14,6 +14,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'GeoSettingsAppRoot',
     store: createStore(sitesPath),
     render(createElement) {
       return createElement(GeoSettingsApp);

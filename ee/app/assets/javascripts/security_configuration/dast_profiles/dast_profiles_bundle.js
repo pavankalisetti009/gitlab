@@ -23,6 +23,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'DastProfilesRoot',
     apolloProvider,
     provide: {
       timezones: JSON.parse(timezones),

@@ -17,6 +17,7 @@ export default () => {
     // eslint-disable-next-line no-new
     new Vue({
       el,
+      name: 'GroupRepositoryAnalyticsRoot',
       components: {
         GroupRepositoryAnalytics,
       },

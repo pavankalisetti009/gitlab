@@ -17,6 +17,7 @@ export const initMaintenanceModeSettings = () => {
 
   return new Vue({
     el,
+    name: 'MaintenanceModeSettingsAppRoot',
     render(createElement) {
       return createElement(MaintenanceModeSettingsApp, {
         props: {

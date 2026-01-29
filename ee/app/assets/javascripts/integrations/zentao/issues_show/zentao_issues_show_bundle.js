@@ -13,6 +13,7 @@ export default function initZentaoIssueShow({ mountPointSelector }) {
 
   return new Vue({
     el: mountPointEl,
+    name: 'ZentaoIssuesShowAppRoot',
     provide: {
       issuesShowPath,
       issuesListPath,

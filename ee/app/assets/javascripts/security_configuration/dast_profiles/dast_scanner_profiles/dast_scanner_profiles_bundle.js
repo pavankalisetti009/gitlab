@@ -27,6 +27,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'DastScannerProfileFormRoot',
     apolloProvider,
     render(h) {
       return h(DastScannerProfileForm, {

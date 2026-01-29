@@ -42,6 +42,7 @@ const initTestCaseList = ({ mountPointSelector }) => {
 
   return new Vue({
     el: mountPointEl,
+    name: 'TestCaseListAppRoot',
     apolloProvider,
     provide: {
       ...mountPointEl.dataset,

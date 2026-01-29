@@ -21,6 +21,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'DevopsAdoptionAppRoot',
     apolloProvider: createApolloProvider(groupId),
     provide: {
       emptyStateSvgPath,

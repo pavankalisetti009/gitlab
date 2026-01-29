@@ -17,6 +17,7 @@ function initLearnGitlab() {
 
   return new Vue({
     el,
+    name: 'LearnGitlabRoot',
     render(createElement) {
       return createElement(LearnGitlab, {
         props: { actions, sections, project, learnGitlabEndPath },

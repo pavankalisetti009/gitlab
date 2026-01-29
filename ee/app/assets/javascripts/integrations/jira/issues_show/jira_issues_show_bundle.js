@@ -13,6 +13,7 @@ export default function initJiraIssueShow({ mountPointSelector }) {
 
   return new Vue({
     el: mountPointEl,
+    name: 'JiraIssuesShowAppRoot',
     provide: {
       issuesShowPath,
       issuesListPath,

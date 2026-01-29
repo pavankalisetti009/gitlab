@@ -8,6 +8,7 @@ const { gitlabCiYmls, value } = el.dataset;
 // eslint-disable-next-line no-new
 new Vue({
   el,
+  name: 'CiTemplateDropdownRoot',
   provide: {
     gitlabCiYmls: JSON.parse(gitlabCiYmls),
     initialSelectedGitlabCiYmlName: value,

@@ -25,6 +25,7 @@ export default async (el, dashboardType) => {
   if (el.dataset.isUnavailable) {
     return new Vue({
       el,
+      name: 'UnavailableStateRoot',
       render(createElement) {
         return createElement(UnavailableState, {
           props: { svgPath: el.dataset.emptyStateSvgPath },

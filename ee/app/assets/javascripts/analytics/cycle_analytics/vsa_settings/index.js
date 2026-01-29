@@ -54,6 +54,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'VSASettingsAppRoot',
     apolloProvider,
     provide: {
       vsaPath,

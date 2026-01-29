@@ -49,6 +49,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'CorpusManagementRoot',
     provide,
     apolloProvider: new VueApollo({ defaultClient }),
     render(h) {

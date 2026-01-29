@@ -20,6 +20,7 @@ export function initTestCaseCreate({ mountPointSelector }) {
 
   return new Vue({
     el: mountPointEl,
+    name: 'TestCaseCreateAppRoot',
     apolloProvider,
     provide: {
       ...mountPointEl.dataset,

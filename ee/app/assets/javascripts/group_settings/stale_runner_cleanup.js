@@ -20,6 +20,7 @@ export default (containerSelector = '#stale-runner-cleanup-form') => {
 
   return new Vue({
     el: containerEl,
+    name: 'StaleRunnerCleanupToggleRoot',
     apolloProvider,
     render(createElement) {
       return createElement(StaleRunnerCleanupToggle, {

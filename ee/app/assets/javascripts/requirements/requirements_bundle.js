@@ -34,6 +34,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'RequirementsRootRoot',
     apolloProvider,
     components: {
       RequirementsRoot,

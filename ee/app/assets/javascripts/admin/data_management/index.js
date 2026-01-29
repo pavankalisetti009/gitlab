@@ -22,6 +22,7 @@ export const initAdminDataManagementApp = () => {
 
   return new Vue({
     el,
+    name: 'AdminDataManagementAppRoot',
     router: createRouter(basePath),
     provide: {
       basePath,

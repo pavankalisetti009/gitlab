@@ -47,6 +47,7 @@ const mountGroupProjectFields = (el, store) => {
 
   return new Vue({
     el,
+    name: 'GroupProjectFieldsRoot',
     store,
     render(createElement) {
       return createElement(GroupProjectFields, {

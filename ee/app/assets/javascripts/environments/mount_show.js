@@ -27,6 +27,7 @@ export const initDeploymentApprovals = () => {
 
       return new Vue({
         el,
+        name: 'EnvironmentApprovalRoot',
         provide: { projectId, projectPath },
         apolloProvider,
         render(h) {

@@ -16,6 +16,7 @@ const initComplianceInfo = () => {
   const { projectPath, complianceCenterPath, canViewDashboard } = complianceInfoEl.dataset;
   return new Vue({
     el: complianceInfoEl,
+    name: 'ComplianceInfoRoot',
     apolloProvider,
     render(h) {
       return h(ComplianceInfo, {

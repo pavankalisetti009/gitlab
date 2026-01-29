@@ -29,6 +29,7 @@ export default () => {
   // eslint-disable-next-line no-new
   new Vue({
     el: container,
+    name: 'CodeAnalyticsAppRoot',
     store,
     render(h) {
       return h(CodeAnalyticsApp, {

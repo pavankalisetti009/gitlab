@@ -30,6 +30,7 @@ export default (containerId = 'js-billing-plans') => {
 
   return new Vue({
     el: containerEl,
+    name: 'SubscriptionAppRoot',
     store: new Vuex.Store(initialStore()),
     apolloProvider,
     provide: {

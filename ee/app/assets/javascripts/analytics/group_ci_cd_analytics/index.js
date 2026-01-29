@@ -22,6 +22,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'CiCdAnalyticsAppRoot',
     apolloProvider,
     provide: {
       groupPath: fullPath,

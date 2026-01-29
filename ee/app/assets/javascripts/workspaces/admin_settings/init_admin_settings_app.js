@@ -24,6 +24,7 @@ const initWorkspacesAgentAvailabilityApp = () => {
 
   return new Vue({
     el,
+    name: 'WorkspacesAgentAvailabilityAppRoot',
     apolloProvider: createApolloProvider(),
     components: {
       WorkspacesAgentAvailabilityApp,
