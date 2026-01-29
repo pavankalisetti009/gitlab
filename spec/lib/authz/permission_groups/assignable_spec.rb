@@ -17,7 +17,7 @@ RSpec.describe Authz::PermissionGroups::Assignable, feature_category: :permissio
   let(:assignable) { described_class.new(definition, file_path) }
 
   it_behaves_like 'loadable from yaml' do
-    let(:definition_name) { :edit_wiki }
+    let(:definition_name) { :update_wiki }
   end
 
   it_behaves_like 'yaml backed permission'
