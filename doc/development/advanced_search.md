@@ -1005,80 +1005,6 @@ Uses `simple_query_string` Elasticsearch API. Can be customized with the followi
 }
 ```
 
-#### `by_knn`
-
-Requires options: `vectors_supported` (set to `:elasticsearch` or `:opensearch`) and `embedding_field`. Callers may optionally provide options: `embeddings`
-
-Performs a hybrid search using embeddings. Uses `full_text_search` unless embeddings are supported.
-
-> [!warning]
-> Elasticsearch and OpenSearch DSL for `knn` queries is different. To support both, this query must be used with the `by_knn` filter.
-
-The example below is for Elasticsearch.
-
-```json
-{
-  "query": {
-    "bool": {
-      "must": [
-        {
-          "bool": {
-            "must": [],
-            "must_not": [],
-            "should": [
-              {
-                "multi_match": {
-                  "_name": "work_item:multi_match:and:search_terms",
-                  "fields": [
-                    "iid^50",
-                    "title^2",
-                    "description"
-                  ],
-                  "query": "test",
-                  "operator": "and",
-                  "lenient": true
-                }
-              },
-              {
-                "multi_match": {
-                  "_name": "work_item:multi_match_phrase:search_terms",
-                  "type": "phrase",
-                  "fields": [
-                    "iid^50",
-                    "title^2",
-                    "description"
-                  ],
-                  "query": "test",
-                  "lenient": true
-                }
-              }
-            ],
-            "filter": [],
-            "minimum_should_match": 1
-          }
-        }
-      ],
-      "must_not": [],
-      "should": [],
-      "filter": [],
-      "minimum_should_match": null
-    }
-  },
-  "knn": {
-    "field": "embedding_0",
-    "query_vector": [
-      0.030752448365092278,
-      -0.05360432341694832
-    ],
-    "boost": 5,
-    "k": 25,
-    "num_candidates": 100,
-    "similarity": 0.6,
-    "filter": []
-  }
-}
-```
-
 ### Available Filters
 
 The following sections detail each available filter, its required fields, supported options, and example output.
@@ -2195,14 +2121,6 @@ Requires `search_level` field and at least one of `use_group_authorization` or `
   }
 ]
 ```
-
-#### `by_knn`
-
-Requires options: `vectors_supported` (set to `:elasticsearch` or `:opensearch`) and `embedding_field`. Callers may optionally provide options: `embeddings`
-
-> [!warning]
-> Elasticsearch and OpenSearch DSL for `knn` queries is different. To support both, this filter must be used with the
-> `by_knn` query.
 
 #### `by_noteable_type`
 
