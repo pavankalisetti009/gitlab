@@ -522,8 +522,7 @@ changed any defaults, configure the script accordingly (replacing any directorie
    > Each Geo **secondary** site must have its own unique replication slot name.
    > Using the same slot name between two secondaries breaks PostgreSQL replication.
 
-   > [!note]
-   > Replication slot names must only contain lowercase letters, numbers, and the underscore character.
+   Replication slot names must only contain lowercase letters, numbers, and the underscore character.
 
    When prompted, enter the plaintext password you set up for the `gitlab_replicator`
    user in the first step.
