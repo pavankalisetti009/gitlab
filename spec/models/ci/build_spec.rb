@@ -2692,7 +2692,10 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
     end
 
     it 'enqueues the build' do
-      expect(build.play(user)).to be_pending
+      result = build.play(user)
+
+      expect(result).to be_success
+      expect(result.payload[:job]).to be_pending
     end
   end
 
