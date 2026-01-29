@@ -16,6 +16,14 @@ module Analytics
       def count_field_name(event_name)
         (event_name + ::Analytics::AiEventFields::COUNT_FIELD_SUFFIX).to_sym
       end
+
+      def expose_event_fields_for(feature)
+        exposed_events(feature).each do |event_name|
+          field count_field_name(event_name), GraphQL::Types::Int,
+            null: true,
+            description: "Total count of `#{event_name}` event."
+        end
+      end
     end
   end
 end
