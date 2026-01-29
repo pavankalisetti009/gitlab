@@ -367,19 +367,37 @@ RSpec.shared_examples 'a blob replicator' do
       end
 
       context 'when the file does not exist' do
-        it 'raises an error' do
+        it 'raises an error with file path details' do
+          allow(model_record).to receive(:in_verifiables?).and_return(true)
           allow(subject).to receive(:resource_exists?).and_return(false)
+          allow(subject).to receive(:blob_path).and_return('/path/to/missing/file.txt')
 
-          expect { subject.calculate_checksum }.to raise_error('File is not checksummable')
+          expect { subject.calculate_checksum }.to raise_error(
+            Geo::Errors::ReplicableDoesNotExistError,
+            "File is not checksummable - file does not exist at: /path/to/missing/file.txt"
+          )
         end
       end
     end
 
     context 'when the file is not verifiable' do
-      it 'raises an error' do
+      it 'raises an error with verifiables scope details' do
+        allow(subject).to receive(:resource_exists?).and_return(true)
         allow(model_record).to receive(:in_verifiables?).and_return(false)
 
-        expect { subject.calculate_checksum }.to raise_error('File is not checksummable')
+        expect { subject.calculate_checksum }.to raise_error("File is not checksummable - #{model_record.class.name} #{model_record.id} is excluded from verification")
+      end
+    end
+
+    context 'when checksummable? is true' do
+      it 'does not call not_checksummable_error and completes successfully' do
+        allow(model_record).to receive(:in_verifiables?).and_return(true)
+        allow(subject).to receive(:resource_exists?).and_return(true)
+        allow(subject.carrierwave_uploader).to receive(:file_storage?).and_return(true)
+        allow(described_class.model).to receive(:sha256_hexdigest).and_return('abc123')
+
+        expect(subject).not_to receive(:not_checksummable_error)
+        expect(subject.calculate_checksum).to eq('abc123')
       end
     end
   end
