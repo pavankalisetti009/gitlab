@@ -4,7 +4,6 @@ import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { reportToSentry } from '~/ci/utils';
 import { setUrlParams, updateHistory, getParameterByName } from '~/lib/utils/url_utility';
-import MergeTrainsFeedbackBanner from './components/merge_trains_feedback_banner.vue';
 import MergeTrainBranchSelector from './components/merge_train_branch_selector.vue';
 import MergeTrainTabs from './components/merge_train_tabs.vue';
 import MergeTrainsTable from './components/merge_trains_table.vue';
@@ -20,7 +19,6 @@ export default {
   name: 'MergeTrainsApp',
   components: {
     GlLoadingIcon,
-    MergeTrainsFeedbackBanner,
     MergeTrainBranchSelector,
     MergeTrainTabs,
     MergeTrainsTable,
@@ -166,8 +164,6 @@ export default {
     <gl-loading-icon v-if="loading" class="gl-float-left gl-mt-5" size="md" />
 
     <template v-else>
-      <merge-trains-feedback-banner />
-
       <div class="gl-mb-5 gl-flex gl-justify-between">
         <h1 class="gl-text-size-h1">{{ s__('Pipelines|Merge train') }}</h1>
         <merge-train-branch-selector :selected-branch="selectedBranch" @branchChanged="setBranch" />
