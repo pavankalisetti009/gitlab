@@ -2,24 +2,20 @@ import { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { GlIcon } from '@gitlab/ui';
 import ActivityLogs from 'ee/ai/duo_agents_platform/components/common/activity_logs.vue';
+import LogEntry from 'ee/ai/duo_agents_platform/components/common/log_entry.vue';
 import ActivityConnectorSvg from 'ee/ai/duo_agents_platform/components/common/activity_connector_svg.vue';
 import { getTimeago } from '~/lib/utils/datetime_utility';
-import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
-import { mockItems, mockItemsWithFilepath } from './mock';
+import { mockItems } from './mock';
 
 jest.mock('~/lib/utils/datetime_utility');
 
 describe('ActivityLogs', () => {
   let wrapper;
 
-  // Finders
   const findActivityConnectorSvg = () => wrapper.findComponent(ActivityConnectorSvg);
   const findAllListItems = () => wrapper.findAll('li');
   const findAllIcons = () => wrapper.findAllComponents(GlIcon);
-  const findAllTimestamps = () => wrapper.findAll('.gl-text-subtle');
-  const findFirstTitle = () => wrapper.find('strong');
-  const findAllMarkdownRenderComponent = () => wrapper.findAllComponents(NonGfmMarkdown);
-  const findAllCodeElements = () => wrapper.findAll('code');
+  const findAllLogEntries = () => wrapper.findAllComponents(LogEntry);
 
   const mockTimeago = {
     format: jest.fn(),
@@ -34,26 +30,75 @@ describe('ActivityLogs', () => {
     });
   };
 
-  describe('when component is mounted', () => {
+  beforeEach(() => {
+    getTimeago.mockReturnValue(mockTimeago);
+    mockTimeago.format.mockReturnValue('2 minutes ago');
+  });
+
+  describe('LogEntry component integration', () => {
     beforeEach(() => {
-      getTimeago.mockReturnValue(mockTimeago);
-      mockTimeago.format.mockReturnValue('2 minutes ago');
       wrapper = createWrapper();
     });
 
-    it('renders the expected content', () => {
-      const markdownContent = findAllMarkdownRenderComponent();
-      expect(findAllListItems()).toHaveLength(3);
-      expect(findAllMarkdownRenderComponent()).toHaveLength(2);
-      // First item is always filtered out as its the user set goal
-      expect(findAllListItems().at(0).text()).toContain('Starting workflow');
-      // Markdown Content
-      expect(markdownContent.at(0).props().markdown).toContain('Processing data');
-      expect(markdownContent.at(1).props().markdown).toContain('Workflow completed');
+    it('renders LogEntry for each item', () => {
+      expect(findAllLogEntries()).toHaveLength(3);
     });
 
-    it('renders the updated session triggered title', () => {
-      expect(findFirstTitle().text()).toBe('Session triggered');
+    it('passes correct props to first LogEntry', () => {
+      expect(findAllLogEntries().at(0).props()).toEqual({
+        item: mockItems[0],
+        index: 0,
+      });
+    });
+
+    it('passes correct props to second LogEntry', () => {
+      expect(findAllLogEntries().at(1).props()).toEqual({
+        item: mockItems[1],
+        index: 1,
+      });
+    });
+
+    it('passes correct props to third LogEntry', () => {
+      expect(findAllLogEntries().at(2).props()).toEqual({
+        item: mockItems[2],
+        index: 2,
+      });
+    });
+  });
+
+  describe('list rendering', () => {
+    beforeEach(() => {
+      wrapper = createWrapper();
+    });
+
+    it('renders correct number of list items', () => {
+      expect(findAllListItems()).toHaveLength(3);
+    });
+
+    it('updates list when items prop changes', async () => {
+      expect(findAllListItems()).toHaveLength(3);
+
+      const newItems = [
+        ...mockItems,
+        {
+          id: 4,
+          content: 'New item',
+          messageType: 'tool',
+          status: 'success',
+          timestamp: '2023-01-01T10:15:00Z',
+        },
+      ];
+
+      await wrapper.setProps({ items: newItems });
+
+      expect(findAllListItems()).toHaveLength(4);
+      expect(findAllLogEntries()).toHaveLength(4);
+    });
+  });
+
+  describe('when component is mounted', () => {
+    beforeEach(() => {
+      wrapper = createWrapper();
     });
 
     it('renders ActivityConnectorSvg component', () => {
@@ -66,106 +111,6 @@ describe('ActivityLogs', () => {
 
     it('assigns play icon to first item', () => {
       expect(findAllIcons().at(0).props('name')).toBe('play');
-    });
-
-    describe('when timestamp is required', () => {
-      it('renders timestamps with timeago format in the DOM', () => {
-        expect(findAllTimestamps()).toHaveLength(3);
-
-        expect(getTimeago).toHaveBeenCalled();
-        expect(mockTimeago.format).toHaveBeenCalledWith('2023-01-01T10:00:00Z');
-        expect(mockTimeago.format).toHaveBeenCalledWith('2023-01-01T10:05:00Z');
-        expect(mockTimeago.format).toHaveBeenCalledWith('2023-01-01T10:10:00Z');
-
-        // Assert that timestamp is rendered with the timeago format in the DOM
-        findAllTimestamps().wrappers.forEach((timestampWrapper) => {
-          expect(timestampWrapper.text()).toBe('2 minutes ago');
-        });
-      });
-    });
-
-    describe('when filepath is not present', () => {
-      it('does not render code elements', () => {
-        expect(findAllCodeElements()).toHaveLength(0);
-      });
-    });
-  });
-
-  describe('markdown decision logic', () => {
-    describe('when message is at index 0', () => {
-      it.each(['user', 'agent', 'tool', 'workflow_end', 'unknown'])(
-        'does not render markdown with type %s',
-        (messageType) => {
-          wrapper = createWrapper({
-            items: [
-              {
-                id: 0,
-                content: 'New workflow item',
-                messageType,
-                status: 'success',
-                timestamp: '2023-01-01T10:15:00Z',
-              },
-            ],
-          });
-
-          expect(findAllListItems()).toHaveLength(1);
-          expect(findAllMarkdownRenderComponent()).toHaveLength(0);
-        },
-      );
-    });
-
-    describe('when message is higher than index 0', () => {
-      it.each`
-        messageType       | isMarkdown
-        ${'user'}         | ${false}
-        ${'agent'}        | ${true}
-        ${'tool'}         | ${true}
-        ${'workflow_end'} | ${true}
-        ${'unknown'}      | ${true}
-      `('does not render markdown with type $messageType', ({ messageType, isMarkdown }) => {
-        wrapper = createWrapper({
-          items: [
-            {
-              id: 0,
-              content: 'initialmessage',
-              messageType: 'agent',
-              status: 'success',
-              timestamp: '2023-01-01T10:15:00Z',
-            },
-            {
-              id: 1,
-              content: 'New workflow item',
-              messageType,
-              status: 'success',
-              timestamp: '2023-01-01T10:15:00Z',
-            },
-          ],
-        });
-
-        expect(findAllListItems()).toHaveLength(2);
-        expect(findAllMarkdownRenderComponent()).toHaveLength(isMarkdown ? 1 : 0);
-      });
-    });
-  });
-
-  describe('when items have filepath', () => {
-    beforeEach(() => {
-      getTimeago.mockReturnValue(mockTimeago);
-      mockTimeago.format.mockReturnValue('2 minutes ago');
-      wrapper = createWrapper({ items: mockItemsWithFilepath });
-    });
-
-    it('renders code elements for items with filepath', () => {
-      const codeElements = findAllCodeElements();
-      expect(codeElements).toHaveLength(2);
-      expect(codeElements.at(0).text()).toBe('src/components/example.vue');
-      expect(codeElements.at(1).text()).toBe('src/utils/helper.js');
-    });
-
-    it('does not render code element for items without filepath', () => {
-      const codeElements = findAllCodeElements();
-      // Should only have 2 code elements (first and third items have filepath, second doesn't)
-      expect(codeElements).toHaveLength(2);
     });
   });
 
@@ -185,8 +130,6 @@ describe('ActivityLogs', () => {
 
     describe('when component is mounted', () => {
       beforeEach(() => {
-        getTimeago.mockReturnValue(mockTimeago);
-        mockTimeago.format.mockReturnValue('2 minutes ago');
         wrapper = createWrapper();
       });
 
@@ -197,8 +140,6 @@ describe('ActivityLogs', () => {
 
     describe('when component is destroyed', () => {
       beforeEach(() => {
-        getTimeago.mockReturnValue(mockTimeago);
-        mockTimeago.format.mockReturnValue('2 minutes ago');
         wrapper = createWrapper();
         wrapper.destroy();
       });
@@ -211,8 +152,6 @@ describe('ActivityLogs', () => {
 
   describe('when resize event is triggered', () => {
     beforeEach(async () => {
-      getTimeago.mockReturnValue(mockTimeago);
-      mockTimeago.format.mockReturnValue('2 minutes ago');
       wrapper = createWrapper();
       await nextTick();
     });
@@ -233,60 +172,27 @@ describe('ActivityLogs', () => {
     });
   });
 
-  describe('when items prop changes', () => {
+  describe('when items change', () => {
     beforeEach(() => {
-      getTimeago.mockReturnValue(mockTimeago);
-      mockTimeago.format.mockReturnValue('2 minutes ago');
       wrapper = createWrapper();
     });
 
-    it('updates the rendered content', async () => {
+    it('update the props passed to the SVG component', async () => {
       expect(findAllListItems()).toHaveLength(3);
-      expect(findAllMarkdownRenderComponent()).toHaveLength(2);
-      expect(findAllMarkdownRenderComponent().at(0).props().markdown).toBe('Processing data');
 
       const newItems = [
-        ...mockItems,
         {
-          id: 4,
-          content: 'New workflow item',
-          messageType: 'tool',
+          id: 5,
+          content: 'Another new item',
+          messageType: 'assistant',
           status: 'success',
-          timestamp: '2023-01-01T10:15:00Z',
+          timestamp: '2023-01-01T10:20:00Z',
         },
       ];
 
       await wrapper.setProps({ items: newItems });
 
-      expect(findAllListItems()).toHaveLength(4);
-      expect(findAllMarkdownRenderComponent()).toHaveLength(3);
-      expect(findAllMarkdownRenderComponent().at(2).props().markdown).toBe('New workflow item');
-    });
-
-    describe('when items change', () => {
-      beforeEach(() => {
-        getTimeago.mockReturnValue(mockTimeago);
-        mockTimeago.format.mockReturnValue('2 minutes ago');
-        wrapper = createWrapper();
-      });
-
-      it('update the props passed to the SVG component', async () => {
-        expect(findAllListItems()).toHaveLength(3);
-
-        const newItems = [
-          {
-            id: 5,
-            content: 'Another new item',
-            messageType: 'assistant',
-            status: 'success',
-            timestamp: '2023-01-01T10:20:00Z',
-          },
-        ];
-
-        await wrapper.setProps({ items: newItems });
-
-        expect(findAllListItems()).toHaveLength(1);
-      });
+      expect(findAllListItems()).toHaveLength(1);
     });
   });
 });
