@@ -19,7 +19,16 @@ module Security
         all_project_ids = collect_project_ids(group_ids, project_ids, user)
         return if all_project_ids.empty?
 
-        schedule_batch_workers(all_project_ids, attribute_ids, mode, user_id)
+        # To ensure all the ids are processed together by the same worker,
+        # we use the first project_id as an indicator for the entire batch
+        root_namespace = Project.id_in(all_project_ids.first).first.root_namespace
+
+        if Feature.enabled?(:security_bulk_operations_notifications, root_namespace)
+          operation_id = create_background_operation(all_project_ids.size, attribute_ids, mode, user)
+          schedule_background_operations_batch_workers(all_project_ids, attribute_ids, mode, user_id, operation_id)
+        else
+          schedule_batch_workers(all_project_ids, attribute_ids, mode, user_id)
+        end
       end
 
       private
@@ -58,6 +67,30 @@ module Security
             user_id
           )
         end
+      end
+
+      def schedule_background_operations_batch_workers(project_ids, attribute_ids, mode, user_id, operation_id)
+        project_ids.in_groups_of(BATCH_SIZE, false).each_with_index do |ids_batch, index|
+          # Add a small delay between batches to prevent overwhelming the queue
+          delay = index * BATCH_DELAY
+          Security::Attributes::BackgroundOperationBulkUpdateWorker.perform_in(
+            delay,
+            ids_batch,
+            attribute_ids,
+            mode,
+            user_id,
+            operation_id
+          )
+        end
+      end
+
+      def create_background_operation(projects_count, attribute_ids, mode, user)
+        Gitlab::BackgroundOperations::RedisStore.create_operation(
+          operation_type: 'attribute_update',
+          user_id: user.id,
+          total_items: projects_count,
+          parameters: { attribute_uids: attribute_ids, mode: mode.to_s.upcase }
+        )
       end
     end
   end
