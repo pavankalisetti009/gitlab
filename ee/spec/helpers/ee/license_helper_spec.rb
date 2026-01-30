@@ -104,9 +104,11 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
         expect(helper.cloud_license_view_data).to eq(
           {
             has_active_license: 'true',
+            groups_count: nil,
+            projects_count: nil,
+            users_count: nil,
             customers_portal_url: 'subscriptions_manage_url',
             free_trial_path: new_self_managed_trials_path,
-            buy_subscription_path: promo_pricing_url,
             subscription_sync_path: sync_seat_link_admin_license_path,
             license_remove_path: admin_license_path,
             congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
@@ -133,6 +135,12 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
     end
 
     context 'when there is no current license' do
+      # rubocop:disable RSpec/FactoryBot/AvoidCreate -- uses finders which need db persistence
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:user) { create(:user) }
+      # rubocop:enable RSpec/FactoryBot/AvoidCreate
+
       before do
         allow(License).to receive(:current).and_return(nil)
       end
@@ -141,9 +149,11 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
         expect(helper.cloud_license_view_data).to eq(
           {
             has_active_license: 'false',
+            groups_count: 1,
+            projects_count: 1,
+            users_count: 2,
             customers_portal_url: 'subscriptions_manage_url',
             free_trial_path: new_self_managed_trials_path,
-            buy_subscription_path: promo_pricing_url,
             subscription_sync_path: sync_seat_link_admin_license_path,
             license_remove_path: admin_license_path,
             congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),

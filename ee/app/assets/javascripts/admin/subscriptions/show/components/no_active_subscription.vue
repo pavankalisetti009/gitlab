@@ -2,25 +2,25 @@
 import { GlAlert, GlSprintf } from '@gitlab/ui';
 import { minBy } from 'lodash';
 import { isInFuture } from '~/lib/utils/datetime/date_calculation_utility';
-import { instanceHasFutureLicenseBanner, noActiveSubscription } from '../constants';
+import UpgradePlanHeader from 'ee/vue_shared/subscription/components/upgrade_plan_header.vue';
+import CurrentPlanHeader from 'ee/vue_shared/subscription/components/current_plan_header.vue';
+import { instanceHasFutureLicenseBanner } from '../constants';
 import SubscriptionActivationCard from './subscription_activation_card.vue';
 import SubscriptionDetailsHistory from './subscription_details_history.vue';
-import SubscriptionPurchaseCard from './subscription_purchase_card.vue';
-import SubscriptionTrialCard from './subscription_trial_card.vue';
 
 export default {
   name: 'NoActiveSubscription',
   components: {
+    CurrentPlanHeader,
+    UpgradePlanHeader,
     GlAlert,
     GlSprintf,
     SubscriptionActivationCard,
-    SubscriptionPurchaseCard,
-    SubscriptionTrialCard,
     SubscriptionDetailsHistory,
   },
+  inject: ['freeTrialPath', 'groupsCount', 'projectsCount', 'usersCount'],
   i18n: {
     instanceHasFutureLicenseBanner,
-    noActiveSubscription,
   },
   props: {
     subscriptionList: {
@@ -47,40 +47,46 @@ export default {
 </script>
 
 <template>
-  <div class="row">
-    <div class="gl-col-12">
-      <h3 class="gl-mb-7 gl-mt-6 gl-text-center" data-testid="subscription-activation-title">
-        {{ $options.i18n.noActiveSubscription }}
-      </h3>
-      <subscription-activation-card v-on="$listeners" />
-      <gl-alert
-        v-if="hasFutureDatedLicense"
-        :title="$options.i18n.instanceHasFutureLicenseBanner.title"
-        :dismissible="false"
-        class="gl-mt-5"
-        variant="info"
-        data-testid="subscription-future-licenses-alert"
-      >
-        <gl-sprintf :message="$options.i18n.instanceHasFutureLicenseBanner.message">
-          <template #date>{{ nextFutureDatedLicenseDate }}</template>
-        </gl-sprintf>
-      </gl-alert>
-      <div v-if="hasItems && hasFutureDatedLicense" class="gl-col-12 gl-mt-5">
-        <subscription-details-history :subscription-list="subscriptionList" />
-      </div>
+  <div>
+    <div class="gl-mb-6 gl-flex gl-flex-col md:gl-flex-row">
+      <current-plan-header
+        :seats-in-use="usersCount"
+        :total-projects="projectsCount"
+        :total-groups="groupsCount"
+        :trial-active="false"
+        :is-saas="false"
+      />
 
-      <div class="row gl-mt-7">
-        <div class="gl-col-lg-6 @sm/panel:gl-mb-7">
-          <subscription-trial-card />
-        </div>
-        <div class="gl-col-lg-6">
-          <subscription-purchase-card />
-        </div>
-      </div>
+      <upgrade-plan-header
+        :trial-active="false"
+        :trial-expired="false"
+        :start-trial-path="freeTrialPath"
+        :can-access-duo-chat="false"
+        :is-saas="false"
+      />
+    </div>
 
-      <div v-if="hasItems && !hasFutureDatedLicense" class="gl-col-12 gl-mt-5">
-        <subscription-details-history :subscription-list="subscriptionList" />
-      </div>
+    <subscription-activation-card v-on="$listeners" />
+
+    <gl-alert
+      v-if="hasFutureDatedLicense"
+      :title="$options.i18n.instanceHasFutureLicenseBanner.title"
+      :dismissible="false"
+      class="gl-mt-5"
+      variant="info"
+      data-testid="subscription-future-licenses-alert"
+    >
+      <gl-sprintf :message="$options.i18n.instanceHasFutureLicenseBanner.message">
+        <template #date>{{ nextFutureDatedLicenseDate }}</template>
+      </gl-sprintf>
+    </gl-alert>
+
+    <div v-if="hasItems && hasFutureDatedLicense" class="gl-col-12 gl-mt-5">
+      <subscription-details-history :subscription-list="subscriptionList" />
+    </div>
+
+    <div v-if="hasItems && !hasFutureDatedLicense" class="gl-col-12 gl-mt-5">
+      <subscription-details-history :subscription-list="subscriptionList" />
     </div>
   </div>
 </template>

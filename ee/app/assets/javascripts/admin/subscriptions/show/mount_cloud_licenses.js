@@ -20,7 +20,6 @@ export default () => {
   }
 
   const {
-    buySubscriptionPath,
     congratulationSvgPath,
     customersPortalUrl,
     freeTrialPath,
@@ -30,6 +29,9 @@ export default () => {
     licenseUsageFilePath,
     isAdmin,
     settingsAddLicensePath,
+    groupsCount,
+    projectsCount,
+    usersCount,
   } = el.dataset;
   const connectivityHelpURL = helpPagePath('/administration/license.html', {
     anchor: 'error-cannot-activate-instance-due-to-a-connectivity-issue',
@@ -41,7 +43,6 @@ export default () => {
     name: 'CloudLicenseRoot',
     apolloProvider,
     provide: {
-      buySubscriptionPath,
       congratulationSvgPath,
       connectivityHelpURL,
       customersPortalUrl,
@@ -49,6 +50,9 @@ export default () => {
       licenseRemovePath,
       subscriptionSyncPath,
       settingsAddLicensePath,
+      groupsCount: Number(groupsCount),
+      projectsCount: Number(projectsCount),
+      usersCount: Number(usersCount),
     },
     render: (h) =>
       h(CloudLicenseShowApp, {

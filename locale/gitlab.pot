@@ -67576,16 +67576,10 @@ msgstr ""
 msgid "SuperSonics|An error occurred during activation"
 msgstr ""
 
-msgid "SuperSonics|Buy subscription"
-msgstr ""
-
 msgid "SuperSonics|Cannot activate instance due to a connectivity issue"
 msgstr ""
 
 msgid "SuperSonics|Could not activate subscription"
-msgstr ""
-
-msgid "SuperSonics|Customers Portal"
 msgstr ""
 
 msgid "SuperSonics|Enter activation code"
@@ -67594,13 +67588,7 @@ msgstr ""
 msgid "SuperSonics|Export license usage file"
 msgstr ""
 
-msgid "SuperSonics|Free trial"
-msgstr ""
-
 msgid "SuperSonics|I agree that my use of the GitLab Software is subject to the Subscription Agreement located at the %{linkStart}Terms of Service%{linkEnd}, unless otherwise agreed to in writing with GitLab."
-msgstr ""
-
-msgid "SuperSonics|Instance subscription"
 msgstr ""
 
 msgid "SuperSonics|Learn how to %{linkStart}activate your subscription%{linkEnd}."
@@ -67618,16 +67606,13 @@ msgstr ""
 msgid "SuperSonics|Online license"
 msgstr ""
 
-msgid "SuperSonics|Ready to get started? A GitLab plan is ideal for scaling organizations and for multi team usage."
-msgstr ""
-
 msgid "SuperSonics|Received a license key? %{linkStart}Go to license settings%{linkEnd} to add it to your GitLab instance."
 msgstr ""
 
 msgid "SuperSonics|Select that you agree before activating the subscription."
 msgstr ""
 
-msgid "SuperSonics|Start free trial"
+msgid "SuperSonics|Subscription"
 msgstr ""
 
 msgid "SuperSonics|Subscription cannot be activated if %{silentModeDocsLinkStart}Silent Mode%{silentModeDocsLinkEnd} is enabled. Disable Silent Mode and try again."
@@ -67666,13 +67651,7 @@ msgstr ""
 msgid "SuperSonics|You can %{purchaseSubscriptionLinkStart}purchase a new subscription%{purchaseSubscriptionLinkEnd} and try again. If you need further assistance, please %{supportLinkStart}contact GitLab Support%{supportLinkEnd}."
 msgstr ""
 
-msgid "SuperSonics|You can start a free trial of GitLab Ultimate without any obligation or payment details."
-msgstr ""
-
 msgid "SuperSonics|You can sync your subscription data to ensure your details are up to date."
-msgstr ""
-
-msgid "SuperSonics|You do not have an active subscription"
 msgstr ""
 
 msgid "SuperSonics|You have a future dated license"

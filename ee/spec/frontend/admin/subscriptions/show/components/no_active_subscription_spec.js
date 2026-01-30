@@ -4,10 +4,11 @@ import VueApollo from 'vue-apollo';
 import SubscriptionActivationCard from 'ee/admin/subscriptions/show/components/subscription_activation_card.vue';
 import SubscriptionDetailsHistory from 'ee/admin/subscriptions/show/components/subscription_details_history.vue';
 import NoActiveSubscription from 'ee_else_ce/admin/subscriptions/show/components/no_active_subscription.vue';
+import CurrentPlanHeader from 'ee/vue_shared/subscription/components/current_plan_header.vue';
+import UpgradePlanHeader from 'ee/vue_shared/subscription/components/upgrade_plan_header.vue';
 import { isInFuture } from '~/lib/utils/datetime/date_calculation_utility';
 import {
   instanceHasFutureLicenseBanner,
-  noActiveSubscription,
   SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT,
 } from 'ee/admin/subscriptions/show/constants';
 import { useFakeDate } from 'helpers/fake_date';
@@ -25,15 +26,21 @@ describe('NoActiveSubscription', () => {
 
   const findActivateSubscriptionCard = () => wrapper.findComponent(SubscriptionActivationCard);
   const findSubscriptionDetailsHistory = () => wrapper.findComponent(SubscriptionDetailsHistory);
-  const findSubscriptionActivationTitle = () =>
-    wrapper.findByTestId('subscription-activation-title');
   const findSubscriptionFutureLicensesAlert = () =>
     wrapper.findByTestId('subscription-future-licenses-alert');
+
+  const provideProps = {
+    freeTrialPath: 'free/trial/path',
+    groupsCount: 10,
+    projectsCount: 9,
+    usersCount: 8,
+  };
 
   const createComponent = (props, listeners) => {
     wrapper = shallowMountExtended(NoActiveSubscription, {
       propsData: props,
       listeners,
+      provide: provideProps,
       stubs: {
         GlSprintf,
       },
@@ -45,10 +52,6 @@ describe('NoActiveSubscription', () => {
       createComponent({
         subscriptionList: subscriptionPastHistory,
       });
-    });
-
-    it('shows a title saying there is no active subscription', () => {
-      expect(findSubscriptionActivationTitle().text()).toBe(noActiveSubscription);
     });
 
     it('shows the past items', () => {
@@ -130,6 +133,36 @@ describe('NoActiveSubscription', () => {
       await nextTick();
 
       expect(onSuccess).toHaveBeenCalledWith(license.ULTIMATE);
+    });
+  });
+
+  describe('Plan headers', () => {
+    beforeEach(() => {
+      createComponent({
+        subscriptionList: [],
+      });
+    });
+
+    it('shows the current plan header', () => {
+      expect(wrapper.findComponent(CurrentPlanHeader).exists()).toBe(true);
+      expect(wrapper.findComponent(CurrentPlanHeader).props()).toMatchObject({
+        seatsInUse: provideProps.usersCount,
+        totalProjects: provideProps.projectsCount,
+        totalGroups: provideProps.groupsCount,
+        trialActive: false,
+        isSaas: false,
+      });
+    });
+
+    it('shows the upgrade plan header', () => {
+      expect(wrapper.findComponent(UpgradePlanHeader).exists()).toBe(true);
+      expect(wrapper.findComponent(UpgradePlanHeader).props()).toMatchObject({
+        trialActive: false,
+        trialExpired: false,
+        startTrialPath: provideProps.freeTrialPath,
+        canAccessDuoChat: false,
+        isSaas: false,
+      });
     });
   });
 });

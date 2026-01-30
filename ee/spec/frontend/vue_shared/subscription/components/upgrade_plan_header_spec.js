@@ -42,6 +42,7 @@ describe('UpgradePlanHeader', () => {
     expect(cta.attributes('data-event-tracking')).toBe('click_duo_enterprise_trial_billing_page');
     expect(cta.attributes('data-event-label')).toBe('ultimate_and_duo_enterprise_trial');
     expect(cta.props('href')).toBe(mockBillingPageAttributes.startTrialPath);
+    expect(cta.props('target')).toBe('_blank');
     expect(cta.text()).toBe('Start free trial');
   });
 
@@ -283,6 +284,7 @@ describe('UpgradePlanHeader', () => {
       );
       expect(cta.props('href')).toBe(mockBillingPageAttributes.startTrialPath);
       expect(cta.text()).toBe('Start free trial');
+      expect(cta.props('target')).toBe(false);
 
       const secondaryCta = wrapper.findByTestId('explore-link-cta');
       expect(secondaryCta.attributes('data-event-tracking')).toBe(
