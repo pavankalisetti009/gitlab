@@ -34371,7 +34371,10 @@ msgstr ""
 msgid "Groups|There was an error creating the Group README."
 msgstr ""
 
-msgid "Groups|This group can be restored until %{date}. %{linkStart}Learn more%{linkEnd}."
+msgid "Groups|This action will place this group, including its subgroups and projects, in a pending deletion state for %{delayedDeletionPeriodInDays} days, and delete it permanently on %{date}."
+msgstr ""
+
+msgid "Groups|This group is scheduled for deletion on %{date}. This action will permanently delete this group, including its subgroups and projects, %{strongStart}immediately%{strongEnd}. This action cannot be undone."
 msgstr ""
 
 msgid "Groups|This process deletes the group, subgroups and project repositories, and all related resources."
@@ -54456,6 +54459,12 @@ msgstr ""
 msgid "Projects|Projects where you contribute code, create issues or epics, or participate in discussions will appear here."
 msgstr ""
 
+msgid "Projects|This action will place this project, including all its resources, in a pending deletion state for %{delayedDeletionPeriodInDays} days, and delete it permanently on %{date}."
+msgstr ""
+
+msgid "Projects|This project is scheduled for deletion on %{date}. This action will permanently delete this project, including all its resources, %{strongStart}immediately%{strongEnd}. This action cannot be undone."
+msgstr ""
+
 msgid "Projects|View projects that are archived or pending deletion."
 msgstr ""
 
@@ -70154,9 +70163,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "This process deletes the project repository and all related resources."
-msgstr ""
-
-msgid "This project can be restored until %{date}. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
 msgid "This project cannot be %{visibilityLevel} because the visibility of %{openShowLink}%{name}%{closeShowLink} is %{visibility}."

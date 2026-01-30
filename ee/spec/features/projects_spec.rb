@@ -29,7 +29,7 @@ RSpec.describe 'Project', :js, :with_current_organization, feature_category: :gr
 
       click_button "Delete"
 
-      expect(page).to have_content("This project can be restored until #{deletion_date}.")
+      expect(page).to have_content("This action will place this project, including all its resources, in a pending deletion state for 7 days, and delete it permanently on #{deletion_date}.")
 
       confirm_deletion(project)
 
