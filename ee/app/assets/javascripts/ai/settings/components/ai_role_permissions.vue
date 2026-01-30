@@ -85,18 +85,12 @@ export default {
     },
   },
   i18n: {
-    minimumAccessLevelExecuteAsyncLabel: s__(
-      'AiPowered|Execute Duo Agent Platform with CI/CD pipelines',
+    minimumAccessLevelExecuteAsyncLabel: s__('AiPowered|Features with CI/CD pipelines'),
+    minimumAccessLevelExecuteSyncLabel: s__('AiPowered|Features without CI/CD pipelines'),
+    sectionDescription: s__(
+      'AiPowered|Control who can access AI-native features executed with or without CI/CD pipelines.',
     ),
-    minimumAccessLevelExecuteAsyncDescription: s__(
-      'AiPowered|Control who can use AI features that run using CI/CD pipelines.',
-    ),
-    minimumAccessLevelExecuteSyncLabel: s__('AiPowered|Execute Duo Agent Platform'),
-    minimumAccessLevelExecuteSyncDescription: s__(
-      'AiPowered|Control who can use AI features that run without using CI/CD pipelines.',
-    ),
-    sectionDescription: s__('AiPowered|Define the minimum role for the following actions'),
-    sectionTitle: s__('AiPowered|Duo Agent Platform Permissions'),
+    sectionTitle: s__('AiPowered|Access to GitLab Duo Agent Platform'),
   },
   ALL_ACCESS_LEVELS_LABELS: {
     [ACCESS_LEVEL_EVERYONE_INTEGER]: s__('AiPowered|Everyone'),
@@ -114,23 +108,7 @@ export default {
 
       <div>
         <gl-form-group
-          :label="$options.i18n.minimumAccessLevelExecuteSyncLabel"
-          :description="$options.i18n.minimumAccessLevelExecuteSyncDescription"
-          label-for="minimum-access-level-execute-sync-selector"
-        >
-          <gl-form-select
-            id="minimum-access-level-execute-sync-selector"
-            v-model="minimumAccessLevelExecuteSync"
-            :options="minimumAccessLevelExecuteSyncOptions"
-            data-testid="minimum-access-level-execute-sync-selector"
-            class="gl-max-w-26"
-            @change="changeMinimumAccessLevelExecuteSync"
-          />
-        </gl-form-group>
-
-        <gl-form-group
           :label="$options.i18n.minimumAccessLevelExecuteAsyncLabel"
-          :description="$options.i18n.minimumAccessLevelExecuteAsyncDescription"
           label-for="minimum-access-level-execute-async-selector"
         >
           <gl-form-select
@@ -140,6 +118,20 @@ export default {
             data-testid="minimum-access-level-execute-async-selector"
             class="gl-max-w-26"
             @change="changeMinimumAccessLevelExecuteAsync"
+          />
+        </gl-form-group>
+
+        <gl-form-group
+          :label="$options.i18n.minimumAccessLevelExecuteSyncLabel"
+          label-for="minimum-access-level-execute-sync-selector"
+        >
+          <gl-form-select
+            id="minimum-access-level-execute-sync-selector"
+            v-model="minimumAccessLevelExecuteSync"
+            :options="minimumAccessLevelExecuteSyncOptions"
+            data-testid="minimum-access-level-execute-sync-selector"
+            class="gl-max-w-26"
+            @change="changeMinimumAccessLevelExecuteSync"
           />
         </gl-form-group>
       </div>

@@ -51,38 +51,30 @@ describe('AiRolePermissions', () => {
     });
 
     it('renders the main form group with correct title', () => {
-      expect(findMainFormGroup().attributes('label')).toBe('Duo Agent Platform Permissions');
+      expect(findMainFormGroup().attributes('label')).toBe('Access to GitLab Duo Agent Platform');
     });
 
     it('renders the section description', () => {
       createWrapper({ stubs: { GlFormGroup } });
 
       expect(findMainFormGroup().text()).toContain(
-        'Define the minimum role for the following actions',
+        'Control who can access AI-native features executed with or without CI/CD pipelines.',
       );
     });
 
-    it('renders execute role form group with correct label and description', () => {
+    it('renders execute role form group with correct label', () => {
       const executeFormGroup = findMinimumAccessLevelExecuteSyncFormGroup();
 
-      expect(executeFormGroup.attributes('label')).toBe('Execute Duo Agent Platform');
-      expect(executeFormGroup.attributes('description')).toBe(
-        'Control who can use AI features that run without using CI/CD pipelines.',
-      );
+      expect(executeFormGroup.attributes('label')).toBe('Features without CI/CD pipelines');
       expect(executeFormGroup.attributes('label-for')).toBe(
         'minimum-access-level-execute-sync-selector',
       );
     });
 
-    it('renders execute async role form group with correct label and description', () => {
+    it('renders execute async role form group with correct label', () => {
       const executeAsyncFormGroup = findMinimumAccessLevelExecuteAsyncFormGroup();
 
-      expect(executeAsyncFormGroup.attributes('label')).toBe(
-        'Execute Duo Agent Platform with CI/CD pipelines',
-      );
-      expect(executeAsyncFormGroup.attributes('description')).toBe(
-        'Control who can use AI features that run using CI/CD pipelines.',
-      );
+      expect(executeAsyncFormGroup.attributes('label')).toBe('Features with CI/CD pipelines');
       expect(executeAsyncFormGroup.attributes('label-for')).toBe(
         'minimum-access-level-execute-async-selector',
       );
