@@ -5,6 +5,7 @@ import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
 import DuoModelsConfigurationInfoCard from 'ee/ai/settings/components/duo_models_configuration_info_card.vue';
 import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
+import DuoAgentPlatformBuyCreditsCard from 'ee/ai/settings/components/duo_agent_platform_buy_credits_card.vue';
 import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
 import DuoUsageAnalyticsCard from 'ee/ai/settings/components/duo_usage_analytics_card.vue';
@@ -30,6 +31,7 @@ describe('GitLab Duo Home', () => {
     modelSwitchingEnabled = false,
     modelSwitchingPath = 'groups/test/-/settings/gitlab_duo/model_selection',
     gitlabCreditsDashboardPath = '',
+    glFeatures = {},
   } = {}) => {
     wrapper = shallowMount(GitlabDuoHome, {
       provide: {
@@ -41,6 +43,7 @@ describe('GitLab Duo Home', () => {
         modelSwitchingPath,
         canManageInstanceModelSelection,
         gitlabCreditsDashboardPath,
+        glFeatures,
       },
       stubs: {
         CodeSuggestionsUsage: stubComponent(CodeSuggestionsUsage, {
@@ -65,6 +68,8 @@ describe('GitLab Duo Home', () => {
   const findDuoModelsConfigurationCard = () =>
     wrapper.findComponent(DuoModelsConfigurationInfoCard);
   const findDuoCoreUpgradeCard = () => wrapper.findComponent(DuoCoreUpgradeCard);
+  const findDuoAgentPlatformBuyCreditsCard = () =>
+    wrapper.findComponent(DuoAgentPlatformBuyCreditsCard);
   const findDuoWorkflowSettings = () => wrapper.findComponent(DuoWorkflowSettings);
 
   describe('when SaaS', () => {
@@ -75,6 +80,7 @@ describe('GitLab Duo Home', () => {
         expect(findCodeSuggestionsUsage().exists()).toBe(false);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
         expect(findDuoCoreUpgradeCard().exists()).toBe(false);
+        expect(findDuoAgentPlatformBuyCreditsCard().exists()).toBe(false);
         expect(findDuoModelsConfigurationCard().exists()).toBe(false);
         expect(findHealthCheckList().exists()).toBe(false);
         expect(findDuoWorkflowSettings().exists()).toBe(true);
@@ -259,6 +265,7 @@ describe('GitLab Duo Home', () => {
       createComponent({ customSlotProps: { activeDuoTier: DUO_PRO } });
 
       expect(findDuoCoreUpgradeCard().exists()).toBe(false);
+      expect(findDuoAgentPlatformBuyCreditsCard().exists()).toBe(false);
       expect(findDuoSeatUtilizationInfoCard().exists()).toBe(true);
     });
 
@@ -266,14 +273,48 @@ describe('GitLab Duo Home', () => {
       createComponent({ customSlotProps: { activeDuoTier: DUO_ENTERPRISE } });
 
       expect(findDuoCoreUpgradeCard().exists()).toBe(false);
+      expect(findDuoAgentPlatformBuyCreditsCard().exists()).toBe(false);
       expect(findDuoSeatUtilizationInfoCard().exists()).toBe(true);
     });
 
-    it('renders the correct cards for Duo Core', () => {
+    it('renders the correct cards for Duo Core on group page', () => {
       createComponent({ customSlotProps: { activeDuoTier: DUO_CORE } });
 
       expect(findDuoCoreUpgradeCard().exists()).toBe(true);
+      expect(findDuoAgentPlatformBuyCreditsCard().exists()).toBe(false);
       expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
+    });
+
+    it('renders the DuoAgentPlatformBuyCreditsCard for Duo Core on self-managed admin page', () => {
+      createComponent({
+        isSaaS: false,
+        customSlotProps: { activeDuoTier: DUO_CORE },
+      });
+
+      expect(findDuoAgentPlatformBuyCreditsCard().exists()).toBe(true);
+      expect(findDuoCoreUpgradeCard().exists()).toBe(false);
+    });
+
+    it('renders DuoAgentPlatformBuyCreditsCard for Duo Core on SaaS group page with feature flag enabled', () => {
+      createComponent({
+        isSaaS: true,
+        customSlotProps: { activeDuoTier: DUO_CORE },
+        glFeatures: { ultimateTrialWithDap: true },
+      });
+
+      expect(findDuoAgentPlatformBuyCreditsCard().exists()).toBe(true);
+      expect(findDuoCoreUpgradeCard().exists()).toBe(false);
+    });
+
+    it('renders DuoCoreUpgradeCard for Duo Core on SaaS group page without feature flag', () => {
+      createComponent({
+        isSaaS: true,
+        customSlotProps: { activeDuoTier: DUO_CORE },
+        glFeatures: { ultimateTrialWithDap: false },
+      });
+
+      expect(findDuoAgentPlatformBuyCreditsCard().exists()).toBe(false);
+      expect(findDuoCoreUpgradeCard().exists()).toBe(true);
     });
   });
 });
