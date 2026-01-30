@@ -10,12 +10,12 @@ module GitlabSubscriptions
         response = execute_trial_request
 
         if response[:success]
-          after_success_hook
-
           # We need to stick to an up to date replica or primary db here in order
           # to properly observe the add_on_purchase that CustomersDot created.
           # See https://gitlab.com/gitlab-org/gitlab/-/issues/499720
           Namespace.sticking.find_caught_up_replica(:namespace, namespace.id)
+
+          after_success_hook
 
           ServiceResponse.success
         else
