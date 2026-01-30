@@ -46,34 +46,6 @@ RSpec.describe 'shared/issuable/_approver_suggestion.html.haml' do
       stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
     end
 
-    context 'when the gitlab_com_subscriptions saas feature is available' do
-      let(:gitlab_com_subscriptions_enabled) { true }
-
-      before do
-        allow(view).to receive(:can?).with(user, :admin_group, anything).and_return(user_can_admin_group)
-      end
-
-      context 'when the user is an owner of the root group' do
-        let(:user_can_admin_group) { true }
-
-        it 'renders the MR approvals promo' do
-          do_render
-
-          expect(rendered).to have_css('#js-mr-approvals-promo')
-        end
-      end
-
-      context 'when the user is not an owner of the root group' do
-        let(:user_can_admin_group) { false }
-
-        it 'renders nothing' do
-          do_render
-
-          expect(rendered).to be_blank
-        end
-      end
-    end
-
     context 'when the gitlab_com_subscriptions saas feature is not available' do
       let(:gitlab_com_subscriptions_enabled) { false }
 
