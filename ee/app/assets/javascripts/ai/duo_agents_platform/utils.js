@@ -24,29 +24,11 @@ export const getAgentStatusBadge = (status) => {
   return AGENT_PLATFORM_STATUS_BADGE[status] || AGENT_PLATFORM_STATUS_BADGE.FAILED;
 };
 
-export const parseJsonProperty = (value) => {
-  if (typeof value !== 'string') return value;
-
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    return value;
-  }
-};
-
-export const getNamespaceDatasetProperties = (dataset, properties, jsonProperties = []) => {
-  const allProperties = [...properties, ...jsonProperties];
-  return allProperties.reduce((acc, prop) => {
-    const value = dataset[prop];
-
-    if (jsonProperties.includes(prop)) {
-      acc[prop] = parseJsonProperty(value);
-    } else {
-      acc[prop] = value;
-    }
+export const getNamespaceDatasetProperties = (dataset, properties) =>
+  properties.reduce((acc, prop) => {
+    acc[prop] = dataset[prop];
     return acc;
   }, {});
-};
 
 export const getToolData = (toolMessage) => {
   const toolName = toolMessage?.toolInfo?.name;
