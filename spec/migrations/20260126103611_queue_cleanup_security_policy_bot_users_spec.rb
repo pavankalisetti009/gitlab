@@ -7,7 +7,7 @@ RSpec.describe QueueCleanupSecurityPolicyBotUsers, feature_category: :security_p
   let!(:batched_migration) { described_class::MIGRATION }
 
   before do
-    allow(Gitlab).to receive(:com?).and_return(gitlab_com)
+    allow(Gitlab).to receive(:com_except_jh?).and_return(gitlab_com)
   end
 
   describe '#up' do

@@ -11,7 +11,7 @@ class QueueCleanupSecurityPolicyBotUsers < Gitlab::Database::Migration[2.3]
   SUB_BATCH_SIZE = 50
 
   def up
-    return unless Gitlab.com?
+    return unless Gitlab.com_except_jh?
 
     queue_batched_background_migration(
       MIGRATION,
@@ -24,7 +24,7 @@ class QueueCleanupSecurityPolicyBotUsers < Gitlab::Database::Migration[2.3]
   end
 
   def down
-    return unless Gitlab.com?
+    return unless Gitlab.com_except_jh?
 
     delete_batched_background_migration(MIGRATION, :users, :id, [])
   end
