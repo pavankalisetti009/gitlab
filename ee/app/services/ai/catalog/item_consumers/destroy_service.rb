@@ -20,8 +20,7 @@ module Ai
             successfully_deleted, error_messages = remove_service_account_from_project
             raise ActiveRecord::Rollback unless successfully_deleted
 
-            successfully_deleted, error_messages = remove_service_account_from_all_projects
-            raise ActiveRecord::Rollback unless successfully_deleted
+            remove_service_account_from_all_projects
 
             successfully_deleted, error_messages = delete_item_consumer
             raise ActiveRecord::Rollback unless successfully_deleted
@@ -72,28 +71,17 @@ module Ai
         end
 
         def remove_service_account_from_all_projects
-          return [true, nil] if item_consumer.service_account_id.nil? || item_consumer.group_id.nil?
+          return if item_consumer.service_account.nil? || item_consumer.group.nil?
 
-          memberships = ::Member.in_hierarchy(item_consumer.group).with_user(item_consumer.service_account)
+          # Set user_id variable for the run_after_commit context
+          user_id = current_user.id
 
-          # We can't extract this to a worker to do async.
-          # There would be a race condition, where if a user removes a flow from the group, then adds it back to the
-          # group and a project before the job runs, it would delete the member after being re-enabled
-          memberships.each do |member|
-            Members::DestroyService.new(current_user).execute(
-              member,
-              skip_authorization: true,
-              skip_subresources: true
+          item_consumer.run_after_commit do
+            Ai::Catalog::DeleteServiceAccountMembersFromHierarchyWorker.perform_async(
+              user_id, service_account.id, group.id,
+              { 'skip_authorization' => true }
             )
-
-            next if member.destroyed?
-
-            errors = member.errors.full_messages.map { |err| "Service account membership: #{err}" }
-
-            return [false, errors]
           end
-
-          [true, nil]
         end
 
         def error_no_permissions

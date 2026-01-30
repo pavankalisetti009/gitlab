@@ -3,6 +3,8 @@
 module Ai
   module Catalog
     class ItemConsumer < ApplicationRecord
+      include AfterCommitQueue
+
       self.table_name = "ai_catalog_item_consumers"
 
       validates :enabled, :locked, inclusion: { in: [true, false] }
@@ -62,6 +64,12 @@ module Ai
       scope :with_items_configurable_for_project, ->(project_id) {
         joins(:item).where(item: { public: true }).or(where(item: { project_id: project_id }))
       }
+
+      def self.exists_for_service_account_and_project_id?(service_account, project_id)
+        parent_item_consumers = for_service_account(service_account)
+
+        exists?(parent_item_consumer: parent_item_consumers, project_id: project_id)
+      end
 
       def pinned_version
         @pinned_version ||= item.resolve_version(pinned_version_prefix)

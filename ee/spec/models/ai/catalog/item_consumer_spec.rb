@@ -372,6 +372,64 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
     end
   end
 
+  describe '.exists_for_service_account_and_project_id' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:service_account) { create(:service_account, provisioned_by_group: group) }
+
+    let_it_be(:project_with_consumer) { create(:project, namespace: group, developers: service_account) }
+    let_it_be(:project_without_consumer_for_flow) { create(:project, namespace: group, developers: service_account) }
+
+    let_it_be(:parent_item_consumer) { create(:ai_catalog_item_consumer, :for_flow, group:, service_account:) }
+
+    let_it_be(:child_item_consumer) do
+      create(
+        :ai_catalog_item_consumer, :for_flow, project: project_with_consumer, parent_item_consumer: parent_item_consumer
+      )
+    end
+
+    let_it_be(:unrelated_item_consumer) do
+      create(:ai_catalog_item_consumer, :for_flow, project: project_without_consumer_for_flow)
+    end
+
+    let_it_be(:project_item_consumer_with_no_parent) do
+      create(:ai_catalog_item_consumer, project: project_without_consumer_for_flow, parent_item_consumer: nil)
+    end
+
+    let(:project_id) { project_with_consumer.id }
+
+    subject(:exists_for_service_account_and_project_id) do
+      described_class.exists_for_service_account_and_project_id?(service_account, project_id)
+    end
+
+    context 'when a consumer exists for the project' do
+      it { is_expected.to be(true) }
+    end
+
+    context 'when a consumer does not exist for the project' do
+      let(:project_id) { project_without_consumer_for_flow.id }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when the service account is nil' do
+      let(:service_account) { nil }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when the project_id is nil' do
+      let_it_be(:project_id) { nil }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when there is no parent item consumer' do
+      let_it_be(:service_account) { create(:service_account) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '#pinned_version' do
     let_it_be(:project) { create(:project) }
     let_it_be(:item) { create(:ai_catalog_flow, project: project) }

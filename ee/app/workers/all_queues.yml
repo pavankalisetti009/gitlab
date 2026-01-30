@@ -1584,6 +1584,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: ai_catalog_delete_service_account_members_from_hierarchy
+  :worker_name: Ai::Catalog::DeleteServiceAccountMembersFromHierarchyWorker
+  :feature_category: :ai_abstraction_layer
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ai_catalog_flows_cascade_sync_foundational_flows
   :worker_name: Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker
   :feature_category: :ai_abstraction_layer
