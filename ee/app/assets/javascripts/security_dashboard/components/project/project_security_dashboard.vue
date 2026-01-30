@@ -14,7 +14,6 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import { s__, __ } from '~/locale';
 import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
-import NewSecurityDashboardBanner from '../shared/new_security_dashboard_banner.vue';
 
 const CHART_DEFAULT_DAYS = 30;
 const MAX_DAYS = 100;
@@ -36,7 +35,6 @@ export default {
     GlLink,
     PageHeading,
     PdfExportButton,
-    NewSecurityDashboardBanner,
   },
   props: {
     projectFullPath: {
@@ -220,8 +218,6 @@ export default {
         <pdf-export-button :get-report-data="getReportData" />
       </template>
     </page-heading>
-
-    <new-security-dashboard-banner class="gl-mb-5" />
 
     <div>
       <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-6" />
