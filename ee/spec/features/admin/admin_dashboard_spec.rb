@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Admin Dashboard', feature_category: :shared do
+RSpec.describe 'Admin Dashboard', feature_category: :seat_cost_management do
   include VersionCheckHelpers
 
   before do
