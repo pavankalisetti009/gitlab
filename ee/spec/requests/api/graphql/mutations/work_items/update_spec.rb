@@ -310,8 +310,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             end
 
             before do
-              WorkItems::Type.default_by_type(:task).widget_definitions
-                .find_by_widget_type(:weight).update!(disabled: true)
+              stub_all_work_item_widgets(weight: false)
             end
 
             it_behaves_like 'work item is not updated' do
@@ -875,8 +874,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             end
 
             before do
-              WorkItems::Type.default_by_type(:issue).widget_definitions
-                .find_by_widget_type(:health_status).update!(disabled: true)
+              stub_all_work_item_widgets(health_status: false)
             end
 
             it_behaves_like 'work item is not updated' do
