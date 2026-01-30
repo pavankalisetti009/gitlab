@@ -27393,9 +27393,6 @@ msgstr ""
 msgid "Enable searching"
 msgstr ""
 
-msgid "Enable security training"
-msgstr ""
-
 msgid "Enable two-factor authentication"
 msgstr ""
 
@@ -55895,9 +55892,6 @@ msgstr ""
 msgid "Reduce project visibility"
 msgstr ""
 
-msgid "Reduce risk and triage fewer vulnerabilities with security training"
-msgstr ""
-
 msgid "Reference"
 msgstr ""
 
@@ -64051,13 +64045,7 @@ msgstr[1] ""
 msgid "SecurityTrackedRefs|tag"
 msgstr ""
 
-msgid "SecurityTraining|Enable security training to learn how to fix vulnerabilities. View security training from selected educational providers relevant to the detected vulnerability."
-msgstr ""
-
 msgid "SecurityTraining|Primary Training"
-msgstr ""
-
-msgid "SecurityTraining|Resolve with security training"
 msgstr ""
 
 msgid "SecurityTraining|Training from this partner takes precedence when more than one training partner is enabled."

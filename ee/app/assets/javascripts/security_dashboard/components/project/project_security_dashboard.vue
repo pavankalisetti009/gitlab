@@ -3,7 +3,6 @@ import { GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlLineChart } from '@gitlab/ui/src/charts';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
-import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
 import { PROJECT_LOADING_ERROR_MESSAGE, PdfExportError } from 'ee/security_dashboard/helpers';
 import {
   DOC_PATH_PROJECT_SECURITY_DASHBOARD,
@@ -31,7 +30,6 @@ const SEVERITIES = [
 
 export default {
   components: {
-    SecurityTrainingPromoBanner,
     GlLoadingIcon,
     GlLineChart,
     GlSprintf,
@@ -45,11 +43,6 @@ export default {
       type: String,
       required: false,
       default: '',
-    },
-    shouldShowPromoBanner: {
-      type: Boolean,
-      required: true,
-      default: true,
     },
   },
   apollo: {
@@ -207,8 +200,6 @@ export default {
 
 <template>
   <div data-testid="project-security-dashboard">
-    <security-training-promo-banner v-if="shouldShowPromoBanner" />
-
     <page-heading :heading="s__('SecurityReports|Security dashboard')">
       <template #description>
         <gl-sprintf

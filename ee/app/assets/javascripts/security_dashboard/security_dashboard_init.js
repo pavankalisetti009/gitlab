@@ -50,7 +50,6 @@ export default async (el, dashboardType) => {
 
   const hasProjects = parseBoolean(el.dataset.hasProjects);
   const hasVulnerabilities = parseBoolean(el.dataset.hasVulnerabilities);
-  const hideThirdPartyOffers = parseBoolean(el.dataset.hideThirdPartyOffers);
   const canAdminVulnerability = parseBoolean(el.dataset.canAdminVulnerability);
   const provide = {
     emptyStateSvgPath,
@@ -115,7 +114,6 @@ export default async (el, dashboardType) => {
     }
     props = {
       projectFullPath,
-      shouldShowPromoBanner: !hideThirdPartyOffers,
     };
   }
 
