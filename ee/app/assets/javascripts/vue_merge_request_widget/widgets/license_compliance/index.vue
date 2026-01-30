@@ -1,18 +1,16 @@
 <script>
 import { isEmpty } from 'lodash';
-import { sprintf, s__, n__ } from '~/locale';
+import { s__ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
-import { LICENSE_APPROVAL_STATUS } from 'ee/vue_shared/license_compliance/constants';
 import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { parseDependencies } from './utils';
-
-const APPROVAL_STATUS_TO_ICON = {
-  allowed: EXTENSION_ICONS.success,
-  denied: EXTENSION_ICONS.failed,
-  unclassified: EXTENSION_ICONS.notice,
-};
+import {
+  getSummaryTextWithReportItems,
+  groupLicensesByStatus,
+  createLicenseSections,
+  transformLicense,
+} from './utils';
 
 export default {
   name: 'WidgetLicenseCompliance',
@@ -65,7 +63,7 @@ export default {
       return [
         {
           text: s__('ciReport|Full report'),
-          href: this.mr.licenseCompliance.license_scanning.full_report_path,
+          href: this.mr.licenseCompliance?.license_scanning?.full_report_path,
           trackFullReportClicked: true,
           target: '_self',
         },
@@ -74,52 +72,14 @@ export default {
     hasApprovalRequired() {
       return Boolean(this.licenseComplianceData.collapsed?.approval_required);
     },
-    summaryTextWithReportItems() {
-      if (this.hasApprovalRequired && this.hasDeniedLicense) {
-        if (this.hasBaseReportLicenses) {
-          return n__(
-            'LicenseCompliance|License Compliance detected %d new license and policy violation; approval required',
-            'LicenseCompliance|License Compliance detected %d new licenses and policy violations; approval required',
-            this.licenseReportCount,
-          );
-        }
-        return n__(
-          'LicenseCompliance|License Compliance detected %d license and policy violation for the source branch only; approval required',
-          'LicenseCompliance|License Compliance detected %d licenses and policy violations for the source branch only; approval required',
-          this.licenseReportCount,
-        );
-      }
-
-      if (this.hasBaseReportLicenses && !this.hasDeniedLicense) {
-        return n__(
-          'LicenseCompliance|License Compliance detected %d new license',
-          'LicenseCompliance|License Compliance detected %d new licenses',
-          this.licenseReportCount,
-        );
-      }
-      if (this.hasBaseReportLicenses && this.hasDeniedLicense) {
-        return n__(
-          'LicenseCompliance|License Compliance detected %d new license and policy violation',
-          'LicenseCompliance|License Compliance detected %d new licenses and policy violations',
-          this.licenseReportCount,
-        );
-      }
-      if (!this.hasBaseReportLicenses && this.hasDeniedLicense) {
-        return n__(
-          'LicenseCompliance|License Compliance detected %d license and policy violation for the source branch only',
-          'LicenseCompliance|License Compliance detected %d licenses and policy violations for the source branch only',
-          this.licenseReportCount,
-        );
-      }
-      return n__(
-        'LicenseCompliance|License Compliance detected %d license for the source branch only',
-        'LicenseCompliance|License Compliance detected %d licenses for the source branch only',
-        this.licenseReportCount,
-      );
-    },
     summaryText() {
       if (this.hasReportItems) {
-        return this.summaryTextWithReportItems;
+        return getSummaryTextWithReportItems({
+          hasBaseReportLicenses: this.hasBaseReportLicenses,
+          hasDeniedLicense: this.hasDeniedLicense,
+          hasApprovalRequired: this.hasApprovalRequired,
+          licenseReportCount: this.licenseReportCount,
+        });
       }
 
       if (this.hasBaseReportLicenses) {
@@ -141,10 +101,10 @@ export default {
       return EXTENSION_ICONS.warning;
     },
     licenseComplianceCollapsedPath() {
-      return this.mr.licenseCompliance.license_scanning_comparison_collapsed_path;
+      return this.mr.licenseCompliance?.license_scanning_comparison_collapsed_path;
     },
     licenseComplianceExpandedPath() {
-      return this.mr.licenseCompliance.license_scanning_comparison_path;
+      return this.mr.licenseCompliance?.license_scanning_comparison_path;
     },
   },
   methods: {
@@ -168,85 +128,12 @@ export default {
           return { ...res, data };
         }
 
-        let newLicenses = data.new_licenses;
-
-        newLicenses = newLicenses.map((e) => {
-          let supportingText;
-          let actions;
-
-          if (
-            e.classification.approval_status === LICENSE_APPROVAL_STATUS.ALLOWED ||
-            e.classification.approval_status === LICENSE_APPROVAL_STATUS.UNCLASSIFIED
-          ) {
-            actions = [
-              {
-                text: n__('Used by %d package', 'Used by %d packages', e.dependencies.length),
-                href: this.mr.licenseCompliance.license_scanning.full_report_path,
-              },
-            ];
-          } else {
-            supportingText =
-              e.dependencies.length > 0
-                ? sprintf(s__('License Compliance| Used by %{dependencies}'), {
-                    dependencies: parseDependencies(e.dependencies),
-                  })
-                : '';
-          }
-
-          return {
-            status: e.classification.approval_status,
-            icon: {
-              name: APPROVAL_STATUS_TO_ICON[e.classification.approval_status],
-            },
-            link: {
-              href: e.url,
-              text: e.name,
-            },
-            supportingText,
-            actions,
-          };
-        });
-
-        const groupedLicenses = newLicenses.reduce(
-          (licenses, license) => ({
-            ...licenses,
-            [license.status]: [...(licenses[license.status] || []), license],
-          }),
-          {},
+        const fullReportPath = this.mr.licenseCompliance?.license_scanning?.full_report_path;
+        const transformedLicenses = data.new_licenses.map((license) =>
+          transformLicense(license, fullReportPath),
         );
-
-        const licenseSections = [
-          ...(groupedLicenses.denied?.length > 0
-            ? [
-                {
-                  header: s__('LicenseCompliance|Denied'),
-                  text: s__(
-                    "LicenseCompliance|Out-of-compliance with the project's policies and should be removed",
-                  ),
-                  children: groupedLicenses.denied,
-                },
-              ]
-            : []),
-          ...(groupedLicenses.unclassified?.length > 0
-            ? [
-                {
-                  header: s__('LicenseCompliance|Uncategorized'),
-                  text: s__('LicenseCompliance|No policy matches this license'),
-                  children: groupedLicenses.unclassified,
-                },
-              ]
-            : []),
-          ...(groupedLicenses.allowed?.length > 0
-            ? [
-                {
-                  header: s__('LicenseCompliance|Allowed'),
-                  text: s__('LicenseCompliance|Acceptable for use in this project'),
-
-                  children: groupedLicenses.allowed,
-                },
-              ]
-            : []),
-        ];
+        const groupedLicenses = groupLicensesByStatus(transformedLicenses);
+        const licenseSections = createLicenseSections(groupedLicenses);
 
         this.licenseComplianceData.expanded = licenseSections;
 
