@@ -12,7 +12,7 @@ namespace :gitlab do
 
       raise 'Network failure' if resp.code != 200
 
-      data = ::Gitlab::Json.parse(resp.body)
+      data = ::Gitlab::Json.safe_parse(resp.body)
 
       path = ::Gitlab::SPDX::CatalogueGateway::OFFLINE_CATALOGUE_PATH
       output = ::Gitlab::Json.pretty_generate(data)
