@@ -9601,9 +9601,6 @@ msgstr[1] ""
 msgid "ApprovalRules|Define target branch approval rules for new merge requests."
 msgstr ""
 
-msgid "ApprovalRule|A merge request author collaborating with a merge request approver"
-msgstr ""
-
 msgid "ApprovalRule|Add approvers"
 msgstr ""
 
@@ -9628,15 +9625,6 @@ msgstr ""
 msgid "ApprovalRule|Examples: QA, Security."
 msgstr ""
 
-msgid "ApprovalRule|Improve your organization's code review with required approvals."
-msgstr ""
-
-msgid "ApprovalRule|Increase quality and maintain standards."
-msgstr ""
-
-msgid "ApprovalRule|Learn more about merge request approval rules"
-msgstr ""
-
 msgid "ApprovalRule|Need triage"
 msgstr ""
 
@@ -9647,9 +9635,6 @@ msgid "ApprovalRule|New"
 msgstr ""
 
 msgid "ApprovalRule|Previously existing"
-msgstr ""
-
-msgid "ApprovalRule|Reduce your time to merge."
 msgstr ""
 
 msgid "ApprovalRule|Required number of approvals"
@@ -9673,13 +9658,7 @@ msgstr ""
 msgid "ApprovalRule|Search users or groups"
 msgstr ""
 
-msgid "ApprovalRule|Select eligible approvers by expertise or files changed."
-msgstr ""
-
 msgid "ApprovalRule|Target branch"
-msgstr ""
-
-msgid "ApprovalRule|Try for free"
 msgstr ""
 
 msgid "ApprovalRule|any"

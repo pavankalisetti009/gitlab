@@ -100,26 +100,6 @@ export const APPROVAL_DIALOG_I18N = {
   },
 };
 
-export const MR_APPROVALS_PROMO_DISMISSED = 'mr_approvals_promo.dismissed';
-export const MR_APPROVALS_PROMO_TRACKING_EVENTS = {
-  learnMoreClick: { action: 'click_link', label: 'learn_more_merge_approval' },
-  tryNowClick: { action: 'click_button', label: 'start_trial' },
-  collapsePromo: { action: 'click_button', label: 'collapse_approval_rules' },
-  expandPromo: { action: 'click_button', label: 'expand_approval_rules' },
-};
-export const MR_APPROVALS_PROMO_I18N = {
-  accordionTitle: s__('ApprovalRule|Approval rules'),
-  learnMore: __('Learn more'),
-  promoTitle: s__("ApprovalRule|Improve your organization's code review with required approvals."),
-  summary: __('Approvals are optional.'),
-  tryNow: s__('ApprovalRule|Try for free'),
-  valueStatements: [
-    s__('ApprovalRule|Select eligible approvers by expertise or files changed.'),
-    s__('ApprovalRule|Increase quality and maintain standards.'),
-    s__('ApprovalRule|Reduce your time to merge.'),
-  ],
-};
-
 export const SEARCH_PLACEHOLDER = s__('ApprovalRule|Search users or groups');
 
 export const DROPDOWN_OPTION_PROJECT_GROUPS = s__('ApprovalRule|Search in project groups');
