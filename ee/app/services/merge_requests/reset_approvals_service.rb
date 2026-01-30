@@ -12,11 +12,10 @@ module MergeRequests
 
     private
 
-    # Note: Closed merge requests also need approvals reset.
     def reset_approvals_for_merge_requests(ref, newrev, skip_reset_checks = false)
       branch_name = ::Gitlab::Git.ref_name(ref)
 
-      merge_requests = merge_requests_for(branch_name, mr_states: [:opened, :closed])
+      merge_requests = merge_requests_for_approval_reset(branch_name)
 
       merge_requests.each do |merge_request|
         mr_patch_id_sha = merge_request.current_patch_id_sha

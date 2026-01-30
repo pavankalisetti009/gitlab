@@ -229,6 +229,15 @@ module EE
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
       end
+
+      def merge_requests_for_approval_reset(branch_name)
+        project.source_of_merge_requests
+          .by_source_branch(branch_name)
+          .with_state(:opened)
+          .with_existing_approval
+          .preload(:source_project) # rubocop: disable CodeReuse/ActiveRecord -- already exists in this class
+          .select(&:source_project)
+      end
     end
   end
 end
