@@ -8233,9 +8233,6 @@ paths:
                     properties:
                       op:
                         type: string
-                        enum:
-                        - add
-                        - remove
                         description: Operation type
                       path:
                         type: string

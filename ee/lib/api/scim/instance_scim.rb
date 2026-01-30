@@ -258,7 +258,7 @@ module API
             requires :schemas, type: Array, desc: 'SCIM schemas'
             requires :Operations, type: Array, desc: 'Operations to perform' do
               requires :op, type: String,
-                values: %w[add remove],
+                values: { value: ->(v) { %w[add remove].include?(v.to_s.downcase) } },
                 desc: 'Operation type'
               optional :path, type: String, desc: 'Path to modify'
               optional :value, types: [Array, String, Hash], desc: 'Value for the operation'
