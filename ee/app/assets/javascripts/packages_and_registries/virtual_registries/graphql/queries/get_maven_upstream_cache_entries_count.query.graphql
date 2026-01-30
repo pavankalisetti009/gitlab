@@ -2,7 +2,7 @@ query getMavenUpstreamCacheEntriesCount(
   $id: VirtualRegistriesPackagesMavenUpstreamID!
   $search: String
 ) {
-  virtualRegistriesPackagesMavenUpstream(id: $id) {
+  upstream: virtualRegistriesPackagesMavenUpstream(id: $id) {
     id
     cacheEntries(search: $search) {
       count

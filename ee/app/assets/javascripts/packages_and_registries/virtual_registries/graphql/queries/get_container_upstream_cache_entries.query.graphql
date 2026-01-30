@@ -1,14 +1,15 @@
+# @feature_category: virtual_registry
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 
-query getMavenUpstreamCacheEntries(
-  $id: VirtualRegistriesPackagesMavenUpstreamID!
+query getCountUpstreamCacheEntries(
+  $id: VirtualRegistriesContainerUpstreamID!
   $search: String
   $after: String
   $before: String
   $first: Int
   $last: Int
 ) {
-  upstream: virtualRegistriesPackagesMavenUpstream(id: $id) {
+  upstream: virtualRegistriesContainerUpstream(id: $id) {
     id
     cacheEntries(search: $search, after: $after, before: $before, first: $first, last: $last) {
       nodes {

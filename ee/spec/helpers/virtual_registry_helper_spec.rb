@@ -223,7 +223,7 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
 
     it 'returns maven upstream template data' do
       is_expected.to include(
-        'upstream' => maven_upstream_attributes,
+        'initialUpstream' => maven_upstream_attributes,
         'editUpstreamPath' =>
           edit_group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
       )

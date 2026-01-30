@@ -70,7 +70,7 @@ module VirtualRegistryHelper
 
   def maven_upstream_data(upstream)
     {
-      upstream: {
+      initialUpstream: {
         id: upstream.id,
         name: upstream.name,
         url: upstream.url,

@@ -131,13 +131,19 @@ export default {
       }
     },
     getShowUpstreamURL(id) {
-      return this.showUpstreamPathTemplate.replace(':id', getIdFromGraphQLId(id));
+      return (
+        this.showUpstreamPathTemplate &&
+        this.showUpstreamPathTemplate.replace(':id', getIdFromGraphQLId(id))
+      );
     },
     getEditUpstreamURL(id) {
       return this.editUpstreamPathTemplate.replace(':id', getIdFromGraphQLId(id));
     },
     getEditUpstreamLabel(name) {
       return sprintf(s__('VirtualRegistry|Edit upstream %{name}'), { name });
+    },
+    getShowUpstreamRouter(id) {
+      return { name: 'UPSTREAM_SHOW', params: { id: getIdFromGraphQLId(id) } };
     },
     getCacheValidityHoursLabel(cacheValidityHours) {
       return sprintf(
@@ -176,6 +182,7 @@ export default {
           >
             <gl-link
               :href="getShowUpstreamURL(item.id)"
+              :to="getShowUpstreamRouter(item.id)"
               class="gl-mr-2 gl-min-w-0 gl-max-w-full gl-font-bold gl-text-default"
               data-testid="upstream-name"
             >

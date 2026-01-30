@@ -75210,6 +75210,9 @@ msgstr ""
 msgid "Virtual registry"
 msgstr ""
 
+msgid "Virtual registry|Upstream not found."
+msgstr ""
+
 msgid "VirtualRegistries|API endpoints rate limit"
 msgstr ""
 
@@ -75405,6 +75408,9 @@ msgstr ""
 msgid "VirtualRegistry|Connection successful."
 msgstr ""
 
+msgid "VirtualRegistry|Container"
+msgstr ""
+
 msgid "VirtualRegistry|Container virtual registries"
 msgstr ""
 
@@ -75424,6 +75430,9 @@ msgid "VirtualRegistry|Create registry"
 msgstr ""
 
 msgid "VirtualRegistry|Create upstream"
+msgstr ""
+
+msgid "VirtualRegistry|Delete Container upstream cache entry?"
 msgstr ""
 
 msgid "VirtualRegistry|Delete Maven registry"
