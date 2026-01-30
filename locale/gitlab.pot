@@ -2950,13 +2950,19 @@ msgstr ""
 msgid "AICatalog|Is visible only to users with at least the Developer role for this project, and to users with the Owner role for the top-level group."
 msgstr ""
 
-msgid "AICatalog|Is visible to all users."
+msgid "AICatalog|Is visible to everyone, including users outside your organization."
 msgstr ""
 
 msgid "AICatalog|Learn more about foundational agents"
 msgstr ""
 
 msgid "AICatalog|Learn more about foundational flows"
+msgstr ""
+
+msgid "AICatalog|Make %{itemType} public?"
+msgstr ""
+
+msgid "AICatalog|Make public"
 msgstr ""
 
 msgid "AICatalog|Manage agent settings."

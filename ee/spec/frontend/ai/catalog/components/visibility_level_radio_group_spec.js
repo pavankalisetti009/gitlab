@@ -1,4 +1,5 @@
-import { GlFormRadio, GlFormRadioGroup, GlSprintf } from '@gitlab/ui';
+import { nextTick } from 'vue';
+import { GlAlert, GlFormRadio, GlFormRadioGroup, GlSprintf, GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components/visibility_level_radio_group.vue';
@@ -9,6 +10,13 @@ describe('VisibilityLevelRadioGroup', () => {
 
   const findFormRadioGroup = () => wrapper.findComponent(GlFormRadioGroup);
   const findAllHelpPopovers = () => wrapper.findAllComponents(HelpPopover);
+  const findConfirmModal = () => wrapper.findComponent(GlModal);
+  const findAlert = () => wrapper.findComponent(GlAlert);
+
+  const selectVisibilityLevel = async (level) => {
+    findFormRadioGroup().vm.$emit('input', level);
+    await nextTick();
+  };
 
   const defaultProps = {
     id: '1',
@@ -34,18 +42,88 @@ describe('VisibilityLevelRadioGroup', () => {
   };
 
   describe('Visibility Level Radio Group', () => {
-    it('emits the input event', () => {
+    it('emits the input event', async () => {
       createWrapper();
 
-      findFormRadioGroup().vm.$emit('input', VISIBILITY_LEVEL_PUBLIC);
+      await selectVisibilityLevel(VISIBILITY_LEVEL_PRIVATE);
 
+      expect(findConfirmModal().exists()).toBe(false);
       expect(wrapper.emitted('input')).toHaveLength(1);
-      expect(wrapper.emitted('input')[0][0]).toBe(VISIBILITY_LEVEL_PUBLIC);
+      expect(wrapper.emitted('input')[0][0]).toBe(VISIBILITY_LEVEL_PRIVATE);
+    });
 
-      findFormRadioGroup().vm.$emit('input', VISIBILITY_LEVEL_PRIVATE);
+    describe('when selecting public visibility from private', () => {
+      beforeEach(() => {
+        createWrapper({ value: VISIBILITY_LEVEL_PRIVATE });
+      });
 
-      expect(wrapper.emitted('input')).toHaveLength(2);
-      expect(wrapper.emitted('input')[1][0]).toBe(VISIBILITY_LEVEL_PRIVATE);
+      it('emits input event and shows confirmation modal', async () => {
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
+
+        expect(findConfirmModal().exists()).toBe(true);
+        expect(wrapper.emitted('input')).toHaveLength(1);
+        expect(wrapper.emitted('input')[0][0]).toBe(VISIBILITY_LEVEL_PUBLIC);
+      });
+
+      it('closes modal when user confirms', async () => {
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
+
+        findConfirmModal().vm.$emit('primary');
+        await nextTick();
+
+        expect(findConfirmModal().exists()).toBe(false);
+        expect(wrapper.emitted('input')).toHaveLength(1);
+      });
+
+      it('reverts to private when user cancels modal', async () => {
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
+
+        findConfirmModal().vm.$emit('hidden');
+        await nextTick();
+
+        expect(findConfirmModal().exists()).toBe(false);
+        expect(wrapper.emitted('input')).toHaveLength(2);
+        expect(wrapper.emitted('input')[1][0]).toBe(VISIBILITY_LEVEL_PRIVATE);
+      });
+
+      it('displays correct modal title', async () => {
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
+
+        expect(findConfirmModal().props('title')).toBe('Make agent public?');
+      });
+
+      it('displays warning alert in modal', async () => {
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
+
+        expect(findAlert().exists()).toBe(true);
+        expect(findAlert().props('variant')).toBe('warning');
+      });
+
+      it('displays Make public as primary action text', async () => {
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
+
+        expect(findConfirmModal().props('actionPrimary').text).toBe('Make public');
+      });
+    });
+
+    describe('when itemType is FLOW', () => {
+      it('displays correct modal title for flow', async () => {
+        createWrapper({ value: VISIBILITY_LEVEL_PRIVATE, itemType: 'FLOW' });
+
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
+
+        expect(findConfirmModal().props('title')).toBe('Make flow public?');
+      });
+    });
+
+    describe('when value is already public', () => {
+      it('does not show modal when selecting public again', async () => {
+        createWrapper({ value: VISIBILITY_LEVEL_PUBLIC });
+
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
+
+        expect(findConfirmModal().exists()).toBe(false);
+      });
     });
 
     describe('popover', () => {
@@ -76,10 +154,14 @@ describe('VisibilityLevelRadioGroup', () => {
           title: 'Public agent',
         });
         expect(publicPopover.findAll('strong').at(0).text()).toBe('A public agent:');
-        expect(publicPopover.text()).toContain('Is visible to all users.');
+        expect(publicPopover.text()).toContain(
+          'Is visible to everyone, including users outside your organization.',
+        );
         expect(publicPopover.findAll('strong').at(1).text()).toBe('Public agents are best for:');
         expect(publicPopover.text()).toContain('Community contributions.');
-        expect(publicPopover.text()).toContain('Anyone can see your prompts and settings.');
+        expect(publicPopover.text()).toContain(
+          "Anyone can see your prompts and settings. Don't include sensitive data or reference internal systems.",
+        );
       });
     });
   });
