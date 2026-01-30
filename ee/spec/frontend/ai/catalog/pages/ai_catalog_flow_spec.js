@@ -368,4 +368,29 @@ describe('AiCatalogFlow', () => {
       });
     },
   );
+
+  describe('adds the correct page title', () => {
+    it('prefixes the flow name to the base page title', async () => {
+      document.title = 'Flows · Automate · GitLab';
+
+      const mockFlowWithNameHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiCatalogItem: {
+            ...mockFlow,
+            name: 'My Flow',
+            configurationForProject: mockFlowConfigurationForProject,
+            configurationForGroup: mockFlowConfigurationForGroup,
+          },
+        },
+      });
+
+      createComponent({
+        provide: { projectId: '1', rootGroupId: '1' },
+        flowQueryHandler: mockFlowWithNameHandler,
+      });
+      await waitForPromises();
+
+      expect(document.title).toBe('My Flow · Flows · Automate · GitLab');
+    });
+  });
 });

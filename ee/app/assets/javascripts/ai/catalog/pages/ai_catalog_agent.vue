@@ -107,6 +107,22 @@ export default {
       };
     },
   },
+  watch: {
+    aiCatalogAgent: {
+      handler() {
+        if (this.aiCatalogAgent?.name) {
+          document.title = `${this.aiCatalogAgent.name} · ${this.baseTitle}`;
+        }
+      },
+      deep: true,
+    },
+  },
+  created() {
+    const itemType = s__('AICatalog|Agents');
+    this.baseTitle = document.title.includes(itemType)
+      ? document.title
+      : `${itemType} · ${document.title}`;
+  },
   emptySearchSvg,
 };
 </script>

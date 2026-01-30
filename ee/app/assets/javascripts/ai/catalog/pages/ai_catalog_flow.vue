@@ -108,6 +108,22 @@ export default {
       };
     },
   },
+  watch: {
+    aiCatalogFlow: {
+      handler() {
+        if (this.aiCatalogFlow?.name) {
+          document.title = `${this.aiCatalogFlow.name} · ${this.baseTitle}`;
+        }
+      },
+      deep: true,
+    },
+  },
+  created() {
+    const itemType = s__('AICatalog|Flows');
+    this.baseTitle = document.title.includes(itemType)
+      ? document.title
+      : `${itemType} · ${document.title}`;
+  },
   emptySearchSvg,
 };
 </script>
