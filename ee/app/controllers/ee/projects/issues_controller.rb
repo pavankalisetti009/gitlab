@@ -11,7 +11,6 @@ module EE
       prepended do
         include DescriptionDiffActions
         include GeoInstrumentation
-        include GitlabSubscriptions::SeatCountAlert
         include Observability::ObservabilityIssuesHelper
         include EpicParamActions
 
@@ -49,10 +48,6 @@ module EE
         before_action only: [:index, :show] do
           push_force_frontend_feature_flag(:okrs_mvc, !!project&.okrs_mvc_feature_flag_enabled?)
           push_licensed_feature(:okrs, project)
-        end
-
-        before_action only: %i[show index] do
-          @seat_count_data = generate_seat_count_alert_data(@project)
         end
 
         feature_category :team_planning, [:delete_description_version, :description_diff]

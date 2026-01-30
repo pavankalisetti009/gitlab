@@ -10,11 +10,9 @@ module Namespaces
     end
 
     def call
-      render component_instance
-    end
+      return if component_instance.nil?
 
-    def render?
-      component_instance.present?
+      render component_instance
     end
 
     private
@@ -24,11 +22,13 @@ module Namespaces
     def component_instance
       return unless owner_of_paid_group?
 
-      all_seats_used_alert_component if reached_seats_limit?
+      return all_seats_used_alert_component if reached_seats_limit?
+
+      approaching_seat_count_threshold_component if seat_count_data.present?
     end
 
     def all_seats_used_alert_component
-      if block_seat_overages?
+      if root_namespace.block_seat_overages?
         return Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent.new(
           context: root_namespace,
           current_user: current_user
@@ -38,8 +38,12 @@ module Namespaces
       Namespaces::AllSeatsUsedAlertComponent.new(context: root_namespace)
     end
 
-    def block_seat_overages?
-      root_namespace.block_seat_overages?
+    def approaching_seat_count_threshold_component
+      Namespaces::ApproachingSeatCountThresholdComponent.new(
+        context: seat_count_data[:namespace],
+        remaining_seat_count: seat_count_data[:remaining_seat_count],
+        total_seat_count: seat_count_data[:total_seat_count]
+      )
     end
 
     def current_subscription
@@ -63,5 +67,14 @@ module Namespaces
 
       current_subscription.seats <= billable_members_count
     end
+
+    def seat_count_data
+      GitlabSubscriptions::Reconciliations::CalculateSeatCountDataService.new(
+        namespace: root_namespace,
+        user: current_user,
+        subscription: current_subscription
+      ).execute
+    end
+    strong_memoize_attr :seat_count_data
   end
 end

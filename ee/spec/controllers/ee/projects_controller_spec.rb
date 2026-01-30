@@ -146,8 +146,6 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
           let(:namespace) { public_project.namespace }
 
           it_behaves_like 'namespace storage limit alert'
-
-          it_behaves_like 'seat count alert'
         end
       end
     end

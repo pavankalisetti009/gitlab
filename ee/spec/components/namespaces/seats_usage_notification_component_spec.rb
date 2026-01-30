@@ -12,6 +12,7 @@ RSpec.describe Namespaces::SeatsUsageNotificationComponent, :saas, feature_categ
 
   let(:billable_members_count) { 13 }
   let(:total_seat_count) { 13 }
+  let(:seat_count_data) { nil }
 
   let(:kwargs) { { context: namespace, current_user: user } }
 
@@ -20,17 +21,23 @@ RSpec.describe Namespaces::SeatsUsageNotificationComponent, :saas, feature_categ
   before do
     allow(namespace).to receive(:billable_members_count).and_return(billable_members_count)
 
+    allow_next_instance_of(GitlabSubscriptions::Reconciliations::CalculateSeatCountDataService) do |instance|
+      allow(instance).to receive(:execute).and_return(seat_count_data)
+    end
+
     build(:gitlab_subscription, namespace: namespace, plan_code: Plan::ULTIMATE, seats: total_seat_count)
   end
 
   shared_examples 'does not render any notification' do
     it 'does not render an alert' do
+      is_expected.not_to have_selector('[data-testid="approaching-seat-count-threshold-alert"]')
       is_expected.not_to have_selector('[data-testid="all-seats-used-alert"]')
       is_expected.not_to have_selector('[data-testid="bso-all-seats-used-alert"]')
     end
 
     it 'does not contain any text title' do
       is_expected.not_to have_text('Your namespace has used all the seats')
+      is_expected.not_to have_text('approaching the limit of available seats')
     end
   end
 
@@ -97,6 +104,23 @@ RSpec.describe Namespaces::SeatsUsageNotificationComponent, :saas, feature_categ
       end
 
       it_behaves_like 'renders the all seats used notification'
+
+      context 'with seat count data' do
+        let(:total_seat_count) { 14 }
+
+        let(:seat_count_data) do
+          { namespace: namespace,
+            remaining_seat_count: total_seat_count - billable_members_count,
+            seats_in_use: billable_members_count,
+            total_seat_count: total_seat_count }
+        end
+
+        it 'renders the approaching seats threshold notification' do
+          is_expected.to have_text("#{namespace.name} is approaching the limit of available seats")
+          is_expected.to have_text("Your subscription has #{total_seat_count - billable_members_count} out " \
+            "of #{total_seat_count} seats remaining.")
+        end
+      end
     end
 
     describe 'when namespace is personal' do

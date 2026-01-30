@@ -71,16 +71,6 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         end
       end
 
-      it_behaves_like 'seat count alert' do
-        subject { get_show }
-
-        let(:namespace) { project }
-
-        before do
-          project.add_developer(user)
-        end
-      end
-
       it 'exposes the escalation_policies licensed feature setting' do
         project.add_guest(user)
         stub_licensed_features(escalation_policies: true)
@@ -152,12 +142,10 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         end
 
         context 'when viewing all issues' do
-          include_examples 'seat count alert' do
-            let(:namespace) { project }
+          it 'returns issues' do
+            get_index
 
-            before do
-              project.add_developer(user)
-            end
+            expect(response).to have_gitlab_http_status(:ok)
           end
         end
 

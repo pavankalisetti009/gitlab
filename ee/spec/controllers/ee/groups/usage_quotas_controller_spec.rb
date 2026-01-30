@@ -18,10 +18,6 @@ RSpec.describe Groups::UsageQuotasController, feature_category: :consumables_cos
         group.add_owner(user)
       end
 
-      it_behaves_like 'seat count alert' do
-        let(:namespace) { group }
-      end
-
       it 'renders index with 200 status code' do
         request
 
