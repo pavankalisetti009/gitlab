@@ -49,7 +49,7 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     feature_event_keys = feature_events.map { |event| :"#{event}#{count_field_suffix}" }
 
     payload.transform_values do |user_metrics|
-      user_metrics.slice(*feature_event_keys, :total_events_count)
+      user_metrics.slice(*feature_event_keys, :total_events_count, :last_duo_activity_on)
     end
   end
 
@@ -173,11 +173,23 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
 
     context 'with specific field queries' do
       context 'when querying lastDuoActivityOn' do
+        let(:fields) { ['user { id lastDuoActivityOn }', 'codeSuggestions { lastDuoActivityOn }'] }
+        let(:service_payload) do
+          {
+            current_user.id => {
+              code_suggestion_accepted_in_ide_event_count: 10,
+              last_duo_activity_on: 3.days.ago
+            }
+          }
+        end
+
         let_it_be(:current_user_metrics) do
           create(:ai_user_metrics, last_duo_activity_on: 5.days.ago, user: current_user)
         end
 
-        let(:fields) { ['user { id lastDuoActivityOn }'] }
+        it 'returns the last activity date for the feature' do
+          expect(ai_user_metrics['nodes'].first['codeSuggestions']['lastDuoActivityOn']).to eq(3.days.ago.to_date.to_s)
+        end
 
         it 'returns the last activity date' do
           expect(ai_user_metrics['nodes'].first['user']['lastDuoActivityOn']).to eq(5.days.ago.to_date.to_s)

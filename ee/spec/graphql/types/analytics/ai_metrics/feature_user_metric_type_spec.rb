@@ -51,5 +51,15 @@ RSpec.describe Types::Analytics::AiMetrics::FeatureUserMetricType, feature_categ
       expect(type.fields).to include('codeSuggestionAcceptedInIdeEventCount')
       expect(type.fields).to include('codeSuggestionRejectedInIdeEventCount')
     end
+
+    it 'includes lastDuoActivityOn field' do
+      type = described_class[:code_suggestions]
+
+      expect(type.fields).to include('lastDuoActivityOn')
+      expect(type.fields['lastDuoActivityOn'].type.unwrap).to eq(Types::DateType)
+      expect(type.fields['lastDuoActivityOn'].description).to eq(
+        'Date of the last Code Suggestions activity for the user.'
+      )
+    end
   end
 end

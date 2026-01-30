@@ -78,6 +78,15 @@ module Analytics
           query = query.select(count_expression)
         end
 
+        unless fetch_all_features?
+          last_activity_expression = Arel::Nodes::NamedFunction.new('maxIf', [
+            builder.table[:date],
+            builder.table[:event].in(feature_event_ids)
+          ]).as('last_duo_activity_on')
+
+          query = query.select(last_activity_expression)
+        end
+
         query
       end
 
