@@ -33,8 +33,9 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
       fill_in 'Display name', with: 'New flow name'
       fill_in 'Description', with: 'New flow description'
 
-      # Set visibility to Public
+      # Set visibility to Public (triggers confirmation modal)
       choose 'Public'
+      click_button 'Make public'
 
       # Fill in the flow definition (YAML configuration)
       flow_definition = <<~YAML
