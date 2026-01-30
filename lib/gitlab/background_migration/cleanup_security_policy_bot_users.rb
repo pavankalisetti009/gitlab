@@ -16,10 +16,12 @@ module Gitlab
       def perform
         each_sub_batch do |sub_batch|
           connection.execute(<<~SQL)
-            DELETE FROM users
-            WHERE id IN (
+            WITH sub_batch AS MATERIALIZED (
+              #{sub_batch.select(:id).limit(sub_batch_size).to_sql}
+            ),
+            users_to_delete AS MATERIALIZED (
               SELECT users.id
-              FROM (#{sub_batch.select(:id).limit(sub_batch_size).to_sql}) AS users
+              FROM sub_batch AS users
               INNER JOIN members ON members.user_id = users.id
               INNER JOIN projects ON projects.id = members.source_id
               INNER JOIN namespaces ON namespaces.id = projects.namespace_id
@@ -28,7 +30,9 @@ module Gitlab
               WHERE members.source_type = 'Project'
                 AND members.type = 'ProjectMember'
                 AND plans.name IN (#{PREMIUM_PLANS.map { |plan| connection.quote(plan) }.join(', ')})
+              LIMIT #{sub_batch_size}
             )
+            DELETE FROM users WHERE id IN (SELECT id FROM users_to_delete)
           SQL
         end
       end
