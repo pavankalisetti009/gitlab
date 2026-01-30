@@ -6,7 +6,12 @@ import waitForPromises from 'helpers/wait_for_promises';
 import SmartInterval from '~/smart_interval';
 import SecurityFindingsPage from 'ee/merge_requests/reports/pages/security_findings_page.vue';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
-import { createEnabledScansQueryResponse } from 'ee_jest/vue_merge_request_widget/mock_data';
+import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
+import {
+  createEnabledScansQueryResponse,
+  mockFindingReportsComparerSuccessResponse,
+  mockFindingReportsComparerParsingResponse,
+} from 'ee_jest/vue_merge_request_widget/mock_data';
 
 jest.mock('~/smart_interval');
 
@@ -17,16 +22,22 @@ describe('Security findings page component', () => {
 
   const DEFAULT_MR_PROPS = {
     targetProjectFullPath: 'gitlab-org/gitlab',
+    iid: 456,
     pipeline: {
       iid: 123,
     },
   };
 
-  const createComponent = ({ mr = {}, enabledScansHandler } = {}) => {
+  const createComponent = ({ mr = {}, enabledScansHandler, findingReportsHandler } = {}) => {
     const mockApollo = createMockApollo([
       [
         enabledScansQuery,
         enabledScansHandler || jest.fn().mockResolvedValue(createEnabledScansQueryResponse()),
+      ],
+      [
+        findingReportsComparerQuery,
+        findingReportsHandler ||
+          jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse),
       ],
     ]);
 
@@ -140,6 +151,161 @@ describe('Security findings page component', () => {
 
         wrapper.vm.$apollo.queries.enabledScans.refetch();
         await waitForPromises();
+
+        expect(destroy).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('finding reports', () => {
+    it('fetches finding reports when scans are ready and enabled', async () => {
+      const findingReportsHandler = jest
+        .fn()
+        .mockResolvedValue(mockFindingReportsComparerSuccessResponse);
+
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler,
+      });
+
+      await waitForPromises();
+
+      expect(findingReportsHandler).toHaveBeenCalledWith({
+        fullPath: DEFAULT_MR_PROPS.targetProjectFullPath,
+        iid: String(DEFAULT_MR_PROPS.iid),
+        reportType: 'SAST',
+        scanMode: 'FULL',
+      });
+    });
+
+    it('does not fetch finding reports when no scans are enabled', async () => {
+      const findingReportsHandler = jest
+        .fn()
+        .mockResolvedValue(mockFindingReportsComparerSuccessResponse);
+
+      createComponent({
+        enabledScansHandler: jest.fn().mockResolvedValue(createEnabledScansQueryResponse()),
+        findingReportsHandler,
+      });
+
+      await waitForPromises();
+
+      expect(findingReportsHandler).not.toHaveBeenCalled();
+    });
+
+    it('does not fetch finding reports while enabledScans is still polling', async () => {
+      const findingReportsHandler = jest
+        .fn()
+        .mockResolvedValue(mockFindingReportsComparerSuccessResponse);
+
+      createComponent({
+        enabledScansHandler: jest.fn().mockResolvedValue(
+          createEnabledScansQueryResponse({
+            full: { ready: false, sast: true },
+            partial: { ready: false },
+          }),
+        ),
+        findingReportsHandler,
+      });
+
+      await waitForPromises();
+
+      expect(SmartInterval).toHaveBeenCalled();
+      expect(findingReportsHandler).not.toHaveBeenCalled();
+    });
+
+    it('fetches reports for multiple scan types', async () => {
+      const findingReportsHandler = jest
+        .fn()
+        .mockResolvedValue(mockFindingReportsComparerSuccessResponse);
+
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true, dast: true } })),
+        findingReportsHandler,
+      });
+
+      await waitForPromises();
+
+      expect(findingReportsHandler).toHaveBeenCalledTimes(2);
+      expect(findingReportsHandler).toHaveBeenCalledWith(
+        expect.objectContaining({ reportType: 'SAST' }),
+      );
+      expect(findingReportsHandler).toHaveBeenCalledWith(
+        expect.objectContaining({ reportType: 'DAST' }),
+      );
+    });
+
+    describe('polling', () => {
+      it('starts polling when report status is PARSING', async () => {
+        createComponent({
+          enabledScansHandler: jest
+            .fn()
+            .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+          findingReportsHandler: jest
+            .fn()
+            .mockResolvedValue(mockFindingReportsComparerParsingResponse),
+        });
+
+        await waitForPromises();
+
+        expect(SmartInterval).toHaveBeenCalledWith(
+          expect.objectContaining({
+            callback: expect.any(Function),
+            startingInterval: 3000,
+            maxInterval: 30000,
+            incrementByFactorOf: 1.5,
+            immediateExecution: false,
+          }),
+        );
+      });
+
+      it('stops polling when report status becomes PARSED', async () => {
+        const destroy = jest.fn();
+        SmartInterval.mockImplementation(() => ({ destroy }));
+
+        const findingReportsHandler = jest
+          .fn()
+          .mockResolvedValueOnce(mockFindingReportsComparerParsingResponse)
+          .mockResolvedValueOnce(mockFindingReportsComparerSuccessResponse);
+
+        createComponent({
+          enabledScansHandler: jest
+            .fn()
+            .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+          findingReportsHandler,
+        });
+
+        await waitForPromises();
+
+        expect(SmartInterval).toHaveBeenCalled();
+
+        const pollerCallback = SmartInterval.mock.calls[0][0].callback;
+        await pollerCallback();
+        await waitForPromises();
+
+        expect(destroy).toHaveBeenCalled();
+      });
+
+      it('cleans up report pollers on destroy', async () => {
+        const destroy = jest.fn();
+        SmartInterval.mockImplementation(() => ({ destroy }));
+
+        createComponent({
+          enabledScansHandler: jest
+            .fn()
+            .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+          findingReportsHandler: jest
+            .fn()
+            .mockResolvedValue(mockFindingReportsComparerParsingResponse),
+        });
+
+        await waitForPromises();
+
+        wrapper.destroy();
 
         expect(destroy).toHaveBeenCalled();
       });
