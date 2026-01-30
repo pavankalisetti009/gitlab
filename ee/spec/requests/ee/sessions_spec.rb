@@ -95,6 +95,10 @@ RSpec.describe 'Sessions', feature_category: :system_access do
   end
 
   describe 'GET /users/sign_in_path', :saas_redirect_sign_in_when_login_not_found do
+    before do
+      stub_feature_flags(two_step_sign_in: true)
+    end
+
     shared_examples 'returns nil sign_in_path' do |login_value|
       it 'returns nil' do
         params = login_value.nil? ? {} : { login: login_value }

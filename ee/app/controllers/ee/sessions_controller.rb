@@ -11,6 +11,7 @@ module EE
       include GoogleSyndicationCSP
 
       before_action :gitlab_geo_logout, only: [:destroy]
+      before_action :set_two_step_sign_in_params, only: [:new]
       prepend_before_action :detect_and_notify_for_compromised_password, only: [:create]
       prepend_before_action :complete_identity_verification, only: :create
     end
@@ -46,6 +47,15 @@ module EE
       return if user.present?
 
       new_user_session_path(login: login)
+    end
+
+    def set_two_step_sign_in_params
+      return unless ::Feature.enabled?(:sign_in_form_vue, ::Feature.current_request)
+      return unless ::Feature.enabled?(:two_step_sign_in, ::Feature.current_request)
+      return unless ::Gitlab::Saas.feature_available?(:redirect_sign_in_when_login_not_found)
+
+      @username_or_email = ActionController::Base.helpers.sanitize(safe_login_param) # rubocop:disable Gitlab/ModuleWithInstanceVariables
+      @remember_me = ActionController::Base.helpers.sanitize(params.permit(:remember_me)[:remember_me]) # rubocop:disable Gitlab/ModuleWithInstanceVariables
     end
 
     def gitlab_geo_logout
