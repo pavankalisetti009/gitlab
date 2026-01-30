@@ -238,4 +238,70 @@ describe('Agents Platform Router', () => {
       expect(utils.setPreviousRoute).not.toHaveBeenCalled();
     });
   });
+
+  describe('afterEach hook - page titles', () => {
+    const originalTitle = 'Automate · GitLab';
+
+    beforeEach(() => {
+      document.title = originalTitle;
+      gon.features = {
+        aiCatalogFlows: true,
+      };
+      router = createRouter(baseRoute, 'project');
+    });
+
+    it('sets document title for agents route', async () => {
+      await router.push('/agents');
+
+      expect(document.title).toBe('Agents · Automate · GitLab');
+    });
+
+    it('sets document title for new agent route', async () => {
+      await router.push('/agents/new');
+
+      expect(document.title).toBe('New agent · Automate · GitLab');
+    });
+
+    it('sets document title for flows route', async () => {
+      await router.push('/flows');
+
+      expect(document.title).toBe('Flows · Automate · GitLab');
+    });
+
+    it('sets document title for new flow route', async () => {
+      await router.push('/flows/new');
+
+      expect(document.title).toBe('New flow · Automate · GitLab');
+    });
+
+    it('sets document title for triggers route', async () => {
+      await router.push('/triggers');
+
+      expect(document.title).toBe('Triggers · Automate · GitLab');
+    });
+
+    it('sets document title for agent-sessions route', async () => {
+      await router.push('/agent-sessions');
+
+      expect(document.title).toBe('Sessions · Automate · GitLab');
+    });
+
+    it('does not set document title for flow routes with useId meta', async () => {
+      await router.push('/flows');
+      const titleAfterFlows = document.title;
+
+      await router.push(`/flows/${id}`);
+
+      expect(document.title).toBe(titleAfterFlows);
+    });
+
+    it('does not set document title for agent routes with useId meta', async () => {
+      await router.push('/agents');
+      const titleAfterAgents = document.title;
+
+      await router.push(`/agents/${id}`);
+
+      expect(document.title).toBe(titleAfterAgents);
+    });
+  });
 });

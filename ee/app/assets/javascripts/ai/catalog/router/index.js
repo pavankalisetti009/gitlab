@@ -40,7 +40,9 @@ const requireAuth = (_, __, next) => {
 };
 
 export const createRouter = (base) => {
-  return new VueRouter({
+  const baseTitle = document.title;
+
+  const router = new VueRouter({
     base,
     mode: 'history',
     routes: [
@@ -54,6 +56,7 @@ export const createRouter = (base) => {
         component: NestedRouteApp,
         path: '/agents',
         meta: {
+          title: s__('AICatalog|Agents'),
           text: s__('AICatalog|Agents'), // Defined on the parent so that all children inherit this as a breadcrumb
           indexRoute: AI_CATALOG_AGENTS_ROUTE, // Used by breadcrumbs to ensure we can identify the index for this tree
         },
@@ -62,6 +65,9 @@ export const createRouter = (base) => {
             name: AI_CATALOG_AGENTS_ROUTE,
             path: '',
             component: AiCatalogAgents,
+            meta: {
+              title: s__('AICatalog|Agents'),
+            },
           },
           {
             name: AI_CATALOG_AGENTS_NEW_ROUTE,
@@ -69,6 +75,7 @@ export const createRouter = (base) => {
             component: AiCatalogAgentsNew,
             beforeEnter: requireAuth,
             meta: {
+              title: s__('AICatalog|New agent'),
               text: s__('AICatalog|New agent'),
             },
           },
@@ -114,6 +121,7 @@ export const createRouter = (base) => {
               component: NestedRouteApp,
               path: '/flows',
               meta: {
+                title: s__('AICatalog|Flows'),
                 text: s__('AICatalog|Flows'),
                 indexRoute: AI_CATALOG_FLOWS_ROUTE,
               },
@@ -122,6 +130,9 @@ export const createRouter = (base) => {
                   name: AI_CATALOG_FLOWS_ROUTE,
                   path: '',
                   component: AiCatalogFlows,
+                  meta: {
+                    title: s__('AICatalog|Flows'),
+                  },
                 },
                 {
                   name: AI_CATALOG_FLOWS_NEW_ROUTE,
@@ -129,6 +140,7 @@ export const createRouter = (base) => {
                   component: AiCatalogFlowsNew,
                   beforeEnter: requireAuth,
                   meta: {
+                    title: s__('AICatalog|New flow'),
                     text: s__('AICatalog|New flow'),
                   },
                 },
@@ -172,4 +184,15 @@ export const createRouter = (base) => {
       { path: '*', redirect: { name: AI_CATALOG_INDEX_ROUTE } },
     ],
   });
+
+  router.afterEach((to) => {
+    // Agent/flow pages handle their own titles in components to display item name
+    const isItemPage = to.matched.some((route) => route.meta?.useId);
+
+    if (!isItemPage && to.meta.title) {
+      document.title = `${to.meta.title} · ${baseTitle}`;
+    }
+  });
+
+  return router;
 };

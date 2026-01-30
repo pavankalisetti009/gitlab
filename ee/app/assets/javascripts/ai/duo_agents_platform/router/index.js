@@ -43,6 +43,7 @@ import { getNamespaceIndexComponent, setPreviousRoute } from './utils';
 Vue.use(VueRouter);
 
 export const createRouter = (base, namespace) => {
+  const baseTitle = document.title;
   const isProjectNamespace = namespace === AGENT_PLATFORM_PROJECT_PAGE;
 
   const router = new VueRouter({
@@ -60,6 +61,9 @@ export const createRouter = (base, namespace) => {
             name: AGENTS_PLATFORM_INDEX_ROUTE,
             path: '',
             component: getNamespaceIndexComponent(namespace),
+            meta: {
+              title: s__('DuoAgentsPlatform|Sessions'),
+            },
           },
           // Used as hardcoded path in
           // https://gitlab.com/gitlab-org/gitlab/-/blob/e9b59c5de32c6ce4e14665681afbf95cf001c044/ee/app/assets/javascripts/ai/components/duo_workflow_action.vue#L76.
@@ -84,6 +88,9 @@ export const createRouter = (base, namespace) => {
             name: FLOW_TRIGGERS_INDEX_ROUTE,
             path: '',
             component: FlowTriggersIndex,
+            meta: {
+              title: s__('DuoAgentsPlatform|Triggers'),
+            },
           },
           ...(gon.abilities?.readAiCatalogThirdPartyFlow ||
           gon.abilities?.createAiCatalogThirdPartyFlow ||
@@ -124,6 +131,9 @@ export const createRouter = (base, namespace) => {
             name: AI_CATALOG_AGENTS_ROUTE,
             path: '',
             component: AiAgentsIndex,
+            meta: {
+              title: s__('AICatalog|Agents'),
+            },
           },
           ...(isProjectNamespace
             ? [
@@ -133,6 +143,7 @@ export const createRouter = (base, namespace) => {
                   component: AiCatalogAgentsNew,
                   meta: {
                     text: s__('AICatalog|New agent'),
+                    title: s__('AICatalog|New agent'),
                   },
                 },
                 {
@@ -199,6 +210,9 @@ export const createRouter = (base, namespace) => {
                   name: AI_CATALOG_FLOWS_ROUTE,
                   path: '',
                   component: AiFlowsIndex,
+                  meta: {
+                    title: s__('AICatalog|Flows'),
+                  },
                 },
                 ...(isProjectNamespace
                   ? [
@@ -208,6 +222,7 @@ export const createRouter = (base, namespace) => {
                         component: AiCatalogFlowsNew,
                         meta: {
                           text: s__('AICatalog|New flow'),
+                          title: s__('AICatalog|New flow'),
                         },
                       },
                       {
@@ -273,6 +288,15 @@ export const createRouter = (base, namespace) => {
       setPreviousRoute(from);
     }
     next();
+  });
+
+  router.afterEach((to) => {
+    // Agent/flow pages handle their own titles in components to display item name
+    const isItemPage = to.matched.some((route) => route.meta?.useId);
+
+    if (!isItemPage && to.meta.title) {
+      document.title = `${to.meta.title} · ${baseTitle}`;
+    }
   });
 
   return router;

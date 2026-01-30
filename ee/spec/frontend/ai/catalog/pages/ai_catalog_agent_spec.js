@@ -375,4 +375,28 @@ describe('AiCatalogAgent', () => {
       });
     },
   );
+
+  describe('adds the correct page title', () => {
+    it('prefixes the agent name to the base page title', async () => {
+      document.title = 'Agents · Automate · GitLab';
+
+      const mockAgentWithNameHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiCatalogItem: {
+            ...mockAgent,
+            name: 'My Agent',
+            configurationForProject: mockAgentConfigurationForProject,
+            configurationForGroup: mockItemConfigurationForGroup,
+          },
+        },
+      });
+
+      createComponent({
+        agentQueryHandler: mockAgentWithNameHandler,
+      });
+      await waitForPromises();
+
+      expect(document.title).toBe('My Agent · Agents · Automate · GitLab');
+    });
+  });
 });

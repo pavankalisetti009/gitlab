@@ -149,4 +149,68 @@ describe('AI Catalog Router', () => {
       expect(router.currentRoute.path).toMatch(/^\/agents\/?$/);
     });
   });
+
+  describe('afterEach hook - page titles', () => {
+    const originalTitle = 'AI Catalog · GitLab';
+
+    beforeEach(() => {
+      document.title = originalTitle;
+      gon.features = {
+        aiCatalogFlows: true,
+      };
+      router = createRouter();
+    });
+
+    it('sets document title for agents route', async () => {
+      await router.push('/agents');
+
+      expect(document.title).toBe('Agents · AI Catalog · GitLab');
+    });
+
+    it('sets document title for new agent route', async () => {
+      await router.push('/agents/new');
+
+      expect(document.title).toBe('New agent · AI Catalog · GitLab');
+    });
+
+    it('sets document title for flows route', async () => {
+      await router.push('/flows');
+
+      expect(document.title).toBe('Flows · AI Catalog · GitLab');
+    });
+
+    it('sets document title for new flow route', async () => {
+      await router.push('/flows/new');
+
+      expect(document.title).toBe('New flow · AI Catalog · GitLab');
+    });
+
+    it('does not set document title for routes without meta.title', async () => {
+      await router.push('/agents');
+      const titleAfterAgents = document.title;
+
+      // Navigate to a route without meta.title (item page)
+      await router.push(`/agents/${agentId}`);
+
+      expect(document.title).toBe(titleAfterAgents);
+    });
+
+    it('does not set document title for agent routes with useId meta', async () => {
+      await router.push('/agents');
+      const titleAfterAgents = document.title;
+
+      await router.push(`/agents/${agentId}`);
+
+      expect(document.title).toBe(titleAfterAgents);
+    });
+
+    it('does not set document title for flow routes with useId meta', async () => {
+      await router.push('/flows');
+      const titleAfterFlows = document.title;
+
+      await router.push(`/flows/${flowId}`);
+
+      expect(document.title).toBe(titleAfterFlows);
+    });
+  });
 });
