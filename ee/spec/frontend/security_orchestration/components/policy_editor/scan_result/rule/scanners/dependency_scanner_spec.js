@@ -28,10 +28,10 @@ describe('DependencyScanner', () => {
     vulnerability_states: [],
   };
 
-  const createComponent = (initRule = defaultRule, options = {}) => {
+  const createComponent = (scanner = defaultRule, options = {}) => {
     wrapper = shallowMountExtended(DependencyScanner, {
       propsData: {
-        initRule,
+        scanner,
         ...options,
       },
       provide: {

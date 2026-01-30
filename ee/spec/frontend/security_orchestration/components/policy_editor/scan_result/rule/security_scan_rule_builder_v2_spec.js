@@ -81,25 +81,65 @@ describe('SecurityScanRuleBuilder', () => {
       expect(findNumberRangeSelect().exists()).toBe(true);
     });
 
-    it('renders global settings', () => {
+    it('renders global settings with scanner prop', () => {
       expect(findGlobalSettings().exists()).toBe(true);
+      expect(findGlobalSettings().props('scanner')).toEqual(defaultRule);
     });
 
-    it('renders dependency scanner', () => {
+    it('renders dependency scanner with scanner prop', () => {
       expect(findDependencyScanner().exists()).toBe(true);
-      expect(findDependencyScanner().props('initRule')).toEqual(defaultRule);
+      expect(findDependencyScanner().props('scanner')).toMatchObject({
+        type: 'dependency_scanning',
+        vulnerabilities_allowed: 0,
+      });
     });
 
-    it('renders sast scanner', () => {
+    it('renders sast scanner with scanner prop', () => {
       expect(findSastScanner().exists()).toBe(true);
+      expect(findSastScanner().props('scanner')).toMatchObject({
+        type: 'sast',
+        vulnerabilities_allowed: 0,
+      });
     });
 
-    it('renders secret detection scanner', () => {
+    it('renders secret detection scanner with scanner prop', () => {
       expect(findSecretDetectionScanner().exists()).toBe(true);
+      expect(findSecretDetectionScanner().props('scanner')).toMatchObject({
+        type: 'secret_detection',
+        vulnerabilities_allowed: 0,
+      });
     });
 
-    it('renders container scanning scanner', () => {
+    it('renders container scanning scanner with scanner prop', () => {
       expect(findContainerScanningScanner().exists()).toBe(true);
+      expect(findContainerScanningScanner().props('scanner')).toMatchObject({
+        type: 'container_scanning',
+        vulnerabilities_allowed: 0,
+      });
+    });
+
+    it('renders dast scanner with scanner prop', () => {
+      expect(findDastScanner().exists()).toBe(true);
+      expect(findDastScanner().props('scanner')).toMatchObject({
+        type: 'dast',
+        vulnerabilities_allowed: 0,
+      });
+    });
+
+    it('renders api fuzzing scanner with scanner prop', () => {
+      expect(findApiFuzzingScanner().exists()).toBe(true);
+      expect(findApiFuzzingScanner().props('scanner')).toMatchObject({
+        type: 'api_fuzzing',
+        vulnerabilities_allowed: 0,
+      });
+    });
+
+    it('renders coverage fuzzing scanner with scanner prop', () => {
+      expect(findCoverageFuzzingScanner().exists()).toBe(true);
+      expect(findCoverageFuzzingScanner().props('scanner')).toMatchObject({
+        type: 'coverage_fuzzing',
+        vulnerabilities_allowed: 0,
+      });
     });
 
     it('renders dast scanner', () => {
@@ -211,86 +251,107 @@ describe('SecurityScanRuleBuilder', () => {
     });
 
     it('updates rule when dependency scanner changes', () => {
-      const updatedRule = {
-        ...defaultRule,
+      const updatedScanner = {
+        type: 'dependency_scanning',
         vulnerability_attributes: {
           fix_available: true,
         },
       };
 
-      findDependencyScanner().vm.$emit('changed', updatedRule);
+      findDependencyScanner().vm.$emit('changed', updatedScanner);
 
-      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+      const emittedRule = wrapper.emitted('changed')[0][0];
+      expect(emittedRule.scanners).toEqual(
+        expect.arrayContaining([expect.objectContaining(updatedScanner)]),
+      );
     });
 
     it('updates rule when sast scanner changes', () => {
-      const updatedRule = {
-        ...defaultRule,
+      const updatedScanner = {
+        type: 'sast',
         severity_levels: ['critical', 'high'],
       };
 
-      findSastScanner().vm.$emit('changed', updatedRule);
+      findSastScanner().vm.$emit('changed', updatedScanner);
 
-      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+      const emittedRule = wrapper.emitted('changed')[0][0];
+      expect(emittedRule.scanners).toEqual(
+        expect.arrayContaining([expect.objectContaining(updatedScanner)]),
+      );
     });
 
     it('updates rule when secret detection scanner changes', () => {
-      const updatedRule = {
-        ...defaultRule,
+      const updatedScanner = {
+        type: 'secret_detection',
         severity_levels: ['critical', 'high'],
         vulnerability_states: ['new_needs_triage'],
       };
 
-      findSecretDetectionScanner().vm.$emit('changed', updatedRule);
+      findSecretDetectionScanner().vm.$emit('changed', updatedScanner);
 
-      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+      const emittedRule = wrapper.emitted('changed')[0][0];
+      expect(emittedRule.scanners).toEqual(
+        expect.arrayContaining([expect.objectContaining(updatedScanner)]),
+      );
     });
 
     it('updates rule when container scanning scanner changes', () => {
-      const updatedRule = {
-        ...defaultRule,
+      const updatedScanner = {
+        type: 'container_scanning',
         vulnerability_attributes: {
           fix_available: true,
           false_positive: false,
         },
       };
 
-      findContainerScanningScanner().vm.$emit('changed', updatedRule);
+      findContainerScanningScanner().vm.$emit('changed', updatedScanner);
 
-      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+      const emittedRule = wrapper.emitted('changed')[0][0];
+      expect(emittedRule.scanners).toEqual(
+        expect.arrayContaining([expect.objectContaining(updatedScanner)]),
+      );
     });
 
     it('updates rule when dast scanner changes', () => {
-      const updatedRule = {
-        ...defaultRule,
+      const updatedScanner = {
+        type: 'dast',
         severity_levels: ['critical', 'high'],
       };
 
-      findDastScanner().vm.$emit('changed', updatedRule);
+      findDastScanner().vm.$emit('changed', updatedScanner);
 
-      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+      const emittedRule = wrapper.emitted('changed')[0][0];
+      expect(emittedRule.scanners).toEqual(
+        expect.arrayContaining([expect.objectContaining(updatedScanner)]),
+      );
     });
 
     it('updates rule when api fuzzing scanner changes', () => {
-      const updatedRule = {
-        ...defaultRule,
+      const updatedScanner = {
+        type: 'api_fuzzing',
         severity_levels: ['critical', 'high'],
       };
 
-      findApiFuzzingScanner().vm.$emit('changed', updatedRule);
+      findApiFuzzingScanner().vm.$emit('changed', updatedScanner);
 
-      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+      const emittedRule = wrapper.emitted('changed')[0][0];
+      expect(emittedRule.scanners).toEqual(
+        expect.arrayContaining([expect.objectContaining(updatedScanner)]),
+      );
     });
 
     it('updates rule when coverage fuzzing scanner changes', () => {
-      const updatedRule = {
-        ...defaultRule,
+      const updatedScanner = {
+        type: 'coverage_fuzzing',
         severity_levels: ['critical', 'high'],
       };
 
-      findCoverageFuzzingScanner().vm.$emit('changed', updatedRule);
+      findCoverageFuzzingScanner().vm.$emit('changed', updatedScanner);
 
-      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+      const emittedRule = wrapper.emitted('changed')[0][0];
+      expect(emittedRule.scanners).toEqual(
+        expect.arrayContaining([expect.objectContaining(updatedScanner)]),
+      );
     });
   });
 });

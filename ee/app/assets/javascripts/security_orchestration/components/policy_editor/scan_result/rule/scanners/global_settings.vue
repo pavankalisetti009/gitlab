@@ -49,7 +49,7 @@ export default {
     StatusFilters,
   },
   props: {
-    initRule: {
+    scanner: {
       type: Object,
       required: true,
     },
@@ -57,7 +57,7 @@ export default {
   emits: ['changed'],
   data() {
     return {
-      filters: buildFiltersFromRule(this.initRule),
+      filters: buildFiltersFromRule(this.scanner),
     };
   },
   computed: {
@@ -71,7 +71,7 @@ export default {
       return this.isFilterSelected(NEWLY_DETECTED) || this.isFilterSelected(PREVIOUSLY_EXISTING);
     },
     severityLevels() {
-      const { severity_levels: severityLevels = [] } = this.initRule;
+      const { severity_levels: severityLevels = [] } = this.scanner;
 
       if (!Array.isArray(severityLevels)) {
         return [];
@@ -80,14 +80,14 @@ export default {
       return severityLevels.length === 0 ? Object.keys(SEVERITY_LEVELS) : severityLevels;
     },
     vulnerabilityAge() {
-      return this.initRule.vulnerability_age;
+      return this.scanner.vulnerability_age;
     },
     vulnerabilityAttributes() {
-      return this.initRule?.vulnerability_attributes || {};
+      return this.scanner?.vulnerability_attributes || {};
     },
     vulnerabilityStates() {
       const vulnerabilityStateGroups = groupVulnerabilityStatesWithDefaults(
-        this.initRule.vulnerability_states,
+        this.scanner.vulnerability_states,
       );
       return {
         [PREVIOUSLY_EXISTING]: vulnerabilityStateGroups[PREVIOUSLY_EXISTING],
@@ -96,8 +96,8 @@ export default {
     },
   },
   watch: {
-    initRule(newRule) {
-      this.filters = buildFiltersFromRule(newRule);
+    scanner(newScanner) {
+      this.filters = buildFiltersFromRule(newScanner);
 
       if (isEmpty(this.vulnerabilityStates[PREVIOUSLY_EXISTING]) && this.isAgeFilterSelected) {
         this.removeAgeFilter();
@@ -129,7 +129,7 @@ export default {
       );
     },
     removeFilterFromRule(filter) {
-      this.$emit('changed', removePropertyFromPayload(this.initRule, filter));
+      this.$emit('changed', removePropertyFromPayload(this.scanner, filter));
     },
     setSeverityLevels(value) {
       this.triggerChanged({
@@ -169,7 +169,7 @@ export default {
       });
     },
     triggerChanged(value) {
-      this.$emit('changed', { ...this.initRule, ...value });
+      this.$emit('changed', { ...this.scanner, ...value });
     },
     selectFilter(filter) {
       switch (filter) {

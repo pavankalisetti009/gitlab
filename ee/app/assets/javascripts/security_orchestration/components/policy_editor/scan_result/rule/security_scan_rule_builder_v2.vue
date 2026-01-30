@@ -1,7 +1,17 @@
 <script>
+import { isObject, omit } from 'lodash';
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { REPORT_TYPES_DEFAULT, REPORT_TYPES_DEFAULT_KEYS } from 'ee/security_dashboard/constants';
+import {
+  REPORT_TYPE_API_FUZZING,
+  REPORT_TYPE_CONTAINER_SCANNING,
+  REPORT_TYPE_COVERAGE_FUZZING,
+  REPORT_TYPE_DAST,
+  REPORT_TYPE_DEPENDENCY_SCANNING,
+  REPORT_TYPE_SAST,
+  REPORT_TYPE_SECRET_DETECTION,
+} from '~/vue_shared/security_reports/constants';
 import {
   ANY_OPERATOR,
   GREATER_THAN_OPERATOR,
@@ -28,6 +38,13 @@ import GlobalSettings from './scanners/global_settings.vue';
 import { selectEmptyArrayWhenAllSelected } from './scanners/utils';
 
 export default {
+  REPORT_TYPE_API_FUZZING,
+  REPORT_TYPE_CONTAINER_SCANNING,
+  REPORT_TYPE_COVERAGE_FUZZING,
+  REPORT_TYPE_DAST,
+  REPORT_TYPE_DEPENDENCY_SCANNING,
+  REPORT_TYPE_SAST,
+  REPORT_TYPE_SECRET_DETECTION,
   REPORT_TYPES_DEFAULT,
   VULNERABILITIES_ALLOWED_OPERATORS,
   i18n: {
@@ -75,6 +92,29 @@ export default {
         ? Object.keys(REPORT_TYPES_DEFAULT)
         : this.initRule.scanners;
     },
+    scannerKeys() {
+      return this.scanners.map((scanner) => {
+        if (isObject(scanner)) {
+          return scanner.type;
+        }
+
+        return scanner;
+      });
+    },
+    scannerObjects() {
+      return this.scanners.map((scanner) => {
+        if (isObject(scanner)) {
+          return scanner;
+        }
+
+        const rule = omit(this.initRule, ['scanners', 'type', 'id']);
+
+        return {
+          type: scanner,
+          ...rule,
+        };
+      });
+    },
     selectedVulnerabilitiesOperator() {
       return this.vulnerabilitiesAllowed === 0 ? ANY_OPERATOR : GREATER_THAN_OPERATOR;
     },
@@ -83,6 +123,9 @@ export default {
     },
   },
   methods: {
+    getScanner(scannerType) {
+      return this.scannerObjects.find(({ type }) => type === scannerType);
+    },
     handleVulnerabilitiesOperatorChange(value) {
       if (value === ANY_OPERATOR) {
         this.setVulnerabilitiesAllowed(0);
@@ -120,6 +163,15 @@ export default {
     setRange(value) {
       this.triggerChanged({ vulnerabilities_allowed: value });
     },
+    setScanner(scanner) {
+      const scanners = this.scannerObjects.map((s) =>
+        s.type === scanner.type ? { ...scanner } : { ...s },
+      );
+
+      this.triggerChanged({
+        scanners,
+      });
+    },
   },
 };
 </script>
@@ -140,7 +192,7 @@ export default {
 
             <template #scanners>
               <rule-multi-select
-                :value="scanners"
+                :value="scannerKeys"
                 class="!gl-inline gl-align-middle"
                 :item-type-name="$options.i18n.scanners"
                 :items="$options.REPORT_TYPES_DEFAULT"
@@ -184,35 +236,65 @@ export default {
       </section-layout>
 
       <div class="gl-w-full gl-rounded-base gl-bg-white gl-p-4">
-        <global-settings :init-rule="initRule" @changed="updateGlobalSettings" />
+        <global-settings :scanner="initRule" @changed="updateGlobalSettings" />
       </div>
 
-      <div class="gl-w-full gl-rounded-base gl-p-4">
-        <dependency-scanner :init-rule="initRule" @changed="triggerChanged" />
+      <div
+        v-if="getScanner($options.REPORT_TYPE_DEPENDENCY_SCANNING)"
+        class="gl-w-full gl-rounded-base gl-p-4"
+      >
+        <dependency-scanner
+          :scanner="getScanner($options.REPORT_TYPE_DEPENDENCY_SCANNING)"
+          @changed="setScanner"
+        />
       </div>
 
-      <div class="gl-w-full gl-rounded-base gl-p-4">
-        <sast-scanner :init-rule="initRule" @changed="triggerChanged" />
+      <div v-if="getScanner($options.REPORT_TYPE_SAST)" class="gl-w-full gl-rounded-base gl-p-4">
+        <sast-scanner :scanner="getScanner($options.REPORT_TYPE_SAST)" @changed="setScanner" />
       </div>
 
-      <div class="gl-w-full gl-rounded-base gl-p-4">
-        <secret-detection-scanner :init-rule="initRule" @changed="triggerChanged" />
+      <div
+        v-if="getScanner($options.REPORT_TYPE_SECRET_DETECTION)"
+        class="gl-w-full gl-rounded-base gl-p-4"
+      >
+        <secret-detection-scanner
+          :scanner="getScanner($options.REPORT_TYPE_SECRET_DETECTION)"
+          @changed="setScanner"
+        />
       </div>
 
-      <div class="gl-w-full gl-rounded-base gl-p-4">
-        <container-scanning-scanner :init-rule="initRule" @changed="triggerChanged" />
+      <div
+        v-if="getScanner($options.REPORT_TYPE_CONTAINER_SCANNING)"
+        class="gl-w-full gl-rounded-base gl-p-4"
+      >
+        <container-scanning-scanner
+          :scanner="getScanner($options.REPORT_TYPE_CONTAINER_SCANNING)"
+          @changed="setScanner"
+        />
       </div>
 
-      <div class="gl-w-full gl-rounded-base gl-p-4">
-        <dast-scanner :init-rule="initRule" @changed="triggerChanged" />
+      <div v-if="getScanner($options.REPORT_TYPE_DAST)" class="gl-w-full gl-rounded-base gl-p-4">
+        <dast-scanner :scanner="getScanner($options.REPORT_TYPE_DAST)" @changed="setScanner" />
       </div>
 
-      <div class="gl-w-full gl-rounded-base gl-p-4">
-        <api-fuzzing-scanner :init-rule="initRule" @changed="triggerChanged" />
+      <div
+        v-if="getScanner($options.REPORT_TYPE_API_FUZZING)"
+        class="gl-w-full gl-rounded-base gl-p-4"
+      >
+        <api-fuzzing-scanner
+          :scanner="getScanner($options.REPORT_TYPE_API_FUZZING)"
+          @changed="setScanner"
+        />
       </div>
 
-      <div class="gl-w-full gl-rounded-base gl-p-4">
-        <coverage-fuzzing-scanner :init-rule="initRule" @changed="triggerChanged" />
+      <div
+        v-if="getScanner($options.REPORT_TYPE_COVERAGE_FUZZING)"
+        class="gl-w-full gl-rounded-base gl-p-4"
+      >
+        <coverage-fuzzing-scanner
+          :scanner="getScanner($options.REPORT_TYPE_COVERAGE_FUZZING)"
+          @changed="setScanner"
+        />
       </div>
     </template>
   </section-layout>

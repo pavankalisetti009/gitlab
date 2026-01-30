@@ -26,10 +26,10 @@ describe('GlobalSettings', () => {
     },
   };
 
-  const createComponent = (initRule = defaultRule) => {
+  const createComponent = (scanner = defaultRule) => {
     wrapper = shallowMountExtended(GlobalSettings, {
       propsData: {
-        initRule,
+        scanner,
       },
     });
   };

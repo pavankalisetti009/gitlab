@@ -29,45 +29,111 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/constants';
 
 describe('invalidScanners', () => {
-  describe('with undefined rules', () => {
-    it('returns false', () => {
-      expect(invalidScanners(undefined)).toBe(false);
+  describe('without securityPoliciesKevFilter feature flag', () => {
+    beforeEach(() => {
+      window.gon = { features: { securityPoliciesKevFilter: false } };
+    });
+
+    describe('with undefined rules', () => {
+      it('returns false', () => {
+        expect(invalidScanners(undefined)).toBe(false);
+      });
+    });
+
+    describe('with empty rules', () => {
+      it('returns false', () => {
+        expect(invalidScanners([])).toBe(false);
+      });
+    });
+
+    describe('with rules with valid scanners', () => {
+      it('returns false', () => {
+        expect(invalidScanners([{ scanners: ['sast'] }])).toBe(false);
+      });
+    });
+
+    describe('with rules without scanners', () => {
+      it('returns false', () => {
+        expect(invalidScanners([{ anotherKey: 'anotherValue' }])).toBe(false);
+      });
+    });
+
+    describe('with multiple rules with the same scanners', () => {
+      it('returns false', () => {
+        expect(invalidScanners([{ scanners: ['sast'] }, { scanners: ['sast'] }])).toBe(false);
+      });
+    });
+
+    describe('with rules with duplicate scanners', () => {
+      it('returns true', () => {
+        expect(invalidScanners([{ scanners: ['sast', 'sast'] }])).toBe(true);
+      });
+    });
+
+    describe('with rules with invalid scanners', () => {
+      it('returns true', () => {
+        expect(invalidScanners([{ scanners: ['notValid'] }])).toBe(true);
+      });
     });
   });
 
-  describe('with empty rules', () => {
-    it('returns false', () => {
-      expect(invalidScanners([])).toBe(false);
+  describe('with securityPoliciesKevFilter feature flag', () => {
+    beforeEach(() => {
+      window.gon = { features: { securityPoliciesKevFilter: true } };
     });
-  });
 
-  describe('with rules with valid scanners', () => {
-    it('returns false', () => {
-      expect(invalidScanners([{ scanners: ['sast'] }])).toBe(false);
+    describe('with undefined rules', () => {
+      it('returns false', () => {
+        expect(invalidScanners(undefined)).toBe(false);
+      });
     });
-  });
 
-  describe('with rules without scanners', () => {
-    it('returns true', () => {
-      expect(invalidScanners([{ anotherKey: 'anotherValue' }])).toBe(false);
+    describe('with empty rules', () => {
+      it('returns false', () => {
+        expect(invalidScanners([])).toBe(false);
+      });
     });
-  });
 
-  describe('with multiple rules with the same scanners', () => {
-    it('returns false', () => {
-      expect(invalidScanners([{ scanners: ['sast'] }, { scanners: ['sast'] }])).toBe(false);
+    describe('with rules with valid string scanners', () => {
+      it('returns false', () => {
+        expect(invalidScanners([{ scanners: ['sast'] }])).toBe(false);
+      });
     });
-  });
 
-  describe('with rules with duplicate scanners', () => {
-    it('returns true', () => {
-      expect(invalidScanners([{ scanners: ['sast', 'sast'] }])).toBe(true);
+    describe('with rules with valid object scanners', () => {
+      it('returns false', () => {
+        expect(invalidScanners([{ scanners: [{ type: 'sast' }] }])).toBe(false);
+      });
     });
-  });
 
-  describe('with rules with invalid scanners', () => {
-    it('returns true', () => {
-      expect(invalidScanners([{ scanners: ['notValid'] }])).toBe(true);
+    describe('with rules with mixed valid string and object scanners', () => {
+      it('returns false', () => {
+        expect(invalidScanners([{ scanners: ['sast', { type: 'dast' }] }])).toBe(false);
+      });
+    });
+
+    describe('with rules without scanners', () => {
+      it('returns false', () => {
+        expect(invalidScanners([{ anotherKey: 'anotherValue' }])).toBe(false);
+      });
+    });
+
+    describe('with rules with invalid string scanners', () => {
+      it('returns true', () => {
+        expect(invalidScanners([{ scanners: ['notValid'] }])).toBe(true);
+      });
+    });
+
+    describe('with rules with invalid object scanners', () => {
+      it('returns true', () => {
+        expect(invalidScanners([{ scanners: [{ type: 'notValid' }] }])).toBe(true);
+      });
+    });
+
+    describe('with rules with invalid scanner type', () => {
+      it('returns true', () => {
+        expect(invalidScanners([{ scanners: [123] }])).toBe(true);
+      });
     });
   });
 });

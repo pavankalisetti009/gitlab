@@ -26,10 +26,10 @@ describe('DastScanner', () => {
     vulnerability_states: [],
   };
 
-  const createComponent = (initRule = defaultRule, options = {}) => {
+  const createComponent = (scanner = defaultRule, options = {}) => {
     wrapper = shallowMountExtended(DastScanner, {
       propsData: {
-        initRule,
+        scanner,
         ...options,
       },
       provide: {

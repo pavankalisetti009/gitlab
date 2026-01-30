@@ -102,7 +102,29 @@ const invalidRuleValues = (rules, key, allowedValues, areDuplicatesAllowed = fal
   return rules.some((rule) => (rule[key] || []).some((value) => !allowedValues.includes(value)));
 };
 
-export const invalidScanners = (rules) => invalidRuleValues(rules, 'scanners', REPORT_TYPES_KEYS);
+export const invalidScanners = (rules) => {
+  const { securityPoliciesKevFilter } = gon.features || {};
+
+  if (!securityPoliciesKevFilter) {
+    return invalidRuleValues(rules, 'scanners', REPORT_TYPES_KEYS);
+  }
+
+  if (!rules) {
+    return false;
+  }
+
+  return rules.some((rule) =>
+    (rule.scanners || []).some((scanner) => {
+      if (typeof scanner === 'string') {
+        return !REPORT_TYPES_KEYS.includes(scanner);
+      }
+      if (typeof scanner === 'object' && scanner !== null) {
+        return !REPORT_TYPES_KEYS.includes(scanner.type);
+      }
+      return true;
+    }),
+  );
+};
 
 export const invalidSeverities = (rules) =>
   invalidRuleValues(rules, 'severity_levels', SEVERITY_LEVELS_KEYS);

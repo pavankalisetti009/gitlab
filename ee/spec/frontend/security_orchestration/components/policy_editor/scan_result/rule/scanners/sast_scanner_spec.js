@@ -28,10 +28,10 @@ describe('SastScanner', () => {
     vulnerability_states: [],
   };
 
-  const createComponent = (initRule = defaultRule, options = {}) => {
+  const createComponent = (scanner = defaultRule, options = {}) => {
     wrapper = shallowMountExtended(SastScanner, {
       propsData: {
-        initRule,
+        scanner,
         ...options,
       },
       provide: {
