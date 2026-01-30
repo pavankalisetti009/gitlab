@@ -9481,6 +9481,32 @@ Input type: `MavenUpstreamCreateInput`
 | <a id="mutationmavenupstreamcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationmavenupstreamcreateupstream"></a>`upstream` | [`MavenUpstreamDetails`](#mavenupstreamdetails) | Maven upstream after the mutation. |
 
+### `Mutation.mavenVirtualRegistryCreate`
+
+{{< details >}}
+**Introduced** in GitLab 18.9.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `MavenVirtualRegistryCreateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmavenvirtualregistrycreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmavenvirtualregistrycreatedescription"></a>`description` | [`String`](#string) | Description of the virtual registry. |
+| <a id="mutationmavenvirtualregistrycreategrouppath"></a>`groupPath` | [`ID`](#id) | Full path of the group with which the resource is associated. |
+| <a id="mutationmavenvirtualregistrycreatename"></a>`name` | [`String!`](#string) | Name of virtual registry. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationmavenvirtualregistrycreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationmavenvirtualregistrycreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationmavenvirtualregistrycreateregistry"></a>`registry` | [`MavenRegistry`](#mavenregistry) | Maven virtual registry after the mutation. |
+
 ### `Mutation.mavenVirtualRegistryDelete`
 
 {{< details >}}
