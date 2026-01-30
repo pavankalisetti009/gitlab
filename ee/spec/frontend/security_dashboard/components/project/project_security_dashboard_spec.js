@@ -4,7 +4,6 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import NewSecurityDashboardBanner from 'ee/security_dashboard/components/shared/new_security_dashboard_banner.vue';
-import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
 import ProjectSecurityDashboard from 'ee/security_dashboard/components/project/project_security_dashboard.vue';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
@@ -28,7 +27,6 @@ describe('Project Security Dashboard component', () => {
 
   const findLineChart = () => wrapper.findComponent(GlLineChart);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findSecurityTrainingPromoBanner = () => wrapper.findComponent(SecurityTrainingPromoBanner);
   const findExportButton = () => wrapper.findComponent(PdfExportButton);
   const findBanner = () => wrapper.findComponent(NewSecurityDashboardBanner);
 
@@ -38,7 +36,6 @@ describe('Project Security Dashboard component', () => {
 
   const defaultProps = {
     projectFullPath,
-    shouldShowPromoBanner: false,
   };
 
   const createWrapper = ({ historyQueryData, severitiesCountQueryData, props = {} } = {}) => {
@@ -91,7 +88,6 @@ describe('Project Security Dashboard component', () => {
       createWrapper();
 
       expect(findLineChart().exists()).toBe(false);
-      expect(findSecurityTrainingPromoBanner().exists()).toBe(false);
       expect(findLoadingIcon().exists()).toBe(true);
     });
   });
@@ -154,14 +150,6 @@ describe('Project Security Dashboard component', () => {
         type: 'slider',
         startValue: '2021-03-12',
       });
-    });
-  });
-
-  describe('promo banner', () => {
-    it.each([[true], [false]])('when prop is %s', async (shouldShowPromoBanner) => {
-      createWrapper({ props: { shouldShowPromoBanner } });
-      await waitForPromises();
-      expect(findSecurityTrainingPromoBanner().exists()).toBe(shouldShowPromoBanner);
     });
   });
 

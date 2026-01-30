@@ -19,7 +19,6 @@ import {
   HTTP_STATUS_ACCEPTED,
 } from '~/lib/utils/http_status';
 import SummaryText, { MAX_NEW_VULNERABILITIES } from './summary_text.vue';
-import SecurityTrainingPromoWidget from './security_training_promo_widget.vue';
 import ReportDetails from './mr_widget_security_report_details.vue';
 import { i18n, reportTypes } from './i18n';
 import { highlightsFromReport, transformToEnabledScans } from './utils';
@@ -35,7 +34,6 @@ export default {
     ReportDetails,
     SummaryText,
     SummaryHighlights,
-    SecurityTrainingPromoWidget,
   },
   i18n,
   props: {
@@ -486,7 +484,6 @@ export default {
         @detected="updateFindingState('detected')"
         @resolveWithAiSuccess="handleResolveWithAiSuccess"
       />
-      <security-training-promo-widget :security-configuration-path="mr.securityConfigurationPath" />
       <report-details
         v-for="report in reports"
         :key="report.reportType"
