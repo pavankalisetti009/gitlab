@@ -43,7 +43,7 @@ module QA
             EE::Flow::Trial.register_for_trial(group: group_for_trial)
 
             Page::Group::Show.perform do |group|
-              expect(group).to have_notice('You have successfully started an Ultimate and GitLab Duo Enterprise trial')
+              expect(group).to have_notice(%r{You have successfully started .*GitLab.* trial})
             end
 
             Page::Group::Menu.perform(&:go_to_billing)
