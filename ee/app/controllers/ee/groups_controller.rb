@@ -8,7 +8,6 @@ module EE
 
     prepended do
       include GeoInstrumentation
-      include GitlabSubscriptions::SeatCountAlert
       include EpicParamActions
 
       before_action :check_subscription!, only: [:destroy]
@@ -31,10 +30,6 @@ module EE
 
       before_action only: :issues do
         push_force_frontend_feature_flag(:okrs_mvc, !!@group&.okrs_mvc_feature_flag_enabled?)
-      end
-
-      before_action only: :show do
-        @seat_count_data = generate_seat_count_alert_data(@group)
       end
     end
 

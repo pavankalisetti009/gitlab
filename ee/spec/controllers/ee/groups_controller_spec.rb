@@ -28,8 +28,6 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
       it_behaves_like 'namespace storage limit alert'
     end
 
-    it_behaves_like 'seat count alert'
-
     context 'with free user cap performance concerns', :with_trial_types, :saas do
       render_views
 

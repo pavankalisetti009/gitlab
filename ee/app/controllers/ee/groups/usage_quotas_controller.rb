@@ -6,8 +6,6 @@ module EE
       extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
 
-      include GitlabSubscriptions::SeatCountAlert
-
       prepended do
         include OneTrustCSP
         include GoogleAnalyticsCSP
@@ -38,13 +36,6 @@ module EE
             )
           end
         end
-      end
-
-      private
-
-      override :seat_count_data
-      def seat_count_data
-        generate_seat_count_alert_data(group)
       end
     end
   end

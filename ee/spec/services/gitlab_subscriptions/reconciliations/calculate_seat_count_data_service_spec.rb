@@ -9,21 +9,13 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
   describe '#execute' do
     let_it_be(:user) { create(:user) }
 
-    let(:gitlab_com_subscriptions) { true }
-
-    before do
-      allow_next_instance_of(GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService) do |service|
-        expect(service).to receive(:execute).and_return(alert_user_overage)
-      end
-
-      stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions)
-    end
-
-    subject(:execute_service) { described_class.new(namespace: root_ancestor, user: user).execute }
+    subject(:execute_service) {
+      described_class.new(namespace: root_ancestor, subscription: subscription, user: user).execute
+    }
 
     context 'with no subscription' do
       let(:root_ancestor) { create(:group) }
-      let(:alert_user_overage) { true }
+      let(:subscription) { nil }
 
       before do
         root_ancestor.add_owner(user)
@@ -34,18 +26,16 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
 
     context 'when the max_seats_used has not been updated on the subscription' do
       let(:root_ancestor) { create(:group) }
-
-      it 'returns nil' do
+      let(:subscription) do
         create(:gitlab_subscription, namespace: root_ancestor, plan_code: Plan::ULTIMATE, seats: 10, max_seats_used: 9)
-
-        expect(subject).to be_nil
       end
+
+      it { is_expected.to be_nil }
     end
 
     context 'when the subscription has expired' do
       let_it_be(:root_ancestor) { create(:group) }
-
-      it 'returns nil' do
+      let(:subscription) do
         create(
           :gitlab_subscription,
           :expired,
@@ -55,17 +45,25 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
           max_seats_used: 9,
           max_seats_used_changed_at: 1.day.ago
         )
-
-        root_ancestor.add_owner(user)
-
-        expect(execute_service).to be_nil
       end
+
+      before do
+        root_ancestor.add_owner(user)
+        allow(GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService)
+          .to receive(:new).and_return(
+            instance_double(
+              GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService,
+              execute: false
+            )
+          )
+      end
+
+      it { is_expected.to be_nil }
     end
 
     context 'when the subscription is a trial' do
       let_it_be(:root_ancestor) { create(:group) }
-
-      it 'returns nil' do
+      let(:subscription) do
         create(
           :gitlab_subscription,
           :active_trial,
@@ -75,17 +73,26 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
           max_seats_used: 9,
           max_seats_used_changed_at: 1.day.ago
         )
-
-        root_ancestor.add_owner(user)
-
-        expect(execute_service).to be_nil
       end
+
+      before do
+        root_ancestor.add_owner(user)
+        allow(GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService)
+          .to receive(:new).and_return(
+            instance_double(
+              GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService,
+              execute: false
+            )
+          )
+      end
+
+      it { is_expected.to be_nil }
     end
 
     context 'when conditions are not met' do
       let(:max_seats_used) { 9 }
-
-      before do
+      let(:root_ancestor) { create(:group) }
+      let(:subscription) do
         create(
           :gitlab_subscription,
           namespace: root_ancestor,
@@ -96,77 +103,45 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
         )
       end
 
-      context 'when it is not SaaS' do
-        let(:alert_user_overage) { true }
-        let(:root_ancestor) { create(:group) }
-        let(:gitlab_com_subscriptions) { false }
-
-        before do
-          root_ancestor.add_owner(user)
+      before do
+        root_ancestor.add_owner(user)
+        allow_next_instance_of(
+          GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService
+        ) do |service|
+          expect(service).to receive(:execute).and_return(true)
         end
-
-        it { is_expected.to be_nil }
-      end
-
-      context 'when namespace is not a group' do
-        let(:alert_user_overage) { true }
-        let(:root_ancestor) { create(:namespace, :with_namespace_settings) }
-
-        it { is_expected.to be_nil }
       end
 
       context 'when the alert was dismissed' do
-        let(:alert_user_overage) { true }
-        let(:root_ancestor) { create(:group) }
-
         before do
           allow(user).to receive(:dismissed_callout_for_group?).and_return(true)
-          root_ancestor.add_owner(user)
-        end
-
-        it { is_expected.to be_nil }
-      end
-
-      context 'when the user does not have admin rights to the group' do
-        let(:alert_user_overage) { true }
-        let(:root_ancestor) { create(:group) }
-
-        before do
-          root_ancestor.add_developer(user)
         end
 
         it { is_expected.to be_nil }
       end
 
       context 'when the subscription is not eligible for usage alerts' do
-        let(:alert_user_overage) { false }
-        let(:root_ancestor) { create(:group) }
-
         before do
-          root_ancestor.add_owner(user)
+          allow_next_instance_of(
+            GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService
+          ) do |service|
+            expect(service).to receive(:execute).and_return(false)
+          end
         end
 
         it { is_expected.to be_nil }
       end
 
       context 'when max seats used are more than the subscription seats' do
-        let(:alert_user_overage) { true }
         let(:max_seats_used) { 11 }
-        let(:root_ancestor) { create(:group) }
-
-        before do
-          root_ancestor.add_owner(user)
-        end
 
         it { is_expected.to be_nil }
       end
     end
 
     context 'with threshold limits' do
-      let_it_be(:alert_user_overage) { true }
       let_it_be(:root_ancestor) { create(:group) }
-
-      before do
+      let(:subscription) do
         create(
           :gitlab_subscription,
           namespace: root_ancestor,
@@ -175,8 +150,13 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
           max_seats_used: max_seats_used,
           max_seats_used_changed_at: 1.day.ago
         )
+      end
 
+      before do
         root_ancestor.add_owner(user)
+        allow_next_instance_of(GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService) do |svc|
+          expect(svc).to receive(:execute).and_return(true)
+        end
       end
 
       context 'when limits are not met' do

@@ -15,18 +15,20 @@ module GitlabSubscriptions
         { range: (1000..nil), percentage: true, value: 5 }
       ].freeze
 
-      attr_reader :namespace, :user
+      attr_reader :namespace, :subscription, :user
 
-      delegate :max_seats_used, :max_seats_used_changed_at, :seats, :seats_remaining, to: :current_subscription
+      delegate :max_seats_used, :max_seats_used_changed_at, :seats, :seats_remaining, to: :subscription
 
-      def initialize(namespace:, user:)
+      def initialize(namespace:, subscription:, user:)
         @namespace = namespace
+        @subscription = subscription
         @user = user
       end
 
       def execute
-        return unless owner_of_paid_group? && seat_count_threshold_reached?
+        return unless subscription.present?
         return if max_seats_used_changed_at.nil? || user_dismissed_alert?
+        return unless seat_count_threshold_reached?
         return unless alert_user_overage?
 
         {
@@ -39,13 +41,6 @@ module GitlabSubscriptions
 
       private
 
-      def owner_of_paid_group?
-        (::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
-          namespace.group_namespace? &&
-          user.can?(:admin_group, namespace) &&
-          current_subscription).present?
-      end
-
       def adapted_remaining_user_count
         return seats_remaining.fdiv(seats) * 100 if current_seat_count_threshold[:percentage]
 
@@ -54,14 +49,6 @@ module GitlabSubscriptions
 
       def alert_user_overage?
         CheckSeatUsageAlertsEligibilityService.new(namespace: namespace).execute
-      end
-
-      def current_subscription
-        strong_memoize(:current_subscription) do
-          subscription = namespace.gitlab_subscription
-
-          subscription if subscription&.has_a_paid_hosted_plan? && !subscription.expired?
-        end
       end
 
       def current_seat_count_threshold
