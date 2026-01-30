@@ -56922,6 +56922,9 @@ msgstr ""
 msgid "RepositoryGraph|Select display option"
 msgstr ""
 
+msgid "Repository|Configure general repository settings."
+msgstr ""
+
 msgid "Repository|New branch"
 msgstr ""
 
