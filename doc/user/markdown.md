@@ -2238,6 +2238,7 @@ are separated into their own lines:
 ```html
 <dl>
   <dt>Markdown in HTML</dt>
+  <dd>
 
   Does *not* work **very** well. HTML tags work, in most cases.
 
