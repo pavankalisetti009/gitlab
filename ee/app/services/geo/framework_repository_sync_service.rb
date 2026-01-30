@@ -1,5 +1,25 @@
 # frozen_string_literal: true
 
+#
+# This service handles Git repository synchronization from primary to secondary Geo sites
+# using the Self-Service Framework.
+#
+# Usage:
+#   Called by Geo::SyncWorker for background syncs and Geo::EventWorker for event-driven
+#   syncs after repository updates.
+#
+# Exclusive Lease:
+#   Uses an 8-hour exclusive lease (via ExclusiveLeaseGuard) to prevent concurrent sync
+#   operations on the same repository, which could cause race conditions and unnecessary
+#   I/O load due to extra syncs.
+#
+# Orphaned Keys:
+#   If the sync process is killed uncleanly, the lease may not be released in the ensure block,
+#   blocking syncs for up to 8 hours until expiration.
+#
+# For detailed information about the repository sync flow, exclusive lease mechanism,
+# and troubleshooting orphaned lease keys, see doc/development/geo/repository_sync.md
+#
 require 'securerandom'
 
 module Geo
