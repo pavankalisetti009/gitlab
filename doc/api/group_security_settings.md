@@ -22,9 +22,9 @@ Every API call to group security settings must be [authenticated](rest/authentic
 
 If a user isn't a member of a private group, requests to the private group return a `404 Not Found` status code.
 
-## Update the `secret_push_protection_enabled` setting
+## Update group security settings
 
-Updates the `secret_push_protection_enabled` setting for all projects in a specified group.
+Updates group security settings for a specified group.
 
 Prerequisites:
 
