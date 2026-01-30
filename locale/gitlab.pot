@@ -72116,6 +72116,9 @@ msgstr ""
 msgid "Trial|Start your free Ultimate and GitLab Duo Enterprise trial"
 msgstr ""
 
+msgid "Trial|Start your free Ultimate trial"
+msgstr ""
+
 msgid "Trial|Start your free Ultimate trial!"
 msgstr ""
 
