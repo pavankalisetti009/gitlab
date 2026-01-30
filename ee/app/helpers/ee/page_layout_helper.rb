@@ -4,6 +4,7 @@ module EE
   module PageLayoutHelper
     VALID_DUO_ADD_ONS = %w[duo_enterprise duo_pro duo_core].freeze
     VALID_DUO_CORE = %w[duo_core].freeze
+    DEFAULT_TRIAL_DURATION = 30
 
     def duo_chat_panel_data(user, project, group)
       user_model_selection_enabled = ::Gitlab::Llm::TanukiBot.user_model_selection_enabled?(
@@ -46,6 +47,33 @@ module EE
       }
     end
 
+    def duo_chat_panel_empty_state_data(source: nil)
+      path =
+        if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+          if source.nil? || source.root_ancestor.is_a?(::Namespaces::UserNamespace)
+            new_trial_path(glm_source: 'gitlab.com', glm_content: 'chat panel')
+          elsif user_can_start_trial_in_source?(source)
+            new_trial_path(source.root_ancestor, glm_source: 'gitlab.com', glm_content: 'chat panel')
+          end
+        else
+          can?(current_user, :manage_subscription) ? self_managed_new_trial_url : nil
+        end
+
+      trial_duration =
+        if path.nil?
+          nil
+        elsif ::Gitlab::Saas.feature_available?(:subscriptions_trials)
+          GitlabSubscriptions::TrialDurationService.new.execute
+        else
+          DEFAULT_TRIAL_DURATION
+        end
+
+      {
+        new_trial_path: path,
+        trial_duration: trial_duration
+      }.compact
+    end
+
     # rubocop:disable Layout/LineLength -- i18n
     def agentic_unavailable_message(user, container, is_agentic_available)
       return if is_agentic_available
@@ -70,6 +98,14 @@ module EE
 
       response = user.allowed_to_use(:duo_chat)
       response.allowed? && response.enablement_type == "duo_core"
+    end
+
+    private
+
+    def user_can_start_trial_in_source?(source)
+      root = source.root_ancestor
+
+      root.has_free_or_no_subscription? && can?(current_user, :admin_namespace, root)
     end
   end
 end

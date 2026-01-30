@@ -49,10 +49,38 @@ RSpec.describe 'layouts/_duo_chat_panel', feature_category: :duo_chat do
     let(:amazon_q_enabled) { false }
     let(:duo_enabled) { false }
 
+    before do
+      stub_feature_flags(dap_onboarding_empty_states: true)
+    end
+
     it 'does not render the ai panel' do
       render
 
       expect(rendered).not_to have_css('#duo-chat-panel')
+    end
+
+    it 'renders the empty state mountpoint' do
+      render
+
+      expect(rendered).to have_css('#duo-chat-panel-empty-state')
+    end
+
+    context 'when the user is anonymous' do
+      let(:user) { nil }
+
+      it 'does not render the empty state mountpoint' do
+        expect { render }.to raise_error(TypeError)
+      end
+    end
+
+    context 'when the `dap_onboarding_empty_states` feature flag is disabled' do
+      before do
+        stub_feature_flags(dap_onboarding_empty_states: false)
+      end
+
+      it 'does not render the empty state mountpoint' do
+        expect { render }.to raise_error(TypeError)
+      end
     end
   end
 end

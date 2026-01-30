@@ -1,8 +1,12 @@
 - duo_enabled_for_project_or_group = ::Gitlab::Llm::TanukiBot.show_breadcrumbs_entry_point?(user: current_user)
+- show_to_free_user = current_user && ::Feature.enabled?(:dap_onboarding_empty_states, current_user)
+- return unless duo_enabled_for_project_or_group || show_to_free_user
 
-- if duo_enabled_for_project_or_group
-  - duo_scope_hash = ::Gitlab::Llm::TanukiBot.duo_scope_hash(current_user, @project, @group, controller_name)
-  - project = duo_scope_hash[:project]
-  - group = duo_scope_hash[:namespace]
-  .paneled-view.ai-panels.-gl-mb-3.lg:gl-mb-0
+.paneled-view.ai-panels.-gl-mb-3.lg:gl-mb-0
+  - if duo_enabled_for_project_or_group
+    - duo_scope_hash = ::Gitlab::Llm::TanukiBot.duo_scope_hash(current_user, @project, @group, controller_name)
+    - project = duo_scope_hash[:project]
+    - group = duo_scope_hash[:namespace]
     #duo-chat-panel.duo-chat-panel{ data: duo_chat_panel_data(current_user, project, group) }
+  - else
+    #duo-chat-panel-empty-state.duo-chat-panel{ data: duo_chat_panel_empty_state_data(source: @project || @group) }
