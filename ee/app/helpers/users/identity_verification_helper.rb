@@ -54,6 +54,7 @@ module Users
           credit_card: credit_card_verification_data(user),
           phone_number: phone_number_verification_data(user),
           email: email_verification_data(user),
+          email_verification_message: unconfirmed_email_ui_copy,
           arkose: arkose_labs_data,
           arkose_data_exchange_payload:
             arkose_data_exchange_payload(Arkose::DataExchangePayload::USE_CASE_IDENTITY_VERIFICATION,

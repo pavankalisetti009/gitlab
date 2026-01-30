@@ -34,6 +34,11 @@ export default {
       required: false,
       default: 0,
     },
+    subhead: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   computed: {
     cardBodyClasses() {
@@ -41,10 +46,11 @@ export default {
       // rounded bottom corners
       return { 'gl-p-0 gl-pb-1': !this.isActive };
     },
+    titleBorderClasses() {
+      return this.isActive ? 'gl-pb-5 gl-border-1 gl-border-b-solid gl-border-default' : '';
+    },
     titleClasses() {
-      const borderClasses = 'gl-pb-5 gl-border-1 gl-border-b-solid gl-border-default';
-      const defaultClasses = 'gl-text-base gl-my-2 gl-flex gl-justify-between';
-      return { [borderClasses]: this.isActive, [defaultClasses]: true };
+      return 'gl-text-base gl-my-2 gl-flex gl-justify-between';
     },
     titleClassesLWRExperiment() {
       const defaultClasses = 'gl-bg-subtle gl-p-0 gl-pt-6 !gl-border-b-0';
@@ -80,12 +86,22 @@ export default {
     <template #control>
       <gl-card class="gl-mb-3" header-class="gl-border-b-0" :body-class="cardBodyClasses">
         <template #header>
-          <h3 :class="titleClasses">
-            {{ title }}
-            <gl-badge v-if="completed" variant="success" icon="check-circle-filled" icon-size="sm">
-              {{ $options.i18n.completed }}
-            </gl-badge>
-          </h3>
+          <div :class="titleBorderClasses">
+            <h3 :class="titleClasses">
+              {{ title }}
+              <gl-badge
+                v-if="completed"
+                variant="success"
+                icon="check-circle-filled"
+                icon-size="sm"
+              >
+                {{ $options.i18n.completed }}
+              </gl-badge>
+            </h3>
+            <p class="gl-m-0">
+              {{ subhead }}
+            </p>
+          </div>
         </template>
         <template #default>
           <slot v-if="isActive"></slot>
