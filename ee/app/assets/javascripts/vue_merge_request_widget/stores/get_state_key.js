@@ -11,11 +11,7 @@ export default function getStateKey() {
     return 'geoSecondaryNode';
   }
 
-  const strategies = [MWCP_MERGE_STRATEGY, MTWCP_MERGE_STRATEGY];
-
-  if (window.gon?.features?.allowMergeTrainRetryMerge) {
-    strategies.push(MT_MERGE_STRATEGY);
-  }
+  const strategies = [MWCP_MERGE_STRATEGY, MTWCP_MERGE_STRATEGY, MT_MERGE_STRATEGY];
 
   if (!this.autoMergeEnabled && strategies.includes(this.preferredAutoMergeStrategy)) {
     return CEStateKey.readyToMerge;
