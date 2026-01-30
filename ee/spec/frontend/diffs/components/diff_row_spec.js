@@ -1,11 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import DiffRow from '~/diffs/components/diff_row.vue';
-import diffsModule from '~/diffs/store/modules';
-
-Vue.use(Vuex);
 
 describe('EE DiffRow', () => {
   let wrapper;
@@ -19,39 +13,14 @@ describe('EE DiffRow', () => {
     index: 0,
     isHighlighted: false,
     fileLineCoverage: () => ({}),
+    userCanReply: true,
   };
 
-  const createComponent = ({ props, state, actions, isLoggedIn = true }) => {
-    const diffs = diffsModule();
-    diffs.state = { ...diffs.state, ...state };
-    diffs.actions = { ...diffs.actions, ...actions };
-
-    const getters = { isLoggedIn: () => isLoggedIn };
-
-    const store = new Vuex.Store({
-      modules: { diffs },
-      getters,
-    });
-
+  const createComponent = ({ props }) => {
     wrapper = shallowMount(DiffRow, {
       propsData: { ...defaultProps, ...props },
-      store,
-      listeners: {
-        enterdragging: () => {},
-        stopdragging: () => {},
-        showCommentForm: () => {},
-        setHighlightedRow: () => {},
-      },
     });
   };
-
-  afterEach(() => {
-    Object.values(DiffRow).forEach(({ cache }) => {
-      if (cache) {
-        cache.clear();
-      }
-    });
-  });
 
   describe('with a new code quality violation', () => {
     beforeEach(() => {
