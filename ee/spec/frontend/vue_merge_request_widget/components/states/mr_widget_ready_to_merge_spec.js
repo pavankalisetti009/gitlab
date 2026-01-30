@@ -64,7 +64,6 @@ describe('ReadyToMerge', () => {
     mountFn = shallowMountExtended,
     data = {},
     mergeTrainsSkipTrainFF = false,
-    allowMergeTrainRetryMerge = false,
     // eslint-disable-next-line max-params
   ) => {
     wrapper = mountFn(ReadyToMerge, {
@@ -95,7 +94,6 @@ describe('ReadyToMerge', () => {
       provide: {
         glFeatures: {
           mergeTrainsSkipTrain: mergeTrainsSkipTrainFF,
-          allowMergeTrainRetryMerge,
         },
       },
     });
@@ -238,7 +236,7 @@ describe('ReadyToMerge', () => {
       expect(showMock).toHaveBeenCalled();
 
       expect(findMergeTrainFailedPipelineConfirmationDialog().props('visible')).toBe(false);
-      expect(findMergeButton().text()).toBe('Merge');
+      expect(findMergeButton().text()).toBe('Set to auto-merge');
       expect(mr.transitionStateMachine).toHaveBeenCalledTimes(0);
     });
 
@@ -340,31 +338,20 @@ describe('ReadyToMerge', () => {
 
   describe('Merge button text', () => {
     it.each`
-      availableAutoMergeStrategies | mergeTrainsCount | allowMergeTrainRetryMerge | expectedText
-      ${[]}                        | ${0}             | ${false}                  | ${'Merge'}
-      ${[]}                        | ${0}             | ${true}                   | ${'Merge'}
-      ${[MWCP_MERGE_STRATEGY]}     | ${0}             | ${false}                  | ${'Set to auto-merge'}
-      ${[MWCP_MERGE_STRATEGY]}     | ${0}             | ${true}                   | ${'Set to auto-merge'}
-      ${[MT_MERGE_STRATEGY]}       | ${0}             | ${false}                  | ${'Merge'}
-      ${[MT_MERGE_STRATEGY]}       | ${0}             | ${true}                   | ${'Set to auto-merge'}
-      ${[MT_MERGE_STRATEGY]}       | ${1}             | ${false}                  | ${'Merge'}
-      ${[MT_MERGE_STRATEGY]}       | ${1}             | ${true}                   | ${'Set to auto-merge'}
-      ${[MTWCP_MERGE_STRATEGY]}    | ${0}             | ${false}                  | ${'Set to auto-merge'}
-      ${[MTWCP_MERGE_STRATEGY]}    | ${0}             | ${true}                   | ${'Set to auto-merge'}
+      availableAutoMergeStrategies | mergeTrainsCount | expectedText
+      ${[]}                        | ${0}             | ${'Merge'}
+      ${[MWCP_MERGE_STRATEGY]}     | ${0}             | ${'Set to auto-merge'}
+      ${[MT_MERGE_STRATEGY]}       | ${0}             | ${'Set to auto-merge'}
+      ${[MT_MERGE_STRATEGY]}       | ${1}             | ${'Set to auto-merge'}
+      ${[MTWCP_MERGE_STRATEGY]}    | ${0}             | ${'Set to auto-merge'}
     `(
-      'displays $expectedText with merge strategy $availableAutoMergeStrategies, merge train count $mergeTrainsCount, and allowMergeTrainRetryMerge $allowMergeTrainRetryMerge',
-      ({
-        availableAutoMergeStrategies,
-        mergeTrainsCount,
-        allowMergeTrainRetryMerge,
-        expectedText,
-      }) => {
+      'displays $expectedText with merge strategy $availableAutoMergeStrategies, merge train count $mergeTrainsCount',
+      ({ availableAutoMergeStrategies, mergeTrainsCount, expectedText }) => {
         createComponent(
           { availableAutoMergeStrategies, mergeTrainsCount },
           shallowMountExtended,
           {},
           false,
-          allowMergeTrainRetryMerge,
         );
 
         expect(findMergeButton().text()).toBe(expectedText);
@@ -413,29 +400,9 @@ describe('ReadyToMerge', () => {
         shallowMountExtended,
         {},
         false,
-        true,
       );
 
       expect(wrapper.vm.showReAddToMergeTrain).toBe(true);
-    });
-
-    it('should return false when feature flag is disabled', () => {
-      createComponent(
-        {
-          availableAutoMergeStrategies: [MT_MERGE_STRATEGY],
-          headPipeline: {
-            id: 'gid://gitlab/Pipeline/1',
-            path: 'path/to/pipeline',
-            ref: 'refs/merge-requests/123/train',
-          },
-        },
-        shallowMountExtended,
-        {},
-        false,
-        false,
-      );
-
-      expect(wrapper.vm.showReAddToMergeTrain).toBe(false);
     });
 
     it('should return false when merge strategy is not MT_MERGE_STRATEGY', () => {
@@ -451,7 +418,6 @@ describe('ReadyToMerge', () => {
         shallowMountExtended,
         {},
         false,
-        true,
       );
 
       expect(wrapper.vm.showReAddToMergeTrain).toBe(false);
@@ -470,7 +436,6 @@ describe('ReadyToMerge', () => {
         shallowMountExtended,
         {},
         false,
-        true,
       );
 
       expect(wrapper.vm.showReAddToMergeTrain).toBe(false);
@@ -485,7 +450,6 @@ describe('ReadyToMerge', () => {
         shallowMountExtended,
         {},
         false,
-        true,
       );
 
       expect(wrapper.vm.showReAddToMergeTrain).toBe(false);
@@ -506,7 +470,6 @@ describe('ReadyToMerge', () => {
         shallowMountExtended,
         {},
         false,
-        true,
       );
 
       expect(findMergeHelperText().text()).toBe('Re-add to merge train');
@@ -519,12 +482,11 @@ describe('ReadyToMerge', () => {
           headPipeline: {
             id: 'gid://gitlab/Pipeline/1',
             path: 'path/to/pipeline',
-            ref: 'refs/merge-requests/123/train',
+            ref: 'abc',
           },
         },
         shallowMountExtended,
         {},
-        false,
         false,
       );
 

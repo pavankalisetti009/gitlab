@@ -26,15 +26,12 @@ describe('EE getStateKey', () => {
   describe('when auto merge is not enabled', () => {
     describe('with merge train strategy', () => {
       it.each`
-        featureFlagEnabled | detailedMergeStatus                   | expectedState
-        ${true}            | ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
-        ${true}            | ${DETAILED_MERGE_STATUS.NOT_APPROVED} | ${'readyToMerge'}
-        ${false}           | ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
-        ${false}           | ${DETAILED_MERGE_STATUS.NOT_APPROVED} | ${null}
+        detailedMergeStatus                   | expectedState
+        ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
+        ${DETAILED_MERGE_STATUS.NOT_APPROVED} | ${'readyToMerge'}
       `(
-        'returns $expectedState when feature flag is $featureFlagEnabled and status is $detailedMergeStatus',
-        ({ featureFlagEnabled, detailedMergeStatus, expectedState }) => {
-          window.gon.features.allowMergeTrainRetryMerge = featureFlagEnabled;
+        'returns $expectedState when status is $detailedMergeStatus',
+        ({ detailedMergeStatus, expectedState }) => {
           const context = createContext(detailedMergeStatus, MT_MERGE_STRATEGY, false);
           const bound = getStateKey.bind(context);
 
@@ -69,7 +66,6 @@ describe('EE getStateKey', () => {
       `(
         'returns $expectedState for $strategy regardless of feature flag state',
         ({ strategy, detailedMergeStatus, expectedState }) => {
-          window.gon.features.allowMergeTrainRetryMerge = false;
           const context = createContext(detailedMergeStatus, strategy, false);
           const bound = getStateKey.bind(context);
 
@@ -81,16 +77,13 @@ describe('EE getStateKey', () => {
 
   describe('when auto merge is enabled', () => {
     it.each`
-      strategy               | featureFlagEnabled | detailedMergeStatus                   | expectedState
-      ${MT_MERGE_STRATEGY}   | ${true}            | ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
-      ${MT_MERGE_STRATEGY}   | ${true}            | ${DETAILED_MERGE_STATUS.NOT_APPROVED} | ${null}
-      ${MT_MERGE_STRATEGY}   | ${false}           | ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
-      ${MWCP_MERGE_STRATEGY} | ${true}            | ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
-      ${MWCP_MERGE_STRATEGY} | ${false}           | ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
+      strategy               | detailedMergeStatus                   | expectedState
+      ${MT_MERGE_STRATEGY}   | ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
+      ${MT_MERGE_STRATEGY}   | ${DETAILED_MERGE_STATUS.NOT_APPROVED} | ${null}
+      ${MWCP_MERGE_STRATEGY} | ${DETAILED_MERGE_STATUS.MERGEABLE}    | ${'readyToMerge'}
     `(
-      'returns $expectedState for $strategy when auto merge is enabled (feature flag: $featureFlagEnabled)',
-      ({ strategy, featureFlagEnabled, detailedMergeStatus, expectedState }) => {
-        window.gon.features.allowMergeTrainRetryMerge = featureFlagEnabled;
+      'returns $expectedState for $strategy when auto merge is enabled',
+      ({ strategy, detailedMergeStatus, expectedState }) => {
         const context = createContext(detailedMergeStatus, strategy, true);
         const bound = getStateKey.bind(context);
 

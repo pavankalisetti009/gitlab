@@ -37,20 +37,12 @@ export default {
       return PIPELINE_MUST_SUCCEED_CONFLICT_TEXT;
     },
     autoMergeText() {
-      if (
-        this.preferredAutoMergeStrategy === MT_MERGE_STRATEGY &&
-        !this.glFeatures.allowMergeTrainRetryMerge
-      ) {
-        return __('Merge');
-      }
-
       return __('Set to auto-merge');
     },
     showReAddToMergeTrain() {
       const mergeTrainRefRegex = /^refs\/merge-requests\/.*\/train$/;
       return Boolean(
-        this.glFeatures.allowMergeTrainRetryMerge &&
-          this.preferredAutoMergeStrategy === MT_MERGE_STRATEGY &&
+        this.preferredAutoMergeStrategy === MT_MERGE_STRATEGY &&
           this.pipeline?.ref?.match(mergeTrainRefRegex),
       );
     },
