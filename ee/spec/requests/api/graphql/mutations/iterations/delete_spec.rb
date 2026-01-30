@@ -60,7 +60,7 @@ RSpec.describe 'Deleting an iteration', feature_category: :team_planning do
         it 'deletes the iteration', :aggregate_failures do
           expect do
             post_graphql_mutation(mutation, current_user: current_user)
-          end.to change(Iteration, :count).by(-1)
+          end.to change { Iteration.count }.by(-1)
 
           expect(mutation_response).to include('group' => hash_including('id' => group.to_global_id.to_s))
         end

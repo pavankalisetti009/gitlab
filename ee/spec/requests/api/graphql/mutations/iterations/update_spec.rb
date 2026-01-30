@@ -41,7 +41,7 @@ RSpec.describe 'Updating an Iteration', feature_category: :team_planning do
     it_behaves_like 'a mutation that returns a top-level access error'
 
     it 'does not update iteration' do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(subject_iteration, :title)
+      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { subject_iteration.title }
     end
   end
 
@@ -115,7 +115,7 @@ RSpec.describe 'Updating an Iteration', feature_category: :team_planning do
               post_graphql_mutation(mutation, current_user: current_user)
 
               subject_iteration.reload
-            end.to change(subject_iteration, :description).to('updated description')
+            end.to change { subject_iteration.description }.to('updated description')
           end
         end
       end
@@ -185,7 +185,7 @@ RSpec.describe 'Updating an Iteration', feature_category: :team_planning do
           errors: ['The list of iteration attributes is empty']
 
         it 'does not update the iteration' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(subject_iteration, :title)
+          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { subject_iteration.title }
         end
       end
     end

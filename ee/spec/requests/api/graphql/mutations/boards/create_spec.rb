@@ -35,7 +35,7 @@ RSpec.describe Mutations::Boards::Create, feature_category: :portfolio_managemen
     end
 
     it 'sets cadence_id on creation' do
-      expect { subject }.to change(::Board, :count).by(1)
+      expect { subject }.to change { ::Board.count }.by(1)
 
       created_board = ::Board.last
 

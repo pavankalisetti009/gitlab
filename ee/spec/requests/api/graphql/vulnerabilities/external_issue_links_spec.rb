@@ -59,8 +59,11 @@ RSpec.describe 'Query.vulnerabilities.externalIssueLinks', feature_category: :vu
 
     it 'schedules a background job to fetch data from Jira' do
       Sidekiq::Testing.fake! do
-        expect { post_graphql(query, current_user: user) }.to change(ExternalServiceReactiveCachingWorker.jobs, :size).by(1)
-        expect(ExternalServiceReactiveCachingWorker.jobs.last['args']).to include(project.id, [vulnerability_external_issue_link.external_issue_key])
+        expect { post_graphql(query, current_user: user) }
+          .to change { ExternalServiceReactiveCachingWorker.jobs.size }.by(1)
+
+        expect(ExternalServiceReactiveCachingWorker.jobs.last['args'])
+          .to include(project.id, [vulnerability_external_issue_link.external_issue_key])
       end
     end
 

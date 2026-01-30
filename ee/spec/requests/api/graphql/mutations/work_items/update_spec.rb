@@ -53,7 +53,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           post_graphql_mutation(mutation, current_user: current_user)
 
           work_item.reload
-        end.to change(work_item, :title).to('updated title')
+        end.to change { work_item.title }.to('updated title')
 
         expect(response).to have_gitlab_http_status(:success)
       end
@@ -87,7 +87,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       expect do
         post_graphql_mutation(mutation, current_user: current_user)
         work_item.reload
-      end.to change(work_item, :confidential).from(false).to(true)
+      end.to change { work_item.confidential }.from(false).to(true)
 
       expect(response).to have_gitlab_http_status(:success)
       expect(mutation_response['workItem']).to include(
@@ -102,7 +102,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         expect do
           post_graphql_mutation(mutation, current_user: current_user)
           work_item.reload
-        end.to change(work_item, :confidential).from(false).to(true)
+        end.to change { work_item.confidential }.from(false).to(true)
 
         expect(response).to have_gitlab_http_status(:success)
         expect(mutation_response['workItem']).to include(
@@ -171,7 +171,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
               post_graphql_mutation(mutation, current_user: current_user)
 
               work_item.reload
-            end.to change(work_item, :iteration).from(old_iteration).to(new_iteration)
+            end.to change { work_item.iteration }.from(old_iteration).to(new_iteration)
 
             expect(response).to have_gitlab_http_status(:success)
           end
@@ -274,7 +274,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             expect do
               post_graphql_mutation(mutation, current_user: current_user)
               work_item.reload
-            end.to change(work_item, :weight).from(2).to(nil)
+            end.to change { work_item.weight }.from(2).to(nil)
 
             expect(response).to have_gitlab_http_status(:success)
           end
@@ -296,7 +296,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
               expect do
                 post_graphql_mutation(mutation, current_user: current_user)
                 work_item.reload
-              end.to change(work_item, :weight).from(2).to(nil)
+              end.to change { work_item.weight }.from(2).to(nil)
 
               expect(response).to have_gitlab_http_status(:success)
             end

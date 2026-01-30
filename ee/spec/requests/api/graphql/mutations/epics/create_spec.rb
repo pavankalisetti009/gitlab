@@ -31,16 +31,19 @@ RSpec.describe 'Creating an Epic', feature_category: :portfolio_management do
     graphql_mutation_response(:create_epic)
   end
 
+  shared_examples 'does not create the epic' do
+    it 'does not create the epic' do
+      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { Epic.count }
+    end
+  end
+
   context 'when the user does not have permission' do
     before do
       stub_licensed_features(epics: true)
     end
 
     it_behaves_like 'a mutation that returns a top-level access error'
-
-    it 'does not create epic' do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Epic, :count)
-    end
+    it_behaves_like 'does not create the epic'
   end
 
   context 'when the user has permission' do
@@ -109,11 +112,9 @@ RSpec.describe 'Creating an Epic', feature_category: :portfolio_management do
         let(:attributes) { { title: '' } }
 
         it_behaves_like 'a mutation that returns errors in the response',
-          errors:  ["Author can't be blank", "Group can't be blank", "Title can't be blank", "Work item can't be blank"]
+          errors: ["Author can't be blank", "Group can't be blank", "Title can't be blank", "Work item can't be blank"]
 
-        it 'does not create the epic' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Epic, :count)
-        end
+        it_behaves_like 'does not create the epic'
       end
 
       context 'when the list of attributes is empty' do
@@ -122,9 +123,7 @@ RSpec.describe 'Creating an Epic', feature_category: :portfolio_management do
         it_behaves_like 'a mutation that returns top-level errors',
           errors: ['The list of epic attributes is empty']
 
-        it 'does not create the epic' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Epic, :count)
-        end
+        it_behaves_like 'does not create the epic'
       end
 
       context 'when IP restriction restricts access' do
@@ -134,9 +133,7 @@ RSpec.describe 'Creating an Epic', feature_category: :portfolio_management do
           end
         end
 
-        it 'does not create the epic' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { Epic.count }
-        end
+        it_behaves_like 'does not create the epic'
       end
     end
   end

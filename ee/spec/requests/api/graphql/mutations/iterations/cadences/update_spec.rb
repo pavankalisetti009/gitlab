@@ -106,7 +106,7 @@ RSpec.describe 'Updating an iteration cadence', feature_category: :team_planning
             post_graphql_mutation(mutation, current_user: current_user)
 
             iteration_cadence.reload
-          end.not_to change(iteration_cadence, :title)
+          end.not_to change { iteration_cadence.title }
         end
       end
 

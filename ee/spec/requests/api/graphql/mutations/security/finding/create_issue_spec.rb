@@ -46,17 +46,17 @@ RSpec.describe 'Creating an Issue from a Security::Finding', feature_category: :
     it_behaves_like 'a mutation that returns a top-level access error'
 
     it 'does not create a new vulnerability' do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Vulnerability, :count)
+      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { Vulnerability.count }
     end
 
     it 'does not create a new issue' do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Issue, :count)
+      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { Issue.count }
     end
 
     it 'does not create a new issue link' do
       expect do
         post_graphql_mutation(mutation, current_user: current_user)
-      end.not_to change(Vulnerabilities::IssueLink, :count)
+      end.not_to change { Vulnerabilities::IssueLink.count }
     end
   end
 
@@ -74,17 +74,17 @@ RSpec.describe 'Creating an Issue from a Security::Finding', feature_category: :
       end
 
       it 'does create a new vulnerability' do
-        expect { post_graphql_mutation(mutation, current_user: current_user) }.to change(Vulnerability, :count).by(1)
+        expect { post_graphql_mutation(mutation, current_user: current_user) }.to change { Vulnerability.count }.by(1)
       end
 
       it 'does create a new issue' do
-        expect { post_graphql_mutation(mutation, current_user: current_user) }.to change(Issue, :count).by(1)
+        expect { post_graphql_mutation(mutation, current_user: current_user) }.to change { Issue.count }.by(1)
       end
 
       it 'does create a new issue link' do
         expect do
           post_graphql_mutation(mutation, current_user: current_user)
-        end.to change(Vulnerabilities::IssueLink, :count).by(1)
+        end.to change { Vulnerabilities::IssueLink.count }.by(1)
       end
     end
 

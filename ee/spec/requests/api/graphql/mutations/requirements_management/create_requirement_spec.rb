@@ -27,7 +27,7 @@ RSpec.describe 'Creating a Requirement', feature_category: :requirements_managem
     it_behaves_like 'a mutation that returns a top-level access error'
 
     it 'does not create requirement' do
-      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(RequirementsManagement::Requirement, :count)
+      expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { RequirementsManagement::Requirement.count }
     end
   end
 
@@ -67,7 +67,7 @@ RSpec.describe 'Creating a Requirement', feature_category: :requirements_managem
           errors: ["Title can't be blank"]
 
         it 'does not create the requirement' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(RequirementsManagement::Requirement, :count)
+          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { RequirementsManagement::Requirement.count }
         end
       end
 
