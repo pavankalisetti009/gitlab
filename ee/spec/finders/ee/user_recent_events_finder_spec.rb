@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe UserRecentEventsFinder do
+RSpec.describe UserRecentEventsFinder, feature_category: :user_profile do
   describe '#execute' do
     let_it_be(:current_user) { create(:user) }
     let_it_be(:user1) { create(:user, :with_namespace) }
