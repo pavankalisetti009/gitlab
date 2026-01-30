@@ -36,6 +36,8 @@ describe('GeoReplicableItemReplicationInfo', () => {
   const findResyncButton = () => wrapper.findComponent(GlButton);
   const findRetryAt = () => wrapper.findByTestId('retry-at-time-ago');
   const findLastSyncedAt = () => wrapper.findByTestId('last-synced-at-time-ago');
+  const findTroubleshootingLink = () =>
+    wrapper.findByTestId('replication-failure-troubleshooting-link');
 
   describe('card header', () => {
     beforeEach(() => {
@@ -140,9 +142,15 @@ describe('GeoReplicableItemReplicationInfo', () => {
         expect(wrapper.text()).toContain('Error: Something is broken');
       });
 
-      it('does not render sync retry text', () => {
+      it('does render sync retry text', () => {
         expect(wrapper.text()).toContain('Next sync retry: Retry #2 scheduled');
         expect(findRetryAt().props('time')).toBe('2025-01-01');
+      });
+
+      it('does render troubleshooting link', () => {
+        expect(findTroubleshootingLink().props('href')).toBe(
+          'administration/geo/replication/troubleshooting/synchronization_verification',
+        );
       });
     });
 
@@ -160,6 +168,10 @@ describe('GeoReplicableItemReplicationInfo', () => {
       it('does not render sync retry text', () => {
         expect(wrapper.text()).not.toContain('Next sync retry:');
         expect(findRetryAt().exists()).toBe(false);
+      });
+
+      it('does not render troubleshooting link', () => {
+        expect(findTroubleshootingLink().exists()).toBe(false);
       });
     });
   });

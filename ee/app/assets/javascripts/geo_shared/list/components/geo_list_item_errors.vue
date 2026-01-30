@@ -1,5 +1,6 @@
 <script>
 import { GlCollapse, GlButton } from '@gitlab/ui';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { __ } from '~/locale';
 
 export default {
@@ -11,6 +12,7 @@ export default {
   components: {
     GlCollapse,
     GlButton,
+    HelpPageLink,
   },
   props: {
     errorsArray: {
@@ -64,6 +66,12 @@ export default {
             <span class="gl-ml-1">{{ error.message }}</span>
           </p>
         </div>
+        <help-page-link
+          class="gl-text-sm"
+          href="administration/geo/replication/troubleshooting/synchronization_verification"
+          target="_blank"
+          >{{ s__('Geo|View troubleshooting docs') }}</help-page-link
+        >
       </div>
     </gl-collapse>
   </section>

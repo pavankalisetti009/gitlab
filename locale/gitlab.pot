@@ -31443,6 +31443,9 @@ msgstr ""
 msgid "Geo|Time in seconds"
 msgstr ""
 
+msgid "Geo|Troubleshooting: %{link}"
+msgstr ""
+
 msgid "Geo|Tuning settings"
 msgstr ""
 
@@ -31507,6 +31510,9 @@ msgid "Geo|Verifies data integrity on the primary site by calculating a checksum
 msgstr ""
 
 msgid "Geo|Verifying"
+msgstr ""
+
+msgid "Geo|View troubleshooting docs"
 msgstr ""
 
 msgid "Geo|Whether this site's database is connected to the primary database directly or through data replication"

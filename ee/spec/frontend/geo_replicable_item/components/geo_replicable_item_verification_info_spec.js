@@ -41,6 +41,8 @@ describe('GeoReplicableItemVerificationInfo', () => {
   const findLocalVerificationChecksum = () => wrapper.findByTestId('local-verification-checksum');
   const findExpectedVerificationChecksum = () =>
     wrapper.findByTestId('expected-verification-checksum');
+  const findTroubleshootingLink = () =>
+    wrapper.findByTestId('verification-failure-troubleshooting-link');
 
   describe('card header', () => {
     beforeEach(() => {
@@ -122,6 +124,12 @@ describe('GeoReplicableItemVerificationInfo', () => {
         expect(wrapper.text()).toContain('Next verification retry: Retry #2 scheduled');
         expect(findRetryAt().props('time')).toBe('2025-01-01');
       });
+
+      it('does render troubleshooting link', () => {
+        expect(findTroubleshootingLink().props('href')).toBe(
+          'administration/geo/replication/troubleshooting/synchronization_verification',
+        );
+      });
     });
 
     describe('when verificationState is not FAILED', () => {
@@ -143,6 +151,10 @@ describe('GeoReplicableItemVerificationInfo', () => {
       it('does not render sync retry text', () => {
         expect(wrapper.text()).not.toContain('Next verification retry:');
         expect(findRetryAt().exists()).toBe(false);
+      });
+
+      it('does not render troubleshooting link', () => {
+        expect(findTroubleshootingLink().exists()).toBe(false);
       });
     });
   });
