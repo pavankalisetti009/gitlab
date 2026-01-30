@@ -12,13 +12,18 @@ module Types
         def self.[](feature)
           Class.new(BaseObject) do
             graphql_name "#{feature.to_s.camelize(:lower)}UserMetrics"
-            description "#{feature.to_s.titleize} user metrics for a user. " \
+            feature_display_name = feature.to_s == 'mcp' ? 'MCP' : feature.to_s.titleize
+            description "#{feature_display_name} user metrics for a user. " \
               "Requires ClickHouse. Premium and Ultimate with GitLab Duo Enterprise only."
 
             include ::Analytics::AiEventFields
 
             field :total_event_count, GraphQL::Types::Int,
-              description: "Total count of all #{feature.to_s.titleize} events for the user.",
+              description: "Total count of all #{feature_display_name} events for the user.",
+              null: true
+
+            field :last_duo_activity_on, Types::DateType,
+              description: "Date of the last #{feature_display_name} activity for the user.",
               null: true
 
             exposed_events(feature).each do |event_name|
@@ -33,6 +38,10 @@ module Types
 
             define_method(:total_event_count) do
               object[:total_events_count] || 0
+            end
+
+            define_method(:last_duo_activity_on) do
+              object[:last_duo_activity_on]
             end
           end
         end

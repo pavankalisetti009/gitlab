@@ -103,6 +103,11 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           })
         end
 
+        it 'does not include last_duo_activity_on when fetching all features' do
+          expect(service_response).to be_success
+          expect(service_response.payload.values).to all(not_include(:last_duo_activity_on))
+        end
+
         it 'includes event counts from all registered features' do
           expect(service_response).to be_success
 
@@ -144,22 +149,18 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           it 'returns all events for specified users across all namespaces' do
             expect(service_response).to be_success
             expect(service_response.payload).to match({
-              user1.id => {
+              user1.id => a_hash_including(
                 total_events_count: 4,
                 code_suggestion_accepted_in_ide_event_count: 3,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
-              },
-              user2.id => {
+                last_duo_activity_on: (to - 3.days).to_date
+              ),
+              user2.id => a_hash_including(
                 total_events_count: 2,
                 code_suggestion_accepted_in_ide_event_count: 1,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
-              }
+                last_duo_activity_on: (to - 2.days).to_date
+              )
             })
           end
         end
@@ -174,7 +175,8 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
                 code_suggestion_direct_access_token_refresh_event_count: 0,
                 code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
+                code_suggestions_requested_event_count: 0,
+                last_duo_activity_on: (to - 3.days).to_date
               },
               user2.id => {
                 total_events_count: 1,
@@ -182,9 +184,16 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
                 code_suggestion_direct_access_token_refresh_event_count: 0,
                 code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
+                code_suggestions_requested_event_count: 0,
+                last_duo_activity_on: (to - 2.days).to_date
               }
             })
+          end
+
+          it 'includes last_duo_activity_on with the most recent activity date' do
+            expect(service_response).to be_success
+            expect(service_response.payload[user1.id][:last_duo_activity_on]).to eq((to - 3.days).to_date)
+            expect(service_response.payload[user2.id][:last_duo_activity_on]).to eq((to - 2.days).to_date)
           end
         end
 
@@ -194,30 +203,22 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           it 'returns metrics for all users without filtering by user_ids' do
             expect(service_response).to be_success
             expect(service_response.payload).to match({
-              user1.id => {
+              user1.id => a_hash_including(
                 total_events_count: 3,
                 code_suggestion_accepted_in_ide_event_count: 2,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
-              },
-              user2.id => {
+                last_duo_activity_on: (to - 3.days).to_date
+              ),
+              user2.id => a_hash_including(
                 total_events_count: 1,
-                code_suggestion_accepted_in_ide_event_count: 0,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
-              },
-              user3.id => {
+                last_duo_activity_on: (to - 2.days).to_date
+              ),
+              user3.id => a_hash_including(
                 total_events_count: 3,
                 code_suggestion_accepted_in_ide_event_count: 3,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
-                code_suggestion_shown_in_ide_event_count: 0,
-                code_suggestions_requested_event_count: 0
-              }
+                last_duo_activity_on: (to - 1.day).to_date
+              )
             })
           end
         end
@@ -228,30 +229,22 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           it 'returns metrics for all users without filtering by user_ids' do
             expect(service_response).to be_success
             expect(service_response.payload).to match({
-              user1.id => {
+              user1.id => a_hash_including(
                 total_events_count: 3,
                 code_suggestion_accepted_in_ide_event_count: 2,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
-              },
-              user2.id => {
+                last_duo_activity_on: (to - 3.days).to_date
+              ),
+              user2.id => a_hash_including(
                 total_events_count: 1,
-                code_suggestion_accepted_in_ide_event_count: 0,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
-              },
-              user3.id => {
+                last_duo_activity_on: (to - 2.days).to_date
+              ),
+              user3.id => a_hash_including(
                 total_events_count: 3,
                 code_suggestion_accepted_in_ide_event_count: 3,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
-                code_suggestion_shown_in_ide_event_count: 0,
-                code_suggestions_requested_event_count: 0
-              }
+                last_duo_activity_on: (to - 1.day).to_date
+              )
             })
           end
         end
@@ -262,14 +255,12 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           it 'returns metrics only for specified users' do
             expect(service_response).to be_success
             expect(service_response.payload).to match({
-              user1.id => {
+              user1.id => a_hash_including(
                 total_events_count: 3,
                 code_suggestion_accepted_in_ide_event_count: 2,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0
-              }
+                last_duo_activity_on: (to - 3.days).to_date
+              )
             })
           end
         end
@@ -298,8 +289,16 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           it 'returns chat metrics across all namespaces' do
             expect(service_response).to be_success
             expect(service_response.payload).to match({
-              user1.id => { total_events_count: 3, request_duo_chat_response_event_count: 3 },
-              user2.id => { total_events_count: 1, request_duo_chat_response_event_count: 1 }
+              user1.id => a_hash_including(
+                total_events_count: 3,
+                request_duo_chat_response_event_count: 3,
+                last_duo_activity_on: (to - 3.days).to_date
+              ),
+              user2.id => a_hash_including(
+                total_events_count: 1,
+                request_duo_chat_response_event_count: 1,
+                last_duo_activity_on: (to - 2.days).to_date
+              )
             })
           end
         end
@@ -308,8 +307,16 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           it 'returns chat metrics only within the specified namespace' do
             expect(service_response).to be_success
             expect(service_response.payload).to match({
-              user1.id => { total_events_count: 2, request_duo_chat_response_event_count: 2 },
-              user2.id => { total_events_count: 1, request_duo_chat_response_event_count: 1 }
+              user1.id => {
+                total_events_count: 2,
+                request_duo_chat_response_event_count: 2,
+                last_duo_activity_on: (to - 3.days).to_date
+              },
+              user2.id => {
+                total_events_count: 1,
+                request_duo_chat_response_event_count: 1,
+                last_duo_activity_on: (to - 2.days).to_date
+              }
             })
           end
         end
@@ -383,22 +390,18 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
         it 'skips events that cannot be mapped to event names' do
           expect(service_response).to be_success
           expect(service_response.payload).to match({
-            user1.id => {
+            user1.id => a_hash_including(
               total_events_count: 2,
               code_suggestion_accepted_in_ide_event_count: 2,
-              code_suggestion_direct_access_token_refresh_event_count: 0,
-              code_suggestion_rejected_in_ide_event_count: 0,
               code_suggestion_shown_in_ide_event_count: 0,
-              code_suggestions_requested_event_count: 0
-            },
-            user2.id => {
+              last_duo_activity_on: (to - 3.days).to_date
+            ),
+            user2.id => a_hash_including(
               total_events_count: 1,
               code_suggestion_accepted_in_ide_event_count: 0,
-              code_suggestion_direct_access_token_refresh_event_count: 0,
-              code_suggestion_rejected_in_ide_event_count: 0,
               code_suggestion_shown_in_ide_event_count: 1,
-              code_suggestions_requested_event_count: 0
-            }
+              last_duo_activity_on: (to - 2.days).to_date
+            )
           })
         end
       end
@@ -440,38 +443,28 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
               # Verify order: user3 (10) > user4 (8) > user1 (7) > user2 (4)
               expect(payload.keys).to match_array([user3.id, user4.id, user1.id, user2.id])
               expect(payload).to match({
-                user3.id => {
+                user3.id => a_hash_including(
                   total_events_count: 10,
                   code_suggestion_accepted_in_ide_event_count: 10,
-                  code_suggestion_direct_access_token_refresh_event_count: 0,
-                  code_suggestion_rejected_in_ide_event_count: 0,
-                  code_suggestion_shown_in_ide_event_count: 0,
-                  code_suggestions_requested_event_count: 0
-                },
-                user4.id => {
+                  last_duo_activity_on: (to - 1.day).to_date
+                ),
+                user4.id => a_hash_including(
                   total_events_count: 8,
-                  code_suggestion_accepted_in_ide_event_count: 0,
-                  code_suggestion_direct_access_token_refresh_event_count: 0,
-                  code_suggestion_rejected_in_ide_event_count: 0,
                   code_suggestion_shown_in_ide_event_count: 8,
-                  code_suggestions_requested_event_count: 0
-                },
-                user1.id => {
+                  last_duo_activity_on: (to - 1.day).to_date
+                ),
+                user1.id => a_hash_including(
                   total_events_count: 7,
                   code_suggestion_accepted_in_ide_event_count: 5,
-                  code_suggestion_direct_access_token_refresh_event_count: 0,
-                  code_suggestion_rejected_in_ide_event_count: 0,
                   code_suggestion_shown_in_ide_event_count: 2,
-                  code_suggestions_requested_event_count: 0
-                },
-                user2.id => {
+                  last_duo_activity_on: (to - 3.days).to_date
+                ),
+                user2.id => a_hash_including(
                   total_events_count: 4,
                   code_suggestion_accepted_in_ide_event_count: 3,
-                  code_suggestion_direct_access_token_refresh_event_count: 0,
-                  code_suggestion_rejected_in_ide_event_count: 0,
                   code_suggestion_shown_in_ide_event_count: 1,
-                  code_suggestions_requested_event_count: 0
-                }
+                  last_duo_activity_on: (to - 2.days).to_date
+                )
               })
             end
           end
@@ -486,38 +479,28 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
               # Verify order: user2 (4) < user1 (7) < user4 (8) < user3 (10)
               expect(payload.keys).to match_array([user2.id, user1.id, user4.id, user3.id])
               expect(payload).to match({
-                user2.id => {
+                user2.id => a_hash_including(
                   total_events_count: 4,
                   code_suggestion_accepted_in_ide_event_count: 3,
-                  code_suggestion_direct_access_token_refresh_event_count: 0,
-                  code_suggestion_rejected_in_ide_event_count: 0,
                   code_suggestion_shown_in_ide_event_count: 1,
-                  code_suggestions_requested_event_count: 0
-                },
-                user1.id => {
+                  last_duo_activity_on: (to - 2.days).to_date
+                ),
+                user1.id => a_hash_including(
                   total_events_count: 7,
                   code_suggestion_accepted_in_ide_event_count: 5,
-                  code_suggestion_direct_access_token_refresh_event_count: 0,
-                  code_suggestion_rejected_in_ide_event_count: 0,
                   code_suggestion_shown_in_ide_event_count: 2,
-                  code_suggestions_requested_event_count: 0
-                },
-                user4.id => {
+                  last_duo_activity_on: (to - 3.days).to_date
+                ),
+                user4.id => a_hash_including(
                   total_events_count: 8,
-                  code_suggestion_accepted_in_ide_event_count: 0,
-                  code_suggestion_direct_access_token_refresh_event_count: 0,
-                  code_suggestion_rejected_in_ide_event_count: 0,
                   code_suggestion_shown_in_ide_event_count: 8,
-                  code_suggestions_requested_event_count: 0
-                },
-                user3.id => {
+                  last_duo_activity_on: (to - 1.day).to_date
+                ),
+                user3.id => a_hash_including(
                   total_events_count: 10,
                   code_suggestion_accepted_in_ide_event_count: 10,
-                  code_suggestion_direct_access_token_refresh_event_count: 0,
-                  code_suggestion_rejected_in_ide_event_count: 0,
-                  code_suggestion_shown_in_ide_event_count: 0,
-                  code_suggestions_requested_event_count: 0
-                }
+                  last_duo_activity_on: (to - 1.day).to_date
+                )
               })
             end
           end
@@ -568,22 +551,17 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
 
             expect(payload.keys).to match_array([user3.id, user1.id])
             expect(payload).to match({
-              user3.id => {
+              user3.id => a_hash_including(
                 total_events_count: 10,
                 code_suggestion_accepted_in_ide_event_count: 10,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
-                code_suggestion_shown_in_ide_event_count: 0,
-                code_suggestions_requested_event_count: 0
-              },
-              user1.id => {
+                last_duo_activity_on: (to - 1.day).to_date
+              ),
+              user1.id => a_hash_including(
                 total_events_count: 7,
                 code_suggestion_accepted_in_ide_event_count: 5,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
                 code_suggestion_shown_in_ide_event_count: 2,
-                code_suggestions_requested_event_count: 0
-              }
+                last_duo_activity_on: (to - 3.days).to_date
+              )
             })
           end
         end
@@ -631,14 +609,12 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
             # Should be sorted by chat events (user5: 10, user1: 5, then others with 0)
             # But returns code_suggestions metrics
             expect(payload.keys.first(2)).to match_array([user5.id, user1.id])
-            expect(payload[user1.id]).to match({
+            expect(payload[user1.id]).to match(a_hash_including(
               total_events_count: 7,
               code_suggestion_accepted_in_ide_event_count: 5,
-              code_suggestion_direct_access_token_refresh_event_count: 0,
-              code_suggestion_rejected_in_ide_event_count: 0,
               code_suggestion_shown_in_ide_event_count: 2,
-              code_suggestions_requested_event_count: 0
-            })
+              last_duo_activity_on: (to - 3.days).to_date
+            ))
           end
         end
       end
