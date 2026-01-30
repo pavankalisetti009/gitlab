@@ -9,7 +9,8 @@ import {
 export const DEPENDENCY_SCANNING_KEY = 'DEPENDENCY_SCANNING';
 export const SAST_KEY = 'SAST';
 export const SAST_ADVANCED_KEY = 'SAST_ADVANCED';
-export const SECRET_DETECTION_KEY = 'SECRET_DETECTION_PIPELINE_BASED';
+export const SECRET_DETECTION_KEY = 'SECRET_DETECTION';
+export const SECRET_DETECTION_PIPELINE_BASED_KEY = 'SECRET_DETECTION_PIPELINE_BASED';
 export const SECRET_PUSH_PROTECTION_KEY = 'SECRET_DETECTION_SECRET_PUSH_PROTECTION';
 export const CONTAINER_SCANNING_KEY = 'CONTAINER_SCANNING';
 export const CONTAINER_SCANNING_FOR_REGISTRY_KEY = 'CONTAINER_SCANNING_FOR_REGISTRY';
@@ -72,7 +73,7 @@ export const SCANNER_TYPES = {
 export const SCANNER_POPOVER_GROUPS = {
   [DEPENDENCY_SCANNING_KEY]: ['DEPENDENCY_SCANNING'],
   [SAST_KEY]: ['SAST', 'SAST_ADVANCED'],
-  [SECRET_DETECTION_KEY]: [SECRET_DETECTION_KEY, SECRET_PUSH_PROTECTION_KEY],
+  [SECRET_DETECTION_KEY]: [SECRET_DETECTION_PIPELINE_BASED_KEY, SECRET_PUSH_PROTECTION_KEY],
   [CONTAINER_SCANNING_KEY]: ['CONTAINER_SCANNING', 'CONTAINER_SCANNING_FOR_REGISTRY'],
   [DAST_KEY]: ['DAST'],
   [SAST_IAC_KEY]: ['SAST_IAC'],
@@ -81,7 +82,7 @@ export const SCANNER_POPOVER_GROUPS = {
 export const SCANNER_POPOVER_LABELS = {
   [SAST_KEY]: s__('SecurityInventory|Basic SAST'),
   [SAST_ADVANCED_KEY]: s__('SecurityInventory|GitLab Advanced SAST'),
-  [SECRET_DETECTION_KEY]: s__('SecurityInventory|Pipeline secret detection'),
+  [SECRET_DETECTION_PIPELINE_BASED_KEY]: s__('SecurityInventory|Pipeline secret detection'),
   [SECRET_PUSH_PROTECTION_KEY]: s__('SecurityInventory|Secret push protection'),
   [CONTAINER_SCANNING_KEY]: s__('SecurityInventory|Container scanning (standard)'),
   [CONTAINER_SCANNING_FOR_REGISTRY_KEY]: s__('SecurityInventory|Container scanning for registry'),
@@ -106,7 +107,7 @@ export const SCANNER_FILTER_LABELS = {
   [DEPENDENCY_SCANNING_KEY]: s__('SecurityInventory|Dependency scanning (DS)'),
   [SAST_KEY]: s__('SecurityInventory|Basic SAST (SAST)'),
   [SAST_ADVANCED_KEY]: s__('SecurityInventory|Advanced SAST (SAST)'),
-  [SECRET_DETECTION_KEY]: s__('SecurityInventory|Pipeline secret detection (SD)'),
+  [SECRET_DETECTION_PIPELINE_BASED_KEY]: s__('SecurityInventory|Pipeline secret detection (SD)'),
   [SECRET_PUSH_PROTECTION_KEY]: s__('SecurityInventory|Secret push protection (SD)'),
   [CONTAINER_SCANNING_KEY]: s__('SecurityInventory|Container scanning (CS)'),
   [CONTAINER_SCANNING_FOR_REGISTRY_KEY]: s__(
@@ -119,7 +120,7 @@ export const SCANNER_SEGMENT_LABELS = {
   [DEPENDENCY_SCANNING_KEY]: s__('SecurityInventory|Dependency scanning'),
   [SAST_KEY]: s__('SecurityInventory|Basic SAST'),
   [SAST_ADVANCED_KEY]: s__('SecurityInventory|Advanced SAST'),
-  [SECRET_DETECTION_KEY]: s__('SecurityInventory|Secret detection'),
+  [SECRET_DETECTION_PIPELINE_BASED_KEY]: s__('SecurityInventory|Secret detection'),
   [SECRET_PUSH_PROTECTION_KEY]: s__('SecurityInventory|Secret push protection'),
   [CONTAINER_SCANNING_KEY]: s__('SecurityInventory|Container scanning'),
   [CONTAINER_SCANNING_FOR_REGISTRY_KEY]: s__('SecurityInventory|Container scanning for registry'),

@@ -7,6 +7,9 @@ import {
   SCANNER_POPOVER_GROUPS,
   SAST_ADVANCED_KEY,
   CONTAINER_SCANNING_FOR_REGISTRY_KEY,
+  SECRET_DETECTION_KEY,
+  SECRET_DETECTION_PIPELINE_BASED_KEY,
+  SECRET_PUSH_PROTECTION_KEY,
 } from '../constants';
 import GroupToolCoverageDetails from './group_tool_coverage_details.vue';
 import SegmentedBar from './segmented_bar.vue';
@@ -63,6 +66,10 @@ export default {
         .filter((type) => type !== SAST_ADVANCED_KEY)
         // Now that container scanning values are backfilled, there's no need to merge them any more
         .filter((type) => type !== CONTAINER_SCANNING_FOR_REGISTRY_KEY)
+        // The backend combines the two secret detection types into just SECRET_DETECTION, so
+        // filter out one of them and map the other to the right key
+        .filter((type) => type !== SECRET_DETECTION_PIPELINE_BASED_KEY)
+        .map((type) => (type === SECRET_PUSH_PROTECTION_KEY ? SECRET_DETECTION_KEY : type))
         .map((type) => {
           const existingScanner = this.item.analyzerStatuses.find(
             (scanner) => scanner.analyzerType === type,
