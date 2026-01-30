@@ -24,8 +24,7 @@ module Admin
     def admin_emails_rate_limited_alert
       return '' unless admin_emails_are_currently_rate_limited?
 
-      _("An email notification was recently sent from the admin panel. Please wait %{wait_time_in_words} before attempting to send another message.") %
-        { wait_time_in_words: distance_of_time_in_words(admin_emails_rate_limit_ttl) }
+      format(_("An email notification was recently sent from the admin panel. Please wait %{wait_time_in_words} before attempting to send another message."), wait_time_in_words: distance_of_time_in_words(admin_emails_rate_limit_ttl))
     end
   end
 end
