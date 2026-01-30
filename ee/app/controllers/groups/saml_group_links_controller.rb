@@ -55,7 +55,7 @@ module Groups
     end
 
     def alert(error_message)
-      s_('GroupSAML|Could not create SAML group link: %{errors}.') % { errors: error_message }
+      format(s_('GroupSAML|Could not create SAML group link: %{errors}.'), errors: error_message)
     end
   end
 end

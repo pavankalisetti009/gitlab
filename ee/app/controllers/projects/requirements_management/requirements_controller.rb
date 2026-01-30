@@ -45,7 +45,7 @@ class Projects::RequirementsManagement::RequirementsController < Projects::Appli
 
   def invalid_file_message
     supported_file_extensions = ".#{EXTENSION_ALLOWLIST.join(', .')}"
-    _("The uploaded file was invalid. Supported file extensions are %{extensions}.") % { extensions: supported_file_extensions }
+    format(_("The uploaded file was invalid. Supported file extensions are %{extensions}."), extensions: supported_file_extensions)
   end
 
   def uploader_class

@@ -187,7 +187,7 @@ module EE
 
         def incorrect_version_message
           translation = _("You need git-lfs version %{min_git_lfs_version} (or greater) to continue. Please visit https://git-lfs.github.com")
-          translation % { min_git_lfs_version: MINIMUM_GIT_LFS_VERSION }
+          format(translation, min_git_lfs_version: MINIMUM_GIT_LFS_VERSION)
         end
 
         def batch_request?
