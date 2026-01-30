@@ -205,25 +205,16 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
 
         it_behaves_like 'creates an audit event on deletion', entity_type: 'Group'
 
-        it 'removes the service account from all projects' do
-          expect { response }.to change { project.team.members.count }.by(-1)
-          expect(project.team.users.pluck(:id)).not_to include(service_account.id)
-        end
+        it 'enqueues the worker to remove the service account from all projects' do
+          expect(Ai::Catalog::DeleteServiceAccountMembersFromHierarchyWorker).to receive(:perform_async)
+            .with(current_user.id, service_account.id, group.id, { 'skip_authorization' => true })
 
-        context 'when removing a service account member fails' do
-          before do
-            allow_next_instance_of(Members::DestroyService) do |instance|
-              allow(instance).to receive(:execute) do |member|
-                member.errors.add(:base, 'Deletion failed')
-              end
-            end
+          # Since specs run inside a transaction which gets rolled back, we need to manually trigger the execution
+          expect(item_consumer).to receive(:run_after_commit) do |&block|
+            item_consumer.instance_eval(&block)
           end
 
-          it 'does not delete the item consumer' do
-            expect { response }.not_to change { Ai::Catalog::ItemConsumer.count }
-            expect(response).to be_error
-            expect(response.message).to contain_exactly('Service account membership: Deletion failed')
-          end
+          response
         end
       end
 
