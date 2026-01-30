@@ -28323,7 +28323,8 @@ CREATE TABLE security_scans (
     pipeline_id bigint,
     latest boolean DEFAULT true NOT NULL,
     status smallint DEFAULT 0 NOT NULL,
-    findings_partition_number integer DEFAULT 1 NOT NULL
+    findings_partition_number integer DEFAULT 1 NOT NULL,
+    CONSTRAINT check_2d56d882f6 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE security_scans_id_seq
@@ -36323,9 +36324,6 @@ ALTER TABLE bulk_import_batch_trackers
 
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE security_scans
-    ADD CONSTRAINT check_2d56d882f6 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE labels
     ADD CONSTRAINT check_2d9a8c1bca CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1)) NOT VALID;
