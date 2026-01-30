@@ -1,0 +1,26 @@
+%tr
+  %td.text-content
+    = email_default_heading(say_hi(@user))
+
+    %p
+      = format(_('Your bulk %{operation_type} operation completed with errors.'), operation_type: @humanized_operation_type.downcase)
+
+    %p
+      %strong= _('Summary:')
+    %p{ style: 'margin: 0;' }= format(_('Total items: %{total}'), total: @operation[:total_items])
+    %p{ style: 'margin: 0; color: #108548;' }= format(_('Successful: %{successful}'), successful: @operation[:successful_items])
+    %p{ style: 'margin: 0; color: #dd2b0e;' }= format(_('Failed: %{failed}'), failed: @operation[:failed_items])
+
+    %p{ style: 'margin-top: 16px;' }
+      %strong= _('Failed Projects:')
+    - @failed_items.each do |item|
+      - if item['project_full_path'].present?
+        - project_url = Gitlab::Routing.url_helpers.root_url + item['project_full_path']
+        - project_link = link_to(item['project_name'] || item['project_full_path'], project_url)
+      - else
+        - project_link = "Project ID #{item['project_id']}"
+      %p{ style: 'margin: 0;' }
+        = project_link
+        \-
+        = item['error_message']
+        = "(#{item['error_code']})"

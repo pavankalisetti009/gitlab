@@ -39,6 +39,9 @@ RSpec.describe Security::Attributes::BulkUpdateService, feature_category: :secur
   describe '#execute' do
     before_all do
       namespace.add_maintainer(user)
+    end
+
+    before do
       stub_feature_flags(security_categories_and_attributes: true)
     end
 

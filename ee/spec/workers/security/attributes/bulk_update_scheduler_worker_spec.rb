@@ -31,7 +31,11 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
   describe '#perform' do
     before_all do
       namespace.add_maintainer(user)
+    end
+
+    before do
       stub_feature_flags(security_categories_and_attributes: true)
+      stub_feature_flags(security_bulk_operations_notifications: false)
     end
 
     context 'when user exists' do
@@ -169,6 +173,56 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
             .with(2.seconds, anything, attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
+        end
+      end
+
+      context 'when security_bulk_operations_notifications feature flag is enabled' do
+        before do
+          stub_feature_flags(security_bulk_operations_notifications: true)
+        end
+
+        it 'creates a background operation and schedules BackgroundOperationBulkUpdateWorker' do
+          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation)
+            .with(
+              operation_type: 'attribute_update',
+              user_id: user.id,
+              total_items: 2,
+              parameters: { attribute_uids: attribute_ids, mode: 'ADD' }
+            )
+            .and_return('test_operation_id')
+
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id, 'test_operation_id')
+
+          worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
+        end
+
+        it 'does not schedule the legacy BulkUpdateWorker' do
+          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return('test_op_id')
+
+          expect(Security::Attributes::BulkUpdateWorker).not_to receive(:perform_in)
+
+          worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
+        end
+
+        context 'with multiple batches' do
+          let(:projects) { create_list(:project, 3, namespace: namespace) }
+          let(:project_ids) { projects.map(&:id) }
+
+          before do
+            stub_const("#{described_class}::BATCH_SIZE", 2)
+          end
+
+          it 'schedules multiple BackgroundOperationBulkUpdateWorker jobs with delays' do
+            allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return('test_op_id')
+
+            expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+              .with(0, anything, attribute_ids, mode, user_id, 'test_op_id')
+            expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+              .with(1.second, anything, attribute_ids, mode, user_id, 'test_op_id')
+
+            worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
+          end
         end
       end
     end
