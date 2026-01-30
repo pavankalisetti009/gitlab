@@ -1,4 +1,4 @@
-import { __, s__, sprintf } from '~/locale';
+import { __, s__ } from '~/locale';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -148,24 +148,6 @@ export const AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG = {
     },
   },
 };
-
-export const DELETE_OPTIONS = (itemTypeLabel) => [
-  {
-    value: true,
-    text: s__('AICatalog|Delete permanently'),
-    help: s__('AICatalog|This action cannot be undone.'),
-  },
-  {
-    value: false,
-    text: s__('AICatalog|Hide from the AI Catalog'),
-    help: sprintf(
-      s__(
-        'AICatalog|Users can continue to use the %{itemType} in the groups and projects it is enabled in.',
-      ),
-      { itemType: itemTypeLabel },
-    ),
-  },
-];
 
 export const ENABLE_AGENT_MODAL_TEXTS = {
   title: s__('AICatalog|Enable agent in your project'),
