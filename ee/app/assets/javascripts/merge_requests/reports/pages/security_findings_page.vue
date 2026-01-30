@@ -1,6 +1,9 @@
 <script>
 import { s__ } from '~/locale';
+import SmartInterval from '~/smart_interval';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
+
+const POLL_INTERVAL = 3000;
 
 export default {
   name: 'SecurityFindingsPage',
@@ -33,9 +36,21 @@ export default {
           return { full: {}, partial: {} };
         }
 
+        const scans = project.pipeline;
+        const isReady = scans.enabledSecurityScans?.ready === true;
+
+        if (!isReady && !this.$options.pollingInterval) {
+          this.initPolling();
+        }
+
+        if (isReady && this.$options.pollingInterval) {
+          this.$options.pollingInterval.destroy();
+          this.$options.pollingInterval = undefined;
+        }
+
         return {
-          full: project.pipeline.enabledSecurityScans || {},
-          partial: project.pipeline.enabledPartialSecurityScans || {},
+          full: scans.enabledSecurityScans || {},
+          partial: scans.enabledPartialSecurityScans || {},
         };
       },
       error() {
@@ -67,6 +82,22 @@ export default {
       return isEnabled(this.enabledScans.full) || isEnabled(this.enabledScans.partial);
     },
   },
+  beforeDestroy() {
+    if (this.$options.pollingInterval) {
+      this.$options.pollingInterval.destroy();
+    }
+  },
+  methods: {
+    initPolling() {
+      this.$options.pollingInterval = new SmartInterval({
+        callback: () => this.$apollo.queries.enabledScans.refetch(),
+        startingInterval: POLL_INTERVAL,
+        incrementByFactorOf: 1,
+        immediateExecution: true,
+      });
+    },
+  },
+  pollingInterval: undefined,
 };
 </script>
 
@@ -78,6 +109,6 @@ export default {
     <template v-else-if="isLoading">
       {{ isLoading }}
     </template>
-    <template v-else>{{ hasEnabledScans }}</template>
+    <template v-else>{{ hasEnabledScans }} {{ enabledScans.full.ready }}</template>
   </div>
 </template>
