@@ -22,7 +22,7 @@ module Analytics
 
     # Pops X hashes from the buffer
     def pop(limit)
-      Array.wrap(lpop_with_limit(buffer_key, limit)).map { |hash| Gitlab::Json.parse(hash) }
+      Array.wrap(lpop_with_limit(buffer_key, limit)).map { |hash| Gitlab::Json.safe_parse(hash) }
     end
 
     private
