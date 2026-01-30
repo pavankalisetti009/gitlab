@@ -56,7 +56,7 @@ const createTemplate = (config = {}) => {
     defaultClient,
   });
 
-  window.gon.display_gitlab_credits_user_data = true;
+  window.gon.display_gitlab_credits_user_data = config.display_gitlab_credits_user_data ?? true;
 
   return (args, { argTypes }) => ({
     apolloProvider,
@@ -232,6 +232,18 @@ export const ErrorUsersUsageState = {
 
     return createTemplate({
       getSubscriptionUsersUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const CommitmentWithDisabledUserDetails = {
+  render: (...args) => {
+    const getSubscriptionUsageQueryHandler = () =>
+      Promise.resolve(usageDataCommitmentWithMonthlyWaiver);
+
+    return createTemplate({
+      getSubscriptionUsageQueryHandler,
+      display_gitlab_credits_user_data: false,
     })(...args);
   },
 };
