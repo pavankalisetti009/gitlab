@@ -20,7 +20,6 @@ import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/ca
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import {
   AI_CATALOG_ITEM_LABELS,
-  DELETE_OPTIONS,
   TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DELETE_AI_CATALOG_ITEM,
@@ -219,9 +218,6 @@ export default {
           }
         : { isProjectNamespace: this.showEnable };
     },
-    deleteOptions() {
-      return DELETE_OPTIONS(this.itemTypeLabel);
-    },
     origin() {
       if (this.isGlobal) return TRACK_EVENT_ORIGIN_EXPLORE;
       if (this.isProjectNamespace) return TRACK_EVENT_ORIGIN_PROJECT;
@@ -409,10 +405,23 @@ export default {
           </gl-sprintf>
         </p>
         <gl-form-radio-group id="delete-method" v-model="forceHardDelete">
-          <gl-form-radio v-for="option in deleteOptions" :key="option.text" :value="option.value">
-            {{ option.text }}
+          <gl-form-radio :value="true">
+            {{ s__('AICatalog|Delete permanently') }}
             <template #help>
-              {{ option.help }}
+              {{ s__('AICatalog|This action cannot be undone.') }}
+            </template>
+          </gl-form-radio>
+          <gl-form-radio :value="false">
+            {{ s__('AICatalog|Hide from the AI Catalog') }}
+            <template #help>
+              {{
+                sprintf(
+                  s__(
+                    'AICatalog|Users can continue to use the %{itemType} in the groups and projects it is enabled in.',
+                  ),
+                  { itemType: itemTypeLabel },
+                )
+              }}
             </template>
           </gl-form-radio>
         </gl-form-radio-group>
