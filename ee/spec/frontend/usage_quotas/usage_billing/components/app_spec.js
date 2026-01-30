@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { GlAlert, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
 import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/current_overage_usage_card.vue';
@@ -68,6 +68,7 @@ describe('UsageBillingApp', () => {
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findOutdatedClientAlert = () => wrapper.findByTestId('outdated-client-alert');
   const findDisabledStateAlert = () => wrapper.findByTestId('usage-billing-disabled-alert');
+  const findUserDataDisabledAlert = () => wrapper.findByTestId('user-data-disabled-alert');
 
   beforeEach(() => {
     window.gon = { display_gitlab_credits_user_data: true };
@@ -445,12 +446,30 @@ describe('UsageBillingApp', () => {
         expect(findUsageByUserTab().exists()).toBe(true);
       });
 
-      it('does not render UsageByUserTab component if display_gitlab_credits_user_data is false', async () => {
-        window.gon = { display_gitlab_credits_user_data: false };
-        createComponent();
-        await waitForPromises();
+      describe('when display_gitlab_credits_user_data feature flag is false', () => {
+        beforeEach(() => {
+          window.gon = { display_gitlab_credits_user_data: false };
+          createComponent();
+          return waitForPromises();
+        });
 
-        expect(findUsageByUserTab().exists()).toBe(false);
+        afterAll(() => {
+          delete window.gon;
+        });
+
+        it('does not render UsageByUserTab component if display_gitlab_credits_user_data is false', () => {
+          expect(findUsageByUserTab().exists()).toBe(false);
+        });
+
+        it('renders alert with help link', () => {
+          expect(findUserDataDisabledAlert().text()).toBe(
+            'Displaying user data is disabled. Learn how to enable it.',
+          );
+
+          expect(findUserDataDisabledAlert().findComponent(GlLink).attributes('href')).toBe(
+            '/help/user/group/manage#display-gitlab-credits-user-data',
+          );
+        });
       });
     });
   });

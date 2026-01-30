@@ -2,6 +2,7 @@
 import { GlAlert, GlSprintf, GlLink, GlTab, GlTabs } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
@@ -132,6 +133,9 @@ export default {
     },
   },
   LONG_DATE_FORMAT_WITH_TZ,
+  displayUserDataHelpPath: helpPagePath('user/group/manage', {
+    anchor: 'display-gitlab-credits-user-data',
+  }),
 };
 </script>
 <template>
@@ -283,8 +287,18 @@ export default {
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
           <usage-by-user-tab v-if="shouldDisplayUserData" />
-          <gl-alert v-else>
-            {{ s__('UsageBilling|Displaying user data is disabled.') }}
+          <gl-alert v-else data-testid="user-data-disabled-alert">
+            <gl-sprintf
+              :message="
+                s__(
+                  'UsageBilling|Displaying user data is disabled. %{linkStart}Learn how to enable it%{linkEnd}.',
+                )
+              "
+            >
+              <template #link="{ content }">
+                <gl-link :href="$options.displayUserDataHelpPath">{{ content }}</gl-link>
+              </template>
+            </gl-sprintf>
           </gl-alert>
         </gl-tab>
       </gl-tabs>
