@@ -1,17 +1,15 @@
 <script>
 import { GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { getTimeago } from '~/lib/utils/datetime_utility';
-import { captureException } from '~/sentry/sentry_browser_wrapper';
-import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
 import { getMessageData } from 'ee/ai/duo_agents_platform/utils';
 import ActivityConnectorSvg from './activity_connector_svg.vue';
+import LogEntry from './log_entry.vue';
 
 export default {
   components: {
     ActivityConnectorSvg,
     GlIcon,
-    NonGfmMarkdown,
+    LogEntry,
   },
   props: {
     items: {
@@ -56,30 +54,6 @@ export default {
 
       return getMessageData(message)?.icon;
     },
-    filePath(item) {
-      return this.getToolInfo(item)?.args?.file_path;
-    },
-    getToolInfo(item) {
-      try {
-        return JSON.parse(item.toolInfo);
-      } catch (e) {
-        captureException(e);
-        return {};
-      }
-    },
-    isMarkdown(item, index) {
-      return item.messageType !== 'user' && index > 0;
-    },
-    title(message, index) {
-      if (index === 0) {
-        return this.$options.startMessage.title;
-      }
-
-      return getMessageData(message)?.title;
-    },
-    timeAgo(message) {
-      return getTimeago().format(message.timestamp);
-    },
     getTargets() {
       if (this.items.length === 0) return;
 
@@ -105,22 +79,7 @@ export default {
         </div>
       </div>
 
-      <div class="gl-w-full">
-        <div class="gl-flex gl-justify-between">
-          <strong class="gl-mb-1 gl-text-strong">{{ title(item, index) }}</strong>
-          <span class="gl-text-subtle">{{ timeAgo(item) }}</span>
-        </div>
-
-        <non-gfm-markdown
-          v-if="isMarkdown(item, index)"
-          :markdown="item.content"
-          class="gl-m-0 gl-flex-1 gl-py-2 gl-pr-6 gl-wrap-anywhere"
-        />
-        <div v-else class="gl-m-0 gl-flex-1 gl-py-2">
-          {{ item.content }}
-        </div>
-        <code v-if="filePath(item)" class="gl-break-all">{{ filePath(item) }}</code>
-      </div>
+      <log-entry :item="item" :index="index" />
     </li>
   </ul>
 </template>

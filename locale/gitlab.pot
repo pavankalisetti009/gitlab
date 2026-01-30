@@ -25849,6 +25849,9 @@ msgstr ""
 msgid "DuoAgentPlatform|Session triggered"
 msgstr ""
 
+msgid "DuoAgentPlatform|Show tool details"
+msgstr ""
+
 msgid "DuoAgentPlatform|Triggered"
 msgstr ""
 
