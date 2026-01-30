@@ -464,6 +464,9 @@ module EE
 
         enable :read_group_all_available_runners
         enable :read_runners
+        enable :read_dependency
+        enable :read_licenses
+        enable :read_vulnerability
       end
 
       rule { auditor & group_ci_cd_analytics_available }.policy do
@@ -694,11 +697,14 @@ module EE
         enable :create_wiki
         enable :admin_merge_request
         enable :read_group_audit_events
+        enable :read_vulnerability
         enable :read_vulnerability_statistics
         enable :read_security_inventory
         enable :read_ai_catalog_flow
         enable :read_foundational_flow
         enable :read_ai_catalog_third_party_flow
+        enable :read_dependency
+        enable :read_licenses
       end
 
       rule { has_maintainer_projects }.policy do
@@ -725,12 +731,6 @@ module EE
         enable :read_security_orchestration_policies
         enable :read_security_orchestration_policy_project
         enable :update_security_orchestration_policy_project
-      end
-
-      rule { auditor | can?(:developer_access) }.policy do
-        enable :read_dependency
-        enable :read_vulnerability
-        enable :read_licenses
       end
 
       rule { custom_role_enables_read_dependency }.policy do

@@ -46,6 +46,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       read_milestone
       read_namespace
       read_runners
+      read_vulnerability
       upload_file
     ]
   end

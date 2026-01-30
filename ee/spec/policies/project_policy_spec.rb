@@ -52,7 +52,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         read_pipeline read_build read_commit_status read_container_image
         read_environment read_deployment read_merge_request read_pages
         award_emoji
-        read_project_security_dashboard read_security_resource read_vulnerability_scanner
+        read_project_security_dashboard read_security_resource
+        read_vulnerability
+        read_vulnerability_scanner
         read_software_license_policy
         read_merge_train
         read_release
