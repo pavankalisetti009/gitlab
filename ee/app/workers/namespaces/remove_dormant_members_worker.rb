@@ -61,11 +61,16 @@ module Namespaces
       dormant_count = 0
 
       ::GitlabSubscriptions::SeatAssignment.dormant_in_namespace(namespace, dormant_period).find_each do |assignment|
-        next if namespace.owner_ids.include?(assignment.user_id)
+        if namespace.owner_ids.include?(assignment.user_id)
+          log_skip_reason(namespace.id, assignment.user_id, :is_owner)
+          next
+        end
 
         user = assignment.user
 
-        next if user.bot? || user.deactivated?
+        next log_skip_reason(namespace.id, user.id, :bot_user) if user.bot?
+
+        next log_skip_reason(namespace.id, user.id, :deactivated_user) if user.deactivated?
 
         ::Gitlab::Auth::CurrentUserMode.optionally_run_in_admin_mode(admin_bot) do
           if user.enterprise_user_of_group?(namespace)
@@ -87,6 +92,16 @@ module Namespaces
         namespace_id: namespace_id,
         dormant_count: dormant_count
       )
+    end
+
+    def log_skip_reason(namespace_id, user_id, reason)
+      Gitlab::AppLogger.info(
+        message: 'User deactivation skipped',
+        reason: reason.to_s,
+        user_id: user_id,
+        namespace_id: namespace_id
+      )
+      nil
     end
 
     def admin_bot_for_organization_id(organization_id)
