@@ -390,10 +390,8 @@ module MergeRequests
 
       commits_to_process = if first_and_last_only && total_count > 2
                              [commits.first, commits.last]
-                           elsif !first_and_last_only
-                             commits.first(NotificationService::NEW_COMMIT_EMAIL_DISPLAY_LIMIT)
                            else
-                             commits
+                             commits.first(NotificationService::NEW_COMMIT_EMAIL_DISPLAY_LIMIT)
                            end
 
       commit_data = commits_to_process.map do |commit|

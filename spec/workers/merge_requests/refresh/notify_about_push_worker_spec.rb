@@ -59,18 +59,7 @@ RSpec.describe MergeRequests::Refresh::NotifyAboutPushWorker, feature_category: 
             total_new_commits_count: total_new_commits_count,
             existing_commits_data: existing_commits_data.map(&:symbolize_keys),
             total_existing_commits_count: total_existing_commits_count
-          )
-        end
-
-        perform
-      end
-
-      it 'converts string keys to symbols' do
-        expect_next_instance_of(NotificationService) do |service|
-          expect(service).to receive(:push_to_merge_request_with_data) do |_mr, _user, **kwargs|
-            expect(kwargs[:new_commits_data].first).to have_key(:short_id)
-            expect(kwargs[:new_commits_data].first).not_to have_key('short_id')
-          end
+          ).and_call_original
         end
 
         perform
