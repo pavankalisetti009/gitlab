@@ -387,6 +387,19 @@ RSpec.describe MergeRequests::Refresh::ApprovalService, feature_category: :code_
     describe '#reset_approvals_for_merge_requests' do
       let_it_be(:user) { create(:user) }
 
+      let(:approver) { create(:user) }
+      let(:newrev) { commits.first.id }
+      let(:oldrev) { commits.last.id }
+      let(:commits) { merge_request.commits }
+      let(:forked_merge_request) do
+        create(:merge_request,
+          source_project: forked_project,
+          source_branch: 'master',
+          target_branch: 'feature',
+          target_project: project)
+      end
+
+      let(:forked_project) { fork_project(project, user, repository: true) }
       let(:merge_request) do
         create(:merge_request,
           source_project: project,
@@ -397,20 +410,6 @@ RSpec.describe MergeRequests::Refresh::ApprovalService, feature_category: :code_
           merge_user: user)
       end
 
-      let(:forked_project) { fork_project(project, user, repository: true) }
-      let(:forked_merge_request) do
-        create(:merge_request,
-          source_project: forked_project,
-          source_branch: 'master',
-          target_branch: 'feature',
-          target_project: project)
-      end
-
-      let(:commits) { merge_request.commits }
-      let(:oldrev) { commits.last.id }
-      let(:newrev) { commits.first.id }
-      let(:approver) { create(:user) }
-
       before do
         group.add_owner(user)
 
@@ -420,6 +419,43 @@ RSpec.describe MergeRequests::Refresh::ApprovalService, feature_category: :code_
         project.add_developer(approver)
 
         perform_enqueued_jobs
+      end
+
+      context 'when there are closed merge requests' do
+        let(:closed_mr_with_approval) do
+          create(:merge_request,
+            :closed,
+            source_project: project,
+            source_branch: 'master',
+            target_branch: 'feature',
+            target_project: project)
+        end
+
+        let(:closed_mr_without_approval) do
+          create(:merge_request,
+            :closed,
+            source_project: project,
+            source_branch: 'master',
+            target_branch: 'test',
+            target_project: project)
+        end
+
+        before do
+          closed_mr_with_approval.approvals.create!(user_id: user.id)
+        end
+
+        it 'does not process closed MRs', :sidekiq_inline do
+          expect { service.execute(oldrev, newrev, 'refs/heads/master') }
+            .to not_change { closed_mr_with_approval.approvals.count }.from(1)
+            .and not_change { closed_mr_without_approval.approvals.count }.from(0)
+        end
+
+        it 'does not temporarily unapprove closed MRs' do
+          service.execute(oldrev, newrev, 'refs/heads/master')
+
+          expect(closed_mr_with_approval.approval_state.temporarily_unapproved?).to be false
+          expect(closed_mr_without_approval.approval_state.temporarily_unapproved?).to be false
+        end
       end
 
       def approval_todos(merge_request)
@@ -511,11 +547,11 @@ RSpec.describe MergeRequests::Refresh::ApprovalService, feature_category: :code_
             forked_merge_request.close!
           end
 
-          it 'resets approvals', :sidekiq_might_not_need_inline do
+          it 'does not reset approvals', :sidekiq_might_not_need_inline do
             refresh
 
             expect(merge_request.approvals).not_to be_empty
-            expect(forked_merge_request.approvals).to be_empty
+            expect(forked_merge_request.approvals).not_to be_empty
             expect(approval_todos(merge_request)).to be_empty
             expect(approval_todos(forked_merge_request)).to be_empty
           end
@@ -634,8 +670,8 @@ RSpec.describe MergeRequests::Refresh::ApprovalService, feature_category: :code_
               reload_mrs
             end
 
-            it 'resets the approvals' do
-              expect(merge_request.approvals).to be_empty
+            it 'does not reset the approvals' do
+              expect(merge_request.approvals).not_to be_empty
               expect(approval_todos(merge_request)).to be_empty
             end
           end

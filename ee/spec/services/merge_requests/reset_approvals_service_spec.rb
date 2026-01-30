@@ -53,6 +53,65 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
       perform_enqueued_jobs
     end
 
+    context 'when there are closed merge requests' do
+      let(:closed_mr_with_approval) do
+        create(:merge_request,
+          :closed,
+          author: current_user,
+          source_project: project,
+          source_branch: 'master',
+          target_branch: 'test',
+          target_project: project)
+      end
+
+      let(:closed_mr_without_approval) do
+        create(:merge_request,
+          :closed,
+          author: current_user,
+          source_project: project,
+          source_branch: 'master',
+          target_branch: 'another-test',
+          target_project: project)
+      end
+
+      let(:opened_mr_with_approval) do
+        create(:merge_request,
+          :opened,
+          author: current_user,
+          source_project: project,
+          source_branch: 'master',
+          target_branch: 'test',
+          target_project: project)
+      end
+
+      let(:opened_mr_without_approval) do
+        create(:merge_request,
+          :opened,
+          author: current_user,
+          source_project: project,
+          source_branch: 'master',
+          target_branch: 'another-test',
+          target_project: project)
+      end
+
+      before do
+        closed_mr_with_approval.approvals.create!(user_id: approver.id)
+        opened_mr_with_approval.approvals.create!(user_id: approver.id)
+      end
+
+      it 'does not process closed MRs' do
+        expect { service.execute('refs/heads/master', newrev) }
+          .to not_change { closed_mr_with_approval.approvals.count }.from(1)
+          .and not_change { closed_mr_without_approval.approvals.count }.from(0)
+      end
+
+      it 'only processes open MRs that have approvals' do
+        expect { service.execute('refs/heads/master', newrev) }
+          .to change { opened_mr_with_approval.approvals.count }.from(1).to(0)
+          .and not_change { opened_mr_without_approval.approvals.count }.from(0)
+      end
+    end
+
     shared_examples_for 'triggers GraphQL subscription mergeRequestMergeStatusUpdated at least once' do
       specify do
         expect(GraphqlTriggers).to receive(:merge_request_merge_status_updated)

@@ -34,8 +34,7 @@ module MergeRequests
       def reset_approvals_for_merge_requests(ref, newrev)
         # Add a flag that prevents unverified changes from getting through in the
         #   10 second window below
-        #
-        merge_requests_for(push.branch_name, mr_states: [:opened, :closed]).each do |mr|
+        merge_requests_for(push.branch_name, mr_states: [:opened]).each do |mr|
           mr.approval_state.temporarily_unapprove! if reset_approvals?(mr, newrev)
         end
 
