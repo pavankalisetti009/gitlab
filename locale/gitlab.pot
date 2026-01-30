@@ -14753,9 +14753,6 @@ msgstr ""
 msgid "CiCatalog|Verified creator"
 msgstr ""
 
-msgid "CiCatalog|We want to help you create and manage pipeline component repositories, while also making it easier to reuse pipeline configurations. Let us know how we're doing!"
-msgstr ""
-
 msgid "CiCatalog|What are verified component creators?"
 msgstr ""
 
