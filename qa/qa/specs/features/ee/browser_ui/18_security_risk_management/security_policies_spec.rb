@@ -60,7 +60,12 @@ module QA
           policy_editor.click_save_policy_button
         end
 
-        QA::Support::Waiter.wait_until { QA::Page::MergeRequest::Show.perform(&:has_merge_button?) }
+        Page::MergeRequest::Show.perform do |mr_page|
+          mr_page.wait_until(max_duration: 60, sleep_interval: 2, reload: true,
+            message: 'Wait for policy MR page') do
+            mr_page.has_merge_button?
+          end
+        end
 
         expect(page.current_url).to include('-security-policy-project/-/merge_requests/1')
       end
