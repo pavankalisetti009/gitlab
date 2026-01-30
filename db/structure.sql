@@ -48258,8 +48258,6 @@ CREATE INDEX index_vulnerability_reads_on_uuid_project_id_and_state ON vulnerabi
 
 CREATE UNIQUE INDEX index_vulnerability_reads_on_vulnerability_id ON vulnerability_reads USING btree (vulnerability_id);
 
-CREATE UNIQUE INDEX index_vulnerability_reads_on_vulnerability_occurrence_id_unique ON vulnerability_reads USING btree (vulnerability_occurrence_id);
-
 CREATE UNIQUE INDEX index_vulnerability_remediations_on_project_id_and_checksum ON vulnerability_remediations USING btree (project_id, checksum);
 
 CREATE UNIQUE INDEX index_vulnerability_risk_scores_on_vulnerability_finding ON vulnerability_finding_risk_scores USING btree (finding_id);
