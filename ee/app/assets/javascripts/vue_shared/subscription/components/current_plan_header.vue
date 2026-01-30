@@ -18,7 +18,8 @@ export default {
     },
     manageSeatsPath: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     totalSeats: {
       type: Number,

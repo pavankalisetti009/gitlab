@@ -36,7 +36,8 @@ export default {
     },
     upgradeToPremiumUrl: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     canAccessDuoChat: {
       type: Boolean,
@@ -44,7 +45,8 @@ export default {
     },
     exploreLinks: {
       type: Object,
-      required: true,
+      required: false,
+      default: () => {},
     },
   },
   computed: {
@@ -197,7 +199,7 @@ export default {
         v-bind="attributes.ctaTrackingData"
         :href="attributes.ctaHref"
         referrerpolicy="no-referrer-when-downgrade"
-        target="_blank"
+        :target="isSaas && '_blank'"
       >
         {{ attributes.ctaLabel }}
       </gl-button>

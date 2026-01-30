@@ -1,7 +1,7 @@
 import { __, s__ } from '~/locale';
 import { PROMO_URL } from '~/constants';
 
-export const subscriptionMainTitle = s__('SuperSonics|Instance subscription');
+export const subscriptionMainTitle = s__('SuperSonics|Subscription');
 export const subscriptionActivationNotificationText = s__(
   `SuperSonics|Your subscription was successfully activated. You can see the details below.`,
 );
@@ -29,7 +29,6 @@ export const cancelLabel = __('Cancel');
 export const activateLabel = s__('AdminUsers|Activate');
 export const activateSubscription = s__('SuperSonics|Activate subscription');
 export const addActivationCode = s__('SuperSonics|Add activation code');
-export const noActiveSubscription = s__(`SuperSonics|You do not have an active subscription`);
 export const subscriptionDetailsHeaderText = s__('SuperSonics|Subscription details');
 export const licensedToHeaderText = s__('SuperSonics|Licensed to');
 export const copySubscriptionIdButtonText = __('Copy');
@@ -86,22 +85,6 @@ export const subscriptionTypes = {
   LEGACY_LICENSE: 'legacy_license',
 };
 
-export const trialCard = {
-  title: s__('SuperSonics|Free trial'),
-  description: s__(
-    'SuperSonics|You can start a free trial of GitLab Ultimate without any obligation or payment details.',
-  ),
-  startTrial: s__('SuperSonics|Start free trial'),
-};
-
-export const buySubscriptionCard = {
-  title: __('Subscription'),
-  description: s__(
-    'SuperSonics|Ready to get started? A GitLab plan is ideal for scaling organizations and for multi team usage.',
-  ),
-  buttonLabel: s__('SuperSonics|Buy subscription'),
-};
-
 export const SUBSCRIPTION_ACTIVATION_FAILURE_EVENT = 'subscription-activation-failure';
 export const SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT = 'subscription-activation-success';
 export const SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT = 'subscription-activation-finalized';
@@ -122,7 +105,6 @@ export const INVALID_CODE_ERROR = 'INVALID_CODE_ERROR';
 
 export const supportLink = `${PROMO_URL}/support/#contact-support`;
 export const exportLicenseUsageBtnText = s__('SuperSonics|Export license usage file');
-export const customersPortalBtnText = s__('SuperSonics|Customers Portal');
 
 export const instanceHasFutureLicenseBanner = {
   title: s__('SuperSonics|You have a future dated license'),

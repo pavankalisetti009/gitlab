@@ -67,7 +67,6 @@ describe('SubscriptionManagementApp', () => {
   const findSubscriptionFetchErrorAlert = () =>
     wrapper.findByTestId('subscription-fetch-error-alert');
   const findExportLicenseUsageFileLink = () => wrapper.findByTestId('export-license-usage-btn');
-  const findCustomersPortalBtn = () => wrapper.findByTestId('customers-portal-btn');
 
   let currentSubscriptionResolver;
   let pastSubscriptionsResolver;
@@ -131,10 +130,6 @@ describe('SubscriptionManagementApp', () => {
       expect(findSubscriptionMainTitle().props()).toMatchObject({
         heading: subscriptionMainTitle,
       });
-    });
-
-    it('shows the customers portal button', () => {
-      expect(findCustomersPortalBtn().exists()).toBe(true);
     });
   });
 

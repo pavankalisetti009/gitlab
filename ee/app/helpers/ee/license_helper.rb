@@ -21,6 +21,27 @@ module EE
       License.current.present?
     end
 
+    def groups_count
+      return if has_active_license?
+
+      groups = ::GroupsFinder.new(current_user, active: true).execute
+      groups.count
+    end
+
+    def projects_count
+      return if has_active_license?
+
+      projects = ::ProjectsFinder.new(current_user: current_user, params: { active: true }).execute
+      projects.count
+    end
+
+    def users_count
+      return if has_active_license?
+
+      users = ::User.filter_items(nil)
+      users.count
+    end
+
     def show_promotions?(selected_user = current_user, hide_on_self_managed: false)
       return false unless selected_user
 
@@ -60,10 +81,12 @@ module EE
     # EE:Self Managed
     def cloud_license_view_data
       {
-        buy_subscription_path: promo_pricing_url,
         customers_portal_url: subscription_portal_manage_url,
         free_trial_path: sm_trial_form_path,
         has_active_license: (has_active_license? ? 'true' : 'false'),
+        groups_count: groups_count,
+        projects_count: projects_count,
+        users_count: users_count,
         license_remove_path: (current_user.can?(:delete_license) ? admin_license_path : ''),
         subscription_sync_path: sync_seat_link_admin_license_path,
         congratulation_svg_path: image_path('illustrations/cloud-check-sm.svg'),

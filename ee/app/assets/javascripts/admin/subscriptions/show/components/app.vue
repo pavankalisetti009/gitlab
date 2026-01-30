@@ -15,7 +15,6 @@ import {
   futureSubscriptionsEntryName,
   subscriptionMainTitle,
   exportLicenseUsageBtnText,
-  customersPortalBtnText,
   SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT,
   VIEW_ADMIN_SUBSCRIPTION_PAGELOAD,
 } from '../constants';
@@ -39,7 +38,6 @@ export default {
   inject: ['customersPortalUrl'],
   i18n: {
     exportLicenseUsageBtnText,
-    customersPortalBtnText,
     subscriptionMainTitle,
     subscriptionHistoryFailedTitle,
     subscriptionHistoryFailedMessage,
@@ -152,14 +150,6 @@ export default {
           data-testid="export-license-usage-btn"
           :href="licenseUsageFilePath"
           >{{ $options.i18n.exportLicenseUsageBtnText }}
-        </gl-button>
-        <gl-button
-          category="secondary"
-          variant="confirm"
-          data-testid="customers-portal-btn"
-          :href="customersPortalUrl"
-          referrerpolicy="no-referrer-when-downgrade"
-          >{{ $options.i18n.customersPortalBtnText }}
         </gl-button>
       </template>
     </page-heading>

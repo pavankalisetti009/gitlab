@@ -58,14 +58,6 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :plan_provisio
     end
   end
 
-  shared_examples 'no active license' do
-    it 'displays a message signaling there is not active subscription' do
-      page.within(find('#content-body', match: :first)) do
-        expect(page).to have_content('You do not have an active subscription')
-      end
-    end
-  end
-
   context 'with a cloud license' do
     let!(:license) { create_current_license(cloud_licensing_enabled: true, plan: License::ULTIMATE_PLAN) }
 
@@ -185,10 +177,15 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :plan_provisio
       visit(admin_subscription_path)
     end
 
-    it_behaves_like 'no active license'
-
     it 'does not display the Export License Usage File button' do
       expect(page).not_to have_link('Export license usage file', href: admin_license_usage_export_path(format: :csv))
+    end
+
+    it 'displays current and upgrade plan headers' do
+      expect(page).to have_content('Your instance is on GitLab Free')
+      expect(page).to have_content('Get the most out of GitLab with Ultimate')
+      expect(page).to have_link('Start free trial')
+      expect(page).to have_link('Explore plans')
     end
 
     context 'when activating a subscription fails' do
@@ -258,8 +255,6 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :plan_provisio
       it 'shows a successful future-dated activation message' do
         expect(page).to have_content('Your future dated license was successfully added')
       end
-
-      it_behaves_like 'no active license'
     end
 
     context 'when activating a new subscription' do
