@@ -677,7 +677,7 @@ export const getMergeRequestConfig = (params = {}, context = {}) => {
 };
 
 export const policyBodyToYaml = (policy) => {
-  return safeDump(removeIdsFromPolicy(policy));
+  return safeDump(removeIdsFromPolicy(policy), { noRefs: true });
 };
 
 /**
@@ -695,7 +695,7 @@ export const policyToYaml = (policy, type) => {
   }
 
   const payload = { [type]: [policyWithoutIds] };
-  return safeDump(payload);
+  return safeDump(payload, { noRefs: true });
 };
 
 /**

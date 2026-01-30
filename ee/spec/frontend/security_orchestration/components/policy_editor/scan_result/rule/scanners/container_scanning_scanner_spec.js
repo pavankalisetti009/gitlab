@@ -28,10 +28,10 @@ describe('ContainerScanningScanner', () => {
     vulnerability_states: [],
   };
 
-  const createComponent = (initRule = defaultRule, options = {}) => {
+  const createComponent = (scanner = defaultRule, options = {}) => {
     wrapper = shallowMountExtended(ContainerScanningScanner, {
       propsData: {
-        initRule,
+        scanner,
         ...options,
       },
       provide: {

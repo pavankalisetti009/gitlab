@@ -63,7 +63,7 @@ export default {
   },
   inject: ['namespaceType'],
   props: {
-    initRule: {
+    scanner: {
       type: Object,
       required: true,
     },
@@ -81,7 +81,7 @@ export default {
   },
   computed: {
     branchExceptions() {
-      return this.initRule.branch_exceptions;
+      return this.scanner.branch_exceptions;
     },
     branchTypes() {
       return SCAN_RESULT_BRANCH_TYPE_OPTIONS(this.namespaceType);
@@ -93,19 +93,19 @@ export default {
       return this.vulnerabilitiesAllowed === 0 ? ANY_OPERATOR : GREATER_THAN_OPERATOR;
     },
     vulnerabilitiesAllowed() {
-      return enforceIntValue(this.initRule.vulnerabilities_allowed);
+      return enforceIntValue(this.scanner.vulnerabilities_allowed);
     },
     kevFilterValue() {
-      return getVulnerabilityAttribute(this.initRule, KNOWN_EXPLOITED);
+      return getVulnerabilityAttribute(this.scanner, KNOWN_EXPLOITED);
     },
     epssOperator() {
-      return this.initRule?.vulnerability_attributes?.[EPSS_SCORE]?.operator;
+      return this.scanner?.vulnerability_attributes?.[EPSS_SCORE]?.operator;
     },
     epssValue() {
-      return this.initRule?.vulnerability_attributes?.[EPSS_SCORE]?.value || 0;
+      return this.scanner?.vulnerability_attributes?.[EPSS_SCORE]?.value || 0;
     },
     vulnerabilityAttributes() {
-      const { vulnerability_attributes: attributes = {} } = this.initRule;
+      const { vulnerability_attributes: attributes = {} } = this.scanner;
       const { [KNOWN_EXPLOITED]: kevFilter, [EPSS_SCORE]: epssFilter, ...rest } = attributes;
 
       if (Object.keys(rest).length === 0) {
@@ -147,7 +147,7 @@ export default {
       this.triggerChanged({ vulnerabilities_allowed: value });
     },
     triggerChanged(value) {
-      this.$emit('changed', { ...this.initRule, ...value });
+      this.$emit('changed', { ...this.scanner, ...value });
     },
     setBranchType(value) {
       this.$emit('changed', value);
@@ -156,24 +156,24 @@ export default {
       this.localVisible = !this.localVisible;
     },
     removeExceptions() {
-      const rule = { ...this.initRule };
-      if (BRANCH_EXCEPTIONS_KEY in rule) {
-        delete rule[BRANCH_EXCEPTIONS_KEY];
+      const updatedScanner = { ...this.scanner };
+      if (BRANCH_EXCEPTIONS_KEY in updatedScanner) {
+        delete updatedScanner[BRANCH_EXCEPTIONS_KEY];
       }
 
-      this.$emit('changed', rule);
+      this.$emit('changed', updatedScanner);
     },
     setRange(value) {
       this.triggerChanged({ vulnerabilities_allowed: value });
     },
     setKevFilter(value) {
       this.$emit('changed', {
-        ...buildVulnerabilitiesPayload(this.initRule, KNOWN_EXPLOITED, value),
+        ...buildVulnerabilitiesPayload(this.scanner, KNOWN_EXPLOITED, value),
       });
     },
     setEpssFilter(value) {
       this.$emit('changed', {
-        ...buildVulnerabilitiesPayload(this.initRule, EPSS_SCORE, value),
+        ...buildVulnerabilitiesPayload(this.scanner, EPSS_SCORE, value),
       });
     },
     setVulnerabilityAttributes(value) {
@@ -192,7 +192,7 @@ export default {
       };
 
       if (Object.keys(vulnerabilityAttributes).length === 0) {
-        const { vulnerability_attributes, ...rest } = this.initRule;
+        const { vulnerability_attributes, ...rest } = this.scanner;
         this.$emit('changed', rest);
       } else {
         this.triggerChanged({ vulnerability_attributes: vulnerabilityAttributes });
@@ -240,7 +240,7 @@ export default {
           <gl-sprintf :message="$options.i18n.scanResultRuleCopy">
             <template #branches>
               <branch-selection
-                :init-rule="initRule"
+                :init-rule="scanner"
                 :branch-types="branchTypes"
                 @changed="triggerChanged($event)"
                 @set-branch-type="setBranchType"

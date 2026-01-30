@@ -26,10 +26,10 @@ describe('ApiFuzzingScanner', () => {
     vulnerability_states: [],
   };
 
-  const createComponent = (initRule = defaultRule, options = {}) => {
+  const createComponent = (scanner = defaultRule, options = {}) => {
     wrapper = shallowMountExtended(ApiFuzzingScanner, {
       propsData: {
-        initRule,
+        scanner,
         ...options,
       },
       provide: {

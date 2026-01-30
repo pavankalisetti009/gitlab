@@ -46,7 +46,7 @@ export default {
   },
   inject: ['namespaceType'],
   props: {
-    initRule: {
+    scanner: {
       type: Object,
       required: true,
     },
@@ -58,7 +58,7 @@ export default {
   },
   emits: ['changed'],
   data() {
-    const filters = buildFiltersFromRule(this.initRule);
+    const filters = buildFiltersFromRule(this.scanner);
 
     return {
       localVisible: this.visible,
@@ -67,7 +67,7 @@ export default {
   },
   computed: {
     branchExceptions() {
-      return this.initRule.branch_exceptions;
+      return this.scanner.branch_exceptions;
     },
     branchTypes() {
       return SCAN_RESULT_BRANCH_TYPE_OPTIONS(this.namespaceType);
@@ -79,23 +79,21 @@ export default {
       return this.vulnerabilitiesAllowed === 0 ? ANY_OPERATOR : GREATER_THAN_OPERATOR;
     },
     vulnerabilitiesAllowed() {
-      return enforceIntValue(this.initRule.vulnerabilities_allowed);
+      return enforceIntValue(this.scanner.vulnerabilities_allowed);
     },
     severityLevels() {
-      return this.initRule.severity_levels?.length
-        ? this.initRule.severity_levels
-        : [CRITICAL, HIGH];
+      return this.scanner.severity_levels?.length ? this.scanner.severity_levels : [CRITICAL, HIGH];
     },
     vulnerabilityStates() {
       const vulnerabilityStateGroups = groupVulnerabilityStatesWithDefaults(
-        this.initRule.vulnerability_states,
+        this.scanner.vulnerability_states,
       );
       return vulnerabilityStateGroups[NEWLY_DETECTED] || [];
     },
   },
   watch: {
-    initRule(newRule) {
-      this.filters = buildFiltersFromRule(newRule);
+    scanner(newScanner) {
+      this.filters = buildFiltersFromRule(newScanner);
     },
   },
   methods: {
@@ -108,7 +106,7 @@ export default {
       this.triggerChanged({ vulnerabilities_allowed: value });
     },
     triggerChanged(value) {
-      this.$emit('changed', { ...this.initRule, ...value });
+      this.$emit('changed', { ...this.scanner, ...value });
     },
     setBranchType(value) {
       this.$emit('changed', value);
@@ -117,24 +115,24 @@ export default {
       this.localVisible = !this.localVisible;
     },
     removeExceptions() {
-      const rule = { ...this.initRule };
-      if (BRANCH_EXCEPTIONS_KEY in rule) {
-        delete rule[BRANCH_EXCEPTIONS_KEY];
+      const updatedScanner = { ...this.scanner };
+      if (BRANCH_EXCEPTIONS_KEY in updatedScanner) {
+        delete updatedScanner[BRANCH_EXCEPTIONS_KEY];
       }
 
-      this.$emit('changed', rule);
+      this.$emit('changed', updatedScanner);
     },
     setRange(value) {
       this.triggerChanged({ vulnerabilities_allowed: value });
     },
     setSeverityLevels(value) {
-      const rule = { ...this.initRule };
+      const updatedScanner = { ...this.scanner };
       if (value && value.length > 0) {
-        rule.severity_levels = value;
+        updatedScanner.severity_levels = value;
       } else {
-        delete rule.severity_levels;
+        delete updatedScanner.severity_levels;
       }
-      this.$emit('changed', rule);
+      this.$emit('changed', updatedScanner);
     },
     setVulnerabilityStates(vulnerabilityStates) {
       this.triggerChanged({
@@ -163,7 +161,7 @@ export default {
           <gl-sprintf :message="$options.i18n.scanResultRuleCopy">
             <template #branches>
               <branch-selection
-                :init-rule="initRule"
+                :init-rule="scanner"
                 :branch-types="branchTypes"
                 @changed="triggerChanged($event)"
                 @set-branch-type="setBranchType"
