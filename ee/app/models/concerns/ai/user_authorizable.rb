@@ -21,7 +21,8 @@ module Ai
     DUO_ADD_ONS_CACHE_KEY = 'user-%{user_id}-duo-add-ons-cache'
     AMAZON_Q_FEATURES = [
       :code_suggestions,
-      :duo_chat,
+      :chat,
+      :duo_chat, # alternate name of (classic) :chat
       :explain_vulnerability,
       :generate_commit_message,
       :glab_ask_git_command,

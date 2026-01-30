@@ -75,16 +75,21 @@ module EE
         enable :access_glab_ask_git_command
       end
 
-      condition(:duo_chat_enabled_for_user) do
+      condition(:duo_classic_chat_enabled_for_user) do
         next false unless @user
 
-        @user.allowed_to_use?(:duo_chat)
+        if ::Feature.enabled?(:no_duo_classic_for_duo_core_users, @user)
+          @user.allowed_to_use?(:chat, unit_primitive_name: :duo_classic_chat)
+        else
+          # this unit_primitive allows for Duo Core
+          @user.allowed_to_use?(:chat, unit_primitive_name: :duo_chat)
+        end
       end
 
       condition(:duo_agentic_chat_enabled_for_user) do
         next false unless @user
 
-        @user.allowed_to_use?(:duo_agent_platform)
+        @user.allowed_to_use?(:agentic_chat, unit_primitive_name: :duo_chat)
       end
 
       condition(:user_belongs_to_paid_namespace) do
@@ -263,7 +268,7 @@ module EE
       end.enable :access_code_suggestions
 
       rule do
-        duo_chat_enabled_for_user & ~ai_features_banned
+        duo_classic_chat_enabled_for_user & ~ai_features_banned
       end.enable :access_duo_classic_chat
       rule do
         duo_agentic_chat_enabled_for_user & ~ai_features_banned

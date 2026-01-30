@@ -614,7 +614,73 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
       with_them do
         before do
-          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat).and_return(duo_pro_seat_assigned)
+          allow(current_user).to receive(:allowed_to_use?).with(:chat,
+            unit_primitive_name: :duo_classic_chat).and_return(duo_pro_seat_assigned)
+        end
+
+        it { is_expected.to duo_chat_enabled_for_user }
+      end
+    end
+
+    context 'when not on .org or .com' do
+      where(:lock_duo_features_enabled, :duo_pro_seat_assigned, :duo_chat_enabled_for_user) do
+        true  | true  | be_disallowed(policy)
+        true  | false | be_disallowed(policy)
+        false | false | be_disallowed(policy)
+        false | true  | be_allowed(policy)
+      end
+
+      with_them do
+        before do
+          allow(::Gitlab).to receive(:org_or_com?).and_return(false)
+          stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
+          allow(current_user).to receive(:allowed_to_use?).with(:chat,
+            unit_primitive_name: :duo_classic_chat).and_return(duo_pro_seat_assigned)
+        end
+
+        it { is_expected.to duo_chat_enabled_for_user }
+      end
+    end
+
+    context 'when amazon q is connected' do
+      where(:duo_chat_on_saas, :amazon_q_connected, :duo_chat_enabled_for_user) do
+        true  | true  | be_allowed(policy)
+        false | true  | be_allowed(policy)
+        true  | false | be_disallowed(policy)
+        true  | false | be_disallowed(policy)
+      end
+
+      with_them do
+        before do
+          allow(::Gitlab).to receive(:com?).and_return(duo_chat_on_saas)
+          allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_connected)
+          stub_licensed_features(ai_chat: true, amazon_q: true)
+        end
+
+        it { is_expected.to duo_chat_enabled_for_user }
+      end
+    end
+  end
+
+  describe 'access_duo_classic_chat (no_duo_classic_for_duo_core_users disabled)' do
+    let(:policy) { :access_duo_classic_chat }
+
+    let_it_be_with_reload(:current_user) { create(:user) }
+
+    before do
+      stub_feature_flags(no_duo_classic_for_duo_core_users: false)
+    end
+
+    context 'when on .org or .com', :saas do
+      where(:duo_pro_seat_assigned, :duo_chat_enabled_for_user) do
+        true  | be_allowed(policy)
+        false | be_disallowed(policy)
+      end
+
+      with_them do
+        before do
+          allow(current_user).to receive(:allowed_to_use?).with(:chat,
+            unit_primitive_name: :duo_chat).and_return(duo_pro_seat_assigned)
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
@@ -639,7 +705,8 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         before do
           allow(::Gitlab).to receive(:org_or_com?).and_return(false)
           stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
-          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat).and_return(duo_pro_seat_assigned)
+          allow(current_user).to receive(:allowed_to_use?).with(:chat,
+            unit_primitive_name: :duo_chat).and_return(duo_pro_seat_assigned)
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
@@ -678,7 +745,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
       with_them do
         before do
-          allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform)
+          allow(current_user).to receive(:allowed_to_use?).with(:agentic_chat, unit_primitive_name: :duo_chat)
             .and_return(duo_agentic_chat_enabled_for_user)
         end
 
@@ -704,7 +771,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         before do
           allow(::Gitlab).to receive(:org_or_com?).and_return(false)
           stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
-          allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform)
+          allow(current_user).to receive(:allowed_to_use?).with(:agentic_chat, unit_primitive_name: :duo_chat)
             .and_return(duo_agentic_chat_enabled_for_user)
         end
 

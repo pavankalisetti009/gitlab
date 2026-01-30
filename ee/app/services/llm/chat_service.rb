@@ -13,12 +13,13 @@ module Llm
     end
 
     def perform
+      unit_primitive = ::Feature.enabled?(:no_duo_classic_for_duo_core_users, user) ? :duo_classic_chat : :duo_chat
       track_internal_event(
         'request_duo_chat_response',
         user: user,
         project: project,
         namespace: namespace,
-        feature_enabled_by_namespace_ids: user.allowed_by_namespace_ids(:chat, unit_primitive_name: :duo_chat)
+        feature_enabled_by_namespace_ids: user.allowed_by_namespace_ids(:chat, unit_primitive_name: unit_primitive)
       )
 
       prompt_message.save!
