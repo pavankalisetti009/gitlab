@@ -75599,6 +75599,9 @@ msgstr ""
 msgid "VirtualRegistry|Registry"
 msgstr ""
 
+msgid "VirtualRegistry|Registry %{name} was successfully created."
+msgstr ""
+
 msgid "VirtualRegistry|Registry cache cleared successfully."
 msgstr ""
 
