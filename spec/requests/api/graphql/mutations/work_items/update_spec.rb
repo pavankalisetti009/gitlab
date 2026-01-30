@@ -1723,7 +1723,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             end
 
             before do
-              stub_all_work_item_widgets(:notes)
+              stub_all_work_item_widgets(notes: false)
             end
 
             it_behaves_like 'work item is not updated' do
@@ -1928,7 +1928,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           end
 
           before do
-            stub_all_work_item_widgets(:time_tracking)
+            stub_all_work_item_widgets(time_tracking: false)
           end
 
           it 'ignores the quick action' do

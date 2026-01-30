@@ -36,10 +36,8 @@ module WorkItems
     # When a widget is disabled, get_widget returns nil (not the widget object) and
     # has_widget? returns false. Unstubbed widgets will use the original behavior.
     #
-    # Note: We stub Issue instead of WorkItem because WorkItem is a child class of Issue.
-    # When using allow_any_instance_of with a parent class, it automatically applies to all
-    # instances of child classes as well. This is why stubbing Issue covers both Issue and
-    # WorkItem instances.
+    # Note: We stub the get_widget method with the WorkItem model as that's where the method is
+    # defined and the has_widget? with the Issue model, for the same reasons.
     #
     # Examples:
     #   stub_all_work_item_widgets(notes: false)
@@ -48,14 +46,14 @@ module WorkItems
     def stub_all_work_item_widgets(**widgets)
       # rubocop:disable RSpec/AnyInstanceOf -- To simulate work item without certain widgets
       # Set up default behavior to call original for any widget not explicitly stubbed
-      allow_any_instance_of(Issue).to receive(:get_widget).and_call_original
+      allow_any_instance_of(WorkItem).to receive(:get_widget).and_call_original
       allow_any_instance_of(Issue).to receive(:has_widget?).and_call_original
 
       widgets.each do |widget, enabled|
         if enabled
-          allow_any_instance_of(Issue).to receive(:get_widget).with(widget).and_call_original
+          allow_any_instance_of(WorkItem).to receive(:get_widget).with(widget).and_call_original
         else
-          allow_any_instance_of(Issue).to receive(:get_widget).with(widget).and_return(nil)
+          allow_any_instance_of(WorkItem).to receive(:get_widget).with(widget).and_return(nil)
         end
 
         allow_any_instance_of(Issue).to receive(:has_widget?).with(widget).and_return(enabled)
