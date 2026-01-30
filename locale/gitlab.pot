@@ -19579,9 +19579,6 @@ msgstr ""
 msgid "Container scanning"
 msgstr ""
 
-msgid "Container virtual registry not available"
-msgstr ""
-
 msgid "ContainerRegistry| Please visit the %{linkStart}administration settings%{linkEnd} to enable this feature."
 msgstr ""
 
@@ -75357,6 +75354,9 @@ msgstr ""
 msgid "VirtualRegistry|Container virtual registries"
 msgstr ""
 
+msgid "VirtualRegistry|Container virtual registry not available"
+msgstr ""
+
 msgid "VirtualRegistry|Copy virtual registry ID: %{id}"
 msgstr ""
 
@@ -75499,6 +75499,9 @@ msgid "VirtualRegistry|Maven upstreams"
 msgstr ""
 
 msgid "VirtualRegistry|Maven virtual registries"
+msgstr ""
+
+msgid "VirtualRegistry|Maven virtual registry not available"
 msgstr ""
 
 msgid "VirtualRegistry|Maven virtual registry was created"

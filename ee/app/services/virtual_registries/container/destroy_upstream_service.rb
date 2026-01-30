@@ -11,7 +11,9 @@ module VirtualRegistries
 
       def execute
         unless ::VirtualRegistries::Container.virtual_registry_available?(upstream.group, current_user)
-          return ServiceResponse.error(message: _('Container virtual registry not available'), reason: :unavailable)
+          return ServiceResponse.error(
+            message: s_('VirtualRegistry|Container virtual registry not available'), reason: :unavailable
+          )
         end
 
         upstream.transaction do

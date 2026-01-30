@@ -382,6 +382,8 @@ module EE
           experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Registry::Destroy,
           experiment: { milestone: '18.9' }
+        mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Registry::Create,
+          experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::Update,
           experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::LinkIssue, experiment: {
