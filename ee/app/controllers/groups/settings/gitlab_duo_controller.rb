@@ -12,6 +12,7 @@ module Groups
 
       before_action do
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :beta)
+        push_frontend_feature_flag(:ultimate_trial_with_dap, :instance)
       end
 
       def show

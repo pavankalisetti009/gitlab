@@ -4,6 +4,7 @@ import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE } from 'ee/constants/duo';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
+import DuoAgentPlatformBuyCreditsCard from 'ee/ai/settings/components/duo_agent_platform_buy_credits_card.vue';
 import DuoSeatUtilizationInfoCard from '../components/duo_seat_utilization_info_card.vue';
 import DuoConfigurationSettingsInfoCard from '../components/duo_configuration_settings_info_card.vue';
 import DuoModelsConfigurationInfoCard from '../components/duo_models_configuration_info_card.vue';
@@ -17,6 +18,7 @@ export default {
     HealthCheckList,
     DuoConfigurationSettingsInfoCard,
     DuoCoreUpgradeCard,
+    DuoAgentPlatformBuyCreditsCard,
     DuoSeatUtilizationInfoCard,
     DuoModelsConfigurationInfoCard,
     DuoWorkflowSettings,
@@ -31,6 +33,7 @@ export default {
     modelSwitchingEnabled: { default: false },
     modelSwitchingPath: { default: '' },
     gitlabCreditsDashboardPath: { default: '' },
+    glFeatures: { default: () => ({}) },
   },
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
@@ -103,6 +106,12 @@ export default {
     shouldShowDuoAgentPlatformSettings() {
       return this.isAdminInstanceDuoHome;
     },
+    shouldShowBuyCreditsCard() {
+      if (!this.isSaaS) {
+        return true;
+      }
+      return this.glFeatures.ultimateTrialWithDap;
+    },
   },
   methods: {
     shouldShowDuoCoreUpgradeCard(activeDuoTier) {
@@ -129,7 +138,10 @@ export default {
       <template #duo-card="{ totalValue, usageValue, activeDuoTier, addOnPurchases }">
         <div class="gl-grid gl-gap-y-5">
           <section class="gl-grid gl-gap-5 @md/panel:gl-grid-cols-2">
-            <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(activeDuoTier)" />
+            <template v-if="shouldShowDuoCoreUpgradeCard(activeDuoTier)">
+              <duo-agent-platform-buy-credits-card v-if="shouldShowBuyCreditsCard" />
+              <duo-core-upgrade-card v-else />
+            </template>
             <duo-seat-utilization-info-card
               v-if="shouldShowSeatUtilizationInfoCard(activeDuoTier)"
               data-testid="duo-seat-utilization-info-card"
