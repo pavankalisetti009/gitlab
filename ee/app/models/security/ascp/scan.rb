@@ -16,10 +16,8 @@ module Security
       #          foreign_key: :introduced_in_scan_id, inverse_of: :introduced_in_scan
       # has_many :fixed_sinks, class_name: 'Security::Ascp::Sink',
       #          foreign_key: :fixed_in_scan_id, inverse_of: :fixed_in_scan
-      # has_many :components, class_name: 'Security::Ascp::Component',
-      #          foreign_key: :scan_id, inverse_of: :scan
-      # has_many :security_contexts, class_name: 'Security::Ascp::SecurityContext',
-      #          foreign_key: :scan_id, inverse_of: :scan
+      has_many :components, class_name: 'Security::Ascp::Component', inverse_of: :scan
+      has_many :security_contexts, class_name: 'Security::Ascp::SecurityContext', inverse_of: :scan
 
       validates :project, presence: true
       validates :scan_sequence, presence: true
