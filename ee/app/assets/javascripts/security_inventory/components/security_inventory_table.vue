@@ -250,6 +250,7 @@ export default {
 
     <project-attributes-update-drawer
       v-if="selectedProject"
+      :key="selectedProject.id"
       ref="attributesDrawer"
       :project-id="selectedProject.id"
       :selected-attributes="selectedProject.securityAttributes.nodes"
@@ -268,6 +269,7 @@ export default {
     />
     <project-security-configuration-drawer
       v-if="selectedProjectForConfiguration"
+      :key="selectedProjectForConfiguration.id"
       ref="securityConfigurationDrawer"
       :project-id="selectedProjectForConfiguration.id"
       :project-full-path="selectedProjectForConfiguration.fullPath"
