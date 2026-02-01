@@ -28,7 +28,6 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
               name
               accessLevel
               membersCount
-              usersCount
             }
           }
         }
@@ -71,8 +70,7 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
           item = graphql_dig_at(data, :data, :group, :standard_roles, :nodes, index)
           expect(item).to(match(a_hash_including(
             "accessLevel" => access_level,
-            "membersCount" => count,
-            "usersCount" => count
+            "membersCount" => count
           )))
         end
       end
@@ -102,8 +100,7 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
           item = graphql_dig_at(data, :data, :group, :standard_roles, :nodes, index)
           expect(item).to(match(a_hash_including(
             "accessLevel" => access_level,
-            "membersCount" => count,
-            "usersCount" => count
+            "membersCount" => count
           )))
         end
       end
@@ -136,8 +133,7 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
           item = graphql_dig_at(data, :data, :group, :standard_roles, :nodes, index)
           expect(item).to(match(a_hash_including(
             "accessLevel" => access_level,
-            "membersCount" => count,
-            "usersCount" => count
+            "membersCount" => count
           )))
         end
       end

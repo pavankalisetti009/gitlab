@@ -32,6 +32,11 @@ module Types
         description: 'Array of security policies dependent on the custom role.',
         resolver: ::Resolvers::Members::ApprovalPolicyResolver
 
+      field :users_count,
+        GraphQL::Types::Int,
+        experiment: { milestone: '17.5' },
+        description: 'Number of users who have been directly assigned the role in at least one group or project.'
+
       def enabled_permissions
         object.enabled_permissions.keys
       end

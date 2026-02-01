@@ -33,7 +33,6 @@ RSpec.describe Resolvers::Members::StandardRolesResolver, feature_category: :api
           expect(role[:access_level]).to eq(value)
           expect(role[:name]).to eq(name)
           expect(role[:members_count]).to eq(roles_with_members.include?(value) ? 1 : 0)
-          expect(role[:users_count]).to eq(roles_with_members.include?(value) ? 1 : 0)
           expect(role[:group]).to eq(group)
         end
       end
@@ -48,7 +47,6 @@ RSpec.describe Resolvers::Members::StandardRolesResolver, feature_category: :api
         role = result.first
         expect(role[:access_level]).to eq(::Gitlab::Access::MAINTAINER)
         expect(role[:members_count]).to eq(1)
-        expect(role[:users_count]).to eq(1)
       end
     end
   end
