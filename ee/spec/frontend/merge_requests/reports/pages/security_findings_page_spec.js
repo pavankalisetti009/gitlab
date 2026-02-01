@@ -1,7 +1,8 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlButton, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { stubComponent } from 'helpers/stub_component';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import SmartInterval from '~/smart_interval';
@@ -10,6 +11,8 @@ import HelpPopover from '~/vue_shared/components/help_popover.vue';
 import SecurityFindingsPage from 'ee/merge_requests/reports/pages/security_findings_page.vue';
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
+import ReportDetails from 'ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_report_details.vue';
+import VulnerabilityFindingModal from 'ee/security_dashboard/components/pipeline/vulnerability_finding_modal.vue';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
 import {
@@ -28,7 +31,10 @@ describe('Security findings page component', () => {
   let wrapper;
 
   const DEFAULT_MR_PROPS = {
+    id: 12345,
     targetProjectFullPath: 'gitlab-org/gitlab',
+    sourceProjectFullPath: 'namespace/project',
+    sourceBranch: 'feature-branch',
     iid: 456,
     isPipelineActive: false,
     pipeline: {
@@ -57,6 +63,7 @@ describe('Security findings page component', () => {
       },
       stubs: {
         GlButton,
+        VulnerabilityFindingModal: stubComponent(VulnerabilityFindingModal),
       },
     });
   };
@@ -66,6 +73,8 @@ describe('Security findings page component', () => {
   const findSummaryHighlights = () => wrapper.findComponent(SummaryHighlights);
   const findHelpPopover = () => wrapper.findComponent(HelpPopover);
   const findLearnMoreLink = () => findHelpPopover().findComponent(GlLink);
+  const findReportDetails = () => wrapper.findAllComponents(ReportDetails);
+  const findVulnerabilityFindingModal = () => wrapper.findByTestId('vulnerability-finding-modal');
 
   describe('rendering', () => {
     it('does not render when enabledScans is loading', async () => {
@@ -617,5 +626,121 @@ describe('Security findings page component', () => {
         expect(destroy).toHaveBeenCalled();
       });
     });
+  });
+
+  describe('ReportDetails', () => {
+    it('does not render when loading', async () => {
+      createComponent({
+        enabledScansHandler: jest.fn().mockResolvedValue(
+          createEnabledScansQueryResponse({
+            full: { ready: false },
+          }),
+        ),
+      });
+      await waitForPromises();
+
+      expect(findReportDetails()).toHaveLength(0);
+    });
+
+    it('renders ReportDetails for each report', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true, dast: true } })),
+      });
+      await waitForPromises();
+
+      expect(findReportDetails()).toHaveLength(2);
+    });
+
+    it('passes correct props to ReportDetails', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+      });
+      await waitForPromises();
+
+      const reportDetails = findReportDetails().at(0);
+      expect(reportDetails.props()).toMatchObject({
+        report: { reportType: 'SAST' },
+        mr: expect.objectContaining({ iid: DEFAULT_MR_PROPS.iid }),
+        widgetName: 'SecurityFindingsPage',
+      });
+    });
+  });
+
+  describe('VulnerabilityFindingModal', () => {
+    const createFinding = (overrides = {}) => ({
+      uuid: 'test-uuid',
+      title: 'Test Vulnerability',
+      foundByPipelineIid: 123,
+      state: 'detected',
+      ...overrides,
+    });
+
+    const openModalWithFinding = async (findingData) => {
+      findReportDetails().at(0).vm.$emit('modal-data', findingData);
+      await nextTick();
+    };
+
+    beforeEach(async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest
+          .fn()
+          .mockResolvedValue(mockFindingReportsComparerSuccessResponse),
+      });
+      await waitForPromises();
+    });
+
+    it('does not render modal by default', () => {
+      expect(findVulnerabilityFindingModal().exists()).toBe(false);
+    });
+
+    it('renders modal when finding is clicked', async () => {
+      await openModalWithFinding(createFinding());
+
+      expect(findVulnerabilityFindingModal().exists()).toBe(true);
+    });
+
+    it('passes correct props to modal', async () => {
+      const finding = createFinding();
+      await openModalWithFinding(finding);
+
+      expect(findVulnerabilityFindingModal().props()).toMatchObject({
+        findingUuid: finding.uuid,
+        pipelineIid: finding.foundByPipelineIid,
+        branchRef: DEFAULT_MR_PROPS.sourceBranch,
+        projectFullPath: DEFAULT_MR_PROPS.targetProjectFullPath,
+        sourceProjectFullPath: DEFAULT_MR_PROPS.sourceProjectFullPath,
+        mergeRequestId: DEFAULT_MR_PROPS.id,
+      });
+    });
+
+    it('clears modal data when hidden event is emitted', async () => {
+      await openModalWithFinding(createFinding());
+
+      expect(findVulnerabilityFindingModal().exists()).toBe(true);
+
+      findVulnerabilityFindingModal().vm.$emit('hidden');
+      await nextTick();
+
+      expect(findVulnerabilityFindingModal().exists()).toBe(false);
+    });
+
+    it.each(['dismissed', 'detected'])(
+      'handles %s event and keeps modal visible',
+      async (event) => {
+        await openModalWithFinding(createFinding());
+
+        findVulnerabilityFindingModal().vm.$emit(event);
+        await nextTick();
+
+        expect(findVulnerabilityFindingModal().exists()).toBe(true);
+      },
+    );
   });
 });

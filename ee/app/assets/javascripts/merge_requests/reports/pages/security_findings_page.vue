@@ -18,6 +18,7 @@ import SummaryText, {
   MAX_NEW_VULNERABILITIES,
 } from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
+import ReportDetails from 'ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_report_details.vue';
 
 const POLL_INTERVAL = 3000;
 const MAX_POLL_INTERVAL = 30000;
@@ -31,6 +32,9 @@ export default {
     HelpPopover,
     GlButton,
     GlLink,
+    ReportDetails,
+    VulnerabilityFindingModal: () =>
+      import('ee/security_dashboard/components/pipeline/vulnerability_finding_modal.vue'),
   },
   props: {
     mr: {
@@ -53,6 +57,7 @@ export default {
       isLoading: true,
       hasAtLeastOneReportWithMaxNewVulnerabilities: false,
       errorMessage: '',
+      modalData: null,
     };
   },
   apollo: {
@@ -180,6 +185,13 @@ export default {
       // eslint-disable-next-line @gitlab/no-hardcoded-urls
       return `${this.mr.pipeline.path}/security`;
     },
+    modalPipelineIid() {
+      const iid = this.modalData?.vulnerability?.foundByPipelineIid;
+      return iid ? Number(iid) : null;
+    },
+    branchRef() {
+      return this.mr.sourceBranch;
+    },
   },
   beforeDestroy() {
     if (this.$options.pollingInterval) {
@@ -243,6 +255,7 @@ export default {
         status: data?.status,
         added,
         fixed,
+        findings: [...added, ...fixed],
         numberOfNewFindings: added.length,
         numberOfFixedFindings: fixed.length,
       };
@@ -276,6 +289,19 @@ export default {
         }
       }
     },
+    setModalData(finding) {
+      this.modalData = {
+        error: null,
+        title: finding.title,
+        vulnerability: finding,
+      };
+    },
+    clearModalData() {
+      this.modalData = null;
+    },
+    updateFindingState(state) {
+      this.modalData.vulnerability.state = state;
+    },
   },
   pollingInterval: undefined,
   helpPopover: {
@@ -291,38 +317,65 @@ export default {
 </script>
 
 <template>
-  <div v-if="shouldRenderMrWidget" data-testid="security-findings-page">
-    <div class="gl-flex">
-      <status-icon :name="$options.name" :is-loading="isLoading" :icon-name="statusIconName" />
-      <div class="gl-flex gl-grow gl-justify-between">
-        <div>
-          <summary-text
-            :total-new-vulnerabilities="totalNewFindings"
-            :is-loading="isLoading"
-            :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
-          />
-          <summary-highlights v-if="!isLoading && totalNewFindings > 0" :highlights="highlights" />
-        </div>
-        <div class="gl-flex gl-items-center">
-          <help-popover
-            icon="information-o"
-            :options="$options.helpPopover.options"
-            class="gl-mr-3"
-          >
-            <p class="gl-mb-0">{{ $options.helpPopover.content.text }}</p>
-            <gl-link
-              :href="$options.helpPopover.content.learnMorePath"
-              target="_blank"
-              class="gl-text-sm"
+  <div>
+    <vulnerability-finding-modal
+      v-if="modalData"
+      :finding-uuid="modalData.vulnerability.uuid"
+      :pipeline-iid="modalPipelineIid"
+      :branch-ref="branchRef"
+      :project-full-path="mr.targetProjectFullPath"
+      :source-project-full-path="mr.sourceProjectFullPath"
+      :show-ai-resolution="true"
+      :merge-request-id="mr.id"
+      data-testid="vulnerability-finding-modal"
+      @hidden="clearModalData"
+      @dismissed="updateFindingState('dismissed')"
+      @detected="updateFindingState('detected')"
+    />
+    <div v-if="shouldRenderMrWidget" data-testid="security-findings-page">
+      <div class="gl-flex">
+        <status-icon :name="$options.name" :is-loading="isLoading" :icon-name="statusIconName" />
+        <div class="gl-flex gl-grow gl-justify-between">
+          <div>
+            <summary-text
+              :total-new-vulnerabilities="totalNewFindings"
+              :is-loading="isLoading"
+              :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
+            />
+            <summary-highlights
+              v-if="!isLoading && totalNewFindings > 0"
+              :highlights="highlights"
+            />
+          </div>
+          <div class="gl-flex gl-items-center">
+            <help-popover
+              icon="information-o"
+              :options="$options.helpPopover.options"
+              class="gl-mr-3"
             >
-              {{ __('Learn more') }}
-            </gl-link>
-          </help-popover>
-          <gl-button :href="pipelineSecurityPath">
-            {{ s__('ciReport|View all pipeline findings') }}
-          </gl-button>
+              <p class="gl-mb-0">{{ $options.helpPopover.content.text }}</p>
+              <gl-link
+                :href="$options.helpPopover.content.learnMorePath"
+                target="_blank"
+                class="gl-text-sm"
+              >
+                {{ __('Learn more') }}
+              </gl-link>
+            </help-popover>
+            <gl-button :href="pipelineSecurityPath">
+              {{ s__('ciReport|View all pipeline findings') }}
+            </gl-button>
+          </div>
         </div>
       </div>
+      <report-details
+        v-for="report in reports"
+        :key="report.reportType"
+        :report="report"
+        :mr="mr"
+        :widget-name="$options.name"
+        @modal-data="setModalData"
+      />
     </div>
   </div>
 </template>
