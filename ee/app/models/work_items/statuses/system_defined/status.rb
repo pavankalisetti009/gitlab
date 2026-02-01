@@ -52,12 +52,6 @@ module WorkItems
         attribute :position, :integer, default: 0
 
         class << self
-          def find_by_work_item_and_name(work_item, status_name)
-            base_type = work_item.work_item_type.base_type.to_sym
-            # Status is only valid if it belongs to the lifecycle of the work item type.
-            Lifecycle.of_work_item_base_type(base_type)&.find_available_status_by_name(status_name)
-          end
-
           def find_by_name(status_name, partial_match: false)
             if partial_match
               normalized_name = status_name.downcase.strip

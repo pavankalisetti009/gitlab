@@ -23,27 +23,6 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
     end
   end
 
-  describe '.find_by_work_item_and_name' do
-    let(:work_item) { build_stubbed(:work_item, :task) }
-    let(:status_name) { 'in progress' }
-
-    subject { described_class.find_by_work_item_and_name(work_item, status_name) }
-
-    it { is_expected.to have_attributes(id: 2, name: 'In progress') }
-
-    context 'when there is no lifecycle assigned to the work item type' do
-      let(:work_item) { build_stubbed(:work_item, :epic) }
-
-      it { is_expected.to be_nil }
-    end
-
-    context 'when status_name does not resolve to a valid status' do
-      let(:status_name) { 'invalid' }
-
-      it { is_expected.to be_nil }
-    end
-  end
-
   describe '.find_by_name' do
     let(:work_item) { build_stubbed(:work_item, :task) }
     let(:status_name) { 'in progress' }
