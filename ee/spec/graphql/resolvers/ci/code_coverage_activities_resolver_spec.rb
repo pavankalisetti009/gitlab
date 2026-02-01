@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Ci::CodeCoverageActivitiesResolver do
+RSpec.describe Resolvers::Ci::CodeCoverageActivitiesResolver, feature_category: :code_testing do
   include GraphqlHelpers
 
   it { expect(described_class.type).to eq(Types::Ci::CodeCoverageActivityType) }

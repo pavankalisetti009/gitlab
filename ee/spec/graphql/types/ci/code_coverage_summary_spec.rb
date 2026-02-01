@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['CodeCoverageSummary'] do
+RSpec.describe GitlabSchema.types['CodeCoverageSummary'], feature_category: :code_testing do
   it { expect(described_class.graphql_name).to eq('CodeCoverageSummary') }
 
   describe 'fields' do
