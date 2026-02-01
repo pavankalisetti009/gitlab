@@ -74,5 +74,32 @@ RSpec.describe Vulnerabilities::IssueLinkEntity, feature_category: :vulnerabilit
         expect(serialized_issue_link).not_to include(:issue_url)
       end
     end
+
+    context 'when issue is a group-level work item' do
+      # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Requires persisted records for URL generation and permissions
+      let_it_be(:group) { create(:group) }
+      let_it_be(:group_user) { create(:user, developer_of: [group, project]) }
+      let_it_be(:group_issue) { create(:issue, :group_level, namespace: group) }
+      let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+      let(:issue_link) { create(:vulnerabilities_issue_link, issue: group_issue, vulnerability: vulnerability) }
+      # rubocop:enable RSpec/FactoryBot/AvoidCreate
+      let(:opts) { { request: request } }
+      let(:request) { EntityRequest.new(current_user: group_user) }
+
+      before do
+        project.update!(group: group)
+        stub_licensed_features(epics: true)
+      end
+
+      it 'generates issue_url without raising error' do
+        expect { serialized_issue_link[:issue_url] }.not_to raise_error
+      end
+
+      it 'exposes issue_url with group-level path' do
+        expect(serialized_issue_link[:issue_url]).to match(
+          %r{/groups/#{Regexp.escape(group.full_path)}/-/work_items/#{group_issue.iid}}
+        )
+      end
+    end
   end
 end

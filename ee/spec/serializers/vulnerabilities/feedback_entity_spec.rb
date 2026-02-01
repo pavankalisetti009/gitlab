@@ -3,8 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Vulnerabilities::FeedbackEntity, feature_category: :vulnerability_management do
+  # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Requires persisted records for permissions and URL generation
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
+  # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
   let(:request) { double('request') }
   let(:entity) { described_class.represent(feedback, request: request) }
@@ -148,6 +150,38 @@ RSpec.describe Vulnerabilities::FeedbackEntity, feature_category: :vulnerability
 
     it 'exposes dismissal_reason' do
       expect(subject[:dismissal_reason]).to eq(feedback.dismissal_reason)
+    end
+  end
+
+  context 'when issue is a group-level work item' do
+    # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Requires persisted records for URL generation and permissions
+    let_it_be(:group) { create(:group) }
+    let_it_be(:group_user) { create(:user, developer_of: [group, project]) }
+    let_it_be(:group_issue) { create(:issue, :group_level, namespace: group) }
+    let_it_be(:feedback) { create(:vulnerability_feedback, :issue, project: project, issue: group_issue) }
+    # rubocop:enable RSpec/FactoryBot/AvoidCreate
+
+    let(:request) { double('request') }
+    let(:entity) { described_class.represent(feedback, request: request) }
+
+    subject { entity.as_json }
+
+    before do
+      project.update!(group: group)
+      allow(request).to receive(:current_user).and_return(group_user)
+      stub_licensed_features(epics: true)
+    end
+
+    context 'when user can view the issue' do
+      it 'generates issue_url without raising error' do
+        expect { subject[:issue_url] }.not_to raise_error
+      end
+
+      it 'exposes issue_url with group-level path' do
+        expect(subject[:issue_url]).to match(
+          %r{/groups/#{Regexp.escape(group.full_path)}/-/work_items/#{group_issue.iid}}
+        )
+      end
     end
   end
 end

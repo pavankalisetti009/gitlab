@@ -9,7 +9,7 @@ module Vulnerabilities
     end
 
     expose :issue_url, if: ->(_, _) { can_read_issue? } do |issue_link|
-      project_issue_url(issue_link.vulnerability.project, issue_link.issue)
+      Gitlab::UrlBuilder.build(issue_link.issue)
     end
 
     expose :author, using: UserEntity
