@@ -5,12 +5,15 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import SmartInterval from '~/smart_interval';
 import SecurityFindingsPage from 'ee/merge_requests/reports/pages/security_findings_page.vue';
+import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
 import {
   createEnabledScansQueryResponse,
   mockFindingReportsComparerSuccessResponse,
   mockFindingReportsComparerParsingResponse,
+  mockFindingReportsComparerEmptyResponse,
+  createMockFindingReportsComparerResponse,
 } from 'ee_jest/vue_merge_request_widget/mock_data';
 
 jest.mock('~/smart_interval');
@@ -23,6 +26,7 @@ describe('Security findings page component', () => {
   const DEFAULT_MR_PROPS = {
     targetProjectFullPath: 'gitlab-org/gitlab',
     iid: 456,
+    isPipelineActive: false,
     pipeline: {
       iid: 123,
     },
@@ -50,12 +54,157 @@ describe('Security findings page component', () => {
   };
 
   const findSecurityFindingsPage = () => wrapper.findByTestId('security-findings-page');
+  const findSummaryText = () => wrapper.findComponent(SummaryText);
 
   describe('rendering', () => {
-    it('renders the security findings page', () => {
-      createComponent();
+    it('does not render when enabledScans is loading', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+      });
+
+      expect(findSecurityFindingsPage().exists()).toBe(false);
+
+      await waitForPromises();
 
       expect(findSecurityFindingsPage().exists()).toBe(true);
+    });
+
+    it('does not render when pipeline is active', async () => {
+      createComponent({
+        mr: { isPipelineActive: true },
+        enabledScansHandler: jest.fn().mockResolvedValue(createEnabledScansQueryResponse()),
+      });
+
+      await waitForPromises();
+
+      expect(findSecurityFindingsPage().exists()).toBe(false);
+    });
+
+    it('does not render when no scans are enabled', async () => {
+      createComponent({
+        enabledScansHandler: jest.fn().mockResolvedValue(createEnabledScansQueryResponse()),
+      });
+
+      await waitForPromises();
+
+      expect(findSecurityFindingsPage().exists()).toBe(false);
+    });
+
+    it('renders when scans are ready, pipeline inactive, and scans enabled', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+      });
+
+      await waitForPromises();
+
+      expect(findSecurityFindingsPage().exists()).toBe(true);
+    });
+  });
+
+  describe('SummaryText', () => {
+    it('passes isLoading true while fetching reports', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest.fn(() => new Promise(() => {})),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryText().props('isLoading')).toBe(true);
+    });
+
+    it('passes isLoading false after reports are fetched', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest
+          .fn()
+          .mockResolvedValue(mockFindingReportsComparerSuccessResponse),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryText().props('isLoading')).toBe(false);
+    });
+
+    it('passes totalNewVulnerabilities from reports', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest
+          .fn()
+          .mockResolvedValue(mockFindingReportsComparerSuccessResponse),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryText().props('totalNewVulnerabilities')).toBe(1);
+    });
+
+    it('sums vulnerabilities from multiple reports', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true, dast: true } })),
+        findingReportsHandler: jest
+          .fn()
+          .mockResolvedValue(mockFindingReportsComparerSuccessResponse),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryText().props('totalNewVulnerabilities')).toBe(2);
+    });
+
+    it('passes zero vulnerabilities when scans are enabled but have no findings', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest.fn().mockResolvedValue(mockFindingReportsComparerEmptyResponse),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryText().props('totalNewVulnerabilities')).toBe(0);
+    });
+
+    it('passes showAtLeastHint true when a report has 25 findings', async () => {
+      const findings = Array(25)
+        .fill(null)
+        .map((_, i) => ({
+          title: `Finding ${i}`,
+          uuid: `uuid-${i}`,
+          severity: 'HIGH',
+          state: 'DETECTED',
+          foundByPipelineIid: '4',
+          aiResolutionEnabled: true,
+          matchesAutoDismissPolicy: false,
+          __typename: 'ComparedSecurityReportFinding',
+        }));
+
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest
+          .fn()
+          .mockResolvedValue(
+            createMockFindingReportsComparerResponse('SAST', { added: findings, fixed: [] }),
+          ),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryText().props('showAtLeastHint')).toBe(true);
     });
   });
 
@@ -83,20 +232,6 @@ describe('Security findings page component', () => {
       createComponent({ mr: { targetProjectFullPath: null }, enabledScansHandler });
 
       expect(enabledScansHandler).not.toHaveBeenCalled();
-    });
-
-    describe('when query fails', () => {
-      it('displays error message', async () => {
-        createComponent({
-          enabledScansHandler: jest.fn().mockRejectedValue(new Error('GraphQL error')),
-        });
-
-        await waitForPromises();
-
-        expect(findSecurityFindingsPage().text()).toContain(
-          'Error while fetching enabled scans. Please try again later.',
-        );
-      });
     });
 
     describe('polling', () => {
