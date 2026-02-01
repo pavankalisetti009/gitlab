@@ -34,11 +34,6 @@ module Resolvers
       end
       strong_memoize_attr :member_counts
 
-      def user_counts
-        selects_field?(:users_count) ? memberships([:access_level, :user_id]).count_users_by_role : {}
-      end
-      strong_memoize_attr :user_counts
-
       def selected_fields
         node_selection.selections.map(&:name)
       end
@@ -59,7 +54,6 @@ module Resolvers
           name: name,
           access_level: access_level,
           members_count: member_counts[access_level] || 0,
-          users_count: user_counts[access_level] || 0,
           group: object
         }
       end

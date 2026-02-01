@@ -14,7 +14,6 @@ RSpec.describe 'Query.group_standard_role', feature_category: :system_access do
             accessLevel
             name
             membersCount
-            usersCount
             detailsPath
           }
         }
@@ -51,56 +50,48 @@ RSpec.describe 'Query.group_standard_role', feature_category: :system_access do
         'accessLevel' => 5,
         'name' => 'Minimal Access',
         'membersCount' => 0,
-        'usersCount' => 0,
         'detailsPath' => '/admin/application_settings/roles_and_permissions/MINIMAL_ACCESS'
       },
       {
         'accessLevel' => 10,
         'name' => 'Guest',
         'membersCount' => 2,
-        'usersCount' => 1,
         'detailsPath' => '/admin/application_settings/roles_and_permissions/GUEST'
       },
       {
         'accessLevel' => 15,
         'name' => 'Planner',
         'membersCount' => 1,
-        'usersCount' => 1,
         'detailsPath' => '/admin/application_settings/roles_and_permissions/PLANNER'
       },
       {
         'accessLevel' => 20,
         'name' => 'Reporter',
         'membersCount' => 0,
-        'usersCount' => 0,
         'detailsPath' => '/admin/application_settings/roles_and_permissions/REPORTER'
       },
       {
         'accessLevel' => 25,
         'name' => 'Security Manager',
         'membersCount' => 0,
-        'usersCount' => 0,
         'detailsPath' => '/admin/application_settings/roles_and_permissions/SECURITY_MANAGER'
       },
       {
         'accessLevel' => 30,
         'name' => 'Developer',
         'membersCount' => 0,
-        'usersCount' => 0,
         'detailsPath' => '/admin/application_settings/roles_and_permissions/DEVELOPER'
       },
       {
         'accessLevel' => 40,
         'name' => 'Maintainer',
         'membersCount' => 1,
-        'usersCount' => 1,
         'detailsPath' => '/admin/application_settings/roles_and_permissions/MAINTAINER'
       },
       {
         'accessLevel' => 50,
         'name' => 'Owner',
         'membersCount' => 0,
-        'usersCount' => 0,
         'detailsPath' => '/admin/application_settings/roles_and_permissions/OWNER'
       }
     ]
