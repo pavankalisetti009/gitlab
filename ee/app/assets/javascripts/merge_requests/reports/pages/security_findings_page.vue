@@ -4,6 +4,8 @@ import SmartInterval from '~/smart_interval';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
 import { transformToEnabledScans } from 'ee/vue_merge_request_widget/widgets/security_reports/utils';
+import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
+import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
 import SummaryText, {
   MAX_NEW_VULNERABILITIES,
 } from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
@@ -14,6 +16,7 @@ const MAX_POLL_INTERVAL = 30000;
 export default {
   name: 'SecurityFindingsPage',
   components: {
+    StatusIcon,
     SummaryText,
   },
   props: {
@@ -120,6 +123,17 @@ export default {
 
       return sumFindings(this.reportsByScanType.full) + sumFindings(this.reportsByScanType.partial);
     },
+    statusIconName() {
+      if (this.totalNewFindings > 0) {
+        return EXTENSION_ICONS.warning;
+      }
+
+      if (this.errorMessage) {
+        return EXTENSION_ICONS.error;
+      }
+
+      return EXTENSION_ICONS.success;
+    },
   },
   beforeDestroy() {
     if (this.$options.pollingInterval) {
@@ -223,10 +237,15 @@ export default {
 
 <template>
   <div v-if="shouldRenderMrWidget" data-testid="security-findings-page">
-    <summary-text
-      :total-new-vulnerabilities="totalNewFindings"
-      :is-loading="isLoading"
-      :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
-    />
+    <div class="gl-flex">
+      <status-icon :name="$options.name" :is-loading="isLoading" :icon-name="statusIconName" />
+      <div class="gl-flex gl-grow">
+        <summary-text
+          :total-new-vulnerabilities="totalNewFindings"
+          :is-loading="isLoading"
+          :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
+        />
+      </div>
+    </div>
   </div>
 </template>
