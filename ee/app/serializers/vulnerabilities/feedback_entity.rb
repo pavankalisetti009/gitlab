@@ -30,7 +30,7 @@ class Vulnerabilities::FeedbackEntity < Grape::Entity
   end
 
   expose :issue_url, if: ->(_, _) { can_read_issue? } do |feedback|
-    project_issue_url(feedback.project, feedback.issue)
+    Gitlab::UrlBuilder.build(feedback.issue)
   end
 
   expose :merge_request_iid, if: ->(feedback, _) { feedback.merge_request.present? } do |feedback|
