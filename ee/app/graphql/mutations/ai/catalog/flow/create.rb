@@ -42,10 +42,6 @@ module Mutations
             required: false,
             description: 'YAML definition for the flow.'
 
-          argument :add_to_project_when_created, GraphQL::Types::Boolean,
-            required: false,
-            description: 'Whether to add to the project upon creation.'
-
           authorize :create_ai_catalog_flow
 
           def resolve(args)

@@ -23,8 +23,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       :system_prompt,
       :user_prompt,
       :tools,
-      :client_mutation_id,
-      :addToProjectWhenCreated
+      :client_mutation_id
     )
   end
 end

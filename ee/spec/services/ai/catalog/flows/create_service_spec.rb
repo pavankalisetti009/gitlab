@@ -247,28 +247,4 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       it_behaves_like 'an error response', 'You have insufficient permissions'
     end
   end
-
-  context 'when add_to_project_when_created is true' do
-    let(:params) { super().merge(add_to_project_when_created: true) }
-
-    it 'adds the created item to project',
-      skip: 'Temporarily unavailable until we add the ability to automatically create the top-level group consumer' do
-      expect(response).to be_success
-
-      item = response.payload[:item]
-      item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
-      expect(item_consumer.project).to eq(project)
-    end
-
-    context 'and ItemConsumer fails to be created' do
-      it 'returns a success with errors from item consumer creation' do
-        allow_next_instance_of(::Ai::Catalog::ItemConsumers::CreateService) do |instance|
-          expect(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Failure!'))
-        end
-
-        expect(response.payload[:item]).to be_kind_of(Ai::Catalog::Item)
-        expect(response.message).to eq(['Failure!'])
-      end
-    end
-  end
 end

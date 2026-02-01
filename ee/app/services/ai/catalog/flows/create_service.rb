@@ -36,16 +36,6 @@ module Ai
           track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
           send_audit_events('create_ai_catalog_flow', item)
 
-          if params[:add_to_project_when_created]
-            service_response = ::Ai::Catalog::ItemConsumers::CreateService.new(
-              container: project,
-              current_user: current_user,
-              params: { item: item }
-            ).execute
-
-            return error(service_response.errors, payload: { item: item }) if service_response.error?
-          end
-
           ServiceResponse.success(payload: { item: item })
         end
 
