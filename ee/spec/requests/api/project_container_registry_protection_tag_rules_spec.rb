@@ -7,7 +7,9 @@ RSpec.describe API::ProjectContainerRegistryProtectionTagRules, :aggregate_failu
   include ContainerRegistryHelpers
 
   let_it_be(:project) { create(:project, :private) }
-  let_it_be(:maintainer) { create(:user, maintainer_of: project) }
+  let_it_be(:other_project) { create(:project, :private) }
+  let_it_be(:owner) { create(:user, owner_of: project) }
+  let_it_be(:maintainer) { create(:user, maintainer_of: [project, other_project]) }
 
   describe 'PATCH /projects/:id/registry/protection/tag/rules/:protection_rule_id' do
     let_it_be_with_reload(:tag_rule_to_update) do
@@ -105,6 +107,67 @@ RSpec.describe API::ProjectContainerRegistryProtectionTagRules, :aggregate_failu
 
           expect(response).to have_gitlab_http_status(:unprocessable_entity)
           expect(json_response['message']['error']).to eq('Operation not allowed')
+        end
+      end
+    end
+  end
+
+  describe 'DELETE /projects/:id/registry/protection/tag/rules/:tag_rule_id' do
+    let_it_be_with_reload(:immutable_tag_rule) do
+      create(:container_registry_protection_tag_rule, :immutable, project: project, tag_name_pattern: 'immutable-*')
+    end
+
+    let(:protection_rule) { immutable_tag_rule }
+    let(:protection_rule_id) { immutable_tag_rule.id }
+    let(:path) { "registry/protection/tag/rules/#{protection_rule_id}" }
+    let(:url) { "/projects/#{project.id}/#{path}" }
+
+    subject(:delete_tag_rule) { delete(api(url, api_user)) }
+
+    before do
+      stub_gitlab_api_client_to_support_gitlab_api(supported: true)
+    end
+
+    shared_examples 'deletes the immutable tag protection rule' do
+      it 'deletes the immutable tag protection rule' do
+        expect { delete_tag_rule }.to change { ContainerRegistry::Protection::TagRule.count }.by(-1)
+
+        expect(response).to have_gitlab_http_status(:no_content)
+        expect(response.body).to be_empty
+
+        expect { immutable_tag_rule.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+
+    context 'with an immutable tag rule' do
+      context 'when user is owner' do
+        let_it_be(:owner) { create(:user, owner_of: project) }
+
+        let(:api_user) { owner }
+
+        it_behaves_like 'deletes the immutable tag protection rule'
+        it_behaves_like 'rejecting protection rules request when handling rule ids'
+        it_behaves_like 'rejecting protection rules request when invalid project'
+      end
+
+      context 'when user is admin' do
+        let_it_be(:admin) { create(:admin) }
+
+        subject(:delete_tag_rule) { delete(api(url, admin, admin_mode: true)) }
+
+        it_behaves_like 'deletes the immutable tag protection rule'
+      end
+
+      context 'when user is maintainer' do
+        let_it_be(:maintainer) { create(:user, maintainer_of: [project, other_project]) }
+
+        let(:api_user) { maintainer }
+
+        it 'returns forbidden and does not delete the rule' do
+          expect { delete_tag_rule }.not_to change { ContainerRegistry::Protection::TagRule.count }
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(immutable_tag_rule.reload).to be_present
         end
       end
     end
