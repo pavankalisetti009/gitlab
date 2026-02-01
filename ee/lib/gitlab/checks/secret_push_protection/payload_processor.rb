@@ -25,7 +25,8 @@ module Gitlab
           invalid_encoding: "Could not convert data to UTF-8 from %{encoding}",
           paths_sent_to_scan: "Number of changed paths broken down by their type",
           populated_lookup_map: "Populated the lookup map used to associate a " \
-            "finding to commit sha + file path"
+            "finding to commit sha + file path",
+          total_lines: "Total number of lines to scan"
         }.freeze
 
         # The `standardize_payloads` method gets payloads containing git diffs
@@ -39,6 +40,16 @@ module Gitlab
           lookup_map = Hash.new { |h, id| h[id] = [] }
 
           payloads = get_diffs(lookup_map)
+
+          total_lines = payloads.sum { |diff| diff.patch.lines.size }
+          total_payload_bytes = payloads.sum { |diff| diff.patch.bytesize }
+          secret_detection_logger.info(
+            build_structured_payload(
+              message: LOG_MESSAGES[:total_lines],
+              total_lines: total_lines,
+              total_payload_bytes: total_payload_bytes
+            )
+          )
 
           payloads = payloads.flat_map do |payload|
             p_ary = parse_diffs(payload)

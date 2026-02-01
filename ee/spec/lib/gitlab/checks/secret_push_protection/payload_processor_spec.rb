@@ -300,6 +300,19 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
 
         payload_processor.standardize_payloads
       end
+
+      it 'logs the total number of lines and payload bytes across all diffs' do
+        payload_processor.standardize_payloads
+
+        expect(logged_messages[:info]).to include(
+          hash_including(
+            "class" => "Gitlab::Checks::SecretPushProtection::PayloadProcessor",
+            "message" => "Total number of lines to scan",
+            "total_lines" => 8,
+            "total_payload_bytes" => 158
+          )
+        )
+      end
     end
 
     context 'when diff_blobs_with_raw_info fails' do
