@@ -20,12 +20,16 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
     }
   end
 
+  let_it_be(:user1) { create(:user) }
+  let_it_be(:user2) { create(:user) }
+  let_it_be(:user3) { create(:user) }
+
   let(:sessions_data) do
     [
       # User 1, very old
       {
         session_id: 1,
-        user_id: 1,
+        user_id: user1.id,
         flow_type: 'duo_chat',
         project: project1,
         created_at: 100.days.ago,
@@ -34,7 +38,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       },
       {
         session_id: 2,
-        user_id: 1,
+        user_id: user1.id,
         flow_type: 'duo_chat',
         project: project1,
         created_at: 50.days.ago,
@@ -43,7 +47,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       },
       {
         session_id: 3,
-        user_id: 1,
+        user_id: user1.id,
         flow_type: 'duo_chat',
         project: project1,
         created_at: 15.days.ago,
@@ -52,7 +56,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       # User 2, code_review sessions
       {
         session_id: 4,
-        user_id: 2,
+        user_id: user2.id,
         flow_type: 'code_review',
         project: project1,
         created_at: 12.days.ago,
@@ -62,7 +66,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       # Not finished
       {
         session_id: 5,
-        user_id: 2,
+        user_id: user2.id,
         flow_type: 'code_review',
         project: project1,
         created_at: 8.days.ago,
@@ -71,7 +75,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       # User 3
       {
         session_id: 6,
-        user_id: 3,
+        user_id: user3.id,
         flow_type: 'code_generation',
         project: project1,
         created_at: 8.days.ago,
@@ -81,7 +85,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       # code_review
       {
         session_id: 7,
-        user_id: 1,
+        user_id: user1.id,
         flow_type: 'code_review',
         project: project1,
         created_at: 10.days.ago,
@@ -91,7 +95,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       # code generation
       {
         session_id: 8,
-        user_id: 1,
+        user_id: user1.id,
         flow_type: 'code_generation',
         project: project1,
         created_at: 8.days.ago,
@@ -101,7 +105,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       # different project
       {
         session_id: 9,
-        user_id: 1,
+        user_id: user1.id,
         flow_type: 'code_review',
         project: project2,
         created_at: 8.days.ago,
@@ -143,19 +147,21 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
             #{query_type}(fullPath: "#{query_path}") {
               aiUsage {
                 agentPlatformSessions(
-                  userId: [1, 2]
+                  userId: [#{user1.id}, #{user2.id}]
                   flowType: ["duo_chat", "code_review"]
                   createdEventAtFrom: "#{60.days.ago.iso8601}"
                   createdEventAtTo: "#{5.days.ago.iso8601}"
                   orderBy: [
-                    { identifier: "user_id", direction: DESC }
+                    { identifier: "user", direction: DESC }
                     { identifier: "mean_duration", direction: DESC }
                   ]
                 ) {
                   nodes {
                     dimensions {
                       flowType
-                      userId
+                      user {
+                        id
+                      }
                       createdEventAtMonthly: createdEventAt(granularity: "monthly")
                       createdEventAtWeekly: createdEventAt(granularity: "weekly")
                     }
@@ -187,7 +193,9 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
         expect(nodes[0]).to eq(
           'dimensions' => {
             'flowType' => 'code_review',
-            'userId' => 2,
+            'user' => {
+              'id' => user2.to_global_id.to_s
+            },
             'createdEventAtMonthly' => '2026-01-01',
             'createdEventAtWeekly' => '2026-01-12'
           },
@@ -202,7 +210,9 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
         expect(nodes[1]).to eq(
           'dimensions' => {
             'flowType' => 'code_review',
-            'userId' => 2,
+            'user' => {
+              'id' => user2.to_global_id.to_s
+            },
             'createdEventAtMonthly' => '2026-01-01',
             'createdEventAtWeekly' => '2026-01-19'
           },
@@ -217,7 +227,9 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
         expect(nodes[2]).to eq(
           'dimensions' => {
             'flowType' => 'code_review',
-            'userId' => 1,
+            'user' => {
+              'id' => user1.to_global_id.to_s
+            },
             'createdEventAtMonthly' => '2026-01-01',
             'createdEventAtWeekly' => '2026-01-19'
           },
@@ -232,7 +244,9 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
         expect(nodes[3]).to eq(
           'dimensions' => {
             'flowType' => 'duo_chat',
-            'userId' => 1,
+            'user' => {
+              'id' => user1.to_global_id.to_s
+            },
             'createdEventAtMonthly' => '2025-12-01',
             'createdEventAtWeekly' => '2025-12-08'
           },
@@ -247,7 +261,9 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
         expect(nodes[4]).to eq(
           'dimensions' => {
             'flowType' => 'duo_chat',
-            'userId' => 1,
+            'user' => {
+              'id' => user1.to_global_id.to_s
+            },
             'createdEventAtMonthly' => '2026-01-01',
             'createdEventAtWeekly' => '2026-01-12'
           },
@@ -269,7 +285,7 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
             #{query_type}(fullPath: "#{query_path}") {
               aiUsage {
                 agentPlatformSessions(
-                  userId: [1]
+                  userId: [#{user1.id}]
                 ) {
                   nodes {
                     durationQuantile50: durationQuantile
@@ -304,13 +320,15 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
             #{query_type}(fullPath: "#{query_path}") {
               aiUsage {
                 agentPlatformSessions(
-                  userId: [1]
+                  userId: [#{user1.id}]
                   flowType: ["duo_chat"]
                 ) {
                   nodes {
                     dimensions {
                       flowType
-                      userId
+                      user {
+                        id
+                      }
                     }
                     totalCount
                     finishedCount
@@ -334,7 +352,9 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
           'finishedCount' => 2,
           'dimensions' => {
             'flowType' => 'duo_chat',
-            'userId' => 1
+            'user' => {
+              'id' => user1.to_global_id.to_s
+            }
           }
         }])
       end

@@ -125,6 +125,18 @@ RSpec.describe Analytics::AggregationEngines::AgentPlatformSessions, :click_hous
           { user_id: 2, total_count: 1 }
         ]))
       end
+
+      it 'groups sessions by user_id with user request' do
+        request = {
+          dimensions: [{ identifier: :user }],
+          metrics: [{ identifier: :total_count }]
+        }
+
+        expect(engine).to execute_aggregation(request).and_return(match_array([
+          { user_id: 1, total_count: 2 },
+          { user_id: 2, total_count: 1 }
+        ]))
+      end
     end
 
     describe 'created_event_at' do
