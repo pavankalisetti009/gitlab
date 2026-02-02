@@ -14,10 +14,6 @@ module EE
         super
 
         remove_requested_changes
-
-        if log_refresh_service_duration_enabled?
-          log_duration_data(duration_statistics)
-        end
       end
 
       override :execute_async_workers
