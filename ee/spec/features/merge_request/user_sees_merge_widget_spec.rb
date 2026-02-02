@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe 'Merge request > User sees merge widget', :js, feature_category: :code_review_workflow do
