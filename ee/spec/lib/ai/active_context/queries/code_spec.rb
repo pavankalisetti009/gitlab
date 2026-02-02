@@ -17,33 +17,50 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
   describe '.available?' do
     subject(:available) { described_class.available? }
 
-    context 'when Code indexing is disabled' do
+    context 'when ActiveContext indexing is disabled' do
       before do
-        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(false)
+        allow(::ActiveContext).to receive(:indexing?).and_return(false)
       end
 
       it { is_expected.to be(false) }
     end
 
-    context 'when Code indexing is enabled' do
+    context 'when ActiveContext indexing is enabled' do
       before do
-        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
+        allow(::ActiveContext).to receive(:indexing?).and_return(true)
       end
 
-      context 'when code collection record does not exist' do
-        it { is_expected.to be(false) }
-      end
+      it { is_expected.to be(false) }
 
       context 'when code collection record exists' do
-        before do
+        let_it_be(:collection_record) do
           create(
             :ai_active_context_collection,
+            indexing_embedding_versions: [1],
             search_embedding_version: 1,
             include_ref_fields: false
           )
         end
 
-        it { is_expected.to be(true) }
+        context 'when code collection record has valid embeddings versions' do
+          it { is_expected.to be(true) }
+        end
+
+        context 'when code collection has no current_search_embedding_version' do
+          before do
+            collection_record.update!(search_embedding_version: nil)
+          end
+
+          it { is_expected.to be(false) }
+        end
+
+        context 'when code collection has no current_indexing_embedding_versions' do
+          before do
+            collection_record.update!(indexing_embedding_versions: nil)
+          end
+
+          it { is_expected.to be(false) }
+        end
       end
     end
   end
@@ -53,7 +70,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       let(:expected_error_class) { Ai::ActiveContext::Queries::Code::NotAvailable }
 
       before do
-        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(false)
+        allow(::ActiveContext).to receive(:indexing?).and_return(false)
       end
 
       it 'raises the expected error' do
@@ -65,7 +82,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
     context 'when semantic search is available' do
       before do
-        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
+        allow(::ActiveContext).to receive(:indexing?).and_return(true)
 
         # mock the call to embeddings generation
         allow(ActiveContext::Embeddings).to receive(:generate_embeddings)
@@ -91,6 +108,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       let_it_be(:collection) do
         create(
           :ai_active_context_collection,
+          indexing_embedding_versions: [embeddings_version],
           search_embedding_version: embeddings_version,
           include_ref_fields: false
         )
