@@ -1,6 +1,8 @@
 key_path: advanced_search.distribution
 description: Advanced Search search engine distribution
 product_group: global_search
+product_categories:
+- global_search
 value_type: string
 status: active
 milestone: "14.9"
