@@ -614,5 +614,53 @@ describe('AiAdminSettings', () => {
         });
       });
     });
+
+    describe('with "Everyone" support', () => {
+      it('maps -1 to null when changing from role to Everyone', async () => {
+        await createComponent({
+          provide: {
+            initialMinimumAccessLevelExecuteAsync: 30,
+            initialMinimumAccessLevelExecuteSync: 30,
+          },
+        });
+
+        // Change to Everyone
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoCoreFeaturesEnabled: false,
+          minimumAccessLevelExecuteAsync: -1,
+          minimumAccessLevelExecuteSync: -1,
+        });
+
+        expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: expect.objectContaining({
+            minimumAccessLevelExecute: null,
+            minimumAccessLevelExecuteAsync: null,
+          }),
+        });
+      });
+
+      it('maps role to string when changing from Everyone to role', async () => {
+        // Start with Everyone
+        await createComponent({
+          provide: {
+            initialMinimumAccessLevelExecuteAsync: -1,
+            initialMinimumAccessLevelExecuteSync: -1,
+          },
+        });
+
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoCoreFeaturesEnabled: false,
+          minimumAccessLevelExecuteAsync: 30,
+          minimumAccessLevelExecuteSync: 30,
+        });
+
+        expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: expect.objectContaining({
+            minimumAccessLevelExecute: 'DEVELOPER',
+            minimumAccessLevelExecuteAsync: 'DEVELOPER',
+          }),
+        });
+      });
+    });
   });
 });
