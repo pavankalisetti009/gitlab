@@ -64,7 +64,7 @@ module Security
       end
 
       def pipelines_in_hierarchy
-        return [root_pipeline] unless Feature.enabled?(:show_child_security_reports_in_mr_widget, pipeline.project)
+        return [pipeline] unless Feature.enabled?(:show_child_security_reports_in_mr_widget, pipeline.project)
 
         root_pipeline.self_and_project_descendants
       end
@@ -75,16 +75,11 @@ module Security
         pipeline_ids = pipelines_in_hierarchy.map(&:id)
         Ci::Build.in_pipelines(pipeline_ids).latest.includes(:job_definition).select(&:security_job?)
       end
+      strong_memoize_attr :security_builds
 
       def pipelines_with_security_reports
-        pipeline_ids = pipelines_in_hierarchy.map(&:id)
-        pipelines_with_security_jobs = Ci::Build.in_pipelines(pipeline_ids)
-                                                .latest
-                                                .includes(:job_definition)
-                                                .select(&:security_job?)
-                                                .map(&:pipeline_id)
-                                                .uniq
-        pipelines_in_hierarchy.select { |p| pipelines_with_security_jobs.include?(p.id) }
+        pipelines_ids_with_security_jobs = security_builds.map(&:pipeline_id).uniq
+        pipelines_in_hierarchy.select { |p| pipelines_ids_with_security_jobs.include?(p.id) }
       end
       # rubocop:enable CodeReuse/ActiveRecord
 

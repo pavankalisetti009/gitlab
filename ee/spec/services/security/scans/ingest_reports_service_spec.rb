@@ -166,10 +166,10 @@ RSpec.describe Security::Scans::IngestReportsService, :clean_gitlab_redis_shared
             stub_feature_flags(show_child_security_reports_in_mr_widget: false)
           end
 
-          it 'does not process due to parent pipeline not having reports' do
+          it 'still processes the child pipeline' do
             ingest_security_scans
 
-            expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
+            expect(::Security::StoreScansWorker).to have_received(:perform_async)
           end
         end
       end
@@ -235,11 +235,11 @@ RSpec.describe Security::Scans::IngestReportsService, :clean_gitlab_redis_shared
             stub_feature_flags(show_child_security_reports_in_mr_widget: false)
           end
 
-          it 'processes the parent' do
+          it 'processes the child' do
             ingest_security_scans
 
-            expect(::Security::StoreScansWorker).to have_received(:perform_async).with(parent_pipeline.id).once
-            expect(::Security::StoreScansWorker).not_to have_received(:perform_async).with(child_pipeline.id)
+            expect(::Security::StoreScansWorker).to have_received(:perform_async).with(child_pipeline.id).once
+            expect(::Security::StoreScansWorker).not_to have_received(:perform_async).with(parent_pipeline.id)
           end
         end
       end
