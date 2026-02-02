@@ -24,7 +24,7 @@ module Ai
         params[:root_namespace_id] = root_namespace.id
         params[:plan_key] = root_namespace.actual_plan_name
       else
-        params[:unique_instance_id] = Gitlab::GlobalAnonymousId.instance_id
+        params[:unique_instance_id] = self_managed_instance_identifier
         params[:plan_key] = License.current&.trial?.to_s
       end
 
@@ -61,6 +61,14 @@ module Ai
       end
     end
     strong_memoize_attr :root_namespace
+
+    def self_managed_instance_identifier
+      if License.current&.trial?
+        Gitlab::GlobalAnonymousId.instance_uuid
+      else
+        Gitlab::GlobalAnonymousId.instance_id
+      end
+    end
 
     def skip_quota_check_for_team_members?
       Feature.disabled?(:enable_quota_check_for_team_members, user) && user.gitlab_team_member?
