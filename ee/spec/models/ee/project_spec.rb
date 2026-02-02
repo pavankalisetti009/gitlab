@@ -4816,30 +4816,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#member_usernames_among' do
-    let_it_be(:users) { create_list(:user, 3) }
-
-    let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, namespace: group) }
-
-    before_all do
-      project.add_guest(users.first)
-      project.group.add_maintainer(users.last)
-    end
-
-    it "returns project members' usernames among the users" do
-      result = project.member_usernames_among(User.where(id: users.map(&:id)))
-
-      expect(result).to match_array([users.first.username, users.last.username])
-    end
-
-    it 'returns empty array if users is empty' do
-      result = project.member_usernames_among(User.none)
-
-      expect(result).to be_empty
-    end
-  end
-
   describe '#custom_roles_enabled?' do
     context 'project belongs to group' do
       let_it_be(:project) { create(:project, :in_group) }

@@ -620,10 +620,6 @@ module EE
         duo_features_enabled && ::Gitlab::Llm::StageCheck.available?(self, :ai_catalog)
       end
 
-      def member_usernames_among(users)
-        members_among(users).pluck(:username)
-      end
-
       def custom_roles_enabled?
         return false unless group
 
