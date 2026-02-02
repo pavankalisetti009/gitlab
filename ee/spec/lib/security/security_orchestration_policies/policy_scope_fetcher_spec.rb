@@ -205,6 +205,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeFetcher, :agg
     end
   end
 
+  shared_examples 'setting excluding_archived_projects to false' do
+    it 'sets excluding_archived_projects to false' do
+      response = service.execute
+
+      expect(response[:excluding_archived_projects]).to be false
+    end
+  end
+
   describe '#execute' do
     context 'when container is a group' do
       it_behaves_like 'returns policy_scope'
@@ -332,6 +340,96 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeFetcher, :agg
         end
 
         it_behaves_like 'setting excluding_personal_projects to false'
+      end
+    end
+
+    describe "excluding_archived_projects" do
+      context 'when excluding archived projects' do
+        let(:policy_scope) do
+          {
+            projects: {
+              excluding: [
+                { id: project1.id, type: 'archived' },
+                { id: project2.id }
+              ]
+            }
+          }
+        end
+
+        it 'sets excluding_archived_projects to true' do
+          response = service.execute
+
+          expect(response[:excluding_archived_projects]).to be true
+        end
+      end
+
+      context 'when not excluding archived projects' do
+        let(:policy_scope) do
+          {
+            projects: {
+              excluding: [
+                { id: project1.id },
+                { id: project2.id }
+              ]
+            }
+          }
+        end
+
+        it_behaves_like 'setting excluding_archived_projects to false'
+      end
+
+      context 'when projects excluding is empty' do
+        let(:policy_scope) do
+          {
+            projects: {
+              excluding: []
+            }
+          }
+        end
+
+        it_behaves_like 'setting excluding_archived_projects to false'
+      end
+
+      context 'when projects excluding is nil' do
+        let(:policy_scope) do
+          {
+            projects: {
+              including: [{ id: project1.id }]
+            }
+          }
+        end
+
+        it_behaves_like 'setting excluding_archived_projects to false'
+      end
+
+      context 'when policy_scope has no projects key' do
+        let(:policy_scope) do
+          {
+            compliance_frameworks: [{ id: framework1.id }]
+          }
+        end
+
+        it_behaves_like 'setting excluding_archived_projects to false'
+      end
+    end
+
+    describe 'excluding both personal and archived projects' do
+      let(:policy_scope) do
+        {
+          projects: {
+            excluding: [
+              { type: 'personal' },
+              { type: 'archived' }
+            ]
+          }
+        }
+      end
+
+      it 'sets both excluding flags to true' do
+        response = service.execute
+
+        expect(response[:excluding_personal_projects]).to be true
+        expect(response[:excluding_archived_projects]).to be true
       end
     end
   end

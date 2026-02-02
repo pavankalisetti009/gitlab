@@ -15,6 +15,10 @@ module Types
         null: false,
         description: 'Boolean indicating whether personal projects are excluded from the policy.'
 
+      field :excluding_archived_projects, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Boolean indicating whether archived projects are excluded from the policy.'
+
       field :including_projects, ::Types::ProjectType.connection_type,
         null: false,
         description: 'Projects to which the policy should be applied.'

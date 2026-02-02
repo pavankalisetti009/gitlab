@@ -6,6 +6,7 @@ module Security
       include Gitlab::InternalEventsTracking
 
       PERSONAL_PROJECT_TYPE = 'personal'
+      ARCHIVED_PROJECT_TYPE = 'archived'
 
       def initialize(project:)
         @project = project
@@ -57,6 +58,10 @@ module Security
         return false if policy_scope_excluded_projects.any? { |policy_project| policy_project[:id] == project.id }
         return false if project.personal? && policy_scope_excluded_projects.any? do |policy_project|
           policy_project[:type] == PERSONAL_PROJECT_TYPE
+        end
+
+        return false if project.archived? && policy_scope_excluded_projects.any? do |policy_project|
+          policy_project[:type] == ARCHIVED_PROJECT_TYPE
         end
 
         return true if policy_scope_included_projects.blank?

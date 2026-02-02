@@ -21,6 +21,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ApprovalPolicyResolver, feature
         enforcement_type: policy[:enforcement_type],
         policy_scope: {
           compliance_frameworks: [],
+          excluding_archived_projects: false,
           excluding_personal_projects: false,
           including_projects: [],
           excluding_projects: [],

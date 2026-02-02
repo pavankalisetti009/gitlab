@@ -57,6 +57,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_archived_projects: false,
           excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
@@ -100,7 +101,8 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         enabled: true,
         name: approval_policy[:name],
         policy_attributes: {
-          action_approvers: [{ all_groups: [], custom_roles: [], groups: [], roles: [], users: [] }],
+          action_approvers: [{ all_groups: [], custom_roles: [], groups: [], roles: [],
+                               users: [] }],
           all_group_approvers: [],
           custom_roles: [],
           deprecated_properties: [],
@@ -116,6 +118,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_archived_projects: false,
           excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
@@ -177,6 +180,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_archived_projects: false,
           excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
@@ -238,6 +242,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_archived_projects: false,
           excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
@@ -295,6 +300,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_archived_projects: false,
           excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],

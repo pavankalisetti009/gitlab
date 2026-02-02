@@ -159,7 +159,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
           it { is_expected.to eq false }
         end
 
-        context 'when excluding project scope is not personal' do
+        context 'when excluding project scope is personal' do
           let(:policy_scope) do
             {
               projects: {
@@ -172,6 +172,24 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
 
           context 'and project is personal' do
             let_it_be_with_refind(:project) { create(:project, namespace: user.namespace) }
+
+            it { is_expected.to eq false }
+          end
+        end
+
+        context 'when excluding project scope is archived' do
+          let(:policy_scope) do
+            {
+              projects: {
+                excluding: [{ type: 'archived' }]
+              }
+            }
+          end
+
+          it { is_expected.to eq true }
+
+          context 'and project is archived' do
+            let_it_be_with_refind(:project) { create(:project, :archived, group: group) }
 
             it { is_expected.to eq false }
           end

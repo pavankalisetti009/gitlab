@@ -44,9 +44,10 @@
               },
               "type": {
                 "type": "string",
-                "description": "Exclude projects of this type from the policy scope. Set to 'personal' to exclude personal projects from policy.",
+                "description": "Exclude projects of this type from the policy scope. Set to 'personal' to exclude personal projects or 'archived' to exclude archived projects from policy.",
                 "enum": [
-                  "personal"
+                  "personal",
+                  "archived"
                 ]
               }
             }
