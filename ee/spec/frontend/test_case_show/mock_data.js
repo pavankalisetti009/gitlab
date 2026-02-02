@@ -1,6 +1,6 @@
 import {
   mockAuthor,
-  mockTestCaseIssuable,
+  mockIssuable,
   mockCurrentUserTodo,
 } from 'jest/vue_shared/issuable/list/mock_data';
 
@@ -11,11 +11,11 @@ const {
   taskCompletionStatus,
   userDiscussionsCount,
   namespace,
-  ...mockTestCaseAttributes
-} = mockTestCaseIssuable;
+  ...mockIssuableAttributes
+} = mockIssuable;
 
 export const mockTestCase = {
-  ...mockTestCaseAttributes,
+  ...mockIssuableAttributes,
   __typename: 'Issue',
   type: 'TEST_CASE',
   id: 'gid://gitlab/Issue/1',
@@ -80,7 +80,7 @@ export const mockProvide = {
   projectFullPath: 'gitlab-org/gitlab-test',
   testCaseNewPath: '/gitlab-org/gitlab-test/-/quality/test_cases/new',
   testCasesPath: '/root/rails/-/quality/test_cases',
-  testCaseId: mockTestCaseIssuable.iid,
+  testCaseId: mockIssuable.iid,
   canEditTestCase: true,
   canMoveTestCase: true,
   descriptionPreviewPath: '/gitlab-org/gitlab-test/preview_markdown',
@@ -88,6 +88,6 @@ export const mockProvide = {
   labelsFetchPath: '/gitlab-org/gitlab-test/-/labels.json',
   labelsManagePath: '/gitlab-org/gitlab-shell/-/labels',
   projectsFetchPath: '/-/autocomplete/projects?project_id=1',
-  updatePath: `${mockTestCaseIssuable.webUrl}.json`,
+  updatePath: `${mockIssuable.webUrl}.json`,
   lockVersion: 1,
 };
