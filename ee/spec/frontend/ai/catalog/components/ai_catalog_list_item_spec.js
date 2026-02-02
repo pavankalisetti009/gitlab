@@ -417,7 +417,7 @@ describe('AiCatalogListItem', () => {
   });
 
   describe('status badge', () => {
-    describe('when item has no group configuration', () => {
+    describe('when item has group configuration but not enabled', () => {
       beforeEach(() => {
         createComponent({
           item: {
@@ -428,7 +428,7 @@ describe('AiCatalogListItem', () => {
         });
       });
 
-      it('displays pending badge', () => {
+      it('displays pending approval badge', () => {
         expect(findStatusBadge().findComponent(GlBadge).text()).toBe('Pending approval');
         expect(findStatusBadge().findComponent(GlBadge).props('variant')).toBe('warning');
         expect(findStatusBadge().attributes('title')).toBe(
@@ -437,7 +437,27 @@ describe('AiCatalogListItem', () => {
       });
     });
 
-    describe('when item has group configuration but no project configuration', () => {
+    describe('when item has no group configuration (null)', () => {
+      beforeEach(() => {
+        createComponent({
+          item: {
+            ...mockItem,
+            configurationForGroup: null,
+            configurationForProject: { enabled: false },
+          },
+        });
+      });
+
+      it('displays pending approval badge', () => {
+        expect(findStatusBadge().findComponent(GlBadge).text()).toBe('Pending approval');
+        expect(findStatusBadge().findComponent(GlBadge).props('variant')).toBe('warning');
+        expect(findStatusBadge().attributes('title')).toBe(
+          'To use this agent, a user with the Owner role must enable it in the top-level group.',
+        );
+      });
+    });
+
+    describe('when item has group configuration enabled but no project configuration', () => {
       beforeEach(() => {
         createComponent({
           item: {
@@ -457,13 +477,33 @@ describe('AiCatalogListItem', () => {
       });
     });
 
-    describe('when item has group and project configurations', () => {
+    describe('when item has group and project configurations enabled', () => {
       beforeEach(() => {
         createComponent({
           item: {
             ...mockItem,
             configurationForGroup: { enabled: true },
             configurationForProject: { enabled: true },
+          },
+        });
+      });
+
+      it('does not display status badge', () => {
+        expect(findStatusBadge().exists()).toBe(false);
+      });
+    });
+
+    describe('when showStatusBadge is false in itemTypeConfig', () => {
+      beforeEach(() => {
+        createComponent({
+          item: {
+            ...mockItem,
+            configurationForGroup: { enabled: false },
+            configurationForProject: { enabled: false },
+          },
+          itemTypeConfig: {
+            ...defaultItemTypeConfig,
+            showStatusBadge: false,
           },
         });
       });
