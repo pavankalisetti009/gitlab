@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe ::VirtualRegistries::Packages::Maven::CreateRegistryService, feature_category: :virtual_registry do
   let_it_be(:group) { create(:group) }
   let_it_be(:current_user) { create(:user) }
-  let(:params) { { name: 'Registry', description: 'Test registry' } }
+  let(:params) { { name: "Registry #{SecureRandom.hex(8)}", description: 'Test registry' } }
   let(:available) { true }
 
   describe '#execute' do
@@ -26,7 +26,7 @@ RSpec.describe ::VirtualRegistries::Packages::Maven::CreateRegistryService, feat
       expect(result.status).to eq(:success)
       expect(result.payload).to have_attributes(
         group_id: group.id,
-        name: 'Registry',
+        name: params[:name],
         description: 'Test registry'
       )
     end
