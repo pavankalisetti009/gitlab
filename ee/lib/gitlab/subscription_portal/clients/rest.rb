@@ -84,6 +84,7 @@ module Gitlab
             user_id: nil,
             root_namespace_id: nil,
             unique_instance_id: nil,
+            plan_key: nil,
             realm: ::CloudConnector.gitlab_realm
           )
             raise ArgumentError, "event_type cannot be nil" if event_type.nil?
@@ -108,7 +109,7 @@ module Gitlab
 
             return verify_usage_quota_request(query) if use_mock_usage_quota_endpoint?
 
-            query_hash = Digest::SHA256.hexdigest(query.sort.to_s)
+            query_hash = Digest::SHA256.hexdigest(query.merge(plan_key: plan_key).sort.to_s)
             cache_key = "usage_quota_dot_query:#{query_hash}"
 
             Rails.cache.fetch(cache_key, expires_in: 1.hour) do

@@ -432,6 +432,22 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, :without_license, feat
           expect(Gitlab::HTTP).to have_received(http_method).twice
         end
 
+        context 'when plan key is present' do
+          let(:method_params) do
+            super().merge(plan_key: 'premium')
+          end
+
+          it 'caches the response for 1 hour' do
+            # \b[a-f0-9]{64}\b regex for output of Digest::SHA256.hexdigest
+            expect(Rails.cache).to receive(:fetch).with(
+              including(/usage_quota_dot_query:\b[a-f0-9]{64}\b/),
+              expires_in: 1.hour
+            ).and_call_original
+
+            verify_usage_quota_request
+          end
+        end
+
         context 'when using mock endpoint' do
           before do
             stub_feature_flags(use_mock_dot_api_for_usage_quota: true)
