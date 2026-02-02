@@ -69470,6 +69470,9 @@ msgstr ""
 msgid "There was an error fetching data for the tasks by type chart"
 msgstr ""
 
+msgid "There was an error fetching inputs for this job."
+msgstr ""
+
 msgid "There was an error fetching label data for the selected group"
 msgstr ""
 
