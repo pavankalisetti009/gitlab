@@ -1,8 +1,8 @@
 <script>
 import { GlFormGroup, GlFormSelect } from '@gitlab/ui';
-import { pick } from 'lodash';
 import { s__ } from '~/locale';
 import {
+  ACCESS_LEVEL_EVERYONE_INTEGER,
   ACCESS_LEVEL_DEVELOPER_INTEGER,
   ACCESS_LEVEL_MAINTAINER_INTEGER,
   ACCESS_LEVEL_ADMIN_INTEGER,
@@ -20,9 +20,7 @@ export default {
     GlFormGroup,
     GlFormSelect,
   },
-  inject: {
-    isAdminInstanceDuoHome: { default: false },
-  },
+  inject: ['isSaaS'],
   props: {
     initialMinimumAccessLevelExecuteAsync: {
       type: Number,
@@ -47,7 +45,7 @@ export default {
         ACCESS_LEVEL_MAINTAINER_INTEGER,
         ACCESS_LEVEL_OWNER_INTEGER,
       ];
-      if (this.isAdminInstanceDuoHome) {
+      if (!this.isSaaS) {
         roles.push(ACCESS_LEVEL_ADMIN_INTEGER);
       }
       return this.generateSelectOptions(roles);
@@ -55,26 +53,27 @@ export default {
     minimumAccessLevelExecuteSyncOptions() {
       const roles = [
         ACCESS_LEVEL_GUEST_INTEGER,
-        ACCESS_LEVEL_REPORTER_INTEGER,
         ACCESS_LEVEL_PLANNER_INTEGER,
+        ACCESS_LEVEL_REPORTER_INTEGER,
         ACCESS_LEVEL_DEVELOPER_INTEGER,
         ACCESS_LEVEL_MAINTAINER_INTEGER,
         ACCESS_LEVEL_OWNER_INTEGER,
       ];
-      if (this.isAdminInstanceDuoHome) {
+
+      if (!this.isSaaS) {
+        roles.unshift(ACCESS_LEVEL_EVERYONE_INTEGER);
         roles.push(ACCESS_LEVEL_ADMIN_INTEGER);
       }
+
       return this.generateSelectOptions(roles);
     },
   },
   methods: {
     generateSelectOptions(roles) {
-      return Object.entries(pick(this.$options.ALL_ACCESS_LEVELS_LABELS, roles)).map(
-        ([value, label]) => ({
-          text: label,
-          value: parseInt(value, 10),
-        }),
-      );
+      return roles.map((role) => ({
+        text: this.$options.ALL_ACCESS_LEVELS_LABELS[role],
+        value: role,
+      }));
     },
     changeMinimumAccessLevelExecuteAsync(role) {
       this.minimumAccessLevelExecuteAsync = role;
@@ -100,6 +99,7 @@ export default {
     sectionTitle: s__('AiPowered|Duo Agent Platform Permissions'),
   },
   ALL_ACCESS_LEVELS_LABELS: {
+    [ACCESS_LEVEL_EVERYONE_INTEGER]: s__('AiPowered|Everyone'),
     ...ACCESS_LEVEL_LABELS,
     [ACCESS_LEVEL_ADMIN_INTEGER]: ACCESS_LEVEL_ADMIN,
   },

@@ -9,7 +9,7 @@ const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),
 });
 
-const sanitizedInt = (value) => parseInt(value, 10) || undefined;
+const sanitizedInt = (value) => parseInt(value, 10) || -1;
 
 export const initAiSettings = (id, component, options = {}) => {
   const el = document.getElementById(id);
