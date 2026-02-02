@@ -57,7 +57,7 @@ RSpec.describe MergeRequestPresenter, feature_category: :shared do
     subject { described_class.new(merge_request, current_user: user).suggested_approvers }
 
     it 'delegates to the approval state' do
-      expect(merge_request.approval_state).to receive(:suggested_approvers).with(current_user: user) { [:ok] }
+      expect(merge_request.approval_state).to receive(:suggested_approvers).with(current_user: user).and_return([:ok])
 
       is_expected.to contain_exactly(:ok)
     end

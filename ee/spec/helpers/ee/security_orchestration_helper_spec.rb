@@ -17,19 +17,22 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
     end
 
     it 'returns false when user cannot update security orchestration policy project' do
-      allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project, project) { false }
+      allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project,
+        project).and_return(false)
       expect(helper.can_update_security_orchestration_policy_project?(project)).to eq false
     end
 
     context 'when user can update security orchestration policy project' do
       it 'returns true for project' do
-        allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project, project) { true }
+        allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project,
+          project).and_return(true)
         expect(helper.can_update_security_orchestration_policy_project?(project)).to eq true
       end
 
       context 'for namespace' do
         before do
-          allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project, namespace) { true }
+          allow(helper).to receive(:can?).with(owner, :update_security_orchestration_policy_project,
+            namespace).and_return(true)
         end
 
         it 'returns true' do
@@ -222,7 +225,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
       before do
         allow(helper).to receive(:timezone_data).with(format: :full).and_return(timezones)
         allow(helper).to receive(:current_user) { owner }
-        allow(helper).to receive(:can?).with(owner, :modify_security_policy, project) { true }
+        allow(helper).to receive(:can?).with(owner, :modify_security_policy, project).and_return(true)
       end
 
       subject(:orchestration_policy_data) { helper.orchestration_policy_data(project, policy_type, policy) }
@@ -242,7 +245,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
 
       context 'when scan policy update is disabled' do
         before do
-          allow(helper).to receive(:can?).with(owner, :modify_security_policy, project) { false }
+          allow(helper).to receive(:can?).with(owner, :modify_security_policy, project).and_return(false)
         end
 
         it { is_expected.to match(base_data.merge(disable_scan_policy_update: 'true')) }
@@ -315,7 +318,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
       before do
         allow(helper).to receive(:timezone_data).with(format: :full).and_return(timezones)
         allow(helper).to receive(:current_user) { owner }
-        allow(helper).to receive(:can?).with(owner, :modify_security_policy, namespace) { true }
+        allow(helper).to receive(:can?).with(owner, :modify_security_policy, namespace).and_return(true)
       end
 
       subject(:orchestration_policy_data) do

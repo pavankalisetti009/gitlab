@@ -2013,7 +2013,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     context 'when feature symbol is included on Namespace features code' do
       before do
         stub_application_setting('check_namespace_plan?' => check_namespace_plan)
-        allow(Gitlab).to receive(:com?) { true }
+        allow(Gitlab).to receive(:com?).and_return(true)
         stub_licensed_features(feature => allowed_on_global_license)
         allow(namespace).to receive(:plan) { plan_license }
       end
@@ -2056,8 +2056,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
                 let(:plan_license) { build(:bronze_plan) }
 
                 before do
-                  allow(namespace).to receive(:public?) { true }
-                  allow(project).to receive(:public?) { true }
+                  allow(namespace).to receive(:public?).and_return(true)
+                  allow(project).to receive(:public?).and_return(true)
                 end
 
                 context 'with group namespace' do

@@ -30,7 +30,7 @@ RSpec.describe MergeRequests::BuildService, feature_category: :code_review_workf
   end
 
   before do
-    allow(service).to receive(:branches_valid?) { true }
+    allow(service).to receive(:branches_valid?).and_return(true)
 
     project.add_developer(user)
   end

@@ -86,7 +86,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     subject { job.cost_factor_enabled? }
 
     before do
-      allow(::Gitlab::CurrentSettings).to receive(:shared_runners_minutes) { 400 }
+      allow(::Gitlab::CurrentSettings).to receive(:shared_runners_minutes).and_return(400)
     end
 
     context 'with shared runner' do

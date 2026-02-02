@@ -314,7 +314,7 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
       context 'when token_revocation_url is missing' do
         before do
           allow_next_instance_of(described_class) do |token_revocation_service|
-            allow(token_revocation_service).to receive(:token_revocation_url) { nil }
+            allow(token_revocation_service).to receive(:token_revocation_url).and_return(nil)
           end
         end
 
@@ -339,7 +339,7 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
       context 'when token_types_url is missing' do
         before do
           allow_next_instance_of(described_class) do |token_revocation_service|
-            allow(token_revocation_service).to receive(:token_types_url) { nil }
+            allow(token_revocation_service).to receive(:token_types_url).and_return(nil)
           end
         end
 
@@ -355,7 +355,7 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
       context 'when revocation_api_token is missing' do
         before do
           allow_next_instance_of(described_class) do |token_revocation_service|
-            allow(token_revocation_service).to receive(:revocation_api_token) { nil }
+            allow(token_revocation_service).to receive(:revocation_api_token).and_return(nil)
           end
         end
 

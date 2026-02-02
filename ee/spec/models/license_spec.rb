@@ -1331,26 +1331,26 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
   describe '#overage' do
     it 'returns 0 if seats is nil' do
-      allow(license).to receive(:seats) { nil }
+      allow(license).to receive(:seats).and_return(nil)
 
       expect(license.overage).to eq(0)
     end
 
     it 'returns the difference between user_count and seats' do
-      allow(license).to receive(:seats) { 10 }
+      allow(license).to receive(:seats).and_return(10)
 
       expect(license.overage(14)).to eq(4)
     end
 
     it 'returns the difference using daily_billable_users_count as user_count if no user_count argument provided' do
-      allow(license).to receive(:daily_billable_users_count) { 110 }
-      allow(license).to receive(:seats) { 100 }
+      allow(license).to receive(:daily_billable_users_count).and_return(110)
+      allow(license).to receive(:seats).and_return(100)
 
       expect(license.overage).to eq(10)
     end
 
     it 'returns 0 if the difference is a negative number' do
-      allow(license).to receive(:seats) { 2 }
+      allow(license).to receive(:seats).and_return(2)
 
       expect(license.overage(1)).to eq(0)
     end

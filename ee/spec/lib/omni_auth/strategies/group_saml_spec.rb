@@ -58,10 +58,10 @@ RSpec.describe OmniAuth::Strategies::GroupSaml, feature_category: :system_access
     context 'with valid SAMLResponse' do
       before do
         allow_next_instance_of(OneLogin::RubySaml::Response) do |instance|
-          allow(instance).to receive(:validate_signature) { true }
-          allow(instance).to receive(:validate_session_expiration) { true }
-          allow(instance).to receive(:validate_subject_confirmation) { true }
-          allow(instance).to receive(:validate_conditions) { true }
+          allow(instance).to receive(:validate_signature).and_return(true)
+          allow(instance).to receive(:validate_session_expiration).and_return(true)
+          allow(instance).to receive(:validate_subject_confirmation).and_return(true)
+          allow(instance).to receive(:validate_conditions).and_return(true)
         end
       end
 

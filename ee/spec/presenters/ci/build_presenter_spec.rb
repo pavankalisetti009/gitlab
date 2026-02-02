@@ -22,7 +22,7 @@ RSpec.describe Ci::BuildPresenter do
 
     context 'when the build exists in a pipeline for merge train' do
       before do
-        allow(ci_build).to receive(:merge_train_pipeline?) { true }
+        allow(ci_build).to receive(:merge_train_pipeline?).and_return(true)
       end
 
       it { is_expected.to be false }
@@ -30,7 +30,7 @@ RSpec.describe Ci::BuildPresenter do
 
     context 'when the build does not exist in a pipeline for merge train' do
       before do
-        allow(ci_build).to receive(:merge_train_pipeline?) { false }
+        allow(ci_build).to receive(:merge_train_pipeline?).and_return(false)
       end
 
       it { is_expected.to be true }
