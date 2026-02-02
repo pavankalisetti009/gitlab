@@ -290,6 +290,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
 
         it_behaves_like 'returning the workhorse send_dependency response'
       end
+
+      it_behaves_like 'authorizing granular token permissions', :download_maven_package_file do
+        let(:boundary_object) { registry.group }
+        let(:request) do
+          get api(url), headers: { 'Private-Token' => pat.token }
+        end
+      end
     end
 
     context 'with no user' do
@@ -400,6 +407,24 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
       end
 
       it_behaves_like 'logging access through project membership'
+
+      it_behaves_like 'authorizing granular token permissions', :upload_maven_package_file do
+        let(:boundary_object) { registry.group }
+        let(:headers) { super().merge({ 'Private-Token' => pat.token }) }
+        let(:request) do
+          workhorse_finalize(
+            api(url),
+            file_key: :file,
+            headers: headers,
+            params: {
+              file: file_upload,
+              'file.md5' => 'd8e8fca2dc0f896fd7cb4cb0031ba249',
+              'file.sha1' => '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83'
+            },
+            send_rewritten_field: true
+          )
+        end
+      end
     end
 
     it_behaves_like 'virtual registry not available', :maven
