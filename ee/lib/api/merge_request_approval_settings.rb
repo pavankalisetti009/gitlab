@@ -61,7 +61,7 @@ module API
           failure [
             { code: 403, message: 'Forbidden' }
           ]
-          tags %w[merge_request_approval_setting]
+          tags %w[merge_request_approvals]
         end
         route_setting :authorization, permissions: :read_merge_request_approval_setting, boundary_type: :project
         get '/', urgency: :medium do
@@ -76,7 +76,7 @@ module API
             { code: 400, message: 'Validation error' },
             { code: 403, message: 'Forbidden' }
           ]
-          tags %w[merge_request_approval_setting]
+          tags %w[merge_request_approvals]
         end
         params do
           use :merge_request_approval_settings
@@ -112,7 +112,7 @@ module API
           failure [
             { code: 403, message: 'Forbidden' }
           ]
-          tags %w[merge_request_approval_setting]
+          tags %w[merge_request_approvals]
         end
         route_setting :authorization, permissions: :read_merge_request_approval_setting, boundary_type: :group
         get do
@@ -127,7 +127,7 @@ module API
             { code: 400, message: 'Validation error' },
             { code: 403, message: 'Forbidden' }
           ]
-          tags %w[merge_request_approval_setting]
+          tags %w[merge_request_approvals]
         end
         params do
           use :merge_request_approval_settings

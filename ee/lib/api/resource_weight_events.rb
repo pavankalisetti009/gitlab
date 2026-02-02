@@ -8,8 +8,7 @@ module API
 
     before { authenticate! }
 
-    resource_weight_events_tags = %w[resource_weight_events]
-
+    resource_weight_events_tags = %w[resource_events]
     feature_category :team_planning
     urgency :low
 

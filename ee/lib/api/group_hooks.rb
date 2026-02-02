@@ -4,8 +4,7 @@ module API
   class GroupHooks < ::API::Base
     include ::API::PaginationParams
 
-    group_hooks_tags = %w[group_hooks]
-
+    group_hooks_tags = %w[hooks]
     feature_category :webhooks
     urgency :low
 

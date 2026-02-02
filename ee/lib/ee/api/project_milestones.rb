@@ -14,7 +14,7 @@ module EE
         resource :projects, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
           desc 'Get a list of burndown events' do
             detail 'This feature was introduced in GitLab 12.1.'
-            tags ['project_milestones']
+            tags ['milestones']
           end
           route_setting :authorization, permissions: :read_milestone_burndown_event, boundary_type: :project
           get ':id/milestones/:milestone_id/burndown_events' do

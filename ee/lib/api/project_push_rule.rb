@@ -62,7 +62,7 @@ module API
       desc 'Get project push rule' do
         success code: 200, model: ::API::Entities::ProjectPushRule
         failure [{ code: 404, message: 'Not found' }]
-        tags %w[projects push_rules]
+        tags %w[push_rules]
       end
       route_setting :authorization, permissions: :read_push_rule, boundary_type: :project
       get ":id/push_rule" do
@@ -77,7 +77,7 @@ module API
           { code: 404, message: 'Not found' },
           { code: 422, message: 'Unprocessable entity' }
         ]
-        tags %w[projects push_rules]
+        tags %w[push_rules]
       end
       params do
         use :push_rule_params
@@ -95,7 +95,7 @@ module API
           { code: 404, message: 'Not found' },
           { code: 422, message: 'Unprocessable entity' }
         ]
-        tags %w[projects push_rules]
+        tags %w[push_rules]
       end
       params do
         use :push_rule_params
@@ -109,7 +109,7 @@ module API
       desc 'Deletes project push rule' do
         success code: 204
         failure [{ code: 404, message: 'Not found' }]
-        tags %w[projects push_rules]
+        tags %w[push_rules]
       end
       route_setting :authorization, permissions: :delete_push_rule, boundary_type: :project
       delete ":id/push_rule" do

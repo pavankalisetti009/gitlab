@@ -33,7 +33,7 @@ module API
           { code: 404, message: '404 Group Not Found' },
           { code: 401, message: '401 Unauthorized' }
         ]
-        tags ['group_protected_branches']
+        tags ['protected_branches']
       end
       params do
         use :pagination
@@ -57,7 +57,7 @@ module API
           { code: 404, message: '404 ProtectedBranch Not Found' },
           { code: 401, message: '401 Unauthorized' }
         ]
-        tags ['group_protected_branches']
+        tags ['protected_branches']
       end
       params do
         requires :name, type: String, desc: 'The name of the branch or wildcard', documentation: { example: 'main' }
@@ -77,7 +77,7 @@ module API
           { code: 404, message: '404 Group Not Found' },
           { code: 401, message: '401 Unauthorized' }
         ]
-        tags ['group_protected_branches']
+        tags ['protected_branches']
       end
       params do
         requires :name, type: String, desc: 'The name of the protected branch', documentation: { example: 'main' }
@@ -115,7 +115,7 @@ module API
           { code: 404, message: '404 ProtectedBranch Not Found' },
           { code: 401, message: '401 Unauthorized' }
         ]
-        tags ['group_protected_branches']
+        tags ['protected_branches']
       end
       params do
         requires :name, type: String, desc: 'The name of the branch', documentation: { example: 'main' }
@@ -145,7 +145,7 @@ module API
           { code: 404, message: '404 ProtectedBranch Not Found' },
           { code: 401, message: '401 Unauthorized' }
         ]
-        tags ['group_protected_branches']
+        tags ['protected_branches']
       end
       params do
         requires :name, type: String, desc: 'The name of the protected branch', documentation: { example: 'main' }

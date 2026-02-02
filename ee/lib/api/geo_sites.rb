@@ -40,7 +40,7 @@ module API
           { code: 401, message: '401 Unauthorized' },
           { code: 403, message: '403 Forbidden' }
         ]
-        tags %w[geo_sites]
+        tags %w[geo]
       end
       params do
         optional :primary, type: Boolean, desc: 'Specifying whether this site will be primary. Defaults to false.'
@@ -102,7 +102,7 @@ module API
           { code: 403, message: '403 Forbidden' }
         ]
         is_array true
-        tags %w[geo_sites]
+        tags %w[geo]
       end
       params do
         use :pagination
@@ -125,7 +125,7 @@ module API
           { code: 403, message: '403 Forbidden' }
         ]
         is_array true
-        tags %w[geo_sites]
+        tags %w[geo]
       end
       params do
         use :pagination
@@ -163,7 +163,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoSite Not Found' }
           ]
-          tags %w[geo_sites]
+          tags %w[geo]
         end
         get do
           not_found!('GeoSite') unless geo_site
@@ -182,7 +182,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoSite Not Found' }
           ]
-          tags %w[geo_sites]
+          tags %w[geo]
         end
         params do
           optional :refresh, type: Boolean,
@@ -207,7 +207,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoSite Not Found' }
           ]
-          tags %w[geo_sites]
+          tags %w[geo]
         end
         post 'repair' do
           not_found!('GeoSite') unless geo_site
@@ -231,7 +231,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoSite Not Found' }
           ]
-          tags %w[geo_sites]
+          tags %w[geo]
         end
         params do
           optional :enabled, type: Boolean, desc: 'Flag indicating if the Geo site is enabled'
@@ -295,7 +295,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoSite Not Found' }
           ]
-          tags %w[geo_sites]
+          tags %w[geo]
         end
         delete do
           not_found!('GeoSite') unless geo_site

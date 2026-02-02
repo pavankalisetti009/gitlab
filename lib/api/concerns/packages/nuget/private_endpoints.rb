@@ -38,7 +38,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not Found' }
                 ]
-                tags %w[nuget_packages]
+                tags %w[packages]
               end
               get 'index', format: :json, urgency: :low do
                 present ::Packages::Nuget::PackagesMetadataPresenter.new(find_packages),
@@ -53,7 +53,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not Found' }
                 ]
-                tags %w[nuget_packages]
+                tags %w[packages]
               end
               params do
                 requires :package_version, type: String, desc: 'The NuGet package version',
@@ -87,7 +87,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not Found' }
                 ]
-                tags %w[nuget_packages]
+                tags %w[packages]
               end
               get format: :json, urgency: :low do
                 track_package_event(

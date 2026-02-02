@@ -17,7 +17,7 @@ module API
                 namespace "agentw" do
                   desc "Gets agentw info" do
                     detail "Retrieves agent info for agentw for the given workspace token"
-                    tags ["workspace_tokens"]
+                    tags ['workspaces']
                     success code: 200, message: "Agentw info retrieved successfully"
                   end
 

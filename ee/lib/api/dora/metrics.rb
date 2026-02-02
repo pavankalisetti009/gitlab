@@ -7,7 +7,6 @@ module API
       urgency :low
 
       dora_metrics_tags = %w[dora_metrics]
-
       helpers do
         params :dora_metrics_params do
           requires :metric,

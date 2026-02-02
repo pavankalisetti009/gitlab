@@ -79,7 +79,7 @@ module API
                 { code: 403, message: 'Forbidden' },
                 { code: 404, message: 'Not Found' }
               ]
-              tags %w[maven_virtual_registries]
+              tags %w[virtual_registries]
               hidden true
             end
             params do
@@ -110,7 +110,7 @@ module API
                 { code: 403, message: 'Forbidden' },
                 { code: 404, message: 'Not Found' }
               ]
-              tags %w[maven_virtual_registries]
+              tags %w[virtual_registries]
               hidden true
             end
             params do

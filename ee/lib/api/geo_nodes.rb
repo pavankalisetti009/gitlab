@@ -40,7 +40,7 @@ module API
           { code: 401, message: '401 Unauthorized' },
           { code: 403, message: '403 Forbidden' }
         ]
-        tags %w[geo_nodes]
+        tags %w[geo]
       end
       params do
         optional :primary, type: Boolean, desc: 'Specifying whether this node will be primary. Defaults to false.'
@@ -104,7 +104,7 @@ module API
           { code: 403, message: '403 Forbidden' }
         ]
         is_array true
-        tags %w[geo_nodes]
+        tags %w[geo]
       end
       params do
         use :pagination
@@ -127,7 +127,7 @@ module API
           { code: 403, message: '403 Forbidden' }
         ]
         is_array true
-        tags %w[geo_nodes]
+        tags %w[geo]
       end
       params do
         use :pagination
@@ -165,7 +165,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoNode Not Found' }
           ]
-          tags %w[geo_nodes]
+          tags %w[geo]
         end
         get do
           not_found!('GeoNode') unless geo_node
@@ -184,7 +184,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoNode Not Found' }
           ]
-          tags %w[geo_nodes]
+          tags %w[geo]
         end
         params do
           optional :refresh, type: Boolean,
@@ -209,7 +209,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoNode Not Found' }
           ]
-          tags %w[geo_nodes]
+          tags %w[geo]
         end
         post 'repair' do
           not_found!('GeoNode') unless geo_node
@@ -233,7 +233,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoNode Not Found' }
           ]
-          tags %w[geo_nodes]
+          tags %w[geo]
         end
         params do
           optional :enabled, type: Boolean, desc: 'Flag indicating if the Geo node is enabled'
@@ -299,7 +299,7 @@ module API
             { code: 403, message: '403 Forbidden' },
             { code: 404, message: '404 GeoNode Not Found' }
           ]
-          tags %w[geo_nodes]
+          tags %w[geo]
         end
         delete do
           not_found!('GeoNode') unless geo_node
