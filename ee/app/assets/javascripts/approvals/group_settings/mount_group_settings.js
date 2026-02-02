@@ -22,6 +22,7 @@ const mountGroupApprovalSettings = (el) => {
 
   return new Vue({
     el,
+    name: 'GroupSettingsAppRoot',
     store,
     provide: {
       fullPath,

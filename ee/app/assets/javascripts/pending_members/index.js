@@ -17,6 +17,7 @@ export default (containerId = 'js-pending-members-app') => {
 
   return new Vue({
     el,
+    name: 'PendingMembersAppRoot',
     apolloProvider,
     provide: {
       namespacePath,

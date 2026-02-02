@@ -82,6 +82,7 @@ export default () => {
   // eslint-disable-next-line no-new
   new Vue({
     el: groupProjectSelectContainer,
+    name: 'FilterDropdownsRoot',
     apolloProvider,
     store,
     created() {
@@ -162,6 +163,7 @@ export default () => {
   // eslint-disable-next-line no-new
   new Vue({
     el: timeframeContainer,
+    name: 'DateRangeRoot',
     store,
     computed: {
       ...mapState('filters', ['groupNamespace', 'startDate', 'endDate']),
@@ -190,6 +192,7 @@ export default () => {
   // eslint-disable-next-line no-new
   new Vue({
     el: appContainer,
+    name: 'ProductivityAnalyticsAppRoot',
     store,
     render(h) {
       return h(ProductivityAnalyticsApp, {

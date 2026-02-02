@@ -12,6 +12,7 @@ export const initAdminEmailsForm = () => {
 
   return new Vue({
     el,
+    name: 'AdminEmailsFormRoot',
     provide: {
       adminEmailPath,
       adminEmailsAreCurrentlyRateLimited,

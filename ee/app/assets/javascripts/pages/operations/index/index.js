@@ -15,6 +15,7 @@ const {
 // eslint-disable-next-line no-new
 new Vue({
   el: '#js-operations',
+  name: 'DashboardComponentRoot',
   store: createStore(),
   components: {
     DashboardComponent,

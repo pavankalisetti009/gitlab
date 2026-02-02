@@ -26,6 +26,7 @@ if (codeOwnersEl) {
   // eslint-disable-next-line no-new
   new Vue({
     el: document.getElementById('js-code-owners'),
+    name: 'CodeOwnersRoot',
     apolloProvider,
     router,
     render(h) {

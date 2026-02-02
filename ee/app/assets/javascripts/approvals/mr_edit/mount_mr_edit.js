@@ -34,6 +34,7 @@ export default function mountApprovalInput(el) {
 
   return new Vue({
     el,
+    name: 'MrEditAppRoot',
     store,
     apolloProvider: new VueApollo({
       defaultClient: createDefaultClient(),

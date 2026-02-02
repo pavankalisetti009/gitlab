@@ -16,6 +16,7 @@ export const initGeoReplicableItem = () => {
 
   return new Vue({
     el,
+    name: 'GeoReplicableItemAppRoot',
     apolloProvider,
     render(createElement) {
       return createElement(GeoReplicableItemApp, {

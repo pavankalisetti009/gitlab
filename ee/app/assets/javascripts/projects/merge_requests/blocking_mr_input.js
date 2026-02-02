@@ -26,6 +26,7 @@ export default (el) => {
 
   return new Vue({
     el,
+    name: 'BlockingMrInputRoot',
     render(h) {
       return h(BlockingMrInput, {
         props: {

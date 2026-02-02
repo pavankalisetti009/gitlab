@@ -12,6 +12,7 @@ export const initGroupProtectedEnvironmentList = () => {
       const accessLevels = JSON.parse(levels);
       return new Vue({
         el,
+        name: 'GroupProtectedEnvironmentRoot',
         render(createElement) {
           return createElement(GroupProtectedEnvironment, {
             props: {

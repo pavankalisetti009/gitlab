@@ -16,6 +16,7 @@ function initRefSwitcher() {
 
   return new Vue({
     el: refSwitcherEl,
+    name: 'RefSelectorRoot',
     render(createElement) {
       return createElement(RefSelector, {
         props: {

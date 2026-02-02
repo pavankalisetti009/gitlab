@@ -12,6 +12,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'InsightsRoot',
     store,
     router,
     components: {

@@ -12,6 +12,7 @@ export function initProductAnalyticsSettingsInstrumentationInstructions() {
 
   return new Vue({
     el,
+    name: 'ProductAnalyticsSettingsInstrumentationInstructionsRoot',
     provide: {
       collectorHost,
     },

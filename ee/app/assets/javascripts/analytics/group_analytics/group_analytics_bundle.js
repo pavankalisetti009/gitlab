@@ -22,6 +22,7 @@ export default () => {
   // eslint-disable-next-line no-new
   new Vue({
     el: container,
+    name: 'GroupActivityCardRoot',
     provide: {
       currentUserIsOwner: parseBoolean(currentUserIsOwner),
       showPlanIndicator: parseBoolean(showPlanIndicator),

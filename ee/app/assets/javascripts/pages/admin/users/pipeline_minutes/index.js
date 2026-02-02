@@ -13,6 +13,7 @@ export function pipelineMinutes() {
     // eslint-disable-next-line no-new
     new Vue({
       el,
+      name: 'ResetButtonRoot',
       provide: {
         resetMinutesPath,
       },

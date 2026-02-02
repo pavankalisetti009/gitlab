@@ -28,6 +28,7 @@ export default () => {
   // eslint-disable-next-line no-new
   new Vue({
     el,
+    name: 'DastSiteProfileFormRoot',
     provide: {
       additionalVariableOptions: JSON.parse(el.dataset.additionalVariableOptions),
     },

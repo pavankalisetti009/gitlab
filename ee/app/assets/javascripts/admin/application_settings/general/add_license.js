@@ -22,6 +22,7 @@ export default function initAddLicenseApp() {
 
     return new Vue({
       el,
+      name: 'LicenseDropzoneRoot',
       components: {
         LicenseDropzone,
       },

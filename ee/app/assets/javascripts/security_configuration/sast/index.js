@@ -20,6 +20,7 @@ export default function init() {
 
   return new Vue({
     el,
+    name: 'SASTConfigurationAppRoot',
     apolloProvider,
     provide: {
       securityConfigurationPath,

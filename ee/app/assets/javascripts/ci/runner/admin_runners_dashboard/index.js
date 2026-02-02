@@ -20,6 +20,7 @@ export const initAdminRunnersDashboard = (selector = '#js-admin-runners-dashboar
 
   return new Vue({
     el,
+    name: 'AdminRunnersDashboardAppRoot',
     apolloProvider,
     provide: {
       clickhouseCiAnalyticsAvailable: parseBoolean(clickhouseCiAnalyticsAvailable),

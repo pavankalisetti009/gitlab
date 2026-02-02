@@ -10,6 +10,7 @@ export const initAdminDataManagementItem = () => {
 
   return new Vue({
     el,
+    name: 'AdminDataManagementItemAppRoot',
     render(createElement) {
       return createElement(AdminDataManagementItemApp, {
         props: {

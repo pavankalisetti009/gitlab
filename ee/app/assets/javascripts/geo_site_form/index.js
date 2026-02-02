@@ -22,6 +22,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'GeoSiteFormAppRoot',
     apolloProvider,
     store: createStore(sitesPath),
     render(createElement) {

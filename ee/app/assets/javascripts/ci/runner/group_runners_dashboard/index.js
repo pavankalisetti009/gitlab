@@ -20,6 +20,7 @@ export const initGroupRunnersDashboard = (selector = '#js-group-runners-dashboar
 
   return new Vue({
     el,
+    name: 'GroupRunnersDashboardAppRoot',
     apolloProvider,
     provide: {
       clickhouseCiAnalyticsAvailable: parseBoolean(clickhouseCiAnalyticsAvailable),

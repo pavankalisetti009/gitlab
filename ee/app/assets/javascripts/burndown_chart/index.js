@@ -25,6 +25,7 @@ export default () => {
     // eslint-disable-next-line no-new
     new Vue({
       el: container,
+      name: 'BurnChartsRoot',
       components: {
         BurnCharts,
       },

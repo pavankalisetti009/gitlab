@@ -39,6 +39,7 @@ export default function mountProjectSettingsApprovals(el) {
 
   return new Vue({
     el,
+    name: 'ProjectSettingsAppRoot',
     store,
     apolloProvider: new VueApollo({
       defaultClient: createDefaultClient(),

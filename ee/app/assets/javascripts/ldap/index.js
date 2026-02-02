@@ -12,6 +12,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'GroupSelectRoot',
     render(createElement) {
       return createElement(GroupSelect, {
         props: { providerElement },

@@ -23,6 +23,7 @@ export const initApiFuzzingConfiguration = () => {
 
   return new Vue({
     el,
+    name: 'ApiFuzzingAppRoot',
     apolloProvider,
     provide: {
       securityConfigurationPath,

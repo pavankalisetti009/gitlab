@@ -14,6 +14,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'InviteMembersRoot',
     render(createElement) {
       return createElement(InviteMembers, {
         props: {

@@ -13,6 +13,7 @@ export default () => {
 
   return new Vue({
     el,
+    name: 'TargetedMessageFormRoot',
     render(h) {
       return h(TargetedMessageForm, {
         props: {

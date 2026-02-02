@@ -48,6 +48,7 @@ export const initScimTokenApp = () => {
 
   return new Vue({
     el,
+    name: 'ScimTokenRoot',
     provide: {
       initialEndpointUrl: endpointUrl,
       generateTokenPath,

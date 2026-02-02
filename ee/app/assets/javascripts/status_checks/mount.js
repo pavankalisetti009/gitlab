@@ -27,6 +27,7 @@ export default function mountProjectSettingsApprovals(el) {
 
   return new Vue({
     el,
+    name: 'StatusChecksRoot',
     store,
     render(h) {
       return h(StatusChecks);

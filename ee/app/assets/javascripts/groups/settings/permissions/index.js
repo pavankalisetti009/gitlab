@@ -17,6 +17,7 @@ const showConfirmModal = () => {
   confirmModalWrapper.append(confirmModalElement);
 
   new Vue({
+    name: 'ConfirmModalRoot',
     render(createElement) {
       return createElement(ConfirmModal, {
         props: {
@@ -130,6 +131,7 @@ export const initGroupSecretsManagerSettings = () => {
 
   return new Vue({
     el,
+    name: 'SecretsManagerSettingsRoot',
     apolloProvider,
     render(createElement) {
       return createElement(SecretsManagerSettings, {
