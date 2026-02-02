@@ -1,0 +1,10 @@
+---
+name: post_process_semantic_code_search_group_by_file
+description: Groups semantic code search results by file path and merges sequential line ranges to reduce token usage
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/579852
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219805
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/587194
+milestone: '18.9'
+group: group::code creation
+type: experiment
+default_enabled: false

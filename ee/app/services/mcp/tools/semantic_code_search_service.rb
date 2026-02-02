@@ -89,6 +89,12 @@ module Mcp
           - UNKNOWN: Confidence cannot be determined (e.g., storage backend doesn't provide scores)
       DESC
 
+      GROUPING_DESCRIPTION = <<~DESC.strip
+        - Results are grouped by file path with sequential line ranges merged
+        - Each file group shows all relevant code regions from that file
+        - Group score is the maximum score among all snippets in that file
+      DESC
+
       HIGH_SCORE_THRESHOLD = 0.75
       MEDIUM_SCORE_THRESHOLD = 0.5
       STEEP_DROPOFF_THRESHOLD = 0.15
@@ -104,6 +110,7 @@ module Mcp
 
         parts << SCORE_DESCRIPTION if include_score_in_response?
         parts << CONFIDENCE_DESCRIPTION if include_confidence_in_response?
+        parts << GROUPING_DESCRIPTION if group_by_file?
 
         parts.join("\n")
       end
@@ -187,40 +194,125 @@ module Mcp
       end
       strong_memoize_attr :include_confidence_in_response?
 
+      def group_by_file?
+        ::Feature.enabled?(:post_process_semantic_code_search_group_by_file, current_user)
+      end
+      strong_memoize_attr :group_by_file?
+
       def post_process_results(filtered_results)
-        text_output = build_text_output(filtered_results)
+        confidence = include_confidence_in_response? ? compute_confidence_level(extract_scores(filtered_results)) : nil
+        results = group_by_file? ? group_results_by_file(filtered_results) : filtered_results
 
-        metadata = {
-          count: filtered_results.length,
-          has_more: false
-        }
-
-        # Apply confidence post-processing
-        if include_confidence_in_response?
-          scores = filtered_results.filter_map { |hit| hit['score'] }
-          confidence = compute_confidence_level(scores)
-
-          text_output = "Confidence: #{confidence.to_s.upcase}\n\n#{text_output}"
-          metadata[:confidence] = confidence
-        end
-
-        structured_data = {
-          items: filtered_results,
-          metadata: metadata
-        }
-
-        [[{ type: 'text', text: text_output }], structured_data]
+        [
+          build_text_content(results, is_grouped: group_by_file?, confidence: confidence),
+          build_structured_data(results, confidence: confidence)
+        ]
       end
 
-      def build_text_output(filtered_results)
-        lines = filtered_results.map.with_index(1) do |hit, idx|
+      def build_text_content(results, is_grouped:, confidence:)
+        text_output = is_grouped ? format_grouped_text(results) : format_flat_text(results)
+        text_output = "Confidence: #{confidence.to_s.upcase}\n\n#{text_output}" if confidence
+
+        [{ type: 'text', text: text_output }]
+      end
+
+      def build_structured_data(results, confidence:)
+        metadata = { count: results.length, has_more: false }
+        metadata[:confidence] = confidence if confidence
+
+        { items: results, metadata: metadata }
+      end
+
+      def extract_scores(results)
+        results.filter_map { |hit| hit['score'] }
+      end
+
+      def format_flat_text(results)
+        lines = results.map.with_index(1) do |hit, idx|
           snippet = hit['content']
           score_str = hit['score'] ? format(' (score: %.4f)', hit['score']) : ''
 
-          "#{idx}. #{hit['path']}#{score_str}\n   #{snippet}"
+          "#{idx}. #{hit['path']}#{score_str}\n#{snippet}"
         end
 
         lines.join("\n")
+      end
+
+      def format_grouped_text(grouped_results)
+        lines = grouped_results.map.with_index(1) do |group, idx|
+          score_str = ''
+          score_str = format(' (score: %.4f)', group[:score]) if include_score_in_response? && group[:score]
+
+          ranges_text = group[:snippet_ranges].map do |range|
+            "[Lines #{range[:start_line]}-#{range[:end_line]}]\n#{range[:content]}"
+          end.join("\n")
+
+          "#{idx}. #{group[:path]}#{score_str}\n#{ranges_text}"
+        end
+
+        lines.join("\n\n")
+      end
+
+      def group_results_by_file(filtered_results)
+        return [] if filtered_results.empty?
+
+        groups_by_path = filtered_results.group_by { |hit| hit['path'] }
+
+        groups_after_merging = groups_by_path.map do |path, hits|
+          sorted_hits = hits.sort_by { |hit| hit['start_line'] || 0 }
+          merged_ranges = merge_sequential_ranges(sorted_hits)
+
+          first_hit = sorted_hits.first
+          group = {
+            path: path,
+            project_id: first_hit['project_id'],
+            language: first_hit['language'],
+            blob_id: first_hit['blob_id'],
+            snippet_ranges: merged_ranges
+          }
+          group[:score] = merged_ranges.filter_map { |r| r[:score] }.max if include_score_in_response?
+          group
+        end
+
+        groups_after_merging.sort_by { |group| -(group[:score] || 0) }
+      end
+
+      def merge_sequential_ranges(sorted_hits)
+        return [] if sorted_hits.empty?
+
+        ranges = []
+        current_range = nil
+
+        sorted_hits.each do |hit|
+          start_line = hit['start_line'] || 0
+          end_line = compute_end_line(hit)
+          content = hit['content']
+
+          if current_range.nil?
+            current_range = build_range(start_line, end_line, content, hit)
+          elsif start_line == current_range[:end_line] + 1
+            current_range[:end_line] = end_line
+            current_range[:content] = "#{current_range[:content]}\n#{content}"
+            current_range[:score] = [current_range[:score], hit['score']].compact.max if include_score_in_response?
+          else
+            ranges << current_range
+            current_range = build_range(start_line, end_line, content, hit)
+          end
+        end
+
+        ranges << current_range
+        ranges
+      end
+
+      def build_range(start_line, end_line, content, hit)
+        range = { start_line: start_line, end_line: end_line, content: content }
+        range[:score] = hit['score'] if include_score_in_response?
+        range
+      end
+
+      def compute_end_line(hit)
+        start_line = hit['start_line'] || 0
+        start_line + (hit['content'] || '').count("\n")
       end
 
       def compute_confidence_level(scores)

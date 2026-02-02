@@ -8,7 +8,10 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
   let_it_be(:access_token) { create(:oauth_access_token, user: user, scopes: [:mcp]) }
 
   before do
-    stub_application_setting(instance_level_ai_beta_features_enabled: true)
+    stub_application_setting(
+      instance_level_ai_beta_features_enabled: true,
+      duo_features_enabled: true
+    )
 
     # Stub semantic code search availability to avoid ActiveContext infrastructure dependency
     # We have to use `allow_any_instance_of` since this tool is initialized
@@ -468,7 +471,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
       before do
         stub_feature_flags(
           post_process_semantic_code_search_add_score: false,
-          post_process_semantic_code_search_overall_confidence: false
+          post_process_semantic_code_search_overall_confidence: false,
+          post_process_semantic_code_search_group_by_file: false
         )
         # We have to use `allow_any_instance_of` since this tool is initialized
         # *on class definition time* in EE::Mcp::Tools::Manager

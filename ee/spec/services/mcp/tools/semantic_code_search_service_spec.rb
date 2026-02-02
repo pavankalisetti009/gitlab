@@ -126,27 +126,27 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
 
     let(:base_description) do
       <<~DESC.strip
-            Code search using natural language.
+        Code search using natural language.
 
-            Returns ranked code snippets with file paths and matching content for natural-language queries.
+        Returns ranked code snippets with file paths and matching content for natural-language queries.
 
-            Primary use cases:
-            - When you do not know the exact symbol or file path
-            - To see how a behavior or feature is implemented across the codebase
-            - To discover related implementations (clients, jobs, feature flags, background workers)
+        Primary use cases:
+        - When you do not know the exact symbol or file path
+        - To see how a behavior or feature is implemented across the codebase
+        - To discover related implementations (clients, jobs, feature flags, background workers)
 
-            How to use:
-            - Provide a concise, specific query (1–2 sentences) with concrete keywords like endpoint, class, or framework names
-            - Add directory_path to narrow scope, e.g., "app/services/" or "ee/app/workers/"
-            - Prefer precise intent over broad terms (e.g., "rate limiting middleware for REST API" instead of "rate limit")
+        How to use:
+        - Provide a concise, specific query (1–2 sentences) with concrete keywords like endpoint, class, or framework names
+        - Add directory_path to narrow scope, e.g., "app/services/" or "ee/app/workers/"
+        - Prefer precise intent over broad terms (e.g., "rate limiting middleware for REST API" instead of "rate limit")
 
-            Example queries:
-            - semantic_query: "JWT verification middleware" with directory_path: "app/"
-            - semantic_query: "CI pipeline triggers downstream jobs" with directory_path: "lib/"
-            - semantic_query: "feature flag to disable email notifications" (no directory_path)
+        Example queries:
+        - semantic_query: "JWT verification middleware" with directory_path: "app/"
+        - semantic_query: "CI pipeline triggers downstream jobs" with directory_path: "lib/"
+        - semantic_query: "feature flag to disable email notifications" (no directory_path)
 
-            Output:
-            - Ranked snippets with file paths and the matched content for each hit
+        Output:
+        - Ranked snippets with file paths and the matched content for each hit
       DESC
     end
 
@@ -158,7 +158,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
       before do
         stub_feature_flags(
           post_process_semantic_code_search_add_score: true,
-          post_process_semantic_code_search_overall_confidence: false
+          post_process_semantic_code_search_overall_confidence: false,
+          post_process_semantic_code_search_group_by_file: false
         )
       end
 
@@ -171,7 +172,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
       before do
         stub_feature_flags(
           post_process_semantic_code_search_add_score: false,
-          post_process_semantic_code_search_overall_confidence: false
+          post_process_semantic_code_search_overall_confidence: false,
+          post_process_semantic_code_search_group_by_file: false
         )
       end
 
@@ -184,7 +186,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
       before do
         stub_feature_flags(
           post_process_semantic_code_search_add_score: false,
-          post_process_semantic_code_search_overall_confidence: true
+          post_process_semantic_code_search_overall_confidence: true,
+          post_process_semantic_code_search_group_by_file: false
         )
       end
 
@@ -197,7 +200,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
       before do
         stub_feature_flags(
           post_process_semantic_code_search_add_score: true,
-          post_process_semantic_code_search_overall_confidence: true
+          post_process_semantic_code_search_overall_confidence: true,
+          post_process_semantic_code_search_group_by_file: false
         )
       end
 
@@ -205,6 +209,20 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
         expected = [base_description, described_class::SCORE_DESCRIPTION,
           described_class::CONFIDENCE_DESCRIPTION].join("\n")
         expect(service.description).to eq(expected)
+      end
+    end
+
+    context 'when post_process_semantic_code_search_group_by_file feature flag is enabled' do
+      before do
+        stub_feature_flags(
+          post_process_semantic_code_search_add_score: false,
+          post_process_semantic_code_search_overall_confidence: false,
+          post_process_semantic_code_search_group_by_file: true
+        )
+      end
+
+      it 'returns description with grouping information' do
+        expect(service.description).to eq("#{base_description}\n#{described_class::GROUPING_DESCRIPTION}")
       end
     end
   end
@@ -300,7 +318,8 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
         project.add_developer(current_user)
         stub_feature_flags(
           post_process_semantic_code_search_add_score: true,
-          post_process_semantic_code_search_overall_confidence: false
+          post_process_semantic_code_search_overall_confidence: false,
+          post_process_semantic_code_search_group_by_file: false
         )
       end
 
@@ -329,7 +348,7 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           expect(response[:content]).to be_an(Array)
           expect(response[:content].first[:type]).to eq('text')
 
-          expect(response[:content].first[:text]).to eq("1. ruby/server.rb (score: 0.9523)\n   require 'webrick'")
+          expect(response[:content].first[:text]).to eq("1. ruby/server.rb (score: 0.9523)\nrequire 'webrick'")
 
           structured = response[:structuredContent]
           expect(structured).to be_a(Hash)
@@ -434,7 +453,7 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           expect(response[:isError]).to be false
 
           # Verify filtered content only shows non-excluded file
-          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\n   require 'webrick'")
+          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\nrequire 'webrick'")
 
           # Verify structured data only contains non-excluded file
           structured = response[:structuredContent]
@@ -483,7 +502,7 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           expect(response[:isError]).to be false
 
           # Text output should NOT include score
-          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\n   require 'webrick'")
+          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\nrequire 'webrick'")
 
           # Structured data should NOT include score
           structured = response[:structuredContent]
@@ -619,6 +638,138 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
           structured = response[:structuredContent]
           # When confidence is disabled, structured data uses default format (items array wrapped by Response)
           expect(structured[:metadata]).not_to have_key(:confidence)
+        end
+      end
+
+      context 'when post_process_semantic_code_search_group_by_file feature flag is enabled' do
+        let(:project_id) { project.id.to_s }
+        let(:grouping_hits) do
+          [
+            {
+              'project_id' => 1000000,
+              'path' => 'app/services/user_service.rb',
+              'content' => 'def create_user',
+              'name' => 'user_service.rb',
+              'blob_id' => 'abc123',
+              'start_line' => 10,
+              'start_byte' => 0,
+              'language' => 'ruby',
+              'score' => 0.9
+            },
+            {
+              'project_id' => 1000000,
+              'path' => 'app/services/user_service.rb',
+              'content' => 'def update_user',
+              'name' => 'user_service.rb',
+              'blob_id' => 'abc123',
+              'start_line' => 11,
+              'start_byte' => 100,
+              'language' => 'ruby',
+              'score' => 0.8
+            },
+            {
+              'project_id' => 1000000,
+              'path' => 'app/models/user.rb',
+              'content' => 'class User',
+              'name' => 'user.rb',
+              'blob_id' => 'def456',
+              'start_line' => 1,
+              'start_byte' => 0,
+              'language' => 'ruby',
+              'score' => 0.7
+            }
+          ]
+        end
+
+        let(:grouping_query_result) do
+          ::Ai::ActiveContext::Queries::Result.success(grouping_hits)
+        end
+
+        before do
+          stub_feature_flags(
+            post_process_semantic_code_search_add_score: true,
+            post_process_semantic_code_search_overall_confidence: false,
+            post_process_semantic_code_search_group_by_file: true
+          )
+          allow(query_obj).to receive(:filter).and_return(grouping_query_result)
+        end
+
+        it 'groups results by file path in text output' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+          text_output = response[:content].first[:text]
+
+          # Should show grouped format with file path and merged ranges
+          expect(text_output).to include('app/services/user_service.rb')
+          expect(text_output).to include('Lines 10-11')
+          expect(text_output).to include('app/models/user.rb')
+        end
+
+        it 'includes grouped structure in structured data' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+          structured = response[:structuredContent]
+
+          # Should have 2 groups (2 unique files)
+          expect(structured[:items].size).to eq(2)
+
+          # First group should be user_service.rb (higher score)
+          first_group = structured[:items].first
+          expect(first_group[:path]).to eq('app/services/user_service.rb')
+          expect(first_group[:score]).to eq(0.9)
+          expect(first_group[:snippet_ranges]).to be_an(Array)
+          # Ranges should include score (merged range uses max score)
+          expect(first_group[:snippet_ranges].first[:score]).to eq(0.9)
+        end
+
+        it 'merges sequential line ranges within same file' do
+          response = service.execute(request: nil, params: arguments)
+
+          structured = response[:structuredContent]
+          user_service_group = structured[:items].find { |g| g[:path] == 'app/services/user_service.rb' }
+
+          # Lines 10 and 11 should be merged into a single range
+          expect(user_service_group[:snippet_ranges].size).to eq(1)
+          expect(user_service_group[:snippet_ranges].first[:start_line]).to eq(10)
+          expect(user_service_group[:snippet_ranges].first[:end_line]).to eq(11)
+        end
+      end
+
+      context 'when post_process_semantic_code_search_group_by_file feature flag is disabled' do
+        let(:project_id) { project.id.to_s }
+
+        before do
+          stub_feature_flags(
+            post_process_semantic_code_search_add_score: true,
+            post_process_semantic_code_search_overall_confidence: false,
+            post_process_semantic_code_search_group_by_file: false
+          )
+          allow(query_obj).to receive(:filter).and_return(query_result)
+        end
+
+        it 'does not group results in text output' do
+          response = service.execute(request: nil, params: arguments)
+
+          expect(response[:isError]).to be false
+          text_output = response[:content].first[:text]
+
+          # Should show flat format without grouping
+          expect(text_output).not_to include('Lines ')
+          expect(text_output).to match(/^\d+\. /)
+        end
+
+        it 'does not include snippet_ranges in structured data' do
+          response = service.execute(request: nil, params: arguments)
+
+          structured = response[:structuredContent]
+
+          # Items should not have snippet_ranges/children keys
+          structured[:items].each do |item|
+            expect(item).not_to have_key(:snippet_ranges)
+            expect(item).not_to have_key(:children)
+          end
         end
       end
     end
@@ -950,6 +1101,167 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
       let(:scores) { [0.80, 0.78] }
 
       it { is_expected.to eq(:medium) }
+    end
+  end
+
+  describe '#group_results_by_file' do
+    let(:service) { described_class.new(name: service_name, version: '0.1.0') }
+
+    subject(:grouped) { service.send(:group_results_by_file, hits) }
+
+    context 'with empty hits' do
+      let(:hits) { [] }
+
+      it { is_expected.to eq([]) }
+    end
+
+    context 'with single hit' do
+      let(:hits) do
+        [
+          {
+            'path' => 'server.rb',
+            'project_id' => 1000,
+            'language' => 'ruby',
+            'blob_id' => 'abc123',
+            'content' => 'def run',
+            'start_line' => 10,
+            'score' => 0.85
+          }
+        ]
+      end
+
+      it 'returns a single group' do
+        expect(grouped.size).to eq(1)
+        expect(grouped.first[:path]).to eq('server.rb')
+        expect(grouped.first[:score]).to eq(0.85)
+        expect(grouped.first[:snippet_ranges].size).to eq(1)
+      end
+    end
+
+    context 'with multiple hits from same file' do
+      let(:hits) do
+        [
+          {
+            'path' => 'server.rb',
+            'project_id' => 1000,
+            'language' => 'ruby',
+            'blob_id' => 'abc123',
+            'content' => 'def run',
+            'start_line' => 10,
+            'score' => 0.85
+          },
+          {
+            'path' => 'server.rb',
+            'project_id' => 1000,
+            'language' => 'ruby',
+            'blob_id' => 'abc123',
+            'content' => 'def stop',
+            'start_line' => 20,
+            'score' => 0.75
+          }
+        ]
+      end
+
+      it 'groups them into one result' do
+        expect(grouped.size).to eq(1)
+        expect(grouped.first[:path]).to eq('server.rb')
+        expect(grouped.first[:score]).to eq(0.85) # max score
+        expect(grouped.first[:snippet_ranges].size).to eq(2)
+        # Each range includes its score
+        expect(grouped.first[:snippet_ranges].pluck(:score)).to contain_exactly(0.85, 0.75)
+      end
+    end
+
+    context 'with hits from different files' do
+      let(:hits) do
+        [
+          {
+            'path' => 'server.rb',
+            'project_id' => 1000,
+            'language' => 'ruby',
+            'blob_id' => 'abc123',
+            'content' => 'def run',
+            'start_line' => 10,
+            'score' => 0.85
+          },
+          {
+            'path' => 'client.rb',
+            'project_id' => 1000,
+            'language' => 'ruby',
+            'blob_id' => 'def456',
+            'content' => 'def connect',
+            'start_line' => 5,
+            'score' => 0.70
+          }
+        ]
+      end
+
+      it 'creates separate groups sorted by score' do
+        expect(grouped.size).to eq(2)
+        expect(grouped.first[:path]).to eq('server.rb') # higher score first
+        expect(grouped.last[:path]).to eq('client.rb')
+      end
+    end
+  end
+
+  describe '#merge_sequential_ranges' do
+    let(:service) { described_class.new(name: service_name, version: '0.1.0') }
+
+    subject(:merged) { service.send(:merge_sequential_ranges, sorted_hits) }
+
+    context 'with empty hits' do
+      let(:sorted_hits) { [] }
+
+      it { is_expected.to eq([]) }
+    end
+
+    context 'with non-sequential ranges' do
+      let(:sorted_hits) do
+        [
+          { 'start_line' => 10, 'content' => 'line 10' },
+          { 'start_line' => 20, 'content' => 'line 20' }
+        ]
+      end
+
+      it 'keeps them separate' do
+        expect(merged.size).to eq(2)
+        expect(merged[0][:start_line]).to eq(10)
+        expect(merged[1][:start_line]).to eq(20)
+      end
+    end
+
+    context 'with sequential ranges (line 10 followed by line 11)' do
+      let(:sorted_hits) do
+        [
+          { 'start_line' => 10, 'content' => 'line 10' },
+          { 'start_line' => 11, 'content' => 'line 11' }
+        ]
+      end
+
+      it 'merges them into one range' do
+        expect(merged.size).to eq(1)
+        expect(merged.first[:start_line]).to eq(10)
+        expect(merged.first[:content]).to eq("line 10\nline 11")
+      end
+    end
+
+    context 'with mixed sequential and non-sequential ranges' do
+      let(:sorted_hits) do
+        [
+          { 'start_line' => 10, 'content' => 'line 10' },
+          { 'start_line' => 11, 'content' => 'line 11' },
+          { 'start_line' => 20, 'content' => 'line 20' },
+          { 'start_line' => 21, 'content' => 'line 21' }
+        ]
+      end
+
+      it 'merges sequential ranges separately' do
+        expect(merged.size).to eq(2)
+        expect(merged[0][:start_line]).to eq(10)
+        expect(merged[0][:content]).to eq("line 10\nline 11")
+        expect(merged[1][:start_line]).to eq(20)
+        expect(merged[1][:content]).to eq("line 20\nline 21")
+      end
     end
   end
 
