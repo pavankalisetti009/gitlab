@@ -83,6 +83,19 @@ export default {
           </gl-sprintf>
         </p>
 
+        <p class="gl-mb-0">
+          <gl-sprintf :message="s__('Geo|Troubleshooting: %{link}')">
+            <template #link>
+              <help-page-link
+                href="administration/geo/replication/troubleshooting/synchronization_verification"
+                target="_blank"
+                data-testid="checksum-failure-troubleshooting-link"
+                >{{ s__('Geo|View troubleshooting docs') }}</help-page-link
+              >
+            </template>
+          </gl-sprintf>
+        </p>
+
         <p class="gl-mb-0 gl-font-bold" data-testid="checksum-retry">
           <gl-sprintf
             :message="

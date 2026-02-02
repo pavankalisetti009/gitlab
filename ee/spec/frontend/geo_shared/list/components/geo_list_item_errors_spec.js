@@ -2,6 +2,7 @@ import { GlCollapse, GlButton } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListItemErrors from 'ee/geo_shared/list/components/geo_list_item_errors.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { MOCK_ERRORS } from '../mock_data';
 
 describe('GeoListItemErrors', () => {
@@ -23,6 +24,7 @@ describe('GeoListItemErrors', () => {
   const findToggleButton = () => wrapper.findComponent(GlButton);
   const findCollapse = () => wrapper.findComponent(GlCollapse);
   const findErrorItems = () => wrapper.findAllByTestId('geo-list-error-item');
+  const findTroubleshootingLink = () => wrapper.findComponent(HelpPageLink);
 
   describe('template', () => {
     beforeEach(() => {
@@ -50,6 +52,12 @@ describe('GeoListItemErrors', () => {
     it('renders an error message for each item in the errorsArray', () => {
       const expectedErrors = MOCK_ERRORS.map(({ label, message }) => `${label}: ${message}`);
       expect(findErrorItems().wrappers.map((w) => w.text())).toStrictEqual(expectedErrors);
+    });
+
+    it('renders a link to the geo troubleshooting doc', () => {
+      expect(findTroubleshootingLink().props('href')).toBe(
+        'administration/geo/replication/troubleshooting/synchronization_verification',
+      );
     });
   });
 });

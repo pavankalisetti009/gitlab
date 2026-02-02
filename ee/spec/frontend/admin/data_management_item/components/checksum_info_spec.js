@@ -34,6 +34,8 @@ describe('ChecksumInfo', () => {
   const findHelpIcon = () => wrapper.findComponent(HelpIcon);
   const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findHelpPageLink = () => findGlPopover().findComponent(HelpPageLink);
+  const findTroubleshootingLink = () =>
+    wrapper.findByTestId('checksum-failure-troubleshooting-link');
 
   it('renders card header', () => {
     createComponent();
@@ -102,6 +104,10 @@ describe('ChecksumInfo', () => {
     it('does not render retry information', () => {
       expect(findChecksumRetry().exists()).toBe(false);
     });
+
+    it('does not render troubleshooting link', () => {
+      expect(findTroubleshootingLink().exists()).toBe(false);
+    });
   });
 
   describe('when status failed', () => {
@@ -129,6 +135,12 @@ describe('ChecksumInfo', () => {
     it('renders retry scheduled time', () => {
       expect(findChecksumRetry().text()).toContain('Next checksum retry:');
       expect(findChecksumRetry().findComponent(TimeAgo).props('time')).toBe('2024-01-01T00:00:00Z');
+    });
+
+    it('does render troubleshooting link', () => {
+      expect(findTroubleshootingLink().props('href')).toBe(
+        'administration/geo/replication/troubleshooting/synchronization_verification',
+      );
     });
   });
 

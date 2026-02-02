@@ -101,6 +101,19 @@ export default {
           </gl-sprintf>
         </p>
 
+        <p class="gl-mb-0">
+          <gl-sprintf :message="s__('Geo|Troubleshooting: %{link}')">
+            <template #link>
+              <help-page-link
+                href="administration/geo/replication/troubleshooting/synchronization_verification"
+                target="_blank"
+                data-testid="replication-failure-troubleshooting-link"
+                >{{ s__('Geo|View troubleshooting docs') }}</help-page-link
+              >
+            </template>
+          </gl-sprintf>
+        </p>
+
         <p class="gl-mb-0 gl-font-bold">
           <gl-sprintf :message="$options.i18n.syncRetryAt">
             <template #noBold="{ content }">
