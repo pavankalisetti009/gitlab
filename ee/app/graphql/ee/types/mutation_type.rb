@@ -99,6 +99,7 @@ module EE
         mount_mutation ::Mutations::SecretsManagement::GroupSecretsManagers::Deprovision
         mount_mutation ::Mutations::SecretsManagement::GroupSecretsPermissions::Update
         mount_mutation ::Mutations::SecretsManagement::GroupSecretsPermissions::Delete
+        mount_mutation ::Mutations::SecretsManagement::GroupSecrets::Create
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Initialize
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Deprovision
         mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Create

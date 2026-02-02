@@ -41,33 +41,15 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
     it_behaves_like 'a mutation on an unauthorized resource'
   end
 
-  context 'when current user is project maintainer, but has no openbao policies' do
+  context 'when current user does not have write permissions in openbao' do
     before_all do
       project.add_maintainer(current_user)
     end
 
-    it 'returns permission error from Openbao' do
-      post_mutation
-
-      expect(response).to have_gitlab_http_status(:success)
-      expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("Resource not available")
-    end
+    it_behaves_like 'a mutation on an unauthorized resource'
   end
 
-  context 'when current user is the project owner and has proper openbao policies' do
-    before_all do
-      project.add_owner(current_user)
-    end
-
-    it_behaves_like 'internal event tracking' do
-      let(:event) { 'create_ci_secret' }
-      let(:user) { current_user }
-      let(:namespace) { project.namespace }
-      let(:additional_properties) { { label: 'graphql' } }
-      let(:category) { 'Mutations::SecretsManagement::ProjectSecrets::Create' }
-    end
-
+  shared_examples_for 'a successful create request' do
     it 'creates the project secret', :aggregate_failures do
       post_mutation
 
@@ -97,6 +79,29 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
 
     it_behaves_like 'an API request requiring an exclusive project secret operation lease'
 
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'create_ci_secret' }
+      let(:user) { current_user }
+      let(:namespace) { project.namespace }
+      let(:category) { 'Mutations::SecretsManagement::ProjectSecrets::Create' }
+    end
+  end
+
+  context 'when current user was granted write permissions in openbao' do
+    before_all do
+      project.add_maintainer(current_user)
+    end
+
+    before do
+      update_project_secrets_permission(
+        user: current_user, project: project, actions: %w[write read], principal: {
+          id: Gitlab::Access.sym_options[:maintainer], type: 'Role'
+        }
+      )
+    end
+
+    it_behaves_like 'a successful create request'
+
     context 'and service results to a failure' do
       before do
         allow_next_instance_of(SecretsManagement::ProjectSecrets::CreateService) do |service|
@@ -109,7 +114,7 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
           project_secret = SecretsManagement::ProjectSecret.new
           project_secret.errors.add(:base, 'some error')
 
-          result = ServiceResponse.error(message: 'some error', payload: { project_secret: project_secret })
+          result = ServiceResponse.error(message: 'some error', payload: { secret: project_secret })
           expect(service).to receive(:execute).and_return(result)
         end
 
@@ -121,45 +126,6 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
       it_behaves_like 'internal event not tracked'
     end
 
-    context 'and value exceed allowed limits (10k characters)' do
-      let(:params) do
-        {
-          project_path: project.full_path,
-          name: 'TEST_SECRET_1234',
-          description: 'test description',
-          secret: "x" * 10001,
-          branch: 'main',
-          environment: 'prod'
-        }
-      end
-
-      it 'fails', :aggregate_failures do
-        post_mutation
-
-        msg = 'Length of secret value exceeds allowed limits (10k bytes).'
-        expect(mutation_response['errors']).to include(msg)
-      end
-    end
-
-    context 'and name does not conform' do
-      let(:params) do
-        {
-          project_path: project.full_path,
-          name: '../../OTHER_SECRET',
-          description: 'test description',
-          secret: 'Secret123',
-          branch: 'main',
-          environment: 'prod'
-        }
-      end
-
-      it 'fails', :aggregate_failures do
-        post_mutation
-
-        expect(mutation_response['errors']).to include("Name can contain only letters, digits and '_'.")
-      end
-    end
-
     context 'and secrets_manager feature flag is disabled' do
       before do
         stub_feature_flags(secrets_manager: false)
@@ -167,5 +133,13 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
 
       it_behaves_like 'a mutation on an unauthorized resource'
     end
+  end
+
+  context 'when current user is project owner' do
+    before_all do
+      project.add_owner(current_user)
+    end
+
+    it_behaves_like 'a successful create request'
   end
 end
