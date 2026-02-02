@@ -85,10 +85,7 @@ module Mutations
             'create_ci_secret',
             user: current_user,
             namespace: project.namespace,
-            project: project,
-            additional_properties: {
-              label: 'graphql'
-            }
+            project: project
           )
         end
       end

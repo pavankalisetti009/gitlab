@@ -6,8 +6,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
   include GraphqlHelpers
 
   let_it_be_with_reload(:project) { create(:project) }
-  let_it_be(:current_user) { create(:user) }
   let_it_be(:owner_user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:mutation_name) { :project_secret_update }
 
   let(:secrets_manager) { create(:project_secrets_manager, project: project) }
@@ -45,8 +45,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
   end
 
   before do
-    provision_project_secrets_manager(secrets_manager, owner_user)
     stub_last_activity_update
+    provision_project_secrets_manager(secrets_manager, owner_user)
 
     create_project_secret(
       **project_secret_attributes.merge(user: owner_user, project: project)
@@ -57,33 +57,15 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
     it_behaves_like 'a mutation on an unauthorized resource'
   end
 
-  context 'when current user is maintainer, but has no openbao policies' do
+  context 'when current user does not have write permissions in openbao' do
     before_all do
       project.add_maintainer(current_user)
     end
 
-    it 'returns permission error from Openbao' do
-      post_mutation
-
-      expect(response).to have_gitlab_http_status(:success)
-      expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("Resource not available")
-    end
+    it_behaves_like 'a mutation on an unauthorized resource'
   end
 
-  context 'when current user is the project owner and has proper policies in Openbao' do
-    before_all do
-      project.add_owner(current_user)
-    end
-
-    it_behaves_like 'internal event tracking' do
-      let(:event) { 'update_ci_secret' }
-      let(:user) { current_user }
-      let(:namespace) { project.namespace }
-      let(:additional_properties) { { label: 'graphql' } }
-      let(:category) { 'Mutations::SecretsManagement::ProjectSecrets::Update' }
-    end
-
+  shared_examples_for 'a successful update request' do
     it 'updates the project secret', :aggregate_failures do
       post_mutation
 
@@ -101,6 +83,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
           branch: 'feature',
           environment: 'staging',
           metadata_version: new_version,
+          status: 'COMPLETED',
           rotation_info: a_graphql_entity_for(
             rotation_interval_days: rotation_info.rotation_interval_days,
             status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
@@ -111,6 +94,31 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
           )
         ))
     end
+
+    it_behaves_like 'an API request requiring an exclusive project secret operation lease'
+
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'update_ci_secret' }
+      let(:user) { current_user }
+      let(:namespace) { project.namespace }
+      let(:category) { 'Mutations::SecretsManagement::ProjectSecrets::Update' }
+    end
+  end
+
+  context 'when current user was granted write permissions in openbao' do
+    before_all do
+      project.add_maintainer(current_user)
+    end
+
+    before do
+      update_project_secrets_permission(
+        user: current_user, project: project, actions: %w[write read], principal: {
+          id: Gitlab::Access.sym_options[:maintainer], type: 'Role'
+        }
+      )
+    end
+
+    it_behaves_like 'a successful update request'
 
     context 'when secret is stale' do
       let(:client) { secrets_manager_client.with_namespace(namespace) }
@@ -328,7 +336,5 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
 
       it_behaves_like 'a mutation on an unauthorized resource'
     end
-
-    it_behaves_like 'an API request requiring an exclusive project secret operation lease'
   end
 end

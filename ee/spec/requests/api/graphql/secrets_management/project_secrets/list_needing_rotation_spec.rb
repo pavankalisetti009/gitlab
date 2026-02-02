@@ -11,9 +11,8 @@ RSpec.describe 'List project secrets needing rotation', :gitlab_secrets_manager,
 
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
-  let(:error_message) do
-    "Secrets manager is not active"
-  end
+  let(:inactive_error_message) { "Secrets manager is not active" }
+  let(:access_error_message) { Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR }
 
   let(:list_needing_rotation_query) do
     graphql_query_for(
@@ -42,7 +41,7 @@ RSpec.describe 'List project secrets needing rotation', :gitlab_secrets_manager,
 
     it 'returns permission error from Openbao' do
       expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("Resource not available")
+      expect(graphql_errors.first['message']).to include(access_error_message)
     end
   end
 
@@ -60,7 +59,7 @@ RSpec.describe 'List project secrets needing rotation', :gitlab_secrets_manager,
       it 'returns a top-level error' do
         expect(graphql_errors).to be_present
         error_messages = graphql_errors.pluck('message')
-        expect(error_messages).to match_array([error_message])
+        expect(error_messages).to match_array([inactive_error_message])
       end
     end
 
@@ -254,7 +253,7 @@ RSpec.describe 'List project secrets needing rotation', :gitlab_secrets_manager,
 
     it 'returns permission error from Openbao' do
       expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("Resource not available")
+      expect(graphql_errors.first['message']).to include(access_error_message)
     end
   end
 end

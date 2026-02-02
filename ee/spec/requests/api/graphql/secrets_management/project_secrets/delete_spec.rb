@@ -55,13 +55,7 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
       project.add_maintainer(current_user)
     end
 
-    it 'returns permission error from Openbao' do
-      post_mutation
-
-      expect(response).to have_gitlab_http_status(:success)
-      expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("Resource not available")
-    end
+    it_behaves_like 'a mutation on an unauthorized resource'
   end
 
   context 'when current user is the project owner and has proper openbao policies' do

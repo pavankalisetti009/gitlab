@@ -16,7 +16,8 @@ RSpec.describe SecretsManagement::GraphqlErrorHandling, feature_category: :secre
         raise SecretsManagement::SecretsManagerClient::ApiError, @message
       end
 
-      def raise_resource_not_available_error!(msg)
+      def raise_resource_not_available_error!
+        msg = Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR
         raise Gitlab::Graphql::Errors::ResourceNotAvailable, msg # rubocop:disable Graphql/ResourceNotAvailableError -- we are mocking exactly the same method
       end
     end
@@ -42,8 +43,9 @@ RSpec.describe SecretsManagement::GraphqlErrorHandling, feature_category: :secre
 
     with_them do
       it 'raises ResourceNotAvailable' do
+        msg = Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR
         expect { dummy.resolve }
-          .to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable, 'Resource not available')
+          .to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable, msg)
       end
     end
   end

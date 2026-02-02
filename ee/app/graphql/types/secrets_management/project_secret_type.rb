@@ -11,7 +11,7 @@ module Types
       field :project,
         Types::ProjectType,
         null: false,
-        description: 'Project the secret belong to.'
+        description: 'Project the secret belongs to.'
 
       field :name,
         type: GraphQL::Types::String,
@@ -43,7 +43,7 @@ module Types
         null: true,
         description: 'Current metadata version of the project secret.'
 
-      field :status, ProjectSecretStatusEnum, null: false,
+      field :status, SecretStatusEnum, null: false,
         description: 'Computed lifecycle status of the secret, based on timestamps.'
     end
   end

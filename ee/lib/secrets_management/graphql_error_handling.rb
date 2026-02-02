@@ -14,7 +14,7 @@ module SecretsManagement
         super
       rescue SecretsManagement::SecretsManagerClient::ApiError => e
         if permission_error?(e.message)
-          raise_resource_not_available_error!('Resource not available')
+          raise_resource_not_available_error!
         else
           sanitized_message = sanitize_error_message(e.message)
           track_exception(e) if default_error?(sanitized_message)
