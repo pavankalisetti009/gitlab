@@ -4093,9 +4093,6 @@ msgstr ""
 msgid "AccessTokens|At least one scope is required."
 msgstr ""
 
-msgid "AccessTokens|Broad-access token"
-msgstr ""
-
 msgid "AccessTokens|Consider reducing scope"
 msgstr ""
 
@@ -28893,9 +28890,6 @@ msgid "Expires %{preposition} %{expires_at}"
 msgstr ""
 
 msgid "Expires at"
-msgstr ""
-
-msgid "Expiring soon"
 msgstr ""
 
 msgid "Explain current vulnerability."
