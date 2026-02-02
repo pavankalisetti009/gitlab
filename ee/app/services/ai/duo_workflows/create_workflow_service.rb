@@ -70,7 +70,7 @@ module Ai
       private
 
       def base_params
-        @params.except(:issue_id, :merge_request_id, :ai_catalog_item_consumer_id)
+        @params.except(:issue_id, :merge_request_id)
       end
 
       def create_workflow_system_note(workflow)

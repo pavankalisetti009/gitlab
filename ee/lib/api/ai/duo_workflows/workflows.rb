@@ -231,7 +231,8 @@ module API
               :start_workflow,
               :source_branch,
               :additional_context,
-              :shallow_clone
+              :shallow_clone,
+              :ai_catalog_item_consumer_id
             )
 
             if wrkf_params[:ai_catalog_item_version_id]
