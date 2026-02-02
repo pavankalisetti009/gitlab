@@ -358,7 +358,7 @@ RSpec.shared_examples 'ee protected ref access' do
         it { is_expected.to eq(false) }
 
         context 'when group has no access to project' do
-          context 'and the user is a developer in the group ' do
+          context 'and the user is a developer in the group' do
             before do
               group.add_developer(current_user) # rubocop:disable RSpec/BeforeAllRoleAssignment -- the let_it_be(:group) is overriden with let(:group) within this context
             end
@@ -376,7 +376,7 @@ RSpec.shared_examples 'ee protected ref access' do
         context 'and the group has max role less than developer' do
           let(:invited_group_access_level) { :reporter }
 
-          context 'and the user is a developer in the group ' do
+          context 'and the user is a developer in the group' do
             before do
               group.add_developer(current_user) # rubocop:disable RSpec/BeforeAllRoleAssignment -- the let_it_be(:group) is overriden with let(:group) within this context
             end

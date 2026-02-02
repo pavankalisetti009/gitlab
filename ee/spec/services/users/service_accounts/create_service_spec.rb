@@ -17,7 +17,7 @@ RSpec.describe Users::ServiceAccounts::CreateService, feature_category: :user_ma
 
   subject(:service) { described_class.new(current_user, params) }
 
-  context 'when current user is an admin ', :enable_admin_mode do
+  context 'when current user is an admin', :enable_admin_mode do
     let_it_be(:current_user) { create(:admin) }
 
     it_behaves_like 'service account creation failure'

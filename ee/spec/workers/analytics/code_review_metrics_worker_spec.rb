@@ -23,7 +23,7 @@ RSpec.describe Analytics::CodeReviewMetricsWorker, feature_category: :value_stre
       end
 
       context 'for invalid MR id' do
-        it 'does not  execute  operation' do
+        it 'does not execute operation' do
           expect(operation.constantize).not_to receive(:new)
 
           worker.perform(operation, 1992291)

@@ -44,7 +44,7 @@ RSpec.shared_examples 'password complexity validations' do
       end
     end
 
-    context 'when two complexity rules are required ' do
+    context 'when two complexity rules are required' do
       let(:complexity_rules) { [:number, :lowercase] }
 
       before do
