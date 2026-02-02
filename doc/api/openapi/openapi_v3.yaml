@@ -14996,7 +14996,7 @@ paths:
       summary: List runner controller tokens
       description: Get all tokens for a specific runner controller.
       tags:
-      - Runner controller tokens
+      - Runners
       responses:
         '200':
           description: OK
@@ -15167,7 +15167,7 @@ paths:
       summary: List runner controllers
       description: Get all runner controllers.
       tags:
-      - Runner controllers
+      - Runners
       responses:
         '200':
           description: OK
@@ -31959,6 +31959,7 @@ paths:
       description: This feature was introduced in GitLab 10.5.
       tags:
       - Search
+      - Projects
       responses:
         '200':
           description: OK
