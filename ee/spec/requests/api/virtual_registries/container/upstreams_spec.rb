@@ -81,6 +81,88 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 
+  describe 'POST /api/v4/groups/:id/-/virtual_registries/container/upstreams/test' do
+    let(:group_id) { group.id }
+    let(:url) { "/groups/#{group_id}/-/virtual_registries/container/upstreams/test" }
+    let(:params) { { url: 'http://example.com', username: 'user', password: 'test' } }
+
+    subject(:api_request) { post api(url), params: params, headers: headers }
+
+    it_behaves_like 'virtual registry not available', :container
+
+    context 'with valid params' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      before do
+        allow_next_instance_of(::VirtualRegistries::Container::Upstream) do |upstream_instance|
+          allow(upstream_instance).to receive(:test).and_return({ success: true })
+        end
+      end
+
+      it 'returns a successful response' do
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq({ 'success' => true })
+      end
+    end
+
+    context 'with invalid group_id' do
+      where(:group_id, :status) do
+        non_existing_record_id | :not_found
+        'foo'                  | :not_found
+        ''                     | :not_found
+      end
+
+      with_them do
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'with a non top level group' do
+      let(:group) { create(:group, :nested) }
+
+      before do
+        group.parent.add_maintainer(user)
+      end
+
+      it_behaves_like 'returning response status', :bad_request
+    end
+
+    context 'with invalid params' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      where(:params, :status) do
+        { url: '' }                                     | :bad_request
+        { url: 'invalid-url' }                          | :bad_request
+        {}                                              | :bad_request
+        { username: 'user' }                            | :bad_request
+        { password: 'test' }                            | :bad_request
+        { url: 'http://example.com', username: 'user' } | :bad_request
+        { url: 'http://example.com', password: 'test' } | :bad_request
+      end
+
+      with_them do
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_container_registry,
+      upstream_factory: :virtual_registries_container_upstream
+    it_behaves_like 'an authenticated virtual registry REST API' do
+      before do
+        allow_next_instance_of(::VirtualRegistries::Container::Upstream) do |instance|
+          allow(instance).to receive(:test)
+        end
+      end
+    end
+  end
+
   describe 'GET /api/v4/virtual_registries/container/registries/:id/upstreams' do
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/container/registries/#{registry_id}/upstreams" }
@@ -493,6 +575,77 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
       before_all do
         group.add_maintainer(user)
+      end
+    end
+  end
+
+  describe 'POST /api/v4/virtual_registries/container/upstreams/:id/test' do
+    let(:url) { "/virtual_registries/container/upstreams/#{upstream.id}/test" }
+    let(:params) { {} }
+
+    subject(:api_request) { post api(url), params: params, headers: headers }
+
+    shared_examples 'a successful test response' do
+      specify do
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq({ 'success' => true })
+      end
+    end
+
+    before do
+      allow(Gitlab::HTTP).to receive(:head).and_return(instance_double(HTTParty::Response, code: 200, success?: true,
+        unauthorized?: false))
+    end
+
+    it_behaves_like 'virtual registry not available', :container
+    it_behaves_like 'virtual registry non member user access',
+      registry_factory: :virtual_registries_container_registry,
+      upstream_factory: :virtual_registries_container_upstream
+
+    it { is_expected.to have_request_urgency(:low) }
+
+    it_behaves_like 'an authenticated virtual registry REST API'
+
+    context 'with no override params' do
+      before do
+        group.add_guest(user)
+      end
+
+      it_behaves_like 'a successful test response'
+    end
+
+    context 'with override params' do
+      before_all do
+        group.add_guest(user)
+      end
+
+      let(:new_url) { 'http://new-example.com' }
+      let(:existing_username) { upstream.username }
+      let(:existing_password) { upstream.password }
+
+      where(:scenario, :params) do
+        'url only'                          | { url: ref(:new_url) }
+        'url with new credentials'          | { url: ref(:new_url), username: 'new-username', password: 'new-password' }
+        'existing user, no password'        | { username: ref(:existing_username), password: '' }
+        'existing user and password'        | { username: ref(:existing_username), password: ref(:existing_password) }
+      end
+
+      with_them do
+        it_behaves_like 'a successful test response'
+      end
+    end
+
+    context 'with invalid override params' do
+      where(:params, :error_message) do
+        { url: '' }                    | { 'url' => ['is empty'] }
+        { password: 'new-password' }   | { 'username' => ["can't be blank"] }
+        { username: 'new-username' }   | { 'password' => ["can't be blank"] }
+      end
+
+      with_them do
+        it_behaves_like 'returning response status', :bad_request
       end
     end
   end

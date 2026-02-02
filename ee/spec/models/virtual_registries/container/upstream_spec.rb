@@ -473,6 +473,99 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
       it { is_expected.to eq(with_accept_headers({ 'Authorization' => 'Bearer successful_bearer_token_123' })) }
     end
 
+    context 'with non-persisted upstream' do
+      let(:upstream) do
+        build(:virtual_registries_container_upstream,
+          group: group,
+          url: 'https://registry-1.docker.io',
+          username: 'testuser',
+          password: 'testpassword'
+        )
+      end
+
+      let(:request_auth_url) { 'https://auth.docker.io/token?scope=repository:library/alpine:pull&service=registry.docker.io' }
+      let(:auth_url) { 'https://auth.docker.io/token?service=registry.docker.io' }
+
+      before do
+        stub_request(:head, "#{upstream.url}/v2/#{path}")
+          .to_return(
+            status: 401,
+            headers: {
+              'www-authenticate' => 'Bearer realm="https://auth.docker.io/token",service="registry.docker.io",scope="repository:library/alpine:pull"'
+            }
+          )
+
+        stub_request(:get, request_auth_url).with(headers: basis_auth_header)
+          .to_return(
+            status: 200,
+            body: '{"token": "successful_bearer_token_123"}'
+          )
+      end
+
+      it 'does not attempt to save auth_url' do
+        expect(upstream).not_to receive(:update)
+
+        headers
+
+        expect(headers).to eq(with_accept_headers({ 'Authorization' => 'Bearer successful_bearer_token_123' }))
+        expect(upstream.auth_url).to be_nil
+      end
+
+      context 'when authentication fails' do
+        before do
+          stub_request(:get, request_auth_url).with(headers: basis_auth_header)
+            .to_return(status: 401, body: '{"error": "unauthorized"}')
+        end
+
+        it 'does not attempt to clear auth_url' do
+          expect(upstream).not_to receive(:update)
+
+          headers
+
+          expect(headers).to eq({})
+          expect(upstream.auth_url).to be_nil
+        end
+      end
+
+      context 'when stale auth_url needs retry' do
+        let(:upstream) do
+          build(:virtual_registries_container_upstream,
+            group: group,
+            url: 'https://registry-1.docker.io',
+            username: 'testuser',
+            password: 'testpassword',
+            auth_url: 'https://stale-auth.docker.io/token?service=registry.docker.io'
+          )
+        end
+
+        before do
+          stub_request(:get, 'https://stale-auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
+            .to_return(status: 404)
+
+          stub_request(:head, "#{upstream.url}/v2/#{path}")
+            .to_return(
+              status: 401,
+              headers: {
+                'www-authenticate' => 'Bearer realm="https://fresh-auth.docker.io/token",service="registry.docker.io"'
+              }
+            )
+
+          stub_request(:get, 'https://fresh-auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
+            .to_return(status: 200, body: '{"token": "fresh_token"}')
+        end
+
+        it 'does not attempt to update auth_url during retry' do
+          expect(upstream).not_to receive(:update)
+
+          headers
+
+          expect(headers).to eq(with_accept_headers({ 'Authorization' => 'Bearer fresh_token' }))
+          # auth_url remains as originally set since update wasn't called
+          expect(upstream.auth_url).to eq('https://stale-auth.docker.io/token?service=registry.docker.io')
+        end
+      end
+    end
+
     context 'with credentials but authentication discovery fails' do
       before do
         stub_request(:head, "#{upstream.url}/v2/#{path}")
@@ -699,6 +792,126 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
     subject { upstream.default_cache_entries }
 
     it { is_expected.to contain_exactly(default_cache_entry) }
+  end
+
+  describe '#test' do
+    let(:test_url) { upstream.url_for(described_class::TEST_PATH) }
+    let(:response) { ActiveSupport::OrderedOptions.new }
+    let(:code) { 200 }
+    let(:message) { 'OK' }
+
+    subject(:test) { upstream.test }
+
+    before do
+      allow(Gitlab::HTTP).to receive(:head) do
+        response.code = code
+        response.message = message
+        response
+      end
+    end
+
+    it 'makes a HEAD request to the test endpoint' do
+      test
+
+      expect(Gitlab::HTTP).to have_received(:head).with(
+        test_url,
+        headers: upstream.headers(described_class::TEST_PATH),
+        follow_redirects: true
+      )
+    end
+
+    context 'with different HTTP response codes' do
+      where(:code, :message, :expected_result) do
+        200 | 'OK'                    | { success: true }
+        201 | 'Created'               | { success: true }
+        299 | 'Misc Success'          | { success: true }
+        404 | 'Not Found'             | { success: true }
+        400 | 'Bad Request'           | { success: false, result: 'Error: 400 - Bad Request' }
+        401 | 'Unauthorized'          | { success: false, result: 'Error: 401 - Unauthorized' }
+        403 | 'Forbidden'             | { success: false, result: 'Error: 403 - Forbidden' }
+        500 | 'Internal Server Error' | { success: false, result: 'Error: 500 - Internal Server Error' }
+      end
+
+      with_them do
+        it { is_expected.to eq(expected_result) }
+      end
+    end
+
+    context 'when HTTP errors occur' do
+      where(:error_class, :error_message) do
+        Net::OpenTimeout | 'Connection timeout'
+        SocketError      | 'getaddrinfo: Name or service not known'
+      end
+
+      before do
+        allow(Gitlab::HTTP).to receive(:head).and_raise(error_class, error_message)
+      end
+
+      with_them do
+        it { is_expected.to eq({ success: false, result: "Error: #{error_message}" }) }
+      end
+    end
+
+    context 'with credentials' do
+      context 'with username and password' do
+        let(:bearer_headers) { with_accept_headers({ 'Authorization' => 'Bearer test_bearer_token' }) }
+
+        before do
+          upstream.assign_attributes(username: 'testuser', password: 'testpass')
+
+          allow(upstream).to receive(:headers).and_call_original
+          allow(upstream).to receive(:headers).with(described_class::TEST_PATH).and_return(bearer_headers)
+        end
+
+        it 'uses bearer token authentication' do
+          test
+
+          expect(Gitlab::HTTP).to have_received(:head).with(
+            test_url,
+            headers: bearer_headers,
+            follow_redirects: true
+          )
+        end
+      end
+
+      context 'without credentials' do
+        before do
+          upstream.assign_attributes(username: nil, password: nil)
+          allow(upstream).to receive(:headers).with(described_class::TEST_PATH).and_return({})
+        end
+
+        it 'makes request without authorization header' do
+          test
+
+          expect(Gitlab::HTTP).to have_received(:head).with(
+            test_url,
+            headers: {},
+            follow_redirects: true
+          )
+        end
+      end
+    end
+
+    context 'with existing upstream cache entries' do
+      before do
+        upstream.save!
+        create(
+          :virtual_registries_container_cache_entry,
+          upstream: upstream,
+          relative_path: 'dummy/path/maven-metadata.xml'
+        )
+      end
+
+      it 'uses the cache entry relative_path for the HEAD request' do
+        test
+
+        expect(Gitlab::HTTP).to have_received(:head).with(
+          upstream.url_for('dummy/path/maven-metadata.xml'),
+          headers: upstream.headers('dummy/path/maven-metadata.xml'),
+          follow_redirects: true
+        )
+      end
+    end
   end
 
   describe 'callbacks' do
