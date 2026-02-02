@@ -116,7 +116,7 @@ module EE
           def check_query_limit
             # Short circuit if tracking is disabled
             return unless ::Gitlab::QueryLimiting.enabled?
-            return unless params[:duo_availability].present? && ::Ai::AmazonQ.connected?
+            return super unless params[:duo_availability].present? && ::Ai::AmazonQ.connected?
 
             # AmazonQ can trigger service account removal from group and nested namespaces which causes too many queries
             ::Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/510174', new_threshold: 200)
