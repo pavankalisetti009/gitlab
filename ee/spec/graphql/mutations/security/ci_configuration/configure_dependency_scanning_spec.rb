@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Security::CiConfiguration::ConfigureDependencyScanning do
+RSpec.describe Mutations::Security::CiConfiguration::ConfigureDependencyScanning, feature_category: :software_composition_analysis do
   include GraphqlHelpers
 
   let(:service) { ::Security::CiConfiguration::DependencyScanningCreateService }
