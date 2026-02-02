@@ -28,6 +28,7 @@ module Security
         {
           compliance_frameworks: compliance_frameworks,
           excluding_personal_projects: excluding_personal_projects?,
+          excluding_archived_projects: excluding_archived_projects?,
           including_projects: including_projects,
           excluding_projects: excluding_projects,
           including_groups: including_groups,
@@ -88,12 +89,20 @@ module Security
       end
 
       def excluding_personal_projects?
+        excluding_projects_by_type?(PolicyScopeChecker::PERSONAL_PROJECT_TYPE)
+      end
+
+      def excluding_archived_projects?
+        excluding_projects_by_type?(PolicyScopeChecker::ARCHIVED_PROJECT_TYPE)
+      end
+
+      def excluding_projects_by_type?(type)
         return false if policy_scope.blank?
 
         excluding_projects = policy_scope.dig(:projects, :excluding)
         return false if excluding_projects.blank?
 
-        excluding_projects.any? { |project| project[:type] == 'personal' }
+        excluding_projects.any? { |project| project[:type] == type }
       end
     end
   end
