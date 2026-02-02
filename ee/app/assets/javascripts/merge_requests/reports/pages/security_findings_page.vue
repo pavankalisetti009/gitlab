@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlLink } from '@gitlab/ui';
+import { visitUrl } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import SmartInterval from '~/smart_interval';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
@@ -308,6 +309,10 @@ export default {
     updateFindingState(state) {
       this.modalData.vulnerability.state = state;
     },
+    handleResolveWithAiSuccess(commentUrl) {
+      this.clearModalData();
+      visitUrl(commentUrl);
+    },
   },
   pollingInterval: undefined,
   helpPopover: {
@@ -324,6 +329,10 @@ export default {
 
 <template>
   <div>
+    <!-- eslint-disable vue/v-on-event-hyphenation -->
+    <!-- Vue 3 requires exact case match for emitted events
+      but this breaks specs of other components. Will address in
+      https://gitlab.com/gitlab-org/gitlab/-/issues/588862 -->
     <vulnerability-finding-modal
       v-if="modalData"
       :finding-uuid="modalData.vulnerability.uuid"
@@ -337,7 +346,9 @@ export default {
       @hidden="clearModalData"
       @dismissed="updateFindingState('dismissed')"
       @detected="updateFindingState('detected')"
+      @resolveWithAiSuccess="handleResolveWithAiSuccess"
     />
+    <!-- eslint-enable vue/v-on-event-hyphenation -->
     <div v-if="shouldRenderMrWidget" data-testid="security-findings-page">
       <div class="gl-flex">
         <status-icon :name="$options.name" :is-loading="isLoading" :icon-name="statusIconName" />
