@@ -24969,9 +24969,6 @@ msgstr ""
 msgid "DevOps adoption"
 msgstr ""
 
-msgid "DevOps adoption gives you an overview of what development, security, and operations features your organization has adopted, and which groups are using these features."
-msgstr ""
-
 msgid "Developer"
 msgstr ""
 
@@ -37138,9 +37135,6 @@ msgid "Internal users cannot be deactivated"
 msgstr ""
 
 msgid "Interval"
-msgstr ""
-
-msgid "Introducing your DevOps adoption analytics"
 msgstr ""
 
 msgid "Invalid 'schemaVersion' '%{schema_version}'"
