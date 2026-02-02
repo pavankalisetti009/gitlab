@@ -5264,40 +5264,6 @@ RETURN NULL;
 END
 $$;
 
-CREATE FUNCTION update_namespace_details_from_namespaces() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-INSERT INTO
-  namespace_details (
-    description,
-    description_html,
-    cached_markdown_version,
-    updated_at,
-    created_at,
-    namespace_id
-  )
-VALUES
-  (
-    NEW.description,
-    NEW.description_html,
-    NEW.cached_markdown_version,
-    NEW.updated_at,
-    NEW.updated_at,
-    NEW.id
-  ) ON CONFLICT (namespace_id) DO
-UPDATE
-SET
-  description = NEW.description,
-  description_html = NEW.description_html,
-  cached_markdown_version = NEW.cached_markdown_version,
-  updated_at = NEW.updated_at
-WHERE
-  namespace_details.namespace_id = NEW.id;RETURN NULL;
-
-END
-$$;
-
 CREATE FUNCTION update_namespace_details_from_projects() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -53444,10 +53410,6 @@ CREATE TRIGGER trigger_sync_redirect_routes_namespace_id BEFORE INSERT OR UPDATE
 CREATE TRIGGER trigger_sync_work_item_transitions_from_issues AFTER INSERT OR UPDATE OF moved_to_id, duplicated_to_id, promoted_to_epic_id, namespace_id ON issues FOR EACH ROW EXECUTE FUNCTION sync_work_item_transitions_from_issues();
 
 CREATE TRIGGER trigger_todos_sharding_key BEFORE INSERT OR UPDATE ON todos FOR EACH ROW EXECUTE FUNCTION todos_sharding_key();
-
-CREATE TRIGGER trigger_update_details_on_namespace_insert AFTER INSERT ON namespaces FOR EACH ROW WHEN (((new.type)::text <> 'Project'::text)) EXECUTE FUNCTION update_namespace_details_from_namespaces();
-
-CREATE TRIGGER trigger_update_details_on_namespace_update AFTER UPDATE ON namespaces FOR EACH ROW WHEN ((((new.type)::text <> 'Project'::text) AND (((old.description)::text IS DISTINCT FROM (new.description)::text) OR (old.description_html IS DISTINCT FROM new.description_html) OR (old.cached_markdown_version IS DISTINCT FROM new.cached_markdown_version)))) EXECUTE FUNCTION update_namespace_details_from_namespaces();
 
 CREATE TRIGGER trigger_update_details_on_project_insert AFTER INSERT ON projects FOR EACH ROW EXECUTE FUNCTION update_namespace_details_from_projects();
 
