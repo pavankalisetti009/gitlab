@@ -156,7 +156,7 @@ RSpec.describe Groups::ProtectedEnvironmentsController, feature_category: :conti
     context 'when destroy failed' do
       before do
         allow_next_instance_of(::ProtectedEnvironments::DestroyService) do |service|
-          allow(service).to receive(:execute) { false }
+          allow(service).to receive(:execute).and_return(false)
         end
       end
 

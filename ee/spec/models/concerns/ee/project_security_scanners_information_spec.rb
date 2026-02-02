@@ -16,9 +16,9 @@ RSpec.describe ::EE::ProjectSecurityScannersInformation do
 
   describe '#available_scanners' do
     before do
-      allow(project).to receive(:feature_available?) { false }
-      allow(project).to receive(:feature_available?).with(:sast) { true }
-      allow(project).to receive(:feature_available?).with(:dast) { true }
+      allow(project).to receive(:feature_available?).and_return(false)
+      allow(project).to receive(:feature_available?).with(:sast).and_return(true)
+      allow(project).to receive(:feature_available?).with(:dast).and_return(true)
     end
 
     it 'returns a list of all scanners available for the project' do

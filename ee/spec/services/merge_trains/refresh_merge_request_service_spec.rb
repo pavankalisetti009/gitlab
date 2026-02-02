@@ -259,7 +259,7 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
         context 'when it failed to create a pipeline' do
           before do
             allow_next_instance_of(MergeTrains::CreatePipelineService) do |instance|
-              allow(instance).to receive(:execute) { { result: :error, message: 'failed to create pipeline' } }
+              allow(instance).to receive(:execute).and_return({ result: :error, message: 'failed to create pipeline' })
             end
           end
 
@@ -426,10 +426,10 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
 
         context 'when it failed to merge the merge request' do
           before do
-            allow(merge_request).to receive(:broken?) { false }
+            allow(merge_request).to receive(:broken?).and_return(false)
             merge_request.update!(merge_error: 'Branch has been updated since the merge was requested.')
             allow_next_instance_of(MergeRequests::MergeService) do |instance|
-              allow(instance).to receive(:execute) { { result: :error } }
+              allow(instance).to receive(:execute).and_return({ result: :error })
             end
           end
 

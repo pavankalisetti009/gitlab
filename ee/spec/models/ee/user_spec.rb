@@ -1077,7 +1077,7 @@ RSpec.describe User, feature_category: :system_access do
     end
 
     it 'does not call save when in a GitLab read-only instance' do
-      allow(Gitlab::Database).to receive(:read_only?) { true }
+      allow(Gitlab::Database).to receive(:read_only?).and_return(true)
 
       expect(subject).not_to receive(:save)
 
@@ -1095,7 +1095,7 @@ RSpec.describe User, feature_category: :system_access do
     end
 
     it 'does not update remember_created_at when in a Geo read-only instance' do
-      allow(Gitlab::Database).to receive(:read_only?) { true }
+      allow(Gitlab::Database).to receive(:read_only?).and_return(true)
 
       expect { subject.remember_me! }.not_to change(subject, :remember_created_at)
     end

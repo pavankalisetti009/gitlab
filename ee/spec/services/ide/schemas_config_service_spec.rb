@@ -81,7 +81,7 @@ RSpec.describe Ide::SchemasConfigService, feature_category: :web_ide do
 
     context 'feature :ide_schema_config is available' do
       before do
-        allow(project).to receive(:feature_available?).with(:ide_schema_config) { true }
+        allow(project).to receive(:feature_available?).with(:ide_schema_config).and_return(true)
       end
 
       context 'schemas are defined and a matching schema is found and valid' do

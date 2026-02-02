@@ -318,8 +318,8 @@ RSpec.describe Admin::CredentialsController, type: :request, feature_category: :
           context 'does not have permissions to revoke the credential' do
             before do
               allow(Ability).to receive(:allowed?).and_call_original
-              allow(Ability).to receive(:allowed?).with(admin, :log_in, :global) { true }
-              allow(Ability).to receive(:allowed?).with(admin, :revoke_token, personal_access_token) { false }
+              allow(Ability).to receive(:allowed?).with(admin, :log_in, :global).and_return(true)
+              allow(Ability).to receive(:allowed?).with(admin, :revoke_token, personal_access_token).and_return(false)
             end
 
             let(:token_id) { personal_access_token.id }

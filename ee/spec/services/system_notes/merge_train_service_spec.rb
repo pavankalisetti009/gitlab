@@ -34,7 +34,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
 
     context 'when index of the merge request is not zero' do
       before do
-        allow(noteable.merge_train_car).to receive(:index) { 1 }
+        allow(noteable.merge_train_car).to receive(:index).and_return(1)
       end
 
       it "posts the 'merge train' system note" do

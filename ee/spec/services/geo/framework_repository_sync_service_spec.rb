@@ -339,7 +339,7 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
 
     context 'with a never synced repository' do
       before do
-        allow(repository).to receive(:exists?) { false }
+        allow(repository).to receive(:exists?).and_return(false)
       end
 
       it 'clones repository with JWT credentials' do

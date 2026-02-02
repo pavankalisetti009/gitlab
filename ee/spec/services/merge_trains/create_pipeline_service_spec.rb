@@ -157,7 +157,7 @@ RSpec.describe MergeTrains::CreatePipelineService, feature_category: :continuous
         before do
           check_service = double
           allow(expected_ref_creation_service).to receive(:new) { check_service }
-          allow(check_service).to receive(:execute) { { status: :error, message: 'Merge ref was not found' } }
+          allow(check_service).to receive(:execute).and_return({ status: :error, message: 'Merge ref was not found' })
         end
 
         it_behaves_like 'returns an error' do

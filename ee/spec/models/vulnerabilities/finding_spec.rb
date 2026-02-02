@@ -1543,19 +1543,19 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       subject { finding.metadata }
 
       it "handles bool JSON data" do
-        allow(finding).to receive(:raw_metadata) { "true" }
+        allow(finding).to receive(:raw_metadata).and_return("true")
 
         expect(subject).to eq({})
       end
 
       it "handles string JSON data" do
-        allow(finding).to receive(:raw_metadata) { '"test"' }
+        allow(finding).to receive(:raw_metadata).and_return('"test"')
 
         expect(subject).to eq({})
       end
 
       it "parses JSON data" do
-        allow(finding).to receive(:raw_metadata) { '{ "test": true }' }
+        allow(finding).to receive(:raw_metadata).and_return('{ "test": true }')
 
         expect(subject).to eq({ "test" => true })
       end

@@ -82,7 +82,7 @@ RSpec.describe Deployments::AutoRollbackService, :clean_gitlab_redis_rate_limiti
 
     context 'when auto rollback was triggered recently' do
       before do
-        allow(::Gitlab::ApplicationRateLimiter).to receive(:throttled?) { true }
+        allow(::Gitlab::ApplicationRateLimiter).to receive(:throttled?).and_return(true)
       end
 
       it_behaves_like 'rollback failure' do
