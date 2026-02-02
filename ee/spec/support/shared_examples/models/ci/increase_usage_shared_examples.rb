@@ -5,7 +5,7 @@ RSpec.shared_examples_for 'compute minutes increase usage' do
 
   let(:increments) { { amount_used: amount } }
 
-  context 'when amount is greater than 0' do
+  context 'when amount is greater than 0', :clean_gitlab_redis_shared_state do
     let(:amount) { 10.5 }
 
     it 'updates the current month usage' do
@@ -15,7 +15,7 @@ RSpec.shared_examples_for 'compute minutes increase usage' do
     end
   end
 
-  context 'when amount is less or equal to 0' do
+  context 'when amount is less or equal to 0', :clean_gitlab_redis_shared_state do
     let(:amount) { -2.0 }
 
     it 'does not update the current month usage' do
@@ -25,7 +25,7 @@ RSpec.shared_examples_for 'compute minutes increase usage' do
     end
   end
 
-  context 'when shared_runners_duration is incremented' do
+  context 'when shared_runners_duration is incremented', :clean_gitlab_redis_shared_state do
     let(:increments) { { amount_used: amount, shared_runners_duration: duration } }
     let(:amount) { 10.5 }
 
@@ -51,7 +51,7 @@ RSpec.shared_examples_for 'compute minutes increase usage' do
       end
     end
 
-    context 'when duration is zero' do
+    context 'when duration is zero', :clean_gitlab_redis_shared_state do
       let(:duration) { 0 }
 
       it 'updates only the amount used' do
@@ -61,7 +61,7 @@ RSpec.shared_examples_for 'compute minutes increase usage' do
         expect(current_usage.shared_runners_duration).to eq(0)
       end
 
-      context 'when amount_used is zero' do
+      context 'when amount_used is zero', :clean_gitlab_redis_shared_state do
         let(:amount) { 0 }
 
         it 'does not perform updates' do
