@@ -40,7 +40,7 @@ module QA
             duo_chat.number_of_messages > 1
           end
 
-          expect(duo_chat).to have_text('/explain'), 'Expected "/explain" request sent to Duo Chat.'
+          expect(duo_chat).to have_text('Explain this code'), 'Expected "Explain this code" request sent to Duo Chat.'
           expect { duo_chat.response }.to eventually_include('code').within(max_duration: 30),
             'Expected "code" within Duo Chat response.'
         end
