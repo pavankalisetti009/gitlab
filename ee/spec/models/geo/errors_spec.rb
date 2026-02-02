@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Geo::Errors, :geo, type: :model, feature_category: :geo_replication do
-  RSpec.shared_examples 'logs error on initialization' do
-    it 'logs an error when initialized' do
-      expect(Gitlab::Geo::Logger).to receive(:error).with(hash_including(message: expected_log_message))
+  RSpec.shared_examples 'logs warning on initialization' do
+    it 'logs a warning when initialized' do
+      expect(Gitlab::Geo::Logger).to receive(:warn).with(hash_including(expected_log_data))
 
       error
     end
@@ -27,9 +27,15 @@ RSpec.describe Geo::Errors, :geo, type: :model, feature_category: :geo_replicati
       )
     end
 
-    let(:expected_log_message) { 'File is not checksummable - Upload 123 is excluded from verification' }
+    let(:expected_log_data) do
+      {
+        message: 'File is not checksummable because the replicable is excluded from verification',
+        model_class: 'Upload',
+        model_record_id: 123
+      }
+    end
 
-    it_behaves_like 'logs error on initialization'
+    it_behaves_like 'logs warning on initialization'
 
     it 'returns the correct error message' do
       expect(error.message).to eq('File is not checksummable - Upload 123 is excluded from verification')
@@ -51,9 +57,14 @@ RSpec.describe Geo::Errors, :geo, type: :model, feature_category: :geo_replicati
       )
     end
 
-    let(:expected_log_message) { 'File is not checksummable - file does not exist at: /path/to/missing/file.txt' }
+    let(:expected_log_data) do
+      {
+        message: 'File is not checksummable because it does not exist',
+        file_path: '/path/to/missing/file.txt'
+      }
+    end
 
-    it_behaves_like 'logs error on initialization'
+    it_behaves_like 'logs warning on initialization'
 
     it 'returns the correct error message' do
       expect(error.message).to eq("File is not checksummable - file does not exist at: /path/to/missing/file.txt")
