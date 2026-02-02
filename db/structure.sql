@@ -37467,6 +37467,9 @@ ALTER TABLE clusters_kubernetes_namespaces
 ALTER TABLE merge_request_context_commit_diff_files
     ADD CONSTRAINT check_90390c308c CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE security_findings
+    ADD CONSTRAINT check_9c3ba4d6f2 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE related_epic_links
     ADD CONSTRAINT check_a6d9d7c276 CHECK ((issue_link_id IS NOT NULL)) NOT VALID;
 
