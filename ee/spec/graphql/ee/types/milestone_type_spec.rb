@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Milestone'] do
+RSpec.describe GitlabSchema.types['Milestone'], feature_category: :team_planning do
   it 'has the expected fields' do
     expected_fields = %w[
       report

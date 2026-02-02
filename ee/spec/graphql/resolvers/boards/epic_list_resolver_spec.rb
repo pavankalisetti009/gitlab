@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Boards::EpicListResolver do
+RSpec.describe Resolvers::Boards::EpicListResolver, feature_category: :portfolio_management do
   include GraphqlHelpers
   include Gitlab::Graphql::Laziness
 

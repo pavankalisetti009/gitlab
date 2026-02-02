@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['EpicListMetadata'] do
+RSpec.describe GitlabSchema.types['EpicListMetadata'], feature_category: :portfolio_management do
   specify { expect(described_class.graphql_name).to eq('EpicListMetadata') }
 
   it 'has specific fields' do

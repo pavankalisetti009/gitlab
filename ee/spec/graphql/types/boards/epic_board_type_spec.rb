@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['EpicBoard'] do
+RSpec.describe GitlabSchema.types['EpicBoard'], feature_category: :portfolio_management do
   specify { expect(described_class.graphql_name).to eq('EpicBoard') }
 
   specify { expect(described_class).to require_graphql_authorizations(:read_epic_board) }

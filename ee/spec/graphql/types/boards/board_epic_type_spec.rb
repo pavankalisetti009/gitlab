@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['BoardEpic'] do
+RSpec.describe GitlabSchema.types['BoardEpic'], feature_category: :portfolio_management do
   it { expect(described_class.graphql_name).to eq('BoardEpic') }
 
   it 'has specific fields' do
