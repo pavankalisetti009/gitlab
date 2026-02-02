@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-RSpec.describe Namespaces::CombinedStorageUsers::OwnerAlertComponent, :saas, type: :component,
+RSpec.describe Namespaces::CombinedStorageUsers::OwnerAlertComponent, :saas,
   feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
   include FreeUserCapHelpers

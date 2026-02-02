@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe GitlabSubscriptions::TrialAdvantageComponent, :aggregate_failures, type: :component, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::TrialAdvantageComponent, :aggregate_failures, feature_category: :subscription_management do
   let(:advantage) { '_some_advantage_' }
 
   subject(:component) { described_class.new(advantage) }

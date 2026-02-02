@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::CombinedStorageUsers::NonOwnerAlertComponent, :saas, type: :component,
+RSpec.describe Namespaces::CombinedStorageUsers::NonOwnerAlertComponent, :saas,
   feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
 

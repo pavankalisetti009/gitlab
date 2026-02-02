@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponent, :saas, type: :component, feature_category: :seat_cost_management do
+RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponent, :saas, feature_category: :seat_cost_management do
   let(:user) { build(:user) }
   let(:namespace) { build(:group, :private, id: non_existing_record_id) }
   let(:wrapper_class) { 'test-content' }

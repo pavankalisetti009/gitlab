@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::DiscoverDuoProComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
+RSpec.describe GitlabSubscriptions::DiscoverDuoProComponent, :aggregate_failures, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
   let(:page_scope) { page }
   let(:duo_buy_now_url) { ::Gitlab::Routing.url_helpers.subscription_portal_add_saas_duo_pro_seats_url(namespace.id) }

@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Pipelines::Alerts::SharedRunnersMinutesLimitAlertComponent, :saas, type: :component,
+RSpec.describe Namespaces::Pipelines::Alerts::SharedRunnersMinutesLimitAlertComponent, :saas,
   feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
   include NamespacesHelper

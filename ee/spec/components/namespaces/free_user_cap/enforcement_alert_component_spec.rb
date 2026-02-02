@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::FreeUserCap::EnforcementAlertComponent, :with_trial_types, :saas, :aggregate_failures, type: :component, feature_category: :seat_cost_management do
+RSpec.describe Namespaces::FreeUserCap::EnforcementAlertComponent, :with_trial_types, :saas, :aggregate_failures, feature_category: :seat_cost_management do
   let_it_be(:namespace, reload: true) { create(:group) }
   let_it_be(:user, refind: true) { create(:user) }
   let(:content_class) { '_content_class_' }

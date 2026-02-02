@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::Ultimate::CreationFailureComponent, :aggregate_failures, type: :component, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::Ultimate::CreationFailureComponent, :aggregate_failures, feature_category: :acquisition do
   let(:user) { build(:user) }
   let(:namespace_id) { non_existing_record_id }
   let(:params) do
