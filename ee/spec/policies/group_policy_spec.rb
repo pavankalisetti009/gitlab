@@ -18,9 +18,17 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   let_it_be(:auditor) { create(:user, :auditor) }
 
   let(:epic_rules) do
-    %i[read_epic create_epic admin_epic destroy_epic read_confidential_epic
-      read_epic_board read_epic_board_list admin_epic_board
-      admin_epic_board_list]
+    %i[
+      read_epic
+      create_epic
+      admin_epic
+      destroy_epic
+      read_confidential_epic
+      read_epic_board
+      read_epic_board_list
+      admin_epic_board
+      admin_epic_board_list
+    ]
   end
 
   let(:auditor_permissions) do
