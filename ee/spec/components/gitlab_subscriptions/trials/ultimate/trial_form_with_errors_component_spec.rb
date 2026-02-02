@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormWithErrorsComponent, :aggregate_failures, type: :component, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormWithErrorsComponent, :aggregate_failures, feature_category: :acquisition do
   it_behaves_like GitlabSubscriptions::Trials::Ultimate::TrialFormComponent do
     let(:additional_kwargs) { { namespace_create_errors: 'some error' } }
     let(:extra_namespace_data) { { createErrors: 'some error' } }

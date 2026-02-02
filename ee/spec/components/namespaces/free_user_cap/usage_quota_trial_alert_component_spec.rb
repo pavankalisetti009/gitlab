@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::FreeUserCap::UsageQuotaTrialAlertComponent, :saas, :aggregate_failures, type: :component,
+RSpec.describe Namespaces::FreeUserCap::UsageQuotaTrialAlertComponent, :saas, :aggregate_failures,
   feature_category: :seat_cost_management do
   let_it_be(:namespace, refind: true) { create(:group, :private) }
   let_it_be(:user, refind: true) { create(:user) }

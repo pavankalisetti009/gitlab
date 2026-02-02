@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::FreeUserCap::EnforcementAtLimitAlertComponent, :with_trial_types, :saas, :aggregate_failures, type: :component, feature_category: :seat_cost_management do
+RSpec.describe Namespaces::FreeUserCap::EnforcementAtLimitAlertComponent, :with_trial_types, :saas, :aggregate_failures, feature_category: :seat_cost_management do
   let(:namespace) { build_stubbed(:group) }
   let(:content_class) { '_content_class_' }
   let(:user) { build_stubbed(:user) }

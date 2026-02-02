@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggregate_failures, type: :component, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggregate_failures, feature_category: :acquisition do
   let(:user) { build(:user, user_detail_organization: 'Acme Corp') }
   let(:form_params) do
     {

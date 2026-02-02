@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
+RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
 
   subject(:component) { render_inline(test_discover_class.new(namespace: namespace)) }

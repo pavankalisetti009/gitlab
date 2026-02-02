@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::DiscoverDuoCoreTrialComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
+RSpec.describe GitlabSubscriptions::DiscoverDuoCoreTrialComponent, :aggregate_failures, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
   let(:page_scope) { page }
 
