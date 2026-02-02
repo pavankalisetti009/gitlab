@@ -1,7 +1,6 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { parseAllowDenyLicenseList } from 'ee/security_orchestration/components/policy_editor/utils';
@@ -42,7 +41,6 @@ export default {
     PolicyExceptions,
     Settings,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     policy: {
       type: Object,
@@ -93,10 +91,7 @@ export default {
       return this.requireApprovals.length > 0;
     },
     isWarnMode() {
-      return (
-        this.glFeatures.securityPolicyApprovalWarnMode &&
-        this.parsedYaml?.enforcement_type === WARN_VALUE
-      );
+      return this.parsedYaml?.enforcement_type === WARN_VALUE;
     },
     requireApprovals() {
       return this.actions?.filter((action) => action.type === REQUIRE_APPROVAL_TYPE) || [];

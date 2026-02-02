@@ -2,7 +2,6 @@
 import { GlIcon, GlPopover } from '@gitlab/ui';
 import { get, uniqBy } from 'lodash';
 import { s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import MergeChecksMessage from '~/vue_merge_request_widget/components/checks/message.vue';
 import ActionButtons from '~/vue_merge_request_widget/components/action_buttons.vue';
 import getPolicyViolations from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
@@ -46,7 +45,6 @@ export default {
       },
     },
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     mr: {
       type: Object,
@@ -93,9 +91,6 @@ export default {
     hasActiveWarnPolicies() {
       return Boolean(this.activeWarnPolicies.length);
     },
-    hasBypassFeatureFlags() {
-      return this.warnModeEnabled;
-    },
     hasBypassPolicies() {
       return this.bypassPolicies.length > 0;
     },
@@ -103,11 +98,7 @@ export default {
       return this.bypassStatuses.length > 0;
     },
     showBypassButton() {
-      return (
-        this.hasBypassFeatureFlags &&
-        this.mr.securityPoliciesPath &&
-        (this.hasBypassPolicies || this.hasBypassStatuses)
-      );
+      return this.mr.securityPoliciesPath && (this.hasBypassPolicies || this.hasBypassStatuses);
     },
     tertiaryActionsButtons() {
       return [
@@ -138,9 +129,6 @@ export default {
     },
     calculatedMode() {
       return this.selectedModeOption || this.mode;
-    },
-    warnModeEnabled() {
-      return this.glFeatures.securityPolicyApprovalWarnMode;
     },
   },
   methods: {

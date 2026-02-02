@@ -250,10 +250,7 @@ export default {
       return this.explicitBotActions.length > 0;
     },
     isWarnMode() {
-      return this.hasWarnModeFeatureFlag && this.enforcement === WARN_VALUE;
-    },
-    hasWarnModeFeatureFlag() {
-      return Boolean(this.glFeatures.securityPolicyApprovalWarnMode);
+      return this.enforcement === WARN_VALUE;
     },
     hasLegacyWarnAction() {
       return (
@@ -569,7 +566,6 @@ export default {
   >
     <template #additional-status>
       <enforcement-type
-        v-if="hasWarnModeFeatureFlag"
         :enforcement="enforcement"
         :has-legacy-warn-action="hasLegacyWarnAction"
         :is-warn-mode="isWarnMode"

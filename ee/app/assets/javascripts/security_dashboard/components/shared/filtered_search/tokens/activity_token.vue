@@ -11,10 +11,7 @@ import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
-import {
-  autoDismissVulnerabilityPoliciesEnabled,
-  isPolicyViolationFilterEnabled,
-} from 'ee/security_dashboard/utils';
+import { autoDismissVulnerabilityPoliciesEnabled } from 'ee/security_dashboard/utils';
 import { ALL_ID as ALL_ACTIVITY_VALUE } from '../../filters/constants';
 import { ITEMS as ACTIVITY_FILTER_ITEMS } from '../../filters/activity_filter.vue';
 import SearchSuggestion from '../components/search_suggestion.vue';
@@ -101,10 +98,11 @@ export default {
   transformFilters: (filters, { dashboardType }) => {
     const showAiFpFilter =
       window.gon?.abilities?.accessAdvancedVulnerabilityManagement &&
-      window.gon?.features.aiExperimentSastFpDetection;
+      window.gon?.features?.aiExperimentSastFpDetection;
     const showAiResolutionFilter = window.gon?.abilities?.resolveVulnerabilityWithAi;
     const showPolicyViolationFilter =
-      isPolicyViolationFilterEnabled() && isGroupOrProjectDashboard(dashboardType);
+      window.gon?.abilities?.accessAdvancedVulnerabilityManagement &&
+      isGroupOrProjectDashboard(dashboardType);
     const showAutoDismissVulnerabilityFilter =
       autoDismissVulnerabilityPoliciesEnabled() && isGroupOrProjectDashboard(dashboardType);
 
@@ -217,7 +215,10 @@ export default {
       return this.glAbilities.resolveVulnerabilityWithAi;
     },
     showPolicyViolationsFilter() {
-      return isPolicyViolationFilterEnabled() && isGroupOrProjectDashboard(this.dashboardType);
+      return (
+        this.glAbilities?.accessAdvancedVulnerabilityManagement &&
+        isGroupOrProjectDashboard(this.dashboardType)
+      );
     },
     activityTokenGroups() {
       const groups = [...GROUPS];

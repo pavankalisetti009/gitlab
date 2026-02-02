@@ -23,6 +23,7 @@ export const mockDefaultApprovalManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: ''
     actions:
@@ -44,6 +45,7 @@ export const mockRoleApproversApprovalManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: ''
     actions:
@@ -68,6 +70,7 @@ export const mockUserApproversApprovalManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: ''
     actions:
@@ -92,6 +95,7 @@ export const mockGroupApproversApprovalManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     policy_scope:
       projects:
         excluding: []
@@ -120,6 +124,7 @@ export const mockLicenseApprovalManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: license_finding
         match_on_inclusion_license: true
@@ -147,6 +152,7 @@ export const mockLicenseApprovalWithLicenseExceptionsManifest = `approval_policy
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: license_finding
         match_on_inclusion_license: true
@@ -185,6 +191,7 @@ export const mockSecurityApprovalManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: scan_finding
         scanners: []
@@ -212,6 +219,7 @@ export const mockAnyMergeRequestApprovalManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: any_merge_request
         branch_type: protected

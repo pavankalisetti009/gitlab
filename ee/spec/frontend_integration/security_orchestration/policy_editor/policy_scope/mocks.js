@@ -49,6 +49,7 @@ export const mockApprovalActionGroupManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     policy_scope:
       compliance_frameworks:
         - id: 1
@@ -76,6 +77,7 @@ export const mockApprovalActionProjectManifest = `approval_policy:
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: ''
     actions:
@@ -130,6 +132,7 @@ type: pipeline_execution_policy
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     policy_scope:
       projects:
         excluding:
@@ -192,6 +195,7 @@ ${SCAN_EXECUTION_DEFAULT.skip}
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     rules:
       - type: ''
     actions:
@@ -271,6 +275,7 @@ ${SCAN_EXECUTION_DEFAULT.skip}
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     policy_scope:
       groups:
         including:
@@ -339,6 +344,7 @@ ${SCAN_EXECUTION_DEFAULT.skip}
   - name: ''
     description: ''
     enabled: true
+    enforcement_type: warn
     policy_scope:
       groups:
         including:

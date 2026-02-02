@@ -10,7 +10,6 @@ import { createAlert } from '~/alert';
 import { TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { normalizeGraphQLNote } from '../helpers';
 import GenericReportSection from './generic_report/report_section.vue';
 import HistoryEntry from './history_entry.vue';
@@ -35,7 +34,6 @@ export default {
     SolutionCard,
     StatusDescription,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     createJiraIssueUrl: {
       default: '',
@@ -252,13 +250,11 @@ export default {
         />
       </div>
     </div>
-    <template v-if="glFeatures.securityPolicyApprovalWarnMode">
-      <security-policy-bypass-description
-        v-for="bypass in securityPolicyBypasses"
-        :key="bypass.id"
-        :bypass="bypass"
-      />
-    </template>
+    <security-policy-bypass-description
+      v-for="bypass in securityPolicyBypasses"
+      :key="bypass.id"
+      :bypass="bypass"
+    />
     <hr />
     <gl-loading-icon v-if="discussionsLoading" />
     <div v-else-if="discussions.length">

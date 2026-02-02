@@ -80,7 +80,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
     bypassed = false,
     status = 'SUCCESS',
     securityPoliciesPath = null,
-    warnModeEnabled = false,
     policies = defaultPolicies,
   } = {}) {
     wrapper = mountExtended(SecurityPolicyViolations, {
@@ -94,11 +93,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
         check: {
           identifier: 'security_policy_violations',
           status,
-        },
-      },
-      provide: {
-        glFeatures: {
-          securityPolicyApprovalWarnMode: warnModeEnabled,
         },
       },
       stubs: { ActionButtons },
@@ -151,40 +145,29 @@ describe('SecurityPolicyViolations merge checks component', () => {
 
   describe('bypass functionality', () => {
     it.each`
-      title                                                                                       | warnModeEnabled | securityPoliciesPath | policies
-      ${'warn mode is disabled and there is not a security path and there are no policies'}       | ${false}        | ${''}                | ${[]}
-      ${'warn mode is disabled and there is not a security path and there are enforced policies'} | ${false}        | ${''}                | ${[mockEnforcedSecurityPolicyViolation]}
-      ${'warn mode is disabled and there is not a security path and there are warn policies'}     | ${false}        | ${''}                | ${[mockWarnSecurityPolicyViolation]}
-      ${'warn mode is disabled and there is a security path and there are no policies'}           | ${false}        | ${policiesPath}      | ${[]}
-      ${'warn mode is disabled and there is a security path adn there are enforced policies'}     | ${false}        | ${policiesPath}      | ${[mockEnforcedSecurityPolicyViolation]}
-      ${'warn mode is disabled and there is a security path adn there are warn policies'}         | ${false}        | ${policiesPath}      | ${[mockWarnSecurityPolicyViolation]}
-      ${'warn mode is enabled and this is no security path and there are no policies'}            | ${true}         | ${''}                | ${[]}
-      ${'warn mode is enabled and this is no security path and there are enforced policies'}      | ${true}         | ${''}                | ${[mockEnforcedSecurityPolicyViolation]}
-      ${'warn mode is enabled and this is no security path and there are warn policies'}          | ${true}         | ${''}                | ${[mockWarnSecurityPolicyViolation]}
-    `(
-      'does not show the bypass button when $title',
-      async ({ warnModeEnabled, securityPoliciesPath, policies }) => {
-        createComponent({
-          warnModeEnabled,
-          securityPoliciesPath,
-          policies,
-        });
-        await waitForPromises();
+      title                                                             | securityPoliciesPath | policies
+      ${'there is not a security path and there are no policies'}       | ${''}                | ${[]}
+      ${'there is not a security path and there are enforced policies'} | ${''}                | ${[mockEnforcedSecurityPolicyViolation]}
+      ${'there is not a security path and there are warn policies'}     | ${''}                | ${[mockWarnSecurityPolicyViolation]}
+      ${'there is a security path and there are no policies'}           | ${policiesPath}      | ${[]}
+      ${'there is a security path and there are enforced policies'}     | ${policiesPath}      | ${[mockEnforcedSecurityPolicyViolation]}
+    `('does not show the bypass button when $title', async ({ securityPoliciesPath, policies }) => {
+      createComponent({ securityPoliciesPath, policies });
+      await waitForPromises();
 
-        expect(findBypassButton().exists()).toBe(false);
-      },
-    );
+      expect(findBypassButton().exists()).toBe(false);
+    });
 
     it.each`
-      policiesTitle                                             | warnModeEnabled | securityPoliciesPath | policies
-      ${'there are warn policies that have not been dismissed'} | ${true}         | ${policiesPath}      | ${[mockWarnSecurityPolicyViolation]}
-      ${'there are warn policies that have been dismissed'}     | ${true}         | ${policiesPath}      | ${[{ ...mockWarnSecurityPolicyViolation, dismissed: true }]}
+      policiesTitle                                             | policies
+      ${'there are warn policies that have not been dismissed'} | ${[mockWarnSecurityPolicyViolation]}
+      ${'there are warn policies that have been dismissed'}     | ${[{ ...mockWarnSecurityPolicyViolation, dismissed: true }]}
     `(
-      'shows the bypass button when warn mode is enabled and there is a security path and $policiesTitle',
-      async ({ warnModeEnabled, securityPoliciesPath, policies }) => {
+      'shows the bypass button when there is a security path and $policiesTitle',
+      async ({ warnModeEnabled, policies }) => {
         createComponent({
           warnModeEnabled,
-          securityPoliciesPath,
+          securityPoliciesPath: policiesPath,
           policies,
         });
         await waitForPromises();

@@ -197,7 +197,7 @@ describe('EditorComponent', () => {
       namespaceType              | policy
       ${NAMESPACE_TYPES.GROUP}   | ${APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS}
       ${NAMESPACE_TYPES.PROJECT} | ${APPROVAL_POLICY_DEFAULT_POLICY}
-    `('should render default policy for a $namespaceType', ({ namespaceType, policy }) => {
+    `('renders the default policy for a $namespaceType', ({ namespaceType, policy }) => {
       factory({ provide: { namespaceType } });
       expect(findPolicyEditorLayout().props('policy')).toStrictEqual(policy);
       expect(findPolicyEditorLayout().props('hasParsingError')).toBe(false);
@@ -209,7 +209,7 @@ describe('EditorComponent', () => {
       ${NAMESPACE_TYPES.GROUP}   | ${DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS}
       ${NAMESPACE_TYPES.PROJECT} | ${DEFAULT_SCAN_RESULT_POLICY}
     `(
-      'should use the correct default policy yaml for a $namespaceType',
+      'uses the correct default policy yaml for a $namespaceType',
       ({ namespaceType, manifest }) => {
         factory({ provide: { namespaceType } });
         expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(manifest);
@@ -260,158 +260,131 @@ describe('EditorComponent', () => {
     });
 
     describe('additional options section', () => {
-      describe('with the securityPolicyApprovalWarnMode feature flag on', () => {
-        describe('default', () => {
-          it('renders enforcement type section', () => {
-            factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
-            expect(findEnforcementSection().exists()).toBe(true);
-            expect(findEnforcementSection().props()).toEqual({
-              enforcement: 'enforce',
-              hasLegacyWarnAction: false,
-              isWarnMode: false,
-            });
-          });
-        });
-
-        describe('enforcement is "enforce"', () => {
-          it('does not display the warn action', () => {
-            factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
-            expect(findWarnTypeAction().exists()).toBe(false);
-          });
-
-          it('does not display the warn action for legacy warn policies', () => {
-            factoryWithExistingPolicy({
-              provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
-              policy: mockLegacyWarnTypeScanResultObject,
-            });
-            expect(findWarnTypeAction().exists()).toBe(false);
-            expect(findEnforcementSection().props('hasLegacyWarnAction')).toBe(true);
-          });
-
-          it('shows the correct scan filter selector options', () => {
-            factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
-            expect(findAllActionSections()).toHaveLength(1);
-            expect(
-              findScanFilterSelector().props('shouldDisableFilter')(REQUIRE_APPROVAL_TYPE),
-            ).toBe(false);
-            expect(findScanFilterSelector().props('shouldDisableFilter')(BOT_MESSAGE_TYPE)).toBe(
-              true,
-            );
-            expect(findScanFilterSelector().props('shouldDisableFilter')(WARN_TYPE)).toBe(true);
-          });
-        });
-
-        describe('enforcement is "warn"', () => {
-          it('shows the correct scan filter selector options', async () => {
-            factoryWithExistingPolicy({
-              provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
-              policy: mockLegacyWarnTypeScanResultObject,
-            });
-            await findEnforcementSection().vm.$emit('change', 'warn');
-            expect(findWarnTypeAction().exists()).toBe(true);
-            expect(findAllActionSections()).toHaveLength(1);
-            expect(
-              findScanFilterSelector().props('shouldDisableFilter')(REQUIRE_APPROVAL_TYPE),
-            ).toBe(true);
-            expect(findScanFilterSelector().props('shouldDisableFilter')(BOT_MESSAGE_TYPE)).toBe(
-              true,
-            );
-            expect(findScanFilterSelector().props('shouldDisableFilter')(WARN_TYPE)).toBe(false);
-          });
-
-          it('does not display the bot comment action', async () => {
-            factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
-            expect(findBotCommentAction().exists()).toBe(true);
-            await findEnforcementSection().vm.$emit('change', 'warn');
-            expect(findWarnTypeAction().exists()).toBe(true);
-            expect(findAllActionSections()).toHaveLength(1);
-            expect(findBotCommentAction().exists()).toBe(false);
-          });
-        });
-
-        describe('events', () => {
-          it('replaces policy actions with the default actions when enforcement is changed to "enforce"', async () => {
-            factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
-            await findEnforcementSection().vm.$emit('change', 'warn');
-            await findEnforcementSection().vm.$emit('change', 'enforce');
-            expect(findAllActionSections()).toHaveLength(1);
-            expect(findWarnTypeAction().exists()).toBe(false);
-            expect(findBotCommentAction().exists()).toBe(true);
-          });
-
-          describe('changing enforcement to "warn"', () => {
-            it('replaces policy actions with a new warn-type action', async () => {
-              factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
-              expect(findAllActionSections()).toHaveLength(1);
-              expect(findBotCommentAction().exists()).toBe(true);
-              expect(findWarnTypeAction().exists()).toBe(false);
-              await findEnforcementSection().vm.$emit('change', 'warn');
-              expect(findAllActionSections()).toHaveLength(1);
-              expect(findBotCommentAction().exists()).toBe(false);
-              expect(findWarnTypeAction().exists()).toBe(true);
-            });
-
-            it('preserves the user-chosen bot comment action', async () => {
-              factoryWithExistingPolicy({
-                provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
-                policy: mockDefaultBranchesScanResultObject,
-              });
-              await findEnforcementSection().vm.$emit('change', 'warn');
-              expect(findAllActionSections()).toHaveLength(1);
-              expect(findBotCommentAction().exists()).toBe(false);
-              expect(findWarnTypeAction().exists()).toBe(true);
-              expect(findPolicyEditorLayout().props('policy').actions).toContainEqual(
-                expect.objectContaining({
-                  type: REQUIRE_APPROVAL_TYPE,
-                  approvals_required: 1,
-                  user_approvers: ['the.one'],
-                }),
-              );
-            });
-
-            it('updates bot comment to be "true"', async () => {
-              factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
-              expect(findBotCommentAction().exists()).toBe(true);
-              await findBotCommentAction().vm.$emit('changed', DISABLED_BOT_MESSAGE_ACTION);
-              expect(findBotCommentAction().exists()).toBe(false);
-              await findEnforcementSection().vm.$emit('change', 'warn');
-              expect(findBotCommentAction().exists()).toBe(false);
-              expect(findPolicyEditorLayout().props('policy').actions).toContainEqual(
-                expect.objectContaining({ type: BOT_MESSAGE_TYPE, enabled: true }),
-              );
-            });
-
-            it('updates bot comment to exist', async () => {
-              factoryWithExistingPolicy({
-                provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
-                policy: mockDefaultBranchesScanResultObjectWithoutBotAction,
-              });
-              expect(findAllActionSections()).toHaveLength(1);
-              expect(findBotCommentAction().exists()).toBe(true);
-              expect(findWarnTypeAction().exists()).toBe(false);
-              await findEnforcementSection().vm.$emit('change', 'warn');
-              expect(findPolicyEditorLayout().props('policy').actions).toContainEqual(
-                expect.objectContaining({ type: BOT_MESSAGE_TYPE, enabled: true }),
-              );
-            });
+      describe('default', () => {
+        it('renders enforcement type section', () => {
+          factory();
+          expect(findEnforcementSection().exists()).toBe(true);
+          expect(findEnforcementSection().props()).toEqual({
+            enforcement: 'warn',
+            hasLegacyWarnAction: false,
+            isWarnMode: true,
           });
         });
       });
 
-      describe('with the securityPolicyApprovalWarnMode feature flag  off', () => {
-        it('does not render enforcement type section', () => {
-          factory();
-          expect(findEnforcementSection().exists()).toBe(false);
-        });
-
-        it('does not display the warn action by default', () => {
-          factory();
+      describe('enforcement is "enforce"', () => {
+        it('does not display the warn action', () => {
+          factoryWithExistingPolicy();
           expect(findWarnTypeAction().exists()).toBe(false);
         });
 
-        it('does not display the warn action with the feature flag off', () => {
-          factoryWithExistingPolicy({ policy: mockLegacyWarnTypeScanResultObject });
+        it('does not display the warn action for legacy warn policies', () => {
+          factoryWithExistingPolicy({
+            policy: mockLegacyWarnTypeScanResultObject,
+          });
           expect(findWarnTypeAction().exists()).toBe(false);
+          expect(findEnforcementSection().props('hasLegacyWarnAction')).toBe(true);
+        });
+
+        it('shows the correct scan filter selector options', () => {
+          factoryWithExistingPolicy();
+          expect(findAllActionSections()).toHaveLength(1);
+          expect(findScanFilterSelector().props('shouldDisableFilter')(REQUIRE_APPROVAL_TYPE)).toBe(
+            false,
+          );
+          expect(findScanFilterSelector().props('shouldDisableFilter')(BOT_MESSAGE_TYPE)).toBe(
+            true,
+          );
+          expect(findScanFilterSelector().props('shouldDisableFilter')(WARN_TYPE)).toBe(true);
+        });
+      });
+
+      describe('enforcement is "warn"', () => {
+        it('shows the correct scan filter selector options', async () => {
+          factory();
+          await findEnforcementSection().vm.$emit('change', 'warn');
+          expect(findWarnTypeAction().exists()).toBe(true);
+          expect(findAllActionSections()).toHaveLength(1);
+          expect(findScanFilterSelector().props('shouldDisableFilter')(REQUIRE_APPROVAL_TYPE)).toBe(
+            true,
+          );
+          expect(findScanFilterSelector().props('shouldDisableFilter')(BOT_MESSAGE_TYPE)).toBe(
+            true,
+          );
+          expect(findScanFilterSelector().props('shouldDisableFilter')(WARN_TYPE)).toBe(false);
+        });
+
+        it('does not display the bot comment action', () => {
+          factory();
+          expect(findWarnTypeAction().exists()).toBe(true);
+          expect(findAllActionSections()).toHaveLength(1);
+          expect(findBotCommentAction().exists()).toBe(false);
+        });
+      });
+
+      describe('events', () => {
+        it('replaces policy actions with the default actions when enforcement is changed to "enforce"', async () => {
+          factoryWithExistingPolicy();
+          await findEnforcementSection().vm.$emit('change', 'warn');
+          await findEnforcementSection().vm.$emit('change', 'enforce');
+          expect(findAllActionSections()).toHaveLength(1);
+          expect(findWarnTypeAction().exists()).toBe(false);
+          expect(findBotCommentAction().exists()).toBe(true);
+        });
+
+        describe('changing enforcement to "warn"', () => {
+          it('replaces policy actions with a new warn-type action', async () => {
+            factoryWithExistingPolicy();
+            expect(findAllActionSections()).toHaveLength(1);
+            expect(findBotCommentAction().exists()).toBe(true);
+            expect(findWarnTypeAction().exists()).toBe(false);
+            await findEnforcementSection().vm.$emit('change', 'warn');
+            expect(findAllActionSections()).toHaveLength(1);
+            expect(findBotCommentAction().exists()).toBe(false);
+            expect(findWarnTypeAction().exists()).toBe(true);
+          });
+
+          it('preserves the user-chosen bot comment action', async () => {
+            factoryWithExistingPolicy({
+              policy: mockDefaultBranchesScanResultObject,
+            });
+            await findEnforcementSection().vm.$emit('change', 'warn');
+            expect(findAllActionSections()).toHaveLength(1);
+            expect(findBotCommentAction().exists()).toBe(false);
+            expect(findWarnTypeAction().exists()).toBe(true);
+            expect(findPolicyEditorLayout().props('policy').actions).toContainEqual(
+              expect.objectContaining({
+                type: REQUIRE_APPROVAL_TYPE,
+                approvals_required: 1,
+                user_approvers: ['the.one'],
+              }),
+            );
+          });
+
+          it('updates bot comment to be "true"', async () => {
+            factoryWithExistingPolicy();
+            expect(findBotCommentAction().exists()).toBe(true);
+            await findBotCommentAction().vm.$emit('changed', DISABLED_BOT_MESSAGE_ACTION);
+            expect(findBotCommentAction().exists()).toBe(false);
+            await findEnforcementSection().vm.$emit('change', 'warn');
+            expect(findBotCommentAction().exists()).toBe(false);
+            expect(findPolicyEditorLayout().props('policy').actions).toContainEqual(
+              expect.objectContaining({ type: BOT_MESSAGE_TYPE, enabled: true }),
+            );
+          });
+
+          it('updates bot comment to exist', async () => {
+            factoryWithExistingPolicy({
+              policy: mockDefaultBranchesScanResultObjectWithoutBotAction,
+            });
+            expect(findAllActionSections()).toHaveLength(1);
+            expect(findBotCommentAction().exists()).toBe(true);
+            expect(findWarnTypeAction().exists()).toBe(false);
+            await findEnforcementSection().vm.$emit('change', 'warn');
+            expect(findPolicyEditorLayout().props('policy').actions).toContainEqual(
+              expect.objectContaining({ type: BOT_MESSAGE_TYPE, enabled: true }),
+            );
+          });
         });
       });
     });
@@ -542,7 +515,7 @@ describe('EditorComponent', () => {
           });
 
           it('displays the approver action and the add action button on the group-level', () => {
-            factory({ provide: { namespaceType } });
+            factoryWithExistingPolicy({ provide: { namespaceType } });
             expect(findActionSection().exists()).toBe(true);
             expect(findAllActionSections()).toHaveLength(1);
             expect(findBotCommentActions()).toHaveLength(1);
@@ -581,8 +554,9 @@ describe('EditorComponent', () => {
             findScanFilterSelector().props('shouldDisableFilter')({ value: REQUIRE_APPROVAL_TYPE }),
           ).toBe(false);
           expect(findScanFilterSelector().props('filters')).toEqual([
-            { value: REQUIRE_APPROVAL_TYPE, text: 'Require Approvers' },
-            { value: BOT_MESSAGE_TYPE, text: 'Send bot message' },
+            { text: 'Require Approvers', value: REQUIRE_APPROVAL_TYPE },
+            { text: 'Send bot message', value: BOT_MESSAGE_TYPE },
+            { text: 'Warn in merge request', value: WARN_TYPE },
           ]);
         });
 
@@ -596,6 +570,7 @@ describe('EditorComponent', () => {
           expect(findScanFilterSelector().props('filters')).toEqual([
             { text: 'Require Approvers', value: REQUIRE_APPROVAL_TYPE },
             { text: 'Send bot message', value: BOT_MESSAGE_TYPE },
+            { text: 'Warn in merge request', value: WARN_TYPE },
           ]);
         });
 
@@ -698,7 +673,7 @@ describe('EditorComponent', () => {
         });
 
         it('disables the bot message action', async () => {
-          factory();
+          factoryWithExistingPolicy();
           expect(findAllActionSections()).toHaveLength(1);
           expect(findBotCommentActions()).toHaveLength(1);
           await findBotCommentAction().vm.$emit('changed', DISABLED_BOT_MESSAGE_ACTION);
@@ -945,7 +920,6 @@ describe('EditorComponent', () => {
           policy,
           hasActions: false,
           hasRules: false,
-          provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
         });
         expect(findEmptyActionsAlert().text()).toBe(expected);
       });
@@ -1099,6 +1073,7 @@ describe('EditorComponent', () => {
             policy: `name: ''
 description: ''
 enabled: true
+enforcement_type: warn
 rules:
   - type: ''
 actions:
