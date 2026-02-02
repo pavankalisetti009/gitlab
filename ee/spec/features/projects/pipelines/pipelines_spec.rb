@@ -15,11 +15,14 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
 
   describe 'GET /:project/-/pipelines' do
     describe 'when namespace is in read-only mode' do
-      it 'does not render New pipeline link' do
-        allow_next_found_instance_of(Namespace) do |instance|
-          allow(instance).to receive(:read_only?).and_return(true)
+      before do
+        # Trigger read-only mode via storage limit to avoid association loading issues with direct Namespace stubbing
+        allow_next_instance_of(::Namespaces::Storage::RootSize) do |size_checker|
+          allow(size_checker).to receive(:above_size_limit?).and_return(true)
         end
+      end
 
+      it 'does not render New pipeline link' do
         visit project_pipelines_path(project)
         wait_for_requests
         expect(page).to have_content('Show Pipeline ID')

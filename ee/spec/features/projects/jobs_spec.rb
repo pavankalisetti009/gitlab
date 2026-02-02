@@ -22,11 +22,14 @@ RSpec.describe 'Jobs', :clean_gitlab_redis_shared_state, feature_category: :cont
       let(:project) { create(:project, :repository) }
 
       context 'when namespace is in read-only mode' do
-        it 'does not show retry button' do
-          allow_next_found_instance_of(Namespace) do |instance|
-            allow(instance).to receive(:read_only?).and_return(true)
+        before do
+          # Trigger read-only mode via storage limit to avoid association loading issues with direct Namespace stubbing
+          allow_next_instance_of(::Namespaces::Storage::RootSize) do |size_checker|
+            allow(size_checker).to receive(:above_size_limit?).and_return(true)
           end
+        end
 
+        it 'does not show retry button' do
           visit project_job_path(project, job)
           wait_for_requests
 
