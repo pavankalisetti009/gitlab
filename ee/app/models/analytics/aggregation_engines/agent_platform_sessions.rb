@@ -8,7 +8,7 @@ module Analytics
 
       dimensions do
         column :flow_type, :string, description: 'Type of session'
-        column :user_id, :integer, description: 'User ID'
+        column :user_id, :integer, description: 'Session owner', association: true
         date_bucket :created_event_at, :date, -> {
           sql('anyIfMerge(created_event_at)')
         }, description: 'Session creation time', parameters: {

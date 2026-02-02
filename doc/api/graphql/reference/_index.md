@@ -26064,7 +26064,7 @@ Response dimensions for AgentPlatformSessions aggregation engine.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="agentplatformsessionsaggregationresponsedimensionsflowtype"></a>`flowType` | [`String`](#string) | Type of session. |
-| <a id="agentplatformsessionsaggregationresponsedimensionsuserid"></a>`userId` | [`Int`](#int) | User ID. |
+| <a id="agentplatformsessionsaggregationresponsedimensionsuser"></a>`user` | [`UserCore`](#usercore) | Session owner. |
 
 #### Fields with arguments
 
