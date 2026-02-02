@@ -28,9 +28,10 @@ module Geo
         @model_class = model_class
         @model_record_id = model_record_id
 
-        Gitlab::Geo::Logger.error(
-          message: "File is not checksummable - #{model_class} #{model_record_id} is excluded from verification",
-          correlation_id: Labkit::Correlation::CorrelationId.current_id
+        Gitlab::Geo::Logger.warn(
+          message: "File is not checksummable because the replicable is excluded from verification",
+          model_class: model_class,
+          model_record_id: model_record_id
         )
       end
 
@@ -45,9 +46,9 @@ module Geo
       def initialize(file_path:)
         @file_path = file_path
 
-        Gitlab::Geo::Logger.error(
-          message: "File is not checksummable - file does not exist at: #{file_path}",
-          correlation_id: Labkit::Correlation::CorrelationId.current_id
+        Gitlab::Geo::Logger.warn(
+          message: "File is not checksummable because it does not exist",
+          file_path: file_path
         )
       end
 
