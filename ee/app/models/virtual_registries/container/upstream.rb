@@ -5,6 +5,7 @@ module VirtualRegistries
     class Upstream < ::VirtualRegistries::Upstream
       include Gitlab::SQL::Pattern
 
+      TEST_PATH = 'library/alpine/manifests/latest'
       TOKEN_REQUEST_TIMEOUT = 10.seconds
       BEARER_TOKEN_CACHE_DURATION = 3.minutes
       AUTH_CHALLENGE_REGEX = /(\w+)="([^"]+)"/
@@ -88,17 +89,31 @@ module VirtualRegistries
         if response&.not_found? && auth_url.present?
           request_auth_url = fetch_auth_url(path)
 
-          update(auth_url: nil) && return unless request_auth_url
+          unless request_auth_url
+            clear_auth_url
+            return
+          end
 
           response = request_bearer_token(request_auth_url, path)
         end
 
-        update(auth_url: nil) && return unless response&.success?
+        unless response&.success?
+          clear_auth_url
+          return
+        end
 
         token = parse_token(response)
-        update(auth_url: request_auth_url) if token.present?
+        save_auth_url(request_auth_url) if token.present?
 
         token
+      end
+
+      def clear_auth_url
+        update(auth_url: nil) if persisted?
+      end
+
+      def save_auth_url(url)
+        update(auth_url: url) if persisted?
       end
 
       def fetch_auth_url(path)

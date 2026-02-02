@@ -72,5 +72,31 @@ module VirtualRegistries
     def purge_cache!
       ::VirtualRegistries::Cache::MarkEntriesForDestructionWorker.perform_async(to_global_id.to_s)
     end
+
+    def test
+      relative_path =
+        if new_record?
+          self.class::TEST_PATH
+        else
+          default_cache_entries.pick(:relative_path) || self.class::TEST_PATH
+        end
+
+      response = Gitlab::HTTP.head(
+        url_for(relative_path),
+        headers: headers(relative_path),
+        follow_redirects: true
+      )
+
+      case response.code
+      # Both 2XX and 404 indicate successful connectivity.
+      # 404 means the upstream is reachable but the test artifact doesn't exist,
+      # which is acceptable for a connectivity test.
+      when 404, 200..299 then { success: true }
+      else
+        { success: false, result: "Error: #{response.code} - #{response.message}" }
+      end
+    rescue *::Gitlab::HTTP::HTTP_ERRORS => e
+      { success: false, result: "Error: #{e.message}" }
+    end
   end
 end
