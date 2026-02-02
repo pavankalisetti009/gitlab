@@ -18,6 +18,7 @@ module Ai
       belongs_to :ai_catalog_item_version, optional: true, class_name: 'Ai::Catalog::ItemVersion'
       belongs_to :issue, optional: true
       belongs_to :merge_request, optional: true
+      belongs_to :service_account, optional: true, class_name: 'User'
 
       has_many :checkpoints, class_name: 'Ai::DuoWorkflows::Checkpoint'
       has_many :checkpoint_writes, class_name: 'Ai::DuoWorkflows::CheckpointWrite'
@@ -33,6 +34,7 @@ module Ai
       validate :only_known_agent_privileges
       validate :only_known_pre_approved_agent_privileges
       validate :pre_approved_privileges_included_in_agent_privileges, on: :create
+      validate :valid_service_account_user
 
       # `ide` is deprecated in favor of `chat`
       # `web` is deprecated in favor of `ambient`
@@ -250,6 +252,13 @@ module Ai
       end
 
       private
+
+      def valid_service_account_user
+        return if service_account.nil?
+        return if service_account.service_account?
+
+        errors.add(:service_account, 'must be a service account user')
+      end
 
       def only_known_pre_approved_agent_privileges
         return if pre_approved_agent_privileges.nil?
