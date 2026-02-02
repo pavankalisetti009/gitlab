@@ -20,7 +20,7 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
         .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
     end
 
-    context 'when running on GitLab.com' do
+    context 'when running on GitLab.com', :saas do
       shared_examples 'falling back to default namespace' do
         context 'when default namespace selected by user' do
           let_it_be(:default_namespace) { create(:group) }
@@ -36,7 +36,8 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
               :rails_on_ui_check,
               feature_metadata,
               user_id: user.id,
-              root_namespace_id: default_namespace.id
+              root_namespace_id: default_namespace.id,
+              plan_key: 'free'
             )
 
             service_call
@@ -62,7 +63,7 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
       context 'when namespace is provided' do
         subject(:service_call) { described_class.new(ai_feature: ai_feature, user: user, namespace: namespace).execute }
 
-        let_it_be(:root_namespace) { create(:group) }
+        let_it_be(:root_namespace) { create(:group_with_plan, plan: :premium_plan) }
         let_it_be(:namespace) { create(:group, parent: root_namespace) }
 
         context 'when the user can invoke the feature in the given namespace' do
@@ -99,7 +100,8 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
                 :rails_on_ui_check,
                 feature_metadata,
                 user_id: user.id,
-                root_namespace_id: root_namespace.id
+                root_namespace_id: root_namespace.id,
+                plan_key: 'premium'
               ).and_return({ success: true })
             end
 
@@ -110,7 +112,8 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
                 :rails_on_ui_check,
                 feature_metadata,
                 user_id: user.id,
-                root_namespace_id: root_namespace.id
+                root_namespace_id: root_namespace.id,
+                plan_key: 'premium'
               )
 
               expect(service_call).to be_success
@@ -123,7 +126,8 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
                 :rails_on_ui_check,
                 feature_metadata,
                 user_id: user.id,
-                root_namespace_id: root_namespace.id
+                root_namespace_id: root_namespace.id,
+                plan_key: 'premium'
               ).and_return({ success: false, data: { errors: "HTTP status code: 402" } }.with_indifferent_access)
             end
 
@@ -134,7 +138,8 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
                 :rails_on_ui_check,
                 feature_metadata,
                 user_id: user.id,
-                root_namespace_id: root_namespace.id
+                root_namespace_id: root_namespace.id,
+                plan_key: 'premium'
               )
 
               expect(service_call).to be_error
@@ -150,23 +155,51 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
     end
 
     context 'when running on self-hosted instance' do
+      let(:plan_key) { '' }
+
+      let(:params) do
+        [
+          :rails_on_ui_check,
+          feature_metadata,
+          {
+            user_id: user.id,
+            unique_instance_id: 'instance_id',
+            plan_key: plan_key
+          }
+        ]
+      end
+
       subject(:service_call) { described_class.new(ai_feature: ai_feature, user: user).execute }
 
       before do
         allow(::Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return("instance_id")
+        create_current_license
       end
 
       it 'calls portal with instance id, dap_feature_legacy metadata, and rails_on_ui_check event type' do
         expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
           .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
-        expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(
-          :rails_on_ui_check,
-          feature_metadata,
-          user_id: user.id,
-          unique_instance_id: "instance_id"
-        )
+
+        expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(*params)
 
         service_call
+      end
+
+      context 'when on trial' do
+        let(:plan_key) { 'true' }
+
+        before do
+          create_current_license(:trial)
+        end
+
+        it 'calls portal with instance id, dap_feature_legacy metadata, and rails_on_ui_check event type' do
+          expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
+            .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
+
+          expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(*params)
+
+          service_call
+        end
       end
     end
 
@@ -188,7 +221,8 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
           :custom_event,
           feature_metadata,
           user_id: user.id,
-          root_namespace_id: 999
+          root_namespace_id: 999,
+          plan_key: 'free'
         )
 
         service_call

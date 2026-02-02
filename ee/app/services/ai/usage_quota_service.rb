@@ -22,8 +22,10 @@ module Ai
         return ServiceResponse.success if skip_quota_check_for_team_members?
 
         params[:root_namespace_id] = root_namespace.id
+        params[:plan_key] = root_namespace.actual_plan_name
       else
         params[:unique_instance_id] = Gitlab::GlobalAnonymousId.instance_id
+        params[:plan_key] = License.current&.trial?.to_s
       end
 
       feature_metadata = ::Gitlab::SubscriptionPortal::FeatureMetadata.for(:dap_feature_legacy)
