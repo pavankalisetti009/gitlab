@@ -27,7 +27,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   context 'basic permissions' do
     let(:additional_guest_permissions) { %i[read_limit_alert] }
     let(:additional_reporter_permissions) do
-      %i[read_software_license_policy admin_value_stream read_customizable_dashboards read_path_locks]
+      %i[
+        admin_value_stream
+        read_customizable_dashboards
+        read_path_locks
+        read_software_license_policy
+      ]
     end
 
     let(:additional_developer_permissions) do
@@ -60,27 +65,48 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     let(:auditor_permissions) do
       %i[
-        download_code download_wiki_code read_project read_project_metadata read_issue_board read_issue_board_list
-        read_project_for_iids read_issue_iid read_merge_request_iid read_wiki
-        read_issue read_label read_issue_link read_milestone
-        read_snippet read_project_member read_note read_cycle_analytics
-        read_pipeline read_build read_commit_status read_container_image
-        read_environment read_deployment read_merge_request read_pages
         award_emoji
-        read_project_security_dashboard read_security_resource
+        download_code
+        download_wiki_code
+        export_work_items
+        read_alert_management_alert
+        read_build
+        read_cluster
+        read_commit_status
+        read_container_image
+        read_cycle_analytics
+        read_deployment
+        read_environment
+        read_feature_flag
+        read_issue
+        read_issue_board
+        read_issue_board_list
+        read_issue_iid
+        read_issue_link
+        read_label
+        read_merge_request
+        read_merge_request_iid
+        read_merge_train
+        read_milestone
+        read_note
+        read_on_demand_dast_scan
+        read_pages
+        read_pipeline
+        read_project
+        read_project_audit_events
+        read_project_for_iids
+        read_project_member
+        read_project_merge_request_analytics
+        read_project_metadata
+        read_project_security_dashboard
+        read_release
+        read_security_resource
+        read_snippet
+        read_software_license_policy
+        read_terraform_state
         read_vulnerability
         read_vulnerability_scanner
-        read_software_license_policy
-        read_merge_train
-        read_release
-        read_project_audit_events
-        read_cluster
-        read_terraform_state
-        read_feature_flag
-        read_project_merge_request_analytics
-        read_on_demand_dast_scan
-        read_alert_management_alert
-        export_work_items
+        read_wiki
       ]
     end
 
@@ -98,7 +124,14 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:current_user) { auditor }
       let(:auditor_permission_exclusions) { [:fork_project, :create_merge_request_in] }
       let(:auditor_as_guest_exclusions) do
-        %i[create_note read_confidential_issues create_project create_issue create_note upload_file admin_issue_link]
+        %i[
+          admin_issue_link
+          create_issue
+          create_note
+          create_project
+          read_confidential_issues
+          upload_file
+        ]
       end
 
       before do
@@ -111,74 +144,74 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'for read_* permissions' do
         let(:excluded_permissions) do
-          [
-            :read_ai_agents,
-            :read_ai_catalog_flow,
-            :read_ai_catalog_third_party_flow,
-            :read_ai_catalog_item_consumer,
-            :read_all_organization_resources,
-            :read_ci_pipeline_schedules_plan_limit,
-            :read_cluster_agent,
-            :read_commit_committer_check,
-            :read_commit_committer_name_check,
-            :read_compliance_adherence_report,
-            :read_compliance_dashboard,
-            :read_compliance_violations_report,
-            :read_coverage_fuzzing,
-            :read_customizable_dashboards,
-            :read_custom_attribute,
-            :read_dap_external_trigger_usage_rule,
-            :read_dedicated_hosted_runner_usage,
-            :read_deploy_board,
-            :read_deploy_token,
-            :read_design,
-            :read_design_activity,
-            :read_dora4_analytics,
-            :read_duo_usage_analytics,
-            :read_enterprise_ai_analytics,
-            :read_external_emails,
-            :read_foundational_flow,
-            :read_freeze_period,
-            :read_google_cloud_artifact_registry,
-            :read_grafana,
-            :read_harbor_registry,
-            :read_import_error,
-            :read_internal_note,
-            :read_iteration,
-            :read_limit_alert,
-            :read_member_access_request,
-            :read_member_role,
-            :read_observability,
-            :read_pod_logs,
-            :read_pro_ai_analytics,
-            :read_project_secrets,
-            :read_project_secrets_manager,
-            :read_project_secrets_manager_status,
-            :read_prometheus,
-            :read_protected_branch,
-            :read_protected_tags,
-            :read_reject_non_dco_commits,
-            :read_reject_unsigned_commits,
-            :read_resource_group,
-            :read_runner_cloud_provisioning_info,
-            :read_runner_gke_provisioning_info,
-            :read_runner_usage,
-            :read_runners_registration_token,
-            :read_saved_replies,
-            :read_secret_push_protection_info,
-            :read_secure_files,
-            :read_security_configuration,
-            :read_security_orchestration_policy_project,
-            :read_security_scan_profiles,
-            :read_sentry_issue,
-            :read_statistics,
-            :read_storage_disk_path,
-            :read_subscription_usage,
-            :read_usage_quotas,
-            :read_web_hook,
-            :read_work_item_lifecycle,
-            :read_work_item_status,
-            :read_service_account
+          %i[
+            read_ai_agents
+            read_ai_catalog_flow
+            read_ai_catalog_item_consumer
+            read_ai_catalog_third_party_flow
+            read_all_organization_resources
+            read_ci_pipeline_schedules_plan_limit
+            read_cluster_agent
+            read_commit_committer_check
+            read_commit_committer_name_check
+            read_compliance_adherence_report
+            read_compliance_dashboard
+            read_compliance_violations_report
+            read_coverage_fuzzing
+            read_custom_attribute
+            read_customizable_dashboards
+            read_dap_external_trigger_usage_rule
+            read_dedicated_hosted_runner_usage
+            read_deploy_board
+            read_deploy_token
+            read_design_activity
+            read_design
+            read_dora4_analytics
+            read_duo_usage_analytics
+            read_enterprise_ai_analytics
+            read_external_emails
+            read_foundational_flow
+            read_freeze_period
+            read_google_cloud_artifact_registry
+            read_grafana
+            read_harbor_registry
+            read_import_error
+            read_internal_note
+            read_iteration
+            read_limit_alert
+            read_member_access_request
+            read_member_role
+            read_observability
+            read_pod_logs
+            read_pro_ai_analytics
+            read_project_secrets_manager_status
+            read_project_secrets_manager
+            read_project_secrets
+            read_prometheus
+            read_protected_branch
+            read_protected_tags
+            read_reject_non_dco_commits
+            read_reject_unsigned_commits
+            read_resource_group
+            read_runner_cloud_provisioning_info
+            read_runner_gke_provisioning_info
+            read_runner_usage
+            read_runners_registration_token
+            read_saved_replies
+            read_secret_push_protection_info
+            read_secure_files
+            read_security_configuration
+            read_security_orchestration_policy_project
+            read_security_scan_profiles
+            read_sentry_issue
+            read_service_account
+            read_statistics
+            read_storage_disk_path
+            read_subscription_usage
+            read_usage_quotas
+            read_web_hook
+            read_work_item_lifecycle
+            read_work_item_status
           ]
         end
 
