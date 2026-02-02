@@ -70,7 +70,7 @@ RSpec.describe Deployments::AutoRollbackService, :clean_gitlab_redis_rate_limiti
       end
     end
 
-    context 'when there are running deployments ' do
+    context 'when there are running deployments' do
       before do
         create(:deployment, :running, environment: environment)
       end
