@@ -128,6 +128,18 @@
     "packages_nuget_symbols_verification_failed_count",
     "packages_nuget_symbols_synced_in_percentage",
     "packages_nuget_symbols_verified_in_percentage",
+    "supply_chain_attestations_count",
+    "supply_chain_attestations_checksum_total_count",
+    "supply_chain_attestations_checksummed_count",
+    "supply_chain_attestations_checksum_failed_count",
+    "supply_chain_attestations_synced_count",
+    "supply_chain_attestations_failed_count",
+    "supply_chain_attestations_registry_count",
+    "supply_chain_attestations_verification_total_count",
+    "supply_chain_attestations_verified_count",
+    "supply_chain_attestations_verification_failed_count",
+    "supply_chain_attestations_synced_in_percentage",
+    "supply_chain_attestations_verified_in_percentage",
     "pages_deployments_count",
     "pages_deployments_checksum_failed_count",
     "pages_deployments_checksum_total_count",
@@ -995,6 +1007,72 @@
       ]
     },
     "pages_deployments_verified_in_percentage": {
+      "type": "string"
+    },
+    "supply_chain_attestations_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_checksummed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_checksum_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_checksum_total_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_registry_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_synced_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_synced_in_percentage": {
+      "type": "string"
+    },
+    "supply_chain_attestations_verification_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_verification_total_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_verified_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "supply_chain_attestations_verified_in_percentage": {
       "type": "string"
     },
     "terraform_state_versions_count": {

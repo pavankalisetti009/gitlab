@@ -31308,6 +31308,12 @@ msgstr ""
 msgid "Geo|Successfully recalculated checksum for %{name}."
 msgstr ""
 
+msgid "Geo|Supply Chain Attestation"
+msgstr ""
+
+msgid "Geo|Supply Chain Attestations"
+msgstr ""
+
 msgid "Geo|Sync failed"
 msgstr ""
 
