@@ -7,9 +7,8 @@ module SecretsManagement
 
       def secrets_limit_exceeded?
         return false if secrets_manager.nil?
-        return false if secrets_limit == 0 # 0 means unlimited
 
-        current_secret_count >= secrets_limit
+        secrets_count_service.secrets_limit_exceeded?
       end
 
       def secrets_limit
@@ -147,6 +146,12 @@ module SecretsManagement
           message: secret.errors.full_messages.to_sentence,
           payload: { secret: secret }
         )
+      end
+
+      private
+
+      def secrets_count_service
+        raise NotImplementedError, "#{self.class} must implement #secrets_count_service"
       end
     end
   end

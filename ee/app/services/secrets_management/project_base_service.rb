@@ -40,11 +40,5 @@ module SecretsManagement
         use_cel_auth: true)
     end
     strong_memoize_attr :user_client
-
-    private
-
-    def current_secret_count
-      SecretsManagement::ProjectSecretsCountService.new(project, current_user).execute
-    end
   end
 end

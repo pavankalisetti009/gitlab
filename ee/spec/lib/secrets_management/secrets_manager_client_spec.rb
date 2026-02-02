@@ -422,6 +422,89 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
+  describe '#count_secrets' do
+    let(:mount_path) { 'some/mount/path' }
+    let(:other_mount_path) { 'other/mount/path' }
+    let(:secrets_path) { 'secrets' }
+    let(:target_mount_path) { mount_path }
+    let(:target_secrets_path) { secrets_path }
+
+    before do
+      client.enable_secrets_engine(mount_path, 'kv-v2')
+      client.enable_secrets_engine(other_mount_path, 'kv-v2')
+
+      update_kv_secret_with_metadata(
+        mount_path,
+        "#{secrets_path}/DBPASS",
+        'somevalue',
+        environment: 'staging'
+      )
+
+      update_kv_secret_with_metadata(
+        mount_path,
+        "other_secrets/APIKEY",
+        'somevalue',
+        environment: 'staging'
+      )
+
+      update_kv_secret_with_metadata(
+        other_mount_path,
+        "#{secrets_path}/DEPLOYKEY",
+        'somevalue',
+        environment: 'staging'
+      )
+    end
+
+    subject(:result) { client.count_secrets(target_mount_path, target_secrets_path) }
+
+    it 'returns the count of matching secrets' do
+      expect(result).to eq(1)
+    end
+
+    context 'when mount path does not exist' do
+      let(:target_mount_path) { 'something/else' }
+
+      it_behaves_like 'making an invalid API request'
+    end
+
+    context 'when secrets path does not exist' do
+      let(:target_secrets_path) { 'something/else' }
+
+      it { is_expected.to eq(0) }
+    end
+
+    context 'when response has no keys' do
+      before do
+        allow(client).to receive(:make_request).and_call_original
+        allow(client).to receive(:make_request)
+          .with(
+            :list,
+            "#{mount_path}/metadata/#{secrets_path}",
+            {},
+            allow_not_found_response: true
+          )
+          .and_return({ "data" => {} })
+      end
+
+      it { is_expected.to eq(0) }
+    end
+
+    context 'when limit is provided' do
+      it 'passes the limit to the list request' do
+        expect(client).to receive(:make_request)
+          .with(
+            :list,
+            "#{mount_path}/metadata/#{secrets_path}",
+            hash_including(limit: 1),
+            allow_not_found_response: true
+          )
+          .and_call_original
+
+        client.count_secrets(mount_path, secrets_path, limit: 1)
+      end
+    end
+  end
+
   describe '#read_secret_metadata' do
     let(:existing_mount_path) { 'secrets' }
     let(:existing_secret_path) { 'DBPASS' }

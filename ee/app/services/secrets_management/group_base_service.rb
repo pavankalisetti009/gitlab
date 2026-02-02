@@ -51,9 +51,5 @@ module SecretsManagement
       )
     end
     strong_memoize_attr :user_client
-
-    def current_secret_count
-      SecretsManagement::GroupSecretsCountService.new(group, current_user).execute
-    end
   end
 end

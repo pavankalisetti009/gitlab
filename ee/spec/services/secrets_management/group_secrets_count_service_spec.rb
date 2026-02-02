@@ -60,9 +60,88 @@ RSpec.describe SecretsManagement::GroupSecretsCountService,
         mount_path = secrets_manager.ci_secrets_mount_path
         data_path = secrets_manager.ci_data_path
 
-        expect(client).to receive(:list_secrets).with(mount_path, data_path).and_call_original
+        expect(client).to receive(:count_secrets)
+          .with(mount_path, data_path, limit: nil)
+          .and_call_original
 
         count
+      end
+    end
+  end
+
+  describe '#secrets_limit_exceeded?' do
+    subject(:limit_exceeded) { service.secrets_limit_exceeded? }
+
+    let(:mount_path) { secrets_manager.ci_secrets_mount_path }
+    let(:data_path) { secrets_manager.ci_data_path }
+
+    context 'when secrets_limit is 0 (unlimited)' do
+      before do
+        allow(group.secrets_manager).to receive(:secrets_limit).and_return(0)
+      end
+
+      it 'returns false' do
+        expect(limit_exceeded).to be(false)
+      end
+
+      it 'does not call count_secrets' do
+        client = service.send(:group_secrets_manager_client)
+
+        expect(client).not_to receive(:count_secrets)
+
+        limit_exceeded
+      end
+    end
+
+    context 'when there are secrets below the limit' do
+      let(:limit) { 2 }
+
+      before do
+        allow(group.secrets_manager).to receive(:secrets_limit).and_return(limit)
+        create_group_secret(
+          user: user,
+          group: group,
+          name: 'group_secret1',
+          value: 'value1',
+          environment: 'production',
+          protected: true
+        )
+      end
+
+      it 'returns false and counts with limit + 1' do
+        client = service.send(:group_secrets_manager_client)
+
+        expect(client).to receive(:count_secrets)
+          .with(mount_path, data_path, limit: limit + 1)
+          .and_call_original
+
+        expect(limit_exceeded).to be(false)
+      end
+    end
+
+    context 'when there are secrets at the limit' do
+      let(:limit) { 1 }
+
+      before do
+        allow(group.secrets_manager).to receive(:secrets_limit).and_return(limit)
+        create_group_secret(
+          user: user,
+          group: group,
+          name: 'group_secret1',
+          value: 'value1',
+          environment: 'production',
+          protected: true
+        )
+      end
+
+      it 'returns true and counts with limit + 1' do
+        client = service.send(:group_secrets_manager_client)
+
+        expect(client).to receive(:count_secrets)
+          .with(mount_path, data_path, limit: limit + 1)
+          .and_call_original
+
+        expect(limit_exceeded).to be(true)
       end
     end
   end

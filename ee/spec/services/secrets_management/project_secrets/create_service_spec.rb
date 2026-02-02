@@ -316,7 +316,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
             .to receive(:new)
             .with(project, user)
             .and_return(secret_count_service_double)
-          allow(secret_count_service_double).to receive(:execute).and_return(0)
+          allow(secret_count_service_double).to receive(:secrets_limit_exceeded?).and_return(false)
           webmock_enable!(allow_localhost: false)
 
           secret_metadata_path = [

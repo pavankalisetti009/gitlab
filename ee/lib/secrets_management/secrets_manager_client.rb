@@ -108,6 +108,16 @@ module SecretsManagement
       end
     end
 
+    def count_secrets(mount_path, secret_path, limit: nil)
+      params = {}
+      params[:limit] = limit unless limit.nil?
+
+      result = make_request(:list, "#{mount_path}/metadata/#{secret_path}", params, allow_not_found_response: true)
+      return 0 unless result
+
+      result.dig("data", "keys")&.size || 0
+    end
+
     def list_policies(type: nil)
       subdir = "/#{type}" if type
       result = make_request(:list, "sys/policies/detailed/acl#{subdir}", {}, allow_not_found_response: true)

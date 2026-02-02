@@ -31,6 +31,10 @@ module SecretsManagement
 
       delegate :secrets_manager, to: :group
 
+      def secrets_count_service
+        SecretsManagement::GroupSecretsCountService.new(group, current_user)
+      end
+
       def read_secret(group_secret)
         GroupSecrets::ReadMetadataService.new(group, current_user)
           .execute(group_secret.name)
