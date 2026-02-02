@@ -73229,7 +73229,13 @@ msgstr ""
 msgid "UsageQuota|%{percentageRemaining}%% namespace storage remaining."
 msgstr ""
 
+msgid "UsageQuota|%{percent} of total"
+msgstr ""
+
 msgid "UsageQuota|%{storage_limit_link_start}A namespace storage limit%{link_end} of %{limit} will soon be enforced for the %{strong_start}%{namespace_name}%{strong_end} namespace. %{extra_message}"
+msgstr ""
+
+msgid "UsageQuota|%{value} loose refs"
 msgstr ""
 
 msgid "UsageQuota|An error occured while loading the storage usage details. Please refresh the page to try again."
@@ -73331,6 +73337,9 @@ msgstr ""
 msgid "UsageQuota|Job artifacts created by CI/CD."
 msgstr ""
 
+msgid "UsageQuota|Last update: %{date}"
+msgstr ""
+
 msgid "UsageQuota|Learn more about usage quotas."
 msgstr ""
 
@@ -73370,6 +73379,9 @@ msgstr ""
 msgid "UsageQuota|No projects to display."
 msgstr ""
 
+msgid "UsageQuota|Objects storage"
+msgstr ""
+
 msgid "UsageQuota|Observability"
 msgstr ""
 
@@ -73391,10 +73403,25 @@ msgstr ""
 msgid "UsageQuota|Recalculate repository usage"
 msgstr ""
 
+msgid "UsageQuota|Recent objects"
+msgstr ""
+
+msgid "UsageQuota|Recent objects progress bar"
+msgstr ""
+
+msgid "UsageQuota|References"
+msgstr ""
+
+msgid "UsageQuota|Regenerate report"
+msgstr ""
+
 msgid "UsageQuota|Registry"
 msgstr ""
 
 msgid "UsageQuota|Repository Health report was not found"
+msgstr ""
+
+msgid "UsageQuota|Repository health"
 msgstr ""
 
 msgid "UsageQuota|Seat utilization"
@@ -73416,6 +73443,15 @@ msgid "UsageQuota|Something went wrong while fetching runner filters"
 msgstr ""
 
 msgid "UsageQuota|Something went wrong while loading Usage quotas Tabs."
+msgstr ""
+
+msgid "UsageQuota|Stale objects"
+msgstr ""
+
+msgid "UsageQuota|Stale objects progress bar"
+msgstr ""
+
+msgid "UsageQuota|Storage breakdown"
 msgstr ""
 
 msgid "UsageQuota|Storage per project included in %{planName} subscription"
