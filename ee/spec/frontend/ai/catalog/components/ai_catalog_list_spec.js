@@ -45,50 +45,64 @@ describe('AiCatalogList', () => {
   const findEmptyStateButton = () => wrapper.findComponent(GlButton);
 
   describe('component rendering', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('does not render the loading state component', () => {
-      expect(findLoadingStateList().exists()).toBe(false);
-    });
-
-    it('does render list items', () => {
-      const listItems = findListItems();
-
-      expect(listItems).toHaveLength(3);
-    });
-
-    it('passes correct props to each list item', () => {
-      const listItems = findListItems();
-
-      listItems.wrappers.forEach((listItem, index) => {
-        expect(listItem.props('item')).toEqual(mockItems[index]);
-      });
-    });
-
-    it('does not render empty state', () => {
-      expect(findEmptyState().exists()).toBe(false);
-    });
-
-    it('does not render the confirm modal by default', () => {
-      expect(findConfirmModal().exists()).toBe(false);
-    });
-
-    describe('when loading data', () => {
+    describe('template', () => {
       beforeEach(() => {
-        createComponent({
-          props: {
-            isLoading: true,
-          },
+        createComponent();
+      });
+
+      it('does not render the loading state component', () => {
+        expect(findLoadingStateList().exists()).toBe(false);
+      });
+
+      it('does render list items', () => {
+        const listItems = findListItems();
+
+        expect(listItems).toHaveLength(3);
+      });
+
+      it('passes correct props to each list item', () => {
+        const listItems = findListItems();
+
+        listItems.wrappers.forEach((listItem, index) => {
+          expect(listItem.props('item')).toEqual(mockItems[index]);
         });
       });
 
-      it('renders loading state component', () => {
-        const loadingStateList = findLoadingStateList();
+      it('does not render empty state', () => {
+        expect(findEmptyState().exists()).toBe(false);
+      });
 
-        expect(loadingStateList.exists()).toBe(true);
-        expect(loadingStateList.props('showRightElement')).toBe(false);
+      it('does not render the confirm modal by default', () => {
+        expect(findConfirmModal().exists()).toBe(false);
+      });
+    });
+
+    describe('when loading data', () => {
+      describe('default', () => {
+        beforeEach(() => {
+          createComponent({
+            props: {
+              isLoading: true,
+            },
+          });
+        });
+
+        it('renders loading state component', () => {
+          const loadingStateList = findLoadingStateList();
+
+          expect(loadingStateList.exists()).toBe(true);
+          expect(loadingStateList.props('showRightElement')).toBe(false);
+        });
+
+        it('does not render list items', () => {
+          const listItems = findListItems();
+
+          expect(listItems).toHaveLength(0);
+        });
+
+        it('does not render empty state', () => {
+          expect(findEmptyState().exists()).toBe(false);
+        });
       });
 
       it('renders loading state with right-hand component placeholder', () => {
@@ -101,16 +115,6 @@ describe('AiCatalogList', () => {
         const loadingStateList = findLoadingStateList();
 
         expect(loadingStateList.props('showRightElement')).toBe(true);
-      });
-
-      it('does not render list items', () => {
-        const listItems = findListItems();
-
-        expect(listItems).toHaveLength(0);
-      });
-
-      it('does not render empty state', () => {
-        expect(findEmptyState().exists()).toBe(false);
       });
     });
 
@@ -199,27 +203,29 @@ describe('AiCatalogList', () => {
   });
 
   describe('disabling an item', () => {
-    beforeEach(() => {
-      createComponent();
-      const secondItem = findListItems().at(1);
+    describe('default', () => {
+      beforeEach(() => {
+        createComponent();
+        const secondItem = findListItems().at(1);
 
-      secondItem.vm.$emit('disable');
-    });
-
-    it('opens confirm modal on disable', () => {
-      expect(findConfirmModal().props()).toMatchObject({
-        title: mockDisableTitle,
-        actionText: 'Disable',
+        secondItem.vm.$emit('disable');
       });
-      expect(findConfirmModal().text()).toBe(
-        `Are you sure you want to disable item ${mockItems[1].name}?`,
-      );
-    });
 
-    it('calls disable function on confirm', () => {
-      findConfirmModal().props('actionFn')();
+      it('opens confirm modal on disable', () => {
+        expect(findConfirmModal().props()).toMatchObject({
+          title: mockDisableTitle,
+          actionText: 'Disable',
+        });
+        expect(findConfirmModal().text()).toBe(
+          `Are you sure you want to disable item ${mockItems[1].name}?`,
+        );
+      });
 
-      expect(mockDisableFn).toHaveBeenCalledWith(mockItems[1]);
+      it('calls disable function on confirm', () => {
+        findConfirmModal().props('actionFn')();
+
+        expect(mockDisableFn).toHaveBeenCalledWith(mockItems[1]);
+      });
     });
 
     describe('with itemTypeConfig', () => {

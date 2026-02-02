@@ -63,60 +63,64 @@ describe('FormGroupDropdown', () => {
 
   const findSingleSelectDropdown = () => wrapper.findComponent(SingleSelectDropdown);
 
-  beforeEach(() => {
-    createComponent();
-  });
+  describe('default', () => {
+    beforeEach(() => {
+      createComponent();
+    });
 
-  it('renders SingleSelectDropdown with correct props', () => {
-    expect(findSingleSelectDropdown().props()).toMatchObject({
-      id: 'gl-form-field-group',
-      query: getGroups,
-      queryVariables: {
-        topLevelOnly: true,
-        ownedOnly: true,
-        sort: 'similarity',
-      },
-      dataKey: 'groups',
-      placeholderText: 'Select a group',
-      itemTextFn: expect.any(Function),
-      itemLabelFn: expect.any(Function),
-      itemSubLabelFn: expect.any(Function),
-      isValid: true,
-      disabled: false,
+    it('renders SingleSelectDropdown with correct props', () => {
+      expect(findSingleSelectDropdown().props()).toMatchObject({
+        id: 'gl-form-field-group',
+        query: getGroups,
+        queryVariables: {
+          topLevelOnly: true,
+          ownedOnly: true,
+          sort: 'similarity',
+        },
+        dataKey: 'groups',
+        placeholderText: 'Select a group',
+        itemTextFn: expect.any(Function),
+        itemLabelFn: expect.any(Function),
+        itemSubLabelFn: expect.any(Function),
+        isValid: true,
+        disabled: false,
+      });
+    });
+
+    describe('event handling', () => {
+      it('emits input event when SingleSelectDropdown emits input', async () => {
+        await waitForPromises();
+
+        findSingleSelectDropdown().vm.$emit('input', mockGroups[0]);
+
+        expect(wrapper.emitted('input')).toEqual([[mockGroups[0].id]]);
+      });
+
+      it('emits error event when SingleSelectDropdown emits error', () => {
+        findSingleSelectDropdown().vm.$emit('error');
+
+        expect(wrapper.emitted('error')).toEqual([['Failed to load groups.']]);
+      });
     });
   });
 
-  it('passes value prop to SingleSelectDropdown', () => {
-    createComponent({ props: { value: 'gid://gitlab/Group/1' } });
+  describe('SingleSelectDropdown props', () => {
+    it('passes value prop to SingleSelectDropdown', () => {
+      createComponent({ props: { value: 'gid://gitlab/Group/1' } });
 
-    expect(findSingleSelectDropdown().props('value')).toBe('gid://gitlab/Group/1');
-  });
-
-  it('passes isValid prop to SingleSelectDropdown', () => {
-    createComponent({ props: { isValid: false } });
-
-    expect(findSingleSelectDropdown().props('isValid')).toBe(false);
-  });
-
-  it('passes disabled prop to SingleSelectDropdown', () => {
-    createComponent({ props: { disabled: true } });
-
-    expect(findSingleSelectDropdown().props('disabled')).toBe(true);
-  });
-
-  describe('event handling', () => {
-    it('emits input event when SingleSelectDropdown emits input', async () => {
-      await waitForPromises();
-
-      findSingleSelectDropdown().vm.$emit('input', mockGroups[0]);
-
-      expect(wrapper.emitted('input')).toEqual([[mockGroups[0].id]]);
+      expect(findSingleSelectDropdown().props('value')).toBe('gid://gitlab/Group/1');
     });
 
-    it('emits error event when SingleSelectDropdown emits error', () => {
-      findSingleSelectDropdown().vm.$emit('error');
+    it('passes isValid prop to SingleSelectDropdown', () => {
+      createComponent({ props: { isValid: false } });
 
-      expect(wrapper.emitted('error')).toEqual([['Failed to load groups.']]);
+      expect(findSingleSelectDropdown().props('isValid')).toBe(false);
+    });
+
+    it('passes disabled prop to SingleSelectDropdown', () => {
+      createComponent({ props: { disabled: true } });
+
+      expect(findSingleSelectDropdown().props('disabled')).toBe(true);
     });
   });
 });

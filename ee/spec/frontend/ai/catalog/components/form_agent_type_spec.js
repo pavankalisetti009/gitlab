@@ -21,26 +21,28 @@ describe('FormAgentType', () => {
 
   const findRadioGroup = () => wrapper.findComponent(GlFormRadioGroup);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
-  it('renders radio group with correct props', () => {
-    expect(findRadioGroup().attributes()).toMatchObject({
-      id: defaultProps.id,
-      checked: defaultProps.value,
+  describe('default', () => {
+    beforeEach(() => {
+      createComponent();
     });
-    expect(findRadioGroup().attributes('disabled')).toBeUndefined();
-    expect(findRadioGroup().props('options')).toEqual([
-      { value: 'AGENT', text: 'Custom' },
-      { value: 'THIRD_PARTY_FLOW', text: 'External' },
-    ]);
-  });
 
-  it('emits input event when a radio option is selected', () => {
-    findRadioGroup().vm.$emit('input', 'THIRD_PARTY_FLOW');
+    it('renders radio group with correct props', () => {
+      expect(findRadioGroup().attributes()).toMatchObject({
+        id: defaultProps.id,
+        checked: defaultProps.value,
+      });
+      expect(findRadioGroup().attributes('disabled')).toBeUndefined();
+      expect(findRadioGroup().props('options')).toEqual([
+        { value: 'AGENT', text: 'Custom' },
+        { value: 'THIRD_PARTY_FLOW', text: 'External' },
+      ]);
+    });
 
-    expect(wrapper.emitted('input')).toEqual([['THIRD_PARTY_FLOW']]);
+    it('emits input event when a radio option is selected', () => {
+      findRadioGroup().vm.$emit('input', 'THIRD_PARTY_FLOW');
+
+      expect(wrapper.emitted('input')).toEqual([['THIRD_PARTY_FLOW']]);
+    });
   });
 
   describe('when disabled prop is true', () => {
