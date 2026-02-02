@@ -222,28 +222,25 @@ module Ai
       end
 
       def check_access_through_namespace(ai_feature, root_namespace = nil)
-        if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-          check_access_through_namespace_in_saas(ai_feature, root_namespace)
-        else
-          check_access_through_namespace_at_instance(ai_feature)
-        end
+        mapped_ai_feature = THROUGH_NAMESPACE_ACCESS_FEATURE_MAP[ai_feature]
+
+        return unless mapped_ai_feature
+        return unless Feature.enabled?(:duo_access_through_namespaces, saas? ? root_namespace : :instance)
+        return check_access_through_namespace_in_saas(mapped_ai_feature, root_namespace) if saas?
+
+        check_access_through_namespace_at_instance(mapped_ai_feature)
       end
 
-      def check_access_through_namespace_at_instance(ai_feature)
-        return if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-        return unless Feature.enabled?(:duo_access_through_namespaces, :instance)
+      private
 
+      def check_access_through_namespace_at_instance(mapped_ai_feature)
         return unless ::Ai::FeatureAccessRule.exists?
 
-        accessible_feature = THROUGH_NAMESPACE_ACCESS_FEATURE_MAP[ai_feature]
-
-        return unless accessible_feature
-
         has_access = Rails.cache.fetch(
-          ['users', id, DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY, accessible_feature],
+          ['users', id, DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY, mapped_ai_feature],
           expires_in: DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_PERIOD
         ) do
-          ::Ai::FeatureAccessRule.accessible_for_user(self, accessible_feature).exists?
+          ::Ai::FeatureAccessRule.accessible_for_user(self, mapped_ai_feature).exists?
         end
 
         Response.new(
@@ -254,14 +251,7 @@ module Ai
         )
       end
 
-      def check_access_through_namespace_in_saas(ai_feature, root_namespace = nil)
-        return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-        return unless Feature.enabled?(:duo_access_through_namespaces, root_namespace)
-
-        accessible_feature = THROUGH_NAMESPACE_ACCESS_FEATURE_MAP[ai_feature]
-
-        return unless accessible_feature
-
+      def check_access_through_namespace_in_saas(mapped_ai_feature, root_namespace = nil)
         # The billable namespace is the authority over governance settings. The billable namespace for an action is
         # the user's default namespace, expect when the user is a member of the namespace the action
         # is being executed. For further details, see https://gitlab.com/gitlab-org/gitlab/-/issues/580901
@@ -280,11 +270,11 @@ module Ai
         return unless ::Ai::NamespaceFeatureAccessRule.for_namespace(authority_namespace).exists?
 
         has_access = Rails.cache.fetch(
-          ['users', id, DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY, authority_namespace.id, accessible_feature],
+          ['users', id, DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_KEY, authority_namespace.id, mapped_ai_feature],
           expires_in: DUO_FEATURE_ENABLED_THROUGH_NAMESPACE_CACHE_PERIOD
         ) do
           ::Ai::NamespaceFeatureAccessRule
-            .accessible_for_user(self, accessible_feature, authority_namespace)
+            .accessible_for_user(self, mapped_ai_feature, authority_namespace)
             .exists?
         end
 
