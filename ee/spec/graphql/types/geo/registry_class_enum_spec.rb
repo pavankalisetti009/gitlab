@@ -23,6 +23,7 @@ RSpec.describe GitlabSchema.types['GeoRegistryClass'], feature_category: :geo_re
       PROJECT_REPOSITORY_REGISTRY
       GROUP_WIKI_REPOSITORY_REGISTRY
       PACKAGES_NUGET_SYMBOL_REGISTRY
+      SUPPLY_CHAIN_ATTESTATION_REGISTRY
     ]
   end
 

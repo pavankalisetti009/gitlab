@@ -667,6 +667,46 @@
         "description": "Snippet repositories verified count",
         "type": "number"
       },
+      "supply_chain_attestations_checksum_failed_count": {
+        "description": "Supply chain attestations checksum failed count",
+        "type": "number"
+      },
+      "supply_chain_attestations_checksum_total_count": {
+        "description": "Supply chain attestations checksum total count",
+        "type": "number"
+      },
+      "supply_chain_attestations_checksummed_count": {
+        "description": "Supply chain attestations checksummed count",
+        "type": "number"
+      },
+      "supply_chain_attestations_count": {
+        "description": "Supply chain attestations count",
+        "type": "number"
+      },
+      "supply_chain_attestations_failed_count": {
+        "description": "Supply chain attestations failed count",
+        "type": "number"
+      },
+      "supply_chain_attestations_registry_count": {
+        "description": "Supply chain attestations registry count",
+        "type": "number"
+      },
+      "supply_chain_attestations_synced_count": {
+        "description": "Supply chain attestations synced count",
+        "type": "number"
+      },
+      "supply_chain_attestations_verification_failed_count": {
+        "description": "Supply chain attestations verification failed count",
+        "type": "number"
+      },
+      "supply_chain_attestations_verification_total_count": {
+        "description": "Supply chain attestations verification total count",
+        "type": "number"
+      },
+      "supply_chain_attestations_verified_count": {
+        "description": "Supply chain attestations verified count",
+        "type": "number"
+      },
       "terraform_state_versions_checksum_failed_count": {
         "description": "Terraform state versions checksum failed count",
         "type": "number"
