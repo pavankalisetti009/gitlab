@@ -640,12 +640,14 @@ CREATE TABLE users (
     color_mode_id smallint DEFAULT 1 NOT NULL,
     composite_identity_enforced boolean DEFAULT false NOT NULL,
     organization_id bigint NOT NULL,
+    otp_secret text,
     CONSTRAINT check_061f6f1c91 CHECK ((project_view IS NOT NULL)),
     CONSTRAINT check_0dd5948e38 CHECK ((user_type IS NOT NULL)),
     CONSTRAINT check_3a60c18afc CHECK ((hide_no_password IS NOT NULL)),
     CONSTRAINT check_693c6f3aab CHECK ((hide_no_ssh_key IS NOT NULL)),
     CONSTRAINT check_7bde697e8e CHECK ((char_length(static_object_token_encrypted) <= 255)),
-    CONSTRAINT check_c737c04b87 CHECK ((notified_of_own_activity IS NOT NULL))
+    CONSTRAINT check_c737c04b87 CHECK ((notified_of_own_activity IS NOT NULL)),
+    CONSTRAINT check_d0b84b7b3a CHECK ((char_length(otp_secret) <= 255))
 );
 
 CREATE FUNCTION find_users_by_id(users_id bigint) RETURNS users
