@@ -22,6 +22,7 @@ RSpec.describe 'Querying container virtual upstreams for top-level group', :aggr
       {
         group(fullPath: "#{full_path}") {
           virtualRegistriesContainerUpstreams {
+            count
             nodes {
               id
               url
@@ -69,6 +70,10 @@ RSpec.describe 'Querying container virtual upstreams for top-level group', :aggr
 
     context 'when virtual registry is available' do
       let(:feature_enabled) { true }
+
+      it 'returns count for the virtualRegistriesContainerUpstreams field' do
+        expect(container_upstreams_response['count']).to eq(2)
+      end
 
       it 'returns the virtualRegistriesContainerUpstreams fields' do
         container_upstreams = container_upstreams_response['nodes']

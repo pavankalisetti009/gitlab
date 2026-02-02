@@ -16,6 +16,7 @@ RSpec.describe 'Querying maven virtual registries for top-level group', :aggrega
       {
         group(fullPath: "#{full_path}") {
           virtualRegistriesPackagesMavenRegistries {
+            count
             nodes {
               id
               name
@@ -64,6 +65,10 @@ RSpec.describe 'Querying maven virtual registries for top-level group', :aggrega
         maven_registries = maven_registries_response['nodes']
 
         expect(maven_registries[0]['name']).to eq(registry.name)
+      end
+
+      it 'returns count for the virtualRegistriesPackagesMavenRegistries field' do
+        expect(maven_registries_response['count']).to eq(1)
       end
     end
   end

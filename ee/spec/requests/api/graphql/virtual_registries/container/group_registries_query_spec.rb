@@ -16,6 +16,7 @@ RSpec.describe 'Querying container virtual registries for top-level group', :agg
       {
         group(fullPath: "#{full_path}") {
           virtualRegistriesContainerRegistries {
+            count
             nodes {
               id
               name
@@ -61,6 +62,10 @@ RSpec.describe 'Querying container virtual registries for top-level group', :agg
 
     context 'when virtual registry is available' do
       let(:virtual_registry_available) { true }
+
+      it 'returns count for the virtualRegistriesContainerRegistries field' do
+        expect(container_registries_response['count']).to eq(1)
+      end
 
       it 'returns the virtualRegistriesContainerRegistries fields' do
         container_registries = container_registries_response['nodes']

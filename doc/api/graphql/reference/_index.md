@@ -18694,6 +18694,20 @@ The connection type for [`ContainerRegistry`](#containerregistry).
 | <a id="containerregistryconnectionnodes"></a>`nodes` | [`[ContainerRegistry]`](#containerregistry) | A list of nodes. |
 | <a id="containerregistryconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
 
+##### Fields with arguments
+
+###### `ContainerRegistryConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="containerregistryconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
+
 #### `ContainerRegistryEdge`
 
 The edge type for [`ContainerRegistry`](#containerregistry).
@@ -21026,6 +21040,20 @@ The connection type for [`MavenRegistry`](#mavenregistry).
 | <a id="mavenregistryconnectionedges"></a>`edges` | [`[MavenRegistryEdge]`](#mavenregistryedge) | A list of edges. |
 | <a id="mavenregistryconnectionnodes"></a>`nodes` | [`[MavenRegistry]`](#mavenregistry) | A list of nodes. |
 | <a id="mavenregistryconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `MavenRegistryConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mavenregistryconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MavenRegistryEdge`
 

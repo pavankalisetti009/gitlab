@@ -8,6 +8,7 @@ module Types
         description 'Represents a container virtual registry'
 
         authorize :read_virtual_registry
+        connection_type_class ::Types::CountableConnectionType
 
         implements Types::VirtualRegistries::RegistryInterface
 
