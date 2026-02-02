@@ -70219,7 +70219,7 @@ msgstr ""
 msgid "This project is archived. Its data is %{strong_open}read-only%{strong_close}."
 msgstr ""
 
-msgid "This project is being deleted. Repository and other project resources are read-only."
+msgid "This project is being deleted."
 msgstr ""
 
 msgid "This project is licensed under the %{strong_start}%{license_name}%{strong_end}."
