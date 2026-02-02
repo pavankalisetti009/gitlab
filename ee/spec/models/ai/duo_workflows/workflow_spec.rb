@@ -18,9 +18,67 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
     it { is_expected.to belong_to(:merge_request).optional }
     it { is_expected.to belong_to(:ai_catalog_item_version).optional }
     it { is_expected.to belong_to(:ai_catalog_item_version).class_name('Ai::Catalog::ItemVersion') }
+    it { is_expected.to belong_to(:service_account).optional }
+    it { is_expected.to belong_to(:service_account).class_name('User') }
 
     it 'validates vulnerability triggered workflow association' do
       is_expected.to have_many(:vulnerability_triggered_workflows).class_name('::Vulnerabilities::TriggeredWorkflow')
+    end
+  end
+
+  describe 'service_account association' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:regular_user) { create(:user) }
+    let_it_be(:service_account_user) { create(:user, :service_account) }
+
+    describe 'validation' do
+      context 'when service_account is nil' do
+        it 'is valid' do
+          workflow = build(:duo_workflows_workflow, project: project, service_account: nil)
+
+          expect(workflow).to be_valid
+        end
+      end
+
+      context 'when service_account is a service account user' do
+        it 'is valid' do
+          workflow = build(:duo_workflows_workflow, project: project, service_account: service_account_user)
+
+          expect(workflow).to be_valid
+        end
+      end
+
+      context 'when service_account is a regular user' do
+        it 'is invalid' do
+          workflow = build(:duo_workflows_workflow, project: project, service_account: regular_user)
+
+          expect(workflow).not_to be_valid
+          expect(workflow.errors[:service_account]).to include('must be a service account user')
+        end
+      end
+    end
+
+    describe 'on_delete behavior' do
+      let(:service_account_user_1) { create(:user, :service_account) }
+
+      it 'nullifies service_account_id when the service account user is deleted' do
+        workflow = create(:duo_workflows_workflow, project: project, service_account: service_account_user_1)
+
+        expect(workflow.service_account_id).to eq(service_account_user_1.id)
+
+        service_account_user_1.destroy!
+        workflow.reload
+
+        expect(workflow.service_account_id).to be_nil
+      end
+
+      it 'does not delete the workflow when the service account user is deleted' do
+        workflow = create(:duo_workflows_workflow, project: project, service_account: service_account_user_1)
+
+        service_account_user_1.destroy!
+
+        expect(described_class.find_by(id: workflow.id)).to be_present
+      end
     end
   end
 
