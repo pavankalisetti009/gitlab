@@ -40,29 +40,31 @@ describe('AiCatalogNavTabs', () => {
   const findTabs = () => wrapper.findComponent(GlTabs);
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
 
-  beforeEach(() => {
-    createComponent();
-  });
+  describe('template', () => {
+    beforeEach(() => {
+      createComponent();
+    });
 
-  it('renders tabs', () => {
-    expect(findTabs().exists()).toBe(true);
-  });
+    it('renders tabs', () => {
+      expect(findTabs().exists()).toBe(true);
+    });
 
-  it('renders the correct number of tabs', () => {
-    expect(findAllTabs()).toHaveLength(2);
-  });
+    it('renders the correct number of tabs', () => {
+      expect(findAllTabs()).toHaveLength(2);
+    });
 
-  it('renders the Agents tab as active', () => {
-    const agentsTab = findAllTabs().at(0);
+    it('renders the Agents tab as active', () => {
+      const agentsTab = findAllTabs().at(0);
 
-    expect(agentsTab.attributes('title')).toBe('Agents');
-    expect(agentsTab.attributes('active')).toBe('true');
-  });
+      expect(agentsTab.attributes('title')).toBe('Agents');
+      expect(agentsTab.attributes('active')).toBe('true');
+    });
 
-  it('renders the Flows tab', () => {
-    const flowsTab = findAllTabs().at(1);
+    it('renders the Flows tab', () => {
+      const flowsTab = findAllTabs().at(1);
 
-    expect(flowsTab.attributes('title')).toBe('Flows');
+      expect(flowsTab.attributes('title')).toBe('Flows');
+    });
   });
 
   describe('when readAiCatalogFlow is null and aiCatalogFlows FF is false', () => {
@@ -145,6 +147,8 @@ describe('AiCatalogNavTabs', () => {
 
   describe('navigation', () => {
     it('navigates to the correct route when tab is clicked', () => {
+      createComponent();
+
       const agentsTab = findAllTabs().at(1);
 
       agentsTab.vm.$emit('click');

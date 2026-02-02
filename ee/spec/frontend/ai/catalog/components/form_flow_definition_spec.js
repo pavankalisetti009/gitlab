@@ -25,14 +25,31 @@ describe('FormFlowDefinition', () => {
   const findClearButton = () => wrapper.findByTestId('flow-definition-clear-button');
   const findSourceEditor = () => wrapper.findComponent(SourceEditor);
 
-  beforeEach(() => {
-    createComponent();
-  });
+  describe('default', () => {
+    beforeEach(() => {
+      createComponent();
+    });
 
-  it('renders header with clipboard and clear button', () => {
-    expect(findHeader().text()).toBe('config.yaml');
-    expect(findClipboardButton().props('text')).toBe(defaultProps.value);
-    expect(findClearButton().exists()).toBe(true);
+    it('renders header with clipboard and clear button', () => {
+      expect(findHeader().text()).toBe('config.yaml');
+      expect(findClipboardButton().props('text')).toBe(defaultProps.value);
+      expect(findClearButton().exists()).toBe(true);
+    });
+
+    it('renders source editor with correct props', () => {
+      expect(findSourceEditor().props('value')).toBe(defaultProps.value);
+      expect(findSourceEditor().props('fileName')).toBe('*.yaml');
+      expect(findSourceEditor().props('editorOptions')).toEqual({
+        padding: { top: 4 },
+        readOnly: defaultProps.readOnly,
+      });
+    });
+
+    it('emits input event when value is changed', async () => {
+      await findSourceEditor().vm.$emit('input', 'updated YAML content');
+
+      expect(wrapper.emitted('input')).toEqual([['updated YAML content']]);
+    });
   });
 
   describe('when readOnly is true', () => {
@@ -45,26 +62,13 @@ describe('FormFlowDefinition', () => {
     });
   });
 
-  it('renders source editor with correct props', () => {
-    expect(findSourceEditor().props('value')).toBe(defaultProps.value);
-    expect(findSourceEditor().props('fileName')).toBe('*.yaml');
-    expect(findSourceEditor().props('editorOptions')).toEqual({
-      padding: { top: 4 },
-      readOnly: defaultProps.readOnly,
-    });
-  });
-
-  it('emits input event when value is changed', async () => {
-    await findSourceEditor().vm.$emit('input', 'updated YAML content');
-
-    expect(wrapper.emitted('input')).toEqual([['updated YAML content']]);
-  });
-
   describe('clear button', () => {
     let mockEditor;
     let mockModel;
 
     beforeEach(() => {
+      createComponent();
+
       mockModel = {
         getFullModelRange: jest.fn().mockReturnValue('full-range'),
       };
