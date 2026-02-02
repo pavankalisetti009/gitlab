@@ -206,6 +206,55 @@ RSpec.describe Ci::Minutes::NamespaceMonthlyUsage, feature_category: :hosted_run
 
   describe '#increase_usage' do
     it_behaves_like 'compute minutes increase usage'
+
+    context 'when an exception occurs' do
+      subject(:execute) { current_usage.increase_usage(increments) }
+
+      let(:increments) { { amount_used: amount } }
+      let(:amount) { 10.5 }
+
+      it 'tracks the error and tries a direct database update' do
+        allow_next_instance_of(Ci::Minutes::RedisBatchUsage) do |instance|
+          allow(instance).to receive(:batch_increment)
+                               .and_raise(StandardError.new('Test error'))
+        end
+
+        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
+        expect(current_usage).to receive(:direct_database_update)
+        execute
+      end
+    end
+
+    context 'when fix_minute_contention is disabled' do
+      before do
+        stub_feature_flags(fix_minute_contention: false)
+      end
+
+      it_behaves_like 'compute minutes increase usage'
+
+      context 'when an exception occurs' do
+        subject(:execute) { current_usage.increase_usage(increments) }
+
+        let(:increments) { { amount_used: amount } }
+        let(:amount) { 10.5 }
+
+        it 'tracks the error and tries a direct database update' do
+          expect(current_usage)
+            .to receive(:direct_database_update)
+                  .ordered
+                  .and_raise(StandardError.new('Test error'))
+
+          expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
+
+          expect(current_usage)
+            .to receive(:direct_database_update)
+                  .ordered
+                  .and_call_original
+
+          execute
+        end
+      end
+    end
   end
 
   describe '.for_namespace' do

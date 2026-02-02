@@ -1,0 +1,10 @@
+---
+name: fix_minute_contention
+description: This FF introduces Namespace consumption accumulation in order to decrease DB record contention
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/490968
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/issues/490968
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/571171
+milestone: '18.9'
+group: group::pipeline execution
+type: gitlab_com_derisk
+default_enabled: false

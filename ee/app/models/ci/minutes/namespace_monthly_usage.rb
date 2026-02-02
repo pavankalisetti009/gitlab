@@ -24,6 +24,14 @@ module Ci
         time.utc.beginning_of_month
       end
 
+      def amount_used
+        super + redis_batch_usage.fetch_field('amount_used')
+      end
+
+      def shared_runners_duration
+        super + redis_batch_usage.fetch_field('shared_runners_duration')
+      end
+
       # We should always use this method to access data for the current month
       # since this will lazily create an entry if it doesn't exist.
       # For example, on the 1st of each month, when we update the usage for a namespace,
@@ -50,14 +58,20 @@ module Ci
         unsafe_find_current(namespace_id)
       end
 
-      def increase_usage(increments)
-        increment_params = increments.select { |_attribute, value| value > 0 }
+      def increase_usage(increment_params)
+        increment_params = increment_params
+                            .slice(:amount_used, :shared_runners_duration)
+                            .select { |_key, value| value > 0 }
         return if increment_params.empty?
 
-        # The use of `update_counters` ensures we do a SQL update rather than
-        # incrementing the counter for the object in memory and then save it.
-        # This is better for concurrent updates.
-        self.class.update_counters(self, increment_params)
+        if Feature.enabled?(:fix_minute_contention, namespace)
+          redis_batch_usage.batch_increment(**increment_params)
+        else
+          direct_database_update(increment_params)
+        end
+      rescue StandardError => e
+        Gitlab::ErrorTracking.track_and_raise_for_dev_exception(e, namespace_id: namespace_id)
+        direct_database_update(increment_params)
       end
 
       def self.reset_current_usage(namespace)
@@ -100,6 +114,19 @@ module Ci
       #     meaning that the quota used is still in the bucket 100%-to-30% used.
       def usage_notified?(remaining_percentage)
         notification_level == remaining_percentage
+      end
+
+      private
+
+      def redis_batch_usage
+        @redis_batch_usage ||= Ci::Minutes::RedisBatchUsage.new(namespace_id: namespace_id)
+      end
+
+      def direct_database_update(increment_params)
+        # The use of `update_counters` builds a SQL query that references
+        # the existing database value during the update rather than updating the object in memory.
+        # This is better for concurrent updates, since the value could change after it's fetched.
+        self.class.update_counters(self, increment_params)
       end
     end
   end
