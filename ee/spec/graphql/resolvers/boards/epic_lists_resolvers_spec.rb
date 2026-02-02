@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Boards::EpicListsResolver do
+RSpec.describe Resolvers::Boards::EpicListsResolver, feature_category: :portfolio_management do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

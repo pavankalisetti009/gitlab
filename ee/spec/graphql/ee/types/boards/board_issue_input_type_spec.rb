@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['BoardIssueInput'] do
+RSpec.describe GitlabSchema.types['BoardIssueInput'], feature_category: :portfolio_management do
   it 'has specific fields' do
     allowed_args = %w[epicId epicWildcardId includeSubepics iterationTitle iterationWildcardId weight
       healthStatusFilter status]

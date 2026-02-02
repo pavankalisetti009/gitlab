@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Epics::DefaultProjectForIssueCreationResolver do
+RSpec.describe Resolvers::Epics::DefaultProjectForIssueCreationResolver, feature_category: :portfolio_management do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

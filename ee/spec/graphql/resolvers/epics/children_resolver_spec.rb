@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Resolvers::Epics::ChildrenResolver' do
+RSpec.describe 'Resolvers::Epics::ChildrenResolver', feature_category: :portfolio_management do
   include GraphqlHelpers
 
   let_it_be_with_refind(:group) { create(:group, :private) }

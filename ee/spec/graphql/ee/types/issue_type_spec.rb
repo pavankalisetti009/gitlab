@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Issue'] do
+RSpec.describe GitlabSchema.types['Issue'], feature_category: :team_planning do
   include GraphqlHelpers
 
   it { expect(described_class).to have_graphql_field(:epic) }

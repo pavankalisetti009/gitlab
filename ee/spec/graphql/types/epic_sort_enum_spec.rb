@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['EpicSort'] do
+RSpec.describe GitlabSchema.types['EpicSort'], feature_category: :portfolio_management do
   it { expect(described_class.graphql_name).to eq('EpicSort') }
 
   it 'exposes all the existing epic sort orders' do

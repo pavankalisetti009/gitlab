@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['BoardEpicUserPreferences'] do
+RSpec.describe GitlabSchema.types['BoardEpicUserPreferences'], feature_category: :portfolio_management do
   it { expect(described_class.graphql_name).to eq('BoardEpicUserPreferences') }
 
   it 'has specific fields' do

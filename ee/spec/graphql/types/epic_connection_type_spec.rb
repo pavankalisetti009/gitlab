@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['EpicConnection'] do
+RSpec.describe GitlabSchema.types['EpicConnection'], feature_category: :portfolio_management do
   it 'has the expected fields' do
     expected_fields = %i[edges nodes count pageInfo]
 
