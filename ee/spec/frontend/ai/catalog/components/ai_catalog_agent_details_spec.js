@@ -61,19 +61,22 @@ describe('AiCatalogAgentDetails', () => {
   const findTriggerField = () => wrapper.findComponent(TriggerField);
   const findServiceAccountField = () => wrapper.findByTestId('service-account-field');
 
-  beforeEach(() => {
-    createComponent();
-  });
+  describe('template', () => {
+    beforeEach(() => {
+      createComponent();
+    });
 
-  it('renders sections', () => {
-    expect(findAllSections()).toHaveLength(2);
-    expect(findSection(0).attributes('title')).toBe('Visibility & access');
-    expect(findSection(1).attributes('title')).toBe('Configuration');
+    it('renders sections', () => {
+      expect(findAllSections()).toHaveLength(2);
+      expect(findSection(0).attributes('title')).toBe('Visibility & access');
+      expect(findSection(1).attributes('title')).toBe('Configuration');
+    });
   });
 
   describe('renders "Visibility & access" details', () => {
     let accessRightsDetails;
     beforeEach(() => {
+      createComponent();
       accessRightsDetails = findAllFieldsForSection(0);
     });
 
@@ -118,6 +121,7 @@ describe('AiCatalogAgentDetails', () => {
     let configurationDetails;
 
     beforeEach(() => {
+      createComponent();
       configurationDetails = findAllFieldsForSection(1);
     });
 

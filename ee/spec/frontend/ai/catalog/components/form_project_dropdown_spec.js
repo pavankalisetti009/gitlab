@@ -35,11 +35,9 @@ describe('FormProjectDropdown', () => {
 
   const findSingleSelectDropdown = () => wrapper.findComponent(SingleSelectDropdown);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   it('renders SingleSelectDropdown with correct props', () => {
+    createComponent();
+
     expect(findSingleSelectDropdown().props()).toMatchObject({
       id: 'gl-form-field-project',
       query: getProjects,
@@ -77,6 +75,9 @@ describe('FormProjectDropdown', () => {
   });
 
   describe('event handling', () => {
+    beforeEach(() => {
+      createComponent();
+    });
     it('emits input event when SingleSelectDropdown emits input', async () => {
       await waitForPromises();
 
