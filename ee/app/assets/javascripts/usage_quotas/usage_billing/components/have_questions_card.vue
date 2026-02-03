@@ -1,5 +1,6 @@
 <script>
 import { GlCard, GlButton } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 import { PROMO_URL } from '~/constants';
 
 export default {
@@ -8,6 +9,7 @@ export default {
     GlCard,
     GlButton,
   },
+  mixins: [InternalEvents.mixin()],
   btnLink: `${PROMO_URL}/sales`,
 };
 </script>
@@ -25,7 +27,13 @@ export default {
     </p>
 
     <div class="gl-mt-auto">
-      <gl-button category="secondary" :href="$options.btnLink">
+      <gl-button
+        category="secondary"
+        :href="$options.btnLink"
+        data-event-action="click_CTA"
+        data-event-label="contact_sales"
+        data-event-property="have_questions_card"
+      >
         {{ s__('UsageBilling|Contact sales') }}
       </gl-button>
     </div>

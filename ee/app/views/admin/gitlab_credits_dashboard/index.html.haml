@@ -2,11 +2,13 @@
 - page_title title_text
 - breadcrumb_title title_text
 
+- trial_data = {}
+- if License.current.trial?
+  - trial_data = { trial_start_date: License.current.starts_at.to_s, trial_end_date: License.current.expires_at.to_s }
+
 #js-instance-usage-billing-dashboard{ data: {
   user_usage_path: admin_gitlab_credits_dashboard_user_path('__USERNAME__'),
   is_saas: ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions).to_s,
-  is_free: !License.current&.paid?.to_s,
-  in_trial: License.current.trial?.to_s,
-  trial_start_date: License.current.starts_at.to_s,
-  trial_end_date: License.current.expires_at.to_s
+  is_free: !License.current.paid?.to_s,
+  **trial_data
 } }

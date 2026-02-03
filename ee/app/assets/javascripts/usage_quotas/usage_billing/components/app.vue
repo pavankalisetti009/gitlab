@@ -3,6 +3,7 @@ import { GlAlert, GlSprintf, GlLink, GlTab, GlTabs } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { InternalEvents } from '~/tracking';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
@@ -39,6 +40,7 @@ export default {
     UpgradeToPremiumCard,
     HaveQuestionsCard,
   },
+  mixins: [InternalEvents.mixin()],
   apollo: {
     subscriptionUsage: {
       query: getSubscriptionUsageQuery,
@@ -60,7 +62,6 @@ export default {
   inject: {
     namespacePath: { default: '' },
     isFree: { default: false },
-    inTrial: { default: false },
     trialStartDate: { default: '' },
     trialEndDate: { default: '' },
   },
@@ -71,7 +72,14 @@ export default {
     };
   },
   computed: {
+    inTrial() {
+      return this.trialStartDate !== '';
+    },
     isUsageBillingDisabled() {
+      if (this.inTrial) {
+        return false;
+      }
+
       return this.subscriptionUsage?.enabled === false;
     },
     shouldDisplayUserData() {
@@ -120,17 +128,14 @@ export default {
       return this.poolIsAvailable || this.isMonthlyWaiverAvailable || this.overageIsAllowed;
     },
     fromDate() {
-      if (this.inTrial) {
-        return this.trialStartDate;
-      }
-      return this.subscriptionUsage.startDate;
+      return this.trialStartDate || this.subscriptionUsage.startDate;
     },
     tillDate() {
-      if (this.inTrial) {
-        return this.trialEndDate;
-      }
-      return this.subscriptionUsage.endDate;
+      return this.trialEndDate || this.subscriptionUsage.endDate;
     },
+  },
+  mounted() {
+    this.trackEvent('view_usage_billing_pageload');
   },
   LONG_DATE_FORMAT_WITH_TZ,
   displayUserDataHelpPath: helpPagePath('user/group/manage', {

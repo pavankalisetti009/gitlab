@@ -14,6 +14,7 @@ import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
 import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
@@ -53,7 +54,6 @@ describe('UsageBillingApp', () => {
       provide: {
         customersUsageDashboardPath: 'https://gitlab.com/dummy-usage-dashboard-path',
         isFree: false,
-        inTrial: false,
         trialStartDate: '',
         trialEndDate: '',
         ...provide,
@@ -69,6 +69,15 @@ describe('UsageBillingApp', () => {
   const findOutdatedClientAlert = () => wrapper.findByTestId('outdated-client-alert');
   const findDisabledStateAlert = () => wrapper.findByTestId('usage-billing-disabled-alert');
   const findUserDataDisabledAlert = () => wrapper.findByTestId('user-data-disabled-alert');
+  const findCurrentUsageCard = () => wrapper.findComponent(CurrentUsageCard);
+  const findCurrentOverageUsageCard = () => wrapper.findComponent(CurrentOverageUsageCard);
+  const findMonthlyWaiverCard = () => wrapper.findComponent(MonthlyWaiverCard);
+  const findPurchaseCommitmentCard = () => wrapper.findComponent(PurchaseCommitmentCard);
+  const findOverageOptInCard = () => wrapper.findComponent(OverageOptInCard);
+  const findUpgradeToPremiumCard = () => wrapper.findComponent(UpgradeToPremiumCard);
+  const findHaveQuestionsCard = () => wrapper.findComponent(HaveQuestionsCard);
+  const findUsageBillingCardsRow = () => wrapper.findByTestId('usage-billing-cards-row');
+  const findCardsTrialRow = () => wrapper.findByTestId('cards-during-trial-row');
 
   beforeEach(() => {
     window.gon = { display_gitlab_credits_user_data: true };
@@ -96,28 +105,24 @@ describe('UsageBillingApp', () => {
 
     describe('page header', () => {
       it('renders the page title with its description', () => {
-        const pageHeading = findPageHeading();
-
-        expect(pageHeading.text()).toContain('GitLab Credits');
+        expect(findPageHeading().text()).toContain('GitLab Credits');
       });
 
       it('renders the page month subtitle', () => {
-        const pageHeading = findPageHeading();
-
-        expect(pageHeading.text()).toContain('Usage period:');
-        expect(pageHeading.findComponent(HumanTimeframe).exists()).toBe(true);
-        expect(pageHeading.findComponent(HumanTimeframe).props()).toEqual({
+        expect(findPageHeading().text()).toContain('Usage period:');
+        expect(findPageHeading().findComponent(HumanTimeframe).exists()).toBe(true);
+        expect(findPageHeading().findComponent(HumanTimeframe).props()).toEqual({
           from: '2025-10-01',
           till: '2025-10-31',
         });
       });
 
       it('renders last event transaction at', () => {
-        const pageHeading = findPageHeading();
-
-        expect(pageHeading.text()).toContain('Last event transaction at:');
-        expect(pageHeading.findComponent(UserDate).exists()).toBe(true);
-        expect(pageHeading.findComponent(UserDate).props('date')).toBe('2025-10-14T07:41:59Z');
+        expect(findPageHeading().text()).toContain('Last event transaction at:');
+        expect(findPageHeading().findComponent(UserDate).exists()).toBe(true);
+        expect(findPageHeading().findComponent(UserDate).props('date')).toBe(
+          '2025-10-14T07:41:59Z',
+        );
       });
 
       describe('outdated client alert', () => {
@@ -145,8 +150,8 @@ describe('UsageBillingApp', () => {
           });
 
           it('displays all other elements', () => {
-            expect(wrapper.findByTestId('usage-billing-cards-row').exists()).toBe(true);
-            expect(wrapper.findComponent(UsageByUserTab).exists()).toBe(true);
+            expect(findUsageBillingCardsRow().exists()).toBe(true);
+            expect(findUsageByUserTab().exists()).toBe(true);
           });
         });
 
@@ -164,19 +169,19 @@ describe('UsageBillingApp', () => {
           });
 
           it('hides all other components', () => {
-            expect(wrapper.findByTestId('usage-billing-cards-row').exists()).toBe(false);
-            expect(wrapper.findComponent(UsageByUserTab).exists()).toBe(false);
+            expect(findUsageBillingCardsRow().exists()).toBe(false);
+            expect(findUsageByUserTab().exists()).toBe(false);
           });
         });
       });
     });
 
     it('renders purchase-commitment-card', () => {
-      const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
-
-      expect(purchaseCommitmentCard.exists()).toBe(true);
-      expect(purchaseCommitmentCard.props('hasCommitment')).toBe(true);
-      expect(purchaseCommitmentCard.props('purchaseCreditsPath')).toBe('/purchase-credits-path');
+      expect(findPurchaseCommitmentCard().exists()).toBe(true);
+      expect(findPurchaseCommitmentCard().props('hasCommitment')).toBe(true);
+      expect(findPurchaseCommitmentCard().props('purchaseCreditsPath')).toBe(
+        '/purchase-credits-path',
+      );
     });
 
     describe.each`
@@ -199,8 +204,7 @@ describe('UsageBillingApp', () => {
       });
 
       it(`will set overageOptInCard visibility to: ${cardVisible}`, () => {
-        const overageOptInCard = wrapper.findComponent(OverageOptInCard);
-        expect(overageOptInCard.exists()).toBe(cardVisible);
+        expect(findOverageOptInCard().exists()).toBe(cardVisible);
       });
     });
 
@@ -231,7 +235,7 @@ describe('UsageBillingApp', () => {
       });
 
       it('does not render purchase-commitment-card', () => {
-        expect(wrapper.findComponent(PurchaseCommitmentCard).exists()).toBe(false);
+        expect(findPurchaseCommitmentCard().exists()).toBe(false);
       });
     });
   });
@@ -278,17 +282,15 @@ describe('UsageBillingApp', () => {
         });
 
         it(`will switch CurrentUsageCard visibility: ${currentUsageCard}`, () => {
-          expect(wrapper.findComponent(CurrentUsageCard).exists()).toBe(currentUsageCard);
+          expect(findCurrentUsageCard().exists()).toBe(currentUsageCard);
         });
 
         it(`will switch MonthlyWaiverCard visibility: ${monthlyWaiverCard}`, () => {
-          expect(wrapper.findComponent(MonthlyWaiverCard).exists()).toBe(monthlyWaiverCard);
+          expect(findMonthlyWaiverCard().exists()).toBe(monthlyWaiverCard);
         });
 
         it(`will switch CurrentOverageUsageCard visibility: ${currentOverageUsageCard}`, () => {
-          expect(wrapper.findComponent(CurrentOverageUsageCard).exists()).toBe(
-            currentOverageUsageCard,
-          );
+          expect(findCurrentOverageUsageCard().exists()).toBe(currentOverageUsageCard);
         });
 
         it(`will switch UsageTrendsChart visibility: ${usageTrendsChart}`, () => {
@@ -305,7 +307,7 @@ describe('UsageBillingApp', () => {
     });
 
     it('renders current-usage-card', () => {
-      expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
+      expect(findCurrentUsageCard().props()).toMatchObject({
         poolCreditsUsed: 50.333,
         poolTotalCredits: 100,
         monthEndDate: '2025-10-31',
@@ -313,7 +315,7 @@ describe('UsageBillingApp', () => {
     });
 
     it('does not render monthly-waiver-card', () => {
-      expect(wrapper.findComponent(MonthlyWaiverCard).exists()).toBe(false);
+      expect(findMonthlyWaiverCard().exists()).toBe(false);
     });
   });
 
@@ -326,7 +328,7 @@ describe('UsageBillingApp', () => {
     });
 
     it('renders monthly-waiver-card', () => {
-      expect(wrapper.findComponent(MonthlyWaiverCard).props()).toMatchObject({
+      expect(findMonthlyWaiverCard().props()).toMatchObject({
         monthlyWaiverTotalCredits: 100,
         monthlyWaiverCreditsUsed: 75,
       });
@@ -344,8 +346,8 @@ describe('UsageBillingApp', () => {
     });
 
     it('renders current-overage-usage-card', () => {
-      expect(wrapper.findComponent(CurrentOverageUsageCard).exists()).toBe(true);
-      expect(wrapper.findComponent(CurrentOverageUsageCard).props()).toMatchObject({
+      expect(findCurrentOverageUsageCard().exists()).toBe(true);
+      expect(findCurrentOverageUsageCard().props()).toMatchObject({
         overageCreditsUsed: 24,
         monthlyWaiverCreditsUsed: 100,
       });
@@ -361,25 +363,19 @@ describe('UsageBillingApp', () => {
     });
 
     it('will not render current-usage-card', () => {
-      const currentUsageCard = wrapper.findComponent(CurrentUsageCard);
-
-      expect(currentUsageCard.exists()).toBe(false);
+      expect(findCurrentUsageCard().exists()).toBe(false);
     });
 
     it('will render current overage usage card', () => {
-      const currentOverageUsageCard = wrapper.findComponent(CurrentOverageUsageCard);
-
-      expect(currentOverageUsageCard.exists()).toBe(true);
-      expect(currentOverageUsageCard.props()).toMatchObject({
+      expect(findCurrentOverageUsageCard().exists()).toBe(true);
+      expect(findCurrentOverageUsageCard().props()).toMatchObject({
         overageCreditsUsed: 50,
         monthlyWaiverCreditsUsed: 0,
       });
     });
 
     it('will pass hasComitment to purchase-commitment-card', () => {
-      const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
-
-      expect(purchaseCommitmentCard.props('hasCommitment')).toBe(false);
+      expect(findPurchaseCommitmentCard().props('hasCommitment')).toBe(false);
     });
   });
 
@@ -394,21 +390,15 @@ describe('UsageBillingApp', () => {
     });
 
     it('will not render current-usage-card', () => {
-      const currentUsageCard = wrapper.findComponent(CurrentUsageCard);
-
-      expect(currentUsageCard.exists()).toBe(false);
+      expect(findCurrentUsageCard().exists()).toBe(false);
     });
 
     it('will not render render current overage usage card', () => {
-      const currentOverageUsageCard = wrapper.findComponent(CurrentOverageUsageCard);
-
-      expect(currentOverageUsageCard.exists()).toBe(false);
+      expect(findCurrentOverageUsageCard().exists()).toBe(false);
     });
 
     it('will pass hasCommitment to purchase-commitment-card', () => {
-      const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
-
-      expect(purchaseCommitmentCard.props('hasCommitment')).toBe(false);
+      expect(findPurchaseCommitmentCard().props('hasCommitment')).toBe(false);
     });
   });
 
@@ -483,8 +473,7 @@ describe('UsageBillingApp', () => {
     });
 
     it('shows error alert when API request fails', () => {
-      const alert = findAlert();
-      expect(alert.text()).toBe('An error occurred while fetching data');
+      expect(findAlert().text()).toBe('An error occurred while fetching data');
     });
 
     it('logs the error to console and Sentry', () => {
@@ -493,13 +482,41 @@ describe('UsageBillingApp', () => {
     });
   });
 
+  describe('tracking', () => {
+    useMockInternalEventsTracking();
+
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('tracks pageview on component mount', () => {
+      expect(wrapper.vm.$options.mixins).toContainEqual(
+        expect.objectContaining({
+          methods: expect.objectContaining({
+            trackEvent: expect.any(Function),
+          }),
+        }),
+      );
+    });
+
+    it('uses InternalEvents mixin for tracking', () => {
+      expect(wrapper.vm.$options.mixins).toContainEqual(
+        expect.objectContaining({
+          methods: expect.objectContaining({
+            trackEvent: expect.any(Function),
+          }),
+        }),
+      );
+    });
+  });
+
   describe('trial cards visibility', () => {
-    describe('when isFree is true and inTrial is true', () => {
+    describe('when isFree is true and inTrial is true (trialStartDate provided)', () => {
       beforeEach(async () => {
         createComponent({
           provide: {
             isFree: true,
-            inTrial: true,
             trialStartDate: '2025-09-01',
             trialEndDate: '2025-09-30',
           },
@@ -508,105 +525,109 @@ describe('UsageBillingApp', () => {
       });
 
       it('renders upgrade-to-premium-card', () => {
-        const upgradeToPremiumCard = wrapper.findComponent(UpgradeToPremiumCard);
-
-        expect(upgradeToPremiumCard.exists()).toBe(true);
+        expect(findUpgradeToPremiumCard().exists()).toBe(true);
       });
 
       it('renders have-questions-card', () => {
-        const haveQuestionsCard = wrapper.findComponent(HaveQuestionsCard);
-
-        expect(haveQuestionsCard.exists()).toBe(true);
+        expect(findHaveQuestionsCard().exists()).toBe(true);
       });
 
       it('renders cards in the trial section', () => {
-        const trialSection = wrapper.findByTestId('cards-during-trial-row');
-
-        expect(trialSection.exists()).toBe(true);
-        expect(trialSection.findComponent(UpgradeToPremiumCard).exists()).toBe(true);
-        expect(trialSection.findComponent(HaveQuestionsCard).exists()).toBe(true);
+        expect(findCardsTrialRow().exists()).toBe(true);
+        expect(findCardsTrialRow().findComponent(UpgradeToPremiumCard).exists()).toBe(true);
+        expect(findCardsTrialRow().findComponent(HaveQuestionsCard).exists()).toBe(true);
       });
 
       it('does not render the usage billing cards section', () => {
-        const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
-
-        expect(usageBillingSection.exists()).toBe(false);
+        expect(findUsageBillingCardsRow().exists()).toBe(false);
       });
     });
 
-    describe('when isFree is true and inTrial is false', () => {
+    describe('when isFree is true and inTrial is false (no trialStartDate)', () => {
       beforeEach(async () => {
         createComponent({
-          provide: { isFree: true, inTrial: false },
+          provide: { isFree: true, trialStartDate: '' },
         });
         await waitForPromises();
       });
 
       it('does not render upgrade-to-premium-card', () => {
-        const upgradeToPremiumCard = wrapper.findComponent(UpgradeToPremiumCard);
-
-        expect(upgradeToPremiumCard.exists()).toBe(false);
+        expect(findUpgradeToPremiumCard().exists()).toBe(false);
       });
 
       it('does not render have-questions-card', () => {
-        const haveQuestionsCard = wrapper.findComponent(HaveQuestionsCard);
-
-        expect(haveQuestionsCard.exists()).toBe(false);
+        expect(findHaveQuestionsCard().exists()).toBe(false);
       });
 
       it('renders the usage billing cards section', () => {
-        const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
-
-        expect(usageBillingSection.exists()).toBe(true);
+        expect(findUsageBillingCardsRow().exists()).toBe(true);
       });
 
       it('does not render the trial section', () => {
-        const trialSection = wrapper.findByTestId('cards-during-trial-row');
-
-        expect(trialSection.exists()).toBe(false);
+        expect(findCardsTrialRow().exists()).toBe(false);
       });
     });
 
-    describe('when isFree is false', () => {
+    describe('when isFree is false and inTrial is true (trialStartDate provided)', () => {
       beforeEach(async () => {
         createComponent({
-          provide: { isFree: false, inTrial: true },
+          provide: {
+            isFree: false,
+            trialStartDate: '2025-09-01',
+            trialEndDate: '2025-09-30',
+          },
         });
         await waitForPromises();
       });
 
       it('does not render upgrade-to-premium-card', () => {
-        const upgradeToPremiumCard = wrapper.findComponent(UpgradeToPremiumCard);
-
-        expect(upgradeToPremiumCard.exists()).toBe(false);
+        expect(findUpgradeToPremiumCard().exists()).toBe(false);
       });
 
       it('does not render have-questions-card', () => {
-        const haveQuestionsCard = wrapper.findComponent(HaveQuestionsCard);
-
-        expect(haveQuestionsCard.exists()).toBe(false);
+        expect(findHaveQuestionsCard().exists()).toBe(false);
       });
 
       it('renders the usage billing cards section', () => {
-        const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
-
-        expect(usageBillingSection.exists()).toBe(true);
+        expect(findUsageBillingCardsRow().exists()).toBe(true);
       });
 
       it('does not render the trial section', () => {
-        const trialSection = wrapper.findByTestId('cards-during-trial-row');
+        expect(findCardsTrialRow().exists()).toBe(false);
+      });
+    });
 
-        expect(trialSection.exists()).toBe(false);
+    describe('when isFree is false and inTrial is false (no trialStartDate)', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: { isFree: false, trialStartDate: '' },
+        });
+        await waitForPromises();
+      });
+
+      it('does not render upgrade-to-premium-card', () => {
+        expect(findUpgradeToPremiumCard().exists()).toBe(false);
+      });
+
+      it('does not render have-questions-card', () => {
+        expect(findHaveQuestionsCard().exists()).toBe(false);
+      });
+
+      it('renders the usage billing cards section', () => {
+        expect(findUsageBillingCardsRow().exists()).toBe(true);
+      });
+
+      it('does not render the trial section', () => {
+        expect(findCardsTrialRow().exists()).toBe(false);
       });
     });
   });
 
   describe('usage period dates', () => {
-    describe('when inTrial is true', () => {
+    describe('when trial dates are provided', () => {
       beforeEach(async () => {
         createComponent({
           provide: {
-            inTrial: true,
             trialStartDate: '2025-09-01',
             trialEndDate: '2025-09-30',
           },
@@ -615,33 +636,94 @@ describe('UsageBillingApp', () => {
       });
 
       it('uses trial dates for the usage period', () => {
-        const pageHeading = findPageHeading();
-        const humanTimeframe = pageHeading.findComponent(HumanTimeframe);
-
-        expect(humanTimeframe.props()).toEqual({
+        expect(findPageHeading().findComponent(HumanTimeframe).props()).toEqual({
           from: '2025-09-01',
           till: '2025-09-30',
         });
       });
     });
 
-    describe('when inTrial is false', () => {
+    describe('when trial dates are not provided', () => {
       beforeEach(async () => {
         createComponent({
-          provide: { inTrial: false },
+          provide: {
+            trialStartDate: '',
+            trialEndDate: '',
+          },
         });
         await waitForPromises();
       });
 
       it('uses subscription dates for the usage period', () => {
-        const pageHeading = findPageHeading();
-        const humanTimeframe = pageHeading.findComponent(HumanTimeframe);
-
-        expect(humanTimeframe.props()).toEqual({
+        expect(findPageHeading().findComponent(HumanTimeframe).props()).toEqual({
           from: '2025-10-01',
           till: '2025-10-31',
         });
       });
+    });
+  });
+
+  describe('inTrial computed property', () => {
+    it('returns true when trialStartDate is provided', async () => {
+      createComponent({
+        provide: {
+          trialStartDate: '2025-09-01',
+          trialEndDate: '2025-09-30',
+        },
+      });
+      await waitForPromises();
+
+      expect(wrapper.vm.inTrial).toBe(true);
+    });
+
+    it('returns false when trialStartDate is empty', async () => {
+      createComponent({
+        provide: {
+          trialStartDate: '',
+          trialEndDate: '',
+        },
+      });
+      await waitForPromises();
+
+      expect(wrapper.vm.inTrial).toBe(false);
+    });
+  });
+
+  describe('isUsageBillingDisabled computed property', () => {
+    it('returns false when inTrial is true', async () => {
+      createComponent({
+        provide: {
+          trialStartDate: '2025-09-01',
+          trialEndDate: '2025-09-30',
+        },
+      });
+      await waitForPromises();
+
+      expect(wrapper.vm.isUsageBillingDisabled).toBe(false);
+    });
+
+    it('returns false when subscriptionUsage.enabled is true', async () => {
+      createComponent({
+        mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithCommitment),
+        provide: {
+          trialStartDate: '',
+        },
+      });
+      await waitForPromises();
+
+      expect(wrapper.vm.isUsageBillingDisabled).toBe(false);
+    });
+
+    it('returns true when subscriptionUsage.enabled is false and not in trial', async () => {
+      createComponent({
+        mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithDisabledState),
+        provide: {
+          trialStartDate: '',
+        },
+      });
+      await waitForPromises();
+
+      expect(wrapper.vm.isUsageBillingDisabled).toBe(true);
     });
   });
 });

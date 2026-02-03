@@ -2,13 +2,15 @@
 - page_title title_text
 - breadcrumb_title title_text
 
+- trial_data = {}
+- if GitlabSubscriptions::Trials.namespace_plan_eligible_for_active?(@group)
+  - trial_data = { trial_start_date: @group.gitlab_subscription.start_date.to_s, trial_end_date: @group.gitlab_subscription.end_date.to_s }
+
 #js-group-usage-billing-dashboard{ data: {
   user_usage_path: group_settings_gitlab_credits_dashboard_user_path(@group, '__USERNAME__'),
   namespace_path: @group.full_path,
   upgrade_button_path: group_billings_path(@group),
   is_saas: ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions).to_s,
   is_free: @group.has_free_or_no_subscription?.to_s,
-  in_trial: GitlabSubscriptions::Trials.namespace_plan_eligible_for_active?(@group),
-  trial_start_date: @group.gitlab_subscription.start_date.to_s,
-  trial_end_date: @group.gitlab_subscription.end_date.to_s
- } }
+  **trial_data
+} }

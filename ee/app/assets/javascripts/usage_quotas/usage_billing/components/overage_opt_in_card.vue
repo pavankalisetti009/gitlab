@@ -28,7 +28,7 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="gl-banner gl-flex-1" body-class="gl-p-5">
+  <gl-card class="gl-flex-1 gl-border-feedback-brand gl-bg-feedback-brand" body-class="gl-p-5">
     <h2 class="gl-heading-scale-400 gl-mb-3">
       {{ s__("UsageBilling|Keep your team's GitLab Duo features unblocked") }}
     </h2>
