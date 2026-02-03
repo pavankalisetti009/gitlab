@@ -14,7 +14,6 @@ import waitForPromises from 'helpers/wait_for_promises';
 import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
 import AnalyticsDashboard from 'ee/analytics/analytics_dashboards/components/analytics_dashboard.vue';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
-import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import {
   DATE_RANGE_OPTION_TODAY,
@@ -87,7 +86,6 @@ describe('AnalyticsDashboard', () => {
     findAllPanels().wrappers.find((w) => w.props('title') === title);
   const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
-  const findValueStreamFeedbackBanner = () => wrapper.findComponent(ValueStreamFeedbackBanner);
   const findInvalidDashboardAlert = () =>
     wrapper.findByTestId('analytics-dashboard-invalid-config-alert');
   const findUsageOverviewAggregationWarning = () =>
@@ -372,10 +370,9 @@ describe('AnalyticsDashboard', () => {
       return waitForPromises();
     });
 
-    it('does not render the dashboard, loader or feedback banners', () => {
+    it('does not render the dashboard or loader', () => {
       expect(findDashboard().exists()).toBe(false);
       expect(findLoader().exists()).toBe(false);
-      expect(findValueStreamFeedbackBanner().exists()).toBe(false);
       expect(breadcrumbState.updateName).toHaveBeenCalledWith('');
     });
 
@@ -863,10 +860,6 @@ describe('AnalyticsDashboard', () => {
       });
     });
 
-    it('does not render the value stream feedback banner', () => {
-      expect(findValueStreamFeedbackBanner().exists()).toBe(false);
-    });
-
     it('renders a custom description with links', () => {
       const description = findCustomDescription();
       expect(description.text()).toContain('Understand your audience');
@@ -918,10 +911,6 @@ describe('AnalyticsDashboard', () => {
           slug: 'value_streams_dashboard',
         },
       });
-    });
-
-    it('renders the value stream feedback banner', () => {
-      expect(findValueStreamFeedbackBanner().exists()).toBe(true);
     });
 
     it('renders a custom description with links', () => {
