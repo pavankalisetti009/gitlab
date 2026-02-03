@@ -25807,9 +25807,6 @@ msgstr ""
 msgid "DuoAgentPlatform|%{agentName} %{date}"
 msgstr ""
 
-msgid "DuoAgentPlatform|%{formattedName} created"
-msgstr ""
-
 msgid "DuoAgentPlatform|%{linkStart}What are flows%{linkEnd}?"
 msgstr ""
 
@@ -25844,9 +25841,6 @@ msgid "DuoAgentPlatform|Error occurred when starting the flow."
 msgstr ""
 
 msgid "DuoAgentPlatform|Flow"
-msgstr ""
-
-msgid "DuoAgentPlatform|Flow started successfully."
 msgstr ""
 
 msgid "DuoAgentPlatform|Foundational GitLab Duo Flows"

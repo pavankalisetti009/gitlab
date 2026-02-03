@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import createDefaultClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import { __ } from '~/locale';
 import { createRouter } from 'ee/ai/duo_agents_platform/router/ai_panel_router';
@@ -9,6 +8,7 @@ import DuoChat from 'ee/ai/tanuki_bot/components/duo_chat.vue';
 import { activeWorkItemIds } from '~/work_items/utils';
 import { setAgenticMode } from 'ee/ai/utils';
 import store from './tanuki_bot/store';
+import { createApolloProvider } from './graphql';
 import AIPanel from './components/ai_panel.vue';
 import AIPanelEmptyState from './components/ai_panel_empty_state.vue';
 
@@ -69,9 +69,7 @@ export function initDuoPanel() {
   Vue.use(VueApollo);
 
   const router = createRouter('/', 'user');
-  const apolloProvider = new VueApollo({
-    defaultClient: createDefaultClient(),
-  });
+  const apolloProvider = createApolloProvider();
 
   // Configure chat-specific values in a single configuration object
   const chatConfiguration = {

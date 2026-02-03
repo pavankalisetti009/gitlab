@@ -5,12 +5,11 @@ import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
-import Cookies from '~/lib/utils/cookies';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
+import { setAiPanelTab } from '../graphql';
+import activeTabQuery from '../graphql/active_tab.query.graphql';
 import AiContentContainer from './content_container.vue';
 import NavigationRail from './navigation_rail.vue';
-
-const ACTIVE_TAB_KEY = 'ai_panel_active_tab';
 
 export default {
   name: 'AiPanel',
@@ -61,13 +60,19 @@ export default {
       default: '',
     },
   },
+  apollo: {
+    activeTab: {
+      query: activeTabQuery,
+      result({ data }) {
+        if (data?.activeTab) {
+          this.handleChangeTab(data.activeTab);
+        }
+      },
+    },
+  },
   data() {
-    // Initialize global state from cookie if not already set
-    if (duoChatGlobalState.activeTab === null) {
-      duoChatGlobalState.activeTab = Cookies.get(ACTIVE_TAB_KEY) || undefined;
-    }
-
     return {
+      activeTab: undefined,
       isDesktop: GlBreakpointInstance.isDesktop(),
       duoChatGlobalState,
       selectedAgentError: null,
@@ -75,9 +80,6 @@ export default {
     };
   },
   computed: {
-    activeTab() {
-      return this.duoChatGlobalState.activeTab;
-    },
     isChatDisabled() {
       return Boolean(this.chatDisabledReason);
     },
@@ -156,7 +158,7 @@ export default {
     showBackButton() {
       return (
         this.currentTabComponent?.initialRoute &&
-        this.currentTabComponent.initialRoute !== this.$route.path
+        this.currentTabComponent?.initialRoute !== this.$route.path
       );
     },
   },
@@ -186,7 +188,7 @@ export default {
     window.addEventListener('resize', this.handleWindowResize);
     window.addEventListener('focus', this.handleWindowFocus);
 
-    if (this.chatDisabledReason && this.activeTab) {
+    if (this.chatDisabledReason) {
       this.setActiveTab(undefined);
     }
   },
@@ -196,20 +198,13 @@ export default {
   },
   methods: {
     handleGoBack() {
-      this.$router.push(this.currentTabComponent.initialRoute || '/');
+      this.$router.push(this.currentTabComponent?.initialRoute || '/');
     },
     setActiveTab(value) {
-      // Update global state (will trigger Vue reactivity)
-      this.duoChatGlobalState.activeTab = value;
-      // Also update cookie for persistence across page loads
-      if (value) {
-        Cookies.set(ACTIVE_TAB_KEY, value);
-      } else {
-        Cookies.remove(ACTIVE_TAB_KEY);
-      }
+      setAiPanelTab(value);
     },
     async handleNewChat() {
-      this.handleChangeTab('new');
+      this.setActiveTab('new');
     },
     async handleTabToggle(tab) {
       // Clicking on the icon of active tab acts as a toggle
@@ -218,14 +213,12 @@ export default {
         return;
       }
 
-      this.handleChangeTab(tab);
-    },
-    handleChangeTab(tab) {
       this.setActiveTab(tab);
-
+    },
+    async handleChangeTab(tab) {
       const targetRoute =
         this.duoChatGlobalState.lastRoutePerTab[tab] ||
-        this.currentTabComponent.initialRoute ||
+        this.currentTabComponent?.initialRoute ||
         '/';
 
       this.$router.push(targetRoute).catch(() => {});

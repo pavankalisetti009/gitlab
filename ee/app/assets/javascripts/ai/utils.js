@@ -6,22 +6,7 @@ import {
   DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
   CHAT_MODES,
 } from 'ee/ai/tanuki_bot/constants';
-
-// Initialize chatMode from cookie or localStorage on module load
-const savedModeCookie = getCookie(DUO_AGENTIC_MODE_COOKIE);
-const savedModeStorage = getStorageValue(DUO_AGENTIC_MODE_COOKIE);
-const savedMode = savedModeCookie || (savedModeStorage.exists ? savedModeStorage.value : null);
-
-// When agenticChatGa FF is enabled, default to agentic unless explicitly disabled
-// When FF is disabled, default to classic unless explicitly enabled
-if (
-  (window.gon?.features?.agenticChatGa && savedMode !== 'false') ||
-  (!window.gon?.features?.agenticChatGa && savedMode === 'true')
-) {
-  duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
-} else {
-  duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
-}
+import { setAiPanelTab } from './graphql';
 
 export const concatStreamedChunks = (arr) => {
   if (!arr) return '';
@@ -86,7 +71,7 @@ const openChatAndGetState = () => {
   setAgenticMode({ agenticMode: isAgenticMode, saveCookie: false, isEmbedded: true });
 
   // Embedded mode: Open the AI panel to chat tab
-  duoChatGlobalState.activeTab = 'chat';
+  setAiPanelTab('chat');
 
   return {
     isEmbedded: true,
@@ -167,3 +152,22 @@ export const utils = {
   concatStreamedChunks,
   generateEventLabelFromText,
 };
+
+export const initializeChatMode = () => {
+  const savedModeCookie = getCookie(DUO_AGENTIC_MODE_COOKIE);
+  const savedModeStorage = getStorageValue(DUO_AGENTIC_MODE_COOKIE);
+  const savedMode = savedModeCookie || (savedModeStorage.exists ? savedModeStorage.value : null);
+
+  // When agenticChatGa FF is enabled, default to agentic unless explicitly disabled
+  // When FF is disabled, default to classic unless explicitly enabled
+  if (
+    (window.gon?.features?.agenticChatGa && savedMode !== 'false') ||
+    (!window.gon?.features?.agenticChatGa && savedMode === 'true')
+  ) {
+    duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+  } else {
+    duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+  }
+};
+
+initializeChatMode();
