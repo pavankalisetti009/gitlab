@@ -110,15 +110,16 @@ module SecretsManagement
 
     def list_policies(type: nil)
       subdir = "/#{type}" if type
-      result = make_request(:list, "sys/policies/acl#{subdir}", {}, allow_not_found_response: true)
+      result = make_request(:list, "sys/policies/detailed/acl#{subdir}", {}, allow_not_found_response: true)
       return [] unless result
 
-      result["data"]["keys"].filter_map do |key|
-        # Always skip the default policy in the root of a namespace; this is
-        # managed by OpenBao and not for our consumption.
-        next if (key == "default") && type.nil?
+      key_info = result["data"]["key_info"] || {}
 
-        metadata = get_policy(key)
+      key_info.filter_map do |key, raw_metadata|
+        # Filter out system policies ('default' and 'root') that should not be exposed to users.
+        next if (key == "root") || (key == "default")
+
+        metadata = parse_policy_metadata(key, raw_metadata)
         next unless metadata
 
         policy_data = { "key" => key, "metadata" => metadata }
@@ -322,6 +323,14 @@ module SecretsManagement
     def read_raw_policy(name)
       body = make_request(:get, "sys/policies/acl/#{name}", {}, allow_not_found_response: true)
       body["data"] if body
+    end
+
+    def parse_policy_metadata(name, raw_metadata)
+      policy_json = raw_metadata.fetch("policy", nil)
+      return AclPolicy.new(name) if policy_json.nil?
+
+      parsed = Gitlab::Json.parse(policy_json)
+      AclPolicy.build_from_hash(name, parsed)
     end
 
     def connection
