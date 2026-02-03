@@ -171,7 +171,7 @@ module Gitlab
 
             def authorize
               if ::Feature.enabled?(:dap_external_trigger_usage_billing, context.current_user)
-                context.current_user.allowed_to_use?(:troubleshoot_job)
+                context.current_user.allowed_to_use?(:troubleshoot_job, root_namespace: job.project.root_ancestor)
               else
                 context.current_user.can?(:troubleshoot_job_with_ai, job)
               end
