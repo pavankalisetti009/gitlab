@@ -180,8 +180,6 @@ module Gitlab
           end
 
           def run!
-            raise "Error: Can only be run within a rake task" unless Gitlab::Runtime.rake?
-
             if !Rails.env.development? && Gitlab::Saas.feature_available?(:ai_catalog)
               raise "Error: Cannot be run on production GitLab SaaS environments"
             end

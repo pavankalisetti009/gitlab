@@ -25,10 +25,6 @@ RSpec.describe Gitlab::Ai::Catalog::ThirdPartyFlows::Seeder, feature_category: :
   describe '#run!' do
     let(:seeder) { described_class.new }
 
-    before do
-      allow(Gitlab::Runtime).to receive(:rake?).and_return(true)
-    end
-
     context 'when all conditions are met' do
       it 'seeds external agents successfully' do
         expect { seeder.run! }.to change { Ai::Catalog::Item.count }.by(2)
@@ -98,16 +94,6 @@ RSpec.describe Gitlab::Ai::Catalog::ThirdPartyFlows::Seeder, feature_category: :
     it 'does not raise an error if other data is already in the catalog' do
       create(:ai_catalog_third_party_flow)
       expect { seeder.run! }.to output(/Completed successfully/).to_stdout
-    end
-
-    context 'when not running in a rake task' do
-      before do
-        allow(Gitlab::Runtime).to receive(:rake?).and_return(false)
-      end
-
-      it 'raises an error' do
-        expect { seeder.run! }.to raise_error("Error: Can only be run within a rake task")
-      end
     end
 
     context 'when running on production SaaS', :saas do
