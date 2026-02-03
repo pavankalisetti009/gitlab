@@ -11,7 +11,9 @@ module QA
     describe 'Update and Delete on secret permissions' do
       context 'when owner enables secrets manager' do
         it 'automatically creates owner permissions and displays them in roles tab',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579566' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579566',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/29022',
+                        type: 'flaky' } do
           Page::Main::Menu.perform(&:sign_out)
           Flow::Login.sign_in(as: owner)
           project.visit!
@@ -30,7 +32,9 @@ module QA
 
       context 'when testing access control for secret permissions management' do
         it 'allows only project owner to access secret permissions management',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579568' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579568',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/29022',
+                        type: 'flaky' } do
           # Test that maintainer access secret permissions management, but not edit them.
           Page::Main::Menu.perform(&:sign_out)
           Flow::Login.sign_in(as: maintainer)
@@ -58,7 +62,9 @@ module QA
 
       context 'when a non-owner access the secret permissions' do
         it 'cannot access secret permissions page',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579569' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579569',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/29022',
+                        type: 'flaky' } do
           Page::Main::Menu.perform(&:sign_out)
           Flow::Login.sign_in(as: non_project_owner)
           project.visit!
@@ -95,7 +101,9 @@ module QA
         # rubocop:enable RSpec/InstanceVariable
 
         it 'successfully creates permissions',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579570' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579570',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/29022',
+                        type: 'flaky' } do
           Page::Main::Menu.perform(&:sign_out)
           Flow::Login.sign_in(as: owner)
           project.visit!
@@ -113,7 +121,9 @@ module QA
 
       context 'when owner creates permission for non-project user' do
         it 'fails to create the secret permission',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579706' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579706',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/29022',
+                        type: 'flaky' } do
           Page::Main::Menu.perform(&:sign_out)
           Flow::Login.sign_in(as: owner)
           project.visit!
@@ -132,7 +142,9 @@ module QA
 
       context 'when owner creates permission for developer-role without read permission' do
         it 'fails to create the secret permission',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579708' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579708',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/29022',
+                        type: 'flaky' } do
           Page::Main::Menu.perform(&:sign_out)
           Flow::Login.sign_in(as: owner)
           project.visit!
@@ -150,7 +162,9 @@ module QA
 
       context 'when owner deletes a permission' do
         it 'successfully deletes permissions',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579769' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/579769',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/29022',
+                        type: 'flaky' } do
           Page::Main::Menu.perform(&:sign_out)
           Flow::Login.sign_in(as: owner)
           project.visit!
