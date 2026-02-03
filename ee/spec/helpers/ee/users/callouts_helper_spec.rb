@@ -360,33 +360,6 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
     end
   end
 
-  describe '.show_explore_duo_core_banner?' do
-    let_it_be(:user) { create(:user) }
-    let(:merge_request) { create(:merge_request) }
-
-    subject { helper.show_explore_duo_core_banner?(merge_request) }
-
-    where(:is_assignee, :user_can_access_duo_chat_via_duo_core, :user_dismissed, :expected_result) do
-      true | true | false | true
-      false | true | false | false
-      true | true | true | false
-      true | false | false | false
-    end
-
-    with_them do
-      before do
-        allow(helper).to receive(:current_user).and_return(user)
-        merge_request.update!(assignees: [user]) if is_assignee
-        allow(helper).to receive(:user_dismissed?).with(::Users::CalloutsHelper::EXPLORE_DUO_CORE_BANNER) { user_dismissed }
-        allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(
-          instance_double(Ai::UserAuthorizable::Response, authorized_by_duo_core: user_can_access_duo_chat_via_duo_core)
-        )
-      end
-
-      it { is_expected.to be expected_result }
-    end
-  end
-
   describe '#render_product_usage_data_collection_changes', :do_not_mock_admin_mode_setting do
     let_it_be(:admin) { create(:user, :admin) }
     let_it_be(:license) { create(:license) }
