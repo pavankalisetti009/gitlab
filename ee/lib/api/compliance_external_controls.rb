@@ -106,6 +106,7 @@ module API
         requires :control_id, type: Integer, desc: 'The ID of the control'
         requires :status, type: String, values: VALID_STATUS_VALUES, desc: 'The status of the control'
       end
+      route_setting :authorization, skip_granular_token_authorization: true
       patch ':id/compliance_external_controls/:control_id/status' do
         control = valid_control(params[:control_id])
         verify_hmac_signature!(control)
