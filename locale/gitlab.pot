@@ -24558,9 +24558,6 @@ msgstr ""
 msgid "Deployment|Latest Deployed"
 msgstr ""
 
-msgid "Deployment|Leave feedback"
-msgstr ""
-
 msgid "Deployment|Needs Approval"
 msgstr ""
 
@@ -24657,12 +24654,6 @@ msgid "Deployment|Waiting"
 msgstr ""
 
 msgid "Deployment|Waiting to be deployed."
-msgstr ""
-
-msgid "Deployment|We know this page is a bit empty at the moment, but we're working hard to bring you a great experience! In the meantime, we'd love to hear your feedback."
-msgstr ""
-
-msgid "Deployment|What would you like to see here?"
 msgstr ""
 
 msgid "Deployment|You"
