@@ -8,6 +8,7 @@ module Security
 
       data_consistency :sticky
       feature_category :vulnerability_management
+      deduplicate :until_executed, if_deduplicated: :reschedule_once
       idempotent!
 
       def handle_event(event)
