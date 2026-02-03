@@ -9,6 +9,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :api do
     expected_ee_fields = [
       :add_on_purchases,
       :ai_catalog_agent_flow_config,
+      :ai_catalog_available_flows_for_project,
       :ai_catalog_built_in_tools,
       :ai_catalog_configured_items,
       :ai_catalog_item_consumer,

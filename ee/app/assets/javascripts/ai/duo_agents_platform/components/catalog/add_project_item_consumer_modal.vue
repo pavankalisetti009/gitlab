@@ -56,6 +56,11 @@ export default {
       required: false,
       default: false,
     },
+    useRootGroupFlows: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -228,6 +233,7 @@ export default {
           :dropdown-texts="modalTexts.dropdownTexts"
           :is-valid="isGroupItemConsumerValid"
           :item-types="itemTypes"
+          :use-root-group-flows="useRootGroupFlows"
           @input="onGroupItemConsumerSelect"
           @error="onError"
         />

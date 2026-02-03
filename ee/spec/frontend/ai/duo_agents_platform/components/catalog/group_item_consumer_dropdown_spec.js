@@ -5,6 +5,7 @@ import { shallowMount } from '@vue/test-utils';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
+import aiCatalogAvailableFlowsForProjectQuery from 'ee/ai/duo_agents_platform/graphql/queries/ai_catalog_available_flows_for_project.query.graphql';
 import { PAGE_SIZE } from 'ee/ai/catalog/constants';
 import GroupItemConsumerDropdown from 'ee/ai/duo_agents_platform/components/catalog/group_item_consumer_dropdown.vue';
 import SingleSelectDropdown from 'ee/ai/catalog/components/single_select_dropdown.vue';
@@ -29,10 +30,12 @@ describe('GroupItemConsumerDropdown', () => {
     itemTypes: ['AGENT'],
   };
   const mockConfiguredItemsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
+  const mockAvailableFlowsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
 
   const createComponent = ({ props = {} } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogConfiguredItemsQuery, mockConfiguredItemsQueryHandler],
+      [aiCatalogAvailableFlowsForProjectQuery, mockAvailableFlowsQueryHandler],
     ]);
 
     wrapper = shallowMount(GroupItemConsumerDropdown, {
@@ -51,48 +54,96 @@ describe('GroupItemConsumerDropdown', () => {
   const findSingleSelectDropdown = () => wrapper.findComponent(SingleSelectDropdown);
 
   beforeEach(() => {
-    createComponent();
+    jest.clearAllMocks();
   });
 
-  it('renders SingleSelectDropdown with correct props', () => {
-    expect(findSingleSelectDropdown().props()).toMatchObject({
-      id: 'gl-form-field-item',
-      query: aiCatalogConfiguredItemsQuery,
-      queryVariables: {
-        groupId: convertToGraphQLId(TYPENAME_GROUP, rootGroupId),
-        configurableForProjectId: convertToGraphQLId(TYPENAME_PROJECT, projectId),
-        itemTypes: ['AGENT'],
-        first: PAGE_SIZE,
-        after: null,
-        before: null,
-        last: null,
-      },
-      dataKey: 'aiCatalogConfiguredItems',
-      placeholderText: 'Select an agent',
-      itemTextFn: expect.any(Function),
-      itemLabelFn: expect.any(Function),
-      itemSubLabelFn: expect.any(Function),
-      isValid: true,
+  describe('when useRootGroupFlows is false (default)', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders SingleSelectDropdown with aiCatalogConfiguredItems query', () => {
+      expect(findSingleSelectDropdown().props()).toMatchObject({
+        id: 'gl-form-field-item',
+        query: aiCatalogConfiguredItemsQuery,
+        queryVariables: {
+          groupId: convertToGraphQLId(TYPENAME_GROUP, rootGroupId),
+          configurableForProjectId: convertToGraphQLId(TYPENAME_PROJECT, projectId),
+          itemTypes: ['AGENT'],
+          first: PAGE_SIZE,
+          after: null,
+          before: null,
+          last: null,
+        },
+        dataKey: 'aiCatalogConfiguredItems',
+        placeholderText: 'Select an agent',
+        itemTextFn: expect.any(Function),
+        itemLabelFn: expect.any(Function),
+        itemSubLabelFn: expect.any(Function),
+        isValid: true,
+      });
+    });
+
+    it('passes value prop to SingleSelectDropdown', () => {
+      createComponent({
+        props: { value: 'gid://gitlab/Ai::Catalog::ItemConsumer/1' },
+      });
+
+      expect(findSingleSelectDropdown().props('value')).toBe(
+        'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+      );
+    });
+
+    it('passes isValid prop to SingleSelectDropdown', () => {
+      createComponent({ props: { isValid: false } });
+
+      expect(findSingleSelectDropdown().props('isValid')).toBe(false);
     });
   });
 
-  it('passes value prop to SingleSelectDropdown', () => {
-    createComponent({
-      props: { value: 'gid://gitlab/Ai::Catalog::ItemConsumer/1' },
+  describe('when useRootGroupFlows is true', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          useRootGroupFlows: true,
+          itemTypes: ['FLOW'],
+          dropdownTexts: {
+            placeholder: 'Select a flow',
+            itemSublabel: 'ID: %{id}',
+          },
+        },
+      });
     });
 
-    expect(findSingleSelectDropdown().props('value')).toBe(
-      'gid://gitlab/Ai::Catalog::ItemConsumer/1',
-    );
-  });
+    it('renders SingleSelectDropdown with aiCatalogAvailableFlowsForProject query', () => {
+      expect(findSingleSelectDropdown().props()).toMatchObject({
+        query: aiCatalogAvailableFlowsForProjectQuery,
+        queryVariables: {
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, projectId),
+          first: PAGE_SIZE,
+          after: null,
+          before: null,
+          last: null,
+        },
+        dataKey: 'aiCatalogAvailableFlowsForProject',
+        placeholderText: 'Select a flow',
+      });
+    });
 
-  it('passes isValid prop to SingleSelectDropdown', () => {
-    createComponent({ props: { isValid: false } });
+    it('does not include groupId or itemTypes in query variables', () => {
+      const { queryVariables } = findSingleSelectDropdown().props();
 
-    expect(findSingleSelectDropdown().props('isValid')).toBe(false);
+      expect(queryVariables.groupId).toBeUndefined();
+      expect(queryVariables.itemTypes).toBeUndefined();
+      expect(queryVariables.configurableForProjectId).toBeUndefined();
+    });
   });
 
   describe('item formatting functions', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('itemTextFn returns item name', () => {
       const { itemTextFn } = findSingleSelectDropdown().props();
 
@@ -113,6 +164,10 @@ describe('GroupItemConsumerDropdown', () => {
   });
 
   describe('event handling', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('emits input event when SingleSelectDropdown emits input', async () => {
       await waitForPromises();
 

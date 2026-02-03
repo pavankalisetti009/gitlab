@@ -403,6 +403,7 @@ export default {
       :item-types="$options.itemTypes"
       :modal-id="$options.addFlowModalId"
       :modal-texts="$options.modalTexts"
+      use-root-group-flows
       @submit="addFlowToProject"
     />
   </div>
