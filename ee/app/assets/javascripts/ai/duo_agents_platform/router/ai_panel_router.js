@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
-import NestedRouteApp from '../nested_route_app.vue';
+import NestedRouteApp from '~/vue_shared/spa/components/router_view.vue';
 import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
 import {
   getStorageKey,

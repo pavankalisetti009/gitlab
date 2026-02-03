@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
-import SpaRoot from '~/vue_shared/spa/components/spa_root.vue';
+import SpaRouterView from '~/vue_shared/spa/components/router_view.vue';
 import UpstreamShow from 'ee/packages_and_registries/virtual_registries/pages/common/upstream/show.vue';
 import RegistriesNewPage from '../common/registry/new.vue';
 import RegistriesAndUpstreams from './registries_and_upstreams.vue';
@@ -25,11 +25,11 @@ export default function createRouter(base) {
       { path: '/', redirect: { name: CONTAINER_REGISTRIES_INDEX } },
       {
         path: '/',
-        component: SpaRoot,
+        component: SpaRouterView,
         children: [
           {
             path: 'registries',
-            component: SpaRoot,
+            component: SpaRouterView,
             meta: {
               text: s__('VirtualRegistries|Container registries'),
               defaultRoute: CONTAINER_REGISTRIES_INDEX,
@@ -59,7 +59,7 @@ export default function createRouter(base) {
               },
               {
                 path: ':id(\\d+)',
-                component: SpaRoot,
+                component: SpaRouterView,
                 meta: {
                   useId: true,
                   defaultRoute: CONTAINER_REGISTRIES_SHOW,
@@ -86,7 +86,7 @@ export default function createRouter(base) {
           },
           {
             path: 'upstreams',
-            component: SpaRoot,
+            component: SpaRouterView,
             meta: {
               text: s__('VirtualRegistries|Container upstreams'),
               defaultRoute: CONTAINER_UPSTREAMS_INDEX,
@@ -99,7 +99,7 @@ export default function createRouter(base) {
               },
               {
                 path: ':id(\\d+)',
-                component: SpaRoot,
+                component: SpaRouterView,
                 children: [
                   {
                     name: 'UPSTREAM_SHOW',

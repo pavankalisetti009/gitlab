@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
-import NestedRouteApp from 'ee/ai/duo_agents_platform/nested_route_app.vue';
+import NestedRouteApp from '~/vue_shared/spa/components/router_view.vue';
 import AiCatalogAgents from '../pages/ai_catalog_agents.vue';
 import AiCatalogAgent from '../pages/ai_catalog_agent.vue';
 import AiCatalogAgentsShow from '../pages/ai_catalog_agents_show.vue';
