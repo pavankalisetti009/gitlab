@@ -29,7 +29,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
       end
 
       it_behaves_like 'authorizing granular token permissions', :associate_maven_virtual_registry_upstream do
-        let(:boundary_object) { :instance }
+        let(:boundary_object) { registry.group }
         let(:request) { post api(url, personal_access_token: pat), params: params }
       end
     end
@@ -150,7 +150,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
     end
 
     it_behaves_like 'authorizing granular token permissions', :update_maven_virtual_registry_upstream do
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { registry_upstream.group }
       let(:request) { patch api(url, personal_access_token: pat), params: { position: 5 } }
     end
   end
@@ -170,7 +170,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
       end
 
       it_behaves_like 'authorizing granular token permissions', :disassociate_maven_virtual_registry_upstream do
-        let(:boundary_object) { :instance }
+        let(:boundary_object) { registry_upstream.group }
         let(:request) { delete api(url, personal_access_token: pat) }
       end
     end

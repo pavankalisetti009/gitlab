@@ -133,7 +133,7 @@ module API
                     hidden true
                   end
                   route_setting :authorization, permissions: :read_maven_virtual_registry_upstream,
-                    boundary_type: :instance
+                    boundary: -> { registry.group }
                   get do
                     authorize! :read_virtual_registry, registry
 
@@ -170,6 +170,8 @@ module API
                       desc: 'The metadata cache validity period in hours. Defaults to 24'
                     all_or_none_of :username, :password
                   end
+                  route_setting :authorization, permissions: :create_maven_virtual_registry_upstream,
+                    boundary: -> { registry.group }
                   post do
                     authorize! :create_virtual_registry, registry
 
@@ -202,6 +204,8 @@ module API
                   tags %w[maven_virtual_registries]
                   hidden true
                 end
+                route_setting :authorization, permissions: :read_maven_virtual_registry_upstream,
+                  boundary: -> { upstream.group }
                 get do
                   authorize! :read_virtual_registry, upstream
 
@@ -239,7 +243,7 @@ module API
                     :metadata_cache_validity_hours
                 end
                 route_setting :authorization, permissions: :update_maven_virtual_registry_upstream,
-                  boundary_type: :instance
+                  boundary: -> { upstream.group }
                 patch do
                   authorize! :update_virtual_registry, upstream
 
@@ -263,7 +267,7 @@ module API
                   hidden true
                 end
                 route_setting :authorization, permissions: :delete_maven_virtual_registry_upstream,
-                  boundary_type: :instance
+                  boundary: -> { upstream.group }
                 delete do
                   authorize! :destroy_virtual_registry, upstream
 
@@ -285,7 +289,7 @@ module API
                   hidden true
                 end
                 route_setting :authorization, permissions: :purge_maven_virtual_registry_upstream_cache,
-                  boundary_type: :instance
+                  boundary: -> { upstream.group }
                 delete :cache do
                   authorize! :destroy_virtual_registry, upstream
 
@@ -307,7 +311,7 @@ module API
                   hidden true
                 end
                 route_setting :authorization, permissions: :test_maven_virtual_registry_upstream,
-                  boundary_type: :instance
+                  boundary: -> { upstream.group }
                 get :test do
                   authorize! :read_virtual_registry, upstream
 
@@ -335,7 +339,7 @@ module API
                   optional :password, type: String, desc: 'The password of the Maven virtual registry upstream'
                 end
                 route_setting :authorization, permissions: :test_maven_virtual_registry_upstream,
-                  boundary_type: :instance
+                  boundary: -> { upstream.group }
                 post :test do
                   authorize! :read_virtual_registry, upstream
 

@@ -201,7 +201,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
       it_behaves_like 'successful response'
 
       it_behaves_like 'authorizing granular token permissions', :read_maven_virtual_registry do
-        let(:boundary_object) { :instance }
+        let(:boundary_object) { registry.group }
         let(:request) do
           get api(url, personal_access_token: pat)
         end
@@ -286,7 +286,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
 
     it_behaves_like 'authorizing granular token permissions', :update_maven_virtual_registry do
       let(:params) { { name: 'foo', description: 'description' } }
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { registry.group }
       let(:request) do
         patch api(url, personal_access_token: pat), params: params
       end
@@ -350,7 +350,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     end
 
     it_behaves_like 'authorizing granular token permissions', :delete_maven_virtual_registry do
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { registry.group }
       let(:request) do
         delete api(url, personal_access_token: pat)
       end
@@ -419,7 +419,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     end
 
     it_behaves_like 'authorizing granular token permissions', :purge_maven_virtual_registry_cache do
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { registry.group }
       let(:request) do
         delete api(url, personal_access_token: pat)
       end
