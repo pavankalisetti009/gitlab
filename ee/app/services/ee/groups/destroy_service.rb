@@ -8,10 +8,11 @@ module EE
       override :execute
       def execute
         with_scheduling_epic_cache_update do
-          group = super
-          after_destroy(group)
+          result = super
+          next result if result.error?
 
-          group
+          after_destroy(result[:group])
+          result
         end
       end
 

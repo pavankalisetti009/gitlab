@@ -5,10 +5,10 @@ require 'spec_helper'
 RSpec.describe GroupDestroyWorker, feature_category: :groups_and_projects do
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, namespace: group) }
-  let_it_be(:user) { create(:user, owner_of: group) }
-  let_it_be(:admin) { create(:user, :admin, owner_of: group) }
+  let(:group) { create(:group) }
+  let(:project) { create(:project, namespace: group) }
+  let(:user) { create(:user, owner_of: group) }
+  let(:admin) { create(:user, :admin, owner_of: group) }
 
   subject(:worker) { described_class.new }
 
@@ -31,14 +31,17 @@ RSpec.describe GroupDestroyWorker, feature_category: :groups_and_projects do
         stub_application_setting(admin_mode: admin_mode_enabled)
         worker_user = user_is_admin ? admin : user
 
+        group_id = group.id
+        project_id = project.id
+
+        worker.perform(group_id, worker_user.id)
+
         if should_delete
-          worker.perform(group.id, worker_user.id)
-          expect(Group.all).not_to include(group)
-          expect(Project.all).not_to include(project)
+          expect { Group.find(group_id) }.to raise_error(ActiveRecord::RecordNotFound)
+          expect { Project.find(project_id) }.to raise_error(ActiveRecord::RecordNotFound)
         else
-          expect do
-            worker.perform(group.id, worker_user.id)
-          end.to raise_error(Groups::DestroyService::DestroyError)
+          expect(Group.find(group_id)).to eq(group)
+          expect(Project.find(project_id)).to eq(project)
         end
       end
     end
