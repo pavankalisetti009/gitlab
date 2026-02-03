@@ -4132,7 +4132,7 @@ msgstr ""
 msgid "AccessTokens|Disable access tokens"
 msgstr ""
 
-msgid "AccessTokens|Disable personal, group, project and impersonation tokens. Does not affect personal access tokens for service accounts."
+msgid "AccessTokens|Disables personal, group, project and impersonation access tokens. This setting also disables personal access tokens for service accounts."
 msgstr ""
 
 msgid "AccessTokens|Enable DPoP"
