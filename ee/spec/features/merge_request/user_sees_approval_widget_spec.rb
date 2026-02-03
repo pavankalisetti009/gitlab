@@ -2,13 +2,22 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Merge request > User sees approval widget', :js, feature_category: :code_review_workflow do
-  let(:project) { create(:project, :public, :repository) }
-  let(:user) { project.creator }
+RSpec.describe 'Merge request > User sees approval widget', :js, :saas, feature_category: :code_review_workflow do
+  let_it_be(:group) { create(:group_with_plan, :public, plan: :premium_plan) }
+
+  let(:project) { create(:project, :public, :repository, namespace: group) }
+  let(:user) { create(:user, :with_namespace) }
   let(:merge_request) { create(:merge_request, source_project: project) }
 
   before do
+    project.add_developer(user)
     sign_in(user)
+  end
+
+  include_context 'with duo features enabled and agentic chat available for group on SaaS'
+
+  it_behaves_like 'user can use agentic chat' do
+    subject { project_merge_request_path(project, merge_request) }
   end
 
   context 'when merge when threads resolved is active' do

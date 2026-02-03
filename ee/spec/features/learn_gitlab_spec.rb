@@ -129,7 +129,9 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
 
       let_it_be(:project) { create(:project, namespace: group) }
 
-      include_context 'with duo features enabled and ai chat available for group on SaaS'
+      include_context 'with duo features enabled and ai chat available for group on SaaS' do
+        let(:dismiss_duo_chat_callout) { false }
+      end
 
       context 'when the cookie `confetti_post_signup` is true' do
         before do
