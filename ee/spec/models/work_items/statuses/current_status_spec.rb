@@ -569,7 +569,7 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
 
         context 'when no mappings exist for the specific combination' do
           let_it_be(:other_group) { create(:group) }
-          let_it_be(:other_work_item_type) { create(:work_item_type, :non_default) }
+          let_it_be(:other_work_item_type) { create(:work_item_type) }
 
           before do
             stub_feature_flags(work_item_system_defined_type: false)

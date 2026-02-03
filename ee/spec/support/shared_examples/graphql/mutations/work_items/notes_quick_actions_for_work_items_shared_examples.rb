@@ -19,8 +19,7 @@ RSpec.shared_examples 'work item does not support weights widget updates via qui
   let(:body) { "Updating weight.\n/weight 1" }
 
   before do
-    WorkItems::Type.default_by_type(:issue).widget_definitions
-      .find_by_widget_type(:weight).update!(disabled: true)
+    stub_all_work_item_widgets(weight: false)
   end
 
   it 'ignores the quick action' do
@@ -50,9 +49,7 @@ RSpec.shared_examples 'work item does not support health status widget updates v
   let(:body) { "Updating health status.\n/health_status on_track" }
 
   before do
-    WorkItems::Type.default_by_type(:issue).widget_definitions
-      .find_by_widget_type(:health_status).update!(disabled: true)
-
+    stub_all_work_item_widgets(health_status: false)
     noteable.update!(health_status: nil)
   end
 

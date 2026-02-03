@@ -59,7 +59,7 @@ RSpec.shared_examples 'a mutation that adds closing merge request' do
 
     context 'when the target work item does not have a development widget' do
       before do
-        work_item.work_item_type.widget_definitions.where(name: 'Development').update_all(disabled: true)
+        stub_work_item_widget(work_item, development: false)
       end
 
       it_behaves_like 'a mutation that does not add closing merge request' do
