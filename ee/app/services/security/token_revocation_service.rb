@@ -129,7 +129,7 @@ module Security
         )
         raise RevocationFailedError, 'Failed to get revocation token types' unless response.success?
 
-        token_types = ::Gitlab::Json.parse(response.body)['types']
+        token_types = ::Gitlab::Json.safe_parse(response.body)['types']
         if token_types.blank?
           @revocable_keys.each do |key|
             log_unable_to_revoke_token(key_type: key[:type], reason: UNSUPPORTED)
