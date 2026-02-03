@@ -6,9 +6,9 @@ import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
 import getConfiguredFlows from 'ee/ai/graphql/get_configured_flows.query.graphql';
+import { setAiPanelTab } from 'ee/ai/graphql';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
-import toast from '~/vue_shared/plugins/global_toast';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
 import {
@@ -26,7 +26,7 @@ import {
 } from '../mocks';
 
 jest.mock('~/alert');
-jest.mock('~/vue_shared/plugins/global_toast');
+jest.mock('ee/ai/graphql', () => ({ setAiPanelTab: jest.fn() }));
 
 Vue.use(VueApollo);
 
@@ -542,36 +542,14 @@ describe('DuoWorkflowAction component', () => {
         });
       });
 
-      describe('when there is a projectPath prop', () => {
+      describe('when the request succeeds', () => {
         beforeEach(async () => {
           findButton().vm.$emit('click');
           await waitForPromises();
         });
 
-        it('shows success toast with the session ID and action link', () => {
-          expect(toast).toHaveBeenCalledWith('Developer/v1 #1056241 created', {
-            action: {
-              text: 'View',
-              href: '/group/project/-/automate/agent-sessions/1056241',
-            },
-            autoHideDelay: 4000,
-          });
-        });
-      });
-
-      describe('when there is no projectPath prop', () => {
-        it('shows generic success toast without action link', () => {
-          createComponent({ props: { projectPath: '' } });
-          // Manually call toast since button is not displayed
-          wrapper.vm.showSuccessToast(
-            mockCreateFlowResponse.id,
-            mockCreateFlowResponse.workflow_definition,
-          );
-
-          expect(toast).toHaveBeenCalledWith('Flow started successfully.', {
-            action: undefined,
-            autoHideDelay: 4000,
-          });
+        it('sets the open AI panel to the sessions', () => {
+          expect(setAiPanelTab).toHaveBeenCalledWith('sessions');
         });
       });
     });

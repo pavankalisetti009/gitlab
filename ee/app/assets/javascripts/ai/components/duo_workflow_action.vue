@@ -3,16 +3,14 @@ import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
 import getConfiguredFlows from 'ee/ai/graphql/get_configured_flows.query.graphql';
-import { sprintf, s__, __ } from '~/locale';
+import { setAiPanelTab } from 'ee/ai/graphql';
+import { s__, __ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
-import toast from '~/vue_shared/plugins/global_toast';
-import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { buildApiUrl } from '~/api/api_utils';
 
 const FLOW_WEB_ENVIRONMENT = 'web';
-const TOAST_HIDE_DELAY = 4000;
 const INIT_ERROR_MESSAGE = __('Something went wrong');
 
 export default {
@@ -190,27 +188,6 @@ export default {
       }
       return false;
     },
-    showSuccessToast(id, workflowDefinition) {
-      let message;
-      let action;
-
-      if (this.projectPath && id) {
-        message = sprintf(s__('DuoAgentPlatform|%{formattedName} created'), {
-          formattedName: formatAgentFlowName(workflowDefinition, id),
-        });
-        action = { text: __('View'), href: this.formatMessageLinks(id).link };
-      } else {
-        message = s__('DuoAgentPlatform|Flow started successfully.');
-      }
-      toast(message, { action, autoHideDelay: TOAST_HIDE_DELAY });
-    },
-    formatMessageLinks(id) {
-      return {
-        // Hardcoded for an easier integration with any page at GitLab.
-        // https://gitlab.com/gitlab-org/gitlab/-/blob/b50c9e5ad666bab0e45365b2c6994d99407a68d1/ee/app/assets/javascripts/ai/duo_agents_platform/router/index.js#L61
-        link: `/${this.projectPath}/-/automate/agent-sessions/${id}`,
-      };
-    },
     startWorkflow() {
       if (this.promptValidatorRegex && !this.promptValidatorRegex.test(this.goal)) {
         this.$emit('prompt-validation-error', this.goal);
@@ -252,7 +229,7 @@ export default {
 
           this.$emit('agent-flow-started', data);
 
-          this.showSuccessToast(data.id, data.workflow_definition);
+          setAiPanelTab('sessions');
         })
         .catch((error) => {
           const errorMessage =

@@ -5,7 +5,7 @@ import MockAdapter from 'axios-mock-adapter';
 import VueApollo from 'vue-apollo';
 import { createMockSubscription } from 'mock-apollo-client';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import * as aiUtils from 'ee/ai/utils';
+import { sendDuoChatCommand } from 'ee/ai/utils';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
 import Api from 'ee/api';
@@ -65,8 +65,7 @@ jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrl: jest.fn(),
 }));
-jest.mock('ee/ai/utils');
-jest.spyOn(aiUtils, 'sendDuoChatCommand');
+jest.mock('ee/ai/utils', () => ({ sendDuoChatCommand: jest.fn() }));
 
 describe('Vulnerability Header', () => {
   let wrapper;
@@ -680,11 +679,11 @@ describe('Vulnerability Header', () => {
       });
 
       it('calls sendDuoChatCommand with the correct parameters when clicked', async () => {
-        expect(aiUtils.sendDuoChatCommand).not.toHaveBeenCalled();
+        expect(sendDuoChatCommand).not.toHaveBeenCalled();
 
         await clickButton('explain-vulnerability');
 
-        expect(aiUtils.sendDuoChatCommand).toHaveBeenCalledWith({
+        expect(sendDuoChatCommand).toHaveBeenCalledWith({
           question: '/vulnerability_explain',
           resourceId: `gid://gitlab/Vulnerability/${defaultVulnerability.id}`,
           agenticPrompt:

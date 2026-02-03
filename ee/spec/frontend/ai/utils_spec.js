@@ -6,9 +6,10 @@ import {
   setAgenticMode,
   saveDuoAgenticModePreference,
   focusDuoChatInput,
+  initializeChatMode,
 } from 'ee/ai/utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { setCookie } from '~/lib/utils/common_utils';
+import { setCookie, getCookie } from '~/lib/utils/common_utils';
 import { saveStorageValue } from '~/lib/utils/local_storage';
 import {
   DUO_AGENTIC_MODE_COOKIE,
@@ -577,17 +578,6 @@ describe('AI Utils', () => {
   });
 
   describe('chatMode initialization from cookie', () => {
-    let getCookieMock;
-
-    beforeEach(() => {
-      jest.resetModules();
-      getCookieMock = jest.fn();
-      jest.doMock('~/lib/utils/common_utils', () => ({
-        setCookie: jest.fn(),
-        getCookie: getCookieMock,
-      }));
-    });
-
     afterEach(() => {
       window.gon = {};
     });
@@ -597,40 +587,36 @@ describe('AI Utils', () => {
         window.gon = { features: { agenticChatGa: true } };
       });
 
-      it('defaults to agentic mode when no cookie is set', async () => {
-        getCookieMock.mockReturnValue(undefined);
+      it('defaults to agentic mode when no cookie is set', () => {
+        getCookie.mockReturnValue(undefined);
 
-        const { duoChatGlobalState: state } = await import('~/super_sidebar/constants');
-        await import('ee/ai/utils');
+        initializeChatMode();
 
-        expect(state.chatMode).toBe(CHAT_MODES.AGENTIC);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
       });
 
-      it('defaults to agentic mode when cookie is empty string', async () => {
-        getCookieMock.mockReturnValue('');
+      it('defaults to agentic mode when cookie is empty string', () => {
+        getCookie.mockReturnValue('');
 
-        const { duoChatGlobalState: state } = await import('~/super_sidebar/constants');
-        await import('ee/ai/utils');
+        initializeChatMode();
 
-        expect(state.chatMode).toBe(CHAT_MODES.AGENTIC);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
       });
 
-      it('uses classic mode when cookie is explicitly set to false', async () => {
-        getCookieMock.mockReturnValue('false');
+      it('uses classic mode when cookie is explicitly set to false', () => {
+        getCookie.mockReturnValue('false');
 
-        const { duoChatGlobalState: state } = await import('~/super_sidebar/constants');
-        await import('ee/ai/utils');
+        initializeChatMode();
 
-        expect(state.chatMode).toBe(CHAT_MODES.CLASSIC);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
       });
 
-      it('uses agentic mode when cookie is set to true', async () => {
-        getCookieMock.mockReturnValue('true');
+      it('uses agentic mode when cookie is set to true', () => {
+        getCookie.mockReturnValue('true');
 
-        const { duoChatGlobalState: state } = await import('~/super_sidebar/constants');
-        await import('ee/ai/utils');
+        initializeChatMode();
 
-        expect(state.chatMode).toBe(CHAT_MODES.AGENTIC);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
       });
     });
 
@@ -639,31 +625,28 @@ describe('AI Utils', () => {
         window.gon = { features: { agenticChatGa: false } };
       });
 
-      it('defaults to classic mode when no cookie is set', async () => {
-        getCookieMock.mockReturnValue(undefined);
+      it('defaults to classic mode when no cookie is set', () => {
+        getCookie.mockReturnValue(undefined);
 
-        const { duoChatGlobalState: state } = await import('~/super_sidebar/constants');
-        await import('ee/ai/utils');
+        initializeChatMode();
 
-        expect(state.chatMode).toBe(CHAT_MODES.CLASSIC);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
       });
 
-      it('uses agentic mode when cookie is set to true', async () => {
-        getCookieMock.mockReturnValue('true');
+      it('uses agentic mode when cookie is set to true', () => {
+        getCookie.mockReturnValue('true');
 
-        const { duoChatGlobalState: state } = await import('~/super_sidebar/constants');
-        await import('ee/ai/utils');
+        initializeChatMode();
 
-        expect(state.chatMode).toBe(CHAT_MODES.AGENTIC);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
       });
 
-      it('uses classic mode when cookie is set to false', async () => {
-        getCookieMock.mockReturnValue('false');
+      it('uses classic mode when cookie is set to false', () => {
+        getCookie.mockReturnValue('false');
 
-        const { duoChatGlobalState: state } = await import('~/super_sidebar/constants');
-        await import('ee/ai/utils');
+        initializeChatMode();
 
-        expect(state.chatMode).toBe(CHAT_MODES.CLASSIC);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
       });
     });
   });
