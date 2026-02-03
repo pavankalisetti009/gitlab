@@ -4,9 +4,8 @@ module VirtualRegistries
   module Cleanup
     class ExecutePolicyService
       CACHE_ENTRIES_CLASSES = {
-        maven: ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry
-        # TODO: uncomment when https://gitlab.com/gitlab-org/gitlab/-/work_items/583726 is done
-        # container: ::VirtualRegistries::Container::Cache::Entry
+        maven: ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry,
+        container: ::VirtualRegistries::Container::Cache::Remote::Entry
       }.freeze
       BATCH_SIZE = 250
 

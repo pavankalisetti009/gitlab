@@ -8,7 +8,8 @@ module EE
       VREG_CACHE_ENTRY_CLASSES = [
         ::VirtualRegistries::Packages::Maven::Cache::Entry,
         ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry,
-        ::VirtualRegistries::Container::Cache::Entry
+        ::VirtualRegistries::Container::Cache::Entry,
+        ::VirtualRegistries::Container::Cache::Remote::Entry
       ].freeze
 
       override :perform

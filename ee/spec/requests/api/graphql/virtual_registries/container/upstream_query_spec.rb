@@ -9,7 +9,7 @@ RSpec.describe 'Querying a container virtual registry', :aggregate_failures, fea
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:registry) { create(:virtual_registries_container_registry, group: group) }
   let_it_be(:upstream) { create(:virtual_registries_container_upstream, group: group, registries: [registry]) }
-  let_it_be(:cache_entries) { create_list(:virtual_registries_container_cache_entry, 2, upstream:) }
+  let_it_be(:cache_entries) { create_list(:virtual_registries_container_cache_remote_entry, 2, upstream:) }
 
   let(:global_id) { upstream.to_gid }
   let(:query) do

@@ -67,7 +67,7 @@ module VirtualRegistries
       strong_memoize_attr :cache_entry
 
       def build_base_query
-        VirtualRegistries::Container::Cache::Entry
+        VirtualRegistries::Container::Cache::Remote::Entry
           .default
           .for_upstream(registry.upstreams)
           .for_group(registry.group)

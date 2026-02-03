@@ -10,11 +10,13 @@ RSpec.describe Resolvers::VirtualRegistries::Container::Cache::EntriesResolver, 
   let_it_be(:registry) { create(:virtual_registries_container_registry, group: group) }
   let_it_be(:upstream) { create(:virtual_registries_container_upstream, registries: [registry]) }
   let_it_be(:entry1) do
-    create(:virtual_registries_container_cache_entry, upstream: upstream, relative_path: 'com/example/app.jar')
+    create(:virtual_registries_container_cache_remote_entry, upstream: upstream,
+      relative_path: 'library/alpine/manifests/v1')
   end
 
   let_it_be(:entry2) do
-    create(:virtual_registries_container_cache_entry, upstream: upstream, relative_path: 'org/test/lib.jar')
+    create(:virtual_registries_container_cache_remote_entry, upstream: upstream,
+      relative_path: 'myorg/myapp/manifests/v2')
   end
 
   let(:virtual_registry_available) { true }
@@ -50,7 +52,7 @@ RSpec.describe Resolvers::VirtualRegistries::Container::Cache::EntriesResolver, 
     end
 
     context 'when filtering by search' do
-      let(:args) { { search: 'com/example' } }
+      let(:args) { { search: 'library/alpine' } }
 
       it { is_expected.to have_attributes(items: contain_exactly(entry1), has_next_page: false) }
     end

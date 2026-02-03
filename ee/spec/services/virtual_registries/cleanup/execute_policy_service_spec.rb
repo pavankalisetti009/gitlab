@@ -22,13 +22,63 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyService, feature_categor
         it 'returns success with zero counts' do
           is_expected.to be_success.and have_attributes(
             payload: {
-              maven: { deleted_entries_count: 0, deleted_size: 0 }
+              maven: { deleted_entries_count: 0, deleted_size: 0 },
+              container: { deleted_entries_count: 0, deleted_size: 0 }
             }
           )
         end
       end
 
-      context 'with cache entries requiring cleanup' do
+      shared_examples 'cache entries requiring cleanup' do |entry_type, factory_name, expected_payload_key|
+        let!(:old_entry1) do
+          create(factory_name, group: group, size: 2048, downloaded_at: 35.days.ago)
+        end
+
+        let!(:old_entry2) do
+          create(factory_name, group: group, size: 4096, downloaded_at: 40.days.ago)
+        end
+
+        let!(:recent_entry) do
+          create(factory_name, group: group, size: 1024, downloaded_at: 10.days.ago)
+        end
+
+        before do
+          allow(::VirtualRegistries::CreateAuditEventsService).to receive(:new).and_call_original
+        end
+
+        it 'marks old entries for destruction and returns correct counts, and creates audit events',
+          :aggregate_failures do
+          expect { execute }.to change {
+            entry_type.for_group(group).pending_destruction.size
+          }.by(2)
+
+          expect_audit_events_for([old_entry1, old_entry2])
+
+          is_expected.to be_success.and have_attributes(payload: expected_payload_key)
+        end
+      end
+
+      context 'with maven cache entries requiring cleanup' do
+        it_behaves_like 'cache entries requiring cleanup',
+          ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry,
+          :virtual_registries_packages_maven_cache_remote_entry,
+          {
+            maven: { deleted_entries_count: 2, deleted_size: 6144 },
+            container: { deleted_entries_count: 0, deleted_size: 0 }
+          }
+      end
+
+      context 'with container cache entries requiring cleanup' do
+        it_behaves_like 'cache entries requiring cleanup',
+          ::VirtualRegistries::Container::Cache::Remote::Entry,
+          :virtual_registries_container_cache_remote_entry,
+          {
+            maven: { deleted_entries_count: 0, deleted_size: 0 },
+            container: { deleted_entries_count: 2, deleted_size: 6144 }
+          }
+      end
+
+      context 'with both maven and container cache entries requiring cleanup' do
         let!(:old_maven_entry1) do
           create(
             :virtual_registries_packages_maven_cache_remote_entry,
@@ -47,12 +97,21 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyService, feature_categor
           )
         end
 
-        let!(:recent_maven_entry) do
+        let_it_be_with_reload(:old_container_entry1) do
           create(
-            :virtual_registries_packages_maven_cache_remote_entry,
+            :virtual_registries_container_cache_remote_entry,
             group: group,
-            size: 512,
-            downloaded_at: 10.days.ago
+            size: 2048,
+            downloaded_at: 35.days.ago
+          )
+        end
+
+        let_it_be_with_reload(:old_container_entry2) do
+          create(
+            :virtual_registries_container_cache_remote_entry,
+            group: group,
+            size: 4096,
+            downloaded_at: 40.days.ago
           )
         end
 
@@ -60,17 +119,23 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyService, feature_categor
           allow(::VirtualRegistries::CreateAuditEventsService).to receive(:new).and_call_original
         end
 
-        it 'marks old entries for destruction and returns correct counts, and creates audit events',
+        it 'marks old entries for destruction and returns correct counts for both types, and creates audit events',
           :aggregate_failures do
-          expect { execute }.to change {
+          expect do
+            execute
+          end.to change {
             ::VirtualRegistries::Packages::Maven::Cache::Remote::Entry.for_group(group).pending_destruction.size
+          }.by(2).and change {
+            ::VirtualRegistries::Container::Cache::Remote::Entry.for_group(group).pending_destruction.size
           }.by(2)
 
           expect_audit_events_for([old_maven_entry1, old_maven_entry2])
+          expect_audit_events_for([old_container_entry1, old_container_entry2])
 
           is_expected.to be_success.and have_attributes(
             payload: {
-              maven: { deleted_entries_count: 2, deleted_size: 3072 }
+              maven: { deleted_entries_count: 2, deleted_size: 3072 },
+              container: { deleted_entries_count: 2, deleted_size: 6144 }
             }
           )
         end
@@ -95,7 +160,8 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyService, feature_categor
 
           is_expected.to be_success.and have_attributes(
             payload: {
-              maven: { deleted_entries_count: 5, deleted_size: 5120 }
+              maven: { deleted_entries_count: 5, deleted_size: 5120 },
+              container: { deleted_entries_count: 0, deleted_size: 0 }
             }
           )
         end

@@ -73,15 +73,14 @@ RSpec.describe VirtualRegistries::Cache::MarkEntriesForDestructionWorker, :aggre
     end
   end
 
-  # TODO: uncomment when https://gitlab.com/gitlab-org/gitlab/-/work_items/583726 is done
-  # context 'with a container upstream' do
-  #   let_it_be(:upstream) { create(:virtual_registries_container_upstream) }
-  #   let(:cache_entry_factory) { :virtual_registries_container_cache_entry }
-  #   let(:cache_entry_class) { ::VirtualRegistries::Container::Cache::Entry }
-  #   let(:upstream_class_name) { 'VirtualRegistries::Container::Upstream' }
+  context 'with a container upstream' do
+    let_it_be(:upstream) { create(:virtual_registries_container_upstream) }
+    let(:cache_entry_factory) { :virtual_registries_container_cache_remote_entry }
+    let(:cache_entry_class) { ::VirtualRegistries::Container::Cache::Remote::Entry }
+    let(:upstream_class_name) { 'VirtualRegistries::Container::Upstream' }
 
-  #   it_behaves_like 'marking entries for destruction'
-  # end
+    it_behaves_like 'marking entries for destruction'
+  end
 
   context 'with a maven upstream' do
     let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }

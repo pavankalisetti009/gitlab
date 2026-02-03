@@ -323,18 +323,16 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
     subject(:api_request) { delete api(url), headers: headers }
 
     before_all do
-      create_list(:virtual_registries_container_cache_entry, 2, upstream:) # 2 default
-      create(:virtual_registries_container_cache_entry, :pending_destruction, upstream:) # 1 pending destruction
-      create(:virtual_registries_container_cache_entry) # 1 default in another upstream
+      create_list(:virtual_registries_container_cache_remote_entry, 2, upstream:) # 2 default
+      create(:virtual_registries_container_cache_remote_entry, :pending_destruction, upstream:) # 1 pending destruction
+      create(:virtual_registries_container_cache_remote_entry) # 1 default in another upstream
     end
 
     shared_examples 'successful response' do
       it 'returns a successful response' do
-        # the functionality of deleting cache is disabled for now till
-        # https://gitlab.com/gitlab-org/gitlab/-/work_items/583726 is addressed
-        expect { api_request }.not_to change {
-          ::VirtualRegistries::Container::Cache::Entry.pending_destruction.count
-        }
+        expect { api_request }.to change {
+          ::VirtualRegistries::Container::Cache::Remote::Entry.pending_destruction.count
+        }.by(3)
 
         expect(response).to have_gitlab_http_status(:no_content)
       end

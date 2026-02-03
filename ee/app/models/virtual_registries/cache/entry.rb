@@ -13,7 +13,7 @@ module VirtualRegistries
 
       self.primary_key = %i[upstream_id relative_path status]
 
-      belongs_to :group
+      belongs_to :group, optional: false
 
       alias_method :namespace, :group
 

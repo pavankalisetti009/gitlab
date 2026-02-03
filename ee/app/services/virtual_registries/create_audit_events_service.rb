@@ -4,7 +4,7 @@ module VirtualRegistries
   class CreateAuditEventsService
     EVENT_MESSAGE = 'Marked cache entry for deletion'
     EVENT_NAMES = %w[
-      virtual_registries_container_cache_entry_deleted
+      virtual_registries_container_cache_remote_entry_deleted
       virtual_registries_packages_maven_cache_remote_entry_deleted
     ].freeze
 

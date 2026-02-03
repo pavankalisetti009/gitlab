@@ -14,7 +14,7 @@ RSpec.describe VirtualRegistries::ContainerController, feature_category: :virtua
   let_it_be_with_reload(:upstream) { registry.upstreams.first }
   let_it_be_with_reload(:cache_entry) do
     create(
-      :virtual_registries_container_cache_entry,
+      :virtual_registries_container_cache_remote_entry,
       group: group,
       upstream: upstream,
       relative_path: '/alpine/manifests/latest'
@@ -378,7 +378,7 @@ RSpec.describe VirtualRegistries::ContainerController, feature_category: :virtua
 
     context 'with valid request' do
       it 'accepts the upload and creates a cache entry' do
-        expect { send_request }.to change { upstream.cache_entries.count }.by(1)
+        expect { send_request }.to change { upstream.cache_remote_entries.count }.by(1)
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(response.body).to eq('')
@@ -387,7 +387,7 @@ RSpec.describe VirtualRegistries::ContainerController, feature_category: :virtua
       it 'creates a cache entry with correct attributes' do
         send_request
 
-        cache_entry = upstream.cache_entries.find_by(relative_path: "/#{upload_path}")
+        cache_entry = upstream.cache_remote_entries.find_by(relative_path: "/#{upload_path}")
         expect(cache_entry).to have_attributes(
           relative_path: "/#{image}/blobs/#{sha}",
           upstream_id: upstream.id,
@@ -410,7 +410,7 @@ RSpec.describe VirtualRegistries::ContainerController, feature_category: :virtua
         it 'sanitizes the etag by removing quotes' do
           send_request
 
-          cache_entry = upstream.cache_entries.find_by(relative_path: "/#{image}/blobs/#{sha}")
+          cache_entry = upstream.cache_remote_entries.find_by(relative_path: "/#{image}/blobs/#{sha}")
           expect(cache_entry.upstream_etag).to eq('7901283c50d90d8a5a1fef11773b59d2')
         end
       end

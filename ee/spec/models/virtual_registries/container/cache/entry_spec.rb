@@ -59,15 +59,6 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
     end
   end
 
-  describe 'associations' do
-    it 'belongs to an upstream' do
-      is_expected.to belong_to(:upstream)
-        .class_name('VirtualRegistries::Container::Upstream')
-        .required
-        .inverse_of(:cache_entries)
-    end
-  end
-
   describe 'scopes' do
     let_it_be(:first_entry) { create(:virtual_registries_container_cache_entry, created_at: 3.days.ago) }
     let_it_be(:second_entry) { create(:virtual_registries_container_cache_entry, created_at: 2.days.ago) }
@@ -388,7 +379,7 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
 
     context 'for different upstream_id generates different ids' do
       let(:cache_entry2) do
-        create(:virtual_registries_packages_maven_cache_entry, relative_path: cache_entry.relative_path)
+        create(:virtual_registries_container_cache_entry, relative_path: cache_entry.relative_path)
       end
 
       it { is_expected.not_to eq(cache_entry2.generate_id) }

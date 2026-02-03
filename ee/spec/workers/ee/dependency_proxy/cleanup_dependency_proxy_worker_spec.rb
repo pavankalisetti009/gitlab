@@ -12,6 +12,7 @@ RSpec.describe DependencyProxy::CleanupDependencyProxyWorker, type: :worker, fea
           create(:virtual_registries_packages_maven_cache_entry, :pending_destruction)
           create(:virtual_registries_packages_maven_cache_remote_entry, :pending_destruction)
           create(:virtual_registries_container_cache_entry, :pending_destruction)
+          create(:virtual_registries_container_cache_remote_entry, :pending_destruction)
 
           described_class::VREG_CACHE_ENTRY_CLASSES.each do |klass|
             expect(::VirtualRegistries::Cache::DestroyOrphanEntriesWorker)
