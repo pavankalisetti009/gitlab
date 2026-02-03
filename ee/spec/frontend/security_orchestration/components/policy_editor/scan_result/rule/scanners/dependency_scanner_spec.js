@@ -1,11 +1,10 @@
-import { GlCollapse, GlSprintf } from '@gitlab/ui';
+import { nextTick } from 'vue';
+import { GlCollapse } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DependencyScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/dependency_scanner.vue';
-import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
-import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
-import NumberRangeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/number_range_select.vue';
-import KevFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/kev_filter.vue';
-import EpssFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/epss_filter.vue';
+import BranchRuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/branch_rule_section.vue';
+import ScannerHeader from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/scanner_header.vue';
+import ExploitSettingsSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/exploit_settings_section.vue';
 import AttributeFilters from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/attribute_filters.vue';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import {
@@ -37,18 +36,13 @@ describe('DependencyScanner', () => {
       provide: {
         namespaceType: 'project',
       },
-      stubs: {
-        GlSprintf,
-      },
     });
   };
 
   const findCollapse = () => wrapper.findComponent(GlCollapse);
-  const findBranchSelection = () => wrapper.findComponent(BranchSelection);
-  const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
-  const findNumberRangeSelect = () => wrapper.findComponent(NumberRangeSelect);
-  const findKevFilter = () => wrapper.findComponent(KevFilter);
-  const findEpssFilter = () => wrapper.findComponent(EpssFilter);
+  const findScannerHeader = () => wrapper.findComponent(ScannerHeader);
+  const findBranchRuleSection = () => wrapper.findComponent(BranchRuleSection);
+  const findExploitSettingsSection = () => wrapper.findComponent(ExploitSettingsSection);
   const findAttributeFilters = () => wrapper.findComponent(AttributeFilters);
   const findFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
 
@@ -57,13 +51,17 @@ describe('DependencyScanner', () => {
       createComponent();
 
       expect(findCollapse().exists()).toBe(true);
-      expect(findBranchSelection().exists()).toBe(true);
-      expect(findBranchExceptionSelector().exists()).toBe(true);
-      expect(findNumberRangeSelect().exists()).toBe(true);
-      expect(findKevFilter().exists()).toBe(true);
-      expect(findEpssFilter().exists()).toBe(true);
+      expect(findScannerHeader().exists()).toBe(true);
+      expect(findBranchRuleSection().exists()).toBe(true);
+      expect(findExploitSettingsSection().exists()).toBe(true);
       expect(findAttributeFilters().exists()).toBe(false);
       expect(findFilterSelector().exists()).toBe(true);
+    });
+
+    it('passes scanner prop to BranchRuleSection', () => {
+      createComponent();
+
+      expect(findBranchRuleSection().props('scanner')).toEqual(defaultRule);
     });
   });
 
@@ -82,34 +80,36 @@ describe('DependencyScanner', () => {
   });
 
   describe('existing rule', () => {
+    const ruleWithValues = {
+      ...defaultRule,
+      vulnerabilities_allowed: 5,
+      branch_exceptions: ['main'],
+      vulnerability_attributes: {
+        [KNOWN_EXPLOITED]: true,
+        [EPSS_SCORE]: { operator: 'greater_than', value: 0.5 },
+        [FIX_AVAILABLE]: true,
+      },
+    };
+
     beforeEach(() => {
-      createComponent({
-        ...defaultRule,
-        vulnerabilities_allowed: 5,
-        branch_exceptions: ['main'],
-        vulnerability_attributes: {
-          [KNOWN_EXPLOITED]: true,
-          [EPSS_SCORE]: { operator: 'greater_than', value: 0.5 },
-          [FIX_AVAILABLE]: true,
-        },
-      });
+      createComponent(ruleWithValues);
     });
 
-    it('passes vulnerabilities allowed value to number range select', () => {
-      expect(findNumberRangeSelect().props('value')).toBe(5);
+    it('passes vulnerabilities allowed value to branch rule section', () => {
+      expect(findBranchRuleSection().props('vulnerabilitiesAllowed')).toBe(5);
     });
 
-    it('passes branch exceptions to branch exception selector', () => {
-      expect(findBranchExceptionSelector().props('selectedExceptions')).toEqual(['main']);
+    it('passes branch exceptions to branch rule section', () => {
+      expect(findBranchRuleSection().props('branchExceptions')).toEqual(['main']);
     });
 
-    it('passes KEV filter value', () => {
-      expect(findKevFilter().props('selected')).toBe(true);
+    it('passes KEV filter value to exploit settings section', () => {
+      expect(findExploitSettingsSection().props('kevFilterValue')).toBe(true);
     });
 
-    it('passes EPSS filter values', () => {
-      expect(findEpssFilter().props('selectedOperator')).toBe('greater_than');
-      expect(findEpssFilter().props('selectedValue')).toBe(0.5);
+    it('passes EPSS filter values to exploit settings section', () => {
+      expect(findExploitSettingsSection().props('epssOperator')).toBe('greater_than');
+      expect(findExploitSettingsSection().props('epssValue')).toBe(0.5);
     });
 
     it('renders attribute filters when attributes are selected', () => {
@@ -125,10 +125,10 @@ describe('DependencyScanner', () => {
       createComponent();
     });
 
-    it('emits changed event when branch selection changes', () => {
+    it('emits changed event when branch rule section emits changed', () => {
       const payload = { branches: ['main'] };
 
-      findBranchSelection().vm.$emit('changed', payload);
+      findBranchRuleSection().vm.$emit('changed', payload);
 
       expect(wrapper.emitted('changed')).toHaveLength(1);
       expect(wrapper.emitted('changed')[0][0]).toMatchObject(payload);
@@ -140,14 +140,14 @@ describe('DependencyScanner', () => {
         branch_exceptions: ['main'],
       });
 
-      findBranchExceptionSelector().vm.$emit('remove');
+      findBranchRuleSection().vm.$emit('remove-exceptions');
 
       expect(wrapper.emitted('changed')).toHaveLength(1);
       expect(wrapper.emitted('changed')[0][0]).not.toHaveProperty('branch_exceptions');
     });
 
     it('emits changed event when vulnerabilities allowed changes', () => {
-      findNumberRangeSelect().vm.$emit('input', 10);
+      findBranchRuleSection().vm.$emit('range-input', 10);
 
       expect(wrapper.emitted('changed')).toHaveLength(1);
       expect(wrapper.emitted('changed')[0][0]).toMatchObject({
@@ -156,7 +156,7 @@ describe('DependencyScanner', () => {
     });
 
     it('emits changed event when KEV filter changes', () => {
-      findKevFilter().vm.$emit('select', true);
+      findExploitSettingsSection().vm.$emit('kev-change', true);
 
       expect(wrapper.emitted('changed')).toHaveLength(1);
       expect(wrapper.emitted('changed')[0][0]).toHaveProperty('vulnerability_attributes');
@@ -169,7 +169,7 @@ describe('DependencyScanner', () => {
     it('emits changed event when EPSS filter changes', () => {
       const epssValue = { operator: 'less_than', value: 0.3 };
 
-      findEpssFilter().vm.$emit('select', epssValue);
+      findExploitSettingsSection().vm.$emit('epss-change', epssValue);
 
       expect(wrapper.emitted('changed')).toHaveLength(1);
       expect(wrapper.emitted('changed')[0][0]).toHaveProperty('vulnerability_attributes');
@@ -314,6 +314,19 @@ describe('DependencyScanner', () => {
         [FALSE_POSITIVE]: true,
         [ATTRIBUTE]: true,
       });
+    });
+  });
+
+  describe('collapse behavior', () => {
+    it('toggles collapse when header emits toggle', async () => {
+      createComponent();
+
+      expect(findCollapse().props('visible')).toBe(true);
+
+      findScannerHeader().vm.$emit('toggle');
+      await nextTick();
+
+      expect(findCollapse().props('visible')).toBe(false);
     });
   });
 });
