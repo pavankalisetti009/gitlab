@@ -60,17 +60,33 @@ module Ai
       )
     end
 
+    def exception_when_starting_workflow_error
+      message_with_error_code(
+        s_(
+          "DuoCodeReview|:warning: Something went wrong while starting Code Review Flow. " \
+            "Please try again later."
+        ),
+        "DCR5000"
+      )
+    end
+
     def foundational_flow_not_enabled_error
-      s_(
-        "DuoCodeReview|:warning: Code Review Flow is not enabled. " \
-          "Contact your group administrator to enable the Code Review foundational flow in the top-level group."
+      message_with_error_code(
+        s_(
+          "DuoCodeReview|:warning: Code Review Flow is not enabled. " \
+            "Contact your group administrator to enable the foundational flow in the top-level group."
+        ),
+        "DCR4000"
       )
     end
 
     def missing_service_account_error
-      s_(
-        "DuoCodeReview|:warning: Code Review Flow is enabled " \
-          "but the service account needs to be verified. Contact your administrator."
+      message_with_error_code(
+        s_(
+          "DuoCodeReview|:warning: Code Review Flow is enabled " \
+            "but the service account needs to be verified. Contact your administrator."
+        ),
+        "DCR4001"
       )
     end
 
@@ -83,6 +99,13 @@ module Ai
 
     def could_not_generate_summary_error
       s_("DuoCodeReview|:warning: Something went wrong while GitLab Duo was generating a code review summary.")
+    end
+
+    def message_with_error_code(message, error_code)
+      error_code_url =
+        "#{Gitlab.doc_url}/user/duo_agent_platform/flows/foundational_flows/code_review/#error-#{error_code.downcase}"
+
+      "#{message}\n\nError code: [#{error_code}](#{error_code_url})"
     end
   end
 end

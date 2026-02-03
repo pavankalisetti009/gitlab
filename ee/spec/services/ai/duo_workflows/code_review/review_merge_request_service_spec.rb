@@ -155,7 +155,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
       include_examples 'updates merge request status', 'reviewed'
 
-      include_examples 'adds an error note', ::Ai::CodeReviewMessages.could_not_start_workflow_error
+      include_examples 'adds an error note', ::Ai::CodeReviewMessages.exception_when_starting_workflow_error
 
       it 'tracks the exception with correct unit primitive' do
         expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
@@ -200,7 +200,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
       include_examples 'updates merge request status', 'reviewed'
 
-      include_examples 'adds an error note', ::Ai::CodeReviewMessages.could_not_start_workflow_error
+      include_examples 'adds an error note', ::Ai::CodeReviewMessages.exception_when_starting_workflow_error
 
       it 'cleans up the progress note' do
         progress_note = instance_double(::Note)

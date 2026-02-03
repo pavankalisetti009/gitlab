@@ -42,7 +42,7 @@ module Ai
           result
         rescue StandardError => error
           Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE.to_s)
-          cleanup_failed_review(::Ai::CodeReviewMessages.could_not_start_workflow_error)
+          cleanup_failed_review(::Ai::CodeReviewMessages.exception_when_starting_workflow_error)
           progress_note&.destroy
           ServiceResponse.error(message: error.message)
         end
