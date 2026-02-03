@@ -26248,6 +26248,9 @@ msgstr ""
 msgid "DuoCodeReview|:warning: Code Review Flow is not enabled. Contact your group administrator to enable the foundational flow in the top-level group."
 msgstr ""
 
+msgid "DuoCodeReview|:warning: No GitLab Credits remain for this billing period. To continue using Code Review Flow, contact your administrator."
+msgstr ""
+
 msgid "DuoCodeReview|:warning: Something went wrong and the review request was stopped. Please request a new review."
 msgstr ""
 

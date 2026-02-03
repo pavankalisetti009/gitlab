@@ -90,6 +90,16 @@ module Ai
       )
     end
 
+    def usage_quota_exceeded_error
+      message_with_error_code(
+        s_(
+          "DuoCodeReview|:warning: No GitLab Credits remain for this billing period. " \
+            "To continue using Code Review Flow, contact your administrator."
+        ),
+        "DCR4002"
+      )
+    end
+
     def timeout_error
       s_(
         "DuoCodeReview|:warning: Something went wrong and the review request was stopped. " \

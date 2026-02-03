@@ -198,6 +198,18 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     include_examples 'failure', :invalid_service_account, 'Could not resolve the service account for this flow'
   end
 
+  context 'when usage quota is exceeded' do
+    before do
+      allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+        allow(instance).to receive(:execute).and_return(
+          ServiceResponse.error(message: "Usage quota exceeded", reason: :usage_quota_exceeded)
+        )
+      end
+    end
+
+    include_examples 'failure', :usage_quota_exceeded, 'Usage quota exceeded'
+  end
+
   context 'with a configured foundational flow' do
     include_examples 'success'
   end

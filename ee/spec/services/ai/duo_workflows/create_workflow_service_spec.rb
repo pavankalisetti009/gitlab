@@ -162,6 +162,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
           expect(execute[:status]).to eq(:error)
           expect(execute[:http_status]).to eq(:payment_required)
           expect(execute[:message]).to include('Usage quota exceeded')
+          expect(execute.payload[:reason]).to eq(:usage_quota_exceeded)
         end
       end
 

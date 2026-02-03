@@ -129,6 +129,19 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
         include_examples 'adds an error note', ::Ai::CodeReviewMessages.missing_service_account_error
       end
 
+      context 'when user has exceeded usage quota' do
+        let(:create_and_start_service_result) do
+          ServiceResponse.error(
+            message: 'Usage quota exceeded',
+            reason: :usage_quota_exceeded
+          )
+        end
+
+        include_examples 'updates merge request status', 'reviewed'
+
+        include_examples 'adds an error note', ::Ai::CodeReviewMessages.usage_quota_exceeded_error
+      end
+
       context 'with a generic failure reason' do
         let(:create_and_start_service_result) do
           ServiceResponse.error(

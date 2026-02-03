@@ -29,7 +29,12 @@ module Ai
           params: create_workflow_params
         ).execute
 
-        return error(create_result.message, :create_workflow) if create_result.error?
+        if create_result.error?
+          return error(
+            create_result.message,
+            create_result.payload[:reason] || :create_workflow
+          )
+        end
 
         workflow = create_result[:workflow]
 
