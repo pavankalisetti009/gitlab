@@ -65,6 +65,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     let(:auditor_permissions) do
       %i[
+        access_security_and_compliance
         award_emoji
         download_code
         download_wiki_code
