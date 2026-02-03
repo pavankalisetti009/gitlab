@@ -32,7 +32,7 @@ module GitlabSubscriptions
         # lead and trial created
         # We go off the gitlab_subscription end_date here since in the premium with ultimate trial case the
         # trial_ends_on does get populated on the gitlab_subscription record.
-        flash[:success] = success_flash_message(@result.payload[:namespace].reset.gitlab_subscription)
+        flash[:success] = success_flash_message(@result.payload[:namespace].gitlab_subscription)
 
         redirect_to trial_success_path(@result.payload[:namespace])
       elsif @result.reason == GitlabSubscriptions::Trials::UltimateCreateService::NOT_FOUND

@@ -126,7 +126,10 @@ module GitlabSubscriptions
         if result.success?
           track_event('trial_registration_success')
 
-          ServiceResponse.success(message: 'Trial applied', payload: { namespace: namespace })
+          # Refind the Namespace here due to database sticking logic.
+          # Doing this instead of reload/reset of the record ensures we take advantage of the database
+          # sticking we performed earlier.
+          ServiceResponse.success(message: 'Trial applied', payload: { namespace: Namespace.find(namespace.id) })
         else
           track_event('trial_registration_failure')
 
