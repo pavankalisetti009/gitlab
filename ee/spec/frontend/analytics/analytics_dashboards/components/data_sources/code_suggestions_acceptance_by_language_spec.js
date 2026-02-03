@@ -348,6 +348,13 @@ describe('`Code suggestion acceptance by language` Data Source', () => {
           return fetch();
         });
 
+        it('calls `setAlerts` with generic error', () => {
+          expect(setAlerts).toHaveBeenCalledWith({
+            title: 'Failed to load dashboard panel.',
+            errors: expect.arrayContaining(['Failed to load code suggestions data by language.']),
+          });
+        });
+
         it('returns empty object', () => {
           expect(res).toEqual({});
         });

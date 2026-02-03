@@ -1,6 +1,4 @@
-import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import { toISODateFormat } from '~/lib/utils/datetime_utility';
-import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { __, s__, sprintf } from '~/locale';
 import {
   DATE_RANGE_OPTION_LAST_30_DAYS,
@@ -9,52 +7,12 @@ import {
 import { getLanguageDisplayName } from 'ee/analytics/analytics_dashboards/code_suggestions_languages';
 import { truncate } from '~/lib/utils/text_utility';
 import { calculateRate } from 'ee/analytics/dashboards/ai_impact/utils';
-import { defaultClient } from '../graphql/client';
-
-const extractAiMetricsResponse = (result) =>
-  extractQueryResponseFromNamespace({
-    result,
-    resultKey: 'aiMetrics',
-  });
-
-const fetchAllCodeSuggestionsLanguagesMetrics = async (variables) => {
-  const rawAiMetricsQueryResult = await defaultClient.query({
-    query: AiMetricsQuery,
-    variables,
-  });
-
-  const { codeSuggestions } = extractAiMetricsResponse(rawAiMetricsQueryResult);
-
-  // Filter out empty strings returned for unknown/unsupported languages
-  const codeSuggestionsLanguages =
-    codeSuggestions?.languages?.filter((languageId) => languageId !== '') ?? [];
-
-  const results = await Promise.allSettled(
-    codeSuggestionsLanguages.map(async (languageId) => {
-      try {
-        return await defaultClient.query({
-          query: AiMetricsQuery,
-          variables: {
-            ...variables,
-            languages: languageId,
-          },
-        });
-      } catch (error) {
-        throw new Error(languageId);
-      }
-    }),
-  );
-
-  const successfulLanguages = results
-    .filter((result) => result.status === 'fulfilled')
-    .map((result) => result.value);
-
-  const failedLanguages = results
-    .filter((result) => result.status === 'rejected')
-    .map((result) => result.reason?.message);
-
-  return { successfulLanguages, failedLanguages };
-};
+import {
+  extractAiMetricsResponse,
+  fetchCodeSuggestionsMetricsByDimension,
+} from 'ee/analytics/dashboards/ai_impact/api';
+import { LANGUAGE_DIMENSION_KEY } from '~/analytics/shared/constants';
+import { GENERIC_DASHBOARD_ERROR } from 'ee/analytics/dashboards/constants';
 
 // Merges language variants into single entries by canonical name, summing counts.
 const mergeMetricsByLanguage = (results = []) => {
@@ -131,20 +89,30 @@ export default async function fetch({
     ? DATE_RANGE_OPTIONS[dateRangeKey]
     : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_30_DAYS];
 
-  const { successfulLanguages, failedLanguages } = await fetchAllCodeSuggestionsLanguagesMetrics({
-    fullPath: namespaceOverride ?? namespace,
-    startDate: toISODateFormat(startDate, true),
-    endDate: toISODateFormat(endDate, true),
-  });
+  const { successful, failed } = await fetchCodeSuggestionsMetricsByDimension(
+    {
+      fullPath: namespaceOverride ?? namespace,
+      startDate: toISODateFormat(startDate, true),
+      endDate: toISODateFormat(endDate, true),
+    },
+    LANGUAGE_DIMENSION_KEY,
+  );
 
-  const { chartData, contextualData } = extractAcceptanceMetricsByLanguage(successfulLanguages);
+  if (failed.length > 0 && successful.length === 0) {
+    setAlerts({
+      title: GENERIC_DASHBOARD_ERROR,
+      errors: [
+        s__(
+          'CodeSuggestionsAcceptanceByLanguageChart|Failed to load code suggestions data by language.',
+        ),
+      ],
+    });
 
-  if (!chartData.some(([value]) => value)) return {};
+    return {};
+  }
 
-  if (failedLanguages.length > 0) {
-    const languages = failedLanguages
-      .map((language) => getLanguageDisplayName(language))
-      .join(', ');
+  if (failed.length > 0) {
+    const languages = failed.map((language) => getLanguageDisplayName(language)).join(', ');
 
     setAlerts({
       canRetry: true,
@@ -156,6 +124,10 @@ export default async function fetch({
       ],
     });
   }
+
+  const { chartData, contextualData } = extractAcceptanceMetricsByLanguage(successful);
+
+  if (!chartData.some(([value]) => value)) return {};
 
   setVisualizationOverrides({
     visualizationOptionOverrides: {
