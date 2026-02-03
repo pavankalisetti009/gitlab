@@ -52039,9 +52039,6 @@ msgstr ""
 msgid "ProfileSession|on"
 msgstr ""
 
-msgid "ProfilesAuthentication|Add a passkey to sign in securely with your trusted device. %{link_start}Learn more about passkeys%{link_end}."
-msgstr ""
-
 msgid "ProfilesAuthentication|Add passkey"
 msgstr ""
 
@@ -52102,9 +52099,6 @@ msgstr ""
 msgid "ProfilesAuthentication|Register another 2FA method above to automatically use passkeys as default 2FA."
 msgstr ""
 
-msgid "ProfilesAuthentication|Sign in faster with passkeys"
-msgstr ""
-
 msgid "ProfilesAuthentication|To use passkeys as your default two-factor authentication, please register at least one backup 2FA method first below."
 msgstr ""
 
@@ -52142,9 +52136,6 @@ msgid "ProfilesAuthentication|You cannot modify your enrollment because the inst
 msgstr ""
 
 msgid "ProfilesAuthentication|You cannot modify your enrollment because your account does not use a password to sign in."
-msgstr ""
-
-msgid "ProfilesAuthentication|You currently use passkeys for secure and faster sign in. %{link_start}Manage passkeys%{link_end}."
 msgstr ""
 
 msgid "Profiles| You are about to permanently delete %{strongStart}your account%{strongEnd}, and all of the issues, merge requests, and groups linked to your account. Once you confirm %{strongStart}Delete account%{strongEnd}, your account cannot be recovered."
