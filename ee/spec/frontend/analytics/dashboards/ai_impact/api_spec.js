@@ -1,4 +1,15 @@
-import { extractGraphqlAiData } from 'ee/analytics/dashboards/ai_impact/api';
+import mockAiMetricsResponse from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.json';
+import mockAiMetricsResponseColumn2 from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.column_2.json';
+import mockAiMetricsResponseColumn3 from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.column_3.json';
+import mockAiMetricsResponseColumn4 from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.column_4.json';
+import mockAiMetricsNullResponseData from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.null_values.json';
+import mockAiMetricsResponseEmptyCodeSuggestionDimensions from 'test_fixtures/ee/graphql/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql.empty_code_suggestion_dimensions.json';
+import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
+import {
+  extractGraphqlAiData,
+  fetchCodeSuggestionsMetricsByDimension,
+} from 'ee/analytics/dashboards/ai_impact/api';
+import { LANGUAGE_DIMENSION_KEY } from '~/analytics/shared/constants';
 
 describe('AI impact dashboard api', () => {
   describe('extractGraphqlAiData', () => {
@@ -72,6 +83,91 @@ describe('AI impact dashboard api', () => {
       ['duo_agent_platform_chats', { agentPlatformChats: { startedSessionEventCount: 0 } }],
     ])('returns %s given %o', (identifier, data) => {
       expect(extractGraphqlAiData(data)[identifier]).toMatchSnapshot();
+    });
+  });
+
+  describe('fetchCodeSuggestionsMetricsByDimension', () => {
+    const mockVariables = {
+      fullPath: 'test-namespace',
+      startDate: '2024-01-01',
+      endDate: '2024-01-31',
+    };
+
+    const mockResolvedAiMetricsQuery = (response = mockAiMetricsResponse) =>
+      jest.spyOn(defaultClient, 'query').mockResolvedValueOnce(response);
+
+    const expectQueryWithVariables = (variables) =>
+      expect(defaultClient.query).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variables: expect.objectContaining(variables),
+        }),
+      );
+
+    it('fetches metrics for each dimension item', async () => {
+      mockResolvedAiMetricsQuery()
+        .mockResolvedValueOnce(mockAiMetricsResponseColumn2)
+        .mockResolvedValueOnce(mockAiMetricsResponseColumn3)
+        .mockResolvedValueOnce(mockAiMetricsResponseColumn4);
+
+      const { successful, failed } = await fetchCodeSuggestionsMetricsByDimension(
+        mockVariables,
+        LANGUAGE_DIMENSION_KEY,
+      );
+
+      expect(defaultClient.query).toHaveBeenCalledTimes(4);
+      expectQueryWithVariables(mockVariables);
+      expectQueryWithVariables({ ...mockVariables, languages: 'js' });
+      expectQueryWithVariables({ ...mockVariables, languages: 'ruby' });
+      expectQueryWithVariables({ ...mockVariables, languages: 'go' });
+
+      expect(successful).toEqual([
+        mockAiMetricsResponseColumn2,
+        mockAiMetricsResponseColumn3,
+        mockAiMetricsResponseColumn4,
+      ]);
+      expect(failed).toHaveLength(0);
+    });
+
+    it('only fetches metrics for supported dimension items', async () => {
+      mockResolvedAiMetricsQuery(mockAiMetricsResponseEmptyCodeSuggestionDimensions);
+
+      await fetchCodeSuggestionsMetricsByDimension(mockVariables, LANGUAGE_DIMENSION_KEY);
+
+      expect(defaultClient.query).toHaveBeenCalledTimes(3);
+    });
+
+    it('separates successful and failed queries', async () => {
+      mockResolvedAiMetricsQuery()
+        .mockResolvedValueOnce(mockAiMetricsResponseColumn2)
+        .mockRejectedValueOnce({})
+        .mockRejectedValueOnce({});
+
+      const { successful, failed } = await fetchCodeSuggestionsMetricsByDimension(
+        mockVariables,
+        LANGUAGE_DIMENSION_KEY,
+      );
+
+      expect(successful).toEqual([mockAiMetricsResponseColumn2]);
+      expect(failed).toEqual(['ruby', 'go']);
+    });
+
+    it('returns empty results when there are no dimension items to fetch', async () => {
+      mockResolvedAiMetricsQuery(mockAiMetricsNullResponseData);
+
+      const { successful, failed } = await fetchCodeSuggestionsMetricsByDimension(
+        mockVariables,
+        LANGUAGE_DIMENSION_KEY,
+      );
+
+      expect(defaultClient.query).toHaveBeenCalledTimes(1);
+      expect(successful).toHaveLength(0);
+      expect(failed).toHaveLength(0);
+    });
+
+    it('throws error for invalid dimension key', async () => {
+      await expect(
+        fetchCodeSuggestionsMetricsByDimension(mockVariables, 'invalidKey'),
+      ).rejects.toThrow('Invalid dimension key: invalidKey. Must be one of: ideNames, languages');
     });
   });
 });

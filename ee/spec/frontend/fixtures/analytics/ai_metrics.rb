@@ -139,6 +139,20 @@ RSpec.describe 'AI Metrics (GraphQL fixtures)', feature_category: :value_stream_
       it_behaves_like 'AI metrics fixture', 'null_values'
     end
 
+    context 'with unknown/unsupported code suggestion dimensions' do
+      let(:ai_metrics_service_payload) { base_ai_metrics_payload }
+      let(:code_suggestion_payload) do
+        base_code_suggestion_payload.merge(
+          languages: %w[js ts] + [''],
+          ide_names: %w[GoLand WebStorm] + [''])
+      end
+
+      let(:usage_event_count_service_payload) { base_usage_event_count_payload }
+      let(:agent_platform_event_count_service_payload) { base_agent_platform_payload }
+
+      it_behaves_like 'AI metrics fixture', 'empty_code_suggestion_dimensions'
+    end
+
     private
 
     def multiply_payload(payload, multiplier)
