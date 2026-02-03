@@ -5,7 +5,6 @@ module API
     before { authenticated_as_admin! }
 
     LICENSES_TAGS = %w[licenses].freeze
-
     feature_category :plan_provisioning
     urgency :low
 

@@ -6,8 +6,7 @@ module API
 
     helpers ::API::Helpers::NotesHelpers
 
-    resource_iteration_events_tags = %w[resource_iteration_events]
-
+    resource_iteration_events_tags = %w[resource_events]
     before { authenticate! }
 
     { Issue => :team_planning }.each do |eventable_type, feature_category|

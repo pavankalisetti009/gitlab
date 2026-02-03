@@ -17,7 +17,7 @@ module API
                 namespace "agentw" do
                   desc "server_config" do
                     detail "Returns configuration for Workspaces HTTP Server."
-                    tags ["oauth_applications"]
+                    tags ['oauth_applications']
                     success code: 200, message: "Server config retrieved successfully"
                   end
                   get "/server_config", feature_category: :workspaces, urgency: :low do

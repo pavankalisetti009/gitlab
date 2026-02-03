@@ -91,7 +91,7 @@ module API
                 { code: 403, message: 'Forbidden' },
                 { code: 404, message: 'Not Found' }
               ]
-              tags %w[dependency_proxy_npm_packages]
+              tags %w[dependency_proxy]
             end
             params do
               requires :package_name, type: String, desc: 'Package name', regexp: Gitlab::Regex.npm_package_name_regex

@@ -18,7 +18,7 @@ module API
       segment ':id/approval_rules' do
         desc 'Get all project approval rules' do
           success ::API::Entities::ProjectApprovalRule
-          tags %w[project_approval_rules]
+          tags %w[approval_rules]
         end
         params do
           use :pagination
@@ -32,7 +32,7 @@ module API
 
         desc 'Create new project approval rule' do
           success ::API::Entities::ProjectApprovalRule
-          tags %w[project_approval_rules]
+          tags %w[approval_rules]
         end
         params do
           use :create_project_approval_rule
@@ -45,7 +45,7 @@ module API
         segment ':approval_rule_id' do
           desc 'Get a single approval rule' do
             success ::API::Entities::ProjectApprovalRule
-            tags %w[project_approval_rules]
+            tags %w[approval_rules]
           end
           route_setting :authorization, permissions: :read_approval_rule, boundary_type: :project
           get do
@@ -58,7 +58,7 @@ module API
 
           desc 'Update project approval rule' do
             success ::API::Entities::ProjectApprovalRule
-            tags %w[project_approval_rules]
+            tags %w[approval_rules]
           end
           params do
             use :update_project_approval_rule
@@ -70,7 +70,7 @@ module API
 
           desc 'Destroy project approval rule' do
             success [{ code: 204 }]
-            tags %w[project_approval_rules]
+            tags %w[approval_rules]
           end
           params do
             use :delete_project_approval_rule

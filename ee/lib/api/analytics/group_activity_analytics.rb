@@ -24,7 +24,7 @@ module API
       resource :analytics do
         resource :group_activity do
           desc 'Get count of recently created issues for the group' do
-            tags %w[group_analytics]
+            tags %w[analytics]
             detail 'This feature was introduced in GitLab 12.9.'
             success ::API::Entities::Analytics::GroupActivity::IssuesCount
           end
@@ -41,7 +41,7 @@ module API
           end
 
           desc 'Get count of recently created merge requests for the group' do
-            tags %w[group_analytics]
+            tags %w[analytics]
             detail 'This feature was introduced in GitLab 12.9.'
             success ::API::Entities::Analytics::GroupActivity::MergeRequestsCount
           end
@@ -58,7 +58,7 @@ module API
           end
 
           desc 'Get count of recently created group members' do
-            tags %w[group_analytics]
+            tags %w[analytics]
             detail 'This feature was introduced in GitLab 12.9.'
             success ::API::Entities::Analytics::GroupActivity::NewMembersCount
           end

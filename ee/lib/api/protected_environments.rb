@@ -4,9 +4,7 @@ module API
   class ProtectedEnvironments < ::API::Base
     include PaginationParams
 
-    project_protected_environments_tags = %w[project_protected_environments]
-    group_protected_environments_tags = %w[group_protected_environments]
-
+    protected_environments_tags = %w[protected_environments]
     ENVIRONMENT_ENDPOINT_REQUIREMENTS = API::NAMESPACE_OR_PROJECT_REQUIREMENTS.merge(name: API::NO_SLASH_URL_PART_REGEX)
 
     feature_category :continuous_delivery
@@ -106,7 +104,7 @@ module API
           { code: '404', message: 'Not found' }
         ]
         is_array true
-        tags project_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         use :pagination
@@ -124,7 +122,7 @@ module API
         failure [
           { code: '404', message: 'Not found' }
         ]
-        tags project_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         requires :name, type: String, desc: 'The name of the protected environment'
@@ -142,7 +140,7 @@ module API
           { code: '404', message: 'Not found' },
           { code: '422', message: 'Unprocessable entity' }
         ]
-        tags project_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         requires :name, type: String, desc: 'The name of the environment'
@@ -181,7 +179,7 @@ module API
           { code: '404', message: 'Not found' },
           { code: '422', message: 'Unprocessable entity' }
         ]
-        tags project_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         requires :name, type: String, desc: 'The name of the environment'
@@ -213,7 +211,7 @@ module API
 
       desc 'Unprotect a single environment' do
         detail 'Unprotects the given protected environment. This feature was introduced in GitLab 12.8.'
-        tags project_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         requires :name, type: String, desc: 'The name of the protected environment'
@@ -247,7 +245,7 @@ module API
           { code: '404', message: 'Not found' }
         ]
         is_array true
-        tags group_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         use :pagination
@@ -265,7 +263,7 @@ module API
         failure [
           { code: '404', message: 'Not found' }
         ]
-        tags group_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         requires :name,
@@ -286,7 +284,7 @@ module API
           { code: '404', message: 'Not found' },
           { code: '422', message: 'Unprocessable entity' }
         ]
-        tags group_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         requires :name,
@@ -332,7 +330,7 @@ module API
           { code: '404', example: 'Not found' },
           { code: '422', example: 'Unprocessable entity' }
         ]
-        tags group_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         requires :name,
@@ -371,7 +369,7 @@ module API
 
       desc 'Unprotect a single environment' do
         detail 'This feature was introduced in GitLab 14.0.'
-        tags group_protected_environments_tags
+        tags protected_environments_tags
       end
       params do
         requires :name, type: String, desc: 'The tier name of the protected environment'

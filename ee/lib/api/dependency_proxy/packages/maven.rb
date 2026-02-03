@@ -110,7 +110,7 @@ module API
               { code: 403, message: 'Forbidden' },
               { code: 404, message: 'Not Found' }
             ]
-            tags %w[dependency_proxy_maven_packages]
+            tags %w[dependency_proxy]
             produces %w[application/octet-stream]
           end
           params do

@@ -47,7 +47,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
-                tags %w[maven_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
 
@@ -71,7 +71,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
-                tags %w[maven_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
 
@@ -107,7 +107,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
-                tags %w[maven_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
               route_setting :authorization, permissions: :read_maven_virtual_registry, boundary: -> { registry.group }
@@ -129,7 +129,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
-                tags %w[maven_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
 
@@ -162,7 +162,7 @@ module API
                   { code: 404, message: 'Not found' },
                   { code: 412, message: 'Precondition Failed' }
                 ]
-                tags %w[maven_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
               route_setting :authorization, permissions: :delete_maven_virtual_registry, boundary: -> { registry.group }
@@ -183,7 +183,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
-                tags %w[maven_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
               route_setting :authorization, permissions: :purge_maven_virtual_registry_cache,

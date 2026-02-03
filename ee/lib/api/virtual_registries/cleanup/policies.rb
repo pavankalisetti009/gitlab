@@ -49,7 +49,7 @@ module API
                 This feature is currently in an experimental state. \
                 This feature is behind the `maven_virtual_registry` feature flag.'
               success Entities::VirtualRegistries::Cleanup::Policy
-              tags %w[virtual_registries_cleanup_policies]
+              tags %w[virtual_registries]
               hidden true
             end
 
@@ -63,7 +63,7 @@ module API
                 This feature is currently in an experimental state. \
                 This feature is behind the `maven_virtual_registry` feature flag.'
               success Entities::VirtualRegistries::Cleanup::Policy
-              tags %w[virtual_registries_cleanup_policies]
+              tags %w[virtual_registries]
               hidden true
             end
 
@@ -97,7 +97,7 @@ module API
                 This feature is currently in an experimental state. \
                 This feature is behind the `maven_virtual_registry` feature flag.'
               success Entities::VirtualRegistries::Cleanup::Policy
-              tags %w[virtual_registries_cleanup_policies]
+              tags %w[virtual_registries]
               hidden true
             end
 
@@ -127,7 +127,7 @@ module API
               detail 'This feature was introduced in GitLab 18.6. \
                 This feature is currently in an experimental state. \
                 This feature is behind the `maven_virtual_registry` feature flag.'
-              tags %w[virtual_registries_cleanup_policies]
+              tags %w[virtual_registries]
               hidden true
             end
 

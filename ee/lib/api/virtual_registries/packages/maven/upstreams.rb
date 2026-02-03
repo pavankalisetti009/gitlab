@@ -62,7 +62,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
-                tags %w[maven_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
               params do
@@ -90,7 +90,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
-                tags %w[maven_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
               params do
@@ -129,7 +129,7 @@ module API
                       { code: 403, message: 'Forbidden' },
                       { code: 404, message: 'Not found' }
                     ]
-                    tags %w[maven_virtual_registries]
+                    tags %w[virtual_registries]
                     hidden true
                   end
                   route_setting :authorization, permissions: :read_maven_virtual_registry_upstream,
@@ -154,7 +154,7 @@ module API
                       { code: 404, message: 'Not found' },
                       { code: 409, message: 'Conflict' }
                     ]
-                    tags %w[maven_virtual_registries]
+                    tags %w[virtual_registries]
                     hidden true
                   end
                   params do
@@ -201,7 +201,7 @@ module API
                     { code: 403, message: 'Forbidden' },
                     { code: 404, message: 'Not found' }
                   ]
-                  tags %w[maven_virtual_registries]
+                  tags %w[virtual_registries]
                   hidden true
                 end
                 route_setting :authorization, permissions: :read_maven_virtual_registry_upstream,
@@ -224,7 +224,7 @@ module API
                     { code: 403, message: 'Forbidden' },
                     { code: 404, message: 'Not found' }
                   ]
-                  tags %w[maven_virtual_registries]
+                  tags %w[virtual_registries]
                   hidden true
                 end
                 params do
@@ -263,7 +263,7 @@ module API
                     { code: 403, message: 'Forbidden' },
                     { code: 404, message: 'Not found' }
                   ]
-                  tags %w[maven_virtual_registries]
+                  tags %w[virtual_registries]
                   hidden true
                 end
                 route_setting :authorization, permissions: :delete_maven_virtual_registry_upstream,
@@ -285,7 +285,7 @@ module API
                     { code: 403, message: 'Forbidden' },
                     { code: 404, message: 'Not found' }
                   ]
-                  tags %w[maven_virtual_registries]
+                  tags %w[virtual_registries]
                   hidden true
                 end
                 route_setting :authorization, permissions: :purge_maven_virtual_registry_upstream_cache,
@@ -307,7 +307,7 @@ module API
                     { code: 403, message: 'Forbidden' },
                     { code: 404, message: 'Not found' }
                   ]
-                  tags %w[maven_virtual_registries]
+                  tags %w[virtual_registries]
                   hidden true
                 end
                 route_setting :authorization, permissions: :test_maven_virtual_registry_upstream,
@@ -329,7 +329,7 @@ module API
                     { code: 403, message: 'Forbidden' },
                     { code: 404, message: 'Not found' }
                   ]
-                  tags %w[maven_virtual_registries]
+                  tags %w[virtual_registries]
                   hidden true
                 end
                 params do

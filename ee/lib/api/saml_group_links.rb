@@ -4,8 +4,7 @@ module API
   class SamlGroupLinks < ::API::Base
     before { authenticate! }
 
-    SAML_GROUP_LINKS = %w[saml_group_links].freeze
-
+    SAML_GROUP_LINKS = %w[scim_and_saml].freeze
     feature_category :user_management
 
     params do

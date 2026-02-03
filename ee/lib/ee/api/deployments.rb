@@ -13,7 +13,7 @@ module EE
           desc 'Approve or reject a blocked deployment' do
             detail 'This feature was introduced in GitLab 14.8.'
             success ::API::Entities::Deployments::Approval
-            tags %w[deployments]
+            tags %w[deploy_resources]
           end
           params do
             requires :deployment_id, type: Integer, desc: 'The ID of the deployment'

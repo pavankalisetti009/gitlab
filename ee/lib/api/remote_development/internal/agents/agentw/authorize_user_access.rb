@@ -17,7 +17,7 @@ module API
                 namespace "agentw" do
                   desc "authorize_user_access" do
                     detail "Returns whether the user is authorized to access the workspace."
-                    tags ["workspaces"]
+                    tags ['workspaces']
                     success code: 200, message: "User access authorization info retrieved successfully"
                   end
                   params do

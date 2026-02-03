@@ -330,7 +330,7 @@ module EE
               { code: 404, message: '404 Not Found' }
             ]
             is_array true
-            tags %w[group_ssh_certificates]
+            tags %w[keys]
           end
           params do
             use :pagination
@@ -354,7 +354,7 @@ module EE
               { code: 403, message: 'Forbidden' },
               { code: 404, message: 'Not found' }
             ]
-            tags %w[group_ssh_certificates]
+            tags %w[keys]
           end
           params do
             requires :title, type: String, desc: 'The title of the ssh certificate'
@@ -384,7 +384,7 @@ module EE
               { code: 403, message: 'Forbidden' },
               { code: 422, message: 'Unprocessable entity' }
             ]
-            tags %w[group_ssh_certificates]
+            tags %w[keys]
           end
           route_setting :authorization, permissions: :delete_ssh_certificate, boundary_type: :group
           delete ":id/ssh_certificates/:ssh_certificates_id", feature_category: :groups_and_projects do

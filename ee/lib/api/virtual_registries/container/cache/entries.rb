@@ -56,7 +56,7 @@ module API
                       { code: 403, message: 'Forbidden' },
                       { code: 404, message: 'Not found' }
                     ]
-                    tags %w[container_virtual_registries]
+                    tags %w[virtual_registries]
                     is_array true
                     hidden true
                   end
@@ -87,7 +87,7 @@ module API
                   { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
-                tags %w[container_virtual_registries]
+                tags %w[virtual_registries]
                 hidden true
               end
               params do

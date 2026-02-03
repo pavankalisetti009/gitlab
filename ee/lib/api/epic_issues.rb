@@ -45,7 +45,7 @@ module API
           { code: 403, message: 'Forbidden' },
           { code: 404, message: 'Not found' }
         ]
-        tags %w[epic_issues]
+        tags %w[epics]
       end
       params do
         requires :epic_iid, types: [Integer, String], desc: 'The internal ID of the epic', documentation: { example: 5 }
@@ -84,7 +84,7 @@ module API
             { code: 403, message: 'Forbidden' },
             { code: 404, message: 'Not found' }
           ]
-          tags %w[epic_issues]
+          tags %w[epics]
         end
         params do
           requires :epic_iid, types: [Integer, String], desc: 'The internal ID of the epic', documentation: { example: 5 }
@@ -110,7 +110,7 @@ module API
           { code: 404, message: 'No matching issue found' },
           { code: 409, message: 'Issue already assigned' }
         ]
-        tags %w[epic_issues]
+        tags %w[epics]
       end
       params do
         requires :epic_iid, types: [Integer, String], desc: 'The internal ID of the epic', documentation: { example: 5 }
@@ -145,7 +145,7 @@ module API
           { code: 403, message: 'Forbidden' },
           { code: 404, message: 'Not found' }
         ]
-        tags %w[epic_issues]
+        tags %w[epics]
       end
       params do
         requires :epic_iid, types: [Integer, String], desc: 'The internal ID of the epic', documentation: { example: 5 }
