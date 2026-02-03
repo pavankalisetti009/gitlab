@@ -156,6 +156,8 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
 
     context 'when running on self-hosted instance' do
       let(:plan_key) { '' }
+      let(:unique_instance_id) { 'instance_id' }
+      let(:real_unique_instance_id) { 'uniq_instance_id' }
 
       let(:params) do
         [
@@ -163,7 +165,7 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
           feature_metadata,
           {
             user_id: user.id,
-            unique_instance_id: 'instance_id',
+            unique_instance_id: unique_instance_id,
             plan_key: plan_key
           }
         ]
@@ -172,26 +174,44 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
       subject(:service_call) { described_class.new(ai_feature: ai_feature, user: user).execute }
 
       before do
-        allow(::Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return("instance_id")
-        create_current_license
+        allow(::Gitlab::GlobalAnonymousId)
+          .to receive_messages(instance_id: unique_instance_id, instance_uuid: real_unique_instance_id)
       end
 
-      it 'calls portal with instance id, dap_feature_legacy metadata, and rails_on_ui_check event type' do
-        expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
-          .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
+      context 'when on paid license' do
+        before do
+          create_current_license
+        end
 
-        expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(*params)
+        it 'calls portal with instance id, dap_feature_legacy metadata, and rails_on_ui_check event type' do
+          expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
+            .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
 
-        service_call
+          expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(*params)
+
+          service_call
+        end
       end
 
       context 'when on trial' do
         let(:plan_key) { 'true' }
+        let(:unique_instance_id) { real_unique_instance_id }
 
         before do
           create_current_license(:trial)
         end
 
+        it 'calls portal with instance id, dap_feature_legacy metadata, and rails_on_ui_check event type' do
+          expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
+            .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
+
+          expect(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).with(*params)
+
+          service_call
+        end
+      end
+
+      context 'when no license exists', :without_license do
         it 'calls portal with instance id, dap_feature_legacy metadata, and rails_on_ui_check event type' do
           expect(::Gitlab::SubscriptionPortal::FeatureMetadata)
             .to receive(:for).with(:dap_feature_legacy).and_return(feature_metadata)
