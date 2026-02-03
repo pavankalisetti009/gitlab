@@ -1,5 +1,6 @@
 <script>
 import { GlCard, GlSprintf, GlLink, GlButton } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 import { PROMO_URL } from '~/constants';
 
 export default {
@@ -10,6 +11,7 @@ export default {
     GlLink,
     GlButton,
   },
+  mixins: [InternalEvents.mixin()],
   inject: {
     isSaas: { default: true },
     upgradeButtonPath: { default: null },
@@ -27,7 +29,7 @@ export default {
 </script>
 <template>
   <gl-card
-    class="gl-banner gl-flex gl-flex-1 gl-flex-col"
+    class="gl-flex gl-flex-1 gl-flex-col gl-border-feedback-brand gl-bg-feedback-brand"
     body-class="gl-p-5 gl-flex gl-flex-col gl-h-full"
   >
     <div>
@@ -42,12 +44,26 @@ export default {
         "
       >
         <template #link="{ content }">
-          <gl-link :href="unlockMoreCreditsLink" target="_blank">{{ content }}</gl-link>
+          <gl-link
+            :href="unlockMoreCreditsLink"
+            target="_blank"
+            data-event-action="click_link"
+            data-event-label="gitlab_credit_pricing"
+            data-event-property="upgrade_to_premium_card"
+          >
+            {{ content }}
+          </gl-link>
         </template>
       </gl-sprintf>
     </div>
     <div class="gl-mt-5">
-      <gl-button :href="upgradeButtonLink" variant="confirm">
+      <gl-button
+        :href="upgradeButtonLink"
+        variant="confirm"
+        data-event-action="click_CTA"
+        data-event-label="upgrade_to_premium"
+        data-event-property="upgrade_to_premium_card"
+      >
         {{ __('Upgrade to Premium') }}
       </gl-button>
     </div>

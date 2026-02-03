@@ -2,6 +2,7 @@ import { GlButton } from '@gitlab/ui';
 import HaveQuestionsCard from 'ee/usage_quotas/usage_billing/components/have_questions_card.vue';
 import { PROMO_URL } from '~/constants';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 describe('HaveQuestionsCard', () => {
   let wrapper;
@@ -10,12 +11,15 @@ describe('HaveQuestionsCard', () => {
     wrapper = mountExtended(HaveQuestionsCard);
   };
 
+  const findCardTitle = () => wrapper.find('h2');
+  const findContactSalesButton = () => wrapper.findComponent(GlButton);
+
   beforeEach(() => {
     createComponent();
   });
 
   it('renders card title', () => {
-    expect(wrapper.find('h2').text()).toBe('Have questions?');
+    expect(findCardTitle().text()).toBe('Have questions?');
   });
 
   it('renders card description', () => {
@@ -25,18 +29,27 @@ describe('HaveQuestionsCard', () => {
   });
 
   it('renders contact sales button', () => {
-    const button = wrapper.findComponent(GlButton);
-    expect(button.exists()).toBe(true);
-    expect(button.text()).toBe('Contact sales');
+    expect(findContactSalesButton().exists()).toBe(true);
+    expect(findContactSalesButton().text()).toBe('Contact sales');
   });
 
   it('renders button with correct href', () => {
-    const button = wrapper.findComponent(GlButton);
-    expect(button.props('href')).toBe(`${PROMO_URL}/sales`);
+    expect(findContactSalesButton().props('href')).toBe(`${PROMO_URL}/sales`);
   });
 
   it('renders button with secondary variant', () => {
-    const button = wrapper.findComponent(GlButton);
-    expect(button.props('category')).toBe('secondary');
+    expect(findContactSalesButton().props('category')).toBe('secondary');
+  });
+
+  describe('tracking', () => {
+    useMockInternalEventsTracking();
+
+    it('has correct tracking attributes on contact sales button', () => {
+      expect(findContactSalesButton().attributes()).toMatchObject({
+        'data-event-action': 'click_CTA',
+        'data-event-label': 'contact_sales',
+        'data-event-property': 'have_questions_card',
+      });
+    });
   });
 });
