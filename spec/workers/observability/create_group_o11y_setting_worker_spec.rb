@@ -95,7 +95,9 @@ RSpec.describe Observability::CreateGroupO11ySettingWorker, feature_category: :o
                   'group_id' => group.id,
                   'email' => user.email,
                   'password' => match(/\A[a-f0-9]{32}\z/),
-                  'encryption_key' => match(/\A[a-f0-9]{64}\z/)
+                  'encryption_key' => match(/\A[a-f0-9]{64}\z/),
+                  'user_name' => user.name,
+                  'group_path' => group.full_path
                 )
               )
             )
