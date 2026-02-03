@@ -39,8 +39,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     let(:license) do
       build(
         :license,
-        expires_at: subscription_end_date,
-        starts_at: subscription_start_date,
         data: build(
           :gitlab_license,
           restrictions: {
@@ -62,8 +60,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     let(:duo_workflow_enabled) { true }
     let(:is_saas) { true }
     let(:self_hosted_models) { true }
-    let(:subscription_end_date) { 1.year.from_now.to_date }
-    let(:subscription_start_date) { 1.year.ago.to_date }
     let(:subscription_name) { 'A-S0000001' }
     let(:usage_billing_dev_enabled) { true }
     let(:usage_billing_license_available) { true }
@@ -158,9 +154,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
         is_saas: 'true',
         prompt_cache_enabled: 'true',
         redirect_path: '/admin/gitlab_duo',
-        subscription_end_date: subscription_end_date,
         subscription_name: 'A-S0000001',
-        subscription_start_date: subscription_start_date,
         gitlab_credits_dashboard_path: ''
       )
     end
@@ -273,18 +267,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
       let(:application_setting_attributes) { super().merge(model_prompt_cache_enabled?: false) }
 
       it { expect(settings).to include(prompt_cache_enabled: 'false') }
-    end
-
-    context 'with expired license' do
-      let(:subscription_end_date) { 1.day.ago }
-
-      it { expect(settings).to include(subscription_end_date: 1.day.ago.to_date) }
-    end
-
-    context 'with future license' do
-      let(:subscription_start_date) { 1.day.from_now }
-
-      it { expect(settings).to include(subscription_start_date: 1.day.from_now.to_date) }
     end
 
     context 'for usage billing' do

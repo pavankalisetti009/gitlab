@@ -54,9 +54,7 @@ module Admin
         .transform_values(&:to_s)
         .merge(
           **duo_workflow_service_account,
-          **duo_add_on_data,
-          subscription_end_date: expires_at.to_date,
-          subscription_start_date: starts_at.to_date
+          **duo_add_on_data
         )
     end
 
