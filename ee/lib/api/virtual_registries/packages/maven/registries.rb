@@ -110,7 +110,7 @@ module API
                 tags %w[maven_virtual_registries]
                 hidden true
               end
-              route_setting :authorization, permissions: :read_maven_virtual_registry, boundary_type: :instance
+              route_setting :authorization, permissions: :read_maven_virtual_registry, boundary: -> { registry.group }
               get do
                 authorize! :read_virtual_registry, registry
 
@@ -141,7 +141,7 @@ module API
 
                 at_least_one_of :name, :description
               end
-              route_setting :authorization, permissions: :update_maven_virtual_registry, boundary_type: :instance
+              route_setting :authorization, permissions: :update_maven_virtual_registry, boundary: -> { registry.group }
               patch do
                 authorize! :update_virtual_registry, registry
 
@@ -165,7 +165,7 @@ module API
                 tags %w[maven_virtual_registries]
                 hidden true
               end
-              route_setting :authorization, permissions: :delete_maven_virtual_registry, boundary_type: :instance
+              route_setting :authorization, permissions: :delete_maven_virtual_registry, boundary: -> { registry.group }
               delete do
                 authorize! :destroy_virtual_registry, registry
 
@@ -186,7 +186,8 @@ module API
                 tags %w[maven_virtual_registries]
                 hidden true
               end
-              route_setting :authorization, permissions: :purge_maven_virtual_registry_cache, boundary_type: :instance
+              route_setting :authorization, permissions: :purge_maven_virtual_registry_cache,
+                boundary: -> { registry.group }
               delete :cache do
                 authorize! :destroy_virtual_registry, registry
 

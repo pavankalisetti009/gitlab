@@ -227,7 +227,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     it_behaves_like 'logging access through project membership'
 
     it_behaves_like 'authorizing granular token permissions', :read_maven_virtual_registry_upstream do
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { registry.group }
       let(:request) do
         get api(url, personal_access_token: pat)
       end
@@ -354,13 +354,22 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         message: { 'registry_upstreams.position' => ['must be less than or equal to 20'] }
     end
 
-    it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created do
+    context 'with a maintainer' do
       before_all do
         group.add_maintainer(user)
       end
 
       before do
         registry.upstreams.each(&:destroy!)
+      end
+
+      it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created
+
+      it_behaves_like 'authorizing granular token permissions', :create_maven_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api(url, personal_access_token: pat), params: params
+        end
       end
     end
 
@@ -411,6 +420,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       upstream_factory: :virtual_registries_packages_maven_upstream
     it_behaves_like 'an authenticated virtual registry REST API'
     it_behaves_like 'logging access through project membership'
+
+    it_behaves_like 'authorizing granular token permissions', :read_maven_virtual_registry_upstream do
+      let(:boundary_object) { upstream.group }
+      let(:request) do
+        get api(url, personal_access_token: pat)
+      end
+    end
   end
 
   describe 'PATCH /api/v4/virtual_registries/packages/maven/upstreams/:id' do
@@ -448,7 +464,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
 
       it_behaves_like 'authorizing granular token permissions', :update_maven_virtual_registry_upstream do
-        let(:boundary_object) { :instance }
+        let(:boundary_object) { upstream.group }
         let(:request) do
           patch api(url, personal_access_token: pat), params: params
         end
@@ -564,7 +580,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     end
 
     it_behaves_like 'authorizing granular token permissions', :delete_maven_virtual_registry_upstream do
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { upstream.group }
       let(:request) do
         delete api(url, personal_access_token: pat)
       end
@@ -628,7 +644,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     end
 
     it_behaves_like 'authorizing granular token permissions', :purge_maven_virtual_registry_upstream_cache do
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { upstream.group }
       let(:request) do
         delete api(url, personal_access_token: pat)
       end
@@ -668,7 +684,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       it_behaves_like 'successful response'
 
       it_behaves_like 'authorizing granular token permissions', :test_maven_virtual_registry_upstream do
-        let(:boundary_object) { :instance }
+        let(:boundary_object) { upstream.group }
         let(:request) do
           get api(url, personal_access_token: pat)
         end
@@ -735,7 +751,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       it_behaves_like 'an authenticated virtual registry REST API'
 
       it_behaves_like 'authorizing granular token permissions', :test_maven_virtual_registry_upstream do
-        let(:boundary_object) { :instance }
+        let(:boundary_object) { upstream.group }
         let(:request) do
           post api(url, personal_access_token: pat), params: params
         end
