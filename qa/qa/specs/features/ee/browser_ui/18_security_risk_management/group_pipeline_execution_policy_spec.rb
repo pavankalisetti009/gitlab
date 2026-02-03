@@ -118,11 +118,12 @@ module QA
       end
 
       def merge_pipeline_execution_policy
-        Support::Waiter.wait_until(message: 'Wait for policy MR page', sleep_interval: 2, max_duration: 80) do
-          Page::MergeRequest::Show.perform(&:has_merge_button?)
-        end
-
         Page::MergeRequest::Show.perform do |mr_page|
+          mr_page.wait_until(max_duration: 80, sleep_interval: 2, reload: true,
+            message: 'Wait for policy MR page') do
+            mr_page.has_merge_button?
+          end
+
           Support::Retrier.retry_on_exception(sleep_interval: 2, reload_page: mr_page,
             message: "Retrying policy merge") do
             mr_page.merge!
