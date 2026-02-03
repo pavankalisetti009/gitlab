@@ -8,9 +8,8 @@ module VirtualRegistries
       BATCH_SIZE = 500
       GLOBAL_ID_LOCATE_OPTIONS = {
         only: [
-          ::VirtualRegistries::Packages::Maven::Upstream
-          # TODO: uncomment when https://gitlab.com/gitlab-org/gitlab/-/work_items/583726 is done
-          # ::VirtualRegistries::Container::Upstream
+          ::VirtualRegistries::Packages::Maven::Upstream,
+          ::VirtualRegistries::Container::Upstream
         ]
       }.freeze
 
@@ -18,7 +17,8 @@ module VirtualRegistries
       queue_namespace :dependency_proxy_blob
       feature_category :virtual_registry
       urgency :low
-      defer_on_database_health_signal :gitlab_main, %i[virtual_registries_packages_maven_cache_remote_entries],
+      defer_on_database_health_signal :gitlab_main,
+        %i[virtual_registries_packages_maven_cache_remote_entries virtual_registries_container_cache_remote_entries],
         5.minutes
       deduplicate :until_executed
       idempotent!

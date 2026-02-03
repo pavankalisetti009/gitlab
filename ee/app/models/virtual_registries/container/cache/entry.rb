@@ -8,7 +8,6 @@ module VirtualRegistries
 
         belongs_to :upstream,
           class_name: 'VirtualRegistries::Container::Upstream',
-          inverse_of: :cache_entries,
           optional: false
 
         def stale?

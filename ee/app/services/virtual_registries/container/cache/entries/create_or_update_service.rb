@@ -32,7 +32,7 @@ module VirtualRegistries
               content_type: content_type
             }.compact_blank
 
-            ce = ::VirtualRegistries::Container::Cache::Entry.create_or_update_by!(
+            ce = ::VirtualRegistries::Container::Cache::Remote::Entry.create_or_update_by!(
               group_id: upstream.group_id,
               upstream: upstream,
               relative_path: relative_path,

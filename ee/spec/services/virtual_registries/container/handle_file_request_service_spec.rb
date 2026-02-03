@@ -28,7 +28,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
         expect(service).to receive(:can?).and_call_original
 
         if action == :download_file
-          expect_next_found_instance_of(::VirtualRegistries::Container::Cache::Entry) do |expected_cache_entry|
+          expect_next_found_instance_of(::VirtualRegistries::Container::Cache::Remote::Entry) do |expected_cache_entry|
             expect(expected_cache_entry).to receive(:bump_downloads_count)
           end
         end
@@ -72,7 +72,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       let_it_be(:upstream_resource_url) { upstream.url_for(path) }
       let_it_be(:path) { "my/image/manifests/#{upstream_etag}" }
       let_it_be(:cache_entry) do
-        create(:virtual_registries_container_cache_entry,
+        create(:virtual_registries_container_cache_remote_entry,
           :upstream_checked,
           upstream: upstream,
           relative_path: '/my/image/manifests/latest',
@@ -95,7 +95,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       shared_examples 'container request tests' do
         let(:processing_cache_entry) do
           create(
-            :virtual_registries_container_cache_entry,
+            :virtual_registries_container_cache_remote_entry,
             :upstream_checked,
             :processing,
             relative_path: expected_relative_path,
@@ -129,7 +129,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
 
         context 'with a cache entry' do
           let!(:cache_entry) do
-            create(:virtual_registries_container_cache_entry,
+            create(:virtual_registries_container_cache_remote_entry,
               :upstream_checked,
               upstream: upstream,
               relative_path: expected_relative_path

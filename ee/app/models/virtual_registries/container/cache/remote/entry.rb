@@ -4,19 +4,40 @@ module VirtualRegistries
   module Container
     module Cache
       module Remote
-        class Entry < ApplicationRecord
-          include ShaAttribute
+        class Entry < ::VirtualRegistries::Cache::Entry
+          include ::UpdateNamespaceStatistics
 
           self.primary_key = %i[group_id iid]
 
-          belongs_to :group, optional: false
-          belongs_to :upstream, class_name: 'VirtualRegistries::Container::Upstream', optional: false
+          belongs_to :upstream,
+            class_name: 'VirtualRegistries::Container::Upstream',
+            inverse_of: :cache_remote_entries,
+            optional: false
 
-          validates :group, top_level_group: true
+          update_namespace_statistics namespace_statistics_name: :dependency_proxy_size
 
-          enum :status, default: 0, processing: 1, pending_destruction: 2, error: 3
+          validates :relative_path,
+            uniqueness: { scope: [:upstream_id, :status, :group_id] },
+            if: :default?
 
-          sha_attribute :file_sha1
+          attribute :file_store, default: -> { VirtualRegistries::Cache::EntryUploader.default_store }
+
+          scope :order_iid_desc, -> { reorder(iid: :desc) }
+
+          def self.declarative_policy_class
+            'VirtualRegistries::Container::RegistryPolicy'
+          end
+
+          def generate_id
+            Base64.urlsafe_encode64("#{group_id} #{iid}")
+          end
+
+          def stale?
+            return true unless upstream
+            return false if upstream.cache_validity_hours == 0
+
+            (upstream_checked_at + upstream.cache_validity_hours.hours).past?
+          end
         end
       end
     end

@@ -784,9 +784,9 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
 
   describe '#default_cache_entries' do
     let_it_be(:upstream) { create(:virtual_registries_container_upstream) }
-    let_it_be(:default_cache_entry) { create(:virtual_registries_container_cache_entry, upstream:) }
+    let_it_be(:default_cache_entry) { create(:virtual_registries_container_cache_remote_entry, upstream:) }
     let_it_be(:pending_destruction_cache_entry) do
-      create(:virtual_registries_container_cache_entry, :pending_destruction, upstream:)
+      create(:virtual_registries_container_cache_remote_entry, :pending_destruction, upstream:)
     end
 
     subject { upstream.default_cache_entries }
@@ -898,7 +898,7 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
         create(
           :virtual_registries_container_cache_entry,
           upstream: upstream,
-          relative_path: 'dummy/path/maven-metadata.xml'
+          relative_path: 'library/alpine/manifests/latest'
         )
       end
 
@@ -906,8 +906,8 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
         test
 
         expect(Gitlab::HTTP).to have_received(:head).with(
-          upstream.url_for('dummy/path/maven-metadata.xml'),
-          headers: upstream.headers('dummy/path/maven-metadata.xml'),
+          upstream.url_for('library/alpine/manifests/latest'),
+          headers: upstream.headers('library/alpine/manifests/latest'),
           follow_redirects: true
         )
       end

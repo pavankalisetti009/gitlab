@@ -52,7 +52,7 @@ RSpec.describe ::VirtualRegistries::Cache::EntriesFinder, feature_category: :vir
 
   describe 'Container cache entries' do
     it_behaves_like 'cache entries finder',
-      cache_entry_factory: :virtual_registries_container_cache_entry,
+      cache_entry_factory: :virtual_registries_container_cache_remote_entry,
       upstream_factory: :virtual_registries_container_upstream
   end
 end

@@ -11,7 +11,6 @@ FactoryBot.define do
     content_type { 'application/octet-stream' }
     file_sha1 { '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83' }
     status { :default }
-    object_storage_key { "virtual_registries/container/#{group.path}/remote/#{relative_path}" }
 
     transient do
       file_fixture { 'spec/fixtures/bfg_object_map.txt' }

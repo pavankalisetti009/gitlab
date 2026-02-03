@@ -17,18 +17,33 @@ RSpec.describe API::VirtualRegistries::Container::Cache::Entries, :aggregate_fai
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(Gitlab::Json.parse(response.body)).to contain_exactly(
-          cache_entry
-            .as_json
-            .merge('id' => Base64.urlsafe_encode64("#{upstream.id} #{cache_entry.relative_path}"))
-            .except('object_storage_key', 'file', 'file_store', 'status')
-        )
+
+        response_body = Gitlab::Json.parse(response.body)
+        expect(response_body).to be_an(Array)
+        expect(response_body.length).to eq(1)
+
+        actual_entry = response_body.first
+        expected_entry = cache_entry
+          .as_json
+          .merge('id' => cache_entry.generate_id)
+          .except('object_storage_key', 'file', 'file_store', 'status', 'iid')
+
+        # Compare each field individually to identify the mismatch
+        expected_entry.each do |key, expected_value|
+          actual_value = actual_entry[key]
+          expect(actual_value).to eq(expected_value),
+            "Mismatch for key '#{key}': expected #{expected_value.inspect}, got #{actual_value.inspect}"
+        end
+
+        # Check for extra fields in actual response
+        extra_keys = actual_entry.keys - expected_entry.keys
+        expect(extra_keys).to be_empty, "Unexpected keys in response: #{extra_keys.inspect}"
       end
     end
 
     before_all do
       create(
-        :virtual_registries_container_cache_entry,
+        :virtual_registries_container_cache_remote_entry,
         :processing,
         upstream: upstream,
         relative_path: cache_entry.relative_path
@@ -80,7 +95,7 @@ RSpec.describe API::VirtualRegistries::Container::Cache::Entries, :aggregate_fai
   end
 
   describe 'DELETE /api/v4/virtual_registries/container/cache_entries/*id' do
-    let(:id) { Base64.urlsafe_encode64("#{upstream.id} #{cache_entry.relative_path}") }
+    let(:id) { cache_entry.generate_id }
     let(:url) { "/virtual_registries/container/cache_entries/#{id}" }
 
     subject(:api_request) { delete api(url), headers: headers }
@@ -88,7 +103,7 @@ RSpec.describe API::VirtualRegistries::Container::Cache::Entries, :aggregate_fai
     shared_examples 'successful response' do
       it 'returns a successful response' do
         expect { api_request }.to change {
-          VirtualRegistries::Container::Cache::Entry.first.status
+          VirtualRegistries::Container::Cache::Remote::Entry.first.status
         }.from('default').to('pending_destruction')
 
         expect(response).to have_gitlab_http_status(:no_content)
@@ -135,7 +150,7 @@ RSpec.describe API::VirtualRegistries::Container::Cache::Entries, :aggregate_fai
       before do
         allow_next_found_instance_of(cache_entry.class) do |instance|
           errors = ActiveModel::Errors.new(instance).tap { |e| e.add(:cache_entry, 'error message') }
-          allow(instance).to receive_messages(mark_as_pending_destruction: false, errors: errors)
+          allow(instance).to receive_messages(pending_destruction!: false, errors: errors)
         end
       end
 

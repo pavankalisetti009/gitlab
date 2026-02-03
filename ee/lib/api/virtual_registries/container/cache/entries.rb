@@ -30,13 +30,16 @@ module API
             strong_memoize_attr :upstream
 
             def cache_entries
-              upstream.default_cache_entries.order_created_desc.search_by_relative_path(params[:search])
+              upstream
+                .default_cache_entries
+                .order_iid_desc
+                .search_by_relative_path(params[:search])
             end
 
             def cache_entry
-              ::VirtualRegistries::Container::Cache::Entry
+              ::VirtualRegistries::Container::Cache::Remote::Entry
                 .default
-                .find_by_upstream_id_and_relative_path!(*declared_params[:id].split)
+                .find_by_group_id_and_iid!(*declared_params[:id].split)
             end
             strong_memoize_attr :cache_entry
           end
@@ -49,7 +52,7 @@ module API
                     detail 'This feature was introduced in GitLab 18.5. \
                           This feature is currently in an experimental state. \
                           This feature is behind the `container_virtual_registries` feature flag.'
-                    success ::API::Entities::VirtualRegistries::Container::Cache::Entry
+                    success ::API::Entities::VirtualRegistries::Container::Cache::Remote::Entry
                     failure [
                       { code: 400, message: 'Bad Request' },
                       { code: 401, message: 'Unauthorized' },
@@ -69,7 +72,7 @@ module API
                     authorize! :read_virtual_registry, upstream
 
                     present paginate(cache_entries),
-                      with: ::API::Entities::VirtualRegistries::Container::Cache::Entry
+                      with: ::API::Entities::VirtualRegistries::Container::Cache::Remote::Entry
                   end
                 end
               end
@@ -92,15 +95,15 @@ module API
               end
               params do
                 requires :id, type: String, coerce_with: Base64.method(:urlsafe_decode64),
-                  desc: 'The base64 encoded upstream id and relative path of the cache entry',
-                  documentation: { example: 'Zm9vL2Jhci9teXBrZy5wb20=' }
+                  desc: 'The base64 encoded cache entry identifier (format: "group_id iid")',
+                  documentation: { example: 'MTIzNCA1Njc4' }
               end
 
               delete '*id' do
                 authorize! :destroy_virtual_registry, cache_entry.upstream
 
                 destroy_conditionally!(cache_entry) do |cache_entry|
-                  render_validation_error!(cache_entry) unless cache_entry.mark_as_pending_destruction
+                  render_validation_error!(cache_entry) unless cache_entry.pending_destruction!
                 end
               end
             end
