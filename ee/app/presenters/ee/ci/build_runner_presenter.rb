@@ -5,6 +5,8 @@ module EE
     module BuildRunnerPresenter
       extend ActiveSupport::Concern
 
+      GROUP_SOURCE_REGEX = %r{\Agroup/([a-zA-Z0-9_\-\./]+)\z}
+
       def secrets_configuration
         secrets.to_h.transform_values do |secret|
           secret['vault']['server'] = vault_server(secret) if secret['vault']
@@ -67,8 +69,8 @@ module EE
         }
       end
 
-      def gitlab_secrets_manager_server(project_secrets_manager)
-        @gitlab_secrets_manager_server ||= {
+      def gitlab_projects_secrets_manager_server(project_secrets_manager)
+        @gitlab_projects_secrets_manager_server ||= {
           'url' => SecretsManagement::ProjectSecretsManager.server_url,
           'inline_auth' => {
             'jwt' => project_secrets_manager.ci_jwt(self),
@@ -78,14 +80,55 @@ module EE
         }
       end
 
+      def gitlab_groups_secrets_manager_server(groups_secrets_manager)
+        {
+          'url' => SecretsManagement::GroupSecretsManager.server_url,
+          'inline_auth' => {
+            'jwt' => groups_secrets_manager.ci_jwt(self),
+            'role' => groups_secrets_manager.ci_auth_role,
+            'path' => groups_secrets_manager.ci_auth_path
+          }.compact
+        }
+      end
+
       def gitlab_secrets_manager_payload(secret)
+        group_secret?(secret) ? group_secrets_manager_payload(secret) : project_secrets_manager_payload(secret)
+      end
+
+      def group_secret?(secret)
+        source = secret['gitlab_secrets_manager']['source']
+        # project is the default source if source is missing
+        source&.match?(GROUP_SOURCE_REGEX)
+      end
+
+      def project_secrets_manager_payload(secret)
         secret_name = secret['gitlab_secrets_manager']['name']
         project_secrets_manager = SecretsManagement::ProjectSecretsManager.find_by_project_id(project.id)
         {
           'engine' => { 'name' => "kv-v2", 'path' => project_secrets_manager.ci_secrets_mount_full_path },
           'path' => project_secrets_manager.ci_data_path(secret_name),
           'field' => "value",
-          'server' => gitlab_secrets_manager_server(project_secrets_manager)
+          'server' => gitlab_projects_secrets_manager_server(project_secrets_manager)
+        }
+      end
+
+      def group_secrets_manager_payload(secret)
+        source = secret['gitlab_secrets_manager']['source']
+        secret_name = secret['gitlab_secrets_manager']['name']
+        group_full_path = source.match(GROUP_SOURCE_REGEX)[1]
+
+        accessible_groups = project.group&.self_and_ancestors
+        accessing_group = accessible_groups&.find_by_full_path(group_full_path)
+        return {} unless accessing_group
+
+        group_secrets_manager = SecretsManagement::GroupSecretsManager.find_by_group_id(accessing_group.id)
+        return {} unless group_secrets_manager
+
+        {
+          'engine' => { 'name' => "kv-v2", 'path' => group_secrets_manager.ci_secrets_mount_full_path },
+          'path' => group_secrets_manager.ci_data_path(secret_name),
+          'field' => "value",
+          'server' => gitlab_groups_secrets_manager_server(group_secrets_manager)
         }
       end
 
