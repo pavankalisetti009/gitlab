@@ -11,9 +11,9 @@ RSpec.describe Gitlab::Duo::Developments::FeatureFlagEnabler, feature_category: 
     described_class.execute
   end
 
-  it 'enables feature flags by group code creation' do
+  it 'enables feature flags by group ai coding' do
     expect(Feature::Definition).to receive(:definitions)
-      .and_return({ test_f: Feature::Definition.new(nil, group: 'group::code creation',
+      .and_return({ test_f: Feature::Definition.new(nil, group: 'group::ai coding',
         name: 'test_f') })
     expect(Feature).to receive(:enable).with(:test_f)
 

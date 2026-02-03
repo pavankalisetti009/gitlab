@@ -4,6 +4,6 @@ feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/16910
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/190454
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/540543
 milestone: '18.0'
-group: group::code creation
+group: group::ai coding
 type: beta
 default_enabled: false

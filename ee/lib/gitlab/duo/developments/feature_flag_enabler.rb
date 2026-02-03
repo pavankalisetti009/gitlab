@@ -23,7 +23,7 @@ module Gitlab
               v.group == "group::duo chat" ||
               v.group == "group::duo workflow" ||
               v.group == "group::custom models" ||
-              v.group == "group::code creation"
+              v.group == "group::ai coding"
           end
 
           feature_flag_names = feature_flag_names.flatten - EXCLUDED_FEATURE_FLAGS
