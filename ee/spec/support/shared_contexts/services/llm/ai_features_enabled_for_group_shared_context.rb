@@ -77,23 +77,29 @@ end
 
 RSpec.shared_context 'with duo features enabled and ai chat available for group on SaaS' do
   include_context 'with duo pro addon'
+  include_context 'without ai usage quota check'
+  include_context 'without duo chat callout'
 
   before do
     allow(Gitlab).to receive(:org_or_com?).and_return(true)
     stub_ee_application_setting(should_check_namespace_plan: true)
     stub_licensed_features(ai_chat: true)
     group.namespace_settings.reload.update!(duo_features_enabled: true)
+    create(:cloud_connector_keys)
   end
 end
 
 RSpec.shared_context 'with duo features enabled and agentic chat available for group on SaaS' do
   include_context 'with duo pro addon'
+  include_context 'without ai usage quota check'
+  include_context 'without duo chat callout'
 
   before do
     allow(Gitlab).to receive(:org_or_com?).and_return(true)
     stub_ee_application_setting(should_check_namespace_plan: true)
     stub_licensed_features(agentic_chat: true)
     group.namespace_settings.reload.update!(duo_features_enabled: true, experiment_features_enabled: true)
+    create(:cloud_connector_keys)
   end
 end
 
@@ -239,5 +245,32 @@ RSpec.shared_context 'with duo core addon' do
 
       active_purchase || create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group)
     end
+  end
+end
+
+RSpec.shared_context 'without ai usage quota check' do
+  let(:bypass_ai_usage_quota_check) { true }
+
+  before do
+    next unless bypass_ai_usage_quota_check
+
+    allow_next_instance_of(::Ai::UsageQuotaService) do |service|
+      allow(service).to receive(:execute).and_return(ServiceResponse.success)
+    end
+  end
+end
+
+RSpec.shared_context 'without duo chat callout' do
+  let(:dismiss_duo_chat_callout) { true }
+
+  before do
+    next unless dismiss_duo_chat_callout
+
+    feature_name = :duo_chat_callout
+    u = defined?(current_user) ? current_user : user
+
+    next if u.callouts.with_feature_name(feature_name).exists?
+
+    create(:callout, user: u, feature_name: feature_name)
   end
 end

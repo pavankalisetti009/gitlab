@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Issue Sidebar', :js, feature_category: :team_planning do
+RSpec.describe 'Issue Sidebar', :js, :saas, feature_category: :team_planning do
   include ListboxHelpers
   include MobileHelpers
   include Features::IterationHelpers
 
-  let_it_be(:group) { create(:group, :nested) }
+  let_it_be(:group) { create(:group_with_plan, :public, plan: :premium_plan) }
   let_it_be(:project) { create(:project, :public, namespace: group) }
   let_it_be(:project_without_group) { create(:project, :public) }
   let_it_be(:user) { create(:user) }
@@ -17,6 +17,16 @@ RSpec.describe 'Issue Sidebar', :js, feature_category: :team_planning do
 
   before do
     sign_in(user)
+  end
+
+  include_context 'with duo features enabled and agentic chat available for group on SaaS'
+
+  it_behaves_like 'user can use agentic chat' do
+    before do
+      project.add_maintainer(user)
+    end
+
+    subject { project_issue_path(project, issue) }
   end
 
   context 'for accessibility' do

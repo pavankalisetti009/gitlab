@@ -4,6 +4,14 @@ module EE
   module TestEnv
     extend ::Gitlab::Utils::Override
 
+    EE_SETUP_METHODS = %i[setup_gitlab_ai_gateway].freeze
+    GITLAB_AI_GATEWAY_TEST_DIR = 'gitlab-ai-gateway'
+
+    override :setup_methods
+    def setup_methods
+      EE_SETUP_METHODS + super
+    end
+
     override :setup_go_projects
     def setup_go_projects
       super
@@ -53,6 +61,18 @@ module EE
       end
     end
 
+    def setup_gitlab_ai_gateway
+      return unless ::Tasks::Gitlab::AiGateway::Utils.duo_workflow_service_enabled?
+
+      component_timed_setup(
+        'GitLab AI Gateway',
+        install_dir: ai_gateway_path,
+        version: ::Tasks::Gitlab::AiGateway::Utils.latest_sha,
+        task: "gitlab:ai_gateway:install",
+        task_args: [ai_gateway_path].compact
+      )
+    end
+
     def indexer_path
       @indexer_path ||= File.join('tmp', 'tests', 'gitlab-elasticsearch-indexer')
     end
@@ -85,6 +105,19 @@ module EE
       @zoekt_version ||= Rails.root.join('GITLAB_ZOEKT_VERSION').read.chomp
     end
 
+    def ai_gateway_path
+      @ai_gateway_path ||= File.join('tmp', 'tests', GITLAB_AI_GATEWAY_TEST_DIR)
+    end
+
+    def with_duo_workflow_service
+      pid = ::Tasks::Gitlab::AiGateway::Utils.run_duo_workflow_service(path: ai_gateway_path)
+
+      yield
+    ensure
+      Process.kill('TERM', pid) if pid
+      Process.wait(pid) if pid
+    end
+
     private
 
     def test_dirs
@@ -92,6 +125,7 @@ module EE
         gitlab-elasticsearch-indexer
         gitlab-zoekt
         openbao
+        #{GITLAB_AI_GATEWAY_TEST_DIR}
         #{File.basename(::Search::Zoekt::ZoektProcessManager::INDEX_DIR)}
         #{File.basename(::Search::Zoekt::ZoektProcessManager::LOG_DIR)}
       ]

@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio_management do
+RSpec.describe 'epic boards', :sidekiq_inline, :js, :saas, feature_category: :portfolio_management do
   include MobileHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group, :public) }
+  let_it_be(:group) { create(:group_with_plan, :public, plan: :premium_plan) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:epic_board) { create(:epic_board, group: group) }
   let_it_be(:label) { create(:group_label, group: group, name: 'Label1') }
@@ -26,11 +26,17 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
   let(:edit_board) { find_by_testid('boards-config-button') }
   let(:view_scope) { find_by_testid('boards-config-button') }
 
+  include_context 'with duo features enabled and agentic chat available for group on SaaS'
+
   context 'display epics in board' do
     before do
-      stub_licensed_features(epics: true)
+      stub_licensed_features(epics: true, agentic_chat: true)
       group.add_maintainer(user)
       sign_in(user)
+    end
+
+    it_behaves_like 'user can use agentic chat' do
+      subject { group_epic_boards_path(group) }
     end
 
     context 'default' do
