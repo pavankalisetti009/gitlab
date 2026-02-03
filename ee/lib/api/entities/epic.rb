@@ -145,7 +145,7 @@ module API
         epic.work_item.closed_at
       end
       expose :labels, documentation: { is_array: true } do |epic, options|
-        labels = epic.lazy_labels.sort_by(&:title)
+        labels = epic.labels.sort_by(&:title)
 
         options[:with_labels_details] ? ::API::Entities::LabelBasic.represent(labels) : labels.map(&:title)
       end

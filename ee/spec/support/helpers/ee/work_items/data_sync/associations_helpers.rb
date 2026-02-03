@@ -14,7 +14,7 @@ module EE
           award_emoji: [:own_award_emoji],
           description: [:own_description_versions],
           hierarchy: [:epic, :epic_issue],
-          labels: [:own_label_links, :own_labels, :own_resource_label_events],
+          labels: [:own_resource_label_events],
           notes: [:own_notes],
           notifications: [:own_subscriptions],
           color: [:color],

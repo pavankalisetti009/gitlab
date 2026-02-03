@@ -27,7 +27,7 @@ module EE
       include ::Elastic::ApplicationVersionedSearch
       include Elastic::UpdateAssociatedEpicsOnDateChange
 
-      # we'd need to make sure these override the existing associations so we prepend this.
+      # We'd need to make sure these override the existing associations so we prepend this.
       include ::WorkItems::EpicAsWorkItem
 
       DEFAULT_COLOR = ::Gitlab::Color.of('#1068bf')
@@ -74,6 +74,10 @@ module EE
       belongs_to :work_item, foreign_key: 'issue_id', inverse_of: :synced_epic, dependent: :destroy
       # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
       belongs_to :sync_object, foreign_key: 'issue_id', class_name: 'WorkItem', inverse_of: :sync_object
+
+      # Labels are stored on the work_item. This module overrides the Issuable associations
+      # to read/write from work_item.
+      include ::WorkItems::EpicAsWorkItem::Labels
 
       has_internal_id :iid, scope: :group
 

@@ -6,7 +6,6 @@ module WorkItems
 
     included do
       include Gitlab::Utils::StrongMemoize
-      include ::WorkItems::UnifiedAssociations::Labels
       include ::WorkItems::UnifiedAssociations::AwardEmoji
       include ::WorkItems::UnifiedAssociations::Notes
       include ::WorkItems::UnifiedAssociations::ResourceLabelEvents
@@ -16,7 +15,7 @@ module WorkItems
       include ::WorkItems::UnifiedAssociations::Events
 
       # this overrides the scope in Issuable by removing the labels association from it as labels are now preloaded
-      # by loading labels for epic and for epic work item
+      # by loading labels from the work item
       scope :includes_for_bulk_update, -> do
         association_symbols = %i[author sync_object assignees epic group metrics project source_project target_project]
         associations = association_symbols.select do |assoc|

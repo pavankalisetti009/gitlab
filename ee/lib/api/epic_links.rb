@@ -22,12 +22,9 @@ module API
       end
 
       def child_epics
-        epics = ::Epics::CrossHierarchyChildrenFinder.new(current_user, { parent: epic, sort: 'relative_position' })
+        ::Epics::CrossHierarchyChildrenFinder.new(current_user, { parent: epic, sort: 'relative_position' })
           .execute(preload: true)
           .with_api_entity_associations_from_work_item
-
-        epics.each(&:lazy_labels)
-        epics
       end
 
       params :child_epic_id do

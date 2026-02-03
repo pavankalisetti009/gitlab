@@ -22,16 +22,15 @@ RSpec.describe WorkItems::DataSync::Widgets::Labels, feature_category: :team_pla
     context 'when target work item has labels widget' do
       context 'with group level work item(epic)' do
         let_it_be(:another_group) { create(:group) }
-        let_it_be(:labels) { create_list(:group_label, 4, group: group) }
+        let_it_be(:labels) { create_list(:group_label, 2, group: group) }
         let_it_be(:another_group_label1) { create(:group_label, group: another_group, title: labels[0].title) }
         let_it_be(:another_group_label2) { create(:group_label, group: another_group, title: labels[1].title) }
         let_it_be(:target_work_item) { create(:work_item, :epic, namespace: another_group) }
         let_it_be(:work_item) do
-          create(:work_item, :epic_with_legacy_epic, namespace: group, labels: [labels[0], labels[2]])
+          create(:work_item, :epic_with_legacy_epic, namespace: group, labels: labels)
         end
 
         before do
-          work_item.sync_object.update!(labels: [labels[1], labels[3]])
           stub_licensed_features(epics: true)
         end
 
@@ -41,18 +40,15 @@ RSpec.describe WorkItems::DataSync::Widgets::Labels, feature_category: :team_pla
           expect(callback).to receive(:new_work_item_label_links).and_call_original
           expect(::LabelLink).to receive(:insert_all).and_call_original
 
-          # 2 labels from group removed,
           # 2 labels from group replaced by labels in another group => 2 removed + 2 added => 4
-          expect { callback.after_create }.to change { ::ResourceLabelEvent.count }.by(6)
+          expect { callback.after_create }.to change { ::ResourceLabelEvent.count }.by(4)
 
-          expect(target_work_item.reload.labels.pluck(:title)).to match_array([labels[0], labels[1]].pluck(:title))
-          # both labels from legacy epic and epic work item are assigned to new epic work item
-          expect(target_work_item.reload.own_labels.pluck(:title)).to match_array([labels[0], labels[1]].pluck(:title))
+          expect(target_work_item.reload.labels.pluck(:title)).to match_array(labels.pluck(:title))
         end
 
         describe '#post_move_cleanup' do
           it 'removes original work item labels' do
-            expect { callback.post_move_cleanup }.to change { work_item.reload.labels.count }.from(4).to(0)
+            expect { callback.post_move_cleanup }.to change { work_item.reload.labels.count }.from(2).to(0)
           end
         end
       end

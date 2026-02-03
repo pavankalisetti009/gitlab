@@ -296,11 +296,7 @@ RSpec.describe Issuable::BulkUpdateService, feature_category: :team_planning do
           end
         end
 
-        context 'when labels are spread across epic and epic work item' do
-          # epic1 and epic2 have label1
-          # epic1 work_item - has label2
-          # epic2 work_item - has label3
-          # we'll remove label1 and label2 and we'll add label4 to both epics
+        context 'when labels are set on epic work items' do
           let(:label4) { create(:group_label, group: group, title: 'feature') }
 
           let(:params) do
@@ -312,12 +308,11 @@ RSpec.describe Issuable::BulkUpdateService, feature_category: :team_planning do
           end
 
           before do
-            epic1.work_item.labels = [label2]
-            epic2.work_item.labels = [label3]
+            epic1.work_item.labels = [label1, label2]
+            epic2.work_item.labels = [label1, label3]
           end
 
           it 'keeps existing labels' do
-            # sanity check
             expect(epic1.reload.labels).to match_array([label1, label2])
             expect(epic2.reload.labels).to match_array([label1, label3])
 
