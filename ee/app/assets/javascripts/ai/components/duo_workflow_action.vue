@@ -3,7 +3,7 @@ import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
 import getConfiguredFlows from 'ee/ai/graphql/get_configured_flows.query.graphql';
-import { setAiPanelTab } from 'ee/ai/graphql';
+import { eventHub, SHOW_SESSION } from 'ee/ai/events/panel';
 import { s__, __ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
@@ -229,7 +229,7 @@ export default {
 
           this.$emit('agent-flow-started', data);
 
-          setAiPanelTab('sessions');
+          eventHub.$emit(SHOW_SESSION, data);
         })
         .catch((error) => {
           const errorMessage =

@@ -26,6 +26,7 @@ describe('AiPanel', () => {
   let wrapper;
   let mockRouter;
   let mockApollo;
+  let mockRoute;
 
   const getContentComponentMock = jest.fn();
 
@@ -39,6 +40,12 @@ describe('AiPanel', () => {
   } = {}) => {
     mockRouter = {
       push: jest.fn().mockResolvedValue(),
+    };
+
+    mockRoute = {
+      name: routeName,
+      path: routePath,
+      params: routeParams,
     };
 
     mockApollo = createMockApollo([], {}, cacheConfig);
@@ -74,11 +81,7 @@ describe('AiPanel', () => {
       },
       mocks: {
         $router: mockRouter,
-        $route: {
-          name: routeName,
-          path: routePath,
-          params: routeParams,
-        },
+        $route: mockRoute,
       },
       stubs: {
         AiContentContainer: stubComponent(AiContentContainer, {
@@ -615,14 +618,8 @@ describe('AiPanel', () => {
       duoChatGlobalState.lastRoutePerTab = { sessions: '/agent-sessions/123' };
       createComponent({
         mountFn: mountExtended,
-        routePath: '/agent-sessions/123',
-        routeName: AGENTS_PLATFORM_SHOW_ROUTE,
-        routeParams: { id: '123' },
+        routePath: '/',
       });
-
-      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
-      jest.advanceTimersToNextTimer();
-      await waitForPromises();
 
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       jest.advanceTimersToNextTimer();
@@ -636,11 +633,8 @@ describe('AiPanel', () => {
 
     it('navigates to stored route when returning to a tab with initialRoute', async () => {
       duoChatGlobalState.lastRoutePerTab = { sessions: '/agent-sessions/123' };
-      createComponent({ routePath: '/agent-sessions/123' });
+      createComponent({ routePath: '/' });
 
-      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
-      jest.advanceTimersToNextTimer();
-      await waitForPromises();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       jest.advanceTimersToNextTimer();
       await waitForPromises();

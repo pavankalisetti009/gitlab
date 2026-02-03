@@ -2,6 +2,7 @@ import VueApollo from 'vue-apollo';
 import Cookies from '~/lib/utils/cookies';
 import createDefaultClient from '~/lib/graphql';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
+import { eventHub, SHOW_SESSION } from 'ee/ai/events/panel';
 import {
   setAiPanelTab,
   ACTIVE_TAB_KEY,
@@ -12,6 +13,7 @@ import {
 
 jest.mock('~/lib/utils/cookies');
 jest.mock('~/lib/graphql');
+jest.mock('ee/ai/events/panel');
 jest.mock('vue-apollo');
 
 describe('AI GraphQL Configuration', () => {
@@ -96,12 +98,32 @@ describe('AI GraphQL Configuration', () => {
 
   describe('createApolloProvider', () => {
     let mockClient;
+    let eventHandler;
 
     beforeEach(() => {
+      eventHub.$on.mockImplementation((event, handler) => {
+        eventHandler = handler;
+      });
       mockClient = { query: jest.fn() };
       createDefaultClient.mockReturnValue(mockClient);
       VueApollo.mockImplementation(function MockVueApollo(config) {
         this.defaultClient = config.defaultClient;
+      });
+    });
+
+    describe('events', () => {
+      beforeEach(() => {
+        createApolloProvider();
+      });
+
+      it('listens to SHOW_SESSION events', () => {
+        expect(eventHub.$on).toHaveBeenCalledWith(SHOW_SESSION, expect.any(Function));
+      });
+
+      it('sets the active tab when a SHOW_SESSION event is received', () => {
+        eventHandler();
+
+        expect(activeTab()).toBe('sessions');
       });
     });
 
