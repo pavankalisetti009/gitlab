@@ -85,6 +85,26 @@ describe('AddProjectItemConsumerModal', () => {
       expect(findGroupItemConsumerDropdown().exists()).toBe(true);
     });
 
+    describe('useRootGroupFlows prop', () => {
+      it('passes useRootGroupFlows=true to dropdown when prop is true', () => {
+        createComponent({ props: { useRootGroupFlows: true } });
+
+        expect(findGroupItemConsumerDropdown().props('useRootGroupFlows')).toBe(true);
+      });
+
+      it('passes useRootGroupFlows=false to dropdown when prop is false', () => {
+        createComponent({ props: { useRootGroupFlows: false } });
+
+        expect(findGroupItemConsumerDropdown().props('useRootGroupFlows')).toBe(false);
+      });
+
+      it('defaults useRootGroupFlows to false', () => {
+        createComponent();
+
+        expect(findGroupItemConsumerDropdown().props('useRootGroupFlows')).toBe(false);
+      });
+    });
+
     it('does not render pre-selected trigger type checkboxes by default', () => {
       expect(findFormCheckboxGroup().attributes('checked')).toEqual(
         'mention,assign,assign_reviewer,pipeline_hooks',

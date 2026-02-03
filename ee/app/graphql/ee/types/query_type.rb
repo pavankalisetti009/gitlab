@@ -94,6 +94,11 @@ module EE
           null: true,
           description: 'Find a single AI Catalog item consumer by ID.',
           experiment: { milestone: '18.5' }
+        field :ai_catalog_available_flows_for_project,
+          resolver: ::Resolvers::Ai::Catalog::AvailableFlowsForProjectResolver,
+          null: false,
+          description: 'AI Catalog flows available to enable for a project.',
+          experiment: { milestone: '18.9' }
         field :current_license, ::Types::Admin::CloudLicenses::CurrentLicenseType,
           null: true,
           resolver: ::Resolvers::Admin::CloudLicenses::CurrentLicenseResolver,
