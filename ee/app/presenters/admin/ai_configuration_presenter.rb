@@ -41,6 +41,7 @@ module Admin
         are_prompt_cache_settings_allowed: true,
         beta_self_hosted_models_enabled: beta_self_hosted_models_enabled,
         can_manage_self_hosted_models: can_manage_self_hosted_models?,
+        can_configure_ai_logging: can_configure_ai_logging?,
         disabled_direct_connection_method: disabled_direct_code_suggestions?,
         duo_availability: duo_availability,
         duo_agent_platform_enabled: duo_agent_platform_enabled,
@@ -98,6 +99,13 @@ module Admin
 
     def can_manage_self_hosted_models?
       ::Ability.allowed?(@current_user, :manage_self_hosted_models_settings)
+    end
+
+    def can_configure_ai_logging?
+      return false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      return false if gitlab_dedicated_instance?
+
+      ::License.ai_features_available?
     end
 
     def url_helpers

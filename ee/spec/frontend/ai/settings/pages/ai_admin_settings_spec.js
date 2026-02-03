@@ -64,6 +64,7 @@ const createComponent = async ({
       disabledDirectConnectionMethod: false,
       betaSelfHostedModelsEnabled: false,
       canManageSelfHostedModels: true,
+      canConfigureAiLogging: true,
       enabledExpandedLogging: false,
       toggleBetaModelsPath,
       aiGatewayUrl,
@@ -426,6 +427,16 @@ describe('AiAdminSettings', () => {
       });
     });
 
+    describe('when canConfigureAiLogging is false', () => {
+      beforeEach(() => {
+        createComponent({ provide: { canConfigureAiLogging: false } });
+      });
+
+      it('does not render the expanded logging form', () => {
+        expect(findDuoExpandedLoggingForm().exists()).toBe(false);
+      });
+    });
+
     describe('when canManageSelfHostedModels is false', () => {
       beforeEach(() => {
         createComponent({ provide: { canManageSelfHostedModels: false } });
@@ -445,10 +456,6 @@ describe('AiAdminSettings', () => {
 
       it('does not render Duo Agent Platform Service URL input form', () => {
         expect(findDuoAgentPlatformServiceUrlInputForm().exists()).toBe(false);
-      });
-
-      it('does not render the expanded logging form', () => {
-        expect(findDuoExpandedLoggingForm().exists()).toBe(false);
       });
     });
   });

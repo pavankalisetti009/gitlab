@@ -112,6 +112,8 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
 
       allow(Ai::FeatureAccessRule).to receive(:duo_root_namespace_access_rules).and_return namespace_access_rules
 
+      stub_licensed_features(ai_features: true)
+
       stub_feature_flags(duo_foundational_agents_per_agent_availability: false)
     end
 
@@ -126,6 +128,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         are_prompt_cache_settings_allowed: 'true',
         beta_self_hosted_models_enabled: 'true',
         can_manage_self_hosted_models: 'true',
+        can_configure_ai_logging: 'true',
         disabled_direct_connection_method: 'true',
         duo_availability: 'default_off',
         duo_remote_flows_availability: 'true',
@@ -242,6 +245,28 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       end
 
       it { expect(settings).to include(duo_core_features_enabled: 'false') }
+    end
+
+    context 'when on SaaS' do
+      before do
+        allow(Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(true)
+      end
+
+      it { expect(settings).to include(can_configure_ai_logging: 'false') }
+    end
+
+    context 'when on GitLab Dedicated' do
+      let(:application_setting_attributes) { super().merge(gitlab_dedicated_instance?: true) }
+
+      it { expect(settings).to include(can_configure_ai_logging: 'false') }
+    end
+
+    context 'when AI features are not available' do
+      before do
+        allow(License).to receive(:ai_features_available?).and_return(false)
+      end
+
+      it { expect(settings).to include(can_configure_ai_logging: 'false') }
     end
 
     context 'without expanded logging' do
