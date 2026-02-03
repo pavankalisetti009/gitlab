@@ -137,6 +137,20 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
             /#{group_virtual_registries_container_registry_path(group, registry)}/)
         end
       end
+
+      it 'creates new registry', :js do
+        visit new_group_virtual_registries_container_registry_path(group)
+
+        fill_in _('Name'), with: 'New Name'
+        fill_in _('Description (optional)'), with: 'New description'
+
+        click_button 'Create registry'
+
+        expect(page).to have_content('Registry New Name was successfully created.')
+        expect(page).to have_current_path(
+          "#{group_virtual_registries_container_registry_path(group, ::VirtualRegistries::Container::Registry.last)}/"
+        )
+      end
     end
   end
 end

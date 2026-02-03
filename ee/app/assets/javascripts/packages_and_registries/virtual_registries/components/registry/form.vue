@@ -1,6 +1,7 @@
 <script>
 import { GlAlert, GlForm, GlFormFields, GlFormTextarea, GlButton } from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/src/utils';
+import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__, sprintf } from '~/locale';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -14,7 +15,7 @@ export default {
     GlFormTextarea,
     GlButton,
   },
-  inject: ['fullPath', 'createRegistryMutation'],
+  inject: ['fullPath', 'createRegistryMutation', 'routes'],
   data() {
     return {
       submitting: false,
@@ -56,9 +57,15 @@ export default {
           } else {
             const { registry } = result;
 
-            // TODO: Fix this when the detail page route is merged
+            createAlert({
+              message: sprintf(s__('VirtualRegistry|Registry %{name} was successfully created.'), {
+                name: registry.name,
+              }),
+              variant: 'success',
+            });
+
             this.$router.push({
-              name: 'container_registries_index',
+              name: this.routes.showRegistryRouteName,
               params: { id: getIdFromGraphQLId(registry.id) },
             });
           }

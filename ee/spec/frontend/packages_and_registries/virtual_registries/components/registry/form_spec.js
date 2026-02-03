@@ -3,11 +3,13 @@ import VueApollo from 'vue-apollo';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { createAlert } from '~/alert';
 import RegistryForm from 'ee/packages_and_registries/virtual_registries/components/registry/form.vue';
 import createRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_container_registry.mutation.graphql';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
+jest.mock('~/alert');
 
 Vue.use(VueApollo);
 
@@ -39,6 +41,9 @@ describe('Virtual registry form component', () => {
       provide: {
         fullPath: 'gitlab-org',
         createRegistryMutation,
+        routes: {
+          showRegistryRouteName: 'show',
+        },
       },
       stubs: {
         RouterLink: true,
@@ -98,7 +103,24 @@ describe('Virtual registry form component', () => {
         params: {
           id: 1,
         },
-        name: expect.any(String),
+        name: 'show',
+      });
+    });
+
+    it('shows success alert message', async () => {
+      factory();
+
+      findFormFields().vm.$emit('input', {
+        name: 'Registry name',
+        description: 'Registry description',
+      });
+      findFormFields().vm.$emit('submit');
+
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Registry Registry name was successfully created.',
+        variant: 'success',
       });
     });
 
