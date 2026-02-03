@@ -1129,6 +1129,100 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
+  describe '#parse_policy_metadata' do
+    let(:policy_name) { 'test_policy' }
+
+    context 'when policy JSON is present in raw_metadata' do
+      let(:policy_hash) do
+        {
+          "path" => {
+            "test/secrets/*" => {
+              "capabilities" => %w[create read],
+              "required_parameters" => ["something_required"],
+              "allowed_parameters" => {
+                "something_allowed" => ["allowed_value"]
+              },
+              "denied_parameters" => {
+                "something_denied" => ["denied_value"]
+              }
+            }
+          }
+        }
+      end
+
+      let(:raw_metadata) do
+        {
+          "policy" => policy_hash.to_json
+        }
+      end
+
+      it 'parses the policy JSON and returns an AclPolicy object' do
+        result = client.send(:parse_policy_metadata, policy_name, raw_metadata)
+
+        expect(result).to be_a(SecretsManagement::AclPolicy)
+        expect(result.name).to eq(policy_name)
+
+        attributes = result.to_openbao_attributes
+        expect(attributes[:path]).to have_key("test/secrets/*")
+        expect(attributes[:path]["test/secrets/*"]["capabilities"]).to contain_exactly("create", "read")
+        expect(attributes[:path]["test/secrets/*"]["required_parameters"]).to contain_exactly("something_required")
+        expect(attributes[:path]["test/secrets/*"]["allowed_parameters"]).to eq({
+          "something_allowed" => ["allowed_value"]
+        })
+        expect(attributes[:path]["test/secrets/*"]["denied_parameters"]).to eq({
+          "something_denied" => ["denied_value"]
+        })
+      end
+    end
+
+    context 'when policy JSON is nil in raw_metadata' do
+      let(:raw_metadata) do
+        {
+          "policy" => nil
+        }
+      end
+
+      it 'returns early without parsing JSON when policy_json is nil' do
+        expect(Gitlab::Json).not_to receive(:parse)
+        expect(SecretsManagement::AclPolicy).not_to receive(:build_from_hash)
+
+        result = client.send(:parse_policy_metadata, policy_name, raw_metadata)
+
+        expect(result).to be_a(SecretsManagement::AclPolicy)
+        expect(result.name).to eq(policy_name)
+        expect(result.to_openbao_attributes).to eq({ path: {} })
+      end
+    end
+
+    context 'when policy key is missing from raw_metadata' do
+      let(:raw_metadata) do
+        {
+          "other_key" => "some_value"
+        }
+      end
+
+      it 'returns an empty AclPolicy object with the given name' do
+        result = client.send(:parse_policy_metadata, policy_name, raw_metadata)
+
+        expect(result).to be_a(SecretsManagement::AclPolicy)
+        expect(result.name).to eq(policy_name)
+        expect(result.to_openbao_attributes).to eq({ path: {} })
+      end
+    end
+
+    context 'when raw_metadata is empty' do
+      let(:raw_metadata) { {} }
+
+      it 'returns an empty AclPolicy object with the given name' do
+        result = client.send(:parse_policy_metadata, policy_name, raw_metadata)
+
+        expect(result).to be_a(SecretsManagement::AclPolicy)
+        expect(result.name).to eq(policy_name)
+        expect(result.to_openbao_attributes).to eq({ path: {} })
+      end
+    end
+  end
+
   describe '.server_available?' do
     context 'when OpenBao is healthy' do
       before do
