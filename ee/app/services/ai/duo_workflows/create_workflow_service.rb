@@ -28,7 +28,7 @@ module Ai
           # http status should not be part of Service, but needs significant refactoring in the callers of
           # CreateWorkflowService.execute
           http_status = http_status_for_quota_error(credit_check_response.reason)
-          return error(credit_check_response.message, http_status)
+          return error(credit_check_response.message, http_status, pass_back: { reason: credit_check_response.reason })
         end
 
         response = check_ai_catalog_item_access || check_access

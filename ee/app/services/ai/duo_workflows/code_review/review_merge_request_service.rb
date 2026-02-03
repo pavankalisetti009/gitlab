@@ -72,6 +72,8 @@ module Ai
             ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
           when :invalid_service_account
             ::Ai::CodeReviewMessages.missing_service_account_error
+          when :usage_quota_exceeded
+            ::Ai::CodeReviewMessages.usage_quota_exceeded_error
           else
             ::Ai::CodeReviewMessages.could_not_start_workflow_error
           end
