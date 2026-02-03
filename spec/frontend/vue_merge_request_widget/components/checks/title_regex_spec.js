@@ -66,11 +66,12 @@ describe('MergeChecksTitleRegex component', () => {
     expect(titleRegexQueryHandler).toHaveBeenCalledWith({ projectPath: TEST_PROJECT_PATH });
   });
 
-  it.each([
-    ['renders description when present', 'MR title must match: ^feat|fix|chore:', true],
-    ['does not render description when null', null, false],
-    ['does not render description when empty', '', false],
-  ])('%s', async (_, description, shouldExist) => {
+  it.each`
+    scenario                                    | description                                | shouldExist
+    ${'renders description when present'}       | ${'MR title must match: ^feat|fix|chore:'} | ${true}
+    ${'does not render description when null'}  | ${null}                                    | ${false}
+    ${'does not render description when empty'} | ${''}                                      | ${false}
+  `('$scenario', async ({ description, shouldExist }) => {
     await createComponent({
       titleRegexQueryHandler: jest
         .fn()
@@ -79,6 +80,7 @@ describe('MergeChecksTitleRegex component', () => {
 
     const descriptionEl = wrapper.find('.gl-text-subtle');
     expect(descriptionEl.exists()).toBe(shouldExist);
+
     if (shouldExist) {
       expect(descriptionEl.text()).toBe(description);
     }
