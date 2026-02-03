@@ -667,7 +667,6 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :portfol
                 context 'and replacing labels with `label_ids` param' do
                   let(:opts) { { label_ids: new_labels.map(&:id) } }
                   let(:expected_labels) { new_labels }
-                  let(:expected_epic_work_item_own_labels) { new_labels }
 
                   it_behaves_like 'syncs labels between epics and epic work items'
                 end

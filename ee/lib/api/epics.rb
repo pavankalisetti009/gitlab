@@ -131,7 +131,6 @@ module API
           epics = paginate(find_epics(finder_params: { group_id: user_group.id }))
             .with_api_entity_associations_from_work_item
 
-          epics.each(&:lazy_labels)
           # issuable_metadata has to be set because `Entities::Epic` doesn't inherit from `Entities::IssuableEntity`
           extra_options = {
             issuable_metadata: Gitlab::IssuableMetadata.new(current_user, epics).data,

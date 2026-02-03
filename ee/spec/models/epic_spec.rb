@@ -1741,6 +1741,12 @@ RSpec.describe Epic, feature_category: :portfolio_management do
           expect(work_item.reload.label_links.find(epic_label_link.id)).to eq(epic_label_link)
         end
       end
+
+      describe '#label_links.scope' do
+        it 'returns work_item label_links when work_item exists' do
+          expect(epic.label_links.scope).to eq(work_item.label_links)
+        end
+      end
     end
 
     context 'with labels' do
@@ -1762,6 +1768,97 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         it 'returns epic and epic work item labels queried by id' do
           expect(epic.reload.labels.find(label1.id)).to eq(label1)
           expect(work_item.reload.labels.find(label1.id)).to eq(label1)
+        end
+      end
+
+      describe '#labels.find with block' do
+        it 'uses block form of find' do
+          result = epic.labels.find { |l| l.id == label1.id }
+          expect(result).to eq(label1)
+        end
+      end
+
+      describe '#labels.scope' do
+        it 'returns work_item labels when work_item exists' do
+          expect(epic.labels.scope).to eq(work_item.labels)
+        end
+      end
+
+      describe '#labels.<<' do
+        it 'delegates to work_item.labels when work_item exists' do
+          label3 = create(:group_label, group: group, title: 'epic-label-3')
+
+          epic.labels << label3
+
+          expect(work_item.reload.labels).to include(label3)
+        end
+      end
+
+      describe '#label_ids' do
+        it 'returns work_item label_ids when work_item exists' do
+          expect(epic.reload.label_ids).to match_array(work_item.reload.label_ids)
+        end
+      end
+    end
+
+    context 'when work_item is nil' do
+      let(:epic_without_work_item) do
+        create(:epic, group: group).tap do |e|
+          allow(e).to receive(:work_item).and_return(nil)
+        end
+      end
+
+      describe '#label_links' do
+        it 'returns empty relation' do
+          expect(epic_without_work_item.label_links).to be_empty
+        end
+
+        describe '#scope' do
+          it 'returns LabelLink.none when work_item is nil' do
+            expect(epic_without_work_item.label_links.scope).to eq(LabelLink.none)
+          end
+        end
+
+        describe '#find' do
+          it 'falls back to super and raises RecordNotFound' do
+            expect { epic_without_work_item.label_links.find(non_existing_record_id) }
+              .to raise_error(ActiveRecord::RecordNotFound)
+          end
+        end
+      end
+
+      describe '#labels' do
+        it 'returns empty relation' do
+          expect(epic_without_work_item.labels).to be_empty
+        end
+
+        describe '#scope' do
+          it 'returns Label.none when work_item is nil' do
+            expect(epic_without_work_item.labels.scope).to eq(Label.none)
+          end
+        end
+
+        describe '#<<' do
+          it 'returns self without delegating to work_item' do
+            label = create(:group_label, group: group)
+
+            result = epic_without_work_item.labels << label
+
+            expect(result).to be_a(ActiveRecord::Associations::CollectionProxy)
+          end
+        end
+
+        describe '#find' do
+          it 'falls back to super and raises RecordNotFound' do
+            expect { epic_without_work_item.labels.find(non_existing_record_id) }
+              .to raise_error(ActiveRecord::RecordNotFound)
+          end
+        end
+      end
+
+      describe '#label_ids' do
+        it 'returns empty array' do
+          expect(epic_without_work_item.label_ids).to eq([])
         end
       end
     end
