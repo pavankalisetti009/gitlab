@@ -115,7 +115,7 @@ module Ai
 
         # (Foundational flows)
         if foundational_flow_reference.present?
-          return [] unless Ability.allowed?(current_user, :read_foundational_flow, container)
+          return [] unless Ability.allowed?(current_user, :read_ai_foundational_flow, container)
           return [] if beta_foundational_flow_without_beta_features?
 
           return [Ai::Catalog::Item::FLOW_TYPE]

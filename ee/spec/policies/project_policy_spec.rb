@@ -171,7 +171,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             read_duo_usage_analytics
             read_enterprise_ai_analytics
             read_external_emails
-            read_foundational_flow
+            read_ai_foundational_flow
             read_freeze_period
             read_google_cloud_artifact_registry
             read_grafana
@@ -5810,8 +5810,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     shared_examples 'no foundational flow permissions when StageCheck :foundational_flows is false' do
       let(:foundational_flows_available) { false }
 
-      it { expect_disallowed(:read_foundational_flow) }
-      it { expect_disallowed(:create_foundational_flow_item_consumer) }
+      it { expect_disallowed(:read_ai_foundational_flow) }
+      it { expect_disallowed(:create_ai_foundational_flow_item_consumer) }
     end
 
     shared_examples 'no permissions when Duo features are not available' do
@@ -5864,8 +5864,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { expect_allowed(:admin_ai_catalog_item_consumer) }
       it { expect_allowed(:read_ai_catalog_item_consumer) }
       it { expect_allowed(:execute_ai_catalog_item) }
-      it { expect_allowed(:read_foundational_flow) }
-      it { expect_allowed(:create_foundational_flow_item_consumer) }
+      it { expect_allowed(:read_ai_foundational_flow) }
+      it { expect_allowed(:create_ai_foundational_flow_item_consumer) }
       it { expect_allowed(:create_ai_catalog_flow_item_consumer) }
 
       it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
@@ -5882,13 +5882,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { expect_disallowed(:create_ai_catalog_flow) }
       it { expect_disallowed(:create_ai_catalog_third_party_flow) }
-      it { expect_disallowed(:create_foundational_flow_item_consumer) }
+      it { expect_disallowed(:create_ai_foundational_flow_item_consumer) }
       it { expect_disallowed(:create_ai_catalog_flow_item_consumer) }
       it { expect_disallowed(:admin_ai_catalog_item) }
       it { expect_disallowed(:admin_ai_catalog_item_consumer) }
       it { expect_allowed(:read_ai_catalog_flow) }
       it { expect_allowed(:read_ai_catalog_third_party_flow) }
-      it { expect_allowed(:read_foundational_flow) }
+      it { expect_allowed(:read_ai_foundational_flow) }
       it { expect_allowed(:read_ai_catalog_item_consumer) }
       it { expect_allowed(:execute_ai_catalog_item) }
 

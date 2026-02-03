@@ -439,7 +439,7 @@ module EE
         enable :admin_ai_catalog_item_consumer
         enable :create_ai_catalog_flow_item_consumer
         enable :create_ai_catalog_third_party_flow_item_consumer
-        enable :create_foundational_flow_item_consumer
+        enable :create_ai_foundational_flow_item_consumer
         enable :enable_secret_push_protection
         enable :apply_security_scan_profiles
       end
@@ -702,7 +702,7 @@ module EE
         enable :read_vulnerability_statistics
         enable :read_security_inventory
         enable :read_ai_catalog_flow
-        enable :read_foundational_flow
+        enable :read_ai_foundational_flow
         enable :read_ai_catalog_third_party_flow
         enable :read_dependency
         enable :read_licenses
@@ -1213,8 +1213,8 @@ module EE
       end
 
       rule { ~foundational_flows_available | ~ai_catalog_available_for_user }.policy do
-        prevent :read_foundational_flow
-        prevent :create_foundational_flow_item_consumer
+        prevent :read_ai_foundational_flow
+        prevent :create_ai_foundational_flow_item_consumer
       end
 
       rule { ~ai_catalog_enabled | ~flows_enabled | ~flows_available }.policy do

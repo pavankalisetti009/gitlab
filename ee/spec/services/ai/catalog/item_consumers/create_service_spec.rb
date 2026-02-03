@@ -963,11 +963,11 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       let(:item) { beta_enabled_project_foundational_flow_item }
       let(:parent_item_consumer) { beta_enabled_project_foundational_flow_parent_item_consumer }
 
-      context 'when user lacks create_foundational_flow_item_consumer permission' do
+      context 'when user lacks create_ai_foundational_flow_item_consumer permission' do
         before do
           allow(Ability).to receive(:allowed?).and_call_original
           allow(Ability).to receive(:allowed?)
-            .with(user, :create_foundational_flow_item_consumer, container).and_return(false)
+            .with(user, :create_ai_foundational_flow_item_consumer, container).and_return(false)
         end
 
         it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'

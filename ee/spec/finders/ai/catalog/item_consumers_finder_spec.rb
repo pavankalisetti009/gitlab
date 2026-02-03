@@ -275,7 +275,7 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
     context 'when user is not allowed to read foundational flows' do
       before do
         allow(Ability).to receive(:allowed?).and_call_original
-        allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, project).and_return(false)
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_foundational_flow, project).and_return(false)
       end
 
       it { is_expected.to be_empty }

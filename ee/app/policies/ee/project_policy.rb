@@ -531,7 +531,7 @@ module EE
         enable :read_ai_catalog_flow
         enable :read_ai_catalog_third_party_flow
         enable :read_coverage_fuzzing
-        enable :read_foundational_flow
+        enable :read_ai_foundational_flow
         enable :read_on_demand_dast_scan
         enable :read_project_audit_events
         enable :read_project_security_exclusions
@@ -809,7 +809,7 @@ module EE
         enable :admin_ai_catalog_item_consumer
         enable :create_ai_catalog_flow_item_consumer
         enable :create_ai_catalog_third_party_flow_item_consumer
-        enable :create_foundational_flow_item_consumer
+        enable :create_ai_foundational_flow_item_consumer
         enable :manage_ai_flow_triggers
         enable :apply_security_scan_profiles
         enable :create_service_account
@@ -1491,8 +1491,8 @@ module EE
       end
 
       rule { ~ai_catalog_enabled | ~foundational_flows_available | ~ai_catalog_available_for_user }.policy do
-        prevent :read_foundational_flow
-        prevent :create_foundational_flow_item_consumer
+        prevent :read_ai_foundational_flow
+        prevent :create_ai_foundational_flow_item_consumer
       end
 
       rule { ~third_party_flows_enabled | ~third_party_flows_available }.policy do

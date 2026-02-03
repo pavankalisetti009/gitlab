@@ -84,7 +84,7 @@ RSpec.describe 'Groups::DuoAgentsPlatform', feature_category: :duo_agent_platfor
       context 'when user can read foundational flows' do
         before do
           allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(false)
-          allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(true)
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_foundational_flow, group).and_return(true)
         end
 
         it 'returns successfully' do
@@ -97,7 +97,7 @@ RSpec.describe 'Groups::DuoAgentsPlatform', feature_category: :duo_agent_platfor
       context 'when user does not have access to read flows or foundational flows' do
         before do
           allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(false)
-          allow(Ability).to receive(:allowed?).with(user, :read_foundational_flow, group).and_return(false)
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_foundational_flow, group).and_return(false)
         end
 
         it 'does not render' do
