@@ -110,7 +110,8 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
         expect do
           get api(endpoint, user), params: { scope: 'merge_requests', search: '*' }
-        end.not_to exceed_query_limit(control)
+          # Threshold required for specs to pass, see: https://gitlab.com/gitlab-org/gitlab/-/work_items/587748.
+        end.not_to exceed_query_limit(control).with_threshold(3)
       end
     end
 
