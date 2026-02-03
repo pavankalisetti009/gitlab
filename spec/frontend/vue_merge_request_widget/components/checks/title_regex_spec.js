@@ -11,6 +11,8 @@ Vue.use(VueApollo);
 
 const TEST_PROJECT_PATH = 'gitlab-org/gitlab';
 const TEST_PROJECT_ID = 'gid://gitlab/Project/1';
+const DEFAULT_CHECK = { status: 'FAILED', identifier: 'title_regex' };
+const DEFAULT_MR = { targetProjectFullPath: TEST_PROJECT_PATH };
 
 describe('MergeChecksTitleRegex component', () => {
   let wrapper;
@@ -24,11 +26,13 @@ describe('MergeChecksTitleRegex component', () => {
       },
     },
   });
+  const createDefaultTitleRegexQueryHandler = () =>
+    jest.fn().mockResolvedValue(createTitleRegexQueryResponse());
 
   const createComponent = async ({
-    check = { status: 'FAILED', identifier: 'title_regex' },
-    mr = { targetProjectFullPath: TEST_PROJECT_PATH },
-    titleRegexQueryHandler = jest.fn().mockResolvedValue(createTitleRegexQueryResponse()),
+    check = DEFAULT_CHECK,
+    mr = DEFAULT_MR,
+    titleRegexQueryHandler = createDefaultTitleRegexQueryHandler(),
   } = {}) => {
     const apolloProvider = createMockApollo([[titleRegexQuery, titleRegexQueryHandler]]);
 
