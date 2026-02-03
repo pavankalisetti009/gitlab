@@ -47,6 +47,7 @@ duo_chat:
     - general
   unit_primitives:
     - duo_chat
+    - duo_classic_chat
     - chat
     - include_file_context
     - include_snippet_context
