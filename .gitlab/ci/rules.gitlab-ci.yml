@@ -1415,6 +1415,10 @@
       changes: *docs-patterns
       when: manual
       allow_failure: true
+    - <<: *if-dot-com-gitlab-org-merge-request
+      changes: *docs-i18n-patterns
+      when: manual
+      allow_failure: true
 
 .docs:rules:redirect-check:
   rules:
