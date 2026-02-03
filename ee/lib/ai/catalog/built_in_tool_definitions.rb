@@ -1028,6 +1028,27 @@ module Ai
           description: "Post a Duo Code Review to a merge request. " \
             "Example: post_duo_code_review(project_id=123, merge_request_iid=45, " \
             "review_output=\"<review>...</review>\")"
+        },
+        {
+          id: 88,
+          name: "run_glql_query",
+          title: "Run GLQL Query",
+          description: "Execute a GLQL (GitLab Query Language) query to search supported data sources " \
+            "like work items, epics, and merge requests. " \
+            "GLQL syntax: https://docs.gitlab.com/user/glql/ — consult docs or include GLQL reference " \
+            "in prompt for accurate query generation. " \
+            "Limitation: `in` uses OR logic; for AND, use multiple conditions: `label = ~x and label = ~y` " \
+            "Limitation: GLQL does not support text search, `contains`, or `like` " \
+            "Parameters: " \
+            "- glql_yaml (required): GLQL query block. 'query' field is required; " \
+            "'display', 'fields', 'title', 'sort', 'limit' are optional. " \
+            "- after (optional): Pagination cursor (use pageInfo.endCursor from previous response). " \
+            "Returns GraphQL response: data.nodes (results), data.count, data.pageInfo, fields. " \
+            "Example: " \
+            "run_glql_query(glql_yaml=\"" \
+            "fields: title, state, author\\n" \
+            "limit: 100\\n" \
+            "query: type = Issue and project = \\\"gitlab-duo/test\\\"\")"
         }
       ].freeze
     end
