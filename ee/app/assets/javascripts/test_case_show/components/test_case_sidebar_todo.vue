@@ -1,13 +1,12 @@
 <script>
 import { GlTooltipDirective as GlTooltip, GlButton, GlIcon, GlLoadingIcon } from '@gitlab/ui';
 import { __ } from '~/locale';
-import { TYPE_TEST_CASE, WORKSPACE_PROJECT } from '~/issues/constants';
+import { TYPE_TEST_CASE } from '~/issues/constants';
 import TestCaseGraphQL from '../mixins/test_case_graphql';
 
 export default {
   name: 'TestCaseSidebarTodo',
   TYPE_TEST_CASE,
-  WORKSPACE_PROJECT,
   components: {
     GlButton,
     GlIcon,
