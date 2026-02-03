@@ -122,20 +122,4 @@ RSpec.describe PackageMetadata::Advisory, type: :model, feature_category: :softw
       it { is_expected.to be false }
     end
   end
-
-  describe '#from_dependency_scanning?' do
-    subject { advisory.from_dependency_scanning? }
-
-    context 'when source_xid is glad' do
-      let(:advisory) { build(:pm_advisory, source_xid: 'glad') }
-
-      it { is_expected.to be true }
-    end
-
-    context 'when source_xid is not glad' do
-      let(:advisory) { build(:pm_advisory, source_xid: 'trivy-db') }
-
-      it { is_expected.to be false }
-    end
-  end
 end

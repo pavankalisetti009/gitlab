@@ -38,9 +38,5 @@ module PackageMetadata
     def from_container_scanning?
       source_xid == 'trivy-db'
     end
-
-    def from_dependency_scanning?
-      source_xid == 'glad'
-    end
   end
 end
