@@ -483,16 +483,6 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
       end
 
       context 'with Gitlab Secrets Manager' do
-        let(:secrets) do
-          {
-            DATABASE_PASSWORD: {
-              gitlab_secrets_manager: {
-                name: "password"
-              }
-            }
-          }
-        end
-
         let(:gitlab_secrets_manager_payload) do
           presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'gitlab_secrets_manager')
         end
@@ -501,30 +491,210 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           gitlab_secrets_manager_payload['server']
         end
 
-        let(:project_secrets_manager) do
-          SecretsManagement::ProjectSecretsManager.find_by(project: ci_build.project)
+        context 'when project level secret' do
+          let(:secrets) do
+            {
+              DATABASE_PASSWORD: {
+                gitlab_secrets_manager: {
+                  name: "password"
+                }
+              }
+            }
+          end
+
+          let(:project_secrets_manager) do
+            SecretsManagement::ProjectSecretsManager.find_by(project: ci_build.project)
+          end
+
+          before do
+            create(:project_secrets_manager, project: ci_build.project)
+            allow_any_instance_of(SecretsManagement::ProjectSecretsManager).to receive(:ci_jwt).and_return(jwt_token) # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
+          end
+
+          it 'sets the correct values for the server configuration' do
+            expect(gitlab_secrets_manager_server).to include(
+              'url' => SecretsManagement::ProjectSecretsManager.server_url,
+              'inline_auth' => {
+                'jwt' => jwt_token,
+                'role' => "all_pipelines",
+                'path' => project_secrets_manager.ci_auth_path
+              }
+            )
+          end
+
+          it 'sets the correct values for the payload' do
+            expect(gitlab_secrets_manager_payload).to include(
+              'path' => project_secrets_manager.ci_data_path('password'),
+              'field' => 'value',
+              'engine' => {
+                'name' => 'kv-v2',
+                'path' => project_secrets_manager.ci_secrets_mount_full_path
+              }
+            )
+          end
         end
 
-        before do
-          create(:project_secrets_manager, project: ci_build.project)
-          allow_any_instance_of(SecretsManagement::ProjectSecretsManager).to receive(:ci_jwt).and_return(jwt_token) # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
+        context 'when group level secret for a root group' do
+          let_it_be_with_reload(:group) { create(:group) }
+
+          let(:secrets) do
+            {
+              DATABASE_PASSWORD: {
+                gitlab_secrets_manager: {
+                  name: "password",
+                  source: "group/#{group.full_path}"
+                }
+              }
+            }
+          end
+
+          let(:group_secrets_manager) do
+            SecretsManagement::GroupSecretsManager.find_by(group: group)
+          end
+
+          before do
+            create(:group_secrets_manager, group: group)
+            allow_any_instance_of(SecretsManagement::GroupSecretsManager).to receive(:ci_jwt).and_return(jwt_token) # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
+            allow(ci_build.project).to receive(:group) { group }
+          end
+
+          it 'sets the correct values for the server configuration' do
+            expect(gitlab_secrets_manager_server).to include(
+              'url' => SecretsManagement::GroupSecretsManager.server_url,
+              'inline_auth' => {
+                'jwt' => jwt_token,
+                'role' => "all_pipelines",
+                'path' => group_secrets_manager.ci_auth_path
+              }
+            )
+          end
+
+          it 'sets the correct values for the payload' do
+            expect(gitlab_secrets_manager_payload).to include(
+              'path' => group_secrets_manager.ci_data_path('password'),
+              'field' => 'value',
+              'engine' => {
+                'name' => 'kv-v2',
+                'path' => group_secrets_manager.ci_secrets_mount_full_path
+              }
+            )
+          end
         end
 
-        it 'sets the correct values for inline_auth keys' do
-          expect(gitlab_secrets_manager_server.fetch('inline_auth')['jwt']).to eq(jwt_token)
-          expect(gitlab_secrets_manager_server.fetch('inline_auth')['role']).to eq("all_pipelines")
-          expect(gitlab_secrets_manager_server.fetch('inline_auth')['path']).to eq(project_secrets_manager.ci_auth_path)
+        context 'when group level secret for a nested subgroup' do
+          let_it_be_with_reload(:root_group) { create(:group) }
+          let_it_be_with_reload(:child_group) { create(:group, parent: root_group) }
+
+          let(:secrets) do
+            {
+              DATABASE_PASSWORD: {
+                gitlab_secrets_manager: {
+                  name: "password",
+                  source: "group/#{child_group.full_path}"
+                }
+              }
+            }
+          end
+
+          let(:group_secrets_manager) do
+            SecretsManagement::GroupSecretsManager.find_by(group: child_group)
+          end
+
+          before do
+            create(:group_secrets_manager, group: child_group)
+            allow_any_instance_of(SecretsManagement::GroupSecretsManager).to receive(:ci_jwt).and_return(jwt_token) # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
+            allow(ci_build.project).to receive(:group) { child_group }
+          end
+
+          it 'sets the correct values for the server configuration' do
+            expect(gitlab_secrets_manager_server).to include(
+              'url' => SecretsManagement::GroupSecretsManager.server_url,
+              'inline_auth' => {
+                'jwt' => jwt_token,
+                'role' => "all_pipelines",
+                'path' => group_secrets_manager.ci_auth_path
+              }
+            )
+          end
+
+          it 'sets the correct values for the payload' do
+            expect(gitlab_secrets_manager_payload).to include(
+              'path' => group_secrets_manager.ci_data_path('password'),
+              'field' => 'value',
+              'engine' => {
+                'name' => 'kv-v2',
+                'path' => group_secrets_manager.ci_secrets_mount_full_path
+              }
+            )
+          end
         end
 
-        it 'sets the correct value for the server URL' do
-          expect(gitlab_secrets_manager_server.fetch('url')).to eq(SecretsManagement::ProjectSecretsManager.server_url)
+        context 'when project does not belong to a group' do
+          let(:secrets) do
+            {
+              DATABASE_PASSWORD: {
+                gitlab_secrets_manager: {
+                  name: "password",
+                  source: "group/some_group"
+                }
+              }
+            }
+          end
+
+          before do
+            allow(ci_build.project).to receive(:group).and_return(nil)
+          end
+
+          it 'returns empty hash for the payload' do
+            expect(gitlab_secrets_manager_payload).to eq({})
+          end
         end
 
-        it 'sets the correct value for other fields in the payload' do
-          expect(gitlab_secrets_manager_payload.fetch('path')).to eq(project_secrets_manager.ci_data_path('password'))
-          expect(gitlab_secrets_manager_payload.fetch('field')).to eq('value')
-          expect(gitlab_secrets_manager_payload.fetch('engine')['name']).to eq('kv-v2')
-          expect(gitlab_secrets_manager_payload.fetch('engine')['path']).to eq(project_secrets_manager.ci_secrets_mount_full_path)
+        context 'when group is not an ancestor of the project' do
+          let_it_be(:project_group) { create(:group) }
+          let_it_be(:unrelated_group) { create(:group) }
+
+          let(:secrets) do
+            {
+              DATABASE_PASSWORD: {
+                gitlab_secrets_manager: {
+                  name: "password",
+                  source: "group/#{unrelated_group.full_path}"
+                }
+              }
+            }
+          end
+
+          before do
+            allow(ci_build.project).to receive(:group) { project_group }
+          end
+
+          it 'returns empty hash for the payload' do
+            expect(gitlab_secrets_manager_payload).to eq({})
+          end
+        end
+
+        context 'when group secrets manager does not exist for the group' do
+          let_it_be_with_reload(:group) { create(:group) }
+
+          let(:secrets) do
+            {
+              DATABASE_PASSWORD: {
+                gitlab_secrets_manager: {
+                  name: "password",
+                  source: "group/#{group.full_path}"
+                }
+              }
+            }
+          end
+
+          before do
+            allow(ci_build.project).to receive(:group) { group }
+          end
+
+          it 'returns empty hash for the payload' do
+            expect(gitlab_secrets_manager_payload).to eq({})
+          end
         end
       end
     end

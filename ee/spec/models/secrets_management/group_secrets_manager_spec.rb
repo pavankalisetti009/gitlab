@@ -187,8 +187,8 @@ RSpec.describe SecretsManagement::GroupSecretsManager, feature_category: :secret
       )
     end
 
-    it 'is returns full path including root namespace' do
-      expect(path).to eq('some/namespace/group_1/auth/ci_auth/login')
+    it 'returns full CEL auth path including root namespace' do
+      expect(path).to eq('some/namespace/group_1/auth/ci_auth/cel/login')
     end
   end
 

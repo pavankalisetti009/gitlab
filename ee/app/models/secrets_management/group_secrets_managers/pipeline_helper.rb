@@ -10,6 +10,7 @@ module SecretsManagement
           full_group_namespace_path,
           'auth',
           ci_auth_mount,
+          'cel',
           'login'
         ].compact.join('/')
       end
