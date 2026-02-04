@@ -298,7 +298,7 @@ export default {
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
     <page-heading>
       <template #heading>
-        <div class="gl-flex gl-gap-3">
+        <div class="gl-flex gl-items-baseline gl-gap-3">
           <span class="gl-line-clamp-1 gl-wrap-anywhere">
             {{ aiCatalogAgent.name }}
           </span>
