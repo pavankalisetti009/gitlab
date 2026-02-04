@@ -16078,9 +16078,6 @@ msgstr ""
 msgid "ClusterIntegration|Any project namespaces"
 msgstr ""
 
-msgid "ClusterIntegration|Apply for credit"
-msgstr ""
-
 msgid "ClusterIntegration|Authentication Error"
 msgstr ""
 
@@ -16153,9 +16150,6 @@ msgstr ""
 msgid "ClusterIntegration|Deploy each environment to its own namespace. Otherwise, environments within a project share a project-wide namespace. Note that anyone who can trigger a deployment of a namespace can read its secrets. If modified, existing environments will use their current namespaces until the cluster cache is cleared."
 msgstr ""
 
-msgid "ClusterIntegration|Did you know?"
-msgstr ""
-
 msgid "ClusterIntegration|Elastic Kubernetes Service"
 msgstr ""
 
@@ -16181,9 +16175,6 @@ msgid "ClusterIntegration|Environment scope"
 msgstr ""
 
 msgid "ClusterIntegration|Environment scope is required."
-msgstr ""
-
-msgid "ClusterIntegration|Every new Google Cloud Platform (GCP) account receives $300 in credit upon %{sign_up_link}. In partnership with Google, GitLab is able to offer an additional $200 for both new and existing GCP accounts to get started with GitLab's Google Kubernetes Engine Integration."
 msgstr ""
 
 msgid "ClusterIntegration|GitLab Integration"
@@ -16457,9 +16448,6 @@ msgid "ClusterIntegration|Your cluster API is unreachable. Please ensure your AP
 msgstr ""
 
 msgid "ClusterIntegration|Your project doesn't have any GitLab agents"
-msgstr ""
-
-msgid "ClusterIntegration|sign up"
 msgstr ""
 
 msgid "Clusters|An error occurred while loading clusters"
