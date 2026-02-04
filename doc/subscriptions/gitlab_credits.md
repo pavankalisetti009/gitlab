@@ -22,6 +22,9 @@ title: GitLab Credits and usage billing
 GitLab Credits are the standardized consumption currency for usage-based billing.
 Credits are used for [GitLab Duo Agent Platform](../user/duo_agent_platform/_index.md),
 where each usage action consumes a number of credits.
+
+[GitLab Duo Pro and Enterprise](subscription-add-ons.md#gitlab-duo-pro-and-enterprise) and their associated [GitLab Duo (Classic) features](../user/gitlab_duo/feature_summary.md) are not billed based on usage and do not consume GitLab Credits.
+
 Credits are calculated based on the features and models you use, as listed in the credit multiplier tables.
 
 GitLab provides three ways to obtain credits:
