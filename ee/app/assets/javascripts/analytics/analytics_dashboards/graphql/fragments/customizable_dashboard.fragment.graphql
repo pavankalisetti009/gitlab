@@ -5,6 +5,7 @@ fragment CustomizableDashboardFragment on CustomizableDashboardConnection {
     description
     userDefined
     status
+    gridHeight @gl_introduced(version: "18.9.0")
     errors
     filters
     panels {

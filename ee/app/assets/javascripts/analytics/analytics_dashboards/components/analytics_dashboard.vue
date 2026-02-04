@@ -37,6 +37,10 @@ import {
 } from './filters/utils';
 import AnalyticsDashboardPanel from './analytics_dashboard_panel.vue';
 
+const GRID_HEIGHT_COMPACT = 'COMPACT';
+const GRID_HEIGHT_COMPACT_CELL_HEIGHT = 10;
+const GRID_HEIGHT_COMPACT_MIN_CELL_HEIGHT = 10;
+
 export default {
   name: 'AnalyticsDashboard',
   components: {
@@ -109,6 +113,16 @@ export default {
     },
     dateRangeLimit() {
       return this.dateRangeFilter.numberOfDaysLimit || 0;
+    },
+    cellHeight() {
+      return this.dashboard?.gridHeight === GRID_HEIGHT_COMPACT
+        ? GRID_HEIGHT_COMPACT_CELL_HEIGHT
+        : undefined;
+    },
+    minCellHeight() {
+      return this.dashboard?.gridHeight === GRID_HEIGHT_COMPACT
+        ? GRID_HEIGHT_COMPACT_MIN_CELL_HEIGHT
+        : undefined;
     },
     showAnonUserFilter() {
       return isDashboardFilterEnabled(this.dashboard?.filters?.excludeAnonymousUsers);
@@ -347,7 +361,11 @@ export default {
         </ul>
       </gl-alert>
 
-      <gl-dashboard-layout :config="dashboard">
+      <gl-dashboard-layout
+        :config="dashboard"
+        :cell-height="cellHeight"
+        :min-cell-height="minCellHeight"
+      >
         <template v-if="hasStatusBadge" #title>
           <h2 data-testid="custom-title" class="gl-my-0">{{ dashboard.title }}</h2>
           <gl-experiment-badge class="gl-ml-3" :type="statusBadgeType" />

@@ -48,6 +48,7 @@ export const getGraphQLDashboard = (options = {}) => ({
   title: '',
   userDefined: false,
   status: null,
+  gridHeight: 'DEFAULT',
   description: 'Understand your audience',
   __typename: 'CustomizableDashboard',
   errors: [],
