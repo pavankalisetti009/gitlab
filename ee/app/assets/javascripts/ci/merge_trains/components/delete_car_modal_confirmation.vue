@@ -45,7 +45,7 @@ export default {
     :title="s__('Pipelines|Remove from merge train')"
     :action-primary="$options.actionPrimary"
     :action-cancel="$options.actionCancel"
-    @primary="$emit('removeCarConfirmed')"
+    @primary="$emit('remove-car-confirmed')"
   >
     <p>
       <gl-sprintf :message="$options.warningMessage">

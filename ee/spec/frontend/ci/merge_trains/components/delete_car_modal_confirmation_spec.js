@@ -48,10 +48,10 @@ describe('MergeTrainsTable', () => {
     );
   });
 
-  it('emits removeCarConfirmed event', () => {
+  it('emits remove-car-confirmed event', () => {
     findModal().vm.$emit('primary');
 
-    expect(wrapper.emitted()).toEqual({ removeCarConfirmed: [[]] });
+    expect(wrapper.emitted()).toEqual({ 'remove-car-confirmed': [[]] });
   });
 
   it('modal contains reference to merge request title', () => {

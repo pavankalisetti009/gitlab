@@ -166,14 +166,17 @@ export default {
     <template v-else>
       <div class="gl-mb-5 gl-flex gl-justify-between">
         <h1 class="gl-text-size-h1">{{ s__('Pipelines|Merge train') }}</h1>
-        <merge-train-branch-selector :selected-branch="selectedBranch" @branchChanged="setBranch" />
+        <merge-train-branch-selector
+          :selected-branch="selectedBranch"
+          @branch-changed="setBranch"
+        />
       </div>
 
       <merge-train-tabs
         class="gl-pt-2"
         :active-train="activeMergeTrains.train"
         :merged-train="completedMergeTrains.train"
-        @activeTab="tabHandler"
+        @active-tab="tabHandler"
       >
         <template #active>
           <merge-trains-table
@@ -181,8 +184,8 @@ export default {
             :train="activeMergeTrains.train"
             is-active-tab
             data-testid="active-merge-trains-table"
-            @pageChange="activeCursor = $event"
-            @deleteCar="deleteMergeTrainCar"
+            @page-change="activeCursor = $event"
+            @delete-car="deleteMergeTrainCar"
           />
 
           <merge-trains-empty-state
@@ -196,7 +199,7 @@ export default {
             v-if="hasMergedCars"
             :train="completedMergeTrains.train"
             data-testid="completed-merge-trains-table"
-            @pageChange="mergedCursor = $event"
+            @page-change="mergedCursor = $event"
           />
 
           <merge-trains-empty-state
