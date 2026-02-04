@@ -66,12 +66,12 @@ export default {
       },
       adoptionTabClicked: false,
       devopsScoreTabClicked: false,
+      devopsAdoptionEnabledNamespaces: undefined,
       selectedTab: 0,
       groupsSearchTerm: '',
     };
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     devopsAdoptionEnabledNamespaces: {
       query: devopsAdoptionEnabledNamespacesQuery,
       variables() {
