@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, feature_category: :groups_and_projects do
+RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_projects do
   include GroupAPIHelpers
 
   let_it_be(:ssh_certificate_1) { create(:group_ssh_certificate) }

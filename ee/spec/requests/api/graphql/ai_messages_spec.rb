@@ -5,14 +5,13 @@ require 'spec_helper'
 RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_category: :shared do
   include GraphqlHelpers
 
-  let_it_be(:organization) { create(:organization) }
-  let_it_be(:user) { create(:user, organizations: [organization]) }
+  let_it_be(:user) { create(:user) }
   let_it_be(:thread) do
-    create(:ai_conversation_thread, user: user, conversation_type: 'duo_chat', organization: organization)
+    create(:ai_conversation_thread, user: user, conversation_type: 'duo_chat')
   end
 
-  let_it_be(:other_user) { create(:user, organizations: [organization]) }
-  let_it_be(:other_thread) { create(:ai_conversation_thread, user: other_user, organization: organization) }
+  let_it_be(:other_user) { create(:user) }
+  let_it_be(:other_thread) { create(:ai_conversation_thread, user: other_user) }
 
   let_it_be(:external_issue) { create(:issue) }
   let_it_be(:external_issue_url) { ::Gitlab::UrlBuilder.instance.issue_url(external_issue) }

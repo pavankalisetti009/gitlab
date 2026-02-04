@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, feature_category: :code_suggestions do
+RSpec.describe API::Ai::DuoWorkflows::CodeReview, feature_category: :code_suggestions do
   include HttpBasicAuthHelpers
 
   shared_context 'with DAP Duo Code Review enabled' do
