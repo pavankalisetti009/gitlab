@@ -30,6 +30,8 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
       promptInjectionProtectionLevel: 'interrupt',
       promptInjectionProtectionAvailable: true,
       availableFoundationalFlows: [],
+      initialMinimumAccessLevelExecuteAsync: 30,
+      initialMinimumAccessLevelExecuteSync: 30,
       ...provide,
     },
   });
@@ -221,8 +223,6 @@ describe('AiGroupSettings', () => {
         namespaceAccessRules: [
           { throughNamespace: { id: 1, name: 'Group' }, features: ['duo_classic'] },
         ],
-        minimumAccessLevelExecuteSync: 30,
-        minimumAccessLevelExecuteAsync: 30,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
@@ -240,8 +240,6 @@ describe('AiGroupSettings', () => {
           duo_workflow_mcp_enabled: false,
           prompt_injection_protection_level: 'interrupt',
           foundational_agents_default_enabled: true,
-          minimum_access_level_execute: 30,
-          minimum_access_level_execute_async: 30,
         },
         duo_namespace_access_rules: [{ through_namespace: { id: 1 }, features: ['duo_classic'] }],
       });
@@ -344,28 +342,6 @@ describe('AiGroupSettings', () => {
               duo_workflow_mcp_enabled: false,
               prompt_injection_protection_level: 'log_only',
             },
-          }),
-        );
-      });
-    });
-
-    describe('with minimum access levels', () => {
-      it('maps minimum access levels in ai_settings_attributes correctly', async () => {
-        createComponent();
-
-        updateGroupSettings.mockResolvedValue({});
-        await findAiCommonSettings().vm.$emit('submit', {
-          minimumAccessLevelExecuteSync: 20,
-          minimumAccessLevelExecuteAsync: 30,
-        });
-
-        expect(updateGroupSettings).toHaveBeenCalledWith(
-          '100',
-          expect.objectContaining({
-            ai_settings_attributes: expect.objectContaining({
-              minimum_access_level_execute: 20,
-              minimum_access_level_execute_async: 30,
-            }),
           }),
         );
       });
@@ -496,6 +472,63 @@ describe('AiGroupSettings', () => {
               enabled_foundational_flows: [1, 2, 3],
             }),
           );
+        });
+      });
+    });
+
+    describe('minimum access level conditional mutation', () => {
+      describe('updateSettings mutation input', () => {
+        beforeEach(() => {
+          updateGroupSettings.mockClear();
+        });
+
+        it('excludes minimum_access_level_execute_async when unchanged', async () => {
+          createComponent({
+            provide: {
+              initialMinimumAccessLevelExecuteSync: 30,
+              initialMinimumAccessLevelExecuteAsync: 30,
+            },
+          });
+
+          updateGroupSettings.mockResolvedValue({});
+          await findAiCommonSettings().vm.$emit('submit', {
+            minimumAccessLevelExecuteSync: 10,
+            minimumAccessLevelExecuteAsync: 30,
+          });
+
+          const callArgs = updateGroupSettings.mock.calls[0][1];
+          expect(callArgs.minimum_access_level_execute).toBe(10);
+          expect(callArgs.minimum_access_level_execute_async).toBeUndefined();
+        });
+
+        it('excludes minimum_access_level_execute when unchanged', async () => {
+          createComponent({
+            provide: {
+              initialMinimumAccessLevelExecuteSync: 30,
+              initialMinimumAccessLevelExecuteAsync: 30,
+            },
+          });
+
+          updateGroupSettings.mockResolvedValue({});
+          await findAiCommonSettings().vm.$emit('submit', {
+            minimumAccessLevelExecuteSync: 30,
+            minimumAccessLevelExecuteAsync: 50,
+          });
+
+          const callArgs = updateGroupSettings.mock.calls[0][1];
+          expect(callArgs.minimum_access_level_execute_async).toBe(50);
+          expect(callArgs.minimum_access_level_execute).toBeUndefined();
+        });
+
+        it('excludes both fields when neither has changed', async () => {
+          createComponent();
+
+          updateGroupSettings.mockResolvedValue({});
+          await findAiCommonSettings().vm.$emit('submit', {});
+
+          const callArgs = updateGroupSettings.mock.calls[0][1];
+          expect(callArgs.minimum_access_level_execute).toBeUndefined();
+          expect(callArgs.minimum_access_level_execute_async).toBeUndefined();
         });
       });
     });

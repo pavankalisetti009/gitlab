@@ -108,12 +108,18 @@ export default {
         this.duoAgentPlatformServiceUrlInput !== this.duoAgentPlatformServiceUrl ||
         this.areDuoCoreFeaturesEnabled !== this.duoCoreFeaturesEnabled ||
         this.aiGatewayTimeoutSecondsInput !== this.aiGatewayTimeoutSeconds ||
-        this.minimumAccessLevelExecuteAsync !== this.initialMinimumAccessLevelExecuteAsync ||
-        this.minimumAccessLevelExecuteSync !== this.initialMinimumAccessLevelExecuteSync
+        this.hasMinimumAccessLevelExecuteAsyncChanged ||
+        this.hasMinimumAccessLevelExecuteSyncChanged
       );
     },
     hasExpandedAiLoggingChanged() {
       return this.expandedLogging !== this.enabledExpandedLogging;
+    },
+    hasMinimumAccessLevelExecuteAsyncChanged() {
+      return this.minimumAccessLevelExecuteAsync !== this.initialMinimumAccessLevelExecuteAsync;
+    },
+    hasMinimumAccessLevelExecuteSyncChanged() {
+      return this.minimumAccessLevelExecuteSync !== this.initialMinimumAccessLevelExecuteSync;
     },
   },
   methods: {
@@ -198,12 +204,16 @@ export default {
         });
     },
     async updateAiSettings() {
-      const input = {
-        duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled,
-        minimumAccessLevelExecute: ACCESS_LEVELS_WITH_EVERYONE[this.minimumAccessLevelExecuteSync],
-        minimumAccessLevelExecuteAsync:
-          ACCESS_LEVELS_WITH_EVERYONE[this.minimumAccessLevelExecuteAsync],
-      };
+      const input = { duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled };
+
+      if (this.hasMinimumAccessLevelExecuteAsyncChanged) {
+        input.minimumAccessLevelExecuteAsync =
+          ACCESS_LEVELS_WITH_EVERYONE[this.minimumAccessLevelExecuteAsync];
+      }
+      if (this.hasMinimumAccessLevelExecuteSyncChanged) {
+        input.minimumAccessLevelExecute =
+          ACCESS_LEVELS_WITH_EVERYONE[this.minimumAccessLevelExecuteSync];
+      }
 
       if (this.canManageSelfHostedModels) {
         input.aiGatewayUrl = this.aiGatewayUrlInput;
