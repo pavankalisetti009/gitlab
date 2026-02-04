@@ -262,6 +262,44 @@ module EE
         .where(members: { id: nil }, ghost_user_migrations: { id: nil })
       end
 
+      scope :without_duo_flows_service_accounts, ->(project, event_type_ids) do
+        parent = ::Ai::Catalog::ItemConsumer.arel_table
+        children = ::Ai::Catalog::ItemConsumer.arel_table.alias('children')
+        triggers = ::Ai::FlowTrigger.arel_table.alias('triggers')
+
+        flow_service_accounts_cte_query = parent
+          .project(parent[:service_account_id])
+          .project(triggers[:event_types])
+          .join(children, Arel::Nodes::OuterJoin)
+            .on(
+              children[:parent_item_consumer_id]
+                .eq(parent[:id])
+                .and(children[:project_id].eq(project.id))
+            )
+          .join(triggers, Arel::Nodes::OuterJoin)
+            .on(triggers[:ai_catalog_item_consumer_id].eq(children[:id]))
+          .where(parent[:group_id].eq(project.root_ancestor.id))
+        .where(parent[:service_account_id].not_eq(nil))
+
+        flow_service_accounts_cte = ::Gitlab::SQL::CTE.new(:flow_service_accounts, flow_service_accounts_cte_query)
+
+        flow_service_accounts_subquery = flow_service_accounts_cte.table
+          .project(:service_account_id)
+          .where(
+            Arel.sql(
+              sanitize_sql_array([
+                'flow_service_accounts.event_types IS NULL OR (flow_service_accounts.event_types <@ ARRAY[?]::smallint[])',
+                event_type_ids
+              ])
+            )
+          )
+
+        with(flow_service_accounts_cte.to_arel)
+          .where(
+            arel_table[:id].not_in(Arel.sql(flow_service_accounts_subquery.to_sql))
+          )
+      end
+
       accepts_nested_attributes_for :namespace
       accepts_nested_attributes_for :custom_attributes
 
