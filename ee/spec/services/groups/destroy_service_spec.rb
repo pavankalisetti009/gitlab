@@ -8,6 +8,10 @@ RSpec.describe Groups::DestroyService, feature_category: :groups_and_projects do
   let!(:user) { create(:user) }
   let!(:group) { create(:group) }
 
+  before do
+    group.add_owner(user)
+  end
+
   subject { described_class.new(group, user, {}) }
 
   context 'audit events' do
@@ -67,7 +71,7 @@ RSpec.describe Groups::DestroyService, feature_category: :groups_and_projects do
     let_it_be(:group) { blob.group }
 
     before do
-      group.add_maintainer(user)
+      group.add_owner(user)
     end
 
     it 'destroys the dependency proxy blobs' do
@@ -122,7 +126,7 @@ RSpec.describe Groups::DestroyService, feature_category: :groups_and_projects do
     let!(:epic4) { create(:epic, group: group, parent: epic2) }
 
     before do
-      group.add_maintainer(user)
+      group.add_owner(user)
     end
 
     it 'schedules cache update for associated epics in batches' do
