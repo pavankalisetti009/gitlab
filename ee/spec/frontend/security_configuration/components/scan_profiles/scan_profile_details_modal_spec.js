@@ -8,6 +8,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import ScanProfileDetailsModal from 'ee/security_configuration/components/scan_profiles/scan_profile_details_modal.vue';
 import CollapsibleSection from 'ee/security_configuration/components/scan_profiles/collapsible_section.vue';
 import ScanTriggersDetail from 'ee/security_configuration/components/scan_profiles/scan_triggers_detail.vue';
+import InsufficientPermissionsPopover from 'ee/security_configuration/components/scan_profiles/insufficient_permissions_popover.vue';
 import queryProfile from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile.query.graphql';
 
 Vue.use(VueApollo);
@@ -37,7 +38,11 @@ describe('ScanProfileDetailsModal', () => {
   const createErrorResolver = () => jest.fn().mockRejectedValue(new Error('Query failed'));
   const createLoadingResolver = () => jest.fn(() => new Promise(() => {}));
 
-  const createComponent = ({ props = {}, resolver = createSuccessResolver() } = {}) => {
+  const createComponent = ({
+    props = {},
+    resolver = createSuccessResolver(),
+    canApplyProfiles = true,
+  } = {}) => {
     const apolloProvider = createMockApollo([[queryProfile, resolver]]);
 
     wrapper = shallowMountExtended(ScanProfileDetailsModal, {
@@ -46,6 +51,9 @@ describe('ScanProfileDetailsModal', () => {
         visible: true,
         profileId: mockProfile.id,
         ...props,
+      },
+      provide: {
+        canApplyProfiles,
       },
       stubs: { GlModal },
     });
@@ -56,7 +64,9 @@ describe('ScanProfileDetailsModal', () => {
   const findModal = () => wrapper.findComponent(GlModal);
   const findApplyButton = () => wrapper.findComponent(GlButton);
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
-  const findPopover = () => wrapper.findComponent(GlPopover);
+  const findInfoPopover = () => wrapper.findComponent(GlPopover);
+  const findInsufficientPermissionsPopover = () =>
+    wrapper.findComponent(InsufficientPermissionsPopover);
   const findCollapsibleSections = () => wrapper.findAllComponents(CollapsibleSection);
   const findScanTriggersDetail = () => wrapper.findComponent(ScanTriggersDetail);
   const findProfileName = () => wrapper.find('h3');
@@ -80,7 +90,7 @@ describe('ScanProfileDetailsModal', () => {
     });
 
     it('renders info popover with correct props', () => {
-      const popover = findPopover();
+      const popover = findInfoPopover();
       expect(popover.props('target')).toBe('header-info');
       expect(popover.props('title')).toBe('What are configuration profiles?');
       expect(popover.text()).toContain(
@@ -220,6 +230,36 @@ describe('ScanProfileDetailsModal', () => {
       createComponent({ props: { visible: false } });
 
       expect(findModal().props('visible')).toBe(false);
+    });
+  });
+
+  describe('permissions', () => {
+    it('shows lock icon and popover when user cannot apply profiles', async () => {
+      createComponent({ canApplyProfiles: false });
+      await waitForPromises();
+
+      const button = findApplyButton();
+      expect(button.props('disabled')).toBe(true);
+      expect(button.html()).toContain('lock');
+      expect(findInsufficientPermissionsPopover().exists()).toBe(true);
+      expect(findInsufficientPermissionsPopover().props('target')).toBe('modal-apply-button');
+    });
+
+    it('does not show lock icon or popover when user can apply profiles', async () => {
+      createComponent({ canApplyProfiles: true });
+      await waitForPromises();
+
+      const button = findApplyButton();
+      expect(button.props('disabled')).toBe(false);
+      expect(button.html()).not.toContain('lock');
+    });
+
+    it('hides apply button when profile is already attached', async () => {
+      createComponent({ props: { isAttached: true } });
+      await waitForPromises();
+
+      expect(findApplyButton().exists()).toBe(false);
+      expect(wrapper.text()).toContain('Currently active');
     });
   });
 });

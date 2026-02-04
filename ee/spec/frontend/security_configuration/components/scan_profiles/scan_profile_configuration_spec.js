@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import ScanProfileConfiguration from 'ee/security_configuration/components/scan_profiles/scan_profile_configuration.vue';
 import DisableScanProfileConfirmationModal from 'ee/security_configuration/components/scan_profiles/disable_scan_profile_confirmation_modal.vue';
 import ScanProfileDetailsModal from 'ee/security_configuration/components/scan_profiles/scan_profile_details_modal.vue';
+import InsufficientPermissionsPopover from 'ee/security_configuration/components/scan_profiles/insufficient_permissions_popover.vue';
 import availableProfilesQuery from 'ee/security_configuration/graphql/scan_profiles/group_available_security_scan_profiles.query.graphql';
 import projectProfilesQuery from 'ee/security_configuration/graphql/scan_profiles/project_security_scan_profiles.query.graphql';
 import attachMutation from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile_attach.mutation.graphql';
@@ -87,6 +88,7 @@ describe('ScanProfileConfiguration', () => {
     attachResolver = createAttachMutationResolver(),
     detachResolver = createDetachMutationResolver(),
     profileDetailsResolver = createProfileDetailsResolver(),
+    canApplyProfiles = true,
   } = {}) => {
     mockToastShow = jest.fn();
 
@@ -103,6 +105,7 @@ describe('ScanProfileConfiguration', () => {
       provide: {
         projectFullPath: 'group/project',
         groupFullPath: 'group',
+        canApplyProfiles,
       },
       mocks: {
         $toast: {
@@ -119,6 +122,7 @@ describe('ScanProfileConfiguration', () => {
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findDisableModal = () => wrapper.findComponent(DisableScanProfileConfirmationModal);
   const findDetailsModal = () => wrapper.findComponent(ScanProfileDetailsModal);
+  const findPopover = () => wrapper.findComponent(InsufficientPermissionsPopover);
 
   describe('loading state', () => {
     it('shows loading icon while queries are loading', () => {
@@ -243,6 +247,7 @@ describe('ScanProfileConfiguration', () => {
       );
 
       expect(applyButton).toBeDefined();
+      expect(applyButton.props('loading')).toBe(false);
       await applyButton.trigger('click');
       await waitForPromises();
 
@@ -339,6 +344,7 @@ describe('ScanProfileConfiguration', () => {
       const disableButton = buttons.wrappers.find((btn) => btn.text().includes('Disable'));
 
       expect(disableButton).toBeDefined();
+      expect(disableButton.props('loading')).toBe(false);
       await disableButton.trigger('click');
       await waitForPromises();
 
@@ -433,6 +439,53 @@ describe('ScanProfileConfiguration', () => {
       await waitForPromises();
 
       expect(attachResolver).toHaveBeenCalled();
+    });
+  });
+
+  describe('permissions', () => {
+    it('shows lock icon and popover on apply button when user cannot apply profiles', async () => {
+      createComponent({ canApplyProfiles: false });
+      await waitForPromises();
+
+      const buttons = wrapper.findAllComponents(GlButton);
+      const applyButton = buttons.wrappers.find((btn) =>
+        btn.text().includes('Apply default profile'),
+      );
+
+      expect(applyButton.text()).toContain('Apply default profile');
+      expect(applyButton.html()).toContain('lock');
+      expect(findPopover().exists()).toBe(true);
+      expect(findPopover().props('target')).toContain('apply-button');
+    });
+
+    it('shows lock icon and popover on disable button when user cannot apply profiles', async () => {
+      createComponent({
+        canApplyProfiles: false,
+        projectProfilesResolver: createProjectProfilesResolver([mockProfile]),
+      });
+      await waitForPromises();
+
+      const buttons = wrapper.findAllComponents(GlButton);
+      const disableButton = buttons.wrappers.find((btn) => btn.text().includes('Disable'));
+
+      expect(disableButton.html()).toContain('lock');
+
+      const popovers = wrapper.findAllComponents(InsufficientPermissionsPopover);
+      expect(popovers.length).toBeGreaterThan(0);
+      const disablePopover = popovers.wrappers.find((p) =>
+        p.props('target').includes('disable-button'),
+      );
+      expect(disablePopover).toBeDefined();
+    });
+
+    it('allows preview button to be clicked when user cannot apply profiles', async () => {
+      createComponent({ canApplyProfiles: false });
+      await waitForPromises();
+
+      const buttons = wrapper.findAllComponents(GlButton);
+      const previewButton = buttons.wrappers.find((btn) => btn.props('icon') === 'eye');
+
+      expect(previewButton.props('disabled')).toBe(false);
     });
   });
 

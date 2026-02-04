@@ -4,6 +4,7 @@ import { s__, __ } from '~/locale';
 import queryProfile from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile.query.graphql';
 import CollapsibleSection from './collapsible_section.vue';
 import ScanTriggersDetail from './scan_triggers_detail.vue';
+import InsufficientPermissionsPopover from './insufficient_permissions_popover.vue';
 
 const i18n = {
   modalTitle: s__('ScanProfiles|Secret push protection profile'),
@@ -38,7 +39,10 @@ export default {
     GlPopover,
     CollapsibleSection,
     ScanTriggersDetail,
+    InsufficientPermissionsPopover,
   },
+
+  inject: ['canApplyProfiles'],
 
   props: {
     visible: {
@@ -148,14 +152,17 @@ export default {
               {{ $options.i18n.profileSubtitle }}
             </span>
           </div>
-          <gl-button
-            v-if="!isAttached"
-            variant="confirm"
-            class="gl-self-center"
-            @click="applyProfile"
-          >
-            {{ $options.i18n.applyProfile }}
-          </gl-button>
+          <div v-if="!isAttached" id="modal-apply-button" class="gl-self-center">
+            <gl-button variant="confirm" :disabled="!canApplyProfiles" @click="applyProfile">
+              {{ $options.i18n.applyProfile }}
+              <gl-icon v-if="!canApplyProfiles" name="lock" class="gl-ml-2" />
+            </gl-button>
+            <insufficient-permissions-popover
+              v-if="!canApplyProfiles"
+              target="modal-apply-button"
+              placement="top"
+            />
+          </div>
           <span v-else class="gl-font-weight-bold gl-self-center gl-text-green-600">
             {{ $options.i18n.currentlyActive }}
           </span>
