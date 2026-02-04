@@ -24,6 +24,7 @@ module Vulnerabilities
 
       finding = vulnerability_flag.finding
       return unless ::Feature.enabled?(:enable_vulnerability_resolution, finding.project.root_ancestor)
+      return unless finding.project.duo_sast_vr_workflow_enabled
 
       result = trigger_workflow(finding)
       if result.success?

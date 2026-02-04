@@ -734,6 +734,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         initialDuoRemoteFlowsAvailability: true,
         initialDuoFoundationalFlowsAvailability: true,
         initialDuoSastFpDetectionEnabled: false,
+        initialDuoSastVrWorkflowEnabled: false,
         experimentFeaturesEnabled: false }
     end
 

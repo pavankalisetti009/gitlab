@@ -32325,6 +32325,12 @@ paths:
         type: boolean
         required: false
       - in: formData
+        name: override_params[duo_sast_vr_workflow_enabled]
+        description: Enable GitLab Duo SAST vulnerability resolution workflow for
+          this project
+        type: boolean
+        required: false
+      - in: formData
         name: override_params[spp_repository_pipeline_access]
         description: Grant read-only access to security policy configurations for
           enforcement in linked CI/CD projects
@@ -33039,6 +33045,12 @@ paths:
       - in: formData
         name: override_params[duo_sast_fp_detection_enabled]
         description: Enable GitLab Duo SAST false positive detection for this project
+        type: boolean
+        required: false
+      - in: formData
+        name: override_params[duo_sast_vr_workflow_enabled]
+        description: Enable GitLab Duo SAST vulnerability resolution workflow for
+          this project
         type: boolean
         required: false
       - in: formData
@@ -33835,6 +33847,12 @@ paths:
       - in: formData
         name: override_params[duo_sast_fp_detection_enabled]
         description: Enable GitLab Duo SAST false positive detection for this project
+        type: boolean
+        required: false
+      - in: formData
+        name: override_params[duo_sast_vr_workflow_enabled]
+        description: Enable GitLab Duo SAST vulnerability resolution workflow for
+          this project
         type: boolean
         required: false
       - in: formData
@@ -49551,6 +49569,8 @@ definitions:
         type: string
       duo_sast_fp_detection_enabled:
         type: string
+      duo_sast_vr_workflow_enabled:
+        type: string
       web_based_commit_signing_enabled:
         type: string
       spp_repository_pipeline_access:
@@ -65254,6 +65274,10 @@ definitions:
       duo_sast_fp_detection_enabled:
         type: boolean
         description: Enable GitLab Duo SAST false positive detection for this project
+      duo_sast_vr_workflow_enabled:
+        type: boolean
+        description: Enable GitLab Duo SAST vulnerability resolution workflow for
+          this project
       spp_repository_pipeline_access:
         type: boolean
         description: Grant read-only access to security policy configurations for
@@ -65700,6 +65724,10 @@ definitions:
       duo_sast_fp_detection_enabled:
         type: boolean
         description: Enable GitLab Duo SAST false positive detection for this project
+      duo_sast_vr_workflow_enabled:
+        type: boolean
+        description: Enable GitLab Duo SAST vulnerability resolution workflow for
+          this project
       spp_repository_pipeline_access:
         type: boolean
         description: Grant read-only access to security policy configurations for
@@ -66148,6 +66176,8 @@ definitions:
       duo_foundational_flows_enabled:
         type: string
       duo_sast_fp_detection_enabled:
+        type: string
+      duo_sast_vr_workflow_enabled:
         type: string
       web_based_commit_signing_enabled:
         type: string
@@ -66631,6 +66661,10 @@ definitions:
       duo_sast_fp_detection_enabled:
         type: boolean
         description: Enable GitLab Duo SAST false positive detection for this project
+      duo_sast_vr_workflow_enabled:
+        type: boolean
+        description: Enable GitLab Duo SAST vulnerability resolution workflow for
+          this project
       spp_repository_pipeline_access:
         type: boolean
         description: Grant read-only access to security policy configurations for

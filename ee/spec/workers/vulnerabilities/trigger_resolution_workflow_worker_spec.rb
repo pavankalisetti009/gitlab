@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_category: :static_application_security_testing do
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be_with_refind(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, developer_of: project) }
   let_it_be(:vulnerability) { create(:vulnerability, project: project, author: user) }
   let_it_be(:finding) { create(:vulnerabilities_finding, project: project, vulnerability: vulnerability) }
@@ -51,6 +51,23 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
         end
 
         context 'when feature flag is enabled' do
+          before do
+            project.project_setting.update!(duo_sast_vr_workflow_enabled: true)
+          end
+
+          context 'when duo_sast_vr_workflow_enabled is disabled' do
+            before do
+              project.project_setting.update!(duo_sast_vr_workflow_enabled: false)
+            end
+
+            it 'returns early without calling the workflow service' do
+              expect(::Ai::Catalog::Flows::ExecuteService).not_to receive(:new)
+              expect(Gitlab::AppLogger).not_to receive(:error)
+
+              worker.perform(vulnerability_flag_id)
+            end
+          end
+
           it 'finds the consumer with correct parameters' do
             expected_user = project.first_owner || user
 
@@ -111,6 +128,7 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
             end
 
             before do
+              project_with_group.project_setting.update!(duo_sast_vr_workflow_enabled: true)
               allow(::Ai::Catalog::ItemConsumersFinder).to receive(:new).and_return(
                 instance_double(::Ai::Catalog::ItemConsumersFinder, execute: [consumer])
               )
@@ -153,6 +171,7 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
             end
 
             before do
+              project_with_group.project_setting.update!(duo_sast_vr_workflow_enabled: true)
               allow(::Ai::Catalog::ItemConsumersFinder).to receive(:new).and_return(
                 instance_double(::Ai::Catalog::ItemConsumersFinder, execute: [consumer])
               )
@@ -358,6 +377,7 @@ RSpec.describe Vulnerabilities::TriggerResolutionWorkflowWorker, feature_categor
 
       before do
         vulnerability_flag.update!(confidence_score: 0.5)
+        project.project_setting.update!(duo_sast_vr_workflow_enabled: true)
         allow(::Ai::Catalog::Flows::ExecuteService).to receive(:new).and_raise(error)
       end
 

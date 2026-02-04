@@ -966,6 +966,41 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         end
       end
     end
+
+    context 'when duo_sast_vr_workflow_enabled param is specified' do
+      let(:params) { { project_setting_attributes: { duo_sast_vr_workflow_enabled: true } } }
+
+      let(:request) do
+        put :update, params: { namespace_id: project.namespace, id: project, project: params }
+      end
+
+      context 'when feature flag is enabled' do
+        before do
+          stub_feature_flags(enable_vulnerability_resolution: true)
+        end
+
+        it 'updates duo_sast_vr_workflow_enabled' do
+          project.project_setting.duo_sast_vr_workflow_enabled = false
+          project.project_setting.save!
+
+          request
+
+          expect(project.reload.project_setting.duo_sast_vr_workflow_enabled).to eq(true)
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(enable_vulnerability_resolution: false)
+          project.project_setting.duo_sast_vr_workflow_enabled = false
+          project.project_setting.save!
+        end
+
+        it 'does not update duo_sast_vr_workflow_enabled' do
+          expect { request }.not_to change { project.reload.project_setting.duo_sast_vr_workflow_enabled }.from(false)
+        end
+      end
+    end
   end
 
   describe '#download_export', feature_category: :importers do

@@ -534,6 +534,8 @@ module EE
         :duo_foundational_flows_enabled=,
         :duo_sast_fp_detection_enabled,
         :duo_sast_fp_detection_enabled=,
+        :duo_sast_vr_workflow_enabled,
+        :duo_sast_vr_workflow_enabled=,
         to: :project_setting
       with_options prefix: :delegated, to: :project_setting do
         delegate :require_reauthentication_to_approve=

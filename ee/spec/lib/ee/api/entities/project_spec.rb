@@ -347,6 +347,43 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
     end
   end
 
+  describe 'duo_sast_vr_workflow_enabled' do
+    context 'when project is licensed to use ai_features and feature flag is enabled' do
+      before do
+        stub_licensed_features(ai_features: true)
+        stub_feature_flags(enable_vulnerability_resolution: true)
+      end
+
+      it 'returns a boolean value' do
+        expect(subject[:duo_sast_vr_workflow_enabled]).to be_in([true, false])
+      end
+    end
+
+    context 'when project is licensed to use ai_features but feature flag is disabled' do
+      before do
+        stub_licensed_features(ai_features: true)
+        stub_feature_flags(enable_vulnerability_resolution: false)
+      end
+
+      it 'returns nil' do
+        expect(subject[:duo_sast_vr_workflow_enabled]).to be_nil
+      end
+    end
+
+    context 'when project is not licensed to use ai_features' do
+      let(:current_user) { developer }
+
+      before do
+        stub_licensed_features(ai_features: false)
+        stub_feature_flags(enable_vulnerability_resolution: true)
+      end
+
+      it 'returns nil' do
+        expect(subject[:duo_sast_vr_workflow_enabled]).to be_nil
+      end
+    end
+  end
+
   describe 'web_based_commit_signing_enabled' do
     before do
       stub_saas_features(repositories_web_based_commit_signing: repositories_web_based_commit_signing)

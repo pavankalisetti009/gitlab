@@ -2281,6 +2281,51 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
+    context 'when setting duo_sast_vr_workflow_enabled' do
+      let(:project_params) { { duo_sast_vr_workflow_enabled: true } }
+
+      context 'when licence is available and feature flag is enabled' do
+        before do
+          stub_licensed_features(ai_features: true)
+          stub_feature_flags(enable_vulnerability_resolution: true)
+        end
+
+        it 'updates the value' do
+          expect { subject }.to change { project.reload.duo_sast_vr_workflow_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_sast_vr_workflow_enabled']).to eq true
+        end
+      end
+
+      context 'when licence is available but feature flag is disabled' do
+        before do
+          stub_licensed_features(ai_features: true)
+          stub_feature_flags(enable_vulnerability_resolution: false)
+        end
+
+        it 'does not update the value and does not expose it in response' do
+          expect { subject }.not_to change { project.reload.duo_sast_vr_workflow_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_sast_vr_workflow_enabled']).to be_nil
+        end
+      end
+
+      context 'when licence is not available' do
+        before do
+          stub_feature_flags(enable_vulnerability_resolution: true)
+        end
+
+        it 'does not update the value and does not expose it in response' do
+          expect { subject }.not_to change { project.reload.duo_sast_vr_workflow_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_sast_vr_workflow_enabled']).to be_nil
+        end
+      end
+    end
+
     context 'updating web_based_commit_signing_enabled' do
       using RSpec::Parameterized::TableSyntax
 
