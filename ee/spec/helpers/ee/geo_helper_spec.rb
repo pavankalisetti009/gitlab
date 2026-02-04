@@ -57,6 +57,7 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
         graphql_registry_class: replicator.registry_class,
         graphql_mutation_registry_class: replicator.graphql_mutation_registry_class,
         model_class_name: replicator.model.name,
+        data_management_url: list_admin_data_management_path(model_name: replicator.model_name.pluralize),
         replication_enabled: replicator.replication_enabled?,
         verification_enabled: replicator.verification_enabled?,
         graphql_registry_id_type: Types::GlobalIDType[replicator.registry_class].to_s

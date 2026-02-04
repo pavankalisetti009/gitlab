@@ -1,4 +1,4 @@
-import { GlCard, GlPopover, GlLink } from '@gitlab/ui';
+import { GlCard, GlPopover, GlLink, GlIcon } from '@gitlab/ui';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
@@ -18,7 +18,7 @@ describe('GeoSiteVerificationInfo', () => {
     site: MOCK_PRIMARY_SITE,
   };
 
-  const createComponent = (props) => {
+  const createComponent = ({ props = {}, features = {} } = {}) => {
     const store = new Vuex.Store({
       getters: {
         verificationInfo: () => () => MOCK_VERIFICATION_INFO,
@@ -31,6 +31,12 @@ describe('GeoSiteVerificationInfo', () => {
         ...defaultProps,
         ...props,
       },
+      provide: {
+        glFeatures: {
+          geoPrimaryVerificationView: false,
+          ...features,
+        },
+      },
       stubs: { GlCard, HelpIcon },
     });
   };
@@ -39,6 +45,10 @@ describe('GeoSiteVerificationInfo', () => {
   const findGlIcon = () => wrapper.findComponent(HelpIcon);
   const findGlPopover = () => wrapper.findComponent(GlPopover);
   const findGlPopoverLink = () => findGlPopover().findComponent(GlLink);
+  const findGeoSiteProgressBarLinks = () =>
+    wrapper.findAllByTestId('verification-bar-data-management-link');
+  const findGeoSiteProgressBarNonLinks = () =>
+    wrapper.findAllByTestId('verification-bar-data-management-non-link');
   const findGeoSiteProgressBarTitles = () => wrapper.findAllByTestId('verification-bar-title');
   const findGeoSiteProgressBars = () => wrapper.findAllComponents(GeoSiteProgressBar);
 
@@ -69,11 +79,57 @@ describe('GeoSiteVerificationInfo', () => {
       it('renders a progress bar for each verification replicable', () => {
         expect(findGeoSiteProgressBars()).toHaveLength(MOCK_VERIFICATION_INFO.length);
       });
+    });
+
+    describe('when feature flag geoPrimaryVerificationView is disabled', () => {
+      beforeEach(() => {
+        createComponent({ features: { geoPrimaryVerificationView: false } });
+      });
+
+      it('renders progress bar containers as non-links', () => {
+        expect(findGeoSiteProgressBarNonLinks()).toHaveLength(MOCK_VERIFICATION_INFO.length);
+        expect(findGeoSiteProgressBarLinks()).toHaveLength(0);
+      });
 
       it('renders progress bar titles correctly', () => {
         expect(findGeoSiteProgressBarTitles().wrappers.map((w) => w.text())).toStrictEqual(
-          MOCK_VERIFICATION_INFO.map((vI) => `${vI.titlePlural} checksum progress`),
+          MOCK_VERIFICATION_INFO.map((vI) => vI.titlePlural),
         );
+      });
+
+      it('does not render GlIcon for each container', () => {
+        expect(
+          findGeoSiteProgressBarNonLinks().wrappers.map((w) => w.findComponent(GlIcon).exists()),
+        ).toStrictEqual(MOCK_VERIFICATION_INFO.map(() => false));
+      });
+    });
+
+    describe('when feature flag geoPrimaryVerificationView is enabled', () => {
+      beforeEach(() => {
+        createComponent({ features: { geoPrimaryVerificationView: true } });
+      });
+
+      it('renders progress bar containers as links', () => {
+        expect(findGeoSiteProgressBarNonLinks()).toHaveLength(0);
+        expect(findGeoSiteProgressBarLinks()).toHaveLength(MOCK_VERIFICATION_INFO.length);
+      });
+
+      it('renders each progress bar link correctly', () => {
+        expect(findGeoSiteProgressBarLinks().wrappers.map((w) => w.props('href'))).toStrictEqual(
+          MOCK_VERIFICATION_INFO.map((vI) => vI.dataManagementUrl),
+        );
+      });
+
+      it('renders progress bar titles correctly', () => {
+        expect(findGeoSiteProgressBarTitles().wrappers.map((w) => w.text())).toStrictEqual(
+          MOCK_VERIFICATION_INFO.map((vI) => vI.titlePlural),
+        );
+      });
+
+      it('does render GlIcon for each container', () => {
+        expect(
+          findGeoSiteProgressBarLinks().wrappers.map((w) => w.findComponent(GlIcon).exists()),
+        ).toStrictEqual(MOCK_VERIFICATION_INFO.map(() => true));
       });
     });
   });

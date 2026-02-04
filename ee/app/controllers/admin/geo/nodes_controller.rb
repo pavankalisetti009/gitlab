@@ -10,6 +10,10 @@ module Admin
         push_frontend_feature_flag(:org_mover_extend_selective_sync_to_primary_checksumming, type: :ops)
       end
 
+      before_action only: [:index] do
+        push_frontend_feature_flag(:geo_primary_verification_view)
+      end
+
       def create
         @node = ::Geo::NodeCreateService.new(geo_node_params).execute
 

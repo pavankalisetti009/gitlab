@@ -143,7 +143,7 @@ namespace :admin do
 
   resource :data_management do
     get '/', to: 'data_management#index'
-    get '/:model_name', to: 'data_management#index'
-    get '/:model_name/:id', to: 'data_management#show'
+    get '/:model_name', to: 'data_management#index', as: 'list'
+    get '/:model_name/:id', to: 'data_management#show', as: 'details'
   end
 end
