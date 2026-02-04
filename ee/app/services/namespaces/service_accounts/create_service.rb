@@ -106,7 +106,7 @@ module Namespaces
       def active_subscription?
         return super unless saas?
 
-        group_subscription = root_namespace&.gitlab_subscription
+        group_subscription = root_namespace.gitlab_subscription
         return false unless group_subscription
         return false if group_subscription.expired?
         return false unless group_subscription.plan_name
