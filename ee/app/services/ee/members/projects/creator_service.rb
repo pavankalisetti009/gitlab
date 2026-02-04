@@ -19,7 +19,7 @@ module EE
         def service_account_eligible_for_membership?
           return true unless member.user&.service_account?
 
-          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(
+          ::Members::ServiceAccounts::EligibilityChecker.new(
             target_project: member.project).eligible?(member.user)
         end
       end

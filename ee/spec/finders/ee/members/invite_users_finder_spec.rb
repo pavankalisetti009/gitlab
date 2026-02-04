@@ -23,7 +23,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         let(:resource) { root_group }
 
         it 'passes target_group to MembershipEligibilityChecker' do
-          expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+          expect(::Members::ServiceAccounts::EligibilityChecker)
             .to receive(:new).with(target_group: root_group).and_call_original
 
           finder.execute
@@ -34,7 +34,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         let(:resource) { project }
 
         it 'passes target_project to MembershipEligibilityChecker' do
-          expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+          expect(::Members::ServiceAccounts::EligibilityChecker)
             .to receive(:new).with(target_project: project).and_call_original
 
           finder.execute
@@ -47,7 +47,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         end
 
         it 'passes no arguments to MembershipEligibilityChecker' do
-          expect(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+          expect(::Members::ServiceAccounts::EligibilityChecker)
             .to receive(:new).with(no_args).and_call_original
 
           finder.execute
@@ -61,8 +61,8 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
 
         before do
           filtered_users = User.where(id: [regular_user.id, admin_user.id])
-          checker_instance = instance_double(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
-          allow(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+          checker_instance = instance_double(::Members::ServiceAccounts::EligibilityChecker)
+          allow(::Members::ServiceAccounts::EligibilityChecker)
             .to receive(:new).with(target_group: root_group).and_return(checker_instance)
           allow(checker_instance).to receive(:filter_users).and_return(filtered_users)
         end
