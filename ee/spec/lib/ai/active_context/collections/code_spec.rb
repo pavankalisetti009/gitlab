@@ -3,6 +3,38 @@
 require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_suggestions do
+  shared_context 'on saas instance' do
+    before do
+      stub_saas_features(gitlab_com_subscriptions: true)
+      allow(::Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(false)
+      allow(::Gitlab::AiGateway).to receive(:has_self_hosted_ai_gateway?).and_return(false)
+    end
+  end
+
+  shared_context 'on dedicated instance' do
+    before do
+      stub_saas_features(gitlab_com_subscriptions: false)
+      allow(::Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(true)
+      allow(::Gitlab::AiGateway).to receive(:has_self_hosted_ai_gateway?).and_return(false)
+    end
+  end
+
+  shared_context 'on SM instance without self-hosted AIGW' do
+    before do
+      stub_saas_features(gitlab_com_subscriptions: false)
+      allow(::Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(false)
+      allow(::Gitlab::AiGateway).to receive(:has_self_hosted_ai_gateway?).and_return(false)
+    end
+  end
+
+  shared_context 'on SM instance with self-hosted AIGW' do
+    before do
+      stub_saas_features(gitlab_com_subscriptions: false)
+      allow(::Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(false)
+      allow(::Gitlab::AiGateway).to receive(:has_self_hosted_ai_gateway?).and_return(true)
+    end
+  end
+
   let_it_be(:connection) do
     create(:ai_active_context_connection, :elasticsearch)
   end
@@ -155,8 +187,36 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
         collection.update!(indexing_embedding_versions: [1])
       end
 
-      it 'returns the matching hash from MODEL' do
-        expect(described_class.current_indexing_embedding_versions).to eq([described_class::MODELS[1]])
+      context 'on saas instance' do
+        include_context 'on saas instance'
+
+        it 'returns the matching hash from MODEL' do
+          expect(described_class.current_indexing_embedding_versions).to eq([described_class::MODELS[1]])
+        end
+      end
+
+      context 'on dedicated instance' do
+        include_context 'on dedicated instance'
+
+        it 'returns the matching hash from MODEL' do
+          expect(described_class.current_indexing_embedding_versions).to eq([described_class::MODELS[1]])
+        end
+      end
+
+      context 'on SM instance without self-hosted AIGW' do
+        include_context 'on SM instance without self-hosted AIGW'
+
+        it 'returns the matching hash from MODEL' do
+          expect(described_class.current_indexing_embedding_versions).to eq([described_class::MODELS[1]])
+        end
+      end
+
+      context 'on SM instance with self-hosted AIGW' do
+        include_context 'on SM instance with self-hosted AIGW'
+
+        it 'is empty' do
+          expect(described_class.current_indexing_embedding_versions).to be_empty
+        end
       end
     end
   end
@@ -171,8 +231,36 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
         collection.update!(search_embedding_version: 1)
       end
 
-      it 'returns the matching hash from MODEL' do
-        expect(described_class.current_search_embedding_version).to eq(described_class::MODELS[1])
+      context 'on saas instance' do
+        include_context 'on saas instance'
+
+        it 'returns the matching hash from MODEL' do
+          expect(described_class.current_search_embedding_version).to eq(described_class::MODELS[1])
+        end
+      end
+
+      context 'on dedicated instance' do
+        include_context 'on dedicated instance'
+
+        it 'returns the matching hash from MODEL' do
+          expect(described_class.current_search_embedding_version).to eq(described_class::MODELS[1])
+        end
+      end
+
+      context 'on SM instance without self-hosted AIGW' do
+        include_context 'on SM instance without self-hosted AIGW'
+
+        it 'returns the matching hash from MODEL' do
+          expect(described_class.current_search_embedding_version).to eq(described_class::MODELS[1])
+        end
+      end
+
+      context 'on SM instance with self-hosted AIGW' do
+        include_context 'on SM instance with self-hosted AIGW'
+
+        it 'is empty' do
+          expect(described_class.current_search_embedding_version).to be_empty
+        end
       end
     end
   end

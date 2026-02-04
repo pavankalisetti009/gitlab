@@ -50,6 +50,22 @@ module Ai
           object[:routing]
         end
 
+        # TODO: this is a temporary override while we are working on supporting self-hosted AIGW setups
+        # See https://gitlab.com/groups/gitlab-org/-/work_items/20110
+        def self.current_indexing_embedding_versions
+          return [] unless use_gitlab_selected_model?
+
+          super
+        end
+
+        # TODO: this is a temporary override while we are working on supporting self-hosted AIGW setups
+        # See https://gitlab.com/groups/gitlab-org/-/work_items/20110
+        def self.current_search_embedding_version
+          return {} unless use_gitlab_selected_model?
+
+          super
+        end
+
         def self.track_refs!(routing:, hashes:)
           hashes.each { |hash| track!({ id: hash, routing: routing }) }
         end
@@ -66,6 +82,13 @@ module Ai
             permitted.concat(project_objects) if project && Ability.allowed?(result.user, :read_code, project)
           end
         end
+
+        def self.use_gitlab_selected_model?
+          ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) ||
+            ::Gitlab::CurrentSettings.gitlab_dedicated_instance? ||
+            !::Gitlab::AiGateway.has_self_hosted_ai_gateway?
+        end
+        private_class_method :use_gitlab_selected_model?
       end
     end
   end
