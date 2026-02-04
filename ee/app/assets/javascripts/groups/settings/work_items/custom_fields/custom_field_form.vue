@@ -12,6 +12,7 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import { uniqueId } from 'lodash';
 import Draggable from '~/lib/utils/vue3compat/draggable_compat.vue';
 import { defaultSortableOptions, DRAG_DELAY } from '~/sortable/constants';
 import { __, s__, sprintf } from '~/locale';
@@ -74,7 +75,7 @@ export default {
         fieldType: FIELD_TYPE_OPTIONS[0].value,
         fieldName: '',
         workItemTypes: [],
-        selectOptions: [{ value: '' }],
+        selectOptions: [{ localId: uniqueId(), value: '' }],
       },
       formState: {
         fieldName: null,
@@ -165,7 +166,7 @@ export default {
   },
   methods: {
     async addSelectOption() {
-      this.formData.selectOptions.push({ value: '' });
+      this.formData.selectOptions.push({ localId: uniqueId(), value: '' });
       await nextTick();
       this.$refs[`selectOptions${this.formData.selectOptions.length - 1}`][0].$el.focus();
     },
@@ -227,9 +228,15 @@ export default {
       const newValue =
         currentValue.substring(0, selectionStart) + lines[0] + currentValue.substring(selectionEnd);
 
-      this.formData.selectOptions[currentIndex] = { value: newValue };
+      this.formData.selectOptions[currentIndex] = {
+        ...this.formData.selectOptions[currentIndex],
+        value: newValue,
+      };
 
-      const newOptions = lines.slice(1).map((line) => ({ value: line }));
+      const newOptions = lines.slice(1).map((line) => ({
+        localId: uniqueId(),
+        value: line,
+      }));
       this.formData.selectOptions.splice(currentIndex + 1, 0, ...newOptions);
 
       this.validateSelectOptions();
@@ -239,7 +246,7 @@ export default {
         fieldType: FIELD_TYPE_OPTIONS[0].value,
         fieldName: '',
         workItemTypes: [],
-        selectOptions: [{ value: '' }],
+        selectOptions: [{ localId: uniqueId(), value: '' }],
       };
       this.formState = {
         fieldName: null,
@@ -272,7 +279,11 @@ export default {
               groupPath: this.fullPath,
               name: this.formData.fieldName,
               fieldType: this.formData.fieldType,
-              selectOptions: this.isSelect ? this.formData.selectOptions : undefined,
+              selectOptions: this.isSelect
+                ? this.formData.selectOptions.map((opt) => ({
+                    value: opt.value,
+                  }))
+                : undefined,
               workItemTypeIds: this.formData.workItemTypes,
             };
 
@@ -320,7 +331,7 @@ export default {
             selectOptions:
               selectOptions.length > 0
                 ? JSON.parse(JSON.stringify(selectOptions))
-                : [{ value: '' }],
+                : [{ localId: uniqueId(), value: '' }],
           };
         }
       } catch (error) {
@@ -429,10 +440,14 @@ export default {
               }}
             </span></template
           >
-          <draggable v-model="formData.selectOptions" v-bind="dragOptions" item-key="value">
+          <draggable
+            v-model="formData.selectOptions"
+            v-bind="dragOptions"
+            :item-key="(option) => option.localId || option.id"
+          >
             <div
               v-for="(selectOption, index) in formData.selectOptions"
-              :key="selectOption.value"
+              :key="selectOption.localId || selectOption.id"
               class="gl-mb-3 gl-flex gl-items-center gl-gap-2"
             >
               <gl-icon
