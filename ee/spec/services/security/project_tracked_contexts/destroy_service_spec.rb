@@ -27,7 +27,7 @@ RSpec.describe Security::ProjectTrackedContexts::DestroyService, feature_categor
         is_default: false)
     end
 
-    let(:service) { described_class.new(tracked_context, current_user) }
+    let(:service) { described_class.new(tracked_context: tracked_context, current_user: current_user) }
 
     subject(:result) { service.execute }
 

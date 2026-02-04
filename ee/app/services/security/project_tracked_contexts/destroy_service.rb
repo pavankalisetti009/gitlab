@@ -3,7 +3,7 @@
 module Security
   module ProjectTrackedContexts
     class DestroyService
-      def initialize(tracked_context, current_user)
+      def initialize(tracked_context:, current_user:)
         @tracked_context = tracked_context
         @current_user = current_user
       end
