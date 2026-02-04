@@ -48,7 +48,7 @@ describe('AiPanelEmptyState', () => {
     const workflowExamples = findWorkflowExamples();
 
     expect(text.text()).toMatchInterpolatedText(
-      'Start your free 20-day trial to collaborate with agents and automate workflows across your development process.',
+      'Start your free 20-day trial now to accelerate your software delivery. Automate tasks with AI agents, from searching projects to creating commits.',
     );
 
     expect(findStartTrialLink().props('href')).toBe(newTrialPathMock);
