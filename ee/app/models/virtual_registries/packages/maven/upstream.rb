@@ -10,6 +10,7 @@ module VirtualRegistries
         TEST_PATH = 'com/company/app/maven-metadata.xml'
         MAVEN_CENTRAL_URL = 'https://repo1.maven.org/maven2'
         TRAILING_SLASHES_REGEX = %r{/+$}
+        DEFAULT_PORTS = { 'https' => 443, 'http' => 80 }.freeze
 
         SAME_URL_AND_CREDENTIALS_ERROR = 'already has a remote upstream with the same url and credentials'
         SAME_LOCAL_PROJECT_OR_GROUP_ERROR = 'already has a local upstream with the same target project or group'
@@ -197,7 +198,50 @@ module VirtualRegistries
         private
 
         def normalize_url
-          self.url = url.sub(TRAILING_SLASHES_REGEX, '')
+          uri = URI.parse(url.strip)
+
+          # Preserve userinfo - Ruby URI clears it when host or port are modified
+          saved_userinfo = uri.userinfo
+
+          # Normalize host: downcase (hostnames are case-insensitive per RFC 3986)
+          uri.host = uri.host&.downcase
+
+          # Normalize path: handle both .git/ and /.git patterns
+          # Order: slashes, .git, slashes (handles all combinations)
+          uri.path = uri.path
+            .sub(TRAILING_SLASHES_REGEX, '') # /maven2.git/ -> /maven2.git
+            .chomp('.git') # /maven2.git -> /maven2
+            .sub(TRAILING_SLASHES_REGEX, '') # /maven2/ -> /maven2 (for /.git case)
+
+          # Remove default ports (443 for https, 80 for http)
+          uri.port = nil if uri.port == DEFAULT_PORTS[uri.scheme]
+
+          # Restore userinfo after all modifications (host= and port= both clear it)
+          uri.userinfo = saved_userinfo if saved_userinfo
+
+          self.url = uri.to_s
+        rescue URI::InvalidURIError => e
+          Gitlab::AppLogger.warn(
+            message: 'Failed to normalize upstream URL',
+            url: url,
+            error: e.message
+          )
+        end
+
+        def protocol_variant_url
+          return unless url.present?
+
+          case url
+          when /\Ahttps:/
+            url.sub(/\Ahttps:/, 'http:')
+          when /\Ahttp:/
+            url.sub(/\Ahttp:/, 'https:')
+          end
+        end
+
+        def credentials_match?(other)
+          other.username == username &&
+            Rack::Utils.secure_compare(other.password.to_s, password.to_s)
         end
 
         def reset_credentials
@@ -216,13 +260,27 @@ module VirtualRegistries
         def credentials_uniqueness_for_group
           return unless group
 
-          return if self.class.for_group(group)
-            .select(:username, :password)
-            .then { |q| new_record? ? q : q.where.not(id:) }
-            .where(url:)
-            .none? { |u| u.username == username && Rack::Utils.secure_compare(u.password.to_s, password.to_s) }
+          if remote?
+            # Build list of URL variants to check (current URL + protocol variation)
+            urls_to_check = [url, protocol_variant_url].compact.uniq
 
-          errors.add(:group, remote? ? SAME_URL_AND_CREDENTIALS_ERROR : SAME_LOCAL_PROJECT_OR_GROUP_ERROR)
+            existing_match = self.class.for_group(group)
+              .where(url: urls_to_check)
+              .then { |q| new_record? ? q : q.where.not(id:) }
+              .find { |upstream| credentials_match?(upstream) }
+
+            return unless existing_match
+
+            errors.add(:group, SAME_URL_AND_CREDENTIALS_ERROR)
+          else
+            # Local upstream: check for same project/group URL
+            return if self.class.for_group(group)
+              .where(url:)
+              .then { |q| new_record? ? q : q.where.not(id:) }
+              .none?
+
+            errors.add(:group, SAME_LOCAL_PROJECT_OR_GROUP_ERROR)
+          end
         end
 
         def ensure_local_project_or_local_group

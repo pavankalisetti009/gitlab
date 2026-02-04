@@ -106,11 +106,22 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
 
         context 'for normalization' do
           where(:url_to_set, :expected_url) do
-            'http://test.maven'       | 'http://test.maven'
-            'http://test.maven/'      | 'http://test.maven'
-            'http://test.maven//'     | 'http://test.maven'
-            'http://test.maven/path'  | 'http://test.maven/path'
-            'http://test.maven/path/' | 'http://test.maven/path'
+            'http://test.maven'                 | 'http://test.maven'
+            'http://test.maven/'                | 'http://test.maven'
+            'http://test.maven//'               | 'http://test.maven'
+            'http://test.maven/path'            | 'http://test.maven/path'
+            'http://test.maven/path/'           | 'http://test.maven/path'
+            'https://REPO.MAVEN.ORG/maven2'     | 'https://repo.maven.org/maven2'
+            'https://repo.maven.org:443/maven2' | 'https://repo.maven.org/maven2'
+            'http://repo.maven.org:80/maven2'   | 'http://repo.maven.org/maven2'
+            'https://repo.maven.org:8443/maven2' | 'https://repo.maven.org:8443/maven2'
+            '  https://repo.maven.org/maven2  ' | 'https://repo.maven.org/maven2'
+            'https://repo.maven.org/maven2.git' | 'https://repo.maven.org/maven2'
+            'https://repo.maven.org/maven2.git/' | 'https://repo.maven.org/maven2'
+            'https://repo.maven.org/maven2/.git' | 'https://repo.maven.org/maven2'
+            'https://repo.maven.org/maven2/.git/' | 'https://repo.maven.org/maven2'
+            'https://repo.maven.org/.git' | 'https://repo.maven.org'
+            'https://REPO.MAVEN.ORG:443/maven2/.git' | 'https://repo.maven.org/maven2'
           end
 
           with_them do
@@ -119,6 +130,48 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
             end
 
             it { is_expected.to be_valid.and have_attributes(url: expected_url) }
+          end
+
+          context 'with invalid URL' do
+            it 'logs warning and keeps original URL' do
+              invalid_url = 'http://[invalid'
+              upstream.url = invalid_url
+
+              expect(Gitlab::AppLogger).to receive(:warn).with(
+                hash_including(message: 'Failed to normalize upstream URL')
+              )
+
+              upstream.valid?
+
+              expect(upstream.url).to eq(invalid_url)
+            end
+          end
+
+          context 'with IPv6 URL' do
+            it 'handles IPv6 URLs correctly' do
+              upstream.url = 'https://[2001:db8::1]:443/maven2'
+              upstream.valid?
+
+              expect(upstream.url).to eq('https://[2001:db8::1]/maven2')
+            end
+          end
+
+          context 'with .git in middle of path' do
+            it 'does not strip .git from middle of path' do
+              upstream.url = 'https://repo.maven.org/path.git/subpath'
+              upstream.valid?
+
+              expect(upstream.url).to eq('https://repo.maven.org/path.git/subpath')
+            end
+          end
+
+          context 'with userinfo in URL' do
+            it 'preserves userinfo while normalizing host' do
+              upstream.url = 'https://myuser:mypass@EXAMPLE.COM:443/maven2/'
+              upstream.valid?
+
+              expect(upstream.url).to eq('https://myuser:mypass@example.com/maven2')
+            end
           end
 
           context 'when creating upstreams with same URL but different trailing slashes' do
@@ -375,6 +428,256 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
                 .and have_attributes(errors: match_array([expected_message]))
             end
           end
+        end
+      end
+
+      context 'with URL normalization edge cases' do
+        context 'when protocol differs (http vs https)' do
+          let_it_be(:protocol_group) { create(:group) }
+          let_it_be(:https_upstream) do
+            create(
+              :virtual_registries_packages_maven_upstream,
+              group: protocol_group,
+              url: 'https://example.com/protocol-test',
+              username: 'user',
+              password: 'pass'
+            )
+          end
+
+          it 'treats http variant as duplicate with same credentials' do
+            duplicate = build(
+              :virtual_registries_packages_maven_upstream,
+              group: protocol_group,
+              url: 'http://example.com/protocol-test',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(duplicate).to be_invalid
+            expect(duplicate.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+
+          it 'allows http variant with different credentials' do
+            different_creds = build(
+              :virtual_registries_packages_maven_upstream,
+              group: protocol_group,
+              url: 'http://example.com/protocol-test',
+              username: 'different_user',
+              password: 'different_pass'
+            )
+
+            expect(different_creds).to be_valid
+          end
+        end
+
+        context 'when URL has case differences in hostname' do
+          let_it_be(:case_group) { create(:group) }
+          let_it_be(:lowercase_upstream) do
+            create(
+              :virtual_registries_packages_maven_upstream,
+              group: case_group,
+              url: 'https://example.com/case-test',
+              username: 'user',
+              password: 'pass'
+            )
+          end
+
+          it 'treats uppercase hostname as duplicate' do
+            duplicate = build(
+              :virtual_registries_packages_maven_upstream,
+              group: case_group,
+              url: 'https://EXAMPLE.COM/case-test',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(duplicate).to be_invalid
+            expect(duplicate.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+        end
+
+        context 'when URL has default port specified' do
+          let_it_be(:port_group) { create(:group) }
+          let_it_be(:no_port_upstream) do
+            create(
+              :virtual_registries_packages_maven_upstream,
+              group: port_group,
+              url: 'https://example.com/port-test',
+              username: 'user',
+              password: 'pass'
+            )
+          end
+
+          it 'treats explicit port 443 as duplicate for https' do
+            duplicate = build(
+              :virtual_registries_packages_maven_upstream,
+              group: port_group,
+              url: 'https://example.com:443/port-test',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(duplicate).to be_invalid
+            expect(duplicate.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+
+          it 'allows non-default port as different upstream' do
+            different_port = build(
+              :virtual_registries_packages_maven_upstream,
+              group: port_group,
+              url: 'https://example.com:8443/port-test',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(different_port).to be_valid
+          end
+        end
+
+        context 'when URL has trailing .git suffix' do
+          let_it_be(:git_group) { create(:group) }
+          let_it_be(:base_upstream) do
+            create(
+              :virtual_registries_packages_maven_upstream,
+              group: git_group,
+              url: 'https://example.com/git-test',
+              username: 'user',
+              password: 'pass'
+            )
+          end
+
+          it 'treats URL with .git suffix as duplicate' do
+            duplicate = build(
+              :virtual_registries_packages_maven_upstream,
+              group: git_group,
+              url: 'https://example.com/git-test.git',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(duplicate).to be_invalid
+            expect(duplicate.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+
+          it 'treats URL with .git/ suffix as duplicate' do
+            duplicate = build(
+              :virtual_registries_packages_maven_upstream,
+              group: git_group,
+              url: 'https://example.com/git-test.git/',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(duplicate).to be_invalid
+            expect(duplicate.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+
+          it 'treats URL with /.git suffix as duplicate' do
+            duplicate = build(
+              :virtual_registries_packages_maven_upstream,
+              group: git_group,
+              url: 'https://example.com/git-test/.git',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(duplicate).to be_invalid
+            expect(duplicate.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+
+          it 'treats URL with /.git/ suffix as duplicate' do
+            duplicate = build(
+              :virtual_registries_packages_maven_upstream,
+              group: git_group,
+              url: 'https://example.com/git-test/.git/',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(duplicate).to be_invalid
+            expect(duplicate.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+        end
+
+        context 'when updating an upstream to match another' do
+          let_it_be(:update_group) { create(:group) }
+          let_it_be(:target_upstream) do
+            create(
+              :virtual_registries_packages_maven_upstream,
+              group: update_group,
+              url: 'https://example.com/update-test',
+              username: 'user',
+              password: 'pass'
+            )
+          end
+
+          let(:upstream_to_update) do
+            create(
+              :virtual_registries_packages_maven_upstream,
+              group: update_group,
+              url: 'https://example2.com/other-path',
+              username: 'user',
+              password: 'pass'
+            )
+          end
+
+          it 'prevents update to duplicate URL with same credentials' do
+            upstream_to_update.url = 'https://example.com/update-test'
+
+            expect(upstream_to_update).to be_invalid
+            expect(upstream_to_update.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+
+          it 'prevents update to protocol variant of existing URL' do
+            upstream_to_update.url = 'http://example.com/update-test'
+
+            expect(upstream_to_update).to be_invalid
+            expect(upstream_to_update.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+        end
+
+        context 'with multiple normalizations needed' do
+          let_it_be(:multi_group) { create(:group) }
+          let_it_be(:normalized_upstream) do
+            create(
+              :virtual_registries_packages_maven_upstream,
+              group: multi_group,
+              url: 'https://example.com/multi-test',
+              username: 'user',
+              password: 'pass'
+            )
+          end
+
+          it 'treats URL with case, port, and .git differences as duplicate' do
+            duplicate = build(
+              :virtual_registries_packages_maven_upstream,
+              group: multi_group,
+              url: 'https://EXAMPLE.COM:443/multi-test/.git/',
+              username: 'user',
+              password: 'pass'
+            )
+
+            expect(duplicate).to be_invalid
+            expect(duplicate.errors[:group]).to include(described_class::SAME_URL_AND_CREDENTIALS_ERROR)
+          end
+        end
+      end
+    end
+
+    describe '#protocol_variant_url' do
+      subject(:upstream) { build(:virtual_registries_packages_maven_upstream) }
+
+      where(:url, :expected_variant) do
+        'https://repo.maven.org' | 'http://repo.maven.org'
+        'http://repo.maven.org'  | 'https://repo.maven.org'
+        nil                      | nil
+      end
+
+      with_them do
+        it 'returns the protocol variant' do
+          upstream.url = url
+
+          expect(upstream.send(:protocol_variant_url)).to eq(expected_variant)
         end
       end
     end
