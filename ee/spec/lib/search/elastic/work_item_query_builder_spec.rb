@@ -641,7 +641,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     let_it_be(:private_group) { create(:group, :private) }
     let_it_be(:private_project) { create(:project, :private, namespace: private_group) }
 
-    let(:epic_type_id) { ::WorkItems::Type.default_by_type(:epic).id }
+    let(:epic_type_id) { FactoryBot.build(:work_item_system_defined_type, :epic).id }
     let(:current_user) { epics_test_user }
     let(:base_options) do
       {

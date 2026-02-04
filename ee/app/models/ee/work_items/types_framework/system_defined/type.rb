@@ -25,6 +25,12 @@ module EE
             end
           end
 
+          BASE_TYPES.each do |type|
+            define_method :"#{type[:base_type]}?" do
+              base_type == type[:base_type]
+            end
+          end
+
           override :widgets
           def widgets(resource_parent)
             # Only include widgets if the resource_parent has the appropriate license or if the widget is not licensed

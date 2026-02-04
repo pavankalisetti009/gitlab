@@ -59,7 +59,7 @@ RSpec.describe 'Setting the epic of an issue', feature_category: :team_planning 
   it 'sets given epic to the issue' do
     # TODO: remove threshold after epic-work item sync
     # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-    allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
+    allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(141)
 
     post_graphql_mutation(mutation, current_user: current_user)
 

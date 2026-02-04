@@ -169,7 +169,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           it 'adds mapping record' do
             expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(2)
 
-            expect(mappings.pluck(:work_item_type_id)).to match_array(lifecycle.work_item_types.pluck(:id))
+            expect(mappings.pluck(:work_item_type_id)).to match_array(lifecycle.work_item_types.map(&:id))
             expect(mappings).to all(
               have_attributes(
                 old_status_id: old_status_id,
@@ -393,7 +393,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
 
                 mappings = WorkItems::Statuses::Custom::Mapping.last(2)
 
-                expect(mappings.pluck(:work_item_type_id)).to match_array(lifecycle.work_item_types.pluck(:id))
+                expect(mappings.pluck(:work_item_type_id)).to match_array(lifecycle.work_item_types.map(&:id))
                 expect(mappings).to all(
                   have_attributes(
                     old_status_id: WorkItems::Statuses::Custom::Status.find_by(namespace: group, name: "To do").id,
@@ -874,7 +874,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 it 'adds mapping record' do
                   expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(1)
 
-                  expect([mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.pluck(:id))
+                  expect([mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.map(&:id))
                   expect(mapping).to have_attributes(
                     old_status_id: custom_status.id,
                     new_status_id: custom_lifecycle.default_open_status.id,
@@ -910,7 +910,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
 
                     first_mapping, second_mapping = WorkItems::Statuses::Custom::Mapping.last(2)
 
-                    expect([first_mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.pluck(:id))
+                    expect([first_mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.map(&:id))
                     expect(first_mapping).to have_attributes(
                       old_status_id: custom_status.id,
                       new_status_id: custom_lifecycle.default_open_status.id,
@@ -919,7 +919,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                       valid_until: nil
                     )
 
-                    expect([second_mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.pluck(:id))
+                    expect([second_mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.map(&:id))
                     expect(second_mapping).to have_attributes(
                       old_status_id: other_mapping_status.id,
                       new_status_id: custom_lifecycle.default_open_status.id,

@@ -33,9 +33,8 @@ module Resolvers
           end
         end
 
-        # rubocop:disable CodeReuse/ActiveRecord -- skip
         def count_work_items_for_status(status)
-          work_item_types = lifecycle.work_item_types.pluck(:base_type)
+          work_item_types = lifecycle.work_item_types.map(&:base_type)
           return if work_item_types.blank?
 
           finder = ::WorkItems::WorkItemsFinder.new(
@@ -55,7 +54,6 @@ module Resolvers
           count = relation.page.total_count_with_limit(:all, limit: MAX_COUNTABLE_WORK_ITEMS + 1)
           count > MAX_COUNTABLE_WORK_ITEMS ? "#{MAX_COUNTABLE_WORK_ITEMS}+" : count.to_s
         end
-        # rubocop:enable CodeReuse/ActiveRecord
       end
     end
   end

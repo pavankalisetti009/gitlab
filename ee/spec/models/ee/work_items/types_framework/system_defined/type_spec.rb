@@ -1007,4 +1007,19 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
       end
     end
   end
+
+  describe 'dynamic base_type methods' do
+    let(:type_instance) { described_class.new(base_type: 'epic') }
+
+    it 'returns true when base_type matches' do
+      expect(type_instance.epic?).to be true
+    end
+
+    it 'returns false when base_type does not match' do
+      expect(type_instance.requirement?).to be false
+      expect(type_instance.objective?).to be false
+      expect(type_instance.key_result?).to be false
+      expect(type_instance.test_case?).to be false
+    end
+  end
 end

@@ -112,7 +112,9 @@ RSpec.shared_context 'with work item types request context EE' do
   def widget_available_for?(widget_type:, work_item_type_id: nil, work_item_type_name: nil)
     raise unless work_item_type_id.present? || work_item_type_name.present?
 
-    work_item_type_id = WorkItems::Type.find_by_name(work_item_type_name).id unless work_item_type_id.present?
+    unless work_item_type_id.present?
+      work_item_type_id = WorkItems::TypesFramework::Provider.new.find_by_name(work_item_type_name).id
+    end
 
     widget_definitions_map[work_item_type_id].any? { |definition| definition.widget_type == widget_type }
   end

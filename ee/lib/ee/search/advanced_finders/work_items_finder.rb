@@ -22,7 +22,7 @@
 #     assignee_wildcard_id:  - String with possible values of  'none', 'any'
 #     weight:                - String containing integer representing work item's weight
 #     weight_wildcard_id:    - String with possible values of  'none', 'any'
-#     issue_types:           - Array of strings (one of WorkItems::Type.base_types)
+#     issue_types:           - Array of strings (one of WorkItems::TypesFramework::Provider.new.unfiltered_base_types)
 #     health_status_filter:  - String with possible values of 'on_track', 'needs_attention' and 'at_risk',
 #                              can also accept wildcard values of "NONE" or "ANY"
 #     due_after:             - Time object
