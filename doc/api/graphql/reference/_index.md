@@ -41928,6 +41928,18 @@ Represents a pipeline schedule.
 | <a id="pipelineschedulepermissionstakeownershippipelineschedule"></a>`takeOwnershipPipelineSchedule` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Deprecated** in GitLab 15.9. Use admin_pipeline_schedule permission to determine if the user can take ownership of a pipeline schedule. |
 | <a id="pipelineschedulepermissionsupdatepipelineschedule"></a>`updatePipelineSchedule` | [`Boolean!`](#boolean) | If `true`, the user can perform `update_pipeline_schedule` on this resource. |
 
+### `PipelineScheduleStatusCount`
+
+Counts of pipeline schedules by status.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelineschedulestatuscountactive"></a>`active` | [`Int!`](#int) | Number of active pipeline schedules. |
+| <a id="pipelineschedulestatuscountinactive"></a>`inactive` | [`Int!`](#int) | Number of inactive pipeline schedules. |
+| <a id="pipelineschedulestatuscounttotal"></a>`total` | [`Int!`](#int) | Total number of pipeline schedules. |
+
 ### `PipelineScheduleVariable`
 
 #### Fields
@@ -42348,6 +42360,7 @@ Project-level settings for product analytics provider.
 | <a id="projectpathlocks"></a>`pathLocks` | [`PathLockConnection`](#pathlockconnection) | The project's path locks. (see [Connections](#connections)) |
 | <a id="projectpendingmemberapprovals"></a>`pendingMemberApprovals` | [`MemberApprovalConnection`](#memberapprovalconnection) | Pending member promotions of the project. (see [Connections](#connections)) |
 | <a id="projectpermanentdeletiondate"></a>`permanentDeletionDate` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. For projects pending deletion, returns the project's scheduled deletion date. For projects not pending deletion, returns a theoretical date based on current settings if marked for deletion today. |
+| <a id="projectpipelineschedulestatuscounts"></a>`pipelineScheduleStatusCounts` | [`PipelineScheduleStatusCount`](#pipelineschedulestatuscount) | Counts of pipeline schedules by status. |
 | <a id="projectpipelinetriggers"></a>`pipelineTriggers` {{< icon name="warning-solid" >}} | [`PipelineTriggerConnection`](#pipelinetriggerconnection) | **Introduced** in GitLab 16.3. **Status**: Experiment. List of pipeline trigger tokens. |
 | <a id="projectprereceivesecretdetectionenabled"></a>`preReceiveSecretDetectionEnabled` | [`Boolean`](#boolean) | Indicates whether secret push protection is on or not for the project. |
 | <a id="projectpreventmergewithoutjiraissueenabled"></a>`preventMergeWithoutJiraIssueEnabled` | [`Boolean!`](#boolean) | Indicates if an associated issue from Jira is required. |
