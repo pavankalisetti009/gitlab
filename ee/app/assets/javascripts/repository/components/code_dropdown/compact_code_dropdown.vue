@@ -67,6 +67,8 @@ export default {
     :gitpod-url="gitpodUrl"
     :current-path="currentPath"
     :directory-download-links="directoryDownloadLinks"
+    :show-no-ssh-key-message="showNoSshKeyMessage"
+    :user-settings-ssh-keys-path="userSettingsSshKeysPath"
     :project-path="projectPath"
     :show-web-ide-button="showWebIdeButton"
     :is-gitpod-enabled-for-user="isGitpodEnabledForUser"

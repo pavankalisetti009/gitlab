@@ -80,6 +80,8 @@ export const headerAppInjected = {
   isBinary: false,
   rootRef: 'main',
   newWorkspacePath: '/workspaces/new',
+  showNoSshKeyMessage: false,
+  userSettingsSshKeysPath: '',
 };
 
 export const userPermissionsMock = {
