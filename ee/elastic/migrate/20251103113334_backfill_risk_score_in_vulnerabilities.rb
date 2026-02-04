@@ -13,3 +13,5 @@ class BackfillRiskScoreInVulnerabilities < Elastic::Migration
   DOCUMENT_TYPE = Vulnerability
   NEW_SCHEMA_VERSION = 25_45
 end
+
+BackfillRiskScoreInVulnerabilities.prepend ::Search::Elastic::MigrationObsolete

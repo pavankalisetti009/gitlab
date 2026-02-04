@@ -3,21 +3,6 @@
 require 'spec_helper'
 require File.expand_path('ee/elastic/migrate/20251103113334_backfill_risk_score_in_vulnerabilities.rb')
 
-RSpec.describe BackfillRiskScoreInVulnerabilities, feature_category: :vulnerability_management do
-  let(:version) { 20251103113334 }
-
-  describe 'migration', :elastic_delete_by_query, :sidekiq_inline do
-    before do
-      allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
-    end
-
-    include_examples 'migration reindex based on schema_version' do
-      let(:expected_throttle_delay) { 15.seconds }
-      let(:expected_batch_size) { 10_000 }
-
-      let(:objects) do
-        create_list(:vulnerability_read, 3)
-      end
-    end
-  end
+RSpec.describe BackfillRiskScoreInVulnerabilities, feature_category: :global_search do
+  it_behaves_like 'a deprecated Advanced Search migration', 20251103113334
 end
