@@ -18,7 +18,7 @@ module API
           detail 'Get all tokens for a specific runner controller.'
           is_array true
           success Entities::Ci::RunnerControllerToken
-          tags %w[runner_controller_tokens]
+          tags %w[runners]
           failure [
             { code: 403, message: 'Forbidden' },
             { code: 404, message: 'Not found' }

@@ -17,7 +17,7 @@ module API
           detail 'Get all runner controllers.'
           is_array true
           success Entities::Ci::RunnerController
-          tags %w[runner_controllers]
+          tags %w[runners]
           failure [
             { code: 403, message: 'Forbidden' }
           ]

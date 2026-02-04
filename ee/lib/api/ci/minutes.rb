@@ -7,7 +7,6 @@ module API
       urgency :low
 
       CI_MINUTES_TAGS = %w[ci_minutes].freeze
-
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
         desc '[DEPRECATED] Create a compute minutes purchase record for the namespace' do
           detail 'Creates an additional pack'
