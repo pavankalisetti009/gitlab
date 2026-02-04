@@ -1901,6 +1901,29 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#allow_passkey_authentication?' do
+    subject(:allow_passkey_authentication?) { user.allow_passkey_authentication? }
+
+    context 'when GitLab.com' do
+      context 'for enterprise users' do
+        let_it_be(:enterprise_group) { create(:group) }
+        let_it_be(:saml_provider) { create(:saml_provider, group: enterprise_group, enabled: true) }
+
+        let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+
+        it { is_expected.to be_truthy }
+
+        context 'when password authentication disabled by the enterprise group' do
+          before do
+            user.enterprise_group.saml_provider.update!(disable_password_authentication_for_enterprise_users: true)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+      end
+    end
+  end
+
   describe '#password_authentication_disabled_by_enterprise_group?' do
     subject(:password_authentication_disabled_by_enterprise_group?) { user.password_authentication_disabled_by_enterprise_group? }
 

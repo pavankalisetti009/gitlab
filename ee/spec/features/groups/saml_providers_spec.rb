@@ -117,7 +117,7 @@ RSpec.describe 'SAML provider settings', feature_category: :system_access do
       it 'updates disable_password_authentication_for_enterprise_users setting', :js do
         visit group_saml_providers_path(group)
 
-        check 'Disable password authentication for enterprise users'
+        check 'Disable password and passkey authentication for enterprise users'
 
         expect { submit }.to change { saml_provider.reload.disable_password_authentication_for_enterprise_users }.to(true)
       end
