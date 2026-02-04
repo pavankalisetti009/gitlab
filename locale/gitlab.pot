@@ -46517,7 +46517,7 @@ msgstr ""
 msgid "Observability|Bug reports"
 msgstr ""
 
-msgid "Observability|Built on ClickHouse for superior performance, GitLab Observability makes enterprise-grade observability accessible within GitLab."
+msgid "Observability|Built on ClickHouse for superior performance, GitLab Observability makes observability accessible within GitLab."
 msgstr ""
 
 msgid "Observability|Built on industry-standard OpenTelemetry for seamless integration"
@@ -46592,6 +46592,9 @@ msgstr ""
 msgid "Observability|Dive deep into your data with comprehensive analytics, custom visualizations, and intelligent insights for better decision-making."
 msgstr ""
 
+msgid "Observability|Drive the roadmap"
+msgstr ""
+
 msgid "Observability|Edit"
 msgstr ""
 
@@ -46614,12 +46617,6 @@ msgid "Observability|Encryption key"
 msgstr ""
 
 msgid "Observability|Endpoint details"
-msgstr ""
-
-msgid "Observability|Enterprise ready"
-msgstr ""
-
-msgid "Observability|Enterprise-grade observability for GitLab"
 msgstr ""
 
 msgid "Observability|Example curl command"
@@ -46683,6 +46680,9 @@ msgid "Observability|General Observability information"
 msgstr ""
 
 msgid "Observability|General feedback and suggestions"
+msgstr ""
+
+msgid "Observability|GitLab Observability"
 msgstr ""
 
 msgid "Observability|GitLab Observability dashboard - advanced analytics"
@@ -46871,9 +46871,6 @@ msgstr ""
 msgid "Observability|Related issues"
 msgstr ""
 
-msgid "Observability|Scalable architecture designed for enterprise workloads"
-msgstr ""
-
 msgid "Observability|See it in action"
 msgstr ""
 
@@ -46887,6 +46884,9 @@ msgid "Observability|Services"
 msgstr ""
 
 msgid "Observability|Setup"
+msgstr ""
+
+msgid "Observability|Shape the roadmap with direct feedback channels to our development team"
 msgstr ""
 
 msgid "Observability|Single pane of glass for logs, metrics, and traces within GitLab"
@@ -46946,7 +46946,7 @@ msgstr ""
 msgid "Observability|Unknown group"
 msgstr ""
 
-msgid "Observability|Up to 5 minutes"
+msgid "Observability|Up to %{minutes} minutes"
 msgstr ""
 
 msgid "Observability|Update your o11y service connection settings."
