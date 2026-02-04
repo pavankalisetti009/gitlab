@@ -8,7 +8,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { ENTER_KEY, ESC_KEY } from '~/lib/utils/keys';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { TRACKING_CATEGORY_SHOW } from '~/work_items/constants';
+import { TRACKING_CATEGORY_SHOW, WIDGET_TYPE_PROGRESS } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 import { updateWorkItemMutationResponse } from '../mock_data';
@@ -21,19 +21,29 @@ describe('WorkItemProgress component', () => {
   let wrapper;
 
   const updateWorkItemMutationHandler = jest.fn().mockResolvedValue(updateWorkItemMutationResponse);
+  const getWorkItemTypeConfiguration = jest.fn();
 
   const findInput = () => wrapper.findComponent(GlFormInput);
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findProgressPopover = () => wrapper.findComponent(GlPopover);
 
-  const createComponent = ({ canUpdate = false, progress = 0 } = {}) => {
+  const createComponent = ({
+    canUpdate = false,
+    progress = 0,
+    workItemType = 'Objective',
+    widgetDefinitions = [],
+  } = {}) => {
+    getWorkItemTypeConfiguration.mockReturnValue({ widgetDefinitions });
     wrapper = shallowMountExtended(WorkItemProgress, {
       apolloProvider: createMockApollo([[updateWorkItemMutation, updateWorkItemMutationHandler]]),
+      provide: {
+        getWorkItemTypeConfiguration,
+      },
       propsData: {
         canUpdate,
         progress,
         workItemId: 'gid://gitlab/WorkItem/1',
-        workItemType: 'Objective',
+        workItemType,
       },
       stubs: {
         WorkItemSidebarWidget,
@@ -41,11 +51,24 @@ describe('WorkItemProgress component', () => {
     });
   };
 
-  it('displays progress popover for objectives', () => {
-    createComponent();
+  it.each`
+    workItemType   | showPopover  | expected
+    ${'Objective'} | ${undefined} | ${true}
+    ${'Task'}      | ${false}     | ${false}
+    ${'Task'}      | ${null}      | ${false}
+    ${'Objective'} | ${null}      | ${true}
+  `(
+    'displays progress popover as $expected for $workItemType when showPopover is $showPopover',
+    ({ workItemType, showPopover, expected }) => {
+      createComponent({
+        workItemType,
+        widgetDefinitions:
+          showPopover !== undefined ? [{ type: WIDGET_TYPE_PROGRESS, showPopover }] : [],
+      });
 
-    expect(findProgressPopover().exists()).toBe(true);
-  });
+      expect(findProgressPopover().exists()).toBe(expected);
+    },
+  );
 
   describe('when user cannot update progress', () => {
     beforeEach(() => {
