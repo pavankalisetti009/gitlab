@@ -266,15 +266,14 @@ module Gitlab
       #
       # @param [Symbol] event_name
       # @param [Hash] event_data
+      # @return [ServiceResponse] result of the EventPublicationService for the event published
       def publish(event_name, **event_data)
         return unless should_publish_replication_event?
         raise ArgumentError, "Unsupported event: '#{event_name}'" unless self.class.event_supported?(event_name)
 
-        create_event_with(
-          replicable_name: self.class.replicable_name,
-          event_name: event_name,
-          payload: event_data
-        )
+        ::Geo::EventPublicationService
+                   .new(replicable_name: self.class.replicable_name, event_name: event_name, payload: event_data)
+                   .execute
       end
 
       # Consume an event, using the published contextual data
@@ -379,28 +378,6 @@ module Gitlab
       # conditionals for accepting events
       def should_publish_replication_event?
         self.class.replication_enabled?
-      end
-
-      # Store an event on the database
-      #
-      # @example Create an event
-      #   create_event_with(key: key)
-      #
-      # @param [Hash] **params context information that will be stored in the event table
-      # @return [ApplicationRecord] event instance that was just persisted
-      def create_event_with(**params)
-        return unless Gitlab::Geo.primary?
-        return unless Gitlab::Geo.secondary_nodes.any?
-
-        event = ::Geo::Event.create!(**params)
-
-        # Only works with the new geo_events at the moment because we need to
-        # know which foreign key to use
-        ::Geo::EventLog.create!(geo_event: event)
-
-        event
-      rescue ActiveRecord::RecordInvalid, NoMethodError => e
-        log_error("::Geo::Event could not be created", e, params)
       end
 
       def current_node

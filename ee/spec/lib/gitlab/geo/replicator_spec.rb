@@ -59,6 +59,53 @@ RSpec.describe Gitlab::Geo::Replicator, feature_category: :geo_replication do
         expect { subject.publish(:unsupported) }.to raise_error(ArgumentError)
       end
     end
+
+    context 'when replicator should not publish events' do
+      before do
+        allow(subject).to receive(:should_publish_replication_event?).and_return(false)
+      end
+
+      it 'returns nil' do
+        expect(subject.publish(:test)).to be_nil
+      end
+    end
+
+    context 'when on a secondary' do
+      before do
+        stub_current_geo_node(secondary_node)
+      end
+
+      it 'does not publish an event' do
+        expect { subject.publish(:test) }.not_to change { ::Geo::EventLog.count }
+      end
+
+      it 'returns a service response error' do
+        result = subject.publish(:test)
+
+        expect(result).to be_a(ServiceResponse)
+        expect(result).to be_error
+        expect(result.message).to include('::Geo::Event cannot be created')
+      end
+    end
+
+    context 'when there are no secondaries' do
+      before do
+        stub_current_geo_node(primary_node)
+        allow(Gitlab::Geo).to receive(:secondary_nodes).and_return([])
+      end
+
+      it 'does not publish an event' do
+        expect { subject.publish(:test) }.not_to change { ::Geo::EventLog.count }
+      end
+
+      it 'returns a service response error' do
+        result = subject.publish(:test)
+
+        expect(result).to be_a(ServiceResponse)
+        expect(result).to be_error
+        expect(result.message).to include('there are no secondary sites')
+      end
+    end
   end
 
   describe '#consume' do
