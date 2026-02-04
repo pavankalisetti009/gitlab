@@ -25,6 +25,8 @@ export default {
     'promptInjectionProtectionLevel',
     'promptInjectionProtectionAvailable',
     'availableFoundationalFlows',
+    'initialMinimumAccessLevelExecuteAsync',
+    'initialMinimumAccessLevelExecuteSync',
   ],
   props: {
     redirectPath: {
@@ -41,6 +43,8 @@ export default {
     return {
       duoWorkflowMcp: this.duoWorkflowMcpEnabled,
       promptInjectionProtection: this.promptInjectionProtectionLevel,
+      minimumAccessLevelExecuteAsync: this.initialMinimumAccessLevelExecuteAsync,
+      minimumAccessLevelExecuteSync: this.initialMinimumAccessLevelExecuteSync,
     };
   },
   computed: {
@@ -52,6 +56,12 @@ export default {
     },
     showWorkflowSettingsForm() {
       return this.duoWorkflowAvailable || this.promptInjectionProtectionAvailable;
+    },
+    hasMinimumAccessLevelExecuteAsyncChanged() {
+      return this.minimumAccessLevelExecuteAsync !== this.initialMinimumAccessLevelExecuteAsync;
+    },
+    hasMinimumAccessLevelExecuteSyncChanged() {
+      return this.minimumAccessLevelExecuteSync !== this.initialMinimumAccessLevelExecuteSync;
     },
   },
   methods: {
@@ -76,6 +86,9 @@ export default {
           (agent) => agent.enabled !== null,
         );
 
+        this.minimumAccessLevelExecuteSync = minimumAccessLevelExecuteSync;
+        this.minimumAccessLevelExecuteAsync = minimumAccessLevelExecuteAsync;
+
         const input = {
           duo_availability: duoAvailability,
           experiment_features_enabled: experimentFeaturesEnabled,
@@ -96,10 +109,15 @@ export default {
               prompt_injection_protection_level: this.promptInjectionProtection,
             }),
             foundational_agents_default_enabled: foundationalAgentsEnabled,
-            minimum_access_level_execute: minimumAccessLevelExecuteSync,
-            minimum_access_level_execute_async: minimumAccessLevelExecuteAsync,
           },
         };
+
+        if (this.hasMinimumAccessLevelExecuteSyncChanged) {
+          input.minimum_access_level_execute = minimumAccessLevelExecuteSync;
+        }
+        if (this.hasMinimumAccessLevelExecuteAsyncChanged) {
+          input.minimum_access_level_execute_async = minimumAccessLevelExecuteAsync;
+        }
 
         if (!this.onGeneralSettingsPage) {
           input.duo_core_features_enabled = duoCoreFeaturesEnabled;
