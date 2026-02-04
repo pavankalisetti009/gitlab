@@ -350,7 +350,7 @@ You should delete the unnecessary job artifacts first and then clean up job logs
 
 ### List job artifacts
 
-To analyze pipeline storage, you can use the [Job API endpoint](../api/jobs.md#list-project-jobs) to retrieve a list of
+To analyze pipeline storage, you can use the [Job API endpoint](../api/jobs.md#list-all-jobs-for-a-project) to retrieve a list of
 job artifacts. The endpoint returns the job artifacts `file_type` key in the `artifacts` attribute.
 The `file_type` key indicates the artifact type:
 
