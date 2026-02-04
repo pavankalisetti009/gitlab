@@ -87,13 +87,15 @@ module Search
       end
 
       def update_cache!(search_results:, total_count:, file_count:)
-        return unless search_results && total_count > 0 && file_count > 0
+        # For count-only queries, file_count is 0, but we still want to cache the count
+        return if !count_only && file_count == 0
 
         with_redis do |redis|
           redis.multi do |pipeline|
             (0..MAX_PAGES).each do |page_idx|
               result = search_results[page_idx]
-              next unless result
+              # For count-only queries, result will be nil/empty, but we still want to cache page 0
+              next unless result || (count_only && page_idx == 0)
 
               cached_result = [{ page_idx => result }, total_count, file_count]
 
