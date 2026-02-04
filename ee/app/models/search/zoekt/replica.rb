@@ -32,6 +32,7 @@ module Search
       end
 
       scope :for_namespace, ->(id) { where(namespace_id: id) }
+      scope :without_indices, -> { left_joins(:indices).where(zoekt_indices: { zoekt_replica_id: nil }) }
 
       def self.for_enabled_namespace!(zoekt_enabled_namespace)
         params = {

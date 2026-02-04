@@ -173,6 +173,91 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
     end
   end
 
+  describe 'cleanup of replicas without indices' do
+    let_it_be(:node) { create(:zoekt_node) }
+    let_it_be(:enabled_namespace) { create(:zoekt_enabled_namespace) }
+
+    let_it_be_with_reload(:replica_without_index) do
+      create(:zoekt_replica,
+        zoekt_enabled_namespace: enabled_namespace,
+        namespace_id: enabled_namespace.root_namespace_id
+      )
+    end
+
+    let_it_be_with_reload(:replica_with_index) do
+      replica = create(:zoekt_replica,
+        zoekt_enabled_namespace: enabled_namespace,
+        namespace_id: enabled_namespace.root_namespace_id
+      )
+      create(:zoekt_index,
+        replica: replica,
+        node: node,
+        zoekt_enabled_namespace: enabled_namespace,
+        namespace_id: enabled_namespace.root_namespace_id
+      )
+      replica
+    end
+
+    let(:options) { { dry_run: false } }
+
+    before do
+      allow(selection_service).to receive(:execute).and_return(resource_pool)
+      allow(planning_service).to receive(:plan).and_return(plan)
+      allow(provisioning_service).to receive(:execute).and_return({ errors: [], success: [] })
+    end
+
+    context 'when dry_run is false' do
+      it 'deletes replicas without indices before processing' do
+        expect { service.execute }.to change {
+          Search::Zoekt::Replica.exists?(replica_without_index.id)
+        }.from(true).to(false)
+      end
+
+      it 'keeps replicas with indices' do
+        expect { service.execute }.not_to change {
+          Search::Zoekt::Replica.exists?(replica_with_index.id)
+        }
+      end
+
+      it 'logs the cleanup with total deleted replicas' do
+        allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
+
+        expect(logger).to receive(:info).with(hash_including(
+          message: 'Deleted Zoekt replicas without indices',
+          total_deleted_replicas: 1
+        ))
+
+        service.execute
+      end
+
+      context 'when there are no replicas without indices' do
+        before do
+          replica_without_index.destroy!
+        end
+
+        it 'does not log anything' do
+          allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
+
+          expect(logger).not_to receive(:info).with(hash_including(
+            message: 'Deleted Zoekt replicas without indices'
+          ))
+
+          service.execute
+        end
+      end
+    end
+
+    context 'when dry_run is true' do
+      let(:options) { { dry_run: true } }
+
+      it 'does not delete replicas without indices' do
+        expect { service.execute }.not_to change {
+          Search::Zoekt::Replica.exists?(replica_without_index.id)
+        }
+      end
+    end
+  end
+
   describe '.execute' do
     let(:options) do
       { dry_run: true }
