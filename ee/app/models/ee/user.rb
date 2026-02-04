@@ -641,6 +641,13 @@ module EE
       super
     end
 
+    override :allow_passkey_authentication?
+    def allow_passkey_authentication?
+      return false if password_authentication_disabled_by_enterprise_group?
+
+      super
+    end
+
     def password_authentication_disabled_by_enterprise_group?
       return false unless enterprise_user?
       return false unless enterprise_group.saml_provider

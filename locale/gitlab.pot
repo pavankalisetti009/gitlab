@@ -8155,10 +8155,10 @@ msgstr ""
 msgid "Allow owners to manage default branch protection per group."
 msgstr ""
 
-msgid "Allow password authentication for Git over HTTP(S)"
+msgid "Allow password and passkey authentication for the web interface"
 msgstr ""
 
-msgid "Allow password authentication for the web interface"
+msgid "Allow password authentication for Git over HTTP(S)"
 msgstr ""
 
 msgid "Allow possible spam"
@@ -15194,7 +15194,7 @@ msgstr ""
 msgid "Clear this checkbox to use a personal access token or LDAP password instead."
 msgstr ""
 
-msgid "Clear this checkbox to use an external authentication provider instead."
+msgid "Clear this checkbox to use an external authentication provider instead. Disables passkeys for two-factor authentication."
 msgstr ""
 
 msgid "Clear uploads"
@@ -25351,7 +25351,7 @@ msgstr ""
 msgid "Disable inviting new members to group or project by group/project owners or project maintainers"
 msgstr ""
 
-msgid "Disable password authentication for users with an SSO identity"
+msgid "Disable password and passkey authentication for users with an SSO identity"
 msgstr ""
 
 msgid "Disable semantic search"
@@ -27491,7 +27491,7 @@ msgstr ""
 msgid "Enhance security by storing service account keys in secret managers - learn more about %{docLinkStart}secret management with GitLab%{docLinkEnd}"
 msgstr ""
 
-msgid "Ensure users with SSO identities cannot sign in with password even when password authentication is enabled."
+msgid "Ensure users with SSO identities cannot sign in with password or passkey even when password authentication is enabled."
 msgstr ""
 
 msgid "Ensure your %{linkStart}environment is part of the deploy stage%{linkEnd} of your CI pipeline to track deployments to your cluster."
@@ -33641,7 +33641,10 @@ msgstr ""
 msgid "GroupSAML|Default membership role"
 msgstr ""
 
-msgid "GroupSAML|Disable password authentication for enterprise users"
+msgid "GroupSAML|Disable password and passkey authentication for enterprise users"
+msgstr ""
+
+msgid "GroupSAML|Disables passkeys for two-factor authentication."
 msgstr ""
 
 msgid "GroupSAML|Enable SAML authentication for this group"
