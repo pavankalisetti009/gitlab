@@ -78456,6 +78456,9 @@ msgstr ""
 msgid "WorkItem|Link items together to show that they're related."
 msgstr ""
 
+msgid "WorkItem|Link to view copied to clipboard."
+msgstr ""
+
 msgid "WorkItem|Linked item removed"
 msgstr ""
 
