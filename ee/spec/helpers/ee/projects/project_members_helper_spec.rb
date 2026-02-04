@@ -50,8 +50,6 @@ RSpec.describe Projects::ProjectMembersHelper do
         invited: [],
         links: ::Members::GroupLinksCollection.new([]),
         access_requests: [],
-        include_relations: [:inherited, :direct],
-        search: nil,
         pending_members_count: nil
       )
     end
@@ -80,8 +78,6 @@ RSpec.describe Projects::ProjectMembersHelper do
         invited: [],
         links: ::Members::GroupLinksCollection.new([]),
         access_requests: [],
-        include_relations: [:inherited, :direct],
-        search: nil,
         pending_members_count: pending_members_count
       )
     end
