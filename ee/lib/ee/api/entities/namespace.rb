@@ -53,8 +53,6 @@ module EE
           private
 
           def can_read_billing?(namespace, opts)
-            return true unless ::Feature.enabled?(:restrict_namespace_api_billing_fields) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- No actor needed
-
             ::Ability.allowed?(opts[:current_user], :read_billing, namespace)
           end
         end
