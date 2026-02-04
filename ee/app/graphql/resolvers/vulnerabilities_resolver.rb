@@ -213,17 +213,6 @@ module Resolvers
       end
     end
 
-    def vulnerable_to_actor
-      case vulnerable
-      when ::InstanceSecurityDashboard
-        current_user
-      when Project
-        vulnerable.group
-      else
-        vulnerable
-      end
-    end
-
     def after_severity
       severity_from_cursor(:after)
     end
