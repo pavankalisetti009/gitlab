@@ -55,13 +55,6 @@ module EE
       end
     end
 
-    def show_advanced_search_promotion?
-      !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
-        show_promotions? &&
-        show_callout?('promote_advanced_search_dismissed') &&
-        !License.feature_available?(:elastic_search)
-    end
-
     def licensed_users(license)
       if license.restricted?(:active_user_count)
         number_with_delimiter(license.restrictions[:active_user_count])
