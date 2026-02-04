@@ -155,6 +155,78 @@ RSpec.shared_examples 'gets registries for' do |args|
     end
   end
 
+  context 'for data_management_details_path field' do
+    let(:query_with_path) do
+      <<~QUERY
+        {
+          geoNode {
+            #{field_name} {
+              nodes {
+                id
+                modelRecordId
+                dataManagementDetailsPath
+              }
+            }
+          }
+        }
+      QUERY
+    end
+
+    context 'when geo_primary_verification_view feature flag is enabled' do
+      before do
+        stub_feature_flags(geo_primary_verification_view: true)
+      end
+
+      it 'returns the data management details path' do
+        post_graphql(query_with_path, current_user: current_user)
+
+        actual = graphql_data_at(:geo_node, field_name_sym, :nodes)
+
+        [registry1, registry2].each do |registry|
+          registry_data = actual.find { |r| r['id'] == registry.to_global_id.to_s }
+          expected_path = data_management_details_path_for_registry(registry)
+          expect(registry_data['dataManagementDetailsPath']).to eq(expected_path)
+        end
+      end
+    end
+
+    context 'when geo_primary_verification_view feature flag is disabled' do
+      before do
+        stub_feature_flags(geo_primary_verification_view: false)
+      end
+
+      it 'returns nil for data management details path' do
+        post_graphql(query_with_path, current_user: current_user)
+
+        actual = graphql_data_at(:geo_node, field_name_sym, :nodes)
+
+        actual.each do |registry_data|
+          expect(registry_data['dataManagementDetailsPath']).to be_nil
+        end
+      end
+    end
+
+    context 'when registry has no model_record_id' do
+      before do
+        stub_feature_flags(geo_primary_verification_view: true)
+        allow_next_found_instance_of(registry1.class) do |instance|
+          allow(instance).to receive(:model_record_id).and_return(nil)
+        end
+      end
+
+      it 'returns nil for data management details path' do
+        post_graphql(query_with_path, current_user: current_user)
+
+        actual = graphql_data_at(:geo_node, field_name_sym, :nodes)
+        registry_data = actual.find { |r| r['id'] == registry1.to_global_id.to_s }
+
+        expect(registry_data['dataManagementDetailsPath']).to be_nil
+      end
+    end
+  end
+
+  private
+
   def registry_to_graphql_data_hash(registry)
     data = {
       'id' => registry.to_global_id.to_s,
@@ -174,11 +246,16 @@ RSpec.shared_examples 'gets registries for' do |args|
       'verificationFailure' => registry.verification_failure,
       'verificationRetryCount' => registry.verification_retry_count,
       'verificationStartedAt' => registry.verification_started_at,
-      'verificationState' => registry.verification_state_name_no_prefix.upcase
+      'verificationState' => registry.verification_state_name_no_prefix.upcase,
+      'dataManagementDetailsPath' => data_management_details_path_for_registry(registry)
     }
 
     return data unless verification_enabled
 
     data.merge({ 'verifiedAt' => registry.verified_at, 'verificationRetryAt' => registry.verification_retry_at })
+  end
+
+  def data_management_details_path_for_registry(registry)
+    "/admin/data_management/#{replicator_class.model_name.pluralize}/#{registry.model_record_id}"
   end
 end

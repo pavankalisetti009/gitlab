@@ -11,6 +11,7 @@ module Types
 
         field :checksum_mismatch, GraphQL::Types::Boolean, null: true, description: "Indicate if the checksums of the #{graphql_name} do not match on the primary and secondary."
         field :created_at, Types::TimeType, null: true, description: "Timestamp when the #{graphql_name} was created"
+        field :data_management_details_path, GraphQL::Types::String, null: true, description: "Path to the data management view for this #{graphql_name}"
         field :force_to_redownload,
           GraphQL::Types::Boolean,
           null: true,
@@ -36,6 +37,16 @@ module Types
 
         def verification_state_name_value
           object.verification_state_name_no_prefix
+        end
+
+        def data_management_details_path
+          return unless ::Feature.enabled?(:geo_primary_verification_view, @user)
+          return unless object.model_record_id
+
+          ::Gitlab::Routing.url_helpers.details_admin_data_management_path(
+            model_name: object.class.replicator_class.model_name_plural,
+            id: object.model_record_id
+          )
         end
       end
     end
