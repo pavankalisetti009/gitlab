@@ -71,18 +71,6 @@ RSpec.describe Epic, feature_category: :portfolio_management do
           end
         end
       end
-
-      context 'when epic does not have associated work item' do
-        before do
-          allow(epic).to receive(:sync_object).and_return(nil)
-          allow(work_item).to receive(:sync_object).and_return(nil)
-        end
-
-        it 'returns award emoji only from epic' do
-          expect(epic.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_DOWN])
-          expect(work_item.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_UP])
-        end
-      end
     end
   end
 

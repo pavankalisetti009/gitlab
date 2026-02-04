@@ -52,8 +52,8 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response['name']).to eq(award_emoji.name)
-        expect(json_response['awardable_id']).to eq(epic.id)
-        expect(json_response['awardable_type']).to eq("Epic")
+        expect(json_response['awardable_id']).to eq(epic.issue_id)
+        expect(json_response['awardable_type']).to eq("Issue")
       end
 
       it "returns a 404 error if the award is not found" do

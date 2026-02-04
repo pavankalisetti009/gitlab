@@ -302,9 +302,10 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         expect_paginated_array_response([epic3.id])
       end
 
-      it 'has upvote/downvote information' do
+      it 'has upvote/downvote information from both epic and work item award emojis' do
         create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic, user: user)
-        create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: epic2, user: user)
+        legacy_emoji = create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: epic2, user: user)
+        legacy_emoji.update_columns(awardable_type: 'Epic', awardable_id: epic2.id)
 
         get api(url)
 

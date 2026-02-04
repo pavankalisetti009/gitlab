@@ -6,6 +6,49 @@ RSpec.describe AwardEmoji, feature_category: :team_planning do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
 
+  describe 'callbacks' do
+    describe 'before_validation' do
+      describe '#rewrite_epic_awardable_type' do
+        let_it_be(:issue) { create(:issue) }
+        let_it_be(:epic) { create(:epic) }
+
+        context 'when creating an award emoji with Epic awardable_type' do
+          it 'rewrites awardable_type from Epic to Issue' do
+            award_emoji = build(:award_emoji, awardable_type: 'Epic', awardable_id: epic.id, user: user)
+
+            expect { award_emoji.save! }.to change { award_emoji.awardable_type }.from('Epic').to('Issue')
+              .and change { award_emoji.awardable_id }.from(epic.id).to(epic.issue_id)
+          end
+        end
+
+        context 'when updating an existing award emoji' do
+          let_it_be(:award_emoji) { create(:award_emoji, awardable: issue, user: user) }
+
+          it 'does not rewrite awardable_type on update' do
+            award_emoji.awardable_type = 'Epic'
+            award_emoji.awardable_id = epic.id
+
+            award_emoji.save!
+
+            expect(award_emoji.reload.awardable_type).to eq('Epic')
+            expect(award_emoji.reload.awardable_id).to eq(epic.id)
+          end
+        end
+
+        context 'when awardable_type is not Epic' do
+          it 'does not modify awardable_type for Issue' do
+            award_emoji = build(:award_emoji, awardable: issue, user: user)
+
+            award_emoji.save!
+
+            expect(award_emoji.reload.awardable_type).to eq('Issue')
+            expect(award_emoji.reload.awardable_id).to eq(issue.id)
+          end
+        end
+      end
+    end
+  end
+
   describe 'validations' do
     context 'custom emoji' do
       let_it_be(:emoji) { create(:custom_emoji, name: 'partyparrot', namespace: group) }
