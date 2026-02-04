@@ -52,9 +52,8 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
         # eligible_namespace_too_few has 1 replica but needs 2 (default)
         create(:zoekt_replica, zoekt_enabled_namespace: eligible_namespace_too_few)
 
-        # namespace_with_exact_replicas has 2 replicas and needs 2 (default) and has indices - should be excluded
+        # namespace_with_exact_replicas has 2 replicas and needs 2 (default) - should be excluded
         create_list(:zoekt_replica, 2, zoekt_enabled_namespace: namespace_with_exact_replicas)
-        create(:zoekt_index, zoekt_enabled_namespace: namespace_with_exact_replicas)
 
         # failed_namespace has 3 replicas but needs 2, but should be excluded due to rollout failure
         create_list(:zoekt_replica, 3, zoekt_enabled_namespace: failed_namespace)
@@ -64,20 +63,18 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
         expect(resource_pool.enabled_namespaces).to include(eligible_namespace_too_many, eligible_namespace_too_few)
       end
 
-      it 'includes namespaces with exact replicas but missing indices' do
-        expect(resource_pool.enabled_namespaces).to include(namespace_with_exact_replicas)
+      it 'excludes namespaces with exact number of replicas' do
+        expect(resource_pool.enabled_namespaces).not_to include(namespace_with_exact_replicas)
       end
 
       it 'excludes namespaces with rollout blocked flag' do
         expect(resource_pool.enabled_namespaces).not_to include(failed_namespace)
       end
 
-      it 'fetches namespaces with mismatched replicas and missing indices' do
+      it 'calls each_batch_with_mismatched_replicas' do
         rollout_allowed_relation = Search::Zoekt::EnabledNamespace.with_rollout_allowed
         allow(Search::Zoekt::EnabledNamespace).to receive(:with_rollout_allowed).and_return(rollout_allowed_relation)
-        expect(rollout_allowed_relation)
-          .to receive(:each_batch_with_mismatched_replicas_or_missing_indices)
-          .and_call_original
+        expect(rollout_allowed_relation).to receive(:each_batch_with_mismatched_replicas).and_call_original
 
         described_class.execute
       end
@@ -140,13 +137,10 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
       end
 
       before_all do
-        # Create namespaces with exact replica counts AND indices (not mismatched, not missing)
+        # Create namespaces with exact replica counts (not mismatched)
         2.times do
           enabled_ns = create(:zoekt_enabled_namespace)
-          node = create(:zoekt_node)
-          # Exactly 2 replicas, matching default
-          replicas = create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_ns)
-          create(:zoekt_index, zoekt_enabled_namespace: enabled_ns, node: node, replica: replicas.first) # Has indices
+          create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_ns) # Exactly 2 replicas, matching default
         end
 
         # Create a failed namespace with mismatched replicas

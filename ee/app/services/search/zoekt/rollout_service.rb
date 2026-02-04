@@ -5,6 +5,8 @@ module Search
     class RolloutService
       include Gitlab::Loggable
 
+      CLEANUP_BATCH_SIZE = 1_000
+
       DEFAULT_OPTIONS = {
         max_indices_per_replica: MAX_INDICES_PER_REPLICA,
         dry_run: true,
@@ -27,6 +29,9 @@ module Search
       end
 
       def execute
+        # Cleanup replicas without indices before processing
+        cleanup_replicas_without_indices unless dry_run
+
         resource_pool = ::Search::Zoekt::SelectionService.execute(max_batch_size: batch_size)
         return Result.new('No enabled namespaces found', {}, false) if resource_pool.enabled_namespaces.empty?
         return Result.new('No available nodes found', {}, false) if resource_pool.nodes.empty?
@@ -44,6 +49,19 @@ module Search
       end
 
       private
+
+      def cleanup_replicas_without_indices
+        deleted_total = 0
+
+        # Delete all replicas without indices in batches
+        ::Search::Zoekt::Replica.without_indices.each_batch(of: CLEANUP_BATCH_SIZE) do |batch|
+          deleted_total += batch.delete_all
+        end
+
+        return if deleted_total == 0
+
+        logger.info(message: 'Deleted Zoekt replicas without indices', total_deleted_replicas: deleted_total)
+      end
 
       def logger
         @logger ||= ::Search::Zoekt::Logger.build

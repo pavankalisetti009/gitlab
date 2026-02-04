@@ -45,22 +45,9 @@ module Search
 
       validates :metadata, json_schema: { filename: 'zoekt_enabled_namespaces_metadata', size_limit: 64.kilobytes }
 
-      def self.each_batch_with_mismatched_replicas_or_missing_indices(batch_size: 5000)
-        processed_ids = Set.new
-
+      def self.each_batch_with_mismatched_replicas(batch_size: 5000, &block)
         each_batch(of: batch_size) do |batch|
-          # Process namespaces with mismatched replicas in this batch
-          batch.with_mismatched_replicas.each do |ns|
-            processed_ids << ns.id
-            yield(ns)
-          end
-
-          # Process namespaces with missing indices in this batch (skip duplicates)
-          batch.with_missing_indices.each do |ns|
-            next if processed_ids.include?(ns.id)
-
-            yield(ns)
-          end
+          batch.with_mismatched_replicas.each(&block)
         end
       end
 

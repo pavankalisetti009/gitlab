@@ -235,6 +235,22 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
         expect(scope).to match_array(zoekt_replica)
       end
     end
+
+    describe '.without_indices' do
+      subject(:scope) { described_class.without_indices }
+
+      let_it_be(:replica_without_indices) do
+        create(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace)
+      end
+
+      it 'returns replicas without any indices' do
+        expect(scope).to contain_exactly(replica_without_indices)
+      end
+
+      it 'does not return replicas with indices' do
+        expect(scope).not_to include(zoekt_replica)
+      end
+    end
   end
 
   describe '#fetch_repositories_with_project_identifier' do

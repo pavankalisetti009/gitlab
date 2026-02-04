@@ -96,6 +96,38 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
       end
     end
 
+    describe '.with_missing_indices' do
+      let_it_be(:zoekt_enabled_namespace2) { create(:zoekt_enabled_namespace) }
+
+      before do
+        create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace2)
+      end
+
+      it 'returns Search::Zoekt::EnabledNamespace with missing zoekt index' do
+        expect(described_class.with_missing_indices).to contain_exactly(zoekt_enabled_namespace)
+      end
+    end
+
+    describe '.with_all_ready_indices' do
+      let_it_be(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace) } # With all ready indices
+      let_it_be(:zoekt_enabled_namespace2) { create(:zoekt_enabled_namespace) } # With some non ready indices
+      let_it_be(:zoekt_enabled_namespace3) { create(:zoekt_enabled_namespace) } # Without any indices
+
+      subject(:collection) { described_class.with_all_ready_indices }
+
+      before do
+        create(:zoekt_index, :ready, zoekt_enabled_namespace: zoekt_enabled_namespace)
+        create(:zoekt_index, :ready, zoekt_enabled_namespace: zoekt_enabled_namespace2)
+        create(:zoekt_index, :pending, zoekt_enabled_namespace: zoekt_enabled_namespace2)
+      end
+
+      it 'returns Search::Zoekt::EnabledNamespace with all ready indices' do
+        expect(collection).to include(zoekt_enabled_namespace)
+        expect(collection).not_to include(zoekt_enabled_namespace2)
+        expect(collection).not_to include(zoekt_enabled_namespace3)
+      end
+    end
+
     describe '.with_mismatched_replicas' do
       let_it_be(:namespace1) { create(:group) }
       let_it_be(:namespace2) { create(:group) }
@@ -148,11 +180,11 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
         # No replicas created
       end
 
-      it 'returns namespaces with too many replicas' do
+      it 'returns enabled namespaces with too many replicas' do
         expect(collection).to include(enabled_namespace_with_too_many)
       end
 
-      it 'returns namespaces with too few replicas' do
+      it 'returns enabled namespaces with too few replicas' do
         expect(collection).to include(enabled_namespace_with_too_few)
       end
 
@@ -165,24 +197,11 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
       end
     end
 
-    describe '.with_missing_indices' do
-      let_it_be(:zoekt_enabled_namespace2) { create(:zoekt_enabled_namespace) }
-
-      before do
-        create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace2)
-      end
-
-      it 'returns Search::Zoekt::EnabledNamespace with missing zoekt index' do
-        expect(described_class.with_missing_indices).to contain_exactly(zoekt_enabled_namespace)
-      end
-    end
-
-    describe '.each_batch_with_mismatched_replicas_or_missing_indices' do
+    describe '.each_batch_with_mismatched_replicas' do
       let_it_be(:namespace1) { create(:group) }
       let_it_be(:namespace2) { create(:group) }
       let_it_be(:namespace3) { create(:group) }
       let_it_be(:namespace4) { create(:group) }
-      let_it_be(:namespace5) { create(:group) }
 
       let_it_be(:enabled_namespace_with_too_many) do
         create(:zoekt_enabled_namespace, namespace: namespace1, number_of_replicas_override: 2)
@@ -192,25 +211,20 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
         create(:zoekt_enabled_namespace, namespace: namespace2)
       end
 
-      let_it_be(:enabled_namespace_with_exact_replicas_and_indices) do
+      let_it_be(:enabled_namespace_with_exact_replicas) do
         create(:zoekt_enabled_namespace, namespace: namespace3)
       end
 
-      let_it_be(:enabled_namespace_with_exact_replicas_no_indices) do
+      let_it_be(:enabled_namespace_with_no_replicas) do
         create(:zoekt_enabled_namespace, namespace: namespace4)
-      end
-
-      let_it_be(:enabled_namespace_with_mismatch_and_no_indices) do
-        create(:zoekt_enabled_namespace, namespace: namespace5)
       end
 
       let(:namespace_ids) do
         [
           enabled_namespace_with_too_many.id,
           enabled_namespace_with_too_few.id,
-          enabled_namespace_with_exact_replicas_and_indices.id,
-          enabled_namespace_with_exact_replicas_no_indices.id,
-          enabled_namespace_with_mismatch_and_no_indices.id
+          enabled_namespace_with_exact_replicas.id,
+          enabled_namespace_with_no_replicas.id
         ]
       end
 
@@ -220,100 +234,49 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
       end
 
       before_all do
-        # enabled_namespace_with_too_many: 3 replicas, needs 2, has indices
-        node = create(:zoekt_node)
-        replicas = create_list(:zoekt_replica, 3, zoekt_enabled_namespace: enabled_namespace_with_too_many)
-        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace_with_too_many, node: node,
-          replica: replicas.first)
+        # enabled_namespace_with_too_many has 3 replicas but needs only 2
+        create_list(:zoekt_replica, 3, zoekt_enabled_namespace: enabled_namespace_with_too_many)
 
-        # enabled_namespace_with_too_few: 1 replica, needs 2, has indices
-        replicas = create_list(:zoekt_replica, 1, zoekt_enabled_namespace: enabled_namespace_with_too_few)
-        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace_with_too_few, node: node,
-          replica: replicas.first)
+        # enabled_namespace_with_too_few has 1 replica but needs 2 (default)
+        create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace_with_too_few)
 
-        # enabled_namespace_with_exact_replicas_and_indices: 2 replicas, needs 2, has indices (should be excluded)
-        replicas = create_list(:zoekt_replica, 2,
-          zoekt_enabled_namespace: enabled_namespace_with_exact_replicas_and_indices)
-        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace_with_exact_replicas_and_indices, node: node,
-          replica: replicas.first)
+        # enabled_namespace_with_exact_replicas has 2 replicas and needs 2 (default)
+        create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_namespace_with_exact_replicas)
 
-        # enabled_namespace_with_exact_replicas_no_indices: 2 replicas, needs 2, NO indices (missing indices only)
-        create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_namespace_with_exact_replicas_no_indices)
-
-        # enabled_namespace_with_mismatch_and_no_indices: 1 replica, needs 2, NO indices (both conditions match)
-        create(:zoekt_replica, zoekt_enabled_namespace: enabled_namespace_with_mismatch_and_no_indices)
+        # enabled_namespace_with_no_replicas has 0 replicas but needs 2 (default)
+        # No replicas created
       end
 
-      it 'yields namespaces with mismatched replicas' do
+      it 'yields enabled namespaces with mismatched replicas' do
         yielded = []
-        described_class.id_in(namespace_ids).each_batch_with_mismatched_replicas_or_missing_indices do |ns|
-          yielded << ns
-        end
+        described_class.id_in(namespace_ids).each_batch_with_mismatched_replicas { |ns| yielded << ns }
 
-        expect(yielded).to include(enabled_namespace_with_too_many)
-        expect(yielded).to include(enabled_namespace_with_too_few)
+        expect(yielded).to contain_exactly(
+          enabled_namespace_with_too_many,
+          enabled_namespace_with_too_few,
+          enabled_namespace_with_no_replicas
+        )
       end
 
-      it 'yields namespaces with missing indices' do
+      it 'does not yield namespaces with exact number of replicas' do
         yielded = []
-        described_class.id_in(namespace_ids).each_batch_with_mismatched_replicas_or_missing_indices do |ns|
-          yielded << ns
-        end
+        described_class.id_in(namespace_ids).each_batch_with_mismatched_replicas { |ns| yielded << ns }
 
-        expect(yielded).to include(enabled_namespace_with_exact_replicas_no_indices)
-      end
-
-      it 'does not yield namespaces with exact replicas and indices' do
-        yielded = []
-        described_class.id_in(namespace_ids).each_batch_with_mismatched_replicas_or_missing_indices do |ns|
-          yielded << ns
-        end
-
-        expect(yielded).not_to include(enabled_namespace_with_exact_replicas_and_indices)
-      end
-
-      it 'deduplicates namespaces matching both conditions' do
-        yielded = []
-        described_class.id_in(namespace_ids).each_batch_with_mismatched_replicas_or_missing_indices do |ns|
-          yielded << ns
-        end
-
-        # enabled_namespace_with_mismatch_and_no_indices matches both conditions but should appear only once
-        expect(yielded.count { |ns| ns.id == enabled_namespace_with_mismatch_and_no_indices.id }).to eq(1)
+        expect(yielded).not_to include(enabled_namespace_with_exact_replicas)
       end
 
       it 'processes records in batches' do
         expect(described_class).to receive(:each_batch).with(of: 5000).and_call_original
 
-        described_class.each_batch_with_mismatched_replicas_or_missing_indices(batch_size: 5000) { |_ns| true }
+        described_class.each_batch_with_mismatched_replicas(batch_size: 5000) { |_ns| true }
       end
 
       context 'when custom batch size is provided' do
         it 'uses the provided batch size' do
           expect(described_class).to receive(:each_batch).with(of: 100).and_call_original
 
-          described_class.each_batch_with_mismatched_replicas_or_missing_indices(batch_size: 100) { |_ns| true }
+          described_class.each_batch_with_mismatched_replicas(batch_size: 100) { |_ns| true }
         end
-      end
-    end
-
-    describe '.with_all_ready_indices' do
-      let_it_be(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace) } # With all ready indices
-      let_it_be(:zoekt_enabled_namespace2) { create(:zoekt_enabled_namespace) } # With some non ready indices
-      let_it_be(:zoekt_enabled_namespace3) { create(:zoekt_enabled_namespace) } # Without any indices
-
-      subject(:collection) { described_class.with_all_ready_indices }
-
-      before do
-        create(:zoekt_index, :ready, zoekt_enabled_namespace: zoekt_enabled_namespace)
-        create(:zoekt_index, :ready, zoekt_enabled_namespace: zoekt_enabled_namespace2)
-        create(:zoekt_index, :pending, zoekt_enabled_namespace: zoekt_enabled_namespace2)
-      end
-
-      it 'returns Search::Zoekt::EnabledNamespace with all ready indices' do
-        expect(collection).to include(zoekt_enabled_namespace)
-        expect(collection).not_to include(zoekt_enabled_namespace2)
-        expect(collection).not_to include(zoekt_enabled_namespace3)
       end
     end
 

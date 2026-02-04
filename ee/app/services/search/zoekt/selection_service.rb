@@ -26,7 +26,7 @@ module Search
 
       def fetch_enabled_namespace_for_indexing
         [].tap do |batch|
-          EnabledNamespace.with_rollout_allowed.each_batch_with_mismatched_replicas_or_missing_indices do |ns|
+          ::Search::Zoekt::EnabledNamespace.with_rollout_allowed.each_batch_with_mismatched_replicas do |ns|
             batch << ns
             break if batch.count >= max_batch_size
           end
