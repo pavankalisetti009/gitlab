@@ -41,8 +41,23 @@ module EE
             return false unless super
 
             insert_item_after(:monitor, analytics_menu_item)
+            insert_item_after(:ci_cd, work_item_settings_menu_item)
 
             true
+          end
+
+          def work_item_settings_menu_item
+            unless ::Feature.enabled?(:work_item_configurable_types, context.project)
+              return ::Sidebars::NilMenuItem.new(item_id: :work_items)
+            end
+
+            ::Sidebars::MenuItem.new(
+              title: _('Work items'),
+              link: project_settings_work_items_path(context.project),
+              active_routes: { path: %w[projects/settings/work_items#show] },
+              item_id: :work_items,
+              container_html_options: { 'data-testid': 'project-work-items-settings' }
+            )
           end
 
           def analytics_menu_item
