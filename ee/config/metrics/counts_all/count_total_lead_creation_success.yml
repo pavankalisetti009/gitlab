@@ -2,6 +2,8 @@
 key_path: counts.count_total_lead_creation_success
 description: Total count of creations lead successfully
 product_group: acquisition
+product_categories:
+- acquisition
 performance_indicator_type: []
 value_type: number
 status: active

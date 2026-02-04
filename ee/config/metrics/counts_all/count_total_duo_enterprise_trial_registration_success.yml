@@ -2,6 +2,8 @@
 key_path: counts.count_total_duo_enterprise_trial_registration_success
 description: Total count of creations Duo Enterprise trial successfully
 product_group: acquisition
+product_categories:
+- duo_chat
 performance_indicator_type: []
 value_type: number
 status: active
