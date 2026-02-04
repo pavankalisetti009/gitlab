@@ -130,5 +130,62 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
         end
       end
     end
+
+    describe 'count-only caching' do
+      let(:count_only) { true }
+      let(:file_count) { 0 }
+      let(:search_results) { {} }
+      let(:response) { [search_results, total_count, file_count] }
+
+      context 'when count_only is true and file_count is 0' do
+        it 'caches the count result' do
+          data = cache.fetch { response }
+
+          expect(data).to eq(response)
+
+          # Verify data was cached by checking Redis
+          redis = ::Gitlab::Redis::Cache.with { |r| r }
+          data = "#{query}-g#{group_id}-p#{project_id}-#{search_mode}-3-#{Gitlab::Json.generate(filters.sort)}"
+          fingerprint = OpenSSL::Digest.hexdigest('SHA256', data)
+          cached_data = redis.get("cache:zoekt:{#{user1.id}}/#{count_only}/#{fingerprint}/#{per_page}/#{page}")
+
+          expect(cached_data).not_to be_nil
+          # For count-only queries, search_results is {}, so search_results[0] is nil
+          expect(Marshal.load(cached_data)).to match_array([{ 0 => nil }, total_count, file_count]) # rubocop:disable Security/MarshalLoad -- Testing cache serialization
+        end
+
+        it 'returns cached count on subsequent calls' do
+          # First call - populates cache
+          first_call_result = cache.fetch { response }
+          expect(first_call_result).to eq(response)
+
+          # Second call - should use cache without yielding
+          # The cached result has a slightly different structure: {0 => nil} instead of {}
+          expect do |block|
+            second_call_result = cache.fetch(&block)
+            # When retrieved from cache, search_results becomes {0 => nil}
+            expect(second_call_result).to match_array([{ 0 => nil }, total_count, file_count])
+          end.not_to yield_control
+        end
+      end
+
+      context 'when count_only is false and file_count is 0' do
+        let(:count_only) { false }
+
+        it 'does not cache the result' do
+          data = cache.fetch { response }
+
+          expect(data).to eq(response)
+
+          # Verify data was not cached
+          redis = ::Gitlab::Redis::Cache.with { |r| r }
+          data = "#{query}-g#{group_id}-p#{project_id}-#{search_mode}-3-#{Gitlab::Json.generate(filters.sort)}"
+          fingerprint = OpenSSL::Digest.hexdigest('SHA256', data)
+          cached_data = redis.get("cache:zoekt:{#{user1.id}}/#{count_only}/#{fingerprint}/#{per_page}/#{page}")
+
+          expect(cached_data).to be_nil
+        end
+      end
+    end
   end
 end
