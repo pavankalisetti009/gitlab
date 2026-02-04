@@ -9,82 +9,15 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Remote::Entry, :aggreg
   it { is_expected.to include_module(::UpdateNamespaceStatistics) }
   it { is_expected.to include_module(::Auditable) }
 
-  it_behaves_like 'having unique enum values'
   it_behaves_like 'updates namespace statistics' do
     let(:statistic_source) { cache_entry }
     let(:non_statistic_attribute) { :relative_path }
   end
 
-  describe 'associations' do
-    it { is_expected.to belong_to(:group).required(true) }
-    it { is_expected.to belong_to(:upstream).required(true) }
-  end
-
-  describe 'validations' do
-    context 'with a non top-level group' do
-      let(:subgroup) { build(:group, parent: build(:group)) }
-      let(:entry) { build(:virtual_registries_packages_maven_cache_remote_entry, group: subgroup) }
-
-      it 'is invalid' do
-        expect(entry).to be_invalid
-        expect(entry.errors[:group]).to include('must be a top level Group')
-      end
-    end
-
-    %i[file file_sha1 relative_path size].each do |attr|
-      it { is_expected.to validate_presence_of(attr) }
-    end
-
-    %i[upstream_etag content_type].each do |attr|
-      it { is_expected.to validate_length_of(attr).is_at_most(255) }
-    end
-
-    %i[relative_path object_storage_key].each do |attr|
-      it { is_expected.to validate_length_of(attr).is_at_most(1024) }
-    end
-
-    it { is_expected.to validate_length_of(:file_md5).is_equal_to(32).allow_nil }
-    it { is_expected.to validate_length_of(:file_sha1).is_equal_to(40) }
-
-    context 'with persisted cache entry' do
-      before do
-        cache_entry.save!
-      end
-
-      it { is_expected.to validate_uniqueness_of(:relative_path).scoped_to(:upstream_id, :status, :group_id) }
-      it { is_expected.to validate_uniqueness_of(:object_storage_key).scoped_to(:relative_path, :group_id) }
-
-      context 'with a similar cache entry in a different status' do
-        let!(:cache_entry_in_error) do
-          create(
-            :virtual_registries_packages_maven_cache_remote_entry,
-            :error,
-            group_id: cache_entry.group_id,
-            upstream_id: cache_entry.upstream_id,
-            relative_path: cache_entry.relative_path
-          )
-        end
-
-        let(:new_cache_entry) do
-          build(
-            :virtual_registries_packages_maven_cache_remote_entry,
-            :error,
-            group_id: cache_entry.group_id,
-            upstream_id: cache_entry.upstream_id,
-            relative_path: cache_entry.relative_path
-          )
-        end
-
-        before do
-          new_cache_entry.validate
-        end
-
-        it 'does not validate uniqueness of relative_path' do
-          expect(new_cache_entry.errors.messages_for(:relative_path)).not_to include 'has already been taken'
-        end
-      end
-    end
-  end
+  it_behaves_like 'virtual registries remote entries models',
+    upstream_class: 'VirtualRegistries::Packages::Maven::Upstream',
+    upstream_factory: :virtual_registries_packages_maven_upstream,
+    entry_factory: :virtual_registries_packages_maven_cache_remote_entry
 
   describe 'scopes' do
     let_it_be(:cache_entry1) { create(:virtual_registries_packages_maven_cache_remote_entry) }
@@ -156,39 +89,6 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Remote::Entry, :aggreg
       let(:relative_path) { cache_entry.relative_path.slice(3, 8) }
 
       it { is_expected.to contain_exactly(cache_entry) }
-    end
-  end
-
-  describe '.create_or_update_by!' do
-    let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }
-
-    let(:size) { 10.bytes }
-
-    subject(:create_or_update) do
-      Tempfile.create('test.txt') do |file|
-        file.write('test')
-        described_class.create_or_update_by!(
-          upstream: upstream,
-          group_id: upstream.group_id,
-          relative_path: '/test',
-          updates: { file: file, size: size, file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f95' }
-        )
-      end
-    end
-
-    context 'with parallel execution' do
-      it 'creates or update the existing record' do
-        expect { with_threads { create_or_update } }.to change { described_class.count }.by(1)
-      end
-    end
-
-    context 'with invalid updates' do
-      let(:size) { nil }
-
-      it 'bubbles up the error' do
-        expect { create_or_update }.to not_change { described_class.count }
-          .and raise_error(ActiveRecord::RecordInvalid)
-      end
     end
   end
 
@@ -364,52 +264,5 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Remote::Entry, :aggreg
 
       include_examples 'threshold behavior'
     end
-  end
-
-  describe '#bump_downloads_count' do
-    let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_remote_entry) }
-
-    subject(:bump) { cache_entry.bump_downloads_count }
-
-    it 'enqueues the update', :sidekiq_inline do
-      expect(FlushCounterIncrementsWorker)
-        .to receive(:perform_in)
-        .with(Gitlab::Counters::BufferedCounter::WORKER_DELAY, described_class.name, cache_entry.id, 'downloads_count')
-        .and_call_original
-
-      expect { bump }.to change { cache_entry.reload.downloads_count }.by(1)
-        .and change { cache_entry.downloaded_at }
-    end
-  end
-
-  context 'with loose foreign key on virtual_registries_packages_maven_cache_remote_entries.upstream_id' do
-    it_behaves_like 'update by a loose foreign key' do
-      let_it_be(:parent) { create(:virtual_registries_packages_maven_upstream) }
-      let_it_be(:model) { create(:virtual_registries_packages_maven_cache_remote_entry, upstream: parent) }
-
-      let(:find_model) { described_class.take }
-    end
-  end
-
-  def with_threads(&block)
-    return unless block
-
-    # create a race condition - structure from https://blog.arkency.com/2015/09/testing-race-conditions/
-    wait_for_it = true
-
-    threads = Array.new(5) do
-      Thread.new do
-        # each thread must checkout its own connection
-        ApplicationRecord.connection_pool.with_connection do
-          # A loop to make threads busy until we `join` them
-          true while wait_for_it
-
-          yield
-        end
-      end
-    end
-
-    wait_for_it = false
-    threads.each(&:join)
   end
 end
