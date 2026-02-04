@@ -245,4 +245,88 @@ RSpec.describe RuboCop::Cop::API::ParameterDocumentation, :config, feature_categ
       RUBY
     end
   end
+
+  context "when Proc is assigned to a variable" do
+    context "without documentation" do
+      it "registers an offense for Proc variable in values:" do
+        expect_offense(<<~RUBY, msg: msg_values)
+          values = proc { Status.names }
+          params do
+            requires :status, type: String, values: values
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ %{msg}
+          end
+        RUBY
+      end
+
+      it "registers an offense for lambda variable in values:" do
+        expect_offense(<<~RUBY, msg: msg_values)
+          values = -> { Status.names }
+          params do
+            requires :status, type: String, values: values
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ %{msg}
+          end
+        RUBY
+      end
+
+      it "registers an offense for Proc variable in default:" do
+        expect_offense(<<~RUBY, msg: msg_default)
+          default_value = proc { Config.limit }
+          params do
+            optional :limit, type: Integer, default: default_value
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ %{msg}
+          end
+        RUBY
+      end
+
+      it "registers an offense for lambda variable in default:" do
+        expect_offense(<<~RUBY, msg: msg_default)
+          default_value = -> { Config.limit }
+          params do
+            optional :limit, type: Integer, default: default_value
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ %{msg}
+          end
+        RUBY
+      end
+    end
+
+    context "with documentation" do
+      it "does not register an offense for Proc variable in values:" do
+        expect_no_offenses(<<~RUBY)
+          values = proc { Status.names }
+          params do
+            requires :status, type: String, values: values, documentation: { example: 'active' }
+          end
+        RUBY
+      end
+
+      it "does not register an offense for Proc variable in default:" do
+        expect_no_offenses(<<~RUBY)
+          default_value = proc { Config.limit }
+          params do
+            optional :limit, type: Integer, default: default_value, documentation: { example: 10 }
+          end
+        RUBY
+      end
+    end
+
+    context "when variable is not a Proc" do
+      it "does not register an offense for non-Proc variable in values:" do
+        expect_no_offenses(<<~RUBY)
+          values = %w[active inactive]
+          params do
+            requires :status, type: String, values: values
+          end
+        RUBY
+      end
+
+      it "does not register an offense for non-Proc variable in default:" do
+        expect_no_offenses(<<~RUBY)
+          default_value = 10
+          params do
+            optional :limit, type: Integer, default: default_value
+          end
+        RUBY
+      end
+    end
+  end
 end

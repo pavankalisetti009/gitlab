@@ -37,18 +37,41 @@ module RuboCop
       #       requires :status, type: String, values: -> { Status.names }, documentation: false
       #     end
       #
+      #   # bad (Proc assigned to variable and used in values)
+      #     values = proc { Status.names }
+      #     params do
+      #       requires :status, type: String, values: values
+      #     end
+      #
       class ParameterDocumentation < RuboCop::Cop::Base
         include CodeReuseHelpers
 
-        MSG_VALUES = "Parameter is constrained to a set of values determined at runtime. " \
-          "Include a `documentation` field to inform about the allowed values as precisely as possible."
-        MSG_DEFAULT = "Parameter has a default value determined at runtime. " \
-          "Include a `documentation` field to inform about the default as precisely as possible."
+        MESSAGES = {
+          values: "Parameter is constrained to a set of values determined at runtime. " \
+            "Include a `documentation` field to inform about the allowed values as precisely as possible.",
+          default: "Parameter has a default value determined at runtime. " \
+            "Include a `documentation` field to inform about the default as precisely as possible."
+        }.freeze
         RESTRICT_ON_SEND = %i[requires optional].freeze
 
         PROC_PATTERN = "{(block (send nil? :proc) ...) (block (send nil? :lambda) ...) " \
           "(block (send (const nil? :Proc) :new) ...) (send nil? :proc) (send nil? :lambda) " \
           "(send _ :to_proc)}"
+
+        def on_new_investigation
+          @proc_variables = {}
+        end
+
+        # @!method proc_assignment?(node)
+        def_node_matcher :proc_assignment?, <<~PATTERN
+          (lvasgn $_name #{PROC_PATTERN})
+        PATTERN
+
+        def on_lvasgn(node)
+          proc_assignment?(node) do |name|
+            @proc_variables[name] = true
+          end
+        end
 
         # @!method has_documentation?(node)
         def_node_matcher :has_documentation?, <<~PATTERN
@@ -58,32 +81,35 @@ module RuboCop
           )
         PATTERN
 
-        # @!method proc_in_values?(node)
-        def_node_matcher :proc_in_values?, <<~PATTERN
+        # @!method proc_used?(node)
+        def_node_matcher :proc_used?, <<~PATTERN
           (send _
             ...
-            (hash <(pair (sym :values) #{PROC_PATTERN}) ...>)
+            (hash <(pair (sym ${:values :default}) #{PROC_PATTERN}) ...>)
           )
         PATTERN
 
-        # @!method proc_in_default?(node)
-        def_node_matcher :proc_in_default?, <<~PATTERN
+        # @!method variable_used?(node)
+        def_node_matcher :variable_used?, <<~PATTERN
           (send _
             ...
-            (hash <(pair (sym :default) #{PROC_PATTERN}) ...>)
+            (hash <(pair (sym ${:values :default}) (lvar $_name)) ...>)
           )
         PATTERN
 
         def on_send(node)
           return if has_documentation?(node)
 
-          if proc_in_values?(node)
-            add_offense(node, message: MSG_VALUES)
-          elsif proc_in_default?(node)
-            add_offense(node, message: MSG_DEFAULT)
-          end
+          key = proc_used?(node) || proc_variable_used?(node)
+          add_offense(node, message: MESSAGES[key]) if key
         end
         alias_method :on_csend, :on_send
+
+        private
+
+        def proc_variable_used?(node)
+          variable_used?(node) { |key, name| key if @proc_variables[name] }
+        end
       end
     end
   end
