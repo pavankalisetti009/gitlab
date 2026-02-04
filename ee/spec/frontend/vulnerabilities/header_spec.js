@@ -178,6 +178,7 @@ describe('Vulnerability Header', () => {
     glAbilities,
     hideVulnerabilitySeverityOverride = false,
     glFeatures = {},
+    experimentFeaturesEnabled = true,
   }) => {
     wrapper = shallowMount(Header, {
       apolloProvider,
@@ -193,6 +194,7 @@ describe('Vulnerability Header', () => {
       },
       provide: {
         dismissalDescriptions,
+        experimentFeaturesEnabled,
         glAbilities: {
           explainVulnerabilityWithAi: true,
           resolveVulnerabilityWithAi: true,
@@ -915,6 +917,21 @@ describe('Vulnerability Header', () => {
       createWrapper({
         vulnerability,
         glFeatures: { aiExperimentSastFpDetection: true },
+      });
+    });
+
+    describe('when experimentFeaturesEnabled is false', () => {
+      beforeEach(() => {
+        gon.api_version = 'v4';
+        createWrapper({
+          vulnerability,
+          glFeatures: { aiExperimentSastFpDetection: true },
+          experimentFeaturesEnabled: false,
+        });
+      });
+
+      it('does not show the AI false positive detection button', () => {
+        expect(findActionsDropdown().props('canRunAiFalsePositiveDetection')).toBe(false);
       });
     });
 

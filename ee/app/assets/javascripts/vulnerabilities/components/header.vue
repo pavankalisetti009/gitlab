@@ -77,6 +77,7 @@ export default {
     GlModal: GlModalDirective,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
+  inject: ['experimentFeaturesEnabled'],
   props: {
     vulnerability: {
       type: Object,
@@ -131,6 +132,7 @@ export default {
         this.canAdminVulnerability &&
         this.glAbilities.explainVulnerabilityWithAi &&
         this.glFeatures.aiExperimentSastFpDetection &&
+        this.experimentFeaturesEnabled &&
         this.vulnerability.reportType === 'sast' &&
         !this.detectedAsFalsePositive
       );

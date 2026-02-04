@@ -12,7 +12,8 @@ module VulnerabilitiesHelper
       commit_path_template: commit_path_template(project),
       project_full_path: project.full_path,
       default_branch: project.default_branch,
-      customize_jira_issue_enabled: project.jira_integration&.customize_jira_issue_enabled.to_s
+      customize_jira_issue_enabled: project.jira_integration&.customize_jira_issue_enabled.to_s,
+      experiment_features_enabled: (project.root_ancestor&.experiment_features_enabled || false).to_s
     }
   end
 
