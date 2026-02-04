@@ -10,6 +10,7 @@ import {
   NAME_TO_TEXT_LOWERCASE_MAP,
   TRACKING_CATEGORY_SHOW,
   WORK_ITEM_TYPE_NAME_OBJECTIVE,
+  WIDGET_TYPE_PROGRESS,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { sprintf } from '~/locale';
@@ -25,6 +26,7 @@ export default {
     WorkItemSidebarWidget,
   },
   mixins: [Tracking.mixin(), glFeatureFlagMixin()],
+  inject: ['getWorkItemTypeConfiguration'],
   props: {
     canUpdate: {
       type: Boolean,
@@ -60,8 +62,15 @@ export default {
         property: `type_${this.workItemType}`,
       };
     },
+    workItemTypeConfiguration() {
+      return this.getWorkItemTypeConfiguration(this.workItemType);
+    },
     showProgressPopover() {
-      return this.workItemType === WORK_ITEM_TYPE_NAME_OBJECTIVE;
+      return (
+        this.workItemTypeConfiguration?.widgetDefinitions.find(
+          ({ type }) => type === WIDGET_TYPE_PROGRESS,
+        )?.showPopover || this.workItemType === WORK_ITEM_TYPE_NAME_OBJECTIVE
+      );
     },
     isValidProgress() {
       if (this.localProgress === '') {
@@ -164,7 +173,7 @@ export default {
         </button>
         <gl-popover
           target="okr-progress-popover-title"
-          placement="right"
+          placement="top"
           :title="__('How is progress calculated?')"
           :content="
             __(
