@@ -26289,6 +26289,9 @@ msgstr ""
 msgid "DuoCodeReview|Enable automatic reviews by GitLab Duo"
 msgstr ""
 
+msgid "DuoCodeReview|Error code: [%{error_code}](%{error_code_url})"
+msgstr ""
+
 msgid "DuoCodeReview|GitLab Duo Code Review"
 msgstr ""
 

@@ -112,10 +112,20 @@ module Ai
     end
 
     def message_with_error_code(message, error_code)
-      error_code_url =
-        "#{Gitlab.doc_url}/user/duo_agent_platform/flows/foundational_flows/code_review/#error-#{error_code.downcase}"
+      error_code_url = Rails.application.routes.url_helpers.help_page_url(
+        'user/duo_agent_platform/flows/foundational_flows/code_review.md',
+        anchor: "error-#{error_code.downcase}"
+      )
 
-      "#{message}\n\nError code: [#{error_code}](#{error_code_url})"
+      error_info = format(
+        s_(
+          "DuoCodeReview|Error code: [%{error_code}](%{error_code_url})"
+        ),
+        error_code_url: error_code_url,
+        error_code: error_code
+      )
+
+      "#{message}\n\n#{error_info}"
     end
   end
 end
