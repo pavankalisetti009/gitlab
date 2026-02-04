@@ -62,7 +62,7 @@ module WorkItems
               { 'epic' => :subepics, 'issue' => :epics }
             end
 
-            def support_roadmap_view?
+            def supports_roadmap_view?
               true
             end
 
@@ -70,7 +70,7 @@ module WorkItems
               false
             end
 
-            def configurable
+            def configurable?
               false
             end
           end
