@@ -291,6 +291,17 @@ describe('AnalyticsDashboard', () => {
       expect(findUsageOverviewAggregationWarning().exists()).toBe(false);
     });
 
+    it('should use the default cell height for the grid', async () => {
+      createWrapper();
+
+      await waitForPromises();
+
+      expect(findDashboard().props()).toMatchObject({
+        cellHeight: 137,
+        minCellHeight: 1,
+      });
+    });
+
     it('should add unique panel ids to each panel', async () => {
       createWrapper();
 
@@ -1009,6 +1020,25 @@ describe('AnalyticsDashboard', () => {
 
     it('renders the usage overview aggregation warning', () => {
       expect(findUsageOverviewAggregationWarning().exists()).toBe(true);
+    });
+  });
+
+  describe('when COMPACT gridHeight is used', () => {
+    beforeEach(() => {
+      setupDashboard(
+        createDashboardGraphqlSuccessResponse(
+          getGraphQLDashboardWithPanels({ gridHeight: 'COMPACT' }),
+        ),
+      );
+
+      return waitForPromises();
+    });
+
+    it('sets the correct cell height and min cell height for the grid', () => {
+      expect(findDashboard().props()).toMatchObject({
+        cellHeight: 10,
+        minCellHeight: 10,
+      });
     });
   });
 });
