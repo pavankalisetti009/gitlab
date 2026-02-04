@@ -67,6 +67,8 @@ describe('initDuoPanel', () => {
     Object.assign(element.dataset, {
       canStartTrial: 'true',
       newTrialPath: 'newTrialPath',
+      trialDuration: '30',
+      namespaceType: 'Group',
       ...dataset,
     });
     document.body.appendChild(element);
@@ -102,7 +104,12 @@ describe('initDuoPanel', () => {
       it('extracts all required data attributes', () => {
         const vueInstance = initDuoPanel();
 
-        expect(vueInstance.$options.provide.newTrialPath).toBe('newTrialPath');
+        expect(vueInstance.$options.provide).toEqual({
+          canStartTrial: true,
+          namespaceType: 'Group',
+          newTrialPath: 'newTrialPath',
+          trialDuration: '30',
+        });
       });
     });
 
@@ -111,10 +118,10 @@ describe('initDuoPanel', () => {
         createDuoPanelEmptyStateElement({ newTrialPath: '' });
       });
 
-      it('returns false', () => {
-        const result = initDuoPanel();
+      it('computes `canStartTrial` properly', () => {
+        const vueInstance = initDuoPanel();
 
-        expect(result).toBe(false);
+        expect(vueInstance.$options.provide.canStartTrial).toBe(false);
       });
     });
 
