@@ -43,6 +43,12 @@ namespace :gitlab do
       Gitlab::Duo::Developments::DapEvalsSeeder.seed_issues(output_file: output_file)
     end
 
+    desc 'GitLab | Duo | Seed projects and issues for SWE Bench evaluations'
+    task :swe_bench_seeder, [:projects] => :environment do |_, args|
+      project_filter = args[:projects]&.split(',')&.map(&:strip)&.reject(&:empty?)&.presence
+      Gitlab::Duo::Developments::SweBenchSeeder.seed(project_filter: project_filter)
+    end
+
     desc 'GitLab | Duo | Onboard Duo Agent Platform'
     task onboard_dap: :gitlab_environment do
       Gitlab::Duo::Developments::DapOnboarding.execute
