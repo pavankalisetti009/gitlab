@@ -100,6 +100,7 @@ module EE
         elasticsearch_analyzers_kuromoji_enabled: [:boolean, { default: false }],
         elasticsearch_indexed_field_length_limit: [:integer, { default: 0 }],
         elasticsearch_indexed_file_size_limit_kb: [:integer, { default: 1024 }],
+        elasticsearch_indexing_timeout_minutes: [:integer, { default: ::Gitlab::Elastic::Indexer::TIMEOUT_MINUTES }],
         elasticsearch_max_code_indexing_concurrency: [:integer, { default: 30 }],
         elasticsearch_prefix: [:string, { default: 'gitlab' }],
         elasticsearch_code_scope: [:boolean, { default: true }]
@@ -171,6 +172,7 @@ module EE
       validates :mirror_capacity_threshold,
         :mirror_max_capacity,
         :elasticsearch_indexed_file_size_limit_kb,
+        :elasticsearch_indexing_timeout_minutes,
         :elasticsearch_max_bulk_concurrency,
         :elasticsearch_max_bulk_size_mb,
         :search_max_docs_denominator,

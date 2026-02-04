@@ -87,6 +87,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         elasticsearch_client_request_timeout: 0,
         elasticsearch_indexed_field_length_limit: 0,
         elasticsearch_indexed_file_size_limit_kb: 1024,
+        elasticsearch_indexing_timeout_minutes: 30,
         elasticsearch_indexing: false,
         elasticsearch_limit_indexing: false,
         elasticsearch_max_bulk_concurrency: 10,
@@ -234,6 +235,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
 
       it { is_expected.not_to allow_value(nil).for(:elasticsearch_indexed_file_size_limit_kb) }
+
+      it 'validates elasticsearch_indexing_timeout_minutes' do
+        is_expected.to validate_numericality_of(:elasticsearch_indexing_timeout_minutes).only_integer.is_greater_than(0)
+      end
+
+      it { is_expected.not_to allow_value(nil).for(:elasticsearch_indexing_timeout_minutes) }
 
       it 'validates elasticsearch_indexed_field_length_limit' do
         is_expected.to validate_numericality_of(:elasticsearch_indexed_field_length_limit)

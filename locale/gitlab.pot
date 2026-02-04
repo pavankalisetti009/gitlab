@@ -36542,7 +36542,13 @@ msgstr ""
 msgid "Indexing CPU to tasks multiplier"
 msgstr ""
 
+msgid "Indexing timeout (minutes)"
+msgstr ""
+
 msgid "Indexing timeout per project"
+msgstr ""
+
+msgid "Indexing timeout per project. For large projects, increase this limit."
 msgstr ""
 
 msgid "Inform users without uploaded SSH keys that they can't push over SSH until one is added"

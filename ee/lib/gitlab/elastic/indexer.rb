@@ -9,7 +9,7 @@ module Gitlab
       include Gitlab::Utils::StrongMemoize
       include Gitlab::Loggable
 
-      TIMEOUT = 30.minutes.to_i
+      TIMEOUT_MINUTES = 30 # Default timeout, overridden by application setting
       Error = Class.new(StandardError)
       BLOB_SCHEMA_VERSION = 23_08
       COMMIT_SCHEMA_VERSION = 23_06
@@ -18,6 +18,10 @@ module Gitlab
       class << self
         def indexer_version
           Rails.root.join('GITLAB_ELASTICSEARCH_INDEXER_VERSION').read.chomp
+        end
+
+        def timeout
+          Gitlab::CurrentSettings.elasticsearch_indexing_timeout_minutes.minutes
         end
       end
 
@@ -84,6 +88,8 @@ module Gitlab
         true
       end
 
+      private
+
       def find_indexable_commit(ref)
         return if repository.empty?
 
@@ -93,8 +99,6 @@ module Gitlab
       def purge_unreachable_commits_from_index?(to_sha)
         to_sha.blank? || force_reindexing? || !last_commit_ancestor_of?(to_sha)
       end
-
-      private
 
       def repository
         index_wiki? ? container.wiki.repository : container.repository
@@ -156,7 +160,7 @@ module Gitlab
 
       def build_command(base_sha, to_sha)
         path_to_indexer = Gitlab.config.elasticsearch.indexer_path
-        timeout_argument = "--timeout=#{TIMEOUT}s"
+        timeout_argument = "--timeout=#{self.class.timeout.to_i}s"
         visibility_level_argument = "--visibility-level=#{container.visibility_level}"
 
         command = [path_to_indexer, timeout_argument, visibility_level_argument]
