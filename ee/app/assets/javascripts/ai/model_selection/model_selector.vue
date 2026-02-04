@@ -133,6 +133,7 @@ export default {
     <model-select-dropdown
       class="gl-w-34 lg:gl-w-48"
       :selected-option="selectedOption"
+      :placeholder-dropdown-text="s__('ModelSelection|Select a model')"
       :items="listItems"
       :is-loading="isSaving || batchUpdateIsSaving"
       @select="onSelect"
