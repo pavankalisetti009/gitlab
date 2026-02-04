@@ -43262,13 +43262,10 @@ msgstr ""
 msgid "MissingSSHKeyWarningLink|Add SSH key"
 msgstr ""
 
-msgid "MissingSSHKeyWarningLink|Don't show again"
-msgstr ""
-
-msgid "MissingSSHKeyWarningLink|You can't push or pull repositories using SSH until you add an SSH key to your profile."
-msgstr ""
-
 msgid "MissingSSHKeyWarningLink|You won't be able to pull or push repositories via SSH until you add an SSH key to your profile"
+msgstr ""
+
+msgid "MissingSSHKeyWarningLink|Your account does not have an SSH key."
 msgstr ""
 
 msgid "Mixed"
