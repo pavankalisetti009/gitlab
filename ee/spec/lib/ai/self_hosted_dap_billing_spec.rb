@@ -23,7 +23,7 @@ RSpec.describe Ai::SelfHostedDapBilling, feature_category: :duo_agent_platform d
     end
 
     context 'when using offline cloud license' do
-      let(:license) { instance_double(License, offline_cloud_license?: true) }
+      let(:license) { instance_double(License, online_cloud_license?: false) }
 
       before do
         stub_feature_flags(self_hosted_dap_per_request_billing: true)
@@ -39,15 +39,50 @@ RSpec.describe Ai::SelfHostedDapBilling, feature_category: :duo_agent_platform d
         allow(License).to receive(:current).and_return(nil)
       end
 
-      it { is_expected.to be_truthy }
+      it { is_expected.to be_falsey }
     end
 
     context 'when all conditions are met' do
-      let(:license) { instance_double(License, offline_cloud_license?: false) }
+      let(:license) { instance_double(License, online_cloud_license?: true) }
 
       before do
         stub_feature_flags(self_hosted_dap_per_request_billing: true)
         allow(License).to receive(:current).and_return(license)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when in development environment and SELF_HOSTED_DAP_BILLING_ENABLED is not set' do
+      before do
+        stub_feature_flags(self_hosted_dap_per_request_billing: true)
+        allow(License).to receive(:current).and_return(nil)
+        allow(Rails.env).to receive(:development?).and_return(true)
+        stub_env('SELF_HOSTED_DAP_BILLING_ENABLED', nil)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when in development environment and SELF_HOSTED_DAP_BILLING_ENABLED is false' do
+      before do
+        stub_feature_flags(self_hosted_dap_per_request_billing: true)
+        allow(License).to receive(:current).and_return(nil)
+        allow(Rails.env).to receive(:development?).and_return(true)
+        stub_env('SELF_HOSTED_DAP_BILLING_ENABLED', 'false')
+      end
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when in development environment and SELF_HOSTED_DAP_BILLING_ENABLED is true' do
+      let(:license) { instance_double(License, online_cloud_license?: true) }
+
+      before do
+        stub_feature_flags(self_hosted_dap_per_request_billing: true)
+        allow(License).to receive(:current).and_return(license)
+        allow(Rails.env).to receive(:development?).and_return(true)
+        stub_env('SELF_HOSTED_DAP_BILLING_ENABLED', 'true')
       end
 
       it { is_expected.to be_truthy }
