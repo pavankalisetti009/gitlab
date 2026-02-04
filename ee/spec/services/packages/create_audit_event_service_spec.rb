@@ -3,10 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Packages::CreateAuditEventService, feature_category: :package_registry do
-  # Use `let` instead of `let_it_be` because the "when project does not belong
-  # to a group" context sets `project.group = nil` in a before block. With
-  # `let_it_be`, the same project instance is reused across examples, causing
-  # the mutation to leak to other tests.
+  # Use `let` with `build_stubbed` - non-persisted objects don't benefit from `let_it_be`.
   let(:project) { build_stubbed(:project, group: build_stubbed(:group)) }
   let(:user) { build_stubbed(:user) }
   let(:package) { build_stubbed(:generic_package, project: project, creator: user) }
