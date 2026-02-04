@@ -145,7 +145,7 @@ describe('MergeTrainsApp', () => {
   });
 
   describe('events', () => {
-    it('refetches queries on the branchChanged event and sets branch query param', async () => {
+    it('refetches queries on the branch-changed event and sets branch query param', async () => {
       createComponent();
 
       jest.spyOn(urlUtils, 'updateHistory');
@@ -154,7 +154,7 @@ describe('MergeTrainsApp', () => {
 
       await waitForPromises();
 
-      findBranchSelector().vm.$emit('branchChanged', targetBranch);
+      findBranchSelector().vm.$emit('branch-changed', targetBranch);
 
       await waitForPromises();
 
@@ -180,7 +180,7 @@ describe('MergeTrainsApp', () => {
       });
     });
 
-    it('refetches query on pageChange event', async () => {
+    it('refetches query on page-change event', async () => {
       createComponent();
 
       await waitForPromises();
@@ -192,7 +192,7 @@ describe('MergeTrainsApp', () => {
         before: null,
       };
 
-      findActiveTable().vm.$emit('pageChange', paginationInfo);
+      findActiveTable().vm.$emit('page-change', paginationInfo);
 
       await waitForPromises();
 
@@ -274,7 +274,7 @@ describe('MergeTrainsApp', () => {
     });
 
     it('polls data only for the active tab', async () => {
-      findTabs().vm.$emit('activeTab', 0);
+      findTabs().vm.$emit('active-tab', 0);
 
       expect(activeTrainsHandler).toHaveBeenCalledTimes(1);
       expect(mergedTrainsHandler).toHaveBeenCalledTimes(1);
@@ -290,7 +290,7 @@ describe('MergeTrainsApp', () => {
       expect(activeTrainsHandler).toHaveBeenCalledTimes(3);
       expect(mergedTrainsHandler).toHaveBeenCalledTimes(1);
 
-      findTabs().vm.$emit('activeTab', 1);
+      findTabs().vm.$emit('active-tab', 1);
 
       advanceToNextFetch();
 
@@ -307,7 +307,7 @@ describe('MergeTrainsApp', () => {
 
       expect(activeTrainsHandler).toHaveBeenCalledTimes(1);
 
-      findActiveTable().vm.$emit('deleteCar', carId);
+      findActiveTable().vm.$emit('delete-car', carId);
 
       expect(deleteCarHandler).toHaveBeenCalledWith({ input: { carId } });
       expect(activeTrainsHandler).toHaveBeenCalledTimes(2);
@@ -322,7 +322,7 @@ describe('MergeTrainsApp', () => {
 
       await waitForPromises();
 
-      findActiveTable().vm.$emit('deleteCar', carId);
+      findActiveTable().vm.$emit('delete-car', carId);
 
       await waitForPromises();
 

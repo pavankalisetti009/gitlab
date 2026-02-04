@@ -31,7 +31,7 @@ export default {
 </script>
 
 <template>
-  <gl-tabs sync-active-tab-with-query-params lazy @input="$emit('activeTab', $event)">
+  <gl-tabs sync-active-tab-with-query-params lazy @input="$emit('active-tab', $event)">
     <gl-tab query-param-value="active" data-testid="active-cars-tab">
       <template #title>
         <span class="gl-mr-2">{{ s__('Pipelines|Active') }}</span>

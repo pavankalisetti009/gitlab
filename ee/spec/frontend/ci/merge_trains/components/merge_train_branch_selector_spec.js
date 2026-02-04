@@ -36,11 +36,11 @@ describe('MergeTrainBranchFilter', () => {
     expect(findRefSelector().props('projectId')).toBe('1');
   });
 
-  it('emits branchChanged event with selected branch', () => {
+  it('emits branch-changed event with selected branch', () => {
     createComponent();
 
     findRefSelector().vm.$emit('input', 'dev');
 
-    expect(wrapper.emitted()).toEqual({ branchChanged: [['dev']] });
+    expect(wrapper.emitted()).toEqual({ 'branch-changed': [['dev']] });
   });
 });

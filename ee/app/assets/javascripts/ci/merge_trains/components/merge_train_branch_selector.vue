@@ -34,7 +34,7 @@ export default {
       :value="branch"
       :project-id="projectId"
       :enabled-ref-types="$options.ENABLED_REF_TYPES"
-      @input="$emit('branchChanged', $event)"
+      @input="$emit('branch-changed', $event)"
     />
   </div>
 </template>

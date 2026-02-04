@@ -82,7 +82,7 @@ export default {
       return sprintf(__('Added %{timeAgo} by'), { timeAgo });
     },
     nextPage(item) {
-      this.$emit('pageChange', {
+      this.$emit('page-change', {
         first: CARS_PER_PAGE,
         after: item,
         last: null,
@@ -90,7 +90,7 @@ export default {
       });
     },
     prevPage(item) {
-      this.$emit('pageChange', {
+      this.$emit('page-change', {
         first: null,
         after: null,
         last: CARS_PER_PAGE,
@@ -153,7 +153,7 @@ export default {
 
     <delete-car-modal-confirmation
       :merge-request-title="mergeRequestTitle"
-      @removeCarConfirmed="$emit('deleteCar', carToRemoveId)"
+      @remove-car-confirmed="$emit('delete-car', carToRemoveId)"
     />
   </div>
 </template>

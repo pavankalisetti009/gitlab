@@ -59,12 +59,12 @@ describe('MergeTrainTabs', () => {
     );
   });
 
-  it('emits the activeTab event', () => {
+  it('emits the active-tab event', () => {
     createComponent();
 
     findActiveCarsTab().vm.$emit('click');
 
-    expect(wrapper.emitted('activeTab')).toEqual([[0]]);
+    expect(wrapper.emitted('active-tab')).toEqual([[0]]);
   });
 
   it('passes the `sync-active-tab-with-query-params` prop', () => {

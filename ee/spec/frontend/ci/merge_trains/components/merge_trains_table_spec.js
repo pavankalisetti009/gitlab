@@ -107,22 +107,22 @@ describe('MergeTrainsTable', () => {
       expect(findKeysetPagination().exists()).toBe(true);
     });
 
-    it('emits pageChange event with prev cursor data', () => {
+    it('emits page-change event with prev cursor data', () => {
       const expectedBefore = 'eyJpZCI6IjUzIn0';
 
       findKeysetPagination().vm.$emit('prev', expectedBefore);
 
-      expect(wrapper.emitted('pageChange')).toEqual([
+      expect(wrapper.emitted('page-change')).toEqual([
         [{ after: null, before: expectedBefore, first: null, last: 20 }],
       ]);
     });
 
-    it('emits pageChange event with next cursor data', () => {
+    it('emits page-change event with next cursor data', () => {
       const expectedAfter = 'eyHpKCL6IjBzIn0';
 
       findKeysetPagination().vm.$emit('next', expectedAfter);
 
-      expect(wrapper.emitted('pageChange')).toEqual([
+      expect(wrapper.emitted('page-change')).toEqual([
         [{ after: expectedAfter, before: null, first: 20, last: null }],
       ]);
     });
