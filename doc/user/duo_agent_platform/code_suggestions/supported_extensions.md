@@ -2,26 +2,18 @@
 stage: AI-powered
 group: Code Creation
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
-description: Code Suggestions (Classic) supports multiple editors and languages.
-title: Supported extensions and languages for Code Suggestions (Classic)
+description: Code Suggestions supports multiple editors and languages.
+title: Supported extensions and languages
 ---
 
 {{< details >}}
 
 - Tier: Premium, Ultimate
-- Add-on: GitLab Duo Core, Pro, or Enterprise, GitLab Duo with Amazon Q
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 {{< /details >}}
 
-{{< history >}}
-
-- Changed to require GitLab Duo add-on in GitLab 17.6 and later.
-- Changed to include GitLab Duo Core in GitLab 18.0.
-
-{{< /history >}}
-
-Code Suggestions (Classic) is available in the following editor extensions and
+Code Suggestions is available in the following editor extensions and
 for the following languages.
 
 ## Supported editor extensions
@@ -31,11 +23,11 @@ To use Code Suggestions, use one of these editor extensions:
 | IDE                                                             | Extension |
 |-----------------------------------------------------------------|-----------|
 | Visual Studio Code (VS Code)                                    | [GitLab Workflow for VS Code](https://marketplace.visualstudio.com/items?itemName=GitLab.gitlab-workflow) |
-| [GitLab Web IDE (VS Code in the Cloud)](../../web_ide/_index.md) | No configuration required. |
+| [GitLab Web IDE (VS Code in the Cloud)](../../../user/project/web_ide/_index.md) | No configuration required. |
 | Microsoft Visual Studio (2022 for Windows)                      | [Visual Studio GitLab extension](https://marketplace.visualstudio.com/items?itemName=GitLab.GitLabExtensionForVisualStudio) |
 | JetBrains IDEs                                                  | [GitLab Duo Plugin for JetBrains](https://plugins.jetbrains.com/plugin/22325-gitlab-duo) |
 | Neovim                                                          | [`gitlab.vim` plugin](https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim) |
-| Eclipse                                                          | [GitLab for Eclipse](../../../../editor_extensions/eclipse/setup.md) |
+| Eclipse                                                          | [GitLab for Eclipse](../../../editor_extensions/eclipse/setup.md) |
 
 A [GitLab Language Server](https://gitlab.com/gitlab-org/editor-extensions/gitlab-lsp) is used in VS Code, Visual Studio, Eclipse, and Neovim. The Language Server supports faster iteration across more platforms. You can also configure it to support Code Suggestions in IDEs where GitLab doesn't provide official support.
 
@@ -128,7 +120,7 @@ However, Code Suggestions might not function as expected.
 Prerequisites:
 
 - You have installed and enabled the
-  [GitLab Workflow extension for VS Code](../../../../editor_extensions/visual_studio_code/_index.md).
+  [GitLab Workflow extension for VS Code](../../../editor_extensions/visual_studio_code/_index.md).
 - You have completed the [VS Code extension setup](https://gitlab.com/gitlab-org/gitlab-vscode-extension/#setup)
   instructions, and authorized the extension to access your GitLab account.
 
@@ -154,7 +146,7 @@ To do this:
 Prerequisites:
 
 - You have installed and enabled the
-  [GitLab plugin for JetBrains IDEs](../../../../editor_extensions/jetbrains_ide/_index.md).
+  [GitLab plugin for JetBrains IDEs](../../../editor_extensions/jetbrains_ide/_index.md).
 - You have completed the [Jetbrains extension setup](https://gitlab.com/gitlab-org/editor-extensions/gitlab-jetbrains-plugin#setup)
   instructions, and authorized the extension to access your GitLab account.
 
@@ -176,8 +168,8 @@ To do this:
 
 Prerequisites:
 
-- You have installed and enabled the [GitLab for Eclipse plugin](../../../../editor_extensions/eclipse/_index.md).
-- You have completed the [Eclipse setup](../../../../editor_extensions/eclipse/setup.md)
+- You have installed and enabled the [GitLab for Eclipse plugin](../../../editor_extensions/eclipse/_index.md).
+- You have completed the [Eclipse setup](../../../editor_extensions/eclipse/setup.md)
   instructions, and authorized the extension to access your GitLab account.
 
 To do this:

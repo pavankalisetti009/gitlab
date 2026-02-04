@@ -2,25 +2,18 @@
 stage: AI-powered
 group: Code Creation
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
-description: Set up Code Suggestions (Classic) in your IDE.
-title: Set up Code Suggestions (Classic)
+description: Set up Code Suggestions.
+title: Set up Code Suggestions
 ---
 
 {{< details >}}
 
 - Tier: Premium, Ultimate
-- Add-on: GitLab Duo Core, Pro, or Enterprise, GitLab Duo with Amazon Q
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 {{< /details >}}
 
-{{< history >}}
-
-- Changed to include GitLab Duo Core in GitLab 18.0.
-
-{{< /history >}}
-
-You can use GitLab Duo Code Suggestions (Classic) in several different IDEs.
+You can use GitLab Duo Code Suggestions in several different IDEs.
 
 To set up Code Suggestions, follow the instructions for your IDE.
 
@@ -28,7 +21,7 @@ To set up Code Suggestions, follow the instructions for your IDE.
 
 To use Code Suggestions, you need:
 
-- If you have GitLab Duo Core, [IDE features turned on](../../../gitlab_duo/turn_on_off.md#turn-gitlab-duo-core-on-or-off).
+- If you have GitLab Duo Core, [IDE features turned on](../../gitlab_duo/turn_on_off.md#turn-gitlab-duo-core-on-or-off).
 - To confirm that Code Suggestions [supports your preferred language](supported_extensions.md#supported-languages-by-ide).
   Different IDEs support different languages.
 
@@ -42,11 +35,11 @@ Code Suggestions is part of an editor extension. To use Code Suggestions:
 
 Follow these steps for your IDE:
 
-- [Visual Studio Code](../../../../editor_extensions/visual_studio_code/setup.md)
-- [Visual Studio](../../../../editor_extensions/visual_studio/setup.md)
-- [GitLab Duo plugin for JetBrains IDEs](../../../../editor_extensions/jetbrains_ide/setup.md)
-- [`gitlab.vim` plugin for Neovim](../../../../editor_extensions/neovim/setup.md)
-- [GitLab for Eclipse](../../../../editor_extensions/eclipse/setup.md)
+- [Visual Studio Code](../../../editor_extensions/visual_studio_code/setup.md)
+- [Visual Studio](../../../editor_extensions/visual_studio/setup.md)
+- [GitLab Duo plugin for JetBrains IDEs](../../../editor_extensions/jetbrains_ide/setup.md)
+- [`gitlab.vim` plugin for Neovim](../../../editor_extensions/neovim/setup.md)
+- [GitLab for Eclipse](../../../editor_extensions/eclipse/setup.md)
 
 ## Turn on Code Suggestions
 
@@ -135,7 +128,7 @@ Code Suggestions provides a LSP (Language Server Protocol) server, to support th
 | Mode     | Key mappings                          | Type      | Description |
 |----------|---------------------------------------|-----------|-------------|
 | `INSERT` | <kbd>Control</kbd>+<kbd>x</kbd>, <kbd>Control</kbd>+<kbd>o</kbd> | Built-in | Requests completions from GitLab Duo Code Suggestions through the language server. |
-| `NORMAL` | `<Plug>(GitLabToggleCodeSuggestions)` | `<Plug>`  | Toggles Code Suggestions on or off for the current buffer. Requires [configuration](../../../../editor_extensions/neovim/setup.md#configure-plug-key-mappings). |
+| `NORMAL` | `<Plug>(GitLabToggleCodeSuggestions)` | `<Plug>`  | Toggles Code Suggestions on or off for the current buffer. Requires [configuration](../../../editor_extensions/neovim/setup.md#configure-plug-key-mappings). |
 
 ## Verify that Code Suggestions is on
 
@@ -166,12 +159,12 @@ To turn off Code Suggestions in VS Code:
 1. Select **Manage** ({{< icon name="settings" >}}) > **Settings**.
 1. Clear the **GitLab Duo Code Suggestions** checkbox.
 
-Instead, you can [set `gitlab.duoCodeSuggestions.enabled` to `false` in the VS Code `settings.json` file](../../../../editor_extensions/visual_studio_code/settings.md#extension-settings).
+Instead, you can [set `gitlab.duoCodeSuggestions.enabled` to `false` in the VS Code `settings.json` file](../../../editor_extensions/visual_studio_code/settings.md#extension-settings).
 
 ### Visual Studio
 
 To turn Code Suggestions on or off without uninstalling the extension,
-[assign a keyboard shortcut to the `GitLab.ToggleCodeSuggestions` custom command](../../../../editor_extensions/visual_studio/setup.md#configure-the-extension).
+[assign a keyboard shortcut to the `GitLab.ToggleCodeSuggestions` custom command](../../../editor_extensions/visual_studio/setup.md#configure-the-extension).
 
 To disable or uninstall the extension, see the
 [Microsoft Visual Studio documentation on uninstalling or disabling the extension](https://learn.microsoft.com/en-us/visualstudio/ide/finding-and-using-visual-studio-extensions?view=vs-2022#uninstall-or-disable-an-extension).
@@ -213,4 +206,4 @@ To disable Eclipse Code Suggestions for a specific language:
 
 ### Turn off GitLab Duo
 
-Alternatively, you can [turn off GitLab Duo](../../../gitlab_duo/turn_on_off.md) (which includes Code Suggestions) completely for a group, project, or instance.
+Alternatively, you can [turn off GitLab Duo](../../gitlab_duo/turn_on_off.md) (which includes Code Suggestions) completely for a group, project, or instance.

@@ -2,40 +2,32 @@
 stage: AI-powered
 group: Code Creation
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
-description: Troubleshooting tips for common problems in Code Suggestions (Classic).
-title: Troubleshooting Code Suggestions (Classic)
+description: Troubleshooting tips for common problems in Code Suggestions.
+title: Troubleshooting Code Suggestions
 ---
 
 {{< details >}}
 
 - Tier: Premium, Ultimate
-- Add-on: GitLab Duo Core, Pro, or Enterprise, GitLab Duo with Amazon Q
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 {{< /details >}}
 
-{{< history >}}
+When working with GitLab Duo Code Suggestions, you might encounter the following issues.
 
-- Changed to require GitLab Duo add-on in GitLab 17.6 and later.
-- Changed to include GitLab Duo Core in GitLab 18.0.
-
-{{< /history >}}
-
-When working with GitLab Duo Code Suggestions (Classic), you might encounter the following issues.
-
-You can run a [health check](../../../gitlab_duo/turn_on_off.md) to test if your instance meets the requirements to run Code Suggestions.
+You can run a [health check](../../gitlab_duo/turn_on_off.md) to test if your instance meets the requirements to run Code Suggestions.
 
 For more information on troubleshooting GitLab Duo, see:
 
-- [Troubleshooting GitLab Duo](../../../gitlab_duo/troubleshooting.md).
-- [GitLab Duo Chat troubleshooting](../../../gitlab_duo_chat/troubleshooting.md).
-- [Troubleshooting GitLab Duo Self-Hosted](../../../../administration/gitlab_duo_self_hosted/troubleshooting.md).
+- [Troubleshooting GitLab Duo](../../gitlab_duo/troubleshooting.md).
+- [GitLab Duo Chat troubleshooting](../../gitlab_duo_chat/troubleshooting.md).
+- [Troubleshooting GitLab Duo Self-Hosted](../../../administration/gitlab_duo_self_hosted/troubleshooting.md).
 
 ## Suggestions are not displayed
 
 If suggestions are not displayed, ensure that you:
 
-- Have [configured GitLab Duo correctly](../../../gitlab_duo/turn_on_off.md).
+- Have [configured GitLab Duo correctly](../../gitlab_duo/turn_on_off.md).
 - Are using a [supported language](supported_extensions.md#supported-languages-by-ide)
   and [editor extension](supported_extensions.md#supported-editor-extensions).
 - Have [configured your editor extension correctly](set_up.md#configure-editor-extension).
@@ -50,7 +42,7 @@ for the different IDEs:
 ## Code Suggestions returns a 401 error
 
 Code Suggestions depends on a license token
-that [synchronizes your subscription](../../../../administration/license.md) with GitLab.
+that [synchronizes your subscription](../../../administration/license.md) with GitLab.
 
 When the token expires, Code Suggestions returns the following error with status `401`:
 
@@ -60,7 +52,7 @@ Token validation failed in Language Server:
 ```
 
 If GitLab has access to the cloud server, try
-[manually synchronizing your license](../../../../subscriptions/manage_subscription.md#manually-synchronize-subscription-data).
+[manually synchronizing your license](../../../subscriptions/manage_subscription.md#manually-synchronize-subscription-data).
 
 ## Authentication troubleshooting
 
@@ -76,11 +68,11 @@ specifically the token system. To resolve the issue:
 The following documentation is for Code Suggestions-specific troubleshooting for
 VS Code.
 
-For non-Code Suggestions troubleshooting for VS Code, see [Troubleshooting the GitLab Workflow extension for VS Code](../../../../editor_extensions/visual_studio_code/troubleshooting.md).
+For non-Code Suggestions troubleshooting for VS Code, see [Troubleshooting the GitLab Workflow extension for VS Code](../../../editor_extensions/visual_studio_code/troubleshooting.md).
 
 ### Suggestions not displayed in VS Code or GitLab Web IDE
 
-If you are on GitLab Self-Managed, ensure that Code Suggestions for the [GitLab Web IDE](../../web_ide/_index.md) is enabled. The same settings apply to VS Code as local IDE.
+If you are on GitLab Self-Managed, ensure that Code Suggestions for the [GitLab Web IDE](../../../user/project/web_ide/_index.md) is enabled. The same settings apply to VS Code as local IDE.
 
 1. On the left sidebar, select **Extensions** > **GitLab Workflow**.
 1. Select **Manage** ({{< icon name="settings" >}}), and then select **Settings**.
@@ -92,7 +84,7 @@ If you are on GitLab Self-Managed, ensure that Code Suggestions for the [GitLab 
 If Code Suggestions is enabled for the IDE, but suggestions are still not displayed:
 
 1. In your IDE, in the GitLab Workflow **Extension Settings**, enable **GitLab: Debug**.
-   - For Web IDE, you must have the [marketplace extensions](../../web_ide/_index.md#manage-extensions) enabled.
+   - For Web IDE, you must have the [marketplace extensions](../../../user/project/web_ide/_index.md#manage-extensions) enabled.
 1. On the top menu, select **View** > **Output** to open the bottom panel, then either:
    - In the command palette, select `GitLab: Show Extension Logs`.
    - In the bottom panel, on the right, select the dropdown list to filter the logs. Select **GitLab Workflow**.
@@ -156,7 +148,7 @@ This issue is often caused by network connection problems, like with your LAN fi
 The following documentation is for Code Suggestions-specific troubleshooting for
 JetBrains IDEs.
 
-For non-Code Suggestions troubleshooting for JetBrains IDEs, see [JetBrains troubleshooting](../../../../editor_extensions/jetbrains_ide/jetbrains_troubleshooting.md).
+For non-Code Suggestions troubleshooting for JetBrains IDEs, see [JetBrains troubleshooting](../../../editor_extensions/jetbrains_ide/jetbrains_troubleshooting.md).
 
 ### Suggestions not displayed in JetBrains IDEs
 
@@ -188,7 +180,7 @@ The following documentation is for Code Suggestions-specific troubleshooting for
 Microsoft Visual Studio.
 
 For non-Code Suggestions troubleshooting for Microsoft Visual Studio, see
-[Visual Studio troubleshooting](../../../../editor_extensions/visual_studio/visual_studio_troubleshooting.md).
+[Visual Studio troubleshooting](../../../editor_extensions/visual_studio/visual_studio_troubleshooting.md).
 
 ### IntelliCode is missing
 
@@ -244,7 +236,7 @@ If another extension provides similar suggestion or completion features, the ext
 The following documentation is for Code Suggestions-specific troubleshooting for
 Neovim.
 
-For non-Code Suggestions troubleshooting for Neovim, see [Neovim troubleshooting](../../../../editor_extensions/neovim/neovim_troubleshooting.md).
+For non-Code Suggestions troubleshooting for Neovim, see [Neovim troubleshooting](../../../editor_extensions/neovim/neovim_troubleshooting.md).
 
 ### Code completions fails
 
@@ -271,7 +263,7 @@ For non-Code Suggestions troubleshooting for Neovim, see [Neovim troubleshooting
 
 If you are assigned a seat in a project that has a specific model selected for code completion:
 
-- Your IDE extension disables the [direct connection to the AI Gateway](../../../../administration/gitlab_duo/gateway.md#region-support)
+- Your IDE extension disables the [direct connection to the AI Gateway](../../../administration/gitlab_duo/gateway.md#region-support)
 - Code completion requests go through the GitLab monolith, which then selects the specified model to respond to these requests.
 
 This might cause increased latency with code completion requests.
