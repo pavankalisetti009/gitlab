@@ -1239,52 +1239,7 @@ describe('toggle position based on chatMode', () => {
   });
 });
 
-describe('Agentic Mode Toggle (when agenticChatGa FF is disabled)', () => {
-  const findGlToggle = () => wrapper.findComponent(GlToggle);
-
-  beforeEach(() => {
-    duoChatGlobalState.isShown = true;
-    duoChatGlobalState.chatMode = 'classic';
-    createComponent({
-      propsData: {
-        userId: MOCK_USER_ID,
-        resourceId: MOCK_RESOURCE_ID,
-        isAgenticAvailable: true,
-      },
-    });
-  });
-
-  it('renders the GlToggle component with "Agentic mode" label', () => {
-    expect(findGlToggle().exists()).toBe(true);
-    expect(findGlToggle().text()).toContain('Agentic mode');
-  });
-
-  it('calls setAgenticMode when toggle value changes', async () => {
-    const toggle = findGlToggle();
-
-    toggle.vm.$emit('change', true);
-    await nextTick();
-
-    expect(setAgenticMode).toHaveBeenCalledWith({
-      agenticMode: true,
-      saveCookie: true,
-      isEmbedded: true,
-    });
-  });
-
-  describe('when Duo Chat is not shown', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isShown = false;
-      createComponent();
-    });
-
-    it('does not render the GlToggle component', () => {
-      expect(findGlToggle().exists()).toBe(false);
-    });
-  });
-});
-
-describe('Agentic Toggle (when agenticChatGa FF is enabled)', () => {
+describe('Agentic Toggle', () => {
   const findGlToggle = () => wrapper.findComponent(GlToggle);
 
   beforeEach(() => {
@@ -1296,9 +1251,6 @@ describe('Agentic Toggle (when agenticChatGa FF is enabled)', () => {
         userId: MOCK_USER_ID,
         resourceId: MOCK_RESOURCE_ID,
         isAgenticAvailable: true,
-      },
-      glFeatures: {
-        agenticChatGa: true,
       },
     });
   });
@@ -1325,11 +1277,7 @@ describe('Agentic Toggle (when agenticChatGa FF is enabled)', () => {
   describe('when Duo Chat is not shown', () => {
     beforeEach(() => {
       duoChatGlobalState.isShown = false;
-      createComponent({
-        glFeatures: {
-          agenticChatGa: true,
-        },
-      });
+      createComponent();
     });
 
     it('does not render the GlToggle component', () => {
