@@ -27125,7 +27125,7 @@ msgstr ""
 msgid "EmailOTP|Enhanced authentication coming soon"
 msgstr ""
 
-msgid "EmailOTP|On %{date}, GitLab will begin requiring email one-time passcodes for your account. To avoid being locked out, make sure you can access your primary email address before this date."
+msgid "EmailOTP|On %{date}, GitLab will begin requiring email one-time passcodes for your account. To avoid being locked out, make sure you can access your primary email address (%{strong_open}%{email}%{strong_close}) and have verified any secondary email addresses before this date."
 msgstr ""
 
 msgid "EmailOTP|Review email addresses"
