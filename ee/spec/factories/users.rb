@@ -98,4 +98,14 @@ FactoryBot.define do
       association :user_detail, :enterprise, provisioned_by_project: project, user: instance
     end
   end
+
+  factory :composite_identity_service_account_for_project, parent: :user, traits: [:service_account] do
+    transient do
+      project { association(:project) }
+    end
+
+    developer_of { project }
+    composite_identity_enforced { true }
+    provisioned_by_group { project.root_ancestor }
+  end
 end

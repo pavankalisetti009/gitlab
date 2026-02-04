@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe User, feature_category: :system_access do
   include GitlabSubscriptions::SubscriptionHelpers
+  include Ai::Catalog::FlowFactoryHelpers
 
   subject(:user) { described_class.new }
 
@@ -691,6 +692,65 @@ RSpec.describe User, feature_category: :system_access do
 
       it 'returns the users with specific admin role' do
         expect(described_class.with_admin_role(user_role_1.member_role.id)).to eq([user_1])
+      end
+    end
+
+    describe '.without_duo_flows_service_accounts' do
+      subject(:users) { described_class.without_duo_flows_service_accounts(project, [0]) }
+
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, group: group) }
+
+      let_it_be(:regular_human_account) do
+        create(:user, developer_of: project, username: 'regular_human_account')
+      end
+
+      let_it_be(:service_account_without_flow) do
+        create(:composite_identity_service_account_for_project, project: project, username: 'without_flow')
+      end
+
+      let_it_be(:service_account_without_trigger) do
+        create(:composite_identity_service_account_for_project, project: project, username: 'without_trigger')
+      end
+
+      let_it_be(:service_account_with_mention_trigger) do
+        create(:composite_identity_service_account_for_project, project: project, username: 'with_mention_trigger')
+      end
+
+      let_it_be(:service_account_with_assign_trigger) do
+        create(:composite_identity_service_account_for_project, project: project, username: 'with_assign_trigger')
+      end
+
+      before do
+        create_flow_configuration_for_project(
+          project, service_account_without_trigger, []
+        )
+        create_flow_configuration_for_project(
+          project, service_account_with_mention_trigger, [0]
+        )
+        create_flow_configuration_for_project(
+          project, service_account_with_assign_trigger, [1]
+        )
+        # These records are created to simulate orphan item consumer records when a service account is deleted
+        # and the item consumer remains in. It shouldn't really happen to real data, but we want to be
+        # extra safe this won't cause any issues in case it happens because of a bug or manual intervention.
+        # See more information in this thread:
+        # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219115#note_3044940114
+        create_flow_configuration_for_project(
+          project, nil, []
+        )
+      end
+
+      it 'filters out service accounts without a flow trigger and services accounts for the specified triggers' do
+        expect(users)
+          .to include(
+            regular_human_account,
+            service_account_without_flow,
+            service_account_with_assign_trigger
+          ).and exclude(
+            service_account_without_trigger,
+            service_account_with_mention_trigger
+          )
       end
     end
   end

@@ -34580,6 +34580,7 @@ Returns [`[AutocompletedUser!]`](#autocompleteduser).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="groupautocompleteusersincludeserviceaccountsfortriggerevents"></a>`includeServiceAccountsForTriggerEvents` {{< icon name="warning-solid" >}} | [`[AiFlowTriggerEventType!]`](#aiflowtriggereventtype) | **Introduced** in GitLab 18.9. **Status**: Experiment. Which flow triggers events associated to the service accounts to include. |
 | <a id="groupautocompleteuserssearch"></a>`search` | [`String`](#string) | Query to search users by name, username, or public email. |
 
 ##### `Group.availableSecurityScanProfiles`
@@ -43453,6 +43454,7 @@ Returns [`[AutocompletedUser!]`](#autocompleteduser).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="projectautocompleteusersincludeserviceaccountsfortriggerevents"></a>`includeServiceAccountsForTriggerEvents` {{< icon name="warning-solid" >}} | [`[AiFlowTriggerEventType!]`](#aiflowtriggereventtype) | **Introduced** in GitLab 18.9. **Status**: Experiment. Which flow triggers events associated to the service accounts to include. |
 | <a id="projectautocompleteuserssearch"></a>`search` | [`String`](#string) | Query to search users by name, username, or public email. |
 
 ##### `Project.availableDeployKeys`
@@ -52148,6 +52150,17 @@ AI features that can be configured through the Duo self-hosted feature settings.
 | <a id="aifeaturesreview_merge_request"></a>`REVIEW_MERGE_REQUEST` | Review merge request feature setting. |
 | <a id="aifeaturessummarize_new_merge_request"></a>`SUMMARIZE_NEW_MERGE_REQUEST` | Summarize new merge request feature setting. |
 | <a id="aifeaturessummarize_review"></a>`SUMMARIZE_REVIEW` | Summarize review feature setting. |
+
+### `AiFlowTriggerEventType`
+
+Possible event types for flow triggers.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="aiflowtriggereventtypeassign"></a>`ASSIGN` | Flow trigger assign event. |
+| <a id="aiflowtriggereventtypeassign_reviewer"></a>`ASSIGN_REVIEWER` | Flow trigger assign_reviewer event. |
+| <a id="aiflowtriggereventtypemention"></a>`MENTION` | Flow trigger mention event. |
+| <a id="aiflowtriggereventtypepipeline_hooks"></a>`PIPELINE_HOOKS` | Flow trigger pipeline_hooks event. |
 
 ### `AiMessageRole`
 
