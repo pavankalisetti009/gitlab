@@ -206,9 +206,78 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
   describe '#resume_indexing' do
     let(:settings) { ::Gitlab::CurrentSettings }
+    let(:indexing_paused) { true }
+    let(:indexing_enabled) { true }
 
     before do
-      settings.update!(elasticsearch_pause_indexing: indexing_paused)
+      settings.update!(elasticsearch_pause_indexing: indexing_paused, elasticsearch_indexing: indexing_enabled)
+      allow(::Search::Elastic::ReindexingTask).to receive(:running?).and_return(false)
+      allow(::Elastic::DataMigrationService).to receive(:pending_migrations).and_return([])
+    end
+
+    context 'when indexing is disabled' do
+      let(:indexing_enabled) { false }
+
+      it 'does not resume indexing and logs an error' do
+        expect(logger).to receive(:info).with(/Resuming indexing.../)
+        expect(logger).to receive(:error).with(/Cannot resume indexing: Indexing is disabled/)
+
+        expect { service.execute(:resume_indexing) }.not_to change {
+          settings.reload.elasticsearch_pause_indexing
+        }
+      end
+    end
+
+    context 'when a reindexing task is in progress' do
+      before do
+        allow(::Search::Elastic::ReindexingTask).to receive(:running?).and_return(true)
+      end
+
+      it 'does not resume indexing and logs an error' do
+        expect(logger).to receive(:info).with(/Resuming indexing.../)
+        expect(logger).to receive(:error).with(/Cannot resume indexing: A reindexing task is currently in progress/)
+
+        expect { service.execute(:resume_indexing) }.not_to change {
+          settings.reload.elasticsearch_pause_indexing
+        }
+      end
+    end
+
+    context 'when a migration is running that requires paused indexing' do
+      let(:migration) { ::Elastic::DataMigrationService.migrations.first }
+
+      before do
+        allow(::Elastic::DataMigrationService).to receive(:pending_migrations).and_return([migration])
+        allow(migration).to receive_messages(running?: true, pause_indexing?: true)
+      end
+
+      it 'does not resume indexing and logs an error' do
+        expect(logger).to receive(:info).with(/Resuming indexing.../)
+        expect(logger).to receive(:error)
+          .with(/Cannot resume indexing: A migration is running that requires indexing to be paused/)
+
+        expect { service.execute(:resume_indexing) }.not_to change {
+          settings.reload.elasticsearch_pause_indexing
+        }
+      end
+    end
+
+    context 'when a migration is running but does not require paused indexing' do
+      let(:migration) { ::Elastic::DataMigrationService.migrations.first }
+
+      before do
+        allow(::Elastic::DataMigrationService).to receive(:pending_migrations).and_return([migration])
+        allow(migration).to receive_messages(running?: true, pause_indexing?: false)
+      end
+
+      it 'resumes indexing successfully' do
+        expect(logger).to receive(:info).with(/Resuming indexing.../)
+        expect(logger).to receive(:info).with(/Indexing is now running/)
+
+        expect { service.execute(:resume_indexing) }.to change {
+          settings.reload.elasticsearch_pause_indexing
+        }.from(true).to(false)
+      end
     end
 
     context 'when indexing is already running' do
@@ -225,8 +294,6 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     end
 
     context 'when indexing is not running' do
-      let(:indexing_paused) { true }
-
       it 'resumes indexing' do
         expect(logger).to receive(:info).with(/Resuming indexing.../)
         expect(logger).to receive(:info).with(/Indexing is now running/)

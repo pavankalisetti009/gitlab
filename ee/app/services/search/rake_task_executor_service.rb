@@ -195,6 +195,24 @@ module Search
       logger.info(Rainbow('Resuming indexing...').green)
 
       if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
+        unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+          logger.error(Rainbow('Cannot resume indexing: Indexing is disabled. Enable indexing first.').red)
+          return
+        end
+
+        if ::Search::Elastic::ReindexingTask.running?
+          logger.error(Rainbow('Cannot resume indexing: A reindexing task is currently in progress.').red)
+          return
+        end
+
+        first_pending_migration = ::Elastic::DataMigrationService.pending_migrations.first
+        if first_pending_migration&.running? && first_pending_migration.pause_indexing?
+          logger.error(
+            Rainbow('Cannot resume indexing: A migration is running that requires indexing to be paused.').red
+          )
+          return
+        end
+
         ApplicationSettings::UpdateService.new(
           Gitlab::CurrentSettings.current_application_settings,
           nil,
