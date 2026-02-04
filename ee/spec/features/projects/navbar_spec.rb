@@ -30,7 +30,6 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
     insert_infrastructure_aws_nav
     project.update!(service_desk_enabled: true)
     allow(::ServiceDesk).to receive(:supported?).and_return(true)
-
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
     stub_licensed_features(product_analytics: true)
     stub_feature_flags(product_analytics_features: true)
@@ -39,6 +38,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
   describe 'when hide_error_tracking_features is disabled' do
     before do
       stub_feature_flags(hide_error_tracking_features: false)
+      stub_feature_flags(work_item_configurable_types: false)
     end
 
     context 'with default navbar' do
@@ -316,6 +316,27 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
       it_behaves_like 'verified navigation bar'
     end
 
+    context 'when work item settings is available' do
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(work_item_configurable_types: false)
+          visit project_path(project)
+        end
+
+        it_behaves_like 'verified navigation bar'
+      end
+
+      context 'when feature flag is enabled' do
+        before do
+          stub_feature_flags(work_item_configurable_types: true)
+          insert_work_items_settings_nav
+          visit project_path(project)
+        end
+
+        it_behaves_like 'verified navigation bar'
+      end
+    end
+
     context 'when analytics dashboards is available' do
       before do
         stub_licensed_features({ project_level_analytics_dashboard: true, product_analytics: true,
@@ -374,6 +395,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
   describe 'when hide_error_tracking_features is enabled' do
     context 'when error tracking feature flag is enabled' do
       before do
+        stub_feature_flags(work_item_configurable_types: false)
         remove_nav_item(_('Error Tracking'))
 
         visit project_path(project)

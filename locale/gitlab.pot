@@ -77617,6 +77617,9 @@ msgstr ""
 msgid "Withdraw access request"
 msgstr ""
 
+msgid "Work Item Settings"
+msgstr ""
+
 msgid "Work Item type %{gid} was not found"
 msgstr ""
 

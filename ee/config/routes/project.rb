@@ -164,6 +164,7 @@ constraints(::Projects::ProjectUrlConstraint.new) do
 
         namespace :settings do
           resource :analytics, only: [:show, :update]
+          resource :work_items, only: [:show], controller: 'work_items'
         end
 
         resources :secrets, path: 'secrets(/*vueroute)', only: [:index]
