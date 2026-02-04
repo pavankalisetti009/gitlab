@@ -107,4 +107,16 @@ RSpec.configure do |config|
     # things to clean up here later on as we add more features.
     reset_openbao
   end
+
+  # Dismiss duo_panel_auto_expanded callout for all feature specs to prevent the AI panel from auto-opening.
+  # Use :duo_panel_auto_expand metadata tag to test the auto-expand behavior.
+  config.before(:each, type: :feature) do |example|
+    next if example.metadata[:duo_panel_auto_expand]
+
+    # rubocop:disable RSpec/AnyInstanceOf -- needed to globally stub callout for all feature specs
+    allow_any_instance_of(User).to receive(:dismissed_callout?).and_wrap_original do |method, **args|
+      args[:feature_name] == 'duo_panel_auto_expanded' || method.call(**args)
+    end
+    # rubocop:enable RSpec/AnyInstanceOf
+  end
 end

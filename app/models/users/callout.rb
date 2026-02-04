@@ -124,8 +124,9 @@ module Users
       vulnerability_report_limited_experience: 120, # EE-only
       file_tree_browser_popover: 121,
       virtual_registry_permission_change_alert: 122, # EE-only
-      security_scanner_profiles_announcement: 123 # EE-only
+      security_scanner_profiles_announcement: 123, # EE-only
       # RESERVE CALLOUT ID 124 for a security fix 1509. See internal issue for more information.
+      duo_panel_auto_expanded: 125 # EE-only
     }
 
     validates :feature_name,

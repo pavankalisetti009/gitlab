@@ -45,7 +45,8 @@ module EE
         preferences_path: profile_preferences_path(anchor: 'user_duo_default_namespace_id'),
         expanded: ('true' if ai_panel_expanded?),
         **subscription_status_data(group, project),
-        explore_ai_catalog_path: explore_ai_catalog_path
+        explore_ai_catalog_path: explore_ai_catalog_path,
+        auto_expand: should_auto_expand_duo_panel?(user).to_s
       }.merge(duo_chat_billing_attributes(user, project, group))
     end
 
@@ -109,6 +110,12 @@ module EE
 
       response = user.allowed_to_use(:duo_chat)
       response.allowed? && response.enablement_type == "duo_core"
+    end
+
+    def should_auto_expand_duo_panel?(user)
+      return false unless user
+
+      !user.dismissed_callout?(feature_name: 'duo_panel_auto_expanded')
     end
 
     private
