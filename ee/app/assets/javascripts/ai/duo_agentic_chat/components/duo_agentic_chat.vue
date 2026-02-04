@@ -487,6 +487,7 @@ export default {
       handler(newVal) {
         const [firstCommand] = newVal;
         if (firstCommand) {
+          this.selectAgentFromCommand(firstCommand);
           this.onNewChat();
           this.onSendChatPrompt(firstCommand.question);
         }
@@ -1102,6 +1103,14 @@ export default {
         label: event.feedbackType,
         property: this.workflowId,
       });
+    },
+
+    selectAgentFromCommand(command) {
+      if (!command?.agent) {
+        return;
+      }
+
+      this.setCurrentAgent(command.agent);
     },
   },
 };
