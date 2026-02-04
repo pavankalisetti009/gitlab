@@ -46,8 +46,9 @@ class ElasticWikiIndexerWorker
     options = options.with_indifferent_access
     force = !!options['force']
     search_indexing_duration_s = Benchmark.realtime do
-      @ret = in_lock("#{self.class.name}/#{container_type}/#{container_id}",
-        ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute), retries: LOCK_RETRIES, sleep_sec: LOCK_SLEEP_SEC) do
+      key = "#{self.class.name}/#{container_type}/#{container_id}"
+      ttl = Gitlab::Elastic::Indexer.timeout + 1.minute
+      @ret = in_lock(key, ttl: ttl, retries: LOCK_RETRIES, sleep_sec: LOCK_SLEEP_SEC) do
         Gitlab::Elastic::Indexer.new(container, wiki: true, force: force).run
       end
     end

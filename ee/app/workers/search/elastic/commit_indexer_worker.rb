@@ -41,7 +41,7 @@ module Search
         force = !!options['force']
         search_indexing_duration_s = Benchmark.realtime do
           key = "#{self.class.name}/#{project_id}"
-          ttl = Gitlab::Elastic::Indexer::TIMEOUT + 1.minute
+          ttl = Gitlab::Elastic::Indexer.timeout + 1.minute
           @ret = in_lock(key, ttl: ttl, retries: LOCK_RETRIES, sleep_sec: LOCK_SLEEP_SEC) do
             Gitlab::Elastic::Indexer.new(@project, force: force).run
           end

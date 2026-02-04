@@ -145,7 +145,7 @@ RSpec.describe Search::Elastic::CommitIndexerWorker, feature_category: :global_s
       it 'does not run index' do
         expect(worker).to receive(:in_lock) # Mock and don't yield
           .with("Search::Elastic::CommitIndexerWorker/#{project.id}",
-            ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
+            ttl: Gitlab::Elastic::Indexer.timeout + 1.minute,
             retries: 2,
             sleep_sec: 1)
 
@@ -157,7 +157,7 @@ RSpec.describe Search::Elastic::CommitIndexerWorker, feature_category: :global_s
       it 'does not log anything' do
         expect(worker).to receive(:in_lock) # Mock and don't yield
           .with("Search::Elastic::CommitIndexerWorker/#{project.id}",
-            ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
+            ttl: Gitlab::Elastic::Indexer.timeout + 1.minute,
             retries: 2,
             sleep_sec: 1)
 
@@ -169,7 +169,7 @@ RSpec.describe Search::Elastic::CommitIndexerWorker, feature_category: :global_s
       it 'does not record the apdex SLI' do
         expect(worker).to receive(:in_lock) # Mock and don't yield
           .with("Search::Elastic::CommitIndexerWorker/#{project.id}",
-            ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
+            ttl: Gitlab::Elastic::Indexer.timeout + 1.minute,
             retries: 2,
             sleep_sec: 1)
 
@@ -181,7 +181,7 @@ RSpec.describe Search::Elastic::CommitIndexerWorker, feature_category: :global_s
       it 'does not log extra metadata' do
         expect(worker).to receive(:in_lock) # Mock and don't yield
           .with("Search::Elastic::CommitIndexerWorker/#{project.id}",
-            ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
+            ttl: Gitlab::Elastic::Indexer.timeout + 1.minute,
             retries: 2,
             sleep_sec: 1)
 
@@ -193,7 +193,7 @@ RSpec.describe Search::Elastic::CommitIndexerWorker, feature_category: :global_s
       it 'skips index and schedules a job' do
         expect(worker).to receive(:in_lock)
           .with("Search::Elastic::CommitIndexerWorker/#{project.id}",
-            ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
+            ttl: Gitlab::Elastic::Indexer.timeout + 1.minute,
             retries: 2,
             sleep_sec: 1)
           .and_raise(Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError)

@@ -94,6 +94,10 @@
       "type": "integer",
       "default": 1024
     },
+    "elasticsearch_indexing_timeout_minutes": {
+      "type": "integer",
+      "default": 30
+    },
     "elasticsearch_max_code_indexing_concurrency": {
       "type": "integer",
       "default": 30

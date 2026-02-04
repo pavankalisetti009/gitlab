@@ -26,6 +26,7 @@ module EE
         :elasticsearch_client_request_timeout,
         :elasticsearch_indexed_field_length_limit,
         :elasticsearch_indexed_file_size_limit_kb,
+        :elasticsearch_indexing_timeout_minutes,
         :elasticsearch_indexing,
         :elasticsearch_requeue_workers,
         :elasticsearch_limit_indexing,

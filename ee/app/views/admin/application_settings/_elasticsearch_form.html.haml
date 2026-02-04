@@ -118,6 +118,12 @@
               = _('For files larger than this limit, only index the file name. The file content is neither indexed nor searchable.')
 
           .form-group
+            = f.label :elasticsearch_indexing_timeout_minutes, _('Indexing timeout (minutes)'), class: 'label-bold'
+            = f.number_field :elasticsearch_indexing_timeout_minutes, value: @application_setting.elasticsearch_indexing_timeout_minutes, class: 'form-control gl-form-input', min: 1
+            .form-text.gl-text-subtle.gl-mt-0
+              = _('Indexing timeout per project. For large projects, increase this limit.')
+
+          .form-group
             = f.label :elasticsearch_indexed_field_length_limit, _('Maximum field length'), class: 'label-bold'
             = f.number_field :elasticsearch_indexed_field_length_limit, value: @application_setting.elasticsearch_indexed_field_length_limit, class: 'form-control gl-form-input'
             .form-text.gl-text-subtle.gl-mt-0
