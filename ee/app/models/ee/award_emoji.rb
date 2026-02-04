@@ -8,6 +8,7 @@ module EE
     prepended do
       include FromUnion
 
+      before_validation :rewrite_epic_awardable_type, on: :create
       validate :uniqueness_between_epic_and_work_item, on: :create, unless: -> { ghost_user? || importing? }
 
       def uniqueness_between_epic_and_work_item
@@ -23,6 +24,14 @@ module EE
     end
 
     private
+
+    def rewrite_epic_awardable_type
+      return unless awardable
+      return unless awardable_type == 'Epic'
+
+      self.awardable_id = awardable.issue_id
+      self.awardable_type = 'Issue'
+    end
 
     override :ensure_sharding_key
     def ensure_sharding_key

@@ -2,12 +2,31 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::IssuableMetadata do
+RSpec.describe Gitlab::IssuableMetadata, feature_category: :team_planning do
   let_it_be(:user) { create(:user) }
   let_it_be(:project1) { create(:project, :public, :repository, creator: user, namespace: user.namespace) }
   let_it_be(:project2) { create(:project, :public, :repository, creator: user, namespace: user.namespace) }
 
-  context 'issues' do
+  context 'with epics' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:epic1) { create(:epic, group: group) }
+    let_it_be(:epic2) { create(:epic, group: group) }
+
+    it 'aggregates votes from both epic and work item award emojis' do
+      create(:award_emoji, :upvote, awardable: epic1, user: user)
+      legacy_emoji = create(:award_emoji, :downvote, awardable: epic2, user: user)
+      legacy_emoji.update_columns(awardable_type: 'Epic', awardable_id: epic2.id)
+
+      data = described_class.new(user, Epic.id_in([epic1.id, epic2.id]).limit(2)).data
+
+      expect(data[epic1.id].upvotes).to eq(1)
+      expect(data[epic1.id].downvotes).to eq(0)
+      expect(data[epic2.id].upvotes).to eq(0)
+      expect(data[epic2.id].downvotes).to eq(1)
+    end
+  end
+
+  context 'with issues' do
     # blocked issues
     let_it_be(:blocked_issue_1) { create(:issue, author: user, project: project1) }
     let_it_be(:blocked_issue_2) { create(:issue, author: user, project: project2) }
