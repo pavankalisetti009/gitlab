@@ -9,6 +9,7 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
 
   before do
     sign_in(user)
+    create(:callout, user: user, feature_name: :security_scanner_profiles_announcement)
   end
 
   context 'with security_dashboard feature available' do

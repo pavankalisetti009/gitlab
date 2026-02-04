@@ -4,10 +4,12 @@ import { GlTable, GlButton, GlAlert, GlLink, GlLoadingIcon } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { stubComponent } from 'helpers/stub_component';
 import ScanProfileConfiguration from 'ee/security_configuration/components/scan_profiles/scan_profile_configuration.vue';
 import DisableScanProfileConfirmationModal from 'ee/security_configuration/components/scan_profiles/disable_scan_profile_confirmation_modal.vue';
 import ScanProfileDetailsModal from 'ee/security_configuration/components/scan_profiles/scan_profile_details_modal.vue';
 import InsufficientPermissionsPopover from 'ee/security_configuration/components/scan_profiles/insufficient_permissions_popover.vue';
+import ScanProfileLaunchModal from 'ee/security_configuration/components/scan_profiles/scan_profile_launch_modal.vue';
 import availableProfilesQuery from 'ee/security_configuration/graphql/scan_profiles/group_available_security_scan_profiles.query.graphql';
 import projectProfilesQuery from 'ee/security_configuration/graphql/scan_profiles/project_security_scan_profiles.query.graphql';
 import attachMutation from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile_attach.mutation.graphql';
@@ -111,6 +113,9 @@ describe('ScanProfileConfiguration', () => {
         $toast: {
           show: mockToastShow,
         },
+      },
+      stubs: {
+        ScanProfileLaunchModal: stubComponent(ScanProfileLaunchModal),
       },
     });
 
