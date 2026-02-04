@@ -38,8 +38,8 @@ module Gitlab
         end
 
         # Child classes may impose additional restrictions
-        def self.user(user:) # rubocop:disable Lint/UnusedMethodArgument -- Argument used by child classes
-          Response.new(allowed: true)
+        def self.user(user:)
+          Response.new(allowed: user.present?)
         end
 
         private_class_method def self.user_as_resource(resource:, user:)

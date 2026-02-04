@@ -27,7 +27,7 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
     allow(Ability).to receive(:allowed?).with(user, :duo_workflow, anything).and_return(true)
 
     allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
-    allow(::Gitlab::Llm::TanukiBot).to receive_messages(show_breadcrumbs_entry_point?: true, enabled_for?: true)
+    allow(::Gitlab::Llm::TanukiBot).to receive_messages(show_duo_entry_point?: true, enabled_for?: true)
     allow(::Gitlab::Llm::TanukiBot).to receive_messages(chat_disabled_reason: nil, credits_available?: true)
     allow(::Gitlab::Llm::TanukiBot).to receive(:agentic_mode_available?).and_return(true)
   end

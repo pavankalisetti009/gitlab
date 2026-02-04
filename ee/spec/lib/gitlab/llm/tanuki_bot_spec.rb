@@ -156,28 +156,21 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     end
   end
 
-  describe '.show_breadcrumbs_entry_point' do
+  describe '.show_duo_entry_point?' do
     let(:authorizer_response) { instance_double(Gitlab::Llm::Utils::Authorizer::Response, allowed?: allowed) }
 
-    before do
-      allow(described_class).to receive(:chat_enabled?).with(user)
-                                                       .and_return(ai_features_enabled_for_user)
-      allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive(:user).with(user: user)
-                                                                        .and_return(authorizer_response)
-    end
-
-    where(:ai_features_enabled_for_user, :allowed, :duo_chat_access) do
+    where(:allowed, :duo_chat_access) do
       [
-        [true, true, true],
-        [true, false, false],
-        [false, true, false],
-        [false, false, false]
+        [true, true],
+        [false, false]
       ]
     end
 
     with_them do
       it 'shows button in correct cases' do
-        expect(described_class.show_breadcrumbs_entry_point?(user: user)).to be(duo_chat_access)
+        expect(Gitlab::Llm::Chain::Utils::ChatAuthorizer)
+          .to receive(:user).with(user: user).and_return(authorizer_response)
+        expect(described_class.show_duo_entry_point?(user: user)).to be(duo_chat_access)
       end
     end
   end
