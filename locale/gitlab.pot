@@ -63140,6 +63140,9 @@ msgstr ""
 msgid "SecurityPolicies|Invalid or empty policy"
 msgstr ""
 
+msgid "SecurityProfiles|Action unavailable"
+msgstr ""
+
 msgid "SecurityProfiles|Active"
 msgstr ""
 
@@ -63168,6 +63171,9 @@ msgid "SecurityProfiles|No profile applied"
 msgstr ""
 
 msgid "SecurityProfiles|Not configured"
+msgstr ""
+
+msgid "SecurityProfiles|Only a project maintainer or owner can apply or disable profiles."
 msgstr ""
 
 msgid "SecurityProfiles|Prevents secrets from being pushed to your repository"

@@ -23,6 +23,7 @@ import attachMutation from 'ee/security_configuration/graphql/scan_profiles/secu
 import detachMutation from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile_detach.mutation.graphql';
 import DisableScanProfileConfirmationModal from './disable_scan_profile_confirmation_modal.vue';
 import ScanProfileDetailsModal from './scan_profile_details_modal.vue';
+import InsufficientPermissionsPopover from './insufficient_permissions_popover.vue';
 
 Vue.use(GlToast);
 
@@ -38,11 +39,12 @@ export default {
     GlLoadingIcon,
     DisableScanProfileConfirmationModal,
     ScanProfileDetailsModal,
+    InsufficientPermissionsPopover,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['projectFullPath', 'groupFullPath'],
+  inject: ['projectFullPath', 'groupFullPath', 'canApplyProfiles'],
   SCAN_PROFILE_I18N,
   apollo: {
     availableProfiles: {
@@ -77,7 +79,7 @@ export default {
   data() {
     return {
       projectId: null,
-      busy: false,
+      isSubmitting: false,
       errorMessage: null,
       previewProfileId: '',
       previewModalVisible: false,
@@ -148,10 +150,13 @@ export default {
     showToast(message) {
       this.$toast.show(message);
     },
+    getButtonId(item) {
+      return item.isConfigured ? `disable-button-${item.id}` : `apply-button-${item.id}`;
+    },
     async applyProfile(profileId) {
       if (!this.projectId || !profileId) return;
 
-      this.busy = true;
+      this.isSubmitting = true;
       this.errorMessage = null;
 
       try {
@@ -183,7 +188,7 @@ export default {
       } catch (error) {
         this.showError(SCAN_PROFILE_I18N.errorApplying);
       } finally {
-        this.busy = false;
+        this.isSubmitting = false;
       }
     },
     openDisableModal(scanType) {
@@ -195,7 +200,7 @@ export default {
       if (!attachedProfile || !this.projectId) return;
 
       this.disableModalVisible = false;
-      this.busy = true;
+      this.isSubmitting = true;
       this.errorMessage = null;
 
       try {
@@ -224,7 +229,7 @@ export default {
       } catch (error) {
         this.showError(SCAN_PROFILE_I18N.errorDetaching);
       } finally {
-        this.busy = false;
+        this.isSubmitting = false;
         this.disablingScanType = null;
       }
     },
@@ -335,34 +340,57 @@ export default {
       </template>
 
       <template #cell(actions)="{ item }">
-        <gl-button-group v-if="!item.isConfigured">
-          <gl-button
-            variant="confirm"
-            category="secondary"
-            :disabled="busy"
-            @click="applyProfile(item.id)"
-          >
-            {{ $options.SCAN_PROFILE_I18N.applyDefault }}
-          </gl-button>
-          <gl-button
-            v-gl-tooltip
-            variant="confirm"
-            category="secondary"
-            icon="eye"
-            :title="$options.SCAN_PROFILE_I18N.previewDefault"
-            :disabled="busy"
-            @click="openPreview(item.id)"
+        <div v-if="!item.isConfigured">
+          <gl-button-group>
+            <!-- Apply button -->
+            <div :id="getButtonId(item)" class="gl-inline">
+              <gl-button
+                variant="confirm"
+                category="secondary"
+                :loading="isSubmitting"
+                :disabled="!canApplyProfiles"
+                @click="applyProfile(item.id)"
+              >
+                {{ $options.SCAN_PROFILE_I18N.applyDefault }}
+                <gl-icon v-if="!canApplyProfiles" name="lock" class="gl-ml-2" />
+              </gl-button>
+            </div>
+            <!-- Preview button -->
+            <gl-button
+              v-gl-tooltip
+              variant="confirm"
+              category="secondary"
+              icon="eye"
+              :title="$options.SCAN_PROFILE_I18N.previewDefault"
+              :disabled="isSubmitting"
+              @click="openPreview(item.id)"
+            />
+          </gl-button-group>
+          <insufficient-permissions-popover
+            v-if="!canApplyProfiles"
+            :target="getButtonId(item)"
+            placement="top"
           />
-        </gl-button-group>
-        <gl-button
-          v-else
-          variant="danger"
-          category="secondary"
-          :disabled="busy"
-          @click="openDisableModal(item.scanType)"
-        >
-          {{ $options.SCAN_PROFILE_I18N.disable }}
-        </gl-button>
+        </div>
+
+        <div v-else :id="getButtonId(item)">
+          <!-- Disable button -->
+          <gl-button
+            variant="danger"
+            category="secondary"
+            :loading="isSubmitting"
+            :disabled="!canApplyProfiles"
+            @click="openDisableModal(item.scanType)"
+          >
+            {{ $options.SCAN_PROFILE_I18N.disable }}
+            <gl-icon v-if="!canApplyProfiles" name="lock" class="gl-ml-2" />
+          </gl-button>
+          <insufficient-permissions-popover
+            v-if="!canApplyProfiles"
+            :target="getButtonId(item)"
+            placement="top"
+          />
+        </div>
       </template>
     </gl-table>
 
