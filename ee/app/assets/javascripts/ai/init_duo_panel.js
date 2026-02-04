@@ -19,17 +19,14 @@ function initDuoPanelEmptyState() {
     return false;
   }
 
-  const { newTrialPath, trialDuration } = el.dataset;
-  const canStartTrial = Boolean(newTrialPath);
+  const { newTrialPath, trialDuration, namespaceType } = el.dataset;
 
-  if (!canStartTrial) {
-    return false;
-  }
+  const canStartTrial = Boolean(newTrialPath);
 
   return new Vue({
     el,
     name: 'AIPanelEmptyStateApp',
-    provide: { newTrialPath, trialDuration },
+    provide: { canStartTrial, newTrialPath, trialDuration, namespaceType },
     render(renderElement) {
       return renderElement(AIPanelEmptyState);
     },

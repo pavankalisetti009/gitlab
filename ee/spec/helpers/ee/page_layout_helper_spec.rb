@@ -238,7 +238,9 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
         let(:source) { group }
 
         it 'returns the correct data' do
-          is_expected.to eq({})
+          is_expected.to eq({
+            namespace_type: 'Group'
+          })
         end
       end
 
@@ -248,7 +250,9 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
         let(:source) { group }
 
         it 'returns the correct data' do
-          is_expected.to eq({})
+          is_expected.to eq({
+            namespace_type: 'Group'
+          })
         end
       end
 
@@ -295,7 +299,8 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
             is_expected.to eq({
               new_trial_path: new_trial_path(source.root_ancestor, glm_source: 'gitlab.com',
                 glm_content: 'chat panel'),
-              trial_duration: 30
+              trial_duration: 30,
+              namespace_type: 'Group'
             })
           end
         end
@@ -329,7 +334,9 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
 
       context 'when user cannot start a trial' do
         it 'returns the correct data' do
-          is_expected.to eq({})
+          is_expected.to eq({
+            namespace_type: 'Group'
+          })
         end
       end
 
@@ -339,7 +346,8 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
         it 'returns the correct data' do
           is_expected.to eq({
             new_trial_path: 'subscription_portal_trial_url',
-            trial_duration: 30
+            trial_duration: 30,
+            namespace_type: 'Group'
           })
         end
       end

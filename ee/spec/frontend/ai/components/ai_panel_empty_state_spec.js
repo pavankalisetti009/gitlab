@@ -2,6 +2,7 @@ import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { GlIcon, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import AiPanelEmptyState from 'ee/ai/components/ai_panel_empty_state.vue';
 import Cookies from '~/lib/utils/cookies';
 
@@ -11,6 +12,7 @@ const trialDurationMock = '20';
 const triggerResize = () => {
   window.dispatchEvent(new Event('resize'));
 };
+const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
 describe('AiPanelEmptyState', () => {
   let wrapper;
@@ -22,11 +24,13 @@ describe('AiPanelEmptyState', () => {
   const findLearnMoreLink = () => wrapper.findByTestId('learn-more-link');
   const findWorkflowExamples = () => wrapper.findAllByTestId('workflow-example');
 
-  const createComponent = () => {
+  const createComponent = (provide = {}) => {
     wrapper = shallowMountExtended(AiPanelEmptyState, {
       provide: {
+        canStartTrial: true,
         newTrialPath: newTrialPathMock,
         trialDuration: trialDurationMock,
+        ...provide,
       },
       stubs: {
         GlSprintf,
@@ -48,7 +52,7 @@ describe('AiPanelEmptyState', () => {
     );
 
     expect(findStartTrialLink().props('href')).toBe(newTrialPathMock);
-    expect(findLearnMoreLink().props('href')).toBe('/help/user/permissions.md');
+    expect(findLearnMoreLink().props('href')).toBe('/help/user/duo_agent_platform/_index.md');
 
     expect(workflowExamples.at(0).findComponent(GlIcon).props('name')).toBe('merge-request');
     expect(workflowExamples.at(0).text()).toContain('Review a merge request');
@@ -59,6 +63,35 @@ describe('AiPanelEmptyState', () => {
     expect(workflowExamples.at(1).text()).toContain(
       'Analyze pipeline failures and get fix suggestions',
     );
+  });
+
+  it('tracks the `view_duo_agentic_not_available_empty_state` on mount', () => {
+    createComponent();
+    const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+    expect(trackEventSpy).toHaveBeenCalledWith(
+      'view_duo_agentic_not_available_empty_state',
+      {},
+      undefined,
+    );
+  });
+
+  it('adds the correct tracking properties to the "Start a Free Trial" link', () => {
+    createComponent();
+
+    expect(findStartTrialLink().attributes()).toMatchObject({
+      'data-event-tracking': 'click_link',
+      'data-event-label': 'click_duo_agentic_not_available_empty_state_start_trial',
+    });
+  });
+
+  it('adds the correct tracking properties to the "Learn more" link', () => {
+    createComponent();
+
+    expect(findLearnMoreLink().attributes()).toMatchObject({
+      'data-event-tracking': 'click_link',
+      'data-event-label': 'click_duo_agentic_not_available_empty_state_learn_more',
+    });
   });
 
   it('does not set the cookie initially', async () => {
@@ -136,6 +169,41 @@ describe('AiPanelEmptyState', () => {
 
       it('starts with content expanded', () => {
         expect(findPanelContent().exists()).toBe(true);
+      });
+    });
+  });
+
+  describe('when the user cannot start a trial', () => {
+    it('renders the correct content', () => {
+      createComponent({
+        canStartTrial: false,
+      });
+
+      expect(findEmptyStateText().text()).toMatchInterpolatedText(
+        "You don't have permission to use GitLab Duo Agent Platform in this project. Learn more.",
+      );
+      expect(findLearnMoreLink().props('href')).toBe('/help/user/duo_agent_platform/_index.md');
+    });
+
+    it('shows the correct text when the namespace is a group', () => {
+      createComponent({
+        canStartTrial: false,
+        namespaceType: 'Group',
+      });
+
+      expect(findEmptyStateText().text()).toMatchInterpolatedText(
+        "You don't have permission to use GitLab Duo Agent Platform in this group. Learn more.",
+      );
+    });
+
+    it('adds the correct tracking properties to the "Learn more" link', () => {
+      createComponent({
+        canStartTrial: false,
+      });
+
+      expect(findLearnMoreLink().attributes()).toMatchObject({
+        'data-event-tracking': 'click_link',
+        'data-event-label': 'click_duo_agentic_not_available_empty_state_learn_more',
       });
     });
   });

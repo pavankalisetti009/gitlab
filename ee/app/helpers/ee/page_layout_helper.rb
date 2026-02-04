@@ -70,7 +70,8 @@ module EE
 
       {
         new_trial_path: path,
-        trial_duration: trial_duration
+        trial_duration: trial_duration,
+        namespace_type: source.is_a?(Group) ? source.type : nil
       }.compact
     end
 
