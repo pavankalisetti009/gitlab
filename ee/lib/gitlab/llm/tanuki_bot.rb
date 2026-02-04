@@ -6,8 +6,6 @@ module Gitlab
       SCOPELESS_CONTROLLERS = %w[search].freeze
 
       def self.enabled_for?(user:, container: nil)
-        return false unless chat_enabled?(user)
-
         authorizer_response = if container
                                 Gitlab::Llm::Chain::Utils::ChatAuthorizer.container(container: container, user: user)
                               else
@@ -28,12 +26,10 @@ module Gitlab
       end
 
       def self.classic_chat_available?(user:)
-        show_breadcrumbs_entry_point?(user: user)
+        show_duo_entry_point?(user: user)
       end
 
-      def self.show_breadcrumbs_entry_point?(user:)
-        return false unless chat_enabled?(user)
-
+      def self.show_duo_entry_point?(user:)
         Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: user).allowed?
       end
 
@@ -44,12 +40,6 @@ module Gitlab
         return if authorizer_response.allowed?
 
         container.is_a?(Group) ? :group : :project
-      end
-
-      def self.chat_enabled?(user)
-        return false unless user
-
-        true
       end
 
       def self.credits_available?(user:, project: nil, group: nil)

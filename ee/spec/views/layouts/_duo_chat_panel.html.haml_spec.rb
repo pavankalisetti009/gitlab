@@ -15,7 +15,7 @@ RSpec.describe 'layouts/_duo_chat_panel', feature_category: :duo_chat do
 
     allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
     allow(::Gitlab::Llm::TanukiBot)
-      .to receive(:show_breadcrumbs_entry_point?)
+      .to receive(:show_duo_entry_point?)
       .with(user: user)
       .and_return(duo_enabled)
     allow(::Gitlab::Llm::TanukiBot)
