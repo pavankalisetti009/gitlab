@@ -28,7 +28,7 @@ describe('AiCatalogListHeader', () => {
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
-  const findDashboardLink = () => wrapper.findComponent(GlLink);
+  const findDashboardLink = () => wrapper.findByTestId('ai-impact-dashboard-link');
   const findDashboardIcon = () => wrapper.findComponent(GlIcon);
   const findPopover = () => wrapper.findComponent(GlPopover);
   const findPopoverLink = () => findPopover().findComponent(GlLink);
@@ -91,72 +91,102 @@ describe('AiCatalogListHeader', () => {
   });
 
   describe('dashboard link', () => {
-    describe('when aiImpactDashboardEnabled is true', () => {
-      beforeEach(() => {
-        createComponent({ provide: { aiImpactDashboardEnabled: true }, stubs: { GlSprintf } });
-      });
+    const mockDashboardPath = '/duo_and_sdlc_trends';
 
-      it('renders link to dashboard with correct text', () => {
-        expect(findDashboardLink().exists()).toBe(true);
-        expect(findDashboardLink().text()).toBe('Explore your GitLab Duo and SDLC trends');
-      });
-
-      it('sets the modal directive correctly', () => {
-        const linkModalDirective = getBinding(findDashboardLink().element, 'gl-modal');
-        expect(linkModalDirective.value).toBe('link-to-dashboard-modal');
-      });
-
-      it('renders information icon', () => {
-        expect(findDashboardIcon().exists()).toBe(true);
-        expect(findDashboardIcon().props('name')).toBe('information-o');
-      });
-
-      it('has correct aria-label', () => {
-        expect(findDashboardLink().attributes('aria-label')).toBe(
-          'Explore your GitLab Duo and SDLC trends',
-        );
-      });
-
-      it('has correct tracking attributes', () => {
-        expect(findDashboardLink().attributes('data-track-action')).toBe(
-          TRACKING_ACTION_CLICK_DASHBOARD_LINK,
-        );
-        expect(findDashboardLink().attributes('data-track-label')).toBe(
-          TRACKING_LABEL_AI_CATALOG_HEADER,
-        );
-      });
-
-      it('renders modal with correct dashboard name', () => {
-        expect(findLinkToDashboardModal().exists()).toBe(true);
-        expect(findLinkToDashboardModal().props('dashboardName')).toBe('duo_and_sdlc_trends');
-      });
-
-      it('renders the info popover', () => {
-        expect(findDashboardIcon().attributes('id')).toBe('dashboard-link');
-        expect(findPopover().props('target')).toBe('dashboard-link');
-      });
-
-      it('renders the popover content with link', () => {
-        expect(findPopover().text()).toMatchInterpolatedText(
-          'This key dashboard provides visibility into SDLC metrics in the context of AI adoption for projects and groups. Learn more',
-        );
-        expect(findPopoverLink().attributes('href')).toBe(
-          `${DOCS_URL}/user/analytics/duo_and_sdlc_trends/`,
-        );
-      });
-    });
-
-    describe('when aiImpactDashboardEnabled is false', () => {
+    describe('when `aiImpactDashboardEnabled` is false', () => {
       beforeEach(() => {
         createComponent({ provide: { aiImpactDashboardEnabled: false } });
       });
 
-      it('does not render link to dashboard', () => {
+      it('does not render dashboard link', () => {
         expect(findDashboardLink().exists()).toBe(false);
       });
 
       it('does not render modal', () => {
         expect(findLinkToDashboardModal().exists()).toBe(false);
+      });
+    });
+
+    describe('when `aiImpactDashboardEnabled` is true', () => {
+      describe('default', () => {
+        beforeEach(() => {
+          createComponent({ provide: { aiImpactDashboardEnabled: true }, stubs: { GlSprintf } });
+        });
+
+        it('renders information icon', () => {
+          expect(findDashboardIcon().exists()).toBe(true);
+          expect(findDashboardIcon().props('name')).toBe('information-o');
+        });
+
+        it('has correct tracking attributes', () => {
+          expect(findDashboardLink().attributes('data-track-action')).toBe(
+            TRACKING_ACTION_CLICK_DASHBOARD_LINK,
+          );
+          expect(findDashboardLink().attributes('data-track-label')).toBe(
+            TRACKING_LABEL_AI_CATALOG_HEADER,
+          );
+        });
+
+        it('renders the info popover', () => {
+          expect(findDashboardIcon().attributes('id')).toBe('dashboard-link');
+          expect(findPopover().props('target')).toBe('dashboard-link');
+        });
+
+        it('renders the popover content with link', () => {
+          expect(findPopover().text()).toMatchInterpolatedText(
+            'This key dashboard provides visibility into SDLC metrics in the context of AI adoption for projects and groups. Learn more',
+          );
+          expect(findPopoverLink().attributes('href')).toBe(
+            `${DOCS_URL}/user/analytics/duo_and_sdlc_trends/`,
+          );
+        });
+      });
+
+      describe('without dashboard path', () => {
+        beforeEach(() => {
+          createComponent({
+            provide: { aiImpactDashboardEnabled: true, aiImpactDashboardPath: null },
+            stubs: { GlSprintf },
+          });
+        });
+
+        it('renders link without href', () => {
+          expect(findDashboardLink().text()).toBe('Explore your GitLab Duo and SDLC trends');
+          expect(findDashboardLink().attributes('href')).toBeUndefined();
+        });
+
+        it('sets the modal directive correctly', () => {
+          const linkModalDirective = getBinding(findDashboardLink().element, 'gl-modal');
+
+          expect(linkModalDirective.value).toBe('link-to-dashboard-modal');
+          expect(findDashboardLink().attributes('href')).toBeUndefined();
+        });
+
+        it('renders modal with correct dashboard name', () => {
+          expect(findLinkToDashboardModal().exists()).toBe(true);
+          expect(findLinkToDashboardModal().props('dashboardName')).toBe('duo_and_sdlc_trends');
+        });
+      });
+
+      describe('with dashboard path', () => {
+        beforeEach(() => {
+          createComponent({
+            provide: {
+              aiImpactDashboardEnabled: true,
+              aiImpactDashboardPath: mockDashboardPath,
+            },
+            stubs: { GlSprintf },
+          });
+        });
+
+        it('renders link to dashboard with correct href', () => {
+          expect(findDashboardLink().text()).toBe('Explore your GitLab Duo and SDLC trends');
+          expect(findDashboardLink().attributes('href')).toBe('/duo_and_sdlc_trends');
+        });
+
+        it('does not render modal', () => {
+          expect(findLinkToDashboardModal().exists()).toBe(false);
+        });
       });
     });
   });

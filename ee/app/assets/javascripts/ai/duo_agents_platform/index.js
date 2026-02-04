@@ -1,4 +1,5 @@
 import { initSinglePageApplication } from '~/vue_shared/spa';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import { createRouter } from './router';
 import { getNamespaceDatasetProperties } from './utils';
 
@@ -15,7 +16,12 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
 
   const { dataset } = el;
 
-  const { agentsPlatformBaseRoute, exploreAiCatalogPath } = dataset;
+  const {
+    agentsPlatformBaseRoute,
+    exploreAiCatalogPath,
+    aiImpactDashboardEnabled,
+    aiImpactDashboardPath,
+  } = dataset;
   const namespaceProvideData = getNamespaceDatasetProperties(dataset, namespaceDatasetProperties);
 
   if (namespaceDatasetProperties.length !== Object.keys(namespaceProvideData).length) {
@@ -35,6 +41,8 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
     el,
     provide: {
       exploreAiCatalogPath,
+      aiImpactDashboardPath,
+      aiImpactDashboardEnabled: parseBoolean(aiImpactDashboardEnabled),
       ...namespaceProvideData,
     },
   });
