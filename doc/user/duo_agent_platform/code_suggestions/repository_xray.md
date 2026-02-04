@@ -2,8 +2,8 @@
 stage: AI-powered
 group: Code Creation
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
-description: Repository X-Ray gives Code Suggestions (Classic) more insight into your project's codebase and dependencies.
-title: Repository X-Ray with Code Suggestions (Classic)
+description: Repository X-Ray gives Code Suggestions more insight into your project's codebase and dependencies.
+title: Repository X-Ray
 ---
 
 {{< details >}}
@@ -17,14 +17,13 @@ title: Repository X-Ray with Code Suggestions (Classic)
 {{< history >}}
 
 - [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/12060) in GitLab 16.7.
-- Changed to require GitLab Duo add-on in GitLab 17.6 and later.
 
 {{< /history >}}
 
 Repository X-Ray automatically enriches:
 
-- Code generation requests for [GitLab Duo Code Suggestions (Classic)](_index.md) by providing additional context about a project's dependencies to improve the accuracy and relevance of code recommendations.
-- Requests to [refactor code](../../../gitlab_duo_chat/examples.md#refactor-code-in-the-ide), [fix code](../../../gitlab_duo_chat/examples.md#fix-code-in-the-ide), and [write tests](../../../gitlab_duo_chat/examples.md#write-tests-in-the-ide).
+- Code generation requests for [GitLab Duo Code Suggestions](_index.md) by providing additional context about a project's dependencies to improve the accuracy and relevance of code recommendations.
+- Requests to [refactor code](../../gitlab_duo_chat/examples.md#refactor-code-in-the-ide), [fix code](../../gitlab_duo_chat/examples.md#fix-code-in-the-ide), and [write tests](../../gitlab_duo_chat/examples.md#write-tests-in-the-ide).
 
 To do this, Repository X-Ray gives the code assistant more insight into the project's codebase and dependencies by:
 
@@ -60,7 +59,7 @@ When a code generation request is made, a maximum of 300 libraries from the pars
 
 {{< history >}}
 
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/476180) in GitLab 17.4 [with a flag](../../../../administration/feature_flags/list.md) named `ai_enable_internal_repository_xray_service`. Disabled by default.
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/476180) in GitLab 17.4 [with a flag](../../../administration/feature_flags/list.md) named `ai_enable_internal_repository_xray_service`. Disabled by default.
 - [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/483928) in GitLab 17.6. Feature flag `ai_enable_internal_repository_xray_service` removed.
 
 {{< /history >}}
