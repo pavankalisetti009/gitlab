@@ -6,6 +6,7 @@ import {
   GlModalDirective,
   GlPopover,
   GlSprintf,
+  GlButton,
 } from '@gitlab/ui';
 import uniqueId from 'lodash/uniqueId';
 import { s__ } from '~/locale';
@@ -35,6 +36,7 @@ export default {
     LinkToDashboardModal,
     GlPopover,
     GlSprintf,
+    GlButton,
   },
   directives: {
     GlModal: GlModalDirective,
@@ -45,6 +47,9 @@ export default {
     },
     aiImpactDashboardEnabled: {
       default: false,
+    },
+    aiImpactDashboardPath: {
+      default: null,
     },
     showLegalDisclaimer: {
       default: false,
@@ -74,9 +79,20 @@ export default {
     aiImpactDashboardDocsLink() {
       return `${DOCS_URL}/user/analytics/duo_and_sdlc_trends/`;
     },
+    aiImpactDashboardLinkAttrs() {
+      return {
+        'data-testid': 'ai-impact-dashboard-link',
+        'data-track-action': this.$options.TRACKING_ACTION_CLICK_DASHBOARD_LINK,
+        'data-track-label': this.$options.TRACKING_LABEL_AI_CATALOG_HEADER,
+      };
+    },
     showBetaBadge() {
       const { showBetaBadge } = useAiBetaBadge();
       return showBetaBadge.value;
+    },
+    shouldShowLinkToDashboardsModal() {
+      // Show modal when dashboard path is unavailable (path only available in project/group scope, not global scope, e.g., /explore/ai-catalog/agents)
+      return this.aiImpactDashboardEnabled && !this.aiImpactDashboardPath;
     },
   },
   LINK_TO_DASHBOARD_MODAL_ID,
@@ -88,6 +104,7 @@ export default {
     legalDisclaimer: s__(
       'AICatalog|This catalog contains third-party content that may be subject to additional terms. GitLab does not control or assume liability for third-party content.',
     ),
+    aiImpactDashboardCTA: s__('AICatalog|Explore your GitLab Duo and SDLC trends'),
   },
 };
 </script>
@@ -102,33 +119,37 @@ export default {
         </span>
       </template>
       <template #actions>
-        <div class="gl-flex gl-items-center gl-gap-3">
+        <div class="gl-flex gl-flex-wrap gl-items-center gl-gap-3">
           <template v-if="aiImpactDashboardEnabled">
-            <gl-link
-              v-gl-modal="$options.LINK_TO_DASHBOARD_MODAL_ID"
-              class="gl-flex gl-items-center gl-gap-2"
-              :aria-label="s__('AICatalog|Explore your GitLab Duo and SDLC trends')"
-              :data-track-action="$options.TRACKING_ACTION_CLICK_DASHBOARD_LINK"
-              :data-track-label="$options.TRACKING_LABEL_AI_CATALOG_HEADER"
-            >
-              {{ s__('AICatalog|Explore your GitLab Duo and SDLC trends') }}
-            </gl-link>
-            <gl-icon :id="$options.AI_IMPACT_DASHBOARD_POPOVER_TARGET_ID" name="information-o" />
-            <gl-popover :target="$options.AI_IMPACT_DASHBOARD_POPOVER_TARGET_ID">
-              <gl-sprintf
-                :message="
-                  s__(
-                    'AICatalog|This key dashboard provides visibility into SDLC metrics in the context of AI adoption for projects and groups. %{linkStart}Learn more%{linkEnd}',
-                  )
-                "
+            <div :class="{ 'sm:gl-mr-4': !isGlobal }" class="gl-flex gl-items-center gl-gap-3">
+              <gl-button
+                v-if="shouldShowLinkToDashboardsModal"
+                v-gl-modal="$options.LINK_TO_DASHBOARD_MODAL_ID"
+                v-bind="aiImpactDashboardLinkAttrs"
+                variant="link"
               >
-                <template #link="{ content }">
-                  <gl-link :href="aiImpactDashboardDocsLink" target="_blank" class="!gl-text-sm">
-                    {{ content }}</gl-link
-                  >
-                </template>
-              </gl-sprintf>
-            </gl-popover>
+                {{ $options.i18n.aiImpactDashboardCTA }}
+              </gl-button>
+              <gl-link v-else v-bind="aiImpactDashboardLinkAttrs" :href="aiImpactDashboardPath">{{
+                $options.i18n.aiImpactDashboardCTA
+              }}</gl-link>
+              <gl-icon :id="$options.AI_IMPACT_DASHBOARD_POPOVER_TARGET_ID" name="information-o" />
+              <gl-popover :target="$options.AI_IMPACT_DASHBOARD_POPOVER_TARGET_ID">
+                <gl-sprintf
+                  :message="
+                    s__(
+                      'AICatalog|This key dashboard provides visibility into SDLC metrics in the context of AI adoption for projects and groups. %{linkStart}Learn more%{linkEnd}',
+                    )
+                  "
+                >
+                  <template #link="{ content }">
+                    <gl-link :href="aiImpactDashboardDocsLink" target="_blank" class="!gl-text-sm">
+                      {{ content }}</gl-link
+                    >
+                  </template>
+                </gl-sprintf>
+              </gl-popover>
+            </div>
           </template>
           <ai-catalog-nav-actions
             v-if="!isGlobal"
@@ -150,7 +171,7 @@ export default {
     </div>
 
     <link-to-dashboard-modal
-      v-if="aiImpactDashboardEnabled"
+      v-if="shouldShowLinkToDashboardsModal"
       :dashboard-name="$options.AI_IMPACT_DASHBOARD"
     />
   </div>
