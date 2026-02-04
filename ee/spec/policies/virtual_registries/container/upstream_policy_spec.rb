@@ -10,8 +10,8 @@ RSpec.describe VirtualRegistries::Container::UpstreamPolicy, feature_category: :
   let(:policy) { described_class.new(user, upstream) }
 
   describe 'delegation' do
-    subject { policy.delegated_policies.values }
+    subject { policy }
 
-    it { is_expected.to have_attributes(size: 1).and be_all(::VirtualRegistries::Policies::GroupPolicy) }
+    it { is_expected.to delegate_to(::VirtualRegistries::Policies::GroupPolicy) }
   end
 end

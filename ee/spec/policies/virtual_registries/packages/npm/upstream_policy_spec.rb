@@ -2,11 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe VirtualRegistries::Packages::Maven::UpstreamPolicy, feature_category: :virtual_registry do
-  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }
+RSpec.describe VirtualRegistries::Packages::Npm::UpstreamPolicy, feature_category: :virtual_registry do
+  let_it_be(:upstream) { create(:virtual_registries_packages_npm_upstream) }
 
   let(:user) { upstream.group.first_owner }
-
   let(:policy) { described_class.new(user, upstream) }
 
   describe 'delegation' do
