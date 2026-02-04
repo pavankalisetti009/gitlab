@@ -19,6 +19,7 @@ module GitlabSubscriptions
 
     belongs_to :user, inverse_of: :assigned_add_ons
     belongs_to :add_on_purchase, class_name: 'GitlabSubscriptions::AddOnPurchase', inverse_of: :assigned_users
+    belongs_to :organization, class_name: 'Organizations::Organization', inverse_of: :user_add_on_assignments
 
     validates :user, :add_on_purchase, presence: true
     validates :add_on_purchase_id, uniqueness: { scope: :user_id }

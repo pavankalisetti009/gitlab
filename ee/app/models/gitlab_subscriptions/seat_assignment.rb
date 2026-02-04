@@ -4,7 +4,7 @@ module GitlabSubscriptions
   class SeatAssignment < ApplicationRecord
     belongs_to :namespace, optional: false
     belongs_to :user, optional: false
-    belongs_to :organization, class_name: 'Organizations::Organization'
+    belongs_to :organization, class_name: 'Organizations::Organization', inverse_of: :seat_assignments
 
     validates :namespace_id, uniqueness: { scope: :user_id }, presence: { if: :gitlab_com_subscription? }
 

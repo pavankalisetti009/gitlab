@@ -12,6 +12,15 @@ module EE
           -> { non_archived },
           class_name: 'Project',
           inverse_of: :organization
+        has_many :add_on_purchases,
+          class_name: 'GitlabSubscriptions::AddOnPurchase',
+          inverse_of: :organization
+        has_many :seat_assignments,
+          class_name: 'GitlabSubscriptions::SeatAssignment',
+          inverse_of: :organization
+        has_many :user_add_on_assignments,
+          class_name: 'GitlabSubscriptions::UserAddOnAssignment',
+          inverse_of: :organization
         has_many :vulnerability_exports, class_name: 'Vulnerabilities::Export'
         has_many :sbom_sources, class_name: 'Sbom::Source'
         has_many :sbom_source_packages, class_name: 'Sbom::SourcePackage'
