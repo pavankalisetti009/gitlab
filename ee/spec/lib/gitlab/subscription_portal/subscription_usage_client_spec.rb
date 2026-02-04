@@ -151,7 +151,10 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
               overageTermsAccepted: true,
               canAcceptOverageTerms: true,
               dapPromoEnabled: false,
-              usageDashboardPath: "/subscriptions/A-S00012345/usage"
+              usageDashboardPath: "/subscriptions/A-S00012345/usage",
+              paidTierTrial: {
+                isActive: true
+              }
             }
           }
         }
@@ -170,7 +173,10 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           overageTermsAccepted: true,
           canAcceptOverageTerms: true,
           dapPromoEnabled: false,
-          usageDashboardPath: "/subscriptions/A-S00012345/usage"
+          usageDashboardPath: "/subscriptions/A-S00012345/usage",
+          paidTierTrial: {
+            isActive: true
+          }
         }
       }
     end

@@ -52,6 +52,10 @@ module Types
         null: true,
         description: 'Consumption usage for users under the subscription.'
 
+      field :paid_tier_trial, SubscriptionUsage::PaidTierTrialType,
+        null: false,
+        description: 'Paid tier trial data for the subscription.'
+
       field :overage_terms_accepted, GraphQL::Types::Boolean,
         null: false,
         description: 'Indicates whether overage terms have been accepted for the subscription.'

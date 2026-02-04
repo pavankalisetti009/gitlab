@@ -121,6 +121,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           ],
           args: user_arguments
         )
+      ]),
+      query_graphql_field(:paid_tier_trial, {}, [
+        :is_active
       ])
     ]
   end
@@ -500,6 +503,52 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             post_graphql(query, current_user: admin)
 
             expect(graphql_data_at(:subscription_usage, :overageTermsAccepted)).to be false
+          end
+        end
+
+        context 'when paid tier trial is active' do
+          let(:query_fields) do
+            [query_graphql_field(:paid_tier_trial, {}, [:is_active])]
+          end
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                paidTierTrial: {
+                  isActive: true
+                }
+              }
+            }
+          end
+
+          it 'returns true for paidTierTrial.isActive' do
+            post_graphql(query, current_user: admin)
+
+            expect(graphql_data_at(:subscription_usage, :paidTierTrial, :isActive)).to be true
+          end
+        end
+
+        context 'when paid tier trial is not active' do
+          let(:query_fields) do
+            [query_graphql_field(:paid_tier_trial, {}, [:is_active])]
+          end
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                paidTierTrial: {
+                  isActive: false
+                }
+              }
+            }
+          end
+
+          it 'returns false for paidTierTrial.isActive' do
+            post_graphql(query, current_user: admin)
+
+            expect(graphql_data_at(:subscription_usage, :paidTierTrial, :isActive)).to be false
           end
         end
 
