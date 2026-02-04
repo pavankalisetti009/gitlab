@@ -31,7 +31,18 @@ module Ai
         private
 
         def user_has_duo_enterprise_add_on?
-          ::GitlabSubscriptions::AddOnPurchase.for_active_add_ons([:duo_enterprise], user).exists?
+          if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+            ::GitlabSubscriptions::AddOnPurchase
+              .for_duo_enterprise
+              .assigned_to_user(user)
+              .exists?
+          else
+            ::GitlabSubscriptions::AddOnPurchase
+              .for_self_managed
+              .for_duo_enterprise
+              .assigned_to_user(user)
+              .exists?
+          end
         end
 
         def duo_agent_platform_configured?
