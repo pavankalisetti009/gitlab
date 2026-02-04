@@ -65,7 +65,24 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
       end
 
       context 'when feature flag is enabled' do
+        context 'when duo_sast_vr_workflow_enabled is disabled' do
+          before do
+            project.project_setting.update!(duo_sast_vr_workflow_enabled: false)
+          end
+
+          it 'does not trigger resolution workflow' do
+            expect(::Vulnerabilities::TriggerResolutionWorkflowWorker)
+              .not_to receive(:perform_async)
+
+            create(:vulnerabilities_flag, finding: finding, confidence_score: 0.5, origin: described_class::AI_SAST_FP_DETECTION_ORIGIN)
+          end
+        end
+
         context 'when origin is ai_sast_fp_detection' do
+          before do
+            project.project_setting.update!(duo_sast_vr_workflow_enabled: true)
+          end
+
           context 'when confidence score is below threshold' do
             it 'triggers resolution workflow' do
               expect(::Vulnerabilities::TriggerResolutionWorkflowWorker)
@@ -108,6 +125,10 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
 
     context 'when updating an existing vulnerability flag' do
       let_it_be(:existing_flag) { create(:vulnerabilities_flag, finding: finding, confidence_score: 0.5, origin: described_class::AI_SAST_FP_DETECTION_ORIGIN) }
+
+      before do
+        project.project_setting.update!(duo_sast_vr_workflow_enabled: true)
+      end
 
       context 'when only non-relevant fields are updated' do
         it 'does not trigger resolution workflow' do

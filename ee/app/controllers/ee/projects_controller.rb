@@ -15,6 +15,7 @@ module EE
         push_frontend_feature_flag(:repository_lock_information, @project)
         push_frontend_feature_flag(:use_duo_context_exclusion, @project)
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @project, type: :beta)
+        push_frontend_feature_flag(:enable_vulnerability_resolution, @project, type: :beta)
         push_frontend_feature_flag(:convert_to_gl_ci_flow_registry, current_user)
       end
     end
@@ -97,6 +98,10 @@ module EE
 
       unless project&.project_setting&.duo_sast_fp_detection_enabled_locked?
         attributes << :duo_sast_fp_detection_enabled
+      end
+
+      if ::Feature.enabled?(:enable_vulnerability_resolution, project)
+        attributes << :duo_sast_vr_workflow_enabled
       end
 
       attributes

@@ -26,6 +26,7 @@ module EE
             optional :auto_duo_code_review_enabled, type: Grape::API::Boolean, desc: 'Enable automatic reviews by GitLab Duo on merge requests'
             optional :duo_remote_flows_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo remote flows for this project'
             optional :duo_sast_fp_detection_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo SAST false positive detection for this project'
+            optional :duo_sast_vr_workflow_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo SAST vulnerability resolution workflow for this project'
             optional :spp_repository_pipeline_access, type: Grape::API::Boolean, desc: 'Grant read-only access to security policy configurations for enforcement in linked CI/CD projects'
           end
 
@@ -55,6 +56,7 @@ module EE
               desc: 'Enable web based commit signing for this project'
             optional :duo_remote_flows_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo remote flows for this project'
             optional :duo_sast_fp_detection_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo SAST false positive detection for this project'
+            optional :duo_sast_vr_workflow_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo SAST vulnerability resolution workflow for this project'
             optional :spp_repository_pipeline_access, type: Grape::API::Boolean, desc: 'Grant read-only access to security policy configurations for enforcement in linked CI/CD projects'
           end
 
@@ -76,6 +78,7 @@ module EE
               :auto_duo_code_review_enabled,
               :duo_remote_flows_enabled,
               :duo_sast_fp_detection_enabled,
+              :duo_sast_vr_workflow_enabled,
               :allow_pipeline_trigger_approve_deployment,
               :only_allow_merge_if_all_status_checks_passed,
               :approvals_before_merge,
@@ -130,13 +133,21 @@ module EE
 
           attrs.delete(:duo_remote_flows_enabled) unless License.feature_available?(:ai_workflows)
 
-          unless License.feature_available?(:ai_features) && ::Feature.enabled?(:ai_experiment_sast_fp_detection, current_user)
-            attrs.delete(:duo_sast_fp_detection_enabled)
-          end
+          filter_duo_sast_attributes!(attrs)
 
           return if ::License.feature_available?(:security_orchestration_policies)
 
           attrs.delete(:spp_repository_pipeline_access)
+        end
+
+        def filter_duo_sast_attributes!(attrs)
+          unless License.feature_available?(:ai_features) && ::Feature.enabled?(:ai_experiment_sast_fp_detection, current_user)
+            attrs.delete(:duo_sast_fp_detection_enabled)
+          end
+
+          unless License.feature_available?(:ai_features) && ::Feature.enabled?(:enable_vulnerability_resolution, current_user)
+            attrs.delete(:duo_sast_vr_workflow_enabled)
+          end
         end
       end
     end

@@ -59,6 +59,7 @@ module EE
         initialDuoRemoteFlowsAvailability: project.duo_remote_flows_enabled,
         initialDuoFoundationalFlowsAvailability: project.duo_foundational_flows_enabled,
         initialDuoSastFpDetectionEnabled: project.duo_sast_fp_detection_enabled,
+        initialDuoSastVrWorkflowEnabled: project.duo_sast_vr_workflow_enabled,
         experimentFeaturesEnabled: experiment_features_enabled,
         paidDuoTier: paid_duo_tier_for_project(project)
       })
