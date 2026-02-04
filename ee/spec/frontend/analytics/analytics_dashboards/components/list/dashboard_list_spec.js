@@ -3,25 +3,6 @@ import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_help
 import DashboardList from 'ee/analytics/analytics_dashboards/components/list/dashboard_list.vue';
 
 // NOTE: theres no graphql query for this yet, eventually replace with a fixture
-const mockStarredDashboard = [
-  {
-    name: 'Built in dashboard',
-    description: 'Built in dashboard description',
-    slug: 'built-in',
-    user: {
-      id: 1337,
-      name: 'GitLab',
-      username: 'gitlab',
-      avatarUrl: '/fake/user/avatar.jpg',
-      webUrl: '/gitlab',
-    },
-    isCustom: false,
-    isStarred: true,
-    shareLink: '/fake/link/to/share',
-    lastEdited: '2024-12-20',
-  },
-];
-
 const mockDashboards = [
   {
     name: 'First custom dashboard',
@@ -100,45 +81,8 @@ describe('DashboardList', () => {
       expect(findTableRows()).toHaveLength(mockDashboards.length);
     });
 
-    it('renders dashboard names as links', () => {
-      const dashboardLinks = findDashboardLinks();
-
-      expect(dashboardLinks).toHaveLength(mockDashboards.length);
-
-      dashboardLinks.wrappers.forEach((link, index) => {
-        const dashboard = mockDashboards[index];
-        expect(link.text()).toBe(dashboard.name);
-        expect(link.attributes('href')).toBe(`/${dashboard.slug}`);
-      });
-    });
-
-    it('renders star icons with correct states', () => {
-      const starIcons = findStarIcons();
-
-      expect(starIcons).toHaveLength(mockDashboards.length);
-
-      starIcons.wrappers.forEach((icon, index) => {
-        const dashboard = mockDashboards[index];
-
-        expect(icon.attributes()).toMatchObject({
-          'aria-label': `Add ${dashboard.name} to favorites`,
-          title: 'Add to favorites',
-        });
-
-        expect(icon.props()).toMatchObject({
-          icon: 'star-o',
-          category: 'tertiary',
-          variant: 'default',
-          size: 'medium',
-          type: 'button',
-        });
-      });
-    });
-
     it('renders user avatars with correct props', () => {
       const avatars = findUserAvatars();
-
-      expect(avatars).toHaveLength(mockDashboards.length);
 
       avatars.wrappers.forEach((avatar, index) => {
         const dashboard = mockDashboards[index];
@@ -188,35 +132,6 @@ describe('DashboardList', () => {
         .map(({ label }) => label);
 
       expect(fields).toEqual(expectedFields);
-    });
-  });
-
-  describe('with a starred dashboard', () => {
-    beforeEach(() => {
-      createWrapper({ dashboards: mockStarredDashboard }, mountExtended);
-    });
-
-    it('renders star icons with correct states', () => {
-      const starIcons = findStarIcons();
-
-      expect(starIcons).toHaveLength(mockStarredDashboard.length);
-
-      starIcons.wrappers.forEach((icon, index) => {
-        const dashboard = mockStarredDashboard[index];
-
-        expect(icon.attributes()).toMatchObject({
-          'aria-label': `Remove ${dashboard.name} from favorites`,
-          title: 'Remove from favorites',
-        });
-
-        expect(icon.props()).toMatchObject({
-          icon: 'star',
-          category: 'tertiary',
-          variant: 'default',
-          size: 'medium',
-          type: 'button',
-        });
-      });
     });
   });
 

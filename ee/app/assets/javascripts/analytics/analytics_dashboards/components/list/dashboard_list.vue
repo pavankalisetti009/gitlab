@@ -3,15 +3,12 @@ import {
   GlTable,
   GlAvatarLabeled,
   GlAvatarLink,
-  GlButton,
   GlDisclosureDropdown,
   GlDisclosureDropdownGroup,
-  GlLink,
   GlTooltipDirective,
-  GlTruncate,
 } from '@gitlab/ui';
-
-import { __, sprintf } from '~/locale';
+import { __ } from '~/locale';
+import DashboardListNameCell from './dashboard_list_name_cell.vue';
 
 export default {
   name: 'DashboardList',
@@ -19,11 +16,9 @@ export default {
     GlTable,
     GlAvatarLabeled,
     GlAvatarLink,
-    GlButton,
     GlDisclosureDropdown,
     GlDisclosureDropdownGroup,
-    GlLink,
-    GlTruncate,
+    DashboardListNameCell,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -38,16 +33,6 @@ export default {
     dashboardUrl(slug) {
       // NOTE: this should either be a URL or vue router redirect
       return `/${slug}`;
-    },
-    starIcon(isStarred) {
-      return isStarred ? 'star' : 'star-o';
-    },
-    starTitle(isStarred) {
-      return isStarred ? __('Remove from favorites') : __('Add to favorites');
-    },
-    starAriaLabel(name, isStarred) {
-      const str = isStarred ? __('Remove %{name} from favorites') : __('Add %{name} to favorites');
-      return sprintf(str, { name });
     },
   },
   actions: {
@@ -105,29 +90,12 @@ export default {
       ><span class="gl-sr-only">{{ column.label }}</span></template
     >
     <template #cell(name)="{ item: { name, isStarred, description, slug } }">
-      <div class="gl-inline-block gl-w-full gl-min-w-1 gl-flex-row gl-items-center sm:gl-flex">
-        <gl-button
-          class="sm:gl-mr-3"
-          category="tertiary"
-          variant="default"
-          data-testid="dashboard-star-icon"
-          :aria-label="starAriaLabel(name, isStarred)"
-          :title="starTitle(isStarred)"
-          :icon="starIcon(isStarred)"
-        />
-
-        <div class="gl-flex-1 gl-flex-col gl-text-right sm:gl-w-48 sm:gl-text-left">
-          <gl-link
-            data-testid="dashboard-redirect-link"
-            :href="dashboardUrl(slug)"
-            class="gl-font-bold gl-text-black !gl-no-underline"
-            >{{ name }}</gl-link
-          >
-          <div>
-            <gl-truncate :text="description" with-tooltip />
-          </div>
-        </div>
-      </div>
+      <dashboard-list-name-cell
+        :name="name"
+        :description="description"
+        :is-starred="isStarred"
+        :dashboard-url="dashboardUrl(slug)"
+      />
     </template>
     <template #cell(createdBy)="{ item: { user } }">
       <gl-avatar-link target="_blank" :href="user.webUrl">
