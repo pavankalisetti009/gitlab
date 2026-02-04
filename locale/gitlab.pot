@@ -30923,9 +30923,6 @@ msgstr ""
 msgid "Geo|Healthy"
 msgstr ""
 
-msgid "Geo|Help us improve Geo for distributed teams and disaster recovery. We aim to make it simpler to use and operate."
-msgstr ""
-
 msgid "Geo|If enabled, GitLab will handle Object Storage replication using Geo."
 msgstr ""
 
@@ -32274,9 +32271,6 @@ msgid "Give feedback"
 msgstr ""
 
 msgid "Give us feedback"
-msgstr ""
-
-msgid "Give us some feedback"
 msgstr ""
 
 msgid "Given access %{time_ago}"
@@ -80718,9 +80712,6 @@ msgid "Your device was successfully set up! Give it a name and register it with 
 msgstr ""
 
 msgid "Your email"
-msgstr ""
-
-msgid "Your feedback is important to us 👋"
 msgstr ""
 
 msgid "Your file must contain a column named %{codeStart}title%{codeEnd}. A %{codeStart}description%{codeEnd} column is optional. The maximum file size allowed is 10 MB."

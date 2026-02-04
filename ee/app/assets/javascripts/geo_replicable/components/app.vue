@@ -37,14 +37,12 @@ import {
 } from '../constants';
 import buildReplicableTypeQuery from '../graphql/replicable_type_query_builder';
 import GeoReplicable from './geo_replicable.vue';
-import GeoFeedbackBanner from './geo_feedback_banner.vue';
 
 export default {
   name: 'GeoReplicableApp',
   components: {
     GeoListTopBar,
     GeoReplicable,
-    GeoFeedbackBanner,
     GeoList,
   },
   inject: {
@@ -304,7 +302,6 @@ export default {
 
 <template>
   <article class="geo-replicable-container">
-    <geo-feedback-banner />
     <geo-list-top-bar
       :page-heading-title="pageHeadingTitle"
       :page-heading-description="
