@@ -13,34 +13,6 @@ RSpec.describe 'Promotions', :js, feature_category: :code_review_workflow do
   let!(:issue) { create(:issue, project: project, author: user) }
   let(:otherproject) { create(:project, :repository, namespace: otherdeveloper.namespace) }
 
-  describe 'for repository features', :js, feature_category: :source_code_management do
-    before do
-      allow(License).to receive(:current).and_return(nil)
-      stub_saas_features(gitlab_com_subscriptions: false)
-
-      project.add_maintainer(user)
-      sign_in(user)
-    end
-
-    it 'appears in repository settings page' do
-      visit project_settings_repository_path(project)
-
-      expect(find('#promote_repository_features')).to have_content(s_('Promotions|Improve repositories with GitLab Enterprise Edition.'))
-    end
-
-    it 'does not show when cookie is set' do
-      visit project_settings_repository_path(project)
-
-      within('#promote_repository_features') do
-        find('.js-close').click
-      end
-
-      visit project_settings_repository_path(project)
-
-      expect(page).not_to have_selector('#promote_repository_features')
-    end
-  end
-
   describe 'for burndown charts', :js, :saas, feature_category: :team_planning do
     let_it_be(:group) { create(:group_with_plan) }
 
