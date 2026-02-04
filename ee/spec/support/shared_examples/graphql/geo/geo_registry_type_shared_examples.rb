@@ -9,7 +9,7 @@ RSpec.shared_examples_for 'a Geo registry type' do |registry_factory_name|
       verification_retry_at created_at verification_state verification_started_at
       verification_retry_count verification_checksum verification_failure
       missing_on_primary checksum_mismatch
-      verification_checksum_mismatched model_record_id
+      verification_checksum_mismatched model_record_id dataManagementDetailsPath
     ]
 
     expect(described_class).to have_graphql_fields(*expected_fields).at_least

@@ -94,6 +94,11 @@ module Gitlab
         Gitlab::Geo::ModelMapper.convert_to_name(self.model)
       end
 
+      # @return [String] slug that identifies the base Model name, pluralized, i.e. "ci_secure_files"
+      def self.model_name_plural
+        self.model_name.pluralize
+      end
+
       # @return [String] GraphQL mutation registry class used by registry_class_enum.rb. E.g. "PACKAGE_FILE_REGISTRY"
       def self.graphql_mutation_registry_class
         self.registry_class.graphql_enum_key
