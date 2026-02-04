@@ -108,24 +108,10 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
       end
 
       context 'with a cache entry' do
-        # We use `let` instead of `let_it_be` for cache_entry fixtures for several reasons:
-        #
-        # 1. Path uniqueness constraint: Cache entries have a database uniqueness constraint on
-        #    `relative_path`. Using `let_it_be` with different fixture variants (fresh, stale,
-        #    stale_without_etag) would require different paths, but the service looks up entries
-        #    by path, so all variants must use the same path to test the same code paths.
-        #
-        # 2. Some contexts call `Cache::Entry.delete_all`: The "when the cache entry does not
-        #    exist" contexts (for sha1/md5 digests) delete all cache entries in a `before` block.
-        #    With `let_it_be`, records are created once outside the per-example transaction, so
-        #    deleting them would break all subsequent tests in the file.
-        #
-        # 3. Limited reuse benefit: Only 2-3 examples share each fixture variant, so the
-        #    performance cost of `let` (creating a new record per example) is minimal.
-        #
-        # Each context defines a descriptively-named fixture (e.g., `fresh_cache_entry`,
-        # `stale_cache_entry`) and aliases it to `cache_entry` for compatibility with shared
-        # examples that reference `cache_entry`.
+        # Use `let` instead of `let_it_be` because:
+        # 1. Composite primary key (upstream_id, relative_path, status) is incompatible with `refind: true`
+        # 2. Multiple cache entries with same path but different states are needed
+        # 3. Nested contexts use `delete_all` which would permanently delete `let_it_be` records
         let(:fresh_cache_entry) do
           create(:virtual_registries_packages_maven_cache_remote_entry,
             :upstream_checked,
