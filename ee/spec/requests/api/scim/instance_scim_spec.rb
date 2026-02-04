@@ -5,7 +5,9 @@ require 'spec_helper'
 RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
   include LoginHelpers
 
-  let_it_be(:organization) { create(:organization) }
+  # rubocop:disable Gitlab/PreventOrganizationFirst -- Logic depends on first organization
+  let_it_be(:organization) { ::Organizations::Organization.first }
+  # rubocop:enable Gitlab/PreventOrganizationFirst
   let(:user) { create(:user, organizations: [organization]) }
   let(:scim_token) { create(:scim_oauth_access_token, group: nil, organization: organization) }
 

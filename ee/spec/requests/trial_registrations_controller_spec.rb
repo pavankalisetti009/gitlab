@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe TrialRegistrationsController, :with_trial_types, :with_current_organization, feature_category: :onboarding do
+RSpec.describe TrialRegistrationsController, :with_trial_types, feature_category: :onboarding do
   include FullNameHelper
   include IdentityVerificationHelpers
 

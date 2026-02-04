@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting AI catalog agent flow configuration', :with_current_organization, :aggregate_failures, feature_category: :workflow_catalog do
+RSpec.describe 'getting AI catalog agent flow configuration', :aggregate_failures, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 

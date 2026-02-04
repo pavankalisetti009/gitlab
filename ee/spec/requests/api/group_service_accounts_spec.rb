@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate_failures, feature_category: :user_management do
+RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category: :user_management do
   include Auth::DpopTokenHelper
 
   let_it_be(:admin) { create(:admin) }
