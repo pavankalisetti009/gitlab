@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountEventStreamingDestinationsMetric,
-  feature_category: :compliance_managment do
+  feature_category: :compliance_management do
   let_it_be(:destination) { create(:external_audit_event_destination) }
 
   it_behaves_like 'a correct instrumented metric value and query', { time_frame: 'all', data_source: 'database' } do
