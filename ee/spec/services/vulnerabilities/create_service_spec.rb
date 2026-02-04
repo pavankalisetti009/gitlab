@@ -87,11 +87,33 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
 
       expect(vulnerability_read).to have_attributes(
         vulnerability_id: vulnerability.id,
+        vulnerability_occurrence_id: finding.id,
         project_id: project.id,
+        traversal_ids: project.namespace.traversal_ids,
         severity: finding.severity,
         state: finding.state,
         report_type: finding.report_type
       )
+    end
+
+    context 'when turn_off_vulnerability_read_create_db_trigger_function disabled' do
+      before do
+        stub_feature_flags(turn_off_vulnerability_read_create_db_trigger_function: false)
+      end
+
+      it 'creates vulnerability read record when present_on_default_branch is true' do
+        expect { subject }.to change { Vulnerabilities::Read.count }.by(1)
+
+        expect(vulnerability_read).to have_attributes(
+          vulnerability_id: vulnerability.id,
+          vulnerability_occurrence_id: finding.id,
+          project_id: project.id,
+          traversal_ids: project.namespace.traversal_ids,
+          severity: finding.severity,
+          state: finding.state,
+          report_type: finding.report_type
+        )
+      end
     end
 
     context 'with vulnerabilities_across_contexts feature flag enabled' do

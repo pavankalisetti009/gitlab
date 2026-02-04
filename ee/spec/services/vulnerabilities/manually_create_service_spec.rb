@@ -165,6 +165,8 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
 
         expect(vulnerability.vulnerability_read.state).to eq(params.dig(:vulnerability, :state))
         expect(vulnerability.vulnerability_read.severity).to eq(params.dig(:vulnerability, :severity))
+        expect(vulnerability.vulnerability_read.vulnerability_occurrence_id).to eq(finding.id)
+        expect(vulnerability.vulnerability_read.security_project_tracked_context_id).to eq(finding.security_project_tracked_context_id)
 
         scanner = finding.scanner
         expect(scanner.name).to eq(params.dig(:vulnerability, :scanner, :name))

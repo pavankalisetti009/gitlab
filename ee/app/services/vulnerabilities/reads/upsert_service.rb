@@ -17,11 +17,14 @@ module Vulnerabilities
 
       BATCH_SIZE = 1000
 
-      def initialize(vulnerabilities, attributes = {}, projects: [])
+      def initialize(vulnerabilities, attributes = {}, projects: [], update_all_vulnerabilities: false)
         @attributes = attributes
         @vulnerabilities = ensure_vulnerability_relation(vulnerabilities)
         # Project is only needed for feature flag purposes
         @projects = Array(projects)
+        # temporary needed when turn_off_vulnerability_read_create_db_trigger_function is disabled
+        # we still want to use the service to update fields not updated by the trigger
+        @update_all_vulnerabilities = update_all_vulnerabilities
       end
 
       def execute
@@ -30,9 +33,12 @@ module Vulnerabilities
         # Until we globally enable the FF, we have to filter off vulns for projects where the FF is is not on so
         # so that we can make sure to run the service for projects where the trigger is switched off, else we'll
         # cause data inconsistencies.
-        @projects = @projects.select do |p|
-          Feature.enabled?(:turn_off_vulnerability_read_create_db_trigger_function, p)
+        unless @update_all_vulnerabilities
+          @projects = @projects.select do |p|
+            Feature.enabled?(:turn_off_vulnerability_read_create_db_trigger_function, p)
+          end
         end
+
         @vulnerabilities = @vulnerabilities.with_project(@projects)
 
         @vulnerabilities.each_batch(of: BATCH_SIZE) do |vulnerability_batch|
