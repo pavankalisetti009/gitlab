@@ -71,7 +71,20 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
       control = project.project_control_compliance_statuses.first&.compliance_requirements_control
       next unless control
 
-      audit_event = FactoryBot.create(:audit_events_project_audit_event, target_project: project, user: @admin)
+      # Use Gitlab::Audit::Auditor to create audit event properly
+      ::Gitlab::Audit::Auditor.audit(
+        name: 'project_name_updated',
+        author: @admin,
+        scope: project,
+        target: project,
+        message: "Seeded compliance violation for #{control.name}"
+      )
+
+      # Find the audit event we just created - use project_id to ensure correct match
+      audit_event = AuditEvents::ProjectAuditEvent
+        .where(project_id: project.id)
+        .order(created_at: :desc)
+        .first!
 
       violation = FactoryBot.create(:project_compliance_violation, namespace: project.namespace, project: project,
         audit_event_id: audit_event.id,

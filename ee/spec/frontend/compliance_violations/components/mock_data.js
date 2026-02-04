@@ -391,3 +391,113 @@ export const mockToggleAwardEmojiError = {
     },
   },
 };
+
+export const mockNoteCreatedSubscriptionResponse = {
+  data: {
+    workItemNoteCreated: {
+      id: 'gid://gitlab/Note/5',
+      bodyHtml: '<p>New note from subscription</p>',
+      system: false,
+      internal: false,
+      systemNoteIconName: null,
+      createdAt: '2025-06-17T12:00:00Z',
+      author: {
+        id: 'gid://gitlab/User/1',
+        name: 'Test User',
+        username: 'testuser',
+        webUrl: 'https://example.com/testuser',
+        avatarUrl: 'https://example.com/avatar.png',
+        __typename: 'UserCore',
+      },
+      discussion: {
+        id: 'gid://gitlab/Discussion/5',
+        notes: {
+          nodes: [
+            {
+              id: 'gid://gitlab/Note/5',
+              body: 'New note from subscription',
+              bodyHtml: '<p>New note from subscription</p>',
+              createdAt: '2025-06-17T12:00:00Z',
+              lastEditedAt: null,
+              lastEditedBy: null,
+              author: {
+                id: 'gid://gitlab/User/1',
+                avatarUrl: 'https://example.com/avatar.png',
+                name: 'Test User',
+                username: 'testuser',
+                webUrl: 'https://example.com/testuser',
+                webPath: '/testuser',
+                __typename: 'UserCore',
+              },
+              awardEmoji: {
+                nodes: [],
+              },
+              discussion: {
+                id: 'gid://gitlab/Discussion/5',
+                __typename: 'Discussion',
+              },
+              systemNoteIconName: null,
+              system: false,
+              internal: false,
+              __typename: 'Note',
+            },
+          ],
+          __typename: 'NoteConnection',
+        },
+        __typename: 'Discussion',
+      },
+      __typename: 'Note',
+    },
+  },
+};
+
+export const mockNoteUpdatedSubscriptionResponse = {
+  data: {
+    workItemNoteUpdated: {
+      id: 'gid://gitlab/Note/2',
+      body: 'Updated note content',
+      bodyHtml: '<p>Updated note content</p>',
+      createdAt: '2025-06-16T15:30:00Z',
+      lastEditedAt: '2025-06-17T14:00:00Z',
+      lastEditedBy: {
+        id: 'gid://gitlab/User/2',
+        avatarUrl: 'https://example.com/avatar2.png',
+        name: 'Test User 2',
+        username: 'testuser2',
+        webUrl: 'https://example.com/testuser2',
+        webPath: '/testuser2',
+        __typename: 'UserCore',
+      },
+      author: {
+        id: 'gid://gitlab/User/2',
+        avatarUrl: 'https://example.com/avatar2.png',
+        name: 'Test User 2',
+        username: 'testuser2',
+        webUrl: 'https://example.com/testuser2',
+        webPath: '/testuser2',
+        __typename: 'UserCore',
+      },
+      awardEmoji: {
+        nodes: [],
+      },
+      discussion: {
+        id: 'gid://gitlab/Discussion/2',
+        __typename: 'Discussion',
+      },
+      systemNoteIconName: null,
+      system: false,
+      internal: false,
+      __typename: 'Note',
+    },
+  },
+};
+
+export const mockNoteDeletedSubscriptionResponse = {
+  data: {
+    workItemNoteDeleted: {
+      id: 'gid://gitlab/Note/2',
+      discussionId: 'gid://gitlab/Discussion/2',
+      lastDiscussionNote: true,
+    },
+  },
+};
