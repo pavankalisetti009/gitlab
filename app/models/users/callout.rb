@@ -123,7 +123,8 @@ module Users
       # 119 removed in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/221219
       vulnerability_report_limited_experience: 120, # EE-only
       file_tree_browser_popover: 121,
-      virtual_registry_permission_change_alert: 122 # EE-only
+      virtual_registry_permission_change_alert: 122, # EE-only
+      security_scanner_profiles_announcement: 123 # EE-only
     }
 
     validates :feature_name,

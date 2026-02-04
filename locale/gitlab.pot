@@ -60848,7 +60848,7 @@ msgstr ""
 msgid "SecurityConfiguration|Customize common SAST settings to suit your requirements. Configuration changes made here override those provided by GitLab and are excluded from updates. For details of more advanced configuration options, see the %{linkStart}GitLab SAST documentation%{linkEnd}."
 msgstr ""
 
-msgid "SecurityConfiguration|Define security settings once, reuse them everywhere. Update a profile and changes automatically apply to every project using it, ensuring consistent, predictable security coverage with minimal effort."
+msgid "SecurityConfiguration|Define security settings once and reuse them everywhere. Update a profile and your changes automatically apply to every project that uses the profile, ensuring consistent, predictable security coverage with minimal effort."
 msgstr ""
 
 msgid "SecurityConfiguration|Enable %{feature}"
@@ -63104,6 +63104,9 @@ msgstr ""
 msgid "SecurityProfiles|Apply profile to enable"
 msgstr ""
 
+msgid "SecurityProfiles|Configure once. Apply everywhere. Profiles make it easier to configure and manage your security tools at scale. Secret push protection is the first type of scan supported by this new feature."
+msgstr ""
+
 msgid "SecurityProfiles|Disable"
 msgstr ""
 
@@ -63117,6 +63120,18 @@ msgid "SecurityProfiles|Error detaching profile. Please try again."
 msgstr ""
 
 msgid "SecurityProfiles|Error loading profiles. Please try again."
+msgstr ""
+
+msgid "SecurityProfiles|Got it!"
+msgstr ""
+
+msgid "SecurityProfiles|Introducing Security Configuration Profiles"
+msgstr ""
+
+msgid "SecurityProfiles|Learn more"
+msgstr ""
+
+msgid "SecurityProfiles|New feature"
 msgstr ""
 
 msgid "SecurityProfiles|No profile applied"
@@ -63144,6 +63159,9 @@ msgid "SecurityProfiles|Profiles define scanner configuration and can be applied
 msgstr ""
 
 msgid "SecurityProfiles|Secret Push Protection"
+msgstr ""
+
+msgid "SecurityProfiles|Security configuration illustration"
 msgstr ""
 
 msgid "SecurityProfiles|You are about to disable %{scannerName} for this project. Are you sure you want to proceed?"

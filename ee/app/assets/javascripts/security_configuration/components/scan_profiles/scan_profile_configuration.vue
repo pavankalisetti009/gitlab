@@ -24,6 +24,7 @@ import detachMutation from 'ee/security_configuration/graphql/scan_profiles/secu
 import DisableScanProfileConfirmationModal from './disable_scan_profile_confirmation_modal.vue';
 import ScanProfileDetailsModal from './scan_profile_details_modal.vue';
 import InsufficientPermissionsPopover from './insufficient_permissions_popover.vue';
+import ScanProfileLaunchModal from './scan_profile_launch_modal.vue';
 
 Vue.use(GlToast);
 
@@ -40,6 +41,7 @@ export default {
     DisableScanProfileConfirmationModal,
     ScanProfileDetailsModal,
     InsufficientPermissionsPopover,
+    ScanProfileLaunchModal,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -408,5 +410,7 @@ export default {
       @confirm="detachProfile"
       @cancel="disableModalVisible = false"
     />
+
+    <scan-profile-launch-modal />
   </div>
 </template>
