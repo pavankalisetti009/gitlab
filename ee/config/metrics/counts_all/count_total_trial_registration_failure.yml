@@ -2,6 +2,8 @@
 key_path: counts.count_total_trial_registration_failure
 description: Total count of trial failures
 product_group: acquisition
+product_categories:
+- acquisition
 performance_indicator_type: []
 value_type: number
 status: active

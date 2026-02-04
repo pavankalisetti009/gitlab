@@ -2,6 +2,8 @@
 key_path: counts.count_total_lead_creation_failure
 description: Total count of lead failures
 product_group: acquisition
+product_categories:
+- acquisition
 performance_indicator_type: []
 value_type: number
 status: active

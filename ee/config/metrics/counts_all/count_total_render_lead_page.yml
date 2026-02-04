@@ -2,6 +2,8 @@
 key_path: counts.count_total_render_lead_page
 description: Total count of renders lead page
 product_group: acquisition
+product_categories:
+- acquisition
 performance_indicator_type: []
 value_type: number
 status: removed
