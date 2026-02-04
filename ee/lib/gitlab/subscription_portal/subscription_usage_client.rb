@@ -25,6 +25,9 @@ module Gitlab
               canAcceptOverageTerms
               dapPromoEnabled
               usageDashboardPath
+              paidTierTrial {
+                isActive
+              }
             }
           }
         }

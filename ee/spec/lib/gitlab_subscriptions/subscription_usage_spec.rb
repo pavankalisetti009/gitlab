@@ -892,6 +892,68 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
   end
 
+  describe '#paid_tier_trial' do
+    where(:cdot_value, :return_value) do
+      true  | true
+      false | false
+      nil   | false
+    end
+
+    with_them do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
+
+      let(:client_response) do
+        { success: true, subscriptionUsage: { paidTierTrial: { isActive: cdot_value } } }
+      end
+
+      before do
+        allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+      end
+
+      it "returns a struct with is_active=#{params[:return_value]} when CDot returns #{params[:cdot_value].inspect}" do
+        paid_tier_trial = subscription_usage.paid_tier_trial
+
+        expect(paid_tier_trial).to be_a(GitlabSubscriptions::SubscriptionUsage::PaidTierTrial)
+        expect(paid_tier_trial).to have_attributes(
+          is_active: return_value,
+          declarative_policy_subject: subscription_usage
+        )
+      end
+    end
+
+    context 'when paidTierTrial is missing from metadata' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
+
+      let(:client_response) do
+        { success: true, subscriptionUsage: {} }
+      end
+
+      before do
+        allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+      end
+
+      it 'returns a PaidTierTrial struct with is_active=false' do
+        paid_tier_trial = subscription_usage.paid_tier_trial
+
+        expect(paid_tier_trial).to be_a(GitlabSubscriptions::SubscriptionUsage::PaidTierTrial)
+        expect(paid_tier_trial).to have_attributes(
+          is_active: false,
+          declarative_policy_subject: subscription_usage
+        )
+      end
+    end
+  end
+
   describe '#usage_dashboard_path' do
     let(:subscription_usage) do
       described_class.new(
