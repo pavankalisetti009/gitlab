@@ -20,33 +20,30 @@ module QA
           let(:codeowner) { project.group.sandbox.path }
           let(:group_or_project) { project.group.sandbox }
 
-          it_behaves_like 'code owner merge request',
-            quarantine: {
-              type: :investigating,
-              issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20565'
-            }
+          context 'with quarantine test 1',
+            quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20565', type: :investigating } do
+            it_behaves_like 'code owner merge request'
+          end
         end
 
         context 'and the code owner is the subgroup', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347802' do
           let(:codeowner) { project.group.full_path }
           let(:group_or_project) { project.group }
 
-          it_behaves_like 'code owner merge request',
-            quarantine: {
-              type: :investigating,
-              issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20565'
-            }
+          context 'with quarantine test 2',
+            quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20565', type: :investigating } do
+            it_behaves_like 'code owner merge request'
+          end
         end
 
         context 'and the code owner is a user', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347800' do
           let(:codeowner) { approver.username }
           let(:group_or_project) { project }
 
-          it_behaves_like 'code owner merge request',
-            quarantine: {
-              type: :investigating,
-              issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20565'
-            }
+          context 'with quarantine test 3',
+            quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20565', type: :investigating } do
+            it_behaves_like 'code owner merge request'
+          end
         end
       end
     end

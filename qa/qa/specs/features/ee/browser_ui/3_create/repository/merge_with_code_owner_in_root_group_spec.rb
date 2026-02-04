@@ -21,22 +21,20 @@ module QA
           let(:codeowner) { root_group.path }
           let(:group_or_project) { root_group }
 
-          it_behaves_like 'code owner merge request',
-            quarantine: {
-              type: :investigating,
-              issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20565'
-            }
+          context 'with quarantine test 1',
+            quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/21583', type: :investigating } do
+            it_behaves_like 'code owner merge request'
+          end
         end
 
         context 'and the code owner is a user', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347805' do
           let(:codeowner) { approver.username }
           let(:group_or_project) { project }
 
-          it_behaves_like 'code owner merge request',
-            quarantine: {
-              type: :investigating,
-              issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/20565'
-            }
+          context 'with quarantine test 2',
+            quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/21583', type: :investigating } do
+            it_behaves_like 'code owner merge request'
+          end
         end
       end
     end
