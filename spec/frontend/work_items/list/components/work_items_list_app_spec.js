@@ -89,7 +89,6 @@ import {
 import { routes } from '~/work_items/router/routes';
 import workItemsReorderMutation from '~/work_items/graphql/work_items_reorder.mutation.graphql';
 import { isLoggedIn } from '~/lib/utils/common_utils';
-import { singleSavedView } from '~/work_items/graphql/resolvers';
 import {
   workItemsQueryResponseCombined,
   workItemsQueryResponseNoLabels,
@@ -102,6 +101,7 @@ import {
   workItemUserPreferenceUpdateMutationResponse,
   workItemUserPreferenceUpdateMutationResponseWithErrors,
   workItemCountsOnlyResponse,
+  singleSavedView,
 } from '../../mock_data';
 
 jest.mock('~/lib/utils/scroll_utils', () => ({ scrollUp: jest.fn() }));
@@ -149,6 +149,7 @@ const mockSavedViewsData = [
     subscribed: true,
     userPermissions: {
       updateSavedView: true,
+      deleteSavedView: true,
     },
   },
 ];
