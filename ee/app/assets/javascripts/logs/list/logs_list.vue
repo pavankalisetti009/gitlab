@@ -8,7 +8,7 @@ import UrlSync from '~/vue_shared/components/url_sync.vue';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import axios from '~/lib/utils/axios_utils';
 import { queryToObject } from '~/lib/utils/url_utility';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ObservabilityNoDataEmptyState from '~/observability/components/observability_no_data_empty_state.vue';
 import { InternalEvents } from '~/tracking';
@@ -46,7 +46,7 @@ export default {
     ),
     docsLinkText: s__(`ObservabilityLogs|Learn more.`),
   },
-  docsLink: `${DOCS_URL_IN_EE_DIR}/development/logs`,
+  docsLink: `${DOCS_URL}/development/logs`,
   props: {
     observabilityClient: {
       required: true,

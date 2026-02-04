@@ -10,7 +10,7 @@ import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/consta
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { visitUrl, joinPaths, setUrlParams } from '~/lib/utils/url_utility';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import { isMetaClick, contentTop } from '~/lib/utils/common_utils';
 import { sanitize } from '~/lib/dompurify';
 import FilteredSearch from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
@@ -56,7 +56,7 @@ export default {
     ),
     docsLinkText: s__(`ObservabilityMetrics|Learn more.`),
   },
-  docsLink: `${DOCS_URL_IN_EE_DIR}/development/metrics`,
+  docsLink: `${DOCS_URL}/development/metrics`,
   props: {
     observabilityClient: {
       required: true,

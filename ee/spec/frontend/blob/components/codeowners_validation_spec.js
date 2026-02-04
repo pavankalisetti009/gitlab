@@ -12,7 +12,7 @@ import { createAlert } from '~/alert';
 import {
   CODEOWNERS_VALIDATION_I18N,
   COLLAPSE_ID,
-  DOCS_URL,
+  ERROR_HANDLING_DOCS_URL,
   CODE_TO_MESSAGE,
 } from 'ee/blob/constants';
 import CodeownersValidation from 'ee/blob/components/codeowners_validation.vue';
@@ -140,7 +140,7 @@ describe('codeowners validation', () => {
 
     it('renders link to doc', () => {
       expect(findDocsLink().text()).toBe(CODEOWNERS_VALIDATION_I18N.docsLink);
-      expect(findDocsLink().attributes('href')).toBe(DOCS_URL);
+      expect(findDocsLink().attributes('href')).toBe(ERROR_HANDLING_DOCS_URL);
     });
   });
 

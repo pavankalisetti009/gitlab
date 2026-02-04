@@ -9,7 +9,12 @@ import {
   GlSkeletonLoader,
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
-import { CODEOWNERS_VALIDATION_I18N, COLLAPSE_ID, DOCS_URL, CODE_TO_MESSAGE } from '../constants';
+import {
+  CODEOWNERS_VALIDATION_I18N,
+  COLLAPSE_ID,
+  ERROR_HANDLING_DOCS_URL,
+  CODE_TO_MESSAGE,
+} from '../constants';
 import validateCodeownerFileQuery from '../queries/validate_codeowner_file.query.graphql';
 
 export default {
@@ -79,7 +84,7 @@ export default {
   },
   collapseId: COLLAPSE_ID,
   i18n: CODEOWNERS_VALIDATION_I18N,
-  docsUrl: DOCS_URL,
+  docsUrl: ERROR_HANDLING_DOCS_URL,
   codeToMessage: CODE_TO_MESSAGE,
 };
 </script>

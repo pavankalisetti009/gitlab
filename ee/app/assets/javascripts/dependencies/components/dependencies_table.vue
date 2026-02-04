@@ -11,7 +11,7 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import { NAMESPACE_PROJECT, DEPENDENCIES_TABLE_I18N } from '../constants';
 import DependencyLicenseLinks from './dependency_license_links.vue';
 import DependencyLocation from './dependency_location.vue';
@@ -181,7 +181,7 @@ export default {
   ],
   projectFields: [...sharedFields, vulnerabilityField],
   DEPENDENCIES_PER_PAGE: 20,
-  DEPENDENCY_PATH_LINK: `${DOCS_URL_IN_EE_DIR}/user/application_security/dependency_list/#dependency-paths`,
+  DEPENDENCY_PATH_LINK: `${DOCS_URL}/user/application_security/dependency_list/#dependency-paths`,
   i18n: DEPENDENCIES_TABLE_I18N,
 };
 </script>

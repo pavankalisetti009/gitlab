@@ -2,7 +2,7 @@
 import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import {
   CONNECTIVITY_ERROR,
@@ -72,14 +72,14 @@ export const links = Object.freeze({
   supportLink,
   licenseSupportLink:
     'https://support.gitlab.com/hc/en-us/requests/new?ticket_form_id=360000071293',
-  silentModeDocsLink: `${DOCS_URL_IN_EE_DIR}/ee/administration/silent_mode`,
+  silentModeDocsLink: `${DOCS_URL}/administration/silent_mode`,
   subscriptionActivationHelpLink: helpPagePath('administration/license.html'),
   troubleshootingHelpLink: helpPagePath('/administration/license.html', {
     anchor: 'error-cannot-activate-instance-due-to-a-connectivity-issue',
   }),
-  addSeats: `${DOCS_URL_IN_EE_DIR}/subscriptions/self_managed/#buy-seats-for-a-subscription`,
-  deactivateUser: `${DOCS_URL_IN_EE_DIR}/administration/moderate_users.html#deactivate-a-user`,
-  blockUser: `${DOCS_URL_IN_EE_DIR}/administration/moderate_users.html#block-a-user`,
+  addSeats: `${DOCS_URL}/subscriptions/self_managed/#buy-seats-for-a-subscription`,
+  deactivateUser: `${DOCS_URL}/administration/moderate_users.html#deactivate-a-user`,
+  blockUser: `${DOCS_URL}/administration/moderate_users.html#block-a-user`,
 });
 
 export default {

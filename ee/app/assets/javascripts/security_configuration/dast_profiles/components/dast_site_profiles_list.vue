@@ -14,7 +14,7 @@ import dastSiteValidationsQuery from 'ee/security_configuration/dast_site_valida
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { fetchPolicies } from '~/lib/graphql';
 import { s__ } from '~/locale';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import { getTimeDifferenceMinutes } from 'ee/security_configuration/utils';
 import { updateSiteProfilesStatuses } from '../graphql/cache_utils';
 import ProfilesList from './dast_profiles_list.vue';
@@ -79,7 +79,7 @@ export default {
       revokeValidationProfile: null,
     };
   },
-  DOCS_LINK: `${DOCS_URL_IN_EE_DIR}/user/application_security/dast/proxy-based#site-profile-validation`,
+  DOCS_LINK: `${DOCS_URL}/user/application_security/dast/proxy-based#site-profile-validation`,
   statuses: DAST_SITE_VALIDATION_STATUS_PROPS,
   DAST_SITE_VALIDATION_MODAL_ID,
   DAST_SITE_VALIDATION_REVOKE_MODAL_ID,

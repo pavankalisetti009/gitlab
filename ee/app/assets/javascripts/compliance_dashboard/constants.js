@@ -1,5 +1,5 @@
 import { __, s__ } from '~/locale';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 
 export const INPUT_DEBOUNCE = 500;
 
@@ -82,9 +82,9 @@ export const i18n = {
   violationsTab: s__('Compliance Center|Violations'),
 };
 
-export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/_index.html#scope`;
+export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL}/user/application_security/policies/_index.html#scope`;
 
-export const CREATE_FRAMEWORKS_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`;
+export const CREATE_FRAMEWORKS_DOCS_URL = `${DOCS_URL}/user/group/compliance_frameworks.html#prerequisites`;
 
 export const FEEDBACK_ISSUE_URL_VIOLATIONS = 'https://gitlab.com/gitlab-org/gitlab/-/issues/547492';
 

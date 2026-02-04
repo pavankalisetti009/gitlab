@@ -1,5 +1,5 @@
 import { n__, s__ } from '~/locale';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 
 export const SYNTAX_ERRORS_TEXT = (count) =>
   n__(
@@ -24,7 +24,7 @@ export const ERROR_MESSAGE = s__(
   'CodeownersValidation|An error occurred while loading the validation errors. Please try again later.',
 );
 
-export const DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/project/codeowners/advanced.html#error-handling`;
+export const ERROR_HANDLING_DOCS_URL = `${DOCS_URL}/user/project/codeowners/advanced.html#error-handling`;
 
 export const CODEOWNERS_VALIDATION_I18N = {
   syntaxValid: SYNTAX_VALID,

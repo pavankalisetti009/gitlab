@@ -1,7 +1,7 @@
 <script>
 import { GlSprintf, GlLink } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import ObservabilityUsageChart from './observability_usage_chart.vue';
 import ObservabilityUsageSectionedBar from './observability_usage_sectioned_bar.vue';
 import ObservabilityUsageNoData from './observability_usage_no_data.vue';
@@ -15,7 +15,7 @@ export default {
     eventsChartTitle: __('Events'),
     storageChartTitle: __('Storage'),
   },
-  docsLink: `${DOCS_URL_IN_EE_DIR}/operations`,
+  docsLink: `${DOCS_URL}/operations`,
   components: {
     GlSprintf,
     GlLink,

@@ -1,5 +1,5 @@
 import { __, s__ } from '~/locale';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 
 export const GROUP_BY = {
   NONE: null,
@@ -150,12 +150,12 @@ export const STANDARDS_ADHERENCE_CHECK_FIX_FEATURES = {
 };
 
 export const STANDARDS_ADHERENCE_CHECK_FIX_LEARN_MORE_DOCS_LINKS = {
-  [PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#prevent-authors-as-approvers`,
-  [PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#prevent-committers-as-approvers`,
-  [AT_LEAST_TWO_APPROVALS]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#at-least-two-approvals`,
-  [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#at-least-one-non-author-approval`,
-  [SAST]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#sast-scanner-artifact`,
-  [DAST]: `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#dast-scanner-artifact`,
+  [PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR]: `${DOCS_URL}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#prevent-authors-as-approvers`,
+  [PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS]: `${DOCS_URL}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#prevent-committers-as-approvers`,
+  [AT_LEAST_TWO_APPROVALS]: `${DOCS_URL}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#at-least-two-approvals`,
+  [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: `${DOCS_URL}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#at-least-one-non-author-approval`,
+  [SAST]: `${DOCS_URL}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#sast-scanner-artifact`,
+  [DAST]: `${DOCS_URL}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/#dast-scanner-artifact`,
 };
 
 export const STANDARDS_ADHERENCE_CHECK_FIX_BUTTON_TEXT = {
