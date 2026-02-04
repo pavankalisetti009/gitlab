@@ -57,6 +57,9 @@ export function initDuoPanel() {
     creditsAvailable,
     defaultNamespaceSelected,
     preferencesPath,
+    isTrial,
+    buyAddonPath,
+    canBuyAddon,
   } = el.dataset;
 
   if (parseBoolean(forceAgenticModeForCoreDuoUsers)) {
@@ -91,6 +94,9 @@ export function initDuoPanel() {
       creditsAvailable: parseBoolean(creditsAvailable ?? 'true'),
       defaultNamespaceSelected: parseBoolean(defaultNamespaceSelected),
       preferencesPath,
+      isTrial: parseBoolean(isTrial),
+      buyAddonPath,
+      canBuyAddon: parseBoolean(canBuyAddon),
     },
   };
 

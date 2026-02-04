@@ -11,9 +11,11 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
     before do
       allow(::Gitlab::Llm::TanukiBot).to receive_messages(user_model_selection_enabled?: false,
         agentic_mode_available?: false, root_namespace_id: 'root-123', resource_id: 'resource-456',
-        chat_disabled_reason: nil, credits_available?: true)
+        chat_disabled_reason: nil, credits_available?: true, default_duo_namespace: nil)
       allow(::Gitlab::DuoWorkflow::Client).to receive(:metadata).and_return({ key: 'value' })
-      allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
+      allow(::Ai::AmazonQ).to receive_messages(enabled?: false, connected?: false)
+      allow(Gitlab::Saas).to receive(:feature_available?).and_call_original
+      allow(Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(true)
     end
 
     it 'returns user global id' do
@@ -201,12 +203,233 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
         allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
       end
 
-      it 'does not use default namespace when project is present' do
-        expect(user.user_preference).not_to receive(:duo_default_namespace_with_fallback)
-
+      it 'does not use default namespace for namespace_id when project is present' do
         result = helper.duo_chat_panel_data(user, project, nil)
 
         expect(result[:namespace_id]).to be_nil
+      end
+    end
+
+    context 'when no namespace context is available' do
+      subject(:result) { helper.duo_chat_panel_data(user, nil, nil) }
+
+      context 'when default_duo_namespace returns nil' do
+        before do
+          allow(Gitlab::Llm::TanukiBot).to receive(:default_duo_namespace).and_return(nil)
+        end
+
+        it 'handles nil default namespace gracefully' do
+          expect(result[:is_trial]).to eq('false')
+          expect(result[:can_buy_addon]).to eq('false')
+          expect(result[:buy_addon_path]).to be_nil
+        end
+      end
+
+      context 'when default_duo_namespace returns a namespace' do
+        let_it_be(:default_group) { build_stubbed(:group) }
+
+        before do
+          allow(Gitlab::Llm::TanukiBot).to receive(:default_duo_namespace).and_return(default_group)
+          allow(default_group).to receive(:trial_active?).and_return(false)
+          allow(helper).to receive(:can?).with(user, :edit_billing, default_group).and_return(false)
+        end
+
+        it 'uses default namespace for billing attributes' do
+          expect(result[:is_trial]).to eq('false')
+        end
+      end
+    end
+
+    describe 'trial and billing attributes' do
+      subject(:result) { helper.duo_chat_panel_data(user, nil, root_group) }
+
+      let_it_be(:root_group) { build_stubbed(:group) }
+
+      before do
+        allow(Gitlab::Llm::TanukiBot).to receive(:default_duo_namespace).and_return(root_group)
+      end
+
+      context 'when namespace has active trial' do
+        before do
+          allow(root_group).to receive(:trial_active?).and_return(true)
+        end
+
+        it 'returns is_trial as "true"' do
+          expect(result[:is_trial]).to eq('true')
+        end
+      end
+
+      context 'when namespace does not have active trial' do
+        before do
+          allow(root_group).to receive(:trial_active?).and_return(false)
+        end
+
+        it 'returns is_trial as "false"' do
+          expect(result[:is_trial]).to eq('false')
+        end
+      end
+
+      context 'when user can edit billing' do
+        before do
+          allow(helper).to receive(:can?).with(user, :edit_billing, root_group).and_return(true)
+        end
+
+        context 'when not on trial' do
+          before do
+            allow(root_group).to receive(:trial_active?).and_return(false)
+          end
+
+          it 'returns can_buy_addon as "true"' do
+            expect(result[:can_buy_addon]).to eq('true')
+          end
+
+          it 'returns credits dashboard path for buy_addon_path' do
+            expect(result[:buy_addon_path]).to eq(helper.group_settings_gitlab_credits_dashboard_index_path(root_group))
+          end
+        end
+
+        context 'when on trial' do
+          before do
+            allow(root_group).to receive(:trial_active?).and_return(true)
+          end
+
+          it 'returns can_buy_addon as "true"' do
+            expect(result[:can_buy_addon]).to eq('true')
+          end
+
+          it 'returns subscription portal URL for buy_addon_path' do
+            expect(result[:buy_addon_path]).to eq(::Gitlab::Routing.url_helpers.subscription_portal_url)
+          end
+        end
+      end
+
+      context 'when user cannot edit billing' do
+        before do
+          allow(helper).to receive(:can?).with(user, :edit_billing, root_group).and_return(false)
+          allow(root_group).to receive(:trial_active?).and_return(false)
+        end
+
+        it 'returns can_buy_addon as "false"' do
+          expect(result[:can_buy_addon]).to eq('false')
+        end
+
+        it 'returns nil buy_addon_path' do
+          expect(result[:buy_addon_path]).to be_nil
+        end
+      end
+
+      context 'when namespace is nil' do
+        subject(:result) { helper.duo_chat_panel_data(user, nil, nil) }
+
+        before do
+          allow(Gitlab::Llm::TanukiBot).to receive(:default_duo_namespace).and_return(nil)
+        end
+
+        it 'returns is_trial as "false"' do
+          expect(result[:is_trial]).to eq('false')
+        end
+
+        it 'returns can_buy_addon as "false"' do
+          expect(result[:can_buy_addon]).to eq('false')
+        end
+
+        it 'returns nil buy_addon_path' do
+          expect(result[:buy_addon_path]).to be_nil
+        end
+      end
+
+      context 'on self-managed instance' do
+        before do
+          allow(Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(false)
+        end
+
+        context 'when user is admin' do
+          before do
+            allow(helper).to receive(:can?).with(user, :admin_all_resources).and_return(true)
+          end
+
+          context 'when no license' do
+            before do
+              allow(License).to receive(:current).and_return(nil)
+            end
+
+            it 'returns is_trial as empty string' do
+              expect(result[:is_trial]).to eq('')
+            end
+          end
+
+          context 'when not on trial' do
+            before do
+              allow(License).to receive(:current).and_return(instance_double(License, trial?: false))
+            end
+
+            it 'returns can_buy_addon as "true"' do
+              expect(result[:can_buy_addon]).to eq('true')
+            end
+
+            it 'returns admin credits dashboard path for buy_addon_path' do
+              expect(result[:buy_addon_path]).to eq(helper.admin_gitlab_credits_dashboard_index_path)
+            end
+          end
+
+          context 'when on trial' do
+            before do
+              allow(License).to receive(:current).and_return(instance_double(License, trial?: true))
+            end
+
+            it 'returns can_buy_addon as "true"' do
+              expect(result[:can_buy_addon]).to eq('true')
+            end
+
+            it 'returns subscription portal URL for buy_addon_path' do
+              expect(result[:buy_addon_path]).to eq(::Gitlab::Routing.url_helpers.subscription_portal_url)
+            end
+          end
+        end
+
+        context 'when user is not admin' do
+          before do
+            allow(helper).to receive(:can?).with(user, :admin_all_resources).and_return(false)
+          end
+
+          it 'returns can_buy_addon as "false"' do
+            expect(result[:can_buy_addon]).to eq('false')
+          end
+
+          it 'returns nil buy_addon_path' do
+            expect(result[:buy_addon_path]).to be_nil
+          end
+        end
+      end
+
+      context 'on SaaS instance' do
+        context 'when user can edit billing' do
+          before do
+            allow(helper).to receive(:can?).with(user, :edit_billing, root_group).and_return(true)
+          end
+
+          context 'when not on trial' do
+            before do
+              allow(root_group).to receive(:trial_active?).and_return(false)
+            end
+
+            it 'returns group settings path for buy_addon_path' do
+              expect(result[:buy_addon_path]).to eq(
+                helper.group_settings_gitlab_credits_dashboard_index_path(root_group)
+              )
+            end
+          end
+
+          context 'when on trial' do
+            before do
+              allow(root_group).to receive(:trial_active?).and_return(true)
+            end
+
+            it 'returns subscription portal URL for buy_addon_path' do
+              expect(result[:buy_addon_path]).to eq(::Gitlab::Routing.url_helpers.subscription_portal_url)
+            end
+          end
+        end
       end
     end
   end

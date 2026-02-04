@@ -44,7 +44,7 @@ module EE
         default_namespace_selected: default_namespace_selected.to_s,
         preferences_path: profile_preferences_path(anchor: 'user_duo_default_namespace_id'),
         expanded: ('true' if ai_panel_expanded?)
-      }
+      }.merge(duo_chat_billing_attributes(user, project, group))
     end
 
     def duo_chat_panel_empty_state_data(source: nil)
@@ -107,6 +107,58 @@ module EE
       root = source.root_ancestor
 
       root.has_free_or_no_subscription? && can?(current_user, :admin_namespace, root)
+    end
+
+    def duo_chat_root_namespace(user, project, group)
+      namespace = group || project&.group
+      return namespace.root_ancestor if namespace
+
+      ::Gitlab::Llm::TanukiBot.default_duo_namespace(user: user)&.root_ancestor
+    end
+
+    def duo_chat_billing_attributes(user, project, group)
+      return duo_chat_billing_attributes_for_self_managed(user) unless saas?
+
+      namespace = duo_chat_root_namespace(user, project, group)
+      duo_chat_billing_attributes_for_saas(user, namespace)
+    end
+
+    def duo_chat_billing_attributes_for_self_managed(user)
+      can_buy = can?(user, :admin_all_resources)
+      is_trial = License.current&.trial?
+
+      {
+        is_trial: is_trial.to_s,
+        can_buy_addon: can_buy.to_s,
+        buy_addon_path: (duo_chat_buy_addon_path_for_self_managed(is_trial) if can_buy)
+      }
+    end
+
+    def duo_chat_billing_attributes_for_saas(user, namespace)
+      can_buy = !!(namespace && can?(user, :edit_billing, namespace))
+      is_trial = !!namespace&.trial_active?
+
+      {
+        is_trial: is_trial.to_s,
+        can_buy_addon: can_buy.to_s,
+        buy_addon_path: (duo_chat_buy_addon_path_for_saas(namespace, is_trial) if can_buy)
+      }
+    end
+
+    def duo_chat_buy_addon_path_for_self_managed(is_trial)
+      return ::Gitlab::Routing.url_helpers.subscription_portal_url if is_trial
+
+      admin_gitlab_credits_dashboard_index_path
+    end
+
+    def duo_chat_buy_addon_path_for_saas(namespace, is_trial)
+      return ::Gitlab::Routing.url_helpers.subscription_portal_url if is_trial
+
+      group_settings_gitlab_credits_dashboard_index_path(namespace)
+    end
+
+    def saas?
+      ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
     end
   end
 end

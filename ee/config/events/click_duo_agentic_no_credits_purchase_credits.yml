@@ -1,0 +1,17 @@
+---
+description: User clicks purchase more credits button in Duo Agentic Chat no credits empty state
+internal_events: true
+status: active
+action: click_duo_agentic_no_credits_purchase_credits
+identifiers:
+  - user
+  - namespace
+additional_properties:
+  label:
+    description: Subscription type (trial or paid)
+product_group: duo_chat
+milestone: '18.9'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/221113
+tiers:
+  - premium
+  - ultimate
