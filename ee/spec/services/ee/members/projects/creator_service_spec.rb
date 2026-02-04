@@ -116,9 +116,9 @@ RSpec.describe Members::Projects::CreatorService, feature_category: :groups_and_
 
       context 'and the service account is eligible for membership' do
         it 'creates the member successfully and calls MembershipEligibilityChecker with target_project' do
-          allow(::Namespaces::ServiceAccounts::MembershipEligibilityChecker)
+          allow(::Members::ServiceAccounts::EligibilityChecker)
             .to receive(:new).with(target_project: source).and_call_original
-          expect_next_instance_of(::Namespaces::ServiceAccounts::MembershipEligibilityChecker) do |instance|
+          expect_next_instance_of(::Members::ServiceAccounts::EligibilityChecker) do |instance|
             expect(instance).to receive(:eligible?).with(service_account_user).and_return(true)
           end
 
@@ -129,7 +129,7 @@ RSpec.describe Members::Projects::CreatorService, feature_category: :groups_and_
 
       context 'and the service account is not eligible for membership' do
         it 'does not create the member' do
-          expect_next_instance_of(::Namespaces::ServiceAccounts::MembershipEligibilityChecker) do |instance|
+          expect_next_instance_of(::Members::ServiceAccounts::EligibilityChecker) do |instance|
             expect(instance).to receive(:eligible?).with(service_account_user).and_return(false)
           end
 
@@ -144,7 +144,7 @@ RSpec.describe Members::Projects::CreatorService, feature_category: :groups_and_
       let(:current_user) { create(:user) }
 
       it 'does not create the member even if service account is eligible' do
-        expect_next_instance_of(::Namespaces::ServiceAccounts::MembershipEligibilityChecker) do |instance|
+        expect_next_instance_of(::Members::ServiceAccounts::EligibilityChecker) do |instance|
           expect(instance).to receive(:eligible?).and_return(true)
         end
 

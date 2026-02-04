@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module Namespaces
+module Members
   module ServiceAccounts
-    class MembershipEligibilityChecker
+    class EligibilityChecker
       def initialize(target_group: nil, target_project: nil)
         raise ArgumentError, 'Cannot provide both target_group and target_project' if target_group && target_project
 

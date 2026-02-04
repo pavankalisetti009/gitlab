@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::ServiceAccounts::MembershipEligibilityChecker, feature_category: :system_access do
+RSpec.describe Members::ServiceAccounts::EligibilityChecker, feature_category: :system_access do
   let_it_be(:root_group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: root_group) }
   let_it_be(:nested_subgroup) { create(:group, parent: subgroup) }

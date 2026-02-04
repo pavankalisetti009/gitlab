@@ -24,7 +24,7 @@ module EE
           )
         else
           scoped_users = super
-          ::Namespaces::ServiceAccounts::MembershipEligibilityChecker.new(**checker_args).filter_users(scoped_users)
+          ::Members::ServiceAccounts::EligibilityChecker.new(**checker_args).filter_users(scoped_users)
         end
       end
 
