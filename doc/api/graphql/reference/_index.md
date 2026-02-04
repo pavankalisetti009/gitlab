@@ -13056,6 +13056,34 @@ Input type: `SetContainerScanningForRegistryInput`
 | <a id="mutationsetcontainerscanningforregistrycontainerscanningforregistryenabled"></a>`containerScanningForRegistryEnabled` | [`Boolean`](#boolean) | Whether the feature is enabled. |
 | <a id="mutationsetcontainerscanningforregistryerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 
+### `Mutation.setGroupCustomAttribute`
+
+{{< details >}}
+**Introduced** in GitLab 18.9.
+**Status**: Experiment.
+{{< /details >}}
+
+Creates or updates a custom attribute on a group. Only available to admins.
+
+Input type: `SetGroupCustomAttributeInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetgroupcustomattributeclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetgroupcustomattributegrouppath"></a>`groupPath` | [`ID!`](#id) | Full path of the group. |
+| <a id="mutationsetgroupcustomattributekey"></a>`key` | [`String!`](#string) | Key of the custom attribute. |
+| <a id="mutationsetgroupcustomattributevalue"></a>`value` | [`String!`](#string) | Value of the custom attribute. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetgroupcustomattributeclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetgroupcustomattributecustomattribute"></a>`customAttribute` | [`CustomAttribute`](#customattribute) | Custom attribute after mutation. |
+| <a id="mutationsetgroupcustomattributeerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+
 ### `Mutation.setGroupSecretPushProtection`
 
 Enable or disable secret push protection for a group.
