@@ -279,5 +279,46 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
         expect { execute_service }.not_to change { Vulnerabilities::Read.count }
       end
     end
+
+    context 'with update_all_vulnerabilities enabled' do
+      let(:vulnerabilities) { vulnerability }
+      let(:attributes) { { severity: :critical } }
+
+      let(:execute_service) do
+        described_class.new(vulnerabilities, attributes, projects: project, update_all_vulnerabilities: true).execute
+      end
+
+      before do
+        stub_feature_flags(turn_off_vulnerability_read_create_db_trigger_function: false)
+      end
+
+      context 'when vulnerability_read exists' do
+        let!(:existing_read) do
+          create(:vulnerability_read,
+            vulnerability: vulnerability,
+            project: project,
+            scanner: scanner,
+            severity: :low,
+            state: :dismissed,
+            uuid: finding.uuid,
+            report_type: vulnerability.report_type,
+            resolved_on_default_branch: false)
+        end
+
+        it 'updates the record even when feature flag is disabled' do
+          expect { execute_service }.not_to change { Vulnerabilities::Read.count }
+          expect(existing_read.reload.severity).to eq('critical')
+        end
+      end
+
+      context 'when vulnerability_read does not exist' do
+        it 'creates the record even when feature flag is disabled' do
+          expect { execute_service }.to change { Vulnerabilities::Read.count }.by(1)
+
+          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
+          expect(created_read.severity).to eq('critical')
+        end
+      end
+    end
   end
 end

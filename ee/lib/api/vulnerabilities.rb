@@ -135,7 +135,8 @@ module API
         authorize! :admin_vulnerability, user_project
 
         vulnerability = ::Vulnerabilities::CreateService.new(
-          user_project, current_user, finding_id: params[:finding_id]
+          user_project, current_user,
+          finding_id: params[:finding_id]
         ).execute
 
         if vulnerability.persisted?

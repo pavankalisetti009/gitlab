@@ -39,12 +39,16 @@ module Vulnerabilities
         vulnerability.save!
         finding.update!(vulnerability_id: vulnerability.id)
 
-        Vulnerabilities::Reads::UpsertService.new(vulnerability,
+        Vulnerabilities::Reads::UpsertService.new(
+          vulnerability,
           {
+            vulnerability_occurrence_id: finding.id,
             traversal_ids: project.namespace.traversal_ids,
             security_project_tracked_context_id: finding.security_project_tracked_context_id
           },
-          projects: @project).execute
+          projects: @project,
+          update_all_vulnerabilities: true
+        ).execute
 
         update_security_statistics!
 

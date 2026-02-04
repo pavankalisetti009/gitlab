@@ -37,7 +37,10 @@ module Vulnerabilities
       end
 
       if vulnerability.persisted?
-        attributes = {}
+        attributes = {
+          vulnerability_occurrence_id: finding.id,
+          traversal_ids: @project.namespace.traversal_ids
+        }
         attributes[:dismissal_reason] = @dismissal_reason if @dismissal_reason
         if Feature.enabled?(:vulnerabilities_across_contexts, @project) && finding.security_project_tracked_context_id
           attributes[:security_project_tracked_context_id] =
@@ -48,7 +51,9 @@ module Vulnerabilities
         Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(vulnerability)
 
         if @present_on_default_branch
-          Vulnerabilities::Reads::UpsertService.new(vulnerability, attributes, projects: @project).execute
+          Vulnerabilities::Reads::UpsertService.new(
+            vulnerability, attributes, projects: @project, update_all_vulnerabilities: true
+          ).execute
         end
       end
 
