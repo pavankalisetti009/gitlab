@@ -165,8 +165,8 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
         end
 
         context 'with no data cached' do
-          it 'queues reactive caching update and returns parsing' do
-            expect_reactive_cache_update_queued(report_generation_service, params.stringify_keys)
+          it 'uses high urgency worker when queuing reactive cache calculation' do
+            expect_reactive_cache_calculation_queued(report_generation_service, params.stringify_keys)
 
             expect(report).to eq({ status: :parsing })
           end
@@ -228,16 +228,45 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
 
             context 'when cached results is not latest' do
               before do
+                allow(ReactiveCaching::LowUrgencyWorker).to receive(:perform_async).and_call_original
                 allow(ReactiveCachingWorker).to receive(:perform_async).and_call_original
                 allow_next_instance_of(Vulnerabilities::CompareSecurityReportsService) do |instance|
                   allow(instance).to receive(:latest?).and_return(false)
                 end
               end
 
-              it 'queues reactive cache update' do
+              it 'uses high urgency worker when queuing reactive cache calculation' do
+                expect_reactive_cache_calculation_queued(report_generation_service, params.stringify_keys)
+
+                expect(report).to eq({ status: :parsing })
+              end
+
+              it 'queues reactive cache update with low urgency and returns parsing' do
                 expect_reactive_cache_update_queued(report_generation_service, params.stringify_keys)
 
                 expect(report).to eq({ status: :parsing })
+              end
+
+              context 'when feature flag low_urgency_reactive_caching_worker is disabled' do
+                before do
+                  stub_feature_flags(low_urgency_reactive_caching_worker: false)
+                end
+
+                it 'uses high urgency worker when queuing reactive cache calculation' do
+                  expect_reactive_cache_calculation_queued(report_generation_service, params.stringify_keys)
+
+                  expect(report).to eq({ status: :parsing })
+                end
+
+                it 'queues reactive cache update with high urgency and returns parsing' do
+                  expect_reactive_cache_update_queued(
+                    report_generation_service,
+                    params.stringify_keys,
+                    worker_klass: ReactiveCachingWorker
+                  )
+
+                  expect(report).to eq({ status: :parsing })
+                end
               end
             end
 
