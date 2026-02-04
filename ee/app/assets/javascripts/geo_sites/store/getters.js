@@ -29,7 +29,14 @@ export const verificationInfo = (state, getters) => (id) => {
   }
 
   return getters.sortedReplicableTypes.map(
-    ({ namePlural, dataType, dataTypeTitle, titlePlural, verificationEnabled }) => {
+    ({
+      namePlural,
+      dataType,
+      dataTypeTitle,
+      titlePlural,
+      dataManagementUrl,
+      verificationEnabled,
+    }) => {
       const camelCaseName = convertToCamelCase(namePlural);
       const values = verificationEnabled
         ? {
@@ -44,6 +51,7 @@ export const verificationInfo = (state, getters) => (id) => {
         dataTypeTitle,
         namePlural,
         titlePlural,
+        dataManagementUrl,
         verificationEnabled,
         values,
       };

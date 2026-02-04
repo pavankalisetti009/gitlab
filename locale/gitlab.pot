@@ -30702,9 +30702,6 @@ msgstr ""
 msgid "Geo|%{timeAgoStr} (%{pendingEvents} events)"
 msgstr ""
 
-msgid "Geo|%{titlePlural} checksum progress"
-msgstr ""
-
 msgid "Geo|%{titlePlural} synced"
 msgstr ""
 
@@ -31087,6 +31084,9 @@ msgid "Geo|Pipeline Artifacts"
 msgstr ""
 
 msgid "Geo|Primary"
+msgstr ""
+
+msgid "Geo|Primary checksum progress"
 msgstr ""
 
 msgid "Geo|Primary site"
