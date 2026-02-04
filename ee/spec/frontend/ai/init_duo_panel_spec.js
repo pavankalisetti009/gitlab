@@ -357,5 +357,104 @@ describe('initDuoPanel', () => {
         expect(defaultProps.preferencesPath).toBeUndefined();
       });
     });
+
+    describe('isTrial attribute', () => {
+      it('parses isTrial as boolean true', () => {
+        el = createDuoPanelElement({
+          isTrial: 'true',
+        });
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.isTrial).toBe(true);
+      });
+
+      it('parses isTrial as boolean false', () => {
+        el = createDuoPanelElement({
+          isTrial: 'false',
+        });
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.isTrial).toBe(false);
+      });
+
+      it('defaults to false when isTrial is not provided', () => {
+        el = createDuoPanelElement();
+        delete el.dataset.isTrial;
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.isTrial).toBe(false);
+      });
+    });
+
+    describe('buyAddonPath attribute', () => {
+      it('extracts buyAddonPath from dataset', () => {
+        el = createDuoPanelElement({
+          buyAddonPath: '/groups/test/-/billings',
+        });
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.buyAddonPath).toBe('/groups/test/-/billings');
+      });
+
+      it('sets buyAddonPath to undefined when not provided', () => {
+        el = createDuoPanelElement();
+        delete el.dataset.buyAddonPath;
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.buyAddonPath).toBeUndefined();
+      });
+    });
+
+    describe('canBuyAddon attribute', () => {
+      it('parses canBuyAddon as boolean true', () => {
+        el = createDuoPanelElement({
+          canBuyAddon: 'true',
+        });
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.canBuyAddon).toBe(true);
+      });
+
+      it('parses canBuyAddon as boolean false', () => {
+        el = createDuoPanelElement({
+          canBuyAddon: 'false',
+        });
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.canBuyAddon).toBe(false);
+      });
+
+      it('defaults to false when canBuyAddon is not provided', () => {
+        el = createDuoPanelElement();
+        delete el.dataset.canBuyAddon;
+
+        const vueInstance = initDuoPanel();
+        const aiPanel = vueInstance.$children[0];
+        const { defaultProps } = aiPanel.chatConfiguration;
+
+        expect(defaultProps.canBuyAddon).toBe(false);
+      });
+    });
   });
 });

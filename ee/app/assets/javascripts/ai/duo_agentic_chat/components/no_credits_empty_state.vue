@@ -1,39 +1,75 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import tanukiAiSvgUrl from '@gitlab/svgs/dist/illustrations/tanuki-ai-sm.svg?url';
-import SafeHtml from '~/vue_shared/directives/safe_html';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { s__, sprintf } from '~/locale';
+import { s__ } from '~/locale';
+import { InternalEvents } from '~/tracking';
 
 export default {
   name: 'NoCreditsEmptyState',
   components: {
     GlButton,
   },
-  directives: {
-    SafeHtml,
-  },
+  mixins: [InternalEvents.mixin()],
   props: {
-    isClassicAvailable: {
+    isTrial: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    buyAddonPath: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    canBuyAddon: {
       type: Boolean,
       required: false,
       default: false,
     },
   },
-  emits: ['return-to-classic'],
-  creditsExhaustedEmptyStateDescription() {
-    const docsUrl = helpPagePath('user/gitlab_duo_chat/_index');
-    const linkStart = `<a href="${docsUrl}" class="gl-link" target="_blank" rel="noopener noreferrer">`;
-    const linkEnd = '</a>';
-
-    return sprintf(
-      s__(
-        'DuoAgenticChat|No credits remain for this billing period. To continue collaborating with GitLab Duo, turn off the Agentic mode toggle. You can still get AI assistance, just without the advanced agentic features. %{linkStart}Learn more%{linkEnd}.',
-      ),
-      { linkStart, linkEnd },
-      false,
-    );
+  computed: {
+    headline() {
+      return this.isTrial
+        ? s__('DuoAgenticChat|No credits remain on your trial')
+        : s__('DuoAgenticChat|No credits remain for this billing period');
+    },
+    description() {
+      return this.isTrial
+        ? s__(
+            'DuoAgenticChat|To continue collaborating with GitLab Duo Agent Platform, upgrade to a paid subscription or turn off the Agentic toggle. You can still get AI assistance, just without the advanced agentic features.',
+          )
+        : s__(
+            'DuoAgenticChat|To continue collaborating with GitLab Duo Agent Platform, purchase more credits or turn off the Agentic toggle. You can still get AI assistance, just without the advanced agentic features.',
+          );
+    },
+    primaryCtaText() {
+      return this.isTrial
+        ? s__('DuoAgenticChat|Upgrade to Premium')
+        : s__('DuoAgenticChat|Purchase more credits');
+    },
+    showPrimaryCta() {
+      return this.canBuyAddon && this.buyAddonPath;
+    },
   },
+  mounted() {
+    this.trackEvent('view_duo_agentic_no_credits_empty_state', { label: this.trackingLabel() });
+  },
+  methods: {
+    trackingLabel() {
+      return this.isTrial ? 'trial' : 'paid';
+    },
+    onLearnMoreClick() {
+      this.trackEvent('click_duo_agentic_no_credits_learn_more', { label: this.trackingLabel() });
+    },
+    onPrimaryCtaClick() {
+      const event = this.isTrial
+        ? 'click_duo_agentic_no_credits_upgrade_premium'
+        : 'click_duo_agentic_no_credits_purchase_credits';
+      this.trackEvent(event, { label: this.trackingLabel() });
+    },
+  },
+  learnMorePath: helpPagePath('user/duo_agent_platform/_index'),
   tanukiAiSvgUrl,
 };
 </script>
@@ -49,19 +85,30 @@ export default {
       :alt="s__('DuoAgenticChat|GitLab Duo AI assistant')"
     />
     <h2 class="gl-my-0 gl-text-size-h2">
-      {{ s__('DuoAgenticChat|No GitLab Credits remain') }}
+      {{ headline }}
     </h2>
-    <p v-safe-html="$options.creditsExhaustedEmptyStateDescription()" class="gl-text-subtle"></p>
-    <p class="gl-mb-0 gl-text-sm gl-text-subtle">
-      {{ s__('DuoAgenticChat|Need more credits? Contact your administrator.') }}
+    <p class="gl-text-subtle">
+      {{ description }}
     </p>
-    <gl-button
-      v-if="isClassicAvailable"
-      variant="confirm"
-      category="primary"
-      @click="$emit('return-to-classic')"
-    >
-      {{ s__('DuoAgenticChat|Turn off Agentic mode') }}
-    </gl-button>
+    <div class="gl-flex gl-gap-3">
+      <gl-button
+        :href="$options.learnMorePath"
+        target="_blank"
+        data-testid="learn-more-button"
+        @click="onLearnMoreClick"
+      >
+        {{ s__('DuoAgenticChat|Learn more') }}
+      </gl-button>
+      <gl-button
+        v-if="showPrimaryCta"
+        :href="buyAddonPath"
+        variant="confirm"
+        category="primary"
+        data-testid="primary-cta"
+        @click="onPrimaryCtaClick"
+      >
+        {{ primaryCtaText }}
+      </gl-button>
+    </div>
   </div>
 </template>

@@ -149,6 +149,21 @@ export default {
       type: Boolean,
       required: true,
     },
+    isTrial: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    buyAddonPath: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    canBuyAddon: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   apollo: {
     workflowStatus: {
@@ -1201,8 +1216,9 @@ export default {
         <no-credits-empty-state
           v-else-if="!hasCredits"
           key="no-credits-empty-state"
-          :is-classic-available="isClassicAvailable"
-          @return-to-classic="turnOffAgenticMode"
+          :is-trial="isTrial"
+          :buy-addon-path="buyAddonPath"
+          :can-buy-addon="canBuyAddon"
         />
       </template>
     </web-agentic-duo-chat>
