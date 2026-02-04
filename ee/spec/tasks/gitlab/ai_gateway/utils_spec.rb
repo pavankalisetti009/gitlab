@@ -14,17 +14,19 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
           clone!: nil,
           checkout!: nil,
           install_project_deps!: nil,
-          install_runtime_deps!: nil
+          install_runtime_deps!: nil,
+          mark_installed!: nil
         )
       end
 
-      it 'calls clone, checkout, install_project_deps, and install_runtime_deps' do
+      it 'calls clone, checkout, install_project_deps, install_runtime_deps, and mark_installed!' do
         described_class.install!(path: path)
 
         expect(described_class).to have_received(:clone!).with(path)
         expect(described_class).to have_received(:checkout!).with(path)
         expect(described_class).to have_received(:install_project_deps!).with(path)
         expect(described_class).to have_received(:install_runtime_deps!).with(path)
+        expect(described_class).to have_received(:mark_installed!).with(path)
       end
     end
 
@@ -55,7 +57,8 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
           clone!: nil,
           checkout!: nil,
           install_project_deps!: nil,
-          install_runtime_deps!: nil
+          install_runtime_deps!: nil,
+          mark_installed!: nil
         )
       end
 
@@ -66,6 +69,7 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
         expect(described_class).not_to have_received(:checkout!)
         expect(described_class).not_to have_received(:install_project_deps!)
         expect(described_class).not_to have_received(:install_runtime_deps!)
+        expect(described_class).not_to have_received(:mark_installed!)
       end
     end
   end
@@ -73,12 +77,12 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
   describe '.run_duo_workflow_service' do
     let(:path) { '/tmp/ai-gateway' }
 
-    context 'when duo_workflow_service is enabled and dependencies are available' do
+    context 'when duo_workflow_service is enabled and installed' do
       context 'when mise is not available' do
         before do
           allow(described_class).to receive_messages(
             duo_workflow_service_enabled?: true,
-            prerequisites_met?: true,
+            installed?: true,
             duo_workflow_service_port: '50053',
             mise_available?: false
           )
@@ -104,7 +108,7 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
         before do
           allow(described_class).to receive_messages(
             duo_workflow_service_enabled?: true,
-            prerequisites_met?: true,
+            installed?: true,
             duo_workflow_service_port: '50053',
             mise_available?: true
           )
@@ -139,11 +143,11 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
       end
     end
 
-    context 'when dependencies are not available' do
+    context 'when not installed' do
       before do
         allow(described_class).to receive_messages(
           duo_workflow_service_enabled?: true,
-          prerequisites_met?: false
+          installed?: false
         )
       end
 
@@ -276,7 +280,7 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
       it 'prints a warning message' do
         expect do
           described_class.duo_workflow_service_enabled?
-        end.to output(/\[WARN\] Duo Workflow Service is disabled in tests/).to_stdout
+        end.to output(/\[WARN\] Some feature tests/).to_stdout
       end
     end
   end
@@ -329,7 +333,7 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
       it 'prints a warning message' do
         expect do
           described_class.prerequisites_met?
-        end.to output(/\[WARN\] Failed to run Duo Workflow Service or AI Gateway/).to_stdout
+        end.to output(/\[WARN\] Some feature tests/).to_stdout
       end
     end
   end
@@ -454,6 +458,12 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
           array_including('clone', '--depth', '1', repo_url, path)
         )
       end
+
+      it 'prints an info message' do
+        expect do
+          described_class.clone!(path)
+        end.to output(/\[INFO\] Cloned AIGW repository/).to_stdout
+      end
     end
 
     context 'when clone fails' do
@@ -463,7 +473,7 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
 
       it 'raises an error' do
         expect { described_class.clone!(path) }.to raise_error(
-          /Failed to clone gitlab-ai-gateway repo/
+          /git-clone failure of gitlab-ai-gateway repo/
         )
       end
     end
@@ -491,6 +501,12 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
       it 'does not raise an error' do
         expect { described_class.checkout!(path) }.not_to raise_error
       end
+
+      it 'prints an info message' do
+        expect do
+          described_class.checkout!(path)
+        end.to output(/\[INFO\] Checked out AIGW repository ref/).to_stdout
+      end
     end
 
     context 'when fetch fails' do
@@ -500,7 +516,7 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
 
       it 'raises an error' do
         expect { described_class.checkout!(path) }.to raise_error(
-          /Failed to fetch gitlab-ai-gateway branch/
+          /git-fetch failure of gitlab-ai-gateway branch/
         )
       end
     end
@@ -513,7 +529,7 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
 
       it 'raises an error' do
         expect { described_class.checkout!(path) }.to raise_error(
-          /Failed to checkout gitlab-ai-gateway branch/
+          /git-checkout failure of gitlab-ai-gateway branch/
         )
       end
     end
@@ -540,6 +556,12 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
           array_including('mise', '-C', '/app/vendor/ai-gateway', 'install')
         )
       end
+
+      it 'prints an info message' do
+        expect do
+          described_class.install_project_deps!(path)
+        end.to output(/\[INFO\] Installed AIGW project deps/).to_stdout
+      end
     end
 
     context 'when mise is not available' do
@@ -563,7 +585,7 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
 
       it 'raises an error' do
         expect { described_class.install_project_deps!(path) }.to raise_error(
-          /Failed to install AIGW project deps/
+          /installation failure of AIGW project deps/
         )
       end
     end
@@ -590,6 +612,12 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
           array_including('mise', 'exec', 'poetry', '--', 'poetry', '-C', '/app/vendor/ai-gateway', 'install')
         )
       end
+
+      it 'prints an info message' do
+        expect do
+          described_class.install_runtime_deps!(path)
+        end.to output(/\[INFO\] Installed AIGW runtime deps/).to_stdout
+      end
     end
 
     context 'when mise is not available' do
@@ -610,6 +638,12 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
           array_including('poetry', '-C', '/app/vendor/ai-gateway', 'install')
         )
       end
+
+      it 'prints an info message' do
+        expect do
+          described_class.install_runtime_deps!(path)
+        end.to output(/\[INFO\] Installed AIGW runtime deps/).to_stdout
+      end
     end
 
     context 'when poetry install fails' do
@@ -621,8 +655,57 @@ RSpec.describe Tasks::Gitlab::AiGateway::Utils, feature_category: :duo_agent_pla
 
       it 'raises an error' do
         expect { described_class.install_runtime_deps!(path) }.to raise_error(
-          /Failed to install AIGW runtime deps/
+          /installation failure of AIGW runtime deps/
         )
+      end
+    end
+  end
+
+  describe '.mark_installed!' do
+    let(:path) { 'vendor/ai-gateway' }
+
+    it 'creates the installed flag file' do
+      allow(Rails).to receive(:root).and_return(Pathname.new('/app'))
+      allow(FileUtils).to receive(:touch)
+
+      described_class.mark_installed!(path)
+
+      expect(FileUtils).to have_received(:touch).with(Pathname.new('/app/vendor/ai-gateway/ai-gateway-installed.txt'))
+    end
+  end
+
+  describe '.installed?' do
+    let(:path) { 'vendor/ai-gateway' }
+
+    context 'when installed flag file exists' do
+      before do
+        allow(Rails).to receive(:root).and_return(Pathname.new('/app'))
+        allow(File).to receive(:exist?).and_return(true)
+      end
+
+      it 'returns true' do
+        result = described_class.installed?(path)
+
+        expect(result).to be(true)
+      end
+    end
+
+    context 'when installed flag file does not exist' do
+      before do
+        allow(Rails).to receive(:root).and_return(Pathname.new('/app'))
+        allow(File).to receive(:exist?).and_return(false)
+      end
+
+      it 'returns false' do
+        result = described_class.installed?(path)
+
+        expect(result).to be(false)
+      end
+
+      it 'prints a warning message' do
+        expect do
+          described_class.installed?(path)
+        end.to output(/\[WARN\] Some feature tests/).to_stdout
       end
     end
   end

@@ -8,6 +8,8 @@ module Tasks
         DEFAULT_BRANCH = 'main'
         DEFAULT_PORT = '50053'
 
+        INSTALLED_FLAG_FILE = 'ai-gateway-installed.txt'
+
         def self.install!(path:)
           return unless Utils.duo_workflow_service_enabled?
           return unless Utils.prerequisites_met?
@@ -16,11 +18,15 @@ module Tasks
           Utils.checkout!(path)
           Utils.install_project_deps!(path)
           Utils.install_runtime_deps!(path)
+
+          Utils.mark_installed!(path)
+        rescue RuntimeError => e
+          Utils.print_warn('installation failure of AI Gateway project', e)
         end
 
         def self.run_duo_workflow_service(path:)
           return unless Utils.duo_workflow_service_enabled?
-          return unless Utils.prerequisites_met?
+          return unless Utils.installed?(path)
 
           command = %W[poetry -C #{Rails.root.join(path)} run duo-workflow-service]
           command.prepend(*%W[mise -C #{Rails.root.join(path)} exec poetry --]) if Utils.mise_available?
@@ -50,10 +56,7 @@ module Tasks
         def self.duo_workflow_service_enabled?
           return true if ::Gitlab::Utils.to_boolean(ENV.fetch('TEST_DUO_WORKFLOW_SERVICE_ENABLED', true))
 
-          puts <<~TEXT
-            [WARN] Duo Workflow Service is disabled in tests.
-                    Some feature tests that depend on it might fail.
-          TEXT
+          Utils.print_warn('disablement of Duo Workflow Service in tests')
 
           false
         end
@@ -69,14 +72,18 @@ module Tasks
         def self.prerequisites_met?
           return true if Utils.mise_available? || Utils.poetry_available?
 
-          puts <<~TEXT
-            [WARN] Failed to run Duo Workflow Service or AI Gateway due to missing dependencies.
-                   Some feature tests that depend on it might fail.
-                   - If you're working on local environment, make sure that you can launch these services in GDK.
-                   - If you're working on CI environment, make sure to use a Docker image that has already installed these dependencies.
-          TEXT
+          Utils.print_warn('unmet prerequisites in system')
 
           false
+        end
+
+        def self.print_warn(message, error = nil)
+          line = "[WARN] Some feature tests that depend on Duo Workflow Service or AI Gateway " \
+            "might fail due to #{message}.\n"
+          line += "       Error: #{error.message.chomp}\n" if error
+          line += "       See https://docs.gitlab.com/development/testing_guide/testing_ai_features/" \
+            "#dap-feature-tests-in-core-feature-pages for more info."
+          puts line
         end
 
         def self.poetry_available?
@@ -114,7 +121,7 @@ module Tasks
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
-          raise "Failed to clone gitlab-ai-gateway repo: #{out}" unless exit_status == 0
+          raise "git-clone failure of gitlab-ai-gateway repo: #{out}" unless exit_status == 0
 
           puts "[INFO] Cloned AIGW repository (#{REPO_URL}) at #{path}"
         end
@@ -125,14 +132,14 @@ module Tasks
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
-          raise "Failed to fetch gitlab-ai-gateway branch: #{out}" unless exit_status == 0
+          raise "git-fetch failure of gitlab-ai-gateway branch: #{out}" unless exit_status == 0
 
           command = %W[#{::Gitlab.config.git.bin_path} -C #{path} checkout -B #{Utils.ai_gateway_repo_branch}
             origin/#{Utils.ai_gateway_repo_branch}]
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
-          raise "Failed to checkout gitlab-ai-gateway branch: #{out}" unless exit_status == 0
+          raise "git-checkout failure of gitlab-ai-gateway branch: #{out}" unless exit_status == 0
 
           puts "[INFO] Checked out AIGW repository ref (#{Utils.ai_gateway_repo_branch}) at #{path}"
         end
@@ -144,7 +151,7 @@ module Tasks
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
-          raise "Failed to install AIGW project deps: #{out}" unless exit_status == 0
+          raise "installation failure of AIGW project deps: #{out}" unless exit_status == 0
 
           puts "[INFO] Installed AIGW project deps at #{path}"
         end
@@ -155,9 +162,21 @@ module Tasks
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
-          raise "Failed to install AIGW runtime deps: #{out}" unless exit_status == 0
+          raise "installation failure of AIGW runtime deps: #{out}" unless exit_status == 0
 
           puts "[INFO] Installed AIGW runtime deps at #{path}"
+        end
+
+        def self.mark_installed!(path)
+          FileUtils.touch(Rails.root.join(path, INSTALLED_FLAG_FILE))
+        end
+
+        def self.installed?(path)
+          return true if File.exist?(Rails.root.join(path, INSTALLED_FLAG_FILE))
+
+          Utils.print_warn('incomplete installation of AI Gateway project')
+
+          false
         end
       end
     end
