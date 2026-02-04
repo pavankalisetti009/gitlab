@@ -86,11 +86,11 @@ RSpec.describe WorkItems::Widgets::Statuses::TransferService, feature_category: 
     context 'when both namespaces have custom lifecycles and no matching work_item_type is found' do
       it 'skips processing for the same lifecycle' do
         create(:work_item_custom_lifecycle, namespace: old_root_namespace) do |lifecycle|
-          lifecycle.work_item_types << create(:work_item_type, :issue)
+          lifecycle.work_item_types |= [create(:work_item_type, :issue)]
         end
 
         create(:work_item_custom_lifecycle, namespace: new_root_namespace) do |lifecycle|
-          lifecycle.work_item_types << create(:work_item_type, :task)
+          lifecycle.work_item_types |= [create(:work_item_type, :task)]
         end
 
         expect(WorkItems::Widgets::Statuses::BulkStatusUpdater).not_to receive(:new)

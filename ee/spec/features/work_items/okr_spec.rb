@@ -59,7 +59,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
     it_behaves_like 'work items description'
     it_behaves_like 'work items award emoji'
     it_behaves_like 'work items hierarchy', 'work-item-tree', :objective
-    it_behaves_like 'work items comments', :objective
+    it_behaves_like 'work items comments'
     it_behaves_like 'work items toggle status button'
 
     context 'with quarantine', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2657' do
@@ -204,7 +204,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
     it_behaves_like 'work items labels', 'project'
     it_behaves_like 'work items progress'
     it_behaves_like 'work items health status'
-    it_behaves_like 'work items comments', :key_result
+    it_behaves_like 'work items comments'
     it_behaves_like 'work items description'
     it_behaves_like 'work items parent', :objective
   end
