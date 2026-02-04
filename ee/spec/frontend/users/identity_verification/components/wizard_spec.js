@@ -35,6 +35,7 @@ describe('IdentityVerificationWizard', () => {
     verificationStatePath: '/users/identity_verification/verification_state',
     successfulVerificationPath: '/users/identity_verification/success',
     phoneExemptionPath: '/users/identity_verification/toggle_phone_exemption',
+    emailVerificationMessage: '',
   };
 
   const verificationStatePath = `${DEFAULT_PROVIDE.verificationStatePath}?no_cache=1`;

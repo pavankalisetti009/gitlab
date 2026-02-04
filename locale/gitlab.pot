@@ -72723,6 +72723,9 @@ msgstr ""
 msgid "Unverified"
 msgstr ""
 
+msgid "Unverified accounts are deleted after %{cut_off_days} days."
+msgstr ""
+
 msgid "Unverified signature"
 msgstr ""
 

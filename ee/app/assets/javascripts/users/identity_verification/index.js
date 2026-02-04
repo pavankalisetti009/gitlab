@@ -12,6 +12,7 @@ export const initIdentityVerification = () => {
   const {
     username,
     email,
+    emailVerificationMessage,
     creditCard,
     phoneNumber,
     offerPhoneNumberExemption,
@@ -34,6 +35,7 @@ export const initIdentityVerification = () => {
     name: 'IdentityVerificationRoot',
     provide: {
       email,
+      emailVerificationMessage,
       creditCard,
       phoneNumber,
       offerPhoneNumberExemption,

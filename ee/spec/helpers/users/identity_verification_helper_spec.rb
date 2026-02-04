@@ -20,6 +20,7 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
         phone_send_code_path: send_phone_verification_code_signup_identity_verification_path,
         phone_verify_code_path: verify_phone_verification_code_signup_identity_verification_path,
         credit_card_verify_path: verify_credit_card_signup_identity_verification_path,
+        email_verification_message: "Unverified accounts are deleted after 7 days.",
         credit_card_verify_captcha_path: verify_credit_card_captcha_signup_identity_verification_path
       }
     end
@@ -32,6 +33,7 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
         phone_send_code_path: send_phone_verification_code_identity_verification_path,
         phone_verify_code_path: verify_phone_verification_code_identity_verification_path,
         credit_card_verify_path: verify_credit_card_identity_verification_path,
+        email_verification_message: "Unverified accounts are deleted after 7 days.",
         credit_card_verify_captcha_path: verify_credit_card_captcha_identity_verification_path
       }
     end

@@ -24,7 +24,12 @@ export default {
     GlLoadingIcon,
     GitlabExperiment,
   },
-  inject: ['verificationStatePath', 'phoneExemptionPath', 'successfulVerificationPath'],
+  inject: [
+    'verificationStatePath',
+    'phoneExemptionPath',
+    'successfulVerificationPath',
+    'emailVerificationMessage',
+  ],
   props: {
     username: {
       type: String,
@@ -122,6 +127,12 @@ export default {
       };
       return templates[step];
     },
+    stepSubhead(step) {
+      if (step === 'email') {
+        return this.emailVerificationMessage;
+      }
+      return null;
+    },
     exemptionRequested() {
       axios
         .patch(this.phoneExemptionPath)
@@ -173,6 +184,7 @@ export default {
             <verification-step
               :key="step"
               :title="stepTitle(step, index + 1)"
+              :subhead="stepSubhead(step)"
               :completed="stepsVerifiedState[step]"
               :is-active="step === activeStep"
             >
@@ -205,6 +217,7 @@ export default {
             <verification-step
               :key="step"
               :title="stepTitleLWRExperiment(step)"
+              :subhead="stepSubhead(step)"
               :completed="stepsVerifiedState[step]"
               :is-active="step === activeStep"
               :total-steps="orderedSteps.length"

@@ -51,6 +51,13 @@ module EE
       )
     end
 
+    def unconfirmed_email_ui_copy
+      format(
+        _("Unverified accounts are deleted after %{cut_off_days} days."),
+        cut_off_days: ::Gitlab::CurrentSettings.unconfirmed_users_delete_after_days
+      )
+    end
+
     private
 
     def registration_objective_options
