@@ -123,10 +123,41 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
           project_full_path: %r{namespace\d+\/project-\d+},
           commit_path_template: %r{\/namespace\d+\/project-\d+\/\-\/commit\/\$COMMIT_SHA},
           can_view_false_positive: 'false',
-          customize_jira_issue_enabled: 'false'
+          customize_jira_issue_enabled: 'false',
+          experiment_features_enabled: 'false'
         )
       )
       expect(Gitlab::Json.parse(subject[:vulnerability])['severity']).to eq('high')
+    end
+
+    context 'when root_ancestor has namespace_settings with experiment_features_enabled as nil' do
+      before do
+        project.root_ancestor.create_namespace_settings!
+      end
+
+      it 'sets experiment_features_enabled to false' do
+        expect(subject[:experiment_features_enabled]).to eq('false')
+      end
+    end
+
+    context 'when root_ancestor has experiment_features_enabled set to false' do
+      before do
+        project.root_ancestor.create_namespace_settings!(experiment_features_enabled: false)
+      end
+
+      it 'sets experiment_features_enabled to false' do
+        expect(subject[:experiment_features_enabled]).to eq('false')
+      end
+    end
+
+    context 'when root_ancestor has experiment_features_enabled set to true' do
+      before do
+        project.root_ancestor.create_namespace_settings!(experiment_features_enabled: true)
+      end
+
+      it 'sets experiment_features_enabled to true' do
+        expect(subject[:experiment_features_enabled]).to eq('true')
+      end
     end
   end
 
