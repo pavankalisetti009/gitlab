@@ -1054,7 +1054,11 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       it_behaves_like 'work item status widget mutation rejects invalid inputs'
 
       context 'when work item type does not support status widget' do
-        let_it_be(:work_item_type) { create(:work_item_type, :non_default) }
+        before do
+          stub_all_work_item_widgets(status: false)
+        end
+
+        let_it_be(:work_item_type) { create(:work_item_type, :requirement) }
 
         it_behaves_like 'work item mutation with status widget with error'
       end

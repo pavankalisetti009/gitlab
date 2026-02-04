@@ -94,7 +94,7 @@ module DuoChatFixtureHelpers
 
     # Create issue
     issue_attrs = issue[:data].merge!({
-      work_item_type_id: WorkItems::Type.default_by_type(:issue).id
+      work_item_type_id: build(:work_item_system_defined_type, :issue).id
     })
     created_issue = create(:issue, **issue_attrs)
 
