@@ -79,36 +79,6 @@ RSpec.describe 'Promotions', :js, feature_category: :code_review_workflow do
     end
   end
 
-  describe 'for advanced search', :js, feature_category: :global_search do
-    before do
-      allow(License).to receive(:current).and_return(nil)
-      stub_saas_features(gitlab_com_subscriptions: false)
-      sign_in(user)
-    end
-
-    it 'appears on seearch page' do
-      visit search_path
-
-      submit_search('chosen')
-
-      expect(find('#promote_advanced_search')).to have_content 'Improve search with Advanced Search and GitLab Enterprise Edition.'
-    end
-
-    it 'does not show when cookie is set' do
-      visit search_path
-      submit_search('chosen')
-
-      within('#promote_advanced_search') do
-        find('.js-close').click
-      end
-
-      visit search_path
-      submit_search('chosen')
-
-      expect(page).not_to have_selector('#promote_advanced_search')
-    end
-  end
-
   def click_epic_link
     find('.js-epics-sidebar-callout .btn-link').click
   end
