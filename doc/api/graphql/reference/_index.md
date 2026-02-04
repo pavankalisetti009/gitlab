@@ -55960,7 +55960,6 @@ Name of the feature that the callout is for.
 | <a id="usercalloutfeaturenameenumfeature_flags_new_version"></a>`FEATURE_FLAGS_NEW_VERSION` | Callout feature name for feature_flags_new_version. |
 | <a id="usercalloutfeaturenameenumfile_tree_browser_popover"></a>`FILE_TREE_BROWSER_POPOVER` | Callout feature name for file_tree_browser_popover. |
 | <a id="usercalloutfeaturenameenumfocused_vulnerability_reporting"></a>`FOCUSED_VULNERABILITY_REPORTING` | Callout feature name for focused_vulnerability_reporting. |
-| <a id="usercalloutfeaturenameenumgcp_signup_offer"></a>`GCP_SIGNUP_OFFER` | Callout feature name for gcp_signup_offer. |
 | <a id="usercalloutfeaturenameenumgeo_enable_hashed_storage"></a>`GEO_ENABLE_HASHED_STORAGE` | Callout feature name for geo_enable_hashed_storage. |
 | <a id="usercalloutfeaturenameenumgeo_migrate_hashed_storage"></a>`GEO_MIGRATE_HASHED_STORAGE` | Callout feature name for geo_migrate_hashed_storage. |
 | <a id="usercalloutfeaturenameenumgke_cluster_integration"></a>`GKE_CLUSTER_INTEGRATION` | Callout feature name for gke_cluster_integration. |

@@ -9,7 +9,7 @@ module Users
     # NOTE: to avoid false-positive dismissals, use new consecutive enum values for new callout IDs
     enum :feature_name, {
       gke_cluster_integration: 1,
-      gcp_signup_offer: 2,
+      # 2 removed in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/221007
       cluster_security_warning: 3,
       ultimate_trial: 4,                         # EE-only
       geo_enable_hashed_storage: 5,              # EE-only
