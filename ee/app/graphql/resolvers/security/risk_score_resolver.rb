@@ -12,7 +12,6 @@ module Resolvers
       def resolve
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
         validate_advanced_vuln_management!
-        validate_risk_score_es_migration!
 
         base_params = build_base_params
 
@@ -30,13 +29,6 @@ module Resolvers
           project_id: project_ids,
           group_by: vulnerable.is_a?(Group) ? :project : nil
         }.compact
-      end
-
-      def validate_risk_score_es_migration!
-        return if ::Search::Elastic::VulnerabilityIndexHelper.backfill_risk_score_completed?
-
-        raise ::Gitlab::Graphql::Errors::ArgumentError,
-          "Risk score advanced search backfill migration is not completed! Check after migration completion."
       end
 
       def fetch_risk_score_data(params)

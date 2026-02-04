@@ -37,3 +37,5 @@ class BackfillRiskScoreInVulnerabilitiesNoSaas < Elastic::Migration
     { project: :namespace }
   end
 end
+
+BackfillRiskScoreInVulnerabilitiesNoSaas.prepend ::Search::Elastic::MigrationObsolete
