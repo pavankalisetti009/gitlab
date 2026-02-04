@@ -114,7 +114,7 @@ export default {
             <gl-sprintf
               :message="
                 s__(
-                  'DuoAgentsPlatform|Start your free %{strongStart}%{trialDuration}-day trial%{strongEnd} to collaborate with agents and automate workflows across your development process.',
+                  'DuoAgentsPlatform|Start your free %{strongStart}%{trialDuration}-day trial%{strongEnd} now to accelerate your software delivery. Automate tasks with AI agents, from searching projects to creating commits.',
                 )
               "
             >

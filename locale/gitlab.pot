@@ -26142,7 +26142,7 @@ msgstr ""
 msgid "DuoAgentsPlatform|Start a Free Trial"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Start your free %{strongStart}%{trialDuration}-day trial%{strongEnd} to collaborate with agents and automate workflows across your development process."
+msgid "DuoAgentsPlatform|Start your free %{strongStart}%{trialDuration}-day trial%{strongEnd} now to accelerate your software delivery. Automate tasks with AI agents, from searching projects to creating commits."
 msgstr ""
 
 msgid "DuoAgentsPlatform|The trigger could not be created. Try again."
