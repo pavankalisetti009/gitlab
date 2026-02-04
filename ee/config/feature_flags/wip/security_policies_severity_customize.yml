@@ -1,0 +1,9 @@
+---
+name: security_policies_severity_customize
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/work_items/15839
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/222151
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/588540
+milestone: '18.9'
+group: group::security policies
+type: wip
+default_enabled: false
