@@ -448,12 +448,24 @@ module EE
         ::Gitlab::Llm::StageCheck.available?(@subject.parent, :agentic_chat)
       end
 
-      condition(:classic_chat_available_for_user, scope: :user) do
-        Ability.allowed?(@user, :access_duo_classic_chat)
+      condition(:ai_features_banned) do
+        ::Gitlab::CurrentSettings.duo_never_on?
+      end
+
+      condition(:classic_chat_available_for_user) do
+        next false unless @user
+
+        unit_primitive = if ::Feature.enabled?(:no_duo_classic_for_duo_core_users, @user)
+                           :duo_classic_chat
+                         else
+                           :duo_chat
+                         end
+
+        @user.allowed_to_use?(:chat, unit_primitive_name: unit_primitive, root_namespace: @subject.root_ancestor)
       end
 
       condition(:agentic_chat_available_for_user) do
-        Ability.allowed?(@user, :access_duo_agentic_chat) && @user.allowed_to_use_for_resource?(:duo_chat, resource: @subject)
+        @user.allowed_to_use_for_resource?(:agentic_chat, unit_primitive_name: :duo_chat, resource: @subject)
       end
 
       condition(:duo_features_enabled, scope: :subject) { @subject.duo_features_enabled }
@@ -1250,6 +1262,11 @@ module EE
 
       rule { reporter & agent_registry_enabled }.policy do
         enable :write_ai_agents
+      end
+
+      rule { ai_features_banned }.policy do
+        prevent :access_duo_classic_chat
+        prevent :access_duo_agentic_chat
       end
 
       rule { can?(:read_project) & classic_chat_allowed_for_parent_group & classic_chat_available_for_user & duo_features_enabled }.policy do

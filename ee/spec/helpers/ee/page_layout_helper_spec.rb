@@ -706,7 +706,7 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
     end
 
     before do
-      allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(duo_response)
+      allow(user).to receive(:allowed_to_use).and_return(duo_response)
     end
 
     context 'when agentic is available' do
@@ -779,7 +779,9 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
     end
 
     before do
-      allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(duo_response)
+      allow(user).to receive(:allowed_to_use)
+                       .with(:agentic_chat, { unit_primitive_name: :duo_chat })
+                       .and_return(duo_response)
     end
 
     context 'when feature flag is disabled' do
