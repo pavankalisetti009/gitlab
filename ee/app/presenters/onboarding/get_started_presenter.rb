@@ -96,9 +96,8 @@ module Onboarding
             title: s_('LearnGitLab|Assign a GitLab Duo seat to your colleagues'),
             trackLabel: 'duo_seat_assigned',
             url: url_helpers.group_settings_gitlab_duo_seat_utilization_index_path(namespace),
-            # Non trials will need to also observe
-            # GitlabSubscriptions::Duo.any_active_add_on_purchase_for_namespace?(namespace)
-            enabled: user.can?(:read_usage_quotas, namespace)
+            enabled: user.can?(:read_usage_quotas, namespace) &&
+              GitlabSubscriptions::Duo.any_active_add_on_purchase_for_namespace?(namespace)
           },
           {
             title: s_('LearnGitLab|Add code owners'),
