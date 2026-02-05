@@ -10,6 +10,12 @@ RSpec.describe 'graphql queries', feature_category: :api do
     'ee/app/assets/javascripts/boards/graphql/lists_epics_with_color.query.graphql' => 350,
     'ee/app/assets/javascripts/iterations/queries/iteration_issues_with_label_filter.query.graphql' => 290,
 
+    # Work item query has a conditional that includes a new field, but this is only when
+    # a feature flag is on. These tests do not account for conditional fields so we
+    # make the limit higher while we develop https://gitlab.com/gitlab-org/gitlab/-/issues/587972
+    'app/assets/javascripts/work_items/list/graphql/get_work_items_full.query.graphql' => 315,
+    'ee/app/assets/javascripts/work_items/list/graphql/get_work_items_full.query.graphql' => 315,
+
     # Code review: https://gitlab.com/gitlab-org/gitlab/-/issues/584293
     'app/assets/javascripts/ci/merge_requests/graphql/queries/get_merge_request_pipelines.query.graphql' => 685,
     'ee/app/assets/javascripts/analytics/merge_request_analytics/graphql/queries/throughput_table.query.graphql' => 320,
