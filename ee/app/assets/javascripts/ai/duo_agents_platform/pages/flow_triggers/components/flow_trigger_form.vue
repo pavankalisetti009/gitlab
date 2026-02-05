@@ -214,7 +214,7 @@ export default {
     selectedUserName() {
       return this.selectedUsers.length > 0
         ? this.selectedUsers[0].name
-        : s__('DuoAgentsPlatform|Select user');
+        : s__('DuoAgentsPlatform|Select a service account');
     },
     selectedCatalogItem() {
       return this.catalogItems.find((item) => {
@@ -326,29 +326,18 @@ export default {
         />
       </gl-form-group>
 
-      <gl-form-group
-        :label="s__('DuoAgentsPlatform|Service account user')"
-        label-for="trigger-owner"
-      >
+      <gl-form-group :label="s__('DuoAgentsPlatform|Service account')" label-for="trigger-owner">
         <template #label-description>
-          {{ s__('DuoAgentsPlatform|⚠️ Create a unique service account for each project.') }}
-          <br />
           {{
             s__(
-              'DuoAgentsPlatform|Do not assign the service account a role in your project with higher permissions than the users of that service account.',
-            )
-          }}
-          <br />
-          {{
-            s__(
-              'DuoAgentsPlatform|Once the service account is configured for use with triggers, it cannot be used for other things.',
+              'DuoAgentsPlatform|Ensure the service account has a role equal to or less than the users in the project. The account can be used for triggers only.',
             )
           }}
         </template>
         <user-select
           :value="selectedUsers"
           :text="selectedUserName"
-          :header-text="s__('DuoAgentsPlatform|Select a service account user')"
+          :header-text="s__('DuoAgentsPlatform|Select a service account')"
           :full-path="projectPath"
           :allow-multiple-assignees="false"
           :custom-search-users-query="$options.projectServiceAccountsQuery"

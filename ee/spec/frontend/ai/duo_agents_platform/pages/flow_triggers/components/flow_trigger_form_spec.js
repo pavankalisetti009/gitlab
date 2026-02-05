@@ -407,7 +407,7 @@ describe('FlowTriggerForm', () => {
     });
 
     it('shows default text when no user is selected', () => {
-      expect(findUserSelect().props('text')).toBe('Select user');
+      expect(findUserSelect().props('text')).toBe('Select a service account');
     });
 
     it('handles user select error', async () => {
