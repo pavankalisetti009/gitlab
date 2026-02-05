@@ -69,7 +69,7 @@ module EE
       }
 
       jsonb_accessor :usage_billing,
-        display_gitlab_credits_user_data: [:boolean, { default: false }]
+        display_gitlab_credits_user_data: [:boolean, { default: true }]
 
       validates :usage_billing, json_schema: { filename: "usage_billing_settings" }
 

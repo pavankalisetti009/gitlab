@@ -544,13 +544,13 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
           visit edit_group_path(group)
 
-          expect(group.namespace_settings.display_gitlab_credits_user_data).to be_falsey
+          expect(group.namespace_settings.display_gitlab_credits_user_data).to be_truthy
           within_testid('permissions-settings') do
-            expect(page).to have_unchecked_field(_('Display user data'))
+            expect(page).to have_checked_field(_('Display user data'))
           end
 
           within_testid('permissions-settings') do
-            check _('Display user data')
+            uncheck _('Display user data')
             click_button _('Save changes')
           end
 
@@ -563,7 +563,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
           page.refresh
 
-          expect(page).to have_checked_field(_('Display user data'))
+          expect(page).to have_unchecked_field(_('Display user data'))
         end
       end
 

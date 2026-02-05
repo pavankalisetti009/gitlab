@@ -178,7 +178,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         zoekt_lost_node_threshold: Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD,
         zoekt_search_enabled: false,
         enforce_pipl_compliance: false,
-        display_gitlab_credits_user_data: false,
         project_secrets_limit: 100,
         group_secrets_limit: 500
       )
@@ -1548,6 +1547,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it 'validates display_gitlab_credits_user_data' do
         expect(setting).to validate_inclusion_of(:display_gitlab_credits_user_data)
           .in_array([true, false])
+      end
+
+      it 'defaults to true for new records' do
+        new_setting = build(:application_setting)
+
+        expect(new_setting.display_gitlab_credits_user_data).to be true
       end
     end
 
