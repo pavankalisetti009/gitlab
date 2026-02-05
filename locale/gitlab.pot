@@ -54650,9 +54650,6 @@ msgstr ""
 msgid "Promotions|Add Group Webhooks and GitLab Enterprise Edition."
 msgstr ""
 
-msgid "Promotions|Burndown Charts are visual representations of the progress of completing a milestone. At a glance, you see the current state for the completion a given milestone. Without them, you would have to organize the data from the milestone and plot it yourself to have the same sense of progress."
-msgstr ""
-
 msgid "Promotions|Buy EE"
 msgstr ""
 
@@ -54674,9 +54671,6 @@ msgstr ""
 msgid "Promotions|Dismiss Service Desk promotion"
 msgstr ""
 
-msgid "Promotions|Dismiss burndown charts promotion"
-msgstr ""
-
 msgid "Promotions|Don't show me this again"
 msgstr ""
 
@@ -54684,9 +54678,6 @@ msgid "Promotions|Epics let you manage your portfolio of projects more efficient
 msgstr ""
 
 msgid "Promotions|Improve issues management with Issue weight and GitLab Enterprise Edition."
-msgstr ""
-
-msgid "Promotions|Improve milestones with Burndown Charts."
 msgstr ""
 
 msgid "Promotions|Keep track of events in your project"
@@ -54714,9 +54705,6 @@ msgid "Promotions|Upgrade your plan to activate Group Webhooks."
 msgstr ""
 
 msgid "Promotions|Upgrade your plan to activate audit events."
-msgstr ""
-
-msgid "Promotions|Upgrade your plan to improve milestones with Burndown Charts."
 msgstr ""
 
 msgid "Promotions|Webhooks allow you to trigger a URL if, for example, new code is pushed or a new issue is created. You can configure webhooks to listen for specific events like pushes, issues or merge requests. Group webhooks will apply to all projects in a group, allowing you to standardize webhook functionality across your entire group."

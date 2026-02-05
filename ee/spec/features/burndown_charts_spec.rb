@@ -36,15 +36,6 @@ RSpec.describe 'Burndown charts', :js, feature_category: :team_planning do
       expect(page).to have_css('.burndown-chart')
       expect(page).to have_content('Burndown chart')
     end
-
-    it 'presents burndown charts promotion correctly' do
-      stub_licensed_features(milestone_charts: false)
-      allow(License).to receive(:current).and_return(nil)
-      visit project_milestone_path(milestone_1.project, milestone_1)
-
-      expect(page).not_to have_css('.burndown-chart')
-      expect(page).to have_content('Improve milestones with Burndown Charts')
-    end
   end
 
   describe 'for group milestones' do
@@ -70,16 +61,6 @@ RSpec.describe 'Burndown charts', :js, feature_category: :team_planning do
 
       expect(page).to have_css('div.burndown-chart')
       expect(page).to have_content('Burndown chart')
-    end
-
-    it 'presents burndown charts promotion correctly' do
-      stub_licensed_features(milestone_charts: false)
-      allow(License).to receive(:current).and_return(nil)
-
-      visit group_milestone_path(milestone_1.group, milestone_1)
-
-      expect(page).not_to have_css('.burndown-chart')
-      expect(page).to have_content('Improve milestones with Burndown Charts')
     end
   end
 end

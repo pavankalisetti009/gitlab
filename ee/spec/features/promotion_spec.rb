@@ -13,36 +13,6 @@ RSpec.describe 'Promotions', :js, feature_category: :code_review_workflow do
   let!(:issue) { create(:issue, project: project, author: user) }
   let(:otherproject) { create(:project, :repository, namespace: otherdeveloper.namespace) }
 
-  describe 'for burndown charts', :js, :saas, feature_category: :team_planning do
-    let_it_be(:group) { create(:group_with_plan) }
-
-    before do
-      stub_saas_features(gitlab_com_subscriptions: true)
-      stub_application_setting(check_namespace_plan: true)
-
-      project.add_maintainer(user)
-      sign_in(user)
-    end
-
-    it 'appears in milestone page' do
-      visit project_milestone_path(project, milestone)
-
-      expect(find('#promote_burndown_charts')).to have_content 'Upgrade your plan to improve milestones with Burndown Charts.'
-    end
-
-    it 'does not show when cookie is set' do
-      visit project_milestone_path(project, milestone)
-
-      within('#promote_burndown_charts') do
-        find('.js-close').click
-      end
-
-      visit project_milestone_path(project, milestone)
-
-      expect(page).not_to have_selector('#promote_burndown_charts')
-    end
-  end
-
   describe 'for project audit events', :js, feature_category: :audit_events do
     before do
       allow(License).to receive(:current).and_return(nil)
