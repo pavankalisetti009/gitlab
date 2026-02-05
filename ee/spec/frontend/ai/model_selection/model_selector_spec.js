@@ -94,6 +94,23 @@ describe('ModelSelector', () => {
     expect(findDefaultModelModal().exists()).toBe(true);
   });
 
+  it('passes the correct props to `ModelSelectDropdown` component', () => {
+    createComponent();
+
+    expect(findModelSelectDropdown().props('isLoading')).toBe(false);
+    expect(findModelSelectDropdown().props('placeholderDropdownText')).toBe('Select a model');
+    expect(findModelSelectDropdown().props('selectedOption').text).toStrictEqual(
+      'Claude Sonnet 3.7 - Default',
+    );
+    const listItems = findModelSelectDropdown().props('items');
+    expect(listItems.map((item) => item.text)).toStrictEqual([
+      'Claude Haiku 3',
+      'Claude Sonnet 3.5',
+      'Claude Sonnet 3.7',
+      'Claude Sonnet 3.7 - Default',
+    ]);
+  });
+
   describe('loading state', () => {
     it('passes correct loading state to `ModelSelectDropdown` while saving', async () => {
       createComponent();
