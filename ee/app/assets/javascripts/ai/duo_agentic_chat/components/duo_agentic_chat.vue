@@ -13,6 +13,7 @@ import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graph
 import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
+import { computeTrustedUrls } from 'ee/ai/shared/trusted_urls/utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
@@ -150,6 +151,11 @@ export default {
     creditsAvailable: {
       type: Boolean,
       required: true,
+    },
+    trustedUrls: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
     isTrial: {
       type: Boolean,
@@ -389,6 +395,9 @@ export default {
         minHeight: this.minHeight,
         left: this.left,
       };
+    },
+    computedTrustedUrls() {
+      return computeTrustedUrls(this.trustedUrls);
     },
     defaultModel() {
       return getDefaultModel(this.availableModels);
@@ -1196,6 +1205,7 @@ export default {
       :agents="agents"
       :is-chat-available="isChatAvailable"
       :error="showErrorBannerMessage"
+      :trusted-urls="computedTrustedUrls"
       :should-auto-focus-input="!isEmbedded"
       :is-binary-feedback-enabled="glFeatures.duoChatBinaryFeedback"
       class="gl-h-full gl-w-full"

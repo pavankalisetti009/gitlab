@@ -10,6 +10,7 @@ import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, generateEventLabelFromText, setAgenticMode } from 'ee/ai/utils';
+import { computeTrustedUrls } from 'ee/ai/shared/trusted_urls/utils';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
 import getAiMessagesWithThread from 'ee/ai/graphql/get_ai_messages_with_thread.query.graphql';
@@ -102,6 +103,11 @@ export default {
       type: Boolean,
       required: false,
       default: true,
+    },
+    trustedUrls: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
   },
   apollo: {
@@ -250,6 +256,9 @@ export default {
         text: question,
         eventLabel: generateEventLabelFromText(question),
       }));
+    },
+    computedTrustedUrls() {
+      return computeTrustedUrls(this.trustedUrls);
     },
   },
   watch: {
@@ -603,6 +612,7 @@ export default {
         :predefined-prompts="predefinedPrompts"
         :badge-type="null"
         :tool-name="toolName"
+        :trusted-urls="computedTrustedUrls"
         :canceled-request-ids="cancelledRequestIds"
         :class="isEmbedded ? 'gl-h-full gl-w-full' : 'duo-chat-container gl-h-full'"
         :should-auto-focus-input="!isEmbedded"
