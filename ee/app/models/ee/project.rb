@@ -279,6 +279,7 @@ module EE
 
       scope :with_namespaces, -> { includes(:namespace) }
       scope :with_security_attributes, -> { includes(:security_attributes) }
+      scope :with_enabled_foundational_flow_records, -> { preload(:enabled_foundational_flow_records) }
       scope :by_ids, ->(ids) { where(id: ids) }
       scope :mirror, -> { where(mirror: true) }
 

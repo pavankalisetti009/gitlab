@@ -61,6 +61,7 @@ module Ai
 
       scope :for_catalog_items, ->(item_ids) { where(ai_catalog_item_id: item_ids) }
       scope :for_service_account, ->(service_account_id) { where(service_account_id:) }
+      scope :with_service_account, -> { preload(:service_account) }
       scope :with_items_configurable_for_project, ->(project_id) {
         joins(:item).where(item: { public: true }).or(where(item: { project_id: project_id }))
       }
