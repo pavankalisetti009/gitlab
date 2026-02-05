@@ -107,7 +107,7 @@ describe('SecretsManagerPermissionsSettings', () => {
   });
 
   describe('when permissions query fails', () => {
-    const returnedError = new Error();
+    const returnedError = new Error('GraphQL error: Permission denied');
     beforeEach(async () => {
       mockPermissionsQuery = jest.fn().mockRejectedValue(returnedError);
 
@@ -118,9 +118,9 @@ describe('SecretsManagerPermissionsSettings', () => {
       expect(findLoadingIcon().exists()).toBe(false);
     });
 
-    it('renders error message', () => {
+    it('renders error message with GraphQL prefix stripped', () => {
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'Failed to fetch secrets manager permissions. Please try again later.',
+        message: 'Permission denied',
         captureError: true,
         error: returnedError,
       });
@@ -284,20 +284,20 @@ describe('SecretsManagerPermissionsSettings', () => {
     });
 
     describe('when deletion fails', () => {
-      const error = new Error();
+      const error = new Error('GraphQL error: API error');
 
       beforeEach(() => {
         mockDeletePermissionMutation.mockRejectedValue(error);
         return createComponent();
       });
 
-      it('renders error message', async () => {
+      it('renders error message with GraphQL prefix stripped', async () => {
         findPermissionsTable(0).vm.$emit('delete-permission', rolePrincipal);
         await nextTick();
         await deletePermission();
 
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'Failed to delete secrets manager permissions. Please try again.',
+          message: 'API error',
           captureError: true,
           error,
         });
