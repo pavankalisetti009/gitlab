@@ -25,3 +25,9 @@ export const PROTECTION_LEVEL_OPTIONS = [
     description: s__('DuoWorkflowSettings|Scan and block detected prompt injection attempts.'),
   },
 ];
+
+// eslint-disable-next-line @gitlab/no-hardcoded-urls
+export const AI_CATALOG_SEED_EXTERNAL_AGENTS_PATH = '/api/v4/admin/ai_catalog/seed_external_agents';
+// Exact error message from backend:
+// https://gitlab.com/gitlab-org/gitlab/-/blob/8217d2663f0ee08de2829d59b9530c0688585b50/ee/lib/gitlab/ai/catalog/third_party_flows/seeder.rb#L188
+export const AI_CATALOG_ALREADY_SEEDED_ERROR = 'Error: External agents already seeded';

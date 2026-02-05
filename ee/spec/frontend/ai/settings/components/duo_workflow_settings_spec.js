@@ -3,11 +3,16 @@ import { nextTick } from 'vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings.vue';
 import axios from '~/lib/utils/axios_utils';
+import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import {
+  AI_CATALOG_SEED_EXTERNAL_AGENTS_PATH,
+  AI_CATALOG_ALREADY_SEEDED_ERROR,
+} from 'ee/ai/settings/constants';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/axios_utils');
@@ -28,6 +33,13 @@ describe('DuoWorkflowSettings', () => {
   const WORKFLOW_SETTINGS_PATH = '/admin/ai/duo_workflow_settings';
   const WORKFLOW_DISABLE_PATH = '/admin/ai/duo_workflow_settings/disconnect';
   const REDIRECT_PATH = '/admin/gitlab_duo';
+  const mockToast = {
+    show: jest.fn(),
+  };
+  const defaultProps = {
+    title: 'GitLab Duo',
+    displayPageHeading: true,
+  };
 
   const findEnableButton = () => wrapper.findByTestId('enable-workflow-button');
   const findDisableButton = () => wrapper.findByTestId('disable-workflow-button');
@@ -39,10 +51,12 @@ describe('DuoWorkflowSettings', () => {
   const findPageHeadingTitle = () => wrapper.findByTestId('duo-settings-page-title');
   const findPageHeadingSubtitle = () => wrapper.findByTestId('duo-settings-page-subtitle');
   const findServiceAccountLink = () => wrapper.findByTestId('service-account-link');
+  const findSeedExternalAgentsButton = () => wrapper.findByTestId('seed-external-agents-button');
 
   const createWrapper = (props = {}, provide = {}) => {
     const defaultMountOptions = {
       propsData: {
+        ...defaultProps,
         ...props,
       },
       provide: {
@@ -51,7 +65,11 @@ describe('DuoWorkflowSettings', () => {
         duoWorkflowSettingsPath: WORKFLOW_SETTINGS_PATH,
         duoWorkflowDisablePath: WORKFLOW_DISABLE_PATH,
         redirectPath: REDIRECT_PATH,
+        isSaaS: false,
         ...provide,
+      },
+      mocks: {
+        $toast: mockToast,
       },
       stubs: {
         GlModal: true,
@@ -130,6 +148,7 @@ describe('DuoWorkflowSettings', () => {
         ])('renders the page heading with $scenario', ({ props, expected }) => {
           createWrapper({
             displayPageHeading: true,
+            title: null,
             ...props,
           });
 
@@ -357,6 +376,105 @@ describe('DuoWorkflowSettings', () => {
         }),
       );
       expect(findGlLoadingIcon().exists()).toBe(false);
+    });
+  });
+
+  describe('seedExternalAgents', () => {
+    const clickSeedButton = () => findSeedExternalAgentsButton().vm.$emit('click');
+
+    it('renders seed external agents section when isSaaS is false', () => {
+      createWrapper(
+        {},
+        {
+          isSaaS: false,
+        },
+      );
+
+      expect(findSeedExternalAgentsButton().exists()).toBe(true);
+    });
+
+    it('does not render seed external agents section when isSaaS is true', () => {
+      createWrapper(
+        {},
+        {
+          isSaaS: true,
+        },
+      );
+
+      expect(findSeedExternalAgentsButton().exists()).toBe(false);
+    });
+
+    describe('when user clicks seed button', () => {
+      beforeEach(() => {
+        createWrapper();
+      });
+
+      it('sets loading state and calls the correct API endpoint', async () => {
+        clickSeedButton();
+        await nextTick();
+        expect(findSeedExternalAgentsButton().props('loading')).toBe(true);
+        await waitForPromises();
+
+        expect(axios.post).toHaveBeenCalledWith(AI_CATALOG_SEED_EXTERNAL_AGENTS_PATH);
+        expect(findSeedExternalAgentsButton().props('loading')).toBe(false);
+      });
+    });
+
+    describe('when request succeeds', () => {
+      beforeEach(() => {
+        createWrapper();
+        axios.post.mockResolvedValueOnce({ status: HTTP_STATUS_CREATED });
+      });
+
+      it('shows success toast and disables the button', async () => {
+        clickSeedButton();
+        await waitForPromises();
+
+        expect(mockToast.show).toHaveBeenCalledWith('Agents successfully added to AI Catalog.');
+        expect(findSeedExternalAgentsButton().props('disabled')).toBe(true);
+      });
+    });
+
+    describe('when request fails with "already in catalog" error', () => {
+      beforeEach(() => {
+        createWrapper();
+        axios.post.mockRejectedValueOnce({
+          response: {
+            data: {
+              message: AI_CATALOG_ALREADY_SEEDED_ERROR,
+            },
+          },
+        });
+      });
+
+      it('shows already seeded toast and disables the button', async () => {
+        clickSeedButton();
+        await waitForPromises();
+
+        expect(mockToast.show).toHaveBeenCalledWith('Agents already in AI Catalog.');
+        expect(findSeedExternalAgentsButton().props('disabled')).toBe(true);
+      });
+    });
+
+    describe('when request fails', () => {
+      beforeEach(() => {
+        createWrapper();
+        axios.post.mockRejectedValueOnce({
+          response: {
+            data: {
+              message: 'Some other error',
+            },
+          },
+        });
+      });
+
+      it('shows error toast but does not disable the button', async () => {
+        clickSeedButton();
+        await waitForPromises();
+
+        expect(mockToast.show).toHaveBeenCalledWith('Failed to add agents to AI Catalog.');
+        expect(findSeedExternalAgentsButton().props('disabled')).toBe(false);
+      });
     });
   });
 });
