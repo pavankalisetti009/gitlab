@@ -54,11 +54,11 @@ RSpec.describe Groups::DeployTokens::RevokeService, feature_category: :continuou
 
     context 'when source is set' do
       it 'includes source in audit event' do
-        revoke_service.source = :group_token_revocation_service
+        revoke_service.source = :api_admin_token
 
         revoke
 
-        expect(AuditEvent.last.details[:revocation_source]).to eq(:group_token_revocation_service)
+        expect(AuditEvent.last.details[:revocation_source]).to eq(:api_admin_token)
       end
     end
   end
