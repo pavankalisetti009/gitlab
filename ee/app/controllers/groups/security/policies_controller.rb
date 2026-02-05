@@ -16,6 +16,7 @@ module Groups
         push_frontend_feature_flag(:security_policy_approval_warn_mode, group)
         push_frontend_feature_flag(:security_policies_kev_filter, group)
         push_frontend_feature_flag(:auto_dismiss_vulnerability_policies, group)
+        push_frontend_feature_flag(:security_policies_severity_customize, group)
       end
 
       feature_category :security_policy_management

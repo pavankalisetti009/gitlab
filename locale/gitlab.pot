@@ -61710,6 +61710,9 @@ msgstr ""
 msgid "SecurityOrchestration|Days of month"
 msgstr ""
 
+msgid "SecurityOrchestration|Decrease by one level"
+msgstr ""
+
 msgid "SecurityOrchestration|Default approval settings on this merge request have been overridden by policies based on their rules."
 msgstr ""
 
@@ -61935,6 +61938,9 @@ msgstr ""
 msgid "SecurityOrchestration|In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. %{linkStart}Learn more%{linkEnd}"
 msgstr ""
 
+msgid "SecurityOrchestration|Increase by one level"
+msgstr ""
+
 msgid "SecurityOrchestration|Individual users"
 msgstr ""
 
@@ -62118,6 +62124,9 @@ msgid "SecurityOrchestration|Open policy actions dropdown"
 msgstr ""
 
 msgid "SecurityOrchestration|Other"
+msgstr ""
+
+msgid "SecurityOrchestration|Override"
 msgstr ""
 
 msgid "SecurityOrchestration|Override the following project settings:"
@@ -62387,6 +62396,9 @@ msgstr ""
 msgid "SecurityOrchestration|Select criteria"
 msgstr ""
 
+msgid "SecurityOrchestration|Select customize type"
+msgstr ""
+
 msgid "SecurityOrchestration|Select date"
 msgstr ""
 
@@ -62417,6 +62429,9 @@ msgstr ""
 msgid "SecurityOrchestration|Select security policy project"
 msgstr ""
 
+msgid "SecurityOrchestration|Select severity level"
+msgstr ""
+
 msgid "SecurityOrchestration|Select source, currently selected: %{selected}"
 msgstr ""
 
@@ -62430,6 +62445,9 @@ msgid "SecurityOrchestration|Send a bot message when the conditions match."
 msgstr ""
 
 msgid "SecurityOrchestration|Send bot message"
+msgstr ""
+
+msgid "SecurityOrchestration|Set to"
 msgstr ""
 
 msgid "SecurityOrchestration|Settings from outside of the policy can override variables when the policy runs, except the variables defined in the denylist."
@@ -62541,6 +62559,9 @@ msgid "SecurityOrchestration|The security findings remain in their current statu
 msgstr ""
 
 msgid "SecurityOrchestration|Then automatically %{boldStart}dismiss%{boldEnd} these vulnerabilities with the %{reason} reason."
+msgstr ""
+
+msgid "SecurityOrchestration|Then automatically %{boldStart}override severity%{boldEnd} these vulnerabilities to:"
 msgstr ""
 
 msgid "SecurityOrchestration|Then automatically set the status of these vulnerabilities to %{type}."
