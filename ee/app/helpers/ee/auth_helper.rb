@@ -126,20 +126,20 @@ module EE
         is_group: false.to_s,
         service_accounts: {
           enabled: true.to_s,
-          path: expose_url(api_v4_service_accounts_path),
-          edit_path: expose_url(api_v4_service_accounts_path),
+          path: expose_path(api_v4_service_accounts_path),
+          edit_path: expose_path(api_v4_service_accounts_path),
           docs_path: help_page_path('user/profile/service_accounts.md'),
-          delete_path: expose_url(api_v4_users_path)
+          delete_path: expose_path(api_v4_users_path)
         },
         access_token: {
           **expires_at_for_service_access_tokens(
             ::Gitlab::CurrentSettings.current_application_settings.service_access_tokens_expiration_enforced
           ),
           available_scopes: filter_sort_scopes(scopes, sources).to_json,
-          create: expose_url(api_v4_users_personal_access_tokens_path(user_id: ':id')),
-          revoke: expose_url(api_v4_personal_access_tokens_path),
-          rotate: expose_url(api_v4_personal_access_tokens_path),
-          show: "#{expose_url(api_v4_personal_access_tokens_path)}?user_id=:id"
+          create: expose_path(api_v4_users_personal_access_tokens_path(user_id: ':id')),
+          revoke: expose_path(api_v4_personal_access_tokens_path),
+          rotate: expose_path(api_v4_personal_access_tokens_path),
+          show: "#{expose_path(api_v4_personal_access_tokens_path)}?user_id=:id"
         }
       }
     end
@@ -153,18 +153,18 @@ module EE
         is_group: true.to_s,
         service_accounts: {
           enabled: can?(user, :create_service_account, group).to_s,
-          path: expose_url(api_v4_groups_service_accounts_path(id: group.id)),
-          edit_path: expose_url(api_v4_groups_service_accounts_path(id: group.id)),
+          path: expose_path(api_v4_groups_service_accounts_path(id: group.id)),
+          edit_path: expose_path(api_v4_groups_service_accounts_path(id: group.id)),
           docs_path: help_page_path('user/profile/service_accounts.md'),
-          delete_path: expose_url(api_v4_groups_service_accounts_path(id: group.id))
+          delete_path: expose_path(api_v4_groups_service_accounts_path(id: group.id))
         },
         access_token: {
           **expires_at_for_service_access_tokens(group.namespace_settings.service_access_tokens_expiration_enforced),
           available_scopes: filter_sort_scopes(scopes, sources).to_json,
-          create: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
-          revoke: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
-          rotate: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
-          show: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id'))
+          create: expose_path(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
+          revoke: expose_path(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
+          rotate: expose_path(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
+          show: expose_path(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id'))
         }
       }
     end

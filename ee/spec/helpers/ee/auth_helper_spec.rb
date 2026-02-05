@@ -332,19 +332,19 @@ RSpec.describe EE::AuthHelper do
         is_group: 'false',
         service_accounts: {
           enabled: 'true',
-          path: 'http://localhost/api/v4/service_accounts',
-          edit_path: 'http://localhost/api/v4/service_accounts',
-          delete_path: 'http://localhost/api/v4/users',
+          path: '/api/v4/service_accounts',
+          edit_path: '/api/v4/service_accounts',
+          delete_path: '/api/v4/users',
           docs_path: '/help/user/profile/service_accounts.md'
         },
         access_token: {
           max_date: '2022-03-02',
           min_date: '2022-03-02',
           available_scopes: '[]',
-          create: 'http://localhost/api/v4/users/:id/personal_access_tokens',
-          revoke: 'http://localhost/api/v4/personal_access_tokens',
-          rotate: 'http://localhost/api/v4/personal_access_tokens',
-          show: 'http://localhost/api/v4/personal_access_tokens?user_id=:id'
+          create: '/api/v4/users/:id/personal_access_tokens',
+          revoke: '/api/v4/personal_access_tokens',
+          rotate: '/api/v4/personal_access_tokens',
+          show: '/api/v4/personal_access_tokens?user_id=:id'
         }
       }))
     end
@@ -367,18 +367,18 @@ RSpec.describe EE::AuthHelper do
           is_group: 'true',
           service_accounts: {
             enabled: 'true',
-            path: 'http://localhost/api/v4/groups/4/service_accounts',
-            edit_path: 'http://localhost/api/v4/groups/4/service_accounts',
-            delete_path: 'http://localhost/api/v4/groups/4/service_accounts',
+            path: '/api/v4/groups/4/service_accounts',
+            edit_path: '/api/v4/groups/4/service_accounts',
+            delete_path: '/api/v4/groups/4/service_accounts',
             docs_path: '/help/user/profile/service_accounts.md'
           },
           access_token: {
             min_date: 1.day.from_now.iso8601,
             available_scopes: '[]',
-            create: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-            revoke: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-            rotate: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-            show: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens'
+            create: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+            revoke: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+            rotate: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+            show: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens'
           }
         }))
       end
