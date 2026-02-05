@@ -59,15 +59,8 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [InternalEvents.mixin()],
+  inject: ['contextConfig', 'fullPath'],
   props: {
-    contextConfig: {
-      type: Object,
-      required: true,
-    },
-    fullPath: {
-      type: String,
-      required: true,
-    },
     pageSize: {
       type: Number,
       required: false,
@@ -344,7 +337,6 @@ export default {
       </template>
     </crud-component>
     <secret-delete-modal
-      :full-path="fullPath"
       :secret-name="secretToDelete"
       :show-modal="showDeleteModal"
       @hide="hideModal"

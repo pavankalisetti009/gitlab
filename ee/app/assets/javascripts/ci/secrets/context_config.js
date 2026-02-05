@@ -12,20 +12,32 @@ import {
 // project
 import getProjectSecrets from 'ee/ci/secrets/graphql/queries/get_project_secrets.query.graphql';
 import getProjectSecretsNeedingRotation from 'ee/ci/secrets/graphql/queries/get_project_secrets_needing_rotation.query.graphql';
-import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
-import getSecretDetails from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
+import getProjectSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
+import getProjectSecretDetails from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
+
+import createProjectSecret from 'ee/ci/secrets/graphql/mutations/create_project_secret.mutation.graphql';
+import updateProjectSecret from 'ee/ci/secrets/graphql/mutations/update_project_secret.mutation.graphql';
+import deleteProjectSecret from 'ee/ci/secrets/graphql/mutations/delete_project_secret.mutation.graphql';
 
 export const SECRETS_MANAGER_CONTEXT_CONFIG = {
   [ENTITY_PROJECT]: {
     eventTracking: PROJECT_EVENTS,
     type: ENTITY_PROJECT,
+    createSecret: {
+      lookup: (data) => data?.projectSecretCreate,
+      mutation: createProjectSecret,
+    },
+    deleteSecret: {
+      lookup: (data) => data?.projectSecretDelete,
+      mutation: deleteProjectSecret,
+    },
     environments: {
       lookup: (data) => data?.project?.environments,
       query: getProjectEnvironments,
     },
     getSecretDetails: {
       lookup: (data) => data?.projectSecret,
-      query: getSecretDetails,
+      query: getProjectSecretDetails,
     },
     getSecrets: {
       lookup: (data) => data?.projectSecrets,
@@ -37,7 +49,11 @@ export const SECRETS_MANAGER_CONTEXT_CONFIG = {
     },
     getStatus: {
       lookup: (data) => data?.projectSecretsManager,
-      query: getSecretManagerStatusQuery,
+      query: getProjectSecretManagerStatusQuery,
+    },
+    updateSecret: {
+      lookup: (data) => data?.projectSecretUpdate,
+      mutation: updateProjectSecret,
     },
   },
   [ENTITY_GROUP]: {

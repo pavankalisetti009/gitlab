@@ -63,7 +63,7 @@ describe('SecretsTable component', () => {
   const findRotationApproachingIcon = () => wrapper.findByTestId('rotation-approaching-icon');
   const findRotationOverdueIcon = () => wrapper.findByTestId('rotation-overdue-icon');
 
-  const createComponent = async ({ props, isLoading = false } = {}) => {
+  const createComponent = async ({ provide, isLoading = false } = {}) => {
     const handlers = [
       [getSecretManagerStatusQuery, mockSecretManagerStatus],
       [getProjectSecrets, mockProjectSecretsResponse],
@@ -72,11 +72,10 @@ describe('SecretsTable component', () => {
     apolloProvider = createMockApollo(handlers);
 
     wrapper = mountExtended(SecretsTable, {
-      propsData: {
+      provide: {
         fullPath: `path/to/project`,
-        context: ENTITY_PROJECT,
         contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
-        ...props,
+        ...provide,
       },
       apolloProvider,
       stubs: {
@@ -307,7 +306,7 @@ describe('SecretsTable component', () => {
 
       expect(mockProjectSecretsResponse).toHaveBeenCalledWith({
         projectPath: 'path/to/project',
-        limit: 3,
+        limit: PAGE_SIZE,
       });
 
       // next page
@@ -326,7 +325,7 @@ describe('SecretsTable component', () => {
         after: 'Mw',
         before: null,
         projectPath: 'path/to/project',
-        limit: 3,
+        limit: PAGE_SIZE,
       });
 
       // previous page
@@ -338,7 +337,7 @@ describe('SecretsTable component', () => {
         after: null,
         before: 'MQ',
         projectPath: 'path/to/project',
-        limit: 3,
+        limit: PAGE_SIZE,
       });
     });
   });
@@ -493,8 +492,7 @@ describe('SecretsTable component', () => {
   describe('group context', () => {
     beforeEach(async () => {
       await createComponent({
-        props: {
-          context: ENTITY_GROUP,
+        provide: {
           contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP],
         },
       });

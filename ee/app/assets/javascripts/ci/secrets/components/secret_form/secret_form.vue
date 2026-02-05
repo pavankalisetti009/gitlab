@@ -18,8 +18,6 @@ import {
   INDEX_ROUTE_NAME,
   SECRET_DESCRIPTION_MAX_LENGTH,
 } from 'ee/ci/secrets/constants';
-import createSecretMutation from 'ee/ci/secrets/graphql/mutations/create_secret.mutation.graphql';
-import updateSecretMutation from 'ee/ci/secrets/graphql/mutations/update_secret.mutation.graphql';
 import SecretBranchesField from './secret_branches_field.vue';
 
 export default {
@@ -35,6 +33,7 @@ export default {
     GlSprintf,
     SecretBranchesField,
   },
+  inject: ['contextConfig', 'fullPath'],
   props: {
     areEnvironmentsLoading: {
       type: Boolean,
@@ -44,10 +43,6 @@ export default {
       type: Array,
       required: false,
       default: () => [],
-    },
-    fullPath: {
-      type: String,
-      required: true,
     },
     isEditing: {
       type: Boolean,
@@ -128,7 +123,7 @@ export default {
 
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: createSecretMutation,
+          mutation: this.contextConfig.createSecret.mutation,
           variables: {
             projectPath: this.fullPath,
             rotationIntervalDays: this.secret.rotationIntervalDays,
@@ -136,7 +131,7 @@ export default {
           },
         });
 
-        const error = data.projectSecretCreate.errors[0];
+        const error = this.contextConfig.createSecret.lookup(data)?.errors[0];
         if (error) {
           createAlert({
             message: error,
@@ -166,7 +161,7 @@ export default {
 
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: updateSecretMutation,
+          mutation: this.contextConfig.updateSecret.mutation,
           variables: {
             projectPath: this.fullPath,
             rotationIntervalDays: this.secret.rotationIntervalDays,
@@ -174,7 +169,7 @@ export default {
           },
         });
 
-        const error = data.projectSecretUpdate.errors[0];
+        const error = this.contextConfig.updateSecret.lookup(data)?.errors[0];
         if (error) {
           createAlert({
             message: error,

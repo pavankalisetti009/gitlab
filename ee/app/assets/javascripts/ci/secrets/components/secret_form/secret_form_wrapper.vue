@@ -35,16 +35,8 @@ export default {
     SecretForm,
   },
   mixins: [InternalEvents.mixin()],
+  inject: ['contextConfig', 'fullPath'],
   props: {
-    contextConfig: {
-      type: Object,
-      required: true,
-    },
-    fullPath: {
-      type: String,
-      required: false,
-      default: null,
-    },
     isEditing: {
       type: Boolean,
       required: false,
@@ -166,7 +158,6 @@ export default {
       v-else
       :are-environments-loading="areEnvironmentsLoading"
       :environments="environments"
-      :full-path="fullPath"
       :is-editing="isEditing"
       :secret-data="secretData"
       @search-environment="searchEnvironment"

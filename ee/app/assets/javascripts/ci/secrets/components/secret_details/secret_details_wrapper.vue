@@ -25,16 +25,8 @@ export default {
     SecretDetails,
   },
   mixins: [InternalEvents.mixin()],
+  inject: ['contextConfig', 'fullPath'],
   props: {
-    contextConfig: {
-      type: Object,
-      required: true,
-    },
-    fullPath: {
-      type: String,
-      required: false,
-      default: null,
-    },
     secretName: {
       type: String,
       required: true,

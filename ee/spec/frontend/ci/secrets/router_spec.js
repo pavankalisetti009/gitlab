@@ -1,80 +1,13 @@
-import Vue from 'vue';
-import VueApollo from 'vue-apollo';
-import VueRouter from 'vue-router';
-import createMockApollo from 'helpers/mock_apollo_helper';
-import waitForPromises from 'helpers/wait_for_promises';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SecretDetailsWrapper from 'ee/ci/secrets/components/secret_details/secret_details_wrapper.vue';
 import SecretFormWrapper from 'ee/ci/secrets/components/secret_form/secret_form_wrapper.vue';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import createRouter from 'ee/ci/secrets/router';
-import SecretsApp from 'ee//ci/secrets/components/secrets_app.vue';
 import { getMatchedComponents } from '~/lib/utils/vue3compat/vue_router';
-import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
-import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
-import {
-  SECRET_MANAGER_STATUS_ACTIVE,
-  ENTITY_GROUP,
-  ENTITY_PROJECT,
-  GROUP_EVENTS,
-  PROJECT_EVENTS,
-} from 'ee/ci/secrets/constants';
-import { secretManagerStatusResponse } from './mock_data';
-
-Vue.use(VueRouter);
-Vue.use(VueApollo);
-jest.mock('~/lib/utils/url_utility', () => ({
-  ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn().mockName('visitUrlMock'),
-}));
 
 describe('Secrets router', () => {
-  let wrapper;
   let router;
-  let apolloProvider;
-  const mockSecretManagerStatus = jest
-    .fn()
-    .mockResolvedValue(secretManagerStatusResponse(SECRET_MANAGER_STATUS_ACTIVE));
 
   const base = '/-/secrets';
-
-  const groupProps = {
-    contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP],
-    eventTracking: GROUP_EVENTS,
-    fullPath: '/path/to/group',
-  };
-
-  const projectProps = {
-    contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
-    eventTracking: PROJECT_EVENTS,
-    fullPath: '/path/to/project',
-  };
-
-  const editRoute = { name: 'edit', params: { secretName: 'SECRET_KEY' } };
-
-  const createSecretsApp = async ({ route, props } = {}) => {
-    const handlers = [[getSecretManagerStatusQuery, mockSecretManagerStatus]];
-
-    apolloProvider = createMockApollo(handlers);
-
-    router = createRouter(base, props);
-    if (route) {
-      await router.push(route);
-    }
-
-    wrapper = mountExtended(SecretsApp, {
-      router,
-      propsData: { ...props },
-      data() {
-        return {
-          secrets: [],
-        };
-      },
-      apolloProvider,
-    });
-
-    await waitForPromises();
-  };
 
   it.each`
     path                     | componentNames            | components
@@ -84,7 +17,7 @@ describe('Secrets router', () => {
     ${'/secretName/details'} | ${'SecretDetailsWrapper'} | ${[SecretDetailsWrapper]}
     ${'/secretName/edit'}    | ${'SecretFormWrapper'}    | ${[SecretFormWrapper]}
   `('uses $componentNames for path "$path"', ({ path, components }) => {
-    router = createRouter(base, groupProps);
+    router = createRouter(base);
     const componentsForRoute = getMatchedComponents(router, path);
 
     expect(componentsForRoute).toStrictEqual(components);
@@ -95,45 +28,10 @@ describe('Secrets router', () => {
     ${'/secretName'}              | ${'details'}
     ${'/secretName/unknownroute'} | ${'index'}
   `('redirects from $path to $redirect', async ({ path, redirect }) => {
-    router = createRouter(base, groupProps);
+    router = createRouter(base);
 
     await router.push(path);
 
     expect(router.currentRoute.name).toBe(redirect);
-  });
-
-  describe.each`
-    context      | props           | fullPath              | isGroup  | contextConfig
-    ${'group'}   | ${groupProps}   | ${'/path/to/group'}   | ${true}  | ${SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP]}
-    ${'project'} | ${projectProps} | ${'/path/to/project'} | ${false} | ${SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT]}
-  `('$context secrets form', ({ props, fullPath, contextConfig }) => {
-    it('provides the correct props when visiting the index', async () => {
-      await createSecretsApp({ route: '/', props });
-
-      expect(wrapper.findComponent(SecretsTable).props()).toMatchObject({
-        contextConfig,
-        fullPath,
-      });
-    });
-
-    it('provides the correct props when visiting the create form', async () => {
-      await createSecretsApp({ route: '/new', props });
-
-      expect(wrapper.findComponent(SecretFormWrapper).props()).toMatchObject({
-        contextConfig,
-        fullPath,
-      });
-    });
-
-    it('provides the correct props when visiting the edit form', async () => {
-      await createSecretsApp({ route: editRoute, props });
-
-      expect(wrapper.findComponent(SecretFormWrapper).props()).toMatchObject({
-        contextConfig,
-        fullPath,
-        isEditing: true,
-        secretName: 'SECRET_KEY',
-      });
-    });
   });
 });
