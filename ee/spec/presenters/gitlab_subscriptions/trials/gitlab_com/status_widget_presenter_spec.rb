@@ -115,21 +115,36 @@ RSpec.describe GitlabSubscriptions::Trials::GitlabCom::StatusWidgetPresenter, :s
           .to receive(:any_add_on_purchase_for_namespace).with(group).and_return(add_on_purchase)
       end
 
-      it 'returns ultimate type and correct discover page path for bundled trials' do
-        expect(attributes).to eq(trial_widget_data_attrs)
+      context 'when ultimate_with_dap is rolled out' do
+        let(:trial_type) { 'ultimate_with_dap' }
+
+        it 'returns ultimate_with_dap type for bundled trials' do
+          expect(attributes).to eq(trial_widget_data_attrs)
+        end
       end
 
-      context 'when candidate variant' do
-        let(:trial_type) { 'ultimate_with_premium_title' }
-
+      context 'when ultimate_with_dap is disabled' do
         before do
-          allow_next_instance_of(PremiumMessageDuringTrialExperiment) do |experiment|
-            allow(experiment).to receive(:run).and_return(trial_type)
-          end
+          stub_feature_flags(ultimate_trial_with_dap: false)
+          stub_feature_flags(ultimate_with_dap_trial_uat: false)
         end
 
-        it 'returns ultimate_with_premium_title type and correct discover page path for bundled trials' do
+        it 'returns ultimate type and correct discover page path for bundled trials' do
           expect(attributes).to eq(trial_widget_data_attrs)
+        end
+
+        context 'when candidate variant' do
+          let(:trial_type) { 'ultimate_with_premium_title' }
+
+          before do
+            allow_next_instance_of(PremiumMessageDuringTrialExperiment) do |experiment|
+              allow(experiment).to receive(:run).and_return(trial_type)
+            end
+          end
+
+          it 'returns ultimate_with_premium_title type and correct discover page path for bundled trials' do
+            expect(attributes).to eq(trial_widget_data_attrs)
+          end
         end
       end
     end

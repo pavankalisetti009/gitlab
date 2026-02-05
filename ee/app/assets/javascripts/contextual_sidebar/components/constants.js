@@ -3,6 +3,7 @@ import { __, s__ } from '~/locale';
 export const DUO_PRO = 'duo_pro';
 export const DUO_ENTERPRISE = 'duo_enterprise';
 export const ULTIMATE_WITH_DUO = 'ultimate';
+export const ULTIMATE_WITH_DAP = 'ultimate_with_dap';
 export const ULTIMATE_WITH_DUO_AND_PREMIUM_TITLE = 'ultimate_with_premium_title';
 export const SELF_MANAGED_ULTIMATE = 'self_managed_ultimate';
 
@@ -27,11 +28,18 @@ export const TRIAL_WIDGET_DUO_ENTERPRISE_EXPIRED = s__(
 export const TRIAL_WIDGET_ULTIMATE_DUO_NAME = s__(
   'TrialWidget|Ultimate with GitLab Duo Enterprise',
 );
+export const TRIAL_WIDGET_ULTIMATE_DAP_NAME = s__(
+  'TrialWidget|Ultimate with GitLab Duo Agent Platform',
+);
 export const TRIAL_WIDGET_ULTIMATE_DUO_TITLE = s__(
   'TrialWidget|Ultimate with GitLab Duo Enterprise Trial',
 );
+export const TRIAL_WIDGET_ULTIMATE_DAP_TITLE = s__('TrialWidget|GitLab Ultimate trial');
 export const TRIAL_WIDGET_ULTIMATE_DUO_EXPIRED = s__(
   'TrialWidget|Your trial of Ultimate with GitLab Duo Enterprise has ended',
+);
+export const TRIAL_WIDGET_ULTIMATE_DAP_EXPIRED = s__(
+  'TrialWidget|Your trial of GitLab Ultimate has ended',
 );
 export const TRIAL_WIDGET_ULTIMATE_DUO_AND_PREMIUM_TITLE = s__(
   'TrialWidget|Upgrade to keep your Premium features',
@@ -65,6 +73,11 @@ export const TRIAL_TYPES_CONFIG = {
     name: TRIAL_WIDGET_ULTIMATE_DUO_NAME,
     widgetTitle: TRIAL_WIDGET_ULTIMATE_DUO_TITLE,
     widgetTitleExpiredTrial: TRIAL_WIDGET_ULTIMATE_DUO_EXPIRED,
+  },
+  [ULTIMATE_WITH_DAP]: {
+    name: TRIAL_WIDGET_ULTIMATE_DAP_NAME,
+    widgetTitle: TRIAL_WIDGET_ULTIMATE_DAP_TITLE,
+    widgetTitleExpiredTrial: TRIAL_WIDGET_ULTIMATE_DAP_EXPIRED,
   },
   [ULTIMATE_WITH_DUO_AND_PREMIUM_TITLE]: {
     name: TRIAL_WIDGET_ULTIMATE_DUO_NAME,
