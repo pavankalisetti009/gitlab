@@ -54,4 +54,30 @@ RSpec.describe API::GroupBoards, feature_category: :portfolio_management do
       let_it_be(:iteration) { create(:iteration, iterations_cadence: create(:iterations_cadence, group: board_parent)) }
     end
   end
+
+  describe 'POST /groups/:id/boards' do
+    let(:url) { "/groups/#{board_parent.id}/boards" }
+
+    before do
+      stub_licensed_features(multiple_group_issue_boards: true)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :create_issue_board do
+      let(:boundary_object) { board_parent }
+      let(:request) { post api(url, personal_access_token: pat), params: { name: 'New Board' } }
+    end
+  end
+
+  describe 'DELETE /groups/:id/boards/:board_id' do
+    let(:url) { "/groups/#{board_parent.id}/boards/#{board.id}" }
+
+    before do
+      stub_licensed_features(multiple_group_issue_boards: true)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_issue_board do
+      let(:boundary_object) { board_parent }
+      let(:request) { delete api(url, personal_access_token: pat) }
+    end
+  end
 end
