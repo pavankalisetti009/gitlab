@@ -13,9 +13,7 @@ import {
 } from '~/graphql_shared/constants';
 import { transformFilters } from 'ee/analytics/shared/utils';
 import { DEFAULT_RENAMED_FILTER_KEYS } from 'ee/analytics/shared/constants';
-// eslint-disable-next-line no-restricted-imports
 import { parseAverageDurationsQueryResponse } from '../../utils';
-// eslint-disable-next-line no-restricted-imports
 import getValueStreamStageAverageDurations from '../../graphql/queries/get_value_stream_stage_average_durations.query.graphql';
 import OverviewChart from './overview_chart.vue';
 import StageChart from './stage_chart.vue';

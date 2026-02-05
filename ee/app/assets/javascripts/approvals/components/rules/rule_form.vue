@@ -11,7 +11,6 @@ import {
   ALL_BRANCHES,
   ALL_PROTECTED_BRANCHES,
 } from 'ee/vue_shared/components/branches_selector/constants';
-// eslint-disable-next-line no-restricted-imports
 import {
   TYPE_USER,
   TYPE_GROUP,
