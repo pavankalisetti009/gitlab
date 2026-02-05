@@ -224,7 +224,7 @@ export const mockFindingReportsComparerParsingResponse = {
       mergeRequest: {
         id: 'gid://gitlab/MergeRequest/1',
         findingReportsComparer: {
-          status: 'PROCESSING',
+          status: 'PARSING',
           report: null,
         },
       },
