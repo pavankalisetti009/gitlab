@@ -87,11 +87,6 @@ module EE
             params.delete(:allowed_email_domains_list) unless
               group.licensed_feature_available?(:group_allowed_email_domains)
 
-            unless group.licensed_feature_available?(:ai_features) && ::Feature.enabled?(
-              :ai_experiment_sast_fp_detection, group)
-              params.delete(:duo_sast_fp_detection_availability)
-            end
-
             return if group.licensed_feature_available?(:group_level_merge_checks_setting)
 
             params.delete(:only_allow_merge_if_pipeline_succeeds)

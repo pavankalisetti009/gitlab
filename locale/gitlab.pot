@@ -26670,9 +26670,6 @@ msgstr ""
 msgid "DuoProTrial|You have successfully started a Duo Pro trial that will expire on %{exp_date}. To give members access to new GitLab Duo Pro features, %{assign_link_start}assign them%{assign_link_end} to GitLab Duo Pro seats."
 msgstr ""
 
-msgid "DuoSAST|SAST false positive detection"
-msgstr ""
-
 msgid "DuoSAST|Turn on SAST false positive detection"
 msgstr ""
 
@@ -26680,12 +26677,6 @@ msgid "DuoSAST|Turn on SAST vulnerability resolution workflow"
 msgstr ""
 
 msgid "DuoSAST|Use false positive detection for vulnerabilities on the default branch"
-msgstr ""
-
-msgid "DuoSAST|Use false positive detection for vulnerabilities on the default branch for the instance."
-msgstr ""
-
-msgid "DuoSAST|Use false positive detection for vulnerabilities on the default branch in this group, its subgroups, and its projects."
 msgstr ""
 
 msgid "DuoSAST|Use vulnerability resolution workflow for vulnerabilities on the default branch"

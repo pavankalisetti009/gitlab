@@ -392,7 +392,6 @@ module EE
           :auto_duo_code_review_enabled,
           :duo_remote_flows_enabled,
           :duo_foundational_flows_enabled,
-          :duo_sast_fp_detection_enabled,
           :display_gitlab_credits_user_data
         )
       end
@@ -806,20 +805,6 @@ module EE
                                                  else
                                                    true
                                                  end
-    end
-
-    def duo_sast_fp_detection_availability
-      duo_sast_fp_detection_enabled
-    end
-
-    def duo_sast_fp_detection_availability=(value)
-      self.duo_sast_fp_detection_enabled = value
-
-      self.lock_duo_sast_fp_detection_enabled = if value
-                                                  false
-                                                else
-                                                  true
-                                                end
     end
 
     def duo_never_on?

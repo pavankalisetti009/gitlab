@@ -31,7 +31,6 @@ export default {
     'promptCacheEnabled',
     'initialDuoRemoteFlowsAvailability',
     'initialDuoFoundationalFlowsAvailability',
-    'initialDuoSastFpDetectionAvailability',
     'foundationalAgentsDefaultEnabled',
     'initialFoundationalAgentsStatuses',
     'initialSelectedFoundationalFlowIds',
@@ -55,7 +54,6 @@ export default {
       cacheEnabled: this.promptCacheEnabled,
       duoRemoteFlowsAvailability: this.initialDuoRemoteFlowsAvailability,
       duoFoundationalFlowsAvailability: this.initialDuoFoundationalFlowsAvailability,
-      duoSastFpDetectionAvailability: this.initialDuoSastFpDetectionAvailability,
       foundationalAgentsEnabled: this.foundationalAgentsDefaultEnabled,
       selectedFlowIds: this.initialSelectedFoundationalFlowIds || [],
       foundationalAgentsStatuses: this.initialFoundationalAgentsStatuses,
@@ -74,7 +72,6 @@ export default {
         promptCacheEnabled: this.cacheEnabled,
         duoRemoteFlowsAvailability: this.duoRemoteFlowsAvailability,
         duoFoundationalFlowsAvailability: this.duoFoundationalFlowsAvailability,
-        duoSastFpDetectionAvailability: this.duoSastFpDetectionAvailability,
         foundationalAgentsEnabled: this.foundationalAgentsEnabled,
         foundationalAgentsStatuses: this.foundationalAgentsStatuses,
         selectedFoundationalFlowIds: this.selectedFlowIds,
@@ -107,9 +104,6 @@ export default {
     },
     onDuoAgentPlatformEnabledChanged(value) {
       this.duoAgentPlatformEnabled = value;
-    },
-    onDuoSastFpDetectionChanged(value) {
-      this.duoSastFpDetectionAvailability = value;
     },
     onFoundationalAgentsStatusesChanged(agentStatuses) {
       this.foundationalAgentsStatuses = agentStatuses;
@@ -157,7 +151,6 @@ export default {
             :duo-availability="duoAvailability"
             :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
             :duo-foundational-flows-availability="initialDuoFoundationalFlowsAvailability"
-            :duo-sast-fp-detection-availability="initialDuoSastFpDetectionAvailability"
             :selected-foundational-flow-ids="initialSelectedFoundationalFlowIds"
             :experiment-features-enabled="experimentFeaturesEnabled"
             :duo-core-features-enabled="duoCoreFeaturesEnabled"
@@ -172,7 +165,6 @@ export default {
             @duo-core-checkbox-changed="duoCoreCheckboxChanged"
             @cache-checkbox-changed="onCacheCheckboxChanged"
             @duo-flow-checkbox-changed="onDuoFlowChanged"
-            @duo-sast-fp-detection-changed="onDuoSastFpDetectionChanged"
             @duo-agent-platform-enabled-changed="onDuoAgentPlatformEnabledChanged"
             @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
             @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
@@ -205,7 +197,6 @@ export default {
         :duo-availability="duoAvailability"
         :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
         :duo-foundational-flows-availability="initialDuoFoundationalFlowsAvailability"
-        :duo-sast-fp-detection-availability="initialDuoSastFpDetectionAvailability"
         :selected-foundational-flow-ids="initialSelectedFoundationalFlowIds"
         :experiment-features-enabled="experimentFeaturesEnabled"
         :duo-core-features-enabled="duoCoreFeaturesEnabled"
@@ -222,7 +213,6 @@ export default {
         @cache-checkbox-changed="onCacheCheckboxChanged"
         @duo-flow-checkbox-changed="onDuoFlowChanged"
         @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
-        @duo-sast-fp-detection-changed="onDuoSastFpDetectionChanged"
         @duo-agent-platform-enabled-changed="onDuoAgentPlatformEnabledChanged"
         @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
         @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"

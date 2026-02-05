@@ -77,8 +77,7 @@ module EE
         {
           duo_availability_cascading_settings: cascading_tooltip_data(:duo_features_enabled),
           duo_remote_flows_cascading_settings: cascading_tooltip_data(:duo_remote_flows_enabled),
-          duo_foundational_flows_cascading_settings: cascading_tooltip_data(:duo_foundational_flows_enabled),
-          duo_sast_fp_detection_cascading_settings: cascading_tooltip_data(:duo_sast_fp_detection_enabled)
+          duo_foundational_flows_cascading_settings: cascading_tooltip_data(:duo_foundational_flows_enabled)
         }
       end
 
@@ -119,7 +118,6 @@ module EE
         {
           duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
           duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
-          duo_sast_fp_detection_availability: @group.namespace_settings.duo_sast_fp_detection_availability.to_s,
           available_foundational_flows: available_foundational_flows_json,
           selected_foundational_flow_references: selected_foundational_flows_json
         }

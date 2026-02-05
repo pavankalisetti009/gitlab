@@ -68,7 +68,6 @@ export default {
     async updateSettings({
       duoAvailability,
       duoRemoteFlowsAvailability,
-      duoSastFpDetectionAvailability,
       experimentFeaturesEnabled,
       duoCoreFeaturesEnabled,
       promptCacheEnabled,
@@ -95,7 +94,6 @@ export default {
           model_prompt_cache_enabled: promptCacheEnabled,
           duo_remote_flows_availability: duoRemoteFlowsAvailability,
           duo_foundational_flows_availability: duoFoundationalFlowsAvailability,
-          duo_sast_fp_detection_availability: duoSastFpDetectionAvailability,
           enabled_foundational_flows: selectedFoundationalFlowIds,
           ...(foundationalAgentsStatuses && {
             foundational_agents_statuses: transformedFoundationalAgentsStatuses,

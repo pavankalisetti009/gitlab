@@ -96,9 +96,7 @@ module EE
         attributes << :duo_features_enabled
       end
 
-      unless project&.project_setting&.duo_sast_fp_detection_enabled_locked?
-        attributes << :duo_sast_fp_detection_enabled
-      end
+      attributes << :duo_sast_fp_detection_enabled
 
       if ::Feature.enabled?(:enable_vulnerability_resolution, project)
         attributes << :duo_sast_vr_workflow_enabled

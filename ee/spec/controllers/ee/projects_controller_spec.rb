@@ -939,32 +939,6 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         expect(project.reload.project_setting.duo_sast_fp_detection_enabled).to eq(true)
       end
-
-      context 'when duo sast fp detection is locked by the ancestor' do
-        before do
-          project.project_setting.duo_sast_fp_detection_enabled = false
-          project.project_setting.save!
-
-          project.namespace.namespace_settings.lock_duo_sast_fp_detection_enabled = true
-          project.namespace.namespace_settings.duo_sast_fp_detection_enabled = false
-          project.namespace.namespace_settings.save!
-        end
-
-        it 'does not update duo sast fp detection' do
-          expect { request }.not_to change { project.reload.project_setting.duo_sast_fp_detection_enabled }.from(false)
-        end
-
-        context 'with more params passed' do
-          let(:params) do
-            { project_setting_attributes: { duo_sast_fp_detection_enabled: true }, description: 'Settings test' }
-          end
-
-          it 'does not update duo sast fp detection, but updates other attributes' do
-            expect { request }.not_to change { project.reload.project_setting.duo_sast_fp_detection_enabled }.from(false)
-            expect(project.description).to eq('Settings test')
-          end
-        end
-      end
     end
 
     context 'when duo_sast_vr_workflow_enabled param is specified' do

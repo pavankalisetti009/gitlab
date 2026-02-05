@@ -198,7 +198,6 @@ module EE
         :auto_duo_code_review_enabled, :auto_duo_code_review_enabled=,
         :duo_remote_flows_enabled, :lock_duo_remote_flows_enabled,
         :duo_foundational_flows_enabled, :lock_duo_foundational_flows_enabled,
-        :duo_sast_fp_detection_enabled, :lock_duo_sast_fp_detection_enabled,
         to: :namespace_settings, allow_nil: true
       delegate :pipeline_execution_policies_per_configuration_limit,
         :pipeline_execution_policies_per_configuration_limit=, :scan_execution_policies_per_configuration_limit,

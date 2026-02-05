@@ -8,7 +8,6 @@ import DuoExperimentBetaFeatures from './duo_experiment_beta_features_form.vue';
 import DuoCoreFeaturesForm from './duo_core_features_form.vue';
 import DuoPromptCache from './duo_prompt_cache_form.vue';
 import DuoFlowSettings from './duo_flow_settings.vue';
-import DuoSastFpDetectionSettings from './duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from './duo_foundational_agents_settings.vue';
 import DuoAgentPlatformSettingsForm from './duo_agent_platform_settings_form.vue';
 import AiNamespaceAccessRules from './ai_namespace_access_rules.vue';
@@ -26,7 +25,6 @@ export default {
     DuoCoreFeaturesForm,
     DuoPromptCache,
     DuoFlowSettings,
-    DuoSastFpDetectionSettings,
     DuoFoundationalAgentsSettings,
     DuoAgentPlatformSettingsForm,
     AiNamespaceAccessRules,
@@ -61,10 +59,6 @@ export default {
       required: true,
     },
     duoFoundationalFlowsAvailability: {
-      type: Boolean,
-      required: true,
-    },
-    duoSastFpDetectionAvailability: {
       type: Boolean,
       required: true,
     },
@@ -109,7 +103,6 @@ export default {
     return {
       availability: this.duoAvailability,
       flowEnabled: this.duoRemoteFlowsAvailability,
-      sastFpDetectionEnabled: this.duoSastFpDetectionAvailability,
       experimentsEnabled: this.experimentFeaturesEnabled,
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
       cacheEnabled: this.promptCacheEnabled,
@@ -143,12 +136,7 @@ export default {
     hasFoundationalFlowsFormChanged() {
       return this.foundationalFlowsEnabled !== this.duoFoundationalFlowsAvailability;
     },
-    hasSastFpDetectionFormChanged() {
-      return (
-        this.glFeatures.aiExperimentSastFpDetection &&
-        this.sastFpDetectionEnabled !== this.duoSastFpDetectionAvailability
-      );
-    },
+
     hasFoundationalAgentsEnabledChanged() {
       return this.foundationalAgentsEnabled !== this.foundationalAgentsEnabledInput;
     },
@@ -197,7 +185,6 @@ export default {
         this.hasParentFormChanged ||
         this.hasFlowFormChanged ||
         this.hasFoundationalFlowsFormChanged ||
-        this.hasSastFpDetectionFormChanged ||
         this.hasFoundationalAgentsEnabledChanged ||
         this.hasFoundationalAgentsStatusesChanged ||
         this.hasSelectedFlowIdsChanged ||
@@ -279,10 +266,6 @@ export default {
       this.foundationalFlowsEnabled = value;
       this.$emit('duo-foundational-flows-checkbox-changed', value);
     },
-    onSastFpDetectionCheckboxChanged(value) {
-      this.sastFpDetectionEnabled = value;
-      this.$emit('duo-sast-fp-detection-changed', value);
-    },
     onFoundationalAgentsEnabledChanged(value) {
       this.foundationalAgentsEnabledInput = value;
       this.$emit('duo-foundational-agents-changed', value);
@@ -353,13 +336,6 @@ export default {
         @agent-toggle="onFoundationalAgentsToggled"
       />
     </duo-agent-platform-settings-form>
-
-    <duo-sast-fp-detection-settings
-      v-if="glFeatures.aiExperimentSastFpDetection"
-      :duo-sast-fp-detection-availability="duoSastFpDetectionAvailability"
-      :disabled-checkbox="disableConfigCheckboxes"
-      @change="onSastFpDetectionCheckboxChanged"
-    />
 
     <duo-prompt-cache
       :prompt-cache-enabled="cacheEnabled"
