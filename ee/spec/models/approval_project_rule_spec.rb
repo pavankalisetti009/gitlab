@@ -779,6 +779,59 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
         )
       end
     end
+
+    describe 'advisory locking' do
+      let_it_be(:approval_rule) do
+        create(:approval_project_rule, :scan_finding, project: project)
+      end
+
+      it 'acquires an advisory lock' do
+        expect(described_class).to receive(:with_merge_request_rule_lock)
+          .with(approval_rule.id, merge_request.id)
+          .and_call_original
+
+        approval_rule.apply_report_approver_rules_to(merge_request)
+      end
+
+      it 'creates the rule' do
+        expect { approval_rule.apply_report_approver_rules_to(merge_request) }
+          .to change { merge_request.approval_rules.count }.by(1)
+      end
+    end
+  end
+
+  describe '.merge_request_rule_lock_key' do
+    let(:merge_request_id) { non_existing_record_id }
+
+    subject(:lock_key) { described_class.merge_request_rule_lock_key(rule.id, merge_request_id) }
+
+    it { is_expected.to eq("approval_project_rule:#{rule.id}:merge_request:#{merge_request_id}") }
+  end
+
+  describe '.with_merge_request_rule_lock' do
+    let(:connection) { ApplicationRecord.connection }
+    let(:rule_id) { non_existing_record_id }
+    let(:merge_request_id) { non_existing_record_id }
+    let(:lock_key) { described_class.merge_request_rule_lock_key(rule_id, merge_request_id) }
+
+    specify do
+      hashed_lock_key = connection.select_value("SELECT hashtext(#{connection.quote(lock_key)})")
+
+      return_value = described_class.with_merge_request_rule_lock(rule_id, merge_request_id) do
+        locked = connection.select_value(<<~SQL)
+          SELECT EXISTS (
+            SELECT 1 FROM pg_locks
+            WHERE locktype = 'advisory' AND objid = #{hashed_lock_key} AND granted = true
+          )
+        SQL
+
+        expect(locked).to be(true)
+
+        :ok
+      end
+
+      expect(return_value).to be(:ok)
+    end
   end
 
   describe "validation" do
