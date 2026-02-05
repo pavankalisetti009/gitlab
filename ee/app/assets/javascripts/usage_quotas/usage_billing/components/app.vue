@@ -62,8 +62,8 @@ export default {
   inject: {
     namespacePath: { default: '' },
     isFree: { default: false },
-    trialStartDate: { default: '' },
-    trialEndDate: { default: '' },
+    trialStartDate: { default: undefined },
+    trialEndDate: { default: undefined },
   },
   data() {
     return {
@@ -73,7 +73,7 @@ export default {
   },
   computed: {
     inTrial() {
-      return this.trialStartDate !== '';
+      return Boolean(this.trialStartDate);
     },
     isUsageBillingDisabled() {
       if (this.inTrial) {

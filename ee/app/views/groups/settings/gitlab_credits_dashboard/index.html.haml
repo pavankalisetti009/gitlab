@@ -11,6 +11,6 @@
   namespace_path: @group.full_path,
   upgrade_button_path: group_billings_path(@group),
   is_saas: ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions).to_s,
-  is_free: @group.has_free_or_no_subscription?.to_s,
+  is_free: (@group.plan_name_for_upgrading == ::Plan::FREE).to_s,
   **trial_data
 } }
