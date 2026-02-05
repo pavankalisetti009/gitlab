@@ -299,6 +299,12 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         expect(settings).to validate_inclusion_of(:display_gitlab_credits_user_data)
           .in_array([true, false])
       end
+
+      it 'defaults to true' do
+        new_settings = build(:namespace_settings)
+
+        expect(new_settings.display_gitlab_credits_user_data).to be true
+      end
     end
   end
 
