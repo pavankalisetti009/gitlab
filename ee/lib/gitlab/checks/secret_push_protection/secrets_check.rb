@@ -77,6 +77,7 @@ module Gitlab
           log_duration(start_time, 'run_validation_dark_launch!')
         end
 
+        # rubocop:disable Metrics/AbcSize -- Extra logging and telemetry in exception handling. Refactoring planned in https://gitlab.com/gitlab-org/gitlab/-/work_items/580388
         def run_validation!
           start_time = Gitlab::Metrics::System.monotonic_time
 
@@ -99,11 +100,13 @@ module Gitlab
           # TODO: Perhaps have a separate message for each and better logging?
           rescue ::Gitlab::SecretDetection::Core::Ruleset::RulesetParseError,
             ::Gitlab::SecretDetection::Core::Ruleset::RulesetCompilationError => e
+            audit_logger.track_spp_ruleset_error
             message = format(ERROR_MESSAGES[:scan_initialization_error], { error_msg: e.message })
             secret_detection_logger.error(build_structured_payload(message:))
           rescue ::Gitlab::GitAccess::ForbiddenError => e
             raise e
           rescue TooManyChangedPathsError => e
+            audit_logger.track_spp_too_many_changed_paths_error(e.message, e.changed_paths_count)
             Gitlab::Checks::SecretPushProtection::PostPushWarning
               .new(project.repository,
                 changes_access.user_access.user,
@@ -111,7 +114,8 @@ module Gitlab
                 e.changed_paths_count,
                 e.changed_paths_threshold
               ).add_message
-          rescue StandardError
+          rescue StandardError => e
+            audit_logger.track_spp_standard_error_exception(e.class.name)
             Gitlab::Checks::SecretPushProtection::PostPushWarning
               .new(project.repository, changes_access.user_access.user, changes_access.protocol)
               .add_message
@@ -119,6 +123,7 @@ module Gitlab
         ensure
           log_duration(start_time, 'run_validation!')
         end
+        # rubocop:enable Metrics/AbcSize
 
         ##############################
         # Helpers

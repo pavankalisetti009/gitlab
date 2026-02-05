@@ -145,6 +145,40 @@ module Gitlab
           )
         end
 
+        def track_spp_standard_error_exception(exception_class)
+          track_internal_event(
+            'spp_standard_error_exception_encountered',
+            user: @user,
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: exception_class
+            }
+          )
+        end
+
+        def track_spp_too_many_changed_paths_error(message, changed_paths_count)
+          track_internal_event(
+            'spp_too_many_changed_paths_error_encountered',
+            user: @user,
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: message,
+              value: changed_paths_count
+            }
+          )
+        end
+
+        def track_spp_ruleset_error
+          track_internal_event(
+            'spp_ruleset_error_encountered',
+            user: @user,
+            project: project,
+            namespace: project.namespace
+          )
+        end
+
         private
 
         def should_log_audit_events?
