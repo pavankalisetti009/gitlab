@@ -59,8 +59,8 @@ module EE
             end
 
             # Deprecated in favor of approval rules API
-            desc 'Deprecated in 16.0: Use the merge request approvals API instead. Change approval-related configuration' do
-              detail 'This feature was introduced in 10.6 and deprecated in 16.0'
+            desc 'Change approval-related configuration' do
+              detail 'Deprecated in 16.0. Use the merge request approvals API instead.'
               success ::API::Entities::ApprovalState
               deprecated true
               tags ['merge_request_approvals']

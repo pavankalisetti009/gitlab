@@ -19522,7 +19522,8 @@ paths:
   "/api/v4/user/{user_id}/credit_card_validation":
     put:
       operationId: putApiV4UserUserIdCreditCardValidation
-      summary: "[DEPRECATED] Update a user's credit_card_validation"
+      summary: Update a user's credit_card_validation
+      description: Deprecated in 17.7
       tags:
       - Users
       responses:
@@ -47382,7 +47383,8 @@ paths:
   "/api/v4/namespaces/{id}":
     put:
       operationId: putApiV4NamespacesId
-      summary: "[DEPRECATED] Update a namespace"
+      summary: Update a namespace
+      description: Deprecated in 17.8
       tags:
       - Namespaces
       responses:
@@ -47933,9 +47935,8 @@ paths:
           description: Not found
     post:
       operationId: postApiV4ProjectsIdMergeRequestsMergeRequestIidApprovals
-      summary: 'Deprecated in 16.0: Use the merge request approvals API instead. Change
-        approval-related configuration'
-      description: This feature was introduced in 10.6 and deprecated in 16.0
+      summary: Change approval-related configuration
+      description: Deprecated in 16.0. Use the merge request approvals API instead.
       tags:
       - Merge request approvals
       responses:
