@@ -1,120 +1,107 @@
 <script>
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import { debounce } from 'lodash';
+import { createAlert } from '~/alert';
+import { s__ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import { getMavenUpstreamRegistriesList } from 'ee/api/virtual_registries_api';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 const PAGE_SIZE = 20;
+const INITIAL_VALUE = { nodes: [], pageInfo: {} };
 
 export default {
-  name: 'MavenUpstreamSelector',
+  name: 'UpstreamSelector',
   components: {
     GlCollapsibleListbox,
   },
-  inject: ['groupPath'],
+  inject: ['groupPath', 'getUpstreamsSelectQuery'],
   props: {
-    linkedUpstreams: {
+    linkedUpstreamIds: {
       type: Array,
-      required: true,
-    },
-    initialUpstreams: {
-      type: Array,
-      required: true,
-    },
-    upstreamsCount: {
-      type: Number,
       required: true,
     },
   },
   emits: ['select'],
   data() {
     return {
+      isLoadingMore: false,
       searchTerm: '',
-      page: 1,
+      pageParams: {
+        first: PAGE_SIZE,
+      },
       selectedUpstream: null,
-      isFetchingUpstreams: false,
-      upstreams: this.initialUpstreams,
-      totalUpstreamsCount: this.upstreamsCount,
+      upstreams: INITIAL_VALUE,
     };
   },
+  apollo: {
+    upstreams: {
+      query() {
+        return this.getUpstreamsSelectQuery;
+      },
+      variables() {
+        return { groupPath: this.groupPath, upstreamName: this.searchTerm, ...this.pageParams };
+      },
+      update: (data) => data.group?.upstreams ?? INITIAL_VALUE,
+      error(error) {
+        createAlert({
+          message: s__('VirtualRegistry|Failed to fetch upstreams. Please try again.'),
+          error,
+          captureError: true,
+        });
+      },
+      debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+    },
+  },
   computed: {
-    upstreamItemIdsMap() {
-      return this.linkedUpstreams.reduce(
-        (map, { id }) => ({
-          ...map,
-          [getIdFromGraphQLId(id)]: true,
-        }),
-        {},
-      );
+    isSearching() {
+      return this.$apollo.queries.upstreams.loading && !this.isLoadingMore;
     },
     linkableUpstreams() {
       return (
-        this.upstreams
+        this.upstreams.nodes
           // filter out upstreams that are already linked to this virtual registry
           .filter((upstream) => {
-            return !this.upstreamItemIdsMap[upstream.id];
+            return this.linkedUpstreamIds.indexOf(upstream.value) === -1;
           })
       );
     },
-    linkableUpstreamsDropdownOptions() {
-      return this.linkableUpstreams.map((upstream) => {
-        return {
-          value: upstream.id,
-          text: upstream.name,
-          secondaryText: upstream.description,
-        };
-      });
-    },
     selectedUpstreamName() {
-      return (
-        this.linkableUpstreams.find((upstream) => upstream.id === this.selectedUpstream)?.name ?? ''
-      );
+      return this.selectedUpstream?.text ?? '';
     },
-  },
-  created() {
-    this.debouncedSearchUpstream = debounce(this.searchUpstream, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
+    selectedUpstreamId() {
+      return this.selectedUpstream?.value;
+    },
   },
   methods: {
-    async fetchUpstreams() {
-      this.isFetchingUpstreams = true;
-      try {
-        const { data, headers } = await getMavenUpstreamRegistriesList({
-          id: this.groupPath,
-          params: {
-            upstream_name: this.searchTerm,
-            page: this.page,
-            per_page: PAGE_SIZE,
-          },
-        });
-        this.totalUpstreamsCount = Number(headers['x-total']) || 0;
-
-        if (this.page === 1) {
-          this.upstreams = data;
-        } else {
-          this.upstreams = this.upstreams.concat(data);
-        }
-      } catch (error) {
-        captureException({ error, component: this.$options.name });
-      } finally {
-        this.isFetchingUpstreams = false;
-      }
-    },
     searchUpstream(searchTerm = '') {
       this.searchTerm = searchTerm;
-      this.page = 1;
-      this.fetchUpstreams();
+      this.pageParams = {
+        first: PAGE_SIZE,
+      };
     },
-    fetchNextPage() {
-      if (this.isFetchingUpstreams || this.upstreams.length === this.totalUpstreamsCount) {
+    async fetchNextPage() {
+      if (this.$apollo.queries.upstreams.loading || !this.upstreams.pageInfo.hasNextPage) {
         return;
       }
 
-      this.page += 1;
-      this.fetchUpstreams();
+      this.isLoadingMore = true;
+      try {
+        await this.$apollo.queries.upstreams.fetchMore({
+          variables: {
+            first: PAGE_SIZE,
+            after: this.upstreams.pageInfo.endCursor,
+            upstreamName: this.searchTerm,
+          },
+        });
+      } catch (error) {
+        captureException({ error, component: this.$options.name });
+      } finally {
+        this.isLoadingMore = false;
+      }
     },
     handleSelect(upstreamId) {
+      this.selectedUpstream = this.linkableUpstreams.find(
+        (upstream) => upstream.value === upstreamId,
+      );
       this.$emit('select', upstreamId);
     },
   },
@@ -123,17 +110,18 @@ export default {
 
 <template>
   <gl-collapsible-listbox
-    v-model="selectedUpstream"
     block
     toggle-id="upstream-select"
     :toggle-text="selectedUpstreamName"
-    :items="linkableUpstreamsDropdownOptions"
+    :items="linkableUpstreams"
     infinite-scroll
     searchable
+    :searching="isSearching"
+    :selected="selectedUpstreamId"
     :no-results-text="__('No matching results')"
-    :infinite-scroll-loading="isFetchingUpstreams"
+    :infinite-scroll-loading="isLoadingMore"
     @select="handleSelect"
-    @search="debouncedSearchUpstream"
+    @search="searchUpstream"
     @bottom-reached="fetchNextPage"
   >
     <template #list-item="{ item }">

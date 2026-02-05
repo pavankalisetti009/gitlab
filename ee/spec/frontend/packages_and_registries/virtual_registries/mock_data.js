@@ -71,6 +71,31 @@ export const groupMavenUpstreamsCount = {
   },
 };
 
+export const groupMavenUpstreamsSelect = {
+  group: {
+    id: 'gid://gitlab/Group/33',
+    __typename: 'Group',
+    upstreams: {
+      __typename: 'MavenUpstreamConnection',
+      nodes: [
+        {
+          __typename: 'MavenUpstream',
+          value: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/1',
+          text: 'Maven Central',
+          secondaryText: 'upstream description',
+        },
+      ],
+      pageInfo: {
+        hasPreviousPage: false,
+        hasNextPage: false,
+        startCursor: 'start',
+        endCursor: 'end',
+        __typename: 'PageInfo',
+      },
+    },
+  },
+};
+
 export const groupContainerUpstreams = {
   group: {
     id: 'gid://gitlab/Group/33',
@@ -106,49 +131,6 @@ export const groupContainerUpstreamsCount = {
       __typename: 'ContainerUpstreamConnection',
       count: 5,
     },
-  },
-};
-
-export const upstreamsResponse = {
-  data: [
-    {
-      id: 3,
-      name: 'test',
-      description: 'test description',
-      group_id: 122,
-      url: 'https://gitlab.com',
-      username: '',
-      cache_validity_hours: 24,
-      metadata_cache_validity_hours: 24,
-      created_at: '2025-07-15T04:10:03.060Z',
-      updated_at: '2025-07-15T04:11:00.426Z',
-    },
-  ],
-  headers: {
-    'x-total': '1',
-  },
-};
-
-export const multipleUpstreamsResponse = {
-  data: [
-    {
-      ...upstreamsResponse.data[0],
-    },
-    {
-      id: 2,
-      name: 'Maven upstream',
-      description: 'Maven Central',
-      group_id: 122,
-      username: null,
-      url: 'https://repo.maven.apache.org/maven2',
-      cache_validity_hours: 24,
-      metadata_cache_validity_hours: 48,
-      created_at: '2025-07-15T04:10:03.060Z',
-      updated_at: '2025-07-15T04:11:00.426Z',
-    },
-  ],
-  headers: {
-    'x-total': '2',
   },
 };
 

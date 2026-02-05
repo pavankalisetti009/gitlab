@@ -1,9 +1,8 @@
 <script>
 import { GlAlert, GlButton, GlCard, GlForm, GlFormGroup, GlSkeletonLoader } from '@gitlab/ui';
 import { sprintf, n__ } from '~/locale';
-import getMavenUpstreamSummaryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_summary.query.graphql';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import { convertToMavenUpstreamGraphQLId } from 'ee/packages_and_registries/virtual_registries/utils';
 import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
 import UpstreamSelector from './upstream_selector.vue';
 
@@ -19,22 +18,15 @@ export default {
     TestMavenUpstreamButton,
     UpstreamSelector,
   },
+  inject: ['getUpstreamSummaryQuery'],
   props: {
     loading: {
       type: Boolean,
       required: false,
       default: false,
     },
-    linkedUpstreams: {
+    linkedUpstreamIds: {
       type: Array,
-      required: true,
-    },
-    initialUpstreams: {
-      type: Array,
-      required: true,
-    },
-    upstreamsCount: {
-      type: Number,
       required: true,
     },
   },
@@ -56,21 +48,28 @@ export default {
   },
   apollo: {
     selectedUpstreamDetails: {
-      query: getMavenUpstreamSummaryQuery,
+      query() {
+        return this.getUpstreamSummaryQuery;
+      },
       loadingKey: 'isFetchingUpstreamDetails',
       skip() {
         return this.selectedUpstream === null;
       },
       variables() {
         return {
-          id: convertToMavenUpstreamGraphQLId(this.selectedUpstream),
+          id: this.selectedUpstream,
         };
       },
-      update: (data) => data.virtualRegistriesPackagesMavenUpstream ?? null,
+      update: (data) => data.upstream,
       error(error) {
         this.fetchUpstreamDetailsError = true;
         captureException({ error, component: this.$options.name });
       },
+    },
+  },
+  computed: {
+    selectedUpstreamId() {
+      return this.selectedUpstream && getIdFromGraphQLId(this.selectedUpstream);
     },
   },
   methods: {
@@ -87,7 +86,7 @@ export default {
     },
     submit() {
       if (this.selectedUpstream) {
-        this.$emit('submit', this.selectedUpstream);
+        this.$emit('submit', this.selectedUpstreamId);
       }
     },
     cancel() {
@@ -106,12 +105,7 @@ export default {
       label-for="upstream-select"
       class="@md/panel:gl-w-3/10"
     >
-      <upstream-selector
-        :linked-upstreams="linkedUpstreams"
-        :upstreams-count="upstreamsCount"
-        :initial-upstreams="initialUpstreams"
-        @select="selectUpstream"
-      />
+      <upstream-selector :linked-upstream-ids="linkedUpstreamIds" @select="selectUpstream" />
     </gl-form-group>
     <gl-card class="gl-my-3" header-class="gl-bg-subtle" body-class="gl-p-0">
       <template #header>
@@ -182,7 +176,7 @@ export default {
       <gl-button data-testid="cancel-button" category="secondary" @click="cancel">
         {{ __('Cancel') }}
       </gl-button>
-      <test-maven-upstream-button v-if="selectedUpstream" :upstream-id="selectedUpstream" />
+      <test-maven-upstream-button v-if="selectedUpstream" :upstream-id="selectedUpstreamId" />
     </div>
   </gl-form>
 </template>

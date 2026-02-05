@@ -8,7 +8,6 @@ import {
   associateMavenUpstreamWithVirtualRegistry,
   deleteMavenRegistryCache,
   deleteMavenUpstreamCache,
-  getMavenUpstreamRegistriesList,
   updateMavenRegistryUpstreamPosition,
   removeMavenUpstreamRegistryAssociation,
 } from 'ee/api/virtual_registries_api';
@@ -46,6 +45,9 @@ export default {
   inject: {
     groupPath: {
       default: '',
+    },
+    getUpstreamsCountQuery: {
+      default: null,
     },
   },
   props: {
@@ -90,9 +92,7 @@ export default {
       createUpstreamMutationLoading: false,
       linkUpstreamInProgress: false,
       registryClearCacheModalIsShown: false,
-      topLevelUpstreams: [],
       topLevelUpstreamsTotalCount: 0,
-      topLevelUpstreamsQueryInProgress: false,
       upstreamClearCacheModalIsShown: false,
       upstreamToBeCleared: null,
       updateActionErrorMessage: '',
@@ -105,8 +105,8 @@ export default {
     canClearRegistryCache() {
       return this.canEdit && this.upstreamsCount;
     },
-    linkedUpstreams() {
-      return this.registryUpstreams.map(({ upstream }) => upstream);
+    linkedUpstreamIds() {
+      return this.registryUpstreams.map(({ upstream }) => upstream.id);
     },
     canCreate() {
       return this.glAbilities.createVirtualRegistry;
@@ -127,7 +127,7 @@ export default {
       return convertToMavenRegistryGraphQLId(this.registryId);
     },
     queriesInProgress() {
-      return this.topLevelUpstreamsQueryInProgress || this.loading;
+      return this.$apollo.queries.topLevelUpstreamsTotalCount.loading || this.loading;
     },
     upstreamNameForClearCache() {
       return this.upstreamToBeCleared?.name ?? '';
@@ -142,20 +142,19 @@ export default {
       return this.upstreamsCount === MAX_UPSTREAMS_PER_REGISTRY;
     },
   },
-  async created() {
-    if (!this.canEdit) return;
-
-    try {
-      this.topLevelUpstreamsQueryInProgress = true;
-      const { headers, data } = await getMavenUpstreamRegistriesList({ id: this.groupPath });
-
-      this.topLevelUpstreamsTotalCount = Number(headers['x-total']) || 0;
-      this.topLevelUpstreams = data;
-    } catch (error) {
-      this.handleError(error);
-    } finally {
-      this.topLevelUpstreamsQueryInProgress = false;
-    }
+  apollo: {
+    topLevelUpstreamsTotalCount: {
+      query() {
+        return this.getUpstreamsCountQuery;
+      },
+      skip() {
+        return !this.canEdit;
+      },
+      variables() {
+        return { groupPath: this.groupPath };
+      },
+      update: (data) => data.group?.upstreams?.count ?? 0,
+    },
   },
   methods: {
     async reorderUpstream(direction, registryUpstream) {
@@ -431,9 +430,7 @@ export default {
       <link-upstream-form
         v-if="isLinkUpstreamForm"
         :loading="linkUpstreamInProgress"
-        :upstreams-count="topLevelUpstreamsTotalCount"
-        :linked-upstreams="linkedUpstreams"
-        :initial-upstreams="topLevelUpstreams"
+        :linked-upstream-ids="linkedUpstreamIds"
         @submit="linkUpstream"
         @cancel="hideForm"
       />

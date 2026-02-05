@@ -1,42 +1,61 @@
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox } from '@gitlab/ui';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { getMavenUpstreamRegistriesList } from 'ee/api/virtual_registries_api';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { createAlert } from '~/alert';
 import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstream_selector.vue';
-import {
-  upstreamsResponse,
-  multipleUpstreamsResponse,
-} from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
+import getUpstreamsSelectQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_select.query.graphql';
+import { groupMavenUpstreamsSelect } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
-jest.mock('ee/api/virtual_registries_api', () => ({
-  getMavenUpstreamRegistriesList: jest.fn(),
+jest.mock('~/alert', () => ({
+  createAlert: jest.fn(),
 }));
+
+Vue.use(VueApollo);
 
 describe('UpstreamSelector', () => {
   let wrapper;
 
   const defaultProps = {
-    linkedUpstreams: [],
-    upstreamsCount: 1,
-    initialUpstreams: upstreamsResponse.data,
+    linkedUpstreamIds: [],
   };
 
-  const createComponent = ({ props = defaultProps } = {}) => {
+  const { upstreams } = groupMavenUpstreamsSelect.group;
+  const [upstream] = upstreams.nodes;
+  const { pageInfo } = upstreams;
+
+  const upstreamsHandler = jest.fn().mockResolvedValue({ data: { ...groupMavenUpstreamsSelect } });
+
+  const waitForDebouncedPromises = async () => {
+    jest.advanceTimersByTime(DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
+    await waitForPromises();
+  };
+
+  const createComponent = ({
+    props = defaultProps,
+    handlers = [[getUpstreamsSelectQuery, upstreamsHandler]],
+  } = {}) => {
     wrapper = shallowMountExtended(UpstreamSelector, {
+      apolloProvider: createMockApollo(handlers),
       propsData: {
         ...defaultProps,
         ...props,
       },
       provide: {
         groupPath: 'full-path',
+        getUpstreamsSelectQuery,
       },
     });
   };
 
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
 
-  it('renders GlCollapsible listbox with right props', () => {
+  it('renders GlCollapsible listbox with right props', async () => {
     createComponent();
+    await waitForDebouncedPromises();
 
     expect(findDropdown().props()).toMatchObject({
       block: true,
@@ -44,121 +63,188 @@ describe('UpstreamSelector', () => {
       toggleText: '',
       infiniteScroll: true,
       searchable: true,
+      searching: false,
       noResultsText: 'No matching results',
       infiniteScrollLoading: false,
     });
 
-    expect(findDropdown().props('items')).toStrictEqual([
-      {
-        value: 3,
-        text: 'test',
-        secondaryText: 'test description',
-      },
-    ]);
+    const { ___typename, ...rest } = upstream;
+
+    expect(findDropdown().props('items')).toStrictEqual([rest]);
   });
 
-  it('does not call fetchUpstreams initially', () => {
+  it('calls getUpstreamsQuery on mount', async () => {
     createComponent();
-    expect(getMavenUpstreamRegistriesList).not.toHaveBeenCalled();
+    await waitForDebouncedPromises();
+
+    expect(upstreamsHandler).toHaveBeenCalledTimes(1);
+    expect(upstreamsHandler).toHaveBeenCalledWith({
+      groupPath: 'full-path',
+      upstreamName: '',
+      first: 20,
+    });
+    expect(createAlert).not.toHaveBeenCalled();
+  });
+
+  describe('when linked upstreams exist', () => {
+    const linkedUpstreamIds = [upstream.value];
+    beforeEach(async () => {
+      createComponent({
+        props: {
+          linkedUpstreamIds,
+        },
+      });
+      await waitForDebouncedPromises();
+    });
+
+    it('filters out linked upstreams from the dropdown items', () => {
+      expect(findDropdown().props('items')).toStrictEqual([]);
+    });
+  });
+
+  describe('when `getUpstreamsSelectQuery` query fails', () => {
+    const error = new Error('GraphQL error');
+
+    beforeEach(async () => {
+      createComponent({
+        handlers: [[getUpstreamsSelectQuery, jest.fn().mockRejectedValue(error)]],
+      });
+      await waitForDebouncedPromises();
+    });
+
+    it('calls createAlert', () => {
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Failed to fetch upstreams. Please try again.',
+        error,
+        captureError: true,
+      });
+    });
   });
 
   describe('when listbox emits `bottom-reached` event', () => {
-    describe('when upstream count is less than total count', () => {
-      beforeEach(() => {
-        getMavenUpstreamRegistriesList.mockResolvedValue(upstreamsResponse);
-        createComponent({
-          props: {
-            upstreamsCount: 2,
-            initialUpstreams: [multipleUpstreamsResponse.data[1]],
-          },
-        });
-        findDropdown().vm.$emit('bottom-reached');
+    describe('and does not have next page', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForDebouncedPromises();
+
+        await findDropdown().vm.$emit('bottom-reached');
+        await waitForDebouncedPromises();
       });
 
-      it('calls getMavenUpstreamRegistriesList API', () => {
-        expect(getMavenUpstreamRegistriesList).toHaveBeenCalledWith({
-          id: 'full-path',
-          params: {
-            upstream_name: '',
-            page: 2,
-            per_page: 20,
-          },
+      it('does not call getUpstreamsSelect', () => {
+        expect(upstreamsHandler).toHaveBeenCalledTimes(1);
+        expect(upstreamsHandler).not.toHaveBeenCalledWith({
+          groupPath: 'full-path',
+          upstreamName: '',
+          first: 20,
+          after: 'end',
         });
-      });
-
-      it('when API is successful, updates dropdown items', () => {
-        expect(findDropdown().props('items')).toStrictEqual([
-          {
-            secondaryText: 'Maven Central',
-            text: 'Maven upstream',
-            value: 2,
-          },
-          {
-            value: 3,
-            text: 'test',
-            secondaryText: 'test description',
-          },
-        ]);
       });
     });
 
-    it('does not call getMavenUpstreamRegistriesList API when upstream count is equal to total count', async () => {
-      createComponent();
-      await findDropdown().vm.$emit('bottom-reached');
-
-      expect(getMavenUpstreamRegistriesList).not.toHaveBeenCalled();
-    });
-
-    it('does not call getMavenUpstreamRegistriesList API when request is in progress', async () => {
-      createComponent({
-        props: {
-          upstreamsCount: 2,
-          initialUpstreams: [multipleUpstreamsResponse.data[1]],
+    describe('and has next page', () => {
+      const multiplePagesHandler = jest.fn().mockResolvedValue({
+        data: {
+          ...groupMavenUpstreamsSelect,
+          group: {
+            ...groupMavenUpstreamsSelect.group,
+            upstreams: {
+              ...groupMavenUpstreamsSelect.group.upstreams,
+              pageInfo: {
+                ...pageInfo,
+                hasNextPage: true,
+              },
+            },
+          },
         },
       });
-      await findDropdown().vm.$emit('bottom-reached');
 
-      expect(findDropdown().props('infiniteScrollLoading')).toBe(true);
+      beforeEach(async () => {
+        createComponent({
+          handlers: [[getUpstreamsSelectQuery, multiplePagesHandler]],
+        });
+        await waitForDebouncedPromises();
 
-      await findDropdown().vm.$emit('bottom-reached');
+        await findDropdown().vm.$emit('bottom-reached');
+      });
 
-      expect(getMavenUpstreamRegistriesList).toHaveBeenCalledTimes(1);
+      it('calls getUpstreamsSelect with page params', () => {
+        expect(multiplePagesHandler).toHaveBeenCalledTimes(2);
+        expect(multiplePagesHandler).toHaveBeenCalledWith({
+          groupPath: 'full-path',
+          upstreamName: '',
+          first: 20,
+          after: 'end',
+        });
+      });
 
-      await waitForPromises();
+      it('sets `infiniteScrollLoading` true', () => {
+        expect(findDropdown().props()).toMatchObject({
+          infiniteScrollLoading: true,
+          searching: false,
+        });
+      });
 
-      expect(findDropdown().props('infiniteScrollLoading')).toBe(false);
+      it('does not call getUpstreamsSelect multiple times when request is in progress', async () => {
+        await findDropdown().vm.$emit('bottom-reached');
+        await findDropdown().vm.$emit('bottom-reached');
+        await waitForDebouncedPromises();
+
+        expect(multiplePagesHandler).toHaveBeenCalledTimes(2);
+        expect(multiplePagesHandler).toHaveBeenLastCalledWith({
+          groupPath: 'full-path',
+          upstreamName: '',
+          first: 20,
+          after: 'end',
+        });
+      });
     });
   });
 
   describe('when listbox emits `search` event', () => {
-    it('calls getMavenUpstreamRegistriesList API with search term', async () => {
-      getMavenUpstreamRegistriesList.mockResolvedValue(multipleUpstreamsResponse);
+    beforeEach(async () => {
       createComponent();
-      await findDropdown().vm.$emit('search', 'Maven');
+      await waitForDebouncedPromises();
+    });
 
-      expect(getMavenUpstreamRegistriesList).toHaveBeenCalledWith({
-        id: 'full-path',
-        params: {
-          upstream_name: 'Maven',
-          page: 1,
-          per_page: 20,
-        },
+    it('calls getUpstreamsQuery with search term', async () => {
+      await findDropdown().vm.$emit('search', 'Maven');
+      jest.advanceTimersByTime(DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
+
+      expect(upstreamsHandler).toHaveBeenCalledTimes(2);
+      expect(upstreamsHandler).toHaveBeenLastCalledWith({
+        groupPath: 'full-path',
+        upstreamName: 'Maven',
+        first: 20,
+      });
+    });
+
+    it('sets `searching` true', async () => {
+      await findDropdown().vm.$emit('search', 'Maven');
+      jest.advanceTimersByTime(DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
+      await nextTick();
+
+      expect(findDropdown().props()).toMatchObject({
+        searching: true,
+        infiniteScrollLoading: false,
       });
     });
   });
 
   describe('when listbox emits `select` event', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       createComponent();
-      findDropdown().vm.$emit('select', 3);
+      await waitForDebouncedPromises();
+      await findDropdown().vm.$emit('select', upstream.value);
     });
 
     it('emits select event with the selected upstream ID', () => {
-      expect(wrapper.emitted('select')).toEqual([[3]]);
+      expect(wrapper.emitted('select')).toEqual([[upstream.value]]);
     });
 
-    it('sets listbox toggleText prop', () => {
-      expect(findDropdown().props('toggleText')).toBe('test');
+    it('sets listbox toggleText prop', async () => {
+      await nextTick();
+      expect(findDropdown().props('toggleText')).toBe(upstream.text);
     });
   });
 });
