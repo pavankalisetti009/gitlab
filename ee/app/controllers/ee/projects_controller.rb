@@ -17,6 +17,7 @@ module EE
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @project, type: :beta)
         push_frontend_feature_flag(:enable_vulnerability_resolution, @project, type: :beta)
         push_frontend_feature_flag(:convert_to_gl_ci_flow_registry, current_user)
+        push_frontend_feature_flag(:ultimate_trial_with_dap, @project&.group)
       end
     end
 

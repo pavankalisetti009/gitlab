@@ -24,6 +24,12 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
       sign_in(user)
     end
 
+    it 'pushes ultimate_trial_with_dap feature flag to frontend' do
+      get_show
+
+      expect(response.body).to have_pushed_frontend_feature_flags(ultimateTrialWithDap: true)
+    end
+
     context 'with storage limit', :saas do
       it_behaves_like 'namespace storage limit alert'
     end
