@@ -309,17 +309,17 @@ describe('SecretsManagerPermissionsModal', () => {
   });
 
   describe('when submission fails', () => {
-    const error = new Error();
+    const error = new Error('GraphQL error: API error');
     beforeEach(() => {
-      mockCreatePermission.mockRejectedValue();
+      mockCreatePermission.mockRejectedValue(error);
       createComponent({ permissionCategory: 'ROLE' });
     });
 
-    it('renders error message', async () => {
+    it('renders error message with GraphQL prefix stripped', async () => {
       await submitPermission();
 
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'Failed to create secrets manager permission. Please try again.',
+        message: 'API error',
         captureError: true,
         error,
       });

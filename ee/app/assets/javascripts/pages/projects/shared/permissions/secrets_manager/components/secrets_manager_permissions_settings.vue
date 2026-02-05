@@ -3,6 +3,7 @@ import { GlCollapsibleListbox, GlLoadingIcon, GlModal, GlTabs } from '@gitlab/ui
 import { upperFirst } from 'lodash';
 import { __, s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
+import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { ACCESS_LEVELS_INTEGER_TO_STRING } from '~/access_level/constants';
 import {
@@ -62,8 +63,11 @@ export default {
       },
       error(error) {
         createAlert({
-          message: s__(
-            'SecretsManagerPermissions|Failed to fetch secrets manager permissions. Please try again later.',
+          message: formatGraphQLError(
+            error.message,
+            s__(
+              'SecretsManagerPermissions|Failed to fetch secrets manager permissions. Please try again later.',
+            ),
           ),
           captureError: true,
           error,
@@ -166,8 +170,11 @@ export default {
         this.$toast.show(s__('SecretsManagerPermissions|Permissions for secrets manager removed.'));
       } catch (e) {
         createAlert({
-          message: s__(
-            'SecretsManagerPermissions|Failed to delete secrets manager permissions. Please try again.',
+          message: formatGraphQLError(
+            e.message,
+            s__(
+              'SecretsManagerPermissions|Failed to delete secrets manager permissions. Please try again.',
+            ),
           ),
           captureError: true,
           error: e,

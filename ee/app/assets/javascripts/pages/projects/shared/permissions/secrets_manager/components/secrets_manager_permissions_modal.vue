@@ -12,6 +12,7 @@ import {
 import { debounce } from 'lodash';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { createAlert } from '~/alert';
+import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import { getDateInFuture, toISODateFormat } from '~/lib/utils/datetime_utility';
 import {
   fetchGroupsWithProjectAccess,
@@ -198,8 +199,11 @@ export default {
         );
       } catch (e) {
         createAlert({
-          message: s__(
-            'SecretsManagerPermissions|Failed to create secrets manager permission. Please try again.',
+          message: formatGraphQLError(
+            e.message,
+            s__(
+              'SecretsManagerPermissions|Failed to create secrets manager permission. Please try again.',
+            ),
           ),
           captureError: true,
           error: e,

@@ -10,4 +10,8 @@ describe('ee/ci/secrets/utils', () => {
       'An error occurred while fetching secrets manager data. Please try again.',
     );
   });
+
+  it('uses a provided backup message when error string is empty', () => {
+    expect(formatGraphQLError(undefined, 'Error message')).toBe('Error message');
+  });
 });
