@@ -233,7 +233,6 @@ app/models/concerns/user_mention_behaviour.rb:
 - mentioned_groups
 - mentioned_projects
 app/models/event.rb:
-- find_sti_class
 - created_target?
 - note_target_id
 - recent_repository_update?
