@@ -367,6 +367,10 @@ export const mockItemConfigurationForGroup = {
   enabled: true,
   serviceAccount: null,
   pinnedItemVersion: mockAgentGroupPinnedVersion,
+  group: {
+    id: 'gid://gitlab/Group/1',
+    duoSettingsPath: '/groups/mock-group/-/settings/gitlab_duo/configuration',
+  },
   userPermissions: mockItemConsumerUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
@@ -641,6 +645,10 @@ export const mockFlowConfigurationForGroup = {
   pinnedItemVersion: mockFlowGroupPinnedVersion,
   userPermissions: mockItemConsumerUserPermissions,
   serviceAccount: mockServiceAccount,
+  group: {
+    id: 'gid://gitlab/Group/1',
+    duoSettingsPath: '/groups/mock-group/-/settings/gitlab_duo/configuration',
+  },
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 

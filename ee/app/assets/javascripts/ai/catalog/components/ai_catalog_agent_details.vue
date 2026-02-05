@@ -81,6 +81,14 @@ export default {
       }
       return this.item.configurationForGroup?.serviceAccount;
     },
+    helpTextSettingsLink() {
+      return (
+        this.item.configurationForGroup?.group?.duoSettingsPath ??
+        helpPagePath('user/duo_agent_platform/agents/foundational_agents/_index', {
+          anchor: 'turn-foundational-agents-on-or-off',
+        })
+      );
+    },
   },
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
   toolsDocsLink: helpPagePath('user/duo_agent_platform/agents/tools'),
@@ -94,8 +102,24 @@ export default {
     </h2>
     <dl class="gl-flex gl-flex-col gl-gap-5">
       <form-section :title="s__('AICatalog|Visibility & access')" is-display>
-        <ai-catalog-item-field v-if="projectName" :title="s__('AICatalog|Managed by')">
-          <gl-link :href="item.project.webUrl">{{ projectName }}</gl-link>
+        <ai-catalog-item-field
+          v-if="projectName || item.foundational"
+          :title="s__('AICatalog|Managed by')"
+          data-testid="managed-by-field"
+        >
+          <gl-link v-if="!item.foundational" :href="item.project.webUrl">{{ projectName }}</gl-link>
+          <gl-sprintf
+            v-else
+            :message="
+              s__(
+                'AICatalog|Foundational agents are managed by the %{linkStart}top-level group%{linkEnd}.',
+              )
+            "
+          >
+            <template #link="{ content }">
+              <gl-link :href="helpTextSettingsLink">{{ content }}</gl-link>
+            </template>
+          </gl-sprintf>
         </ai-catalog-item-field>
         <ai-catalog-item-visibility-field
           :public="item.public"

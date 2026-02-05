@@ -45,6 +45,10 @@ query aiCatalogFlow(
     configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
       id
       enabled
+      group {
+        id
+        duoSettingsPath
+      }
       serviceAccount {
         ...BaseServiceAccount
       }

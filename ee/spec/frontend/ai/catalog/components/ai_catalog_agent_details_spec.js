@@ -1,4 +1,4 @@
-import { GlBadge, GlLink, GlToken, GlTruncateText } from '@gitlab/ui';
+import { GlBadge, GlLink, GlToken, GlTruncateText, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
@@ -15,6 +15,7 @@ import {
   mockThirdPartyFlowConfigurationForProject,
   mockAiCatalogBuiltInToolsNodes,
   mockServiceAccount,
+  mockItemConfigurationForGroup,
 } from '../mock_data';
 
 describe('AiCatalogAgentDetails', () => {
@@ -28,6 +29,7 @@ describe('AiCatalogAgentDetails', () => {
       mockAiCatalogBuiltInToolsNodes[0], // Ci Linter
     ],
   };
+
   const defaultProps = {
     item: {
       ...mockAgent,
@@ -47,6 +49,7 @@ describe('AiCatalogAgentDetails', () => {
       },
       stubs: {
         AiCatalogItemVisibilityField,
+        GlSprintf,
       },
     });
   };
@@ -60,6 +63,7 @@ describe('AiCatalogAgentDetails', () => {
   const findSourceProjectLink = () => wrapper.findComponent(GlLink);
   const findTriggerField = () => wrapper.findComponent(TriggerField);
   const findServiceAccountField = () => wrapper.findByTestId('service-account-field');
+  const findManagedByField = () => wrapper.findByTestId('managed-by-field');
 
   beforeEach(() => {
     createComponent();
@@ -215,37 +219,76 @@ describe('AiCatalogAgentDetails', () => {
   });
 
   describe('when the item is a foundational agent', () => {
-    let configurationDetails;
+    describe('and has configurationForGroup', () => {
+      let configurationDetails;
 
-    beforeEach(() => {
-      createComponent({
-        props: {
-          item: {
-            ...mockAgent,
-            foundational: true,
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockAgent,
+              foundational: true,
+              configurationForGroup: mockItemConfigurationForGroup,
+            },
           },
-        },
+        });
+
+        configurationDetails = findAllFieldsForSection(1);
       });
 
-      configurationDetails = findAllFieldsForSection(1);
-    });
+      it('renders "Type" field with "Foundational" value', () => {
+        expect(configurationDetails.at(0).props()).toMatchObject({
+          title: 'Type',
+          value: 'Foundational',
+        });
+      });
 
-    it('renders "Type" field with "Foundational" value', () => {
-      expect(configurationDetails.at(0).props()).toMatchObject({
-        title: 'Type',
-        value: 'Foundational',
+      it('renders "Tools" field', () => {
+        const toolsField = configurationDetails.at(1);
+        expect(toolsField.props('title')).toBe('Tools');
+        expect(toolsField.text()).toContain(
+          'Tools are built and maintained by GitLab. What are tools?',
+        );
+        expect(toolsField.text()).toContain('None');
+      });
+
+      it('renders "System prompt"', () => {
+        expect(configurationDetails.at(2).props()).toMatchObject({
+          title: 'System prompt',
+        });
+      });
+
+      it('renders "Managed by" field', () => {
+        expect(findManagedByField().props('title')).toBe('Managed by');
+        expect(findManagedByField().text()).toBe(
+          'Foundational agents are managed by the top-level group.',
+        );
+      });
+
+      it('renders link to correct group settings URL', () => {
+        const managedByLink = findManagedByField().findComponent(GlLink);
+        expect(managedByLink.attributes('href')).toBe(
+          '/groups/mock-group/-/settings/gitlab_duo/configuration',
+        );
       });
     });
 
-    it('renders "Tools" field', () => {
-      const toolsField = configurationDetails.at(1);
-      expect(toolsField.props('title')).toBe('Tools');
-      expect(toolsField.text()).toBe('None');
-    });
+    describe('and does not have configurationForGroup', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockAgent,
+              foundational: true,
+              configurationForGroup: null,
+            },
+          },
+        });
+      });
 
-    it('renders "System prompt"', () => {
-      expect(configurationDetails.at(2).props()).toMatchObject({
-        title: 'System prompt',
+      it('renders link to help documentation', () => {
+        const managedByLink = findManagedByField().findComponent(GlLink);
+        expect(managedByLink.attributes('href')).toContain('/help/');
       });
     });
   });
