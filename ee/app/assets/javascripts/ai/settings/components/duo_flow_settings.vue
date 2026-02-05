@@ -2,6 +2,7 @@
 import {
   GlFormCheckbox,
   GlFormGroup,
+  GlFormInput,
   GlIcon,
   GlLink,
   GlSprintf,
@@ -32,11 +33,17 @@ export default {
     foundationalFlowsHelpTextInstance: s__(
       'AiPowered|Allow GitLab Duo agents to execute foundational flows for the instance.',
     ),
+    defaultImageRegistryLabel: s__('DuoAgentPlatform|Image registry'),
+    defaultImageRegistryHelp: s__(
+      'AiPowered|Container registry for foundational flow images. Leave blank to use registry.gitlab.com',
+    ),
+    defaultImageRegistryPlaceholder: s__('AiPowered|registry.gitlab.com'),
   },
   components: {
     CascadingLockIcon,
     GlFormCheckbox,
     GlFormGroup,
+    GlFormInput,
     GlIcon,
     GlLink,
     GlSprintf,
@@ -49,6 +56,7 @@ export default {
   mixins: [glFeatureFlagMixin()],
   inject: [
     'isGroupSettings',
+    'isSaaS',
     'duoRemoteFlowsCascadingSettings',
     'duoFoundationalFlowsCascadingSettings',
   ],
@@ -70,12 +78,18 @@ export default {
       required: false,
       default: () => [],
     },
+    duoWorkflowsDefaultImageRegistry: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
       flowEnabled: this.duoRemoteFlowsAvailability,
       foundationalFlowsEnabled: this.duoFoundationalFlowsAvailability,
       localSelectedFlowIds: this.selectedFoundationalFlowIds,
+      defaultImageRegistry: this.duoWorkflowsDefaultImageRegistry,
     };
   },
   computed: {
@@ -101,6 +115,9 @@ export default {
         this.duoFoundationalFlowsCascadingSettings?.lockedByApplicationSetting
       );
     },
+    shouldShowImageRegistryInput() {
+      return !this.isGroupSettings && !this.isSaaS && this.foundationalFlowsEnabled;
+    },
   },
   methods: {
     checkboxChanged() {
@@ -117,6 +134,9 @@ export default {
     onFlowSelectionChanged(flowIds) {
       this.localSelectedFlowIds = flowIds;
       this.$emit('change-selected-flow-ids', flowIds);
+    },
+    onDefaultImageRegistryChanged() {
+      this.$emit('change-default-image-registry', this.defaultImageRegistry);
     },
   },
   duoFlowHelpPath,
@@ -209,6 +229,25 @@ export default {
         :disabled="disabledCheckbox || !flowEnabled || showCascadingButtonFoundationalFlows"
         @input="onFlowSelectionChanged"
       />
+
+      <div v-if="shouldShowImageRegistryInput" class="gl-mt-5">
+        <label for="duo-workflows-default-image-registry">
+          {{ $options.i18n.defaultImageRegistryLabel }}
+        </label>
+        <gl-form-input
+          id="duo-workflows-default-image-registry"
+          v-model="defaultImageRegistry"
+          name="application_setting[duo_workflows_default_image_registry]"
+          type="text"
+          :placeholder="$options.i18n.defaultImageRegistryPlaceholder"
+          :disabled="disabledCheckbox || !flowEnabled"
+          data-testid="duo-workflows-default-image-registry-input"
+          @input="onDefaultImageRegistryChanged"
+        />
+        <p class="gl-mb-0 gl-mt-2 gl-text-secondary">
+          {{ $options.i18n.defaultImageRegistryHelp }}
+        </p>
+      </div>
     </gl-form-group>
   </div>
 </template>

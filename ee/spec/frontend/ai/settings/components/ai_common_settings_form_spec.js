@@ -32,6 +32,7 @@ describe('AiCommonSettingsForm', () => {
         foundationalAgentsStatuses: mockAgentStatuses,
         duoAgentPlatformEnabled: true,
         initialNamespaceAccessRules: [],
+        duoWorkflowsDefaultImageRegistry: '',
         ...props,
       },
       provide: {
@@ -442,6 +443,48 @@ describe('AiCommonSettingsForm', () => {
         'code_review/v1',
         'bug_triage/v1',
       ]);
+    });
+  });
+
+  describe('duo workflows default image registry integration', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('emits change-default-image-registry event when DuoFlowSettings emits it', async () => {
+      await findDuoFlowSettings().vm.$emit('change-default-image-registry', 'registry.example.com');
+
+      expect(wrapper.emitted('change-default-image-registry')[0]).toEqual(['registry.example.com']);
+    });
+
+    it('updates internal localDefaultImageRegistry data when change-default-image-registry event is received', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoFlowSettings().vm.$emit('change-default-image-registry', 'registry.example.com');
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+
+      await findDuoFlowSettings().vm.$emit('change-default-image-registry', '');
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+    });
+
+    it('enables save button when default image registry changes', async () => {
+      createComponent({ props: { duoWorkflowsDefaultImageRegistry: 'registry.example.com' } });
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoFlowSettings().vm.$emit('change-default-image-registry', 'registry.test.com');
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
+    it('passes duoWorkflowsDefaultImageRegistry prop to DuoFlowSettings', () => {
+      createComponent({ props: { duoWorkflowsDefaultImageRegistry: 'registry.example.com' } });
+
+      expect(findDuoFlowSettings().props('duoWorkflowsDefaultImageRegistry')).toEqual(
+        'registry.example.com',
+      );
     });
   });
 

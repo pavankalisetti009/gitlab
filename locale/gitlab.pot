@@ -7398,6 +7398,9 @@ msgstr ""
 msgid "AiPowered|Contact sales for Duo Enterprise"
 msgstr ""
 
+msgid "AiPowered|Container registry for foundational flow images. Leave blank to use registry.gitlab.com"
+msgstr ""
+
 msgid "AiPowered|Control whether AI-powered features are available."
 msgstr ""
 
@@ -7675,6 +7678,9 @@ msgid "AiPowered|When you turn off composite identity for the Agent Platform, ac
 msgstr ""
 
 msgid "AiPowered|When you turn on composite identity for GitLab Duo Agent Platform, a service account is created."
+msgstr ""
+
+msgid "AiPowered|registry.gitlab.com"
 msgstr ""
 
 msgid "Akismet"
@@ -25963,6 +25969,9 @@ msgid "DuoAgentPlatform|Flow"
 msgstr ""
 
 msgid "DuoAgentPlatform|Foundational GitLab Duo Flows"
+msgstr ""
+
+msgid "DuoAgentPlatform|Image registry"
 msgstr ""
 
 msgid "DuoAgentPlatform|Job ID"

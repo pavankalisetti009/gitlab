@@ -31,6 +31,7 @@ export default {
     'promptCacheEnabled',
     'initialDuoRemoteFlowsAvailability',
     'initialDuoFoundationalFlowsAvailability',
+    'initialDuoWorkflowsDefaultImageRegistry',
     'foundationalAgentsDefaultEnabled',
     'initialFoundationalAgentsStatuses',
     'initialSelectedFoundationalFlowIds',
@@ -54,6 +55,7 @@ export default {
       cacheEnabled: this.promptCacheEnabled,
       duoRemoteFlowsAvailability: this.initialDuoRemoteFlowsAvailability,
       duoFoundationalFlowsAvailability: this.initialDuoFoundationalFlowsAvailability,
+      duoWorkflowsDefaultImageRegistry: this.initialDuoWorkflowsDefaultImageRegistry,
       foundationalAgentsEnabled: this.foundationalAgentsDefaultEnabled,
       selectedFlowIds: this.initialSelectedFoundationalFlowIds || [],
       foundationalAgentsStatuses: this.initialFoundationalAgentsStatuses,
@@ -73,6 +75,7 @@ export default {
         promptCacheEnabled: this.cacheEnabled,
         duoRemoteFlowsAvailability: this.duoRemoteFlowsAvailability,
         duoFoundationalFlowsAvailability: this.duoFoundationalFlowsAvailability,
+        duoWorkflowsDefaultImageRegistry: this.duoWorkflowsDefaultImageRegistry,
         foundationalAgentsEnabled: this.foundationalAgentsEnabled,
         foundationalAgentsStatuses: this.foundationalAgentsStatuses,
         selectedFoundationalFlowIds: this.selectedFlowIds,
@@ -117,6 +120,9 @@ export default {
     onSelectedFlowIdsChanged(flowIds) {
       this.selectedFlowIds = flowIds;
     },
+    onDefaultImageRegistryChanged(value) {
+      this.duoWorkflowsDefaultImageRegistry = value;
+    },
     onNamespaceAccessRulesChanged(rules) {
       this.namespaceAccessRulesChanged = true;
       this.namespaceAccessRules = rules;
@@ -158,6 +164,7 @@ export default {
             :duo-availability="duoAvailability"
             :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
             :duo-foundational-flows-availability="initialDuoFoundationalFlowsAvailability"
+            :duo-workflows-default-image-registry="initialDuoWorkflowsDefaultImageRegistry"
             :selected-foundational-flow-ids="initialSelectedFoundationalFlowIds"
             :experiment-features-enabled="experimentFeaturesEnabled"
             :duo-core-features-enabled="duoCoreFeaturesEnabled"
@@ -177,6 +184,7 @@ export default {
             @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
             @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
             @change-selected-flow-ids="onSelectedFlowIdsChanged"
+            @change-default-image-registry="onDefaultImageRegistryChanged"
           >
             <template #ai-common-settings-top>
               <slot name="ai-common-settings-top"></slot>
@@ -204,6 +212,7 @@ export default {
         :duo-availability="duoAvailability"
         :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
         :duo-foundational-flows-availability="initialDuoFoundationalFlowsAvailability"
+        :duo-workflows-default-image-registry="initialDuoWorkflowsDefaultImageRegistry"
         :selected-foundational-flow-ids="initialSelectedFoundationalFlowIds"
         :experiment-features-enabled="experimentFeaturesEnabled"
         :duo-core-features-enabled="duoCoreFeaturesEnabled"
@@ -224,6 +233,7 @@ export default {
         @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
         @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
         @change-selected-flow-ids="onSelectedFlowIdsChanged"
+        @change-default-image-registry="onDefaultImageRegistryChanged"
         @namespace-access-rules-changed="onNamespaceAccessRulesChanged"
         @minimum-access-level-execute-async-changed="onMinimumAccessLevelExecuteAsyncChanged"
         @minimum-access-level-execute-sync-changed="onMinimumAccessLevelExecuteSyncChanged"

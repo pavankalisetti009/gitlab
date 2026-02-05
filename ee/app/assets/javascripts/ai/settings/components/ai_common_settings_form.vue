@@ -93,6 +93,11 @@ export default {
       required: false,
       default: () => [],
     },
+    duoWorkflowsDefaultImageRegistry: {
+      type: String,
+      required: false,
+      default: '',
+    },
     initialNamespaceAccessRules: {
       type: Array,
       required: false,
@@ -112,6 +117,7 @@ export default {
       duoAgentPlatformEnabledInput: this.duoAgentPlatformEnabled,
       hasFoundationalAgentsStatusesChanged: false,
       localSelectedFlowIds: this.selectedFoundationalFlowIds,
+      localDefaultImageRegistry: this.duoWorkflowsDefaultImageRegistry,
       namespaceAccessRules: this.initialNamespaceAccessRules,
       minimumAccessLevelExecuteAsync: this.initialMinimumAccessLevelExecuteAsync,
       minimumAccessLevelExecuteSync: this.initialMinimumAccessLevelExecuteSync,
@@ -176,6 +182,9 @@ export default {
         this.hasMinimumAccessLevelExecuteSyncChanged
       );
     },
+    hasDefaultImageRegistryChanged() {
+      return this.localDefaultImageRegistry !== this.duoWorkflowsDefaultImageRegistry;
+    },
     hasFormChanged() {
       return (
         this.hasAvailabilityChanged ||
@@ -188,6 +197,7 @@ export default {
         this.hasFoundationalAgentsEnabledChanged ||
         this.hasFoundationalAgentsStatusesChanged ||
         this.hasSelectedFlowIdsChanged ||
+        this.hasDefaultImageRegistryChanged ||
         this.hasDuoAgentPlatformEnabledChanged ||
         this.hasNamespaceAccessRulesChanged ||
         this.hasMinimumAccessLevelExecuteChanged
@@ -279,6 +289,10 @@ export default {
       this.localSelectedFlowIds = flowIds;
       this.$emit('change-selected-flow-ids', flowIds);
     },
+    onDefaultImageRegistryChanged(value) {
+      this.localDefaultImageRegistry = value;
+      this.$emit('change-default-image-registry', value);
+    },
     onDuoAgentPlatformEnabledChanged(value) {
       this.duoAgentPlatformEnabledInput = value;
       this.$emit('duo-agent-platform-enabled-changed', value);
@@ -322,11 +336,13 @@ export default {
       <duo-flow-settings
         :duo-remote-flows-availability="duoRemoteFlowsAvailability"
         :duo-foundational-flows-availability="duoFoundationalFlowsAvailability"
+        :duo-workflows-default-image-registry="duoWorkflowsDefaultImageRegistry"
         :disabled-checkbox="disableConfigCheckboxes"
         :selected-foundational-flow-ids="localSelectedFlowIds"
         @change="onFlowCheckboxChanged"
         @change-foundational-flows="onFoundationalFlowsCheckboxChanged"
         @change-selected-flow-ids="onSelectedFlowIdsChanged"
+        @change-default-image-registry="onDefaultImageRegistryChanged"
       />
       <duo-foundational-agents-settings
         v-if="showFoundationalAgentsAvailability"
