@@ -21,7 +21,7 @@ export default {
       default: true,
     },
   },
-  emits: ['changed'],
+  emits: ['changed', 'remove'],
   methods: {
     handleChanged(value) {
       this.$emit('changed', value);
@@ -36,5 +36,6 @@ export default {
     :visible="visible"
     :title="$options.i18n.title"
     @changed="handleChanged"
+    @remove="$emit('remove')"
   />
 </template>

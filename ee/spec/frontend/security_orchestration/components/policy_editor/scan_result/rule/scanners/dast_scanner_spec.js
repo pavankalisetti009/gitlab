@@ -53,4 +53,14 @@ describe('DastScanner', () => {
       expect(wrapper.emitted('changed')[0][0]).toEqual(payload);
     });
   });
+
+  describe('remove scanner', () => {
+    it('emits remove event when BaseSeverityStatusScanner emits remove', () => {
+      createComponent();
+
+      findBaseSeverityStatusScanner().vm.$emit('remove');
+
+      expect(wrapper.emitted('remove')).toHaveLength(1);
+    });
+  });
 });

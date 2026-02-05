@@ -62,7 +62,7 @@ export default {
       default: true,
     },
   },
-  emits: ['changed'],
+  emits: ['changed', 'remove'],
   data() {
     return {
       localVisible: this.visible,
@@ -197,7 +197,13 @@ export default {
 
 <template>
   <div>
-    <scanner-header :title="$options.i18n.title" :visible="localVisible" @toggle="toggleCollapse" />
+    <scanner-header
+      :title="$options.i18n.title"
+      :visible="localVisible"
+      show-remove-button
+      @toggle="toggleCollapse"
+      @remove="$emit('remove')"
+    />
 
     <gl-collapse v-model="localVisible">
       <branch-rule-section

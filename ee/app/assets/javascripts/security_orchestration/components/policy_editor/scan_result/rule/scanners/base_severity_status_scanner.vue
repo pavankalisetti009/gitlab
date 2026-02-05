@@ -59,7 +59,7 @@ export default {
       required: true,
     },
   },
-  emits: ['changed'],
+  emits: ['changed', 'remove'],
   data() {
     const filters = buildFiltersFromRule(this.scanner);
 
@@ -166,7 +166,13 @@ export default {
 
 <template>
   <div>
-    <scanner-header :title="title" :visible="localVisible" @toggle="toggleCollapse" />
+    <scanner-header
+      :title="title"
+      :visible="localVisible"
+      show-remove-button
+      @toggle="toggleCollapse"
+      @remove="$emit('remove')"
+    />
 
     <gl-collapse v-model="localVisible">
       <branch-rule-section
