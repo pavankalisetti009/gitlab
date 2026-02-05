@@ -35,6 +35,7 @@ module EE
           params do
             requires :name, type: String, desc: 'The board name'
           end
+          route_setting :authorization, permissions: :create_issue_board, boundary_type: :group
           post '/' do
             authorize!(:admin_issue_board, board_parent)
 
@@ -46,6 +47,7 @@ module EE
             success ::API::Entities::Board
             tags ['boards']
           end
+          route_setting :authorization, permissions: :delete_issue_board, boundary_type: :group
           delete '/:board_id' do
             authorize!(:admin_issue_board, board_parent)
 
