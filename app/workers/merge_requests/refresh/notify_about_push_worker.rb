@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
+# rubocop:disable Scalability/IdempotentWorker -- Sends an email
 module MergeRequests
   module Refresh
     class NotifyAboutPushWorker
       include ApplicationWorker
 
-      idempotent!
       deduplicate :until_executed
       feature_category :code_review_workflow
       urgency :low
@@ -36,3 +36,4 @@ module MergeRequests
     end
   end
 end
+# rubocop:enable Scalability/IdempotentWorker

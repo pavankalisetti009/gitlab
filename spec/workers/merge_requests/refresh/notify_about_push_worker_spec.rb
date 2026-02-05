@@ -120,8 +120,8 @@ RSpec.describe MergeRequests::Refresh::NotifyAboutPushWorker, feature_category: 
     end
 
     describe 'idempotency' do
-      it 'is idempotent' do
-        expect(described_class).to be_idempotent
+      it 'is not idempotent' do
+        expect(described_class).not_to be_idempotent
       end
     end
   end

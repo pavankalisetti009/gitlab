@@ -4703,7 +4703,7 @@
   :urgency: :low
   :resource_boundary: :unknown
   :weight: 1
-  :idempotent: true
+  :idempotent: false
   :tags: []
   :queue_namespace:
 - :name: merge_requests_refresh_pipeline
