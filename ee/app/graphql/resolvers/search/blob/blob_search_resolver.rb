@@ -95,8 +95,10 @@ module Resolvers
               search_level: @search_service.level,
               search_scope: @search_service.scope
             )
-
-            raise Gitlab::Graphql::Errors::BaseError, @search_results.error
+            raise Gitlab::Graphql::Errors::BaseError.new(
+              @search_results.error,
+              extensions: { error_type: @search_results.error_type&.name&.demodulize }
+            )
           end
 
           Gitlab::Metrics::GlobalSearchSlis.record_apdex(

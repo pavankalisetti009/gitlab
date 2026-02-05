@@ -140,22 +140,70 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
     end
 
     context 'when the search results fail' do
-      it 'increments the custom search sli error rate with error true' do
-        results_double = instance_double(Search::Zoekt::SearchResults, blobs_count: 0,
-          failed?: true, error: 'hello error')
-        service_double = instance_double(SearchService, level: 'group', scope: 'blobs', search_type: 'zoekt',
-          search_results: results_double, search_objects: [])
+      context 'when the error_type is not present' do
+        it 'increments the custom search sli error rate with error true and set error_type as nil' do
+          results_double = instance_double(
+            Search::Zoekt::SearchResults,
+            blobs_count: 0,
+            failed?: true,
+            error: 'hello error',
+            error_type: nil
+          )
+          service_double = instance_double(
+            SearchService,
+            level: 'group',
+            scope: 'blobs',
+            search_type: 'zoekt',
+            search_results: results_double,
+            search_objects: []
+          )
 
-        allow(SearchService).to receive(:new).and_return(service_double)
+          allow(SearchService).to receive(:new).and_return(service_double)
 
-        expect(Gitlab::Metrics::GlobalSearchSlis).to receive(:record_error_rate).with(
-          error: true,
-          search_scope: 'blobs',
-          search_type: 'zoekt',
-          search_level: 'group'
-        )
+          expect(Gitlab::Metrics::GlobalSearchSlis).to receive(:record_error_rate).with(
+            error: true,
+            search_scope: 'blobs',
+            search_type: 'zoekt',
+            search_level: 'group'
+          )
 
-        post_graphql(query, current_user: current_user)
+          post_graphql(query, current_user: current_user)
+
+          expect(graphql_errors[0]['extensions']['error_type']).to be_nil
+        end
+      end
+
+      context 'when the error_type is present' do
+        it 'increments the custom search sli error rate with error true and set error_type as ClientConnectionError' do
+          results_double = instance_double(
+            Search::Zoekt::SearchResults,
+            blobs_count: 0,
+            failed?: true,
+            error: 'hello error',
+            error_type: Search::Zoekt::Errors::ClientConnectionError
+          )
+          service_double = instance_double(
+            SearchService,
+            level: 'group',
+            scope: 'blobs',
+            search_type: 'zoekt',
+            search_results: results_double,
+            search_objects: []
+          )
+
+          allow(SearchService).to receive(:new).and_return(service_double)
+
+          expect(Gitlab::Metrics::GlobalSearchSlis).to receive(:record_error_rate).with(
+            error: true,
+            search_scope: 'blobs',
+            search_type: 'zoekt',
+            search_level: 'group'
+          )
+
+          post_graphql(query, current_user: current_user)
+
+          expect(graphql_errors[0]['extensions']['error_type']).to eq('ClientConnectionError')
+        end
       end
     end
 

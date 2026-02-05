@@ -546,6 +546,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
 
           expect(blobs_count).to eq 0
           expect(results.error).to eq(client_error.message)
+          expect(results.error_type).to eq(Search::Zoekt::Errors::ClientConnectionError)
         end
       end
 
