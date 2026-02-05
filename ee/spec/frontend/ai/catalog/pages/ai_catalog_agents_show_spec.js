@@ -53,12 +53,14 @@ describe('AiCatalogAgentsShow', () => {
     show: jest.fn(),
   };
 
+  const mockAgentWithConfigs = {
+    ...mockAgent,
+    configurationForProject: mockAgentConfigurationForProject,
+    configurationForGroup: mockItemConfigurationForGroup,
+  };
+
   const defaultProps = {
-    aiCatalogAgent: {
-      ...mockAgent,
-      configurationForProject: mockAgentConfigurationForProject,
-      configurationForGroup: mockItemConfigurationForGroup,
-    },
+    aiCatalogAgent: mockAgentWithConfigs,
     version: mockVersionProp,
   };
 
@@ -124,34 +126,26 @@ describe('AiCatalogAgentsShow', () => {
   const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
   const findMetadataComponent = () => wrapper.findComponent(AiCatalogItemMetadata);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
-  it('renders item actions', () => {
-    expect(findItemActions().props('item')).toEqual({
-      ...mockAgent,
-      configurationForProject: mockAgentConfigurationForProject,
-      configurationForGroup: mockItemConfigurationForGroup,
+  describe('template', () => {
+    beforeEach(() => {
+      createComponent();
     });
-  });
 
-  it('renders AiCatalogItemMetadata component', () => {
-    createComponent({ props: { aiCatalogAgent: mockAgent } });
-
-    expect(findMetadataComponent().props('item')).toEqual(mockAgent);
-  });
-
-  it('renders item view', () => {
-    expect(findItemView().props('item')).toEqual({
-      ...mockAgent,
-      configurationForProject: mockAgentConfigurationForProject,
-      configurationForGroup: mockItemConfigurationForGroup,
+    it('renders item actions', () => {
+      expect(findItemActions().props('item')).toEqual(mockAgentWithConfigs);
     });
-  });
 
-  it('does not render the version alert by default', () => {
-    expect(findVersionAlert().exists()).toBe(false);
+    it('renders AiCatalogItemMetadata component', () => {
+      expect(findMetadataComponent().props('item')).toEqual(mockAgentWithConfigs);
+    });
+
+    it('renders item view', () => {
+      expect(findItemView().props('item')).toEqual(mockAgentWithConfigs);
+    });
+
+    it('does not render the version alert by default', () => {
+      expect(findVersionAlert().exists()).toBe(false);
+    });
   });
 
   describe('when the agent is configured and has a new version available', () => {
@@ -192,6 +186,9 @@ describe('AiCatalogAgentsShow', () => {
     });
 
     describe('when agent is not foundational', () => {
+      beforeEach(() => {
+        createComponent();
+      });
       it('does not render foundational icon', () => {
         expect(findFoundationalIcon().exists()).toBe(false);
       });
@@ -199,6 +196,9 @@ describe('AiCatalogAgentsShow', () => {
   });
 
   describe('tracking events', () => {
+    beforeEach(() => {
+      createComponent();
+    });
     it(`tracks ${TRACK_EVENT_VIEW_AI_CATALOG_ITEM} event on mount`, () => {
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
       expect(trackEventSpy).toHaveBeenCalledWith(
@@ -212,6 +212,10 @@ describe('AiCatalogAgentsShow', () => {
   describe('on adding agent to project', () => {
     const addAgentToProject = () =>
       findItemActions().vm.$emit('add-to-target', { target: { projectId: '1' } });
+
+    beforeEach(() => {
+      createComponent();
+    });
 
     it('calls create consumer mutation for agent', () => {
       addAgentToProject();
@@ -308,13 +312,61 @@ describe('AiCatalogAgentsShow', () => {
     const forceHardDelete = false;
     const deleteAgent = () => findItemActions().props('deleteFn')(forceHardDelete);
 
-    it('calls delete mutation for agent', () => {
-      deleteAgent();
+    describe('when item type is agent', () => {
+      beforeEach(() => {
+        createComponent();
+      });
 
-      expect(deleteThirdPartyFlowMutationHandler).not.toHaveBeenCalled();
-      expect(deleteAgentMutationHandler).toHaveBeenCalledWith({
-        id: mockAgent.id,
-        forceHardDelete,
+      it('calls delete mutation for agent', () => {
+        deleteAgent();
+
+        expect(deleteThirdPartyFlowMutationHandler).not.toHaveBeenCalled();
+        expect(deleteAgentMutationHandler).toHaveBeenCalledWith({
+          id: mockAgent.id,
+          forceHardDelete,
+        });
+      });
+
+      describe('when request succeeds', () => {
+        it('shows toast', async () => {
+          deleteAgent();
+          await waitForPromises();
+
+          expect(mockToast.show).toHaveBeenCalledWith('Agent hidden.');
+        });
+
+        it('shows toast reading "Agent deleted" when forceHardDelete is true', async () => {
+          const deleteAgentWithHardDelete = () => findItemActions().props('deleteFn')(true);
+          deleteAgentWithHardDelete();
+          await waitForPromises();
+
+          expect(mockToast.show).toHaveBeenCalledWith('Agent deleted.');
+        });
+      });
+
+      describe('when request succeeds but returns errors', () => {
+        it('shows error alert', async () => {
+          deleteAgentMutationHandler.mockResolvedValue(mockCatalogAgentDeleteErrorResponse);
+          deleteAgent();
+          await waitForPromises();
+
+          expect(findErrorsAlert().props('errors')).toEqual([
+            'Failed to delete agent. You do not have permission to delete this AI agent.',
+          ]);
+        });
+      });
+
+      describe('when request fails', () => {
+        it('shows error alert and captures exception', async () => {
+          deleteAgentMutationHandler.mockRejectedValue(new Error('custom error'));
+          deleteAgent();
+          await waitForPromises();
+
+          expect(findErrorsAlert().props('errors')).toEqual([
+            'Failed to delete agent. Error: custom error',
+          ]);
+          expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+        });
       });
     });
 
@@ -337,51 +389,23 @@ describe('AiCatalogAgentsShow', () => {
         });
       });
     });
-
-    describe('when request succeeds', () => {
-      it('shows toast', async () => {
-        deleteAgent();
-        await waitForPromises();
-
-        expect(mockToast.show).toHaveBeenCalledWith('Agent hidden.');
-      });
-
-      it('shows toast reading "Agent deleted" when forceHardDelete is true', async () => {
-        const deleteAgentWithHardDelete = () => findItemActions().props('deleteFn')(true);
-        deleteAgentWithHardDelete();
-        await waitForPromises();
-
-        expect(mockToast.show).toHaveBeenCalledWith('Agent deleted.');
-      });
-    });
-
-    describe('when request succeeds but returns errors', () => {
-      it('shows error alert', async () => {
-        deleteAgentMutationHandler.mockResolvedValue(mockCatalogAgentDeleteErrorResponse);
-        deleteAgent();
-        await waitForPromises();
-
-        expect(findErrorsAlert().props('errors')).toEqual([
-          'Failed to delete agent. You do not have permission to delete this AI agent.',
-        ]);
-      });
-    });
-
-    describe('when request fails', () => {
-      it('shows error alert and captures exception', async () => {
-        deleteAgentMutationHandler.mockRejectedValue(new Error('custom error'));
-        deleteAgent();
-        await waitForPromises();
-
-        expect(findErrorsAlert().props('errors')).toEqual([
-          'Failed to delete agent. Error: custom error',
-        ]);
-        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
-      });
-    });
   });
 
   describe('on disabling an agent', () => {
+    const mockVersionPropWithFn = {
+      ...mockVersionProp,
+      activeVersionKey: VERSION_PINNED,
+      setActiveVersionKey: jest.fn(),
+    };
+
+    beforeEach(() => {
+      createComponent({
+        props: {
+          version: mockVersionPropWithFn,
+        },
+      });
+    });
+
     const disableAgent = () => findItemActions().props('disableFn')();
 
     it('calls disable mutation for agent', () => {
@@ -393,20 +417,6 @@ describe('AiCatalogAgentsShow', () => {
     });
 
     describe('when request succeeds', () => {
-      const mockVersionPropWithFn = {
-        ...mockVersionProp,
-        activeVersionKey: VERSION_PINNED,
-        setActiveVersionKey: jest.fn(),
-      };
-
-      beforeEach(() => {
-        createComponent({
-          props: {
-            version: mockVersionPropWithFn,
-          },
-        });
-      });
-
       it('shows toast', async () => {
         disableAgent();
         await waitForPromises();
@@ -461,6 +471,10 @@ describe('AiCatalogAgentsShow', () => {
     };
 
     const reportAgent = () => findItemActions().vm.$emit('report-item', input);
+
+    beforeEach(() => {
+      createComponent();
+    });
 
     it('sends a report request', () => {
       reportAgent();

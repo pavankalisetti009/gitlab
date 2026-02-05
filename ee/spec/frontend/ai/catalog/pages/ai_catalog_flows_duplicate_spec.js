@@ -73,7 +73,6 @@ describe('AiCatalogFlowsDuplicate', () => {
       ...mockFlowVersion,
       key: VERSION_LATEST,
     });
-    createComponent();
   });
 
   afterEach(() => {
@@ -81,6 +80,10 @@ describe('AiCatalogFlowsDuplicate', () => {
   });
 
   describe('Page Heading', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders page heading with correct title and description', () => {
       expect(findPageHeading().exists()).toBe(true);
       expect(findPageHeading().text()).toContain('Duplicate flow');
@@ -298,6 +301,7 @@ describe('AiCatalogFlowsDuplicate', () => {
     const submitForm = () => findForm().vm.$emit('submit', formValues);
 
     beforeEach(async () => {
+      createComponent();
       await waitForPromises();
     });
 

@@ -49,13 +49,15 @@ describe('AiCatalogFlowsShow', () => {
   let wrapper;
   let mockApollo;
 
+  const mockFlowWithConfigs = {
+    ...mockFlow,
+    configurationForProject: mockFlowConfigurationForProject,
+    configurationForGroup: mockFlowConfigurationForGroup,
+  };
+
   const defaultProps = {
     version: mockVersionProp,
-    aiCatalogFlow: {
-      ...mockFlow,
-      configurationForProject: mockFlowConfigurationForProject,
-      configurationForGroup: mockFlowConfigurationForGroup,
-    },
+    aiCatalogFlow: mockFlowWithConfigs,
   };
 
   const mockFlowQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowResponse);
@@ -122,34 +124,26 @@ describe('AiCatalogFlowsShow', () => {
   const findVersionAlert = () => wrapper.findComponent(VersionAlert);
   const findMetadataComponent = () => wrapper.findComponent(AiCatalogItemMetadata);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
-  it('renders item actions', () => {
-    expect(findItemActions().props('item')).toEqual({
-      ...mockFlow,
-      configurationForProject: mockFlowConfigurationForProject,
-      configurationForGroup: mockFlowConfigurationForGroup,
+  describe('template', () => {
+    beforeEach(() => {
+      createComponent({ props: { aiCatalogFlow: mockFlowWithConfigs } });
     });
-  });
 
-  it('renders AiCatalogItemMetadata component', () => {
-    createComponent({ props: { aiCatalogFlow: mockFlow } });
-
-    expect(findMetadataComponent().props('item')).toEqual(mockFlow);
-  });
-
-  it('renders item view', () => {
-    expect(findItemView().props('item')).toEqual({
-      ...mockFlow,
-      configurationForProject: mockFlowConfigurationForProject,
-      configurationForGroup: mockFlowConfigurationForGroup,
+    it('renders item actions', () => {
+      expect(findItemActions().props('item')).toEqual(mockFlowWithConfigs);
     });
-  });
 
-  it('does not render the version alert by default', () => {
-    expect(findVersionAlert().exists()).toBe(false);
+    it('renders AiCatalogItemMetadata component', () => {
+      expect(findMetadataComponent().props('item')).toEqual(mockFlowWithConfigs);
+    });
+
+    it('renders item view', () => {
+      expect(findItemView().props('item')).toEqual(mockFlowWithConfigs);
+    });
+
+    it('does not render the version alert by default', () => {
+      expect(findVersionAlert().exists()).toBe(false);
+    });
   });
 
   describe('when the flow is configured and has a new version available', () => {
@@ -168,6 +162,10 @@ describe('AiCatalogFlowsShow', () => {
   });
 
   describe('Page Heading', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders page heading with correct title and description', () => {
       expect(findPageHeading().exists()).toBe(true);
       expect(findPageHeading().text()).toContain(mockFlow.name);
@@ -211,6 +209,9 @@ describe('AiCatalogFlowsShow', () => {
     });
 
     describe('when flow is not foundational', () => {
+      beforeEach(() => {
+        createComponent();
+      });
       it('does not render foundational icon', () => {
         expect(findFoundationalIcon().exists()).toBe(false);
       });
@@ -218,6 +219,10 @@ describe('AiCatalogFlowsShow', () => {
   });
 
   describe('tracking events', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it(`tracks ${TRACK_EVENT_VIEW_AI_CATALOG_ITEM} event on mount`, () => {
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
       expect(trackEventSpy).toHaveBeenCalledWith(
@@ -235,6 +240,10 @@ describe('AiCatalogFlowsShow', () => {
         target: { projectId: '1' },
         triggerTypes: ['mention', 'assign', 'assign_reviewer'],
       });
+
+    beforeEach(() => {
+      createComponent();
+    });
 
     it('calls create consumer mutation for flow', () => {
       addFlowToProject();
@@ -332,6 +341,10 @@ describe('AiCatalogFlowsShow', () => {
     const forceHardDelete = false;
     const deleteFlow = () => findItemActions().props('deleteFn')(forceHardDelete);
 
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('calls delete mutation for flow', () => {
       deleteFlow();
 
@@ -386,6 +399,20 @@ describe('AiCatalogFlowsShow', () => {
   describe('on disabling a flow', () => {
     const disableFlow = () => findItemActions().props('disableFn')();
 
+    const mockVersionPropWithFn = {
+      ...mockVersionProp,
+      activeVersionKey: VERSION_PINNED,
+      setActiveVersionKey: jest.fn(),
+    };
+
+    beforeEach(() => {
+      createComponent({
+        props: {
+          version: mockVersionPropWithFn,
+        },
+      });
+    });
+
     it('calls disable mutation for flow', () => {
       disableFlow();
 
@@ -395,20 +422,6 @@ describe('AiCatalogFlowsShow', () => {
     });
 
     describe('when request succeeds', () => {
-      const mockVersionPropWithFn = {
-        ...mockVersionProp,
-        activeVersionKey: VERSION_PINNED,
-        setActiveVersionKey: jest.fn(),
-      };
-
-      beforeEach(() => {
-        createComponent({
-          props: {
-            version: mockVersionPropWithFn,
-          },
-        });
-      });
-
       it('shows toast', async () => {
         disableFlow();
         await waitForPromises();
@@ -463,6 +476,10 @@ describe('AiCatalogFlowsShow', () => {
     };
 
     const reportFlow = () => findItemActions().vm.$emit('report-item', input);
+
+    beforeEach(() => {
+      createComponent();
+    });
 
     it('sends a report request', () => {
       reportFlow();
