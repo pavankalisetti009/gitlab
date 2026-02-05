@@ -43193,6 +43193,7 @@ Project-level settings for product analytics provider.
 | <a id="projectvulnerabilityimages"></a>`vulnerabilityImages` | [`VulnerabilityContainerImageConnection`](#vulnerabilitycontainerimageconnection) | Container images reported on the project vulnerabilities. (see [Connections](#connections)) |
 | <a id="projectvulnerabilityscanners"></a>`vulnerabilityScanners` | [`VulnerabilityScannerConnection`](#vulnerabilityscannerconnection) | Vulnerability scanners reported on the project vulnerabilities. (see [Connections](#connections)) |
 | <a id="projectvulnerabilitystatistic"></a>`vulnerabilityStatistic` | [`VulnerabilityStatisticType`](#vulnerabilitystatistictype) | Counts for each vulnerability severity in the project. |
+| <a id="projectwebbasedcommitsigningenabled"></a>`webBasedCommitSigningEnabled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.9. **Status**: Experiment. Indicates whether web-based commit signing is enabled for the project. |
 | <a id="projectwebpath"></a>`webPath` | [`String!`](#string) | Web path of the project. |
 | <a id="projectweburl"></a>`webUrl` | [`String`](#string) | Web URL of the project. |
 | <a id="projectwikienabled"></a>`wikiEnabled` | [`Boolean`](#boolean) | Indicates if Wikis are enabled for the current user. |

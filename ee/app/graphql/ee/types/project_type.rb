@@ -730,6 +730,12 @@ module EE
           description: 'Refs tracked for security vulnerabilities.',
           resolver: ::Resolvers::Security::TrackedRefsResolver,
           experiment: { milestone: '18.8' }
+
+        field :web_based_commit_signing_enabled,
+          GraphQL::Types::Boolean,
+          null: false,
+          description: 'Indicates whether web-based commit signing is enabled for the project.',
+          experiment: { milestone: '18.9' }
       end
 
       def tracking_key
