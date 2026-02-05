@@ -58960,9 +58960,6 @@ msgstr ""
 msgid "Save password"
 msgstr ""
 
-msgid "Saved view limit exceeded."
-msgstr ""
-
 msgid "Saved views are not enabled for this namespace."
 msgstr ""
 
@@ -67093,6 +67090,9 @@ msgid "Subscribe to releases RSS feed"
 msgstr ""
 
 msgid "Subscribed"
+msgstr ""
+
+msgid "Subscribed saved view limit exceeded."
 msgstr ""
 
 msgid "Subscribed to notifications."
