@@ -1,0 +1,14 @@
+# @feature_category: source_code_management
+query getWebBasedCommitSigning($fullPath: ID!, $isGroupLevel: Boolean = false) {
+  group(fullPath: $fullPath) @include(if: $isGroupLevel) {
+    id
+    webBasedCommitSigningEnabled
+  }
+  project(fullPath: $fullPath) @skip(if: $isGroupLevel) {
+    id
+    group {
+      id
+      webBasedCommitSigningEnabled
+    }
+  }
+}

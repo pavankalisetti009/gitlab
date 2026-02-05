@@ -4,7 +4,7 @@ import ProtectedBranchEditList from 'ee/protected_branches/protected_branch_edit
 import initDatePicker from '~/behaviors/date_picker';
 import initDeployKeys from '~/deploy_keys';
 import fileUpload from '~/lib/utils/file_upload';
-import { initWebBasedCommitSigningProjectSettings } from '~/projects/settings/init_web_based_commit_signing_settings';
+import { initWebBasedCommitSigningProjectSettings } from 'ee/projects/settings/init_web_based_commit_signing_settings';
 import ProtectedBranchCreate from '~/protected_branches/protected_branch_create';
 import CEProtectedBranchEditList from '~/protected_branches/protected_branch_edit_list';
 import ProtectedTagCreate from '~/protected_tags/protected_tag_create';

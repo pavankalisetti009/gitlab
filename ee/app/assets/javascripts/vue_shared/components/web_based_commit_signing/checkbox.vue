@@ -1,6 +1,8 @@
 <script>
 import { GlFormCheckbox, GlAlert } from '@gitlab/ui';
+import { captureException } from '~/sentry/sentry_browser_wrapper';
 import GroupInheritancePopover from '~/vue_shared/components/settings/group_inheritance_popover.vue';
+import getWebBasedCommitSigningQuery from 'ee/graphql_shared/queries/web_based_commit_signing.query.graphql';
 import { __ } from '~/locale';
 
 export default {
@@ -10,11 +12,34 @@ export default {
     GlAlert,
     GroupInheritancePopover,
   },
-  props: {
-    initialValue: {
-      type: Boolean,
-      required: true,
+  apollo: {
+    webBasedCommitSigningEnabled: {
+      query: getWebBasedCommitSigningQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+          isGroupLevel: this.isGroupLevel,
+        };
+      },
+      update(data) {
+        if (this.isGroupLevel) {
+          return data.group?.webBasedCommitSigningEnabled ?? false;
+        }
+        // TODO: Once projectSettings field is added to Project type, uncomment the line below
+        // const projectSetting = data.project?.projectSettings?.webBasedCommitSigningEnabled ?? false;
+        // For now, only use the group setting for projects (inheritance only)
+        return data.project?.group?.webBasedCommitSigningEnabled ?? false;
+      },
+      skip() {
+        return !this.fullPath;
+      },
+      error(error) {
+        this.errorMessage = __('An error occurred while updating the settings.');
+        captureException({ error, component: this.$options.name });
+      },
     },
+  },
+  props: {
     hasGroupPermissions: {
       type: Boolean,
       required: true,
@@ -28,12 +53,6 @@ export default {
       required: false,
       default: false,
     },
-    groupWebBasedCommitSigningEnabled: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    // eslint-disable-next-line vue/no-unused-properties
     fullPath: {
       type: String,
       required: true,
@@ -41,19 +60,21 @@ export default {
   },
   data() {
     return {
-      isChecked: this.initialValue,
+      webBasedCommitSigningEnabled: false,
       isSaving: false,
       errorMessage: '',
     };
   },
   computed: {
     isDisabled() {
-      return this.isSaving || (!this.isGroupLevel && this.groupWebBasedCommitSigningEnabled);
+      // temporarily read-only inherited value for the project-level
+      return this.isSaving || !this.isGroupLevel;
     },
   },
   methods: {
     async handleChange(value) {
-      this.isChecked = value;
+      // const previousValue = this.webBasedCommitSigningEnabled;
+      this.webBasedCommitSigningEnabled = value;
       this.errorMessage = '';
       this.isSaving = true;
 
@@ -72,7 +93,7 @@ export default {
       //   });
       // } catch (error) {
       //   this.errorMessage = error.message || __('An error occurred while updating the setting.');
-      //   this.isChecked = !value;
+      //   this.webBasedCommitSigningEnabled = previousValue;
       // } finally {
       //   this.isSaving = false;
       // }
@@ -96,7 +117,8 @@ export default {
 
     <gl-form-checkbox
       id="web-based-commit-signing-checkbox"
-      :checked="isChecked"
+      data-testid="web-based-commit-signing-checkbox"
+      :checked="webBasedCommitSigningEnabled"
       :disabled="isDisabled"
       @change="handleChange"
       ><span class="gl-inline-flex">
