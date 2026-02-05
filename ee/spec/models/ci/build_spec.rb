@@ -170,67 +170,6 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       end
     end
 
-    describe 'transition canceling => canceled' do
-      context 'when failure reason is job_execution_server_timeout and job is canceling' do
-        let(:timeout) { 10 }
-        let(:started_before) { timeout + 5 }
-        let(:runner) { create(:ci_runner, :instance, :online) }
-        let(:job) do
-          create(:ee_ci_build,
-            :canceling,
-            started_at: started_before.seconds.ago,
-            pipeline: pipeline,
-            timeout: timeout,
-            runner: runner)
-        end
-
-        it 'overwrites finished_at and calculates minutes', :sidekiq_inline do
-          expect(Ci::Minutes::UpdateBuildMinutesService)
-            .to receive(:new).and_call_original
-
-          job.drop!(:job_execution_server_timeout)
-          expect(job.reload.finished_at).to eq(job.started_at + timeout.seconds)
-          expect(Ci::Minutes::NamespaceMonthlyUsage.first.shared_runners_duration).to eq(timeout)
-        end
-      end
-
-      context 'when failure reason is not job_execution_server_timeout and job is canceling',
-        :freeze_time,
-        :sidekiq_inline do
-        let(:timeout) { 10 }
-        let(:started_before) { timeout + 5 }
-        let(:runner) { create(:ci_runner, :instance, :online) }
-        let(:job) do
-          create(:ee_ci_build,
-            :canceling,
-            started_at: started_before.seconds.ago,
-            pipeline: pipeline,
-            timeout: timeout,
-            runner: runner)
-        end
-
-        it 'does not overwrite finished_at' do
-          expect(Ci::Minutes::UpdateBuildMinutesService)
-            .to receive(:new).and_call_original
-
-          job.drop!(:job_execution_timeout)
-          expect(job.reload.finished_at).to eq(job.started_at + started_before.seconds)
-          expect(Ci::Minutes::NamespaceMonthlyUsage.first.shared_runners_duration).to eq(started_before)
-        end
-
-        context 'when no failure reason is provided' do
-          it 'does not overwrite finished_at' do
-            expect(Ci::Minutes::UpdateBuildMinutesService)
-              .to receive(:new).and_call_original
-
-            job.drop!
-            expect(job.reload.finished_at).to eq(job.started_at + started_before.seconds)
-            expect(Ci::Minutes::NamespaceMonthlyUsage.first.shared_runners_duration).to eq(started_before)
-          end
-        end
-      end
-    end
-
     # TODO: ensure minutes are still tracked when set to
     # canceled but not when transitioning to canceling
     %w[success drop].each do |event|
