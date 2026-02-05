@@ -52,6 +52,16 @@ RSpec.describe API::VirtualRegistries::Container::Cache::Entries, :aggregate_fai
 
     it { is_expected.to have_request_urgency(:low) }
 
+    it_behaves_like 'successful response'
+
+    it_behaves_like "authorizing granular token permissions",
+      :read_container_virtual_registry_upstream_cache_entry do
+      let(:boundary_object) { group }
+      let(:request) do
+        get api(url, personal_access_token: pat)
+      end
+    end
+
     context 'with invalid upstream' do
       where(:upstream_id, :status) do
         non_existing_record_id | :not_found
@@ -132,6 +142,20 @@ RSpec.describe API::VirtualRegistries::Container::Cache::Entries, :aggregate_fai
           it_behaves_like 'successful response'
         else
           it_behaves_like 'returning response status', params[:status]
+        end
+      end
+
+      context 'with maintainer role' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        it_behaves_like "authorizing granular token permissions",
+          :delete_container_virtual_registry_upstream_cache_entry do
+          let(:boundary_object) { group }
+          let(:request) do
+            delete api(url, personal_access_token: pat)
+          end
         end
       end
     end

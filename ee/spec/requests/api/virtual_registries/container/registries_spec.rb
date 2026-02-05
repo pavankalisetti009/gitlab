@@ -25,6 +25,13 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
 
     context 'with valid group_id' do
       it_behaves_like 'successful response'
+
+      it_behaves_like "authorizing granular token permissions", :read_container_virtual_registry do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
 
     context 'with invalid group_id' do
@@ -94,6 +101,13 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
         end
 
         it_behaves_like 'successful response'
+
+        it_behaves_like "authorizing granular token permissions", :create_container_virtual_registry do
+          let(:boundary_object) { group }
+          let(:request) do
+            post api(url, personal_access_token: pat), params: params
+          end
+        end
       end
 
       it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created do
@@ -183,6 +197,13 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
 
     context 'with valid registry_id' do
       it_behaves_like 'successful response'
+
+      it_behaves_like "authorizing granular token permissions", :read_container_virtual_registry do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(url, personal_access_token: pat)
+        end
+      end
     end
 
     context 'with invalid registry_id' do
@@ -205,12 +226,11 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
 
   describe 'PATCH /api/v4/virtual_registries/container/registries/:id' do
     let(:url) { "/virtual_registries/container/registries/#{registry.id}" }
+    let(:params) { { name: 'foo', description: 'description' } }
 
     subject(:api_request) { patch api(url), params:, headers: }
 
     context 'with valid params' do
-      let(:params) { { name: 'foo', description: 'description' } }
-
       it { is_expected.to have_request_urgency(:low) }
 
       it_behaves_like 'virtual registry not available', :container
@@ -231,9 +251,10 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
         it_behaves_like 'returning response status', params[:status]
       end
 
-      it_behaves_like 'an authenticated virtual registry REST API' do
-        before_all do
-          group.add_maintainer(user)
+      it_behaves_like "authorizing granular token permissions", :update_container_virtual_registry do
+        let(:boundary_object) { group }
+        let(:request) do
+          patch api(url, personal_access_token: pat), params: params
         end
       end
     end
@@ -294,6 +315,13 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
           it_behaves_like 'successful response'
         else
           it_behaves_like 'returning response status', params[:status]
+        end
+      end
+
+      it_behaves_like "authorizing granular token permissions", :delete_container_virtual_registry do
+        let(:boundary_object) { group }
+        let(:request) do
+          delete api(url, personal_access_token: pat)
         end
       end
     end
@@ -360,6 +388,13 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
           it_behaves_like 'successful response'
         else
           it_behaves_like 'returning response status', params[:status]
+        end
+      end
+
+      it_behaves_like "authorizing granular token permissions", :purge_container_virtual_registry_cache do
+        let(:boundary_object) { group }
+        let(:request) do
+          delete api(url, personal_access_token: pat)
         end
       end
     end

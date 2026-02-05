@@ -53,6 +53,19 @@ RSpec.describe API::VirtualRegistries::Container::RegistryUpstreams, :aggregate_
       it_behaves_like params[:expected_behavior]
     end
 
+    context 'with maintainer role' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      it_behaves_like "authorizing granular token permissions", :associate_container_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api(url, personal_access_token: pat), params: params
+        end
+      end
+    end
+
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created do
       before_all do
         group.add_maintainer(user)
@@ -123,10 +136,19 @@ RSpec.describe API::VirtualRegistries::Container::RegistryUpstreams, :aggregate_
         it_behaves_like 'returning response status', params[:status]
       end
 
-      it_behaves_like 'an authenticated virtual registry REST API' do
+      context 'with maintainer role' do
         before_all do
           group.add_maintainer(user)
         end
+
+        it_behaves_like "authorizing granular token permissions", :update_container_virtual_registry_upstream do
+          let(:boundary_object) { group }
+          let(:request) do
+            patch api(url, personal_access_token: pat), params: params
+          end
+        end
+
+        it_behaves_like 'an authenticated virtual registry REST API'
       end
     end
 
@@ -179,6 +201,19 @@ RSpec.describe API::VirtualRegistries::Container::RegistryUpstreams, :aggregate_
       end
 
       it_behaves_like params[:expected_behavior]
+    end
+
+    context 'with maintainer role' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      it_behaves_like "authorizing granular token permissions", :disassociate_container_virtual_registry_upstream do
+        let(:boundary_object) { group }
+        let(:request) do
+          delete api(url, personal_access_token: pat)
+        end
+      end
     end
 
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
