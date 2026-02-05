@@ -39,7 +39,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :groups_and_proj
       compliance_standards_adherence target_branch_rules duo_workflow_status_check component_usages
       vulnerability_archives component_versions vulnerability_statistic analyzer_statuses
       compliance_requirement_statuses duo_agentic_chat_available container_scanning_for_registry_enabled duo_workflow_workflows
-      duo_workflow_events security_metrics ai_catalog_item security_scan_profiles security_tracked_refs
+      duo_workflow_events security_metrics ai_catalog_item security_scan_profiles security_tracked_refs web_based_commit_signing_enabled
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
