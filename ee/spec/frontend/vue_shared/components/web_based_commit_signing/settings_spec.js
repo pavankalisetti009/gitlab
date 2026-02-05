@@ -1,6 +1,6 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import WebBasedCommitSigningSettings from '~/vue_shared/components/web_based_commit_signing/settings.vue';
-import WebBasedCommitSigningCheckbox from '~/vue_shared/components/web_based_commit_signing/checkbox.vue';
+import WebBasedCommitSigningSettings from 'ee/vue_shared/components/web_based_commit_signing/settings.vue';
+import WebBasedCommitSigningCheckbox from 'ee/vue_shared/components/web_based_commit_signing/checkbox.vue';
 
 describe('WebBasedCommitSigningSettings', () => {
   let wrapper;
@@ -44,7 +44,6 @@ describe('WebBasedCommitSigningSettings', () => {
         createComponent({ initialValue: true, isGroupLevel: true });
 
         expect(findCheckbox().props()).toMatchObject({
-          initialValue: true,
           hasGroupPermissions: true,
           groupSettingsRepositoryPath: defaultProvide.groupSettingsRepositoryPath,
           isGroupLevel: true,
@@ -56,18 +55,14 @@ describe('WebBasedCommitSigningSettings', () => {
     describe('project level', () => {
       it('passes correct props to WebBasedCommitSigningCheckbox', () => {
         createComponent({
-          initialValue: true,
           canAdminGroup: true,
-          groupWebBasedCommitSigningEnabled: false,
           isGroupLevel: false,
         });
 
         expect(findCheckbox().props()).toMatchObject({
-          initialValue: true,
           hasGroupPermissions: true,
           groupSettingsRepositoryPath: defaultProvide.groupSettingsRepositoryPath,
           isGroupLevel: false,
-          groupWebBasedCommitSigningEnabled: false,
           fullPath: defaultProvide.fullPath,
         });
       });

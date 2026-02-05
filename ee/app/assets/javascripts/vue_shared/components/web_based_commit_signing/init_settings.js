@@ -18,16 +18,8 @@ export const initWebBasedCommitSigningSettings = (el, dataset, isGroupLevel) => 
   };
 
   const props = {
-    initialValue: parseBoolean(dataset.webBasedCommitSigningEnabled),
     canAdminGroup: parseBoolean(dataset.canAdminGroup),
     isGroupLevel,
-    ...(isGroupLevel
-      ? {}
-      : {
-          groupWebBasedCommitSigningEnabled: parseBoolean(
-            dataset.groupWebBasedCommitSigningEnabled,
-          ),
-        }),
   };
 
   return new Vue({
