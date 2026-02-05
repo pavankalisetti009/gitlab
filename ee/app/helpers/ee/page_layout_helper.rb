@@ -79,7 +79,11 @@ module EE
     def agentic_unavailable_message(user, container, is_agentic_available)
       return if is_agentic_available
 
-      response = user.allowed_to_use(:duo_chat)
+      response = user.allowed_to_use(
+        :agentic_chat,
+        unit_primitive_name: :duo_chat,
+        root_namespace: container&.root_ancestor
+      )
 
       return unless response.allowed? && container.nil? && VALID_DUO_ADD_ONS.include?(response.enablement_type)
 
@@ -97,7 +101,11 @@ module EE
     def force_agentic_mode_for_core_duo_users?(user)
       return false unless ::Feature.enabled?(:no_duo_classic_for_duo_core_users, user)
 
-      response = user.allowed_to_use(:duo_chat)
+      response = user.allowed_to_use(
+        :agentic_chat,
+        unit_primitive_name: :duo_chat
+      )
+
       response.allowed? && response.enablement_type == "duo_core"
     end
 

@@ -44,6 +44,7 @@ module Ai
       generate_commit_message: :duo_classic,
       description_composer: :duo_classic,
       chat: :duo_classic,
+      duo_chat: :duo_classic,
       summarize_new_merge_request: :duo_classic,
       categorize_question: :duo_classic,
       review_merge_request: :duo_classic,

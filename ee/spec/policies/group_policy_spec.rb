@@ -3815,6 +3815,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       context 'when container is a group with AI enabled' do
         include_context 'with duo features enabled and ai chat available for group on SaaS'
 
+        context 'when user is nil' do
+          subject { described_class.new(nil, group) }
+
+          it { expect_disallowed(:access_duo_classic_chat) }
+        end
+
         context 'when user is a member of the group' do
           before do
             group.add_guest(current_user)
@@ -3833,6 +3839,14 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           context 'user can view group' do
             it 'is allowed' do
               is_expected.to be_allowed(:access_duo_classic_chat)
+            end
+
+            context 'when no_duo_classic_for_duo_core_users is disabled' do
+              before do
+                stub_feature_flags(no_duo_classic_for_duo_core_users: false)
+              end
+
+              it { expect_allowed(:access_duo_classic_chat) }
             end
           end
 
@@ -3854,19 +3868,20 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:policy) { :access_duo_classic_chat }
 
       context 'when not on .org or .com' do
-        where(:enabled_for_user, :duo_features_enabled, :cs_matcher) do
-          true  | false | be_disallowed(policy)
-          true  | true  | be_allowed(policy)
-          false | false | be_disallowed(policy)
-          false | true  | be_disallowed(policy)
+        where(:enabled_for_user, :duo_features_enabled, :ai_features_banned, :cs_matcher) do
+          true  | true  | false | be_allowed(policy)
+          true  | true  | false | be_allowed(policy)
+          false | false | false | be_disallowed(policy)
+          false | true  | false | be_disallowed(policy)
+          false | true  | true  | be_disallowed(policy)
         end
 
         with_them do
           before do
             allow(::Gitlab).to receive(:org_or_com?).and_return(false)
             stub_ee_application_setting(duo_features_enabled: duo_features_enabled, lock_duo_features_enabled: true)
-            allow(Ability).to receive(:allowed?).and_call_original
-            allow(Ability).to receive(:allowed?).with(current_user, :access_duo_classic_chat).and_return(enabled_for_user)
+            allow(current_user).to receive(:allowed_to_use?).and_return(enabled_for_user)
+            allow(::Gitlab::CurrentSettings).to receive(:duo_never_on?).and_return(ai_features_banned)
           end
 
           it { is_expected.to cs_matcher }
@@ -3878,7 +3893,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   describe 'access_duo_agentic_chat' do
     shared_examples 'checking for allowed_to_use_for_resource' do
       before do
-        allow(current_user).to receive(:allowed_to_use_for_resource?).with(:duo_chat, resource: group).and_return(allowed_to_use)
+        allow(current_user).to receive(:allowed_to_use_for_resource?).with(:agentic_chat, unit_primitive_name: :duo_chat, resource: group).and_return(allowed_to_use)
       end
 
       context 'when allowed_to_use is true' do
@@ -4005,33 +4020,36 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:policy) { :access_duo_agentic_chat }
 
       context 'when not on .org or .com' do
-        where(:stage_check_passed, :enabled_for_user, :allowed_to_use, :duo_agent_platform_enabled, :duo_features_enabled, :amazon_q_enabled, :cs_matcher) do
-          true  | true  | true  | true  | false | false | be_disallowed(policy)
-          true  | true  | true  | true  | true  | false | be_allowed(policy)
-          true  | true  | false | true  | true  | false | be_disallowed(policy)
+        where(:stage_check_passed, :allowed_to_use, :duo_agent_platform_enabled, :duo_features_enabled, :amazon_q_enabled, :ai_features_banned, :cs_matcher) do
+          true  | true  | true  | true  | false | false | be_allowed(policy)
+          true  | true  | true  | false | false | false | be_disallowed(policy)
           true  | false | true  | true  | false | false | be_disallowed(policy)
-          true  | false | true  | true  | true  | false | be_disallowed(policy)
-          true  | true  | true  | true  | true  | true  | be_disallowed(policy)
+          true  | true  | true  | true  | true  | false | be_disallowed(policy)
+          false | true  | true  | false | false | false | be_disallowed(policy)
           false | true  | true  | true  | false | false | be_disallowed(policy)
-          false | true  | true  | true  | true  | false | be_disallowed(policy)
           false | false | true  | true  | false | false | be_disallowed(policy)
-          false | false | true  | true  | true  | false | be_disallowed(policy)
-          false | true  | true  | false | true  | true  | be_disallowed(policy)
+          false | true  | false | true  | true  | false | be_disallowed(policy)
+          true  | true  | true  | true  | false | true  | be_disallowed(policy)
         end
 
         with_them do
           before do
             allow(::Gitlab).to receive(:org_or_com?).and_return(false)
             stub_ee_application_setting(duo_features_enabled: duo_features_enabled, lock_duo_features_enabled: true)
-            allow(Ability).to receive(:allowed?).and_call_original
-            allow(Ability).to receive(:allowed?).with(current_user, :access_duo_agentic_chat).and_return(enabled_for_user)
-            allow(current_user).to receive(:allowed_to_use_for_resource?).with(:duo_chat, resource: group).and_return(allowed_to_use)
+            allow(current_user).to receive(:allowed_to_use_for_resource?).with(:agentic_chat, unit_primitive_name: :duo_chat, resource: group).and_return(allowed_to_use)
             allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
             allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :agentic_chat).and_return(stage_check_passed)
             allow(::Ai::DuoWorkflow).to receive(:duo_agent_platform_available?).and_return(duo_agent_platform_enabled)
+            allow(::Gitlab::CurrentSettings).to receive(:duo_never_on?).and_return(ai_features_banned)
           end
 
           it { is_expected.to cs_matcher }
+
+          context 'when current user is nil' do
+            let_it_be(:current_user) { nil }
+
+            it { is_expected.to be_disallowed(:access_duo_agentic_chat) }
+          end
         end
       end
 
