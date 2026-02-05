@@ -4,7 +4,7 @@ FactoryBot.define do
   factory :virtual_registries_container_registry, class: 'VirtualRegistries::Container::Registry' do
     group
 
-    name { FFaker::Lorem.word }
+    sequence(:name) { |n| "registry #{n}" }
     description { 'description' }
 
     transient do
