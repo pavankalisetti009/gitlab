@@ -1167,6 +1167,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
           expect_response_contain_exactly(merge_request_locked.id)
         end
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_merge_request do
+        let(:boundary_object) { :user }
+        let(:request) do
+          get api('/merge_requests', personal_access_token: pat), params: { scope: 'all' }
+        end
+      end
     end
   end
 
@@ -1179,6 +1186,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
       allow_public_access_for_enabled_project_features: [:repository, :merge_requests] do
       let(:request) do
         get api(endpoint_path), params: { job_token: target_job.token }
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests", personal_access_token: pat)
       end
     end
 
@@ -1448,6 +1462,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
             merge_request_closed.id, merge_request.id
           )
         end
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request do
+      let(:boundary_object) { group }
+      let(:request) do
+        get api(endpoint_path, personal_access_token: pat)
       end
     end
   end
@@ -1776,6 +1797,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", user)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", personal_access_token: pat)
+      end
+    end
   end
 
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/participants' do
@@ -1786,6 +1814,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
     context 'when merge request author has only guest access' do
       it_behaves_like 'rejects user from accessing merge request info' do
         let(:url) { "/projects/#{project.id}/merge_requests/#{merge_request.iid}/participants" }
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_participant do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/participants", personal_access_token: pat)
       end
     end
   end
@@ -1824,6 +1859,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
     context 'when merge request author has only guest access' do
       it_behaves_like 'rejects user from accessing merge request info' do
         let(:url) { "/projects/#{project.id}/merge_requests/#{merge_request.iid}/reviewers" }
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_reviewer do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/reviewers", personal_access_token: pat)
       end
     end
   end
@@ -1875,6 +1917,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         let(:url) { "/projects/#{project.id}/merge_requests/#{merge_request.iid}/commits" }
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_commit do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/commits", personal_access_token: pat)
+      end
+    end
   end
 
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/:context_commits' do
@@ -1895,6 +1944,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
     it 'returns a 404 when merge_request_iid not found' do
       get api("/projects/#{project.id}/merge_requests/0/context_commits", user)
       expect(response).to have_gitlab_http_status(:not_found)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_context_commit do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/context_commits", personal_access_token: pat)
+      end
     end
   end
 
@@ -1936,6 +1992,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         end
 
         get(api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/changes", user), params: params)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_diff do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/changes", personal_access_token: pat)
       end
     end
 
@@ -2007,13 +2070,6 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         end
       end
     end
-
-    it_behaves_like 'authorizing granular token permissions', :read_merge_request_diff do
-      let(:boundary_object) { project }
-      let(:request) do
-        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/changes", personal_access_token: pat)
-      end
-    end
   end
 
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/diffs' do
@@ -2029,6 +2085,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         title: "Test",
         created_at: base_time
       )
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_diff do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/diffs", personal_access_token: pat)
+      end
     end
 
     it 'returns a 404 when merge_request_iid not found' do
@@ -2091,13 +2154,6 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         end
       end
     end
-
-    it_behaves_like 'authorizing granular token permissions', :read_merge_request_diff do
-      let(:boundary_object) { project }
-      let(:request) do
-        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/diffs", personal_access_token: pat)
-      end
-    end
   end
 
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/raw_diffs' do
@@ -2139,7 +2195,7 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
       expect(response.headers[Gitlab::Workhorse::SEND_DATA_HEADER]).to start_with("git-diff:")
     end
 
-    it_behaves_like 'authorizing granular token permissions', :read_merge_request_diff do
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_raw_diff do
       let(:boundary_object) { project }
       let(:request) do
         get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/raw_diffs", personal_access_token: pat)
@@ -2261,13 +2317,6 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         expect(json_response).to be_a Hash
       end
 
-      it_behaves_like 'authorizing granular token permissions', :create_merge_request_pipeline do
-        let(:boundary_object) { project }
-        let(:request) do
-          post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/pipelines", personal_access_token: pat)
-        end
-      end
-
       context 'when async is requested', :sidekiq_inline do
         let(:request) do
           post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/pipelines", authenticated_user), params: { async: true }
@@ -2279,6 +2328,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
           expect { request }.to change(Ci::Pipeline, :count).by(1)
 
           expect(response).to have_gitlab_http_status(:accepted)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_merge_request_pipeline do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/pipelines", personal_access_token: pat)
         end
       end
     end
@@ -2384,6 +2440,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
           expect(json_response['title']).to eq('Test merge request')
           expect(json_response['assignee']['name']).to eq(user2.name)
           expect(json_response['assignees'].first['name']).to eq(user2.name)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_merge_request do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/merge_requests", personal_access_token: pat), params: params
         end
       end
 
@@ -3219,6 +3282,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/context_commits", reporter), params: params
         expect(response).to have_gitlab_http_status(:forbidden)
       end
+
+      it_behaves_like 'authorizing granular token permissions', :create_merge_request_context_commit do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/context_commits", personal_access_token: pat), params: { commits: [commit.id] }
+        end
+      end
     end
 
     context 'when unauthenticated' do
@@ -3264,6 +3334,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
 
       it_behaves_like '412 response' do
         let(:request) { api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", user) }
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_merge_request do
+      let(:boundary_object) { project }
+      let(:request) do
+        delete api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", personal_access_token: pat)
       end
     end
   end
@@ -3329,6 +3406,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         project.add_reporter(reporter)
         delete api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/context_commits", reporter), params: params
         expect(response).to have_gitlab_http_status(:forbidden)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :delete_merge_request_context_commit do
+        let(:boundary_object) { project }
+        let(:request) do
+          delete api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/context_commits", personal_access_token: pat), params: { commits: [commit.id] }
+        end
       end
     end
 
@@ -3399,6 +3483,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         put api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/merge", oauth_access_token: token)
 
         expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :merge_merge_request do
+      let(:boundary_object) { project }
+      let(:request) do
+        put api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/merge", personal_access_token: pat)
       end
     end
 
@@ -3721,6 +3812,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_merge_ref do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/merge_ref", personal_access_token: pat)
+      end
+    end
   end
 
   describe "PUT /projects/:id/merge_requests/:merge_request_iid" do
@@ -3825,6 +3923,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
       put api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", user), params: { target_branch: "wiki" }
       expect(response).to have_gitlab_http_status(:ok)
       expect(json_response['target_branch']).to eq('wiki')
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :update_merge_request do
+      let(:boundary_object) { project }
+      let(:request) do
+        put api("/projects/#{project.id}/merge_requests/#{merge_request.iid}", personal_access_token: pat), params: { title: 'New title' }
+      end
     end
 
     context "forked projects" do
@@ -4103,6 +4208,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_closes_issue do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/closes_issues", personal_access_token: pat)
+      end
+    end
   end
 
   describe 'GET :id/merge_requests/:merge_request_iid/related_issues' do
@@ -4132,6 +4244,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         expect_successful_response_with_paginated_array
         expect(json_response.length).to eq(1)
         expect(json_response.first['id']).to eq(issue.id)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_merge_request_related_issue do
+        let(:boundary_object) { project }
+        let(:request) do
+          get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/related_issues", personal_access_token: pat)
+        end
       end
     end
 
@@ -4307,6 +4426,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
         expect(response).to have_gitlab_http_status(:forbidden)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :cancel_merge_merge_request do
+      let(:boundary_object) { project }
+      let(:request) do
+        post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/cancel_merge_when_pipeline_succeeds", personal_access_token: pat)
+      end
+    end
   end
 
   describe 'PUT :id/merge_requests/:merge_request_iid/rebase' do
@@ -4349,6 +4475,13 @@ RSpec.describe API::MergeRequests, :aggregate_failures, feature_category: :sourc
           expect(response).to have_gitlab_http_status(:accepted)
           expect(merge_request.reload).to be_rebase_in_progress
           expect(json_response['rebase_in_progress']).to be(true)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :rebase_merge_request do
+        let(:boundary_object) { project }
+        let(:request) do
+          put api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/rebase", personal_access_token: pat)
         end
       end
     end
