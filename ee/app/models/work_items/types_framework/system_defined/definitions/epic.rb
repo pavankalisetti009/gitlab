@@ -73,6 +73,10 @@ module WorkItems
             def configurable?
               false
             end
+
+            def only_for_group?
+              true
+            end
           end
         end
       end
