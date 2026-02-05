@@ -8,10 +8,6 @@ module EE
       has_defined_dates?(milestone)
     end
 
-    def show_burndown_charts_promotion?(milestone)
-      milestone.is_a?(EE::Milestone) && !milestone.supports_milestone_charts? && show_promotions?
-    end
-
     def show_burndown_alert?(milestone)
       milestone.supports_milestone_charts? &&
         can?(current_user, :admin_milestone, milestone.resource_parent) &&
