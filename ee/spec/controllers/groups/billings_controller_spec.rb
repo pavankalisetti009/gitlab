@@ -99,6 +99,23 @@ RSpec.describe Groups::BillingsController, feature_category: :subscription_manag
         is_expected.to have_gitlab_http_status(:not_found)
       end
     end
+
+    context 'with rendered views' do
+      render_views
+
+      before do
+        sign_in(owner)
+        allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
+          allow(instance).to receive(:execute).and_return(nil)
+        end
+      end
+
+      it 'pushes ultimate_trial_with_dap feature flag to frontend' do
+        get_index
+
+        expect(response.body).to have_pushed_frontend_feature_flags(ultimateTrialWithDap: true)
+      end
+    end
   end
 
   describe 'POST refresh_seats', :saas do

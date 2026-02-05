@@ -7,6 +7,7 @@ class Groups::BillingsController < Groups::ApplicationController
   before_action only: [:index] do
     push_frontend_feature_flag(:refresh_billings_seats, type: :ops)
     push_frontend_feature_flag(:targeted_messages_admin_ui)
+    push_frontend_feature_flag(:ultimate_trial_with_dap, @group)
   end
 
   layout 'group_settings'

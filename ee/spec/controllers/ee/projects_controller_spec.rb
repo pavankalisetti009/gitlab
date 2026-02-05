@@ -74,6 +74,12 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         expect(response.body).to have_pushed_frontend_feature_flags(convertToGlCiFlowRegistry: true)
       end
+
+      it 'pushes ultimate_trial_with_dap feature flag to frontend' do
+        get :edit, params: { namespace_id: project.namespace.path, id: project.path }
+
+        expect(response.body).to have_pushed_frontend_feature_flags(ultimateTrialWithDap: true)
+      end
     end
   end
 
