@@ -73202,6 +73202,9 @@ msgstr ""
 msgid "UsageQuota|Audio samples, videos, datasets, and graphics."
 msgstr ""
 
+msgid "UsageQuota|Bloom filters"
+msgstr ""
+
 msgid "UsageQuota|Buy additional compute minutes"
 msgstr ""
 
@@ -73211,7 +73214,13 @@ msgstr ""
 msgid "UsageQuota|Cache for frequently-accessed Docker images and virtual registries."
 msgstr ""
 
+msgid "UsageQuota|Chain length: %{value}"
+msgstr ""
+
 msgid "UsageQuota|Code packages and container images."
+msgstr ""
+
+msgid "UsageQuota|Commit graph"
 msgstr ""
 
 msgid "UsageQuota|Compute minutes usage displays the hosted runner usage against the total available compute minutes."
@@ -73256,6 +73265,12 @@ msgstr ""
 msgid "UsageQuota|Generate Report"
 msgstr ""
 
+msgid "UsageQuota|Generation data"
+msgstr ""
+
+msgid "UsageQuota|Generation data overflow"
+msgstr ""
+
 msgid "UsageQuota|Git repository."
 msgstr ""
 
@@ -73263,6 +73278,9 @@ msgid "UsageQuota|Gitlab-integrated Docker container registry for storing Docker
 msgstr ""
 
 msgid "UsageQuota|Group settings %{gt} Usage quotas"
+msgstr ""
+
+msgid "UsageQuota|Hash cache"
 msgstr ""
 
 msgid "UsageQuota|Hosted runner duration"
@@ -73307,7 +73325,13 @@ msgstr ""
 msgid "UsageQuota|Local proxy used for frequently-accessed upstream Docker images."
 msgstr ""
 
+msgid "UsageQuota|Lookup table"
+msgstr ""
+
 msgid "UsageQuota|Month"
+msgstr ""
+
+msgid "UsageQuota|Multi-pack index bitmap"
 msgstr ""
 
 msgid "UsageQuota|Namespace"
@@ -73325,13 +73349,22 @@ msgstr ""
 msgid "UsageQuota|Namespace total storage represents the sum of storage consumed by all projects, container registry, and Dependency Proxy."
 msgstr ""
 
+msgid "UsageQuota|No commit graph detected. A commit graph file can significantly speed up Git operations like log, merge-base, and push by pre-computing and caching commit metadata."
+msgstr ""
+
 msgid "UsageQuota|No compute usage data available."
 msgstr ""
 
 msgid "UsageQuota|No compute usage data because %{linkStart}Instance runners%{linkEnd} are disabled, or there are no projects in this group."
 msgstr ""
 
+msgid "UsageQuota|No multi-pack index bitmap detected. A multi-pack index bitmap can improve object lookup performance across multiple pack files, particularly benefiting fetch and clone operations."
+msgstr ""
+
 msgid "UsageQuota|No projects to display."
+msgstr ""
+
+msgid "UsageQuota|No reachability bitmap detected. A reachability bitmap can accelerate Git operations that need to determine object reachability, improving performance for clones, fetches, and pushes."
 msgstr ""
 
 msgid "UsageQuota|Objects storage"
@@ -73340,7 +73373,13 @@ msgstr ""
 msgid "UsageQuota|Observability"
 msgstr ""
 
+msgid "UsageQuota|Packfile count: %{value}"
+msgstr ""
+
 msgid "UsageQuota|Pending Members"
+msgstr ""
+
+msgid "UsageQuota|Performance optimizations"
 msgstr ""
 
 msgid "UsageQuota|Pipeline artifacts and job artifacts, created with CI/CD."
@@ -73353,6 +73392,9 @@ msgid "UsageQuota|Projects under this namespace have %{planLimit} of storage lim
 msgstr ""
 
 msgid "UsageQuota|Purchased storage"
+msgstr ""
+
+msgid "UsageQuota|Reachability bitmap"
 msgstr ""
 
 msgid "UsageQuota|Recalculate repository usage"
