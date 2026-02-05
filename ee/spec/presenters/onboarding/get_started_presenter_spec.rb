@@ -91,20 +91,28 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
         end
       end
 
-      context 'when user can assign duo seats' do
-        before do
-          allow(user).to receive(:can?)
-          allow(user).to receive(:can?).with(:read_usage_quotas, namespace).and_return(true)
+      context 'for duo seat assignment' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:active_duo_addon?, :can_read_usage_quotas?, :expected_enabled) do
+          true  | true  | true
+          true  | false | false
+          false | true  | false
+          false | false | false
         end
 
-        it 'marks action as enabled' do
-          expect(duo_seat_action['enabled']).to be true
-        end
-      end
+        with_them do
+          before do
+            allow(GitlabSubscriptions::Duo)
+              .to receive(:any_active_add_on_purchase_for_namespace?).with(namespace).and_return(active_duo_addon?)
+            allow(user).to receive(:can?)
+            allow(user)
+              .to receive(:can?).with(:read_usage_quotas, namespace).and_return(can_read_usage_quotas?)
+          end
 
-      context 'when user cannot assign duo seats' do
-        it 'marks action as disabled' do
-          expect(duo_seat_action['enabled']).to be false
+          it 'marks action as enabled based on both conditions' do
+            expect(duo_seat_action['enabled']).to be(expected_enabled)
+          end
         end
       end
 
