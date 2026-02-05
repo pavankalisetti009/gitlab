@@ -1,10 +1,12 @@
 <script>
 import { GlLink } from '@gitlab/ui';
+import { last } from 'lodash';
+import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { getTimeago } from '~/lib/utils/datetime/timeago_utility';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import { formatAgentFlowName, formatAgentStatus } from 'ee/ai/duo_agents_platform/utils';
+import { formatAgentStatus, formatAgentDefinition } from 'ee/ai/duo_agents_platform/utils';
 import AgentStatusIcon from './agent_status_icon.vue';
 
 export default {
@@ -25,6 +27,9 @@ export default {
     },
   },
   computed: {
+    lastMessage() {
+      return last(this.item.latestCheckpoint?.duoMessages)?.content;
+    },
     linkHoverStyles() {
       return [
         'hover:gl-bg-[--gl-action-neutral-background-color-hover]',
@@ -48,18 +53,27 @@ export default {
     formatId(id) {
       return getIdFromGraphQLId(id);
     },
-    formatName({ workflowDefinition, id }) {
-      return formatAgentFlowName(workflowDefinition, this.formatId(id));
+    formatProjectFlowTitle({ project, workflowDefinition }) {
+      return `${this.showProjectInfo && project ? `${project.name} / ` : ''}${formatAgentDefinition(workflowDefinition)}`;
+    },
+    formatIdTitle({ id }) {
+      return `#${this.formatId(id)}`;
     },
     formatStatus(status) {
       return formatAgentStatus(status);
     },
-    formatUpdatedAt(timestamp) {
+    formatCreatedAt({ createdAt }) {
+      return `${s__('DuoAgentsPlatform|Created')} ${this.formatTimestamp(createdAt)}`;
+    },
+    formatTimestamp(timestamp) {
       try {
         return getTimeago().format(timestamp);
       } catch {
         return timestamp || '';
       }
+    },
+    getLastMessageOrStatus({ humanStatus }) {
+      return this.lastMessage ? this.lastMessage : this.formatStatus(humanStatus);
     },
     handleItemSelected(event) {
       if (event.metaKey || event.ctrlKey) return;
@@ -82,19 +96,30 @@ export default {
       @click="handleItemSelected"
     >
       <div class="gl-flex gl-items-center gl-justify-between">
-        <div class="gl-flex gl-items-center">
+        <div class="gl-flex gl-items-center" data-testid="item-title">
           <agent-status-icon :status="item.status" :human-status="formatStatus(item.humanStatus)" />
-          <strong class="gl-pl-3 gl-text-strong">{{ formatName(item) }}</strong>
-        </div>
-        <div v-if="showProjectInfo && item.project" class="gl-text-subtle">
-          {{ item.project.name }}
+          <strong class="gl-pl-3 gl-text-strong">{{ formatProjectFlowTitle(item) }}</strong>
+          <span class="gl-pl-1 gl-text-subtle" aria-hidden="true">-</span>
+          <span class="gl-pl-1 gl-text-subtle">{{ formatIdTitle(item) }}</span>
         </div>
       </div>
 
+      <div
+        class="gl-ml-7 gl-mt-0 gl-flex gl-items-center gl-gap-2 gl-text-subtle"
+        data-testid="item-created-date"
+      >
+        <span>{{ formatCreatedAt(item) }}</span>
+      </div>
       <div class="gl-ml-7 gl-mt-0 gl-flex gl-items-center gl-gap-2 gl-text-subtle">
-        <span>{{ formatStatus(item.humanStatus) }}</span>
-        <span class="gl-text-subtle" aria-hidden="true">·</span>
-        <span>{{ formatUpdatedAt(item.updatedAt) }}</span>
+        <span
+          :class="{ 'gl-max-w-80 gl-truncate': lastMessage }"
+          data-testid="item-last-updated-message"
+          >{{ getLastMessageOrStatus(item) }}</span
+        >
+        <span v-if="lastMessage" class="gl-text-subtle" aria-hidden="true">-</span>
+        <span :class="{ 'gl-min-w-20': lastMessage }" data-testid="item-updated-date">{{
+          formatTimestamp(item.updatedAt)
+        }}</span>
       </div>
     </gl-link>
   </li>

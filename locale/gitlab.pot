@@ -25989,6 +25989,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Create triggers to automatically run pipelines when specified events occur in your project."
 msgstr ""
 
+msgid "DuoAgentsPlatform|Created"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Default"
 msgstr ""
 

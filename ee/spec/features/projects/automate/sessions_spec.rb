@@ -49,8 +49,8 @@ RSpec.describe 'Automate Agent Sessions', :js, feature_category: :duo_agent_plat
       end
 
       it 'displays the sessions list' do
-        expect(page).to have_content("Issue to mr ##{workflow1.id}")
-        expect(page).to have_content("Code review ##{workflow2.id}")
+        expect(page).to have_content("Issue to mr - ##{workflow1.id}")
+        expect(page).to have_content("Code review - ##{workflow2.id}")
       end
 
       it 'navigates to session details when clicked' do

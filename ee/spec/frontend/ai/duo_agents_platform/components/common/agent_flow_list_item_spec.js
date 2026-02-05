@@ -4,8 +4,10 @@ import AgentFlowListItem from 'ee/ai/duo_agents_platform/components/common/agent
 import AgentStatusIcon from 'ee/ai/duo_agents_platform/components/common/agent_status_icon.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import { getTimeago } from '~/lib/utils/datetime/timeago_utility';
+import { formatAgentStatus, formatAgentDefinition } from 'ee/ai/duo_agents_platform/utils';
 
 jest.mock('~/lib/utils/datetime/timeago_utility');
+jest.mock('ee/ai/duo_agents_platform/utils');
 
 describe('AgentFlowListItem', () => {
   let wrapper;
@@ -19,8 +21,12 @@ describe('AgentFlowListItem', () => {
     id: 'gid://gitlab/DuoWorkflow::Workflow/1',
     status: 'FINISHED',
     humanStatus: 'finished',
+    createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     workflowDefinition: 'software_development',
+    latestCheckpoint: {
+      duoMessages: [{ content: 'This is the last message' }],
+    },
     project: {
       id: 'gid://gitlab/Project/1',
       name: 'Test Project',
@@ -32,8 +38,17 @@ describe('AgentFlowListItem', () => {
     },
   };
 
+  beforeEach(() => {
+    formatAgentStatus.mockReturnValue('Finished');
+    formatAgentDefinition.mockReturnValue('Software development');
+  });
+
   const findLink = () => wrapper.findComponent(GlLink);
   const findStatusIcon = () => wrapper.findComponent(AgentStatusIcon);
+  const findItemTitle = () => wrapper.find('[data-testid="item-title"]');
+  const findCreatedAt = () => wrapper.find('[data-testid="item-created-date"]');
+  const findUpdatedAt = () => wrapper.find('[data-testid="item-updated-date"]');
+  const findLastMessage = () => wrapper.find('[data-testid="item-last-updated-message"]');
 
   const createWrapper = (props = {}) => {
     mockRouter = {
@@ -52,11 +67,14 @@ describe('AgentFlowListItem', () => {
   };
 
   describe('when component is mounted', () => {
-    describe('when showProjectInfo is false', () => {
+    beforeEach(() => {
+      getTimeago.mockReturnValue(mockTimeago);
+      mockTimeago.format.mockReturnValue('2 days ago');
+    });
+
+    describe('with latestCheckpoint messages', () => {
       beforeEach(() => {
-        getTimeago.mockReturnValue(mockTimeago);
-        mockTimeago.format.mockReturnValue('2 days ago');
-        createWrapper({ showProjectInfo: false });
+        createWrapper();
       });
 
       it('renders as a list item', () => {
@@ -74,25 +92,32 @@ describe('AgentFlowListItem', () => {
         expect(findStatusIcon().exists()).toBe(true);
       });
 
-      it('displays the formatted status', () => {
-        expect(wrapper.text()).toContain('Finished');
+      it('displays the formatted agent name without project by default', () => {
+        expect(findItemTitle().text()).toContain('Software development');
+        expect(findItemTitle().text()).not.toContain('Test Project');
       });
 
-      it('displays the formatted agent name', () => {
-        expect(wrapper.text()).toContain('Software development #1');
+      it('displays the formatted agent name with project when showProjectInfo is true', () => {
+        createWrapper({ showProjectInfo: true });
+        expect(findItemTitle().text()).toContain('Test Project / Software development');
+      });
+
+      it('displays the formatted workflow id', () => {
+        expect(findItemTitle().text()).toContain('#1');
+      });
+
+      it('displays the last message truncated', () => {
+        expect(findLastMessage().text()).toContain('This is the last message');
+        expect(findLastMessage().classes()).toContain('gl-truncate');
+      });
+
+      it('displays the created time', () => {
+        expect(wrapper.text()).toContain('Created');
+        expect(findCreatedAt().text()).toContain('2 days ago');
       });
 
       it('displays the formatted updated time', () => {
-        expect(wrapper.text()).toContain('2 days ago');
-      });
-
-      it('displays status and updated time inline with separator', () => {
-        const text = wrapper.text();
-        expect(text).toContain('Finished · 2 days ago');
-      });
-
-      it('does not display project information', () => {
-        expect(wrapper.text()).not.toContain('Test Project');
+        expect(findUpdatedAt().text()).toContain('2 days ago');
       });
 
       describe('link click handling', () => {
@@ -121,45 +146,21 @@ describe('AgentFlowListItem', () => {
       });
     });
 
-    describe('when showProjectInfo is true', () => {
-      beforeEach(() => {
-        getTimeago.mockReturnValue(mockTimeago);
-        mockTimeago.format.mockReturnValue('2 days ago');
-        createWrapper({ showProjectInfo: true });
-      });
+    describe('without latestCheckpoint messages', () => {
+      it('displays last status message when no messages available', () => {
+        createWrapper({
+          item: {
+            ...mockItem,
+            latestCheckpoint: null,
+          },
+        });
 
-      it('displays project name', () => {
-        expect(wrapper.text()).toContain('Test Project');
-      });
-
-      it('displays all other information as well', () => {
         expect(wrapper.text()).toContain('Finished');
-        expect(wrapper.text()).toContain('Software development #1');
-        expect(wrapper.text()).toContain('2 days ago');
-      });
-
-      it('displays status and updated time inline with separator', () => {
-        const text = wrapper.text();
-        expect(text).toContain('Finished · 2 days ago');
-      });
-    });
-
-    describe('when showProjectInfo is not provided', () => {
-      beforeEach(() => {
-        getTimeago.mockReturnValue(mockTimeago);
-        mockTimeago.format.mockReturnValue('2 days ago');
-        createWrapper();
-      });
-
-      it('defaults to not showing project information', () => {
-        expect(wrapper.text()).not.toContain('Test Project');
       });
     });
 
     describe('when project webUrl is not available', () => {
       it('renders link with null href', () => {
-        getTimeago.mockReturnValue(mockTimeago);
-        mockTimeago.format.mockReturnValue('2 days ago');
         createWrapper({
           item: {
             ...mockItem,
@@ -169,7 +170,6 @@ describe('AgentFlowListItem', () => {
             },
           },
         });
-
         expect(findLink().attributes('href')).toBeUndefined();
       });
     });
