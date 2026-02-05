@@ -27,7 +27,11 @@ module Ai
 
           sync_groups(group, user)
 
-          sync_projects(group, user)
+          if Feature.enabled?(:optimized_foundational_flows_sync, group.root_ancestor)
+            sync_projects_optimized(group, user)
+          else
+            sync_projects(group, user)
+          end
         end
 
         private
@@ -49,6 +53,60 @@ module Ai
             group,
             current_user: user
           ).execute
+        end
+
+        def sync_projects_optimized(group, user)
+          return unless user
+
+          foundational_item_ids = Item.foundational_flow_ids
+          parent_consumers = fetch_parent_consumers(group)
+          catalog_items = fetch_catalog_items
+          flow_triggers_by_item = build_flow_triggers_map(catalog_items)
+
+          project_namespace_iterator(group).each_batch(of: BATCH_SIZE) do |project_namespace_ids|
+            projects = Project
+              .by_project_namespace(project_namespace_ids)
+              .with_project_setting
+              .with_enabled_foundational_flow_records
+
+            projects.each do |project|
+              unless project.project_setting&.duo_foundational_flows_enabled
+                project.remove_foundational_flow_consumers(foundational_item_ids)
+                next
+              end
+            end
+
+            next if parent_consumers.empty? || catalog_items.empty?
+
+            ::Ai::Catalog::Flows::SyncBatchFoundationalFlowsService.new(
+              projects,
+              parent_consumers: parent_consumers,
+              catalog_items: catalog_items,
+              flow_triggers_by_item: flow_triggers_by_item,
+              current_user: user
+            ).execute
+          end
+        end
+
+        def fetch_parent_consumers(group)
+          target_ids = group.enabled_flow_catalog_item_ids
+          return {} if target_ids.empty?
+
+          group.configured_ai_catalog_items
+            .for_catalog_items(target_ids)
+            .with_service_account
+            .index_by(&:ai_catalog_item_id)
+        end
+
+        def fetch_catalog_items
+          Item.with_ids(Item.foundational_flow_ids).index_by(&:id)
+        end
+
+        def build_flow_triggers_map(catalog_items)
+          catalog_items.transform_values do |item|
+            flow_definition = ::Ai::Catalog::FoundationalFlow[item.foundational_flow_reference]
+            flow_definition&.triggers
+          end.compact
         end
 
         def sync_projects(group, user)

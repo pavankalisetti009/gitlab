@@ -419,6 +419,10 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     end
 
     context 'when verifying no duplicate service calls', :sidekiq_inline do
+      before do
+        stub_feature_flags(optimized_foundational_flows_sync: false)
+      end
+
       it 'calls SeedFoundationalFlowsService exactly once' do
         seed_call_count = 0
 

@@ -14,6 +14,7 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
   describe '#perform' do
     let(:seed_service) { instance_double(Ai::Catalog::Flows::SeedFoundationalFlowsService) }
     let(:sync_service) { instance_double(Ai::Catalog::Flows::SyncFoundationalFlowsService) }
+    let(:batch_sync_service) { instance_double(Ai::Catalog::Flows::SyncBatchFoundationalFlowsService) }
 
     before do
       allow(Ai::Catalog::Flows::SeedFoundationalFlowsService).to receive(:new).and_return(seed_service)
@@ -21,6 +22,9 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
 
       allow(Ai::Catalog::Flows::SyncFoundationalFlowsService).to receive(:new).and_return(sync_service)
       allow(sync_service).to receive(:execute)
+
+      allow(Ai::Catalog::Flows::SyncBatchFoundationalFlowsService).to receive(:new).and_return(batch_sync_service)
+      allow(batch_sync_service).to receive(:execute)
     end
 
     it 'calls SeedFoundationalFlowsService for the organization' do
@@ -28,17 +32,6 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
         .to receive(:new).with(current_user: user, organization: group.organization)
                          .and_return(seed_service)
       expect(seed_service).to receive(:execute)
-
-      worker.perform(group.id, user.id, nil)
-    end
-
-    it 'calls SyncFoundationalFlowsService for all projects in the group hierarchy' do
-      expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-        .to receive(:new).with(project, current_user: user)
-                         .and_return(sync_service)
-      expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-        .to receive(:new).with(subgroup_project, current_user: user)
-                         .and_return(sync_service)
 
       worker.perform(group.id, user.id, nil)
     end
@@ -87,6 +80,75 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
 
         worker.perform(non_existing_record_id, user.id)
         worker.perform(non_existing_record_id, user.id, nil)
+      end
+    end
+
+    context 'when group has enabled flows with parent consumers' do
+      let_it_be(:catalog_item) { create(:ai_catalog_item, :flow, :with_foundational_flow_reference) }
+      let_it_be(:service_account) { create(:user, :service_account, provisioned_by_group: group) }
+      let_it_be(:parent_consumer) do
+        create(:ai_catalog_item_consumer, group: group, item: catalog_item, service_account: service_account)
+      end
+
+      before do
+        create(:ai_catalog_enabled_foundational_flow, namespace: group, catalog_item: catalog_item)
+        group.namespace_settings.update!(duo_foundational_flows_enabled: true)
+      end
+
+      it 'calls SyncBatchFoundationalFlowsService for project batches' do
+        expect(Ai::Catalog::Flows::SyncBatchFoundationalFlowsService)
+          .to receive(:new).at_least(:once).and_return(batch_sync_service)
+        expect(batch_sync_service).to receive(:execute).at_least(:once)
+
+        worker.perform(group.id, user.id, nil)
+      end
+
+      it 'does not call SyncFoundationalFlowsService for individual projects' do
+        expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
+          .to receive(:new).with(group, current_user: user).and_return(sync_service)
+        expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
+          .not_to receive(:new).with(kind_of(Project), any_args)
+
+        worker.perform(group.id, user.id, nil)
+      end
+
+      context 'when optimized_foundational_flows_sync feature flag is disabled' do
+        before do
+          stub_feature_flags(optimized_foundational_flows_sync: false)
+        end
+
+        it 'calls SyncFoundationalFlowsService for each project' do
+          expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
+            .to receive(:new).with(group, current_user: user).and_return(sync_service)
+          expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
+            .to receive(:new).with(project, current_user: user).and_return(sync_service)
+          expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
+            .to receive(:new).with(subgroup_project, current_user: user).and_return(sync_service)
+
+          worker.perform(group.id, user.id, nil)
+        end
+
+        it 'does not call SyncBatchFoundationalFlowsService' do
+          expect(Ai::Catalog::Flows::SyncBatchFoundationalFlowsService).not_to receive(:new)
+
+          worker.perform(group.id, user.id, nil)
+        end
+      end
+
+      context 'when foundational flows are disabled on a project' do
+        let_it_be(:project_consumer) do
+          create(:ai_catalog_item_consumer, project: project, item: catalog_item,
+            parent_item_consumer: parent_consumer)
+        end
+
+        before do
+          project.project_setting.update!(duo_foundational_flows_enabled: false)
+        end
+
+        it 'removes foundational flow consumers from the disabled project' do
+          expect { worker.perform(group.id, user.id, nil) }
+            .to change { Ai::Catalog::ItemConsumer.where(project: project).count }.from(1).to(0)
+        end
       end
     end
   end
