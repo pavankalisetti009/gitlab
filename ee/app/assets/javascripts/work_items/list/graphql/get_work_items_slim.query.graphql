@@ -50,6 +50,7 @@ query getWorkItemsSlimEE(
   $beforeCursor: String
   $firstPageSize: Int
   $lastPageSize: Int
+  $useWorkItemFeatures: Boolean = false
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -125,6 +126,16 @@ query getWorkItemsSlimEE(
         widgets(onlyTypes: [LABELS]) {
           type
           ... on WorkItemWidgetLabels {
+            allowsScopedLabels
+            labels {
+              nodes {
+                ...Label
+              }
+            }
+          }
+        }
+        features @include(if: $useWorkItemFeatures) {
+          labels {
             allowsScopedLabels
             labels {
               nodes {

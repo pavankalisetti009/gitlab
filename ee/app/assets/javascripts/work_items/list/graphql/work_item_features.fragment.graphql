@@ -1,0 +1,76 @@
+#import "./work_item_feature_status.fragment.graphql"
+
+fragment WorkItemFeatures on WorkItemFeatures {
+  assignees {
+    assignees {
+      nodes {
+        id
+        avatarUrl
+        name
+        username
+        webUrl
+        webPath
+      }
+    }
+  }
+  awardEmoji {
+    upvotes
+    downvotes
+  }
+  milestone {
+    milestone {
+      id
+      dueDate
+      startDate
+      title
+      webPath
+    }
+  }
+  startAndDueDate {
+    startDate
+    dueDate
+    rollUp
+    isFixed
+  }
+  timeTracking {
+    humanReadableAttributes {
+      timeEstimate
+    }
+  }
+  healthStatus {
+    healthStatus
+  }
+  weight {
+    weight
+  }
+  linkedItems {
+    blockedByCount
+    blockingCount
+  }
+  iteration {
+    iteration {
+      id
+      title
+      startDate
+      dueDate
+      webUrl
+      iterationCadence {
+        id
+        title
+      }
+    }
+  }
+  development {
+    closingMergeRequests {
+      count
+    }
+  }
+  hierarchy {
+    parent {
+      id
+    }
+  }
+  status {
+    ...WorkItemFeatureStatus
+  }
+}
