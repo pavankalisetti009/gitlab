@@ -74,7 +74,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             },
             "required" => %w[id pipeline_id],
             "additionalProperties" => false
-          }
+          },
+          "annotations" => { "readOnlyHint" => true }
         },
         {
           "name" => "get_issue",
@@ -94,7 +95,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             },
             "required" => %w[id issue_iid],
             "additionalProperties" => false
-          }
+          },
+          "annotations" => { "readOnlyHint" => true }
         },
         {
           "name" => "create_issue",
@@ -203,7 +205,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             },
             "required" => %w[id merge_request_iid],
             "additionalProperties" => false
-          }
+          },
+          "annotations" => { "readOnlyHint" => true }
         },
         {
           "name" => "get_merge_request_commits",
@@ -231,7 +234,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             },
             "required" => %w[id merge_request_iid],
             "additionalProperties" => false
-          }
+          },
+          "annotations" => { "readOnlyHint" => true }
         },
         {
           "name" => "get_merge_request_diffs",
@@ -259,7 +263,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             },
             "required" => %w[id merge_request_iid],
             "additionalProperties" => false
-          }
+          },
+          "annotations" => { "readOnlyHint" => true }
         },
         {
           "name" => "get_merge_request_pipelines",
@@ -279,7 +284,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             },
             "required" => %w[id merge_request_iid],
             "additionalProperties" => false
-          }
+          },
+          "annotations" => { "readOnlyHint" => true }
         },
         { "name" => "search",
           "icons" => expected_icons,
@@ -340,7 +346,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             },
             "required" => %w[scope search],
             "additionalProperties" => false
-          } },
+          },
+          "annotations" => { "readOnlyHint" => true } },
         {
           "name" => "get_mcp_server_version",
           "description" => "Get the current version of MCP server.",
@@ -349,7 +356,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             "type" => "object",
             "properties" => {},
             "required" => []
-          }
+          },
+          "annotations" => { "readOnlyHint" => true }
         },
         {
           "name" => "create_workitem_note",
@@ -438,7 +446,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
                 "maximum" => 100
               }
             }
-          }
+          },
+          "annotations" => { "readOnlyHint" => true }
         },
         {
           "name" => "search_labels",
@@ -559,7 +568,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
               },
               "required" => %w[semantic_query project_id],
               "additionalProperties" => false
-            }
+            },
+            "annotations" => { "readOnlyHint" => true }
           }
         )
       end
