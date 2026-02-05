@@ -5403,9 +5403,6 @@ msgstr ""
 msgid "AdminArea|For teams who need advanced CI/CD and productivity features."
 msgstr ""
 
-msgid "AdminArea|Get security updates from GitLab and stay up to date"
-msgstr ""
-
 msgid "AdminArea|GitLab Free"
 msgstr ""
 
@@ -5458,12 +5455,6 @@ msgid "AdminArea|Projects"
 msgstr ""
 
 msgid "AdminArea|Reporter"
-msgstr ""
-
-msgid "AdminArea|Sign up for the GitLab Security Newsletter to get notified for security updates."
-msgstr ""
-
-msgid "AdminArea|Sign up for the GitLab newsletter"
 msgstr ""
 
 msgid "AdminArea|Start free trial"
