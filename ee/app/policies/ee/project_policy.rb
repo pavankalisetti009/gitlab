@@ -358,7 +358,7 @@ module EE
       condition(:service_accounts_enabled) { License.feature_available?(:service_accounts) }
 
       condition(:project_service_accounts_feature_available) do
-        ::Feature.enabled?(:allow_projects_to_create_service_accounts, @subject)
+        ::Feature.enabled?(:allow_projects_to_create_service_accounts, @subject.root_ancestor)
       end
 
       condition(:trial_and_identity_verified) do

@@ -5860,6 +5860,28 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             it { expect_allowed(*service_account_permissions) }
           end
         end
+
+        context 'for project in subgroup when FF is enabled for root ancestor' do
+          let_it_be(:root_group) { create(:group) }
+          let_it_be(:subgroup) { create(:group, parent: root_group) }
+          let_it_be(:project_in_subgroup) { create(:project, namespace: subgroup) }
+
+          let(:project) { project_in_subgroup }
+          let(:current_user) { user_in_subgroup }
+          let_it_be(:user_in_subgroup) { create(:user) }
+
+          before_all do
+            project_in_subgroup.add_maintainer(user_in_subgroup)
+          end
+
+          before do
+            stub_feature_flags(allow_projects_to_create_service_accounts: root_group)
+          end
+
+          it 'allows service account permissions when FF is enabled for root ancestor' do
+            expect_allowed(*service_account_permissions)
+          end
+        end
       end
     end
   end
