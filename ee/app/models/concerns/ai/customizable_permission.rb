@@ -5,7 +5,7 @@ module Ai
     extend ActiveSupport::Concern
 
     def ai_minimum_access_level_execute_with_fallback
-      resolve_ai_settings&.minimum_access_level_execute || ::Gitlab::Access::GUEST
+      resolve_ai_settings&.minimum_access_level_execute
     end
 
     def ai_minimum_access_level_execute_async_with_fallback

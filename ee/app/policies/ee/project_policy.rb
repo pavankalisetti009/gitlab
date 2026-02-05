@@ -1277,6 +1277,26 @@ module EE
         enable :trigger_ai_flow
       end
 
+      rule do
+        check_customizable_ai_settings &
+          below_minimum_access_level_execute
+      end.prevent :access_duo_agentic_chat
+
+      condition(:check_customizable_ai_settings) do
+        customizable_permissions_enabled? &&
+          is_gitlab_com? &&
+          !can?(:admin_organization, @subject.organization)
+      end
+
+      condition(:below_minimum_access_level_execute) do
+        next false unless @subject.root_ancestor.is_a?(Group)
+
+        minimum_access_level_execute = @subject.root_ancestor.ai_minimum_access_level_execute_with_fallback
+        next false if minimum_access_level_execute.nil?
+
+        team_access_level < minimum_access_level_execute
+      end
+
       condition(:ai_settings_prevent_execute_async) do
         customizable_permissions_enabled? &&
           @subject.root_ancestor.is_a?(Group) &&

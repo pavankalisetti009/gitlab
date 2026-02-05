@@ -3884,17 +3884,18 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       context 'when allowed_to_use is true' do
         let(:allowed_to_use) { true }
 
-        it { is_expected.to be_allowed(:access_duo_agentic_chat) }
+        it { is_expected.to be_allowed(policy) }
       end
 
       context 'when allowed_to_use is false' do
         let(:allowed_to_use) { false }
 
-        it { is_expected.to be_disallowed(:access_duo_agentic_chat) }
+        it { is_expected.to be_disallowed(policy) }
       end
     end
 
     let_it_be(:current_user) { create(:user) }
+    let(:policy) { :access_duo_agentic_chat }
 
     subject { described_class.new(current_user, group) }
 
@@ -3914,7 +3915,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           context 'when the group does not have an Premium SaaS license' do
             let_it_be(:group) { create(:group) }
 
-            it { is_expected.to be_disallowed(:access_duo_agentic_chat) }
+            it { is_expected.to be_disallowed(policy) }
           end
         end
 
@@ -3929,8 +3930,71 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
             end
 
             it 'is not allowed' do
-              is_expected.to be_disallowed(:access_duo_agentic_chat)
+              is_expected.to be_disallowed(policy)
             end
+          end
+        end
+
+        context 'with customizable permissions' do
+          where(:role, :allowed) do
+            :guest      | false
+            :planner    | false
+            :reporter   | false
+            :developer  | false
+            :maintainer | true
+            :owner      | true
+          end
+
+          with_them do
+            before do
+              group.add_member(current_user, role)
+              group.ai_settings.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+            end
+
+            it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+          end
+
+          context 'when minimum_access_level_execute is enabled for all users' do
+            before do
+              group.ai_settings.update!(minimum_access_level_execute: nil)
+              group.add_guest(current_user)
+            end
+
+            it { is_expected.to be_allowed(policy) }
+          end
+
+          context 'when user is an org owner' do
+            let(:current_user) { create(:organization_owner, organization: group.organization).user }
+
+            it { is_expected.to be_allowed(policy) }
+          end
+
+          context 'when user is not a member of the public group' do
+            context 'when minimum_access_level_execute is enabled for all users' do
+              before do
+                group.ai_settings.update!(minimum_access_level_execute: nil)
+              end
+
+              it { is_expected.to be_allowed(policy) }
+            end
+
+            context 'when minimum_access_level_execute requires membership' do
+              before do
+                group.ai_settings.update!(minimum_access_level_execute: ::Gitlab::Access::GUEST)
+              end
+
+              it { is_expected.to be_disallowed(policy) }
+            end
+          end
+
+          context 'when dap_group_customizable_permissions feature flag is disabled' do
+            before do
+              stub_feature_flags(dap_group_customizable_permissions: false)
+              group.add_guest(current_user)
+              group.ai_settings.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+            end
+
+            it { is_expected.to be_allowed(policy) }
           end
         end
       end
@@ -3968,6 +4032,22 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           end
 
           it { is_expected.to cs_matcher }
+        end
+      end
+
+      context 'with customizable permissions' do
+        include_context 'with duo features enabled and agentic chat available for self-managed'
+
+        it { is_expected.to be_allowed(policy) }
+
+        context 'when dap_instance_customizable_permissions feature flag is disabled' do
+          before do
+            stub_feature_flags(dap_instance_customizable_permissions: false)
+            group.add_guest(current_user)
+            ::Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+          end
+
+          it { is_expected.to be_allowed(policy) }
         end
       end
     end

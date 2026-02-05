@@ -1085,6 +1085,24 @@ module EE
           ~amazon_q_enabled
       end.enable :access_duo_agentic_chat
 
+      rule do
+        check_customizable_ai_settings &
+          below_minimum_access_level_execute
+      end.prevent :access_duo_agentic_chat
+
+      condition(:check_customizable_ai_settings) do
+        customizable_permissions_enabled? &&
+          is_gitlab_com? &&
+          !can?(:admin_organization, @subject.organization)
+      end
+
+      condition(:below_minimum_access_level_execute) do
+        minimum_access_level_execute = @subject.root_ancestor.ai_minimum_access_level_execute_with_fallback
+        next false if minimum_access_level_execute.nil?
+
+        access_level < minimum_access_level_execute
+      end
+
       rule { can?(:read_group) & duo_features_enabled }.enable :access_duo_features
 
       rule { supports_saved_replies & guest }.enable :read_saved_replies
@@ -1324,6 +1342,14 @@ module EE
     def custom_role_ability(user, subject)
       strong_memoize_with(:custom_role_ability, user, subject) do
         ::Authz::CustomAbility.new(user, subject)
+      end
+    end
+
+    def customizable_permissions_enabled?
+      if is_gitlab_com?
+        ::Feature.enabled?(:dap_group_customizable_permissions, group.root_ancestor)
+      else
+        ::Feature.enabled?(:dap_instance_customizable_permissions, :instance)
       end
     end
   end
