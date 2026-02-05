@@ -247,23 +247,6 @@ export const statusesInfo = {
       },
     ],
   },
-  scanner_fuzz_testing_running: {
-    title: s__('ComplianceStandardsAdherence|Fuzz testing running'),
-    description: s__(
-      "ComplianceStandardsAdherence|Ensures fuzz testing is configured and running in the project's default branch pipeline.",
-    ),
-    fixes: [
-      {
-        title: s__('ComplianceStandardsAdherence|Set up fuzz testing'),
-        description: s__(
-          'ComplianceStandardsAdherence|Set up fuzz testing in your pipeline to identify edge cases and potential crashes.',
-        ),
-        linkTitle: __('Fuzz testing'),
-        ultimate: true,
-        link: helpPagePath('user/application_security/coverage_fuzzing/_index.md'),
-      },
-    ],
-  },
   scanner_code_quality_running: {
     title: s__('ComplianceStandardsAdherence|Code quality running'),
     description: s__(

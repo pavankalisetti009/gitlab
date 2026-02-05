@@ -104,13 +104,6 @@ controls:
     compliant_operator: '='
     field_method: scanner_api_security_running?
     enum_value: 12
-  scanner_fuzz_testing_running:
-    name: Fuzz testing running
-    type: boolean
-    compliant_value: true
-    compliant_operator: '='
-    field_method: scanner_fuzz_testing_running?
-    enum_value: 13
   scanner_code_quality_running:
     name: Code quality running
     type: boolean
