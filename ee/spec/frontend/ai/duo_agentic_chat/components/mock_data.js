@@ -94,6 +94,7 @@ export const DUO_CHAT_AGENT_MOCK = {
   name: 'GitLab Duo Agent',
   description: 'Duo is your general development assistant',
   referenceWithVersion: 'chat',
+  avatarUrl: '/assets/bot_avatars/gitlab-duo-agent.png',
 };
 
 export const DUO_FOUNDATIONAL_AGENT_MOCK = {
@@ -102,6 +103,7 @@ export const DUO_FOUNDATIONAL_AGENT_MOCK = {
   description: 'An agent that makes things cooler',
   referenceWithVersion: 'agent/v1',
   foundational: true,
+  avatarUrl: '/assets/bot_avatars/gitlab-duo-agent.png',
 };
 
 export const MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE = {

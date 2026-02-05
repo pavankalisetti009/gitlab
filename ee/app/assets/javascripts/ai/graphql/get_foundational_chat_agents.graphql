@@ -5,6 +5,7 @@ query getFoundationalChatAgents($projectId: ProjectID, $namespaceId: NamespaceID
       name
       description
       referenceWithVersion
+      avatarUrl
     }
   }
 }

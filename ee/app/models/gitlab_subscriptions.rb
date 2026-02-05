@@ -16,4 +16,8 @@ module GitlabSubscriptions
 
     eligible_namespaces.first
   end
+
+  def self.active?(namespace)
+    !GitlabSubscriptions::Trials.namespace_plan_eligible_for_active?(namespace) && namespace.paid?
+  end
 end

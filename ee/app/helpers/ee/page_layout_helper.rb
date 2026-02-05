@@ -43,8 +43,18 @@ module EE
         credits_available: credits_available.to_s,
         default_namespace_selected: default_namespace_selected.to_s,
         preferences_path: profile_preferences_path(anchor: 'user_duo_default_namespace_id'),
-        expanded: ('true' if ai_panel_expanded?)
+        expanded: ('true' if ai_panel_expanded?),
+        **subscription_status_data(group, project),
+        explore_ai_catalog_path: explore_ai_catalog_path
       }.merge(duo_chat_billing_attributes(user, project, group))
+    end
+
+    def subscription_status_data(group, project)
+      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        saas_subscription_status(group, project)
+      else
+        self_managed_subscription_status
+      end
     end
 
     def duo_chat_panel_empty_state_data(source: nil)
@@ -102,6 +112,25 @@ module EE
     end
 
     private
+
+    def saas_subscription_status(group, project)
+      namespace = (group || project)&.root_ancestor
+      return { trial_active: nil, subscription_active: nil } unless namespace
+
+      {
+        trial_active: namespace.trial_active?.to_s,
+        subscription_active: GitlabSubscriptions.active?(namespace).to_s
+      }
+    end
+
+    def self_managed_subscription_status
+      return { trial_active: nil, subscription_active: nil } unless License.current
+
+      {
+        trial_active: License.current.trial?.to_s,
+        subscription_active: License.current.paid?.to_s
+      }
+    end
 
     def user_can_start_trial_in_source?(source)
       root = source.root_ancestor

@@ -60,6 +60,9 @@ export function initDuoPanel() {
     isTrial,
     buyAddonPath,
     canBuyAddon,
+    trialActive,
+    subscriptionActive,
+    exploreAiCatalogPath,
   } = el.dataset;
 
   if (parseBoolean(forceAgenticModeForCoreDuoUsers)) {
@@ -97,6 +100,9 @@ export function initDuoPanel() {
       isTrial: parseBoolean(isTrial),
       buyAddonPath,
       canBuyAddon: parseBoolean(canBuyAddon),
+      trialActive: parseBoolean(trialActive ?? 'false'),
+      subscriptionActive: parseBoolean(subscriptionActive ?? 'false'),
+      exploreAiCatalogPath,
     },
   };
 

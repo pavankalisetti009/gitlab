@@ -360,7 +360,7 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
 
           context 'when not on trial' do
             before do
-              allow(License).to receive(:current).and_return(instance_double(License, trial?: false))
+              allow(License).to receive(:current).and_return(instance_double(License, trial?: false, paid?: true))
             end
 
             it 'returns can_buy_addon as "true"' do
@@ -374,7 +374,7 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
 
           context 'when on trial' do
             before do
-              allow(License).to receive(:current).and_return(instance_double(License, trial?: true))
+              allow(License).to receive(:current).and_return(instance_double(License, trial?: true, paid?: false))
             end
 
             it 'returns can_buy_addon as "true"' do
@@ -428,6 +428,119 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
             it 'returns subscription portal URL for buy_addon_path' do
               expect(result[:buy_addon_path]).to eq(::Gitlab::Routing.url_helpers.subscription_portal_url)
             end
+          end
+        end
+      end
+    end
+
+    describe 'trial and subscription attributes' do
+      context 'when SaaS subscriptions feature is available' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+        end
+
+        it 'returns nil trial and subscription status when project and group are nil' do
+          result = helper.duo_chat_panel_data(user, nil, nil)
+
+          expect(result[:trial_active]).to be_nil
+          expect(result[:subscription_active]).to be_nil
+        end
+
+        context 'with group namespace' do
+          let(:group) { build(:group) }
+          let(:root_namespace) { build(:group) }
+
+          before do
+            allow(group).to receive(:root_ancestor).and_return(root_namespace)
+            allow(root_namespace).to receive(:trial_active?).and_return(true)
+            allow(GitlabSubscriptions).to receive(:active?).with(root_namespace).and_return(false)
+          end
+
+          it 'returns root namespace trial and subscription status' do
+            result = helper.duo_chat_panel_data(user, nil, group)
+
+            expect(result[:trial_active]).to eq('true')
+            expect(result[:subscription_active]).to eq('false')
+          end
+        end
+
+        context 'with project namespace' do
+          let(:project) { build(:project) }
+          let(:root_namespace) { build(:group) }
+
+          before do
+            allow(project).to receive(:root_ancestor).and_return(root_namespace)
+            allow(root_namespace).to receive(:trial_active?).and_return(false)
+            allow(GitlabSubscriptions).to receive(:active?).with(root_namespace).and_return(true)
+          end
+
+          it 'returns project root namespace trial and subscription status' do
+            result = helper.duo_chat_panel_data(user, project, nil)
+
+            expect(result[:trial_active]).to eq('false')
+            expect(result[:subscription_active]).to eq('true')
+          end
+        end
+
+        context 'when namespace is absent' do
+          let(:project) { build(:project) }
+
+          before do
+            allow(project).to receive(:root_ancestor).and_return(nil)
+          end
+
+          it 'returns nil for trial and subscription status' do
+            result = helper.duo_chat_panel_data(user, project, nil)
+
+            expect(result[:trial_active]).to be_nil
+            expect(result[:subscription_active]).to be_nil
+          end
+        end
+      end
+
+      context 'when SaaS subscriptions feature is not available' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+        end
+
+        context 'when License.current is present' do
+          before do
+            license = build(:license, trial: true)
+            allow(License).to receive(:current).and_return(license)
+          end
+
+          it 'returns license trial and subscription status' do
+            result = helper.duo_chat_panel_data(user, nil, nil)
+
+            expect(result[:trial_active]).to eq('true')
+            expect(result[:subscription_active]).to eq('true')
+          end
+        end
+
+        context 'when License.current is nil' do
+          before do
+            allow(License).to receive(:current).and_return(nil)
+          end
+
+          it 'returns nil for trial and subscription status' do
+            result = helper.duo_chat_panel_data(user, nil, nil)
+
+            expect(result[:trial_active]).to be_nil
+            expect(result[:subscription_active]).to be_nil
+          end
+        end
+
+        context 'when License.current is paid' do
+          before do
+            license = build(:license, trial: false)
+            allow(License).to receive(:current).and_return(license)
+          end
+
+          it 'returns paid subscription status' do
+            result = helper.duo_chat_panel_data(user, nil, nil)
+
+            expect(result[:trial_active]).to eq('')
+            expect(result[:subscription_active]).to eq('true')
           end
         end
       end
