@@ -118,5 +118,16 @@ RSpec.describe 'Test cases', :js, feature_category: :quality_management do
         end
       end
     end
+
+    context 'when clicking on a test case' do
+      it 'navigates to the test case detail page' do
+        expect(page).to have_selector('li.issue', count: 3)
+
+        click_link test_case1.title
+
+        expect(page).to have_content(test_case1.title)
+        expect(page).to have_current_path(project_quality_test_case_path(project, test_case1))
+      end
+    end
   end
 end
