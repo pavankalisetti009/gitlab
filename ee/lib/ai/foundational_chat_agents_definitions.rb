@@ -18,7 +18,7 @@ module Ai
       {
         id: 2,
         reference: 'duo_planner',
-        version: 'experimental',
+        version: 'v1',
         name: 'Planner',
         global_catalog_id: 348,
         avatar: 'planner-agent.png',
@@ -30,7 +30,7 @@ module Ai
         id: 3,
         global_catalog_id: 356,
         reference: 'security_analyst_agent',
-        version: 'experimental',
+        version: 'v1',
         name: 'Security Analyst',
         avatar: 'security-agent.png',
         description: <<~DESCRIPTION
