@@ -17,8 +17,8 @@ const apolloProvider = new VueApollo({
 });
 
 // eslint-disable-next-line max-params
-const initSecretsApp = (el, app, props, basePath) => {
-  const router = createRouter(basePath, props);
+const initSecretsApp = (el, app, provide, basePath) => {
+  const router = createRouter(basePath, provide);
 
   if (window.location.href.includes(basePath)) {
     injectVueAppBreadcrumbs(router, SecretsBreadcrumbs);
@@ -28,9 +28,10 @@ const initSecretsApp = (el, app, props, basePath) => {
     el,
     router,
     name: 'SecretsRoot',
+    provide,
     apolloProvider,
     render(createElement) {
-      return createElement(app, { props });
+      return createElement(app, { provide });
     },
   });
 };

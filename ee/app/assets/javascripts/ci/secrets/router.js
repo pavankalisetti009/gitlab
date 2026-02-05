@@ -8,9 +8,7 @@ import SecretsTable from './components/secrets_table/secrets_table.vue';
 
 Vue.use(VueRouter);
 
-export default (base, props) => {
-  const { contextConfig, fullPath } = props;
-
+export default (base) => {
   const router = new VueRouter({
     base,
     routes: [
@@ -18,9 +16,6 @@ export default (base, props) => {
         name: INDEX_ROUTE_NAME,
         path: '/',
         component: SecretsTable,
-        props: () => {
-          return { contextConfig, fullPath };
-        },
         meta: {
           getBreadcrumbText: () => s__('SecretsManager|Secrets'),
           isRoot: true,
@@ -30,9 +25,6 @@ export default (base, props) => {
         name: NEW_ROUTE_NAME,
         path: '/new',
         component: SecretFormWrapper,
-        props: () => {
-          return { contextConfig, fullPath };
-        },
         meta: {
           getBreadcrumbText: () => s__('SecretsManager|New secret'),
         },
@@ -42,7 +34,7 @@ export default (base, props) => {
         path: '/:secretName/details',
         component: SecretDetailsWrapper,
         props: ({ params: { secretName } }) => {
-          return { contextConfig, fullPath, secretName };
+          return { secretName };
         },
         meta: {
           getBreadcrumbText: ({ id }) => id,
@@ -55,8 +47,6 @@ export default (base, props) => {
         component: SecretFormWrapper,
         props: ({ params: { secretName } }) => {
           return {
-            contextConfig,
-            fullPath,
             isEditing: true,
             secretName,
           };

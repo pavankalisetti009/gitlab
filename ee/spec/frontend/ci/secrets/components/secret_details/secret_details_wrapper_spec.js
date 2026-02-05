@@ -33,8 +33,6 @@ describe('SecretDetailsWrapper component', () => {
   };
 
   const defaultProps = {
-    contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
-    fullPath: '/path/to/project',
     secretName: 'SECRET_KEY',
   };
 
@@ -48,6 +46,10 @@ describe('SecretDetailsWrapper component', () => {
 
     wrapper = mountFn(SecretDetailsWrapper, {
       apolloProvider: mockApollo,
+      provide: {
+        contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
+        fullPath: '/path/to/project',
+      },
       propsData: {
         ...defaultProps,
         ...props,

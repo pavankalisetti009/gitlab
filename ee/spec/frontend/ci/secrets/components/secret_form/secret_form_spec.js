@@ -10,10 +10,11 @@ import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
 import createRouter from 'ee/ci/secrets/router';
 import SecretBranchesField from 'ee/ci/secrets/components/secret_form/secret_branches_field.vue';
-import createSecretMutation from 'ee/ci/secrets/graphql/mutations/create_secret.mutation.graphql';
-import updateSecretMutation from 'ee/ci/secrets/graphql/mutations/update_secret.mutation.graphql';
+import createProjectSecretMutation from 'ee/ci/secrets/graphql/mutations/create_project_secret.mutation.graphql';
+import updateProjectSecretMutation from 'ee/ci/secrets/graphql/mutations/update_project_secret.mutation.graphql';
 import getProjectBranches from 'ee/ci/secrets/graphql/queries/get_project_branches.query.graphql';
-import { DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
+import { DETAILS_ROUTE_NAME, ENTITY_PROJECT } from 'ee/ci/secrets/constants';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
 import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
 import { mockProjectBranches, mockProjectSecret, mockProjectUpdateSecret } from '../../mock_data';
 
@@ -32,7 +33,6 @@ describe('SecretForm component', () => {
   const defaultProps = {
     areEnvironmentsLoading: false,
     environments: ['production', 'development'],
-    fullPath: 'path/to/project',
     isEditing: false,
     submitButtonText: 'Add secret',
   };
@@ -52,8 +52,8 @@ describe('SecretForm component', () => {
 
   const createComponent = ({ props, mountFn = shallowMountExtended, stubs } = {}) => {
     const handlers = [
-      [createSecretMutation, mockCreateSecretResponse],
-      [updateSecretMutation, mockUpdateSecretResponse],
+      [createProjectSecretMutation, mockCreateSecretResponse],
+      [updateProjectSecretMutation, mockUpdateSecretResponse],
       [getProjectBranches, mockProjectBranchesResponse],
     ];
 
@@ -62,6 +62,10 @@ describe('SecretForm component', () => {
     wrapper = mountFn(SecretForm, {
       router,
       apolloProvider: mockApollo,
+      provide: {
+        contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
+        fullPath: 'path/to/project',
+      },
       propsData: {
         ...defaultProps,
         ...props,

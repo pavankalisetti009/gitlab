@@ -37,8 +37,6 @@ describe('SecretFormWrapper component', () => {
   let mockSecretQuery;
 
   const defaultProps = {
-    contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
-    fullPath: 'full/path/to/entity',
     isEditing: false,
   };
 
@@ -49,6 +47,7 @@ describe('SecretFormWrapper component', () => {
   const findSecretForm = () => wrapper.findComponent(SecretForm);
 
   const createComponent = async ({
+    provide = {},
     props = {},
     stubs = {},
     isLoading = false,
@@ -65,6 +64,11 @@ describe('SecretFormWrapper component', () => {
 
     wrapper = mountFn(SecretFormWrapper, {
       apolloProvider: mockApollo,
+      provide: {
+        contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
+        fullPath: 'full/path/to/entity',
+        ...provide,
+      },
       propsData: {
         ...defaultProps,
         ...props,
@@ -153,7 +157,7 @@ describe('SecretFormWrapper component', () => {
   describe('environments dropdown', () => {
     it('uses group environments query for group secrets app', async () => {
       await createComponent({
-        props: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP] },
+        provide: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP] },
         stubs: { SecretForm, CiEnvironmentsDropdown },
       });
 
@@ -169,7 +173,7 @@ describe('SecretFormWrapper component', () => {
 
     it('uses project environments query for project secrets app', async () => {
       await createComponent({
-        props: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT] },
+        provide: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT] },
         stubs: { SecretForm, CiEnvironmentsDropdown },
       });
 
@@ -207,7 +211,7 @@ describe('SecretFormWrapper component', () => {
       it('query is called with the correct variables', () => {
         expect(mockProjectEnvQuery).toHaveBeenLastCalledWith({
           first: 30,
-          fullPath: defaultProps.fullPath,
+          fullPath: 'full/path/to/entity',
           search: '',
         });
       });

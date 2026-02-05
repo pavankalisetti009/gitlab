@@ -5,8 +5,9 @@ import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { INDEX_ROUTE_NAME, DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
-import deleteSecretMutation from 'ee/ci/secrets/graphql/mutations/delete_secret.mutation.graphql';
+import { INDEX_ROUTE_NAME, DETAILS_ROUTE_NAME, ENTITY_PROJECT } from 'ee/ci/secrets/constants';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
+import deleteProjectSecretMutation from 'ee/ci/secrets/graphql/mutations/delete_project_secret.mutation.graphql';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import {
   mockDeleteProjectSecretResponse,
@@ -26,7 +27,6 @@ describe('SecretDetailsWrapper component', () => {
   };
 
   const defaultProps = {
-    fullPath: 'path/to/project',
     secretName: 'SECRET_KEY',
     showModal: true,
   };
@@ -37,10 +37,16 @@ describe('SecretDetailsWrapper component', () => {
     isRoot = true,
     routeName = INDEX_ROUTE_NAME,
   } = {}) => {
-    mockApollo = createMockApollo([[deleteSecretMutation, mockDeleteSecretMutationResponse]]);
+    mockApollo = createMockApollo([
+      [deleteProjectSecretMutation, mockDeleteSecretMutationResponse],
+    ]);
 
     wrapper = shallowMountExtended(SecretDeleteModal, {
       apolloProvider: mockApollo,
+      provide: {
+        contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
+        fullPath: 'path/to/project',
+      },
       propsData: {
         ...defaultProps,
         ...props,

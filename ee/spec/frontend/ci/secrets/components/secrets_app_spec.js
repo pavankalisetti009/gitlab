@@ -31,17 +31,17 @@ describe('SecretsApp', () => {
 
   const findRouterView = () => wrapper.findComponent({ ref: 'router-view' });
 
-  const createComponent = async ({ stubs, router, props, isLoading = false } = {}) => {
+  const createComponent = async ({ stubs, router, provide, isLoading = false } = {}) => {
     const handlers = [[getSecretManagerStatusQuery, mockSecretManagerStatus]];
 
     apolloProvider = createMockApollo(handlers);
 
     wrapper = mountExtended(SecretsApp, {
       router,
-      propsData: {
+      provide: {
         fullPath: '/path/to/project',
         contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
-        ...props,
+        ...provide,
       },
       stubs,
       apolloProvider,
@@ -213,7 +213,7 @@ describe('SecretsApp', () => {
     beforeEach(async () => {
       await createComponent({
         stubs: { RouterView: true },
-        props: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP] },
+        provide: { contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_GROUP] },
       });
     });
 

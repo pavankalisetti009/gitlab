@@ -14,16 +14,7 @@ export default {
   components: {
     GlLoadingIcon,
   },
-  props: {
-    contextConfig: {
-      type: Object,
-      required: true,
-    },
-    fullPath: {
-      type: String,
-      required: true,
-    },
-  },
+  inject: ['contextConfig', 'fullPath'],
   data() {
     return {
       secretManagerStatus: null,

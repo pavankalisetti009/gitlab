@@ -4,7 +4,6 @@ import { __, s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import { INDEX_ROUTE_NAME } from '../constants';
-import deleteSecretMutation from '../graphql/mutations/delete_secret.mutation.graphql';
 
 export default {
   name: 'SecretDeleteModal',
@@ -13,11 +12,8 @@ export default {
     GlModal,
     GlSprintf,
   },
+  inject: ['contextConfig', 'fullPath'],
   props: {
-    fullPath: {
-      type: String,
-      required: true,
-    },
     secretName: {
       type: String,
       required: true,
@@ -78,14 +74,14 @@ export default {
     async deleteSecret() {
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: deleteSecretMutation,
+          mutation: this.contextConfig.deleteSecret.mutation,
           variables: {
             fullPath: this.fullPath,
             name: this.secretName,
           },
         });
 
-        const error = data.projectSecretDelete.errors[0];
+        const error = this.contextConfig.deleteSecret.lookup(data)?.errors[0];
         if (error) {
           this.handleDeleteError(error);
           return;
