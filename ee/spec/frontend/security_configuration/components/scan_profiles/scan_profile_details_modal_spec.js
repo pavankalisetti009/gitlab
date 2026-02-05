@@ -86,7 +86,7 @@ describe('ScanProfileDetailsModal', () => {
     });
 
     it('renders modal title', () => {
-      expect(wrapper.text()).toContain('Secret push protection profile');
+      expect(wrapper.text()).toContain('Secret detection profile');
     });
 
     it('renders info popover with correct props', () => {

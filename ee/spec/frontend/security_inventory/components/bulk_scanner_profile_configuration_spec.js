@@ -24,7 +24,7 @@ describe('BulkScannerProfileConfiguration', () => {
           availableSecurityScanProfiles: [
             {
               id: 'gid://gitlab/Security::ScanProfile/1',
-              name: 'Secret Push Protection (default)',
+              name: 'Secret Detection (default)',
               description: 'Default Secret Detection configuration',
               scanType: 'SECRET_DETECTION',
               gitlabRecommended: true,
@@ -78,7 +78,7 @@ describe('BulkScannerProfileConfiguration', () => {
   describe('default state', () => {
     it('renders scanner type label and name', () => {
       expect(findScanTypeCell().text()).toContain('SD');
-      expect(findScanTypeCell().text()).toContain('Secret push protection');
+      expect(findScanTypeCell().text()).toContain('Secret detection');
     });
 
     it('applies status classes to icon', () => {
@@ -115,7 +115,7 @@ describe('BulkScannerProfileConfiguration', () => {
     });
 
     it('renders profile name as link', () => {
-      expect(findProfileNameCell().text()).toContain('Secret Push Protection (default)');
+      expect(findProfileNameCell().text()).toContain('Secret Detection (default)');
     });
 
     it('renders "Disable for all" button', () => {
