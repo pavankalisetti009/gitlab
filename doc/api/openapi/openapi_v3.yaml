@@ -45598,9 +45598,6 @@ paths:
                   type: string
                   description: Name of the object storage bucket where export data
                     is stored
-                source_hostname:
-                  type: string
-                  description: Hostname or alias of the instance exposed on import
                 aws_s3_configuration:
                   type: object
                   description: AWS S3 object storage configuration
@@ -45662,7 +45659,6 @@ paths:
                     - full_path
               required:
               - bucket
-              - source_hostname
               - entities
     get:
       operationId: getApiV4OfflineExports
