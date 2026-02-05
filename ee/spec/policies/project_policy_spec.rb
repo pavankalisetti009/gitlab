@@ -101,6 +101,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         read_project_metadata
         read_project_security_dashboard
         read_release
+        read_runners
         read_security_resource
         read_snippet
         read_software_license_policy
@@ -231,7 +232,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'who is not a team member' do
         it do
           expect_disallowed(*(developer_permissions - auditor_permissions))
-          expect_disallowed(*maintainer_permissions)
+          expect_disallowed(*(maintainer_permissions - auditor_permissions))
           expect_disallowed(*owner_permissions)
           expect_disallowed(*(guest_permissions - auditor_permissions))
           expect_disallowed(*(planner_permissions - auditor_permissions - [:read_confidential_issues]))
@@ -246,7 +247,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
           it do
             expect_disallowed(*(developer_permissions - auditor_permissions))
-            expect_disallowed(*maintainer_permissions)
+            expect_disallowed(*(maintainer_permissions - auditor_permissions))
             expect_disallowed(*owner_permissions)
             expect_disallowed(*(guest_permissions - auditor_permissions))
             expect_disallowed(*(planner_permissions - auditor_permissions - [:read_confidential_issues]))
@@ -263,7 +264,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         it do
           expect_disallowed(*(developer_permissions - auditor_permissions))
-          expect_disallowed(*maintainer_permissions)
+          expect_disallowed(*(maintainer_permissions - auditor_permissions))
           expect_disallowed(*owner_permissions)
           expect_disallowed(*(planner_permissions - auditor_permissions - auditor_as_guest_exclusions))
           expect_allowed(*(guest_permissions - auditor_permissions))
