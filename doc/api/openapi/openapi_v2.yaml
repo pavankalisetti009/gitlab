@@ -28234,9 +28234,8 @@ paths:
       - merge_request_approvals
       operationId: getApiV4ProjectsIdMergeRequestsMergeRequestIidApprovals
     post:
-      summary: 'Deprecated in 16.0: Use the merge request approvals API instead. Change
-        approval-related configuration'
-      description: This feature was introduced in 10.6 and deprecated in 16.0
+      summary: Change approval-related configuration
+      description: Deprecated in 16.0. Use the merge request approvals API instead.
       produces:
       - application/json
       consumes:
@@ -28260,8 +28259,7 @@ paths:
           "$ref": "#/definitions/postApiV4ProjectsIdMergeRequestsMergeRequestIidApprovals"
       responses:
         '201':
-          description: 'Deprecated in 16.0: Use the merge request approvals API instead.
-            Change approval-related configuration'
+          description: Change approval-related configuration
           schema:
             "$ref": "#/definitions/API_Entities_ApprovalState"
       tags:
@@ -45154,7 +45152,8 @@ paths:
       operationId: getApiV4MergeRequests
   "/api/v4/namespaces/{id}":
     put:
-      description: "[DEPRECATED] Update a namespace"
+      summary: Update a namespace
+      description: Deprecated in 17.8
       produces:
       - application/json
       consumes:
@@ -45172,7 +45171,7 @@ paths:
           "$ref": "#/definitions/putApiV4NamespacesId"
       responses:
         '200':
-          description: "[DEPRECATED] Update a namespace"
+          description: Update a namespace
           schema:
             "$ref": "#/definitions/API_Entities_Namespace"
       tags:
@@ -63043,8 +63042,7 @@ definitions:
         example: 2
     required:
     - approvals_required
-    description: 'Deprecated in 16.0: Use the merge request approvals API instead.
-      Change approval-related configuration'
+    description: Change approval-related configuration
   API_Entities_ApprovalState:
     type: object
     properties:
@@ -71032,7 +71030,7 @@ definitions:
             type: integer
             format: int32
             description: Whether subscription is an extended or reactivated trial
-    description: "[DEPRECATED] Update a namespace"
+    description: Update a namespace
   API_Entities_Namespace:
     type: object
     properties:
