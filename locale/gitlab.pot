@@ -60088,6 +60088,9 @@ msgstr ""
 msgid "SearchError|A problem has occurred"
 msgstr ""
 
+msgid "SearchError|Cannot connect to the Zoekt"
+msgstr ""
+
 msgid "SearchError|No results found"
 msgstr ""
 

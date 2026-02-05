@@ -79,13 +79,18 @@ module Search
         error_message
       end
 
+      attr_reader :error_type
+
       private
 
       attr_reader :current_user, :query, :filters, :modes, :source, :projects, :node_id, :multi_match, :options,
         :error_message
 
       def blobs_and_file_count(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
-        return Kaminari.paginate_array([]), 0 if empty_results_preflight_check?
+        if empty_results_preflight_check?
+          empty_results = Search::EmptySearchResults.new
+          return empty_results.objects, empty_results.file_count
+        end
 
         strong_memoize(memoize_key(:blobs_and_file_count, page: page, per_page: per_page, count_only: count_only)) do
           search_as_found_blob(
@@ -145,6 +150,7 @@ module Search
         if response.failure?
           @blobs_count = 0
           @error_message = response.error_message
+          @error_type = ::Search::Zoekt::Errors::BaseError
           return [{}, @blobs_count, 0]
         end
 
@@ -156,6 +162,7 @@ module Search
       rescue ::Search::Zoekt::Errors::ClientConnectionError => e
         @blobs_count = 0
         @error_message = e.message
+        @error_type = e.class
         [{}, @blobs_count, 0]
       end
 
