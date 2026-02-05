@@ -2884,6 +2884,27 @@ describe('Duo Agentic Chat', () => {
 
       expect(mockSocketManager.connect).toHaveBeenCalled();
     });
+
+    describe('when chat is triggered via duoChatGlobalState.commands with an agent', () => {
+      it('sets the selected agent from the command and displays it', async () => {
+        const mockAgent = {
+          id: 'gid://gitlab/Ai::FoundationalChatAgent/security_analyst',
+          name: 'Security Analyst',
+          text: 'Security Analyst',
+        };
+
+        duoChatGlobalState.commands.push({
+          question: 'Analyze this code for vulnerabilities',
+          resourceId: MOCK_RESOURCE_ID,
+          variables: {},
+          agent: mockAgent,
+        });
+        await nextTick();
+
+        expect(actionSpies.setCurrentAgent).toHaveBeenCalledWith(expect.anything(), mockAgent);
+        expect(findDuoChat().props('title')).toBe('Security Analyst');
+      });
+    });
   });
 
   describe('Agent deletion handling', () => {

@@ -94,12 +94,14 @@ const openChatAndGetState = () => {
  * @param {resourceId} String - Unique ID to bind the streaming
  * @param {variables} Object - Additional variables to pass to graphql chat mutation
  * @param {agenticPrompt} String - Optional prompt to use in Agentic mode (e.g., "troubleshoot this broken pipeline")
+ * @param {agent} Object - Optional agent GraphQL ID  (e.g., { id: "gid://gitlab/Ai::FoundationalChatAgent/security_analyst"})
  */
 export const sendDuoChatCommand = ({
   question,
   resourceId,
   variables = {},
   agenticPrompt = null,
+  agent = null,
 } = {}) => {
   if (!question || !resourceId) {
     throw new Error('Both arguments `question` and `resourceId` are required');
@@ -110,12 +112,23 @@ export const sendDuoChatCommand = ({
   window.requestIdleCallback(() => {
     // In Agentic mode, use the agenticPrompt if provided; otherwise fall back to the slash command
     const effectiveQuestion = isAgenticMode && agenticPrompt ? agenticPrompt : question;
+    // Add the preferred agent if available when working with agentic mode
+    const selectedAgent = isAgenticMode ? agent : null;
 
-    duoChatGlobalState.commands.push({
+    const stateOptions = {
       question: effectiveQuestion,
       resourceId,
       variables,
-    });
+    };
+
+    if (selectedAgent != null) {
+      stateOptions.agent = {
+        ...selectedAgent,
+        text: selectedAgent.name,
+      };
+    }
+
+    duoChatGlobalState.commands.push(stateOptions);
   });
 };
 
