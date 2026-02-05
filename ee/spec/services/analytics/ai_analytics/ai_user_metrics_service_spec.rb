@@ -103,9 +103,15 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           })
         end
 
-        it 'does not include last_duo_activity_on when fetching all features' do
+        it 'includes last_duo_activity_on when fetching all features' do
           expect(service_response).to be_success
-          expect(service_response.payload.values).to all(not_include(:last_duo_activity_on))
+          expect(service_response.payload.values).to all(include(:last_duo_activity_on))
+        end
+
+        it 'returns the most recent activity date across all features' do
+          expect(service_response).to be_success
+          expect(service_response.payload[user1.id][:last_duo_activity_on]).to eq((to - 2.days).to_date)
+          expect(service_response.payload[user2.id][:last_duo_activity_on]).to eq((to - 1.day).to_date)
         end
 
         it 'includes event counts from all registered features' do

@@ -173,7 +173,7 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
 
     context 'with specific field queries' do
       context 'when querying lastDuoActivityOn' do
-        let(:fields) { ['user { id lastDuoActivityOn }', 'codeSuggestions { lastDuoActivityOn }'] }
+        let(:fields) { ['user { id lastDuoActivityOn }', 'lastDuoActivityOn', 'codeSuggestions { lastDuoActivityOn }'] }
         let(:service_payload) do
           {
             current_user.id => {
@@ -191,8 +191,12 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
           expect(ai_user_metrics['nodes'].first['codeSuggestions']['lastDuoActivityOn']).to eq(3.days.ago.to_date.to_s)
         end
 
-        it 'returns the last activity date' do
+        it 'returns the last activity date for the user' do
           expect(ai_user_metrics['nodes'].first['user']['lastDuoActivityOn']).to eq(5.days.ago.to_date.to_s)
+        end
+
+        it 'returns the last activity date across all features' do
+          expect(ai_user_metrics['nodes'].first['lastDuoActivityOn']).to eq(3.days.ago.to_date.to_s)
         end
       end
 

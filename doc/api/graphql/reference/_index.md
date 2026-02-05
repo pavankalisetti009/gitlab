@@ -26926,6 +26926,7 @@ Pre-aggregated per-user metrics for GitLab Code Suggestions and GitLab Duo Chat.
 | <a id="aiusermetricscodesuggestions"></a>`codeSuggestions` | [`codeSuggestionsUserMetrics`](#codesuggestionsusermetrics) | Code Suggestions metrics for the user. |
 | <a id="aiusermetricscodesuggestionsacceptedcount"></a>`codeSuggestionsAcceptedCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated** in GitLab 18.7. Use `codeSuggestions.codeSuggestionAcceptedInIdeEventCount` instead. |
 | <a id="aiusermetricsduochatinteractionscount"></a>`duoChatInteractionsCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated** in GitLab 18.7. Use `chat.requestDuoChatResponseEventCount` instead. |
+| <a id="aiusermetricslastduoactivityon"></a>`lastDuoActivityOn` | [`Date`](#date) | Date of the last Duo activity across all features for the user. |
 | <a id="aiusermetricsmcp"></a>`mcp` | [`mcpUserMetrics`](#mcpusermetrics) | Mcp metrics for the user. |
 | <a id="aiusermetricstotaleventcount"></a>`totalEventCount` | [`Int`](#int) | Total count of all tracked events for the user. |
 | <a id="aiusermetricstroubleshootjob"></a>`troubleshootJob` | [`troubleshootJobUserMetrics`](#troubleshootjobusermetrics) | Troubleshoot Job metrics for the user. |

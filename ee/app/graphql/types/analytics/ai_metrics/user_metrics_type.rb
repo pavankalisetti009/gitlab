@@ -33,6 +33,10 @@ module Types
           description: 'Total count of all tracked events for the user.',
           null: true
 
+        field :last_duo_activity_on, Types::DateType,
+          description: 'Date of the last Duo activity across all features for the user.',
+          null: true
+
         Gitlab::Tracking::AiTracking.registered_features.each do |feature|
           field_description = "#{feature.to_s.titleize} metrics for the user."
           field feature, FeatureUserMetricType[feature],
@@ -63,6 +67,12 @@ module Types
         def total_event_count
           ::Gitlab::Graphql::Lazy.with_value(load_all_features_metrics) do |metrics|
             metrics[:total_events_count] || 0
+          end
+        end
+
+        def last_duo_activity_on
+          ::Gitlab::Graphql::Lazy.with_value(load_all_features_metrics) do |metrics|
+            metrics[:last_duo_activity_on]
           end
         end
 
