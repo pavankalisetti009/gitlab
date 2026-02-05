@@ -596,4 +596,487 @@ RSpec.describe API::ProjectServiceAccounts, :with_current_organization, :aggrega
       end
     end
   end
+
+  describe 'GET /projects/:id/service_accounts/:user_id/personal_access_tokens' do
+    let(:target_user_id) { service_account_user.id }
+    let(:path) { "/projects/#{project_id}/service_accounts/#{target_user_id}/personal_access_tokens" }
+    let(:params) { nil }
+
+    subject(:perform_request) { get(api(path, current_user), params: params) }
+
+    context 'when the feature is licensed' do
+      context 'when the user is a project owner' do
+        before_all do
+          project.add_owner(user)
+        end
+
+        context 'when the service_account is provisioned_by the project' do
+          let_it_be(:active_token1) { create(:personal_access_token, user: service_account_user) }
+          let_it_be(:active_token2) { create(:personal_access_token, user: service_account_user) }
+
+          it 'returns the personal access tokens' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response.size).to eq(2)
+          end
+
+          context 'when filtering by state' do
+            let!(:revoked_token) { create(:personal_access_token, user: service_account_user, revoked: true) }
+            let(:params) { { state: 'inactive' } }
+
+            it 'returns only inactive tokens' do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.size).to eq(1)
+              expect(json_response.first['revoked']).to be_truthy
+            end
+          end
+        end
+
+        context 'when the service_account does not belong to the project' do
+          let(:target_user_id) { other_service_account.id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 User Not Found')
+          end
+        end
+
+        context 'when the target_user is not a service account' do
+          let(:target_user_id) { regular_user.id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 User Not Found')
+          end
+        end
+      end
+
+      context 'when project does not exist' do
+        let(:project_id) { non_existing_record_id }
+
+        it 'returns not found' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when user is not a project owner or maintainer' do
+        before_all do
+          project.add_developer(user)
+        end
+
+        it_behaves_like 'forbidden for non-owner/maintainer'
+      end
+
+      context 'without authentication' do
+        it 'returns unauthorized' do
+          get api(path)
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+    end
+
+    it_behaves_like 'forbidden when service accounts feature not licensed'
+  end
+
+  describe 'POST /projects/:id/service_accounts/:user_id/personal_access_tokens' do
+    let(:name) { 'new pat' }
+    let(:description) { 'description' }
+    let(:expires_at) { 3.days.from_now }
+    let(:scopes) { %w[api read_user] }
+    let(:params) { { name: name, description: description, expires_at: expires_at, scopes: scopes } }
+    let(:path) { "/projects/#{project_id}/service_accounts/#{service_account_user.id}/personal_access_tokens" }
+
+    subject(:perform_request) { post(api(path, current_user), params: params) }
+
+    context 'when the feature is licensed' do
+      context 'when user is a project owner' do
+        before_all do
+          project.add_owner(user)
+        end
+
+        it 'creates personal access token for the service account' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['name']).to eq(name)
+          expect(json_response['description']).to eq(description)
+          expect(json_response['scopes']).to eq(scopes)
+          expect(json_response['expires_at']).to eq(expires_at.to_date.iso8601)
+          expect(json_response['id']).to be_present
+          expect(json_response['created_at']).to be_present
+          expect(json_response['active']).to be_truthy
+          expect(json_response['revoked']).to be_falsey
+          expect(json_response['token']).to be_present
+        end
+
+        context 'when an error is thrown by the service' do
+          let(:error_message) { 'error message' }
+
+          before do
+            allow_next_instance_of(::PersonalAccessTokens::CreateService) do |create_service|
+              allow(create_service).to receive(:execute).and_return(
+                ServiceResponse.error(message: error_message)
+              )
+            end
+          end
+
+          it 'returns the error' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:unprocessable_entity)
+            expect(json_response['message']).to eq(error_message)
+          end
+        end
+
+        context 'when service account does not belong to the project' do
+          let(:path) { "/projects/#{project_id}/service_accounts/#{other_service_account.id}/personal_access_tokens" }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 User Not Found')
+          end
+        end
+
+        context 'when target user is not a service account' do
+          let(:path) { "/projects/#{project_id}/service_accounts/#{regular_user.id}/personal_access_tokens" }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 User Not Found')
+          end
+        end
+      end
+
+      context 'when user is a project maintainer' do
+        before_all do
+          project.add_maintainer(user)
+        end
+
+        it 'creates personal access token for the service account' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['token']).to be_present
+        end
+      end
+
+      context 'when project does not exist' do
+        let(:project_id) { non_existing_record_id }
+
+        it 'returns not found' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when user is not a project owner or maintainer' do
+        before_all do
+          project.add_developer(user)
+        end
+
+        it_behaves_like 'forbidden for non-owner/maintainer'
+      end
+
+      context 'without authentication' do
+        it 'returns unauthorized' do
+          post api(path), params: params
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+    end
+
+    it_behaves_like 'forbidden when service accounts feature not licensed'
+  end
+
+  describe 'DELETE /projects/:id/service_accounts/:user_id/personal_access_tokens/:token_id' do
+    let_it_be(:token) { create(:personal_access_token, user: service_account_user) }
+
+    let(:user_id) { service_account_user.id }
+    let(:token_id) { token.id }
+    let(:request_path) { "/projects/#{project_id}/service_accounts/#{user_id}/personal_access_tokens/#{token_id}" }
+
+    subject(:perform_request) { delete(api(request_path, current_user)) }
+
+    shared_examples 'successful token revocation' do
+      it 'revokes the token' do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:no_content)
+        expect(token.reload.revoked?).to be_truthy
+      end
+    end
+
+    context 'when the feature is licensed' do
+      context 'when user is a project owner' do
+        before_all do
+          project.add_owner(user)
+        end
+
+        context 'when all parameters are valid' do
+          it_behaves_like 'successful token revocation'
+        end
+
+        context 'when the revocation service fails' do
+          let(:error_message) { 'error message' }
+
+          before do
+            allow_next_instance_of(::PersonalAccessTokens::RevokeService) do |service|
+              allow(service).to receive(:execute).and_return(
+                ServiceResponse.error(message: error_message)
+              )
+            end
+          end
+
+          it 'returns the error message' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to eq('400 Bad request - error message')
+          end
+        end
+
+        context 'when the token does not exist' do
+          let(:token_id) { non_existing_record_id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 Personal Access Token Not Found')
+          end
+        end
+
+        context 'when the token does not belong to the service account' do
+          let(:other_user) { create(:user) }
+          let(:other_token) { create(:personal_access_token, user: other_user) }
+          let(:token_id) { other_token.id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 Personal Access Token Not Found')
+          end
+        end
+
+        context 'when the service account does not belong to the project' do
+          let(:user_id) { other_service_account.id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 User Not Found')
+          end
+        end
+
+        context 'when target user is not a service account' do
+          let(:user_id) { regular_user.id }
+          let(:regular_token) { create(:personal_access_token, user: regular_user) }
+          let(:token_id) { regular_token.id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 User Not Found')
+          end
+        end
+      end
+
+      context 'when user is a project maintainer' do
+        before_all do
+          project.add_maintainer(user)
+        end
+
+        it_behaves_like 'successful token revocation'
+      end
+
+      context 'when project does not exist' do
+        let(:project_id) { non_existing_record_id }
+
+        it 'returns not found' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when user is not a project owner or maintainer' do
+        before_all do
+          project.add_developer(user)
+        end
+
+        it_behaves_like 'forbidden for non-owner/maintainer'
+      end
+
+      context 'without authentication' do
+        it 'returns unauthorized' do
+          delete api(request_path)
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+    end
+
+    it_behaves_like 'forbidden when service accounts feature not licensed'
+  end
+
+  describe 'POST /projects/:id/service_accounts/:user_id/personal_access_tokens/:token_id/rotate' do
+    let!(:token) { create(:personal_access_token, user: service_account_user) }
+
+    let(:user_id) { service_account_user.id }
+    let(:token_id) { token.id }
+    let(:params) { nil }
+    let(:path) { "/projects/#{project_id}/service_accounts/#{user_id}/personal_access_tokens/#{token_id}/rotate" }
+
+    subject(:perform_request) { post(api(path, current_user), params: params) }
+
+    context 'when the feature is licensed' do
+      context 'when user is a project owner' do
+        before_all do
+          project.add_owner(user)
+        end
+
+        it 'rotates the token' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(token.reload.revoked?).to be_truthy
+          expect(json_response['token']).not_to eq(token.token)
+          expect(json_response['expires_at']).to eq(1.week.from_now.to_date.iso8601)
+        end
+
+        context 'when expiry is defined' do
+          let(:expiry_date) { 1.month.from_now }
+          let(:params) { { expires_at: expiry_date } }
+
+          it 'allows owner to rotate token with custom expiry', :freeze_time do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(token.reload.revoked?).to be_truthy
+            expect(json_response['token']).not_to eq(token.token)
+            expect(json_response['expires_at']).to eq(expiry_date.to_date.iso8601)
+          end
+        end
+
+        context 'when the token is already revoked' do
+          before do
+            token.revoke!
+          end
+
+          it 'returns bad request error' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to eq('400 Bad request - Token already revoked')
+          end
+        end
+
+        context 'when token does not exist' do
+          let(:token_id) { non_existing_record_id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'when token does not belong to the service account' do
+          let(:other_user) { create(:user) }
+          let(:other_token) { create(:personal_access_token, user: other_user) }
+          let(:token_id) { other_token.id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'when service account does not belong to the project' do
+          let(:user_id) { other_service_account.id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 User Not Found')
+          end
+        end
+
+        context 'when target user is not a service account' do
+          let(:user_id) { regular_user.id }
+          let(:regular_token) { create(:personal_access_token, user: regular_user) }
+          let(:token_id) { regular_token.id }
+
+          it 'returns not found' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 User Not Found')
+          end
+        end
+      end
+
+      context 'when user is a project maintainer' do
+        before_all do
+          project.add_maintainer(user)
+        end
+
+        it 'rotates the token' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['token']).to be_present
+        end
+      end
+
+      context 'when project does not exist' do
+        let(:project_id) { non_existing_record_id }
+
+        it 'returns not found' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when user is not a project owner or maintainer' do
+        before_all do
+          project.add_developer(user)
+        end
+
+        it_behaves_like 'forbidden for non-owner/maintainer'
+      end
+
+      context 'without authentication' do
+        it 'returns unauthorized' do
+          post api(path)
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+    end
+
+    it_behaves_like 'forbidden when service accounts feature not licensed'
+  end
 end
