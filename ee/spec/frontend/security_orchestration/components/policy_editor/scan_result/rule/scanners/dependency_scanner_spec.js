@@ -329,4 +329,20 @@ describe('DependencyScanner', () => {
       expect(findCollapse().props('visible')).toBe(false);
     });
   });
+
+  describe('remove scanner', () => {
+    it('passes showRemoveButton prop to scanner header', () => {
+      createComponent();
+
+      expect(findScannerHeader().props('showRemoveButton')).toBe(true);
+    });
+
+    it('emits remove event when scanner header emits remove', () => {
+      createComponent();
+
+      findScannerHeader().vm.$emit('remove');
+
+      expect(wrapper.emitted('remove')).toHaveLength(1);
+    });
+  });
 });

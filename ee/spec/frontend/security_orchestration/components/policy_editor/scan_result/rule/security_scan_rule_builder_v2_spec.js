@@ -341,5 +341,42 @@ describe('SecurityScanRuleBuilder', () => {
         expect.arrayContaining([expect.objectContaining(updatedScanner)]),
       );
     });
+
+    describe('remove scanner', () => {
+      it.each`
+        scannerName             | scannerType              | findMethod
+        ${'dependency'}         | ${'dependency_scanning'} | ${findDependencyScanner}
+        ${'sast'}               | ${'sast'}                | ${findSastScanner}
+        ${'secret detection'}   | ${'secret_detection'}    | ${findSecretDetectionScanner}
+        ${'container scanning'} | ${'container_scanning'}  | ${findContainerScanningScanner}
+        ${'dast'}               | ${'dast'}                | ${findDastScanner}
+        ${'api fuzzing'}        | ${'api_fuzzing'}         | ${findApiFuzzingScanner}
+        ${'coverage fuzzing'}   | ${'coverage_fuzzing'}    | ${findCoverageFuzzingScanner}
+      `(
+        'removes $scannerName scanner when remove event is emitted',
+        ({ scannerType, findMethod }) => {
+          createComponent();
+
+          findMethod().vm.$emit('remove');
+
+          const emittedRule = wrapper.emitted('changed')[0][0];
+          expect(emittedRule.scanners).not.toEqual(
+            expect.arrayContaining([expect.objectContaining({ type: scannerType })]),
+          );
+        },
+      );
+
+      it('emits updated scanners array when a scanner is removed', () => {
+        createComponent({
+          ...defaultRule,
+          scanners: ['sast', 'dast'],
+        });
+
+        findSastScanner().vm.$emit('remove');
+
+        const emittedRule = wrapper.emitted('changed')[0][0];
+        expect(emittedRule.scanners).toEqual([expect.objectContaining({ type: 'dast' })]);
+      });
+    });
   });
 });

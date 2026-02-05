@@ -15,7 +15,8 @@ describe('ScannerHeader', () => {
     });
   };
 
-  const findButton = () => wrapper.findComponent(GlButton);
+  const findCollapseButton = () => wrapper.findAllComponents(GlButton).at(0);
+  const findRemoveButton = () => wrapper.findByTestId('remove-scanner');
   const findTitle = () => wrapper.find('h5');
 
   describe('rendering', () => {
@@ -28,7 +29,21 @@ describe('ScannerHeader', () => {
     it('renders the collapse button', () => {
       createComponent();
 
-      expect(findButton().exists()).toBe(true);
+      expect(findCollapseButton().exists()).toBe(true);
+    });
+
+    it('does not render remove button by default', () => {
+      createComponent();
+
+      expect(findRemoveButton().exists()).toBe(false);
+    });
+
+    it('renders remove button when showRemoveButton is true', () => {
+      createComponent({ showRemoveButton: true });
+
+      expect(findRemoveButton().exists()).toBe(true);
+      expect(findRemoveButton().props('icon')).toBe('remove');
+      expect(findRemoveButton().props('category')).toBe('tertiary');
     });
   });
 
@@ -36,13 +51,13 @@ describe('ScannerHeader', () => {
     it('shows chevron-up icon when visible is true', () => {
       createComponent({ visible: true });
 
-      expect(findButton().props('icon')).toBe('chevron-up');
+      expect(findCollapseButton().props('icon')).toBe('chevron-up');
     });
 
     it('shows chevron-down icon when visible is false', () => {
       createComponent({ visible: false });
 
-      expect(findButton().props('icon')).toBe('chevron-down');
+      expect(findCollapseButton().props('icon')).toBe('chevron-down');
     });
   });
 
@@ -61,12 +76,20 @@ describe('ScannerHeader', () => {
   });
 
   describe('events', () => {
-    it('emits toggle event when button is clicked', () => {
+    it('emits toggle event when collapse button is clicked', () => {
       createComponent();
 
-      findButton().vm.$emit('click');
+      findCollapseButton().vm.$emit('click');
 
       expect(wrapper.emitted('toggle')).toHaveLength(1);
+    });
+
+    it('emits remove event when remove button is clicked', () => {
+      createComponent({ showRemoveButton: true });
+
+      findRemoveButton().vm.$emit('click');
+
+      expect(wrapper.emitted('remove')).toHaveLength(1);
     });
   });
 });

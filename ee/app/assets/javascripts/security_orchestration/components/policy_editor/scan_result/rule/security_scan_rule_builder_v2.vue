@@ -172,6 +172,10 @@ export default {
         scanners,
       });
     },
+    removeScanner(scannerType) {
+      const scanners = this.scannerObjects.filter(({ type }) => type !== scannerType);
+      this.setScanners(scanners);
+    },
   },
 };
 </script>
@@ -246,11 +250,16 @@ export default {
         <dependency-scanner
           :scanner="getScanner($options.REPORT_TYPE_DEPENDENCY_SCANNING)"
           @changed="setScanner"
+          @remove="removeScanner($options.REPORT_TYPE_DEPENDENCY_SCANNING)"
         />
       </div>
 
       <div v-if="getScanner($options.REPORT_TYPE_SAST)" class="gl-w-full gl-rounded-base gl-p-4">
-        <sast-scanner :scanner="getScanner($options.REPORT_TYPE_SAST)" @changed="setScanner" />
+        <sast-scanner
+          :scanner="getScanner($options.REPORT_TYPE_SAST)"
+          @changed="setScanner"
+          @remove="removeScanner($options.REPORT_TYPE_SAST)"
+        />
       </div>
 
       <div
@@ -260,6 +269,7 @@ export default {
         <secret-detection-scanner
           :scanner="getScanner($options.REPORT_TYPE_SECRET_DETECTION)"
           @changed="setScanner"
+          @remove="removeScanner($options.REPORT_TYPE_SECRET_DETECTION)"
         />
       </div>
 
@@ -270,11 +280,16 @@ export default {
         <container-scanning-scanner
           :scanner="getScanner($options.REPORT_TYPE_CONTAINER_SCANNING)"
           @changed="setScanner"
+          @remove="removeScanner($options.REPORT_TYPE_CONTAINER_SCANNING)"
         />
       </div>
 
       <div v-if="getScanner($options.REPORT_TYPE_DAST)" class="gl-w-full gl-rounded-base gl-p-4">
-        <dast-scanner :scanner="getScanner($options.REPORT_TYPE_DAST)" @changed="setScanner" />
+        <dast-scanner
+          :scanner="getScanner($options.REPORT_TYPE_DAST)"
+          @changed="setScanner"
+          @remove="removeScanner($options.REPORT_TYPE_DAST)"
+        />
       </div>
 
       <div
@@ -284,6 +299,7 @@ export default {
         <api-fuzzing-scanner
           :scanner="getScanner($options.REPORT_TYPE_API_FUZZING)"
           @changed="setScanner"
+          @remove="removeScanner($options.REPORT_TYPE_API_FUZZING)"
         />
       </div>
 
@@ -294,6 +310,7 @@ export default {
         <coverage-fuzzing-scanner
           :scanner="getScanner($options.REPORT_TYPE_COVERAGE_FUZZING)"
           @changed="setScanner"
+          @remove="removeScanner($options.REPORT_TYPE_COVERAGE_FUZZING)"
         />
       </div>
     </template>
