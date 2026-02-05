@@ -78,6 +78,13 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_maven_virtual_registry_upstream_cache_entry do
+      let(:boundary_object) { upstream.group }
+      let(:request) do
+        get api(url), headers: { 'Private-Token' => pat.token }
+      end
+    end
   end
 
   describe 'DELETE /api/v4/virtual_registries/packages/maven/cache_entries/:id' do
@@ -141,6 +148,17 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
 
       it_behaves_like 'returning response status with message', status: :bad_request,
         message: { 'cache_entry' => ['error message'] }
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_maven_virtual_registry_upstream_cache_entry do
+      let(:boundary_object) { cache_entry.upstream.group }
+      let(:request) do
+        delete api(url), headers: { 'Private-Token' => pat.token }
+      end
+
+      before do
+        group.add_maintainer(user)
+      end
     end
   end
 end
