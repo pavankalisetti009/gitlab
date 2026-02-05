@@ -75458,6 +75458,9 @@ msgstr ""
 msgid "VirtualRegistry|Failed to fetch upstream summary."
 msgstr ""
 
+msgid "VirtualRegistry|Failed to fetch upstreams. Please try again."
+msgstr ""
+
 msgid "VirtualRegistry|Failed to remove upstream. Try again."
 msgstr ""
 

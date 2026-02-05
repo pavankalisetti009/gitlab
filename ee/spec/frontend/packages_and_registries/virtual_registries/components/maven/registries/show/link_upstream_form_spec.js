@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlForm, GlSkeletonLoader } from '@gitlab/ui';
-import { cloneDeep } from 'lodash';
 import mavenUpstreamSummaryPayload from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_summary.query.graphql.json';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -10,7 +10,6 @@ import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/comp
 import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
 import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstream_selector.vue';
 import getMavenUpstreamSummaryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_summary.query.graphql';
-import { upstreamsResponse } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
 Vue.use(VueApollo);
 
@@ -18,13 +17,12 @@ describe('LinkUpstreamForm', () => {
   let wrapper;
 
   const defaultProps = {
-    linkedUpstreams: [],
-    upstreamsCount: 1,
-    initialUpstreams: upstreamsResponse.data,
+    linkedUpstreamIds: [],
   };
 
-  const upstreamId = upstreamsResponse.data[0].id;
-  const mockUpstream = mavenUpstreamSummaryPayload.data.virtualRegistriesPackagesMavenUpstream;
+  const { upstream: mockUpstream } = mavenUpstreamSummaryPayload.data;
+  const upstreamGid = mockUpstream.id;
+  const upstreamId = getIdFromGraphQLId(upstreamGid);
 
   const mavenUpstreamHandler = jest.fn().mockResolvedValue(mavenUpstreamSummaryPayload);
 
@@ -35,6 +33,9 @@ describe('LinkUpstreamForm', () => {
     wrapper = shallowMountExtended(LinkUpstreamForm, {
       apolloProvider: createMockApollo(handlers),
       propsData: props,
+      provide: {
+        getUpstreamSummaryQuery: getMavenUpstreamSummaryQuery,
+      },
     });
   };
 
@@ -53,10 +54,8 @@ describe('LinkUpstreamForm', () => {
   });
 
   it('renders upstream select', () => {
-    expect(cloneDeep(findUpstreamSelect().props())).toEqual({
-      upstreamsCount: defaultProps.upstreamsCount,
-      linkedUpstreams: defaultProps.linkedUpstreams,
-      initialUpstreams: defaultProps.initialUpstreams,
+    expect(findUpstreamSelect().props()).toEqual({
+      linkedUpstreamIds: defaultProps.linkedUpstreamIds,
     });
   });
 
@@ -82,20 +81,20 @@ describe('LinkUpstreamForm', () => {
 
   describe('when upstream is selected', () => {
     it('renders a loader', async () => {
-      await findUpstreamSelect().vm.$emit('select', upstreamId);
+      await findUpstreamSelect().vm.$emit('select', upstreamGid);
 
       expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(true);
     });
 
     describe('and API succeeds', () => {
       beforeEach(() => {
-        findUpstreamSelect().vm.$emit('select', upstreamId);
+        findUpstreamSelect().vm.$emit('select', upstreamGid);
       });
 
       it('calls maven upstream graphql query', () => {
         expect(mavenUpstreamHandler).toHaveBeenCalledTimes(1);
         expect(mavenUpstreamHandler).toHaveBeenCalledWith({
-          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/3',
+          id: upstreamGid,
         });
       });
 
@@ -113,7 +112,7 @@ describe('LinkUpstreamForm', () => {
       });
 
       it('renders Test upstream button', () => {
-        expect(findTestUpstreamButton().props('upstreamId')).toBe(3);
+        expect(findTestUpstreamButton().props('upstreamId')).toBe(upstreamId);
       });
     });
 
@@ -124,7 +123,7 @@ describe('LinkUpstreamForm', () => {
             [getMavenUpstreamSummaryQuery, jest.fn().mockResolvedValue(new Error('GraphQL error'))],
           ],
         });
-        findUpstreamSelect().vm.$emit('select', upstreamId);
+        findUpstreamSelect().vm.$emit('select', upstreamGid);
       });
 
       it('renders alert message', async () => {
@@ -141,7 +140,7 @@ describe('LinkUpstreamForm', () => {
       const upstreamResponseWithNullDescription = {
         data: {
           ...mavenUpstreamSummaryPayload.data,
-          virtualRegistriesPackagesMavenUpstream: {
+          upstream: {
             ...mockUpstream,
             description: null,
           },
@@ -157,7 +156,7 @@ describe('LinkUpstreamForm', () => {
             ],
           ],
         });
-        findUpstreamSelect().vm.$emit('select', upstreamId);
+        findUpstreamSelect().vm.$emit('select', upstreamGid);
         await waitForPromises();
       });
 
@@ -178,7 +177,7 @@ describe('LinkUpstreamForm', () => {
     });
 
     it('emits event if upstream is selected', async () => {
-      await findUpstreamSelect().vm.$emit('select', upstreamId);
+      await findUpstreamSelect().vm.$emit('select', upstreamGid);
 
       findForm().vm.$emit('submit', { preventDefault: () => {} });
 
@@ -186,7 +185,7 @@ describe('LinkUpstreamForm', () => {
       const [eventParams] = submittedEvent[0];
 
       expect(Boolean(submittedEvent)).toBe(true);
-      expect(eventParams).toEqual(3);
+      expect(eventParams).toEqual(upstreamId);
     });
   });
 

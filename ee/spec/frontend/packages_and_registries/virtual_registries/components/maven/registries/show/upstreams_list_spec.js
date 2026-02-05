@@ -14,19 +14,16 @@ import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
+import getMavenUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
 import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
 import {
   associateMavenUpstreamWithVirtualRegistry,
   deleteMavenUpstreamCache,
   deleteMavenRegistryCache,
-  getMavenUpstreamRegistriesList,
   removeMavenUpstreamRegistryAssociation,
   updateMavenRegistryUpstreamPosition,
 } from 'ee/api/virtual_registries_api';
-import {
-  upstreamsResponse,
-  multipleUpstreamsResponse,
-} from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
+import { groupMavenUpstreamsCount } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
 jest.mock('ee/api/virtual_registries_api');
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
@@ -50,6 +47,8 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
       createVirtualRegistry: true,
       updateVirtualRegistry: true,
     },
+    groupPath: 'full-path',
+    getUpstreamsCountQuery: getMavenUpstreamsCountQuery,
   };
 
   const expectedCapture = (error) => {
@@ -58,6 +57,10 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
       error,
     };
   };
+
+  const getUpstreamsCountHandler = jest
+    .fn()
+    .mockResolvedValue({ data: { ...groupMavenUpstreamsCount } });
 
   const createUpstreamSuccessHandler = jest.fn().mockResolvedValue({
     data: {
@@ -99,7 +102,17 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
   const findUpstreamsCountBadge = () => wrapper.findComponent(GlBadge);
   const findMaxUpstreamsMessage = () => wrapper.findByTestId('max-upstreams');
 
-  const createComponent = ({ props = {}, glAbilities = {}, handlers = [], stubs = {} } = {}) => {
+  const createComponent = ({
+    props = {},
+    glAbilities = {},
+    mutationHandler = createUpstreamSuccessHandler,
+    stubs = {},
+  } = {}) => {
+    const handlers = [
+      [getMavenUpstreamsCountQuery, getUpstreamsCountHandler],
+      [createUpstreamRegistryMutation, mutationHandler],
+    ];
+
     wrapper = shallowMountExtended(MavenRegistryDetailsUpstreamsList, {
       apolloProvider: createMockApollo(handlers),
       propsData: {
@@ -107,7 +120,7 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
         ...props,
       },
       provide: {
-        groupPath: 'full-path',
+        ...defaultProvide,
         glAbilities: {
           ...defaultProvide.glAbilities,
           ...glAbilities,
@@ -125,10 +138,6 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
     });
   };
 
-  beforeEach(() => {
-    getMavenUpstreamRegistriesList.mockResolvedValue(upstreamsResponse);
-  });
-
   it('sets components to loading', () => {
     createComponent({ props: { loading: true } });
 
@@ -141,8 +150,8 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
       createComponent();
     });
 
-    it('calls getMavenUpstreamRegistriesList API', () => {
-      expect(getMavenUpstreamRegistriesList).toHaveBeenCalledWith({ id: 'full-path' });
+    it('calls getMavenUpstreamsCount query', () => {
+      expect(getUpstreamsCountHandler).toHaveBeenCalledWith({ groupPath: 'full-path' });
     });
 
     it('renders the Crud component with correct props', () => {
@@ -224,8 +233,8 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
       });
     });
 
-    it('does not call getMavenUpstreamRegistriesList API', () => {
-      expect(getMavenUpstreamRegistriesList).not.toHaveBeenCalled();
+    it('does not call getMavenUpstreamsCount query', () => {
+      expect(getUpstreamsCountHandler).not.toHaveBeenCalled();
     });
 
     it('does not show `Clear all caches` button', () => {
@@ -238,12 +247,13 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
   });
 
   describe('when there are group level upstreams & registry has no upstreams', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       createComponent({
         props: {
           registryUpstreams: [],
         },
       });
+      await waitForPromises();
     });
 
     it('does not show `Clear all caches` button', () => {
@@ -260,11 +270,7 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
       });
 
       it('shows link form', () => {
-        expect(findLinkUpstreamForm().props('linkedUpstreams')).toStrictEqual([]);
-        expect(findLinkUpstreamForm().props('initialUpstreams')).toStrictEqual(
-          upstreamsResponse.data,
-        );
-        expect(findLinkUpstreamForm().props('upstreamsCount')).toBe(1);
+        expect(findLinkUpstreamForm().props('linkedUpstreamIds')).toStrictEqual([]);
         expect(findCreateUpstreamForm().exists()).toBe(false);
         expect(findAddUpstream().props('disabled')).toBe(true);
       });
@@ -279,24 +285,25 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
   });
 
   describe('when there are group level upstreams & registry has upstreams', () => {
-    const response = multipleUpstreamsResponse;
-    beforeEach(() => {
-      getMavenUpstreamRegistriesList.mockResolvedValue(response);
+    beforeEach(async () => {
       createComponent({
         props: {
           registryUpstreams,
         },
       });
+      await waitForPromises();
+    });
+
+    it('renders AddUpstreamAction component with `canLink` set to true', () => {
+      expect(findAddUpstream().props('canLink')).toBe(true);
     });
 
     it('when link form is shown, sets the upstream options correctly', async () => {
       await findAddUpstream().vm.$emit('link');
 
-      expect(findLinkUpstreamForm().props('initialUpstreams')).toStrictEqual(response.data);
-      expect(findLinkUpstreamForm().props('linkedUpstreams')).toStrictEqual(
-        registryUpstreams.map(({ upstream }) => upstream),
+      expect(findLinkUpstreamForm().props('linkedUpstreamIds')).toStrictEqual(
+        registryUpstreams.map(({ upstream }) => upstream.id),
       );
-      expect(findLinkUpstreamForm().props('upstreamsCount')).toBe(2);
     });
   });
 
@@ -313,7 +320,7 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
 
     it('emits createUpstream on successful form submission', async () => {
       createComponent({
-        handlers: [[createUpstreamRegistryMutation, createUpstreamSuccessHandler]],
+        mutationHandler: createUpstreamSuccessHandler,
       });
 
       await findAddUpstream().vm.$emit('create');
@@ -338,7 +345,7 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
     describe('with errors', () => {
       it('renders alert with message', async () => {
         createComponent({
-          handlers: [[createUpstreamRegistryMutation, createUpstreamErrorHandler]],
+          mutationHandler: createUpstreamErrorHandler,
         });
 
         await findAddUpstream().vm.$emit('create');
@@ -357,7 +364,7 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
 
       it('sends an error to Sentry', async () => {
         createComponent({
-          handlers: [[createUpstreamRegistryMutation, errorHandler]],
+          mutationHandler: errorHandler,
         });
 
         await findAddUpstream().vm.$emit('create');
@@ -377,7 +384,8 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
   });
 
   describe('link upstream action', () => {
-    const upstreamId = upstreamsResponse.data[0].id;
+    const upstreamId = 3;
+
     beforeEach(() => {
       associateMavenUpstreamWithVirtualRegistry.mockReset();
     });
@@ -393,7 +401,7 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
       it('calls the right arguments', () => {
         expect(associateMavenUpstreamWithVirtualRegistry).toHaveBeenCalledWith({
           registryId: 1,
-          upstreamId: 3,
+          upstreamId,
         });
       });
 

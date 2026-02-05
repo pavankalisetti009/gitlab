@@ -1,5 +1,7 @@
+# @feature_category: virtual_registry
+
 query getMavenUpstreamSummary($id: VirtualRegistriesPackagesMavenUpstreamID!) {
-  virtualRegistriesPackagesMavenUpstream(id: $id) {
+  upstream: virtualRegistriesPackagesMavenUpstream(id: $id) {
     id
     url
     name
