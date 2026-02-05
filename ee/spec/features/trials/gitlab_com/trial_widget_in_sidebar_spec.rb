@@ -33,7 +33,7 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
       freeze_time do
         visit group_path(group)
 
-        expect_widget_title_to_be('Ultimate with GitLab Duo Enterprise')
+        expect_widget_title_to_be('GitLab Ultimate trial')
         expect_widget_to_have_content('60 days left in trial')
       end
     end
@@ -42,14 +42,14 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
       travel_to(15.days.from_now) do
         visit group_path(group)
 
-        expect_widget_title_to_be('Ultimate with GitLab Duo Enterprise')
+        expect_widget_title_to_be('GitLab Ultimate trial')
         expect_widget_to_have_content('45 days left in trial')
       end
 
       travel_to(59.days.from_now) do
         visit group_path(group)
 
-        expect_widget_title_to_be('Ultimate with GitLab Duo Enterprise')
+        expect_widget_title_to_be('GitLab Ultimate trial')
         expect_widget_to_have_content('1 days left in trial')
       end
     end
@@ -83,7 +83,7 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
         travel_to(60.days.from_now) do
           visit group_path(group_with_expired_trial)
 
-          expect_widget_title_to_be('Your trial of Ultimate with GitLab Duo Enterprise has ended')
+          expect_widget_title_to_be('Your trial of GitLab Ultimate has ended')
           expect_widget_to_have_content('Upgrade')
         end
       end
@@ -92,7 +92,7 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
         travel_to(60.days.from_now) do
           visit group_path(group_with_expired_trial)
 
-          expect_widget_title_to_be('Your trial of Ultimate with GitLab Duo Enterprise has ended')
+          expect_widget_title_to_be('Your trial of GitLab Ultimate has ended')
           expect_widget_to_have_content('Upgrade')
 
           dismiss_widget

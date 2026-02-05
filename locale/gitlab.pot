@@ -71911,6 +71911,9 @@ msgstr ""
 msgid "TrialWidget|See upgrade options"
 msgstr ""
 
+msgid "TrialWidget|Ultimate with GitLab Duo Agent Platform"
+msgstr ""
+
 msgid "TrialWidget|Ultimate with GitLab Duo Enterprise"
 msgstr ""
 
