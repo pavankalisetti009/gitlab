@@ -17,8 +17,10 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
 
   describe "GET /groups/:id/awardable/:awardable_id/award_emoji" do
     context 'on an epic' do
+      let(:request_path) { "/groups/#{group.id}/epics/#{epic.iid}/award_emoji" }
+
       it "returns an array of award_emoji" do
-        get api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user)
+        get api(request_path, user)
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response).to be_an Array
@@ -30,25 +32,42 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_epic_award_emoji do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(request_path, personal_access_token: pat)
+        end
+      end
     end
   end
 
   describe 'GET /groups/:id/awardable/:awardable_id/notes/:note_id/award_emoji' do
-    let!(:rocket)  { create(:award_emoji, awardable: note, name: 'rocket') }
+    let!(:rocket) { create(:award_emoji, awardable: note, name: 'rocket') }
+    let(:request_path) { "/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji" }
 
     it 'returns an array of award emoji' do
-      get api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji", user)
+      get api(request_path, user)
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(json_response).to be_an Array
       expect(json_response.first['name']).to eq(rocket.name)
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_epic_note_award_emoji do
+      let(:boundary_object) { group }
+      let(:request) do
+        get api(request_path, personal_access_token: pat)
+      end
+    end
   end
 
   describe "GET /groups/:id/awardable/:awardable_id/award_emoji/:award_id" do
     context 'on an epic' do
+      let(:request_path) { "/groups/#{group.id}/epics/#{epic.iid}/award_emoji/#{award_emoji.id}" }
+
       it "returns the award emoji" do
-        get api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji/#{award_emoji.id}", user)
+        get api(request_path, user)
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response['name']).to eq(award_emoji.name)
@@ -61,25 +80,42 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_epic_award_emoji do
+        let(:boundary_object) { group }
+        let(:request) do
+          get api(request_path, personal_access_token: pat)
+        end
+      end
     end
   end
 
   describe 'GET /groups/:id/awardable/:awardable_id/notes/:note_id/award_emoji/:award_id' do
-    let!(:rocket)  { create(:award_emoji, awardable: note, name: 'rocket') }
+    let!(:rocket) { create(:award_emoji, awardable: note, name: 'rocket') }
+    let(:request_path) { "/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji/#{rocket.id}" }
 
     it 'returns an award emoji' do
-      get api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji/#{rocket.id}", user)
+      get api(request_path, user)
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(json_response).not_to be_an Array
       expect(json_response['name']).to eq(rocket.name)
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_epic_note_award_emoji do
+      let(:boundary_object) { group }
+      let(:request) do
+        get api(request_path, personal_access_token: pat)
+      end
+    end
   end
 
   describe "POST /groups/:id/awardable/:awardable_id/award_emoji" do
     context "on an epic" do
+      let(:request_path) { "/groups/#{group.id}/epics/#{epic.iid}/award_emoji" }
+
       it "creates a new award emoji" do
-        post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: 'blowfish' }
+        post api(request_path, user), params: { name: 'blowfish' }
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['name']).to eq('blowfish')
@@ -87,41 +123,49 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
       end
 
       it "returns a 400 bad request error if the name is not given" do
-        post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user)
+        post api(request_path, user)
 
         expect(response).to have_gitlab_http_status(:bad_request)
       end
 
       it "returns a 404 if the user is not authenticated" do
-        post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji"), params: { name: AwardEmoji::THUMBS_UP }
+        post api(request_path), params: { name: AwardEmoji::THUMBS_UP }
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
 
       it "normalizes +1 as thumbsup award" do
-        post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: '+1' }
+        post api(request_path, user), params: { name: '+1' }
 
         expect(epic.award_emoji.last.name).to eq(AwardEmoji::THUMBS_UP)
       end
 
       context 'when the emoji already has been awarded' do
         it 'returns a 404 status code' do
-          post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: AwardEmoji::THUMBS_UP }
-          post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: AwardEmoji::THUMBS_UP }
+          post api(request_path, user), params: { name: AwardEmoji::THUMBS_UP }
+          post api(request_path, user), params: { name: AwardEmoji::THUMBS_UP }
 
           expect(response).to have_gitlab_http_status(:not_found)
           expect(json_response["message"]).to match("has already been taken")
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :create_epic_award_emoji do
+        let(:boundary_object) { group }
+        let(:request) do
+          post api(request_path, personal_access_token: pat), params: { name: 'blowfish' }
         end
       end
     end
   end
 
   describe "POST /groups/:id/awardable/:awardable_id/notes/:note_id/award_emoji" do
-    let(:note2)  { create(:note, noteable: epic, author: user) }
+    let(:request_path) { "/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji" }
+    let(:note2) { create(:note, noteable: epic, author: user) }
 
     it 'creates a new award emoji' do
       expect do
-        post api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji", user), params: { name: 'rocket' }
+        post api(request_path, user), params: { name: 'rocket' }
       end.to change { note.award_emoji.count }.from(0).to(1)
 
       expect(response).to have_gitlab_http_status(:created)
@@ -131,33 +175,42 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
     it 'marks Todos on the Noteable as done' do
       todo = create(:todo, target: note2.noteable, group: group, user: user)
 
-      post api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji", user), params: { name: 'rocket' }
+      post api(request_path, user), params: { name: 'rocket' }
 
       expect(todo.reload).to be_done
     end
 
     it "normalizes +1 as thumbsup award" do
-      post api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji", user), params: { name: '+1' }
+      post api(request_path, user), params: { name: '+1' }
 
       expect(note.award_emoji.last.name).to eq(AwardEmoji::THUMBS_UP)
     end
 
     context 'when the emoji already has been awarded' do
       it 'returns a 404 status code' do
-        post api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji", user), params: { name: 'rocket' }
-        post api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji", user), params: { name: 'rocket' }
+        post api(request_path, user), params: { name: 'rocket' }
+        post api(request_path, user), params: { name: 'rocket' }
 
         expect(response).to have_gitlab_http_status(:not_found)
         expect(json_response["message"]).to match("has already been taken")
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :create_epic_note_award_emoji do
+      let(:boundary_object) { group }
+      let(:request) do
+        post api(request_path, personal_access_token: pat), params: { name: 'rocket' }
       end
     end
   end
 
   describe 'DELETE /groups/:id/awardable/:awardable_id/award_emoji/:award_id' do
     context 'when the awardable is an Epic' do
+      let(:request_path) { "/groups/#{group.id}/epics/#{epic.iid}/award_emoji/#{award_emoji.id}" }
+
       it 'deletes the award' do
         expect do
-          delete api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji/#{award_emoji.id}", user)
+          delete api(request_path, user)
 
           expect(response).to have_gitlab_http_status(:no_content)
         end.to change { epic.award_emoji.count }.from(1).to(0)
@@ -170,24 +223,39 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
       end
 
       it_behaves_like '412 response' do
-        let(:request) { api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji/#{award_emoji.id}", user) }
+        let(:request) { api(request_path, user) }
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :delete_epic_award_emoji do
+        let(:boundary_object) { group }
+        let(:request) do
+          delete api(request_path, personal_access_token: pat)
+        end
       end
     end
   end
 
-  describe 'DELETE /groups/:id/awardable/:awardable_id/award_emoji/:award_emoji_id' do
+  describe 'DELETE /groups/:id/awardable/:awardable_id/notes/:note_id/award_emoji/:award_id' do
     let!(:rocket)  { create(:award_emoji, awardable: note, name: 'rocket', user: user) }
+    let(:request_path) { "/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji/#{rocket.id}" }
 
     it 'deletes the award' do
       expect do
-        delete api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji/#{rocket.id}", user)
+        delete api(request_path, user)
 
         expect(response).to have_gitlab_http_status(:no_content)
       end.to change { note.award_emoji.count }.from(1).to(0)
     end
 
     it_behaves_like '412 response' do
-      let(:request) { api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji/#{rocket.id}", user) }
+      let(:request) { api(request_path, user) }
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_epic_note_award_emoji do
+      let(:boundary_object) { group }
+      let(:request) do
+        delete api(request_path, personal_access_token: pat)
+      end
     end
   end
 end
