@@ -29,5 +29,6 @@ RSpec.describe 'getting AI foundational chat agents', feature_category: :workflo
     expect(first_node["reference"]).to eq("chat")
     expect(first_node["referenceWithVersion"]).to eq("chat")
     expect(first_node["version"]).to eq("")
+    expect(first_node["avatarUrl"]).to match_asset_path("/bot_avatars/gitlab-duo-agent.png")
   end
 end

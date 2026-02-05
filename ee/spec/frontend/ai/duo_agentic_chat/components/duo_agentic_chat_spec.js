@@ -2676,6 +2676,7 @@ describe('Duo Agentic Chat', () => {
         description: 'Duo is your general development assistant',
         referenceWithVersion: 'chat',
         foundational: true,
+        avatarUrl: '/assets/bot_avatars/gitlab-duo-agent.png',
         text: 'GitLab Duo Agent',
       });
     });
@@ -2690,6 +2691,7 @@ describe('Duo Agentic Chat', () => {
         description: 'Duo is your general development assistant',
         referenceWithVersion: 'chat',
         foundational: true,
+        avatarUrl: '/assets/bot_avatars/gitlab-duo-agent.png',
         text: 'GitLab Duo Agent',
       });
     });
@@ -3105,6 +3107,69 @@ describe('Duo Agentic Chat', () => {
     it('shows no-credits empty state when namespace is selected but credits exhausted', () => {
       createComponent({
         propsData: { creditsAvailable: false },
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isEmbedded: false,
+              defaultNamespaceSelected: true,
+              preferencesPath: PREFERENCES_PATH,
+            },
+          },
+        },
+      });
+
+      const duoChat = findDuoChat();
+      const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state']({});
+
+      expect(customEmptyState).toBeDefined();
+    });
+
+    it('shows no-namespace empty state over trial/subscription when both conditions are true', () => {
+      createComponent({
+        propsData: { creditsAvailable: true, trialActive: true },
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isEmbedded: false,
+              defaultNamespaceSelected: false,
+              preferencesPath: PREFERENCES_PATH,
+            },
+          },
+        },
+      });
+
+      const duoChat = findDuoChat();
+      const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state']({});
+
+      expect(customEmptyState).toBeDefined();
+    });
+
+    it('shows no-credits empty state over trial/subscription when both conditions are true', () => {
+      createComponent({
+        propsData: { creditsAvailable: false, trialActive: true },
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isEmbedded: false,
+              defaultNamespaceSelected: true,
+              preferencesPath: PREFERENCES_PATH,
+            },
+          },
+        },
+      });
+
+      const duoChat = findDuoChat();
+      const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state']({});
+
+      expect(customEmptyState).toBeDefined();
+    });
+
+    it('shows trial/subscription empty state when namespace selected and credits available', () => {
+      createComponent({
+        propsData: { creditsAvailable: true, trialActive: true },
         provide: {
           chatConfiguration: {
             title: 'GitLab Duo Agentic Chat',

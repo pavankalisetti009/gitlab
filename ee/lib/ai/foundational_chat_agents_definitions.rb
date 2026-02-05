@@ -11,6 +11,7 @@ module Ai
         global_catalog_id: nil,
         version: '',
         name: 'GitLab Duo',
+        avatar: 'gitlab-duo-agent.png',
         description: "Your general development assistant. Get help with code, planning,
         security, project management, and more."
       },
@@ -20,6 +21,7 @@ module Ai
         version: 'experimental',
         name: 'Planner',
         global_catalog_id: 348,
+        avatar: 'planner-agent.png',
         description: <<~DESCRIPTION
           Get help with planning and workflow management. Organize, edit, create, and track work more effectively in GitLab.
         DESCRIPTION
@@ -30,6 +32,7 @@ module Ai
         reference: 'security_analyst_agent',
         version: 'experimental',
         name: 'Security Analyst',
+        avatar: 'security-agent.png',
         description: <<~DESCRIPTION
           Automate vulnerability management and security workflows. The Security Analyst Agent acts as an
           AI team member that can autonomously analyze,
@@ -43,6 +46,7 @@ module Ai
         global_catalog_id: nil,
         version: 'v1',
         name: 'Data Analyst',
+        avatar: 'analytics-agent.png',
         description: <<~DESCRIPTION
           Beta AI assistant for analyzing data in GitLab, powered by GLQL
         DESCRIPTION

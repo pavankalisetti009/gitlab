@@ -70,6 +70,7 @@ import {
 } from '../utils/chat_thread_snapshot';
 import NoNamespaceEmptyState from './no_namespace_empty_state.vue';
 import NoCreditsEmptyState from './no_credits_empty_state.vue';
+import ActiveTrialOrSubscriptionEmptyState from './active_trial_or_subscription_empty_state.vue';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -80,6 +81,7 @@ export default {
     ChatLoadingState,
     NoNamespaceEmptyState,
     NoCreditsEmptyState,
+    ActiveTrialOrSubscriptionEmptyState,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -154,6 +156,11 @@ export default {
       required: false,
       default: false,
     },
+    trialActive: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     buyAddonPath: {
       type: String,
       required: false,
@@ -163,6 +170,16 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+    subscriptionActive: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    exploreAiCatalogPath: {
+      type: String,
+      required: false,
+      default: null,
     },
   },
   apollo: {
@@ -322,6 +339,7 @@ export default {
       ...getInitialDimensions(),
       chatState: { isEnabled: true, reason: '' },
       hasCredits: this.creditsAvailable,
+      hasTrialOrSubscription: this.trialActive || this.subscriptionActive,
       contextPresets: [],
       availableModels: [],
       pinnedModel: null,
@@ -470,6 +488,16 @@ export default {
       return (
         this.multithreadedView === DUO_CHAT_VIEWS.CHAT &&
         !this.chatConfiguration?.defaultProps?.defaultNamespaceSelected
+      );
+    },
+    shouldShowActiveTrialOrSubscriptionEmptyState() {
+      return this.hasTrialOrSubscription && !this.currentAgent;
+    },
+    shouldShowCustomEmptyState() {
+      return (
+        this.showNoNamespaceEmptyState ||
+        !this.hasCredits ||
+        this.shouldShowActiveTrialOrSubscriptionEmptyState
       );
     },
   },
@@ -1205,7 +1233,7 @@ export default {
           </template>
         </gl-toggle>
       </template>
-      <template v-if="showNoNamespaceEmptyState || !hasCredits" #custom-empty-state>
+      <template v-if="shouldShowCustomEmptyState" #custom-empty-state>
         <no-namespace-empty-state
           v-if="showNoNamespaceEmptyState"
           key="no-namespace-empty-state"
@@ -1219,6 +1247,15 @@ export default {
           :is-trial="isTrial"
           :buy-addon-path="buyAddonPath"
           :can-buy-addon="canBuyAddon"
+        />
+        <active-trial-or-subscription-empty-state
+          v-else-if="shouldShowActiveTrialOrSubscriptionEmptyState"
+          key="has-trial-or-subscription"
+          :agents="agents"
+          :predefined-prompts="predefinedPrompts"
+          :explore-ai-catalog-path="exploreAiCatalogPath"
+          @new-chat="onNewChat"
+          @send-chat-prompt="onSendChatPrompt"
         />
       </template>
     </web-agentic-duo-chat>

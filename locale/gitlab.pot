@@ -7119,6 +7119,9 @@ msgstr ""
 msgid "Agent not found for provided id."
 msgstr ""
 
+msgid "Agents|Explore other agents"
+msgstr ""
+
 msgid "AggregationEngine|Unknown granularity \"%{granularity}\""
 msgstr ""
 
@@ -25818,10 +25821,25 @@ msgstr ""
 msgid "DuoAgentPlatform|User messaged agent"
 msgstr ""
 
+msgid "DuoAgenticChat|Chat about different topics"
+msgstr ""
+
+msgid "DuoAgenticChat|Chat with different agents"
+msgstr ""
+
+msgid "DuoAgenticChat|Collaborate with AI agents to accomplish  tasks and answer questions, or use a multi-agent flow to solve a complex problem."
+msgstr ""
+
+msgid "DuoAgenticChat|Get targeted help for tasks with specialized agents"
+msgstr ""
+
 msgid "DuoAgenticChat|GitLab Duo"
 msgstr ""
 
 msgid "DuoAgenticChat|GitLab Duo AI assistant"
+msgstr ""
+
+msgid "DuoAgenticChat|GitLab Duo Agent Platform"
 msgstr ""
 
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"

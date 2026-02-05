@@ -13,6 +13,7 @@ module Ai
     attribute :description, :string
     attribute :version, :string
     attribute :global_catalog_id, :integer
+    attribute :avatar, :string
 
     validates :name, :reference, :description, presence: true
 

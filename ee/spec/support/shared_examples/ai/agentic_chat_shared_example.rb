@@ -53,7 +53,7 @@ RSpec.shared_examples 'user can use agentic chat' do
       click_button "Active GitLab Duo Chat"
 
       within_testid('chat-component') do
-        expect(page).to have_content('I am GitLab Duo Agentic Chat')
+        expect(page).to have_content('GitLab Duo Agent Platform')
       end
 
       # Ask a question
