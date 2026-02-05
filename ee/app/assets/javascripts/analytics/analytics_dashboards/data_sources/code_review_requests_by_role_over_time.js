@@ -1,8 +1,7 @@
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import {
   DATE_RANGE_OPTION_LAST_180_DAYS,
-  START_DATES,
-  startOfTomorrow,
+  DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
@@ -83,8 +82,10 @@ export default async function fetch({
   queryOverrides: { namespace: namespaceOverride } = {},
   setVisualizationOverrides = () => {},
 }) {
-  const startDate = START_DATES[dateRange] ?? START_DATES[DATE_RANGE_OPTION_LAST_180_DAYS];
-  const endDate = startOfTomorrow;
+  // Default to 180 days if an invalid date range is given
+  const { startDate, endDate } = DATE_RANGE_OPTIONS[dateRange]
+    ? DATE_RANGE_OPTIONS[dateRange]
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_180_DAYS];
 
   const chartData = await fetchCodeReviewRequestsByRoleData({
     namespace: namespaceOverride ?? namespace,

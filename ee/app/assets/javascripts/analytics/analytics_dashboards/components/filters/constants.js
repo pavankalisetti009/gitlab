@@ -1,5 +1,5 @@
 import { __, sprintf } from '~/locale';
-import { dayAfter, nDaysBefore, getDateInPast, getStartOfDay } from '~/lib/utils/datetime_utility';
+import { nDaysBefore, getStartOfDay } from '~/lib/utils/datetime_utility';
 import {
   OPERATORS_IS,
   OPERATORS_IS_NOT,
@@ -15,14 +15,8 @@ import {
 // Compute all relative dates based on the _beginning_ of today.
 // We use this date as the end date for the charts. This causes
 // the current date to be the last day included in the graph.
-const startOfToday = getStartOfDay(new Date(), { utc: true });
-
-// We use this date as the "to" parameter for the API. This allows
-// us to get DORA 4 metrics about the current day.
-export const startOfTomorrow = dayAfter(startOfToday, { utc: true });
-
-export const TODAY = startOfToday;
-export const SEVEN_DAYS_AGO = getDateInPast(TODAY, 7);
+export const TODAY = getStartOfDay(new Date(), { utc: true });
+export const SEVEN_DAYS_AGO = nDaysBefore(TODAY, 7, { utc: true });
 
 export const DATE_RANGE_OPTION_TODAY = 'today';
 export const DATE_RANGE_OPTION_LAST_7_DAYS = '7d';
@@ -105,16 +99,6 @@ export const DATE_RANGE_OPTIONS = {
 };
 
 export const DATE_RANGE_OPTION_KEYS = Object.keys(DATE_RANGE_OPTIONS);
-
-export const START_DATES = {
-  [DATE_RANGE_OPTION_TODAY]: nDaysBefore(startOfTomorrow, 1, { utc: true }),
-  [DATE_RANGE_OPTION_LAST_7_DAYS]: nDaysBefore(startOfTomorrow, 7, { utc: true }),
-  [DATE_RANGE_OPTION_LAST_30_DAYS]: nDaysBefore(startOfTomorrow, 30, { utc: true }),
-  [DATE_RANGE_OPTION_LAST_60_DAYS]: nDaysBefore(startOfTomorrow, 60, { utc: true }),
-  [DATE_RANGE_OPTION_LAST_90_DAYS]: nDaysBefore(startOfTomorrow, 90, { utc: true }),
-  [DATE_RANGE_OPTION_LAST_180_DAYS]: nDaysBefore(startOfTomorrow, 180, { utc: true }),
-  [DATE_RANGE_OPTION_LAST_365_DAYS]: nDaysBefore(startOfTomorrow, 365, { utc: true }),
-};
 
 export const FILTERED_SEARCH_SUPPORTED_TOKENS = [
   TOKEN_TYPE_MILESTONE,

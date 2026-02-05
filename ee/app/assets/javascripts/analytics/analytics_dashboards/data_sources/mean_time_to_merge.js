@@ -1,26 +1,28 @@
+import { dayAfter } from '~/lib/utils/datetime_utility';
 import { queryThroughputData } from 'ee/analytics/merge_request_analytics/api';
 import {
   computeMttmData,
   filterToMRThroughputQueryObject,
 } from 'ee/analytics/merge_request_analytics/utils';
-import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
   DATE_RANGE_OPTION_LAST_365_DAYS,
-  startOfTomorrow,
+  DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 
 export default async function fetch({
   namespace,
-  query: { dateRange: defaultDateRange = DATE_RANGE_OPTION_LAST_365_DAYS } = {},
+  query: { dateRange = DATE_RANGE_OPTION_LAST_365_DAYS } = {},
   queryOverrides = {},
-  filters: { startDate: filtersStartDate, endDate = startOfTomorrow, searchFilters } = {},
+  filters: { startDate: filtersStartDate, endDate: filtersEndDate, searchFilters } = {},
 }) {
-  const startDate = filtersStartDate || getStartDate(defaultDateRange);
+  const { startDate, endDate } = DATE_RANGE_OPTIONS[dateRange]
+    ? DATE_RANGE_OPTIONS[dateRange]
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_365_DAYS];
 
   const rawData = await queryThroughputData({
     namespace,
-    startDate,
-    endDate,
+    startDate: filtersStartDate ?? startDate,
+    endDate: filtersEndDate ?? dayAfter(endDate, { utc: true }),
     ...filterToMRThroughputQueryObject(searchFilters),
     ...queryOverrides,
   });

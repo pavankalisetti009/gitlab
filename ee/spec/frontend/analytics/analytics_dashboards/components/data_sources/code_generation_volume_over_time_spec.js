@@ -89,9 +89,9 @@ describe('`Code generation volume over time` data source', () => {
         expect(defaultClient.query).toHaveBeenCalledTimes(3);
 
         [
-          { startDate: '2020-05-08', endDate: '2020-05-31' },
+          { startDate: '2020-05-07', endDate: '2020-05-31' },
           { startDate: '2020-06-01', endDate: '2020-06-30' },
-          { startDate: '2020-07-01', endDate: '2020-07-07' },
+          { startDate: '2020-07-01', endDate: '2020-07-06' },
         ].forEach(({ startDate, endDate }) => {
           expectQueryWithVariables({
             fullPath: namespace,
@@ -130,13 +130,13 @@ describe('`Code generation volume over time` data source', () => {
       expect(defaultClient.query).toHaveBeenCalledTimes(7);
 
       [
-        { startDate: '2020-01-09', endDate: '2020-01-31' },
+        { startDate: '2020-01-08', endDate: '2020-01-31' },
         { startDate: '2020-02-01', endDate: '2020-02-29' },
         { startDate: '2020-03-01', endDate: '2020-03-31' },
         { startDate: '2020-04-01', endDate: '2020-04-30' },
         { startDate: '2020-05-01', endDate: '2020-05-31' },
         { startDate: '2020-06-01', endDate: '2020-06-30' },
-        { startDate: '2020-07-01', endDate: '2020-07-07' },
+        { startDate: '2020-07-01', endDate: '2020-07-06' },
       ].forEach(({ startDate, endDate }) => {
         expectQueryWithVariables({
           fullPath: namespace,

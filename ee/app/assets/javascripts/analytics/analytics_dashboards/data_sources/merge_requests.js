@@ -1,9 +1,9 @@
+import { dayAfter } from '~/lib/utils/datetime_utility';
 import getMergeRequests from 'ee/analytics/merge_request_analytics/graphql/queries/throughput_table.query.graphql';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
-import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
   DATE_RANGE_OPTION_LAST_365_DAYS,
-  startOfTomorrow,
+  DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { filterToMRThroughputQueryObject } from 'ee/analytics/merge_request_analytics/utils';
 import { defaultClient } from '../graphql/client';
@@ -116,14 +116,16 @@ export default function fetch({
   namespace,
   query: { dateRange = DATE_RANGE_OPTION_LAST_365_DAYS, pagination },
   queryOverrides = {},
-  filters: { startDate: filtersStartDate, endDate = startOfTomorrow, searchFilters } = {},
+  filters: { startDate: filtersStartDate, endDate: filtersEndDate, searchFilters } = {},
 }) {
-  const startDate = filtersStartDate || getStartDate(dateRange);
+  const { startDate, endDate } = DATE_RANGE_OPTIONS[dateRange]
+    ? DATE_RANGE_OPTIONS[dateRange]
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_365_DAYS];
 
   return fetchMergeRequests({
     namespace,
-    startDate,
-    endDate,
+    startDate: filtersStartDate ?? startDate,
+    endDate: filtersEndDate ?? dayAfter(endDate, { utc: true }),
     pagination: pagination || { first: 20 },
     ...filterToMRThroughputQueryObject(searchFilters),
     ...queryOverrides,

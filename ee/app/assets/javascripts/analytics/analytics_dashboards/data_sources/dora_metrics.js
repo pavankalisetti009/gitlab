@@ -18,12 +18,9 @@ import { TABLE_METRICS } from 'ee/analytics/dashboards/constants';
 import { DORA_METRICS_CHARTS_ADDITIONAL_OPTS } from 'ee/analytics/analytics_dashboards/constants';
 import {
   DATE_RANGE_OPTION_LAST_180_DAYS,
-  DATE_RANGE_OPTION_KEYS,
   DATE_RANGE_OPTIONS,
-  startOfTomorrow,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { buildNullSeries } from 'ee/analytics/shared/utils';
-import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import { DEFAULT_NULL_SERIES_OPTIONS, NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 import { defaultClient } from '../graphql/client';
 
@@ -161,16 +158,16 @@ export default async function fetch({
   } = {},
   setVisualizationOverrides = () => {},
 }) {
-  let dateRangeKey = dateRangeOption || dateRangeOverride || defaultDateRange;
-  if (!DATE_RANGE_OPTION_KEYS.includes(dateRangeKey)) {
-    // Default to 180 days if an invalid date range is given
-    dateRangeKey = DATE_RANGE_OPTION_LAST_180_DAYS;
-  }
-
-  const startDate = getStartDate(dateRangeKey);
+  const dateRangeKey = dateRangeOption || dateRangeOverride || defaultDateRange;
+  const {
+    startDate,
+    endDate,
+    text: title,
+  } = DATE_RANGE_OPTIONS[dateRangeKey]
+    ? DATE_RANGE_OPTIONS[dateRangeKey]
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_180_DAYS];
 
   if (interval === BUCKETING_INTERVAL_ALL) {
-    const title = DATE_RANGE_OPTIONS[dateRangeKey].text;
     const visualizationOptionOverrides = {
       ...(title && {
         titleIcon: 'clock',
@@ -189,7 +186,7 @@ export default async function fetch({
 
   return fetchDoraMetricsQuery({
     startDate: filtersStartDate ?? startDate,
-    endDate: filtersEndDate ?? startOfTomorrow,
+    endDate: filtersEndDate ?? endDate,
     metric,
     namespace,
     interval,

@@ -11,7 +11,6 @@ import {
   urlQueryToFilter,
 } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
 import {
-  START_DATES,
   DATE_RANGE_OPTIONS,
   DATE_RANGE_OPTION_CUSTOM,
   DATE_RANGE_OPTION_KEYS,
@@ -96,6 +95,3 @@ export const filtersToQueryParams = ({
 export function isDashboardFilterEnabled(filter) {
   return filter?.enabled || false;
 }
-
-export const getStartDate = (option) =>
-  START_DATES[option] ?? START_DATES[DEFAULT_SELECTED_DATE_RANGE_OPTION];
