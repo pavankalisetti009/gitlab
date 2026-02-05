@@ -6,12 +6,14 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
   let_it_be(:user) { create(:user) }
   let_it_be(:container) { create(:project, namespace: create(:group)) }
   let(:workflow_definition) { 'software_development' }
+  let_it_be_with_reload(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
   let(:service) do
     described_class.new(
       current_user: user,
       organization: container.organization,
       workflow_definition: workflow_definition,
-      container: container
+      container: container,
+      service_account: service_account
     )
   end
 
@@ -229,10 +231,6 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
   end
 
   describe '#generate_oauth_token_with_composite_identity_support' do
-    before do
-      allow(Ai::DuoWorkflow).to receive(:available?).and_return(true)
-    end
-
     context 'when composite identity feature is enabled' do
       it 'calls generate_composite_oauth_token' do
         expect(service).to receive(:generate_composite_oauth_token)
@@ -253,9 +251,9 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
       end
     end
 
-    context 'when Ai::DuoWorkflow is not available' do
+    context 'when service account does not have composite identity enforced' do
       before do
-        allow(Ai::DuoWorkflow).to receive(:available?).and_return(false)
+        service_account.update!(composite_identity_enforced: false)
       end
 
       it 'calls generate_oauth_token' do
@@ -267,10 +265,6 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
   end
 
   describe '#use_service_account?' do
-    before do
-      allow(Ai::DuoWorkflow).to receive(:available?).and_return(true)
-    end
-
     context 'when composite identity feature is enabled' do
       it 'returns true' do
         expect(service.use_service_account?).to be(true)
@@ -287,9 +281,9 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
       end
     end
 
-    context 'when Ai::DuoWorkflow is not available' do
+    context 'when service account does not have composite identity enforced' do
       before do
-        allow(Ai::DuoWorkflow).to receive(:available?).and_return(false)
+        service_account.update!(composite_identity_enforced: false)
       end
 
       it 'returns false' do

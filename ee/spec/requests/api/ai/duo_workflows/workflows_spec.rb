@@ -2411,8 +2411,12 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
       end
 
       context 'for X-Gitlab-Agent-Platform-Feature-Setting-Name header', :saas do
-        context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is provided' do
+        context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is provided', :request_store do
           let(:custom_feature_name) { 'any_dap_feature' }
+
+          before do
+            ::Gitlab::Auth::Identity.link_from_scoped_user(service_account, user)
+          end
 
           it 'uses the header value as feature_name when calling DuoAgentPlatformModelMetadataService' do
             expect(::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService).to receive(:new).with(

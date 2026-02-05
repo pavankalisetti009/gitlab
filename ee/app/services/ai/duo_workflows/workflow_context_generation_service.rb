@@ -64,7 +64,8 @@ module Ai
       attr_reader :current_user, :container, :organization, :workflow_definition, :service_account
 
       def composite_identity_enabled?
-        ::Ai::DuoWorkflow.available? && Feature.enabled?(:duo_workflow_use_composite_identity, current_user)
+        @service_account&.composite_identity_enforced && Feature.enabled?(:duo_workflow_use_composite_identity,
+          current_user)
       end
 
       def ai_feature
