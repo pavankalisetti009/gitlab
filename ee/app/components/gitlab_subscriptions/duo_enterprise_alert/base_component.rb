@@ -29,7 +29,11 @@ module GitlabSubscriptions
       end
 
       def title
-        s_('BillingPlans|Get the most out of GitLab with Ultimate and GitLab Duo Enterprise')
+        if helpers.show_dap_copy?(namespace)
+          s_('BillingPlans|Get the most out of GitLab with Ultimate')
+        else
+          s_('BillingPlans|Get the most out of GitLab with Ultimate and GitLab Duo Enterprise')
+        end
       end
 
       def primary_cta_options
@@ -56,7 +60,11 @@ module GitlabSubscriptions
       end
 
       def primary_cta
-        s_('BillingPlans|Start free trial of GitLab Ultimate and GitLab Duo Enterprise')
+        if helpers.show_dap_copy?(namespace)
+          s_('BillingPlans|Start a free trial of GitLab Ultimate')
+        else
+          s_('BillingPlans|Start free trial of GitLab Ultimate and GitLab Duo Enterprise')
+        end
       end
 
       def hand_raise_lead_data

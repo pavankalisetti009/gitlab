@@ -11565,6 +11565,9 @@ msgstr ""
 msgid "BillingPlans|Start a free GitLab Duo Enterprise Trial"
 msgstr ""
 
+msgid "BillingPlans|Start a free trial of GitLab Ultimate"
+msgstr ""
+
 msgid "BillingPlans|Start an Ultimate trial to try the complete set of features from GitLab."
 msgstr ""
 
