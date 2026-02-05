@@ -9,7 +9,7 @@ describe('PurchaseCommitmentCard', () => {
   const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(PurchaseCommitmentCard, {
       propsData: {
-        purchaseCreditsPath: '/purchase-monthly-commitment',
+        purchaseCreditsUrl: 'https://customers.gitlab.com/purchase/credits',
         hasCommitment: false,
         ...propsData,
       },
@@ -18,12 +18,6 @@ describe('PurchaseCommitmentCard', () => {
       },
     });
   };
-
-  beforeEach(() => {
-    window.gon = {
-      subscriptions_url: 'https://example.com',
-    };
-  });
 
   describe('with monthly commmittment', () => {
     beforeEach(() => {
@@ -43,7 +37,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe('https://example.com/purchase-monthly-commitment');
+      expect(button.props('href')).toBe('https://customers.gitlab.com/purchase/credits');
 
       expect(button.text()).toBe('Increase monthly commitment');
     });
@@ -67,7 +61,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe('https://example.com/purchase-monthly-commitment');
+      expect(button.props('href')).toBe('https://customers.gitlab.com/purchase/credits');
       expect(button.text()).toBe('Purchase monthly commitment');
     });
   });

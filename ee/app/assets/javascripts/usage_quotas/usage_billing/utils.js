@@ -1,4 +1,5 @@
 import { THOUSAND, MILLION } from '~/lib/utils/constants';
+import { isAbsolute, joinPaths } from '~/lib/utils/url_utility';
 
 export const fillUsageValues = (usage) => {
   const {
@@ -39,4 +40,16 @@ export const formatNumber = (value, fractionDigits = 1) => {
     return `${Number((value / THOUSAND).toFixed(fractionDigits))}k`;
   }
   return `${Number((value / MILLION).toFixed(fractionDigits))}m`;
+};
+
+/**
+ * Ensures an absolute URL to customers portal
+ *
+ * @param {string} urlOrPath absolute URL or a path relative to customers portal
+ * @returns {string} absolute URL
+ */
+export const ensureAbsoluteCustomerPortalUrl = (urlOrPath) => {
+  if (isAbsolute(urlOrPath)) return urlOrPath;
+
+  return joinPaths(gon.subscriptions_url, urlOrPath);
 };

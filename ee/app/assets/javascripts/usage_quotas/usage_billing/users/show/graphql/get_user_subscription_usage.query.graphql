@@ -12,9 +12,15 @@ query getUserSubscriptionUsage(
     enabled
 
     lastEventTransactionAt
+    subscriptionPortalUsageDashboardUrl
+    purchaseCreditsPath
 
     startDate
     endDate
+
+    paidTierTrial {
+      isActive
+    }
 
     usersUsage {
       users(username: $username) {

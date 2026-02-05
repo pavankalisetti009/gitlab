@@ -1,6 +1,5 @@
 <script>
 import { GlSprintf, GlLink, GlCard, GlButton } from '@gitlab/ui';
-import { isAbsolute, joinPaths } from '~/lib/utils/url_utility';
 import { PROMO_URL } from '~/constants';
 
 export default {
@@ -12,16 +11,9 @@ export default {
     GlButton,
   },
   props: {
-    customersUsageDashboardPath: {
+    customersUsageDashboardUrl: {
       type: String,
       required: true,
-    },
-  },
-  computed: {
-    customersUsageDashboardUrl() {
-      if (isAbsolute(this.customersUsageDashboardPath)) return this.customersUsageDashboardPath;
-
-      return joinPaths(gon.subscriptions_url, this.customersUsageDashboardPath);
     },
   },
   overageDocsLink: `${PROMO_URL}/pricing`,

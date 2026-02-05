@@ -9,7 +9,13 @@ import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import getUserSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/users/show/graphql/get_user_subscription_usage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { mockDataWithPool, mockDataWithoutPool, mockDisabledStateData } from '../mock_data';
+import PaidTierTrialPeriodView from 'ee/usage_quotas/usage_billing/components/paid_tier_trial_period_view.vue';
+import {
+  mockDataWithPool,
+  mockDataWithoutPool,
+  mockDisabledStateData,
+  mockPaidTierTrialData,
+} from '../mock_data';
 
 jest.mock('~/lib/logger');
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -46,6 +52,13 @@ describe('UsageBillingUserDashboardApp', () => {
   const findTotalUsageCard = () => wrapper.findByTestId('total-usage-card');
   const findEventsTable = () => wrapper.findComponent(EventsTable);
   const findDisabledStateAlert = () => wrapper.findByTestId('usage-billing-disabled-alert');
+
+  beforeEach(() => {
+    window.gon = {
+      display_gitlab_credits_user_data: true,
+      subscriptions_url: 'https://customers.gitlab.com/',
+    };
+  });
 
   beforeEach(() => {
     mockQueryHandler = jest.fn();
@@ -192,6 +205,45 @@ describe('UsageBillingUserDashboardApp', () => {
       mockQueryHandler.mockResolvedValue(mockDataWithoutPool);
       createComponent();
       await waitForPromises();
+    });
+  });
+
+  describe('paid tier trial', () => {
+    describe('when trial is active', () => {
+      beforeEach(async () => {
+        mockQueryHandler.mockResolvedValue(mockPaidTierTrialData);
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('will render trial card', () => {
+        const trialView = wrapper.findComponent(PaidTierTrialPeriodView);
+
+        expect(trialView.exists()).toBe(true);
+        expect(trialView.props()).toEqual({
+          customersUsageDashboardUrl: 'https://customers.gitlab.com/subscriptions/A-S042/usage',
+          purchaseCreditsUrl: 'https://customers.gitlab.com/purchase-credits-path',
+        });
+      });
+
+      it('will not render other cards', () => {
+        const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
+
+        expect(usageBillingSection.exists()).toBe(false);
+      });
+    });
+
+    describe('when not on trial', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('will not render trial card', () => {
+        const trialView = wrapper.findComponent(PaidTierTrialPeriodView);
+
+        expect(trialView.exists()).toBe(false);
+      });
     });
   });
 

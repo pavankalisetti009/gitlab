@@ -9,7 +9,7 @@ describe('OverageOptInCard', () => {
   const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(OverageOptInCard, {
       propsData: {
-        customersUsageDashboardPath: '/subscriptions/A-0123456/usage',
+        customersUsageDashboardUrl: 'https://customers.gitlab.com/subscriptions/A-0123456/usage',
         hasCommitment: false,
         ...propsData,
       },
@@ -18,40 +18,6 @@ describe('OverageOptInCard', () => {
       },
     });
   };
-
-  beforeEach(() => {
-    window.gon = {
-      subscriptions_url: 'https://customers.gitlab.com/',
-    };
-  });
-
-  describe('CDot usage dashboard link', () => {
-    describe('when customersUsageDashboardPath is a relative URL', () => {
-      beforeEach(() => {
-        createComponent();
-      });
-
-      it('will be prepended with the subscription portal url', () => {
-        const button = wrapper.findComponent(GlButton);
-        expect(button.props('href')).toBe(
-          'https://customers.gitlab.com/subscriptions/A-0123456/usage',
-        );
-      });
-    });
-
-    describe('when customersUsageDashboardPath is an absolute URL', () => {
-      beforeEach(() => {
-        createComponent({
-          customersUsageDashboardPath: 'https://example.com/subscriptions/A-0123456/usage',
-        });
-      });
-
-      it('will be used as is', () => {
-        const button = wrapper.findComponent(GlButton);
-        expect(button.props('href')).toBe('https://example.com/subscriptions/A-0123456/usage');
-      });
-    });
-  });
 
   describe('rendering elements', () => {
     beforeEach(() => {

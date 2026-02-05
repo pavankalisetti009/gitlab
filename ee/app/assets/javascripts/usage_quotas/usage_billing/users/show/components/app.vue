@@ -5,9 +5,11 @@ import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
+import { joinPaths } from 'jh_else_ce/lib/utils/url_utility';
+import PaidTierTrialDisclaimer from '../../../components/paid_tier_trial_period_view.vue';
 import { PAGE_SIZE } from '../../../constants';
 import getUserSubscriptionUsageQuery from '../graphql/get_user_subscription_usage.query.graphql';
-import { fillUsageValues, formatNumber } from '../../../utils';
+import { ensureAbsoluteCustomerPortalUrl, fillUsageValues, formatNumber } from '../../../utils';
 import EventsTable from './events_table.vue';
 
 export default {
@@ -21,6 +23,7 @@ export default {
     UserDate,
     HumanTimeframe,
     EventsTable,
+    PaidTierTrialDisclaimer,
   },
   inject: {
     username: 'username',
@@ -68,6 +71,18 @@ export default {
   computed: {
     isUsageBillingDisabled() {
       return this.subscriptionUsage?.enabled === false;
+    },
+    isOnPaidTierTrial() {
+      return this.subscriptionUsage?.paidTierTrial?.isActive;
+    },
+    customersUsageDashboardUrl() {
+      return ensureAbsoluteCustomerPortalUrl(
+        this.subscriptionUsage.subscriptionPortalUsageDashboardUrl,
+      );
+    },
+    purchaseCreditsUrl() {
+      if (!this.subscriptionUsage.purchaseCreditsPath) return null;
+      return joinPaths(gon.subscriptions_url, this.subscriptionUsage.purchaseCreditsPath);
     },
     user() {
       return this.subscriptionUsage?.usersUsage?.users?.nodes?.[0];
@@ -131,6 +146,13 @@ export default {
     >
       {{ s__('UsageBilling|Usage Billing is disabled') }}
     </gl-alert>
+
+    <section v-else-if="isOnPaidTierTrial">
+      <paid-tier-trial-disclaimer
+        :customers-usage-dashboard-url="customersUsageDashboardUrl"
+        :purchase-credits-url="purchaseCreditsUrl"
+      />
+    </section>
 
     <template v-else>
       <header class="gl-my-5 gl-flex gl-flex-col gl-gap-3" data-testid="usage-billing-user-header">
