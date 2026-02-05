@@ -164,6 +164,18 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
 
                 expect { secrets_check.validate! }.not_to raise_error
               end
+
+              it 'tracks the exception in telemetry' do
+                expect_next_instance_of(Gitlab::Checks::SecretPushProtection::AuditLogger) do |logger|
+                  expect(logger).to receive(:track_spp_standard_error_exception).with('StandardError')
+                end
+
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PostPushWarning) do |instance|
+                  allow(instance).to receive(:add_message)
+                end
+
+                expect { secrets_check.validate! }.not_to raise_error
+              end
             end
 
             context 'when TooManyChangedPathsError is raised during scanning' do
@@ -175,8 +187,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
 
               before do
                 allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
-                  allow(instance).to receive(:standardize_payloads).and_raise(too_many_paths_error,
-                    'Unexpected error during payload processing')
+                  allow(instance).to receive(:standardize_payloads).and_raise(too_many_paths_error)
                 end
               end
 
@@ -189,6 +200,19 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
                   .and_return(warning_instance)
 
                 expect(warning_instance).to receive(:add_message)
+
+                expect { secrets_check.validate! }.not_to raise_error
+              end
+
+              it 'tracks the exception in telemetry' do
+                expect_next_instance_of(Gitlab::Checks::SecretPushProtection::AuditLogger) do |logger|
+                  expect(logger).to receive(:track_spp_too_many_changed_paths_error)
+                    .with(too_many_paths_error.message, changed_paths_count)
+                end
+
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PostPushWarning) do |instance|
+                  allow(instance).to receive(:add_message)
+                end
 
                 expect { secrets_check.validate! }.not_to raise_error
               end

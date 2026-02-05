@@ -346,4 +346,47 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::AuditLogger, feature_catego
         .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
     end
   end
+
+  describe '#track_spp_standard_error_exception' do
+    let(:exception_class) { 'GRPC::Unavailable' }
+    let(:properties) { { label: exception_class } }
+
+    it 'triggers the internal event' do
+      expect { audit_logger.track_spp_standard_error_exception(exception_class) }
+        .to trigger_internal_events('spp_standard_error_exception_encountered')
+        .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
+    end
+  end
+
+  describe '#track_spp_too_many_changed_paths_error' do
+    let(:changed_paths_count) { 1500 }
+    let(:changed_paths_threshold) { 1000 }
+    let(:error) do
+      Gitlab::Checks::SecretPushProtection::TooManyChangedPathsError.new(
+        changed_paths_count,
+        changed_paths_threshold
+      )
+    end
+
+    let(:properties) do
+      {
+        label: error.message,
+        value: changed_paths_count
+      }
+    end
+
+    it 'triggers the internal event' do
+      expect { audit_logger.track_spp_too_many_changed_paths_error(error.message, changed_paths_count) }
+        .to trigger_internal_events('spp_too_many_changed_paths_error_encountered')
+        .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
+    end
+  end
+
+  describe '#track_spp_ruleset_error' do
+    it 'triggers the internal event' do
+      expect { audit_logger.track_spp_ruleset_error }
+        .to trigger_internal_events('spp_ruleset_error_encountered')
+        .with(user: user, project: project, namespace: project.namespace)
+    end
+  end
 end
