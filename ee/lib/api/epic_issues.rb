@@ -63,7 +63,7 @@ module API
           move_after_id: params[:move_after_id]
         }
 
-        result = ::EpicIssues::UpdateService.new(link, current_user, update_params).execute
+        result = ::WorkItems::LegacyEpics::EpicIssues::UpdateService.new(link, current_user, update_params).execute
 
         if result
           present paginate(related_issues(epic)),
