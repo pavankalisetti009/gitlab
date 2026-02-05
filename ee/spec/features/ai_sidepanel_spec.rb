@@ -83,8 +83,8 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
     end
 
     it 'displays the sessions list' do
-      expect(page).to have_content("Issue to mr ##{workflow1.id}")
-      expect(page).to have_content("Code review ##{workflow2.id}")
+      expect(page).to have_content("Issue to mr - ##{workflow1.id}")
+      expect(page).to have_content("Code review - ##{workflow2.id}")
     end
 
     it 'navigates to session details when clicked' do
@@ -182,7 +182,7 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
         end
 
         expect(page).to have_content("Sessions")
-        expect(page).to have_content("Issue to mr ##{workflow.id}")
+        expect(page).to have_content("Issue to mr - ##{workflow.id}")
       end
     end
 

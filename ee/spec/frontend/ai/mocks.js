@@ -5,9 +5,15 @@ export const mockAgentFlowEdges = [
       id: 'gid://gitlab/DuoWorkflow::Workflow/1',
       status: 'FINISHED',
       humanStatus: 'completed',
+      createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
       workflowDefinition: 'software_development',
       userId: 'gid://gitlab/User/1',
+      latestCheckpoint: {
+        duoMessages: [
+          { content: 'This is the last message from workflow 1', messageType: 'agent' },
+        ],
+      },
       userPermissions: {
         updateDuoWorkflow: true,
       },
@@ -29,9 +35,15 @@ export const mockAgentFlowEdges = [
       id: 'gid://gitlab/DuoWorkflow::Workflow/2',
       status: 'RUNNING',
       humanStatus: 'running',
+      createdAt: '2024-01-02T00:00:00Z',
       updatedAt: '2024-01-02T00:00:00Z',
       workflowDefinition: 'convert_to_gitlab_ci',
       userId: 'gid://gitlab/User/1',
+      latestCheckpoint: {
+        duoMessages: [
+          { content: 'This is the last message from workflow 2', messageType: 'agent' },
+        ],
+      },
       userPermissions: {
         updateDuoWorkflow: true,
       },
@@ -53,9 +65,11 @@ export const mockAgentFlowEdges = [
       id: 'gid://gitlab/DuoWorkflow::Workflow/3',
       status: 'CREATED',
       humanStatus: 'created',
+      createdAt: '2024-01-03T00:00:00Z',
       updatedAt: '2024-01-03T00:00:00Z',
       workflowDefinition: 'chat',
       userId: 'gid://gitlab/User/2',
+      latestCheckpoint: null,
       userPermissions: {
         updateDuoWorkflow: false,
       },
