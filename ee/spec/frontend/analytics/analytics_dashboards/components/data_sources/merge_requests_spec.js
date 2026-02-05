@@ -1,6 +1,5 @@
 import fetch from 'ee/analytics/analytics_dashboards/data_sources/merge_requests';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
-import * as utils from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
   DATE_RANGE_OPTION_LAST_60_DAYS,
   DATE_RANGE_OPTION_LAST_365_DAYS,
@@ -61,11 +60,9 @@ describe('Merge requests data source', () => {
 
   beforeEach(() => {
     mockSetVisualizationOverrides = jest.fn();
-    jest.spyOn(utils, 'getStartDate').mockReturnValue(new Date('2020-05-13'));
   });
 
   it('can override default query parameters', async () => {
-    jest.spyOn(utils, 'getStartDate').mockReturnValue(new Date('2019-08-07'));
     mockResolvedQuery();
 
     res = await fetch({
@@ -84,7 +81,7 @@ describe('Merge requests data source', () => {
 
     expectQueryWithVariables({
       fullPath: namespace,
-      startDate: new Date('2019-08-07'),
+      startDate: new Date('2019-07-07'),
       endDate: new Date('2020-07-07'),
       labels: ['a', 'b'],
       milestoneTitle: '101',
@@ -108,7 +105,7 @@ describe('Merge requests data source', () => {
 
     expectQueryWithVariables({
       fullPath: namespace,
-      startDate: new Date('2020-05-13'),
+      startDate: new Date('2020-05-07'),
       endDate: new Date('2020-07-07'),
       ...mockThroughputFiltersQueryObject,
     });
@@ -129,7 +126,7 @@ describe('Merge requests data source', () => {
 
     expectQueryWithVariables({
       fullPath: namespace,
-      startDate: new Date('2020-05-13'),
+      startDate: new Date('2020-05-07'),
       endDate: new Date('2020-07-07'),
       firstPageSize: 10,
       nextPageCursor: 'end',
@@ -154,7 +151,7 @@ describe('Merge requests data source', () => {
 
     expectQueryWithVariables({
       fullPath: namespace,
-      startDate: new Date('2020-05-13'),
+      startDate: new Date('2020-05-07'),
       endDate: new Date('2020-07-07'),
       lastPageSize: 20,
       prevPageCursor: 'start',
@@ -177,7 +174,7 @@ describe('Merge requests data source', () => {
     it('sets the correct query parameters', () => {
       expectQueryWithVariables({
         fullPath: namespace,
-        startDate: new Date('2020-05-13'),
+        startDate: new Date('2020-05-07'),
         endDate: new Date('2020-07-07'),
       });
 

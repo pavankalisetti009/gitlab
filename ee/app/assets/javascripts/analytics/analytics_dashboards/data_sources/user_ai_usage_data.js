@@ -1,9 +1,8 @@
 import { sum } from 'lodash';
 import UserAiUserMetricsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_user_ai_user_metrics.query.graphql';
-import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
+  DATE_RANGE_OPTIONS,
   DATE_RANGE_OPTION_LAST_30_DAYS,
-  startOfTomorrow,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { hasAnyNonNullFields } from 'ee/analytics/shared/utils';
@@ -97,7 +96,9 @@ export default async function fetch({
     sortDesc: sortDescOverride,
   } = {},
 }) {
-  const startDate = getStartDate(dateRange);
+  const { startDate, endDate } = DATE_RANGE_OPTIONS[dateRange]
+    ? DATE_RANGE_OPTIONS[dateRange]
+    : DATE_RANGE_OPTIONS[DATE_RANGE_OPTION_LAST_30_DAYS];
 
   const sortBy = sortByOverride ?? defaultSortBy;
   const sortDesc = sortDescOverride ?? defaultSortDesc;
@@ -107,7 +108,7 @@ export default async function fetch({
     variables: {
       fullPath,
       startDate,
-      endDate: startOfTomorrow,
+      endDate,
       first: pagination.first,
       last: pagination.last,
       before: pagination.startCursor,

@@ -59,8 +59,8 @@ describe('Dora Metrics Data Source', () => {
 
         it('correctly applies query parameters', () => {
           expectQueryWithVariables({
-            startDate: new Date('2020-01-09'),
-            endDate: new Date('2020-07-07'),
+            startDate: new Date('2020-01-08'),
+            endDate: new Date('2020-07-06'),
             fullPath: 'cool namespace',
             interval: 'ALL',
           });
@@ -116,8 +116,8 @@ describe('Dora Metrics Data Source', () => {
         });
 
         expectQueryWithVariables({
-          startDate: new Date('2020-06-30'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-06-29'),
+          endDate: new Date('2020-07-06'),
           fullPath: 'cool namespace',
           interval: 'ALL',
         });
@@ -133,8 +133,8 @@ describe('Dora Metrics Data Source', () => {
         });
 
         expectQueryWithVariables({
-          startDate: new Date('2020-01-09'),
-          endDate: new Date('2020-07-07'),
+          startDate: new Date('2020-01-08'),
+          endDate: new Date('2020-07-06'),
           fullPath: 'cool-namespace/sub-namespace',
           interval: 'ALL',
         });

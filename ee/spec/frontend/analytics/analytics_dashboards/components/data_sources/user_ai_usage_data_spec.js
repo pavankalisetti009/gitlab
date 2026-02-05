@@ -136,8 +136,8 @@ describe('User ai usage data source', () => {
 
     expectQueryWithVariables({
       fullPath: namespace,
-      startDate: new Date('2020-05-08'),
-      endDate: new Date('2020-07-07'),
+      startDate: new Date('2020-05-07'),
+      endDate: new Date('2020-07-06'),
       first: 10,
     });
 
@@ -159,8 +159,8 @@ describe('User ai usage data source', () => {
 
     expectQueryWithVariables({
       fullPath: namespace,
-      startDate: new Date('2020-06-07'),
-      endDate: new Date('2020-07-07'),
+      startDate: new Date('2020-06-06'),
+      endDate: new Date('2020-07-06'),
       before: 'start',
       last: 10,
     });
@@ -181,8 +181,8 @@ describe('User ai usage data source', () => {
     it('sets the correct query parameters', () => {
       expectQueryWithVariables({
         fullPath: namespace,
-        startDate: new Date('2020-06-07'),
-        endDate: new Date('2020-07-07'),
+        startDate: new Date('2020-06-06'),
+        endDate: new Date('2020-07-06'),
       });
 
       expect(defaultClient.query).toHaveBeenCalledTimes(1);

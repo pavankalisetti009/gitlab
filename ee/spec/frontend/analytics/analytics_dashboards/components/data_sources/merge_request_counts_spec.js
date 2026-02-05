@@ -1,6 +1,5 @@
 import fetch from 'ee/analytics/analytics_dashboards/data_sources/merge_request_counts';
 import * as api from 'ee/analytics/merge_request_analytics/api';
-import * as utils from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
   DATE_RANGE_OPTION_LAST_60_DAYS,
   DATE_RANGE_OPTION_LAST_365_DAYS,
@@ -46,7 +45,6 @@ describe('Merge request counts data source', () => {
   });
 
   it('can override default query parameters', async () => {
-    jest.spyOn(utils, 'getStartDate').mockReturnValue(new Date('2019-08-07'));
     mockResolvedQuery();
 
     res = await fetch({
@@ -65,7 +63,7 @@ describe('Merge request counts data source', () => {
 
     expectQueryWithVariables({
       namespace,
-      startDate: new Date('2019-08-07'),
+      startDate: new Date('2019-07-07'),
       endDate: new Date('2020-07-07'),
       labels: ['a', 'b'],
       milestoneTitle: '101',
@@ -74,7 +72,6 @@ describe('Merge request counts data source', () => {
   });
 
   it('can transform search filters into correct query parameters', async () => {
-    jest.spyOn(utils, 'getStartDate').mockReturnValue(new Date('2020-05-08'));
     mockResolvedQuery();
 
     res = await fetch({
@@ -88,7 +85,7 @@ describe('Merge request counts data source', () => {
 
     expectQueryWithVariables({
       namespace,
-      startDate: new Date('2020-05-08'),
+      startDate: new Date('2020-05-07'),
       endDate: new Date('2020-07-07'),
       ...mockThroughputFiltersQueryObject,
     });
