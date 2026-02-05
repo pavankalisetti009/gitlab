@@ -187,6 +187,8 @@ module Gitlab
             end
 
             raise "Error: no organization found on instance" unless @organization
+            # Error message hardcoded in frontend
+            # https://gitlab.com/gitlab-org/gitlab/-/blob/d3d0f1f79c78b3db36285b3988dfa492ddd632f4/ee/app/assets/javascripts/ai/settings/constants.js#L33
             raise "Error: External agents already seeded" if already_seeded?
 
             unless Feature.enabled?(:global_ai_catalog, :instance)

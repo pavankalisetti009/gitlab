@@ -2532,6 +2532,12 @@ msgstr ""
 msgid "AICatalog|AI Catalog"
 msgstr ""
 
+msgid "AICatalog|Add GitLab-managed external agents to the instance's AI Catalog."
+msgstr ""
+
+msgid "AICatalog|Add to AI Catalog"
+msgstr ""
+
 msgid "AICatalog|Add triggers"
 msgstr ""
 
@@ -2596,6 +2602,12 @@ msgid "AICatalog|Agent updated."
 msgstr ""
 
 msgid "AICatalog|Agents"
+msgstr ""
+
+msgid "AICatalog|Agents already in AI Catalog."
+msgstr ""
+
+msgid "AICatalog|Agents successfully added to AI Catalog."
 msgstr ""
 
 msgid "AICatalog|All project members will be able to use it, after a Maintainer enables it in a project."
@@ -2817,6 +2829,9 @@ msgstr ""
 msgid "AICatalog|External"
 msgstr ""
 
+msgid "AICatalog|Failed to add agents to AI Catalog."
+msgstr ""
+
 msgid "AICatalog|Failed to delete agent. %{error}"
 msgstr ""
 
@@ -2923,6 +2938,9 @@ msgid "AICatalog|From the flows configured for this project, select the flow tha
 msgstr ""
 
 msgid "AICatalog|Get started with the AI Catalog"
+msgstr ""
+
+msgid "AICatalog|GitLab-managed external agents"
 msgstr ""
 
 msgid "AICatalog|Group is required."
