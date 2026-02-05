@@ -111,6 +111,12 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
           expect(page).to have_link(registry.name, href:
             /#{group_virtual_registries_container_registry_path(group, registry)}/)
         end
+
+        it 'does not allow editing registry', :js do
+          visit edit_group_virtual_registries_container_registry_path(group, registry)
+
+          expect(page).to have_current_path(/#{group_virtual_registries_container_registries_path(group)}/)
+        end
       end
     end
 
@@ -135,6 +141,20 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
             edit_group_virtual_registries_container_registry_path(group, registry))
           expect(page).to have_link(registry.name, href:
             /#{group_virtual_registries_container_registry_path(group, registry)}/)
+        end
+
+        it 'edits registry', :js do
+          visit edit_group_virtual_registries_container_registry_path(group, registry)
+
+          fill_in _('Name'), with: 'New Name'
+          fill_in _('Description (optional)'), with: 'New description'
+
+          click_button 'Save registry'
+
+          expect(page).to have_content('Registry New Name was successfully updated.')
+          expect(page).to have_current_path(
+            "#{group_virtual_registries_container_registry_path(group, ::VirtualRegistries::Container::Registry.last)}/"
+          )
         end
       end
 

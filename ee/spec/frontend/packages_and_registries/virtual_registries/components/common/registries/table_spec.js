@@ -1,4 +1,4 @@
-import { GlTableLite } from '@gitlab/ui';
+import { GlTableLite, GlButton } from '@gitlab/ui';
 import containerRegistriesPayload from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_container_virtual_registries.query.graphql.json';
 import mavenRegistriesPayload from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registries.query.graphql.json';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -45,7 +45,10 @@ describe('RegistriesTable', () => {
 
     const findTable = () => wrapper.findComponent(GlTableLite);
     const findRegistryLinks = () => wrapper.findAllByTestId('registry-name');
-    const findEditButtons = () => wrapper.findAllByTestId('edit-registry-button');
+    const findEditButtons = () =>
+      wrapper
+        .findAllComponents(GlButton)
+        .filter((w) => w.attributes('data-testid') === 'edit-registry-button');
     const findTimeAgoTooltips = () => wrapper.findAllComponents(TimeAgoTooltip);
 
     const createComponent = ({ props = {}, provide = {} } = {}) => {
@@ -57,6 +60,9 @@ describe('RegistriesTable', () => {
         provide: {
           ...defaultProvide,
           ...provide,
+        },
+        stubs: {
+          RouterLink: true,
         },
         mocks: {
           $router: mockRouter,
@@ -132,9 +138,8 @@ describe('RegistriesTable', () => {
           expect(editButtons.at(0).props('href')).toBe(
             `/groups/gitlab-org/-/virtual_registries/${type}/registries/${registryId}/edit`,
           );
-          expect(mockRouter.resolve).not.toHaveBeenCalled();
         } else {
-          expect(mockRouter.resolve).toHaveBeenCalledWith({
+          expect(editButtons.at(0).props('to')).toEqual({
             name: routes.editRegistryRouteName,
             params: { id: registryId },
           });

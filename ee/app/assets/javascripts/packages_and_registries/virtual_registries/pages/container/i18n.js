@@ -14,4 +14,5 @@ export default {
   },
   newRegistryPageTitle: s__('VirtualRegistry|New container virtual registry'),
   registryType: s__('VirtualRegistry|Container'),
+  editRegistryPageTitle: s__('VirtualRegistry|Edit container virtual registry'),
 };
