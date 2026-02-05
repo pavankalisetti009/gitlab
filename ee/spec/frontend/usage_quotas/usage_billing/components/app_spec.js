@@ -54,8 +54,8 @@ describe('UsageBillingApp', () => {
       provide: {
         customersUsageDashboardPath: 'https://gitlab.com/dummy-usage-dashboard-path',
         isFree: false,
-        trialStartDate: '',
-        trialEndDate: '',
+        trialStartDate: undefined,
+        trialEndDate: undefined,
         ...provide,
       },
     });
