@@ -10,7 +10,11 @@ module GitlabSubscriptions
 
         override :title
         def title
-          s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial')
+          if Feature.enabled?(:ultimate_trial_with_dap, :instance)
+            s_('Trial|Start your free Ultimate trial')
+          else
+            s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial')
+          end
         end
       end
     end

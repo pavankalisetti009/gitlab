@@ -19,17 +19,24 @@ module GitlabSubscriptions
       strong_memoize_attr :duo_pro_add_on_purchase?
 
       def body
-        sentences = [
+        return [primary_body_text] if duo_pro_add_on_purchase?
+
+        [
+          primary_body_text,
+          s_('BillingPlans|Not ready to trial the full suite of GitLab and ' \
+            'GitLab Duo features? Start a free trial of GitLab Duo Pro instead.')
+        ]
+      end
+
+      def primary_body_text
+        if helpers.show_dap_copy?(namespace)
+          s_('BillingPlans|Start an Ultimate trial to try the complete set of features from GitLab.')
+        else
           s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to ' \
             'try the complete set of features from GitLab. GitLab Duo Enterprise ' \
             'gives you access to the full product offering from GitLab, ' \
             'including AI-native features.')
-        ]
-
-        return sentences if duo_pro_add_on_purchase?
-
-        sentences << s_('BillingPlans|Not ready to trial the full suite of GitLab and ' \
-          'GitLab Duo features? Start a free trial of GitLab Duo Pro instead.')
+        end
       end
 
       def secondary_cta_options

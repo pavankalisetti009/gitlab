@@ -6,7 +6,8 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
   let(:namespace) { build(:group, id: non_existing_record_id) }
   let(:user) { build(:user) }
   let(:eligible) { true }
-  let(:title) { 'Get the most out of GitLab with Ultimate and GitLab Duo Enterprise' }
+  let(:new_title) { 'Get the most out of GitLab with Ultimate' }
+  let(:old_title) { 'Get the most out of GitLab with Ultimate and GitLab Duo Enterprise' }
 
   let(:duo_pro_text) do
     'Not ready to trial the full suite of GitLab and GitLab Duo features? ' \
@@ -22,31 +23,68 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
     allow(GitlabSubscriptions::Trials).to receive(:namespace_eligible?).with(namespace).and_return(eligible)
   end
 
-  shared_examples 'has the Duo Enterprise text' do
-    it 'has the text' do
-      is_expected.to have_content(title)
+  shared_examples 'has the body text' do
+    context 'when #show_dap_copy? is true' do
+      it 'has the new text' do
+        is_expected.to have_content(new_title)
 
-      is_expected.to have_content(
-        'Start an Ultimate trial with GitLab Duo Enterprise to try the ' \
-          'complete set of features from GitLab. GitLab Duo Enterprise gives ' \
-          'you access to the full product offering from GitLab, including ' \
-          'AI-native features.'
-      )
+        is_expected.to have_content(
+          'Start an Ultimate trial to try the complete set of features from GitLab.'
+        )
+      end
+    end
+
+    context 'when #show_dap_copy? is false' do
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false)
+      end
+
+      it 'has the duo enterprise copy' do
+        is_expected.to have_content(old_title)
+
+        is_expected.to have_content(
+          'Start an Ultimate trial with GitLab Duo Enterprise to try the ' \
+            'complete set of features from GitLab. GitLab Duo Enterprise gives ' \
+            'you access to the full product offering from GitLab, including ' \
+            'AI-native features.'
+        )
+      end
     end
   end
 
   shared_examples 'has the primary action' do
-    it 'has the action' do
-      expected_link = new_trial_path(namespace_id: namespace.id)
+    context 'when #show_dap_copy? is true' do
+      it 'has the action' do
+        expected_link = new_trial_path(namespace_id: namespace.id)
 
-      is_expected.to have_link(
-        'Start free trial of GitLab Ultimate and GitLab Duo Enterprise',
-        href: expected_link
-      )
+        is_expected.to have_link(
+          'Start a free trial of GitLab Ultimate',
+          href: expected_link
+        )
 
-      expect(component.find(:link, href: expected_link))
-        .to trigger_internal_events('click_duo_enterprise_trial_billing_page').on_click
-        .with(additional_properties: { label: 'ultimate_and_duo_enterprise_trial' })
+        expect(component.find(:link, href: expected_link))
+          .to trigger_internal_events('click_duo_enterprise_trial_billing_page').on_click
+          .with(additional_properties: { label: 'ultimate_and_duo_enterprise_trial' })
+      end
+    end
+
+    context 'when #show_dap_copy? is false' do
+      before do
+        stub_feature_flags(ultimate_trial_with_dap: false)
+      end
+
+      it 'has the action' do
+        expected_link = new_trial_path(namespace_id: namespace.id)
+
+        is_expected.to have_link(
+          'Start free trial of GitLab Ultimate and GitLab Duo Enterprise',
+          href: expected_link
+        )
+
+        expect(component.find(:link, href: expected_link))
+          .to trigger_internal_events('click_duo_enterprise_trial_billing_page').on_click
+          .with(additional_properties: { label: 'ultimate_and_duo_enterprise_trial' })
+      end
     end
   end
 
@@ -55,13 +93,13 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
       build(:gitlab_subscription, :gold, namespace: namespace)
     end
 
-    it { is_expected.not_to have_content(title) }
+    it { is_expected.not_to have_content(old_title) }
   end
 
   context 'when is not eligible' do
     let(:eligible) { false }
 
-    it { is_expected.not_to have_content(title) }
+    it { is_expected.not_to have_content(old_title) }
   end
 
   context 'with Duo add-on' do
@@ -72,7 +110,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
         .and_return(build(:gitlab_subscription_add_on_purchase))
     end
 
-    it_behaves_like 'has the Duo Enterprise text'
+    it_behaves_like 'has the body text'
     it_behaves_like 'has the primary action'
 
     it { is_expected.not_to have_content(duo_pro_text) }
@@ -80,7 +118,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
   end
 
   context 'when there are no add-ons' do
-    it_behaves_like 'has the Duo Enterprise text'
+    it_behaves_like 'has the body text'
     it_behaves_like 'has the primary action'
 
     it { is_expected.to have_content(duo_pro_text) }
