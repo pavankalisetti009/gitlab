@@ -118,7 +118,7 @@ module EE
       condition(:self_hosted_models_allowed) do
         next false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
-        next false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+        next false unless self_hosted_enabled_for_dedicated?
 
         next false if ::Ai::AmazonQ.connected?
 
@@ -364,6 +364,11 @@ module EE
       strong_memoize_with(:custom_role_ability, user) do
         ::Authz::CustomAbility.new(user)
       end
+    end
+
+    def self_hosted_enabled_for_dedicated?
+      ::Gitlab::Utils.to_boolean(ENV.fetch('ALLOW_DEDICATED_SELF_HOSTED_AIGW', false)) ||
+        !::Gitlab::CurrentSettings.gitlab_dedicated_instance?
     end
   end
 end
