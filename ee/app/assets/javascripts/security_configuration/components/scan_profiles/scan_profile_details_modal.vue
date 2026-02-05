@@ -7,7 +7,7 @@ import ScanTriggersDetail from './scan_triggers_detail.vue';
 import InsufficientPermissionsPopover from './insufficient_permissions_popover.vue';
 
 const i18n = {
-  modalTitle: s__('ScanProfiles|Secret push protection profile'),
+  modalTitle: s__('ScanProfiles|Secret detection profile'),
   infoPopoverTitle: s__('ScanProfiles|What are configuration profiles?'),
   infoPopoverDetails: s__(
     'ScanProfiles|Configuration profiles are reusable settings templates for security tools. Create and manage profiles once, then apply them to multiple projects to ensure consistent security coverage.',

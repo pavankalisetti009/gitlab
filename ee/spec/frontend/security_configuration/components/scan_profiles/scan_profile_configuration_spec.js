@@ -308,7 +308,7 @@ describe('ScanProfileConfiguration', () => {
       await disableButton.trigger('click');
 
       expect(findDisableModal().props('visible')).toBe(true);
-      expect(findDisableModal().props('scannerName')).toBe('Secret Push Protection');
+      expect(findDisableModal().props('scannerName')).toBe('Secret Detection');
     });
 
     it('calls detach mutation when confirmed in modal', async () => {

@@ -59188,7 +59188,7 @@ msgstr ""
 msgid "ScanProfiles|Scan triggers"
 msgstr ""
 
-msgid "ScanProfiles|Secret push protection profile"
+msgid "ScanProfiles|Secret detection profile"
 msgstr ""
 
 msgid "ScanProfiles|View documentation"
@@ -63155,7 +63155,7 @@ msgstr ""
 msgid "SecurityProfiles|Profiles define scanner configuration and can be applied to multiple projects"
 msgstr ""
 
-msgid "SecurityProfiles|Secret Push Protection"
+msgid "SecurityProfiles|Secret Detection"
 msgstr ""
 
 msgid "SecurityProfiles|Security configuration illustration"

@@ -27,12 +27,14 @@ RSpec.describe Security::DefaultScanProfilesHelper, feature_category: :security_
 
     it 'sets the correct attributes' do
       expect(profile).to have_attributes(
-        name: 'Secret Push Protection (default)',
+        name: 'Secret Detection (default)',
         gitlab_recommended: true,
         scan_type: 'secret_detection',
-        description: "GitLab's recommended baseline protection using industry-standard detection rules. " \
-          "Blocks common secrets like API keys, tokens, and passwords from being committed " \
-          "to your repository, with detection optimized to minimize false positives"
+        description: "Protect your repository from leaked secrets like API keys, tokens, and passwords. " \
+          "This profile uses industry-standard rules optimized to minimize false positives. " \
+          "Enable scans on push events to block secrets before they're committed. " \
+          "Enable scans in merge requests to catch secrets that were previously committed " \
+          "or bypassed real-time protection. For complete coverage, we recommend enabling both."
       )
     end
 
