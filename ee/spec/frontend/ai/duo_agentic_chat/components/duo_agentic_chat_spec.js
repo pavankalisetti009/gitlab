@@ -294,7 +294,8 @@ describe('Duo Agentic Chat', () => {
   };
 
   const mockRefetch = jest.fn().mockResolvedValue({});
-
+  // eslint-disable-next-line no-restricted-syntax
+  const docsUrlHost = 'docs.gitlab.com';
   const userWorkflowsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_USER_WORKFLOWS_RESPONSE);
   const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
   const availableModelsQueryHandlerMock = jest
@@ -4008,6 +4009,114 @@ describe('Duo Agentic Chat', () => {
         }),
         undefined,
       );
+    });
+  });
+
+  describe('computedTrustedUrls', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isAgenticChatShown = true;
+      window.gon = {};
+    });
+
+    afterEach(() => {
+      delete window.gon;
+    });
+
+    it('includes default trusted URLs (gitlab.com and docs URL)', () => {
+      createComponent();
+      const trustedUrls = wrapper.vm.computedTrustedUrls;
+
+      expect(trustedUrls).toContain('gitlab.com');
+      expect(trustedUrls).toContain(docsUrlHost);
+    });
+
+    it('includes instance hostname from gon.gitlab_url when available', () => {
+      window.gon.gitlab_url = 'https://gitlab.example.com';
+      createComponent();
+      const trustedUrls = wrapper.vm.computedTrustedUrls;
+
+      expect(trustedUrls).toContain('gitlab.example.com');
+    });
+
+    it('does not include instance hostname when gon.gitlab_url is not set', () => {
+      createComponent();
+      const trustedUrls = wrapper.vm.computedTrustedUrls;
+
+      expect(trustedUrls).not.toContain('my-gitlab.example.com');
+    });
+
+    it('includes additional URLs passed as props', () => {
+      createComponent({
+        propsData: {
+          projectId: MOCK_PROJECT_ID,
+          resourceId: MOCK_RESOURCE_ID,
+          trustedUrls: ['custom1.example.com', 'custom2.example.com'],
+        },
+      });
+      const trustedUrls = wrapper.vm.computedTrustedUrls;
+
+      expect(trustedUrls).toContain('custom1.example.com');
+      expect(trustedUrls).toContain('custom2.example.com');
+    });
+
+    it('removes duplicate URLs', () => {
+      createComponent({
+        propsData: {
+          projectId: MOCK_PROJECT_ID,
+          resourceId: MOCK_RESOURCE_ID,
+          trustedUrls: ['gitlab.com', `https://${docsUrlHost}`],
+        },
+      });
+      const trustedUrls = wrapper.vm.computedTrustedUrls;
+
+      const gitlabComCount = trustedUrls.filter((url) => url === 'gitlab.com').length;
+      const docsUrlCount = trustedUrls.filter((url) => url === docsUrlHost).length;
+
+      expect(gitlabComCount).toBe(1);
+      expect(docsUrlCount).toBe(1);
+    });
+
+    it('returns an array of unique hostnames', () => {
+      window.gon.gitlab_url = 'https://my-gitlab.example.com';
+      createComponent({
+        propsData: {
+          projectId: MOCK_PROJECT_ID,
+          resourceId: MOCK_RESOURCE_ID,
+          trustedUrls: ['https://custom.example.com'],
+        },
+      });
+      const trustedUrls = wrapper.vm.computedTrustedUrls;
+
+      expect(Array.isArray(trustedUrls)).toBe(true);
+      expect(new Set(trustedUrls).size).toBe(trustedUrls.length);
+    });
+
+    it('handles empty trustedUrls prop gracefully', () => {
+      createComponent({
+        propsData: {
+          projectId: MOCK_PROJECT_ID,
+          resourceId: MOCK_RESOURCE_ID,
+          trustedUrls: [],
+        },
+      });
+      const trustedUrls = wrapper.vm.computedTrustedUrls;
+
+      expect(trustedUrls).toContain('gitlab.com');
+      expect(trustedUrls).toContain(docsUrlHost);
+    });
+
+    it('handles null trustedUrls prop gracefully', () => {
+      createComponent({
+        propsData: {
+          projectId: MOCK_PROJECT_ID,
+          resourceId: MOCK_RESOURCE_ID,
+          trustedUrls: null,
+        },
+      });
+      const trustedUrls = wrapper.vm.computedTrustedUrls;
+
+      expect(trustedUrls).toContain('gitlab.com');
+      expect(trustedUrls).toContain(docsUrlHost);
     });
   });
 });
