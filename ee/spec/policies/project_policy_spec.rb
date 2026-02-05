@@ -5596,13 +5596,112 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     context 'for SaaS', :saas do
-      include_context 'with duo pro addon'
+      context 'with standard access controls' do
+        include_context 'with duo pro addon'
 
-      include_examples 'duo agentic chat access control'
+        include_examples 'duo agentic chat access control'
+      end
+
+      context 'with customizable permissions' do
+        include_context 'with duo features enabled and agentic chat available for group on SaaS'
+
+        before do
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :agentic_chat).and_return(true)
+          allow(current_user).to receive(:allowed_to_use_for_resource?).with(:duo_chat, resource: project)
+            .and_return(true)
+
+          group.ai_settings.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+        end
+
+        context 'when user is a member' do
+          where(:role, :allowed) do
+            :guest      | false
+            :planner    | false
+            :reporter   | false
+            :developer  | false
+            :maintainer | true
+            :owner      | true
+          end
+
+          with_them do
+            before do
+              project.add_member(current_user, role)
+            end
+
+            it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+          end
+        end
+
+        context 'when user is an org owner' do
+          let(:current_user) { create(:organization_owner, organization: group.organization).user }
+
+          it { is_expected.to be_allowed(policy) }
+        end
+
+        context 'when minimum_access_level_execute is enabled for all users' do
+          before do
+            project.add_guest(current_user)
+            group.ai_settings.update!(minimum_access_level_execute: nil)
+          end
+
+          it { is_expected.to be_allowed(policy) }
+        end
+
+        context 'when user is not a member of the public project' do
+          before do
+            project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+          end
+
+          context 'when minimum_access_level_execute is enabled for all users' do
+            before do
+              group.ai_settings.update!(minimum_access_level_execute: nil)
+            end
+
+            it { is_expected.to be_allowed(policy) }
+          end
+
+          context 'when minimum_access_level_execute requires membership' do
+            before do
+              group.ai_settings.update!(minimum_access_level_execute: ::Gitlab::Access::GUEST)
+            end
+
+            it { is_expected.to be_disallowed(policy) }
+          end
+        end
+
+        context 'when dap_group_customizable_permissions feature flag is disabled' do
+          before do
+            project.add_developer(current_user)
+            stub_feature_flags(dap_group_customizable_permissions: false)
+          end
+
+          it { is_expected.to be_allowed(policy) }
+        end
+      end
     end
 
     context 'for self-managed' do
       include_examples 'duo agentic chat access control'
+
+      context 'with customizable permissions' do
+        include_context 'with duo features enabled and agentic chat available for self-managed'
+
+        before do
+          project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+        end
+
+        it { is_expected.to be_allowed(policy) }
+
+        context 'when dap_instance_customizable_permissions feature flag is disabled' do
+          before do
+            stub_feature_flags(dap_instance_customizable_permissions: false)
+            project.add_guest(current_user)
+            ::Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+          end
+
+          it { is_expected.to be_allowed(policy) }
+        end
+      end
     end
   end
 

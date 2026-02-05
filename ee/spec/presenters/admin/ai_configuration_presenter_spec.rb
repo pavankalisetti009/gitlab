@@ -146,7 +146,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         show_foundational_agents_per_agent_availability: 'false',
         show_duo_agent_platform_enablement_setting: 'true',
         namespace_access_rules: Gitlab::Json.dump(transformed_namespace_access_rules),
-        ai_minimum_access_level_to_execute: Gitlab::Access::GUEST.to_s,
+        ai_minimum_access_level_to_execute: '',
         ai_minimum_access_level_to_execute_async: Gitlab::Access::DEVELOPER.to_s
       )
     end

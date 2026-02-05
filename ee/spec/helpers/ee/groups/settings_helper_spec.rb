@@ -203,7 +203,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           show_foundational_agents_per_agent_availability: "true",
           show_duo_agent_platform_enablement_setting: "true",
           is_saas: 'true',
-          ai_minimum_access_level_to_execute: Gitlab::Access::GUEST,
+          ai_minimum_access_level_to_execute: nil,
           ai_minimum_access_level_to_execute_async: Gitlab::Access::DEVELOPER,
           ai_settings_minimum_access_level_manage: nil,
           ai_settings_minimum_access_level_enable_on_projects: nil,
@@ -281,7 +281,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_workflow_mcp_enabled: 'false',
           foundational_agents_default_enabled: 'true',
           duo_agent_platform_enabled: 'true',
-          ai_minimum_access_level_to_execute: Gitlab::Access::GUEST,
+          ai_minimum_access_level_to_execute: nil,
           ai_minimum_access_level_to_execute_async: Gitlab::Access::DEVELOPER,
           ai_settings_minimum_access_level_manage: nil,
           ai_settings_minimum_access_level_enable_on_projects: nil
