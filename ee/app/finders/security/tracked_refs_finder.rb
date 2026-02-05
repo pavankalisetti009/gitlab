@@ -12,7 +12,6 @@ module Security
       return Security::ProjectTrackedContext.none unless can_read_security_refs?
 
       refs = @project.security_project_tracked_contexts
-        .with_vulnerability_reads
 
       filter_by_state(refs)
     end

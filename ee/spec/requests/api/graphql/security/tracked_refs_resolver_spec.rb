@@ -219,7 +219,7 @@ RSpec.describe 'Query.project.securityTrackedRefs', feature_category: :vulnerabi
 
   describe 'comprehensive field implementations' do
     let_it_be(:vulnerability_reads) do
-      create_list(:vulnerability_read, 2, tracked_context: tracked_branch)
+      create_list(:vulnerability_read, 2, project: project, tracked_context: tracked_branch)
     end
 
     before_all do
@@ -262,14 +262,14 @@ RSpec.describe 'Query.project.securityTrackedRefs', feature_category: :vulnerabi
   describe 'performance' do
     it 'avoids N+1 queries when loading multiple refs' do
       refs = create_list(:security_project_tracked_context, 3, :tracked, project: project)
-      refs.each { |ref| create_list(:vulnerability_read, 2, tracked_context: ref) }
+      refs.each { |ref| create_list(:vulnerability_read, 2, project: project, tracked_context: ref) }
 
       control = ActiveRecord::QueryRecorder.new do
         execute_query(query_args: { first: 3 })
       end
 
       additional_refs = create_list(:security_project_tracked_context, 3, :tracked, project: project)
-      additional_refs.each { |ref| create_list(:vulnerability_read, 2, tracked_context: ref) }
+      additional_refs.each { |ref| create_list(:vulnerability_read, 2, project: project, tracked_context: ref) }
 
       expect do
         execute_query(query_args: { first: 6 })

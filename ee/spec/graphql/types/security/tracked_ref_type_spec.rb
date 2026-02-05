@@ -32,9 +32,16 @@ RSpec.describe Types::Security::TrackedRefType, feature_category: :vulnerability
     end
 
     describe '#vulnerabilities_count' do
+      let_it_be(:expected_reads) do
+        create_list(:vulnerability_read, 5, project: project, tracked_context: tracked_ref)
+      end
+
+      let_it_be(:other_reads) do
+        create_list(:vulnerability_read, 5)
+      end
+
       it 'returns count of vulnerability reads' do
-        allow(tracked_ref).to receive_message_chain(:vulnerability_reads, :count).and_return(5)
-        expect(type_instance.vulnerabilities_count).to eq(5)
+        expect(type_instance.vulnerabilities_count).to eq(expected_reads.count)
       end
 
       it 'returns 0 when error occurs' do

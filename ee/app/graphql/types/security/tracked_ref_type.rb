@@ -75,7 +75,7 @@ module Types
       end
 
       def vulnerabilities_count
-        object.vulnerability_reads.count
+        object.vulnerability_reads.by_projects(object.project_id).count
       rescue StandardError => e
         Gitlab::ErrorTracking.track_exception(e, tracked_context_id: object.id)
         0
