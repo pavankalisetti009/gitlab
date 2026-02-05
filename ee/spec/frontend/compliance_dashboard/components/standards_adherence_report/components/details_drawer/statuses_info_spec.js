@@ -62,7 +62,6 @@ describe('statusesInfo', () => {
         'scanner_license_compliance_running',
         'scanner_dast_running',
         'scanner_api_security_running',
-        'scanner_fuzz_testing_running',
         'scanner_code_quality_running',
         'scanner_iac_running',
       ];

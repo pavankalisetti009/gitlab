@@ -27,7 +27,6 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
           'scanner_license_compliance_running' => :scanner_license_compliance_running?,
           'scanner_dast_running' => :scanner_dast_running?,
           'scanner_api_security_running' => :scanner_api_security_running?,
-          'scanner_fuzz_testing_running' => :scanner_fuzz_testing_running?,
           'scanner_code_quality_running' => :scanner_code_quality_running?,
           'scanner_iac_running' => :scanner_iac_running?,
           'terraform_enabled' => :terraform_enabled?,
@@ -57,7 +56,6 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'scanner_license_compliance_running',
         'scanner_dast_running',
         'scanner_api_security_running',
-        'scanner_fuzz_testing_running',
         'scanner_code_quality_running',
         'scanner_iac_running',
         'project_repo_exists',
@@ -437,14 +435,6 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         expect(described_class).to receive(:security_scanner_running?).with(:api_fuzzing, project, {})
 
         described_class.map_field(project, 'scanner_api_security_running')
-      end
-    end
-
-    describe 'scanner_fuzz_testing_running' do
-      it 'calls security_scanner_running? with scanner type fuzz_testing' do
-        expect(described_class).to receive(:security_scanner_running?).with(:fuzz_testing, project, {})
-
-        described_class.map_field(project, 'scanner_fuzz_testing_running')
       end
     end
 

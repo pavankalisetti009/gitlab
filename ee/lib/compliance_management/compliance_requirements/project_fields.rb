@@ -17,7 +17,6 @@ module ComplianceManagement
         :license_scanning,
         :dast,
         :api_fuzzing,
-        :fuzz_testing,
         :codequality,
         :iac
       ].freeze
@@ -107,10 +106,6 @@ module ComplianceManagement
 
         def scanner_api_security_running?(project, context = {})
           security_scanner_running?(:api_fuzzing, project, context)
-        end
-
-        def scanner_fuzz_testing_running?(project, context = {})
-          security_scanner_running?(:fuzz_testing, project, context)
         end
 
         def scanner_code_quality_running?(project, context = {})
