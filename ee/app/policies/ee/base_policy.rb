@@ -25,10 +25,6 @@ module EE
 
       rule { auditor }.enable :read_all_resources
 
-      rule { admin }.policy do
-        enable :read_subscription_usage
-      end
-
       with_scope :global
       condition(:allow_to_manage_default_branch_protection) do
         # When un-licensed: Always allow access.

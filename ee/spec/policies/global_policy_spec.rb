@@ -90,6 +90,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_cloud_connector_status) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_admin_subscription) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_ldap_admin_links) }
+    it { expect(described_class.new(admin, [user])).to be_allowed(:read_subscription_usage) }
   end
 
   context 'when admin mode disabled' do
@@ -102,6 +103,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_admin_subscription) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_admin_data_management) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:manage_ldap_admin_links) }
+    it { expect(described_class.new(admin, [user])).to be_disallowed(:read_subscription_usage) }
   end
 
   shared_examples 'analytics policy' do |action|
