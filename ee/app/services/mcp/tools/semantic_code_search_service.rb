@@ -72,6 +72,9 @@ module Mcp
           },
           required: %w[semantic_query project_id],
           additionalProperties: false
+        },
+        annotations: {
+          readOnlyHint: true
         }
       }
 
