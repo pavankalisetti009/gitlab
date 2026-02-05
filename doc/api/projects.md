@@ -198,7 +198,7 @@ following response attributes:
 | `container_expiration_policy.name_regex_delete` | string | Regular expression to match container image names to delete. |
 | `container_expiration_policy.name_regex_keep` | string | Regular expression to match container image names to keep. |
 | `container_expiration_policy.next_run_at` | datetime | Timestamp for the next scheduled policy run. |
-| `repository_object_format` | string | Object format used by the repository. Possible values: `sha1`, `sha256`. |
+| `repository_object_format` | string | Object format used by the repository. Possible values: `sha1` or `sha256`. |
 | `issues_enabled` | boolean | Whether issues are enabled for the project. |
 | `merge_requests_enabled` | boolean | Whether merge requests are enabled for the project. |
 | `wiki_enabled` | boolean | Whether the wiki is enabled for the project. |
@@ -208,25 +208,25 @@ following response attributes:
 | `service_desk_enabled` | boolean | Whether Service Desk is enabled for the project. |
 | `service_desk_address` | string | Email address for the Service Desk. |
 | `can_create_merge_request_in` | boolean | Whether the current user can create merge requests in the project. |
-| `issues_access_level` | string | Access level for the issues feature. |
-| `repository_access_level` | string | Access level for the repository feature. |
-| `merge_requests_access_level` | string | Access level for the merge requests feature. |
-| `forking_access_level` | string | Access level for forking the project. |
-| `wiki_access_level` | string | Access level for the wiki feature. |
-| `builds_access_level` | string | Access level for the CI/CD builds feature. |
-| `snippets_access_level` | string | Access level for the snippets feature. |
-| `pages_access_level` | string | Access level for GitLab Pages. |
-| `analytics_access_level` | string | Access level for analytics features. |
+| `issues_access_level` | string | Access level for the issues feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `repository_access_level` | string | Access level for the repository feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `merge_requests_access_level` | string | Access level for the merge requests feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `forking_access_level` | string | Access level for forking the project. Possible values: `disabled`, `private`, or `enabled`. |
+| `wiki_access_level` | string | Access level for the wiki feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `builds_access_level` | string | Access level for the CI/CD builds feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `snippets_access_level` | string | Access level for the snippets feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `pages_access_level` | string | Access level for GitLab Pages. Possible values: `disabled`, `private`, `enabled`, or `public`. |
+| `analytics_access_level` | string | Access level for analytics features. Possible values: `disabled`, `private`, or `enabled`. |
 | `container_registry_access_level` | string | Access level for the container registry. Possible values: `disabled`, `private`, or `enabled`. |
-| `security_and_compliance_access_level` | string | Access level for security and compliance features. |
-| `releases_access_level` | string | Access level for the releases feature. |
-| `environments_access_level` | string | Access level for the environments feature. |
-| `feature_flags_access_level` | string | Access level for the feature flags feature. |
-| `infrastructure_access_level` | string | Access level for the infrastructure feature. |
-| `monitor_access_level` | string | Access level for the monitor feature. |
-| `model_experiments_access_level` | string | Access level for the model experiments feature. |
-| `model_registry_access_level` | string | Access level for the model registry feature. |
-| `package_registry_access_level` | string | Access level for the package registry feature. |
+| `security_and_compliance_access_level` | string | Access level for security and compliance features. Possible values: `disabled`, `private`, or `enabled`. |
+| `releases_access_level` | string | Access level for the releases feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `environments_access_level` | string | Access level for the environments feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `feature_flags_access_level` | string | Access level for the feature flags feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `infrastructure_access_level` | string | Access level for the infrastructure feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `monitor_access_level` | string | Access level for the monitor feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `model_experiments_access_level` | string | Access level for the model experiments feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `model_registry_access_level` | string | Access level for the model registry feature. Possible values: `disabled`, `private`, or `enabled`. |
+| `package_registry_access_level` | string | Access level for the package registry feature. Possible values: `disabled`, `private`, or `enabled`. |
 | `emails_disabled` | boolean | Indicates if emails are disabled for the project. |
 | `emails_enabled` | boolean | Indicates if emails are enabled for the project. |
 | `show_diff_preview_in_email` | boolean | Indicates if diff previews are shown in email notifications. |
