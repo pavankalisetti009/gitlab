@@ -466,6 +466,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           "code_suggestions" => "code_completions",
           "generate_code" => "code_generations",
           "duo_chat" => "duo_chat",
+          "duo_classic_chat" => "duo_chat",
           "chat" => "duo_chat",
           "include_file_context" => "duo_chat",
           "include_snippet_context" => "duo_chat",
