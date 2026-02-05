@@ -17,20 +17,6 @@ module EE
         scope :preload_for_epic_link, -> { preload(:related_epic_link, source: [:synced_epic], target: [:synced_epic]) }
       end
 
-      override :validate_related_link_restrictions
-      def validate_related_link_restrictions
-        return super if link_type == ::IssuableLink::TYPE_RELATES_TO
-
-        restriction = find_restriction(source.work_item_type_id, target.work_item_type_id)
-        return if restriction.present?
-
-        errors.add :source, format(
-          s_('%{source_type} cannot block %{type_type}'),
-          source_type: source.work_item_type.name.downcase.pluralize,
-          type_type: target.work_item_type.name.downcase.pluralize
-        )
-      end
-
       def synced_related_epic_link
         return unless source.synced_epic || target.synced_epic
 

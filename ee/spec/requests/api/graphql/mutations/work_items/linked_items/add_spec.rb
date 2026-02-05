@@ -127,44 +127,4 @@ RSpec.describe "Add linked items to a work item", feature_category: :portfolio_m
       end
     end
   end
-
-  context 'when type cannot be blocked by given type' do
-    let_it_be(:objective) { create(:work_item, :objective, project: project) }
-
-    let(:input) do
-      {
-        'id' => work_item.to_global_id.to_s,
-        'workItemsIds' => [objective.to_global_id.to_s],
-        'linkType' => 'BLOCKED_BY'
-      }
-    end
-
-    it 'returns an error message' do
-      post_graphql_mutation(mutation, current_user: current_user)
-
-      expect(mutation_response["errors"]).to eq([
-        "#{objective.to_reference} cannot be added: objectives cannot block issues"
-      ])
-    end
-  end
-
-  context 'when type cannot block given type' do
-    let_it_be(:req) { create(:work_item, :requirement, project: project) }
-
-    let(:input) do
-      {
-        'id' => work_item.to_global_id.to_s,
-        'workItemsIds' => [req.to_global_id.to_s],
-        'linkType' => 'BLOCKS'
-      }
-    end
-
-    it 'returns an error message' do
-      post_graphql_mutation(mutation, current_user: current_user)
-
-      expect(mutation_response["errors"]).to eq([
-        "#{req.to_reference} cannot be added: issues cannot block requirements"
-      ])
-    end
-  end
 end
