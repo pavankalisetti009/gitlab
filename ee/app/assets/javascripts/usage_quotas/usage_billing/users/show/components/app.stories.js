@@ -6,6 +6,7 @@ import {
   mockEmptyData,
   mockNullData,
   mockDisabledStateData,
+  mockPaidTierTrialData,
 } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
 import getUserSubscriptionUsageQuery from '../graphql/get_user_subscription_usage.query.graphql';
 import UsageBillingUserDashboardApp from './app.vue';
@@ -71,6 +72,16 @@ export const NoCommitment = {
 export const EmptyState = {
   render: (...args) => {
     const getUserSubscriptionUsageQueryHandler = () => Promise.resolve(mockEmptyData);
+
+    return createTemplate({
+      getUserSubscriptionUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const PaidTierTrial = {
+  render: (...args) => {
+    const getUserSubscriptionUsageQueryHandler = () => Promise.resolve(mockPaidTierTrialData);
 
     return createTemplate({
       getUserSubscriptionUsageQueryHandler,

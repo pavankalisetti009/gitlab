@@ -7,8 +7,15 @@ export const mockDataWithPool = {
 
       lastEventTransactionAt: '2025-02-02T18:45:32Z',
 
+      subscriptionPortalUsageDashboardUrl: '/subscriptions/A-S042/usage',
+      purchaseCreditsPath: '/purchase-credits-path',
+
       startDate: '2025-08-01',
       endDate: '2025-08-31',
+
+      paidTierTrial: {
+        isActive: false,
+      },
 
       usersUsage: {
         users: {
@@ -240,6 +247,16 @@ export const mockEmptyData = {
     },
   },
 };
+
+export const mockPaidTierTrialData = merge({}, mockEmptyData, {
+  data: {
+    subscriptionUsage: {
+      paidTierTrial: {
+        isActive: true,
+      },
+    },
+  },
+});
 
 export const mockNullData = merge({}, mockEmptyData, {
   data: {

@@ -9,6 +9,7 @@ import OverageOptInCard from 'ee/usage_quotas/usage_billing/components/overage_o
 import UpgradeToPremiumCard from 'ee/usage_quotas/usage_billing/components/upgrade_to_premium_card.vue';
 import HaveQuestionsCard from 'ee/usage_quotas/usage_billing/components/have_questions_card.vue';
 import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
+import PaidTierTrialPeriodView from 'ee/usage_quotas/usage_billing/components/paid_tier_trial_period_view.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
@@ -31,6 +32,7 @@ import {
   usageDataWithOutdatedClient,
   usageDataWithoutPurchaseCreditsPath,
   usageDataWithDisabledState,
+  usageDataOnPaidTierTrial,
 } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -80,7 +82,10 @@ describe('UsageBillingApp', () => {
   const findCardsTrialRow = () => wrapper.findByTestId('cards-during-trial-row');
 
   beforeEach(() => {
-    window.gon = { display_gitlab_credits_user_data: true };
+    window.gon = {
+      display_gitlab_credits_user_data: true,
+      subscriptions_url: 'https://customers.gitlab.com/',
+    };
   });
 
   describe('loading state', () => {
@@ -177,10 +182,12 @@ describe('UsageBillingApp', () => {
     });
 
     it('renders purchase-commitment-card', () => {
-      expect(findPurchaseCommitmentCard().exists()).toBe(true);
-      expect(findPurchaseCommitmentCard().props('hasCommitment')).toBe(true);
-      expect(findPurchaseCommitmentCard().props('purchaseCreditsPath')).toBe(
-        '/purchase-credits-path',
+      const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
+
+      expect(purchaseCommitmentCard.exists()).toBe(true);
+      expect(purchaseCommitmentCard.props('hasCommitment')).toBe(true);
+      expect(purchaseCommitmentCard.props('purchaseCreditsUrl')).toBe(
+        'https://customers.gitlab.com/purchase-credits-path',
       );
     });
 
@@ -508,6 +515,46 @@ describe('UsageBillingApp', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('paid tier trial', () => {
+    describe('when on trial', () => {
+      beforeEach(async () => {
+        createComponent({
+          mockQueryHandler: jest.fn().mockResolvedValue(usageDataOnPaidTierTrial),
+        });
+        await waitForPromises();
+      });
+
+      it('will render trial card', () => {
+        const trialView = wrapper.findComponent(PaidTierTrialPeriodView);
+
+        expect(trialView.exists()).toBe(true);
+        expect(trialView.props()).toEqual({
+          customersUsageDashboardUrl: 'https://customers.gitlab.com/subscriptions/A-S042/usage',
+          purchaseCreditsUrl: 'https://customers.gitlab.com/purchase-credits-path',
+        });
+      });
+
+      it('wont render other cards', () => {
+        const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
+
+        expect(usageBillingSection.exists()).toBe(false);
+      });
+    });
+
+    describe('when not on trial', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('will not render trial card', () => {
+        const trialView = wrapper.findComponent(PaidTierTrialPeriodView);
+
+        expect(trialView.exists()).toBe(false);
+      });
     });
   });
 

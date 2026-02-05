@@ -1,4 +1,8 @@
-import { fillUsageValues, formatNumber } from 'ee/usage_quotas/usage_billing/utils';
+import {
+  fillUsageValues,
+  formatNumber,
+  ensureAbsoluteCustomerPortalUrl,
+} from 'ee/usage_quotas/usage_billing/utils';
 
 describe('fillUsageValues', () => {
   describe('with complete usage data', () => {
@@ -155,5 +159,27 @@ describe('formatNumber', () => {
       const result = formatNumber(1234.5678, 2);
       expect(result).toEqual('1.23k');
     });
+  });
+});
+
+describe('ensureAbsoluteCustomerPortalUrl', () => {
+  beforeEach(() => {
+    window.gon = {
+      subscriptions_url: 'https://customers.gitlab.com/',
+    };
+  });
+
+  it('will return absolute URL as is', () => {
+    const absoluteUrl = 'https://customers.gitlab.com/subscriptions/A-S042/usage';
+
+    expect(ensureAbsoluteCustomerPortalUrl(absoluteUrl)).toBe(absoluteUrl);
+  });
+
+  it('will turn a relative URL into absolute', () => {
+    const relativeUrl = '/subscriptions/A-S042/usage';
+
+    expect(ensureAbsoluteCustomerPortalUrl(relativeUrl)).toBe(
+      'https://customers.gitlab.com/subscriptions/A-S042/usage',
+    );
   });
 });

@@ -12,6 +12,7 @@ import {
   usageDataCommitmentWithMonthlyWaiver,
   usageDataWithOutdatedClient,
   usageDataWithDisabledState,
+  usageDataOnPaidTierTrial,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
@@ -149,6 +150,16 @@ export const NoCommitmentNoMonthlyWaiverNoOverage = {
 
     return createTemplate({
       getSubscriptionUsersUsageQueryHandler,
+      getSubscriptionUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const PaidTierTrial = {
+  render: (...args) => {
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataOnPaidTierTrial);
+
+    return createTemplate({
       getSubscriptionUsageQueryHandler,
     })(...args);
   },

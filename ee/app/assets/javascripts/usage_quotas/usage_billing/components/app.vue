@@ -1,6 +1,7 @@
 <script>
 import { GlAlert, GlSprintf, GlLink, GlTab, GlTabs } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
+import { joinPaths } from 'jh_else_ce/lib/utils/url_utility';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
@@ -8,6 +9,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
+import { ensureAbsoluteCustomerPortalUrl } from '../utils';
 import getSubscriptionUsageQuery from '../graphql/get_subscription_usage.query.graphql';
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
@@ -18,6 +20,7 @@ import UsageTrendsChart from './usage_trends_chart.vue';
 import OverageOptInCard from './overage_opt_in_card.vue';
 import UpgradeToPremiumCard from './upgrade_to_premium_card.vue';
 import HaveQuestionsCard from './have_questions_card.vue';
+import PaidTierTrialDisclaimer from './paid_tier_trial_period_view.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -39,6 +42,7 @@ export default {
     OverageOptInCard,
     UpgradeToPremiumCard,
     HaveQuestionsCard,
+    PaidTierTrialDisclaimer,
   },
   mixins: [InternalEvents.mixin()],
   apollo: {
@@ -81,6 +85,9 @@ export default {
       }
 
       return this.subscriptionUsage?.enabled === false;
+    },
+    isOnPaidTierTrial() {
+      return Boolean(this.subscriptionUsage?.paidTierTrial?.isActive);
     },
     shouldDisplayUserData() {
       return gon.display_gitlab_credits_user_data;
@@ -132,6 +139,15 @@ export default {
     },
     tillDate() {
       return this.trialEndDate || this.subscriptionUsage.endDate;
+    },
+    customersUsageDashboardUrl() {
+      return ensureAbsoluteCustomerPortalUrl(
+        this.subscriptionUsage.subscriptionPortalUsageDashboardUrl,
+      );
+    },
+    purchaseCreditsUrl() {
+      if (!this.subscriptionUsage.purchaseCreditsPath) return null;
+      return joinPaths(gon.subscriptions_url, this.subscriptionUsage.purchaseCreditsPath);
     },
   },
   mounted() {
@@ -230,6 +246,11 @@ export default {
       {{ s__('UsageBilling|Usage Billing is disabled') }}
     </gl-alert>
 
+    <paid-tier-trial-disclaimer
+      v-else-if="isOnPaidTierTrial"
+      :customers-usage-dashboard-url="customersUsageDashboardUrl"
+      :purchase-credits-url="purchaseCreditsUrl"
+    />
     <template v-else>
       <section
         v-if="isFree && inTrial"
@@ -266,13 +287,13 @@ export default {
 
         <overage-opt-in-card
           v-if="subscriptionUsage.canAcceptOverageTerms"
-          :customers-usage-dashboard-path="subscriptionUsage.subscriptionPortalUsageDashboardUrl"
+          :customers-usage-dashboard-url="customersUsageDashboardUrl"
         />
 
         <purchase-commitment-card
-          v-if="subscriptionUsage.purchaseCreditsPath"
+          v-if="purchaseCreditsUrl"
           :has-commitment="poolIsAvailable"
-          :purchase-credits-path="subscriptionUsage.purchaseCreditsPath"
+          :purchase-credits-url="purchaseCreditsUrl"
         />
       </section>
       <gl-tabs class="gl-mt-5" lazy>
