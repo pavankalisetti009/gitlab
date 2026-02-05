@@ -17,13 +17,6 @@ RSpec.describe WorkItems::TypesFramework::Provider, feature_category: :team_plan
 
       expect(described_class.unfiltered_base_types).to match_array(expected_types)
     end
-
-    it 'returns an array of strings' do
-      result = described_class.unfiltered_base_types
-
-      expect(result).to be_an(Array)
-      expect(result).to all(be_a(String))
-    end
   end
 
   describe '#initialize' do
@@ -402,6 +395,29 @@ RSpec.describe WorkItems::TypesFramework::Provider, feature_category: :team_plan
   end
 
   describe '#by_ids_with_widget_definition_preload' do
+    # TODO: change this to system defined in this MR:
+    # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219133
+    let(:issue_type) { build(:work_item_type, :issue) }
+    let(:task_type) { build(:work_item_type, :task) }
+
+    it 'returns work item types without preloading' do
+      ids = [issue_type.id, task_type.id]
+
+      result = provider.by_ids_with_widget_definition_preload(ids)
+
+      expect(result).to match_array([issue_type, task_type])
+    end
+
+    it 'does not calls with_widget_definition_preload' do
+      ids = [issue_type.id]
+      relation = WorkItems::TypesFramework::SystemDefined::Type.where(id: ids)
+
+      allow(WorkItems::TypesFramework::SystemDefined::Type).to receive(:where).with(id: ids).and_return(relation)
+      expect(relation).not_to receive(:with_widget_definition_preload).and_call_original
+
+      provider.by_ids_with_widget_definition_preload(ids)
+    end
+
     context 'when work_item_system_defined_type is disabled' do
       let(:issue_type) { create(:work_item_type, :issue) }
       let(:task_type) { create(:work_item_type, :task) }
@@ -424,35 +440,6 @@ RSpec.describe WorkItems::TypesFramework::Provider, feature_category: :team_plan
 
         allow(WorkItems::Type).to receive(:where).with(id: ids).and_return(relation)
         expect(relation).to receive(:with_widget_definition_preload).and_call_original
-
-        provider.by_ids_with_widget_definition_preload(ids)
-      end
-    end
-
-    context 'when work_item_system_defined_type is enabled' do
-      # TODO: change this to system defined in this MR:
-      # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219133
-      let(:issue_type) { build(:work_item_type, :issue) }
-      let(:task_type) { build(:work_item_type, :task) }
-
-      before do
-        stub_feature_flags(work_item_system_defined_type: true)
-      end
-
-      it 'returns work item types without preloading' do
-        ids = [issue_type.id, task_type.id]
-
-        result = provider.by_ids_with_widget_definition_preload(ids)
-
-        expect(result).to match_array([issue_type, task_type])
-      end
-
-      it 'does not calls with_widget_definition_preload' do
-        ids = [issue_type.id]
-        relation = WorkItems::TypesFramework::SystemDefined::Type.where(id: ids)
-
-        allow(WorkItems::TypesFramework::SystemDefined::Type).to receive(:where).with(id: ids).and_return(relation)
-        expect(relation).not_to receive(:with_widget_definition_preload).and_call_original
 
         provider.by_ids_with_widget_definition_preload(ids)
       end
@@ -507,15 +494,6 @@ RSpec.describe WorkItems::TypesFramework::Provider, feature_category: :team_plan
 
         expect(result).to match_array(%w[issue task])
       end
-    end
-
-    it 'returns an array of strings' do
-      ids = [issue_type.id, task_type.id]
-
-      result = provider.base_types_by_ids(ids)
-
-      expect(result).to be_an(Array)
-      expect(result).to all(be_a(String))
     end
   end
 

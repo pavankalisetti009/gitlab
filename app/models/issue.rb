@@ -891,7 +891,7 @@ class Issue < ApplicationRecord
     project.autoclose_referenced_issues
   end
 
-  # Overriden in EE
+  # Overridden in EE
   def epic_work_item?
     false
   end

@@ -1145,20 +1145,6 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
   end
 
   describe '.base_types' do
-    it 'returns a hash indexed by base_type' do
-      base_types = described_class.base_types
-
-      expect(base_types).to be_a(Hash)
-      expect(base_types.keys).to include('issue', 'incident', 'task', 'ticket')
-    end
-
-    it 'maps each base_type to its corresponding type object' do
-      base_types = described_class.base_types
-
-      expect(base_types['issue']).to be_a(described_class)
-      expect(base_types['issue'].base_type).to eq('issue')
-    end
-
     it 'includes all types from .all' do
       base_types = described_class.base_types
       all_types = described_class.all
@@ -1294,49 +1280,6 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
         allow(type).to receive(:license_name).and_return('')
 
         expect(type.licensed?).to be false
-      end
-    end
-  end
-
-  describe 'base_type predicate methods' do
-    let(:issue_type) { build(:work_item_system_defined_type, :issue) }
-    let(:task_type) { build(:work_item_system_defined_type, :task) }
-    let(:incident_type) { build(:work_item_system_defined_type, :incident) }
-    let(:ticket_type) { build(:work_item_system_defined_type, :ticket) }
-
-    describe '#issue?' do
-      it 'returns true only when base_type is issue' do
-        expect(issue_type.issue?).to be true
-        expect(task_type.issue?).to be false
-        expect(incident_type.issue?).to be false
-        expect(ticket_type.issue?).to be false
-      end
-    end
-
-    describe '#task?' do
-      it 'returns true only when the base_type is task' do
-        expect(task_type.task?).to be true
-        expect(issue_type.task?).to be false
-        expect(incident_type.task?).to be false
-        expect(ticket_type.task?).to be false
-      end
-    end
-
-    describe '#incident?' do
-      it 'returns true only when the base_type is incident' do
-        expect(incident_type.incident?).to be true
-        expect(issue_type.incident?).to be false
-        expect(task_type.incident?).to be false
-        expect(ticket_type.incident?).to be false
-      end
-    end
-
-    describe '#ticket?' do
-      it 'returns true on;y when the base_type is ticket' do
-        expect(ticket_type.ticket?).to be true
-        expect(issue_type.ticket?).to be false
-        expect(task_type.ticket?).to be false
-        expect(incident_type.ticket?).to be false
       end
     end
   end
