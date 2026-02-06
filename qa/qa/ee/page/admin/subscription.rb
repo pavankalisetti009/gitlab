@@ -82,8 +82,8 @@ module QA
             page.has_content?(/no longer has a valid license/)
           end
 
-          def has_no_active_subscription_title?
-            page.has_content?(/do not have an active subscription/)
+          def has_activation_card?
+            has_element?('activation-code-field')
           end
 
           def has_ultimate_subscription_plan?

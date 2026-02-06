@@ -22,9 +22,7 @@ module QA
       Runtime::Browser.visit(:gitlab, EE::Page::Admin::Subscription)
 
       EE::Page::Admin::Subscription.perform do |subscription|
-        # workaround for UI bug https://gitlab.com/gitlab-org/gitlab/-/issues/365305
-        expect { subscription.has_no_active_subscription_title? }
-          .to eventually_be_truthy.within(max_attempts: 60, reload_page: page)
+        expect(subscription.has_activation_card?).to be_truthy
 
         subscription.activate_license(Runtime::Env.ee_activation_code)
       end
