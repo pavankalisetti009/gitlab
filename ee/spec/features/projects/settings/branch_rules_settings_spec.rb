@@ -38,6 +38,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
 
       it 'does not render licensed feature additions' do
         page.within(find_by_testid('allowed-to-push-content')) do
+          expect(page).to have_button('Edit')
           click_button 'Edit'
         end
 
@@ -95,6 +96,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
 
       it 'renders users and groups selectors for branch protection' do
         page.within(find_by_testid('allowed-to-push-content')) do
+          expect(page).to have_button('Edit')
           click_button 'Edit'
         end
 
@@ -106,6 +108,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
 
       it 'can edit branch protection' do
         page.within(find_by_testid('allowed-to-push-content')) do
+          expect(page).to have_button('Edit')
           click_button 'Edit'
         end
 
@@ -126,6 +129,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
       end
 
       it 'can create status check' do
+        expect(page).to have_css('[data-testid="status-checks-table"]')
         within_testid('status-checks-table') do
           click_button('Add status check')
         end
@@ -147,6 +151,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
       end
 
       it 'can update status check' do
+        expect(page).to have_css('[data-testid="status-checks-table"]')
         within_testid('status-checks-table') do
           click_button "Edit #{external_status_check.name}"
         end
@@ -168,6 +173,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
       end
 
       it 'can delete status check' do
+        expect(page).to have_css('[data-testid="status-checks-table"]')
         within_testid('status-checks-table') do
           click_button "Delete"
         end
@@ -186,6 +192,7 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
 
       it 'passes axe automated accessibility testing' do
         page.within(find_by_testid('allowed-to-merge-content')) do
+          expect(page).to have_button('Edit')
           click_button 'Edit'
         end
 

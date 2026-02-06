@@ -27,7 +27,6 @@ import {
   deleteBranchRuleMockResponse,
   branchProtectionsMockResponse,
   squashOptionMockResponse,
-  statusChecksRulesMock,
   protectionPropsMock,
   editBranchRuleMockResponse,
   predefinedBranchRulesMockResponse,
@@ -118,7 +117,6 @@ describe('View branch rules in enterprise edition', () => {
   const findDeleteRuleButtonPopover = () => wrapper.findComponent(GlPopover);
   const findAllowedToMerge = () => wrapper.findByTestId('allowed-to-merge-content');
   const findAllowedToPush = () => wrapper.findByTestId('allowed-to-push-content');
-  const findStatusChecks = () => wrapper.findByTestId('status-checks-content');
   const findApprovalsApp = () => wrapper.findComponent(ApprovalRulesApp);
   const findProjectRules = () => wrapper.findComponent(ProjectRules);
   const findCrudComponent = () => wrapper.findComponent(CrudComponent);
@@ -254,40 +252,6 @@ describe('View branch rules in enterprise edition', () => {
       await waitForPromises();
       expect(findCrudComponent().props('title')).toBe('Rule target');
       expect(findStatusChecksDrawer().exists()).toBe(true);
-    });
-  });
-
-  describe('When edit_branch_rules feature flag is disabled', () => {
-    beforeEach(() => {
-      jest.spyOn(urlUtility, 'getParameterByName').mockReturnValue('main');
-    });
-    it.each`
-      codeOwnerApprovalRequired | title                                           | description
-      ${true}                   | ${'Requires code owner approval'}               | ${'Also rejects code pushes that change files listed in CODEOWNERS file.'}
-      ${false}                  | ${'Does not require approval from code owners'} | ${'Also accepts code pushes that change files listed in CODEOWNERS file.'}
-    `(
-      'renders code owners approval section with the correct title and description',
-      async ({ codeOwnerApprovalRequired, title, description }) => {
-        const mockResponse = branchProtectionsMockResponse;
-        mockResponse.data.project.branchRules.nodes[0].branchProtection.codeOwnerApprovalRequired =
-          codeOwnerApprovalRequired;
-        await createComponent({ editBranchRules: false }, { showCodeOwners: true }, mockResponse);
-        expect(findCodeOwnersToggle().props('iconTitle')).toEqual(title);
-        expect(findCodeOwnersToggle().props('description')).toEqual(description);
-      },
-    );
-
-    it('renders a branch protection component for status checks if "showStatusChecks" is true', async () => {
-      await createComponent({ editBranchRules: false }, { showStatusChecks: true });
-
-      expect(findCrudComponent().props('title')).toBe('Rule target');
-      expect(findStatusChecks().props()).toMatchObject({
-        header: 'Status checks',
-        count: 2,
-        headerLinkHref: statusChecksPath,
-        headerLinkTitle: 'Manage in status checks',
-        statusChecks: statusChecksRulesMock,
-      });
     });
   });
 
