@@ -5,10 +5,20 @@ import {
   ROLES,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
+const normalizeTarget = (target = {}) => {
+  if (target.pattern !== undefined) {
+    return target;
+  }
+  if (target.name !== undefined) {
+    return { pattern: target.name };
+  }
+  return target;
+};
+
 export const createSourceBranchPatternObject = ({ id = '', source = {}, target = {} } = {}) => ({
   id: id || uniqueId('pattern_'),
   source,
-  target,
+  target: normalizeTarget(target),
 });
 
 export const createServiceAccountObject = ({ id = '' } = {}) => ({

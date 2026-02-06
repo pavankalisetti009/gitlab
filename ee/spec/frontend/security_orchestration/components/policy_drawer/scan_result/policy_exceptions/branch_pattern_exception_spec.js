@@ -133,4 +133,68 @@ describe('BranchPatternException', () => {
       expect(findBranchItems()).toHaveLength(2);
     });
   });
+
+  describe('with target.pattern (new format)', () => {
+    const mockBranchesWithPattern = [
+      {
+        source: { pattern: 'feature/*' },
+        target: { pattern: 'main' },
+      },
+      {
+        source: { pattern: 'hotfix/*' },
+        target: { pattern: 'release/*' },
+      },
+    ];
+
+    beforeEach(() => {
+      createComponent({
+        propsData: {
+          branches: mockBranchesWithPattern,
+        },
+      });
+    });
+
+    it('displays correct count in title', () => {
+      expect(findAccordionItem().props('title')).toBe('Branch exceptions (2)');
+    });
+
+    it('renders branch items for each valid branch', () => {
+      expect(findBranchItems()).toHaveLength(2);
+    });
+
+    it('passes correct message to GlSprintf components', () => {
+      const branchItems = findBranchItems();
+
+      expect(branchItems.at(0).text()).toBe('From feature/* to: main');
+      expect(branchItems.at(1).text()).toBe('From hotfix/* to: release/*');
+    });
+  });
+
+  describe('with mixed target.name and target.pattern', () => {
+    const mockMixedTargetBranches = [
+      {
+        source: { pattern: 'feature/*' },
+        target: { name: 'main' },
+      },
+      {
+        source: { pattern: 'release/*' },
+        target: { pattern: 'production' },
+      },
+    ];
+
+    beforeEach(() => {
+      createComponent({
+        propsData: {
+          branches: mockMixedTargetBranches,
+        },
+      });
+    });
+
+    it('handles both target.name and target.pattern', () => {
+      expect(findAccordionItem().props('title')).toBe('Branch exceptions (2)');
+      const branchItems = findBranchItems();
+      expect(branchItems.at(0).text()).toBe('From feature/* to: main');
+      expect(branchItems.at(1).text()).toBe('From release/* to: production');
+    });
+  });
 });

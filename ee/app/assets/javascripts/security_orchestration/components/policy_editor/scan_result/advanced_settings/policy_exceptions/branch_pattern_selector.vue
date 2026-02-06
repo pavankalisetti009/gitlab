@@ -64,7 +64,7 @@ export default {
     duplicateKey(branch) {
       const getValue = (item, path) => get(item, path, '');
       const source = getValue(branch, 'source.pattern');
-      const target = getValue(branch, 'target.name');
+      const target = getValue(branch, 'target.pattern') || getValue(branch, 'target.name');
 
       if (!source && !target) return null;
 

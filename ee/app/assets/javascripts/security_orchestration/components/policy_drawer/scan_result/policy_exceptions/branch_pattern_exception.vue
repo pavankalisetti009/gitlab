@@ -18,7 +18,9 @@ export default {
   },
   computed: {
     validBranches() {
-      return this.branches.filter((branch) => branch?.source?.pattern && branch?.target?.name);
+      return this.branches.filter(
+        (branch) => branch?.source?.pattern && (branch?.target?.pattern || branch?.target?.name),
+      );
     },
     title() {
       return sprintf(s__('SecurityOrchestration|Branch exceptions (%{count})'), {
@@ -29,7 +31,7 @@ export default {
       return this.validBranches.map((branch) =>
         sprintf(__('From %{codeStart}%{source}%{codeEnd} to: %{codeStart}%{target}%{codeEnd}'), {
           source: branch.source.pattern,
-          target: branch.target.name,
+          target: branch.target.pattern || branch.target.name,
         }),
       );
     },

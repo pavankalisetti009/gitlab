@@ -4,7 +4,6 @@ import { GlButton, GlFormInput } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import {
-  NAME,
   PATTERN,
   SOURCE,
   TARGET,
@@ -40,8 +39,8 @@ export default {
     sourcePattern() {
       return this.branch?.source?.pattern ?? '';
     },
-    targetName() {
-      return this.branch?.target?.name ?? '';
+    targetPattern() {
+      return this.branch?.target?.pattern ?? this.branch?.target?.name ?? '';
     },
   },
   created() {
@@ -55,12 +54,10 @@ export default {
       this.$emit('remove');
     },
     setBranch(value, type) {
-      const subKey = type === SOURCE ? PATTERN : NAME;
-
       this.$emit('set-branch', {
         ...this.branch,
         [type]: {
-          [subKey]: value,
+          [PATTERN]: value,
         },
       });
     },
@@ -70,10 +67,8 @@ export default {
 
 <template>
   <div>
-    <div
-      class="gl-flex gl-w-full gl-flex-col gl-gap-5 @md/panel:gl-flex-row @md/panel:gl-items-center"
-    >
-      <div class="gl-flex gl-w-full gl-flex-col gl-items-center @md/panel:gl-flex-row">
+    <div class="gl-flex gl-w-full gl-flex-col gl-gap-5 md:gl-flex-row md:gl-items-center">
+      <div class="gl-flex gl-w-full gl-flex-col gl-items-center md:gl-flex-row">
         <gl-form-input
           :id="`source-${branch.id}`"
           data-testid="source-input"
@@ -88,7 +83,7 @@ export default {
           data-testid="target-input"
           :placeholder="s__('ScanResultPolicy|input target branch')"
           :state="!hasValidationError"
-          :value="targetName"
+          :value="targetPattern"
           @input="debouncedSetBranch($event, $options.TARGET)"
         />
       </div>
