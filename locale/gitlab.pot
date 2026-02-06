@@ -6012,7 +6012,7 @@ msgstr ""
 msgid "AdminSettings|I have read and agree to the Let's Encrypt %{link_start}Terms of Service%{link_end} (PDF)."
 msgstr ""
 
-msgid "AdminSettings|If GitLab manages your cluster, then GitLab retains your analytics data for 1 year. %{link_start}Learn more about data retention policy%{link_end}."
+msgid "AdminSettings|If GitLab manages your cluster, then your analytics data is %{link_start}retained for 1 year%{link_end}."
 msgstr ""
 
 msgid "AdminSettings|If exact code search is enabled, you should turn off this setting to save resources."
@@ -53674,9 +53674,6 @@ msgid "ProjectSettings|Housekeeping, export, archive, change path, transfer, and
 msgstr ""
 
 msgid "ProjectSettings|How do they differ?"
-msgstr ""
-
-msgid "ProjectSettings|If GitLab manages your cluster, then GitLab retains your analytics data for 1 year. %{link_start}Learn more about data retention policy%{link_end}."
 msgstr ""
 
 msgid "ProjectSettings|If merge trains are enabled, merging is only possible if the branch can be rebased without conflicts."
