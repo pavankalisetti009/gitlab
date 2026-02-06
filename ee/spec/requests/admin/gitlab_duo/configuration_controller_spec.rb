@@ -65,6 +65,11 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
           create(:gitlab_subscription_add_on_purchase, :self_hosted_dap, :self_managed, :active)
         end
 
+        before do
+          # Rendering this page will have the chat window available, which makes a usage quota call
+          allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+        end
+
         it_behaves_like 'renders duo settings form'
       end
 
