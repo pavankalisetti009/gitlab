@@ -2,8 +2,6 @@
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax -- GlBreakpointInstance is used intentionally here. In this case we must obtain viewport breakpoints
 import { __ } from '~/locale';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
-import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { setAiPanelTab } from '../graphql';
@@ -141,19 +139,13 @@ export default {
           };
         case 'sessions':
           return {
-            title: this.sessionTitle,
+            title: __('Sessions'),
             component: AgentSessionsRoot,
             initialRoute: '/agent-sessions/',
           };
         default:
           return null;
       }
-    },
-    sessionTitle() {
-      // For now, we don't know the flow type here to format the title.
-      return this.$route.name === AGENTS_PLATFORM_SHOW_ROUTE
-        ? formatAgentFlowName(null, this.$route.params.id)
-        : __('Sessions');
     },
     showBackButton() {
       return (

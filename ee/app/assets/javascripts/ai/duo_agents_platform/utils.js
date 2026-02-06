@@ -98,6 +98,8 @@ export const getMessageData = (message) => {
 };
 
 export const agentSessionStatusVar = makeVar(null);
+export const agentSessionProjectVar = makeVar(null);
+export const agentSessionFlowDefinitionVar = makeVar(null);
 
 export const formatDate = (isoString) => {
   if (!isoString) return '';

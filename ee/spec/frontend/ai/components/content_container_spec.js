@@ -1,18 +1,20 @@
 import { nextTick } from 'vue';
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlSkeletonLoader } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import waitForPromises from 'helpers/wait_for_promises';
 import { copyToClipboard } from '~/lib/utils/copy_to_clipboard';
 import showGlobalToast from '~/vue_shared/plugins/global_toast';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
-import AgentStatusIcon from 'ee/ai/duo_agents_platform/components/common/agent_status_icon.vue';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import DuoChat from 'ee/ai/tanuki_bot/components/duo_chat.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import { agentSessionStatusVar } from 'ee/ai/duo_agents_platform/utils';
+import {
+  agentSessionProjectVar,
+  agentSessionFlowDefinitionVar,
+} from 'ee/ai/duo_agents_platform/utils';
 
 jest.mock('~/lib/utils/copy_to_clipboard');
 jest.mock('~/vue_shared/plugins/global_toast');
@@ -25,6 +27,13 @@ describe('AiContentContainer', () => {
     title: 'Test Tab Title',
     component: 'Placeholder content',
   };
+
+  const createMockComponentTab = (overrides = {}) => ({
+    title: 'Test Component',
+    component: { name: 'MockComponent', render: (h) => h('div') },
+    props: { mode: 'active', isAgenticAvailable: true },
+    ...overrides,
+  });
 
   const createComponent = ({
     activeTab = activeTabMock,
@@ -78,16 +87,18 @@ describe('AiContentContainer', () => {
   };
 
   const findPanelTitle = () => wrapper.findByTestId('content-container-title');
+  const findPanelSubtitle = () => wrapper.findByTestId('content-container-subtitle');
   const findCollapseButton = () => wrapper.findByTestId('content-container-collapse-button');
   const findMaximizeButton = () => wrapper.findByTestId('content-container-maximize-button');
   const findBackButton = () => wrapper.findByTestId('content-container-back-button');
-  const findAgentStatusIcon = () => wrapper.findComponent(AgentStatusIcon);
   const findSessionMenu = () => wrapper.findByTestId('content-container-session-menu');
+  const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
 
   beforeEach(() => {
     // Reset global state before each test
     duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
-    agentSessionStatusVar(null);
+    agentSessionProjectVar(null);
+    agentSessionFlowDefinitionVar(null);
   });
 
   it('renders the tab title in the header', () => {
@@ -159,14 +170,9 @@ describe('AiContentContainer', () => {
   });
 
   describe('props passing to dynamic component', () => {
-    const mockComponentTab = {
-      title: 'Test Component',
-      component: { name: 'MockComponent', render: (h) => h('div') },
-    };
-
     it('renders dynamic component with props bound', () => {
       createComponent({
-        activeTab: mockComponentTab,
+        activeTab: createMockComponentTab(),
         propsData: {
           projectId: 'gid://gitlab/Project/999',
           namespaceId: 'gid://gitlab/Group/888',
@@ -182,7 +188,7 @@ describe('AiContentContainer', () => {
     });
 
     it('does not render string placeholder for non-string components', () => {
-      createComponent({ activeTab: mockComponentTab });
+      createComponent({ activeTab: createMockComponentTab() });
 
       const placeholderDiv = wrapper.find('.ai-panel-body .gl-self-center');
       expect(placeholderDiv.exists()).toBe(false);
@@ -190,11 +196,7 @@ describe('AiContentContainer', () => {
   });
 
   describe('event forwarding', () => {
-    const mockComponentTab = {
-      title: 'Test Component',
-      component: { name: 'MockComponent', render: (h) => h('div') },
-      props: { mode: 'test', isAgenticAvailable: true },
-    };
+    const mockComponentTab = createMockComponentTab({ props: { mode: 'test' } });
 
     it('forwards switch-to-active-tab event from dynamic component', async () => {
       createComponent({ activeTab: mockComponentTab });
@@ -216,13 +218,8 @@ describe('AiContentContainer', () => {
     });
 
     it('does not error when activeTab.props is undefined', () => {
-      const tabWithoutProps = {
-        title: 'Test Component',
-        component: { name: 'MockComponent', render: (h) => h('div') },
-      };
-
       expect(() => {
-        createComponent({ activeTab: tabWithoutProps });
+        createComponent({ activeTab: createMockComponentTab({ props: undefined }) });
       }).not.toThrow();
     });
   });
@@ -273,105 +270,119 @@ describe('AiContentContainer', () => {
     });
   });
 
-  describe('agent status icon', () => {
-    it('does not show status icon when not on agent platform show route', () => {
-      agentSessionStatusVar('Running');
-
+  describe('session route with project and flow definition', () => {
+    it('shows skeleton loader when on session route but project name is not available', async () => {
       createComponent({
+        activeTab: createMockComponentTab(),
         mocks: {
-          $route: { name: 'some-other-route' },
-        },
-      });
-
-      expect(findAgentStatusIcon().exists()).toBe(false);
-    });
-
-    it('does not show the icon when status is not available', () => {
-      createComponent({
-        mocks: {
-          $route: { name: AGENTS_PLATFORM_SHOW_ROUTE },
-        },
-      });
-
-      expect(findAgentStatusIcon().exists()).toBe(false);
-    });
-
-    it('shows the icon when on agent platform show route and status exists', async () => {
-      agentSessionStatusVar('Running');
-
-      createComponent({
-        mocks: {
-          $route: { name: AGENTS_PLATFORM_SHOW_ROUTE },
+          $route: {
+            name: AGENTS_PLATFORM_SHOW_ROUTE,
+            params: { id: '123' },
+          },
         },
       });
 
       await nextTick();
 
-      expect(findAgentStatusIcon().exists()).toBe(true);
-      expect(findAgentStatusIcon().props('status')).toBe('Running');
-      expect(findAgentStatusIcon().props('humanStatus')).toBe('Running');
+      expect(findSkeletonLoader().exists()).toBe(true);
+      expect(findPanelTitle().exists()).toBe(false);
+      expect(findPanelSubtitle().exists()).toBe(false);
     });
 
-    it('updates the icon when reactive variable changes', async () => {
-      agentSessionStatusVar('Running');
-
+    it('displays project name and flow definition when data is available', async () => {
       createComponent({
+        activeTab: createMockComponentTab(),
         mocks: {
-          $route: { name: AGENTS_PLATFORM_SHOW_ROUTE },
+          $route: {
+            name: AGENTS_PLATFORM_SHOW_ROUTE,
+            params: { id: '123' },
+          },
         },
       });
 
+      agentSessionProjectVar({ name: 'Test Project' });
+      agentSessionFlowDefinitionVar('test_flow');
+
       await nextTick();
 
-      expect(findAgentStatusIcon().props('status')).toBe('Running');
+      expect(findPanelTitle().text()).toContain('Test Project');
+      expect(findPanelSubtitle().text()).toContain('Test flow #123');
+    });
 
-      agentSessionStatusVar('Finished');
+    it('hides skeleton loader and shows content when project name becomes available', async () => {
+      createComponent({
+        activeTab: createMockComponentTab(),
+        mocks: {
+          $route: {
+            name: AGENTS_PLATFORM_SHOW_ROUTE,
+            params: { id: '123' },
+          },
+        },
+      });
+
+      expect(findSkeletonLoader().exists()).toBe(true);
+
+      agentSessionProjectVar({ name: 'Test Project' });
+      agentSessionFlowDefinitionVar('test_flow');
       await nextTick();
 
-      expect(findAgentStatusIcon().props('status')).toBe('Finished');
+      expect(findSkeletonLoader().exists()).toBe(false);
+      expect(findPanelTitle().text()).toContain('Test Project');
+    });
+
+    it('does not show skeleton loader when not on session route', async () => {
+      createComponent({
+        activeTab: createMockComponentTab(),
+        mocks: {
+          $route: {
+            name: 'other-route',
+            params: { id: '123' },
+          },
+        },
+      });
+      await nextTick();
+
+      expect(findSkeletonLoader().exists()).toBe(false);
     });
   });
 
   describe('session ID menu', () => {
-    const mockComponentTab = {
-      title: 'Test Component',
-      component: { name: 'MockComponent', render: (h) => h('div') },
-      props: { mode: 'active', isAgenticAvailable: true },
+    const emitSessionEvents = async (sessionId = 'test-session-123', title = 'new-chat-title') => {
+      const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
+      dynamicComponent.vm.$emit('session-id-changed', sessionId);
+      dynamicComponent.vm.$emit('change-title', title);
+
+      await nextTick();
+
+      return sessionId;
     };
 
     it('shows session menu when session ID is received from child', async () => {
-      createComponent({ activeTab: mockComponentTab });
+      createComponent({ activeTab: createMockComponentTab() });
       expect(findSessionMenu().exists()).toBe(false);
 
-      const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
-      dynamicComponent.vm.$emit('session-id-changed', 'new-session-id');
-      dynamicComponent.vm.$emit('change-title', 'new-chat-title');
-      await nextTick();
+      await emitSessionEvents('new-session-id');
 
       expect(findSessionMenu().exists()).toBe(true);
       expect(findSessionMenu().props('items')[0].text).toContain('new-session-id');
     });
 
     it('does not render session menu when sessionId is not set', () => {
-      createComponent({ activeTab: mockComponentTab });
+      createComponent({ activeTab: createMockComponentTab() });
       expect(findSessionMenu().exists()).toBe(false);
     });
 
     it('renders session menu with correct props and session ID when set', async () => {
-      createComponent({ activeTab: mockComponentTab });
-
-      const sessionId = 'test-session-123';
-      const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
-      dynamicComponent.vm.$emit('session-id-changed', sessionId);
-      dynamicComponent.vm.$emit('change-title', 'new-chat-title');
-      await nextTick();
+      createComponent({ activeTab: createMockComponentTab() });
+      const sessionId = await emitSessionEvents('test-session-123');
 
       const menu = findSessionMenu();
-      expect(menu.exists()).toBe(true);
-      expect(menu.props('icon')).toBe('ellipsis_v');
-      expect(menu.props('category')).toBe('tertiary');
-      expect(menu.props('size')).toBe('small');
-      expect(menu.props('noCaret')).toBe(true);
+      expect(menu.props()).toMatchObject({
+        icon: 'ellipsis_v',
+        category: 'tertiary',
+        size: 'small',
+        noCaret: true,
+      });
 
       const items = menu.props('items');
       expect(items).toHaveLength(1);
@@ -380,35 +391,24 @@ describe('AiContentContainer', () => {
     });
 
     describe('copying session ID to clipboard', () => {
+      beforeEach(() => {
+        createComponent({ activeTab: createMockComponentTab() });
+      });
+
       it('copies session ID to clipboard when menu item is clicked', async () => {
         copyToClipboard.mockResolvedValue();
-        createComponent({ activeTab: mockComponentTab });
+        const sessionId = await emitSessionEvents('test-session-copy');
 
-        const sessionId = 'test-session-copy';
-        const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
-        dynamicComponent.vm.$emit('session-id-changed', sessionId);
-        dynamicComponent.vm.$emit('change-title', 'new-chat-title');
-        await nextTick();
-
-        const menu = findSessionMenu();
-        const menuItem = menu.props('items')[0];
-        await menuItem.action();
+        await findSessionMenu().props('items')[0].action();
 
         expect(copyToClipboard).toHaveBeenCalledWith(sessionId);
       });
 
       it('shows success toast when copy succeeds', async () => {
         copyToClipboard.mockResolvedValue();
-        createComponent({ activeTab: mockComponentTab });
+        await emitSessionEvents('test-session-success');
 
-        const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
-        dynamicComponent.vm.$emit('session-id-changed', 'test-session-success');
-        dynamicComponent.vm.$emit('change-title', 'new-chat-title');
-        await nextTick();
-
-        const menu = findSessionMenu();
-        const menuItem = menu.props('items')[0];
-        await menuItem.action();
+        await findSessionMenu().props('items')[0].action();
         await waitForPromises();
 
         expect(showGlobalToast).toHaveBeenCalledWith('Session ID copied to clipboard');
@@ -416,16 +416,9 @@ describe('AiContentContainer', () => {
 
       it('shows error toast when copy fails', async () => {
         copyToClipboard.mockRejectedValue(new Error('Failed'));
-        createComponent({ activeTab: mockComponentTab });
+        await emitSessionEvents('test-session-fail');
 
-        const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
-        dynamicComponent.vm.$emit('session-id-changed', 'test-session-fail');
-        dynamicComponent.vm.$emit('change-title', 'new-chat-title');
-        await nextTick();
-
-        const menu = findSessionMenu();
-        const menuItem = menu.props('items')[0];
-        await menuItem.action();
+        await findSessionMenu().props('items')[0].action();
         await waitForPromises();
 
         expect(showGlobalToast).toHaveBeenCalledWith('Could not copy session ID');
