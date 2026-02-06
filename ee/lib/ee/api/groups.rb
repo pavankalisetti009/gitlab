@@ -268,7 +268,7 @@ module EE
           desc 'Get a list of SAML users of the group' do
             success ::API::Entities::UserPublic
             is_array true
-            tags %w[group]
+            tags %w[groups]
           end
           params do
             optional :username, type: String, desc: 'Return single user with a specific username.'

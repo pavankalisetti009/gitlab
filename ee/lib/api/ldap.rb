@@ -8,8 +8,7 @@ module API
     # group.
     before { authenticated_with_ldap_admin_access! }
 
-    ldap_groups_tags = %w[ldap_groups]
-
+    ldap_groups_tags = %w[ldap]
     feature_category :system_access
 
     resource :ldap do

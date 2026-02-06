@@ -4,7 +4,7 @@ module API
   class LdapGroupLinks < ::API::Base
     before { authenticate! }
 
-    ldap_group_links_tags = %w[ldap_group_links]
+    ldap_group_links_tags = %w[ldap]
 
     feature_category :user_management
 
