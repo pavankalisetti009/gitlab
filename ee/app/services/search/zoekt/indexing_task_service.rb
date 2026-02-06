@@ -6,7 +6,6 @@ module Search
       include ::Gitlab::Utils::StrongMemoize
       include Gitlab::Loggable
 
-      REINDEXING_CHANCE_PERCENTAGE = 0.5
       WATERMARK_RESCHEDULE_INTERVAL = 30.minutes
 
       def self.execute(...)
@@ -62,10 +61,19 @@ module Search
 
       def random_force_reindexing?
         return true if task_type == :force_index_repo
+        return false unless task_type == :index_repo
 
-        task_type == :index_repo && (rand * 100 <= REINDEXING_CHANCE_PERCENTAGE)
+        percentage = force_reindexing_percentage
+        return false if percentage <= 0
+        return true if percentage >= 100
+
+        rand * 100 <= percentage
       end
       strong_memoize_attr :random_force_reindexing?
+
+      def force_reindexing_percentage
+        ::Search::Zoekt::Settings.force_reindexing_percentage
+      end
     end
   end
 end

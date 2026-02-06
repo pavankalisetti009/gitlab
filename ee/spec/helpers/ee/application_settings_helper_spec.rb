@@ -401,36 +401,40 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[0]).to have_selector('label', text: 'Indexing CPU to tasks multiplier')
         expect(result[1])
           .to have_selector('input[type="number"][name="application_setting[zoekt_cpu_to_tasks_ratio]"][value="1.5"]')
-        expect(result[2]).to have_selector('label', text: _('Number of parallel processes per indexing task'))
+        expect(result[2]).to have_selector('label', text: _('Probability of random force reindexing (percentage)'))
         expect(result[3])
-          .to have_selector('input[type="number"][name="application_setting[zoekt_indexing_parallelism]"][value="1"]')
-        expect(result[4]).to have_selector('label', text: _('Number of namespaces per indexing rollout'))
+          .to have_selector('input[type="number"][name="application_setting[zoekt_force_reindexing_percentage]"]' \
+            "[value=\"#{Search::Zoekt::Settings::DEFAULT_FORCE_REINDEXING_PERCENTAGE}\"]")
+        expect(result[4]).to have_selector('label', text: _('Number of parallel processes per indexing task'))
         expect(result[5])
+          .to have_selector('input[type="number"][name="application_setting[zoekt_indexing_parallelism]"][value="1"]')
+        expect(result[6]).to have_selector('label', text: _('Number of namespaces per indexing rollout'))
+        expect(result[7])
           .to have_selector('input[type="number"][name="application_setting[zoekt_rollout_batch_size]"][value="100"]')
-        expect(result[6]).to have_selector('label', text: _('Offline nodes automatically deleted after'))
+        expect(result[8]).to have_selector('label', text: _('Offline nodes automatically deleted after'))
         selector = 'input[type="text"][name="application_setting[zoekt_lost_node_threshold]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD}\"]"
-        expect(result[7]).to have_selector(selector)
-        expect(result[8]).to have_selector('label', text: _('Indexing timeout per project'))
+        expect(result[9]).to have_selector(selector)
+        expect(result[10]).to have_selector('label', text: _('Indexing timeout per project'))
         selector = 'input[type="text"][name="application_setting[zoekt_indexing_timeout]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_INDEXING_TIMEOUT}\"]"
-        expect(result[9]).to have_selector(selector)
-        expect(result[10]).to have_selector('label', text: _('Maximum number of files per project to be indexed'))
+        expect(result[11]).to have_selector(selector)
+        expect(result[12]).to have_selector('label', text: _('Maximum number of files per project to be indexed'))
         selector = 'input[type="number"][name="application_setting[zoekt_maximum_files]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_MAXIMUM_FILES}\"]"
-        expect(result[11]).to have_selector(selector)
-        expect(result[12]).to have_selector('label', text: _('Maximum file size for indexing'))
+        expect(result[13]).to have_selector(selector)
+        expect(result[14]).to have_selector('label', text: _('Maximum file size for indexing'))
         selector = 'input[type="text"][name="application_setting[zoekt_indexed_file_size_limit]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_FILE_SIZE_LIMIT}\"]"
-        expect(result[13]).to have_selector(selector)
-        expect(result[14]).to have_selector('label', text: _('Maximum trigrams per file'))
+        expect(result[15]).to have_selector(selector)
+        expect(result[16]).to have_selector('label', text: _('Maximum trigrams per file'))
         selector = 'input[type="number"][name="application_setting[zoekt_trigram_max]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_TRIGRAM_MAX}\"]"
-        expect(result[15]).to have_selector(selector)
-        expect(result[16]).to have_selector('label', text: _('Retry interval for failed namespaces'))
+        expect(result[17]).to have_selector(selector)
+        expect(result[18]).to have_selector('label', text: _('Retry interval for failed namespaces'))
         selector = 'input[type="text"][name="application_setting[zoekt_rollout_retry_interval]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL}\"]"
-        expect(result[17]).to have_selector(selector)
+        expect(result[19]).to have_selector(selector)
       end
     end
 

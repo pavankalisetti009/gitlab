@@ -67,6 +67,10 @@
     "zoekt_default_number_of_replicas": {
       "type": "number",
       "description": "Specify default number of replicas per namespace. Currently in development."
+    },
+    "zoekt_force_reindexing_percentage": {
+      "type": "number",
+      "description": "Probability of random force re-indexing as a percentage (0-100)"
     }
   }
 }

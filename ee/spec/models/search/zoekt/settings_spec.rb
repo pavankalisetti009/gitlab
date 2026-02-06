@@ -20,7 +20,8 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_trigram_max,
         :zoekt_indexed_file_size_limit,
         :zoekt_rollout_retry_interval,
-        :zoekt_default_number_of_replicas
+        :zoekt_default_number_of_replicas,
+        :zoekt_force_reindexing_percentage
       )
     end
 
@@ -62,7 +63,9 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
     end
 
     it 'has numeric settings with correct type' do
-      expect(described_class::SETTINGS[:zoekt_cpu_to_tasks_ratio][:type]).to eq(:float)
+      %i[zoekt_cpu_to_tasks_ratio zoekt_force_reindexing_percentage].each do |setting|
+        expect(described_class::SETTINGS[setting][:type]).to eq(:float)
+      end
       %i[
         zoekt_default_number_of_replicas
         zoekt_indexing_parallelism
@@ -87,6 +90,9 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
 
     it 'defines input options' do
       expect(described_class::SETTINGS[:zoekt_cpu_to_tasks_ratio][:input_options]).to include(step: 0.1)
+      expect(described_class::SETTINGS[:zoekt_force_reindexing_percentage][:input_options]).to include(
+        step: 0.1, min: 0, max: 100
+      )
       expect(described_class::SETTINGS[:zoekt_lost_node_threshold][:input_options]).to include(
         placeholder: format(
           N_("Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` to disable."),
@@ -126,6 +132,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         zoekt_indexed_file_size_limit
         zoekt_rollout_retry_interval
         zoekt_default_number_of_replicas
+        zoekt_force_reindexing_percentage
       ]
       all_labels = all_settings.map do |setting|
         described_class::SETTINGS[setting][:label].call
@@ -147,7 +154,8 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
           _('Maximum number of files per project to be indexed'),
           _('Maximum file size for indexing'),
           _('Retry interval for failed namespaces'),
-          _('Number of replicas per namespace')
+          _('Number of replicas per namespace'),
+          _('Probability of random force reindexing (percentage)')
         ]
       )
     end
@@ -226,6 +234,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         zoekt_rollout_retry_interval
         zoekt_default_number_of_replicas
         zoekt_trigram_max
+        zoekt_force_reindexing_percentage
       ]
 
       expect(input_ui_settings.keys).to match_array(expected_list)
@@ -390,6 +399,31 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
     context 'when ApplicationSetting is not present' do
       it 'returns default value' do
         expect(default_number_of_replicas).to eq(1)
+      end
+    end
+  end
+
+  describe '.force_reindexing_percentage' do
+    subject { described_class.force_reindexing_percentage }
+
+    context 'with different combinations of set value' do
+      let_it_be(:_) { create(:application_setting) }
+
+      before do
+        stub_ee_application_setting(zoekt_force_reindexing_percentage: set_percentage)
+      end
+
+      using RSpec::Parameterized::TableSyntax
+      where(:set_percentage, :return_value) do
+        0.0   | 0.0
+        0.25  | 0.25
+        0.5   | 0.5
+        1.0   | 1.0
+        50.0  | 50.0
+        100.0 | 100.0
+      end
+      with_them do
+        it { is_expected.to eq(return_value) }
       end
     end
   end

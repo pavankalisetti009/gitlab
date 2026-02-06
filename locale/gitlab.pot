@@ -51711,6 +51711,9 @@ msgstr ""
 msgid "Private projects compute cost factor"
 msgstr ""
 
+msgid "Probability of random force reindexing (percentage)"
+msgstr ""
+
 msgid "Problem with %{name} command: %{message}."
 msgstr ""
 
