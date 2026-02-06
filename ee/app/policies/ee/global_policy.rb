@@ -206,6 +206,7 @@ module EE
         enable :update_dap_self_hosted_model
         enable :manage_instance_model_selection
         enable :read_enterprise_ai_analytics
+        enable :read_subscription_usage
       end
 
       rule { ~instance_model_configuration_allowed }.policy do
