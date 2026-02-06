@@ -79235,6 +79235,9 @@ msgstr ""
 msgid "WorkItem|Usage"
 msgstr ""
 
+msgid "WorkItem|Usage is controlled by the Monitor feature."
+msgstr ""
+
 msgid "WorkItem|Usage is controlled by the Service Desk feature."
 msgstr ""
 
