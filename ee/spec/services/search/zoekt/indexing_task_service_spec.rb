@@ -111,10 +111,11 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
     context 'when task_type is not delete_repo' do
       let(:task_type) { 'index_repo' }
       let(:service) { described_class.new(project.id, task_type) }
+      let_it_be(:_) { create(:application_setting) }
 
-      context 'when REINDEXING_CHANCE_PERCENTAGE is set to 100%' do
+      context 'when zoekt_force_reindexing_percentage is set to 100%' do
         before do
-          stub_const("#{described_class}::REINDEXING_CHANCE_PERCENTAGE", 100)
+          stub_ee_application_setting(zoekt_force_reindexing_percentage: 100.0)
         end
 
         it 'replaces the task type to force_index_repo' do
@@ -122,7 +123,21 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
             .and change { Search::Zoekt::Repository.count }.by(1)
 
           repo = Search::Zoekt::Repository.find_by(project: project, zoekt_index: zoekt_index)
-          expect(repo.tasks.last.task_type).to eq 'force_index_repo'
+          expect(repo.tasks.last).to be_force_index_repo
+        end
+      end
+
+      context 'when zoekt_force_reindexing_percentage is set to 0%' do
+        before do
+          stub_ee_application_setting(zoekt_force_reindexing_percentage: 0.0)
+        end
+
+        it 'does not force reindex' do
+          expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
+            .and change { Search::Zoekt::Repository.count }.by(1)
+
+          repo = Search::Zoekt::Repository.find_by(project: project, zoekt_index: zoekt_index)
+          expect(repo.tasks.last).to be_index_repo
         end
       end
 

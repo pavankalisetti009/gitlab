@@ -46,7 +46,9 @@ module EE
         zoekt_maximum_files: [:integer, { default: ::Search::Zoekt::Settings::DEFAULT_MAXIMUM_FILES }],
         zoekt_rollout_retry_interval: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL }],
         zoekt_lost_node_threshold: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD }],
-        zoekt_default_number_of_replicas: [:integer, { default: ::Search::Zoekt::Settings::DEFAULT_NUM_REPLICAS }]
+        zoekt_default_number_of_replicas: [:integer, { default: ::Search::Zoekt::Settings::DEFAULT_NUM_REPLICAS }],
+        zoekt_force_reindexing_percentage: [:float,
+          { default: ::Search::Zoekt::Settings::DEFAULT_FORCE_REINDEXING_PERCENTAGE }]
 
       jsonb_accessor :code_creation,
         disabled_direct_code_suggestions: [:boolean, { default: false }],
@@ -361,6 +363,8 @@ module EE
       validates :zoekt_indexing_parallelism, numericality: { greater_than: 0 }
       validates :zoekt_default_number_of_replicas, numericality: { greater_than: 0 }
       validates :zoekt_trigram_max, numericality: { only_integer: true, greater_than: 0 }
+      validates :zoekt_force_reindexing_percentage,
+        numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
       validates :zoekt_indexed_file_size_limit, format: {
         with: ::Search::Zoekt::Settings::SIZE_REGEX,
         message: N_('Must be in the following format: `5B`, `5b`, `1KB`, `1kb`, `2MB`, `2mb`, `1GB`, or `1gb`')

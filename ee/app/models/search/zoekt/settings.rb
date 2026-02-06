@@ -22,6 +22,7 @@ module Search
       DEFAULT_FILE_SIZE_LIMIT = '1MB'
       DEFAULT_NUM_REPLICAS = 1
       DEFAULT_TRIGRAM_MAX = 20_000
+      DEFAULT_FORCE_REINDEXING_PERCENTAGE = 0.25
       DISABLED_VALUE = '0'
       DURATION_BASE_REGEX = %r{([1-9]\d*)([mhd])}
       DURATION_INTERVAL_REGEX = %r{\A(?:0|#{DURATION_BASE_REGEX})\z}
@@ -62,6 +63,13 @@ module Search
           label: -> { _('Indexing CPU to tasks multiplier') },
           input_type: :number_field,
           input_options: { step: 0.1 }
+        },
+        zoekt_force_reindexing_percentage: {
+          type: :float,
+          default: DEFAULT_FORCE_REINDEXING_PERCENTAGE,
+          label: -> { _('Probability of random force reindexing (percentage)') },
+          input_type: :number_field,
+          input_options: { step: 0.1, min: 0, max: 100 }
         },
         zoekt_indexing_parallelism: {
           type: :integer,
@@ -171,6 +179,10 @@ module Search
 
         def default_number_of_replicas
           ApplicationSetting.current&.zoekt_default_number_of_replicas || 1
+        end
+
+        def force_reindexing_percentage
+          ApplicationSetting.current&.zoekt_force_reindexing_percentage || DEFAULT_FORCE_REINDEXING_PERCENTAGE
         end
 
         private

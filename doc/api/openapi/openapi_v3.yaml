@@ -22349,6 +22349,8 @@ paths:
                   type: string
                 zoekt_cpu_to_tasks_ratio:
                   type: string
+                zoekt_force_reindexing_percentage:
+                  type: string
                 zoekt_indexing_parallelism:
                   type: string
                 zoekt_rollout_batch_size:
@@ -93362,6 +93364,8 @@ components:
         zoekt_cache_response:
           type: string
         zoekt_cpu_to_tasks_ratio:
+          type: string
+        zoekt_force_reindexing_percentage:
           type: string
         zoekt_indexing_parallelism:
           type: string
