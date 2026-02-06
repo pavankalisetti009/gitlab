@@ -53,15 +53,6 @@ module GitlabSubscriptions
       Namespaces::TrialEligibleFinder.new(namespace:).execute.any?
     end
 
-    def self.namespace_with_mid_trial_premium?(namespace, trial_starts_on)
-      return false unless namespace.premium_plan?
-
-      namespace.gitlab_subscription_histories.transitioning_to_plan_after(
-        ::Plan.by_name(::Plan::PREMIUM),
-        trial_starts_on
-      ).exists?
-    end
-
     def self.recently_expired?(namespace)
       namespace.free_plan? &&
         namespace.trial_expired? &&

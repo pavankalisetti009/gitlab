@@ -238,6 +238,7 @@ module EE
       }
 
       delegate :trial_ends_on, :trial_starts_on, to: :gitlab_subscription, allow_nil: true
+      delegate :start_date, :end_date, to: :gitlab_subscription, allow_nil: true, prefix: true
 
       delegate(
         :experiment_features_enabled,

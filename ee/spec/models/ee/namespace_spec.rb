@@ -42,6 +42,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:trial?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_ends_on).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_starts_on).to(:gitlab_subscription) }
+  it { is_expected.to delegate_method(:start_date).to(:gitlab_subscription).with_prefix.allow_nil }
+  it { is_expected.to delegate_method(:end_date).to(:gitlab_subscription).with_prefix.allow_nil }
   it { is_expected.to delegate_method(:upgradable?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_extended_or_reactivated?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:email).to(:owner).with_prefix.allow_nil }

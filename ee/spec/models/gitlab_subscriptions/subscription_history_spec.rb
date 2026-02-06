@@ -23,49 +23,6 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, :saas, feature_category
   end
 
   describe 'scopes' do
-    describe '.transitioning_to_plan_after' do
-      let(:plan) { group1.actual_plan }
-      let(:date) { 2.days.ago }
-
-      subject(:transitioning_to_plan_after) do
-        described_class.transitioning_to_plan_after(plan, date)
-      end
-
-      context 'when change_type is updated' do
-        let_it_be(:subscription_history) do
-          create(
-            :gitlab_subscription_history, :update,
-            namespace: group1, hosted_plan: group1.actual_plan, created_at: 1.day.ago
-          )
-        end
-
-        it { expect(transitioning_to_plan_after).to eq([subscription_history]) }
-
-        context 'when plan is different' do
-          let(:plan) { free_plan }
-
-          it { expect(transitioning_to_plan_after).to eq([]) }
-        end
-
-        context 'when created_at is before the date' do
-          let(:date) { Date.current }
-
-          it { expect(transitioning_to_plan_after).to eq([]) }
-        end
-      end
-
-      context 'when change_type is destroyed' do
-        before do
-          create(
-            :gitlab_subscription_history, :destroyed,
-            namespace: group1, hosted_plan: group1.actual_plan, created_at: 1.day.ago
-          )
-        end
-
-        it { expect(transitioning_to_plan_after).to eq([]) }
-      end
-    end
-
     describe '.with_all_ultimate_plans' do
       it 'returns histories with any ultimate plan' do
         premium_plan = create(:premium_plan)
