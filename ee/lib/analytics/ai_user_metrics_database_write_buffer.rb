@@ -22,7 +22,7 @@ module Analytics
           pipeline.hdel(buffer_key, keys)
         end
 
-        attributes.compact.map { |attrs| Gitlab::Json.parse(attrs) }
+        attributes.compact.map { |attrs| Gitlab::Json.safe_parse(attrs) }
       end
     end
   end
