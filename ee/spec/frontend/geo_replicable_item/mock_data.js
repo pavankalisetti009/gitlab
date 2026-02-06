@@ -2,11 +2,13 @@ export const MOCK_REPLICABLE_CLASS = {
   graphqlRegistryClass: 'Geo::MockRegistry',
   graphqlFieldName: 'testGraphqlFieldName',
   graphqlRegistryIdType: 'GeoMockRegistryID',
+  modelClassName: 'MockModel',
   verificationEnabled: true,
 };
 
 export const MOCK_REPLICABLE_WITH_VERIFICATION = {
   id: 'gid://gitlab/Geo::MockRegistry/1',
+  dataManagementDetailsPath: '/admin/data_management/mock_model/1',
   checksumMismatch: false,
   createdAt: '2025-01-01',
   lastSyncFailure: null,
@@ -28,6 +30,7 @@ export const MOCK_REPLICABLE_WITH_VERIFICATION = {
 
 export const MOCK_REPLICABLE_WITHOUT_VERIFICATION = {
   id: 'gid://gitlab/Geo::MockRegistry/2',
+  dataManagementDetailsPath: '/admin/data_management/mock_model/2',
   checksumMismatch: false,
   createdAt: '2025-01-01',
   lastSyncFailure: null,

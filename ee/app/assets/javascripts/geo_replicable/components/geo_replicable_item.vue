@@ -20,7 +20,7 @@ export default {
     resync: s__('Geo|Resync'),
     reverify: s__('Geo|Reverify'),
     lastVerified: s__('Geo|Verified'),
-    modelRecordId: s__('Geo|Model record: %{modelRecordId}'),
+    modelRecord: s__('Geo|Model record: %{modelRecord}'),
     replicationStatus: s__('Geo|Replication: %{status}'),
     verificationStatus: s__('Geo|Verification: %{status}'),
     replicationFailure: s__('Geo|Replication failure'),
@@ -90,6 +90,9 @@ export default {
     },
     id() {
       return getIdFromGraphQLId(this.registryId);
+    },
+    modelRecord() {
+      return `${this.replicableClass.modelClassName}/${this.modelRecordId}`;
     },
     detailsPath() {
       return `${this.replicableBasePath}/${getIdFromGraphQLId(this.id)}`;
@@ -196,9 +199,9 @@ export default {
     @actionClicked="handleActionClicked"
   >
     <template #extra-details>
-      <gl-sprintf :message="$options.i18n.modelRecordId">
-        <template #modelRecordId>
-          {{ modelRecordId }}
+      <gl-sprintf :message="$options.i18n.modelRecord">
+        <template #modelRecord>
+          {{ modelRecord }}
         </template>
       </gl-sprintf>
     </template>

@@ -47,11 +47,13 @@ describe('GeoReplicableItem', () => {
         replicableClass: MOCK_REPLICABLE_CLASS,
         ...provide,
       },
+      stubs: {
+        GlSprintf,
+      },
     });
   };
 
   const findGeoListItem = () => wrapper.findComponent(GeoListItem);
-  const findReplicableItemModelRecordId = () => wrapper.findComponent(GlSprintf);
 
   describe('replicable item details path', () => {
     beforeEach(() => {
@@ -220,9 +222,9 @@ describe('GeoReplicableItem', () => {
       createComponent();
     });
 
-    it('renders the model record ID in the extra details section', () => {
-      expect(findReplicableItemModelRecordId().attributes('message')).toBe(
-        'Model record: %{modelRecordId}',
+    it('renders the model record in the extra details section', () => {
+      expect(wrapper.text().replace(/\s+/g, ' ')).toContain(
+        `Model record: ${MOCK_REPLICABLE_CLASS.modelClassName}/11`,
       );
     });
   });

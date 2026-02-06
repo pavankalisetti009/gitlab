@@ -1,4 +1,4 @@
-import { GlSprintf, GlPopover, GlCard } from '@gitlab/ui';
+import { GlSprintf, GlPopover, GlCard, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableItemRegistryInfo from 'ee/geo_replicable_item/components/geo_replicable_item_registry_info.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
@@ -12,6 +12,7 @@ describe('GeoReplicableItemRegistryInfo', () => {
   const defaultProps = {
     replicableItem: MOCK_REPLICABLE_WITH_VERIFICATION,
     registryId: `${MOCK_REPLICABLE_CLASS.graphqlRegistryClass}/${MOCK_REPLICABLE_WITH_VERIFICATION.replicableItemId}`,
+    replicableClass: MOCK_REPLICABLE_CLASS,
   };
 
   const createComponent = ({ props = {} } = {}) => {
@@ -34,6 +35,7 @@ describe('GeoReplicableItemRegistryInfo', () => {
   const findCopyableRegistryInformation = () =>
     wrapper.findAllByTestId('copyable-registry-information');
   const findRegistryInformationCreatedAt = () => wrapper.findComponent(TimeAgo);
+  const findModelRecord = () => wrapper.findByTestId('model-record');
 
   describe('card header', () => {
     beforeEach(() => {
@@ -58,10 +60,9 @@ describe('GeoReplicableItemRegistryInfo', () => {
     });
 
     it.each`
-      index | title              | value
-      ${0}  | ${'Registry ID'}   | ${defaultProps.registryId}
-      ${1}  | ${'GraphQL ID'}    | ${MOCK_REPLICABLE_WITH_VERIFICATION.id}
-      ${2}  | ${'Replicable ID'} | ${MOCK_REPLICABLE_WITH_VERIFICATION.modelRecordId}
+      index | title            | value
+      ${0}  | ${'Registry ID'} | ${defaultProps.registryId}
+      ${1}  | ${'GraphQL ID'}  | ${MOCK_REPLICABLE_WITH_VERIFICATION.id}
     `('renders $title: $value with clipboard button', ({ index, title, value }) => {
       const registryDetails = findCopyableRegistryInformation().at(index);
 
@@ -73,6 +74,55 @@ describe('GeoReplicableItemRegistryInfo', () => {
       expect(findRegistryInformationCreatedAt().props('time')).toBe(
         MOCK_REPLICABLE_WITH_VERIFICATION.createdAt,
       );
+    });
+  });
+
+  describe('model record information', () => {
+    describe('when replicable item has a dataManagementDetailsPath', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('renders model record as a link', () => {
+        expect(findModelRecord().findComponent(GlLink).props('href')).toBe(
+          MOCK_REPLICABLE_WITH_VERIFICATION.dataManagementDetailsPath,
+        );
+        expect(findModelRecord().text()).toBe(
+          `Model record: ${MOCK_REPLICABLE_CLASS.modelClassName}/${MOCK_REPLICABLE_WITH_VERIFICATION.modelRecordId}`,
+        );
+      });
+
+      it('renders a clipboard button with correct value', () => {
+        expect(findModelRecord().findComponent(ClipboardButton).props('text')).toBe(
+          `${MOCK_REPLICABLE_CLASS.modelClassName}/${MOCK_REPLICABLE_WITH_VERIFICATION.modelRecordId}`,
+        );
+      });
+    });
+
+    describe('when replicable item does not have a dataManagementDetailsPath', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            replicableItem: {
+              ...MOCK_REPLICABLE_WITH_VERIFICATION,
+              dataManagementDetailsPath: null,
+            },
+          },
+        });
+      });
+
+      it('renders model record as static text', () => {
+        expect(findModelRecord().findComponent(GlLink).exists()).toBe(false);
+        expect(findModelRecord().text()).toBe(
+          `Model record: ${MOCK_REPLICABLE_CLASS.modelClassName}/${MOCK_REPLICABLE_WITH_VERIFICATION.modelRecordId}`,
+        );
+      });
+
+      it('renders a clipboard button with correct value', () => {
+        expect(findModelRecord().findComponent(ClipboardButton).props('text')).toBe(
+          `${MOCK_REPLICABLE_CLASS.modelClassName}/${MOCK_REPLICABLE_WITH_VERIFICATION.modelRecordId}`,
+        );
+      });
     });
   });
 });

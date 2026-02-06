@@ -30977,7 +30977,7 @@ msgstr ""
 msgid "Geo|Model information"
 msgstr ""
 
-msgid "Geo|Model record: %{modelRecordId}"
+msgid "Geo|Model record: %{modelRecord}"
 msgstr ""
 
 msgid "Geo|Must match with the %{codeStart}external_url%{codeEnd} in %{codeStart}/etc/gitlab/gitlab.rb%{codeEnd}."
@@ -31098,9 +31098,6 @@ msgid "Geo|Remove site"
 msgstr ""
 
 msgid "Geo|Removing a Geo site stops the synchronization to and from that site. Are you sure?"
-msgstr ""
-
-msgid "Geo|Replicable ID: %{id}"
 msgstr ""
 
 msgid "Geo|Replicated data is verified with the secondary site(s) using checksums"

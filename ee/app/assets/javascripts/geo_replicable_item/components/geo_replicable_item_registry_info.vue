@@ -1,5 +1,5 @@
 <script>
-import { GlSprintf, GlCard, GlPopover } from '@gitlab/ui';
+import { GlSprintf, GlCard, GlPopover, GlLink } from '@gitlab/ui';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import { __, s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -11,6 +11,7 @@ export default {
     GlSprintf,
     GlCard,
     GlPopover,
+    GlLink,
     TimeAgo,
     ClipboardButton,
     HelpIcon,
@@ -23,7 +24,7 @@ export default {
     ),
     registryId: s__('Geo|Registry ID: %{id}'),
     graphqlID: s__('Geo|GraphQL ID: %{id}'),
-    replicableId: s__('Geo|Replicable ID: %{id}'),
+    modelRecord: s__('Geo|Model record: %{modelRecord}'),
     createdAt: s__('Geo|Created: %{timeAgo}'),
   },
   props: {
@@ -35,8 +36,15 @@ export default {
       type: Object,
       required: true,
     },
+    replicableClass: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
+    modelRecord() {
+      return `${this.replicableClass.modelClassName}/${this.replicableItem.modelRecordId}`;
+    },
     registryInformation() {
       return [
         {
@@ -46,10 +54,6 @@ export default {
         {
           title: this.$options.i18n.graphqlID,
           value: String(this.replicableItem.id),
-        },
-        {
-          title: this.$options.i18n.replicableId,
-          value: String(this.replicableItem.modelRecordId),
         },
       ];
     },
@@ -86,6 +90,25 @@ export default {
         <clipboard-button
           :title="$options.i18n.copy"
           :text="item.value"
+          size="small"
+          category="tertiary"
+        />
+      </p>
+
+      <p class="gl-mb-0" data-testid="model-record">
+        <gl-sprintf :message="$options.i18n.modelRecord">
+          <template #modelRecord>
+            <gl-link
+              v-if="replicableItem.dataManagementDetailsPath"
+              :href="replicableItem.dataManagementDetailsPath"
+              >{{ modelRecord }}</gl-link
+            >
+            <span v-else class="gl-font-bold">{{ modelRecord }}</span>
+          </template>
+        </gl-sprintf>
+        <clipboard-button
+          :title="$options.i18n.copy"
+          :text="modelRecord"
           size="small"
           category="tertiary"
         />
