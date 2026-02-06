@@ -2271,9 +2271,6 @@ msgstr ""
 msgid "A file with this name already exists."
 msgstr ""
 
-msgid "A group is a collection of several projects"
-msgstr ""
-
 msgid "A group represents your organization in GitLab. Groups allow you to manage users and collaborate across multiple projects."
 msgstr ""
 
@@ -28726,9 +28723,6 @@ msgstr ""
 msgid "Existing branch name, tag, or commit SHA"
 msgstr ""
 
-msgid "Existing projects may be moved into a group"
-msgstr ""
-
 msgid "Existing projects will be able to use cleanup policies. Avoid enabling this if an external container registry is being used, as there is a performance risk if many images exist on one project."
 msgstr ""
 
@@ -33381,9 +33375,6 @@ msgid "Group overview content"
 msgstr ""
 
 msgid "Group path"
-msgstr ""
-
-msgid "Group project URLs are prefixed with the group namespace"
 msgstr ""
 
 msgid "Group requires separate account"
@@ -42164,9 +42155,6 @@ msgid "Members can be added by project %{i_open}Maintainers%{i_close} or %{i_ope
 msgstr ""
 
 msgid "Members listed as CODEOWNERS of affected files."
-msgstr ""
-
-msgid "Members of a group may only view projects they have permission to access"
 msgstr ""
 
 msgid "Members of these groups can also merge into this branch: %{branch}"
