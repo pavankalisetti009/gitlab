@@ -107,7 +107,7 @@ module EE
         id: id,
         model_name: self.class.name,
         discussion_id: discussion_id,
-        last_discussion_note: discussion.notes == [self]
+        last_discussion_note: discussion.notes.count == 1
       }
 
       ::GraphqlTriggers.work_item_note_deleted(noteable.to_global_id, deleted_note_data)
