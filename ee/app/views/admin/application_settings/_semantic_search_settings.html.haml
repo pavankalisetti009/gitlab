@@ -9,8 +9,9 @@
       - using_advanced_search = Ai::ActiveContext::Connection.active&.use_advanced_search_config_option
       - has_active_connection = Ai::ActiveContext::Connection.active.present?
       %div
-        = render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_elasticsearch_use_advanced_search_cluster_for_semantic_search_path, method: :post, disabled: using_advanced_search) do
-          = _('Connect to the advanced search cluster')
+        - if License.feature_available?(:elastic_search)
+          = render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_elasticsearch_use_advanced_search_cluster_for_semantic_search_path, method: :post, disabled: using_advanced_search) do
+            = _('Connect to the advanced search cluster')
       .gl-mt-3
         = render Pajamas::ButtonComponent.new(variant: :danger, button_options: { data: { confirm: _('This action is destructive. Disabling semantic search will remove all indexed data. If you reconnect in the future, a full index will be performed.'), method: :post } }, href: admin_elasticsearch_disable_semantic_search_path, disabled: !has_active_connection) do
           = _('Disable semantic search')
