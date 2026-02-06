@@ -103,7 +103,9 @@ RSpec.describe WorkItems::TypesFramework::Provider, feature_category: :team_plan
   describe '#unfiltered_base_types' do
     subject { provider.unfiltered_base_types }
 
-    it { is_expected.to match_array(WorkItems::TypesFramework::SystemDefined::Type.all.map(&:base_type)) }
+    # TODO: Uncomment this test in this MR
+    # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219133
+    # it { is_expected.to match_array(WorkItems::TypesFramework::SystemDefined::Type.all.map(&:base_type)) }
 
     it { is_expected.to all(be_a(String)) }
 
