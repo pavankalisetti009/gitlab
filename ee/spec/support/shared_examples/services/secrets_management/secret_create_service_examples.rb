@@ -150,7 +150,7 @@ RSpec.shared_examples 'a service for creating a secret' do |resource_type|
             .to receive(:new)
             .with(public_send(resource_type), user)
             .and_return(secret_count_service)
-          allow(secret_count_service).to receive(:execute).and_return(101)
+          allow(secret_count_service).to receive(:secrets_limit_exceeded?).and_return(true)
         end
 
         it 'returns secrets_limit_exceeded_response' do

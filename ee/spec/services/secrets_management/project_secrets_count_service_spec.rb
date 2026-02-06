@@ -69,7 +69,9 @@ RSpec.describe SecretsManagement::ProjectSecretsCountService,
         mount_path = secrets_manager.ci_secrets_mount_path
         data_path = secrets_manager.ci_data_path
 
-        expect(client).to receive(:list_secrets).with(mount_path, data_path).and_call_original
+        expect(client).to receive(:count_secrets)
+          .with(mount_path, data_path, limit: nil)
+          .and_call_original
 
         count
       end
@@ -84,7 +86,7 @@ RSpec.describe SecretsManagement::ProjectSecretsCountService,
       end
     end
 
-    context 'when list_secrets is called with wrong path' do
+    context 'when count_secrets is called with wrong path' do
       before do
         create_project_secret(
           user: user,
@@ -100,7 +102,9 @@ RSpec.describe SecretsManagement::ProjectSecretsCountService,
         client = service.send(:project_secrets_manager_client)
         mount_path = secrets_manager.ci_secrets_mount_path
 
-        expect(client).to receive(:list_secrets).with(mount_path, secrets_manager.ci_data_path).and_call_original
+        expect(client).to receive(:count_secrets)
+          .with(mount_path, secrets_manager.ci_data_path, limit: nil)
+          .and_call_original
 
         expect(count).to eq(1)
       end
@@ -109,11 +113,88 @@ RSpec.describe SecretsManagement::ProjectSecretsCountService,
     context 'when OpenBao returns an error' do
       before do
         client = service.send(:project_secrets_manager_client)
-        allow(client).to receive(:list_secrets).and_raise(StandardError, 'OpenBao connection failed')
+        allow(client).to receive(:count_secrets).and_raise(StandardError, 'OpenBao connection failed')
       end
 
       it 'raises the error' do
         expect { count }.to raise_error(StandardError, 'OpenBao connection failed')
+      end
+    end
+  end
+
+  describe '#secrets_limit_exceeded?' do
+    subject(:limit_exceeded) { service.secrets_limit_exceeded? }
+
+    let(:mount_path) { secrets_manager.ci_secrets_mount_path }
+    let(:data_path) { secrets_manager.ci_data_path }
+
+    context 'when secrets_limit is 0 (unlimited)' do
+      before do
+        allow(project.secrets_manager).to receive(:secrets_limit).and_return(0)
+      end
+
+      it 'returns false' do
+        expect(limit_exceeded).to be(false)
+      end
+
+      it 'does not call count_secrets' do
+        client = service.send(:project_secrets_manager_client)
+
+        expect(client).not_to receive(:count_secrets)
+
+        limit_exceeded
+      end
+    end
+
+    context 'when there are secrets below the limit' do
+      let(:limit) { 2 }
+
+      before do
+        allow(project.secrets_manager).to receive(:secrets_limit).and_return(limit)
+        create_project_secret(
+          user: user,
+          project: project,
+          name: 'secret1',
+          value: 'value1',
+          environment: '*',
+          branch: '*'
+        )
+      end
+
+      it 'returns false and counts with limit + 1' do
+        client = service.send(:project_secrets_manager_client)
+
+        expect(client).to receive(:count_secrets)
+          .with(mount_path, data_path, limit: limit + 1)
+          .and_call_original
+
+        expect(limit_exceeded).to be(false)
+      end
+    end
+
+    context 'when there are secrets at the limit' do
+      let(:limit) { 1 }
+
+      before do
+        allow(project.secrets_manager).to receive(:secrets_limit).and_return(limit)
+        create_project_secret(
+          user: user,
+          project: project,
+          name: 'secret1',
+          value: 'value1',
+          environment: '*',
+          branch: '*'
+        )
+      end
+
+      it 'returns true and counts with limit + 1' do
+        client = service.send(:project_secrets_manager_client)
+
+        expect(client).to receive(:count_secrets)
+          .with(mount_path, data_path, limit: limit + 1)
+          .and_call_original
+
+        expect(limit_exceeded).to be(true)
       end
     end
   end

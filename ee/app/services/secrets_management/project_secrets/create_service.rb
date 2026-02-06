@@ -34,6 +34,10 @@ module SecretsManagement
 
       delegate :secrets_manager, to: :project
 
+      def secrets_count_service
+        SecretsManagement::ProjectSecretsCountService.new(project, current_user)
+      end
+
       def build_secret_rotation_info(name, rotation_interval_days)
         SecretRotationInfo.new(
           project: project,
