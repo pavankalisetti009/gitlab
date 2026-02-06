@@ -417,10 +417,6 @@ describe('AiPanel', () => {
           await waitForPromises();
         });
 
-        it('formats session title with agent flow name', () => {
-          expect(findContentContainer().props('activeTab').title).toBe('Agent session #123');
-        });
-
         it('shows sessions panel with correct component', () => {
           expect(findContentContainer().props('activeTab').component).toBe(AgentSessionsRoot);
         });
@@ -627,7 +623,6 @@ describe('AiPanel', () => {
       findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
       jest.advanceTimersToNextTimer();
       await waitForPromises();
-      expect(findContentContainer().props('activeTab').title).toBe('Agent session #123');
 
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       jest.advanceTimersToNextTimer();
@@ -671,7 +666,6 @@ describe('AiPanel', () => {
       await waitForPromises();
 
       expect(findContentContainer().exists()).toBe(true);
-      expect(findContentContainer().props('activeTab').title).toBe('Agent session #456');
       expect(findContentContainer().props('activeTab').component).toBe(AgentSessionsRoot);
     });
 

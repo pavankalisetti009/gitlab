@@ -1,21 +1,24 @@
 <script>
-import { GlButton, GlDisclosureDropdown, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlDisclosureDropdown, GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
 import SafeHtmlDirective from '~/vue_shared/directives/safe_html';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { __, sprintf } from '~/locale';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import AgentStatusIcon from 'ee/ai/duo_agents_platform/components/common/agent_status_icon.vue';
 import { copyToClipboard } from '~/lib/utils/copy_to_clipboard';
 import showGlobalToast from '~/vue_shared/plugins/global_toast';
-import { agentSessionStatusVar } from 'ee/ai/duo_agents_platform/utils';
+import {
+  formatAgentFlowName,
+  agentSessionProjectVar,
+  agentSessionFlowDefinitionVar,
+} from 'ee/ai/duo_agents_platform/utils';
 
 export default {
   name: 'AiContentContainer',
   expose: ['getContentComponent'],
   components: {
     GlButton,
-    AgentStatusIcon,
     GlDisclosureDropdown,
+    GlSkeletonLoader,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -91,7 +94,8 @@ export default {
     return {
       currentTitle: null,
       duoChatGlobalState,
-      agentSessionStatus: agentSessionStatusVar(),
+      agentSessionProject: agentSessionProjectVar(),
+      agentSessionFlowDefinition: agentSessionFlowDefinitionVar(),
       sessionId: null,
       isSessionDropdownVisible: false,
     };
@@ -109,8 +113,8 @@ export default {
       const componentName = this.activeTab.component?.name || 'component';
       return `${componentName}-${this.duoChatGlobalState.chatMode}`;
     },
-    showAgentStatusIcon() {
-      return this.$route.name === AGENTS_PLATFORM_SHOW_ROUTE && Boolean(this.agentSessionStatus);
+    isShowSessionRoute() {
+      return this.$route.name === AGENTS_PLATFORM_SHOW_ROUTE;
     },
     showSessionId() {
       return this.sessionId && this.activeTab.props.mode === 'active';
@@ -131,6 +135,17 @@ export default {
     showSessionDropdownTooltip() {
       return !this.isSessionDropdownVisible ? this.$options.i18n.moreOptionsLabel : '';
     },
+    projectName() {
+      return this.agentSessionProject?.name;
+    },
+    sessionDefinition() {
+      return formatAgentFlowName(this.agentSessionFlowDefinition, this.$route?.params?.id);
+    },
+    displayTitle() {
+      return (
+        (this.isShowSessionRoute && this.projectName) || this.currentTitle || this.activeTab.title
+      );
+    },
   },
   watch: {
     'activeTab.title': {
@@ -144,18 +159,17 @@ export default {
   },
   mounted() {
     // We need to re-subscribe each time for onNextChange
-    const subscribe = () => {
-      this.unsubscribe = agentSessionStatusVar.onNextChange((newVal) => {
-        this.agentSessionStatus = newVal;
-        subscribe();
-      });
-    };
-    subscribe();
+    this.unsubscribers = [
+      agentSessionProjectVar.onNextChange((newVal) => {
+        this.agentSessionProject = newVal;
+      }),
+      agentSessionFlowDefinitionVar.onNextChange((newVal) => {
+        this.agentSessionFlowDefinition = newVal;
+      }),
+    ];
   },
   beforeDestroy() {
-    if (this.unsubscribe) {
-      this.unsubscribe();
-    }
+    this.unsubscribers?.forEach((unsubscribe) => unsubscribe());
   },
   methods: {
     handleGoBack() {
@@ -215,19 +229,25 @@ export default {
           data-testid="content-container-back-button"
           @click="handleGoBack"
         />
-        <agent-status-icon
-          v-if="showAgentStatusIcon"
-          :status="agentSessionStatus"
-          :human-status="agentSessionStatus"
-          data-testid="agent-status-icon"
-        />
-        <h3
-          class="gl-m-0 gl-truncate gl-text-sm"
-          :class="{ 'gl-ml-4': !showBackButton }"
-          data-testid="content-container-title"
-        >
-          {{ currentTitle || activeTab.title }}
-        </h3>
+        <div class="gl-flex gl-w-full gl-flex-col">
+          <gl-skeleton-loader v-if="isShowSessionRoute && !projectName" :lines="2" />
+          <div v-else>
+            <h3
+              class="gl-m-0 gl-truncate gl-text-sm"
+              :class="{ 'gl-ml-4': !showBackButton }"
+              data-testid="content-container-title"
+            >
+              {{ displayTitle }}
+            </h3>
+            <h4
+              v-if="isShowSessionRoute"
+              class="gl-m-0 gl-mt-1 gl-truncate gl-text-sm gl-font-normal"
+              data-testid="content-container-subtitle"
+            >
+              {{ sessionDefinition }}
+            </h4>
+          </div>
+        </div>
       </div>
 
       <div class="ai-panel-header-actions gl-flex gl-gap-x-2 gl-pr-3">

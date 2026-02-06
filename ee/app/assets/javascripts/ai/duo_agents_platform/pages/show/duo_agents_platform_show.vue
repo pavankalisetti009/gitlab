@@ -10,6 +10,8 @@ import {
   formatAgentDefinition,
   formatAgentStatus,
   agentSessionStatusVar,
+  agentSessionProjectVar,
+  agentSessionFlowDefinitionVar,
 } from 'ee/ai/duo_agents_platform/utils';
 import AgentFlowDetails from './components/agent_flow_details.vue';
 import AgentFlowCancelationModal from './components/agent_flow_cancelation_modal.vue';
@@ -46,6 +48,8 @@ export default {
       result() {
         if (this.isSidePanelView) {
           agentSessionStatusVar(this.agentFlow?.status);
+          agentSessionProjectVar(this.agentFlow?.project);
+          agentSessionFlowDefinitionVar(this.agentFlow?.workflowDefinition);
         }
       },
       error(err) {
@@ -98,6 +102,8 @@ export default {
   },
   beforeDestroy() {
     agentSessionStatusVar(null);
+    agentSessionProjectVar(null);
+    agentSessionFlowDefinitionVar(null);
   },
   methods: {
     async confirmCancelSession() {
