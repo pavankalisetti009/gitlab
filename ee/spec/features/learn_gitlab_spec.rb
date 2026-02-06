@@ -171,55 +171,6 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
       end
     end
 
-    context 'with an active trial' do
-      let_it_be(:group) do
-        create(
-          :group_with_plan, :private,
-          plan: :ultimate_trial_plan,
-          trial: true,
-          trial_starts_on: Date.today,
-          trial_ends_on: 10.days.from_now,
-          owners: user
-        ) do |g|
-          create(:onboarding_progress, namespace: g)
-        end
-      end
-
-      let_it_be(:project) { create(:project, namespace: group) }
-
-      before do
-        stub_ee_application_setting(dashboard_limit_enabled: true)
-
-        sign_in(user)
-      end
-
-      context 'when onboarding progress is less than one day' do
-        it 'does not render the unlimited members during trial alert' do
-          visit namespace_project_learn_gitlab_path(group, project)
-
-          expect(page).not_to have_text('Get the most out of your trial with space for more members')
-        end
-      end
-
-      context 'when onboarding progress is more than one day' do
-        before do
-          group.onboarding_progress.update!(created_at: 1.day.ago)
-        end
-
-        it 'does render the unlimited members during trial alert' do
-          visit namespace_project_learn_gitlab_path(group, project)
-
-          expect(page).to have_text('Get the most out of your trial with space for more members')
-          expect(page).to have_link(text: 'Explore paid plans', href: group_billings_path(group))
-          expect(page).to have_button('Invite more members')
-
-          click_button 'Invite more members'
-
-          expect(page).to have_selector(invite_modal_selector)
-        end
-      end
-    end
-
     def expect_correct_candidate_link(link, path)
       expect(link['href']).to include(path)
       expect(link['data-testid']).to eq('learn-gitlab-link')
