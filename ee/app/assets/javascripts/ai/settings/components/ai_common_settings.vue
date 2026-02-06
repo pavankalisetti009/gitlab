@@ -60,6 +60,7 @@ export default {
       selectedFlowIds: this.initialSelectedFoundationalFlowIds || [],
       foundationalAgentsStatuses: this.initialFoundationalAgentsStatuses,
       duoAgentPlatformEnabled: this.initialDuoAgentPlatformEnabled,
+      namespaceAccessRulesChanged: false,
       namespaceAccessRules: this.initialNamespaceAccessRules,
       minimumAccessLevelExecuteAsync: this.initialMinimumAccessLevelExecuteAsync,
       minimumAccessLevelExecuteSync: this.initialMinimumAccessLevelExecuteSync,
@@ -67,7 +68,7 @@ export default {
   },
   methods: {
     submitForm() {
-      this.$emit('submit', {
+      const payload = {
         duoAvailability: this.availability,
         experimentFeaturesEnabled: this.experimentsEnabled,
         duoCoreFeaturesEnabled: this.duoCoreEnabled,
@@ -79,10 +80,15 @@ export default {
         foundationalAgentsStatuses: this.foundationalAgentsStatuses,
         selectedFoundationalFlowIds: this.selectedFlowIds,
         duoAgentPlatformEnabled: this.duoAgentPlatformEnabled,
-        namespaceAccessRules: this.namespaceAccessRules,
         minimumAccessLevelExecuteAsync: this.minimumAccessLevelExecuteAsync,
         minimumAccessLevelExecuteSync: this.minimumAccessLevelExecuteSync,
-      });
+      };
+
+      if (this.namespaceAccessRulesChanged) {
+        payload.namespaceAccessRules = this.namespaceAccessRules;
+      }
+
+      this.$emit('submit', payload);
     },
     onRadioChanged(value) {
       this.availability = value;
@@ -117,8 +123,9 @@ export default {
     onSelectedFlowIdsChanged(flowIds) {
       this.selectedFlowIds = flowIds;
     },
-    onNamespaceAccessRulesChanged(value) {
-      this.namespaceAccessRules = value;
+    onNamespaceAccessRulesChanged(rules) {
+      this.namespaceAccessRulesChanged = true;
+      this.namespaceAccessRules = rules;
     },
     onMinimumAccessLevelExecuteAsyncChanged(value) {
       this.minimumAccessLevelExecuteAsync = value;

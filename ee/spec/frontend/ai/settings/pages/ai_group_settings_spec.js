@@ -266,18 +266,18 @@ describe('AiGroupSettings', () => {
     });
 
     describe('without namespace access rules', () => {
-      it('calls updateApplicationSettings with empty namespace access rules', async () => {
+      it('does not include duo_namespace_access_rules when undefined', async () => {
         createComponent();
 
         updateGroupSettings.mockResolvedValue({});
-        await findAiCommonSettings().vm.$emit('submit', {});
+        await findAiCommonSettings().vm.$emit('submit', { namespaceAccessRules: undefined });
         await waitForPromises();
 
         expect(updateGroupSettings).toHaveBeenCalledTimes(1);
         expect(updateGroupSettings).toHaveBeenCalledWith(
           '100',
-          expect.objectContaining({
-            duo_namespace_access_rules: [],
+          expect.not.objectContaining({
+            duo_namespace_access_rules: expect.anything(),
           }),
         );
       });
@@ -539,13 +539,13 @@ describe('AiGroupSettings', () => {
       createComponent();
     });
 
-    it('returns empty array when rules is falsy', async () => {
-      await emitSubmitNamespaceAccessRules(null);
+    it('does not include duo_namespace_access_rules when undefined', async () => {
+      await emitSubmitNamespaceAccessRules(undefined);
 
       expect(updateGroupSettings).toHaveBeenCalledWith(
         '100',
-        expect.objectContaining({
-          duo_namespace_access_rules: [],
+        expect.not.objectContaining({
+          duo_namespace_access_rules: expect.anything(),
         }),
       );
     });
