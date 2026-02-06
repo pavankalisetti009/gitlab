@@ -1,11 +1,12 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlIcon, GlPopover, GlSprintf } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import RuleMultiSelect from 'ee/security_orchestration/components/policy_editor/rule_multi_select.vue';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import { groupSelectedVulnerabilityStates } from '../../lib';
 import {
   NEWLY_DETECTED,
+  PREVIOUSLY_EXISTING,
   APPROVAL_VULNERABILITY_STATE_GROUPS,
   APPROVAL_VULNERABILITY_STATES,
   DEFAULT_VULNERABILITY_STATES,
@@ -14,15 +15,23 @@ import {
 export default {
   APPROVAL_VULNERABILITY_STATE_GROUPS,
   APPROVAL_VULNERABILITY_STATES,
+  PREVIOUSLY_EXISTING,
+  POPOVER_TARGET_ID: 'previously-existing-tooltip-target',
   i18n: {
     headerText: __('Choose an option'),
     vulnerabilityStates: s__('ScanResultPolicy|vulnerability states'),
+    previouslyExistingTooltip: s__(
+      "ScanResultPolicy|%{boldStart}Warning:%{boldEnd} Using this status in strictly enforced policies can block merge requests even if there are no new vulnerabilities found in the latest scan. It's recommended that you use warn mode only with this status.",
+    ),
   },
   name: 'StatusFilter',
   components: {
     RuleMultiSelect,
     SectionLayout,
     GlCollapsibleListbox,
+    GlIcon,
+    GlPopover,
+    GlSprintf,
   },
   props: {
     selected: {
@@ -70,6 +79,9 @@ export default {
         text,
       }));
     },
+    showPreviouslyExistingTooltip() {
+      return this.selectedFilter === PREVIOUSLY_EXISTING;
+    },
   },
   methods: {
     remove() {
@@ -107,13 +119,33 @@ export default {
           :disabled="disabled"
           @select="selectVulnerabilityStateGroup"
         />
-        <rule-multi-select
-          :value="filters"
-          :item-type-name="$options.i18n.vulnerabilityStates"
-          :items="$options.APPROVAL_VULNERABILITY_STATES[selectedFilter]"
-          data-testid="vulnerability-states-select"
-          @input="emitVulnerabilityStates"
-        />
+        <div class="gl-flex gl-items-center gl-gap-2">
+          <rule-multi-select
+            :value="filters"
+            :item-type-name="$options.i18n.vulnerabilityStates"
+            :items="$options.APPROVAL_VULNERABILITY_STATES[selectedFilter]"
+            data-testid="vulnerability-states-select"
+            @input="emitVulnerabilityStates"
+          />
+          <gl-icon
+            v-if="showPreviouslyExistingTooltip"
+            :id="$options.POPOVER_TARGET_ID"
+            name="information-o"
+            data-testid="previously-existing-tooltip"
+          />
+        </div>
+        <gl-popover
+          v-if="showPreviouslyExistingTooltip"
+          :target="$options.POPOVER_TARGET_ID"
+          boundary="viewport"
+          placement="top"
+        >
+          <gl-sprintf :message="$options.i18n.previouslyExistingTooltip">
+            <template #bold="{ content }">
+              <b>{{ content }}</b>
+            </template>
+          </gl-sprintf>
+        </gl-popover>
       </slot>
     </template>
   </section-layout>
