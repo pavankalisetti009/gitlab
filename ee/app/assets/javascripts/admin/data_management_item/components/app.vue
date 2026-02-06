@@ -18,15 +18,11 @@ export default {
     GlLoadingIcon,
   },
   props: {
-    modelClass: {
-      type: String,
+    modelTypeData: {
+      type: Object,
       required: true,
     },
     modelId: {
-      type: String,
-      required: true,
-    },
-    modelName: {
       type: String,
       required: true,
     },
@@ -40,7 +36,7 @@ export default {
   },
   computed: {
     name() {
-      return `${this.modelClass}/${this.modelId}`;
+      return `${this.modelTypeData.modelClass}/${this.modelId}`;
     },
     checksumInformation() {
       return this.model?.checksumInformation ?? {};
@@ -52,7 +48,7 @@ export default {
   methods: {
     async initializeModel() {
       try {
-        const { data } = await getModel(this.modelName, this.modelId);
+        const { data } = await getModel(this.modelTypeData.namePlural, this.modelId);
         this.model = convertObjectPropsToCamelCase(data, { deep: true });
       } catch (error) {
         createAlert({
@@ -71,7 +67,11 @@ export default {
       this.checksumLoading = true;
 
       try {
-        const { data } = await putModelAction(this.modelName, this.modelId, 'checksum');
+        const { data } = await putModelAction(
+          this.modelTypeData.namePlural,
+          this.modelId,
+          'checksum',
+        );
         this.model = convertObjectPropsToCamelCase(data, { deep: true });
 
         showToast(

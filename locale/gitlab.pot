@@ -31346,6 +31346,9 @@ msgstr ""
 msgid "Geo|There was an error executing the %{actionName} mutation"
 msgstr ""
 
+msgid "Geo|There was an error fetching %{modelType}. Please refresh the page and try again."
+msgstr ""
+
 msgid "Geo|There was an error fetching %{model}. Please refresh the page and try again."
 msgstr ""
 

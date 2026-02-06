@@ -78,11 +78,11 @@ module EE
 
     def model_types
       ::Gitlab::Geo::ModelMapper.available_models
-        .map { |model_class| model_data(model_class) }
+        .map { |model_class| model_type_data(model_class) }
         .sort_by { |data| data[:title] }
     end
 
-    def model_data(model_class)
+    def model_type_data(model_class)
       model_name = ::Gitlab::Geo::ModelMapper.convert_to_name(model_class)
       has_replicator = model_class.respond_to?(:replicator_class)
 
@@ -92,7 +92,6 @@ module EE
         name: model_name,
         name_plural: model_name.pluralize,
         model_class: model_class.name,
-        rest_endpoint: api_v4_admin_data_management_path(model_name:),
         checksum_enabled: has_replicator ? model_class.replicator_class.verification_enabled? : false
       }
     end
@@ -118,16 +117,15 @@ module EE
     def admin_data_management_app_data(model_class)
       {
         model_types: model_types.to_json,
-        initial_model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model_class).pluralize,
+        initial_model_type_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model_class).pluralize,
         base_path: admin_data_management_path
       }
     end
 
     def admin_data_management_item_app_data(model)
       {
-        model_class: model.class.name,
-        model_id: model.id.to_s,
-        model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model.class).pluralize
+        model_type_data: model_type_data(model.class).to_json,
+        model_id: model.id.to_s
       }
     end
   end

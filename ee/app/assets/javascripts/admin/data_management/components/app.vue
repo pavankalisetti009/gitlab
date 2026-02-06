@@ -26,11 +26,11 @@ export default {
   },
   provide() {
     return {
-      itemTitle: computed(() => this.modelTitle),
+      itemTitle: computed(() => this.modelTypeTitle),
     };
   },
   props: {
-    initialModelName: {
+    initialModelTypeName: {
       type: String,
       required: true,
     },
@@ -41,7 +41,6 @@ export default {
   },
   data() {
     return {
-      activeModelName: this.initialModelName,
       modelItems: [],
       filters: [],
       pageInfo: {},
@@ -49,11 +48,13 @@ export default {
     };
   },
   computed: {
-    activeModel() {
-      return this.modelTypes.find(({ namePlural }) => namePlural === this.activeModelName);
+    activeModelType() {
+      const activeModelTypeName = this.routerParams.modelName || this.initialModelTypeName;
+
+      return this.modelTypes.find(({ namePlural }) => namePlural === activeModelTypeName);
     },
-    modelTitle() {
-      return this.activeModel.titlePlural.toLowerCase();
+    modelTypeTitle() {
+      return this.activeModelType.titlePlural.toLowerCase();
     },
     hasItems() {
       return Boolean(this.modelItems.length);
@@ -70,7 +71,7 @@ export default {
     emptyState() {
       return {
         title: sprintf(s__('Geo|No %{itemTitle} exist'), {
-          itemTitle: this.modelTitle,
+          itemTitle: this.modelTypeTitle,
         }),
         description: s__(
           'Geo|If you believe this is an error, see the %{linkStart}Geo troubleshooting%{linkEnd} documentation.',
@@ -98,7 +99,6 @@ export default {
   watch: {
     $route: {
       handler() {
-        this.initializeModel();
         this.initializePageInfo();
         this.initializeFilters();
         this.fetchModelList();
@@ -119,9 +119,6 @@ export default {
     initializeFilters() {
       this.filters = extractFiltersFromQuery(this.routerParams);
     },
-    initializeModel() {
-      this.activeModelName = this.routerParams.modelName || this.initialModelName;
-    },
     updateCursor(headers) {
       this.pageInfo = {
         ...this.pageInfo,
@@ -133,7 +130,10 @@ export default {
       this.isLoading = true;
 
       try {
-        const { data, headers } = await getModels(this.activeModelName, this.queryWithPagination);
+        const { data, headers } = await getModels(
+          this.activeModelType.namePlural,
+          this.queryWithPagination,
+        );
 
         this.modelItems = convertObjectPropsToCamelCase(data, { deep: true });
         this.updateCursor(headers);
@@ -145,13 +145,13 @@ export default {
     },
     async handleBulkAction({ action, successMessage, errorMessage }) {
       try {
-        await putBulkModelAction(this.activeModel.namePlural, action);
+        await putBulkModelAction(this.activeModelType.namePlural, action);
 
-        showToast(sprintf(successMessage, { type: this.modelTitle }));
+        showToast(sprintf(successMessage, { type: this.modelTypeTitle }));
         this.fetchModelList();
       } catch (error) {
         createAlert({
-          message: sprintf(errorMessage, { type: this.modelTitle }),
+          message: sprintf(errorMessage, { type: this.modelTypeTitle }),
           captureError: true,
           error,
         });
@@ -160,8 +160,10 @@ export default {
     handleFetchError(error) {
       createAlert({
         message: sprintf(
-          s__('Geo|There was an error fetching %{model}. Please refresh the page and try again.'),
-          { model: this.modelTitle },
+          s__(
+            'Geo|There was an error fetching %{modelType}. Please refresh the page and try again.',
+          ),
+          { modelType: this.modelTypeTitle },
         ),
         captureError: true,
         error,
@@ -201,7 +203,7 @@ export default {
         s__('Geo|Review stored data and data health within your instance.')
       "
       :filtered-search-option-label="__('Search by ID')"
-      :active-listbox-item="activeModelName"
+      :active-listbox-item="activeModelType.namePlural"
       :active-sort="pageInfo.sort"
       :bulk-actions="$options.BULK_ACTIONS"
       :show-actions="hasItems"
@@ -214,7 +216,7 @@ export default {
       <data-management-item
         v-for="item in modelItems"
         :key="item.recordIdentifier"
-        :model-name="activeModelName"
+        :active-model-type="activeModelType"
         :initial-item="item"
       />
     </geo-list>

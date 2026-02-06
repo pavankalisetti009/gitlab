@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import models from 'test_fixtures/api/admin/data_management/snippet_repositories.json';
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
+import { MOCK_MODEL_TYPES } from 'ee_jest/admin/data_management/mock_data';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { createAlert } from '~/alert';
 import { putModelAction } from 'ee/api/data_management_api';
@@ -19,8 +20,7 @@ describe('DataManagementItem', () => {
 
   const [rawModel] = models;
   const model = convertObjectPropsToCamelCase(rawModel, { deep: true });
-  const modelName = model.modelClass;
-  const modelDisplayName = `${model.modelClass}/${model.recordIdentifier}`;
+  const modelDisplayName = `${MOCK_MODEL_TYPES[0].modelClass}/${model.recordIdentifier}`;
   const basePath = 'admin/data_management';
 
   const checksumAction = {
@@ -38,7 +38,7 @@ describe('DataManagementItem', () => {
         basePath,
       },
       propsData: {
-        modelName,
+        activeModelType: MOCK_MODEL_TYPES[0],
         initialItem: model,
         ...props,
       },
@@ -53,7 +53,11 @@ describe('DataManagementItem', () => {
 
     expect(findGeoListItem().props()).toMatchObject({
       name: modelDisplayName,
-      detailsPath: joinPaths(basePath, modelName, model.recordIdentifier.toString()),
+      detailsPath: joinPaths(
+        basePath,
+        MOCK_MODEL_TYPES[0].namePlural,
+        model.recordIdentifier.toString(),
+      ),
       timeAgoArray: [
         {
           label: 'Created',
@@ -108,7 +112,7 @@ describe('DataManagementItem', () => {
       fireActionClicked(checksumAction);
 
       expect(putModelAction).toHaveBeenCalledWith(
-        model.modelClass,
+        MOCK_MODEL_TYPES[0].namePlural,
         model.recordIdentifier,
         checksumAction.value,
       );

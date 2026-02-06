@@ -85,8 +85,8 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
     end
   end
 
-  describe '#model_data' do
-    let(:result) { helper.model_data(DummyModel) }
+  describe '#model_type_data' do
+    let(:result) { helper.model_type_data(DummyModel) }
 
     before do
       stub_dummy_replicator_class
@@ -106,7 +106,6 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
             name: 'dummy_model',
             name_plural: 'dummy_models',
             model_class: 'DummyModel',
-            rest_endpoint: '/api/v4/admin/data_management/dummy_model',
             checksum_enabled: true
           })
         end
@@ -139,7 +138,7 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
 
     it 'includes all model_class_data' do
       expected_model_types = Gitlab::Geo::REPLICATOR_CLASSES.map do |replicator|
-        helper.model_data(replicator.model)
+        helper.model_type_data(replicator.model)
       end
 
       expect(model_types).to include(*expected_model_types)
@@ -159,7 +158,7 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
       expect(helper.admin_data_management_app_data(model)).to eq(
         {
           model_types: helper.model_types.to_json,
-          initial_model_name: 'projects',
+          initial_model_type_name: 'projects',
           base_path: '/admin/data_management'
         }
       )
@@ -172,9 +171,8 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
     it 'returns expected data' do
       expect(helper.admin_data_management_item_app_data(model)).to eq(
         {
-          model_class: 'Project',
-          model_id: model.id.to_s,
-          model_name: 'projects'
+          model_type_data: helper.model_type_data(model.class).to_json,
+          model_id: model.id.to_s
         }
       )
     end

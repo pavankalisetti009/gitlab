@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import AdminDataManagementItemApp from 'ee/admin/data_management_item/components/app.vue';
 
 export const initAdminDataManagementItem = () => {
@@ -6,7 +7,9 @@ export const initAdminDataManagementItem = () => {
 
   if (!el) return null;
 
-  const { modelClass, modelId, modelName } = el.dataset;
+  const { modelId } = el.dataset;
+
+  const modelTypeData = convertObjectPropsToCamelCase(JSON.parse(el.dataset.modelTypeData));
 
   return new Vue({
     el,
@@ -14,9 +17,8 @@ export const initAdminDataManagementItem = () => {
     render(createElement) {
       return createElement(AdminDataManagementItemApp, {
         props: {
-          modelClass,
+          modelTypeData,
           modelId,
-          modelName,
         },
       });
     },

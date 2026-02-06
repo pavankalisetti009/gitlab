@@ -16,7 +16,7 @@ export const initAdminDataManagementApp = () => {
 
   if (!el) return null;
 
-  const { initialModelName, modelTypes, basePath } = el.dataset;
+  const { initialModelTypeName, modelTypes, basePath } = el.dataset;
 
   const parsedModelTypes = convertObjectPropsToCamelCase(JSON.parse(modelTypes), { deep: true });
 
@@ -33,7 +33,7 @@ export const initAdminDataManagementApp = () => {
     render(createElement) {
       return createElement(AdminDataManagementApp, {
         props: {
-          initialModelName,
+          initialModelTypeName,
           modelTypes: parsedModelTypes,
         },
       });
