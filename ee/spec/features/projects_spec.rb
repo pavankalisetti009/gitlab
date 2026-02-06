@@ -33,7 +33,7 @@ RSpec.describe 'Project', :js, :with_current_organization, feature_category: :gr
 
       confirm_deletion(project)
 
-      expect(page).to have_content("This project is pending deletion, and will be deleted on #{deletion_date}. Repository and other project resources are read-only.")
+      expect(page).to have_content("This project and all its data will be permanently deleted on #{deletion_date}.")
 
       visit inactive_dashboard_projects_path
 
