@@ -26,7 +26,7 @@ module Ai
       attr_reader :current_user, :params
 
       def init_collection
-        Item.not_deleted.public_or_visible_to_user(current_user).order_by_id_desc
+        Item.not_deleted.public_or_visible_to_user(current_user).order_by_catalog_priority
       end
 
       def by_organization(items)

@@ -51,27 +51,39 @@ module Ai
 
       scope :without_consumers, -> { left_joins(:consumers).where(ai_catalog_item_consumers: { id: nil }) }
 
-      scope :order_by_id_desc, -> do
-        return reorder(id: :desc) unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+      scope :order_by_catalog_priority, -> do
+        order_columns = []
 
-        gitlab_items = GITLAB_ITEM_IDS.map(&:to_i).join(',')
-
-        order = Gitlab::Pagination::Keyset::Order.build([
-          Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
-            attribute_name: 'hard_coded_ids',
-            order_expression: Arel.sql("array_position(ARRAY[#{gitlab_items}]::bigint[], id)").asc,
+        # First priority: foundational agents (SaaS only)
+        chat_agent_ids = foundational_chat_agent_ids
+        if chat_agent_ids.present?
+          ids_list = chat_agent_ids.join(',')
+          order_columns << Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+            attribute_name: 'foundational_chat_agent_priority',
+            order_expression: Arel.sql("array_position(ARRAY[#{ids_list}]::bigint[], id)").asc,
             nullable: :nulls_last,
             order_direction: :asc,
             add_to_projections: true
-          ),
-          Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
-            attribute_name: 'id',
-            order_expression: Item.arel_table[:id].desc,
-            nullable: :not_nullable
           )
-        ])
+        end
 
-        reorder(order)
+        # Second priority: foundational flows
+        order_columns << Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+          attribute_name: 'foundational_flow_priority',
+          order_expression: Arel.sql("foundational_flow_reference").asc,
+          nullable: :nulls_last,
+          order_direction: :asc,
+          add_to_projections: true
+        )
+
+        # Third priority: order by id DESC
+        order_columns << Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+          attribute_name: 'id',
+          order_expression: arel_table[:id].desc,
+          nullable: :not_nullable
+        )
+
+        reorder(Gitlab::Pagination::Keyset::Order.build(order_columns))
       end
 
       scope :foundational_flows, -> { where.not(foundational_flow_reference: nil) }
@@ -105,6 +117,16 @@ module Ai
 
         def foundational_flow_ids
           foundational_flows.order(:id).limit(FOUNDATIONAL_FLOWS_LIMIT).pluck_primary_key
+        end
+
+        # Returns the global_catalog_ids of foundational chat agents.
+        # These IDs are hardcoded in Ai::FoundationalChatAgentsDefinitions and only apply to SaaS.
+        # On non-SaaS environments, these IDs would point to different items, so we return
+        # an empty array to avoid any problem.
+        def foundational_chat_agent_ids
+          return [] unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+
+          ::Ai::FoundationalChatAgent.all.filter_map(&:global_catalog_id)
         end
 
         def foundational_flow_ids_for_references(references)

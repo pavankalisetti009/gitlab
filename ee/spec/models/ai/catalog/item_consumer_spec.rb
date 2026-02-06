@@ -657,5 +657,35 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
         )
       end
     end
+
+    describe '.order_by_catalog_priority' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:foundational_flow) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+      let_it_be(:regular_item_1) { create(:ai_catalog_item, :public) }
+      let_it_be(:regular_item_2) { create(:ai_catalog_item, :public) }
+
+      let_it_be(:foundational_flow_consumer) do
+        create(:ai_catalog_item_consumer, item: foundational_flow, project: project)
+      end
+
+      let_it_be(:regular_item_1_consumer) do
+        create(:ai_catalog_item_consumer, item: regular_item_1, project: project)
+      end
+
+      let_it_be(:regular_item_2_consumer) do
+        create(:ai_catalog_item_consumer, item: regular_item_2, project: project)
+      end
+
+      subject(:ordered_consumers) { described_class.order_by_catalog_priority }
+
+      it 'returns foundational flows first, followed by other consumers' do
+        result = ordered_consumers.to_a
+
+        expect(result.first).to eq(foundational_flow_consumer)
+        expect(result.last(2)).to match_array(
+          [regular_item_1_consumer, regular_item_2_consumer]
+        )
+      end
+    end
   end
 end

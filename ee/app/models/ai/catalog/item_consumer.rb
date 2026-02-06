@@ -59,6 +59,29 @@ module Ai
       scope :with_item_type, ->(item_type) { joins(:item).where(item: { item_type: item_type }) }
       scope :with_items, -> { includes(:item) }
 
+      scope :order_by_catalog_priority, -> do
+        order_columns = []
+
+        # First priority: foundational flows
+        # Note: We don't create item_consumer records for foundational agents
+        order_columns << Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+          attribute_name: 'foundational_flow_reference',
+          order_expression: Arel.sql("item.foundational_flow_reference").asc,
+          nullable: :nulls_last,
+          order_direction: :asc,
+          add_to_projections: true
+        )
+
+        # Second priority: order by id DESC
+        order_columns << Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+          attribute_name: 'id',
+          order_expression: arel_table[:id].desc,
+          nullable: :not_nullable
+        )
+
+        joins(:item).reorder(Gitlab::Pagination::Keyset::Order.build(order_columns))
+      end
+
       scope :for_catalog_items, ->(item_ids) { where(ai_catalog_item_id: item_ids) }
       scope :for_service_account, ->(service_account_id) { where(service_account_id:) }
       scope :with_service_account, -> { preload(:service_account) }

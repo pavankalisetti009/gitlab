@@ -20,7 +20,8 @@ module Ai
         consumers = by_item(consumers) if item_id
         consumers = by_foundational_flow_reference(consumers) if foundational_flow_reference
         consumers = by_configurable_for_project(consumers) if configurable_for_project_id
-        by_item_type(consumers)
+        consumers = by_item_type(consumers)
+        consumers.order_by_catalog_priority
       end
 
       private

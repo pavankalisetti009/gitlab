@@ -279,6 +279,24 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       end
     end
 
+    describe '.foundational_chat_agent_ids' do
+      it 'returns empty array when not on SaaS' do
+        stub_saas_features(gitlab_duo_saas_only: false)
+
+        expect(described_class.foundational_chat_agent_ids).to eq([])
+      end
+
+      context 'when on SaaS', :saas do
+        it 'returns global_catalog_ids from foundational chat agents' do
+          ids = described_class.foundational_chat_agent_ids
+
+          expected_ids = ::Ai::FoundationalChatAgent.all.filter_map(&:global_catalog_id)
+          expect(ids).to match_array(expected_ids)
+          expect(ids).not_to include(nil)
+        end
+      end
+    end
+
     describe '.foundational_flow_ids' do
       let_it_be(:flow1) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
       let_it_be(:flow2) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
@@ -341,43 +359,6 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         result = described_class.foundational_flow_ids_for_references(['code_review/v1', 'sast_fp_detection/v1'])
 
         expect(result.size).to eq(1)
-      end
-    end
-
-    describe '.order_by_id_desc' do
-      subject { described_class.order_by_id_desc }
-
-      let_it_be(:gitlab_item_1) { create(:ai_catalog_agent, public: true) }
-      let_it_be(:regular_item_1) { create(:ai_catalog_agent, public: true) }
-      let_it_be(:gitlab_item_2) { create(:ai_catalog_agent, public: true) }
-      let_it_be(:regular_item_2) { create(:ai_catalog_agent, public: true) }
-
-      before do
-        stub_const('Ai::Catalog::Item::GITLAB_ITEM_IDS', [gitlab_item_1.id, gitlab_item_2.id])
-      end
-
-      it 'orders by id desc when not SaaS' do
-        is_expected.to eq(
-          [
-            regular_item_2,
-            gitlab_item_2,
-            regular_item_1,
-            gitlab_item_1
-          ]
-        )
-      end
-
-      context 'when SaaS', :saas do
-        it 'sorts GitLab items first, then id desc' do
-          is_expected.to eq(
-            [
-              gitlab_item_1,
-              gitlab_item_2,
-              regular_item_2,
-              regular_item_1
-            ]
-          )
-        end
       end
     end
 
@@ -453,6 +434,35 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
 
         it 'returns an empty collection' do
           expect(described_class.without_consumers).to be_empty
+        end
+      end
+    end
+
+    describe '.order_by_catalog_priority' do
+      let_it_be(:foundational_agent) do
+        create(:ai_catalog_agent, id: ::Ai::FoundationalChatAgentsDefinitions::ITEMS[1][:global_catalog_id])
+      end
+
+      let_it_be(:foundational_flow) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+      let_it_be(:regular_item_1) { create(:ai_catalog_item) }
+      let_it_be(:regular_item_2) { create(:ai_catalog_item) }
+
+      subject(:ordered_items) { described_class.order_by_catalog_priority }
+
+      it 'returns foundational flows first, followed by other items' do
+        result = ordered_items.to_a
+
+        expect(result.first).to eq(foundational_flow)
+        expect(result.last(3)).to match_array([regular_item_1, regular_item_2, foundational_agent])
+      end
+
+      context 'when on SaaS', :saas do
+        it 'returns foundational items first, then regular items' do
+          result = ordered_items.to_a
+
+          expect(result[0]).to eq(foundational_agent)
+          expect(result[1]).to eq(foundational_flow)
+          expect(result.last(2)).to match_array([regular_item_1, regular_item_2])
         end
       end
     end

@@ -404,4 +404,37 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
       it { is_expected.to contain_exactly(public_flow_consumer) }
     end
   end
+
+  describe 'ordering' do
+    let_it_be(:foundational_flow) { create(:ai_catalog_flow, :with_foundational_flow_reference, :public) }
+    let_it_be(:regular_agent_1) { create(:ai_catalog_agent, :public) }
+    let_it_be(:regular_agent_2) { create(:ai_catalog_agent, :public) }
+
+    let_it_be(:foundational_flow_consumer) do
+      create(:ai_catalog_item_consumer, item: foundational_flow, project: project)
+    end
+
+    let_it_be(:regular_agent_1_consumer) do
+      create(:ai_catalog_item_consumer, item: regular_agent_1, project: project)
+    end
+
+    let_it_be(:regular_agent_2_consumer) do
+      create(:ai_catalog_item_consumer, item: regular_agent_2, project: project)
+    end
+
+    let(:params) { { project_id: project.id } }
+
+    it 'returns foundational flows first, followed by other consumers' do
+      results_array = results.to_a
+
+      remaining_consumers = [
+        regular_agent_2_consumer,
+        regular_agent_1_consumer,
+        *project_consumers
+      ]
+
+      expect(results_array.first).to eq(foundational_flow_consumer)
+      expect(results_array.last(remaining_consumers.size)).to match_array(remaining_consumers)
+    end
+  end
 end

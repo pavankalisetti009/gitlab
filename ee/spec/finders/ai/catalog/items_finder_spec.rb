@@ -161,24 +161,28 @@ RSpec.describe Ai::Catalog::ItemsFinder, :aggregate_failures, feature_category: 
   end
 
   describe 'ordering' do
-    let_it_be(:gitlab_item_1) { create(:ai_catalog_agent, public: true) }
-    let_it_be(:regular_item_1) { create(:ai_catalog_agent, public: true) }
-    let_it_be(:gitlab_item_2) { create(:ai_catalog_agent, public: true) }
-    let_it_be(:regular_item_2) { create(:ai_catalog_agent, public: true) }
+    let_it_be(:foundational_agent) { create(:ai_catalog_agent, :public) }
+
+    let_it_be(:foundational_flow) { create(:ai_catalog_flow, :with_foundational_flow_reference, :public) }
+    let_it_be(:regular_item_1) { create(:ai_catalog_agent, :public) }
+    let_it_be(:regular_item_2) { create(:ai_catalog_agent, :public) }
 
     let(:params) { { organization: user.organization } }
 
     before do
-      stub_const('Ai::Catalog::Item::GITLAB_ITEM_IDS', [gitlab_item_1.id, gitlab_item_2.id])
+      mock_foundational_chat_agent = instance_double(
+        Ai::FoundationalChatAgent, global_catalog_id: foundational_agent.id
+      )
+      allow(Ai::FoundationalChatAgent).to receive(:all).and_return([mock_foundational_chat_agent])
     end
 
-    it 'orders by id desc when not SaaS' do
-      is_expected.to eq(
+    it 'orders items by user affinity' do
+      expect(results.to_a).to eq(
         [
+          foundational_flow,
           regular_item_2,
-          gitlab_item_2,
           regular_item_1,
-          gitlab_item_1,
+          foundational_agent,
           private_third_party_flow_developer_access,
           private_agent_developer_access,
           private_flow_developer_access,
@@ -188,12 +192,12 @@ RSpec.describe Ai::Catalog::ItemsFinder, :aggregate_failures, feature_category: 
       )
     end
 
-    context 'when SaaS', :saas do
-      it 'sorts GitLab items first, then id desc' do
-        is_expected.to eq(
+    context 'when on SaaS', :saas do
+      it 'orders company project items after foundational items' do
+        expect(results.to_a).to eq(
           [
-            gitlab_item_1,
-            gitlab_item_2,
+            foundational_agent,
+            foundational_flow,
             regular_item_2,
             regular_item_1,
             private_third_party_flow_developer_access,
