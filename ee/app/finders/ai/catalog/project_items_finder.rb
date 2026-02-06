@@ -41,7 +41,7 @@ module Ai
       def init_collection
         items = Item.not_deleted.for_project(project)
         items = items.or(Item.not_deleted.in_organization(project.organization).public_only) if params[:all_available]
-        items.order_by_id_desc
+        items.order_by_catalog_priority
       end
 
       def by_item_type(items)
