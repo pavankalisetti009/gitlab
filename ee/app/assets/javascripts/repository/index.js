@@ -10,7 +10,7 @@ const initCodeOwnersApp = (router, apolloProvider, projectPath) => {
   const { branch, canViewBranchRules, branchRulesPath } = codeOwnersEl.dataset;
   return new Vue({
     el: codeOwnersEl,
-    name: 'CodeOwnersRoot',
+    name: 'RepositoryCodeOwnersRoot',
     router,
     apolloProvider,
     render(h) {
