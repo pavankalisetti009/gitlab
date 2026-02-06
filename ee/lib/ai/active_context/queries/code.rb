@@ -24,6 +24,7 @@ module Ai
 
         def self.available?
           COLLECTION_CLASS.indexing? &&
+            COLLECTION_CLASS.current_search_embedding_version.present? &&
             COLLECTION_CLASS.collection_record.present?
         end
 

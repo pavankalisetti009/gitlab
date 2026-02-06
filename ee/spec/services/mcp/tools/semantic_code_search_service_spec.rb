@@ -897,19 +897,17 @@ RSpec.describe Mcp::Tools::SemanticCodeSearchService, feature_category: :mcp_ser
   describe '#available?' do
     subject(:available?) { service.available? }
 
-    context 'when Code collection is indexed' do
+    context 'when Code Query is not available' do
+      before do
+        allow(::Ai::ActiveContext::Queries::Code).to receive(:available?).and_return(false)
+      end
+
       it { is_expected.to be(false) }
     end
 
-    context 'when code collection is indexed' do
+    context 'when Code Query is available' do
       before do
-        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
-
-        create(
-          :ai_active_context_collection,
-          search_embedding_version: 1,
-          include_ref_fields: false
-        )
+        allow(::Ai::ActiveContext::Queries::Code).to receive(:available?).and_return(true)
       end
 
       context 'when current_user is not set' do
