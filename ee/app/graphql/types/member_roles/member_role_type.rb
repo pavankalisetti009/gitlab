@@ -12,7 +12,6 @@ module Types
 
       implements Types::Members::RoleInterface
       implements Types::Members::CustomRoleInterface
-      implements Types::Members::MemberRoleInterface
 
       field :base_access_level,
         Types::AccessLevelType,
@@ -31,6 +30,11 @@ module Types
         null: true,
         description: 'Array of security policies dependent on the custom role.',
         resolver: ::Resolvers::Members::ApprovalPolicyResolver
+
+      field :members_count,
+        GraphQL::Types::Int,
+        experiment: { milestone: '17.3' },
+        description: 'Number of times the role has been directly assigned to a group or project member.'
 
       field :users_count,
         GraphQL::Types::Int,

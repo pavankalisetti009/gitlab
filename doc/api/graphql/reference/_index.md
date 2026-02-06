@@ -48135,7 +48135,6 @@ Represents a standard role.
 | <a id="standardroledescription"></a>`description` | [`String`](#string) | Role description. |
 | <a id="standardroledetailspath"></a>`detailsPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.4. **Status**: Experiment. URL path to the role details webpage. |
 | <a id="standardroleid"></a>`id` | [`ID!`](#id) | Role ID. |
-| <a id="standardrolememberscount"></a>`membersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Number of times the role has been directly assigned to a group or project member. |
 | <a id="standardrolename"></a>`name` | [`String`](#string) | Role name. |
 
 ### `StandardsAdherenceChecksStatus`
@@ -59038,19 +59037,6 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="memberinterfacemergerequestinteractionid"></a>`id` | [`MergeRequestID!`](#mergerequestid) | Global ID of the merge request. |
-
-#### `MemberRoleInterface`
-
-Implementations:
-
-- [`MemberRole`](#memberrole)
-- [`StandardRole`](#standardrole)
-
-##### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="memberroleinterfacememberscount"></a>`membersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Number of times the role has been directly assigned to a group or project member. |
 
 #### `NamespaceMetadata`
 
