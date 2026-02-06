@@ -23574,9 +23574,6 @@ msgstr ""
 msgid "Delete identity"
 msgstr ""
 
-msgid "Delete immediately"
-msgstr ""
-
 msgid "Delete internal note"
 msgstr ""
 
@@ -23587,6 +23584,9 @@ msgid "Delete label: %{labelName}"
 msgstr ""
 
 msgid "Delete one-time password authenticator"
+msgstr ""
+
+msgid "Delete permanently"
 msgstr ""
 
 msgid "Delete pipeline"
@@ -23714,9 +23714,6 @@ msgstr ""
 msgid "Deletion scheduled at: %{time}"
 msgstr ""
 
-msgid "DeletionSettings|Immediate deletion"
-msgstr ""
-
 msgid "DeletionSettings|Maximum deletion protection duration is 90 days."
 msgstr ""
 
@@ -23724,6 +23721,9 @@ msgid "DeletionSettings|Minimum deletion protection duration is 1 day."
 msgstr ""
 
 msgid "DeletionSettings|Period that deleted groups and projects will remain restorable for."
+msgstr ""
+
+msgid "DeletionSettings|Permanent deletion"
 msgstr ""
 
 msgid "DeletionSettings|Retention period"
@@ -33902,7 +33902,7 @@ msgstr ""
 msgid "GroupSettings|Default to Auto DevOps pipeline for all projects within this group"
 msgstr ""
 
-msgid "GroupSettings|Delete immediately"
+msgid "GroupSettings|Delete permanently"
 msgstr ""
 
 msgid "GroupSettings|Disable SSH Keys"
@@ -35672,10 +35672,10 @@ msgstr ""
 msgid "Images with incorrect dimensions are not resized automatically, and may result in unexpected behavior."
 msgstr ""
 
-msgid "ImmediateNamespacesDeletionSettings|Allow immediate deletion"
+msgid "ImmediateNamespacesDeletionSettings|Allow permanent deletion"
 msgstr ""
 
-msgid "ImmediateNamespacesDeletionSettings|Immediately delete groups and projects scheduled for deletion and bypass the configured retention period. %{link_start}Learn more.%{link_end}"
+msgid "ImmediateNamespacesDeletionSettings|Permanently delete groups and projects scheduled for deletion and bypass the configured retention period. %{link_start}Learn more.%{link_end}"
 msgstr ""
 
 msgid "Immutable tag rules require an Ultimate license"
@@ -53586,7 +53586,7 @@ msgstr ""
 msgid "ProjectSettings|Data sources"
 msgstr ""
 
-msgid "ProjectSettings|Delete immediately"
+msgid "ProjectSettings|Delete permanently"
 msgstr ""
 
 msgid "ProjectSettings|Delete project"
