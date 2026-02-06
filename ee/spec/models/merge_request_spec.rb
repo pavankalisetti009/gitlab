@@ -2053,30 +2053,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           end
         end
       end
-
-      context 'when feature flag allow_merge_train_retry_merge is disabled' do
-        before do
-          stub_feature_flags(allow_merge_train_retry_merge: false)
-        end
-
-        it 'skips only the rebase check' do
-          expect(subject.except(:skip_rebase_check).values).to all(be_falsy)
-          expect(subject[:skip_rebase_check]).to be_truthy
-        end
-
-        context 'when the diff head pipeline is a merge train pipeline' do
-          before do
-            allow(merge_request).to receive(:diff_head_pipeline).and_return(instance_double(Ci::Pipeline,
-              merge_train_pipeline?: true))
-            allow(merge_request).to receive(:on_train?).and_return(false)
-          end
-
-          it 'skips only the rebase check when feature flag is disabled' do
-            expect(subject.except(:skip_rebase_check).values).to all(be_falsy)
-            expect(subject[:skip_rebase_check]).to be_truthy
-          end
-        end
-      end
     end
   end
 
