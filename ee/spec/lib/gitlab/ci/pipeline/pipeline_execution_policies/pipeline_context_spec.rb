@@ -26,7 +26,8 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       chat_data: command.chat_data,
       merge_request: command.merge_request,
       schedule: command.schedule,
-      bridge: command.bridge
+      bridge: command.bridge,
+      trigger: command.trigger
     )
   end
 
@@ -154,6 +155,19 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
         context.policy_pipelines.each do |policy_pipeline|
           expect(policy_pipeline.pipeline.merge_request).to eq(merge_request)
+        end
+      end
+    end
+
+    context 'with trigger parameter set on the command' do
+      let_it_be(:trigger) { create(:ci_trigger, project: project) }
+      let(:command_attributes) { { trigger: trigger } }
+
+      it 'passes the trigger to the policy pipelines' do
+        perform
+
+        context.policy_pipelines.each do |policy_pipeline|
+          expect(policy_pipeline.pipeline.trigger).to eq(trigger)
         end
       end
     end
