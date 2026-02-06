@@ -395,4 +395,55 @@ RSpec.describe EE::AuthHelper do
       end
     end
   end
+
+  describe '#projects_service_accounts_data', :freeze_time do
+    let_it_be(:settings) { build(:namespace_settings, service_access_tokens_expiration_enforced: false) }
+    let_it_be(:group) { build_stubbed(:group, path: 'my-group-path', namespace_settings: settings) }
+    let_it_be(:project) { build_stubbed(:project, path: 'my-project-path', id: 5, namespace: group) }
+    let_it_be(:user) { build_stubbed(:user) }
+
+    before do
+      allow(project).to receive(:root_namespace).and_return(group)
+      allow(helper).to receive(:current_user).and_return(user)
+    end
+
+    context 'when user can create service accounts' do
+      before do
+        allow(helper).to receive(:can?).with(anything, :create_service_account, project).and_return(true)
+      end
+
+      it 'returns data for the service accounts UI with enabled as true' do
+        expect(helper.projects_service_accounts_data(project, 'dummy_user')).to match(a_hash_including({
+          base_path: "/#{group.path}/#{project.path}/-/settings/service_accounts",
+          is_group: 'false',
+          service_accounts: {
+            enabled: 'true',
+            path: "/api/v4/projects/#{project.id}/service_accounts",
+            edit_path: "/api/v4/projects/#{project.id}/service_accounts",
+            delete_path: "/api/v4/projects/#{project.id}/service_accounts",
+            docs_path: '/help/user/profile/service_accounts.md'
+          },
+          access_token: {
+            min_date: 1.day.from_now.iso8601,
+            available_scopes: '[]',
+            create: "/api/v4/projects/#{project.id}/service_accounts/:id/personal_access_tokens",
+            revoke: "/api/v4/projects/#{project.id}/service_accounts/:id/personal_access_tokens",
+            rotate: "/api/v4/projects/#{project.id}/service_accounts/:id/personal_access_tokens",
+            show: "/api/v4/projects/#{project.id}/service_accounts/:id/personal_access_tokens"
+          }
+        }))
+      end
+    end
+
+    context 'when user cannot create service accounts' do
+      before do
+        allow(helper).to receive(:can?).with(anything, :create_service_account, project).and_return(false)
+      end
+
+      it 'returns data for the service accounts UI with enabled as false' do
+        result = helper.projects_service_accounts_data(project, 'dummy_user')
+        expect(result[:service_accounts][:enabled]).to eq('false')
+      end
+    end
+  end
 end

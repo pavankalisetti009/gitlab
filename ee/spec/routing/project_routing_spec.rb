@@ -98,4 +98,14 @@ RSpec.describe 'EE-specific project routing' do
       expect(delete("/gitlab/gitlabhq/-/target_branch_rules/1")).to route_to('projects/target_branch_rules#destroy', namespace_id: 'gitlab', project_id: 'gitlabhq', id: '1')
     end
   end
+
+  describe Projects::Settings::ServiceAccountsController, 'routing', type: :routing do
+    it "to #index" do
+      expect(get("/gitlab/gitlabhq/-/settings/service_accounts")).to route_to(
+        'projects/settings/service_accounts#index',
+        namespace_id: 'gitlab',
+        project_id: 'gitlabhq'
+      )
+    end
+  end
 end
