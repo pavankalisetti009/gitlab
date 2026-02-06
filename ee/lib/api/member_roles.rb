@@ -69,7 +69,7 @@ module API
       desc 'Get Member Roles for a group' do
         success ::API::Entities::MemberRole
         is_array true
-        tags %w[group_member_roles]
+        tags %w[member_roles]
       end
 
       route_setting :authorization, permissions: :read_member_role, boundary_type: :group
@@ -80,7 +80,7 @@ module API
       desc 'Create Member Role for a group' do
         success ::API::Entities::MemberRole
         failure [[400, 'Bad Request'], [401, 'Unauthorized']]
-        tags %w[group_member_roles]
+        tags %w[member_roles]
       end
 
       params do
@@ -95,7 +95,7 @@ module API
       desc 'Delete Member Role for a group' do
         success code: 204, message: '204 No Content'
         failure [[400, 'Bad Request'], [401, 'Unauthorized'], [404, '404 Member Role Not Found']]
-        tags %w[group_member_roles]
+        tags %w[member_roles]
       end
 
       params do

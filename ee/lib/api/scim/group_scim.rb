@@ -109,7 +109,7 @@ module API
 
           desc 'Get SCIM users' do
             detail 'This feature was introduced in GitLab 11.10.'
-            tags ['scim_and_saml']
+            tags ['scim']
           end
           get do
             group = find_and_authenticate_group!(params[:group])
@@ -131,7 +131,7 @@ module API
 
           desc 'Get a SCIM user' do
             detail 'This feature was introduced in GitLab 11.10.'
-            tags ['scim_and_saml']
+            tags ['scim']
           end
           get ':id', requirements: USER_ID_REQUIREMENTS do
             group = find_and_authenticate_group!(params[:group])
@@ -147,7 +147,7 @@ module API
 
           desc 'Create a SCIM user' do
             detail 'This feature was introduced in GitLab 11.10.'
-            tags ['scim_and_saml']
+            tags ['scim']
           end
           post do
             group = find_and_authenticate_group!(params[:group])
@@ -175,7 +175,7 @@ module API
 
           desc 'Updates a SCIM user' do
             detail 'This feature was introduced in GitLab 11.10.'
-            tags ['scim_and_saml']
+            tags ['scim']
           end
           patch ':id', requirements: USER_ID_REQUIREMENTS do
             scim_error!(message: 'Missing ID') unless params[:id]
@@ -198,7 +198,7 @@ module API
 
           desc 'Removes a SCIM user' do
             detail 'This feature was introduced in GitLab 11.10.'
-            tags ['scim_and_saml']
+            tags ['scim']
           end
           delete ':id', requirements: USER_ID_REQUIREMENTS do
             scim_error!(message: 'Missing ID') unless params[:id]
