@@ -121,7 +121,10 @@ export default {
 
         if (!this.onGeneralSettingsPage) {
           input.duo_core_features_enabled = duoCoreFeaturesEnabled;
-          input.duo_namespace_access_rules = this.formatNamespaceAccessRules(namespaceAccessRules);
+          if (namespaceAccessRules !== undefined) {
+            input.duo_namespace_access_rules =
+              this.formatNamespaceAccessRules(namespaceAccessRules);
+          }
         }
 
         await updateGroupSettings(this.updateId, input);

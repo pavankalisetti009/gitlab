@@ -115,6 +115,30 @@ describe('AiCommonSettings', () => {
     });
   });
 
+  it('does not include namespaceAccessRules in submit event when they have not been changed', async () => {
+    await findForm().vm.$emit('submit', {
+      preventDefault: jest.fn(),
+    });
+
+    const emittedData = wrapper.emitted('submit')[0][0];
+
+    expect(emittedData).not.toHaveProperty('namespaceAccessRules');
+  });
+
+  it('includes namespaceAccessRules when a change has been made', async () => {
+    await findForm().vm.$emit('namespace-access-rules-changed', [
+      { throughNamespace: { id: 1, name: 'group' }, features: ['duo_agent_platform'] },
+    ]);
+
+    await findForm().vm.$emit('submit', {
+      preventDefault: jest.fn(),
+    });
+
+    const emittedData = wrapper.emitted('submit')[0][0];
+
+    expect(emittedData).toHaveProperty('namespaceAccessRules');
+  });
+
   describe('when on general settings page', () => {
     beforeEach(() => {
       createComponent({ provide: { onGeneralSettingsPage: true } });
@@ -164,6 +188,10 @@ describe('AiCommonSettings', () => {
     it('renders ai-common-settings slots', () => {
       expect(findTopSettingsSlot().exists()).toBe(true);
       expect(findBottomSettingsSlot().exists()).toBe(true);
+    });
+
+    it('passes initialNamespaceAccessRules prop to form', () => {
+      expect(findForm().props('initialNamespaceAccessRules')).toEqual([]);
     });
   });
 

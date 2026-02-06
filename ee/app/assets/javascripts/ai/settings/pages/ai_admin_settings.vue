@@ -170,8 +170,8 @@ export default {
           duo_chat_expiration_days: this.chatExpirationDays,
           duo_chat_expiration_column: this.chatExpirationColumn,
           duo_agent_platform_enabled: duoAgentPlatformEnabled,
-          duo_namespace_access_rules: this.formatNamespaceAccessRules(namespaceAccessRules),
           foundational_agents_default_enabled: foundationalAgentsEnabled,
+          ...this.namespaceAccessRulesPayload(namespaceAccessRules),
           ...(foundationalAgentsStatuses && {
             foundational_agents_statuses: transformedFoundationalAgentsStatuses,
           }),
@@ -258,15 +258,17 @@ export default {
     onAiGatewayTimeoutChange(value) {
       this.aiGatewayTimeoutSecondsInput = value;
     },
-    formatNamespaceAccessRules(rules) {
-      if (!rules) return [];
+    namespaceAccessRulesPayload(rules) {
+      if (rules === undefined || rules === null) return {};
 
-      return rules.map((rule) => ({
+      const formattedRules = rules.map((rule) => ({
         through_namespace: {
           id: rule.throughNamespace.id,
         },
         features: rule.features,
       }));
+
+      return { duo_namespace_access_rules: formattedRules };
     },
     onError(error) {
       createAlert({

@@ -154,9 +154,22 @@ describe('AiAdminSettings', () => {
     });
 
     describe('without namespace access rules', () => {
-      it('calls updateApplicationSettings with empty namespace access rules', async () => {
+      it('does not include duo_namespace_access_rules when undefined', async () => {
         updateApplicationSettings.mockResolvedValue();
-        await findAiCommonSettings().vm.$emit('submit', {});
+        await findAiCommonSettings().vm.$emit('submit', { namespaceAccessRules: undefined });
+        await waitForPromises();
+
+        expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
+        expect(updateApplicationSettings).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            duo_namespace_access_rules: expect.anything(),
+          }),
+        );
+      });
+
+      it('does include duo_namespace_access_rules when empty', async () => {
+        updateApplicationSettings.mockResolvedValue();
+        await findAiCommonSettings().vm.$emit('submit', { namespaceAccessRules: [] });
         await waitForPromises();
 
         expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
