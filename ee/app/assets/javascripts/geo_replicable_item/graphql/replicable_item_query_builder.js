@@ -10,6 +10,7 @@ export default (graphQlClassID, graphQlFieldName, verificationEnabled) => {
             id
             checksumMismatch
             createdAt
+            dataManagementDetailsPath @gl_introduced(version: "18.9.0")
             lastSyncFailure
             lastSyncedAt
             missingOnPrimary

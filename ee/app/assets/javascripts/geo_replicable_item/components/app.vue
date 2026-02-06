@@ -126,6 +126,7 @@ export default {
         <geo-replicable-item-registry-info
           :replicable-item="replicableItem"
           :registry-id="registryId"
+          :replicable-class="replicableClass"
           class="gl-h-max"
         />
       </div>

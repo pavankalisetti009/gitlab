@@ -119,6 +119,9 @@ describe('GeoReplicableItemApp', () => {
       expect(findRegistryInfoComponent().props('registryId')).toBe(
         `${MOCK_REPLICABLE_CLASS.graphqlRegistryClass}/${defaultProps.replicableItemId}`,
       );
+      expect(findRegistryInfoComponent().props('replicableClass')).toStrictEqual(
+        MOCK_REPLICABLE_CLASS,
+      );
     });
   });
 

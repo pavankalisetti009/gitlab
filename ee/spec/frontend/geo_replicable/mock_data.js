@@ -8,6 +8,7 @@ export const MOCK_REPLICABLE_TYPES = [
     graphqlFieldName: 'designManagementRepositoryRegistries',
     graphqlRegistryIdType: 'DesignManagementRegistryId',
     graphqlMutationRegistryClass: 'DESIGN_MANAGEMENT_REPOSITORY_REGISTRY',
+    modelClassName: 'Designs',
     verificationEnabled: true,
   },
   {
@@ -17,6 +18,7 @@ export const MOCK_REPLICABLE_TYPES = [
     graphqlFieldName: 'projectRepositoryRegistries',
     graphqlRegistryIdType: 'ProjectRepositoryRegistryId',
     graphqlMutationRegistryClass: 'PROJECT_REPOSITORY_REGISTRY',
+    modelClassName: 'Projects',
     verificationEnabled: true,
   },
   {
@@ -26,6 +28,7 @@ export const MOCK_REPLICABLE_TYPES = [
     graphqlFieldName: 'packageFileRegistries',
     graphqlRegistryIdType: 'PackageFileRegistryId',
     graphqlMutationRegistryClass: 'PACKAGE_FILE_REGISTRY',
+    modelClassName: 'PackageFiles',
     verificationEnabled: false,
   },
 ];
