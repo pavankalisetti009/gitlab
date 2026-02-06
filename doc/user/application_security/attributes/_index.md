@@ -43,7 +43,7 @@ This feature is in beta. Track the development of security attributes in [epic 1
 
 Prerequisites:
 
-- You must have at least the Maintainer role in the group to manage security attributes.
+- You must have the Maintainer or Owner role in the group to manage security attributes.
 
 To manage security attributes for a group:
 
@@ -54,7 +54,7 @@ To manage security attributes for a group:
 
 Prerequisites:
 
-- You must have at least the Maintainer role in the project to manage security attributes.
+- You must have the Maintainer or Owner role in the project to manage security attributes.
 
 To manage security attributes for a project:
 
@@ -74,6 +74,6 @@ When working with the security attributes, you might encounter the following iss
 
 ### Security configuration menu item missing
 
-Some users do not have the required permissions to access the **Security configuration** menu item. The menu item only displays for groups when the authenticated user has at least the Maintainer role.
+Some users do not have the required permissions to access the **Security configuration** menu item. The menu item only displays for groups when the authenticated user has the Maintainer or Owner role.
 
 To manage security attributes, ask a maintainer to complete the configuration changes or request the Maintainer role from your administrator, if necessary.
