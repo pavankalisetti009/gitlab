@@ -313,17 +313,6 @@ describe('EE Approvals App', () => {
       expect(button.exists()).toBe(true);
       expect(button.text()).toBe('Add approval rule');
     });
-
-    describe('when edit_branch_rules feature flag is disabled', () => {
-      it('does not render add button', () => {
-        const editBranchRules = false;
-        factory({ isBranchRulesEdit: true }, editBranchRules);
-
-        const button = findAddButton();
-
-        expect(button.exists()).toBe(false);
-      });
-    });
   });
 
   describe('description slot', () => {

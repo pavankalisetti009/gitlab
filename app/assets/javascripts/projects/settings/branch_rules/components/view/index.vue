@@ -202,10 +202,6 @@ export default {
         ? this.$options.i18n.allowForcePushTitle
         : this.$options.i18n.doesNotAllowForcePushTitle;
 
-      if (!this.glFeatures.editBranchRules) {
-        return { title, description: this.$options.i18n.forcePushIconDescription };
-      }
-
       return {
         title,
         description: this.$options.i18n.forcePushDescriptionWithDocs,
@@ -216,14 +212,6 @@ export default {
       const title = codeOwnerApprovalRequired
         ? this.$options.i18n.requiresCodeOwnerApprovalTitle
         : this.$options.i18n.doesNotRequireCodeOwnerApprovalTitle;
-
-      if (!this.glFeatures.editBranchRules) {
-        const description = codeOwnerApprovalRequired
-          ? this.$options.i18n.requiresCodeOwnerApprovalDescription
-          : this.$options.i18n.doesNotRequireCodeOwnerApprovalDescription;
-
-        return { title, description };
-      }
 
       return {
         title,
@@ -256,14 +244,6 @@ export default {
       const total = this.matchingBranchesCount;
       const subject = n__('branch', 'branches', total);
       return sprintf(this.$options.i18n.matchingBranchesLinkTitle, { total, subject });
-    },
-    // needed to override EE component
-    statusChecksHeader() {
-      return '';
-    },
-    // needed to override EE component
-    statusChecksCount() {
-      return '0';
     },
     isAllBranchesRule() {
       return this.branch === this.$options.i18n.allBranches;
@@ -307,7 +287,6 @@ export default {
     },
     showDeleteRuleBtn() {
       return (
-        this.glFeatures.editBranchRules &&
         this.branchRule &&
         this.canAdminProtectedBranches &&
         !this.isAllBranchesRule &&
@@ -592,7 +571,7 @@ export default {
       <crud-component :title="$options.i18n.ruleTarget" data-testid="rule-target-card">
         <template #actions>
           <gl-button
-            v-if="glFeatures.editBranchRules && !isPredefinedRule && canAdminProtectedBranches"
+            v-if="!isPredefinedRule && canAdminProtectedBranches"
             v-gl-modal="$options.editModalId"
             data-testid="edit-rule-name-button"
             size="small"
@@ -787,31 +766,16 @@ export default {
 
         <!-- eslint-disable-next-line vue/no-undef-components -->
         <status-checks
-          v-if="glFeatures.editBranchRules"
           :branch-rule-id="branchRule && branchRule.id"
           :status-checks="statusChecks"
           :project-path="projectPath"
           :is-all-branches-rule="isAllBranchesRule"
           class="gl-mt-3"
         />
-
-        <protection
-          v-else
-          data-testid="status-checks-content"
-          class="gl-mt-0"
-          :header="statusChecksHeader"
-          icon="check-circle"
-          :count="statusChecksCount"
-          :header-link-title="$options.i18n.statusChecksLinkTitle"
-          :header-link-href="statusChecksPath"
-          :status-checks="statusChecks"
-          :empty-state-copy="$options.i18n.statusChecksEmptyState"
-        />
       </settings-section>
 
       <!-- EE end -->
       <gl-modal
-        v-if="glFeatures.editBranchRules"
         :ref="$options.deleteModalId"
         :modal-id="$options.deleteModalId"
         :title="$options.i18n.deleteRuleModalTitle"
@@ -823,7 +787,6 @@ export default {
       </gl-modal>
 
       <branch-rule-modal
-        v-if="glFeatures.editBranchRules"
         :id="$options.editModalId"
         :ref="$options.editModalId"
         :title="$options.i18n.updateTargetRule"
