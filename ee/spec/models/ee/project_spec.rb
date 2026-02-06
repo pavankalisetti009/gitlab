@@ -3092,6 +3092,106 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         end
       end
     end
+
+    context 'foundational flows sync' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:user) { create(:user) }
+      let_it_be(:project) { create(:project, group: group, creator: user) }
+      let_it_be(:import_state) { create(:import_state, project: project) }
+
+      before do
+        allow(project).to receive(:use_elasticsearch?).and_return(false)
+      end
+
+      context 'when project does not belong to a group' do
+        let_it_be(:project) { create(:project, namespace: create(:user).namespace) }
+
+        it 'does not enqueue foundational flows sync worker' do
+          expect(Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker).not_to receive(:perform_async)
+
+          project.after_import
+        end
+      end
+
+      context 'when duo_foundational_flows_enabled is false' do
+        before do
+          allow(project).to receive(:duo_foundational_flows_enabled).and_return(false)
+        end
+
+        it 'does not enqueue foundational flows sync worker' do
+          expect(Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker).not_to receive(:perform_async)
+
+          project.after_import
+        end
+      end
+
+      context 'when duo_foundational_flows_enabled is true' do
+        before do
+          allow(project).to receive(:duo_foundational_flows_enabled).and_return(true)
+        end
+
+        it 'enqueues SyncProjectFoundationalFlowsWorker' do
+          expect(Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker)
+            .to receive(:perform_async).with(project.id, project.creator.id)
+
+          project.after_import
+        end
+      end
+    end
+  end
+
+  describe '#sync_foundational_flows_after_import' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project, group: group, creator: user) }
+
+    context 'when project has no group' do
+      let_it_be(:project) { create(:project, namespace: create(:user).namespace, creator: user) }
+
+      it 'does not enqueue worker' do
+        expect(Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker).not_to receive(:perform_async)
+
+        project.sync_foundational_flows_after_import
+      end
+    end
+
+    context 'when duo_foundational_flows_enabled is false' do
+      before do
+        allow(project).to receive(:duo_foundational_flows_enabled).and_return(false)
+      end
+
+      it 'does not enqueue worker' do
+        expect(Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker).not_to receive(:perform_async)
+
+        project.sync_foundational_flows_after_import
+      end
+    end
+
+    context 'when duo_foundational_flows_enabled is true' do
+      before do
+        allow(project).to receive(:duo_foundational_flows_enabled).and_return(true)
+      end
+
+      it 'enqueues SyncProjectFoundationalFlowsWorker with project id and creator id' do
+        expect(Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker)
+          .to receive(:perform_async).with(project.id, user.id)
+
+        project.sync_foundational_flows_after_import
+      end
+
+      context 'when creator is nil' do
+        before do
+          allow(project).to receive(:creator).and_return(nil)
+        end
+
+        it 'enqueues worker with nil user_id' do
+          expect(Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker)
+            .to receive(:perform_async).with(project.id, nil)
+
+          project.sync_foundational_flows_after_import
+        end
+      end
+    end
   end
 
   describe '#use_zoekt?', feature_category: :global_search do

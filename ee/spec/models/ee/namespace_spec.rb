@@ -3484,6 +3484,59 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         expect(subject.size).to eq(3)
       end
     end
+
+    context 'when namespace has no flows but parent has flows' do
+      let_it_be(:parent_namespace) { create(:group) }
+      let_it_be(:child_namespace) { create(:group, parent: parent_namespace) }
+
+      subject { child_namespace.enabled_flow_catalog_item_ids }
+
+      before do
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace,
+          namespace: parent_namespace, catalog_item: catalog_item_1)
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace,
+          namespace: parent_namespace, catalog_item: catalog_item_2)
+      end
+
+      it 'returns parent namespace catalog item ids' do
+        expect(subject).to match_array([catalog_item_1.id, catalog_item_2.id])
+      end
+    end
+
+    context 'when namespace has no flows and is deeply nested' do
+      let_it_be(:root_namespace) { create(:group) }
+      let_it_be(:middle_namespace) { create(:group, parent: root_namespace) }
+      let_it_be(:leaf_namespace) { create(:group, parent: middle_namespace) }
+
+      subject { leaf_namespace.enabled_flow_catalog_item_ids }
+
+      before do
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace,
+          namespace: root_namespace, catalog_item: catalog_item_1)
+      end
+
+      it 'traverses up hierarchy to find flows from root' do
+        expect(subject).to match_array([catalog_item_1.id])
+      end
+    end
+
+    context 'when namespace has flows and parent also has flows' do
+      let_it_be(:parent_namespace) { create(:group) }
+      let_it_be(:child_namespace) { create(:group, parent: parent_namespace) }
+
+      subject { child_namespace.enabled_flow_catalog_item_ids }
+
+      before do
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace,
+          namespace: child_namespace, catalog_item: catalog_item_1)
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace,
+          namespace: parent_namespace, catalog_item: catalog_item_2)
+      end
+
+      it 'returns own flows and does not inherit from parent' do
+        expect(subject).to match_array([catalog_item_1.id])
+      end
+    end
   end
 
   describe '#sync_enabled_foundational_flows!' do

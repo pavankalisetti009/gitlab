@@ -748,7 +748,10 @@ module EE
     end
 
     def enabled_flow_catalog_item_ids
-      enabled_foundational_flow_records.limit(100).pluck(:catalog_item_id)
+      own_flows = enabled_foundational_flow_records.limit(100).pluck(:catalog_item_id)
+      return own_flows if own_flows.present?
+
+      parent&.enabled_flow_catalog_item_ids || []
     end
 
     def sync_enabled_foundational_flows!(target_ids)
