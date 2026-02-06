@@ -79002,6 +79002,9 @@ msgstr ""
 msgid "WorkItem|Something went wrong while copying the %{workItemType} reference. Please try again."
 msgstr ""
 
+msgid "WorkItem|Something went wrong while creating the view"
+msgstr ""
+
 msgid "WorkItem|Something went wrong while fetching items. Please try again."
 msgstr ""
 
