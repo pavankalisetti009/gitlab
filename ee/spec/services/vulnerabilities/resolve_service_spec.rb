@@ -66,6 +66,7 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
         resolve_vulnerability
       end
 
+
       it 'updates vulnerability read record with resolved state and auto_resolved flag' do
         vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) ||
           create(:vulnerability_read, vulnerability: vulnerability, state: 'detected', auto_resolved: false)
