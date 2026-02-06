@@ -1604,6 +1604,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: ai_catalog_flows_sync_project_foundational_flows
+  :worker_name: Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker
+  :feature_category: :ai_abstraction_layer
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ai_duo_workflows_code_review_timeout
   :worker_name: Ai::DuoWorkflows::CodeReview::TimeoutWorker
   :feature_category: :code_suggestions

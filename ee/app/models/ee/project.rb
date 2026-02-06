@@ -1283,6 +1283,15 @@ module EE
       # Index the wiki repository after import of non-forked projects only, the project repository is indexed
       # in ProjectImportState so ElasticSearch will get project repository changes when mirrors are updated
       ElasticWikiIndexerWorker.perform_async(id, self.class.name) if use_elasticsearch? && !forked?
+
+      sync_foundational_flows_after_import
+    end
+
+    def sync_foundational_flows_after_import
+      return unless group
+      return unless duo_foundational_flows_enabled
+
+      ::Ai::Catalog::Flows::SyncProjectFoundationalFlowsWorker.perform_async(id, creator&.id)
     end
 
     def use_zoekt?
