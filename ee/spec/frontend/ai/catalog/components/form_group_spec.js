@@ -46,11 +46,11 @@ describe('FormGroup', () => {
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
   const findSlotContent = () => wrapper.findByTestId('test-input');
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('rendering', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders a GlFormGroup with correct props', () => {
       const formGroup = findFormGroup();
 

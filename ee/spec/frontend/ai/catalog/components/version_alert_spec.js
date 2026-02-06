@@ -136,23 +136,25 @@ describe('VersionAlert', () => {
           setActiveVersionKey: jest.fn(),
         };
 
-        beforeEach(() => {
-          createComponent({
-            props: { version: mockVersionWithUpdate, itemType },
-            provide: { projectId, groupId },
+        describe('default', () => {
+          beforeEach(() => {
+            createComponent({
+              props: { version: mockVersionWithUpdate, itemType },
+              provide: { projectId, groupId },
+            });
           });
-        });
 
-        it('shows the "View latest version" button', () => {
-          expect(findPrimaryButtonText()).toEqual('View latest version');
-        });
+          it('shows the "View latest version" button', () => {
+            expect(findPrimaryButtonText()).toEqual('View latest version');
+          });
 
-        it('does not show the "Update to vXX" or the "View enabled version" button', () => {
-          expect(findSecondaryButtonText()).toBe(null);
-        });
+          it('does not show the "Update to vXX" or the "View enabled version" button', () => {
+            expect(findSecondaryButtonText()).toBe(null);
+          });
 
-        it(`displays the ${namespace} update message for ${itemName}`, () => {
-          expect(wrapper.text()).toContain(UPDATE_MESSAGES[namespace][itemName]);
+          it(`displays the ${namespace} update message for ${itemName}`, () => {
+            expect(wrapper.text()).toContain(UPDATE_MESSAGES[namespace][itemName]);
+          });
         });
 
         describe('when the user views the latest version', () => {

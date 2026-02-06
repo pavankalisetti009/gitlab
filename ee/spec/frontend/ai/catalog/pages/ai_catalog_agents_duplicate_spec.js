@@ -83,7 +83,6 @@ describe('AiCatalogAgentsDuplicate', () => {
       ...mockAgentVersion,
       key: VERSION_LATEST,
     });
-    createComponent();
   });
 
   afterEach(() => {
@@ -321,6 +320,7 @@ describe('AiCatalogAgentsDuplicate', () => {
     const { type, ...input } = formValues;
 
     beforeEach(async () => {
+      createComponent();
       await waitForPromises();
     });
 

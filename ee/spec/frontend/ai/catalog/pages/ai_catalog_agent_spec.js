@@ -69,19 +69,21 @@ describe('AiCatalogAgent', () => {
   const findGlEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findRouterView = () => wrapper.findComponent(RouterViewStub);
 
-  beforeEach(() => {
-    createComponent({
-      // we include rootGroupId so that internal logic doesn't result in the mockApollo stripping the config for group
-      provide: { projectId: '1', rootGroupId: '1' },
+  describe('loading', () => {
+    beforeEach(() => {
+      createComponent({
+        // we include rootGroupId so that internal logic doesn't result in the mockApollo stripping the config for group
+        provide: { projectId: '1', rootGroupId: '1' },
+      });
     });
-  });
 
-  it('renders loading icon while fetching data', async () => {
-    expect(findGlLoadingIcon().exists()).toBe(true);
+    it('renders loading icon while fetching data', async () => {
+      expect(findGlLoadingIcon().exists()).toBe(true);
 
-    await waitForPromises();
+      await waitForPromises();
 
-    expect(findGlLoadingIcon().exists()).toBe(false);
+      expect(findGlLoadingIcon().exists()).toBe(false);
+    });
   });
 
   describe('when request succeeds but returns null', () => {
@@ -182,6 +184,12 @@ describe('AiCatalogAgent', () => {
   describe('when displaying different agent versions', () => {
     let resolveVersionSpy;
 
+    const mockItemBothConfigsHandler = jest.fn().mockResolvedValue({
+      data: {
+        aiCatalogItem: aiCatalogAgentWithBothConfigs,
+      },
+    });
+
     beforeEach(() => {
       resolveVersionSpy = jest
         .spyOn(utils, 'resolveVersion')
@@ -218,7 +226,13 @@ describe('AiCatalogAgent', () => {
       });
       await waitForPromises();
 
-      expect(resolveVersionSpy).toHaveBeenCalledWith(aiCatalogAgentWithBothConfigs, false);
+      expect(resolveVersionSpy).toHaveBeenCalledWith(
+        {
+          ...mockAgent,
+          configurationForGroup: mockItemConfigurationForGroup,
+        },
+        false,
+      );
 
       const routerView = findRouterView();
       expect(routerView.props('version')).toMatchObject({
@@ -231,12 +245,6 @@ describe('AiCatalogAgent', () => {
       resolveVersionSpy.mockReturnValue({
         ...mockAgentPinnedVersion,
         key: VERSION_PINNED,
-      });
-
-      const mockItemBothConfigsHandler = jest.fn().mockResolvedValue({
-        data: {
-          aiCatalogItem: aiCatalogAgentWithBothConfigs,
-        },
       });
 
       createComponent({
