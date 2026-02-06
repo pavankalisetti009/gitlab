@@ -48,30 +48,60 @@ describe('DataManagementItem', () => {
   const findGeoListItem = () => wrapper.findComponent(GeoListItem);
   const fireActionClicked = (action) => findGeoListItem().vm.$emit('actionClicked', action);
 
-  it('renders GeoListItem with correct props', () => {
-    createComponent();
+  describe('when checksumEnabled is true', () => {
+    beforeEach(() => {
+      createComponent();
+    });
 
-    expect(findGeoListItem().props()).toMatchObject({
-      name: modelDisplayName,
-      detailsPath: joinPaths(
-        basePath,
-        MOCK_MODEL_TYPES[0].namePlural,
-        model.recordIdentifier.toString(),
-      ),
-      timeAgoArray: [
-        {
-          label: 'Created',
-          dateString: model.createdAt,
-          defaultText: 'Unknown',
-        },
-        {
-          label: 'Last checksum',
-          dateString: model.checksumInformation.lastChecksum,
-          defaultText: 'Unknown',
-        },
-      ],
-      actionsArray: [checksumAction],
-      errorsArray: [],
+    it('renders GeoListItem with correct props', () => {
+      expect(findGeoListItem().props()).toMatchObject({
+        name: modelDisplayName,
+        detailsPath: joinPaths(
+          basePath,
+          MOCK_MODEL_TYPES[0].namePlural,
+          model.recordIdentifier.toString(),
+        ),
+        timeAgoArray: [
+          {
+            label: 'Created',
+            dateString: model.createdAt,
+            defaultText: 'Unknown',
+          },
+          {
+            label: 'Last checksum',
+            dateString: model.checksumInformation.lastChecksum,
+            defaultText: 'Unknown',
+          },
+        ],
+        actionsArray: [checksumAction],
+        errorsArray: [],
+      });
+    });
+  });
+
+  describe('when checksumEnabled is false', () => {
+    beforeEach(() => {
+      createComponent({ activeModelType: { ...MOCK_MODEL_TYPES[0], checksumEnabled: false } });
+    });
+
+    it('renders GeoListItem with correct props', () => {
+      expect(findGeoListItem().props()).toMatchObject({
+        name: modelDisplayName,
+        detailsPath: joinPaths(
+          basePath,
+          MOCK_MODEL_TYPES[0].namePlural,
+          model.recordIdentifier.toString(),
+        ),
+        timeAgoArray: [
+          {
+            label: 'Created',
+            dateString: model.createdAt,
+            defaultText: 'Unknown',
+          },
+        ],
+        actionsArray: [],
+        errorsArray: [],
+      });
     });
   });
 

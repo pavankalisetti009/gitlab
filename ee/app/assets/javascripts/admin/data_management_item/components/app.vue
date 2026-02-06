@@ -102,6 +102,7 @@ export default {
     <gl-loading-icon v-if="isLoading" size="xl" class="gl-mt-4" />
     <div v-else-if="model" class="gl-grid gl-gap-4 @md/panel:gl-grid-cols-2">
       <checksum-info
+        v-if="modelTypeData.checksumEnabled"
         class="gl-order-2 @md/panel:gl-order-1"
         :details="checksumInformation"
         :checksum-loading="checksumLoading"

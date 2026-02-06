@@ -61,7 +61,7 @@ describe('AdminDataManagementItemApp', () => {
     expect(getModel).toHaveBeenCalledWith(MOCK_MODEL_TYPES[0].namePlural, defaultProps.modelId);
   });
 
-  describe('when loading model succeeds', () => {
+  describe('when loading model succeeds and checksumEnabled is true', () => {
     beforeEach(async () => {
       getModel.mockResolvedValue({ data: model });
       createComponent();
@@ -97,6 +97,32 @@ describe('AdminDataManagementItemApp', () => {
       it('passes empty object to ChecksumInfo', () => {
         expect(findChecksumInfo().props('details')).toEqual({});
       });
+    });
+  });
+
+  describe('when loading model succeeds and checksumEnabled is false', () => {
+    beforeEach(async () => {
+      getModel.mockResolvedValue({ data: model });
+      createComponent({
+        props: { modelTypeData: { ...MOCK_MODEL_TYPES[0], checksumEnabled: false } },
+      });
+      await waitForPromises();
+    });
+
+    it('renders model info', () => {
+      expect(findModelInfo().props('model')).toEqual(model);
+    });
+
+    it('does not render checksum info', () => {
+      expect(findChecksumInfo().exists()).toBe(false);
+    });
+
+    it('does not create alert', () => {
+      expect(createAlert).not.toHaveBeenCalled();
+    });
+
+    it('hides loading icon', () => {
+      expect(findGlLoadingIcon().exists()).toBe(false);
     });
   });
 
