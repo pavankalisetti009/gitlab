@@ -56147,7 +56147,6 @@ Name of the feature that the callout is for.
 | <a id="usergroupcalloutfeaturenameproject_premium_message_callout"></a>`PROJECT_PREMIUM_MESSAGE_CALLOUT` | Callout feature name for project_premium_message_callout. |
 | <a id="usergroupcalloutfeaturenameproject_repository_limit_alert_warning_threshold"></a>`PROJECT_REPOSITORY_LIMIT_ALERT_WARNING_THRESHOLD` | Callout feature name for project_repository_limit_alert_warning_threshold. |
 | <a id="usergroupcalloutfeaturenamerepository_premium_message_callout"></a>`REPOSITORY_PREMIUM_MESSAGE_CALLOUT` | Callout feature name for repository_premium_message_callout. |
-| <a id="usergroupcalloutfeaturenameunlimited_members_during_trial_alert"></a>`UNLIMITED_MEMBERS_DURING_TRIAL_ALERT` | Callout feature name for unlimited_members_during_trial_alert. |
 | <a id="usergroupcalloutfeaturenameusage_quota_trial_alert"></a>`USAGE_QUOTA_TRIAL_ALERT` | Callout feature name for usage_quota_trial_alert. |
 | <a id="usergroupcalloutfeaturenameuser_reached_limit_free_plan_alert"></a>`USER_REACHED_LIMIT_FREE_PLAN_ALERT` | Callout feature name for user_reached_limit_free_plan_alert. |
 | <a id="usergroupcalloutfeaturenameweb_hook_disabled"></a>`WEB_HOOK_DISABLED` | Callout feature name for web_hook_disabled. |

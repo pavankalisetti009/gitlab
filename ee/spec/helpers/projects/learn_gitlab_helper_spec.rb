@@ -223,28 +223,4 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
       end
     end
   end
-
-  describe '#hide_unlimited_members_during_trial_alert' do
-    subject(:hide_unlimited_members_during_trial_alert?) do
-      helper.hide_unlimited_members_during_trial_alert?(onboarding_progress)
-    end
-
-    let(:onboarding_progress) { build(:onboarding_progress) }
-
-    context 'when onboarding_progress was created within a day' do
-      before do
-        onboarding_progress.created_at = 1.hour.ago
-      end
-
-      it { is_expected.to be true }
-    end
-
-    context 'when onboarding_progress was created more than a day ago' do
-      before do
-        onboarding_progress.created_at = 2.days.ago
-      end
-
-      it { is_expected.to be false }
-    end
-  end
 end
