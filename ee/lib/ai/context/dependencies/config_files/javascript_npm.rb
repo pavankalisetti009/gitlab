@@ -28,7 +28,7 @@ module Ai
           # },
           #
           def extract_libs
-            parsed = ::Gitlab::Json.parse(content)
+            parsed = ::Gitlab::Json.safe_parse(content)
 
             %w[dependencies devDependencies].flat_map do |key|
               dig_in(parsed, key).try(:map) do |name, version|
