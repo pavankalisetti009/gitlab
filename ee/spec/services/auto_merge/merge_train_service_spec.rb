@@ -658,16 +658,6 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
             expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
           end
         end
-
-        context 'when feature flag :allow_merge_train_retry_merge is disabled' do
-          before do
-            stub_feature_flags(allow_merge_train_retry_merge: false)
-          end
-
-          specify do
-            expect(availability_check.unavailable_reason).to eq :mergeability_checks_failed
-          end
-        end
       end
     end
 
@@ -693,16 +683,6 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
           aggregate_failures do
             expect(availability_check.available?).to be false
             expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
-          end
-        end
-
-        context 'when feature flag :allow_merge_train_retry_merge is disabled' do
-          before do
-            stub_feature_flags(allow_merge_train_retry_merge: false)
-          end
-
-          specify do
-            expect(availability_check.unavailable_reason).to eq :mergeability_checks_failed
           end
         end
       end
