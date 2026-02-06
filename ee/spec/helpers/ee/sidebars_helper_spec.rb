@@ -56,15 +56,13 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       describe 'trial status when subscriptions_trials feature is available', :saas do
         let(:root_group) { namespace }
 
-        let(:add_on_purchase) do
-          build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: root_group)
+        let(:gitlab_subscription) do
+          build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: root_group)
         end
 
         before do
           stub_saas_features(subscriptions_trials: true)
-
-          allow(GitlabSubscriptions::Trials::DuoEnterprise)
-            .to receive(:any_add_on_purchase_for_namespace).with(root_group).and_return(add_on_purchase)
+          allow(root_group).to receive(:gitlab_subscription).and_return(gitlab_subscription)
         end
 
         describe 'does not return trial status widget data' do

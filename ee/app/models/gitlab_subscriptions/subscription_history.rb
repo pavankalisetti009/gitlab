@@ -48,14 +48,6 @@ module GitlabSubscriptions
       last_seat_refresh_at
     ].freeze
 
-    scope :transitioning_to_plan_after, ->(plan, date) do
-      where(
-        change_type: change_types[:gitlab_subscription_updated],
-        hosted_plan: plan,
-        created_at: date.beginning_of_day..Time.current
-      )
-    end
-
     scope :with_all_ultimate_plans, -> do
       joins(:hosted_plan).where(hosted_plan: { name: EE::Plan::ALL_ULTIMATE_PLANS })
     end

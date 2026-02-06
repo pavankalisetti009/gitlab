@@ -10,13 +10,11 @@ module GitlabSubscriptions
         presents ::Namespace, as: :namespace
 
         EXPIRED_TRIAL_WIDGET = 'expired_trial_status_widget'
-        TIME_FRAME_AFTER_EXPIRATION = 10.days
-        private_constant :TIME_FRAME_AFTER_EXPIRATION
         ULTIMATE_WITH_DAP_TRIAL_START_DATE = Date.new(2026, 2, 10)
         private_constant :ULTIMATE_WITH_DAP_TRIAL_START_DATE
 
         def eligible_for_widget?
-          duo_enterprise_status.show? && (eligible_trial_active? || eligible_expired_trial?)
+          eligible_trial_active? || eligible_expired_trial?
         end
 
         def attributes
@@ -38,34 +36,28 @@ module GitlabSubscriptions
 
         def eligible_trial_active?
           GitlabSubscriptions::Trials.namespace_plan_eligible_for_active?(namespace) &&
-            duo_enterprise_trial_add_on_purchase.expires_on > Date.current
+            namespace.gitlab_subscription_end_date.present? &&
+            namespace.gitlab_subscription_end_date > Date.current
         end
 
         def eligible_expired_trial?
-          GitlabSubscriptions::Trials.namespace_plan_eligible?(namespace) &&
-            !user_dismissed_widget? &&
-            !GitlabSubscriptions::Trials.namespace_with_mid_trial_premium?(
-              namespace,
-              duo_enterprise_trial_add_on_purchase.started_at
-            )
+          !user_dismissed_widget? && trial_recently_expired?
         end
 
-        def duo_enterprise_status
-          GitlabSubscriptions::Trials::AddOnStatus.new(
-            add_on_purchase: duo_enterprise_trial_add_on_purchase
-          )
+        def trial_recently_expired?
+          # this does not cover the edge case that a premium namespace trailing ultimate becomes free around
+          # the same time as trial expires, see https://gitlab.com/gitlab-org/gitlab/-/work_items/588952 for follow-up
+          GitlabSubscriptions::Trials.recently_expired?(namespace)
         end
-
-        def duo_enterprise_trial_add_on_purchase
-          GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchase_for_namespace(namespace)
-        end
-        strong_memoize_attr :duo_enterprise_trial_add_on_purchase
+        strong_memoize_attr :trial_recently_expired?
 
         def trial_status
-          GitlabSubscriptions::TrialStatus.new(
-            duo_enterprise_trial_add_on_purchase.started_at,
-            duo_enterprise_trial_add_on_purchase.expires_on
-          )
+          if trial_recently_expired?
+            GitlabSubscriptions::TrialStatus.new(namespace.trial_starts_on, namespace.trial_ends_on)
+          else
+            GitlabSubscriptions::TrialStatus.new(namespace.gitlab_subscription_start_date,
+              namespace.gitlab_subscription_end_date)
+          end
         end
         strong_memoize_attr :trial_status
 

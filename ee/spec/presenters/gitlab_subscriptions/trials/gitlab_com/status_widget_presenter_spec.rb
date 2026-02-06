@@ -8,86 +8,72 @@ RSpec.describe GitlabSubscriptions::Trials::GitlabCom::StatusWidgetPresenter, :s
   let(:user) { build_stubbed(:user) }
   let(:group) { build_stubbed(:group) }
   let(:trial_duration) { 60 }
-
-  let(:add_on_purchase) do
-    build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: group,
-      started_at: Date.current, expires_on: trial_duration.days.from_now)
-  end
+  let(:gitlab_subscription) { build_stubbed(:gitlab_subscription) }
 
   let(:presenter) { described_class.new(group, user: user) }
+
+  before do
+    allow(group).to receive(:gitlab_subscription).and_return(gitlab_subscription)
+  end
 
   describe '#eligible_for_widget?' do
     subject(:eligible_for_widget) { presenter.eligible_for_widget? }
 
     it { is_expected.to be(false) }
 
-    context 'when duo enterprise is available' do
-      before do
-        allow(GitlabSubscriptions::Trials::DuoEnterprise)
-          .to receive(:any_add_on_purchase_for_namespace).with(group).and_return(add_on_purchase)
+    context 'when trial is active' do
+      let(:gitlab_subscription) do
+        build_stubbed(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group,
+          end_date: trial_duration.days.from_now)
       end
 
-      context 'when trial is active' do
-        before do
-          build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group)
-        end
+      it { is_expected.to be(true) }
+    end
 
-        it { is_expected.to be(true) }
+    context 'when trial is active and group is paid' do
+      let(:gitlab_subscription) do
+        build_stubbed(:gitlab_subscription, :ultimate_trial_paid_customer, namespace: group,
+          end_date: trial_duration.days.from_now)
       end
 
-      context 'when trial is active and group is paid' do
-        before do
-          build(:gitlab_subscription, :ultimate_trial_paid_customer, namespace: group)
-        end
+      it { is_expected.to be(true) }
+    end
 
-        it { is_expected.to be(true) }
-      end
-
-      context 'when trial has just ended and group is unpaid' do
-        let(:add_on_purchase) do
-          build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired_trial, namespace: group)
-        end
-
-        before do
-          build(:gitlab_subscription, :free, :expired_trial, namespace: group)
-        end
+    context 'when trial ended' do
+      context 'with unpaid group' do
+        let(:gitlab_subscription) { build_stubbed(:gitlab_subscription, :free, :expired_trial, namespace: group) }
 
         it { is_expected.to be(true) }
 
         context 'when widget is dismissed' do
           let(:user) do
-            build(:user, group_callouts: [
-              build(:group_callout, group: group, feature_name: described_class::EXPIRED_TRIAL_WIDGET)
+            build_stubbed(:user, group_callouts: [
+              build_stubbed(:group_callout, group: group, feature_name: described_class::EXPIRED_TRIAL_WIDGET)
             ])
           end
 
           it { is_expected.to be(false) }
         end
 
-        context 'when a paid plan is bought mid-trial and the trial has just ended' do
-          before do
-            allow(GitlabSubscriptions::Trials).to receive(:namespace_with_mid_trial_premium?).and_return(true)
-          end
-
-          it { is_expected.to be(false) }
-        end
-
         context 'when trial ended more than 10 days ago' do
-          let(:add_on_purchase) do
-            build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired_trial, namespace: group,
-              started_at: (trial_duration + 11).days.ago, expires_on: 11.days.ago)
+          let(:gitlab_subscription) do
+            build_stubbed(:gitlab_subscription, :free, :expired_trial, namespace: group, trial_ends_on: 11.days.ago)
           end
 
           it { is_expected.to be(false) }
         end
+      end
+
+      context 'with paid group' do
+        let(:gitlab_subscription) { build_stubbed(:gitlab_subscription, :premium, namespace: group) }
+
+        it { is_expected.to be(false) }
       end
     end
   end
 
   describe '#attributes' do
     subject(:attributes) { presenter.attributes }
-
-    let(:trial_type) { 'ultimate' }
 
     let(:trial_widget_data_attrs) do
       {
@@ -104,47 +90,42 @@ RSpec.describe GitlabSubscriptions::Trials::GitlabCom::StatusWidgetPresenter, :s
       }
     end
 
-    before do
-      build(:gitlab_subscription, :active_trial, :ultimate_trial, namespace: group,
-        trial_starts_on: Date.current, trial_ends_on: trial_duration.days.from_now)
+    let(:gitlab_subscription) do
+      build_stubbed(:gitlab_subscription, :active_trial, :ultimate_trial, namespace: group,
+        start_date: Date.current, end_date: trial_duration.days.from_now)
     end
 
-    context 'when duo enterprise is available' do
+    context 'when ultimate_with_dap is rolled out' do
+      let(:trial_type) { 'ultimate_with_dap' }
+
+      it 'returns ultimate_with_dap type for bundled trials' do
+        expect(attributes).to eq(trial_widget_data_attrs)
+      end
+    end
+
+    context 'when ultimate_with_dap is disabled' do
+      let(:trial_type) { 'ultimate' }
+
       before do
-        allow(GitlabSubscriptions::Trials::DuoEnterprise)
-          .to receive(:any_add_on_purchase_for_namespace).with(group).and_return(add_on_purchase)
+        stub_feature_flags(ultimate_trial_with_dap: false)
+        stub_feature_flags(ultimate_with_dap_trial_uat: false)
       end
 
-      context 'when ultimate_with_dap is rolled out' do
-        let(:trial_type) { 'ultimate_with_dap' }
-
-        it 'returns ultimate_with_dap type for bundled trials' do
-          expect(attributes).to eq(trial_widget_data_attrs)
-        end
+      it 'returns ultimate type and correct discover page path for bundled trials' do
+        expect(attributes).to eq(trial_widget_data_attrs)
       end
 
-      context 'when ultimate_with_dap is disabled' do
+      context 'when candidate variant' do
+        let(:trial_type) { 'ultimate_with_premium_title' }
+
         before do
-          stub_feature_flags(ultimate_trial_with_dap: false)
-          stub_feature_flags(ultimate_with_dap_trial_uat: false)
+          allow_next_instance_of(PremiumMessageDuringTrialExperiment) do |experiment|
+            allow(experiment).to receive(:run).and_return(trial_type)
+          end
         end
 
-        it 'returns ultimate type and correct discover page path for bundled trials' do
+        it 'returns ultimate_with_premium_title type and correct discover page path for bundled trials' do
           expect(attributes).to eq(trial_widget_data_attrs)
-        end
-
-        context 'when candidate variant' do
-          let(:trial_type) { 'ultimate_with_premium_title' }
-
-          before do
-            allow_next_instance_of(PremiumMessageDuringTrialExperiment) do |experiment|
-              allow(experiment).to receive(:run).and_return(trial_type)
-            end
-          end
-
-          it 'returns ultimate_with_premium_title type and correct discover page path for bundled trials' do
-            expect(attributes).to eq(trial_widget_data_attrs)
-          end
         end
       end
     end

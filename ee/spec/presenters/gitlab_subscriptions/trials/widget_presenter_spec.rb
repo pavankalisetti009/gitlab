@@ -30,9 +30,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, feature_category: :
         let(:trial_widget_attribute_keys) { [:trial_widget_data_attrs] }
 
         before do
-          build(:gitlab_subscription, :active_trial, :free, namespace: group)
-
-          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: group) # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
+          build(:gitlab_subscription, :active_trial, :ultimate_trial, namespace: group)
         end
 
         it { is_expected.to match_array(trial_widget_attribute_keys) }
@@ -43,10 +41,9 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, feature_category: :
           before do
             build(
               :gitlab_subscription,
-              :active_trial, :free,
+              :active_trial, :ultimate_trial,
               namespace: current_group, trial_starts_on: Time.current, trial_ends_on: 60.days.from_now
             )
-            create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: current_group) # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
           end
 
           it { is_expected.to match_array(trial_widget_attribute_keys) }
