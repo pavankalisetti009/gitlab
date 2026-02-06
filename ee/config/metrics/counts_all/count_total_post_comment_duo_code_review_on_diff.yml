@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_post_comment_duo_code_review_on_diff
 description: Count of all review comments posted by Duo Code Review on MR diffs
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_review_workflow
 performance_indicator_type: []

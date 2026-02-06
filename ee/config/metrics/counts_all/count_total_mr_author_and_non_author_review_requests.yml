@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_mr_author_and_non_author_review_requests
 description: Count of total MR authors and non authors that request MR code review from Duo Code Review
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_review_workflow
 performance_indicator_type: []

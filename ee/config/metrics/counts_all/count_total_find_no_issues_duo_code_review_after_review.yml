@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_find_no_issues_duo_code_review_after_review
 description: Count of code reviews performed by Duo Code Review with no issues found
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_review_workflow
 performance_indicator_type: []

@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.count_distinct_property_from_mrs_with_author_and_non_author_duo_code_review_requests
 description: Count of unique MRs with Duo Code Review requests from both author and non-authors
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_review_workflow
 performance_indicator_type: []
