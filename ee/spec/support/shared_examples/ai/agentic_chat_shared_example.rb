@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'user can use agentic chat' do
-  context 'when using duo agentic chat' do
+  context 'when using duo agentic chat', :duo_workflow_service do
     let(:model_definitions) do
       {
         'models' => [

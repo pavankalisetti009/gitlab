@@ -4,47 +4,77 @@ module Tasks
   module Gitlab
     module AiGateway
       module Utils
+        DEFAULT_INSTALLATION_DIR = 'tmp/tests/gitlab-ai-gateway'
+
         REPO_URL = 'https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist.git'
         DEFAULT_BRANCH = 'main'
         DEFAULT_PORT = '50053'
 
         INSTALLED_FLAG_FILE = 'ai-gateway-installed.txt'
+        DWS_PID_FILE = 'duo-workflow-service.pid'
 
-        def self.install!(path:)
-          return unless Utils.duo_workflow_service_enabled?
-          return unless Utils.prerequisites_met?
-
-          Utils.clone!(path)
-          Utils.checkout!(path)
-          Utils.install_project_deps!(path)
-          Utils.install_runtime_deps!(path)
-
-          Utils.mark_installed!(path)
-        rescue RuntimeError => e
-          Utils.print_warn('installation failure of AI Gateway project', e)
+        def self.ensure_duo_workflow_service(path: DEFAULT_INSTALLATION_DIR)
+          install(path: path)
+          run_duo_workflow_service(path: path)
         end
 
-        def self.run_duo_workflow_service(path:)
-          return unless Utils.duo_workflow_service_enabled?
-          return unless Utils.installed?(path)
+        def self.install(path: DEFAULT_INSTALLATION_DIR)
+          return unless duo_workflow_service_enabled?
+          return unless prerequisites_met?
+
+          if installed?(path)
+            return if up_to_date?(path)
+
+            FileUtils.rm_rf(path)
+          end
+
+          clone!(path)
+          checkout!(path)
+          install_project_deps!(path)
+          install_runtime_deps!(path)
+
+          mark_installed!(path)
+        rescue RuntimeError => e
+          print_warn('installation failure of AI Gateway project', e)
+        end
+
+        def self.run_duo_workflow_service(path: DEFAULT_INSTALLATION_DIR)
+          return unless duo_workflow_service_enabled?
+          return print_warn('incomplete installation of AI Gateway project') unless installed?(path)
+          return if current_duo_workflow_service_pid(path)
 
           command = %W[poetry -C #{Rails.root.join(path)} run duo-workflow-service]
-          command.prepend(*%W[mise -C #{Rails.root.join(path)} exec poetry --]) if Utils.mise_available?
+          command.prepend(*%W[mise -C #{Rails.root.join(path)} exec poetry --]) if mise_available?
 
           Process.spawn(
             {
               'AIGW_MOCK_MODEL_RESPONSES' => 'true',
               'AIGW_USE_AGENTIC_MOCK' => 'true',
-              'PORT' => Utils.duo_workflow_service_port,
+              'PORT' => duo_workflow_service_port,
               'DUO_WORKFLOW_AUTH__ENABLED' => 'false',
               'LANGCHAIN_ENDPOINT' => ''
             },
             *command
-          )
+          ).tap do |pid|
+            save_duo_workflow_service_pid(pid, path)
+          end
+        end
+
+        def self.terminate_duo_workflow_service(path: DEFAULT_INSTALLATION_DIR)
+          pid = current_duo_workflow_service_pid(path)
+
+          return unless pid
+
+          Process.kill('TERM', pid)
+          Process.wait(pid)
+        rescue Errno::ESRCH
+          # Process already terminated. no-op.
+        ensure
+          delete_duo_workflow_service_pid(path)
         end
 
         def self.latest_sha
-          command = %W[#{::Gitlab.config.git.bin_path} ls-remote #{REPO_URL} #{Utils.ai_gateway_repo_branch}]
+          command = %W[#{::Gitlab.config.git.bin_path} ls-remote #{REPO_URL} #{ai_gateway_repo_branch}]
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
@@ -53,12 +83,50 @@ module Tasks
           out.split[0]
         end
 
+        def self.current_sha(path)
+          command = %W[#{::Gitlab.config.git.bin_path} -C #{path} rev-parse #{ai_gateway_repo_branch}]
+
+          out, exit_status = ::Gitlab::Popen.popen(command)
+
+          raise "Failed to fetch the current SHA of gitlab-ai-gateway: #{out}" unless exit_status == 0
+
+          out.split[0]
+        end
+
+        def self.up_to_date?(path)
+          current_sha(path) == latest_sha
+        end
+
         def self.duo_workflow_service_enabled?
           return true if ::Gitlab::Utils.to_boolean(ENV.fetch('TEST_DUO_WORKFLOW_SERVICE_ENABLED', true))
 
-          Utils.print_warn('disablement of Duo Workflow Service in tests')
+          print_warn('disablement of Duo Workflow Service in tests')
 
           false
+        end
+
+        def self.current_duo_workflow_service_pid(path)
+          pid_path = duo_workflow_service_pid_path(path)
+
+          return unless ::File.exist?(pid_path)
+
+          ::File.read(pid_path).to_i
+        end
+
+        def self.save_duo_workflow_service_pid(pid, path)
+          pid_path = duo_workflow_service_pid_path(path)
+
+          ::File.write(pid_path, pid)
+        end
+
+        def self.delete_duo_workflow_service_pid(path)
+          pid_path = duo_workflow_service_pid_path(path)
+
+          FileUtils.rm_f(pid_path)
+        end
+
+        def self.duo_workflow_service_pid_path(path)
+          Rails.root.join(path, DWS_PID_FILE)
         end
 
         def self.duo_workflow_service_port
@@ -70,9 +138,9 @@ module Tasks
         end
 
         def self.prerequisites_met?
-          return true if Utils.mise_available? || Utils.poetry_available?
+          return true if mise_available? || poetry_available?
 
-          Utils.print_warn('unmet prerequisites in system')
+          print_warn('unmet prerequisites in system')
 
           false
         end
@@ -128,24 +196,24 @@ module Tasks
 
         def self.checkout!(path)
           command = %W[#{::Gitlab.config.git.bin_path} -C #{path} fetch origin
-            refs/heads/#{Utils.ai_gateway_repo_branch}:refs/remotes/origin/#{Utils.ai_gateway_repo_branch}]
+            refs/heads/#{ai_gateway_repo_branch}:refs/remotes/origin/#{ai_gateway_repo_branch}]
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
           raise "git-fetch failure of gitlab-ai-gateway branch: #{out}" unless exit_status == 0
 
-          command = %W[#{::Gitlab.config.git.bin_path} -C #{path} checkout -B #{Utils.ai_gateway_repo_branch}
-            origin/#{Utils.ai_gateway_repo_branch}]
+          command = %W[#{::Gitlab.config.git.bin_path} -C #{path} checkout -B #{ai_gateway_repo_branch}
+            origin/#{ai_gateway_repo_branch}]
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
           raise "git-checkout failure of gitlab-ai-gateway branch: #{out}" unless exit_status == 0
 
-          puts "[INFO] Checked out AIGW repository ref (#{Utils.ai_gateway_repo_branch}) at #{path}"
+          puts "[INFO] Checked out AIGW repository ref (#{ai_gateway_repo_branch}) at #{path}"
         end
 
         def self.install_project_deps!(path)
-          return unless Utils.mise_available?
+          return unless mise_available?
 
           command = %W[mise -C #{Rails.root.join(path)} install]
 
@@ -158,7 +226,7 @@ module Tasks
 
         def self.install_runtime_deps!(path)
           command = %W[poetry -C #{Rails.root.join(path)} install]
-          command.prepend(*%W[mise -C #{Rails.root.join(path)} exec poetry --]) if Utils.mise_available?
+          command.prepend(*%W[mise -C #{Rails.root.join(path)} exec poetry --]) if mise_available?
 
           out, exit_status = ::Gitlab::Popen.popen(command)
 
@@ -172,11 +240,7 @@ module Tasks
         end
 
         def self.installed?(path)
-          return true if File.exist?(Rails.root.join(path, INSTALLED_FLAG_FILE))
-
-          Utils.print_warn('incomplete installation of AI Gateway project')
-
-          false
+          File.exist?(Rails.root.join(path, INSTALLED_FLAG_FILE))
         end
       end
     end
