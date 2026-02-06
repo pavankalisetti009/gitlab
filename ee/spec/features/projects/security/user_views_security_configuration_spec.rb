@@ -282,9 +282,8 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
   def within_security_testing_card(title)
     within_testid('security-testing-tab') do
       within_testid('security-testing-features') do
-        card = all("[data-testid='security-testing-card']").find do |node|
-          node.has_selector?('h3', text: title, exact_text: true)
-        end
+        card = find("[data-testid='security-testing-card'] h3", text: title, exact_text: true)
+                 .ancestor("[data-testid='security-testing-card']")
 
         within(card) { yield }
       end
