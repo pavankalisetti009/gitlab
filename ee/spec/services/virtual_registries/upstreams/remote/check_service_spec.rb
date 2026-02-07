@@ -73,6 +73,211 @@ RSpec.describe VirtualRegistries::Upstreams::Remote::CheckService, :aggregate_fa
 
         it_behaves_like 'returning a service success response with upstream'
       end
+
+      context 'when upstream returns a redirect' do
+        let(:redirect_target) { 'https://redirected.example.com/package.pom' }
+
+        context 'when redirect target is valid external URL' do
+          let(:expected_upstream) { upstream1 }
+
+          before do
+            stub_upstream_redirect(upstream1, redirect_to: redirect_target, final_status: 200)
+            stub_upstream_request(upstream2, status: 404)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it_behaves_like 'returning a service success response with upstream'
+        end
+
+        context 'when redirect target returns 404' do
+          before do
+            stub_upstream_redirect(upstream1, redirect_to: redirect_target, final_status: 404)
+            stub_upstream_request(upstream2, status: 404)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it { is_expected.to eq(described_class::ERRORS[:file_not_found_on_upstreams]) }
+        end
+
+        context 'when following multiple redirects within limit' do
+          let(:expected_upstream) { upstream1 }
+          let(:redirect_chain) do
+            [
+              'https://redirect1.example.com/path',
+              'https://redirect2.example.com/path',
+              'https://redirect3.example.com/path'
+            ]
+          end
+
+          before do
+            stub_upstream_chained_redirects(upstream1, redirect_chain: redirect_chain, final_status: 200)
+            stub_upstream_request(upstream2, status: 404)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it_behaves_like 'returning a service success response with upstream'
+        end
+
+        context 'when redirect count exceeds maximum' do
+          let(:max_redirects) { VirtualRegistries::Upstreams::Remote::RedirectHandler::MAX_REDIRECTS }
+          let(:redirect_chain) do
+            (1..max_redirects + 1).map { |i| "https://redirect#{i}.example.com/path" }
+          end
+
+          before do
+            stub_upstream_chained_redirects(upstream1, redirect_chain: redirect_chain, final_status: 200)
+            stub_upstream_request(upstream2, status: 404)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it { is_expected.to eq(described_class::ERRORS[:file_not_found_on_upstreams]) }
+        end
+
+        context 'when first upstream redirects but second succeeds directly' do
+          let(:expected_upstream) { upstream1 }
+
+          before do
+            stub_upstream_redirect(upstream1, redirect_to: redirect_target, final_status: 200)
+            stub_upstream_request(upstream2, status: 200)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it 'returns the first upstream (priority preserved)' do
+            result = execute
+
+            expect(result).to be_success
+            expect(result.payload[:upstream]).to eq(upstream1)
+          end
+        end
+      end
+
+      context 'with SSRF prevention' do
+        context 'when redirect target is localhost' do
+          before do
+            stub_request(:head, upstream1.url_for(path))
+              .with(headers: upstream1.headers)
+              .to_return(status: 302, headers: { 'Location' => 'http://localhost:3000/internal' })
+
+            stub_upstream_request(upstream2, status: 404)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it { is_expected.to eq(described_class::ERRORS[:file_not_found_on_upstreams]) }
+        end
+
+        context 'when redirect target is loopback address' do
+          before do
+            stub_request(:head, upstream1.url_for(path))
+              .with(headers: upstream1.headers)
+              .to_return(status: 302, headers: { 'Location' => 'http://127.0.0.1:3333/internal' })
+
+            stub_upstream_request(upstream2, status: 404)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it { is_expected.to eq(described_class::ERRORS[:file_not_found_on_upstreams]) }
+        end
+
+        context 'when redirect target is private network address' do
+          using RSpec::Parameterized::TableSyntax
+
+          where(:blocked_url) do
+            [
+              'http://10.0.0.1/internal',
+              'http://172.16.0.1/internal',
+              'http://192.168.1.1/internal'
+            ]
+          end
+
+          with_them do
+            before do
+              stub_request(:head, upstream1.url_for(path))
+                .with(headers: upstream1.headers)
+                .to_return(status: 302, headers: { 'Location' => blocked_url })
+
+              stub_upstream_request(upstream2, status: 404)
+              stub_upstream_request(upstream3, status: 404)
+            end
+
+            it { is_expected.to eq(described_class::ERRORS[:file_not_found_on_upstreams]) }
+          end
+        end
+
+        context 'when redirect target is AWS metadata endpoint' do
+          before do
+            stub_request(:head, upstream1.url_for(path))
+              .with(headers: upstream1.headers)
+              .to_return(status: 302, headers: { 'Location' => 'http://169.254.169.254/latest/meta-data/' })
+
+            allow(Gitlab::HTTP_V2::UrlBlocker).to receive(:validate!)
+              .with('http://169.254.169.254/latest/meta-data/', anything)
+              .and_raise(Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError, 'Requests to link local network are not allowed')
+
+            stub_upstream_request(upstream2, status: 404)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it { is_expected.to eq(described_class::ERRORS[:file_not_found_on_upstreams]) }
+        end
+
+        context 'when chained redirect ends at internal address' do
+          before do
+            # First redirect to external
+            stub_request(:head, upstream1.url_for(path))
+              .with(headers: upstream1.headers)
+              .to_return(status: 302, headers: { 'Location' => 'https://external.example.com/redirect' })
+
+            # Second redirect to internal
+            stub_request(:head, 'https://external.example.com/redirect')
+              .with(headers: upstream1.headers)
+              .to_return(status: 302, headers: { 'Location' => 'http://127.0.0.1:8080/internal' })
+
+            stub_upstream_request(upstream2, status: 404)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it { is_expected.to eq(described_class::ERRORS[:file_not_found_on_upstreams]) }
+        end
+
+        context 'when redirect is blocked but another upstream succeeds' do
+          let(:expected_upstream) { upstream2 }
+
+          before do
+            stub_request(:head, upstream1.url_for(path))
+              .with(headers: upstream1.headers)
+              .to_return(status: 302, headers: { 'Location' => 'http://127.0.0.1:3000/internal' })
+
+            stub_upstream_request(upstream2, status: 200)
+            stub_upstream_request(upstream3, status: 404)
+          end
+
+          it_behaves_like 'returning a service success response with upstream'
+        end
+
+        context 'when redirect is blocked after another upstream already succeeded' do
+          let(:expected_upstream) { upstream3 }
+
+          before do
+            # upstream1: First redirect is valid, second redirect is blocked
+            # This ensures the blocked redirect is processed AFTER upstream3 succeeds
+            stub_request(:head, upstream1.url_for(path))
+              .with(headers: upstream1.headers)
+              .to_return(status: 302, headers: { 'Location' => 'https://external.example.com/valid' })
+
+            stub_request(:head, 'https://external.example.com/valid')
+              .with(headers: upstream1.headers)
+              .to_return(status: 302, headers: { 'Location' => 'http://127.0.0.1:3000/blocked' })
+
+            # upstream2: Returns 404 (no abort triggered)
+            stub_upstream_request(upstream2, status: 404)
+
+            # upstream3: Returns 200 (triggers abort, but follow request already queued)
+            stub_upstream_request(upstream3, status: 200)
+          end
+
+          it_behaves_like 'returning a service success response with upstream'
+        end
+      end
     end
 
     context 'for container virtual registries' do
