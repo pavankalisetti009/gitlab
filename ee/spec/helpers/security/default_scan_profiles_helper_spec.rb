@@ -32,9 +32,8 @@ RSpec.describe Security::DefaultScanProfilesHelper, feature_category: :security_
         scan_type: 'secret_detection',
         description: "Protect your repository from leaked secrets like API keys, tokens, and passwords. " \
           "This profile uses industry-standard rules optimized to minimize false positives. " \
-          "Enable scans on push events to block secrets before they're committed. " \
-          "Enable scans in merge requests to catch secrets that were previously committed " \
-          "or bypassed real-time protection. For complete coverage, we recommend enabling both."
+          "When enabled, secrets are detected in real time during git push events and blocked " \
+          "before they're committed."
       )
     end
 

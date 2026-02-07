@@ -14,9 +14,8 @@ module Security
         name: 'Secret Detection (default)',
         description: "Protect your repository from leaked secrets like API keys, tokens, and passwords. " \
           "This profile uses industry-standard rules optimized to minimize false positives. " \
-          "Enable scans on push events to block secrets before they're committed. " \
-          "Enable scans in merge requests to catch secrets that were previously committed " \
-          "or bypassed real-time protection. For complete coverage, we recommend enabling both.",
+          "When enabled, secrets are detected in real time during git push events and blocked " \
+          "before they're committed.",
         gitlab_recommended: true,
         scan_profile_triggers_attributes: [
           trigger_type: :git_push_event
