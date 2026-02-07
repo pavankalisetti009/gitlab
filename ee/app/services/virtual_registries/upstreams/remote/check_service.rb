@@ -28,26 +28,56 @@ module VirtualRegistries
 
         def configure_hydra
           upstreams.each_with_index do |upstream, index|
-            request = Typhoeus::Request.new(
-              upstream.url_for(path),
-              headers: upstream.headers(path),
-              method: :head,
-              followlocation: true,
-              timeout: NETWORK_TIMEOUT
-            )
+            headers = upstream.headers(path)
+            redirect_handler = RedirectHandler.new(headers: headers, timeout: NETWORK_TIMEOUT)
 
-            request.on_complete do |response|
-              # given that each url is checked in parallel, the order which we receive the
-              # results are not guaranteed. Thus, we need to first record the result for
-              # this index and then check the results array to know if we are in a
-              # success state or not. If that's the case, we need to get which index
-              # contains the first true value.
-              results[index] = response.success?
-              hydra.abort if first_successful_index
-            end
+            request = build_request(upstream.url_for(path), headers: headers)
+            request.on_complete { |response| handle_response(response, index, redirect_handler) }
 
             hydra.queue(request)
           end
+        end
+
+        def build_request(url, headers:)
+          Typhoeus::Request.new(
+            url,
+            headers: headers,
+            method: :head,
+            followlocation: false,
+            timeout: NETWORK_TIMEOUT
+          )
+        end
+
+        def handle_response(response, index, redirect_handler)
+          if redirect_handler.redirect?(response)
+            handle_redirect(response, index, redirect_handler)
+          else
+            record_result(response, index)
+          end
+        end
+
+        def handle_redirect(response, index, redirect_handler)
+          follow_request = redirect_handler.build_follow_request(response) do |follow_response, next_handler|
+            handle_response(follow_response, index, next_handler)
+          end
+
+          if follow_request
+            hydra.queue(follow_request)
+          else
+            # Redirect was blocked (invalid URL or max redirects exceeded)
+            results[index] = false
+            hydra.abort if first_successful_index
+          end
+        end
+
+        def record_result(response, index)
+          # Given that each url is checked in parallel, the order which we receive the
+          # results are not guaranteed. Thus, we need to first record the result for
+          # this index and then check the results array to know if we are in a
+          # success state or not. If that's the case, we need to get which index
+          # contains the first true value.
+          results[index] = response.success?
+          hydra.abort if first_successful_index
         end
       end
     end
