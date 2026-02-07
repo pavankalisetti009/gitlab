@@ -1,4 +1,4 @@
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 
 export const testActions = {
   codeAdded: {
@@ -46,19 +46,19 @@ export const testActions = {
     enabled: true,
   },
   licenseScanningRun: {
-    url: `${DOCS_URL_IN_EE_DIR}/foobar/`,
+    url: `${DOCS_URL}/foobar/`,
     svg: 'http://example.com/images/illustration.svg',
     enabled: true,
     openInNewTab: true,
   },
   secureDependencyScanningRun: {
-    url: `${DOCS_URL_IN_EE_DIR}/foobar/`,
+    url: `${DOCS_URL}/foobar/`,
     svg: 'http://example.com/images/illustration.svg',
     enabled: true,
     openInNewTab: true,
   },
   secureDastRun: {
-    url: `${DOCS_URL_IN_EE_DIR}/foobar/`,
+    url: `${DOCS_URL}/foobar/`,
     svg: 'http://example.com/images/illustration.svg',
     enabled: true,
     openInNewTab: true,

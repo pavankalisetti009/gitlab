@@ -1,11 +1,11 @@
 import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 
 export const maxNameLength = 255;
 export const maxControlsNumber = 5;
 export const maxRequirementsNumber = 50;
-export const requirementsDocsUrl = `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard.html`;
+export const requirementsDocsUrl = `${DOCS_URL}/user/compliance/compliance_center/compliance_standards_adherence_dashboard.html`;
 
 export const requirementEvents = Object.freeze({
   create: 'create',

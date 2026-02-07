@@ -4,7 +4,7 @@ import { throttle } from 'lodash';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { visitUrl, joinPaths, queryToObject } from '~/lib/utils/url_utility';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import { InternalEvents } from '~/tracking';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import { contentTop, isMetaClick } from '~/lib/utils/common_utils';
@@ -43,7 +43,7 @@ export default {
     ),
     docsLinkText: s__(`Tracing|Learn more.`),
   },
-  docsLink: `${DOCS_URL_IN_EE_DIR}/development/tracing`,
+  docsLink: `${DOCS_URL}/development/tracing`,
   props: {
     observabilityClient: {
       required: true,

@@ -2,7 +2,7 @@
 import { GlLink, GlTooltipDirective } from '@gitlab/ui';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import SectionedPercentageBar from '~/usage_quotas/components/sectioned_percentage_bar.vue';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import { s__, sprintf } from '~/locale';
 import { PROJECT_VIEW_TYPE } from '~/usage_quotas/constants';
 
@@ -23,7 +23,7 @@ export default {
     'domain',
   ],
   static: {
-    helpLink: `${DOCS_URL_IN_EE_DIR}/user/project/pages/parallel_deployments#limits`,
+    helpLink: `${DOCS_URL}/user/project/pages/parallel_deployments#limits`,
   },
   i18n: {
     description: s__('PagesUsageQuota|Active parallel deployments'),

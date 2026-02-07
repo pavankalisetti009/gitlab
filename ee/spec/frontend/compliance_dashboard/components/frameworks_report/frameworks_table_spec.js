@@ -24,7 +24,7 @@ import {
 import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_report/frameworks_table.vue';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import { ROUTE_EDIT_FRAMEWORK, ROUTE_EXPORT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/delete_modal.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
@@ -238,7 +238,7 @@ describe('FrameworksTable component', () => {
       );
       expect(links().at(0).attributes('href')).toBe('group/compliance_dashboard');
       expect(links().at(1).attributes('href')).toBe(
-        `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`,
+        `${DOCS_URL}/user/group/compliance_frameworks.html#prerequisites`,
       );
     });
 
