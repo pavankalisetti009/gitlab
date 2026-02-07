@@ -45,6 +45,25 @@ RSpec.describe IterationsFinder, feature_category: :team_planning do
       end
     end
 
+    context 'when private group is nested in public group' do
+      let(:public_group) { create(:group, :public) }
+      let(:iteration_cadence_1) { create(:iterations_cadence, group: public_group, active: true, duration_in_weeks: 3, title: 'three week iterations') }
+      let(:iteration_cadence_2) { create(:iterations_cadence, group: create(:group, :private, parent: public_group), active: true, duration_in_weeks: 4, title: 'four week iterations') }
+
+      let!(:root_group_iteration_public) { create(:current_iteration, iterations_cadence: iteration_cadence_1, start_date: 1.day.ago, due_date: 2.days.from_now, group: public_group) }
+      let!(:subgroup_iteration_private) { create(:current_iteration, :skip_future_date_validation, iterations_cadence: iteration_cadence_2, title: 'subgroup test', start_date: 2.days.ago, due_date: Date.today, updated_at: 5.days.ago) }
+
+      let(:params) { { parent: public_group } }
+
+      it 'returns iterations for ancestor but not descendants' do
+        params[:include_ancestors] = true
+        params[:include_descendants] = true
+
+        expect(subject.to_a).to eq([root_group_iteration_public])
+        expect(subject).not_to include(subgroup_iteration_private)
+      end
+    end
+
     context 'when skipping authorization' do
       let(:params) { { parent: parent, include_ancestors: true } }
 
