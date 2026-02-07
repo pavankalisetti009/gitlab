@@ -1,7 +1,7 @@
 import { GlLink } from '@gitlab/ui';
 import SectionedPercentageBar from '~/usage_quotas/components/sectioned_percentage_bar.vue';
 import StatsCard from 'ee/usage_quotas/pages/components/stats.vue';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import {
@@ -124,7 +124,7 @@ describe('PagesDeploymentsStats', () => {
       const link = wrapper.getComponent(GlLink);
 
       expect(link.attributes('href')).toBe(
-        `${DOCS_URL_IN_EE_DIR}/user/project/pages/parallel_deployments#limits`,
+        `${DOCS_URL}/user/project/pages/parallel_deployments#limits`,
       );
       expect(link.attributes('title')).toBe('Learn about limits for Pages deployments');
       expect(link.attributes('aria-label')).toBe('Learn about limits for Pages deployments');

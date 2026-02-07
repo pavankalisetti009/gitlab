@@ -337,7 +337,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                   data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="scan_dependencies_for_licenses"
-                  href="https://docs.gitlab.com/ee/foobar/"
+                  href="https://docs.gitlab.com/foobar/"
                   rel="noopener noreferrer"
                   target="_blank"
                 >
@@ -364,7 +364,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                   data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="scan_dependencies_for_vulnerabilities"
-                  href="https://docs.gitlab.com/ee/foobar/"
+                  href="https://docs.gitlab.com/foobar/"
                   rel="noopener noreferrer"
                   target="_blank"
                 >
@@ -391,7 +391,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                   data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="analyze_your_application_for_vulnerabilities_with_dast"
-                  href="https://docs.gitlab.com/ee/foobar/"
+                  href="https://docs.gitlab.com/foobar/"
                   rel="noopener noreferrer"
                   target="_blank"
                 >

@@ -13,7 +13,7 @@ import CreateForm from 'ee/groups/settings/compliance_frameworks/components/crea
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
-import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import { DOCS_URL } from '~/constants';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
@@ -198,7 +198,7 @@ describe('ProjectsTable component', () => {
         );
         expect(links().at(0).attributes('href')).toBe('group-path/compliance_dashboard');
         expect(links().at(1).attributes('href')).toBe(
-          `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`,
+          `${DOCS_URL}/user/group/compliance_frameworks.html#prerequisites`,
         );
       });
 
