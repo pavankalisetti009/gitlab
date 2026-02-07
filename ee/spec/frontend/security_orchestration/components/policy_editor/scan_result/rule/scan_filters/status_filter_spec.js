@@ -1,4 +1,4 @@
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlPopover, GlSprintf } from '@gitlab/ui';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import StatusFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filter.vue';
 import RuleMultiSelect from 'ee/security_orchestration/components/policy_editor/rule_multi_select.vue';
@@ -25,6 +25,7 @@ describe('StatusFilter', () => {
         SectionLayout,
         GlCollapsibleListbox,
         RuleMultiSelect,
+        GlSprintf,
       },
     });
   };
@@ -33,6 +34,13 @@ describe('StatusFilter', () => {
   const findListBox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findPolicyRuleMultiSelect = () => wrapper.findComponent(RuleMultiSelect);
   const findAllSelectedItem = () => wrapper.findByTestId('listbox-select-all-button');
+  const findTooltipIcon = () => wrapper.findByTestId('previously-existing-tooltip');
+  const findPopover = () => wrapper.findComponent(GlPopover);
+
+  const expectPopoverExists = (exists) => {
+    expect(findTooltipIcon().exists()).toBe(exists);
+    expect(findPopover().exists()).toBe(exists);
+  };
 
   it('renders both dropdowns', () => {
     createComponent();
@@ -114,6 +122,41 @@ describe('StatusFilter', () => {
       await findSectionLayout().vm.$emit('remove');
 
       expect(wrapper.emitted('remove')).toHaveLength(1);
+    });
+  });
+
+  describe('tooltip', () => {
+    it('should not show tooltip icon when "newly detected" is selected', () => {
+      createComponent({ filter: NEWLY_DETECTED });
+
+      expectPopoverExists(false);
+    });
+
+    it('should show tooltip icon when "previously existing" is selected', () => {
+      createComponent({ filter: PREVIOUSLY_EXISTING });
+
+      expectPopoverExists(true);
+    });
+
+    it('should show tooltip when switching to "previously existing"', async () => {
+      createComponent({ filter: NEWLY_DETECTED });
+
+      expectPopoverExists(false);
+
+      await findListBox().vm.$emit('select', PREVIOUSLY_EXISTING);
+
+      expectPopoverExists(true);
+    });
+
+    it('should have correct tooltip text with bold warning', () => {
+      createComponent({ filter: PREVIOUSLY_EXISTING });
+
+      const popover = findPopover();
+      expect(popover.exists()).toBe(true);
+      expect(popover.text()).toContain('Warning:');
+      expect(popover.text()).toContain(
+        'Using this status in strictly enforced policies can block merge requests',
+      );
     });
   });
 });
