@@ -7,6 +7,7 @@ RSpec.describe IdeHelper, feature_category: :web_ide do
     let_it_be(:project) { build_stubbed(:project) }
     let_it_be(:user) { project.creator }
     let_it_be(:fork_info) { { ide_path: '/test/ide/path' } }
+    let_it_be(:workbench_secret) { 'test-workbench-secret' }
 
     let_it_be(:params) do
       {
@@ -23,7 +24,7 @@ RSpec.describe IdeHelper, feature_category: :web_ide do
     end
 
     it 'returns hash with code suggestions disabled' do
-      expect(helper.ide_data(project: nil, fork_info: fork_info, params: params))
+      expect(helper.ide_data(project: nil, fork_info: fork_info, workbench_secret: workbench_secret, params: params))
         .to include('code-suggestions-enabled' => '')
     end
 
@@ -34,7 +35,7 @@ RSpec.describe IdeHelper, feature_category: :web_ide do
 
       it 'returns hash with code suggestions enabled' do
         expect(
-          helper.ide_data(project: project, fork_info: nil, params: params)
+          helper.ide_data(project: project, fork_info: nil, workbench_secret: workbench_secret, params: params)
         ).to include('code-suggestions-enabled' => 'true')
       end
     end
