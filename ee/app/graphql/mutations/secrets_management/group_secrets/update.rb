@@ -11,7 +11,7 @@ module Mutations
         include Helpers::ErrorMessagesHelpers
         include ::SecretsManagement::MutationErrorHandling
 
-        authorize :write_secret
+        authorize :update_secret
 
         argument :group_path, GraphQL::Types::ID,
           required: true,
