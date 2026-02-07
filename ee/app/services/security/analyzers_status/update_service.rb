@@ -4,6 +4,7 @@ module Security
   module AnalyzersStatus
     class UpdateService
       include ::Security::AnalyzersStatus::AggregatedTypesHandler
+      include ::Security::LatestPipelineInformation
 
       BUILD_TO_ANALYZER_STATUS = {
         "success" => :success,
@@ -143,10 +144,6 @@ module Security
 
         AnalyzerProjectStatus.upsert_all(analyzers_statuses.values, unique_by: [:project_id, :analyzer_type])
         InventoryFilters::AnalyzerStatusUpdateService.execute([project], analyzers_statuses.values)
-      end
-
-      def build_reports(build)
-        build.options[:artifacts][:reports].keys
       end
 
       def update_ancestors(status_diff)

@@ -470,6 +470,20 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
         include_examples 'calls namespace related services'
       end
 
+      context 'when SecurityJobsFinder returns a build with nil report keys' do
+        let!(:build) { create(:ci_build, :success, pipeline: pipeline) }
+
+        before do
+          allow_next_instance_of(::Security::SecurityJobsFinder) do |finder|
+            allow(finder).to receive(:execute).and_return(Ci::Build.where(id: build.id))
+          end
+        end
+
+        it 'handles nil report keys gracefully' do
+          expect { execute }.not_to raise_error
+        end
+      end
+
       context 'when an exception occurs' do
         before do
           allow(service).to receive(:pipeline_builds).and_raise(StandardError.new("Test error"))
