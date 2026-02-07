@@ -37,7 +37,7 @@ module Search
         end
 
         children << Filters.by_archived(false) unless filters[:include_archived] == true
-        children << Filters.by_forked(false) if filters[:exclude_forks] == true
+        children << Filters.by_forked(false) unless filters[:exclude_forks] == false
 
         # Add access branch filters at the very end because they are more expensive to evaluate.
         children << Filters.or_filters(*access_branches(auth), context: { name: 'access_branches' })

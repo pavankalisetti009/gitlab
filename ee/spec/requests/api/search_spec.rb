@@ -81,6 +81,12 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
       expect(response).to have_gitlab_http_status(:bad_request)
     end
+
+    it 'returns bad_request when fields param is passed' do
+      get api(endpoint, user), params: { scope: 'issues', search: 'awesome', fields: ['title'] }
+
+      expect(response).to have_gitlab_http_status(:bad_request)
+    end
   end
 
   shared_examples 'elasticsearch enabled' do |level:|
@@ -92,8 +98,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
     context 'for merge_requests scope' do
       before do
-        create_list(:merge_request, 3, :unique_branches, source_project: project, author: user,
-          milestone: milestone, labels: [label])
+        create_list(:merge_request, 3, :unique_branches, source_project: project, author: user, labels: [label])
         ensure_elasticsearch_index!
       end
 
@@ -104,14 +109,20 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         control = ActiveRecord::QueryRecorder.new do
           get api(endpoint, user), params: { scope: 'merge_requests', search: '*' }
         end
-        create_list(:merge_request, 3, :unique_branches, source_project: project, author: user,
-          milestone: milestone, labels: [label])
+        create_list(:merge_request, 3, :unique_branches, source_project: project, author: user, labels: [label])
         ensure_elasticsearch_index!
 
         expect do
           get api(endpoint, user), params: { scope: 'merge_requests', search: '*' }
           # Threshold required for specs to pass, see: https://gitlab.com/gitlab-org/gitlab/-/work_items/587748.
         end.not_to exceed_query_limit(control).with_threshold(3)
+      end
+
+      it 'returns ok response with fields param' do
+        get api(endpoint, user), params: { scope: 'merge_requests', search: 'title', fields: ['title'] }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.size).to eq 3
       end
     end
 
@@ -278,6 +289,18 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
             end
           end
         end
+
+        it 'returns bad request with regex param' do
+          get api("/projects/#{project.id}/search", user), params: { scope: 'blobs', search: 'test', regex: true }
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+
+        it 'returns bad request with exclude_forks param' do
+          get api("/projects/#{project.id}/search", user), params: { scope: 'blobs', search: 'aa', exclude_forks: true }
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
       end
     end
 
@@ -301,6 +324,13 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         expect do
           get api(endpoint, user), params: { scope: 'issues', search: '*' }
         end.not_to exceed_query_limit(control)
+      end
+
+      it 'returns ok response with fields param' do
+        get api(endpoint, user), params: { scope: 'issues', search: 'title', fields: ['title'] }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.size).to eq 2
       end
 
       it_behaves_like 'pagination', scope: 'issues'
@@ -420,18 +450,21 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
     end
 
     describe 'blobs scope' do
+      let(:api_endpoint) do
+        case level
+        when :project
+          "/projects/#{project.id}/-/search"
+        when :group
+          "/groups/#{group.id}/-/search"
+        else
+          endpoint
+        end
+      end
+
       context 'with filters' do
         context 'for exclude_forks' do
-          let(:api_endpoint) do
-            case level
-            when :project
-              "/projects/#{forked_project.id}/-/search"
-            when :group
-              "/groups/#{forked_project.namespace.id}/-/search"
-            else
-              endpoint
-            end
-          end
+          let(:project) { forked_project }
+          let(:group) { forked_project.namespace }
 
           it 'excludes forks by default' do
             get api(api_endpoint, user), params: { scope: 'blobs', search: 'monitors' }
@@ -461,8 +494,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
           context 'when exclude_forks is false' do
             it 'includes forks' do
-              get api(api_endpoint, user),
-                params: { scope: 'blobs', search: 'monitors', exclude_forks: false }
+              get api(api_endpoint, user), params: { scope: 'blobs', search: 'monitors', exclude_forks: false }
 
               expect(response).to have_gitlab_http_status(:success)
 
@@ -471,6 +503,39 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
             end
           end
         end
+      end
+
+      context 'for regex search' do
+        it 'performs regex search by default' do
+          get api(api_endpoint, user), params: { scope: 'blobs', search: 'path_.*ex' }
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(json_response.pluck('project_id').uniq).to include(project.id)
+        end
+
+        context 'when regex is passed as false' do
+          it 'does not perform regex search' do
+            get api(api_endpoint, user), params: { scope: 'blobs', search: 'path_.*ex', regex: false }
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(json_response).to be_empty
+          end
+        end
+
+        context 'when regex is passed as true' do
+          it 'performs regex search' do
+            get api(api_endpoint, user), params: { scope: 'blobs', search: 'path_.*ex', regex: true }
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(json_response.pluck('project_id').uniq).to include(project.id)
+          end
+        end
+      end
+
+      it 'returns bad request with fields param' do
+        get api("/projects/#{project.id}/search", user), params: { scope: 'blobs', search: 'test', fields: ['title'] }
+
+        expect(response).to have_gitlab_http_status(:bad_request)
       end
     end
   end
