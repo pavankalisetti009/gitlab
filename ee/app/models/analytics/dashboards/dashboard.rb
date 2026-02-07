@@ -46,7 +46,7 @@ module Analytics
 
           next unless config_data
 
-          config = YAML.safe_load(config_data)
+          config = Gitlab::Config::Loader::Yaml.new(config_data).load_raw!
 
           new(
             slug: tree.name,
@@ -61,9 +61,9 @@ module Analytics
       def self.load_yaml_dashboard_config(name, file_path)
         Gitlab::PathTraversal.check_allowed_absolute_path_and_path_traversal!(name, [])
 
-        YAML.safe_load(
+        Gitlab::Config::Loader::Yaml.new(
           File.read(Rails.root.join(file_path, "#{name}.yaml"))
-        )
+        ).load_raw!
       end
 
       def self.product_analytics_dashboards(container, config_project, user)

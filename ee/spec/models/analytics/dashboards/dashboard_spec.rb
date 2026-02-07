@@ -101,11 +101,20 @@ RSpec.describe Analytics::Dashboards::Dashboard, feature_category: :product_anal
     end
   end
 
+  shared_examples 'loads custom dashboard within limits' do
+    it 'successfully loads custom dashboard' do
+      expect(dashboards.map(&:title)).to include('Dashboard Example 1')
+      custom_dashboard = dashboards.find { |d| d.slug == 'dashboard_example_1' }
+      expect(custom_dashboard).to be_a(described_class)
+      expect(custom_dashboard.user_defined).to be true
+    end
+  end
+
   describe '#errors' do
     let(:dashboard) do
       described_class.new(
         container: group,
-        config: YAML.safe_load(config_yaml),
+        config: Gitlab::Config::Loader::Yaml.new(config_yaml).load_raw!,
         slug: 'test2',
         user_defined: true,
         config_project: project
@@ -133,6 +142,37 @@ description: with missing properties
 
       it 'returns schema errors' do
         expect(dashboard.errors).to eq(["root is missing required keys: panels"])
+      end
+    end
+
+    context 'when yaml exceeds file size limits' do
+      let(:config_yaml) do
+        oversized = "title: Oversized\nversion: '2'\npanels: []\ndata: #{'x' * (2.megabytes + 1)}"
+        oversized
+      end
+
+      it 'raises DataTooLargeError when loading oversized dashboard' do
+        expect do
+          dashboard
+        end.to raise_error(Gitlab::Config::Loader::Yaml::DataTooLargeError)
+      end
+    end
+
+    context 'when yaml exceeds file depth limits' do
+      let(:config_yaml) do
+        deeply_nested = "title: Deep\nversion: '2'\npanels: []\n"
+        deeply_nested += "config:\n"
+        101.times do |i|
+          deeply_nested += ("  " * (i + 1)) + "l#{i}:\n"
+        end
+        deeply_nested += "#{'  ' * 102}value: test\n"
+        deeply_nested
+      end
+
+      it 'raises DataTooLargeError when loading deeply nested dashboard' do
+        expect do
+          dashboard
+        end.to raise_error(Gitlab::Config::Loader::Yaml::DataTooLargeError)
       end
     end
   end
@@ -186,6 +226,10 @@ description: with missing properties
                                                "filteredSearch" => { "enabled" => true, "options" =>
                                                  [{ "token" => "label", "maxSuggestions" => 20 }] } })
           expect(dashboards.last.errors).to be_nil
+        end
+
+        context 'when custom dashboard file is within size and depth limits' do
+          it_behaves_like 'loads custom dashboard within limits'
         end
       end
 
@@ -251,6 +295,10 @@ description: with missing properties
             ['Value Streams Dashboard', 'GitLab Duo and SDLC trends', 'DORA metrics analytics',
               'Dashboard Example 1', 'GitLab Duo usage analytics', 'Contributions Dashboard']
           )
+        end
+
+        context 'when custom dashboard file is within size and depth limits' do
+          it_behaves_like 'loads custom dashboard within limits'
         end
       end
 
@@ -345,7 +393,7 @@ description: with missing properties
     let(:dashboard_2) do
       config_yaml =
         File.open(Rails.root.join('ee/spec/fixtures/product_analytics/dashboard_example_1.yaml')).read
-      config_yaml = YAML.safe_load(config_yaml)
+      config_yaml = Gitlab::Config::Loader::Yaml.new(config_yaml).load_raw!
 
       described_class.new(
         container: project,
