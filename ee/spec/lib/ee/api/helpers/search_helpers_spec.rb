@@ -20,8 +20,11 @@ RSpec.describe API::Helpers::SearchHelpers, feature_category: :global_search do
   describe '.search_param_keys' do
     it 'returns param keys with fields' do
       expect(described_class.search_param_keys).to match_array(
-        %i[scope search state confidential search_type num_context_lines page per_page
-          order_by sort fields exclude_forks include_archived])
+        %i[
+          confidential exclude_forks fields include_archived num_context_lines order_by page per_page regex scope search
+          search_type sort state
+        ]
+      )
     end
   end
 end

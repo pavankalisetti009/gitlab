@@ -11,7 +11,7 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
   let(:fixtures_path) { 'ee/spec/fixtures/search/zoekt/' }
   let(:expected_extracted_result) do
     json_result = File.read(Rails.root.join(fixtures_path, extracted_result_path))
-    ::Gitlab::Json.parse(json_result).deep_symbolize_keys
+    ::Gitlab::Json.safe_parse(json_result).deep_symbolize_keys
   end
 
   before do
@@ -307,6 +307,7 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
             group_ids: [],
             project_id: 1,
             search_level: :project,
+            filters: { exclude_forks: false },
             use_traversal_id_queries: true
           }
         end
@@ -329,6 +330,7 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
             current_user: current_user,
             group_id: group.id,
             search_level: :group,
+            filters: { exclude_forks: false },
             use_traversal_id_queries: true
           }
         end
