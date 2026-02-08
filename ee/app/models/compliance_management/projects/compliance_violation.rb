@@ -84,7 +84,7 @@ module ComplianceManagement
         compliance_control&.compliance_requirement
       end
 
-      def to_global_id
+      def to_global_id(_options = {})
         ::Gitlab::GlobalId.as_global_id(id, model_name: self.class.name)
       end
 
