@@ -80,7 +80,7 @@ module Security
         return location_data if location_data.is_a?(Hash)
         return {} unless location_data.is_a?(String)
 
-        parsed_location = Gitlab::Json.parse(location_data)
+        parsed_location = Gitlab::Json.safe_parse(location_data)
         parsed_location.is_a?(Hash) ? parsed_location : {}
       rescue JSON::ParserError
         {}
