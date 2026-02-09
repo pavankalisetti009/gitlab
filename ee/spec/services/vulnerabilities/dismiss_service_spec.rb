@@ -46,17 +46,21 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
       end
     end
 
-    it 'creates a vulnerability state transition record' do
-      expect(::Vulnerabilities::StateTransition).to receive(:create!).with(
-        vulnerability: vulnerability,
-        from_state: vulnerability.state,
-        to_state: :dismissed,
-        author: user,
-        dismissal_reason: dismissal_reason,
-        comment: comment
-      )
+    describe 'creating the state transition record' do
+      let(:expected_state_transition_relation) do
+        Vulnerabilities::StateTransition.where(
+          vulnerability: vulnerability,
+          from_state: vulnerability.state,
+          to_state: :dismissed,
+          author: user,
+          dismissal_reason: dismissal_reason,
+          comment: comment
+        )
+      end
 
-      dismiss_vulnerability
+      it 'creates a vulnerability state transition record with correct attributes' do
+        expect { dismiss_vulnerability }.to change { expected_state_transition_relation.count }.by(1)
+      end
     end
   end
 
