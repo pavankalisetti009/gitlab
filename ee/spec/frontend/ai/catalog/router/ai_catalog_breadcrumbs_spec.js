@@ -41,13 +41,15 @@ describe('AiCatalogBreadcrumbs', () => {
   const findBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
   const getBreadcrumbItems = () => findBreadcrumb().props('items');
 
-  beforeEach(() => {
-    createComponent();
-  });
+  describe('template', () => {
+    beforeEach(() => {
+      createComponent();
+    });
 
-  it('renders breadcrumbs', () => {
-    expect(findBreadcrumb().exists()).toBe(true);
-    expect(findBreadcrumb().props('autoResize')).toBe(false);
+    it('renders breadcrumbs', () => {
+      expect(findBreadcrumb().exists()).toBe(true);
+      expect(findBreadcrumb().props('autoResize')).toBe(false);
+    });
   });
 
   describe.each`

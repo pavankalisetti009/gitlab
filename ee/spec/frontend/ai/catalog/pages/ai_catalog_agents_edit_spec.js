@@ -82,12 +82,9 @@ describe('AiCatalogAgentsEdit', () => {
   const findEditVersionWarningText = () =>
     findEditingLatestVersionWarning().findComponent(GlSprintf).attributes('message');
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('Initial Rendering', () => {
     it('render edit form', () => {
+      createComponent();
       expect(findForm().exists()).toBe(true);
     });
 
@@ -164,6 +161,10 @@ describe('AiCatalogAgentsEdit', () => {
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
 
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('sends an update request', async () => {
       await findForm().vm.$emit('submit', formValues);
       await waitForPromises();
@@ -182,26 +183,22 @@ describe('AiCatalogAgentsEdit', () => {
     });
 
     describe('when request succeeds with version change', () => {
-      beforeEach(async () => {
+      it('shows toast when version was updated', async () => {
         submitForm();
         await waitForPromises();
-      });
 
-      it('shows toast when version was updated', () => {
         expect(mockToast.show).toHaveBeenCalledWith('Agent updated.');
       });
     });
 
     describe('when request succeeds with metadata change only', () => {
-      beforeEach(async () => {
+      it('shows toast when metadata was updated', async () => {
         mockUpdateAiCatalogAgentHandler.mockResolvedValue(
           mockUpdateAiCatalogAgentMetadataOnlyMutation,
         );
         submitForm();
         await waitForPromises();
-      });
 
-      it('shows toast when metadata was updated', () => {
         expect(mockToast.show).toHaveBeenCalledWith('Agent updated.');
       });
     });
@@ -217,8 +214,7 @@ describe('AiCatalogAgentsEdit', () => {
         expect(mockToast.show).not.toHaveBeenCalled();
       });
 
-      it('navigates to agents show page', async () => {
-        await waitForPromises();
+      it('navigates to agents show page', () => {
         expect(mockRouter.push).toHaveBeenCalledWith({
           name: AI_CATALOG_AGENTS_SHOW_ROUTE,
           params: { id: 1 },
@@ -247,13 +243,11 @@ describe('AiCatalogAgentsEdit', () => {
     });
 
     describe('when request succeeds but returns error', () => {
-      beforeEach(async () => {
+      it('shows an alert', async () => {
         mockUpdateAiCatalogAgentHandler.mockResolvedValue(mockUpdateAiCatalogAgentErrorMutation);
         submitForm();
         await waitForPromises();
-      });
 
-      it('shows an alert', () => {
         expect(findForm().props('errors')).toEqual([
           mockUpdateAiCatalogAgentErrorMutation.data.aiCatalogAgentUpdate.errors[0],
         ]);

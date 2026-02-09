@@ -20,7 +20,8 @@ module EE
             requires :tag_name, type: String, desc: 'The Git tag the release is associated with', as: :tag
           end
           route_setting :authentication, job_token_allowed: true
-          route_setting :authorization, job_token_policies: :admin_releases
+          route_setting :authorization, job_token_policies: :admin_releases, permissions: :create_release_evidence,
+            boundary_type: :project
           post ':id/releases/:tag_name/evidence', requirements: ::API::Releases::RELEASE_ENDPOINT_REQUIREMENTS do
             authorize_create_evidence!
 
