@@ -102,7 +102,7 @@ export default {
     buttonText() {
       return this.cleanupPolicy
         ? s__('VirtualRegistryCleanupPolicy|Edit policy')
-        : s__('VirtualRegistryCleanupPolicy|Create policy');
+        : s__('VirtualRegistryCleanupPolicy|Set policy');
     },
     isLoading() {
       return this.$apollo.queries.group.loading;
@@ -345,7 +345,7 @@ export default {
     <template v-else>
       {{
         s__(
-          'VirtualRegistryCleanupPolicy|No cleanup policy yet. Create a policy to delete caches and save space.',
+          'VirtualRegistryCleanupPolicy|No cleanup rule yet. Define when caches should be deleted to save space.',
         )
       }}
     </template>
