@@ -320,19 +320,38 @@ describe('CleanupPolicyDetails', () => {
     });
 
     describe('removes cache not accessed in details', () => {
-      beforeEach(async () => {
-        createComponent({
-          mockQueryResponse: groupVirtualRegistriesCleanupPolicyMock({
-            keepNDaysAfterDownload: 35,
-          }),
+      describe('when keepNDaysAfterDownload is 1', () => {
+        beforeEach(async () => {
+          createComponent({
+            mockQueryResponse: groupVirtualRegistriesCleanupPolicyMock({
+              keepNDaysAfterDownload: 1,
+            }),
+          });
+          await waitForPromises();
         });
-        await waitForPromises();
+
+        it('renders singular form without the number', () => {
+          expect(wrapper.findByTestId('cleanup-policy-rules').text()).toContain(
+            'Delete caches not accessed in the last day',
+          );
+        });
       });
 
-      it('renders removes caches info as', () => {
-        expect(wrapper.findByTestId('cleanup-policy-rules').text()).toContain(
-          'Delete caches not accessed in last 35 days',
-        );
+      describe('when keepNDaysAfterDownload is greater than 1', () => {
+        beforeEach(async () => {
+          createComponent({
+            mockQueryResponse: groupVirtualRegistriesCleanupPolicyMock({
+              keepNDaysAfterDownload: 35,
+            }),
+          });
+          await waitForPromises();
+        });
+
+        it('renders plural form with the number', () => {
+          expect(wrapper.findByTestId('cleanup-policy-rules').text()).toContain(
+            'Delete caches not accessed in the last 35 days',
+          );
+        });
       });
     });
   });

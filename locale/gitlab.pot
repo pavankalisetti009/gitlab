@@ -75455,8 +75455,8 @@ msgstr ""
 msgid "VirtualRegistryCleanupPolicy|Cache cleanup failed. No cache entries were removed."
 msgstr ""
 
-msgid "VirtualRegistryCleanupPolicy|Delete caches not accessed in last %{strongStart}%{days} day%{strongEnd}"
-msgid_plural "VirtualRegistryCleanupPolicy|Delete caches not accessed in last %{strongStart}%{days} days%{strongEnd}"
+msgid "VirtualRegistryCleanupPolicy|Delete caches not accessed in the last %{strongStart}day%{strongEnd}"
+msgid_plural "VirtualRegistryCleanupPolicy|Delete caches not accessed in the last %{strongStart}%{days} days%{strongEnd}"
 msgstr[0] ""
 msgstr[1] ""
 

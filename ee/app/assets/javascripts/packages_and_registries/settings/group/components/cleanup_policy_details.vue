@@ -128,8 +128,8 @@ export default {
         items.push(
           sprintf(
             n__(
-              'VirtualRegistryCleanupPolicy|Delete caches not accessed in last %{strongStart}%{days} day%{strongEnd}',
-              'VirtualRegistryCleanupPolicy|Delete caches not accessed in last %{strongStart}%{days} days%{strongEnd}',
+              'VirtualRegistryCleanupPolicy|Delete caches not accessed in the last %{strongStart}day%{strongEnd}',
+              'VirtualRegistryCleanupPolicy|Delete caches not accessed in the last %{strongStart}%{days} days%{strongEnd}',
               this.cleanupPolicy.keepNDaysAfterDownload,
             ),
             {
