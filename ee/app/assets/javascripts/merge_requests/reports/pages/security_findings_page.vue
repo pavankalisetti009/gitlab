@@ -4,12 +4,18 @@ import SmartInterval from '~/smart_interval';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
 import { transformToEnabledScans } from 'ee/vue_merge_request_widget/widgets/security_reports/utils';
+import SummaryText, {
+  MAX_NEW_VULNERABILITIES,
+} from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 
 const POLL_INTERVAL = 3000;
 const MAX_POLL_INTERVAL = 30000;
 
 export default {
   name: 'SecurityFindingsPage',
+  components: {
+    SummaryText,
+  },
   props: {
     mr: {
       type: Object,
@@ -28,6 +34,8 @@ export default {
         partial: {},
       },
       reportPollers: {},
+      isLoading: true,
+      hasAtLeastOneReportWithMaxNewVulnerabilities: false,
       errorMessage: '',
     };
   },
@@ -85,8 +93,11 @@ export default {
     targetProjectFullPath() {
       return this.mr.targetProjectFullPath;
     },
-    isLoading() {
-      return this.$apollo.queries.enabledScans.loading;
+    hasActivePollers() {
+      return Object.keys(this.reportPollers).length > 0;
+    },
+    isLoadingEnabledScans() {
+      return this.$apollo.queries.enabledScans?.loading || Boolean(this.$options.pollingInterval);
     },
     hasEnabledScans() {
       const isEnabled = (scans) =>
@@ -96,11 +107,18 @@ export default {
 
       return isEnabled(this.enabledScans.full) || isEnabled(this.enabledScans.partial);
     },
-    reportsCount() {
-      return (
-        Object.keys(this.reportsByScanType.full).length +
-        Object.keys(this.reportsByScanType.partial).length
-      );
+    shouldRenderMrWidget() {
+      if (this.isLoadingEnabledScans) {
+        return false;
+      }
+
+      return !this.mr.isPipelineActive && this.hasEnabledScans;
+    },
+    totalNewFindings() {
+      const sumFindings = (reports) =>
+        Object.values(reports).reduce((sum, report) => sum + (report.numberOfNewFindings || 0), 0);
+
+      return sumFindings(this.reportsByScanType.full) + sumFindings(this.reportsByScanType.partial);
     },
   },
   beforeDestroy() {
@@ -123,6 +141,10 @@ export default {
         this.fetchFindingReports(reportType, scanMode),
       );
       await Promise.all(fetchPromises);
+
+      if (!this.hasActivePollers) {
+        this.isLoading = false;
+      }
     },
     async fetchFindingReports(reportType, scanMode) {
       const scanModeKey = scanMode === 'PARTIAL' ? 'partial' : 'full';
@@ -151,6 +173,10 @@ export default {
       // Allows "updateFindingState" to show dismissed badge changes immediately without refresh
       const added = data.report?.added?.map((finding) => ({ ...finding })) || [];
       const fixed = data.report?.fixed?.map((finding) => ({ ...finding })) || [];
+
+      if (added.length === MAX_NEW_VULNERABILITIES) {
+        this.hasAtLeastOneReportWithMaxNewVulnerabilities = true;
+      }
 
       const report = {
         reportType,
@@ -184,6 +210,10 @@ export default {
       if (this.reportPollers[key]) {
         this.reportPollers[key].destroy();
         delete this.reportPollers[key];
+
+        if (!this.hasActivePollers) {
+          this.isLoading = false;
+        }
       }
     },
   },
@@ -192,13 +222,11 @@ export default {
 </script>
 
 <template>
-  <div data-testid="security-findings-page">
-    <template v-if="errorMessage">
-      {{ errorMessage }}
-    </template>
-    <template v-else-if="isLoading">
-      {{ isLoading }}
-    </template>
-    <template v-else> {{ hasEnabledScans }} {{ reportsCount }} </template>
+  <div v-if="shouldRenderMrWidget" data-testid="security-findings-page">
+    <summary-text
+      :total-new-vulnerabilities="totalNewFindings"
+      :is-loading="isLoading"
+      :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
+    />
   </div>
 </template>
