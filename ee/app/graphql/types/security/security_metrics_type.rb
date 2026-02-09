@@ -29,6 +29,15 @@ This feature is currently under development and not yet available for general us
         description: 'Total risk score information.
 This feature is currently under development and not yet available for general use',
         resolver: ::Resolvers::Security::RiskScoreResolver
+
+      field :vulnerabilities_by_age,
+        [::Types::Security::VulnerabilitiesByAgeType],
+        null: true,
+        description: 'Vulnerability age statistics based on predefined age bands.
+See [`VulnerabilitiesByAge`](#vulnerabilitiesbyage) for details.
+This feature is currently under development and not yet available for general use',
+        experiment: { milestone: '18.9' },
+        resolver: ::Resolvers::Security::VulnerabilitiesByAgeResolver
     end
     # rubocop: enable Graphql/AuthorizeTypes, GraphQL/ExtractType
   end
