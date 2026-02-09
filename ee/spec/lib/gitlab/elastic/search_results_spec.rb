@@ -12,6 +12,13 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
   end
 
+  describe 'constants' do
+    it 'EPIC_TYPE_ID matches the epic type ID from database' do
+      epic_type = ::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic])
+      expect(described_class::EPIC_TYPE_ID).to eq(epic_type&.id)
+    end
+  end
+
   describe '#highlight_map' do
     using RSpec::Parameterized::TableSyntax
 
@@ -45,6 +52,31 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         expect(results).to receive(results_method).and_return(results_response) if results_method
 
         expect(results.highlight_map(scope)).to eq(expected)
+      end
+    end
+
+    context 'when scope is work_items' do
+      context 'when work_items_search_enabled? is false' do
+        before do
+          stub_feature_flags(search_scope_work_item: false)
+        end
+
+        it 'returns empty hash' do
+          expect(results.highlight_map('work_items')).to eq({})
+        end
+      end
+
+      context 'when work_items_search_enabled? is true' do
+        before do
+          stub_feature_flags(search_scope_work_item: true)
+        end
+
+        it 'returns issues highlight_map' do
+          issues_double = instance_double(Search::Elastic::ResponseMapper, highlight_map: { 1 => 'highlight' })
+          allow(results).to receive(:issues).and_return(issues_double)
+
+          expect(results.highlight_map('work_items')).to eq({ 1 => 'highlight' })
+        end
       end
     end
   end
@@ -338,6 +370,135 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
 
       it 'returns WorkItemGroupQueryBuilder' do
         expect(results.send(:epics_query_builder)).to eq(::Search::Elastic::WorkItemGroupQueryBuilder)
+      end
+    end
+  end
+
+  describe '#work_items_count' do
+    let(:results) { described_class.new(user, query, limit_project_ids) }
+
+    context 'when work_items_search_enabled? is true' do
+      before do
+        stub_feature_flags(search_scope_work_item: true)
+      end
+
+      context 'when issues are not memoized' do
+        it 'calls issues with work_items scope and count_only' do
+          issues_double = instance_double(Search::Elastic::ResponseMapper, total_count: 5)
+          expect(results).to receive(:issues)
+            .with(scope: 'work_items', count_only: true)
+            .and_return(issues_double)
+
+          expect(results.work_items_count).to eq(5)
+        end
+      end
+
+      context 'when issues are already memoized' do
+        it 'uses memoized issues total_count' do
+          issues_double = instance_double(Search::Elastic::ResponseMapper, total_count: 10)
+          allow(results).to receive(:strong_memoized?).with(:issues).and_return(true)
+          allow(results).to receive(:issues).and_return(issues_double)
+
+          expect(results.work_items_count).to eq(10)
+        end
+      end
+    end
+
+    context 'when work_items_search_enabled? is false' do
+      before do
+        stub_feature_flags(search_scope_work_item: false)
+      end
+
+      it 'returns 0' do
+        expect(results.work_items_count).to eq(0)
+      end
+
+      it 'does not call issues method' do
+        expect(results).not_to receive(:issues)
+
+        expect(results.work_items_count).to eq(0)
+      end
+    end
+  end
+
+  describe '#aggregations' do
+    let(:results) { described_class.new(user, query, limit_project_ids) }
+    let(:issue_aggs) { [{ key: 'bug', count: 5 }] }
+
+    before do
+      allow(results).to receive(:issue_aggregations).and_return(issue_aggs)
+    end
+
+    context 'when scope is work_items' do
+      context 'when work_items_search_enabled? is false' do
+        before do
+          stub_feature_flags(search_scope_work_item: false)
+        end
+
+        it 'returns empty array' do
+          expect(results.aggregations('work_items')).to eq([])
+        end
+      end
+
+      context 'when work_items_search_enabled? is true' do
+        before do
+          stub_feature_flags(search_scope_work_item: true)
+        end
+
+        it 'returns issue_aggregations' do
+          expect(results.aggregations('work_items')).to eq(issue_aggs)
+        end
+      end
+    end
+  end
+
+  describe '#work_item_scope_options' do
+    let(:results) { described_class.new(user, query, limit_project_ids) }
+
+    context 'when scope is nil' do
+      context 'when work_items_search_enabled? is false' do
+        before do
+          stub_feature_flags(search_scope_work_item: false)
+        end
+
+        it 'excludes epics for backward compatibility' do
+          options = results.send(:work_item_scope_options, scope: nil)
+
+          expect(options[:not_work_item_type_ids]).to eq([described_class::EPIC_TYPE_ID])
+        end
+      end
+
+      context 'when work_items_search_enabled? is true' do
+        before do
+          stub_feature_flags(search_scope_work_item: true)
+        end
+
+        it 'includes all types for backward compatibility' do
+          options = results.send(:work_item_scope_options, scope: nil)
+
+          expect(options[:not_work_item_type_ids]).to be_nil
+        end
+      end
+    end
+
+    context 'when scope is work_items with type filters' do
+      let(:filters) { { work_item_type_ids: %w[1 2] } }
+      let(:results) { described_class.new(user, query, limit_project_ids, filters: filters) }
+
+      before do
+        stub_feature_flags(search_scope_work_item: true)
+      end
+
+      it 'converts type IDs to integers' do
+        options = results.send(:work_item_scope_options, scope: 'work_items')
+
+        expect(options[:work_item_type_ids]).to match_array([1, 2])
+      end
+
+      it 'removes not_work_item_type_ids' do
+        options = results.send(:work_item_scope_options, scope: 'work_items')
+
+        expect(options).not_to have_key(:not_work_item_type_ids)
       end
     end
   end

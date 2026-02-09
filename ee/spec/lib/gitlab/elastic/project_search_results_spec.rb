@@ -334,4 +334,24 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
       end
     end
   end
+
+  describe '#scope_options' do
+    let(:results) { described_class.new(user, query, project: project) }
+
+    context 'when scope is :work_items' do
+      it 'builds work items search options' do
+        expect(results).to receive(:build_work_items_search_options).with('work_items').and_call_original
+
+        results.send(:scope_options, :work_items)
+      end
+
+      it 'returns hash with search level project' do
+        options = results.send(:scope_options, :work_items)
+
+        expect(options).to be_a(Hash)
+        expect(options[:search_level]).to eq('project')
+        expect(options[:klass]).to eq(WorkItem)
+      end
+    end
+  end
 end
