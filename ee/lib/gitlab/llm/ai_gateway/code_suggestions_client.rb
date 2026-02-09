@@ -145,6 +145,7 @@ module Gitlab
 
         def task
           inputs = {
+            prompt_version: 1,
             current_file: {
               file_name: 'test.rb',
               content_above_cursor: 'def hello_world'
