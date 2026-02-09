@@ -107,7 +107,7 @@ export default {
           tools: [], // agent specific
           definition: DEFAULT_THIRD_PARTY_FLOW_YML_STRING, // third_party_flow specific
           public: false,
-          type: AI_CATALOG_TYPE_AGENT,
+          itemType: AI_CATALOG_TYPE_AGENT,
         };
       },
     },
@@ -134,7 +134,7 @@ export default {
       return uniqueId('ai-catalog-agent-form-');
     },
     isThirdPartyFlow() {
-      return this.formValues.type === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+      return this.formValues.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
     isEditMode() {
       return this.mode === 'edit';
@@ -189,9 +189,9 @@ export default {
         this.$refs.fieldProject?.validate();
       });
     },
-    'formValues.type': {
-      handler(newType) {
-        this.$emit('select-item-type', newType);
+    'formValues.itemType': {
+      handler(newItemType) {
+        this.$emit('select-item-type', newItemType);
       },
     },
   },
@@ -207,7 +207,7 @@ export default {
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
-        type: this.formValues.type,
+        itemType: this.formValues.itemType,
       };
 
       if (this.isThirdPartyFlow) {
@@ -280,7 +280,7 @@ export default {
         maxLength: MAX_LENGTH_DESCRIPTION,
       },
     },
-    type: {
+    itemType: {
       id: 'agent-form-type',
       label: __('Type'),
       groupAttrs: {
@@ -404,10 +404,10 @@ export default {
       <form-section :title="s__('AICatalog|Configuration')">
         <form-group
           v-if="showTypeSelection"
-          :field="$options.fields.type"
-          :field-value="formValues.type"
+          :field="$options.fields.itemType"
+          :field-value="formValues.itemType"
         >
-          <form-agent-type v-model="formValues.type" :disabled="isEditMode" />
+          <form-agent-type v-model="formValues.itemType" :disabled="isEditMode" />
         </form-group>
         <form-group
           v-if="isThirdPartyFlow"

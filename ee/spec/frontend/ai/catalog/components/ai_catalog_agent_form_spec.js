@@ -49,7 +49,7 @@ describe('AiCatalogAgentForm', () => {
     systemPrompt: 'You are a helpful assistant',
     public: true,
     tools: [],
-    type: 'AGENT',
+    itemType: 'AGENT',
   };
 
   const mockToolsQueryHandler = jest.fn().mockResolvedValue(mockToolsQueryResponse);
@@ -101,7 +101,7 @@ describe('AiCatalogAgentForm', () => {
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
       expect(findSystemPromptField().props('value')).toBe(initialValues.systemPrompt);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PUBLIC);
-      expect(findAgentType().props('value')).toBe(initialValues.type);
+      expect(findAgentType().props('value')).toBe(initialValues.itemType);
     });
 
     it('renders the form with default values when no props are provided and form is global', () => {

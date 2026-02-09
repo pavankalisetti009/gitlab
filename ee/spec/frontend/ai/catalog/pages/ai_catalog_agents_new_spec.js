@@ -58,19 +58,16 @@ describe('AiCatalogAgentsNew', () => {
 
   describe('Form Submit', () => {
     const { name, description, project } = mockAgent;
-    const formValues = {
+    const input = {
       name,
       description,
       projectId: project.id,
       systemPrompt: 'A new system prompt',
       userPrompt: 'A new user prompt',
-      type: 'AGENT',
       public: false,
     };
 
-    const { type, ...input } = formValues;
-
-    const submitForm = () => findForm().vm.$emit('submit', formValues);
+    const submitForm = () => findForm().vm.$emit('submit', { itemType: 'AGENT', ...input });
 
     it('sends a create request', () => {
       submitForm();
@@ -146,22 +143,19 @@ describe('AiCatalogAgentsNew', () => {
     });
 
     describe('when item type is third-party flow', () => {
-      const thirdPartyFlowFormValues = {
+      const inputThirdPartyFlow = {
         name,
         description,
         projectId: project.id,
         public: true,
         definition: 'image:node@22',
-        type: 'THIRD_PARTY_FLOW',
       };
 
       const submitThirdPartyFlowForm = () =>
-        findForm().vm.$emit('submit', thirdPartyFlowFormValues);
+        findForm().vm.$emit('submit', { itemType: 'THIRD_PARTY_FLOW', ...inputThirdPartyFlow });
 
       it('sends a create request for third-party flow', () => {
         submitThirdPartyFlowForm();
-
-        const { type: itemType, ...inputThirdPartyFlow } = thirdPartyFlowFormValues;
 
         expect(createAiCatalogAgentMock).not.toHaveBeenCalled();
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);

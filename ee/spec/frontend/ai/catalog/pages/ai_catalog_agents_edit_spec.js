@@ -95,7 +95,7 @@ describe('AiCatalogAgentsEdit', () => {
         projectId: 'gid://gitlab/Project/1',
         systemPrompt: mockAgent.latestVersion.systemPrompt,
         tools: [],
-        type: 'AGENT',
+        itemType: 'AGENT',
         public: true,
       };
 
@@ -146,18 +146,18 @@ describe('AiCatalogAgentsEdit', () => {
       systemPrompt,
       userPrompt,
       public: publicAgent,
-      itemType: type,
+      itemType,
     } = mockAgent;
-    const formValues = {
+
+    const input = {
       name,
       description,
       systemPrompt,
       userPrompt,
-      type,
       public: publicAgent,
     };
 
-    const { type: itemType, ...input } = formValues;
+    const formValues = { ...input, itemType };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
 
