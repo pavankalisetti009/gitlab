@@ -150,8 +150,7 @@ RSpec.describe WorkItems::Callbacks::Iteration, feature_category: :team_planning
 
         context "when children do not have the iteration widget" do
           before do
-            WorkItems::WidgetDefinition.where(widget_type: "iteration",
-              work_item_type: child_work_item.work_item_type).delete_all
+            stub_all_work_item_widgets(iteration: false)
           end
 
           it_behaves_like "does not update children"
