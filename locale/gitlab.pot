@@ -38291,6 +38291,9 @@ msgstr ""
 msgid "JiraConnect|Setting up this integration is only possible if you're a GitLab administrator."
 msgstr ""
 
+msgid "JiraConnect|Show only top-level groups"
+msgstr ""
+
 msgid "JiraConnect|Sign in to %{url}"
 msgstr ""
 
