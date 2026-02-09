@@ -1709,6 +1709,9 @@ msgstr ""
 msgid "'%{lock_path}' is locked in Git LFS by @%{lock_user_name}"
 msgstr ""
 
+msgid "'%{name}' is already taken"
+msgstr ""
+
 msgid "'%{slug}' is a reserved name"
 msgstr ""
 
@@ -81558,6 +81561,9 @@ msgid "can only have a maximum of %{limit} lifecycles."
 msgstr ""
 
 msgid "can only have a maximum of %{limit} statuses."
+msgstr ""
+
+msgid "can only have a maximum of %{limit} work item types."
 msgstr ""
 
 msgid "can only have one escalation policy"
