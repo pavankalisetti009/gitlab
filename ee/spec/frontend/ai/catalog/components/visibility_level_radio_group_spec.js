@@ -42,32 +42,30 @@ describe('VisibilityLevelRadioGroup', () => {
   };
 
   describe('Visibility Level Radio Group', () => {
-    it('emits the input event', async () => {
-      createWrapper();
+    describe('input event', () => {
+      it('emits the input event', async () => {
+        createWrapper();
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PRIVATE);
 
-      await selectVisibilityLevel(VISIBILITY_LEVEL_PRIVATE);
-
-      expect(findConfirmModal().exists()).toBe(false);
-      expect(wrapper.emitted('input')).toHaveLength(1);
-      expect(wrapper.emitted('input')[0][0]).toBe(VISIBILITY_LEVEL_PRIVATE);
+        expect(findConfirmModal().exists()).toBe(false);
+        expect(wrapper.emitted('input')).toHaveLength(1);
+        expect(wrapper.emitted('input')[0][0]).toBe(VISIBILITY_LEVEL_PRIVATE);
+      });
     });
 
     describe('when selecting public visibility from private', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         createWrapper({ value: VISIBILITY_LEVEL_PRIVATE });
+        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
       });
 
-      it('emits input event and shows confirmation modal', async () => {
-        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
-
+      it('emits input event and shows confirmation modal', () => {
         expect(findConfirmModal().exists()).toBe(true);
         expect(wrapper.emitted('input')).toHaveLength(1);
         expect(wrapper.emitted('input')[0][0]).toBe(VISIBILITY_LEVEL_PUBLIC);
       });
 
       it('closes modal when user confirms', async () => {
-        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
-
         findConfirmModal().vm.$emit('primary');
         await nextTick();
 
@@ -76,8 +74,6 @@ describe('VisibilityLevelRadioGroup', () => {
       });
 
       it('reverts to private when user cancels modal', async () => {
-        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
-
         findConfirmModal().vm.$emit('hidden');
         await nextTick();
 
@@ -86,22 +82,16 @@ describe('VisibilityLevelRadioGroup', () => {
         expect(wrapper.emitted('input')[1][0]).toBe(VISIBILITY_LEVEL_PRIVATE);
       });
 
-      it('displays correct modal title', async () => {
-        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
-
+      it('displays correct modal title', () => {
         expect(findConfirmModal().props('title')).toBe('Make agent public?');
       });
 
-      it('displays warning alert in modal', async () => {
-        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
-
+      it('displays warning alert in modal', () => {
         expect(findAlert().exists()).toBe(true);
         expect(findAlert().props('variant')).toBe('warning');
       });
 
-      it('displays Make public as primary action text', async () => {
-        await selectVisibilityLevel(VISIBILITY_LEVEL_PUBLIC);
-
+      it('displays Make public as primary action text', () => {
         expect(findConfirmModal().props('actionPrimary').text).toBe('Make public');
       });
     });
