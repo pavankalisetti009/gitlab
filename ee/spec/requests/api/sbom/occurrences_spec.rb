@@ -56,6 +56,13 @@ RSpec.describe API::Sbom::Occurrences, :aggregate_failures, :api, feature_catego
           expect(response).to have_gitlab_http_status(:not_found)
         end
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_sbom_occurrence do
+        let(:boundary_object) { sbom_occurrence.project }
+        let(:request) do
+          get api(path, personal_access_token: pat), params: params
+        end
+      end
     end
   end
 end
