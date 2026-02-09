@@ -63,18 +63,6 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
         resolve_vulnerability
       end
 
-      it 'creates state transition entry to `resolved`' do
-        expect(::Vulnerabilities::StateTransition).to receive(:create!).with(
-          vulnerability: vulnerability,
-          from_state: vulnerability.state,
-          to_state: :resolved,
-          author: user,
-          comment: "resolve vulnerability comment"
-        )
-
-        resolve_vulnerability
-      end
-
       it 'updates vulnerability read record with resolved state and auto_resolved flag' do
         vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) ||
           create(:vulnerability_read, vulnerability: vulnerability, state: 'detected', auto_resolved: false)
@@ -99,6 +87,22 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
 
         it 'raises an "access denied" error' do
           expect { resolve_vulnerability }.to raise_error(Gitlab::Access::AccessDeniedError)
+        end
+      end
+
+      describe 'creating the state transition record' do
+        let(:expected_state_transition_relation) do
+          Vulnerabilities::StateTransition.where(
+            vulnerability: vulnerability,
+            from_state: vulnerability.state,
+            to_state: :resolved,
+            author: user,
+            comment: comment
+          )
+        end
+
+        it 'creates state transition entry to `resolved`' do
+          expect { resolve_vulnerability }.to change { expected_state_transition_relation.count }.by(1)
         end
       end
     end
