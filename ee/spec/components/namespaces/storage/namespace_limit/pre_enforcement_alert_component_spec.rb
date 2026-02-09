@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::NamespaceLimit::PreEnforcementAlertComponent, :saas, type: :component,
+RSpec.describe Namespaces::Storage::NamespaceLimit::PreEnforcementAlertComponent, :saas,
   feature_category: :consumables_cost_management do
   using RSpec::Parameterized::TableSyntax
   include NamespaceStorageHelpers

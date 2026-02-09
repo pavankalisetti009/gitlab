@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ArkoseHelper, type: :helper, feature_category: :instance_resiliency do
+RSpec.describe ArkoseHelper, feature_category: :instance_resiliency do
   describe '.arkose_data_exchange_payload' do
     let(:request_double) { instance_double(ActionDispatch::Request) }
     let(:email) { "test@example.com" }

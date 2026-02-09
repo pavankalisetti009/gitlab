@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe NamespaceUserCapReachedAlertHelper, type: :helper, feature_category: :seat_cost_management do
+RSpec.describe NamespaceUserCapReachedAlertHelper, feature_category: :seat_cost_management do
   describe '#display_namespace_user_cap_reached_alert?', :freeze_time do
     subject(:display_alert?) { helper.display_namespace_user_cap_reached_alert?(group) }
 

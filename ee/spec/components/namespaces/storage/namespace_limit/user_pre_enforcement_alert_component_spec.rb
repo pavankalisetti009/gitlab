@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::NamespaceLimit::UserPreEnforcementAlertComponent, :saas, type: :component,
+RSpec.describe Namespaces::Storage::NamespaceLimit::UserPreEnforcementAlertComponent, :saas,
   feature_category: :consumables_cost_management do
   include ActionView::Helpers::NumberHelper
   include NamespaceStorageHelpers

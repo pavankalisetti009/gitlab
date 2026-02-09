@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DashboardHelper, type: :helper, feature_category: :shared do
+RSpec.describe DashboardHelper, feature_category: :shared do
   let(:user) { build(:user) }
 
   describe '.has_start_trial?', :do_not_mock_admin_mode_setting do

@@ -146,7 +146,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
             )
             formatted_message = format(
               message,
-              exp_date: I18n.l(61.days.from_now.to_date, format: :long)
+              exp_date: I18n.l(61.days.from_now.to_date, format: :long_unpadded)
             )
             expect(flash[:success]).to have_content(formatted_message)
           end
