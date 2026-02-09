@@ -15,6 +15,7 @@ import { __ } from '~/locale';
 import {
   SCAN_PROFILE_TYPE_SECRET_DETECTION,
   SCAN_PROFILE_CATEGORIES,
+  SCAN_PROFILE_PROMO_ITEMS,
   SCAN_PROFILE_I18N,
 } from '~/security_configuration/constants';
 import availableProfilesQuery from 'ee/security_configuration/graphql/scan_profiles/group_available_security_scan_profiles.query.graphql';
@@ -46,10 +47,13 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['projectFullPath', 'groupFullPath', 'canApplyProfiles'],
+  inject: ['projectFullPath', 'groupFullPath', 'canApplyProfiles', 'securityScanProfilesLicensed'],
   SCAN_PROFILE_I18N,
   apollo: {
     availableProfiles: {
+      skip() {
+        return !this.securityScanProfilesLicensed;
+      },
       query: availableProfilesQuery,
       variables() {
         return { fullPath: this.groupFullPath, type: SCAN_PROFILE_TYPE_SECRET_DETECTION };
@@ -63,6 +67,9 @@ export default {
       },
     },
     attachedProfiles: {
+      skip() {
+        return !this.securityScanProfilesLicensed;
+      },
       query: projectProfilesQuery,
       variables() {
         return { fullPath: this.projectFullPath };
@@ -113,6 +120,8 @@ export default {
       };
     },
     tableItems() {
+      if (!this.securityScanProfilesLicensed) return SCAN_PROFILE_PROMO_ITEMS;
+
       let profiles = this.availableProfiles;
 
       if (this.showOnlyRecommended) {
@@ -316,7 +325,22 @@ export default {
       </template>
 
       <template #cell(status)="{ item }">
-        <div class="gl-flex gl-items-center">
+        <div v-if="!securityScanProfilesLicensed" class="gl-flex gl-flex-col">
+          <span class="gl-font-weight-bold">
+            {{ __('Available with Ultimate') }}
+          </span>
+          <span class="gl-mt-1 gl-text-sm gl-text-secondary">
+            <gl-link
+              href="https://about.gitlab.com/solutions/application-security-testing/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ __('Learn more about the Ultimate security suite') }}
+              <gl-icon name="external-link" :aria-label="__('(external link)')" />
+            </gl-link>
+          </span>
+        </div>
+        <div v-else class="gl-flex gl-items-center">
           <gl-icon
             :name="item.isConfigured ? 'check-circle-filled' : 'close'"
             :class="item.isConfigured ? 'gl-text-green-500' : 'gl-text-secondary'"
@@ -350,7 +374,7 @@ export default {
                 variant="confirm"
                 category="secondary"
                 :loading="isSubmitting"
-                :disabled="!canApplyProfiles"
+                :disabled="!canApplyProfiles || !securityScanProfilesLicensed"
                 @click="applyProfile(item.id)"
               >
                 {{ $options.SCAN_PROFILE_I18N.applyDefault }}
@@ -364,12 +388,12 @@ export default {
               category="secondary"
               icon="eye"
               :title="$options.SCAN_PROFILE_I18N.previewDefault"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || !securityScanProfilesLicensed"
               @click="openPreview(item.id)"
             />
           </gl-button-group>
           <insufficient-permissions-popover
-            v-if="!canApplyProfiles"
+            v-if="!canApplyProfiles && securityScanProfilesLicensed"
             :target="getButtonId(item)"
             placement="top"
           />
@@ -381,7 +405,7 @@ export default {
             variant="danger"
             category="secondary"
             :loading="isSubmitting"
-            :disabled="!canApplyProfiles"
+            :disabled="!canApplyProfiles || !securityScanProfilesLicensed"
             @click="openDisableModal(item.scanType)"
           >
             {{ $options.SCAN_PROFILE_I18N.disable }}
@@ -411,6 +435,6 @@ export default {
       @cancel="disableModalVisible = false"
     />
 
-    <scan-profile-launch-modal />
+    <scan-profile-launch-modal v-if="securityScanProfilesLicensed" />
   </div>
 </template>

@@ -63,6 +63,7 @@ export function initDuoPanel() {
     trialActive,
     subscriptionActive,
     exploreAiCatalogPath,
+    autoExpand,
   } = el.dataset;
 
   if (parseBoolean(forceAgenticModeForCoreDuoUsers)) {
@@ -72,7 +73,7 @@ export function initDuoPanel() {
   Vue.use(VueApollo);
 
   const router = createRouter('/', 'user');
-  const apolloProvider = createApolloProvider();
+  const apolloProvider = createApolloProvider({ autoExpand: parseBoolean(autoExpand) });
 
   // Configure chat-specific values in a single configuration object
   const chatConfiguration = {

@@ -547,6 +547,39 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
     end
   end
 
+  describe '#should_auto_expand_duo_panel?' do
+    context 'when user is not signed in' do
+      let(:user) { nil }
+
+      it 'returns false' do
+        expect(helper.should_auto_expand_duo_panel?(user)).to be(false)
+      end
+    end
+
+    # rubocop:disable RSpec/FactoryBot/AvoidCreate -- needed for callout association
+    # Using `let` instead of `let_it_be` to avoid memoization issues with user.callouts_by_feature_name
+    context 'when user has not dismissed the callout' do
+      let(:user) { create(:user) }
+
+      it 'returns true' do
+        expect(helper.should_auto_expand_duo_panel?(user)).to be(true)
+      end
+    end
+
+    context 'when user has dismissed the callout' do
+      let(:user) { create(:user) }
+
+      before do
+        create(:callout, user: user, feature_name: 'duo_panel_auto_expanded')
+      end
+
+      it 'returns false' do
+        expect(helper.should_auto_expand_duo_panel?(user)).to be(false)
+      end
+    end
+    # rubocop:enable RSpec/FactoryBot/AvoidCreate
+  end
+
   describe '#duo_chat_panel_empty_state_data' do
     let(:user_namespace) { build_stubbed(:namespace) }
     let(:user) { build_stubbed(:user, namespace: user_namespace) }

@@ -4,6 +4,7 @@ module Search
   module Zoekt
     class MultiMatch
       include Gitlab::EncodingHelper
+      include Search::Zoekt::ResponseParser
 
       MAX_CHUNKS_PER_FILE = 50
       DEFAULT_REQUESTED_CHUNK_SIZE = 3
@@ -47,7 +48,7 @@ module Search
 
           chunks, match_count = chunks_for_each_file_with_limited_match_count(file[:LineMatches])
 
-          project_id = file[:RepositoryID].to_i
+          project_id = extract_project_id(file)
           results[current_page] << build_result(file, chunks, match_count, project_id)
           page += 1
         end

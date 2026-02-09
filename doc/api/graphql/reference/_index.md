@@ -47533,6 +47533,7 @@ Security configuration data for a project.
 | <a id="securityconfigurationsecretpushprotectionavailable"></a>`secretPushProtectionAvailable` | [`Boolean!`](#boolean) | Whether secret push protection is available at the instance level. |
 | <a id="securityconfigurationsecretpushprotectionenabled"></a>`secretPushProtectionEnabled` | [`Boolean`](#boolean) | Whether secret push protection is enabled for the project. |
 | <a id="securityconfigurationsecretpushprotectionlicensed"></a>`secretPushProtectionLicensed` | [`Boolean!`](#boolean) | Whether the project has a license for secret push protection. |
+| <a id="securityconfigurationsecurityscanprofileslicensed"></a>`securityScanProfilesLicensed` | [`Boolean!`](#boolean) | Whether the project has a license for security scan profiles. |
 | <a id="securityconfigurationsecuritytrainingenabled"></a>`securityTrainingEnabled` | [`Boolean!`](#boolean) | Whether security training is available for the project. |
 | <a id="securityconfigurationupgradepath"></a>`upgradePath` | [`String`](#string) | Path to upgrade security features. |
 | <a id="securityconfigurationuserisprojectadmin"></a>`userIsProjectAdmin` | [`Boolean!`](#boolean) | Whether the current user has admin permissions for security testing. |
@@ -56054,6 +56055,7 @@ Name of the feature that the callout is for.
 | <a id="usercalloutfeaturenameenumcluster_security_warning"></a>`CLUSTER_SECURITY_WARNING` | Callout feature name for cluster_security_warning. |
 | <a id="usercalloutfeaturenameenumduo_amazon_q_alert"></a>`DUO_AMAZON_Q_ALERT` | Callout feature name for duo_amazon_q_alert. |
 | <a id="usercalloutfeaturenameenumduo_chat_callout"></a>`DUO_CHAT_CALLOUT` | Callout feature name for duo_chat_callout. |
+| <a id="usercalloutfeaturenameenumduo_panel_auto_expanded"></a>`DUO_PANEL_AUTO_EXPANDED` | Callout feature name for duo_panel_auto_expanded. |
 | <a id="usercalloutfeaturenameenumemail_otp_enrollment_callout"></a>`EMAIL_OTP_ENROLLMENT_CALLOUT` | Callout feature name for email_otp_enrollment_callout. |
 | <a id="usercalloutfeaturenameenumexpired_trial_status_widget"></a>`EXPIRED_TRIAL_STATUS_WIDGET` | Callout feature name for expired_trial_status_widget. |
 | <a id="usercalloutfeaturenameenumfeature_flags_new_version"></a>`FEATURE_FLAGS_NEW_VERSION` | Callout feature name for feature_flags_new_version. |

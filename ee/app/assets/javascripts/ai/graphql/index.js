@@ -32,8 +32,14 @@ export const cacheConfig = {
   },
 };
 
-export const createApolloProvider = () => {
-  activeTab(Cookies.get(ACTIVE_TAB_KEY));
+export const createApolloProvider = ({ autoExpand = false } = {}) => {
+  const savedTab = Cookies.get(ACTIVE_TAB_KEY);
+
+  if (autoExpand && !savedTab) {
+    activeTab('chat');
+  } else {
+    activeTab(savedTab);
+  }
 
   const defaultClient = createDefaultClient(
     {},

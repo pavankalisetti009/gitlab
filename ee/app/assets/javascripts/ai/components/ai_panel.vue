@@ -4,10 +4,13 @@ import { __ } from '~/locale';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
+import dismissUserCalloutMutation from '~/graphql_shared/mutations/dismiss_user_callout.mutation.graphql';
 import { setAiPanelTab } from '../graphql';
 import activeTabQuery from '../graphql/active_tab.query.graphql';
 import AiContentContainer from './content_container.vue';
 import NavigationRail from './navigation_rail.vue';
+
+const DUO_PANEL_AUTO_EXPANDED_CALLOUT = 'duo_panel_auto_expanded';
 
 export default {
   name: 'AiPanel',
@@ -218,6 +221,21 @@ export default {
     closePanel() {
       this.setActiveTab(undefined);
       this.isMaximized = false;
+      this.dismissAutoExpandCallout();
+    },
+    async dismissAutoExpandCallout() {
+      try {
+        await this.$apollo.mutate({
+          mutation: dismissUserCalloutMutation,
+          variables: {
+            input: {
+              featureName: DUO_PANEL_AUTO_EXPANDED_CALLOUT,
+            },
+          },
+        });
+      } catch {
+        // Silently ignore errors - callout dismissal is non-critical
+      }
     },
     focusInput() {
       this.$refs['content-container']?.getContentComponent()?.focusInput?.();
