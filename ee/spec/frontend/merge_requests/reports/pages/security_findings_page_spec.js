@@ -7,6 +7,7 @@ import SmartInterval from '~/smart_interval';
 import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
 import SecurityFindingsPage from 'ee/merge_requests/reports/pages/security_findings_page.vue';
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
+import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
 import {
@@ -56,6 +57,7 @@ describe('Security findings page component', () => {
 
   const findSecurityFindingsPage = () => wrapper.findByTestId('security-findings-page');
   const findSummaryText = () => wrapper.findComponent(SummaryText);
+  const findSummaryHighlights = () => wrapper.findComponent(SummaryHighlights);
 
   describe('rendering', () => {
     it('does not render when enabledScans is loading', async () => {
@@ -253,6 +255,69 @@ describe('Security findings page component', () => {
       await waitForPromises();
 
       expect(findStatusIcon().props('iconName')).toBe(expected);
+    });
+  });
+
+  describe('SummaryHighlights', () => {
+    it('does not render when isLoading is true', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest.fn(() => new Promise(() => {})),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryHighlights().exists()).toBe(false);
+    });
+
+    it('does not render when totalNewFindings is 0', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest.fn().mockResolvedValue(mockFindingReportsComparerEmptyResponse),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryHighlights().exists()).toBe(false);
+    });
+
+    it('renders when findings exist and not loading', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest
+          .fn()
+          .mockResolvedValue(mockFindingReportsComparerSuccessResponse),
+      });
+
+      await waitForPromises();
+
+      expect(findSummaryHighlights().exists()).toBe(true);
+    });
+
+    it('passes correct highlights prop', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest
+          .fn()
+          .mockResolvedValue(mockFindingReportsComparerSuccessResponse),
+      });
+
+      await waitForPromises();
+
+      const highlights = findSummaryHighlights().props('highlights');
+      expect(highlights).toEqual({
+        critical: 0,
+        high: 1,
+        other: 0,
+      });
     });
   });
 

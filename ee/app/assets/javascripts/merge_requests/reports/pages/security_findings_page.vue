@@ -1,14 +1,20 @@
 <script>
 import { s__ } from '~/locale';
 import SmartInterval from '~/smart_interval';
+import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
-import { transformToEnabledScans } from 'ee/vue_merge_request_widget/widgets/security_reports/utils';
+import {
+  transformToEnabledScans,
+  highlightsFromReport,
+} from 'ee/vue_merge_request_widget/widgets/security_reports/utils';
+import { reportTypes } from 'ee/vue_merge_request_widget/widgets/security_reports/i18n';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
 import SummaryText, {
   MAX_NEW_VULNERABILITIES,
 } from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
+import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
 
 const POLL_INTERVAL = 3000;
 const MAX_POLL_INTERVAL = 30000;
@@ -18,6 +24,7 @@ export default {
   components: {
     StatusIcon,
     SummaryText,
+    SummaryHighlights,
   },
   props: {
     mr: {
@@ -117,11 +124,38 @@ export default {
 
       return !this.mr.isPipelineActive && this.hasEnabledScans;
     },
+    reports() {
+      return Object.keys(reportTypes)
+        .filter(
+          (reportType) =>
+            this.reportsByScanType.full[reportType] || this.reportsByScanType.partial[reportType],
+        )
+        .map((reportType) => ({
+          reportType,
+          full: this.reportsByScanType.full[reportType],
+          partial: this.reportsByScanType.partial[reportType],
+        }));
+    },
     totalNewFindings() {
       const sumFindings = (reports) =>
         Object.values(reports).reduce((sum, report) => sum + (report.numberOfNewFindings || 0), 0);
 
       return sumFindings(this.reportsByScanType.full) + sumFindings(this.reportsByScanType.partial);
+    },
+    highlights() {
+      if (this.totalNewFindings === 0) {
+        return {};
+      }
+
+      const highlights = {
+        [CRITICAL]: 0,
+        [HIGH]: 0,
+        other: 0,
+      };
+
+      this.reports.forEach((report) => highlightsFromReport(report, highlights));
+
+      return highlights;
     },
     statusIconName() {
       if (this.totalNewFindings > 0) {
@@ -240,11 +274,14 @@ export default {
     <div class="gl-flex">
       <status-icon :name="$options.name" :is-loading="isLoading" :icon-name="statusIconName" />
       <div class="gl-flex gl-grow">
-        <summary-text
-          :total-new-vulnerabilities="totalNewFindings"
-          :is-loading="isLoading"
-          :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
-        />
+        <div>
+          <summary-text
+            :total-new-vulnerabilities="totalNewFindings"
+            :is-loading="isLoading"
+            :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
+          />
+          <summary-highlights v-if="!isLoading && totalNewFindings > 0" :highlights="highlights" />
+        </div>
       </div>
     </div>
   </div>
