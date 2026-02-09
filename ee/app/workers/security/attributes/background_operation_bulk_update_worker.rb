@@ -40,10 +40,10 @@ module Security
         if result.success?
           record_success
         else
-          record_failure(project, result.message, 'service_error')
+          record_failure(project, result.message)
         end
       rescue StandardError => e
-        record_failure(project, e.message, 'unexpected_error')
+        record_failure(project, e.message)
         Gitlab::ErrorTracking.track_exception(e, operation_id: operation_id, project_id: project.id)
       end
 

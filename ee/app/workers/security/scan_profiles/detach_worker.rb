@@ -4,6 +4,7 @@ module Security
   module ScanProfiles
     class DetachWorker
       include ApplicationWorker
+      include Security::BackgroundOperationTracking
 
       data_consistency :sticky
       idempotent!
@@ -13,22 +14,48 @@ module Security
 
       feature_category :security_asset_inventories
 
-      def perform(group_id, scan_profile_id, current_user_id, traverse_hierarchy = true)
-        group = Group.find_by_id(group_id)
-        return unless group
+      def perform(group_id, scan_profile_id, current_user_id, operation_id = nil, traverse_hierarchy = true)
+        return unless load_resources(group_id, scan_profile_id, current_user_id)
 
-        scan_profile = Security::ScanProfile.find_by_id(scan_profile_id)
-        return unless scan_profile
+        @operation_id = operation_id
 
-        current_user = User.find_by_id(current_user_id)
-        return unless current_user
+        # Skip if operation was deleted (e.g., already finalized by another worker)
+        return if @operation_id && !operation_exists?
 
-        Security::ScanProfiles::DetachService.execute(
-          group,
-          scan_profile,
-          current_user: current_user,
-          traverse_hierarchy: traverse_hierarchy
+        result = Security::ScanProfiles::DetachService.execute(
+          @group,
+          @scan_profile,
+          current_user: @user,
+          traverse_hierarchy: traverse_hierarchy,
+          operation_id: @operation_id
         )
+
+        track_and_finalize(result) if @operation_id
+      end
+
+      private
+
+      def load_resources(group_id, scan_profile_id, current_user_id)
+        @group = Group.find_by_id(group_id)
+        return false unless @group
+
+        @scan_profile = Security::ScanProfile.find_by_id(scan_profile_id)
+        return false unless @scan_profile
+
+        @user = User.find_by_id(current_user_id)
+        return false unless @user
+
+        true
+      end
+
+      def track_and_finalize(result)
+        if result[:status] == :success
+          record_success
+        else
+          record_failure(@group, result[:message])
+        end
+
+        finalize_if_complete
       end
     end
   end

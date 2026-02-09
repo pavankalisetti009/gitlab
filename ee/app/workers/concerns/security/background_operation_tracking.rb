@@ -4,14 +4,19 @@ module Security
   module BackgroundOperationTracking
     extend ActiveSupport::Concern
 
+    OPERATION_TYPE_TRANSLATION_KEYS = {
+      'attribute_update' => 'Attribute update',
+      'profile_attach' => 'Profile attach',
+      'profile_detach' => 'Profile detach'
+    }.freeze
+
     included do
       attr_reader :operation_id, :user
     end
 
     def self.humanized_operation_type(operation_type)
-      {
-        'attribute_update' => _('Attribute update')
-      }.fetch(operation_type.to_s, operation_type.to_s.humanize.downcase)
+      key = OPERATION_TYPE_TRANSLATION_KEYS.fetch(operation_type.to_s, nil)
+      key ? _(key) : operation_type.to_s.humanize.downcase
     end
 
     private
@@ -20,19 +25,21 @@ module Security
       Gitlab::BackgroundOperations::RedisStore.get_operation(operation_id).present?
     end
 
-    def record_failure(project, error_message, error_code)
-      Gitlab::BackgroundOperations::RedisStore.add_failed_project(
+    def record_failure(entity, error_message)
+      entity_type = entity.is_a?(Group) ? 'Group' : 'Project'
+
+      Gitlab::BackgroundOperations::RedisStore.add_failed_item(
         operation_id,
-        project_id: project.id,
-        project_name: project.name,
-        project_full_path: project.full_path,
-        error_message: error_message,
-        error_code: error_code
+        entity_id: entity.id,
+        entity_type: entity_type,
+        entity_name: entity.name,
+        entity_full_path: entity.full_path,
+        error_message: error_message
       )
     end
 
-    def record_success
-      Gitlab::BackgroundOperations::RedisStore.increment_successful(operation_id)
+    def record_success(count = 1)
+      Gitlab::BackgroundOperations::RedisStore.increment_successful(operation_id, count)
     end
 
     def finalize_if_complete

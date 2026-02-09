@@ -39,21 +39,17 @@ module Gitlab
         end
       end
 
-      def self.add_failed_project(
-        operation_id, project_id:, error_message:, error_code:,
-        project_name: nil, project_full_path: nil
+      def self.add_failed_item(
+        operation_id, entity_id:, entity_type:, error_message:,
+        entity_name: nil, entity_full_path: nil
       )
-        # Check if this project already has a failure recorded (idempotency for retries)
-        existing_failures = get_failed_items(operation_id)
-        return if existing_failures.any? { |item| item['project_id'] == project_id }
-
         item = {
-          'project_id' => project_id,
-          'project_name' => project_name,
-          'project_full_path' => project_full_path,
-          'error_message' => error_message,
-          'error_code' => error_code
-        }
+          'entity_id' => entity_id,
+          'entity_type' => entity_type,
+          'entity_name' => entity_name,
+          'entity_full_path' => entity_full_path,
+          'error_message' => error_message
+        }.compact
 
         op_key = operation_key(operation_id)
         failed_key = failed_items_key(operation_id)

@@ -68,15 +68,15 @@ RSpec.describe Gitlab::BackgroundOperations::RedisStore, feature_category: :secu
     end
   end
 
-  describe '.add_failed_project' do
-    it 'adds failed project and increments counter atomically' do
-      described_class.add_failed_project(
+  describe '.add_failed_item' do
+    it 'adds failed item and increments counter atomically' do
+      described_class.add_failed_item(
         operation_id,
-        project_id: 10,
-        project_name: 'My Project',
-        project_full_path: 'my-group/my-project',
-        error_message: 'Permission denied',
-        error_code: 'permission_denied'
+        entity_id: 10,
+        entity_type: 'Project',
+        entity_name: 'My Project',
+        entity_full_path: 'my-group/my-project',
+        error_message: 'Permission denied'
       )
 
       operation = described_class.get_operation(operation_id)
@@ -84,25 +84,27 @@ RSpec.describe Gitlab::BackgroundOperations::RedisStore, feature_category: :secu
 
       items = described_class.get_failed_items(operation_id)
       expect(items.size).to eq(1)
-      expect(items.first['project_id']).to eq(10)
-      expect(items.first['project_name']).to eq('My Project')
-      expect(items.first['project_full_path']).to eq('my-group/my-project')
-      expect(items.first['error_message']).to eq('Permission denied')
-      expect(items.first['error_code']).to eq('permission_denied')
+      expect(items.first).to include(
+        'entity_id' => 10,
+        'entity_type' => 'Project',
+        'entity_name' => 'My Project',
+        'entity_full_path' => 'my-group/my-project',
+        'error_message' => 'Permission denied'
+      )
     end
 
-    it 'adds multiple failed projects' do
-      described_class.add_failed_project(
+    it 'adds multiple failed items' do
+      described_class.add_failed_item(
         operation_id,
-        project_id: 10,
-        error_message: 'Error 1',
-        error_code: 'code_1'
+        entity_id: 10,
+        entity_type: 'Project',
+        error_message: 'Error 1'
       )
-      described_class.add_failed_project(
+      described_class.add_failed_item(
         operation_id,
-        project_id: 20,
-        error_message: 'Error 2',
-        error_code: 'code_2'
+        entity_id: 20,
+        entity_type: 'Group',
+        error_message: 'Error 2'
       )
 
       operation = described_class.get_operation(operation_id)
@@ -112,26 +114,25 @@ RSpec.describe Gitlab::BackgroundOperations::RedisStore, feature_category: :secu
       expect(items.size).to eq(2)
     end
 
-    it 'does not add duplicate failures for the same project_id' do
-      described_class.add_failed_project(
+    it 'allows duplicate failures for the same entity_id with different types' do
+      described_class.add_failed_item(
         operation_id,
-        project_id: 10,
-        error_message: 'First error',
-        error_code: 'code_1'
+        entity_id: 10,
+        entity_type: 'Project',
+        error_message: 'First error'
       )
-      described_class.add_failed_project(
+      described_class.add_failed_item(
         operation_id,
-        project_id: 10,
-        error_message: 'Second error',
-        error_code: 'code_2'
+        entity_id: 10,
+        entity_type: 'Group',
+        error_message: 'Second error'
       )
 
       operation = described_class.get_operation(operation_id)
-      expect(operation.failed_items).to eq(1)
+      expect(operation.failed_items).to eq(2)
 
       items = described_class.get_failed_items(operation_id)
-      expect(items.size).to eq(1)
-      expect(items.first['error_message']).to eq('First error')
+      expect(items.size).to eq(2)
     end
   end
 
@@ -160,11 +161,11 @@ RSpec.describe Gitlab::BackgroundOperations::RedisStore, feature_category: :secu
 
     it 'returns all failed items' do
       3.times do |i|
-        described_class.add_failed_project(
+        described_class.add_failed_item(
           operation_id,
-          project_id: i,
-          error_message: "Error #{i}",
-          error_code: "code_#{i}"
+          entity_id: i,
+          entity_type: 'Project',
+          error_message: "Error #{i}"
         )
       end
 
@@ -176,11 +177,11 @@ RSpec.describe Gitlab::BackgroundOperations::RedisStore, feature_category: :secu
 
   describe '.delete_operation' do
     it 'deletes operation and failed items' do
-      described_class.add_failed_project(
+      described_class.add_failed_item(
         operation_id,
-        project_id: 10,
-        error_message: 'Error',
-        error_code: 'code'
+        entity_id: 10,
+        entity_type: 'Project',
+        error_message: 'Error'
       )
 
       described_class.delete_operation(operation_id)

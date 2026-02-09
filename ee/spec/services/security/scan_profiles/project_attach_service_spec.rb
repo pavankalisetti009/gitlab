@@ -94,7 +94,7 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
       it 'returns an error for the project at limit' do
         result = execute_service
         expect(result[:errors]).to include(
-          "Project #{project_at_limit.id} has reached the maximum limit of scan profiles."
+          match(/Project '#{project_at_limit.name}'.*#{project_at_limit.full_path}.*maximum limit/)
         )
       end
 
@@ -158,10 +158,29 @@ RSpec.describe Security::ScanProfiles::ProjectAttachService, feature_category: :
         allow(Security::ScanProfileProject).to receive(:connection).and_raise(StandardError, 'DB connection failed')
       end
 
-      it 'returns the error message' do
-        result = execute_service
+      it 'raises the error in development/test environment' do
+        expect { execute_service }.to raise_error(StandardError, 'DB connection failed')
+      end
 
-        expect(result[:errors]).to eq(['DB connection failed'])
+      context 'when not in development environment' do
+        before do
+          allow(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception) do |e|
+            Gitlab::ErrorTracking.track_exception(e)
+          end
+        end
+
+        it 'returns an error result without raising' do
+          result = execute_service
+
+          expect(result[:errors]).to include('An error has occurred during profile attachment')
+        end
+
+        it 'tracks the exception' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception)
+            .with(an_instance_of(StandardError))
+
+          execute_service
+        end
       end
     end
 
