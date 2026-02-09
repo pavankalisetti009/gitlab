@@ -56,15 +56,15 @@ export default {
         tools: this.toolIds,
         definition: this.definition,
         public: false,
-        type: this.aiCatalogAgent.itemType,
+        itemType: this.aiCatalogAgent.itemType,
       };
     },
   },
   methods: {
-    async handleSubmit({ type, ...input }) {
+    async handleSubmit({ itemType, ...input }) {
       this.isSubmitting = true;
       this.resetErrorMessages();
-      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[type].create;
+      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[itemType].create;
 
       try {
         const { data } = await this.$apollo.mutate({

@@ -19,9 +19,16 @@ module EE
               def security_policy_management_project_access_allowed?(project)
                 context.logger.instrument(:config_file_project_validate_access_policy) do
                   next false unless policy_management_project_access_allowed?
-
                   next false unless context.project.affected_by_security_policy_management_project?(project)
 
+                  spp_allows_pipeline_access?(project)
+                end
+              end
+
+              def spp_allows_pipeline_access?(project)
+                ::Gitlab::SafeRequestStore.fetch(
+                  ['Ci::Config::External::File::Project', 'spp_allows_pipeline_access', project.id]
+                ) do
                   ::Security::OrchestrationPolicyConfiguration.policy_management_project?(project) &&
                     project.project_setting.spp_repository_pipeline_access
                 end

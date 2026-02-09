@@ -65,15 +65,15 @@ export default {
         tools: this.toolIds,
         definition: this.definition,
         public: this.aiCatalogAgent.public,
-        type: this.aiCatalogAgent.itemType,
+        itemType: this.aiCatalogAgent.itemType,
       };
     },
   },
   methods: {
-    async handleSubmit({ type, ...input }) {
+    async handleSubmit({ itemType, ...input }) {
       this.isSubmitting = true;
       this.resetErrorMessages();
-      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[type].update;
+      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[itemType].update;
       const originalItemUpdatedAt = this.aiCatalogAgent.updatedAt;
       const originalVersionUpdatedAt = this.aiCatalogAgent.latestVersion.updatedAt;
 

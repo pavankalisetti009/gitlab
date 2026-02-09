@@ -93,7 +93,7 @@ describe('AiCatalogAgentsDuplicate', () => {
     const baseExpectedInitialValues = {
       name: `Copy of ${mockAgent.name}`,
       description: mockAgent.description,
-      type: 'AGENT',
+      itemType: 'AGENT',
       public: false,
     };
 
@@ -306,18 +306,15 @@ describe('AiCatalogAgentsDuplicate', () => {
 
   describe('Form Submit', () => {
     const { name, description, project } = mockAgent;
-    const formValues = {
+    const input = {
       name: `${name} 2`,
       description,
       projectId: project.id,
       systemPrompt: 'A new system prompt',
       public: true,
-      type: 'AGENT',
     };
 
-    const submitForm = () => findForm().vm.$emit('submit', formValues);
-
-    const { type, ...input } = formValues;
+    const submitForm = () => findForm().vm.$emit('submit', { itemType: 'AGENT', ...input });
 
     beforeEach(async () => {
       createComponent();
