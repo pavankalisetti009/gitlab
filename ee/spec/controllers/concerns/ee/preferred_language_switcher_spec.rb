@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe PreferredLanguageSwitcher, type: :controller, feature_category: :acquisition do
+RSpec.describe PreferredLanguageSwitcher, feature_category: :acquisition do
   include StubLanguagesTranslationPercentage
 
   controller(ActionController::Base) do

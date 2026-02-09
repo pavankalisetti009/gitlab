@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe MergeChecksHelper, type: :helper, feature_category: :code_review_workflow do
+RSpec.describe MergeChecksHelper, feature_category: :code_review_workflow do
   let_it_be(:group) { create_default(:group, :public) }
   let_it_be(:project) { create_default(:project, group: group) }
 

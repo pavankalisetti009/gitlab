@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_chat do
+RSpec.describe Ai::Conversation::Thread, feature_category: :duo_chat do
   describe 'associations' do
     it { is_expected.to have_many(:messages).class_name('Ai::Conversation::Message') }
     it { is_expected.to belong_to(:organization).class_name('Organizations::Organization') }
