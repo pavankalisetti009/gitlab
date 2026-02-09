@@ -205,6 +205,26 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
           end
         end
 
+        context 'when consumer is not found' do
+          before do
+            allow(::Ai::Catalog::ItemConsumersFinder).to receive(:new).and_return(
+              instance_double(::Ai::Catalog::ItemConsumersFinder, execute: [])
+            )
+          end
+
+          it 'logs info and returns early without calling the execute service' do
+            expect(::Ai::Catalog::Flows::ExecuteService).not_to receive(:new)
+
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              message: 'SAST false positive detection workflow not configured for project',
+              vulnerability_id: vulnerability.id,
+              project_id: project.id
+            )
+
+            worker.perform(vulnerability_id)
+          end
+        end
+
         context 'when workflow service fails' do
           let(:service_result) do
             ServiceResponse.error(message: 'Workflow creation failed', reason: :invalid_params)

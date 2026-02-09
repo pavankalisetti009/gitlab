@@ -21,7 +21,16 @@ module Vulnerabilities
 
       return unless ::Feature.enabled?(:enable_vulnerability_fp_detection, vulnerability.group)
 
-      result = trigger_workflow(vulnerability)
+      project = vulnerability.project
+      user = project.first_owner || vulnerability.author
+      consumer = find_consumer(user, project)
+
+      unless consumer
+        log_workflow_not_configured(vulnerability)
+        return
+      end
+
+      result = trigger_workflow(vulnerability, user, consumer)
 
       if result.success?
         track_event(vulnerability) if create_triggered_workflow_record(vulnerability, result)
@@ -38,11 +47,8 @@ module Vulnerabilities
       ::Vulnerability.find_by_id(vulnerability_id)
     end
 
-    def trigger_workflow(vulnerability)
+    def trigger_workflow(vulnerability, user, consumer)
       project = vulnerability.project
-      user = project.first_owner || vulnerability.author
-
-      consumer = find_consumer(user, project)
       service_account = find_service_account(consumer)
 
       flow_params = {
@@ -92,6 +98,14 @@ module Vulnerabilities
       Gitlab::ErrorTracking.log_and_raise_exception(
         error,
         vulnerability_id: vulnerability_id
+      )
+    end
+
+    def log_workflow_not_configured(vulnerability)
+      Gitlab::AppLogger.info(
+        message: 'SAST false positive detection workflow not configured for project',
+        vulnerability_id: vulnerability.id,
+        project_id: vulnerability.project.id
       )
     end
 
