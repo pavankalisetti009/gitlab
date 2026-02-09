@@ -30,7 +30,10 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
       it_behaves_like 'calls vulnerability statistics utility services in order'
 
       it_behaves_like 'removes dismissal feedback from associated findings'
+
       it_behaves_like 'triggering vulnerability webhook event'
+
+      it_behaves_like 'creating state transition record', :resolved
 
       it 'resolves a vulnerability' do
         freeze_time do
@@ -59,18 +62,6 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
 
       it 'creates note' do
         expect(SystemNoteService).to receive(:change_vulnerability_state).with(vulnerability, user)
-
-        resolve_vulnerability
-      end
-
-      it 'creates state transition entry to `resolved`' do
-        expect(::Vulnerabilities::StateTransition).to receive(:create!).with(
-          vulnerability: vulnerability,
-          from_state: vulnerability.state,
-          to_state: :resolved,
-          author: user,
-          comment: "resolve vulnerability comment"
-        )
 
         resolve_vulnerability
       end
