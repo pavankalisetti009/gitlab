@@ -2271,9 +2271,6 @@ msgstr ""
 msgid "A file with this name already exists."
 msgstr ""
 
-msgid "A group is a collection of several projects"
-msgstr ""
-
 msgid "A group represents your organization in GitLab. Groups allow you to manage users and collaborate across multiple projects."
 msgstr ""
 
@@ -28858,9 +28855,6 @@ msgstr ""
 msgid "Existing branch name, tag, or commit SHA"
 msgstr ""
 
-msgid "Existing projects may be moved into a group"
-msgstr ""
-
 msgid "Existing projects will be able to use cleanup policies. Avoid enabling this if an external container registry is being used, as there is a performance risk if many images exist on one project."
 msgstr ""
 
@@ -33518,9 +33512,6 @@ msgstr ""
 msgid "Group path"
 msgstr ""
 
-msgid "Group project URLs are prefixed with the group namespace"
-msgstr ""
-
 msgid "Group requires separate account"
 msgstr ""
 
@@ -34532,12 +34523,6 @@ msgstr ""
 msgid "Groups|Groups that are archived or pending deletion will appear here."
 msgstr ""
 
-msgid "Groups|Learn more about subgroups"
-msgstr ""
-
-msgid "Groups|Members, projects, trials, and paid subscriptions are tied to a specific top-level group. If you are already a member of a top-level group, you can create a subgroup so your new work is part of your existing top-level group. Do you want to create a subgroup instead?"
-msgstr ""
-
 msgid "Groups|Must start with letter, digit, emoji, or underscore. Can also contain periods, dashes, spaces, and parentheses."
 msgstr ""
 
@@ -34590,9 +34575,6 @@ msgid "Groups|You don't have any active groups yet."
 msgstr ""
 
 msgid "Groups|You don't have any inactive groups."
-msgstr ""
-
-msgid "Groups|You're creating a new top-level group"
 msgstr ""
 
 msgid "Groups|Your group name must not contain a period if you intend to use SCIM integration, as it can lead to errors."
@@ -42302,9 +42284,6 @@ msgid "Members can be added by project %{i_open}Maintainers%{i_close} or %{i_ope
 msgstr ""
 
 msgid "Members listed as CODEOWNERS of affected files."
-msgstr ""
-
-msgid "Members of a group may only view projects they have permission to access"
 msgstr ""
 
 msgid "Members of these groups can also merge into this branch: %{branch}"
@@ -73381,6 +73360,9 @@ msgstr ""
 msgid "UsageQuota|Container registry"
 msgstr ""
 
+msgid "UsageQuota|Cruft packs"
+msgstr ""
+
 msgid "UsageQuota|Deleted Namespace #%{id}"
 msgstr ""
 
@@ -73450,6 +73432,9 @@ msgstr ""
 msgid "UsageQuota|Job artifacts created by CI/CD."
 msgstr ""
 
+msgid "UsageQuota|Last full repack"
+msgstr ""
+
 msgid "UsageQuota|Last update: %{date}"
 msgstr ""
 
@@ -73466,6 +73451,12 @@ msgid "UsageQuota|Local proxy used for frequently-accessed upstream Docker image
 msgstr ""
 
 msgid "UsageQuota|Lookup table"
+msgstr ""
+
+msgid "UsageQuota|Loose objects"
+msgstr ""
+
+msgid "UsageQuota|Maintenance status"
 msgstr ""
 
 msgid "UsageQuota|Month"
@@ -73507,6 +73498,9 @@ msgstr ""
 msgid "UsageQuota|No reachability bitmap detected. A reachability bitmap can accelerate Git operations that need to determine object reachability, improving performance for clones, fetches, and pushes."
 msgstr ""
 
+msgid "UsageQuota|Object packing"
+msgstr ""
+
 msgid "UsageQuota|Objects storage"
 msgstr ""
 
@@ -73514,6 +73508,9 @@ msgid "UsageQuota|Observability"
 msgstr ""
 
 msgid "UsageQuota|Packfile count: %{value}"
+msgstr ""
+
+msgid "UsageQuota|Packfiles"
 msgstr ""
 
 msgid "UsageQuota|Pending Members"
