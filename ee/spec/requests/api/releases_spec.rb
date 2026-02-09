@@ -280,6 +280,14 @@ RSpec.describe API::Releases, feature_category: :release_orchestration do
       end
     end
 
+    it_behaves_like 'authorizing granular token permissions', :create_release_evidence do
+      let(:boundary_object) { project }
+      let(:user) { maintainer }
+      let(:request) do
+        post api("/projects/#{project.id}/releases/#{tag_name}/evidence", personal_access_token: pat)
+      end
+    end
+
     it 'accepts the request' do
       post api("/projects/#{project.id}/releases/#{tag_name}/evidence", maintainer)
 
