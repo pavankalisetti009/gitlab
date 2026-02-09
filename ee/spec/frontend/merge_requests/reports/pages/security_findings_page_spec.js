@@ -4,6 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import SmartInterval from '~/smart_interval';
+import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
 import SecurityFindingsPage from 'ee/merge_requests/reports/pages/security_findings_page.vue';
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
@@ -205,6 +206,53 @@ describe('Security findings page component', () => {
       await waitForPromises();
 
       expect(findSummaryText().props('showAtLeastHint')).toBe(true);
+    });
+  });
+
+  describe('StatusIcon', () => {
+    const findStatusIcon = () => wrapper.findComponent(StatusIcon);
+
+    it('passes isLoading true while fetching reports', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest.fn(() => new Promise(() => {})),
+      });
+
+      await waitForPromises();
+
+      expect(findStatusIcon().props('isLoading')).toBe(true);
+    });
+
+    it('passes isLoading false after reports are fetched', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest.fn().mockResolvedValue(mockFindingReportsComparerEmptyResponse),
+      });
+
+      await waitForPromises();
+
+      expect(findStatusIcon().props('isLoading')).toBe(false);
+    });
+
+    it.each`
+      scenario          | mock                                         | expected
+      ${'no findings'}  | ${mockFindingReportsComparerEmptyResponse}   | ${'success'}
+      ${'has findings'} | ${mockFindingReportsComparerSuccessResponse} | ${'warning'}
+    `('passes $expected icon when $scenario', async ({ mock, expected }) => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+        findingReportsHandler: jest.fn().mockResolvedValue(mock),
+      });
+
+      await waitForPromises();
+
+      expect(findStatusIcon().props('iconName')).toBe(expected);
     });
   });
 
