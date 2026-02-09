@@ -9,7 +9,7 @@ module Groups
     urgency :low
 
     def show
-      render GitlabSubscriptions::DiscoverDuoCoreTrialComponent.new(namespace: @group)
+      render GitlabSubscriptions::DiscoverComponent.new(namespace: @group)
     end
 
     private
