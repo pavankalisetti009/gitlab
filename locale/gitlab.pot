@@ -75168,6 +75168,84 @@ msgstr ""
 msgid "VirtualRegistries|Virtual Registries"
 msgstr ""
 
+msgid "VirtualRegistryCleanupPolicyForm|%{nextRunAt} (estimated cleanup time)"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Cancel"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Delete caches not accessed in the last (days)"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Disabling does not delete caches."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Email notifications"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Enable cleanup policy"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Every day"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Every month"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Every three months"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Every two weeks"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Every week"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Failed to load cleanup policy. Please try again."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Loading cleanup policy"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Must be %{max} days or less."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Must be a whole number."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Must be at least %{min} day."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Next cleanup scheduled to run on"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Not yet scheduled"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Note: Any policy update changes the scheduled run date and time"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Run cleanup"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Save changes"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Save storage space by automatically deleting caches from the virtual registry and keeping the ones you want. %{linkStart}How does cleanup work?%{linkEnd}"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Send email notifications if cleanup fails"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Send email notifications when cleanup runs"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|This field is required."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Virtual registry cache cleanup policy"
+msgstr ""
+
 msgid "VirtualRegistryCleanupPolicy|%{labelStart}Last cleanup:%{labelEnd} %{date}."
 msgstr ""
 
@@ -75195,9 +75273,6 @@ msgstr ""
 msgid "VirtualRegistryCleanupPolicy|Cache cleanup failed. No cache entries were removed."
 msgstr ""
 
-msgid "VirtualRegistryCleanupPolicy|Create policy"
-msgstr ""
-
 msgid "VirtualRegistryCleanupPolicy|Delete caches not accessed in last %{strongStart}%{days} day%{strongEnd}"
 msgid_plural "VirtualRegistryCleanupPolicy|Delete caches not accessed in last %{strongStart}%{days} days%{strongEnd}"
 msgstr[0] ""
@@ -75212,7 +75287,7 @@ msgstr ""
 msgid "VirtualRegistryCleanupPolicy|Enabled"
 msgstr ""
 
-msgid "VirtualRegistryCleanupPolicy|No cleanup policy yet. Create a policy to delete caches and save space."
+msgid "VirtualRegistryCleanupPolicy|No cleanup rule yet. Define when caches should be deleted to save space."
 msgstr ""
 
 msgid "VirtualRegistryCleanupPolicy|Running"
@@ -75240,6 +75315,9 @@ msgid "VirtualRegistryCleanupPolicy|Send email notifications %{strongStart}when 
 msgstr ""
 
 msgid "VirtualRegistryCleanupPolicy|Send email notifications %{strongStart}when cleanup runs%{strongEnd} and %{strongStart}if cleanup fails%{strongEnd}"
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicy|Set policy"
 msgstr ""
 
 msgid "VirtualRegistryCleanupPolicy|Something went wrong while fetching the cleanup policy."
@@ -75603,9 +75681,6 @@ msgid "VirtualRegistry|Rule:"
 msgstr ""
 
 msgid "VirtualRegistry|Save registry"
-msgstr ""
-
-msgid "VirtualRegistry|Save storage space by automatically deleting caches from the virtual registry and keeping the ones you want."
 msgstr ""
 
 msgid "VirtualRegistry|Select an upstream"
