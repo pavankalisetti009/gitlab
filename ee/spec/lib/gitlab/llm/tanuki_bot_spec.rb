@@ -56,6 +56,37 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     end
   end
 
+  describe '.classic_chat_available?' do
+    let(:checked_user) { nil }
+
+    subject(:chat_available) { described_class.classic_chat_available?(user: checked_user) }
+
+    context 'when user is nil' do
+      it { is_expected.to be false }
+    end
+
+    context 'when user is present' do
+      let(:checked_user) { user }
+      let(:can_access_classic_chat) { false }
+
+      before do
+        allow(checked_user).to receive(:can?).with(:access_duo_classic_chat).and_return(can_access_classic_chat)
+      end
+
+      context 'when user can access duo classic chat' do
+        let(:can_access_classic_chat) { true }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when user cannot access duo classic chat' do
+        let(:can_access_classic_chat) { false }
+
+        it { is_expected.to be false }
+      end
+    end
+  end
+
   describe '.agentic_mode_available?' do
     let_it_be(:project) { create(:project) }
     let_it_be(:group) { create(:group) }

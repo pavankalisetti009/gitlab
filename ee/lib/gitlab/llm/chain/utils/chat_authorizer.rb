@@ -48,7 +48,7 @@ module Gitlab
             response = super(user: user)
             return response unless response.allowed?
 
-            allowed = user.can?(:access_duo_classic_chat)
+            allowed = user.can?(:access_duo_entry_point)
             message = no_access_message unless allowed
             Response.new(allowed: allowed, message: message)
           end

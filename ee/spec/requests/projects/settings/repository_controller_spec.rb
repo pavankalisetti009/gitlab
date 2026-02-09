@@ -54,6 +54,10 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
       context 'with custom roles' do
         before do
           stub_licensed_features(custom_roles: true)
+
+          # TODO: reduce query for Duo permission check
+          # https://gitlab.com/gitlab-org/gitlab/-/work_items/588899
+          stub_ee_application_setting(duo_features_enabled: false, lock_duo_features_enabled: true)
         end
 
         it 'does not cause a N+1 problem' do
