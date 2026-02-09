@@ -690,6 +690,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           create(
             :vulnerabilities_flag,
             :false_positive,
+            status: :detected_as_fp,
             finding: vulnerability.findings.first
           )
         end

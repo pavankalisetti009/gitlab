@@ -263,6 +263,14 @@ module Vulnerabilities
       where(report_type: 'cluster_image_scanning')
         .where("vulnerability_occurrences.location -> 'kubernetes_resource' -> 'agent_id' ?| array[:agent_ids]", agent_ids: agent_ids)
     end
+    scope :with_detected_as_fp_flag, -> do
+      joins(:vulnerability_flags)
+        .merge(
+          ::Vulnerabilities::Flag
+            .false_positive
+            .with_status(:detected_as_fp)
+        )
+    end
 
     alias_method :declarative_policy_subject, :project
     alias_attribute :finding_details, :details

@@ -44,6 +44,36 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
     it { is_expected.to contain_exactly(vulnerability_flag) }
   end
 
+  describe '.with_status' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:detected_flag) do
+      create(:vulnerabilities_flag, :false_positive, status: :detected_as_fp)
+    end
+
+    let_it_be(:in_progress_flag) do
+      create(:vulnerabilities_flag, :false_positive, status: :in_progress)
+    end
+
+    let_it_be(:failed_flag) do
+      create(:vulnerabilities_flag, :false_positive, status: :failed)
+    end
+
+    where(:status, :expected) do
+      :detected_as_fp | -> { [detected_flag] }
+      :in_progress    | -> { [in_progress_flag] }
+      :failed         | -> { [failed_flag] }
+    end
+
+    with_them do
+      subject(:scope) { described_class.with_status(status) }
+
+      it 'returns only flags with the given status' do
+        expect(scope).to match_array(instance_exec(&expected))
+      end
+    end
+  end
+
   describe 'after_commit callback for trigger_resolution_workflow' do
     let_it_be(:project) { create(:project) }
     let_it_be(:user) { create(:user) }
