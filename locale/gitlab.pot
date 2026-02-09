@@ -75070,9 +75070,6 @@ msgstr ""
 msgid "View logs"
 msgstr ""
 
-msgid "View merge requests you're involved with from start to finish by highlighting those that Needs Attention and those you are Following."
-msgstr ""
-
 msgid "View milestones"
 msgstr ""
 
@@ -75893,9 +75890,6 @@ msgid "VisibilityLevel|This visibility level is not allowed because the parent g
 msgstr ""
 
 msgid "VisibilityLevel|Unknown"
-msgstr ""
-
-msgid "Visit new homepage"
 msgstr ""
 
 msgid "Visual Studio"
@@ -80940,9 +80934,6 @@ msgid "Your membership in %{project_or_group} %{project_or_group_name} will expi
 msgstr ""
 
 msgid "Your merge requests"
-msgstr ""
-
-msgid "Your merge requests have a new homepage!"
 msgstr ""
 
 msgid "Your merge requests merged in the last 2 weeks."

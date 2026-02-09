@@ -96,7 +96,7 @@ module Users
       branch_rules_tip_callout: 93,
       openssl_callout: 94,
       # 95 removed in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/170868
-      new_mr_dashboard_banner: 96,
+      # 96 removed in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/222230,
       # 97 removed in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196130
       # EE-only
       pipl_compliance_alert: 98,
