@@ -219,7 +219,7 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatAuthorizer, feature_category: :duo
           let(:duo_features_enabled) { true }
 
           it "calls policy with the appropriate arguments" do
-            expect(user).to receive(:can?).with(:access_duo_classic_chat)
+            expect(user).to receive(:can?).with(:access_duo_entry_point)
 
             authorizer.container(container: container, user: user)
           end

@@ -26,7 +26,9 @@ module Gitlab
       end
 
       def self.classic_chat_available?(user:)
-        show_duo_entry_point?(user: user)
+        return false unless user
+
+        user.can?(:access_duo_classic_chat)
       end
 
       def self.show_duo_entry_point?(user:)

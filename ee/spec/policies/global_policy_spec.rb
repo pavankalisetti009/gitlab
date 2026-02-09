@@ -780,6 +780,34 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
   end
 
+  describe 'access_duo_entry_point' do
+    let_it_be_with_reload(:current_user) { create(:user) }
+
+    where(:has_classic_chat, :has_agentic_chat, :allowed) do
+      true  | true  | be_allowed(:access_duo_entry_point)
+      true  | false | be_allowed(:access_duo_entry_point)
+      false | true  | be_allowed(:access_duo_entry_point)
+      false | false | be_disallowed(:access_duo_entry_point)
+    end
+
+    with_them do
+      before do
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:chat, unit_primitive_name: :duo_classic_chat).and_return(has_classic_chat)
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:agentic_chat, unit_primitive_name: :duo_chat).and_return(has_agentic_chat)
+      end
+
+      it { is_expected.to allowed }
+    end
+
+    context 'when user is nil' do
+      let(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(:access_duo_entry_point) }
+    end
+  end
+
   describe 'access_x_ray_on_instance' do
     context 'when on .org or .com', :saas do
       context 'when x ray available' do
