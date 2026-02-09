@@ -160,7 +160,7 @@ RSpec.shared_examples 'merge validation hooks' do |args|
 
   context 'fast forward merge request' do
     it 'returns true when fast forward is enabled' do
-      allow(project).to receive(:merge_requests_ff_only_enabled) { true }
+      allow(project).to receive(:merge_requests_ff_only_enabled).and_return(true)
 
       expect(hooks_pass?).to be(true)
       expect(hooks_error).to be_nil
@@ -250,7 +250,7 @@ RSpec.shared_examples 'merge validation hooks' do |args|
 
   context 'when the project uses the fast-forward merge method' do
     before do
-      allow(project).to receive(:merge_requests_ff_only_enabled) { true }
+      allow(project).to receive(:merge_requests_ff_only_enabled).and_return(true)
     end
 
     it_behaves_like 'squashing commits'

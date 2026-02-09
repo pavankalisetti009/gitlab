@@ -17,7 +17,7 @@ RSpec.shared_examples 'a Geo event store' do |event_class|
     end
 
     it 'does not create an event if there are no secondary nodes' do
-      allow(Gitlab::Geo).to receive(:secondary_nodes) { [] }
+      allow(Gitlab::Geo).to receive(:secondary_nodes).and_return([])
 
       expect { subject.create! }.not_to change(event_class, :count)
     end

@@ -8,7 +8,7 @@ RSpec.describe 'admin/application_settings/_git_abuse_rate_limit' do
   before do
     assign(:application_setting, application_setting)
     allow(view).to receive(:current_user) { admin }
-    allow(view).to receive(:expanded_by_default) { true }
+    allow(view).to receive(:expanded_by_default).and_return(true)
   end
 
   describe 'git abuse rate limit settings' do
