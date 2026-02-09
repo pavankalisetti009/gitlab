@@ -94,6 +94,9 @@ export default {
       // Show modal when dashboard path is unavailable (path only available in project/group scope, not global scope, e.g., /explore/ai-catalog/agents)
       return this.aiImpactDashboardEnabled && !this.aiImpactDashboardPath;
     },
+    hasDashboardLinkWithActions() {
+      return !this.isGlobal && this.canAdmin && this.aiImpactDashboardEnabled;
+    },
   },
   LINK_TO_DASHBOARD_MODAL_ID,
   TRACKING_ACTION_CLICK_DASHBOARD_LINK,
@@ -119,9 +122,13 @@ export default {
         </span>
       </template>
       <template #actions>
-        <div class="gl-flex gl-flex-wrap gl-items-center gl-gap-3">
+        <div
+          data-testid="ai-catalog-list-header-actions"
+          :class="{ 'gl-gap-5': hasDashboardLinkWithActions }"
+          class="gl-flex gl-flex-wrap gl-items-center"
+        >
           <template v-if="aiImpactDashboardEnabled">
-            <div :class="{ 'sm:gl-mr-4': !isGlobal }" class="gl-flex gl-items-center gl-gap-3">
+            <div class="gl-flex gl-items-center gl-gap-3">
               <gl-button
                 v-if="shouldShowLinkToDashboardsModal"
                 v-gl-modal="$options.LINK_TO_DASHBOARD_MODAL_ID"

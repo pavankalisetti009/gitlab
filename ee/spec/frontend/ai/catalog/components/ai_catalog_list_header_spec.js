@@ -28,6 +28,7 @@ describe('AiCatalogListHeader', () => {
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
+  const findHeaderActions = () => wrapper.findByTestId('ai-catalog-list-header-actions');
   const findDashboardLink = () => wrapper.findByTestId('ai-impact-dashboard-link');
   const findDashboardIcon = () => wrapper.findComponent(GlIcon);
   const findPopover = () => wrapper.findComponent(GlPopover);
@@ -291,6 +292,34 @@ describe('AiCatalogListHeader', () => {
       createComponent({ provide: { showLegalDisclaimer: false } });
 
       expect(findLegalDisclaimer().exists()).toBe(false);
+    });
+  });
+
+  describe('actions container spacing', () => {
+    it.each`
+      isGlobal | canAdmin | aiImpactDashboardEnabled
+      ${true}  | ${true}  | ${true}
+      ${false} | ${true}  | ${false}
+      ${false} | ${false} | ${true}
+    `(
+      'does not apply gap spacing when isGlobal=$isGlobal, canAdmin=$canAdmin and aiImpactDashboardEnabled=$aiImpactDashboardEnabled',
+      ({ isGlobal, canAdmin, aiImpactDashboardEnabled }) => {
+        createComponent({
+          provide: { isGlobal, aiImpactDashboardEnabled },
+          props: { canAdmin },
+        });
+
+        expect(findHeaderActions().classes()).not.toContain('gl-gap-5');
+      },
+    );
+
+    it('applies gap spacing when isGlobal=false, canAdmin=true and aiImpactDashboardEnabled=true', () => {
+      createComponent({
+        provide: { isGlobal: false, aiImpactDashboardEnabled: true },
+        props: { canAdmin: true },
+      });
+
+      expect(findHeaderActions().classes()).toContain('gl-gap-5');
     });
   });
 });
