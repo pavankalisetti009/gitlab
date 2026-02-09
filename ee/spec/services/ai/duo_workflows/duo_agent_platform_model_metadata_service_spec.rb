@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_category: :duo_agent_platform do
-  using RSpec::Parameterized::TableSyntax
-
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:user_selected_model_identifier) { nil }
@@ -52,35 +50,17 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
               self_hosted_model: create(:ai_self_hosted_model, model: :claude_3))
           end
 
-          where(:can_read, :can_update, :should_return_metadata) do
-            true  | true  | true
-            false | true  | false
-            true  | false | false
-            false | false | false
-          end
+          it 'returns model metadata headers from existing ModelMetadata class' do
+            result = service.execute
 
-          with_them do
-            before do
-              allow(Ability).to receive(:allowed?).with(user, :read_dap_self_hosted_model).and_return(can_read)
-              allow(Ability).to receive(:allowed?).with(user, :update_dap_self_hosted_model).and_return(can_update)
-            end
+            expect(result).to have_key('x-gitlab-agent-platform-model-metadata')
 
-            it 'returns appropriate response based on permissions' do
-              result = service.execute
-
-              if should_return_metadata
-                expect(result).to have_key('x-gitlab-agent-platform-model-metadata')
-
-                metadata_json = result['x-gitlab-agent-platform-model-metadata']
-                metadata = ::Gitlab::Json.parse(metadata_json)
-                expect(metadata).to include(
-                  'provider' => feature_setting.self_hosted_model.provider.to_s,
-                  'name' => feature_setting.self_hosted_model.model
-                )
-              else
-                expect(result).to eq({})
-              end
-            end
+            metadata_json = result['x-gitlab-agent-platform-model-metadata']
+            metadata = ::Gitlab::Json.parse(metadata_json)
+            expect(metadata).to include(
+              'provider' => feature_setting.self_hosted_model.provider.to_s,
+              'name' => feature_setting.self_hosted_model.model
+            )
           end
         end
 
@@ -90,14 +70,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
               feature: :duo_agent_platform_agentic_chat,
               provider: :disabled,
               self_hosted_model: nil)
-
-            allow(Ability).to receive(:allowed?).and_call_original
-            allow(Ability).to receive(:allowed?)
-              .with(user, :read_dap_self_hosted_model)
-              .and_return(true)
-            allow(Ability).to receive(:allowed?)
-              .with(user, :update_dap_self_hosted_model)
-              .and_return(true)
           end
 
           it_behaves_like 'returns empty headers'
@@ -418,7 +390,7 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
               context 'when the response from AI Gateway is not successful' do
                 before do
                   stub_request(:get, fetch_service_endpoint_url)
-                    .to_return(status: 400)
+                  .to_return(status: 400)
                 end
 
                 it_behaves_like 'uses the gitlab default model'
