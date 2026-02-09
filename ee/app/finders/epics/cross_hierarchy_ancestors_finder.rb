@@ -14,20 +14,21 @@ module Epics
 
     def execute
       return Epic.none unless Ability.allowed?(current_user, :read_epic, child)
-      return Epic.none unless child.parent_id
+      return Epic.none unless child.work_item_parent
 
-      filter_and_search(epics_with_read_access)
+      filtered_epics = filter_and_search(epics_with_read_access)
+      filtered_epics.order_by_hierarchy_order(child)
     end
 
     private
 
     override :epics_collection
     def epics_collection
-      child.ancestors(hierarchy_order: :asc)
+      child.work_item_ancestors
     end
 
     def epics_collection_for_groups
-      child.ancestors(hierarchy_order: nil)
+      child.work_item_ancestors
     end
 
     override :milestone_groups

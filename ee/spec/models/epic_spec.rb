@@ -213,6 +213,56 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       it { expect(preload_group_and_routables.first.group.association(:saml_provider)).to be_loaded }
       it { expect(preload_group_and_routables.first.group.association(:ip_restrictions)).to be_loaded }
     end
+
+    describe '.order_by_hierarchy_order' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:root_epic) { create(:epic, group: group) }
+      let_it_be(:ancestor_epic) { create(:epic, group: group, parent: root_epic) }
+      let_it_be(:parent_epic) { create(:epic, group: group, parent: ancestor_epic) }
+      let_it_be(:child_epic) { create(:epic, group: group, parent: parent_epic) }
+      let_it_be(:other_epic1) { create(:epic, group: group) }
+      let_it_be(:other_epic2) { create(:epic, group: group) }
+
+      it 'returns epics ordered by hierarchy position' do
+        epics = described_class.where(id: [root_epic.id, ancestor_epic.id, parent_epic.id])
+                               .order_by_hierarchy_order(child_epic)
+
+        expect(epics).to eq([parent_epic, ancestor_epic, root_epic])
+      end
+
+      it 'includes the child epic if it is in the where clause' do
+        epics = described_class.where(id: [root_epic.id, ancestor_epic.id, parent_epic.id, child_epic.id])
+                               .order_by_hierarchy_order(child_epic)
+
+        expect(epics.map(&:id)).to include(child_epic.id)
+      end
+
+      context 'when child epic has no ancestors' do
+        it 'returns the original scope' do
+          epics = described_class.where(id: other_epic1.id).order_by_hierarchy_order(other_epic1)
+
+          expect(epics).to eq([other_epic1])
+        end
+      end
+
+      context 'when ancestor_ids is blank' do
+        it 'returns the original scope' do
+          allow(other_epic1).to receive(:work_item_ancestors_ids).and_return([])
+          epics = described_class.where(id: other_epic1.id).order_by_hierarchy_order(other_epic1)
+
+          expect(epics).to eq([other_epic1])
+        end
+      end
+
+      context 'when ancestor_ids has only one element' do
+        it 'returns the original scope' do
+          allow(parent_epic).to receive(:work_item_ancestors_ids).and_return([root_epic.issue_id])
+          epics = described_class.where(id: parent_epic.id).order_by_hierarchy_order(parent_epic)
+
+          expect(epics).to eq([parent_epic])
+        end
+      end
+    end
   end
 
   describe 'validations' do
@@ -667,10 +717,10 @@ RSpec.describe Epic, feature_category: :portfolio_management do
   end
 
   context 'hierarchy' do
-    let_it_be(:epic1) { create(:epic, group: group) }
-    let_it_be(:epic2) { create(:epic, group: group, parent: epic1) }
-    let_it_be(:epic3) { create(:epic, group: group, parent: epic2) }
-    let_it_be(:epic4) { create(:epic, group: group, parent: epic3) }
+    let_it_be(:epic1, reload: true) { create(:epic, group: group) }
+    let_it_be(:epic2, reload: true) { create(:epic, group: group, parent: epic1) }
+    let_it_be(:epic3, reload: true) { create(:epic, group: group, parent: epic2) }
+    let_it_be(:epic4, reload: true) { create(:epic, group: group, parent: epic3) }
 
     describe '#ancestors' do
       it 'returns all ancestors for an epic ordered correctly' do
@@ -683,6 +733,16 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       it 'returns an empty array if an epic does not have any parent' do
         expect(epic1.ancestors).to be_empty
+      end
+    end
+
+    describe '#work_item_ancestors' do
+      it 'returns all ancestors for an epic ordered correctly' do
+        expect(epic4.work_item_ancestors).to match_array([epic3, epic2, epic1])
+      end
+
+      it 'returns an empty array if an epic does not have any parent' do
+        expect(epic1.work_item_ancestors).to be_empty
       end
     end
 

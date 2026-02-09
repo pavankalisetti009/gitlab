@@ -49,8 +49,8 @@ RSpec.describe 'Resolvers::EpicAncestorsResolver', feature_category: :portfolio_
 
         context 'with subgroups' do
           let_it_be(:sub_group) { create(:group, :private, parent: group) }
-          let_it_be(:epic3)    { create(:epic, group: sub_group, parent: epic2) }
-          let_it_be(:epic4)    { create(:epic, group: sub_group, parent: epic3) }
+          let_it_be(:epic3) { create(:epic, group: sub_group, parent: epic2) }
+          let_it_be_with_reload(:epic4) { create(:epic, group: sub_group, parent: epic3) }
 
           before do
             sub_group.add_developer(current_user)
@@ -89,7 +89,7 @@ RSpec.describe 'Resolvers::EpicAncestorsResolver', feature_category: :portfolio_
     let_it_be(:cross_group) { create(:group, :private) }
     let_it_be(:cross_epic1) { create(:epic, group: cross_group, parent: epic1) }
     let_it_be(:subepic1) { create(:epic, group: group, parent: cross_epic1) }
-    let_it_be(:subepic2) { create(:epic, group: group, parent: subepic1) }
+    let_it_be_with_reload(:subepic2) { create(:epic, group: group, parent: subepic1) }
 
     before do
       group.add_developer(current_user)
