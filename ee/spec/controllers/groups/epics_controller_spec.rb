@@ -187,64 +187,113 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
         get :show, params: { group_id: group, id: epic.to_param }, format: format
       end
 
+      shared_examples 'epic not found' do
+        it 'returns a not found 404 response' do
+          show_epic
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(response.media_type).to eq 'text/html'
+        end
+      end
+
+      shared_examples 'show the epic' do
+        context 'when work_item_planning_view is enabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: true)
+          end
+
+          it 'redirects to work item page' do
+            show_epic
+
+            expect(response).to redirect_to(group_work_item_path(group, epic.work_item))
+          end
+
+          it 'logs the view with Gitlab::Search::RecentEpics' do
+            recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
+            expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
+
+            show_epic
+
+            expect(response).to redirect_to(group_work_item_path(group, epic.work_item))
+            expect(recent_epics_double).to have_received(:log_view).with(epic)
+          end
+        end
+
+        context 'when work_item_planning_view is disabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: false)
+          end
+
+          it 'renders work item template' do
+            show_epic
+
+            expect(response.media_type).to eq 'text/html'
+            expect(response).to render_template 'groups/epics/work_items_index'
+          end
+
+          it 'logs the view with Gitlab::Search::RecentEpics' do
+            recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
+            expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
+
+            show_epic
+
+            expect(response).to be_successful
+            expect(recent_epics_double).to have_received(:log_view).with(epic)
+          end
+        end
+      end
+
       context 'when format is HTML' do
-        context 'when authorized' do
+        context 'when user is not a member of the group' do
+          it_behaves_like 'epic not found'
+        end
+
+        context 'when user is developer+' do
           before do
             group.add_developer(user)
           end
 
-          context 'when work_item_planning_view is enabled' do
-            before do
-              stub_feature_flags(work_item_planning_view: true)
-            end
-
-            it 'redirects to work item page' do
-              show_epic
-
-              expect(response).to redirect_to(group_work_item_path(group, epic.work_item))
-            end
-
-            it 'logs the view with Gitlab::Search::RecentEpics' do
-              recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
-              expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
-
-              show_epic
-
-              expect(response).to redirect_to(group_work_item_path(group, epic.work_item))
-              expect(recent_epics_double).to have_received(:log_view).with(epic)
-            end
-          end
-
-          context 'when work_item_planning_view is disabled' do
-            before do
-              stub_feature_flags(work_item_planning_view: false)
-            end
-
-            it 'renders work item template' do
-              show_epic
-
-              expect(response.media_type).to eq 'text/html'
-              expect(response).to render_template 'groups/epics/work_items_index'
-            end
-
-            it 'logs the view with Gitlab::Search::RecentEpics' do
-              recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
-              expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
-
-              show_epic
-
-              expect(response).to be_successful
-              expect(recent_epics_double).to have_received(:log_view).with(epic)
-            end
-          end
+          it_behaves_like 'show the epic'
         end
 
-        context 'with unauthorized user' do
-          it 'returns a not found 404 response' do
-            show_epic
+        context 'when epic is confidential' do
+          before do
+            epic.update!(confidential: true)
+            epic.work_item.update!(confidential: true)
+          end
 
-            expect(response).to have_gitlab_http_status(:not_found)
-            expect(response.media_type).to eq 'text/html'
+          context 'when user is developer+' do
+            before do
+              group.add_developer(user)
+            end
+
+            it_behaves_like 'show the epic'
+          end
+
+          context 'when user is guest' do
+            before do
+              group.add_guest(user)
+              sign_in(user)
+            end
+
+            it_behaves_like 'epic not found'
+
+            context 'when user is the author of the epic' do
+              before do
+                epic.update!(author: user)
+                epic.work_item.update!(author: user)
+              end
+
+              it_behaves_like 'show the epic'
+            end
+
+            context 'when user is assigned to the epic' do
+              before do
+                epic.work_item.assignees << user
+              end
+
+              it_behaves_like 'show the epic'
+            end
           end
         end
 

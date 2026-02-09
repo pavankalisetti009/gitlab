@@ -35,7 +35,7 @@ RSpec.describe Epics::CrossHierarchyAncestorsFinder, feature_category: :portfoli
     )
   end
 
-  let_it_be(:epic4) do
+  let_it_be(:epic4, reload: true) do
     create(
       :epic, parent: epic3, group: group, start_date: 6.days.before(reference_time),
       end_date: 6.days.before(reference_time), iid: 8876

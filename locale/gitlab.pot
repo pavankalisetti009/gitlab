@@ -78565,6 +78565,12 @@ msgstr ""
 msgid "WorkItem|Lavender"
 msgstr ""
 
+msgid "WorkItem|Learn more about view limits."
+msgstr ""
+
+msgid "WorkItem|Learn more."
+msgstr ""
+
 msgid "WorkItem|Lifecycle created."
 msgstr ""
 
@@ -79387,6 +79393,12 @@ msgid "WorkItem|You don't have the necessary permission to view the ancestor."
 msgstr ""
 
 msgid "WorkItem|You don't have the necessary permission to view the ancestors."
+msgstr ""
+
+msgid "WorkItem|You have reached the maximum number of views in your list."
+msgstr ""
+
+msgid "WorkItem|You have reached the maximum number of views in your list. If you add a view, the last view in your list will be removed."
 msgstr ""
 
 msgid "WorkItem|You're only seeing %{boldStart}other activity%{boldEnd} in the feed. To add a comment, switch to one of the following options."

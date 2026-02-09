@@ -4,6 +4,7 @@ module EE
   module Epic
     extend ActiveSupport::Concern
     extend ::Gitlab::Utils::Override
+    include ::Gitlab::Utils::StrongMemoize
 
     prepended do
       include AtomicInternalId
@@ -227,6 +228,21 @@ module EE
 
       scope :with_group_route, -> { preload([group: :route]) }
 
+      scope :order_by_hierarchy_order, ->(child) do
+        # Get the hierarchical order from work_item.ancestors
+        ancestor_ids = child.work_item_ancestors_ids
+
+        return self if ancestor_ids.blank? || ancestor_ids.size == 1
+
+        # Build the array_position expression for ordering
+        order_expression = "array_position(ARRAY[#{ancestor_ids.map(&:to_i).join(',')}], #{table_name}.issue_id)"
+
+        # IMPORTANT: Add the order expression to SELECT so PostgreSQL allows ORDER BY with DISTINCT
+        # The "AS hierarchy_order" makes it an explicit column, satisfying PostgreSQL's requirement
+        select("#{table_name}.*, #{order_expression} AS hierarchy_order")
+          .order(Arel.sql("hierarchy_order"))
+      end
+
       def real_time_notes_enabled?
         true
       end
@@ -238,7 +254,7 @@ module EE
       after_destroy :set_epic_id_to_update_cache
       after_commit :expire_etag_cache
 
-      delegate :use_work_item_url?, :group_level?, to: :work_item
+      delegate :use_work_item_url?, :group_level?, :work_item_parent, to: :work_item
 
       def epic_tree_root?
         parent_id.nil?
@@ -524,6 +540,17 @@ module EE
 
       hierarchy.ancestors(hierarchy_order: hierarchy_order)
     end
+
+    def work_item_ancestors
+      return self.class.none unless work_item_parent
+
+      self.class.where(issue_id: work_item_ancestors_ids)
+    end
+
+    def work_item_ancestors_ids
+      work_item.ancestors.pluck(:id)
+    end
+    strong_memoize_attr :work_item_ancestors_ids
 
     def max_hierarchy_depth_achieved?
       base_and_ancestors.count >= MAX_HIERARCHY_DEPTH

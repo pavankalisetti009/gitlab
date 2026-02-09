@@ -63,7 +63,7 @@ class Groups::EpicsController < Groups::ApplicationController
   def epic
     @issuable = @epic ||= @group.epics.find_by(iid: params[:epic_id] || params[:id])
 
-    return render_404 unless can?(current_user, :read_epic, @epic)
+    return render_404 unless can?(current_user, :read_work_item, @epic.work_item)
 
     @noteable = @epic
   end
