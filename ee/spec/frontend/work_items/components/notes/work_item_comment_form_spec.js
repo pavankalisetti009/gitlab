@@ -139,13 +139,13 @@ describe('WorkItemCommentForm', () => {
           findConfirmButton().vm.$emit('click');
 
           expect(measureCommentTemperatureMock).toHaveBeenCalled();
-          expect(wrapper.emitted('submitForm')).toBeUndefined();
+          expect(wrapper.emitted('submit-form')).toBeUndefined();
 
           findCommentTemperature().vm.$emit('save');
           await nextTick();
 
-          expect(wrapper.emitted('submitForm')).toHaveLength(1);
-          expect(wrapper.emitted('submitForm')[0][0]).toEqual({
+          expect(wrapper.emitted('submit-form')).toHaveLength(1);
+          expect(wrapper.emitted('submit-form')[0][0]).toEqual({
             commentText,
             isNoteInternal: false,
           });
