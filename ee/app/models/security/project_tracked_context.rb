@@ -78,8 +78,8 @@ module Security
       scope state_name, -> { where(state: value) }
     end
 
-    # Maximum number of tracked refs per project (default branch + 15 additional refs)
-    MAX_TRACKED_REFS_PER_PROJECT = 16
+    # Maximum number of tracked refs per project (default branch + 1 additional ref)
+    MAX_TRACKED_REFS_PER_PROJECT = 2
 
     def self.tracked_pipeline?(pipeline)
       for_pipeline(pipeline).tracked.exists?

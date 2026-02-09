@@ -172,13 +172,14 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrenceRefs, feature_category: :
 
     context 'when tracked context creation fails for default branch' do
       before do
-        16.times do |i|
+        Security::ProjectTrackedContext::MAX_TRACKED_REFS_PER_PROJECT.times do |i|
           create(:security_project_tracked_context, :tracked, project: project, context_name: "branch-#{i}")
         end
       end
 
       it 'raises validation error and does not create occurrence ref' do
-        expect { task.execute }.to raise_error(ActiveRecord::RecordInvalid, /cannot exceed 16 tracked refs/)
+        max_refs = Security::ProjectTrackedContext::MAX_TRACKED_REFS_PER_PROJECT
+        expect { task.execute }.to raise_error(ActiveRecord::RecordInvalid, /cannot exceed #{max_refs} tracked refs/)
           .and not_change { Sbom::OccurrenceRef.count }
       end
     end

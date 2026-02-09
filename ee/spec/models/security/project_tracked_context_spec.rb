@@ -279,6 +279,8 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
       end
 
       it 'excludes tag refs' do
+        stub_const("#{described_class}::MAX_TRACKED_REFS_PER_PROJECT", 3)
+
         tag_ref = create(:security_project_tracked_context, :tracked, :tag, context_name: default_ref.context_name,
           project: project)
 

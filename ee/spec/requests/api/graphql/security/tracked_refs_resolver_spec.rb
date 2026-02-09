@@ -261,6 +261,8 @@ RSpec.describe 'Query.project.securityTrackedRefs', feature_category: :vulnerabi
 
   describe 'performance' do
     it 'avoids N+1 queries when loading multiple refs' do
+      stub_const("#{Security::ProjectTrackedContext}::MAX_TRACKED_REFS_PER_PROJECT", 10)
+
       refs = create_list(:security_project_tracked_context, 3, :tracked, project: project)
       refs.each { |ref| create_list(:vulnerability_read, 2, project: project, tracked_context: ref) }
 

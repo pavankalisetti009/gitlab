@@ -71907,7 +71907,7 @@ msgstr ""
 msgid "Track time with quick actions"
 msgstr ""
 
-msgid "Track vulnerabilities in up to 16 refs (branches or tags). The default branch is tracked by default on the Security Dashboard and Vulnerability report and cannot be removed."
+msgid "Track vulnerabilities in up to %{limit} refs (branches or tags). The default branch is tracked by default on the Security Dashboard and Vulnerability report and cannot be removed."
 msgstr ""
 
 msgid "Tracking"
