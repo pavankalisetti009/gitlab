@@ -100,7 +100,7 @@ For configuration information, see
 
 ### Repository archives
 
-A rate limit for [downloading repository archives](../api/repositories.md#get-file-archive) is
+A rate limit for [downloading repository archives](../api/repositories.md#retrieve-file-archive-from-a-repository) is
 available. The limit applies to the project and to the user initiating the download either through
 the UI or the API.
 
@@ -200,8 +200,8 @@ for the projects endpoint.
 Rate limits apply when accessing large files through specific repository API endpoints.
 For files larger than 10 MB, the rate limit is 5 calls per minute per object per project for:
 
-- [Repository blob endpoint](../api/repositories.md#get-a-blob-from-repository): `/projects/:id/repository/blobs/:sha`
-- [Repository file endpoint](../api/repository_files.md#get-file-from-repository): `/projects/:id/repository/files/:file_path`
+- [Repository blob endpoint](../api/repositories.md#retrieve-a-blob-from-a-repository): `/projects/:id/repository/blobs/:sha`
+- [Repository file endpoint](../api/repository_files.md#retrieve-a-file-from-a-repository): `/projects/:id/repository/files/:file_path`
 
 These limits help prevent excessive resource usage when accessing large repository files through
 the API.
