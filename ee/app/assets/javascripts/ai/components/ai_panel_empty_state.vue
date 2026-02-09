@@ -1,5 +1,13 @@
 <script>
-import { GlButton, GlLink, GlCard, GlIcon, GlAvatarLabeled, GlSprintf } from '@gitlab/ui';
+import {
+  GlButton,
+  GlLink,
+  GlCard,
+  GlIcon,
+  GlAvatarLabeled,
+  GlSprintf,
+  GlTooltipDirective,
+} from '@gitlab/ui';
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax -- GlBreakpointInstance is used intentionally here. In this case we must obtain viewport breakpoints
 import tanukiAiSvgUrl from '@gitlab/svgs/dist/illustrations/tanuki-ai-sm.svg?url';
 import securityAgentAvatarUrl from 'ee_images/bot_avatars/security-agent.png';
@@ -23,6 +31,9 @@ export default {
     GlIcon,
     GlAvatarLabeled,
     GlSprintf,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   mixins: [InternalEvents.mixin()],
   inject: {
@@ -97,6 +108,9 @@ export default {
       subtitle: s__('DuoAgentsPlatform|Analyze pipeline failures and get fix suggestions'),
     },
   ],
+  i18n: {
+    collapseButtonLabel: __('Collapse'),
+  },
 };
 </script>
 
@@ -106,9 +120,26 @@ export default {
     <aside
       v-if="isExpanded"
       data-testid="panel-content"
-      class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-justify-center gl-overflow-auto gl-rounded-[1rem] gl-bg-default gl-px-5 [contain:strict] lg:gl-mr-2"
+      class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-justify-center gl-rounded-[1rem] gl-bg-default [contain:strict] lg:gl-mr-2"
     >
-      <div class="ai-panel-body gl-flex gl-w-full gl-flex-col gl-items-start gl-gap-5">
+      <div class="ai-panel-header gl-flex gl-h-[3.0625rem] gl-items-center gl-justify-end">
+        <div class="ai-panel-header-actions gl-flex gl-gap-x-2 gl-pr-3">
+          <gl-button
+            v-gl-tooltip.bottom
+            icon="dash"
+            category="tertiary"
+            size="small"
+            :aria-label="$options.i18n.collapseButtonLabel"
+            :title="$options.i18n.collapseButtonLabel"
+            aria-expanded="true"
+            data-testid="content-container-collapse-button"
+            @click="closePanel"
+          />
+        </div>
+      </div>
+      <div
+        class="ai-panel-body gl-flex gl-w-full gl-grow gl-flex-col gl-items-start gl-gap-5 gl-overflow-auto gl-px-5 gl-pt-5"
+      >
         <img :src="$options.tanukiAiSvgUrl" class="gl-h-10 gl-w-10" />
         <template v-if="canStartTrial">
           <h2 class="gl-my-0 gl-text-size-h2">
@@ -182,18 +213,18 @@ export default {
               )
             }}
           </p>
-          <div class="gl-flex gl-w-full gl-justify-evenly gl-pb-5">
+          <div class="gl-flex gl-w-full gl-justify-start gl-gap-5 gl-pb-5">
             <gl-avatar-labeled
               :src="$options.securityAgentAvatarUrl"
               :size="32"
               :label="s__('DuoAgentsPlatform|Security Agent')"
-              :fallback-on-error="true"
+              fallback-on-error
             />
             <gl-avatar-labeled
               :src="$options.plannerAgentAvatarUrl"
               :size="32"
               :label="s__('DuoAgentsPlatform|Planning Agent')"
-              :fallback-on-error="true"
+              fallback-on-error
             />
           </div>
         </template>
@@ -254,6 +285,7 @@ export default {
     >
       <gl-button
         icon="duo-chat-off"
+        size="small"
         :class="['ai-nav-icon', { 'ai-nav-icon-active': isExpanded }]"
         data-testid="toggle-panel-content-button"
         @click="togglePanel"

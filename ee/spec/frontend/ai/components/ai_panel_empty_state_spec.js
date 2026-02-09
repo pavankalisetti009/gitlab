@@ -19,6 +19,8 @@ describe('AiPanelEmptyState', () => {
 
   const findPanelContent = () => wrapper.findByTestId('panel-content');
   const findTogglePanelContentButton = () => wrapper.findByTestId('toggle-panel-content-button');
+  const findClosePanelContentButton = () =>
+    wrapper.findByTestId('content-container-collapse-button');
   const findEmptyStateText = () => wrapper.findByTestId('empty-state-text');
   const findStartTrialLink = () => wrapper.findByTestId('start-trial-link');
   const findLearnMoreLink = () => wrapper.findByTestId('learn-more-link');
@@ -109,6 +111,19 @@ describe('AiPanelEmptyState', () => {
     await nextTick();
 
     expect(Cookies.get('ai_panel_empty_state')).toBeUndefined();
+  });
+
+  it('collapses the panel upon clicking the close button', async () => {
+    await createComponent().andExpandPanel();
+
+    expect(findPanelContent().exists()).toBe(true);
+    expect(Cookies.get('ai_panel_empty_state')).toBe('AI_PANEL_EMPTY_STATE_OPEN');
+
+    findClosePanelContentButton().vm.$emit('click');
+    await nextTick();
+
+    expect(findPanelContent().exists()).toBe(false);
+    expect(Cookies.get('ai_panel_empty_state')).toBe('AI_PANEL_EMPTY_STATE_CLOSED');
   });
 
   describe('on desktop', () => {
