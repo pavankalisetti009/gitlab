@@ -1512,6 +1512,105 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     it { is_expected.to contain_exactly(policy_a) }
   end
 
+  describe '.with_enrichment_filters' do
+    let(:policy) { create(:security_policy, :approval_policy) }
+    let!(:policy_without_enrichment_filters) { create(:security_policy, :approval_policy) }
+
+    let_it_be(:approval_rule_content) do
+      {
+        type: 'scan_finding',
+        branches: [],
+        scanners: %w[container_scanning],
+        vulnerabilities_allowed: 0,
+        severity_levels: %w[critical],
+        vulnerability_states: %w[detected]
+      }
+    end
+
+    shared_examples_for 'it returns no policy' do
+      it { is_expected.to be_empty }
+    end
+
+    shared_examples_for 'it returns no policy when approval rules are deleted' do
+      before do
+        policy.approval_policy_rules.each { |rule| rule.update!(rule_index: (rule.rule_index * -1) - 1) }
+      end
+
+      it_behaves_like 'it returns no policy'
+    end
+
+    shared_examples_for 'it returns the policy with enrichment filters' do
+      it { is_expected.to contain_exactly(policy) }
+    end
+
+    subject(:with_enrichment_filters) { described_class.with_enrichment_filters }
+
+    context 'when there are no policies with vulnerability_attributes' do
+      it_behaves_like 'it returns no policy'
+    end
+
+    context 'when there are policies with vulnerability_attributes' do
+      let(:approval_rule_content_with_vulnerability_attributes) do
+        approval_rule_content.merge!(vulnerability_attributes: vulnerability_attributes)
+      end
+
+      let!(:approval_policy_rule) do
+        create(:approval_policy_rule, :scan_finding, security_policy: policy,
+          content: approval_rule_content_with_vulnerability_attributes)
+      end
+
+      context 'when approval rule contains known_exploited' do
+        let(:vulnerability_attributes) { { known_exploited: true } }
+
+        it_behaves_like 'it returns the policy with enrichment filters'
+        it_behaves_like 'it returns no policy when approval rules are deleted'
+      end
+
+      context 'when approval rule contains epss_score' do
+        let(:vulnerability_attributes) { { epss_score: { operator: 'greater_than', value: 0.5 } } }
+
+        it_behaves_like 'it returns the policy with enrichment filters'
+        it_behaves_like 'it returns no policy when approval rules are deleted'
+      end
+
+      context 'when approval rule contains both known_exploited and epss_score' do
+        let(:vulnerability_attributes) do
+          { known_exploited: true, epss_score: { operator: 'greater_than', value: 0.5 } }
+        end
+
+        it_behaves_like 'it returns the policy with enrichment filters'
+        it_behaves_like 'it returns no policy when approval rules are deleted'
+      end
+
+      context 'when a policy contain multiple approval rules with enrichment filters' do
+        let(:vulnerability_attributes) { { known_exploited: true } }
+        let!(:other_approval_policy_rule) do
+          create(:approval_policy_rule, :scan_finding, security_policy: policy,
+            content: approval_rule_content_with_vulnerability_attributes)
+        end
+
+        it_behaves_like 'it returns the policy with enrichment filters'
+      end
+
+      context 'when multiple policies contains approval rule contains with enrichment filters' do
+        let(:vulnerability_attributes) { { known_exploited: true } }
+        let_it_be(:other_policy) { create(:security_policy, :approval_policy) }
+        let!(:other_approval_policy_rule) do
+          create(:approval_policy_rule, :scan_finding, security_policy: other_policy,
+            content: approval_rule_content_with_vulnerability_attributes)
+        end
+
+        it { is_expected.to contain_exactly(policy, other_policy) }
+      end
+
+      context 'when approval rule contains other attributes than known_exploited and epss_score' do
+        let(:vulnerability_attributes) { { fix_available: true } }
+
+        it_behaves_like 'it returns no policy'
+      end
+    end
+  end
+
   describe '#bypass_settings' do
     let(:access_token_id) { 42 }
     let(:service_account_id) { 99 }
