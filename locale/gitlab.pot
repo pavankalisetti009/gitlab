@@ -27653,9 +27653,6 @@ msgstr ""
 msgid "Environment scope"
 msgstr ""
 
-msgid "Environment variables on this GitLab instance are configured to be %{help_link_start}protected%{help_link_end} by default."
-msgstr ""
-
 msgid "Environment:"
 msgstr ""
 
