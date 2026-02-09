@@ -13580,12 +13580,6 @@ msgstr ""
 msgid "CICD|Access unrestricted, so users with sufficient permissions in this project can authenticate with a job token generated in any other project."
 msgstr ""
 
-msgid "CICD|Add a %{base_domain_link_start}base domain%{link_end} to your %{kubernetes_cluster_link_start}Kubernetes cluster%{link_end} for your deployment strategy to work."
-msgstr ""
-
-msgid "CICD|Add a %{kubernetes_cluster_link_start}Kubernetes cluster integration%{link_end} with a domain, or create an AUTO_DEVOPS_PLATFORM_TARGET CI variable."
-msgstr ""
-
 msgid "CICD|Add an existing project to the scope"
 msgstr ""
 
@@ -75088,9 +75082,6 @@ msgstr ""
 msgid "View logs"
 msgstr ""
 
-msgid "View merge requests you're involved with from start to finish by highlighting those that Needs Attention and those you are Following."
-msgstr ""
-
 msgid "View milestones"
 msgstr ""
 
@@ -75911,9 +75902,6 @@ msgid "VisibilityLevel|This visibility level is not allowed because the parent g
 msgstr ""
 
 msgid "VisibilityLevel|Unknown"
-msgstr ""
-
-msgid "Visit new homepage"
 msgstr ""
 
 msgid "Visual Studio"
@@ -80958,9 +80946,6 @@ msgid "Your membership in %{project_or_group} %{project_or_group_name} will expi
 msgstr ""
 
 msgid "Your merge requests"
-msgstr ""
-
-msgid "Your merge requests have a new homepage!"
 msgstr ""
 
 msgid "Your merge requests merged in the last 2 weeks."
