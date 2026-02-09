@@ -91,7 +91,7 @@ RSpec.describe Ci::BuildFinishedWorker, feature_category: :continuous_integratio
     context 'when token revocation is disabled' do
       before do
         allow_next_instance_of(described_class) do |build_finished_worker|
-          allow(build_finished_worker).to receive(:revoke_secret_detection_token?) { false }
+          allow(build_finished_worker).to receive(:revoke_secret_detection_token?).and_return(false)
         end
       end
 
