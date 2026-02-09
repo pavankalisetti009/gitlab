@@ -35,7 +35,7 @@ export default {
       {
         [COOKIE_VALUE_OPEN]: true,
         [COOKIE_VALUE_CLOSED]: false,
-      }[Cookies.get(COOKIE_NAME)] ?? isDesktop;
+      }[Cookies.get(COOKIE_NAME)] ?? false;
 
     return {
       isDesktop,

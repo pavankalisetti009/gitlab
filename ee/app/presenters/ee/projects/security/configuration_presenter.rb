@@ -72,6 +72,11 @@ module EE
           group_security_configuration_path(root_group)
         end
 
+        override :max_tracked_refs
+        def max_tracked_refs
+          ::Security::ProjectTrackedContext::MAX_TRACKED_REFS_PER_PROJECT
+        end
+
         def show_discover_project_security?
           current_user &&
             ::Gitlab.com? && # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Matching legacy code for consistency

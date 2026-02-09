@@ -36,14 +36,24 @@ describe('AiPanelEmptyState', () => {
         GlSprintf,
       },
     });
+
+    return {
+      andExpandPanel: () => findTogglePanelContentButton().vm.$emit('click'),
+    };
   };
 
   beforeEach(() => {
     Cookies.remove('ai_panel_empty_state');
   });
 
-  it('renders the correct content', () => {
+  it('starts with content collapsed', () => {
     createComponent();
+
+    expect(findPanelContent().exists()).toBe(false);
+  });
+
+  it('renders the correct content', async () => {
+    await createComponent().andExpandPanel();
     const text = findEmptyStateText();
     const workflowExamples = findWorkflowExamples();
 
@@ -76,8 +86,8 @@ describe('AiPanelEmptyState', () => {
     );
   });
 
-  it('adds the correct tracking properties to the "Start a Free Trial" link', () => {
-    createComponent();
+  it('adds the correct tracking properties to the "Start a Free Trial" link', async () => {
+    await createComponent().andExpandPanel();
 
     expect(findStartTrialLink().attributes()).toMatchObject({
       'data-event-tracking': 'click_link',
@@ -85,8 +95,8 @@ describe('AiPanelEmptyState', () => {
     });
   });
 
-  it('adds the correct tracking properties to the "Learn more" link', () => {
-    createComponent();
+  it('adds the correct tracking properties to the "Learn more" link', async () => {
+    await createComponent().andExpandPanel();
 
     expect(findLearnMoreLink().attributes()).toMatchObject({
       'data-event-tracking': 'click_link',
@@ -104,11 +114,7 @@ describe('AiPanelEmptyState', () => {
   describe('on desktop', () => {
     beforeEach(() => {
       jest.spyOn(GlBreakpointInstance, 'isDesktop').mockReturnValue(true);
-      createComponent();
-    });
-
-    it('starts with content expanded', () => {
-      expect(findPanelContent().exists()).toBe(true);
+      return createComponent().andExpandPanel();
     });
 
     it('collapses the content if the window gets narrower', async () => {
@@ -131,11 +137,22 @@ describe('AiPanelEmptyState', () => {
   describe('when the panel content was previously collapsed manually', () => {
     beforeEach(() => {
       Cookies.set('ai_panel_empty_state', 'AI_PANEL_EMPTY_STATE_CLOSED');
-      createComponent();
+      return createComponent();
     });
 
     it('starts with content collapsed', () => {
       expect(findPanelContent().exists()).toBe(false);
+    });
+  });
+
+  describe('when the panel content was previously expanded manually', () => {
+    beforeEach(() => {
+      Cookies.set('ai_panel_empty_state', 'AI_PANEL_EMPTY_STATE_OPEN');
+      return createComponent();
+    });
+
+    it('starts with content expanded', () => {
+      expect(findPanelContent().exists()).toBe(true);
     });
   });
 
@@ -174,10 +191,10 @@ describe('AiPanelEmptyState', () => {
   });
 
   describe('when the user cannot start a trial', () => {
-    it('renders the correct content', () => {
-      createComponent({
+    it('renders the correct content', async () => {
+      await createComponent({
         canStartTrial: false,
-      });
+      }).andExpandPanel();
 
       expect(findEmptyStateText().text()).toMatchInterpolatedText(
         "You don't have permission to use GitLab Duo Agent Platform in this project. Learn more.",
@@ -185,21 +202,21 @@ describe('AiPanelEmptyState', () => {
       expect(findLearnMoreLink().props('href')).toBe('/help/user/duo_agent_platform/_index.md');
     });
 
-    it('shows the correct text when the namespace is a group', () => {
-      createComponent({
+    it('shows the correct text when the namespace is a group', async () => {
+      await createComponent({
         canStartTrial: false,
         namespaceType: 'Group',
-      });
+      }).andExpandPanel();
 
       expect(findEmptyStateText().text()).toMatchInterpolatedText(
         "You don't have permission to use GitLab Duo Agent Platform in this group. Learn more.",
       );
     });
 
-    it('adds the correct tracking properties to the "Learn more" link', () => {
-      createComponent({
+    it('adds the correct tracking properties to the "Learn more" link', async () => {
+      await createComponent({
         canStartTrial: false,
-      });
+      }).andExpandPanel();
 
       expect(findLearnMoreLink().attributes()).toMatchObject({
         'data-event-tracking': 'click_link',

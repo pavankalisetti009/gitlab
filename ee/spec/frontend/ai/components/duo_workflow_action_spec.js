@@ -14,13 +14,6 @@ import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
 import {
   mockCreateFlowResponse,
   mockDuoWorkflowStatusCheckEnabled,
-  mockDuoWorkflowStatusCheckDisabled,
-  mockDuoWorkflowStatusCheckIsNull,
-  mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled,
-  mockDuoWorkflowStatusCheckEnabledButRemoteFlowsIsNull,
-  mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiNotAllowed,
-  mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiAllowedIsNull,
-  mockDuoWorkflowStatusCheckDisabledButRemoveFlowsEnabledAndCreateDuoWorkflowForCiAllowed,
   mockConfiguredFlowsResponse,
   mockEmptyConfiguredFlowsResponse,
 } from '../mocks';
@@ -101,83 +94,7 @@ describe('DuoWorkflowAction component', () => {
       expect(mockGetHealthCheckHandler).toHaveBeenCalled();
     });
 
-    describe('when duoWorkflowStatusCheck is disabled', () => {
-      beforeEach(async () => {
-        mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckDisabled);
-        await createComponent();
-      });
-
-      it('does not render button', () => {
-        expect(findButton().exists()).toBe(false);
-      });
-    });
-
-    describe('when duoWorkflowStatusCheck is null', () => {
-      beforeEach(async () => {
-        mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckIsNull);
-        await createComponent();
-      });
-
-      it('does not render button', () => {
-        expect(findButton().exists()).toBe(false);
-      });
-    });
-
-    describe('when duoWorkflowStatusCheck is enabled but remoteFlowsEnabled is false', () => {
-      beforeEach(async () => {
-        mockGetHealthCheckHandler = jest
-          .fn()
-          .mockResolvedValue(mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled);
-        await createComponent();
-      });
-
-      it('does not render button', () => {
-        expect(findButton().exists()).toBe(false);
-      });
-    });
-
-    describe('when duoWorkflowStatusCheck is enabled but remoteFlowsEnabled is null', () => {
-      beforeEach(async () => {
-        mockGetHealthCheckHandler = jest
-          .fn()
-          .mockResolvedValue(mockDuoWorkflowStatusCheckEnabledButRemoteFlowsIsNull);
-        await createComponent();
-      });
-
-      it('does not render button', () => {
-        expect(findButton().exists()).toBe(false);
-      });
-    });
-
-    describe('when duoWorkflowStatusCheck is enabled but createDuoWorkflowForCiAllowed is false', () => {
-      beforeEach(async () => {
-        mockGetHealthCheckHandler = jest
-          .fn()
-          .mockResolvedValue(mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiNotAllowed);
-        await createComponent();
-      });
-
-      it('does not render button', () => {
-        expect(findButton().exists()).toBe(false);
-      });
-    });
-
-    describe('when duoWorkflowStatusCheck is enabled but createDuoWorkflowForCiAllowed is null', () => {
-      beforeEach(async () => {
-        mockGetHealthCheckHandler = jest
-          .fn()
-          .mockResolvedValue(
-            mockDuoWorkflowStatusCheckEnabledButCreateDuoWorkflowForCiAllowedIsNull,
-          );
-        await createComponent();
-      });
-
-      it('renders button', () => {
-        expect(findButton().exists()).toBe(true);
-      });
-    });
-
-    describe('when duoWorkflowStatusCheck, remoteFlowsEnabled, and foundationalFlowsEnabled are all enabled', () => {
+    describe('when duoWorkflowStatusCheck, remoteFlowsEnabled, foundationalFlowsEnabled, and createDuoWorkflowForCiAllowed are all enabled', () => {
       beforeEach(async () => {
         await createComponent({
           slots: { default: 'My button' },
@@ -194,6 +111,64 @@ describe('DuoWorkflowAction component', () => {
         expect(findButton().text()).toBe('My button');
       });
     });
+
+    describe('when duoWorkflowStatusCheck is null', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest.fn().mockResolvedValue({
+          data: {
+            project: {
+              id: 'gid://gitlab/Project/1',
+              duoWorkflowStatusCheck: null,
+            },
+          },
+        });
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+    });
+
+    describe.each`
+      enabled  | remoteFlowsEnabled | foundationalFlowsEnabled | createDuoWorkflowForCiAllowed | expected
+      ${false} | ${false}           | ${false}                 | ${false}                      | ${false}
+      ${true}  | ${false}           | ${false}                 | ${false}                      | ${false}
+      ${true}  | ${null}            | ${true}                  | ${true}                       | ${false}
+      ${true}  | ${true}            | ${true}                  | ${false}                      | ${false}
+      ${true}  | ${true}            | ${true}                  | ${null}                       | ${true}
+      ${false} | ${true}            | ${true}                  | ${true}                       | ${false}
+    `(
+      'when enabled is $enabled, remoteFlowsEnabled is $remoteFlowsEnabled, foundationalFlowsEnabled is $foundationalFlowsEnabled and createDuoWorkflowForCiAllowed is $createDuoWorkflowForCiAllowed',
+      ({
+        enabled,
+        remoteFlowsEnabled,
+        foundationalFlowsEnabled,
+        createDuoWorkflowForCiAllowed,
+        expected,
+      }) => {
+        beforeEach(async () => {
+          mockGetHealthCheckHandler = jest.fn().mockResolvedValue({
+            data: {
+              project: {
+                id: 'gid://gitlab/Project/1',
+                duoWorkflowStatusCheck: {
+                  enabled,
+                  remoteFlowsEnabled,
+                  foundationalFlowsEnabled,
+                  createDuoWorkflowForCiAllowed,
+                },
+              },
+            },
+          });
+          await createComponent();
+        });
+
+        it(`${expected ? 'renders' : 'does not render'} the button`, () => {
+          expect(findButton().exists()).toBe(expected);
+        });
+      },
+    );
 
     describe('when projectPath is empty', () => {
       beforeEach(async () => {
@@ -223,21 +198,6 @@ describe('DuoWorkflowAction component', () => {
             },
           },
         });
-        await createComponent();
-      });
-
-      it('does not render button', () => {
-        expect(findButton().exists()).toBe(false);
-      });
-    });
-
-    describe('when duoWorkflowStatusCheck is disabled but remote flows is enabled and creating workflows for CI is allowed', () => {
-      beforeEach(async () => {
-        mockGetHealthCheckHandler = jest
-          .fn()
-          .mockResolvedValue(
-            mockDuoWorkflowStatusCheckDisabledButRemoveFlowsEnabledAndCreateDuoWorkflowForCiAllowed,
-          );
         await createComponent();
       });
 

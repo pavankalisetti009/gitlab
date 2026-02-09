@@ -1709,6 +1709,9 @@ msgstr ""
 msgid "'%{lock_path}' is locked in Git LFS by @%{lock_user_name}"
 msgstr ""
 
+msgid "'%{name}' is already taken"
+msgstr ""
+
 msgid "'%{slug}' is a reserved name"
 msgstr ""
 
@@ -71907,7 +71910,7 @@ msgstr ""
 msgid "Track time with quick actions"
 msgstr ""
 
-msgid "Track vulnerabilities in up to 16 refs (branches or tags). The default branch is tracked by default on the Security Dashboard and Vulnerability report and cannot be removed."
+msgid "Track vulnerabilities in up to %{limit} refs (branches or tags). The default branch is tracked by default on the Security Dashboard and Vulnerability report and cannot be removed."
 msgstr ""
 
 msgid "Tracking"
@@ -81570,6 +81573,9 @@ msgid "can only have a maximum of %{limit} lifecycles."
 msgstr ""
 
 msgid "can only have a maximum of %{limit} statuses."
+msgstr ""
+
+msgid "can only have a maximum of %{limit} work item types."
 msgstr ""
 
 msgid "can only have one escalation policy"
