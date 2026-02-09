@@ -1,7 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlAvatarLabeled, GlAvatarLink, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlLink, GlSprintf, GlButton } from '@gitlab/ui';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemFieldServiceAccount from 'ee/ai/catalog/components/ai_catalog_item_field_service_account.vue';
+import ServiceAccountAvatar from 'ee/ai/catalog/components/service_account_avatar.vue';
+import ServiceAccountProjectMemberships from 'ee/ai/catalog/components/service_account_project_memberships.vue';
 import { mockServiceAccount } from '../mock_data';
 
 describe('AiCatalogItemFieldServiceAccount', () => {
@@ -20,9 +22,11 @@ describe('AiCatalogItemFieldServiceAccount', () => {
     });
   };
 
-  const findServiceAccountAvatar = () => wrapper.findComponent(GlAvatarLabeled);
-  const findServiceAccountLink = () => wrapper.findComponent(GlAvatarLink);
   const findServiceAccountField = () => wrapper.findComponent(AiCatalogItemField);
+  const findServiceAccountAvatar = () => wrapper.findComponent(ServiceAccountAvatar);
+  const findViewPermissionsButton = () => wrapper.findComponent(GlButton);
+  const findServiceAccountProjectMemberships = () =>
+    wrapper.findComponent(ServiceAccountProjectMemberships);
 
   beforeEach(() => {
     createComponent();
@@ -30,7 +34,7 @@ describe('AiCatalogItemFieldServiceAccount', () => {
 
   it('renders help text with full phrase', () => {
     const helpText = findServiceAccountField().text();
-    expect(helpText).toBe(
+    expect(helpText).toContain(
       'Service accounts represent non-human entities. This is the account that you mention or assign to trigger the flow.',
     );
   });
@@ -40,19 +44,30 @@ describe('AiCatalogItemFieldServiceAccount', () => {
     expect(link.attributes('href')).toBe('/help/user/profile/service_accounts');
   });
 
-  it('renders service account avatar', () => {
-    expect(findServiceAccountAvatar().props()).toMatchObject({
-      size: 32,
-      src: mockServiceAccount.avatarUrl,
-      label: mockServiceAccount.name,
-      subLabel: `@${mockServiceAccount.username}`,
-    });
+  it('renders service account avatar component', () => {
+    expect(findServiceAccountAvatar().props('serviceAccount')).toEqual(mockServiceAccount);
   });
 
-  it('renders service account link', () => {
-    expect(findServiceAccountLink().attributes()).toMatchObject({
-      href: mockServiceAccount.webPath,
-      title: mockServiceAccount.name,
-    });
+  it('renders button to view projects and permissions', () => {
+    expect(findViewPermissionsButton().text()).toBe(
+      'View projects and permissions of this service account',
+    );
+  });
+
+  it('opens drawer when button is clicked', async () => {
+    expect(findServiceAccountProjectMemberships().props('isOpen')).toBe(false);
+
+    await findViewPermissionsButton().vm.$emit('click');
+
+    expect(findServiceAccountProjectMemberships().props('isOpen')).toBe(true);
+  });
+
+  it('closes drawer when close event is emitted', async () => {
+    await findViewPermissionsButton().vm.$emit('click');
+    expect(findServiceAccountProjectMemberships().props('isOpen')).toBe(true);
+
+    await findServiceAccountProjectMemberships().vm.$emit('close');
+
+    expect(findServiceAccountProjectMemberships().props('isOpen')).toBe(false);
   });
 });

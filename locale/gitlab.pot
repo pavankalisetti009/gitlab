@@ -2526,6 +2526,12 @@ msgstr ""
 msgid "AICatalog|AI Catalog"
 msgstr ""
 
+msgid "AICatalog|Access granted"
+msgstr ""
+
+msgid "AICatalog|Access level"
+msgstr ""
+
 msgid "AICatalog|Add GitLab-managed external agents to the instance's AI Catalog."
 msgstr ""
 
@@ -2850,6 +2856,9 @@ msgstr ""
 msgid "AICatalog|Failed to load group flows"
 msgstr ""
 
+msgid "AICatalog|Failed to load project memberships. Please try again."
+msgstr ""
+
 msgid "AICatalog|Failed to report agent. %{error}"
 msgstr ""
 
@@ -3018,6 +3027,9 @@ msgstr ""
 msgid "AICatalog|Only members of this project can edit or delete this flow."
 msgstr ""
 
+msgid "AICatalog|Only projects you can view are displayed. Members of the top-level group with at least the Maintainer role can view all projects."
+msgstr ""
+
 msgid "AICatalog|Only this agent in this project will be updated. Other projects using this agent will not be affected."
 msgstr ""
 
@@ -3058,6 +3070,9 @@ msgid "AICatalog|Project members can use this flow. You must have at least the M
 msgstr ""
 
 msgid "AICatalog|Project-specific automation."
+msgstr ""
+
+msgid "AICatalog|Projects using this service account"
 msgstr ""
 
 msgid "AICatalog|Public %{itemTypePlural} are best for:"
@@ -3109,6 +3124,9 @@ msgid "AICatalog|Selected %{itemType}"
 msgstr ""
 
 msgid "AICatalog|Service account"
+msgstr ""
+
+msgid "AICatalog|Service account created"
 msgstr ""
 
 msgid "AICatalog|Shared resources."
@@ -3178,6 +3196,9 @@ msgid "AICatalog|This flow specializes in... It can help you with... Best suited
 msgstr ""
 
 msgid "AICatalog|This key dashboard provides visibility into SDLC metrics in the context of AI adoption for projects and groups. %{linkStart}Learn more%{linkEnd}"
+msgstr ""
+
+msgid "AICatalog|This service account has no associated projects you can view. It might be used in projects that you can't view."
 msgstr ""
 
 msgid "AICatalog|To prevent versioning issues, you can edit only the latest version of this agent. To edit an earlier version, %{linkStart}duplicate the agent%{linkEnd}."
@@ -3259,6 +3280,9 @@ msgid "AICatalog|View enabled version"
 msgstr ""
 
 msgid "AICatalog|View latest version"
+msgstr ""
+
+msgid "AICatalog|View projects and permissions of this service account"
 msgstr ""
 
 msgid "AICatalog|Visibility"
