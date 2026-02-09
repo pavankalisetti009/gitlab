@@ -293,11 +293,22 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
               end
 
               it { is_expected.not_to be_present }
+
+              context 'when feature flag `hide_gitlab_credits_page` is enabled' do
+                before do
+                  stub_feature_flags(hide_gitlab_credits_page: false)
+                end
+
+                it { is_expected.not_to be_present }
+              end
             end
 
             context 'when paid group' do
+              let(:group) { create(:group_with_plan, plan: :bronze_plan, owners: owner) }
+
               before do
                 stub_licensed_features(group_usage_billing: true)
+                stub_feature_flags(hide_gitlab_credits_page: false)
               end
 
               it { is_expected.to be_present }
@@ -308,6 +319,14 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
                 end
 
                 it { is_expected.not_to be_present }
+              end
+
+              context 'when feature flag `hide_gitlab_credits_page` is enabled' do
+                before do
+                  stub_feature_flags(hide_gitlab_credits_page: true)
+                end
+
+                it { is_expected.to be_present }
               end
             end
           end
