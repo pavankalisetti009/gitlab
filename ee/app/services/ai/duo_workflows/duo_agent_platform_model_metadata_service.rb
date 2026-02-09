@@ -36,11 +36,6 @@ module Ai
       end
       strong_memoize_attr :duo_agent_platform
 
-      def can_access_dap_self_hosted?
-        Ability.allowed?(@current_user,
-          :read_dap_self_hosted_model) && Ability.allowed?(@current_user, :update_dap_self_hosted_model)
-      end
-
       def duo_agent_platform_in_self_hosted_duo?
         # There is a `disabled` option for Duo Self-Hosted.
         # We need to consider this case otherwise it resolves to
@@ -60,8 +55,6 @@ module Ai
       # 1. Self-hosted feature setting (admin-configured models only)
       # Note: No user model selection - limited to what admin sets up
       def resolve_self_hosted_duo_model_metadata
-        return {} unless can_access_dap_self_hosted?
-
         feature_setting = duo_agent_platform
 
         return {} if feature_setting.nil? || feature_setting.disabled?

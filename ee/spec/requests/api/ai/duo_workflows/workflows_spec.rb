@@ -2068,11 +2068,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         end
 
         before do
+          stub_feature_flags(duo_agent_platform_model_selection: false)
           stub_saas_features(gitlab_com_subscriptions: false)
-
-          allow(Ability).to receive(:allowed?).and_call_original
-          allow(Ability).to receive(:allowed?).with(user, :read_dap_self_hosted_model).and_return(true)
-          allow(Ability).to receive(:allowed?).with(user, :update_dap_self_hosted_model).and_return(true)
         end
 
         it 'includes model metadata headers in the response' do
@@ -2136,12 +2133,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         it_behaves_like 'ServiceURI has the right value', true
 
         context 'when feature setting is disabled' do
-          before do
-            duo_agent_platform_setting.reload
-            duo_agent_platform_setting.update!(provider: :disabled)
-          end
-
           subject(:get_response) do
+            duo_agent_platform_setting.update!(provider: :disabled)
+
             get api(path, user), headers: workhorse_headers
           end
 

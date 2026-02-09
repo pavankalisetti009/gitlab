@@ -51,9 +51,9 @@ module Gitlab
             def project_global_ids
               @project_global_ids ||= context.additional_context.filter_map do |ctx|
                 case ctx[:category]
-                when 'repository'
+                when ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES[:repository]
                   ctx[:id]
-                when 'directory'
+                when ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES[:directory]
                   ctx.dig(:metadata, 'projectId')
                 end
               end
@@ -62,13 +62,14 @@ module Gitlab
             def enhance_codebase_context
               context.additional_context.each do |ctx|
                 case ctx[:category]
-                when 'repository'
+                when ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES[:repository]
                   ctx[:content] = repository_info_context(ctx[:metadata])
-                  ctx[:content] += search_results_context('repository', ctx[:id])
-                when 'directory'
+                  ctx[:content] += search_results_context(
+                    ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES[:repository], ctx[:id])
+                when ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES[:directory]
                   ctx[:content] = directory_info_context(ctx[:metadata])
                   ctx[:content] += search_results_context(
-                    'directory',
+                    ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES[:directory],
                     ctx.dig(:metadata, 'projectId'),
                     ctx.dig(:metadata, 'relativePath')
                   )
@@ -104,7 +105,7 @@ module Gitlab
               project_id = extract_project_id_from_global_id(project_global_id)
               return "" unless project_id
 
-              return "" if category == 'directory' && path.blank?
+              return "" if category == ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES[:directory] && path.blank?
 
               result = codebase_query.filter(project_or_id: project_id, path: path)
 
