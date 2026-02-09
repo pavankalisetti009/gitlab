@@ -26376,6 +26376,9 @@ msgstr ""
 msgid "DuoChat|What is a fork?"
 msgstr ""
 
+msgid "DuoCodeReview|:warning: %{user_reference}, you need to set a default namespace to use Code Review Flow in this project. Please set a default GitLab Duo namespace in your [preferences](%{docs_url})."
+msgstr ""
+
 msgid "DuoCodeReview|:warning: Code Review Flow is enabled but the service account needs to be verified. Contact your administrator."
 msgstr ""
 

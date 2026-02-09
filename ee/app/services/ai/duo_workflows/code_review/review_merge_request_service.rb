@@ -74,6 +74,8 @@ module Ai
             ::Ai::CodeReviewMessages.missing_service_account_error
           when :usage_quota_exceeded
             ::Ai::CodeReviewMessages.usage_quota_exceeded_error
+          when :namespace_missing
+            ::Ai::CodeReviewMessages.namespace_missing_error(user)
           else
             ::Ai::CodeReviewMessages.could_not_start_workflow_error
           end

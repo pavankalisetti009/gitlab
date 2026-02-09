@@ -22,7 +22,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
     end
   end
 
-  shared_examples_for 'adds an error note' do |expected_error_message|
+  shared_examples_for 'adds an error note' do
     it 'posts an error comment to the merge request' do
       expect_next_instance_of(::Notes::CreateService) do |notes_service|
         expect(notes_service).to receive(:execute).and_call_original
@@ -113,7 +113,9 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'updates merge request status', 'reviewed'
 
-        include_examples 'adds an error note', ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error
+        include_examples 'adds an error note' do
+          let(:expected_error_message) { ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error }
+        end
       end
 
       context 'when code review flow is enabled but service account is not available' do
@@ -126,7 +128,9 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'updates merge request status', 'reviewed'
 
-        include_examples 'adds an error note', ::Ai::CodeReviewMessages.missing_service_account_error
+        include_examples 'adds an error note' do
+          let(:expected_error_message) { ::Ai::CodeReviewMessages.missing_service_account_error }
+        end
       end
 
       context 'when user has exceeded usage quota' do
@@ -139,7 +143,24 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'updates merge request status', 'reviewed'
 
-        include_examples 'adds an error note', ::Ai::CodeReviewMessages.usage_quota_exceeded_error
+        include_examples 'adds an error note' do
+          let(:expected_error_message) { ::Ai::CodeReviewMessages.usage_quota_exceeded_error }
+        end
+      end
+
+      context 'when user does not have a default namespace set' do
+        let(:create_and_start_service_result) do
+          ServiceResponse.error(
+            message: 'Namespace is required',
+            reason: :namespace_missing
+          )
+        end
+
+        include_examples 'updates merge request status', 'reviewed'
+
+        include_examples 'adds an error note' do
+          let(:expected_error_message) { ::Ai::CodeReviewMessages.namespace_missing_error(user) }
+        end
       end
 
       context 'with a generic failure reason' do
@@ -152,7 +173,9 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'updates merge request status', 'reviewed'
 
-        include_examples 'adds an error note', ::Ai::CodeReviewMessages.could_not_start_workflow_error
+        include_examples 'adds an error note' do
+          let(:expected_error_message) { ::Ai::CodeReviewMessages.could_not_start_workflow_error }
+        end
       end
     end
 
@@ -168,7 +191,9 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
       include_examples 'updates merge request status', 'reviewed'
 
-      include_examples 'adds an error note', ::Ai::CodeReviewMessages.exception_when_starting_workflow_error
+      include_examples 'adds an error note' do
+        let(:expected_error_message) { ::Ai::CodeReviewMessages.exception_when_starting_workflow_error }
+      end
 
       it 'tracks the exception with correct unit primitive' do
         expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
@@ -213,7 +238,9 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
       include_examples 'updates merge request status', 'reviewed'
 
-      include_examples 'adds an error note', ::Ai::CodeReviewMessages.exception_when_starting_workflow_error
+      include_examples 'adds an error note' do
+        let(:expected_error_message) { ::Ai::CodeReviewMessages.exception_when_starting_workflow_error }
+      end
 
       it 'cleans up the progress note' do
         progress_note = instance_double(::Note)
