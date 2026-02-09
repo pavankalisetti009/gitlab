@@ -29,7 +29,10 @@ RSpec.describe Vulnerabilities::ConfirmService, feature_category: :vulnerability
       it_behaves_like 'calls vulnerability statistics utility services in order'
 
       it_behaves_like 'removes dismissal feedback from associated findings'
+
       it_behaves_like 'triggering vulnerability webhook event'
+
+      it_behaves_like 'creating state transition record', :confirmed
 
       it 'confirms a vulnerability' do
         freeze_time do
@@ -66,22 +69,6 @@ RSpec.describe Vulnerabilities::ConfirmService, feature_category: :vulnerability
 
         it 'raises an "access denied" error' do
           expect { confirm_vulnerability }.to raise_error(Gitlab::Access::AccessDeniedError)
-        end
-      end
-
-      describe 'creating the state transition record' do
-        let(:expected_state_transition_relation) do
-          ::Vulnerabilities::StateTransition.where(
-            vulnerability: vulnerability,
-            from_state: vulnerability.state,
-            to_state: :confirmed,
-            author: user,
-            comment: comment
-          )
-        end
-
-        it 'creates state transition entry to `confirmed`' do
-          expect { confirm_vulnerability }.to change { expected_state_transition_relation.count }.by(1)
         end
       end
     end

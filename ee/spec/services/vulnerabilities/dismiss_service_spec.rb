@@ -28,6 +28,10 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
     let(:comment) { "Dismissal comment" }
     let(:dismissal_reason) { 'false_positive' }
 
+    it_behaves_like 'creating state transition record', :dismissed do
+      let(:extra_attributes) { { dismissal_reason: dismissal_reason } }
+    end
+
     context 'when a vulnerability read record exists' do
       let(:vulnerability_read) { Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) }
 
@@ -43,23 +47,6 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
       it 'does not fail' do
         expect(vulnerability_read).to be_nil
         expect { dismiss_vulnerability }.not_to change { Vulnerabilities::Read.count }
-      end
-    end
-
-    describe 'creating the state transition record' do
-      let(:expected_state_transition_relation) do
-        Vulnerabilities::StateTransition.where(
-          vulnerability: vulnerability,
-          from_state: vulnerability.state,
-          to_state: :dismissed,
-          author: user,
-          dismissal_reason: dismissal_reason,
-          comment: comment
-        )
-      end
-
-      it 'creates a vulnerability state transition record with correct attributes' do
-        expect { dismiss_vulnerability }.to change { expected_state_transition_relation.count }.by(1)
       end
     end
   end
