@@ -24,16 +24,6 @@ RSpec.describe Security::Categories::UpdateService, feature_category: :security_
 
   subject(:execute) { described_class.new(category: category, params: params, current_user: current_user).execute }
 
-  context 'when security_categories_and_attributes feature is disabled' do
-    before do
-      stub_feature_flags(security_categories_and_attributes: false)
-    end
-
-    it 'raises an "access denied" error' do
-      expect { execute }.to raise_error(Gitlab::Access::AccessDeniedError)
-    end
-  end
-
   context 'when user does not have permission' do
     let(:current_user) { create(:user) }
 

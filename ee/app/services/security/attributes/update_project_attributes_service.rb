@@ -17,10 +17,6 @@ module Security
       end
 
       def execute
-        unless Feature.enabled?(:security_categories_and_attributes, root_namespace)
-          raise Gitlab::Access::AccessDeniedError
-        end
-
         return UnauthorizedError unless permitted?
 
         limits_errors = validate_limits

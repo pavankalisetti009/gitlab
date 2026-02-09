@@ -42,10 +42,6 @@ RSpec.describe Security::Attributes::BackgroundOperationBulkUpdateWorker, featur
       namespace.add_maintainer(user)
     end
 
-    before do
-      stub_feature_flags(security_categories_and_attributes: true)
-    end
-
     context 'when user exists' do
       it 'processes all projects' do
         expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new).twice.and_call_original

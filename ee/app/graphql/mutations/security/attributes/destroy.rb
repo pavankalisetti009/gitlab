@@ -18,10 +18,6 @@ module Mutations
 
         def resolve(id:)
           attribute = authorized_find!(id: id)
-          namespace = attribute&.namespace
-          unless Feature.enabled?(:security_categories_and_attributes, namespace&.root_ancestor)
-            raise_resource_not_available_error!
-          end
 
           result = ::Security::Attributes::DestroyService.new(
             attribute: attribute,
