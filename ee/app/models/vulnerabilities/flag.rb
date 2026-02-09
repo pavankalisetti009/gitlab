@@ -40,6 +40,8 @@ module Vulnerabilities
       )
     end
 
+    scope :with_status, ->(status) { where(status: statuses[status]) }
+
     def initialize(attributes)
       attributes = attributes.to_h if attributes.respond_to?(:to_h)
       super(attributes)

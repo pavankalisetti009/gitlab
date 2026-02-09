@@ -69,7 +69,7 @@ RSpec.shared_examples 'geo base sync fetch' do
 
     context 'with a never synced repository' do
       it 'clones repository from geo node' do
-        allow(repository).to receive(:exists?) { false }
+        allow(repository).to receive(:exists?).and_return(false)
 
         is_expected.to receive(:clone_geo_mirror)
 

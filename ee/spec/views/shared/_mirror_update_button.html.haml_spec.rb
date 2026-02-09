@@ -51,7 +51,7 @@ RSpec.describe 'shared/mirror_update_button' do
 
   context 'mirror update due' do
     it 'renders a disabled update button' do
-      expect(import_state).to receive(:mirror_update_due?) { true }
+      expect(import_state).to receive(:mirror_update_due?).and_return(true)
       allow(import_state).to receive(:last_successful_update_at) { Time.now }
 
       render partial, current_user: owner
@@ -63,7 +63,7 @@ RSpec.describe 'shared/mirror_update_button' do
 
   context 'mirror is currently updating' do
     it 'renders a disabled update button' do
-      expect(import_state).to receive(:updating_mirror?) { true }
+      expect(import_state).to receive(:updating_mirror?).and_return(true)
 
       render partial, current_user: owner
 

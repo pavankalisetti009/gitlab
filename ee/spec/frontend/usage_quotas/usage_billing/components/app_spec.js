@@ -6,8 +6,6 @@ import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/cu
 import MonthlyWaiverCard from 'ee/usage_quotas/usage_billing/components/monthly_waiver_card.vue';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import OverageOptInCard from 'ee/usage_quotas/usage_billing/components/overage_opt_in_card.vue';
-import UpgradeToPremiumCard from 'ee/usage_quotas/usage_billing/components/upgrade_to_premium_card.vue';
-import HaveQuestionsCard from 'ee/usage_quotas/usage_billing/components/have_questions_card.vue';
 import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
 import PaidTierTrialPeriodView from 'ee/usage_quotas/usage_billing/components/paid_tier_trial_period_view.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -76,10 +74,7 @@ describe('UsageBillingApp', () => {
   const findMonthlyWaiverCard = () => wrapper.findComponent(MonthlyWaiverCard);
   const findPurchaseCommitmentCard = () => wrapper.findComponent(PurchaseCommitmentCard);
   const findOverageOptInCard = () => wrapper.findComponent(OverageOptInCard);
-  const findUpgradeToPremiumCard = () => wrapper.findComponent(UpgradeToPremiumCard);
-  const findHaveQuestionsCard = () => wrapper.findComponent(HaveQuestionsCard);
   const findUsageBillingCardsRow = () => wrapper.findByTestId('usage-billing-cards-row');
-  const findCardsTrialRow = () => wrapper.findByTestId('cards-during-trial-row');
 
   beforeEach(() => {
     window.gon = {
@@ -554,118 +549,6 @@ describe('UsageBillingApp', () => {
         const trialView = wrapper.findComponent(PaidTierTrialPeriodView);
 
         expect(trialView.exists()).toBe(false);
-      });
-    });
-  });
-
-  describe('trial cards visibility', () => {
-    describe('when isFree is true and inTrial is true (trialStartDate provided)', () => {
-      beforeEach(async () => {
-        createComponent({
-          provide: {
-            isFree: true,
-            trialStartDate: '2025-09-01',
-            trialEndDate: '2025-09-30',
-          },
-        });
-        await waitForPromises();
-      });
-
-      it('renders upgrade-to-premium-card', () => {
-        expect(findUpgradeToPremiumCard().exists()).toBe(true);
-      });
-
-      it('renders have-questions-card', () => {
-        expect(findHaveQuestionsCard().exists()).toBe(true);
-      });
-
-      it('renders cards in the trial section', () => {
-        expect(findCardsTrialRow().exists()).toBe(true);
-        expect(findCardsTrialRow().findComponent(UpgradeToPremiumCard).exists()).toBe(true);
-        expect(findCardsTrialRow().findComponent(HaveQuestionsCard).exists()).toBe(true);
-      });
-
-      it('does not render the usage billing cards section', () => {
-        expect(findUsageBillingCardsRow().exists()).toBe(false);
-      });
-    });
-
-    describe('when isFree is true and inTrial is false (no trialStartDate)', () => {
-      beforeEach(async () => {
-        createComponent({
-          provide: { isFree: true, trialStartDate: '' },
-        });
-        await waitForPromises();
-      });
-
-      it('does not render upgrade-to-premium-card', () => {
-        expect(findUpgradeToPremiumCard().exists()).toBe(false);
-      });
-
-      it('does not render have-questions-card', () => {
-        expect(findHaveQuestionsCard().exists()).toBe(false);
-      });
-
-      it('renders the usage billing cards section', () => {
-        expect(findUsageBillingCardsRow().exists()).toBe(true);
-      });
-
-      it('does not render the trial section', () => {
-        expect(findCardsTrialRow().exists()).toBe(false);
-      });
-    });
-
-    describe('when isFree is false and inTrial is true (trialStartDate provided)', () => {
-      beforeEach(async () => {
-        createComponent({
-          provide: {
-            isFree: false,
-            trialStartDate: '2025-09-01',
-            trialEndDate: '2025-09-30',
-          },
-        });
-        await waitForPromises();
-      });
-
-      it('does not render upgrade-to-premium-card', () => {
-        expect(findUpgradeToPremiumCard().exists()).toBe(false);
-      });
-
-      it('does not render have-questions-card', () => {
-        expect(findHaveQuestionsCard().exists()).toBe(false);
-      });
-
-      it('renders the usage billing cards section', () => {
-        expect(findUsageBillingCardsRow().exists()).toBe(true);
-      });
-
-      it('does not render the trial section', () => {
-        expect(findCardsTrialRow().exists()).toBe(false);
-      });
-    });
-
-    describe('when isFree is false and inTrial is false (no trialStartDate)', () => {
-      beforeEach(async () => {
-        createComponent({
-          provide: { isFree: false, trialStartDate: '' },
-        });
-        await waitForPromises();
-      });
-
-      it('does not render upgrade-to-premium-card', () => {
-        expect(findUpgradeToPremiumCard().exists()).toBe(false);
-      });
-
-      it('does not render have-questions-card', () => {
-        expect(findHaveQuestionsCard().exists()).toBe(false);
-      });
-
-      it('renders the usage billing cards section', () => {
-        expect(findUsageBillingCardsRow().exists()).toBe(true);
-      });
-
-      it('does not render the trial section', () => {
-        expect(findCardsTrialRow().exists()).toBe(false);
       });
     });
   });

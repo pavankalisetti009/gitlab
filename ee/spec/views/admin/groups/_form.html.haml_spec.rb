@@ -7,7 +7,7 @@ RSpec.describe 'admin/groups/_form' do
 
   before do
     assign(:group, group)
-    allow(view).to receive(:can?) { true }
+    allow(view).to receive(:can?).and_return(true)
     allow(view).to receive(:current_user) { admin }
     allow(view).to receive(:visibility_level) { group.visibility_level }
   end
