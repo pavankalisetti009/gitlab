@@ -932,6 +932,69 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       end
     end
 
+    describe '.with_detected_as_fp_flag' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be(:finding_without_flag) { create(:vulnerabilities_finding) }
+
+      let_it_be(:finding_with_detected_fp) do
+        finding = create(:vulnerabilities_finding)
+        create(
+          :vulnerabilities_flag,
+          :false_positive,
+          status: :detected_as_fp,
+          finding: finding
+        )
+        finding
+      end
+
+      let_it_be(:finding_with_not_detected_fp) do
+        finding = create(:vulnerabilities_finding)
+        create(
+          :vulnerabilities_flag,
+          :false_positive,
+          status: :in_progress,
+          finding: finding
+        )
+        finding
+      end
+
+      subject { described_class.with_detected_as_fp_flag }
+
+      it 'returns only findings with a false positive flag detected as FP' do
+        expect(subject).to contain_exactly(finding_with_detected_fp)
+      end
+
+      where(:status, :expected) do
+        :detected_as_fp | true
+        :in_progress | false
+        :not_started | false
+        :detected_as_not_fp | false
+        :failed | false
+      end
+
+      with_them do
+        it "matches correctly for status=#{params[:status]}" do
+          finding = create(:vulnerabilities_finding)
+
+          create(
+            :vulnerabilities_flag,
+            :false_positive,
+            status: status,
+            finding: finding
+          )
+
+          results = described_class.with_detected_as_fp_flag
+
+          if expected
+            expect(results).to include(finding)
+          else
+            expect(results).not_to include(finding)
+          end
+        end
+      end
+    end
+
     describe '#false_positive?' do
       let_it_be(:finding) { create(:vulnerabilities_finding) }
       let_it_be(:finding_with_fp) { create(:vulnerabilities_finding, vulnerability_flags: [create(:vulnerabilities_flag)]) }
