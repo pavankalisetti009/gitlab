@@ -73378,6 +73378,9 @@ msgstr ""
 msgid "UsageQuota|Container registry"
 msgstr ""
 
+msgid "UsageQuota|Cruft packs"
+msgstr ""
+
 msgid "UsageQuota|Deleted Namespace #%{id}"
 msgstr ""
 
@@ -73447,6 +73450,9 @@ msgstr ""
 msgid "UsageQuota|Job artifacts created by CI/CD."
 msgstr ""
 
+msgid "UsageQuota|Last full repack"
+msgstr ""
+
 msgid "UsageQuota|Last update: %{date}"
 msgstr ""
 
@@ -73463,6 +73469,12 @@ msgid "UsageQuota|Local proxy used for frequently-accessed upstream Docker image
 msgstr ""
 
 msgid "UsageQuota|Lookup table"
+msgstr ""
+
+msgid "UsageQuota|Loose objects"
+msgstr ""
+
+msgid "UsageQuota|Maintenance status"
 msgstr ""
 
 msgid "UsageQuota|Month"
@@ -73504,6 +73516,9 @@ msgstr ""
 msgid "UsageQuota|No reachability bitmap detected. A reachability bitmap can accelerate Git operations that need to determine object reachability, improving performance for clones, fetches, and pushes."
 msgstr ""
 
+msgid "UsageQuota|Object packing"
+msgstr ""
+
 msgid "UsageQuota|Objects storage"
 msgstr ""
 
@@ -73511,6 +73526,9 @@ msgid "UsageQuota|Observability"
 msgstr ""
 
 msgid "UsageQuota|Packfile count: %{value}"
+msgstr ""
+
+msgid "UsageQuota|Packfiles"
 msgstr ""
 
 msgid "UsageQuota|Pending Members"
