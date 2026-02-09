@@ -38,6 +38,8 @@ module API
           detail 'Returns vulnerabilities related to an occurrence.'
           tags ['dependency_management']
         end
+        route_setting :authorization, permissions: :read_sbom_occurrence, boundary_type: :project,
+          boundary: -> { project }
         get 'vulnerabilities' do
           options = { occurrence_id: params[:id], project: project }
 
