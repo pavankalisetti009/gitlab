@@ -35,10 +35,24 @@ RSpec.describe 'trial_registrations/_new', feature_category: :acquisition do
       it { is_expected.to have_content(s_('InProductMarketing|Boost efficiency and collaboration')) }
       it { is_expected.to have_content(s_('InProductMarketing|Ship secure software faster')) }
 
-      it 'shows GitLab Duo Enterprise feature' do
-        is_expected.to have_content(
-          s_('InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle')
-        )
+      context 'when feature flag `ultimate_trial_with_dap` is disabled' do
+        before do
+          stub_feature_flags(ultimate_trial_with_dap: false)
+        end
+
+        it 'shows GitLab Duo Agent Platform feature' do
+          is_expected.to have_content(
+            s_('InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle')
+          )
+        end
+      end
+
+      context 'when feature flag `ultimate_trial_with_dap` is enabled' do
+        it 'shows GitLab Duo Agent Platform feature' do
+          is_expected.to have_content(
+            s_('InProductMarketing|GitLab Duo Agent Platform: AI across the software development lifecycle')
+          )
+        end
       end
     end
 
