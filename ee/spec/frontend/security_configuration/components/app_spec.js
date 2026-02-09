@@ -197,24 +197,21 @@ describe('~/security_configuration/components/app', () => {
 
   describe('Security attributes tab', () => {
     describe.each`
-      securityAttributes | securityContextLabels | canReadAttributes | result
-      ${false}           | ${false}              | ${false}          | ${false}
-      ${false}           | ${false}              | ${true}           | ${false}
-      ${false}           | ${true}               | ${false}          | ${false}
-      ${false}           | ${true}               | ${true}           | ${false}
-      ${true}            | ${false}              | ${false}          | ${false}
-      ${true}            | ${true}               | ${false}          | ${false}
-      ${true}            | ${true}               | ${true}           | ${true}
+      securityAttributes | canReadAttributes | result
+      ${false}           | ${false}          | ${false}
+      ${false}           | ${true}           | ${false}
+      ${true}            | ${false}          | ${false}
+      ${true}            | ${true}           | ${true}
     `(
-      'with licensed feature set to $securityAttributes, feature flag set to $securityContextLabels, and canManageAttributes set to $canManageAttributes',
-      ({ securityAttributes, securityContextLabels, canReadAttributes, result }) => {
+      'with licensed feature set to $securityAttributes, and canManageAttributes set to $canManageAttributes',
+      ({ securityAttributes, canReadAttributes, result }) => {
         beforeEach(async () => {
           window.gon = {
             licensed_features: { securityAttributes },
           };
 
           createComponent({
-            provide: { glFeatures: { securityContextLabels }, canReadAttributes },
+            provide: { canReadAttributes },
             mountFn: shallowMountExtended,
             stubs: {
               GlTab: stubComponent(GlTab, {

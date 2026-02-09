@@ -45,7 +45,7 @@ describe('SecurityInventoryTable', () => {
           ...stubs,
         },
         provide: {
-          glFeatures: { securityContextLabels: true, securityScanProfilesFeature: false },
+          glFeatures: { securityScanProfilesFeature: false },
           ...provide,
         },
       });
@@ -122,13 +122,12 @@ describe('SecurityInventoryTable', () => {
   });
 
   describe('bulk selection', () => {
-    describe('with feature flag and permission', () => {
+    describe('with permission', () => {
       beforeEach(() => {
         createFullComponent({
           props: { items },
           stubs: { GlTableLite: false },
           provide: {
-            glFeatures: { securityContextLabels: true },
             canReadAttributes: true,
             canManageAttributes: true,
             canApplyProfiles: false,
@@ -159,30 +158,10 @@ describe('SecurityInventoryTable', () => {
     });
   });
 
-  describe('when security_context_labels feature flag is disabled', () => {
-    beforeEach(() => {
-      createComponent({
-        provide: {
-          glFeatures: { securityContextLabels: false },
-          canManageAttributes: true,
-          canReadAttributes: true,
-          canApplyProfiles: false,
-        },
-      });
-    });
-
-    it('does not show the security attributes column', () => {
-      expect(findTable().props('fields')).not.toContain(
-        expect.objectContaining({ key: 'securityAttributes' }),
-      );
-    });
-  });
-
   describe('when user does not have permission', () => {
     beforeEach(() => {
       createComponent({
         provide: {
-          glFeatures: { securityContextLabels: true },
           canManageAttributes: false,
           canReadAttributes: false,
           canApplyProfiles: false,
@@ -210,7 +189,7 @@ describe('SecurityInventoryTable', () => {
           }),
         },
         provide: {
-          glFeatures: { securityContextLabels: true, securityScanProfilesFeature: true },
+          glFeatures: { securityScanProfilesFeature: true },
           canApplyProfiles: true,
           canManageAttributes: true,
           canReadAttributes: true,

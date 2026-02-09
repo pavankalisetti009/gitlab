@@ -17,7 +17,7 @@ describe('ActionCell', () => {
   const createComponent = (
     props = {},
     provide = {
-      glFeatures: { securityContextLabels: false, securityScanProfilesFeature: false },
+      glFeatures: { securityScanProfilesFeature: false },
       canManageAttributes: false,
       canApplyProfiles: false,
     },
@@ -90,12 +90,11 @@ describe('ActionCell', () => {
     });
   });
 
-  describe('with securityContextLabels feature flag enabled and canManageAttributes permission', () => {
+  describe('with canManageAttributes permission', () => {
     beforeEach(() => {
       createComponent(
         { item: mockProject },
         {
-          glFeatures: { securityContextLabels: true },
           canManageAttributes: true,
           canApplyProfiles: false,
         },
@@ -145,19 +144,18 @@ describe('ActionCell', () => {
 
   describe('available actions', () => {
     describe.each`
-      type         | item           | securityScanProfilesFeature | securityContextLabels | expectedItems
-      ${'project'} | ${mockProject} | ${true}                     | ${true}               | ${['View project', 'View vulnerability report', 'Manage security configuration', 'Edit security attributes']}
-      ${'project'} | ${mockProject} | ${true}                     | ${false}              | ${['View project', 'View vulnerability report', 'Manage security configuration']}
-      ${'group'}   | ${mockGroup}   | ${true}                     | ${true}               | ${['Manage security scanners for subgroup projects', 'View subgroup', 'View vulnerability report']}
-      ${'group'}   | ${mockGroup}   | ${false}                    | ${true}               | ${['View subgroup', 'View vulnerability report']}
+      type         | item           | securityScanProfilesFeature | expectedItems
+      ${'project'} | ${mockProject} | ${true}                     | ${['View project', 'View vulnerability report', 'Manage security configuration', 'Edit security attributes']}
+      ${'group'}   | ${mockGroup}   | ${true}                     | ${['Manage security scanners for subgroup projects', 'View subgroup', 'View vulnerability report']}
+      ${'group'}   | ${mockGroup}   | ${false}                    | ${['View subgroup', 'View vulnerability report']}
     `(
-      'feature flags: when securityScanProfilesFeature is $securityScanProfilesFeature and securityContextLabels $securityContextLabels',
-      ({ item, securityScanProfilesFeature, securityContextLabels, expectedItems }) => {
+      'feature flags: when securityScanProfilesFeature is $securityScanProfilesFeature',
+      ({ item, securityScanProfilesFeature, expectedItems }) => {
         beforeEach(() => {
           createComponent(
             { item },
             {
-              glFeatures: { securityScanProfilesFeature, securityContextLabels },
+              glFeatures: { securityScanProfilesFeature },
               canApplyProfiles: true,
               canManageAttributes: true,
             },
@@ -185,7 +183,7 @@ describe('ActionCell', () => {
           createComponent(
             { item },
             {
-              glFeatures: { securityScanProfilesFeature: true, securityContextLabels: true },
+              glFeatures: { securityScanProfilesFeature: true },
               canApplyProfiles,
               canManageAttributes,
             },

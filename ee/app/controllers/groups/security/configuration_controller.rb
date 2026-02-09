@@ -16,7 +16,6 @@ module Groups
       def authorize_admin_security_attributes!
         render_403 unless
           can?(current_user, :admin_security_attributes, group.root_ancestor) &&
-            Feature.enabled?(:security_context_labels, group.root_ancestor) &&
             group.licensed_feature_available?(:security_attributes)
       end
     end
