@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::CycleAnalytics::ValueStreamSetting, type: :model, feature_category: :value_stream_management do
+RSpec.describe Analytics::CycleAnalytics::ValueStreamSetting, feature_category: :value_stream_management do
   let_it_be(:group) { create(:group) }
   let_it_be(:value_stream_setting) { create(:cycle_analytics_value_stream_setting) }
 

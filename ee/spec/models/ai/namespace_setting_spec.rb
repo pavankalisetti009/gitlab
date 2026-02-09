@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::NamespaceSetting, type: :model, feature_category: :ai_abstraction_layer do
+RSpec.describe Ai::NamespaceSetting, feature_category: :ai_abstraction_layer do
   describe 'concerns' do
     it { is_expected.to include_module(Ai::HasRolePermissions) }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::VectorizableFile, type: :model, feature_category: :mlops do
+RSpec.describe Ai::VectorizableFile, feature_category: :mlops do
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
     it { is_expected.to have_many(:attachments) }

@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type: :component, feature_category: :consumables_cost_management do
+RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, feature_category: :consumables_cost_management do
   let(:group) do
     build_stubbed(
       :group,

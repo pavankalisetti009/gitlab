@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ContainerRegistry::ContainerRegistryHelper, feature_category: :container_registry, type: :helper do
+RSpec.describe ContainerRegistry::ContainerRegistryHelper, feature_category: :container_registry do
   let_it_be(:project) { build_stubbed(:project, :repository) }
   let_it_be(:user) { build_stubbed(:user) }
   let_it_be(:admin) { build_stubbed(:admin) }

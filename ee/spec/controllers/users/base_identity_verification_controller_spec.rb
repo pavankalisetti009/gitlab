@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Users::BaseIdentityVerificationController, type: :controller, feature_category: :instance_resiliency do
+RSpec.describe Users::BaseIdentityVerificationController, feature_category: :instance_resiliency do
   subject(:controller) { Class.new(described_class) }
 
   describe '#find_verification_user' do
