@@ -47533,6 +47533,7 @@ Security configuration data for a project.
 | <a id="securityconfigurationsecretpushprotectionavailable"></a>`secretPushProtectionAvailable` | [`Boolean!`](#boolean) | Whether secret push protection is available at the instance level. |
 | <a id="securityconfigurationsecretpushprotectionenabled"></a>`secretPushProtectionEnabled` | [`Boolean`](#boolean) | Whether secret push protection is enabled for the project. |
 | <a id="securityconfigurationsecretpushprotectionlicensed"></a>`secretPushProtectionLicensed` | [`Boolean!`](#boolean) | Whether the project has a license for secret push protection. |
+| <a id="securityconfigurationsecurityscanprofileslicensed"></a>`securityScanProfilesLicensed` | [`Boolean!`](#boolean) | Whether the project has a license for security scan profiles. |
 | <a id="securityconfigurationsecuritytrainingenabled"></a>`securityTrainingEnabled` | [`Boolean!`](#boolean) | Whether security training is available for the project. |
 | <a id="securityconfigurationupgradepath"></a>`upgradePath` | [`String`](#string) | Path to upgrade security features. |
 | <a id="securityconfigurationuserisprojectadmin"></a>`userIsProjectAdmin` | [`Boolean!`](#boolean) | Whether the current user has admin permissions for security testing. |

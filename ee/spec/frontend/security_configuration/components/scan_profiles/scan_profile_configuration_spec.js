@@ -1,6 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlTable, GlButton, GlAlert, GlLink, GlLoadingIcon } from '@gitlab/ui';
+import { PROMO_URL } from '~/constants';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -91,6 +92,7 @@ describe('ScanProfileConfiguration', () => {
     detachResolver = createDetachMutationResolver(),
     profileDetailsResolver = createProfileDetailsResolver(),
     canApplyProfiles = true,
+    securityScanProfilesLicensed = true,
   } = {}) => {
     mockToastShow = jest.fn();
 
@@ -108,6 +110,7 @@ describe('ScanProfileConfiguration', () => {
         projectFullPath: 'group/project',
         groupFullPath: 'group',
         canApplyProfiles,
+        securityScanProfilesLicensed,
       },
       mocks: {
         $toast: {
@@ -124,6 +127,7 @@ describe('ScanProfileConfiguration', () => {
 
   const findTable = () => wrapper.findComponent(GlTable);
   const findAlert = () => wrapper.findComponent(GlAlert);
+  const findLink = () => wrapper.findComponent(GlLink);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findDisableModal = () => wrapper.findComponent(DisableScanProfileConfirmationModal);
   const findDetailsModal = () => wrapper.findComponent(ScanProfileDetailsModal);
@@ -215,6 +219,49 @@ describe('ScanProfileConfiguration', () => {
       await waitForPromises();
 
       expect(wrapper.text()).toContain('Active');
+    });
+  });
+
+  describe('when unlicensed', () => {
+    beforeEach(() => {
+      createComponent({ securityScanProfilesLicensed: false });
+    });
+
+    it('renders table with correct fields', () => {
+      const table = findTable();
+      expect(table.exists()).toBe(true);
+      expect(table.props('fields')).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'scanType', label: 'Scanner' }),
+          expect.objectContaining({ key: 'name', label: 'Profile' }),
+          expect.objectContaining({ key: 'status', label: 'Status' }),
+          expect.objectContaining({ key: 'actions', label: '' }),
+        ]),
+      );
+    });
+
+    it('renders "No profile applied"', () => {
+      expect(findAlert().exists()).toBe(false);
+      expect(findTable().exists()).toBe(true);
+
+      expect(wrapper.text()).toContain('No profile applied');
+    });
+
+    it('shows "Available with Ultimate" with a learn more link', () => {
+      expect(wrapper.text()).toContain('Available with Ultimate');
+      expect(findLink().text()).toBe('Learn more about the Ultimate security suite');
+      expect(findLink().props('href')).toBe(`${PROMO_URL}/solutions/application-security-testing/`);
+    });
+
+    it('renders disabled apply and preview buttons', () => {
+      const buttons = wrapper.findAllComponents(GlButton);
+      const applyButton = buttons.wrappers.find((btn) =>
+        btn.text().includes('Apply default profile'),
+      );
+      const previewButton = buttons.wrappers.find((btn) => btn.props('icon') === 'eye');
+
+      expect(applyButton.props('disabled')).toBe(true);
+      expect(previewButton.props('disabled')).toBe(true);
     });
   });
 

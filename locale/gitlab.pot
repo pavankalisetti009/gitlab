@@ -10917,6 +10917,9 @@ msgstr ""
 msgid "Available ID"
 msgstr ""
 
+msgid "Available with Ultimate"
+msgstr ""
+
 msgid "Avatar for %{assigneeName}"
 msgstr ""
 
@@ -40062,6 +40065,9 @@ msgid "Learn more about seats owed"
 msgstr ""
 
 msgid "Learn more about shards and replicas in the %{configuration_link_start}advanced search configuration%{configuration_link_end} documentation. Changes don't take place until you %{recreated_link_start}recreate%{recreated_link_end} the index."
+msgstr ""
+
+msgid "Learn more about the Ultimate security suite"
 msgstr ""
 
 msgid "Learn more about vulnerability management on non-default branches and tags."
