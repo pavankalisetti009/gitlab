@@ -80,11 +80,10 @@ describe('CleanupPolicyDetails', () => {
     });
 
     it('renders the default state', () => {
-      expect(findCleanupPolicyDetails().exists()).toBe(true);
       expect(findCleanupPolicyDetails().text()).toContain(
-        'No cleanup policy yet. Create a policy to delete caches and save space.',
+        'No cleanup rule yet. Define when caches should be deleted to save space.',
       );
-      expect(findEditButton().text()).toContain('Create policy');
+      expect(findEditButton().text()).toContain('Set policy');
       expect(findEditButton().attributes('href')).toBe(virtualRegistryCleanupPolicyPath);
     });
   });
