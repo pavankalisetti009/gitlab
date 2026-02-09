@@ -84,7 +84,7 @@ class BackfillWorkItemsEmbeddings < Elastic::Migration
   end
 
   def projects
-    Project.id_in(PROJECT_IDS).select { |p| Feature.enabled?(:elasticsearch_work_item_embedding, p, type: :ops) }
+    []
   end
 
   def date_filter
