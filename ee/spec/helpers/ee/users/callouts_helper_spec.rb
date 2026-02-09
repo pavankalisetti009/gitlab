@@ -360,41 +360,6 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
     end
   end
 
-  describe '#render_product_usage_data_collection_changes', :do_not_mock_admin_mode_setting do
-    let_it_be(:admin) { create(:user, :admin) }
-    let_it_be(:license) { create(:license) }
-    let(:current_user) { admin }
-
-    subject(:render_callout) { helper.render_product_usage_data_collection_changes(current_user) }
-
-    before do
-      allow(License).to receive(:current).and_return(license)
-      allow(admin).to receive(:can_admin_all_resources?).and_return(true)
-    end
-
-    context 'when license is an offline cloud license' do
-      before do
-        allow(license).to receive(:offline_cloud_license?).and_return(true)
-      end
-
-      it 'does not render the callout' do
-        expect(helper).not_to receive(:render)
-        render_callout
-      end
-    end
-
-    context 'when license is not an offline cloud license' do
-      before do
-        allow(license).to receive(:offline_cloud_license?).and_return(false)
-      end
-
-      it 'renders the callout' do
-        expect(helper).to receive(:render).with('shared/product_usage_data_collection_changes_callout')
-        render_callout
-      end
-    end
-  end
-
   describe '.render_default_duo_namespace_required_alert?', :do_not_mock_admin_mode_setting do
     let_it_be(:user) { create(:user) }
 
