@@ -7257,10 +7257,10 @@ msgstr ""
 msgid "AiImpactAnalytics|Users with assigned Duo seats who used at least one Duo feature. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
-msgid "AiImpactAnalytics|Value can't be calculated due to division by zero."
+msgid "AiImpactAnalytics|Value can't be calculated due to insufficient data."
 msgstr ""
 
-msgid "AiImpactAnalytics|Value can't be calculated due to insufficient data."
+msgid "AiImpactAnalytics|Value can't be calculated due to insufficient data. Change calculation requires at least six months of historical data."
 msgstr ""
 
 msgid "AiModelDeprecation|Change model"

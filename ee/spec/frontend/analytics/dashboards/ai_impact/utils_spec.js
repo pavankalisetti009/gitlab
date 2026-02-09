@@ -49,7 +49,7 @@ describe('AI impact Dashboard utils', () => {
       ${0}         | ${0}         | ${0}     | ${'No change'}
       ${'0.0'}     | ${'0.0'}     | ${0}     | ${'No change'}
       ${10}        | ${10}        | ${0}     | ${'No change'}
-      ${10}        | ${0}         | ${'n/a'} | ${"Value can't be calculated due to division by zero."}
+      ${10}        | ${0}         | ${'n/a'} | ${"Value can't be calculated due to insufficient data. Change calculation requires at least six months of historical data."}
       ${undefined} | ${100}       | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
       ${null}      | ${100}       | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
       ${'-'}       | ${100}       | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
