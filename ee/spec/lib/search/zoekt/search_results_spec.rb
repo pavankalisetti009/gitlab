@@ -503,6 +503,119 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
         expect { objects }.to raise_error(NoMethodError)
       end
     end
+
+    context 'when Zoekt response uses Repository field instead of RepositoryID' do
+      let(:file_with_repository_field) do
+        {
+          Repository: project_1.id.to_s,
+          FileName: 'test.rb',
+          LineMatches: [
+            {
+              LineNumber: 1,
+              Line: Base64.encode64('test content'),
+              LineFragments: [{ LineOffset: 0, MatchLength: 4 }]
+            }
+          ]
+        }
+      end
+
+      let(:mock_response) do
+        instance_double(
+          ::Gitlab::Search::Zoekt::Response,
+          match_count: 1,
+          file_count: 1,
+          failure?: false,
+          parsed_response: {}
+        )
+      end
+
+      before do
+        allow(mock_response).to receive(:each_file).and_yield(file_with_repository_field)
+        allow(Gitlab::Search::Zoekt::Client).to receive(:search).and_return(mock_response)
+      end
+
+      it 'extracts project_id from Repository field' do
+        blobs = objects
+        expect(blobs).not_to be_empty
+        expect(blobs.first.project_id).to eq(project_1.id)
+      end
+    end
+
+    context 'when Zoekt response has RepositoryID as zero and Repository field present' do
+      let(:file_with_zero_repository_id) do
+        {
+          RepositoryID: '0',
+          Repository: project_2.id.to_s,
+          FileName: 'large_id_test.rb',
+          LineMatches: [
+            {
+              LineNumber: 5,
+              Line: Base64.encode64('large project id test'),
+              LineFragments: [{ LineOffset: 0, MatchLength: 5 }]
+            }
+          ]
+        }
+      end
+
+      let(:mock_response) do
+        instance_double(
+          ::Gitlab::Search::Zoekt::Response,
+          match_count: 1,
+          file_count: 1,
+          failure?: false,
+          parsed_response: {}
+        )
+      end
+
+      before do
+        allow(mock_response).to receive(:each_file).and_yield(file_with_zero_repository_id)
+        allow(Gitlab::Search::Zoekt::Client).to receive(:search).and_return(mock_response)
+      end
+
+      it 'falls back to Repository field when RepositoryID is zero' do
+        blobs = objects
+        expect(blobs).not_to be_empty
+        expect(blobs.first.project_id).to eq(project_2.id)
+      end
+    end
+
+    context 'when Zoekt response has valid RepositoryID' do
+      let(:file_with_repository_id) do
+        {
+          RepositoryID: project_1.id.to_s,
+          Repository: '999999',
+          FileName: 'legacy_format.rb',
+          LineMatches: [
+            {
+              LineNumber: 10,
+              Line: Base64.encode64('legacy format test'),
+              LineFragments: [{ LineOffset: 0, MatchLength: 6 }]
+            }
+          ]
+        }
+      end
+
+      let(:mock_response) do
+        instance_double(
+          ::Gitlab::Search::Zoekt::Response,
+          match_count: 1,
+          file_count: 1,
+          failure?: false,
+          parsed_response: {}
+        )
+      end
+
+      before do
+        allow(mock_response).to receive(:each_file).and_yield(file_with_repository_id)
+        allow(Gitlab::Search::Zoekt::Client).to receive(:search).and_return(mock_response)
+      end
+
+      it 'prefers RepositoryID over Repository field' do
+        blobs = objects
+        expect(blobs).not_to be_empty
+        expect(blobs.first.project_id).to eq(project_1.id)
+      end
+    end
   end
 
   describe '#blobs_count' do
