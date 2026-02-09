@@ -86,13 +86,23 @@ module Mutations
         def schedule_group_workers(groups, profile)
           return if groups.empty?
 
+          operation_id = create_background_operation(groups.size, profile)
           # rubocop:disable CodeReuse/Worker -- This should schedule async workers
           ::Security::ScanProfiles::AttachWorker.bulk_perform_async_with_contexts(
             groups,
-            arguments_proc: ->(group) { [group.id, profile.id, current_user.id] },
+            arguments_proc: ->(group) { [group.id, profile.id, current_user.id, operation_id, true] },
             context_proc: ->(group) { { namespace: group, user: current_user } }
           )
           # rubocop:enable CodeReuse/Worker
+        end
+
+        def create_background_operation(groups_count, profile)
+          Gitlab::BackgroundOperations::RedisStore.create_operation(
+            operation_type: 'profile_attach',
+            user_id: current_user.id,
+            total_items: groups_count,
+            parameters: { profile_id: profile.id }
+          )
         end
 
         def validate_id_limit!(project_ids, group_ids)

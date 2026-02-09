@@ -152,10 +152,29 @@ RSpec.describe Security::ScanProfiles::ProjectDetachService, feature_category: :
         allow(Security::ScanProfileProject).to receive(:by_project_id).and_raise(StandardError, 'Database error')
       end
 
-      it 'returns the error message' do
-        result = execute_service
+      it 'raises the error in development/test environment' do
+        expect { execute_service }.to raise_error(StandardError, 'Database error')
+      end
 
-        expect(result[:errors]).to include('Database error')
+      context 'when not in development environment' do
+        before do
+          allow(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception) do |e|
+            Gitlab::ErrorTracking.track_exception(e)
+          end
+        end
+
+        it 'returns an error result without raising' do
+          result = execute_service
+
+          expect(result[:errors]).to include('An error has occurred during profile detachment')
+        end
+
+        it 'tracks the exception' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception)
+            .with(an_instance_of(StandardError))
+
+          execute_service
+        end
       end
     end
 

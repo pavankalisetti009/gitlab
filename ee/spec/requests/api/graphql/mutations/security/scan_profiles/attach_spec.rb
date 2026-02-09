@@ -152,7 +152,9 @@ RSpec.describe 'SecurityScanProfileAttach', feature_category: :security_asset_in
 
         it 'enqueues worker for groups' do
           expect(Security::ScanProfiles::AttachWorker)
-            .to receive(:bulk_perform_async).with([[group1.id, profile.id, current_user.id]])
+            .to receive(:bulk_perform_async).with(
+              contain_exactly([group1.id, profile.id, current_user.id, a_kind_of(String), true])
+            )
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -172,7 +174,9 @@ RSpec.describe 'SecurityScanProfileAttach', feature_category: :security_asset_in
 
         it 'attaches to projects and enqueues workers for groups' do
           expect(Security::ScanProfiles::AttachWorker)
-            .to receive(:bulk_perform_async).with([[group1.id, profile.id, current_user.id]])
+            .to receive(:bulk_perform_async).with(
+              contain_exactly([group1.id, profile.id, current_user.id, a_kind_of(String), true])
+            )
 
           expect { post_graphql_mutation(mutation, current_user: current_user) }
             .to change { Security::ScanProfileProject.count }.by(1)
@@ -311,7 +315,9 @@ RSpec.describe 'SecurityScanProfileAttach', feature_category: :security_asset_in
             .to change { Security::ScanProfileProject.count }.by(1)
 
           expect(response).to have_gitlab_http_status(:success)
-          expect(mutation_result['errors']).to include(match(/Project #{project1.id}.*maximum limit/))
+          expect(mutation_result['errors']).to include(
+            match(/Project '#{project1.name}'.*#{project1.full_path}.*maximum limit/)
+          )
           expect(Security::ScanProfileProject.by_project_id(project2).for_scan_profile(profile)).to exist
         end
       end

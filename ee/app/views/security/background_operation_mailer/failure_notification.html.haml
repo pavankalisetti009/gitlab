@@ -12,15 +12,22 @@
     %p{ style: 'margin: 0; color: #dd2b0e;' }= format(_('Failed: %{failed}'), failed: @operation[:failed_items])
 
     %p{ style: 'margin-top: 16px;' }
-      %strong= _('Failed Projects:')
+      - entity_label = @failed_items.first&.dig('entity_type') == 'Group' ? _('Failed Groups:') : _('Failed Projects:')
+      %strong= entity_label
     - @failed_items.each do |item|
-      - if item['project_full_path'].present?
-        - project_url = Gitlab::Routing.url_helpers.root_url + item['project_full_path']
-        - project_link = link_to(item['project_name'] || item['project_full_path'], project_url)
+      - if item['entity_full_path'].present?
+        - entity_url = Gitlab::Routing.url_helpers.root_url + item['entity_full_path']
+        - entity_link = link_to(item['entity_name'] || item['entity_full_path'], entity_url)
       - else
-        - project_link = "Project ID #{item['project_id']}"
-      %p{ style: 'margin: 0;' }
-        = project_link
-        \-
-        = item['error_message']
-        = "(#{item['error_code']})"
+        - entity_type = item['entity_type'] || 'Project'
+        - entity_link = "#{entity_type} ID #{item['entity_id']}"
+      - error_messages = Array.wrap(item['error_message'])
+      %p{ style: 'margin: 8px 0 8px 0;' }
+        %strong= entity_link
+        - if error_messages.size == 1
+          \-
+          = linkify_project_references(error_messages.first)
+        - else
+          %ul{ style: 'margin: 4px 0 0 16px; padding: 0; list-style-type: none' }
+            - error_messages.each do |message|
+              %li{ style: 'margin: 2px 0;' }= linkify_project_references(message)

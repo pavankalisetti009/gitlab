@@ -29,7 +29,8 @@ module Security
 
         { errors: errors }
       rescue StandardError => e
-        error_result(e.message)
+        Gitlab::ErrorTracking.track_and_raise_for_dev_exception(e)
+        error_result('An error has occurred during profile attachment')
       end
 
       private
@@ -78,8 +79,15 @@ module Security
           .limit(potential_error_ids.size)
           .pluck(:project_id) # rubocop:disable CodeReuse/ActiveRecord -- specific use case
 
-        (potential_error_ids - already_attached_ids).each do |id|
-          errors << "Project #{id} has reached the maximum limit of scan profiles."
+        maxed_out_ids_set = (potential_error_ids - already_attached_ids).to_set
+        maxed_out_projects = projects.select { |p| maxed_out_ids_set.include?(p.id) }
+        return if maxed_out_projects.empty?
+
+        # Preload routes to avoid N+1 queries when accessing project.full_path
+        ActiveRecord::Associations::Preloader.new(records: maxed_out_projects, associations: [:route]).call
+
+        maxed_out_projects.each do |project|
+          errors << "Project '#{project.name}' (#{project.full_path}) has reached the maximum limit of scan profiles."
         end
       end
 

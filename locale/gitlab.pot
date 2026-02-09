@@ -10417,9 +10417,6 @@ msgstr ""
 msgid "Attribute 'pod-overrides' is not yet supported"
 msgstr ""
 
-msgid "Attribute update"
-msgstr ""
-
 msgid "Attributes"
 msgstr ""
 
@@ -29267,6 +29264,9 @@ msgid "Fail"
 msgstr ""
 
 msgid "Failed"
+msgstr ""
+
+msgid "Failed Groups:"
 msgstr ""
 
 msgid "Failed Jobs"
