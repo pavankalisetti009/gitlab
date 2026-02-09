@@ -181,6 +181,42 @@ module Gitlab
         }
       GQL
 
+      GET_TRIAL_USAGE_QUERY = <<~GQL
+        query trialUsage(
+          $namespaceId: ID,
+          $licenseKey: String
+        ) {
+          trialUsage(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            activeTrial {
+              startDate
+              endDate
+            }
+            usersUsage {
+              creditsUsed
+              totalUsersUsingCredits
+            }
+          }
+        }
+      GQL
+
+      GET_TRIAL_USAGE_FOR_USER_IDS_QUERY = <<~GQL
+        query trialUsageForUserIds(
+          $namespaceId: ID,
+          $licenseKey: String,
+          $userIds: [Int!]!
+        ) {
+          trialUsage(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            usersUsage {
+              users(userIds: $userIds) {
+                userId
+                totalCredits
+                creditsUsed
+              }
+            }
+          }
+        }
+      GQL
+
       # Initialize the client with the provided parameters that will be used later
       # to make API calls to the subscription portal
       #
@@ -303,6 +339,36 @@ module Gitlab
         end
       end
       strong_memoize_attr :get_users_usage_stats
+
+      def get_trial_usage
+        response = execute_graphql_query(query: GET_TRIAL_USAGE_QUERY)
+
+        if unsuccessful_response?(response)
+          error(GET_TRIAL_USAGE_QUERY, response)
+        else
+          {
+            success: true,
+            trialUsage: response.dig(:data, :trialUsage)
+          }
+        end
+      end
+      strong_memoize_attr :get_trial_usage
+
+      def get_trial_usage_for_user_ids(user_ids)
+        strong_memoize_with(:get_trial_usage_for_user_ids, user_ids) do
+          response = execute_graphql_query(query: GET_TRIAL_USAGE_FOR_USER_IDS_QUERY,
+            extra_variables: { userIds: user_ids })
+
+          if unsuccessful_response?(response)
+            error(GET_TRIAL_USAGE_FOR_USER_IDS_QUERY, response)
+          else
+            {
+              success: true,
+              usersUsage: response.dig(:data, :trialUsage, :usersUsage, :users)
+            }
+          end
+        end
+      end
 
       private
 

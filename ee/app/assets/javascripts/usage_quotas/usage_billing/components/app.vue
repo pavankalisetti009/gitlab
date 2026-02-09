@@ -18,8 +18,6 @@ import CurrentOverageUsageCard from './current_overage_usage_card.vue';
 import MonthlyWaiverCard from './monthly_waiver_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
 import OverageOptInCard from './overage_opt_in_card.vue';
-import UpgradeToPremiumCard from './upgrade_to_premium_card.vue';
-import HaveQuestionsCard from './have_questions_card.vue';
 import PaidTierTrialDisclaimer from './paid_tier_trial_period_view.vue';
 
 export default {
@@ -40,8 +38,6 @@ export default {
     HumanTimeframe,
     UsageTrendsChart,
     OverageOptInCard,
-    UpgradeToPremiumCard,
-    HaveQuestionsCard,
     PaidTierTrialDisclaimer,
   },
   mixins: [InternalEvents.mixin()],
@@ -65,7 +61,6 @@ export default {
   },
   inject: {
     namespacePath: { default: '' },
-    isFree: { default: false },
     trialStartDate: { default: undefined },
     trialEndDate: { default: undefined },
   },
@@ -253,15 +248,6 @@ export default {
     />
     <template v-else>
       <section
-        v-if="isFree && inTrial"
-        class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row"
-        data-testid="cards-during-trial-row"
-      >
-        <upgrade-to-premium-card />
-        <have-questions-card />
-      </section>
-      <section
-        v-else
         class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row"
         data-testid="usage-billing-cards-row"
       >

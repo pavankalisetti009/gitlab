@@ -480,4 +480,197 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
       let(:variables) { { namespaceId: namespace_id } }
     end
   end
+
+  describe '#get_trial_usage' do
+    let(:request) { client.get_trial_usage }
+    let(:query) { described_class::GET_TRIAL_USAGE_QUERY }
+    let(:trial_usage) do
+      {
+        activeTrial: {
+          startDate: "2026-02-01",
+          endDate: "2026-03-03"
+        },
+        usersUsage: {
+          creditsUsed: 12.5,
+          totalUsersUsingCredits: 3,
+          users: []
+        }
+      }
+    end
+
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          trialUsage: trial_usage
+        }
+      }
+    end
+
+    let(:expected_response) do
+      {
+        success: true,
+        trialUsage: trial_usage
+      }
+    end
+
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key } }
+    end
+
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id } }
+    end
+
+    context 'when trial has zero usage' do
+      let(:trial_usage) do
+        {
+          activeTrial: {
+            startDate: "2026-01-06",
+            endDate: "2026-04-06"
+          },
+          usersUsage: {
+            creditsUsed: 0.0,
+            totalUsersUsingCredits: 0,
+            users: []
+          }
+        }
+      end
+
+      let(:portal_response) do
+        {
+          success: true,
+          data: {
+            trialUsage: trial_usage
+          }
+        }
+      end
+
+      let(:expected_response) do
+        {
+          success: true,
+          trialUsage: trial_usage
+        }
+      end
+
+      include_context 'for self-managed request' do
+        let(:variables) { { licenseKey: license_key } }
+      end
+
+      include_context 'for gitlab.com request' do
+        let(:variables) { { namespaceId: namespace_id } }
+      end
+    end
+  end
+
+  describe '#get_trial_usage_for_user_ids' do
+    let(:user_ids) { [123, 456] }
+    let(:request) { client.get_trial_usage_for_user_ids(user_ids) }
+    let(:query) { described_class::GET_TRIAL_USAGE_FOR_USER_IDS_QUERY }
+    let(:trial_users_usage) do
+      [
+        {
+          userId: 123,
+          totalCredits: 24.0,
+          creditsUsed: 4.5
+        },
+        {
+          userId: 456,
+          totalCredits: 24.0,
+          creditsUsed: nil
+        }
+      ]
+    end
+
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          trialUsage: {
+            activeTrial: {
+              startDate: "2026-01-06",
+              endDate: "2026-04-06"
+            },
+            usersUsage: {
+              creditsUsed: 4.5,
+              totalUsersUsingCredits: 1,
+              users: trial_users_usage
+            }
+          }
+        }
+      }
+    end
+
+    let(:expected_response) do
+      {
+        success: true,
+        usersUsage: trial_users_usage
+      }
+    end
+
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key, userIds: user_ids } }
+    end
+
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id, userIds: user_ids } }
+    end
+
+    context 'when all users have null creditsUsed' do
+      let(:user_ids) { [123, 456, 789] }
+      let(:trial_users_usage) do
+        [
+          {
+            userId: 123,
+            totalCredits: 24.0,
+            creditsUsed: nil
+          },
+          {
+            userId: 456,
+            totalCredits: 24.0,
+            creditsUsed: nil
+          },
+          {
+            userId: 789,
+            totalCredits: 24.0,
+            creditsUsed: nil
+          }
+        ]
+      end
+
+      let(:portal_response) do
+        {
+          success: true,
+          data: {
+            trialUsage: {
+              activeTrial: {
+                startDate: "2026-01-06",
+                endDate: "2026-04-06"
+              },
+              usersUsage: {
+                creditsUsed: 0.0,
+                totalUsersUsingCredits: 0,
+                users: trial_users_usage
+              }
+            }
+          }
+        }
+      end
+
+      let(:expected_response) do
+        {
+          success: true,
+          usersUsage: trial_users_usage
+        }
+      end
+
+      include_context 'for self-managed request' do
+        let(:variables) { { licenseKey: license_key, userIds: user_ids } }
+      end
+
+      include_context 'for gitlab.com request' do
+        let(:variables) { { namespaceId: namespace_id, userIds: user_ids } }
+      end
+    end
+  end
 end

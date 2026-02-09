@@ -72996,6 +72996,9 @@ msgid_plural "UsageBilling|%{poolCreditsRemaining} credits remaining"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "UsageBilling|(Trial)"
+msgstr ""
+
 msgid "UsageBilling|Accept on-demand billing"
 msgstr ""
 
@@ -73033,6 +73036,9 @@ msgid "UsageBilling|Date/Time"
 msgstr ""
 
 msgid "UsageBilling|Displaying user data is disabled. %{linkStart}Learn how to enable it%{linkEnd}."
+msgstr ""
+
+msgid "UsageBilling|Displaying user data is disabled. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
 msgid "UsageBilling|Explore GitLab Duo"
@@ -73135,6 +73141,9 @@ msgid "UsageBilling|This dashboard may not display all current subscription data
 msgstr ""
 
 msgid "UsageBilling|Total credits used"
+msgstr ""
+
+msgid "UsageBilling|Trial period:"
 msgstr ""
 
 msgid "UsageBilling|Try the GitLab Duo Agent Platform and agentic chat to delegate routine tasks like code refactoring, security scans, and research to AI-powered assistants."

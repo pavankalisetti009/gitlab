@@ -507,6 +507,12 @@ module EE
           resolver: ::Resolvers::GitlabSubscriptions::SubscriptionUsageResolver,
           experiment: { milestone: '18.5' }
 
+        field :trial_usage, ::Types::GitlabSubscriptions::TrialUsageType,
+          null: true,
+          description: 'Usage data for trial subscriptions.',
+          resolver: ::Resolvers::GitlabSubscriptions::TrialUsageResolver,
+          experiment: { milestone: '18.9' }
+
         field :openbao_health, GraphQL::Types::Boolean,
           null: false,
           description: 'Check if OpenBao instance is healthy and reachable.',
