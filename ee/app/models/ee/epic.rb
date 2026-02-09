@@ -126,7 +126,6 @@ module EE
       alias_method :issuing_parent, :group
       alias_method :namespace, :group
 
-      scope :in_parents, ->(parent_ids) { where(parent_id: parent_ids) }
       scope :inc_group, -> { includes(:group) }
       scope :in_selected_groups, ->(groups) { where(group_id: groups) }
       scope :in_milestone, ->(milestone_id) { joins(:issues).where(issues: { milestone_id: milestone_id }).distinct }
@@ -249,7 +248,7 @@ module EE
           id, relative_position, parent_id, parent_id as epic_id, '#{underscore}' as object_type
         SELECT_LIST
 
-        select(selection).in_parents(node.parent_ids)
+        select(selection).in_work_item_parents(node.parent.issue_id)
       end
 
       # This is being overriden from Issuable to be able to use
@@ -441,6 +440,11 @@ module EE
       # transition from legacy epics to work item epics
       def internal_id_scope_usage
         :issues
+      end
+
+      def in_work_item_parents(work_item_id)
+        ids = ::WorkItem.with_work_item_parent_ids(work_item_id).select(:id)
+        self.where(issue_id: ids)
       end
     end
 

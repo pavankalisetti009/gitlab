@@ -17,7 +17,7 @@ module Epics
     private
 
     def epics_collection
-      Epic.in_parents(parent)
+      Epic.in_work_item_parents(parent.issue_id)
     end
     alias_method :epics_collection_for_groups, :epics_collection
 

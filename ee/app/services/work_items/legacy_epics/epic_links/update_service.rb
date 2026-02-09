@@ -70,7 +70,7 @@ module WorkItems
         end
 
         def find_sibling_epic!(epic_id)
-          Epic.in_parents(epic.parent_id).find(epic_id)
+          Epic.in_work_item_parents(epic.parent.issue_id).find(epic_id)
         end
 
         def relative_position
