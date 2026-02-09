@@ -13,6 +13,11 @@ module AuditEvents
     loggable_arguments 0, 1
     sidekiq_options retry: 3
 
+    STREAMING_COUNTER = Gitlab::Metrics.counter(
+      :gitlab_audit_event_streaming_worker_total,
+      'Audit events processed by streaming worker'
+    )
+
     def perform(audit_operation, audit_event_id, audit_event_json = nil, model_class = nil)
       return if ::Gitlab::SilentMode.enabled?
 
@@ -34,7 +39,16 @@ module AuditEvents
         return
       end
 
-      AuditEvents::ExternalDestinationStreamer.new(audit_operation, audit_event).stream_to_destinations
+      definition = ::Gitlab::Audit::Type::Definition.get(audit_operation)
+      streamer = AuditEvents::ExternalDestinationStreamer.new(audit_operation, audit_event)
+
+      STREAMING_COUNTER.increment(
+        should_stream: definition&.streamed || false,
+        should_persist: definition&.saved_to_database || false,
+        streamable: streamer.streamable?
+      )
+
+      streamer.stream_to_destinations
 
       log_extra_metadata_on_done(:audit_event_type, audit_operation)
     end
