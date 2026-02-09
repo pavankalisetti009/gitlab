@@ -11,6 +11,12 @@ module Gitlab
       DEFAULT_NUM_CONTEXT_LINES = 2
       MAX_NUM_CONTEXT_LINES = 20
 
+      # Epic type ID from system-defined work item types
+      # This is a temporary constant until work_items_types table is fully removed
+      # and replaced with in-memory type definitions.
+      # See: https://gitlab.com/gitlab-org/gitlab/-/blob/f427bc9e0dea05bfe7c820077d482d2ea8c1a610/app/models/work_items/type.rb#L42
+      EPIC_TYPE_ID = 8
+
       attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :root_ancestor_ids
 
       # Limit search results by passed projects
@@ -115,13 +121,13 @@ module Gitlab
       end
 
       def failed?(scope)
-        return false unless scope == 'issues'
+        return false unless scope == 'issues' || (scope == 'work_items' && work_items_search_enabled?)
 
         issues.failed?
       end
 
       def error(scope)
-        return unless scope == 'issues'
+        return unless scope == 'issues' || (scope == 'work_items' && work_items_search_enabled?)
 
         issues.error
       end
@@ -133,7 +139,9 @@ module Gitlab
         when 'projects'
           eager_load(projects, page, per_page, preload_method, [:route, :namespace, :topics, :creator])
         when 'issues'
-          issues(page: page, per_page: per_page, preload_method: preload_method).paginated_array
+          issues(scope: 'issues', page: page, per_page: per_page, preload_method: preload_method).paginated_array
+        when 'work_items'
+          work_items_objects(page: page, per_page: per_page, preload_method: preload_method)
         when 'merge_requests'
           eager_load(merge_requests, page, per_page, preload_method, target_project: [:route, :namespace])
         when 'milestones'
@@ -155,6 +163,26 @@ module Gitlab
         end
       end
 
+      def work_items_objects(page:, per_page:, preload_method:)
+        if work_items_search_enabled?
+          issues(scope: 'work_items', page: page, per_page: per_page, preload_method: preload_method).paginated_array
+        else
+          Kaminari.paginate_array([])
+        end
+      end
+
+      def work_items_count
+        @work_items_count ||= if work_items_search_enabled?
+                                if strong_memoized?(:issues)
+                                  issues.total_count
+                                else
+                                  issues(scope: 'work_items', count_only: true).total_count
+                                end
+                              else
+                                0
+                              end
+      end
+
       # Pull the highlight attribute out of Elasticsearch results
       # and map it to the result id
       def highlight_map(scope)
@@ -163,6 +191,8 @@ module Gitlab
           create_map(projects)
         when 'issues'
           issues.highlight_map
+        when 'work_items'
+          work_items_search_enabled? ? issues.highlight_map : {}
         when 'merge_requests'
           create_map(merge_requests)
         when 'milestones'
@@ -188,6 +218,8 @@ module Gitlab
           elastic_search_limited_counter_with_delimiter(commits_count)
         when 'issues'
           elastic_search_limited_counter_with_delimiter(issues_count)
+        when 'work_items'
+          work_items_search_enabled? ? elastic_search_limited_counter_with_delimiter(issues_count) : '0'
         when 'merge_requests'
           elastic_search_limited_counter_with_delimiter(merge_requests_count)
         when 'epics'
@@ -251,7 +283,7 @@ module Gitlab
         @issues_count ||= if strong_memoized?(:issues)
                             issues.total_count
                           else
-                            issues(count_only: true).total_count
+                            issues(scope: 'issues', count_only: true).total_count
                           end
       end
 
@@ -296,6 +328,8 @@ module Gitlab
           blob_aggregations
         when 'issues'
           issue_aggregations
+        when 'work_items'
+          work_items_search_enabled? ? issue_aggregations : []
         when 'merge_requests'
           merge_request_aggregations
         else
@@ -356,8 +390,6 @@ module Gitlab
         case scope
         when :projects, :notes, :commits
           base_options.merge(filters.slice(:include_archived))
-        when :work_items # issues
-          add_related_ids(work_item_scope_options, Issue.name)
         when :merge_requests
           base_options.merge(add_related_ids(merge_request_scope_options, MergeRequest.name))
         when :milestones
@@ -368,8 +400,7 @@ module Gitlab
           base_options.merge({ features: [:issues, :merge_requests] }, filters.slice(:include_archived))
         when :epics
 
-          work_item_scope_options.merge(
-            not_work_item_type_ids: nil,
+          work_item_scope_options(scope: 'epics').merge(
             klass: WorkItem,
             work_item_type_ids: [work_item_types_provider.find_by_base_type(:epic).id]
           ).except(:fields)
@@ -384,19 +415,44 @@ module Gitlab
         end
       end
 
-      def work_item_scope_options
+      # Builds options specifically for work items/issues searches
+      # @param search_scope [String] The actual search scope being performed ('issues' or 'work_items')
+      # @return [Hash] Elasticsearch query options
+      def build_work_items_search_options(search_scope)
+        add_related_ids(work_item_scope_options(scope: search_scope), Issue.name)
+      end
+
+      def work_item_scope_options(scope: nil)
+        epic_type_id = EPIC_TYPE_ID
+
+        # Determine not_work_item_type_ids based on scope:
+        # - For 'issues' scope: exclude epics (to show only project-level work items)
+        # - For 'work_items' scope: include all types (nil)
+        # - For 'epics' scope: don't set not_work_item_type_ids (handled by work_item_type_ids later)
+        # - For nil or other scopes: exclude epics (backward compatibility)
+        not_work_item_type_ids = case scope
+                                 when 'issues'
+                                   [epic_type_id].compact
+                                 when 'work_items', 'epics'
+                                   nil
+                                 else
+                                   # Backward compatibility: exclude epics when scope is not specified
+                                   work_items_search_enabled? ? nil : [epic_type_id].compact
+                                 end
+
         work_item_scope_options = base_options.merge(
           {
-            klass: Issue, # For rendering the UI
+            klass: WorkItem, # Load both project-level and group-level work items
             index_name: ::Search::Elastic::References::WorkItem.index,
-            not_work_item_type_ids: [work_item_types_provider.find_by_base_type(:epic).id]
+            not_work_item_type_ids: not_work_item_type_ids
           },
           filters.slice(*::Search::Elastic::References::WorkItem::PERMITTED_FILTER_KEYS)
         )
 
-        if filters[:type].present?
-          work_item_type_id = work_item_types_provider.find_by_base_type(filters[:type])&.id
-          work_item_scope_options[:work_item_type_ids] = [work_item_type_id] unless work_item_type_id.nil?
+        # Handle work_item_type_ids filter (only when feature flag is enabled AND scope is work_items)
+        if work_items_search_enabled? && scope == 'work_items' && filters[:work_item_type_ids].present?
+          work_item_scope_options[:work_item_type_ids] = Array(filters[:work_item_type_ids]).map(&:to_i)
+          work_item_scope_options.delete(:not_work_item_type_ids)
         end
 
         work_item_scope_options
@@ -428,9 +484,9 @@ module Gitlab
         scope_results :projects, Project, count_only: count_only
       end
 
-      def issues(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
+      def issues(scope: 'issues', page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
         strong_memoize(memoize_key('issues', count_only: count_only)) do
-          options = scope_options(:work_items).merge(count_only: count_only, per_page: per_page,
+          options = build_work_items_search_options(scope).merge(count_only: count_only, per_page: per_page,
             page: page, preload_method: preload_method)
 
           search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
@@ -474,7 +530,7 @@ module Gitlab
       end
 
       def epics_query_builder
-        if Feature.enabled?(:search_scope_work_item, :instance)
+        if work_items_search_enabled?
           ::Search::Elastic::WorkItemQueryBuilder
         else
           ::Search::Elastic::WorkItemGroupQueryBuilder
@@ -557,7 +613,7 @@ module Gitlab
       strong_memoize_attr :blob_aggregations
 
       def issue_aggregations
-        options = scope_options(:work_items).merge(aggregation: true)
+        options = build_work_items_search_options('work_items').merge(aggregation: true)
         search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
 
         results = ::Gitlab::Search::Client.execute_search(query: search_query, options: options) do |response|
@@ -597,6 +653,10 @@ module Gitlab
 
       def allowed_to_read_users?
         Ability.allowed?(current_user, :read_users_list)
+      end
+
+      def work_items_search_enabled?
+        ::Feature.enabled?(:search_scope_work_item, :instance)
       end
 
       def create_map(results)

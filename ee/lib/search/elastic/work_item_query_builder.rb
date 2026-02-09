@@ -112,9 +112,19 @@ module Search
       end
 
       def use_group_authorization?
-        return false unless options[:work_item_type_ids].present?
+        # If explicit type inclusion filter is present
+        if options[:work_item_type_ids].present?
+          return options[:work_item_type_ids].any? { |id| group_work_item_type_ids.include?(id) }
+        end
 
-        options[:work_item_type_ids].any? { |id| group_work_item_type_ids.include?(id) }
+        # If explicit type exclusion filter is present
+        if options[:not_work_item_type_ids].present?
+          # Use group auth only if epic is NOT excluded
+          return !options[:not_work_item_type_ids].any? { |id| group_work_item_type_ids.include?(id) }
+        end
+
+        # No filter specified - include all types (including group-level)
+        true
       end
 
       def group_work_item_type_ids

@@ -83,7 +83,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
 
     it 'executes count only queries' do
       results = described_class.new(user, query, limit_project_ids)
-      expect(results).to receive(:issues).with(count_only: true).and_call_original
+      expect(results).to receive(:issues).with(count_only: true, scope: 'issues').and_call_original
 
       count = results.issues_count
 

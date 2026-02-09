@@ -44,4 +44,67 @@ RSpec.describe Gitlab::GroupSearchResults do
       end
     end
   end
+
+  describe '#work_items' do
+    let(:query) { 'foo' }
+    let!(:work_item) { create(:work_item, :group_level, namespace: group, title: 'foo work item') }
+    let!(:another_work_item) { create(:work_item, :group_level, namespace: group, title: 'foo another') }
+    let!(:unrelated_work_item) { create(:work_item, :group_level, title: 'bar') }
+
+    context 'when searching for work items' do
+      it 'finds work items matching the query' do
+        results = subject.work_items
+
+        expect(results).to include(work_item, another_work_item)
+        expect(results).not_to include(unrelated_work_item)
+      end
+
+      it 'includes descendants' do
+        subgroup = create(:group, parent: group)
+        subgroup_work_item = create(:work_item, :group_level, namespace: subgroup, title: 'foo subgroup')
+
+        results = subject.work_items
+
+        expect(results).to include(subgroup_work_item)
+      end
+
+      it 'excludes ancestors' do
+        parent_group = create(:group)
+        group.update!(parent: parent_group)
+        parent_work_item = create(:work_item, :group_level, namespace: parent_group, title: 'foo parent')
+
+        results = subject.work_items
+
+        expect(results).not_to include(parent_work_item)
+      end
+
+      it 'searches by query using title' do
+        results = subject.work_items
+
+        expect(results.map(&:title)).to all(include('foo'))
+      end
+
+      it 'accepts custom finder params' do
+        closed_work_item = create(:work_item, :group_level, namespace: group, title: 'foo closed', state: :closed)
+
+        results = subject.work_items(state: 'closed')
+
+        expect(results).to include(closed_work_item)
+        expect(results).not_to include(work_item)
+      end
+    end
+
+    context 'when applying sort' do
+      let(:query) { 'sortable' }
+      let!(:old_work_item) { create(:work_item, :group_level, namespace: group, title: 'sortable old', created_at: 2.days.ago) }
+      let!(:new_work_item) { create(:work_item, :group_level, namespace: group, title: 'sortable new', created_at: 1.day.ago) }
+
+      it 'applies sorting by created_at desc' do
+        results_with_sort = described_class.new(user, 'sortable', group: group, sort: 'created_desc')
+        sorted_results = results_with_sort.work_items
+
+        expect(sorted_results.to_a).to match_array([new_work_item, old_work_item])
+      end
+    end
+  end
 end

@@ -771,4 +771,80 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       end
     end
   end
+
+  describe 'authorization and features options' do
+    let(:epic_type_id) { ::WorkItems::Type.default_by_type(:epic).id }
+    let(:issue_type_id) { ::WorkItems::Type.default_by_type(:issue).id }
+    let(:task_type_id) { ::WorkItems::Type.default_by_type(:task).id }
+
+    context 'when no work_item_type_ids filter is provided' do
+      let(:options) { base_options.except(:not_work_item_type_ids) }
+
+      it 'does not set issues_access_level filter that would exclude group work items' do
+        assert_names_in_query(build,
+          without: %w[filters:permissions:global:issues_access_level:enabled_or_private])
+      end
+
+      it 'includes group confidentiality filters for epics' do
+        assert_names_in_query(build,
+          with: %w[filters:confidentiality:groups:non_confidential])
+      end
+    end
+
+    context 'when filtering by epic type only' do
+      let(:options) { base_options.merge(work_item_type_ids: [epic_type_id]).except(:not_work_item_type_ids) }
+
+      it 'does not set issues_access_level filter' do
+        assert_names_in_query(build,
+          without: %w[filters:permissions:global:issues_access_level:enabled_or_private])
+      end
+
+      it 'includes group confidentiality filters for epics' do
+        assert_names_in_query(build,
+          with: %w[filters:confidentiality:groups:non_confidential])
+      end
+    end
+
+    context 'when filtering by issue type only' do
+      let(:options) { base_options.merge(work_item_type_ids: [issue_type_id]).except(:not_work_item_type_ids) }
+
+      it 'does not include group confidentiality filters' do
+        assert_names_in_query(build,
+          without: %w[filters:confidentiality:groups:non_confidential])
+      end
+    end
+
+    context 'when filtering by both epic and issue types' do
+      let(:options) do
+        base_options.merge(work_item_type_ids: [epic_type_id, issue_type_id]).except(:not_work_item_type_ids)
+      end
+
+      it 'does not set issues_access_level filter to avoid excluding epics' do
+        assert_names_in_query(build,
+          without: %w[filters:permissions:global:issues_access_level:enabled_or_private])
+      end
+
+      it 'includes group confidentiality filters for epics' do
+        assert_names_in_query(build,
+          with: %w[filters:confidentiality:groups:non_confidential])
+      end
+    end
+
+    context 'when filtering by epic, issue, and task types' do
+      let(:options) do
+        base_options.merge(work_item_type_ids: [epic_type_id, issue_type_id, task_type_id])
+          .except(:not_work_item_type_ids)
+      end
+
+      it 'does not set issues_access_level filter to avoid excluding epics' do
+        assert_names_in_query(build,
+          without: %w[filters:permissions:global:issues_access_level:enabled_or_private])
+      end
+
+      it 'includes group confidentiality filters for epics' do
+        assert_names_in_query(build,
+          with: %w[filters:confidentiality:groups:non_confidential])
+      end
+    end
+  end
 end

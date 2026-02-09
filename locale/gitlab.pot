@@ -963,9 +963,6 @@ msgstr ""
 msgid "%{group_name}&%{epic_iid} &middot; created %{epic_created} by %{author}"
 msgstr ""
 
-msgid "%{group_name}&%{work_item_iid} &middot; created %{work_item_created} by %{author}"
-msgstr ""
-
 msgid "%{groupsLength} group"
 msgid_plural "%{groupsLength} groups"
 msgstr[0] ""
@@ -60083,6 +60080,11 @@ msgid_plural "SearchResults|wiki results"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "SearchResults|work item"
+msgid_plural "SearchResults|work items"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "SearchToken|Assignee"
 msgstr ""
 
@@ -81935,6 +81937,9 @@ msgid "created %{timeAgo} by %{author} in %{project_link}"
 msgstr ""
 
 msgid "created %{timeAgo} by %{email} via %{author}"
+msgstr ""
+
+msgid "created %{work_item_created} by %{author}"
 msgstr ""
 
 msgid "created by"
