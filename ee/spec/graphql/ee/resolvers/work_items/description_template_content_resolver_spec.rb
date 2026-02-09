@@ -203,4 +203,92 @@ RSpec.describe 'getting a WorkItem description template and content', type: :req
       expect(graphql_errors).to be_nil
     end
   end
+
+  context 'when requesting the Settings Default template' do
+    let_it_be(:project_with_default_template) do
+      create(:project, :private, developers: current_user, issues_template: "Default template content")
+    end
+
+    let(:query) do
+      graphql_query_for(:workItemDescriptionTemplateContent,
+        { templateContentInput: {
+          projectId: project_with_default_template.id,
+          name: "Default (Project Settings)"
+        } })
+    end
+
+    context 'when the project has an issues_template' do
+      context 'when the user has access to the project' do
+        it 'returns the Settings Default template' do
+          post_graphql(query, current_user: current_user)
+
+          expect(expected_graphql_data).to match(
+            "projectId" => project_with_default_template.id,
+            "name" => "Default (Project Settings)",
+            "content" => "Default template content",
+            "category" => "Project Templates"
+          )
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(graphql_errors).to be_nil
+        end
+      end
+
+      context 'when the user does not have access to the project' do
+        let_it_be(:project_without_access) do
+          create(:project, :private, issues_template: "Private default template content")
+        end
+
+        let(:query_without_access) do
+          graphql_query_for(:workItemDescriptionTemplateContent,
+            { templateContentInput: {
+              projectId: project_without_access.id,
+              name: "Default (Project Settings)"
+            } })
+        end
+
+        it 'does not allow the user to read the template' do
+          post_graphql(query_without_access, current_user: current_user)
+
+          expect(expected_graphql_data).to be_nil
+        end
+      end
+    end
+
+    context 'when the project does not have an issues_template' do
+      let_it_be(:project_without_template) do
+        create(:project, :private, developers: current_user)
+      end
+
+      let(:query_without_template) do
+        graphql_query_for(:workItemDescriptionTemplateContent,
+          { templateContentInput: {
+            projectId: project_without_template.id,
+            name: "Default (Project Settings)"
+          } })
+      end
+
+      it 'returns nil' do
+        post_graphql(query_without_template, current_user: current_user)
+
+        expect(expected_graphql_data).to be_nil
+      end
+    end
+
+    context 'when the project does not exist' do
+      let(:query_non_existent_project) do
+        graphql_query_for(:workItemDescriptionTemplateContent,
+          { templateContentInput: {
+            projectId: non_existing_record_id,
+            name: "Default (Project Settings)"
+          } })
+      end
+
+      it 'returns nil' do
+        post_graphql(query_non_existent_project, current_user: current_user)
+
+        expect(expected_graphql_data).to be_nil
+      end
+    end
+  end
 end
