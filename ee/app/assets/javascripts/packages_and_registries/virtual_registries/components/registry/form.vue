@@ -7,6 +7,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__, sprintf } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
+import DeleteModal from './delete_modal.vue';
 
 export default {
   name: 'RegistryForm',
@@ -16,6 +17,7 @@ export default {
     GlFormTextarea,
     GlButton,
     ErrorsAlert,
+    DeleteModal,
   },
   inject: [
     'fullPath',
@@ -44,6 +46,7 @@ export default {
       submitting: false,
       errorMessages: [],
       registry: this.initialRegistry,
+      showDeleteModal: false,
     };
   },
   methods: {
@@ -191,6 +194,21 @@ export default {
       <gl-button :to="{ path: '/' }">
         {{ __('Cancel') }}
       </gl-button>
+      <gl-button
+        v-if="registryId"
+        variant="danger"
+        category="secondary"
+        class="gl-ml-auto"
+        @click="showDeleteModal = true"
+      >
+        {{ s__('VirtualRegistry|Delete registry') }}
+      </gl-button>
+
+      <delete-modal
+        v-if="registryId && showDeleteModal"
+        :registry="initialRegistry"
+        @hidden="showDeleteModal = false"
+      />
     </div>
   </gl-form>
 </template>
