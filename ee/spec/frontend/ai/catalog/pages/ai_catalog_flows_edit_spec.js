@@ -68,11 +68,11 @@ describe('AiCatalogFlowsEdit', () => {
   const findEditVersionWarningText = () =>
     findEditingLatestVersionWarning().findComponent(GlSprintf).attributes('message');
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('Page Heading', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders page heading with correct title and description', () => {
       expect(findPageHeading().exists()).toBe(true);
       expect(findPageHeading().text()).toContain('Edit flow');
@@ -87,6 +87,7 @@ describe('AiCatalogFlowsEdit', () => {
 
   describe('Initial Rendering', () => {
     it('render edit form', () => {
+      createComponent();
       expect(findForm().exists()).toBe(true);
     });
 
@@ -162,6 +163,10 @@ describe('AiCatalogFlowsEdit', () => {
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
+
+    beforeEach(() => {
+      createComponent();
+    });
 
     it('sends an update request', async () => {
       await findForm().vm.$emit('submit', formValues);

@@ -182,59 +182,61 @@ describe('AiCatalogAgents', () => {
   });
 
   describe('search', () => {
-    beforeEach(async () => {
-      await createComponent();
-    });
-
-    it('passes search param to agents query on search', async () => {
-      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
-      await waitForPromises();
-
-      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
-        after: null,
-        before: null,
-        first: 20,
-        last: null,
-        search: 'foo',
+    describe('default', () => {
+      beforeEach(async () => {
+        await createComponent();
       });
-    });
 
-    it('updates URL query param when searching', async () => {
-      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
-      await waitForPromises();
+      it('passes search param to agents query on search', async () => {
+        findAiCatalogListWrapper().vm.$emit('search', ['foo']);
+        await waitForPromises();
 
-      expect(mockRouter.replace).toHaveBeenCalledWith({
-        query: { search: 'foo' },
+        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+          itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+          search: 'foo',
+        });
       });
-    });
 
-    it('clears search param when clear-search is emitted', async () => {
-      // First set a search term
-      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
-      await waitForPromises();
+      it('updates URL query param when searching', async () => {
+        findAiCatalogListWrapper().vm.$emit('search', ['foo']);
+        await waitForPromises();
 
-      // Then clear it
-      findAiCatalogListWrapper().vm.$emit('clear-search');
-      await waitForPromises();
-
-      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
-        after: null,
-        before: null,
-        first: 20,
-        last: null,
-        search: '',
+        expect(mockRouter.replace).toHaveBeenCalledWith({
+          query: { search: 'foo' },
+        });
       });
-    });
 
-    it('removes search param from URL when clearing search', async () => {
-      mockRoute.query = { search: 'foo' };
-      findAiCatalogListWrapper().vm.$emit('clear-search');
-      await waitForPromises();
+      it('clears search param when clear-search is emitted', async () => {
+        // First set a search term
+        findAiCatalogListWrapper().vm.$emit('search', ['foo']);
+        await waitForPromises();
 
-      expect(mockRouter.replace).toHaveBeenCalledWith({
-        query: {},
+        // Then clear it
+        findAiCatalogListWrapper().vm.$emit('clear-search');
+        await waitForPromises();
+
+        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+          itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+          search: '',
+        });
+      });
+
+      it('removes search param from URL when clearing search', async () => {
+        mockRoute.query = { search: 'foo' };
+        findAiCatalogListWrapper().vm.$emit('clear-search');
+        await waitForPromises();
+
+        expect(mockRouter.replace).toHaveBeenCalledWith({
+          query: {},
+        });
       });
     });
 
