@@ -629,7 +629,7 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
       "valueLimitMessage": undefined,
     },
     "change": {
-      "tooltip": "Value can't be calculated due to division by zero.",
+      "tooltip": "Value can't be calculated due to insufficient data. Change calculation requires at least six months of historical data.",
       "value": "n/a",
     },
     "chart": {

@@ -124,7 +124,9 @@ export const calculateChange = (current, previous) => {
   if (Number(previous) === 0) {
     return {
       value: __('n/a'),
-      tooltip: s__("AiImpactAnalytics|Value can't be calculated due to division by zero."),
+      tooltip: s__(
+        "AiImpactAnalytics|Value can't be calculated due to insufficient data. Change calculation requires at least six months of historical data.",
+      ),
     };
   }
 
