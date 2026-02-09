@@ -217,6 +217,7 @@ module EE
     end
 
     def gitlab_credits_dashboard_path(group)
+      return if ::Feature.enabled?(:hide_gitlab_credits_page, group) && group.plan_name_for_upgrading == ::Plan::FREE
       return unless usage_billing_feature_available?(group)
 
       group_settings_gitlab_credits_dashboard_index_path(group)

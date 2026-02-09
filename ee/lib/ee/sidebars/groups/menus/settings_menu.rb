@@ -296,6 +296,11 @@ module EE
           end
 
           def gitlab_credits_dashboard_available?
+            if ::Feature.enabled?(:hide_gitlab_credits_page, context.group) &&
+                context.group.plan_name_for_upgrading == ::Plan::FREE
+              return false
+            end
+
             return false unless ::Feature.enabled?(:usage_billing_dev, context.group)
             return false unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
             return false unless context.group.licensed_feature_available?(:group_usage_billing)

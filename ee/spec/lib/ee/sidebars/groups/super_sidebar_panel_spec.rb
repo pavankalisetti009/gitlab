@@ -41,7 +41,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarPanel, feature_category: :navigatio
     # Needed for virtual registry
     stub_config(dependency_proxy: { enabled: true })
     # Needed for Contribution analytics
-    stub_feature_flags(contributions_analytics_dashboard: false)
+    stub_feature_flags(contributions_analytics_dashboard: false, hide_gitlab_credits_page: false)
   end
 
   describe '#renderable_menus' do

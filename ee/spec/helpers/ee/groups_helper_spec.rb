@@ -295,7 +295,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     before do
       allow(helper).to receive(:code_suggestions_usage_app_data).and_return({ code_suggestions: 'data' })
       stub_saas_features(gitlab_com_subscriptions: true)
-      stub_feature_flags(usage_billing_dev: true)
+      stub_feature_flags(usage_billing_dev: true, hide_gitlab_credits_page: false)
     end
 
     it 'returns a hash with expected values and merges the result of code_suggestions_usage_app_data' do
@@ -337,11 +337,33 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
     context 'with disabled usage_billing_dev' do
       before do
-        stub_feature_flags(usage_billing_dev: false)
+        stub_feature_flags(usage_billing_dev: false, hide_gitlab_credits_page: false)
       end
 
-      it 'sets duo_page_path to nil' do
+      it 'sets gitlab_credits_dashboard_path to nil' do
         expect(helper.duo_home_app_data(group)).to include(gitlab_credits_dashboard_path: nil)
+      end
+    end
+
+    context 'when feature flag `hide_gitlab_credits_page` is enabled', :saas do
+      context 'when group is free' do
+        let_it_be(:group) { create(:group) }
+
+        before do
+          stub_feature_flags(hide_gitlab_credits_page: true)
+        end
+
+        it 'sets gitlab_credits_dashboard_path to nil' do
+          expect(helper.duo_home_app_data(group)).to include(gitlab_credits_dashboard_path: nil)
+        end
+      end
+
+      context 'when group is paid' do
+        let_it_be(:group) { create(:group_with_plan, plan: :bronze_plan) }
+
+        it 'sets gitlab_credits_dashboard_path to nil' do
+          expect(helper.duo_home_app_data(group)).to include(gitlab_credits_dashboard_path: gitlab_credits_dashboard_path(group))
+        end
       end
     end
   end
