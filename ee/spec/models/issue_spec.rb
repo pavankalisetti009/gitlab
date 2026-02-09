@@ -1398,6 +1398,40 @@ RSpec.describe Issue, feature_category: :team_planning do
     end
   end
 
+  describe '#epic_work_item?' do
+    let(:issue) { create(:issue) }
+
+    context 'when work item type is epic' do
+      before do
+        issue.work_item_type = create(:work_item_type, :epic)
+      end
+
+      it 'returns true' do
+        expect(issue.epic_work_item?).to be true
+      end
+    end
+
+    context 'when work item type is not epic' do
+      before do
+        issue.work_item_type = create(:work_item_type, :issue)
+      end
+
+      it 'returns false' do
+        expect(issue.epic_work_item?).to be false
+      end
+    end
+
+    context 'when work item type is nil' do
+      before do
+        issue.work_item_type = nil
+      end
+
+      it 'returns false' do
+        expect(issue.epic_work_item?).to be false
+      end
+    end
+  end
+
   describe "#has_parent_link?" do
     let_it_be(:project) { create(:project) }
     let_it_be(:work_item_epic) { create(:work_item, :epic, project: project) }

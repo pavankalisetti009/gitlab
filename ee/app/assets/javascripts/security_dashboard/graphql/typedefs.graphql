@@ -1,9 +1,0 @@
-extend type SecurityMetrics {
-  vulnerabilitiesByAge(severity: [VulnerabilitySeverity!]): [VulnerabilitiesByAgeBucket]
-}
-
-type VulnerabilitiesByAgeBucket {
-  name: String!
-  bySeverity: [VulnerabilitySeverityCount]
-  byReportType: [VulnerabilityReportTypeCount]
-}

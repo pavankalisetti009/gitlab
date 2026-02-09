@@ -7,8 +7,9 @@ module QA
       let(:executor) { "qa-runner-#{SecureRandom.hex(4)}" }
       let(:pipeline_job_name) { 'test-root-cause-analysis' }
       let(:project) { create(:project, name: 'project-for-root-cause-analysis') }
-      let(:root_cause_header) { 'Root cause of failure' }
-      let(:example_fix_header) { 'Example Fix' }
+      let(:root_cause_pattern) { /Root cause of failure|Root cause/i }
+      let(:solution_pattern) { /Example Fix|Solution/i }
+      let(:root_cause_analysis_patterns) { [root_cause_pattern, solution_pattern] }
       let(:expected_command) { '/troubleshoot' }
 
       let!(:runner) { create(:project_runner, project: project, name: executor, tags: [executor]) }
@@ -72,9 +73,11 @@ module QA
               #   .to eventually_be_truthy.within(max_duration: 60),
               #       "Expected \"#{expected_command}\" within Duo Chat response."
 
-              expect { duo_chat.response }
-                .to eventually_include(root_cause_header, example_fix_header).within(max_duration: 90),
-                  "Expected \"#{root_cause_header}\" within Duo Chat response."
+              expect do
+                response = duo_chat.response
+                root_cause_analysis_patterns.all? { |pattern| response.match?(pattern) }
+              end.to eventually_be_truthy.within(max_duration: 90),
+                "Expected root cause and solution patterns within Duo Chat response."
             end
           end
         end

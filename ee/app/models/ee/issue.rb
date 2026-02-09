@@ -416,6 +416,13 @@ module EE
       super
     end
 
+    override :epic_work_item?
+    def epic_work_item?
+      return false unless work_item_type
+
+      work_item_type.epic?
+    end
+
     private
 
     def okr_work_item?
