@@ -65142,10 +65142,19 @@ msgstr ""
 msgid "Shared secret"
 msgstr ""
 
+msgid "SharedRunnersMinutesSettings|Changes the compute usage for this group to zero."
+msgstr ""
+
+msgid "SharedRunnersMinutesSettings|Changes the compute usage for this user to zero."
+msgstr ""
+
 msgid "SharedRunnersMinutesSettings|Reset compute usage"
 msgstr ""
 
-msgid "SharedRunnersMinutesSettings|When you reset the compute usage for this namespace, the compute usage changes to zero."
+msgid "SharedRunnersMinutesSettings|Reset compute usage for this group."
+msgstr ""
+
+msgid "SharedRunnersMinutesSettings|Reset compute usage for this user."
 msgstr ""
 
 msgid "ShellOperations|Git SSH operations rate limits"
@@ -67324,9 +67333,6 @@ msgid "Successfully regenerated unique domain"
 msgstr ""
 
 msgid "Successfully removed email."
-msgstr ""
-
-msgid "Successfully reset compute usage for namespace."
 msgstr ""
 
 msgid "Successfully scheduled a pipeline to run. Go to the %{pipelines_link_start}Pipelines page%{pipelines_link_end} for details."
