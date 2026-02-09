@@ -71,16 +71,6 @@ RSpec.describe Security::Attributes::UpdateProjectAttributesService, feature_cat
     end
   end
 
-  context 'when feature flag is disabled' do
-    before do
-      stub_feature_flags(security_categories_and_attributes: false)
-    end
-
-    it 'raises access denied error' do
-      expect { execute }.to raise_error(Gitlab::Access::AccessDeniedError)
-    end
-  end
-
   context 'when user does not have permissions' do
     it 'returns unauthorized error' do
       expect(execute).to be_error

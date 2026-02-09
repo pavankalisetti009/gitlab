@@ -33,113 +33,97 @@ RSpec.describe Security::Attributes::DestroyService, feature_category: :security
   end
 
   describe '#execute' do
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(security_categories_and_attributes: false)
-      end
+    context 'when user does not have permission' do
+      it 'returns an unauthorized error' do
+        expect { execute }.not_to change { Security::Attribute.count }
 
-      it 'raises an access denied error' do
-        expect { execute }.to raise_error(Gitlab::Access::AccessDeniedError)
+        expect(execute).to be_error
+        expect(execute.message).to eq('You are not authorized to perform this action')
       end
     end
 
-    context 'when feature flag is enabled' do
-      before do
-        stub_feature_flags(security_categories_and_attributes: true)
+    context 'when user has permission' do
+      before_all do
+        namespace.add_owner(user)
       end
 
-      context 'when user does not have permission' do
-        it 'returns an unauthorized error' do
+      context 'when attribute is editable' do
+        it 'soft deletes the attribute successfully and returns its global ID' do
+          expected_gid = attribute.to_global_id.to_s
+
+          expect { execute }
+            .to not_change { Security::Attribute.unscoped.count }
+            .and change { Security::Attribute.not_deleted.count }.by(-1)
+
+          expect(execute).to be_success
+          expect(execute.payload[:deleted_attribute_gid].to_s).to eq(expected_gid)
+
+          attribute.reload
+          expect(attribute.deleted_at).to be_present
+          expect(attribute.deleted?).to be true
+        end
+
+        it 'enqueues the project associations cleanup worker' do
+          expect(Security::Attributes::CleanupProjectToSecurityAttributeWorker)
+            .to receive(:perform_async).with(attribute.id)
+
+          execute
+        end
+
+        it 'creates an audit event' do
+          expect { execute }.to change { AuditEvent.count }.by(1)
+
+          audit_event = AuditEvent.last
+          expect(audit_event.details).to include(
+            event_name: 'security_attribute_deleted',
+            author_name: user.name,
+            custom_message: "Deleted security attribute #{attribute.name}",
+            attribute_name: attribute.name,
+            attribute_description: attribute.description,
+            category_name: category.name
+          )
+        end
+
+        it 'does not create an audit event when deletion fails' do
+          allow(attribute).to receive(:destroy).and_return(false)
+          expect { execute }.not_to change { AuditEvent.count }
+        end
+
+        it 'does not enqueue worker when deletion fails' do
+          allow(attribute).to receive(:destroy).and_return(false)
+
+          expect(Security::Attributes::CleanupProjectToSecurityAttributeWorker)
+            .not_to receive(:perform_async)
+
+          execute
+        end
+      end
+
+      context 'when attribute is locked' do
+        let(:attribute) { locked_attribute }
+
+        it 'returns an error and does not delete the attribute' do
           expect { execute }.not_to change { Security::Attribute.count }
 
           expect(execute).to be_error
-          expect(execute.message).to eq('You are not authorized to perform this action')
+          expect(execute.message).to eq('Cannot delete non-editable attribute')
+
+          expect(locked_attribute.deleted_from_database?).to be_falsey
         end
       end
 
-      context 'when user has permission' do
-        before_all do
-          namespace.add_owner(user)
+      context 'when deletion fails due to database error' do
+        before do
+          allow(attribute).to receive(:destroy).and_raise(
+            ActiveRecord::RecordNotDestroyed.new('Database constraint violation')
+          )
         end
 
-        context 'when attribute is editable' do
-          it 'soft deletes the attribute successfully and returns its global ID' do
-            expected_gid = attribute.to_global_id.to_s
+        it 'returns an error with the failure message' do
+          expect { execute }.not_to change { Security::Attribute.count }
 
-            expect { execute }
-              .to not_change { Security::Attribute.unscoped.count }
-              .and change { Security::Attribute.not_deleted.count }.by(-1)
-
-            expect(execute).to be_success
-            expect(execute.payload[:deleted_attribute_gid].to_s).to eq(expected_gid)
-
-            attribute.reload
-            expect(attribute.deleted_at).to be_present
-            expect(attribute.deleted?).to be true
-          end
-
-          it 'enqueues the project associations cleanup worker' do
-            expect(Security::Attributes::CleanupProjectToSecurityAttributeWorker)
-              .to receive(:perform_async).with(attribute.id)
-
-            execute
-          end
-
-          it 'creates an audit event' do
-            expect { execute }.to change { AuditEvent.count }.by(1)
-
-            audit_event = AuditEvent.last
-            expect(audit_event.details).to include(
-              event_name: 'security_attribute_deleted',
-              author_name: user.name,
-              custom_message: "Deleted security attribute #{attribute.name}",
-              attribute_name: attribute.name,
-              attribute_description: attribute.description,
-              category_name: category.name
-            )
-          end
-
-          it 'does not create an audit event when deletion fails' do
-            allow(attribute).to receive(:destroy).and_return(false)
-            expect { execute }.not_to change { AuditEvent.count }
-          end
-
-          it 'does not enqueue worker when deletion fails' do
-            allow(attribute).to receive(:destroy).and_return(false)
-
-            expect(Security::Attributes::CleanupProjectToSecurityAttributeWorker)
-              .not_to receive(:perform_async)
-
-            execute
-          end
-        end
-
-        context 'when attribute is locked' do
-          let(:attribute) { locked_attribute }
-
-          it 'returns an error and does not delete the attribute' do
-            expect { execute }.not_to change { Security::Attribute.count }
-
-            expect(execute).to be_error
-            expect(execute.message).to eq('Cannot delete non-editable attribute')
-
-            expect(locked_attribute.deleted_from_database?).to be_falsey
-          end
-        end
-
-        context 'when deletion fails due to database error' do
-          before do
-            allow(attribute).to receive(:destroy).and_raise(
-              ActiveRecord::RecordNotDestroyed.new('Database constraint violation')
-            )
-          end
-
-          it 'returns an error with the failure message' do
-            expect { execute }.not_to change { Security::Attribute.count }
-
-            expect(execute).to be_error
-            expect(execute.message).to eq('Failed to delete attributes: Database constraint violation')
-          end
+          expect(execute).to be_error
+          expect(execute.message).to eq('Failed to delete attributes: Database constraint violation')
         end
       end
     end

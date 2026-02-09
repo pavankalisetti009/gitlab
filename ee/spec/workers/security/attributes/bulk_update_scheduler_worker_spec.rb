@@ -34,7 +34,6 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
     end
 
     before do
-      stub_feature_flags(security_categories_and_attributes: true)
       stub_feature_flags(security_bulk_operations_notifications: false)
     end
 

@@ -130,19 +130,6 @@ RSpec.describe 'Group Security Categories', feature_category: :security_asset_in
           )
         end
       end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(security_categories_and_attributes: false)
-        end
-
-        it 'returns null security categories' do
-          execute_query
-
-          expect(graphql_data['group']).not_to be_nil
-          expect(graphql_data['group']['securityCategories']).to be_empty
-        end
-      end
     end
   end
 end

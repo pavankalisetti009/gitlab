@@ -11,7 +11,6 @@ module Security
 
       def execute
         return ServiceResponse.error(message: 'Namespace not found') unless namespace.present?
-        raise Gitlab::Access::AccessDeniedError unless Feature.enabled?(:security_categories_and_attributes, namespace)
         return UnauthorizedError unless permitted?
 
         parsed_category = parse_category_id

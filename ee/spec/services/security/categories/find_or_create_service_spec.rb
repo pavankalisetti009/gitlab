@@ -26,16 +26,6 @@ RSpec.describe Security::Categories::FindOrCreateService, feature_category: :sec
   describe '#execute' do
     subject(:execute) { service.execute }
 
-    context 'when security_categories_and_attributes feature is disabled' do
-      before do
-        stub_feature_flags(security_categories_and_attributes: false)
-      end
-
-      it 'raises an "access denied" error' do
-        expect { execute }.to raise_error(Gitlab::Access::AccessDeniedError)
-      end
-    end
-
     context 'when user does not have permission' do
       it 'returns unauthorized error' do
         expect(execute).to eq(described_class::UnauthorizedError)

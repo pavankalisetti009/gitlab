@@ -19,8 +19,6 @@ module Resolvers
         # This returns a boolean, allowing graceful handling when permission is denied
         return ::Security::Attribute.none unless authorized_resource?(project.namespace)
 
-        return [] unless ::Feature.enabled?(:security_categories_and_attributes, project.root_ancestor)
-
         project.security_attributes.include_category
       end
     end

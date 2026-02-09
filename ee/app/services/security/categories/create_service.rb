@@ -11,10 +11,6 @@ module Security
       end
 
       def execute
-        unless Feature.enabled?(:security_categories_and_attributes, root_namespace)
-          raise Gitlab::Access::AccessDeniedError
-        end
-
         return UnauthorizedError unless permitted?
 
         return error if CreatePredefinedService.new(namespace: root_namespace, current_user: current_user)

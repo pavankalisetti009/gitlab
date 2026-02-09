@@ -36,7 +36,6 @@ module Mutations
 
         def resolve(project_id:, add_attribute_ids: [], remove_attribute_ids: [])
           project = authorized_find!(id: project_id)
-          validate_feature_flag(project)
 
           parsed_add_ids = parse_attribute_ids(add_attribute_ids, project)
           return error_response(parsed_add_ids[:errors]) if parsed_add_ids[:errors].present?
@@ -49,12 +48,6 @@ module Mutations
         end
 
         private
-
-        def validate_feature_flag(project)
-          return if Feature.enabled?(:security_categories_and_attributes, project.namespace.root_ancestor)
-
-          raise_resource_not_available_error!
-        end
 
         def parse_attribute_ids(add_attribute_ids, project)
           return { attribute_ids: [], errors: [] } if add_attribute_ids.blank?

@@ -38,15 +38,6 @@ RSpec.describe 'Mutation.securityAttributeUpdate', feature_category: :security_a
     graphql_mutation_response(:security_attribute_update)
   end
 
-  context 'when security_categories_and_attributes feature is disabled' do
-    before do
-      stub_feature_flags(security_categories_and_attributes: false)
-    end
-
-    it_behaves_like 'a mutation that returns top-level errors',
-      errors: [Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR]
-  end
-
   context 'when the user does not have access' do
     it_behaves_like 'a mutation that returns a top-level access error'
   end

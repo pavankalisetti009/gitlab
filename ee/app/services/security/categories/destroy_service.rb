@@ -9,8 +9,6 @@ module Security
       end
 
       def execute
-        raise Gitlab::Access::AccessDeniedError unless feature_enabled?
-
         return UnauthorizedError unless permitted?
         return not_editable_error unless category.editable?
 
@@ -32,11 +30,6 @@ module Security
 
       def permitted?
         current_user.can?(:admin_security_attributes, category.namespace)
-      end
-
-      def feature_enabled?
-        root_namespace = category.namespace&.root_ancestor
-        Feature.enabled?(:security_categories_and_attributes, root_namespace)
       end
 
       def success(deleted_category_gid, deleted_attributes_id_to_gid, category_id)

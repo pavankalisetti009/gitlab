@@ -15,7 +15,6 @@ module Resolvers
 
       def resolve
         authorize!(object)
-        return [] unless ::Feature.enabled?(:security_categories_and_attributes, root_ancestor)
         return [] unless root_ancestor
 
         existing_categories = ::Security::Category.by_namespace(root_ancestor).preload_attributes
