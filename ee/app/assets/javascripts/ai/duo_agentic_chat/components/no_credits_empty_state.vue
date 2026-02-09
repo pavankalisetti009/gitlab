@@ -37,10 +37,10 @@ export default {
     description() {
       return this.isTrial
         ? s__(
-            'DuoAgenticChat|To continue collaborating with GitLab Duo Agent Platform, upgrade to a paid subscription or turn off the Agentic toggle. You can still get AI assistance, just without the advanced agentic features.',
+            'DuoAgenticChat|Upgrade to a paid subscription or turn off the Agentic toggle to start a new conversation.',
           )
         : s__(
-            'DuoAgenticChat|To continue collaborating with GitLab Duo Agent Platform, purchase more credits or turn off the Agentic toggle. You can still get AI assistance, just without the advanced agentic features.',
+            'DuoAgenticChat|Purchase more credits or turn off the Agentic toggle to start a new conversation.',
           );
     },
     primaryCtaText() {

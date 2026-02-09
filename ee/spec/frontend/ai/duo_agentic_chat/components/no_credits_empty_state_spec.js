@@ -53,7 +53,7 @@ describe('NoCreditsEmptyState', () => {
       });
 
       it('shows paid description mentioning purchasing credits', () => {
-        expect(findDescription().text()).toContain('purchase more credits');
+        expect(findDescription().text()).toContain('Purchase more credits');
       });
 
       it('shows "Purchase more credits" as primary CTA', () => {
@@ -71,7 +71,7 @@ describe('NoCreditsEmptyState', () => {
       });
 
       it('shows trial description mentioning upgrading', () => {
-        expect(findDescription().text()).toContain('upgrade to a paid subscription');
+        expect(findDescription().text()).toContain('Upgrade to a paid subscription');
       });
 
       it('shows "Upgrade to Premium" as primary CTA', () => {
