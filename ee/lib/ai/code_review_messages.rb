@@ -100,6 +100,23 @@ module Ai
       )
     end
 
+    def namespace_missing_error(user)
+      docs_url = Rails.application.routes.url_helpers.help_page_url(
+        'user/profile/preferences.md',
+        anchor: 'set-a-default-gitlab-duo-namespace'
+      )
+
+      format(
+        s_(
+          "DuoCodeReview|:warning: %{user_reference}, you need to set a default namespace to " \
+            "use Code Review Flow in this project. " \
+            "Please set a default GitLab Duo namespace in your [preferences](%{docs_url})."
+        ),
+        user_reference: user.to_reference,
+        docs_url: docs_url
+      )
+    end
+
     def timeout_error
       s_(
         "DuoCodeReview|:warning: Something went wrong and the review request was stopped. " \
