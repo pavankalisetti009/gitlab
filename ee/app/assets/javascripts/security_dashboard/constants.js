@@ -65,7 +65,6 @@ export const COLLAPSE_SECURITY_REPORTS_SUMMARY_LOCAL_STORAGE_KEY =
 export const DEFAULT_SCANNER = 'GitLab';
 export const SCANNER_ID_PREFIX = 'gid://gitlab/Vulnerabilities::Scanner/';
 
-export const DOC_PATH_APPLICATION_SECURITY = helpPagePath('user/application_security/_index');
 export const DOC_PATH_VULNERABILITY_DETAILS = helpPagePath(
   'user/application_security/vulnerabilities/_index',
 );

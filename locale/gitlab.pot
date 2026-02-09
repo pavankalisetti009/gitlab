@@ -1380,16 +1380,6 @@ msgstr ""
 msgid "%{seconds}s"
 msgstr ""
 
-msgid "%{securityScanner} is not enabled for this project. %{linkStart}More information%{linkEnd}"
-msgid_plural "%{securityScanner} are not enabled for this project. %{linkStart}More information%{linkEnd}"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "%{securityScanner} result is not available because a pipeline has not been run since it was enabled. %{linkStart}Run a pipeline%{linkEnd}"
-msgid_plural "%{securityScanner} results are not available because a pipeline has not been run since it was enabled. %{linkStart}Run a pipeline%{linkEnd}"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "%{selectedLabelsCount} label"
 msgid_plural "%{selectedLabelsCount} labels"
 msgstr[0] ""
@@ -81726,9 +81716,6 @@ msgid "ciReport|API Fuzzing"
 msgstr ""
 
 msgid "ciReport|API fuzzing"
-msgstr ""
-
-msgid "ciReport|Advanced SAST Scanning"
 msgstr ""
 
 msgid "ciReport|All tools"
