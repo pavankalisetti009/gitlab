@@ -51,18 +51,6 @@ RSpec.describe Vulnerabilities::ConfirmService, feature_category: :vulnerability
         confirm_vulnerability
       end
 
-      it 'creates state transition entry to `confirmed`' do
-        expect(::Vulnerabilities::StateTransition).to receive(:create!).with(
-          vulnerability: vulnerability,
-          from_state: vulnerability.state,
-          to_state: :confirmed,
-          author: user,
-          comment: "It's really there, I swear."
-        )
-
-        confirm_vulnerability
-      end
-
       it_behaves_like 'calls Vulnerabilities::Findings::RiskScoreCalculationService'
 
       context 'when vulnerability is dismissed' do
@@ -78,6 +66,22 @@ RSpec.describe Vulnerabilities::ConfirmService, feature_category: :vulnerability
 
         it 'raises an "access denied" error' do
           expect { confirm_vulnerability }.to raise_error(Gitlab::Access::AccessDeniedError)
+        end
+      end
+
+      describe 'creating the state transition record' do
+        let(:expected_state_transition_relation) do
+          ::Vulnerabilities::StateTransition.where(
+            vulnerability: vulnerability,
+            from_state: vulnerability.state,
+            to_state: :confirmed,
+            author: user,
+            comment: comment
+          )
+        end
+
+        it 'creates state transition entry to `confirmed`' do
+          expect { confirm_vulnerability }.to change { expected_state_transition_relation.count }.by(1)
         end
       end
     end
