@@ -617,6 +617,7 @@ export const mockFlowsWithConfigs = [
 export const mockServiceAccount = {
   id: 'gid://gitlab/User/100',
   name: 'Fix pipeline/v1',
+  createdAt: '2024-01-10T14:20:00Z',
   username: 'ai-fix-pipeline-v1-group-1',
   webPath: '/ai-fix-pipeline-v1-group-1',
   avatarUrl: 'https://example.com/avatar.png',
@@ -1012,6 +1013,42 @@ export const mockReportAiCatalogItemErrorMutation = {
         "The resource that you are attempting to access does not exist or you don't have permission to perform this action",
       ],
       __typename: TYPENAME_AI_CATALOG_ITEM_REPORT,
+    },
+  },
+};
+
+/* SERVICE ACCOUNT PROJECT MEMBERSHIPS */
+const accessLevels = ['Guest', 'Developer', 'Maintainer', 'Owner'];
+
+const createProjectMemberships = (startAt = 0) =>
+  Array.from({ length: 20 }, (_, i) => {
+    const id = startAt + i + 1;
+    return {
+      accessLevel: {
+        humanAccess: accessLevels[Math.floor(Math.random() * accessLevels.length)],
+      },
+      createdAt: new Date(
+        2024,
+        Math.floor(Math.random() * 12),
+        Math.floor(Math.random() * 28) + 1,
+      ).toISOString(),
+      id: `gid://gitlab/ProjectMember/${id}`,
+      project: {
+        id: `gid://gitlab/Project/${id}`,
+        nameWithNamespace: `Group / Project ${id}`,
+        webUrl: `https://gitlab.com/project-${id}`,
+      },
+    };
+  });
+
+export const mockServiceAccountProjectMembershipsResponse = {
+  data: {
+    user: {
+      id: 'gid://gitlab/User/100',
+      projectMemberships: {
+        nodes: createProjectMemberships(),
+        pageInfo: mockPageInfo,
+      },
     },
   },
 };

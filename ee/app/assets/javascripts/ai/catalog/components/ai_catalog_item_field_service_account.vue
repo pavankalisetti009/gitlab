@@ -1,17 +1,20 @@
 <script>
-import { GlAvatarLabeled, GlAvatarLink, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlLink, GlSprintf, GlButton } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { AI_CATALOG_ITEM_LABELS } from '../constants';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
+import ServiceAccountProjectMemberships from './service_account_project_memberships.vue';
+import ServiceAccountAvatar from './service_account_avatar.vue';
 
 export default {
   name: 'AiCatalogItemFieldServiceAccount',
   components: {
-    GlAvatarLabeled,
-    GlAvatarLink,
     GlLink,
     GlSprintf,
+    GlButton,
     AiCatalogItemField,
+    ServiceAccountProjectMemberships,
+    ServiceAccountAvatar,
   },
   props: {
     serviceAccount: {
@@ -23,9 +26,22 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      isDrawerOpen: false,
+    };
+  },
   computed: {
     itemTypeLabel() {
       return AI_CATALOG_ITEM_LABELS[this.itemType];
+    },
+  },
+  methods: {
+    openDrawer() {
+      this.isDrawerOpen = true;
+    },
+    closeDrawer() {
+      this.isDrawerOpen = false;
     },
   },
   serviceAccountsDocsLink: helpPagePath('user/profile/service_accounts'),
@@ -48,13 +64,15 @@ export default {
         <template #itemType>{{ itemTypeLabel }}</template>
       </gl-sprintf>
     </p>
-    <gl-avatar-link :href="serviceAccount.webPath" :title="serviceAccount.name" class="gl-mt-3">
-      <gl-avatar-labeled
-        :size="32"
-        :src="serviceAccount.avatarUrl"
-        :label="serviceAccount.name"
-        :sub-label="`@${serviceAccount.username}`"
-      />
-    </gl-avatar-link>
+    <service-account-avatar :service-account="serviceAccount" class="gl-mt-3" />
+    <br />
+    <gl-button category="tertiary" variant="link" class="gl-mt-3" @click="openDrawer">
+      {{ s__('AICatalog|View projects and permissions of this service account') }}
+    </gl-button>
+    <service-account-project-memberships
+      :service-account="serviceAccount"
+      :is-open="isDrawerOpen"
+      @close="closeDrawer"
+    />
   </ai-catalog-item-field>
 </template>
