@@ -77,7 +77,7 @@ export default {
             ...this.registry,
           },
         },
-        update: (_, { data: { createRegistry } }) => {
+        update: (store, { data: { createRegistry } }) => {
           const { errors, ...result } = createRegistry;
 
           if (errors.length) {
@@ -88,6 +88,12 @@ export default {
                 name: result.registry.name,
               }),
               variant: 'success',
+            });
+
+            store.evict({
+              id: 'ROOT_QUERY',
+              fieldName: 'group',
+              args: { fullPath: this.fullPath },
             });
           }
         },
