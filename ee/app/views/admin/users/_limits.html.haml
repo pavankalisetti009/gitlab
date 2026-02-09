@@ -9,5 +9,5 @@
   = f.fields_for :namespace do |namespace_form|
     = namespace_form.hidden_field :id
     = render 'namespaces/shared_runners_minutes_setting', form: namespace_form
-    #js-pipeline-minutes-vue{ data: { reset_minutes_path: reset_runners_minutes_admin_user_path(@user) } }
+    #js-pipeline-minutes-vue{ data: { reset_minutes_path: reset_runners_minutes_admin_user_path(@user), context_type: 'USER' } }
 
