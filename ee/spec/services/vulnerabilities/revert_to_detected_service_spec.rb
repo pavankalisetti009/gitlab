@@ -36,20 +36,25 @@ RSpec.describe Vulnerabilities::RevertToDetectedService, feature_category: :vuln
       revert_vulnerability_to_detected
     end
 
-    it 'creates state transition entry to `detected`' do
-      expect(::Vulnerabilities::StateTransition).to receive(:create!).with(
-        vulnerability: vulnerability,
-        from_state: vulnerability.state,
-        to_state: :detected,
-        author: user,
-        comment: comment
-      )
-      revert_vulnerability_to_detected
-    end
-
     it_behaves_like 'calls vulnerability statistics utility services in order'
 
     it_behaves_like 'calls Vulnerabilities::Findings::RiskScoreCalculationService'
+
+    describe 'creating the state transition record' do
+      let(:expected_state_transition_relation) do
+        Vulnerabilities::StateTransition.where(
+          vulnerability: vulnerability,
+          from_state: vulnerability.state,
+          to_state: :detected,
+          author: user,
+          comment: comment
+        )
+      end
+
+      it 'creates state transition entry to `detected`' do
+        expect { revert_vulnerability_to_detected }.to change { expected_state_transition_relation.count }.by(1)
+      end
+    end
   end
 
   context 'with an authorized user with proper permissions' do
