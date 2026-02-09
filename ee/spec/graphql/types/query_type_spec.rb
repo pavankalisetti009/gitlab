@@ -93,6 +93,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :api do
       :virtual_registries_container_upstream,
       :work_item_allowed_statuses,
       :subscription_usage,
+      :trial_usage,
       :openbao_health,
       :security_scan_profile,
       :security_configuration

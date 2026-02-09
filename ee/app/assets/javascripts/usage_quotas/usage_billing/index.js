@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createApolloClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
-import UsageBillingDashboardPage from 'ee/usage_quotas/usage_billing/components/app.vue';
+import UsageBillingDashboardPage from 'ee/usage_quotas/usage_billing/components/meta_app.vue';
 
 /**
  * @param {HTMLElement} el
