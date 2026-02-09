@@ -31,7 +31,7 @@ module EE
 
       def repair_blobs_index
         yield
-        return if @blob # rubocop:disable Gitlab/ModuleWithInstanceVariables -- We cannot use blob method as that is redirecting us in case of 404.
+        return if @blob # We cannot use blob method as that is redirecting us in case of 404.
 
         return unless visiting_from_search_page?
         return unless project

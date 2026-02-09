@@ -15,7 +15,6 @@ module EE
       private
 
       def log_audit_event
-        # rubocop:disable Gitlab/ModuleWithInstanceVariables
         message = "Revoked project deploy token with name: #{@token.name} with token_id: #{@token.id} with scopes: #{@token.scopes}."
         audit_context = {
           name: 'deploy_token_revoked',
@@ -28,7 +27,6 @@ module EE
           }
         }
         ::Gitlab::Audit::Auditor.audit(audit_context)
-        # rubocop:enable Gitlab/ModuleWithInstanceVariables
       end
     end
   end

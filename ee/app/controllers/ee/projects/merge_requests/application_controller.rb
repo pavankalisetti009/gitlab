@@ -57,8 +57,8 @@ module EE
 
           # Target the MR target project in priority, else it depends whether the project
           # is forked.
-          target_project = if @merge_request # rubocop:disable Gitlab/ModuleWithInstanceVariables
-                             @merge_request.target_project # rubocop:disable Gitlab/ModuleWithInstanceVariables
+          target_project = if @merge_request
+                             @merge_request.target_project
                            elsif project.forked? && project.id.to_s != mr_params[:target_project_id]
                              project.fork_network_projects.find(mr_params[:target_project_id])
                            else

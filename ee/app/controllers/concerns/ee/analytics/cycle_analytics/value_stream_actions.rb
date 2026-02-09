@@ -91,7 +91,6 @@ module EE
           request_params = { namespace: namespace, current_user: current_user }
           slice_attrs = [:default_stages, :namespace]
 
-          # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Required by the view
           @data_attributes = ::Gitlab::Analytics::CycleAnalytics::RequestParams.new(request_params)
             .to_data_attributes
             .slice(*slice_attrs)
@@ -103,7 +102,6 @@ module EE
               full_path: namespace.full_path,
               is_project: project?.to_s
             )
-          # rubocop:enable Gitlab/ModuleWithInstanceVariables
         end
 
         def authorize

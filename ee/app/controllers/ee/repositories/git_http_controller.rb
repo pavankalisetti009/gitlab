@@ -87,7 +87,7 @@ module EE
       def geo_push_user
         return unless geo_gl_id
 
-        @geo_push_user ||= ::Geo::PushUser.new(geo_gl_id) # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        @geo_push_user ||= ::Geo::PushUser.new(geo_gl_id)
       end
 
       def geo_gl_id
@@ -131,7 +131,7 @@ module EE
         return render_bad_geo_jwt('Unauthorized scope') unless jwt_scope_valid?
 
         # Grant access
-        @authentication_result = ::Gitlab::Auth::Result.new(nil, project, :geo, [:download_code, :push_code]) # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        @authentication_result = ::Gitlab::Auth::Result.new(nil, project, :geo, [:download_code, :push_code])
       rescue ::Gitlab::Geo::InvalidDecryptionKeyError
         render_bad_geo_jwt("Invalid decryption key")
       rescue ::Gitlab::Geo::InvalidSignatureTimeError

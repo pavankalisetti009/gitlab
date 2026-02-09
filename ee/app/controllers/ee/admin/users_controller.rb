@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Gitlab/ModuleWithInstanceVariables
 module EE
   module Admin
     module UsersController

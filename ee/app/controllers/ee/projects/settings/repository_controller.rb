@@ -24,10 +24,9 @@ module EE
             project.project_setting.update(push_rule_id: push_rule.id)
           end
 
-          @push_rule = project.push_rule # rubocop:disable Gitlab/ModuleWithInstanceVariables
+          @push_rule = project.push_rule
         end
 
-        # rubocop:disable Gitlab/ModuleWithInstanceVariables
         override :load_gon_index
         def load_gon_index
           super
@@ -37,7 +36,6 @@ module EE
             selected_create_access_levels: @protected_tag.create_access_levels.map { |access_level| access_level.user_id || access_level.access_level }
           )
         end
-        # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
         def render_show
           push_rule
@@ -61,7 +59,6 @@ module EE
             .execute
         end
 
-        # rubocop: disable Gitlab/ModuleWithInstanceVariables
         override :define_protected_refs
         def define_protected_refs
           super
@@ -82,7 +79,6 @@ module EE
             .new(project: @project)
             .execute
         end
-        # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
         def group_protected_branches_feature_available?
           ::License.feature_available?(:group_protected_branches)
