@@ -119,6 +119,16 @@ module Security
     scope :prevent_pushing_and_force_pushing,
       -> { where("content -> 'approval_settings' ->> 'prevent_pushing_and_force_pushing' = 'true'") }
 
+    scope :with_enrichment_filters, -> do
+      joins(:approval_policy_rules)
+        .merge(Security::ApprovalPolicyRule.undeleted)
+        .where(
+          "approval_policy_rules.content->'vulnerability_attributes'->>'known_exploited' IS NOT NULL OR " \
+            "approval_policy_rules.content->'vulnerability_attributes'->'epss_score' IS NOT NULL"
+        )
+        .distinct
+    end
+
     delegate :namespace?, :namespace, :project?, :project, to: :security_orchestration_policy_configuration
 
     def self.checksum(policy_hash)
