@@ -433,6 +433,17 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '.policy_project_configuration_url' do
+    let_it_be(:project) { create(:project, :repository) }
+
+    subject(:configuration_url) { described_class.policy_project_configuration_url(project, 'abc123') }
+
+    it 'returns the URL using the provided ref' do
+      expected_url = "http://localhost/#{project.full_path}/-/blob/abc123/.gitlab/security-policies/policy.yml"
+      expect(configuration_url).to eq(expected_url)
+    end
+  end
+
   describe '#configuration_sha' do
     let(:last_commit) { instance_double(Commit, id: 'abc123') }
 

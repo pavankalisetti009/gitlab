@@ -1030,7 +1030,21 @@ RSpec.describe ::Search::Elastic::Filters, :elastic_helpers, feature_category: :
         allow(user).to receive(:can_read_all_resources?).and_return(true)
       end
 
-      it_behaves_like 'does not modify the query_hash'
+      it 'adds a permissive filter for all visibility levels' do
+        expected_filter = [
+          {
+            exists: {
+              _name: 'filters:permissions:global:admin_all_groups:namespace_visibility_level:all',
+              field: :namespace_visibility_level
+            }
+          }
+        ]
+
+        expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+        expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+      end
     end
 
     context 'when user has GUEST permission for the group' do

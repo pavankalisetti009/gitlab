@@ -33,26 +33,12 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
 
   describe '#resolve' do
     context 'when user does not have permission' do
-      before do
-        stub_feature_flags(security_categories_and_attributes: true)
-      end
-
-      it_behaves_like 'a mutation that returns a top-level access error'
-    end
-
-    context 'when feature flag is disabled' do
-      before_all do
-        project.add_maintainer(current_user)
-        stub_feature_flags(security_categories_and_attributes: false)
-      end
-
       it_behaves_like 'a mutation that returns a top-level access error'
     end
 
     context 'when user has permission' do
       before_all do
         namespace.add_maintainer(current_user)
-        stub_feature_flags(security_categories_and_attributes: true)
       end
 
       describe 'adding and removing attributes by id' do

@@ -33,7 +33,7 @@ RSpec.describe Epics::WithAccessCheck, feature_category: :portfolio_management d
       end
 
       def epics_collection
-        Epic.in_parents(base_epic)
+        Epic.in_work_item_parents(base_epic.issue_id)
       end
       alias_method :epics_collection_for_groups, :epics_collection
 

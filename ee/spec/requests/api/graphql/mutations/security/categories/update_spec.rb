@@ -42,15 +42,6 @@ RSpec.describe 'Mutation.securityCategoryUpdate', feature_category: :security_as
       namespace.add_maintainer(current_user)
     end
 
-    context 'when security_categories_and_attributes feature is disabled' do
-      before do
-        stub_feature_flags(security_categories_and_attributes: false)
-      end
-
-      it_behaves_like 'a mutation that returns top-level errors',
-        errors: [Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR]
-    end
-
     context 'when updating by id' do
       it 'updates the security category successfully' do
         post_graphql_mutation(mutation, current_user: current_user)

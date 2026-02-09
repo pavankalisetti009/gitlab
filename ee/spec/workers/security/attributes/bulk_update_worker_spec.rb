@@ -28,7 +28,6 @@ RSpec.describe Security::Attributes::BulkUpdateWorker, feature_category: :securi
   describe '#perform' do
     before_all do
       namespace.add_maintainer(user)
-      stub_feature_flags(security_categories_and_attributes: true)
     end
 
     context 'when user exists' do
@@ -190,18 +189,6 @@ RSpec.describe Security::Attributes::BulkUpdateWorker, feature_category: :securi
 
             worker.perform(project_ids, attribute_ids, mode, user_id)
           end
-        end
-      end
-
-      context 'when feature flag is disabled for a project' do
-        before do
-          stub_feature_flags(security_categories_and_attributes: false)
-        end
-
-        it 'skips processing projects without feature flag' do
-          expect(Security::Attributes::UpdateProjectAttributesService).not_to receive(:new)
-
-          worker.perform(project_ids, attribute_ids, mode, user_id)
         end
       end
 

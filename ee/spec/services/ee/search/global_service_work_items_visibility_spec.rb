@@ -1,0 +1,97 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_search do
+  include SearchResultHelpers
+  include ProjectHelpers
+  include UserHelpers
+
+  before do
+    stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+  end
+
+  describe 'work_items scope visibility', :elastic_delete_by_query do
+    include_context 'ProjectPolicyTable context'
+
+    let_it_be_with_reload(:group) { create(:group) }
+    let_it_be_with_reload(:project) { create(:project, namespace: group) }
+    let(:projects) { [project] }
+
+    let(:user) { create_user_from_membership(project, membership) }
+    let(:user_in_group) { create_user_from_membership(group, membership) }
+
+    context 'for project-level work items' do
+      let_it_be(:work_item) { create(:work_item, project: project) }
+
+      let(:scope) { 'work_items' }
+      let(:search) { work_item.title }
+
+      where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
+        permission_table_for_guest_feature_access
+      end
+
+      with_them do
+        before do
+          Elastic::ProcessInitialBookkeepingService.track!(work_item)
+          ensure_elasticsearch_index!
+        end
+
+        it_behaves_like 'search respects visibility'
+      end
+    end
+
+    context 'for group-level work items (epics)' do
+      include_context 'for GroupPolicyTable context'
+
+      let(:scope) { 'work_items' }
+      let(:search) { 'epic work item title' }
+      let_it_be(:epic_work_item) do
+        create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'epic work item title')
+      end
+
+      where(:project_level, :membership, :admin_mode, :expected_count) do
+        permission_table_for_epics_access
+      end
+
+      with_them do
+        before do
+          # project associated with group must have visibility_level updated to allow
+          # the shared example to update the group visibility_level setting. projects cannot
+          # have higher visibility than the group to which they belong
+          project.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
+
+          ::Elastic::ProcessBookkeepingService.track!(epic_work_item)
+        end
+
+        it_behaves_like 'search respects visibility', project_access: false
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(search_scope_work_item: false)
+      end
+
+      let_it_be(:work_item) { create(:work_item, project: project) }
+      let_it_be(:test_user) { create(:user) }
+      let(:scope) { 'work_items' }
+      let(:search) { work_item.title }
+
+      it 'returns no results' do
+        project.add_developer(test_user)
+        Elastic::ProcessInitialBookkeepingService.track!(work_item)
+        ensure_elasticsearch_index!
+
+        results = described_class.new(test_user, search: search, scope: scope).execute
+
+        expect(results.objects('work_items')).to be_empty
+        expect(results.formatted_count('work_items')).to eq('0')
+      end
+    end
+  end
+
+  def params
+    { search: search, scope: scope }
+  end
+end

@@ -163,6 +163,24 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
       end
     end
 
+    context 'when ProjectAttachService returns errors' do
+      before do
+        allow(Security::ScanProfiles::ProjectAttachService).to receive(:execute)
+          .and_return({ errors: ['Project has reached limit'] })
+      end
+
+      it 'returns an error response with collected errors' do
+        result = service.execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to include('Project has reached limit')
+      end
+
+      it 'does not create audit events for failed attachments' do
+        expect { service.execute }.not_to change { AuditEvent.count }
+      end
+    end
+
     context 'when projects have reached the profile limit' do
       let_it_be(:another_profile) { create(:security_scan_profile, namespace: root_group, scan_type: :sast) }
 
@@ -181,10 +199,13 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
         expect(project3.security_scan_profiles).to contain_exactly(another_profile)
       end
 
-      it 'returns a success response' do
+      it 'returns an error response when all projects are at the limit' do
+        # The service returns error because all projects failed to attach
         result = service.execute
 
-        expect(result[:status]).to eq(:success)
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to be_an(Array)
+        expect(result[:message].size).to eq(3) # All 3 projects at limit
       end
 
       context 'when some projects are at the limit and others are not' do
@@ -236,7 +257,7 @@ RSpec.describe Security::ScanProfiles::AttachService, feature_category: :securit
 
           it 'schedules a retry worker for the namespace' do
             expect(Security::ScanProfiles::AttachWorker).to receive(:perform_in)
-              .with(described_class::RETRY_DELAY, root_group.id, scan_profile.id, user.id, false)
+              .with(described_class::RETRY_DELAY, root_group.id, scan_profile.id, user.id, nil, false)
 
             service.execute
           end

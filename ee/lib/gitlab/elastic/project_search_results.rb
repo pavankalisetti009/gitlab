@@ -103,13 +103,12 @@ module Gitlab
       override :scope_options
       def scope_options(scope)
         case scope
+        when :work_items
+          build_work_items_search_options('work_items')
         when :blobs
           base_options.merge(filters.slice(:language, :num_context_lines))
         when :users
           super.merge(project_id: project.id)
-        when :work_items
-          super.merge(
-            root_ancestor_ids: [project.root_ancestor.id], related_ids: related_ids_for_notes(Issue.name))
         when :merge_requests
           options = super
           options[:related_ids] = related_ids_for_notes(MergeRequest.name)
@@ -118,6 +117,14 @@ module Gitlab
         else
           super
         end
+      end
+
+      override :build_work_items_search_options
+      def build_work_items_search_options(search_scope)
+        super.merge(
+          root_ancestor_ids: [project.root_ancestor.id],
+          related_ids: related_ids_for_notes(Issue.name)
+        )
       end
     end
   end

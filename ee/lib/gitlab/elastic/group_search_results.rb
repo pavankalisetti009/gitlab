@@ -35,12 +35,12 @@ module Gitlab
       def scope_options(scope)
         # User uses group_id for namespace_query
         case scope
+        when :work_items
+          build_work_items_search_options('work_items')
         when :epics, :wiki_blobs
           super.merge(root_ancestor_ids: [group.root_ancestor.id])
         when :users
           super.except(:group_ids) # User uses group_id for namespace_query
-        when :work_items
-          super.merge(root_ancestor_ids: [group.root_ancestor.id], related_ids: related_ids_for_notes(Issue.name))
         when :merge_requests
           options = super
           options[:related_ids] = related_ids_for_notes(MergeRequest.name)
@@ -49,6 +49,11 @@ module Gitlab
         else
           super
         end
+      end
+
+      override :build_work_items_search_options
+      def build_work_items_search_options(search_scope)
+        super.merge(root_ancestor_ids: [group.root_ancestor.id], related_ids: related_ids_for_notes(Issue.name))
       end
     end
   end

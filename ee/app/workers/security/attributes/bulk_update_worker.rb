@@ -36,8 +36,6 @@ module Security
       private
 
       def process_project(project, attribute_ids, mode, user)
-        return unless Feature.enabled?(:security_categories_and_attributes, project.namespace.root_ancestor)
-
         unless user.can?(:admin_project, project) &&
             user.can?(:admin_security_attributes, project.namespace.root_ancestor)
           return

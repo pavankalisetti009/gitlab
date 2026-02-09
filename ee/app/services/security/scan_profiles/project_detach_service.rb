@@ -28,7 +28,8 @@ module Security
 
         { errors: errors }
       rescue StandardError => e
-        error_result(e.message)
+        Gitlab::ErrorTracking.track_and_raise_for_dev_exception(e)
+        error_result('An error has occurred during profile detachment')
       end
 
       private

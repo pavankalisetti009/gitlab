@@ -17,23 +17,26 @@ module Security
         new(...).execute
       end
 
-      def initialize(group, scan_profile, current_user:, traverse_hierarchy: true)
+      def initialize(group, scan_profile, current_user:, traverse_hierarchy: true, operation_id: nil)
         @group = group
         @scan_profile = scan_profile
         @current_user = current_user
         @traverse_hierarchy = traverse_hierarchy
+        @operation_id = operation_id
+        @errors = []
       end
 
       def execute
         return error('Scan profile does not belong to group hierarchy') unless valid_namespace?
 
         detach_profile_from_projects
-        success
+
+        @errors.present? ? error(@errors) : success
       end
 
       private
 
-      attr_reader :group, :scan_profile, :current_user, :traverse_hierarchy
+      attr_reader :group, :scan_profile, :current_user, :traverse_hierarchy, :operation_id
 
       def valid_namespace?
         scan_profile.namespace_id == group.root_ancestor.id
@@ -64,11 +67,13 @@ module Security
         lease_key = Security::ScanProfiles.update_lease_key(namespace_id)
 
         in_lock(lease_key, ttl: LEASE_TIMEOUT, **lock_retry_options) do
-          Security::ScanProfiles::ProjectDetachService.execute(
+          result = Security::ScanProfiles::ProjectDetachService.execute(
             profile: scan_profile,
             current_user: current_user,
             projects: batch.to_a
           )
+
+          @errors.concat(result[:errors]) if result[:errors].any?
         end
       rescue Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError => error
         handle_lock_failure(error, namespace_id)
@@ -84,7 +89,7 @@ module Security
         raise error unless traverse_hierarchy
 
         Security::ScanProfiles::DetachWorker.perform_in(
-          RETRY_DELAY, namespace_id, scan_profile.id, current_user.id, false
+          RETRY_DELAY, namespace_id, scan_profile.id, current_user.id, operation_id, false
         )
       end
     end

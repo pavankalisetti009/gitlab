@@ -186,6 +186,24 @@ RSpec.describe Security::ScanProfiles::DetachService, feature_category: :securit
       end
     end
 
+    context 'when ProjectDetachService returns errors' do
+      before do
+        allow(Security::ScanProfiles::ProjectDetachService).to receive(:execute)
+          .and_return({ errors: ['Project has reached limit'] })
+      end
+
+      it 'returns an error response with collected errors' do
+        result = service.execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to include('Project has reached limit')
+      end
+
+      it 'does not create audit events for failed detachments' do
+        expect { service.execute }.not_to change { AuditEvent.count }
+      end
+    end
+
     context 'when traverse_hierarchy is false' do
       let(:traverse_hierarchy) { false }
 
@@ -229,7 +247,7 @@ RSpec.describe Security::ScanProfiles::DetachService, feature_category: :securit
 
           it 'schedules a retry worker for the namespace' do
             expect(Security::ScanProfiles::DetachWorker).to receive(:perform_in)
-              .with(described_class::RETRY_DELAY, root_group.id, scan_profile.id, user.id, false)
+              .with(described_class::RETRY_DELAY, root_group.id, scan_profile.id, user.id, nil, false)
 
             service.execute
           end

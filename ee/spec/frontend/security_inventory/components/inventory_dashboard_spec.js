@@ -598,7 +598,6 @@ describe('InventoryDashboard', () => {
         createComponent({
           provide: {
             canManageAttributes: true,
-            glFeatures: { securityContextLabels: true },
           },
         });
         wrapper.findComponent(SecurityInventoryTable).vm.$emit('selectedCount', 10);

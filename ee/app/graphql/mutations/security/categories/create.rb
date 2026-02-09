@@ -28,10 +28,6 @@ module Mutations
         def resolve(namespace_id:, **params)
           namespace = authorized_find!(id: namespace_id)
 
-          unless Feature.enabled?(:security_categories_and_attributes, namespace.root_ancestor)
-            raise_resource_not_available_error!
-          end
-
           result = ::Security::Categories::CreateService.new(
             namespace: namespace,
             current_user: current_user,

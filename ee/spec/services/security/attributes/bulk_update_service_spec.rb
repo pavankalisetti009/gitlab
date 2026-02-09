@@ -41,10 +41,6 @@ RSpec.describe Security::Attributes::BulkUpdateService, feature_category: :secur
       namespace.add_maintainer(user)
     end
 
-    before do
-      stub_feature_flags(security_categories_and_attributes: true)
-    end
-
     context 'with valid parameters' do
       it 'schedules scheduler worker for processing' do
         expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)

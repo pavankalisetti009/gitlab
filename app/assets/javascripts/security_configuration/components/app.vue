@@ -130,11 +130,7 @@ export default {
       return this.glFeatures?.vulnerabilitiesAcrossContexts;
     },
     shouldShowSecurityAttributes() {
-      return (
-        window.gon?.licensed_features?.securityAttributes &&
-        this.glFeatures?.securityContextLabels &&
-        this.canReadAttributes
-      );
+      return window.gon?.licensed_features?.securityAttributes && this.canReadAttributes;
     },
     shouldShowScannerProfiles() {
       return this.glFeatures?.securityScanProfilesFeature;

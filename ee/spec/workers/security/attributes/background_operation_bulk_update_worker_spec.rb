@@ -42,10 +42,6 @@ RSpec.describe Security::Attributes::BackgroundOperationBulkUpdateWorker, featur
       namespace.add_maintainer(user)
     end
 
-    before do
-      stub_feature_flags(security_categories_and_attributes: true)
-    end
-
     context 'when user exists' do
       it 'processes all projects' do
         expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new).twice.and_call_original
@@ -247,7 +243,7 @@ RSpec.describe Security::Attributes::BackgroundOperationBulkUpdateWorker, featur
 
         it 'increments successful items counter' do
           expect(Gitlab::BackgroundOperations::RedisStore).to receive(:increment_successful)
-            .with(operation_id).twice
+            .with(operation_id, 1).twice
 
           worker.perform(project_ids, attribute_ids, mode, user_id, operation_id)
         end
@@ -261,12 +257,12 @@ RSpec.describe Security::Attributes::BackgroundOperationBulkUpdateWorker, featur
         end
 
         it 'records failed items' do
-          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:add_failed_project)
-            .with(operation_id, hash_including(project_id: project1.id, error_message: 'Service error',
-              error_code: 'service_error'))
-          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:add_failed_project)
-            .with(operation_id, hash_including(project_id: project2.id, error_message: 'Service error',
-              error_code: 'service_error'))
+          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:add_failed_item)
+            .with(operation_id,
+              hash_including(entity_id: project1.id, entity_type: 'Project', error_message: 'Service error'))
+          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:add_failed_item)
+            .with(operation_id,
+              hash_including(entity_id: project2.id, entity_type: 'Project', error_message: 'Service error'))
 
           worker.perform(project_ids, attribute_ids, mode, user_id, operation_id)
         end
@@ -279,13 +275,13 @@ RSpec.describe Security::Attributes::BackgroundOperationBulkUpdateWorker, featur
           end
         end
 
-        it 'records failed items with unexpected_error code' do
-          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:add_failed_project)
-            .with(operation_id, hash_including(project_id: project1.id, error_message: 'Unexpected error',
-              error_code: 'unexpected_error'))
-          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:add_failed_project)
-            .with(operation_id, hash_including(project_id: project2.id, error_message: 'Unexpected error',
-              error_code: 'unexpected_error'))
+        it 'records failed items' do
+          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:add_failed_item)
+            .with(operation_id,
+              hash_including(entity_id: project1.id, entity_type: 'Project', error_message: 'Unexpected error'))
+          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:add_failed_item)
+            .with(operation_id,
+              hash_including(entity_id: project2.id, entity_type: 'Project', error_message: 'Unexpected error'))
 
           worker.perform(project_ids, attribute_ids, mode, user_id, operation_id)
         end

@@ -13,7 +13,6 @@ RSpec.describe 'User with read_security_attribute custom role', feature_category
 
   before do
     stub_licensed_features(custom_roles: true, security_attributes: true)
-    stub_feature_flags(security_categories_and_attributes: true)
 
     # Clear and stub GraphqlKnownOperations to avoid "undefined method `map' for String" error
     Gitlab::Webpack::GraphqlKnownOperations.clear_memoization!

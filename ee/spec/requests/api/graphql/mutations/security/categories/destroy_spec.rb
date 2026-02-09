@@ -68,16 +68,6 @@ RSpec.describe 'Mutation.securityCategoryDestroy', feature_category: :security_a
     end
   end
 
-  context 'when security_categories_and_attributes feature is disabled' do
-    before_all do
-      stub_feature_flags(security_categories_and_attributes: false)
-      namespace.add_maintainer(current_user)
-    end
-
-    it_behaves_like 'a mutation that returns top-level errors',
-      errors: [Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR]
-  end
-
   context 'when the user does not have access' do
     it_behaves_like 'a mutation that returns a top-level access error'
   end

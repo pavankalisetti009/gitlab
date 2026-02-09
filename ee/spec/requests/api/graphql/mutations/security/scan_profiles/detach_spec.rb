@@ -104,7 +104,9 @@ RSpec.describe 'SecurityScanProfileDetach', feature_category: :security_asset_in
 
         it 'enqueues worker for groups' do
           expect(Security::ScanProfiles::DetachWorker)
-            .to receive(:bulk_perform_async).with([[group1.id, profile.id, current_user.id]])
+            .to receive(:bulk_perform_async).with(
+              contain_exactly([group1.id, profile.id, current_user.id, a_kind_of(String), true])
+            )
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -130,7 +132,9 @@ RSpec.describe 'SecurityScanProfileDetach', feature_category: :security_asset_in
 
         it 'detaches from projects and enqueues workers for groups' do
           expect(Security::ScanProfiles::DetachWorker)
-            .to receive(:bulk_perform_async).with([[group1.id, profile.id, current_user.id]])
+            .to receive(:bulk_perform_async).with(
+              contain_exactly([group1.id, profile.id, current_user.id, a_kind_of(String), true])
+            )
 
           expect { post_graphql_mutation(mutation, current_user: current_user) }
             .to change { Security::ScanProfileProject.count }.by(-1)

@@ -88,6 +88,13 @@ module Security
       self.exists?(security_policy_management_project_id: project_id)
     end
 
+    def self.policy_project_configuration_url(project, ref)
+      Gitlab::Routing.url_helpers.project_blob_url(
+        project,
+        "#{ref}/#{POLICY_PATH}"
+      )
+    end
+
     def configuration_sha
       policy_last_commit&.id
     end

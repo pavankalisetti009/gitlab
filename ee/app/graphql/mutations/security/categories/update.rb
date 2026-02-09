@@ -31,10 +31,6 @@ module Mutations
         def resolve(id:, namespace_id:, **params)
           namespace = authorized_find!(id: namespace_id)
 
-          unless Feature.enabled?(:security_categories_and_attributes, namespace.root_ancestor)
-            raise_resource_not_available_error!
-          end
-
           category_result = ::Security::Categories::FindOrCreateService.new(
             category_id: GitlabSchema.parse_gid(id, expected_type: ::Security::Category).model_id,
             namespace: namespace,

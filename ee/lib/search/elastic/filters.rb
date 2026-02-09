@@ -37,7 +37,6 @@ module Search
             add_filter(combined_filter, :should) do
               group_filter = Search::Elastic::BoolExpr.new
               by_search_level_and_group_membership(query_hash: group_filter, options: combined_options)
-
               group_filter.to_bool_query
             end
           end
@@ -904,7 +903,6 @@ module Search
           return match_none_filter(query_hash) if cross_project_search_restricted_for_user?(user:, search_level:)
 
           query_hash = search_level_filter(query_hash: query_hash, options: options)
-          return query_hash if user&.can_read_all_resources?
 
           filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
 
@@ -1801,6 +1799,17 @@ module Search
 
             namespace_visibility_field = options.fetch(:namespace_visibility_field, NAMESPACE_VISIBILITY_FIELD)
             traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
+
+            if user&.can_read_all_resources?
+              next context.name(:admin_all_groups) do
+                {
+                  exists: {
+                    _name: context.name(namespace_visibility_field, :all),
+                    field: namespace_visibility_field
+                  }
+                }
+              end
+            end
 
             add_visibility_level_filter(user: user, visibility_level_field: namespace_visibility_field, filter: filter)
 

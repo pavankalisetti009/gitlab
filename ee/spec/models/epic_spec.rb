@@ -176,6 +176,45 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       end
     end
 
+    describe '.in_work_item_parents' do
+      let(:parent_epic) { create(:epic, group: group) }
+
+      context 'with child epics' do
+        let(:child_epic1) { create(:epic, group: group, parent: parent_epic) }
+        let(:child_epic2) { create(:epic, group: group, parent: parent_epic) }
+        let(:other_epic) { create(:epic, group: group) }
+
+        it 'returns epics that are children of the given work item' do
+          result = described_class.in_work_item_parents(parent_epic.issue_id)
+
+          expect(result).to match_array([child_epic1, child_epic2])
+          expect(result).not_to include(other_epic)
+        end
+      end
+
+      context 'when work item has no children' do
+        it 'returns empty relation' do
+          result = described_class.in_work_item_parents(parent_epic.issue_id)
+
+          expect(result).to be_empty
+        end
+      end
+
+      context 'with nested epic hierarchies' do
+        let(:grandparent_epic) { create(:epic, group: group) }
+        let(:parent_epic) { create(:epic, group: group, parent: grandparent_epic) }
+        let(:child_epic) { create(:epic, group: group, parent: parent_epic) }
+
+        it 'returns only direct children for each level' do
+          grandparent_children = described_class.in_work_item_parents(grandparent_epic.issue_id)
+          parent_children = described_class.in_work_item_parents(parent_epic.issue_id)
+
+          expect(grandparent_children).to contain_exactly(parent_epic)
+          expect(parent_children).to contain_exactly(child_epic)
+        end
+      end
+    end
+
     describe 'from_id' do
       let_it_be(:max_id) { described_class.maximum(:id) }
       let_it_be(:epic1) { create(:epic, id: max_id + 1) }

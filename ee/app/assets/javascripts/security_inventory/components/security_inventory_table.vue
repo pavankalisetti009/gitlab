@@ -68,7 +68,7 @@ export default {
     },
     shouldShowBulkEdit() {
       return (
-        (this.glFeatures.securityContextLabels && this.canManageAttributes) ||
+        this.canManageAttributes ||
         (this.glFeatures.securityScanProfilesFeature && this.canApplyProfiles)
       );
     },
@@ -89,7 +89,7 @@ export default {
         // spliced element gets inserted here
         { key: 'actions', label: '', thClass: 'gl-w-2/20' },
       ];
-      if (this.glFeatures.securityContextLabels && this.canReadAttributes) {
+      if (this.canReadAttributes) {
         fields.splice(3, 0, {
           key: 'securityAttributes',
           label: s__('SecurityAttributes|Security attributes'),

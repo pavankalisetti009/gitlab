@@ -32,6 +32,7 @@ RSpec.describe Groups::DiscoversController, :saas, feature_category: :activation
     context 'when user is owner' do
       before do
         sign_in(owner)
+        stub_billing_plans(group.id)
       end
 
       it 'renders index with 200 status code' do
