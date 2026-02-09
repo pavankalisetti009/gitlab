@@ -295,15 +295,6 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
 
         it { is_expected.to be_nil }
       end
-
-      context 'when security_context_labels feature flag is not enabled' do
-        before do
-          stub_licensed_features(security_attributes: true)
-          stub_feature_flags(security_context_labels: false)
-        end
-
-        it { is_expected.to be_nil }
-      end
     end
 
     describe 'Dependency List' do

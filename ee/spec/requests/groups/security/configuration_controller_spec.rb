@@ -8,7 +8,6 @@ RSpec.describe Groups::Security::ConfigurationController, feature_category: :sec
 
   before do
     stub_licensed_features(security_attributes: true, security_dashboard: true)
-    stub_feature_flags(security_context_labels: true)
 
     sign_in(user)
   end
@@ -54,23 +53,6 @@ RSpec.describe Groups::Security::ConfigurationController, feature_category: :sec
 
       before do
         stub_licensed_features(security_attributes: false)
-      end
-
-      it 'returns 403 response' do
-        request
-
-        expect(response).to have_gitlab_http_status(:forbidden)
-      end
-    end
-
-    context 'when security attributes feature flag is disabled' do
-      before_all do
-        group.add_maintainer(user)
-        sign_in(user)
-      end
-
-      before do
-        stub_feature_flags(security_context_labels: false)
       end
 
       it 'returns 403 response' do

@@ -236,7 +236,6 @@ module Sidebars
 
         def can_access_group_security_configuration?
           can?(context.current_user, :admin_security_attributes, context.group.root_ancestor) &&
-            Feature.enabled?(:security_context_labels, context.group.root_ancestor) &&
             context.group.licensed_feature_available?(:security_attributes)
         end
       end

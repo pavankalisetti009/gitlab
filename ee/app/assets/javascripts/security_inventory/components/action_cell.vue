@@ -65,7 +65,7 @@ export default {
           text: s__('SecurityInventory|Manage security configuration'),
           action: () => this.$emit('openSecurityConfigurationDrawer', item),
         });
-        if (this.glFeatures.securityContextLabels && this.canManageAttributes) {
+        if (this.canManageAttributes) {
           items.push({
             text: s__('SecurityInventory|Edit security attributes'),
             action: () => this.$emit('openAttributesDrawer', item),
