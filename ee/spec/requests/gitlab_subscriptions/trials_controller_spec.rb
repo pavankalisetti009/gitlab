@@ -179,12 +179,12 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
                 'BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will ' \
                   'expire on %{exp_date}.'
               ),
-              exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+              exp_date: I18n.l(60.days.from_now.to_date, format: :long_unpadded)
             )
             expect(flash[:success]).to have_content(message)
           end
 
-          context 'when ultimate_trial_with_dap is enabled' do
+          context 'when ultimate_trial_with_dap is enabled', :with_trial_types do
             let(:ultimate_trial_with_dap_enabled) { true }
 
             it 'shows valid flash message', :freeze_time do
@@ -194,7 +194,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
                 s_(
                   'BillingPlans|You have successfully started a GitLab Ultimate trial that will expire on %{exp_date}.'
                 ),
-                exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+                exp_date: I18n.l(30.days.from_now.to_date, format: :long_unpadded)
               )
               expect(flash[:success]).to have_content(message)
             end
@@ -228,12 +228,12 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
                   'BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will ' \
                     'expire on %{exp_date}.'
                 ),
-                exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+                exp_date: I18n.l(60.days.from_now.to_date, format: :long_unpadded)
               )
               expect(flash[:success]).to have_content(message)
             end
 
-            context 'when ultimate_trial_with_dap is enabled' do
+            context 'when ultimate_trial_with_dap is enabled', :with_trial_types do
               let(:ultimate_trial_with_dap_enabled) { true }
 
               it 'shows valid flash message', :freeze_time do
@@ -244,7 +244,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
                     'BillingPlans|You have successfully started a GitLab Ultimate trial that will ' \
                       'expire on %{exp_date}.'
                   ),
-                  exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+                  exp_date: I18n.l(30.days.from_now.to_date, format: :long_unpadded)
                 )
                 expect(flash[:success]).to have_content(message)
               end

@@ -12,6 +12,7 @@ RSpec.shared_context 'with saas settings for in-app trial flows' do
 
   before do
     stub_config(extra: { 'google_tag_manager_nonce_id' => 'key' })
+    stub_subscription_trial_types
   end
 end
 

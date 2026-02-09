@@ -64,7 +64,7 @@ module GitlabSubscriptions
               '%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Pro seats.'
           ),
           success_doc_link,
-          exp_date: l(add_on_purchase.expires_on.to_date, format: :long)
+          exp_date: l(add_on_purchase.expires_on.to_date, format: :long_unpadded)
         )
       end
     end

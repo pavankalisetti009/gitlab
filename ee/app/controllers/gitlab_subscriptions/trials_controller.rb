@@ -91,20 +91,26 @@ module GitlabSubscriptions
     def success_flash_message(gitlab_subscription)
       if discover_group_security_flow?
         s_("BillingPlans|Congratulations, your free trial is activated.")
-      else
-        message =
-          if Feature.enabled?(:ultimate_trial_with_dap, :instance)
-            s_("BillingPlans|You have successfully started a GitLab Ultimate trial that will expire on %{exp_date}.")
-          else
-            s_(
-              "BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will " \
-                "expire on %{exp_date}. " \
-                "To give members access to new GitLab Duo Enterprise features, " \
-                "%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats."
-            )
-          end
+      elsif Feature.enabled?(:ultimate_trial_with_dap, :instance)
+        trial_duration = GitlabSubscriptions::TrialDurationService.new.execute
+        message = s_(
+          "BillingPlans|You have successfully started a GitLab Ultimate trial that will expire on %{exp_date}."
+        )
 
-        safe_format(message, success_doc_link, exp_date: l(gitlab_subscription.end_date.to_date, format: :long))
+        safe_format(
+          message, success_doc_link, exp_date: l(trial_duration.days.from_now.to_date, format: :long_unpadded)
+        )
+      else
+        message = s_(
+          "BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will " \
+            "expire on %{exp_date}. " \
+            "To give members access to new GitLab Duo Enterprise features, " \
+            "%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats."
+        )
+
+        safe_format(
+          message, success_doc_link, exp_date: l(gitlab_subscription.end_date.to_date, format: :long_unpadded)
+        )
       end
     end
   end
