@@ -17,14 +17,6 @@ module EE
       PIPL_COMPLIANCE_ALERT = 'pipl_compliance_alert'
       DUO_CORE_RELEASE_DATE = Date.new(2025, 5, 15)
 
-      override :render_product_usage_data_collection_changes
-      def render_product_usage_data_collection_changes(current_user)
-        # Do not show the product usage data banner if the license is offline
-        return if ::License.current&.offline_cloud_license?
-
-        super
-      end
-
       override :render_dashboard_ultimate_trial
       def render_dashboard_ultimate_trial(user)
         return unless user
