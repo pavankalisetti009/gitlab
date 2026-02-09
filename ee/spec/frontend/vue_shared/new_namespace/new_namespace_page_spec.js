@@ -5,7 +5,6 @@ import { GlBreadcrumb } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import NewTopLevelGroupAlert from '~/groups/components/new_top_level_group_alert.vue';
 import getUserCalloutsQuery from '~/graphql_shared/queries/get_user_callouts.query.graphql';
 import WelcomePage from '~/vue_shared/new_namespace/components/welcome.vue';
 import NewNamespacePage from '~/vue_shared/new_namespace/new_namespace_page.vue';
@@ -19,7 +18,6 @@ describe('Experimental new project creation app', () => {
 
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
   const findActivePanelTemplate = () => wrapper.findByTestId('active-panel-template');
-  const findTopLevelGroupAlert = () => wrapper.findComponent(NewTopLevelGroupAlert);
   const findWelcomePage = () => wrapper.findComponent(WelcomePage);
 
   const DEFAULT_PROPS = {
@@ -78,27 +76,7 @@ describe('Experimental new project creation app', () => {
       expect(wrapperText).toContain(DEFAULT_PROPS.panels[0].title);
       expect(wrapperText).toContain(DEFAULT_PROPS.panels[0].details);
 
-      expect(findTopLevelGroupAlert().exists()).toBe(false);
-
       expect(findWelcomePage().exists()).toBe(false);
-    });
-
-    it('shows top level group alert', () => {
-      createComponent({ jumpToLastPersistedPanel: true, isSaas: true });
-
-      expect(findTopLevelGroupAlert().exists()).toBe(true);
-    });
-
-    describe('when child panel', () => {
-      it('does not show top level group alert', () => {
-        createComponent({
-          jumpToLastPersistedPanel: true,
-          isSaas: true,
-          panels: [{ selector: '#some-selector1', detailProps: { parentGroupName: 'parent1' } }],
-        });
-
-        expect(findTopLevelGroupAlert().exists()).toBe(false);
-      });
     });
   });
 

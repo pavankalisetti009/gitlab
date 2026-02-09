@@ -614,14 +614,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       })
     end
 
-    context 'when self-managed' do
-      it { is_expected.to include(is_saas: 'false') }
-    end
-
-    context 'when on .com', :saas do
-      it { is_expected.to include(is_saas: 'true') }
-    end
-
     context 'when the group creation limit is not exceeded' do
       it { is_expected.to include(identity_verification_required: 'false') }
     end
