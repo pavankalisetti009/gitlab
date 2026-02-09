@@ -2,6 +2,8 @@
 import { GlButton, GlLink, GlCard, GlIcon, GlAvatarLabeled, GlSprintf } from '@gitlab/ui';
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax -- GlBreakpointInstance is used intentionally here. In this case we must obtain viewport breakpoints
 import tanukiAiSvgUrl from '@gitlab/svgs/dist/illustrations/tanuki-ai-sm.svg?url';
+import securityAgentAvatarUrl from 'ee_images/bot_avatars/security-agent.png';
+import plannerAgentAvatarUrl from 'ee_images/bot_avatars/planner-agent.png';
 import { __, s__ } from '~/locale';
 import Cookies from '~/lib/utils/cookies';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -80,6 +82,8 @@ export default {
     },
   },
   tanukiAiSvgUrl,
+  securityAgentAvatarUrl,
+  plannerAgentAvatarUrl,
   dapDocs: helpPagePath('/user/duo_agent_platform/_index.md'),
   workflowExamples: [
     {
@@ -179,8 +183,18 @@ export default {
             }}
           </p>
           <div class="gl-flex gl-w-full gl-justify-evenly gl-pb-5">
-            <gl-avatar-labeled :size="32" :label="s__('DuoAgentsPlatform|Security Agent')" />
-            <gl-avatar-labeled :size="32" :label="s__('DuoAgentsPlatform|Planning Agent')" />
+            <gl-avatar-labeled
+              :src="$options.securityAgentAvatarUrl"
+              :size="32"
+              :label="s__('DuoAgentsPlatform|Security Agent')"
+              :fallback-on-error="true"
+            />
+            <gl-avatar-labeled
+              :src="$options.plannerAgentAvatarUrl"
+              :size="32"
+              :label="s__('DuoAgentsPlatform|Planning Agent')"
+              :fallback-on-error="true"
+            />
           </div>
         </template>
         <template v-else>
