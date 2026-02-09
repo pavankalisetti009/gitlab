@@ -46,8 +46,6 @@ module API
 
       def push_feature_flag_headers
         Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, current_user)
-
-        Gitlab::AiGateway.push_feature_flag(:usage_quota_left_check, current_user)
       end
 
       def ai_gateway_headers(headers, task, project_path)
