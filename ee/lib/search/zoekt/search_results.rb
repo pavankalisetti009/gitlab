@@ -6,6 +6,7 @@ module Search
       include ActionView::Helpers::NumberHelper
       include Gitlab::Utils::StrongMemoize
       include Gitlab::Loggable
+      include Search::Zoekt::ResponseParser
 
       ZOEKT_COUNT_LIMIT = 5_000
       DEFAULT_PER_PAGE = Gitlab::SearchResults::DEFAULT_PER_PAGE
@@ -178,7 +179,7 @@ module Search
         results = {}
         page = 0
         response.each_file do |file|
-          project_id = file[:RepositoryID].to_i
+          project_id = extract_project_id(file)
 
           if file[:LineMatches].nil?
             parsed_response = response.parsed_response
