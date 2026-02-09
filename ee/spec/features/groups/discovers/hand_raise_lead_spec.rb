@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Groups > Discovers > Hand Raise Lead', :js, :saas, feature_category: :activation do
   include Features::HandRaiseLeadHelpers
+  include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'YMCA') }
   let_it_be(:group) do
@@ -15,6 +16,7 @@ RSpec.describe 'Groups > Discovers > Hand Raise Lead', :js, :saas, feature_categ
 
   before do
     stub_saas_features(subscriptions_trials: true)
+    stub_billing_plans(group.id, 'ultimate_trial')
 
     sign_in(user)
 
@@ -22,18 +24,10 @@ RSpec.describe 'Groups > Discovers > Hand Raise Lead', :js, :saas, feature_categ
   end
 
   context 'when user interacts with hand raise lead and submits' do
-    it 'renders and submits the top of the page instance' do
-      all_by_testid('trial-discover-hand-raise-lead-button').first.click
+    it 'renders and submits the hand raise lead button' do
+      all_by_testid('expert-contact-hand-raise-lead-button').first.click
 
-      fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'trial_discover_page',
-        product_interaction: 'SMB Promo')
-    end
-
-    it 'renders and submits the bottom of the page instance' do
-      all_by_testid('trial-discover-hand-raise-lead-button').last.click
-
-      fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'trial_discover_page',
-        product_interaction: 'SMB Promo')
+      fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'billing-group')
     end
   end
 end
