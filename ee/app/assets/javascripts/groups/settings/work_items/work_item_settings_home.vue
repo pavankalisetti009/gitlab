@@ -1,7 +1,7 @@
 <script>
 import { __ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { DEFAULT_SETTINGS_CONFIG } from '~/work_items/constants';
+import { DEFAULT_SETTINGS_CONFIG } from 'ee/work_items/constants';
 import SearchSettings from '~/search_settings/components/search_settings.vue';
 import CustomFieldsList from './custom_fields/custom_fields_list.vue';
 import CustomStatusSettings from './custom_status/custom_status_settings.vue';

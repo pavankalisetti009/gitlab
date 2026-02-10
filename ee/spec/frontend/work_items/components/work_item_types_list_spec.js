@@ -10,7 +10,7 @@ import {
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import WorkItemTypesList from '~/work_items/components/work_item_types_list.vue';
+import WorkItemTypesList from 'ee/work_items/components/work_item_types_list.vue';
 import CreateEditWorkItemTypeForm from '~/work_items/components/create_edit_work_item_type_form.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import WorkItemTypeIcon from '~/work_items/components/work_item_type_icon.vue';
@@ -20,7 +20,7 @@ import {
   organisationWorkItemTypesQueryResponse,
   mockWorkItemTypesConfigurationResponse,
 } from 'ee_else_ce_jest/work_items/mock_data';
-import { DEFAULT_SETTINGS_CONFIG } from '~/work_items/constants';
+import { DEFAULT_SETTINGS_CONFIG } from 'ee/work_items/constants';
 import workItemTypesConfigurationQuery from '~/work_items/graphql/work_item_types_configuration.query.graphql';
 
 Vue.use(VueApollo);

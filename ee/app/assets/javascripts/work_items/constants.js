@@ -18,6 +18,17 @@ export const newWorkItemOptimisticUserPermissions = {
   ...CE.newWorkItemOptimisticUserPermissions,
   blockedWorkItems: true,
 };
+
+export const DEFAULT_SETTINGS_CONFIG = {
+  showWorkItemTypesSettings: true,
+  showCustomFieldsSettings: true,
+  showCustomStatusSettings: true,
+  workItemTypeSettingsPermissions: ['edit', 'create', 'archive', 'list'], // 'read' is default hence showing custom work item types
+  // in future we may also have similar permissions on custom status and custom fields
+  // customStatusSettingsPermissions: ['createLifecycle', 'editLifecycle']
+  // we may allow editing lifecycle even at subgroup level that may change
+  layout: 'list', // 'table'
+};
 /* eslint-enable import/export */
 
 export const DEFAULT_STATE_CLOSED = 'closed';

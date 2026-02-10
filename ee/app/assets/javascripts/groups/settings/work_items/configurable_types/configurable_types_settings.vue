@@ -1,5 +1,5 @@
 <script>
-import WorkItemTypesList from '~/work_items/components/work_item_types_list.vue';
+import WorkItemTypesList from 'ee/work_items/components/work_item_types_list.vue';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 
