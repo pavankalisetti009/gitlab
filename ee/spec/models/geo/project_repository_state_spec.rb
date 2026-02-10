@@ -23,6 +23,14 @@ RSpec.describe Geo::ProjectRepositoryState, feature_category: :geo_replication d
     it { is_expected.to validate_presence_of(:project_repository) }
   end
 
+  context 'with loose foreign key on project_repository_states.project_repository_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:project) { create(:project_with_repo) }
+      let_it_be(:parent) { project.project_repository }
+      let_it_be(:model) { create(:geo_project_repository_state, project: project, project_repository: parent) }
+    end
+  end
+
   describe 'verification state behavior' do
     let(:state) { create(:geo_project_repository_state, project_repository: project_repository) }
 
