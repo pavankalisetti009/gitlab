@@ -1077,9 +1077,13 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       it 'returns true when project has valid CI config' do
         yml_dump = '{ image: "ruby:3.0" }'
         config = instance_double(Gitlab::Ci::Config, valid?: true)
+        sha = 'abc123'
 
         allow(project).to receive(:ci_config_for).with(project.default_branch).and_return(yml_dump)
-        allow(Gitlab::Ci::Config).to receive(:new).with(yml_dump, project: project).and_return(config)
+        allow(project.repository).to receive(:root_ref_sha).and_return(sha)
+        allow(Gitlab::Ci::Config).to receive(:new)
+          .with(yml_dump, project: project, sha: sha, ref: project.default_branch)
+          .and_return(config)
 
         expect(described_class.map_field(project, 'has_valid_ci_config')).to be true
       end
@@ -1087,15 +1091,22 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       it 'returns false when project has invalid CI config' do
         yml_dump = '{ invalid: config }'
         config = instance_double(Gitlab::Ci::Config, valid?: false)
+        sha = 'abc123'
 
         allow(project).to receive(:ci_config_for).with(project.default_branch).and_return(yml_dump)
-        allow(Gitlab::Ci::Config).to receive(:new).with(yml_dump, project: project).and_return(config)
+        allow(project.repository).to receive(:root_ref_sha).and_return(sha)
+        allow(Gitlab::Ci::Config).to receive(:new)
+          .with(yml_dump, project: project, sha: sha, ref: project.default_branch)
+          .and_return(config)
 
         expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
       end
 
       it 'returns false when project raises ConfigError' do
+        sha = 'abc123'
+
         allow(project).to receive(:ci_config_for).with(project.default_branch).and_return('invalid')
+        allow(project.repository).to receive(:root_ref_sha).and_return(sha)
         allow(Gitlab::Ci::Config).to receive(:new).and_raise(Gitlab::Ci::Config::ConfigError)
 
         expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
@@ -1109,6 +1120,36 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
       it 'returns false when builds are not enabled' do
         allow(project).to receive(:builds_enabled?).and_return(false)
+
+        expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
+      end
+
+      it 'returns true when project has valid remote CI config' do
+        config = instance_double(Gitlab::Ci::Config, valid?: true)
+        sha = 'abc123'
+
+        allow(project).to receive(:ci_config_for).with(project.default_branch).and_return(nil)
+        allow(project.repository).to receive(:root_ref_sha).and_return(sha)
+        allow(Gitlab::Ci::Config).to receive(:new)
+          .with(nil, project: project, sha: sha, ref: project.default_branch)
+          .and_return(config)
+
+        expect(described_class.map_field(project, 'has_valid_ci_config')).to be true
+      end
+
+      it 'returns false when remote CI config fetch times out' do
+        sha = 'abc123'
+
+        allow(project).to receive(:ci_config_for).with(project.default_branch).and_return(nil)
+        allow(project.repository).to receive(:root_ref_sha).and_return(sha)
+        allow(Gitlab::Ci::Config).to receive(:new).and_raise(Gitlab::Ci::Config::External::Context::TimeoutError)
+
+        expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
+      end
+
+      it 'returns false when root_ref_sha is nil' do
+        allow(project).to receive(:ci_config_for).with(project.default_branch).and_return('some config')
+        allow(project.repository).to receive(:root_ref_sha).and_return(nil)
 
         expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
       end
