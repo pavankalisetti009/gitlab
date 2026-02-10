@@ -14,7 +14,7 @@ import {
   TOKEN_TYPE_HEALTH,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import ServiceDeskListApp from '~/issues/service_desk/components/service_desk_list_app.vue';
-import { WORKSPACE_PROJECT } from '~/issues/service_desk/constants';
+import { NAMESPACE_PROJECT } from '~/issues/service_desk/constants';
 
 const EpicToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/epic_token.vue');
@@ -106,7 +106,7 @@ export default {
           query: searchIterationsQuery,
           variables,
         })
-        .then(({ data }) => data[WORKSPACE_PROJECT]?.iterations.nodes);
+        .then(({ data }) => data[NAMESPACE_PROJECT]?.iterations.nodes);
     },
   },
 };

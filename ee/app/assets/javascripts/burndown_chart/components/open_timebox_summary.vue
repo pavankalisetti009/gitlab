@@ -1,5 +1,5 @@
 <script>
-import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
+import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { __ } from '~/locale';
 import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import { unit } from '../constants';
@@ -37,7 +37,7 @@ export default normalizeRender({
       type: String,
       required: false,
       default: WORKSPACE_GROUP,
-      validator: (value) => [WORKSPACE_GROUP, WORKSPACE_PROJECT].includes(value),
+      validator: (value) => [WORKSPACE_GROUP, NAMESPACE_PROJECT].includes(value),
     },
     displayValue: {
       type: String,

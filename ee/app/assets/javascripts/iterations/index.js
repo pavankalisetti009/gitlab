@@ -1,7 +1,7 @@
 import { GlToast } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
+import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import createDefaultClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
@@ -81,4 +81,4 @@ export function initCadenceApp({ namespaceType }) {
 }
 
 export const initGroupCadenceApp = () => initCadenceApp({ namespaceType: WORKSPACE_GROUP });
-export const initProjectCadenceApp = () => initCadenceApp({ namespaceType: WORKSPACE_PROJECT });
+export const initProjectCadenceApp = () => initCadenceApp({ namespaceType: NAMESPACE_PROJECT });

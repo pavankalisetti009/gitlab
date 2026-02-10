@@ -11,7 +11,7 @@ import BoardOptions from '~/boards/components/board_options.vue';
 import BoardsSelector from '~/boards/components/boards_selector.vue';
 import ConfigToggle from '~/boards/components/config_toggle.vue';
 import ToggleFocus from '~/boards/components/toggle_focus.vue';
-import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
+import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 
 import groupBoardQuery from '~/boards/graphql/group_board.query.graphql';
 import projectBoardQuery from '~/boards/graphql/project_board.query.graphql';
@@ -124,7 +124,7 @@ describe('BoardTopBar', () => {
   it.each`
     boardType            | isEpicBoard | queryHandler                       | notCalledHandler
     ${WORKSPACE_GROUP}   | ${false}    | ${groupBoardQueryHandlerSuccess}   | ${projectBoardQueryHandlerSuccess}
-    ${WORKSPACE_PROJECT} | ${false}    | ${projectBoardQueryHandlerSuccess} | ${groupBoardQueryHandlerSuccess}
+    ${NAMESPACE_PROJECT} | ${false}    | ${projectBoardQueryHandlerSuccess} | ${groupBoardQueryHandlerSuccess}
     ${WORKSPACE_GROUP}   | ${true}     | ${epicBoardQueryHandlerSuccess}    | ${groupBoardQueryHandlerSuccess}
   `(
     'fetches $boardType boards when isEpicBoard is $isEpicBoard',
@@ -132,7 +132,7 @@ describe('BoardTopBar', () => {
       createComponent({
         provide: {
           boardType,
-          isProjectBoard: boardType === WORKSPACE_PROJECT,
+          isProjectBoard: boardType === NAMESPACE_PROJECT,
           isGroupBoard: boardType === WORKSPACE_GROUP,
           isEpicBoard,
         },

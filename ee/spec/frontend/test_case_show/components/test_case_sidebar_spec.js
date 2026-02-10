@@ -9,7 +9,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import projectTestCase from 'ee/test_case_show/queries/project_test_case.query.graphql';
 
-import { TYPE_TEST_CASE, WORKSPACE_PROJECT } from '~/issues/constants';
+import { TYPE_TEST_CASE, NAMESPACE_PROJECT } from '~/issues/constants';
 import { mockProvide, mockTaskCompletionResponse } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -62,7 +62,7 @@ describe('TestCaseSidebar', () => {
         attrWorkspacePath: projectFullPath,
         workspaceType: 'project',
         variant: 'sidebar',
-        labelCreateType: WORKSPACE_PROJECT,
+        labelCreateType: NAMESPACE_PROJECT,
         labelsFilterBasePath: testCasesPath,
       });
       expect(labelSelectEl.text()).toBe('None');

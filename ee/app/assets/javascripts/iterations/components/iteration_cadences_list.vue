@@ -15,7 +15,7 @@ import {
   STATUS_CLOSED,
   STATUS_OPEN,
   WORKSPACE_GROUP,
-  WORKSPACE_PROJECT,
+  NAMESPACE_PROJECT,
 } from '~/issues/constants';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -77,7 +77,7 @@ export default {
       if (this.namespaceType === WORKSPACE_GROUP) {
         return groupQuery;
       }
-      if (this.namespaceType === WORKSPACE_PROJECT) {
+      if (this.namespaceType === NAMESPACE_PROJECT) {
         return projectQuery;
       }
       throw new Error('Must provide a namespaceType');

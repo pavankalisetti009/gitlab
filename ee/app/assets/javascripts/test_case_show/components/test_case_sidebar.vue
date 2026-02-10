@@ -3,13 +3,13 @@ import { s__ } from '~/locale';
 import ProjectSelect from '~/sidebar/components/move/issuable_move_dropdown.vue';
 import LabelsSelectWidget from '~/sidebar/components/labels/labels_select_widget/labels_select_root.vue';
 import SidebarConfidentialityWidget from '~/sidebar/components/confidential/sidebar_confidentiality_widget.vue';
-import { TYPE_TEST_CASE, WORKSPACE_PROJECT } from '~/issues/constants';
+import { TYPE_TEST_CASE, NAMESPACE_PROJECT } from '~/issues/constants';
 import TestCaseGraphQL from '../mixins/test_case_graphql';
 
 export default {
   name: 'TestCaseSidebar',
   TYPE_TEST_CASE,
-  WORKSPACE_PROJECT,
+  NAMESPACE_PROJECT,
   components: {
     ProjectSelect,
     LabelsSelectWidget,
@@ -115,7 +115,7 @@ export default {
       workspace-type="project"
       class="block labels js-labels-block"
       variant="sidebar"
-      :label-create-type="$options.WORKSPACE_PROJECT"
+      :label-create-type="$options.NAMESPACE_PROJECT"
       :labels-filter-base-path="testCasesPath"
       @toggleCollapse="handleLabelsCollapsedButtonClick"
     >

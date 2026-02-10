@@ -32,7 +32,7 @@ import {
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
-import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
+import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import searchIterationsQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
 
@@ -128,7 +128,7 @@ export default {
   },
   computed: {
     namespace() {
-      return !this.isGroup ? WORKSPACE_PROJECT : WORKSPACE_GROUP;
+      return !this.isGroup ? NAMESPACE_PROJECT : WORKSPACE_GROUP;
     },
     preselectedWorkItemType() {
       return this.isEpicsList ? WORK_ITEM_TYPE_NAME_EPIC : WORK_ITEM_TYPE_NAME_ISSUE;
