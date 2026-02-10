@@ -12900,6 +12900,9 @@ msgstr ""
 msgid "BranchRules|This setting is blocked by a security policy. To make changes, go to the %{linkStart}security policies%{linkEnd}. %{learnMoreStart}Learn more.%{learnMoreEnd}"
 msgstr ""
 
+msgid "BranchRules|This setting is blocked by a security policy. To make changes, go to the %{security_policies_link_start}security policies%{security_policies_link_end}. %{learn_more_link_start}Learn more.%{learn_more_link_end}"
+msgstr ""
+
 msgid "BranchRules|This setting is blocked by a security policy. To make changes, go to the security policies."
 msgstr ""
 
@@ -36239,6 +36242,9 @@ msgstr ""
 msgid "InProductMarketing|Get Started with GitLab"
 msgstr ""
 
+msgid "InProductMarketing|GitLab Duo Agent Platform: AI across the software development lifecycle"
+msgstr ""
+
 msgid "InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle"
 msgstr ""
 
@@ -54602,6 +54608,9 @@ msgstr ""
 msgid "ProjectsNew|my-awesome-project"
 msgstr ""
 
+msgid "Projects|All the issues and merge requests that were assigned to you are unassigned."
+msgstr ""
+
 msgid "Projects|An error occurred archiving the project. Please refresh the page to try again."
 msgstr ""
 
@@ -54614,6 +54623,12 @@ msgstr ""
 msgid "Projects|An error occurred unarchiving the project. Please refresh the page to try again."
 msgstr ""
 
+msgid "Projects|An error occurred while leaving the project. Please refresh the page to try again."
+msgstr ""
+
+msgid "Projects|Are you sure you want to leave \"%{nameWithNamespace}\"?"
+msgstr ""
+
 msgid "Projects|Are you sure you want to withdraw your access request for the %{nameWithNamespace} project?"
 msgstr ""
 
@@ -54624,6 +54639,9 @@ msgid "Projects|Copy project ID: %{id}"
 msgstr ""
 
 msgid "Projects|Explore and collaborate on open-source projects"
+msgstr ""
+
+msgid "Projects|Leave project"
 msgstr ""
 
 msgid "Projects|No inactive projects found"
@@ -54659,6 +54677,12 @@ msgstr ""
 msgid "Projects|Visit a project and select the star icon to save projects you want to find later."
 msgstr ""
 
+msgid "Projects|When you leave this project:"
+msgstr ""
+
+msgid "Projects|You are no longer a project member and cannot contribute."
+msgstr ""
+
 msgid "Projects|You aren't a member of any projects yet."
 msgstr ""
 
@@ -54672,6 +54696,9 @@ msgid "Projects|You haven't contributed to any projects yet."
 msgstr ""
 
 msgid "Projects|You haven't starred any projects yet."
+msgstr ""
+
+msgid "Projects|You left the \"%{nameWithNamespace}\" project."
 msgstr ""
 
 msgid "Project|already in use"
