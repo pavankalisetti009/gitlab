@@ -415,15 +415,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         end
       end
 
-      context 'when checking self-hosted DAP add-on without user assignment' do
-        let(:unit_primitive_name) { :self_hosted_duo_agent_platform }
-
-        it 'can check DAP add-on access' do
-          result = user.allowed_to_use(:my_feature, unit_primitive_name: unit_primitive_name)
-          expect(result).to be_a(described_class::Response)
-        end
-      end
-
       context "when the user doesn't have a seat but the unit_primitive has free access" do
         shared_examples 'when checking licensed features' do
           where(:licensed_feature_available, :free_access, :expected_allowed) do
@@ -1644,6 +1635,189 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         end
 
         it { is_expected.to be(false) }
+      end
+    end
+  end
+
+  describe '#map_duo_chat_to_feature_setting' do
+    let_it_be(:user) { create(:user) }
+
+    let_it_be(:self_hosted_model) do
+      create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+    end
+
+    let_it_be(:agentic_chat_feature_setting) do
+      create(:ai_feature_setting, feature: :duo_agent_platform_agentic_chat, self_hosted_model: self_hosted_model)
+    end
+
+    let_it_be(:duo_chat_feature_setting) do
+      create(:ai_feature_setting, feature: :duo_chat, self_hosted_model: self_hosted_model)
+    end
+
+    let(:ai_feature) { :agentic_chat }
+
+    subject(:map_feature) { user.send(:map_duo_chat_to_feature_setting, unit_primitive_name, ai_feature) }
+
+    context 'when unit_primitive_name is not duo_chat' do
+      let(:unit_primitive_name) { :other_feature }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when unit_primitive_name is duo_chat' do
+      let(:unit_primitive_name) { :duo_chat }
+
+      context 'when ai_feature is agentic_chat' do
+        it 'returns feature setting for duo_agent_platform_agentic_chat' do
+          expect(map_feature).to eq(agentic_chat_feature_setting)
+        end
+      end
+
+      context 'when ai_feature is not agentic_chat' do
+        let(:ai_feature) { :duo_chat }
+
+        it 'returns feature setting for duo_chat' do
+          expect(map_feature).to eq(duo_chat_feature_setting)
+        end
+      end
+
+      context 'when ai_feature is chat' do
+        let(:ai_feature) { :chat }
+
+        it 'returns feature setting for duo_chat' do
+          expect(map_feature).to eq(duo_chat_feature_setting)
+        end
+      end
+    end
+  end
+
+  describe '#get_self_hosted_unit_primitive_name' do
+    let_it_be(:user) { create(:user) }
+
+    subject(:get_unit_primitive_name) { user.send(:get_self_hosted_unit_primitive_name, feature_setting) }
+
+    context 'when feature_setting is nil' do
+      let(:feature_setting) { nil }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when feature_setting is not self-hosted' do
+      let_it_be(:feature_setting) do
+        build(:ai_feature_setting, feature: :code_generations, self_hosted_model: nil)
+      end
+
+      before do
+        allow(feature_setting).to receive(:self_hosted?).and_return(false)
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when feature_setting is self-hosted' do
+      let_it_be(:self_hosted_model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      context 'for duo_agent_platform feature' do
+        let_it_be(:feature_setting) do
+          create(:ai_feature_setting, feature: :duo_agent_platform, self_hosted_model: self_hosted_model)
+        end
+
+        it { is_expected.to eq(:self_hosted_duo_agent_platform) }
+      end
+
+      context 'for duo_agent_platform_agentic_chat feature' do
+        let_it_be(:feature_setting) do
+          create(:ai_feature_setting, feature: :duo_agent_platform_agentic_chat, self_hosted_model: self_hosted_model)
+        end
+
+        it { is_expected.to eq(:self_hosted_duo_agent_platform) }
+      end
+
+      context 'for other self-hosted features' do
+        let_it_be(:feature_setting) do
+          create(:ai_feature_setting, feature: :code_generations, self_hosted_model: self_hosted_model)
+        end
+
+        it { is_expected.to eq(:self_hosted_models) }
+      end
+    end
+  end
+
+  describe '#check_dap_self_hosted_feature' do
+    let_it_be(:user) { create(:user) }
+
+    let(:unit_primitive) do
+      build(:cloud_connector_unit_primitive, name: "self_hosted_models", add_ons: %w[duo_enterprise])
+    end
+
+    subject(:check_dap) { user.send(:check_dap_self_hosted_feature, unit_primitive) }
+
+    context 'when unit primitive is not self_hosted_duo_agent_platform' do
+      it { is_expected.to be_nil }
+    end
+
+    context 'when unit primitive is self_hosted_duo_agent_platform' do
+      let(:unit_primitive) do
+        build(:cloud_connector_unit_primitive, name: "self_hosted_duo_agent_platform", add_ons: %w[self_hosted_dap])
+      end
+
+      context 'with offline cloud license' do
+        let(:license_double) do
+          instance_double(License, offline_cloud_license?: true, online_cloud_license?: false)
+        end
+
+        before do
+          allow(License).to receive(:current).and_return(license_double)
+        end
+
+        context 'when no self-hosted DAP purchases exist' do
+          let(:expected_allowed) { false }
+
+          it { is_expected.to eq expected_response }
+        end
+
+        context 'when self-hosted DAP add-on exist' do
+          let_it_be(:dap_add_on) { create(:gitlab_subscription_add_on, :self_hosted_dap) }
+          let_it_be(:dap_purchase) do
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: dap_add_on)
+          end
+
+          let(:expected_allowed) { true }
+          let(:expected_enablement_type) { "self_hosted_dap" }
+
+          it { is_expected.to eq expected_response }
+        end
+      end
+
+      context 'with online cloud license' do
+        using RSpec::Parameterized::TableSyntax
+
+        let(:license_double) do
+          instance_double(License, offline_cloud_license?: false, online_cloud_license?: true)
+        end
+
+        where(:feature_flag_enabled, :has_enterprise_addon, :expected_allowed, :expected_enablement_type) do
+          false | false | false | nil
+          false | true  | true  | "duo_enterprise"
+          true  | false | true  | "self_hosted_usage_billing"
+        end
+
+        with_them do
+          before do
+            allow(License).to receive(:current).and_return(license_double)
+            stub_feature_flags(self_hosted_dap_per_request_billing: feature_flag_enabled)
+
+            if has_enterprise_addon
+              duo_enterprise_purchase = create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise)
+              create(:gitlab_subscription_user_add_on_assignment, user: user,
+                add_on_purchase: duo_enterprise_purchase)
+            end
+          end
+
+          it { is_expected.to eq expected_response }
+        end
       end
     end
   end

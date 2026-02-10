@@ -194,8 +194,16 @@ module Ai
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
         return denied_response unless feature_data
 
-        unit_primitive = get_unit_primitive_model(unit_primitive_name || ai_feature, feature_setting: feature_setting)
+        unit_primitive = get_unit_primitive_model(
+          unit_primitive_name || ai_feature,
+          ai_feature: ai_feature,
+          feature_setting: feature_setting
+        )
         return denied_response unless unit_primitive
+
+        # Access through DAP Self-hosted
+        self_hosted_dap_response = check_dap_self_hosted_feature(unit_primitive)
+        return self_hosted_dap_response if self_hosted_dap_response
 
         # Access through Duo Pro and Duo Enterprise
         add_on_response = check_add_on_purchases(unit_primitive)
@@ -287,6 +295,32 @@ module Ai
         )
       end
 
+      def check_dap_self_hosted_feature(unit_primitive)
+        return unless unit_primitive.name == 'self_hosted_duo_agent_platform'
+
+        enablement_type = 'self_hosted_usage_billing'
+
+        if ::License.current&.offline_cloud_license?
+          purchases = GitlabSubscriptions::AddOnPurchase.for_self_managed.for_self_hosted_dap.active
+          enablement_type = 'self_hosted_dap'
+          return denied_response unless purchases.exists?
+        end
+
+        if !!::License.current&.online_cloud_license? && ::Feature.disabled?(:self_hosted_dap_per_request_billing,
+          :instance)
+          purchases = GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active
+          enablement_type = 'duo_enterprise'
+          return denied_response unless purchases.assigned_to_user(self).any?
+        end
+
+        Response.new(
+          allowed?: true,
+          namespace_ids: [],
+          enablement_type: enablement_type,
+          authorized_by_duo_core: false
+        )
+      end
+
       def get_self_hosted_unit_primitive_name(feature_setting)
         return unless feature_setting&.self_hosted?
 
@@ -297,14 +331,35 @@ module Ai
         :self_hosted_models
       end
 
-      def get_unit_primitive_model(unit_primitive_name, feature_setting: nil)
-        unless ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
-          feature_setting ||= ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)
+      def get_unit_primitive_model(unit_primitive_name, ai_feature: nil, feature_setting: nil)
+        return Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(unit_primitive_name) if
+          ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
 
-          unit_primitive_name = get_self_hosted_unit_primitive_name(feature_setting) if feature_setting&.self_hosted?
-        end
+        feature_setting ||= get_feature_setting(unit_primitive_name, ai_feature)
+
+        unit_primitive_name = get_self_hosted_unit_primitive_name(feature_setting) if feature_setting&.self_hosted?
 
         Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(unit_primitive_name)
+      end
+
+      def get_feature_setting(unit_primitive_name, ai_feature)
+        duo_chat_feature_setting = map_duo_chat_to_feature_setting(unit_primitive_name, ai_feature)
+
+        return duo_chat_feature_setting if duo_chat_feature_setting
+
+        ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)
+      end
+
+      def map_duo_chat_to_feature_setting(unit_primitive_name, ai_feature)
+        # Why: with the presence of the `no_duo_classic_for_duo_core_users` feature flag,
+        # We'll need to rely on the AI feature name to map to the model configuration feature setting
+        # as the :duo_chat unit primitive can be used for both agentic and classic chat.
+        # See: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/218252
+        return unless unit_primitive_name == :duo_chat
+
+        feature = ai_feature == :agentic_chat ? :duo_agent_platform_agentic_chat : :duo_chat
+
+        ::Ai::FeatureSetting.find_by_feature(feature)
       end
 
       def unit_primitive_free_access?(unit_primitive)
