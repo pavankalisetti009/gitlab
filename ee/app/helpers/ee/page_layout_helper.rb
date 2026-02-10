@@ -64,7 +64,7 @@ module EE
           if source.nil? || source.root_ancestor.is_a?(::Namespaces::UserNamespace)
             new_trial_path(glm_source: 'gitlab.com', glm_content: 'chat panel')
           elsif user_can_start_trial_in_source?(source)
-            new_trial_path(source.root_ancestor, glm_source: 'gitlab.com', glm_content: 'chat panel')
+            new_trial_path(namespace_id: source.root_ancestor.id, glm_source: 'gitlab.com', glm_content: 'chat panel')
           end
         else
           can?(current_user, :manage_subscription) ? self_managed_new_trial_url : nil

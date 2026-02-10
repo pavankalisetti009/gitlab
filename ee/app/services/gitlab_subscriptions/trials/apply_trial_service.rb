@@ -62,10 +62,18 @@ module GitlabSubscriptions
       def after_success_hook
         ::Onboarding::ProgressService.new(namespace).execute(action: :trial_started)
 
+        clear_dap_access_cache
+
         return if Feature.enabled?(:ultimate_trial_with_dap, :instance)
 
         add_on_purchase = add_on_purchase_finder.any_add_on_purchase_for_namespace(namespace)
         assign_seat(add_on_purchase, user)
+      end
+
+      def clear_dap_access_cache
+        # Clear DAP access caches for the user who started the trial.
+        # Other namespace members will get access when their cache expires.
+        User.clear_group_with_ai_available_cache(uid)
       end
     end
   end
