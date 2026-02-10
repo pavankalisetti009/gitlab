@@ -21953,6 +21953,10 @@ paths:
                   type: boolean
                   description: Indicates if the GitLab Duo remote flows enabled setting
                     is enforced for all subgroups
+                duo_workflows_default_image_registry:
+                  type: string
+                  description: Default container registry for Duo Agent Platform foundational
+                    flow images
                 duo_namespace_access_rules:
                   type: array
                   description: AI entity access rules for controlling Duo feature
@@ -93795,6 +93799,8 @@ components:
         unconfirmed_users_delete_after_days:
           type: string
         make_profile_private:
+          type: string
+        duo_workflows_default_image_registry:
           type: string
         disabled_direct_code_suggestions:
           type: string

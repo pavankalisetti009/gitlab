@@ -511,11 +511,11 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
 
       let(:image) { nil }
 
-      it 'falls back to the default IMAGE constant' do
+      it 'falls back to the default image' do
         expect(Ci::Workloads::RunWorkloadService)
           .to receive(:new).and_wrap_original do |method, **kwargs|
           workload_definition = kwargs[:workload_definition]
-          expect(workload_definition.image).to eq(described_class::IMAGE)
+          expect(workload_definition.image).to eq("registry.gitlab.com/#{described_class::IMAGE_PATH}")
           method.call(**kwargs)
         end
 
@@ -583,11 +583,11 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         )
       end
 
-      it 'uses the default IMAGE constant' do
+      it 'uses the default image' do
         expect(Ci::Workloads::RunWorkloadService)
           .to receive(:new).and_wrap_original do |method, **kwargs|
           workload_definition = kwargs[:workload_definition]
-          expect(workload_definition.image).to eq(described_class::IMAGE)
+          expect(workload_definition.image).to eq("registry.gitlab.com/#{described_class::IMAGE_PATH}")
           method.call(**kwargs)
         end
 
@@ -1606,6 +1606,68 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       result = execute
       expect(result).to be_error
       expect(result.reason).to eq(:workflow_workload_failure)
+    end
+  end
+
+  describe '#instance_image' do
+    subject(:instance_image) { service.send(:instance_image) }
+
+    let(:service) { described_class.new(workflow: workflow, params: params) }
+
+    context 'when no setting is configured' do
+      it 'returns the default image from registry.gitlab.com' do
+        expect(instance_image).to eq(
+          "registry.gitlab.com/#{described_class::IMAGE_PATH}"
+        )
+      end
+    end
+
+    context 'when duo_workflows_default_image_registry setting is configured' do
+      before do
+        stub_application_setting(duo_workflows_default_image_registry: 'instance-registry.example.com')
+      end
+
+      it 'uses the configured registry' do
+        expect(instance_image).to eq(
+          'instance-registry.example.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.6'
+        )
+      end
+    end
+
+    context 'when registry includes port number' do
+      before do
+        stub_application_setting(duo_workflows_default_image_registry: 'registry.example.com:8080')
+      end
+
+      it 'preserves the port number in the image URL' do
+        expect(instance_image).to eq(
+          'registry.example.com:8080/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.6'
+        )
+      end
+    end
+
+    context 'when registry is set to default value' do
+      before do
+        stub_application_setting(duo_workflows_default_image_registry: 'registry.gitlab.com')
+      end
+
+      it 'returns the default image from registry.gitlab.com' do
+        expect(instance_image).to eq(
+          "registry.gitlab.com/#{described_class::IMAGE_PATH}"
+        )
+      end
+    end
+
+    context 'when registry is set to empty string' do
+      before do
+        stub_application_setting(duo_workflows_default_image_registry: '')
+      end
+
+      it 'falls back to the default registry' do
+        expect(instance_image).to eq(
+          "registry.gitlab.com/#{described_class::IMAGE_PATH}"
+        )
+      end
     end
   end
 end

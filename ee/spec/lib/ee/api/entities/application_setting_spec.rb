@@ -44,4 +44,10 @@ RSpec.describe API::Entities::ApplicationSetting, feature_category: :shared do #
       dependency_scanning_sbom_scan_api_upload_limit
     ]
   end
+
+  describe 'duo workflows settings', feature_category: :ai_abstraction_layer do
+    it_behaves_like 'licensed feature exposing application settings', :ai_features, %i[
+      duo_workflows_default_image_registry
+    ]
+  end
 end
