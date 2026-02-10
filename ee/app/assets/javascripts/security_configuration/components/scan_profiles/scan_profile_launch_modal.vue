@@ -74,6 +74,7 @@ export default {
         :action-primary="actionPrimaryProps"
         :action-secondary="actionSecondaryProps"
         modal-id="scanner-profile-launch-modal"
+        data-testid="scanner-profile-launch-modal"
         size="md"
         hide-header
         @primary="dismiss"
