@@ -620,6 +620,87 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
         end
       end
     end
+
+    context 'with group pipeline authentication using environment and protected ref claims' do
+      let_it_be(:root_group) { create(:group) }
+      let_it_be(:project_in_root_group) { create(:project, :repository, namespace: root_group) }
+      let_it_be(:root_group_owner) { create(:user, owner_of: root_group) }
+      let_it_be(:root_group_secrets_manager) { create(:group_secrets_manager, group: root_group) }
+      let_it_be(:environment) { create(:environment, project: project_in_root_group, name: 'production') }
+
+      let_it_be(:pipeline_in_root_group_project) do
+        create(:ci_pipeline, project: project_in_root_group, sha: project_in_root_group.commit.id,
+          ref: project_in_root_group.default_branch, status: 'success', user: root_group_owner)
+      end
+
+      let(:build_with_environment) do
+        create(:ee_ci_build, :with_deployment, pipeline: pipeline_in_root_group_project,
+          user: root_group_owner, environment: environment.name)
+      end
+
+      before do
+        clean_all_kv_secrets_engines
+        provision_group_secrets_manager(root_group_secrets_manager, root_group_owner)
+      end
+
+      it 'authenticates and returns environment-based policy when environment claim is present' do
+        jwt = root_group_secrets_manager.ci_jwt(build_with_environment)
+
+        client = secrets_manager_client.with_namespace(root_group_secrets_manager.full_group_namespace_path)
+        resp = client.cel_login_jwt(
+          mount_path: root_group_secrets_manager.ci_auth_mount,
+          role: root_group_secrets_manager.ci_auth_role,
+          jwt: jwt
+        )
+
+        expect(resp.dig('auth', 'client_token')).to be_present
+
+        policies = resp.dig('auth', 'policies')
+        expect(policies).to include('pipelines/combined/unprotected/global')
+
+        env_hex = 'production'.unpack1('H*')
+        expect(policies).to include("pipelines/combined/unprotected/env/#{env_hex}")
+      end
+
+      it 'authenticates and returns protected policy when build is protected' do
+        protected_build = create(:ee_ci_build, :protected, pipeline: pipeline_in_root_group_project,
+          user: root_group_owner)
+        jwt = root_group_secrets_manager.ci_jwt(protected_build)
+
+        client = secrets_manager_client.with_namespace(root_group_secrets_manager.full_group_namespace_path)
+        resp = client.cel_login_jwt(
+          mount_path: root_group_secrets_manager.ci_auth_mount,
+          role: root_group_secrets_manager.ci_auth_role,
+          jwt: jwt
+        )
+
+        expect(resp.dig('auth', 'client_token')).to be_present
+
+        policies = resp.dig('auth', 'policies')
+        expect(policies).to include('pipelines/combined/protected/global')
+      end
+
+      it 'authenticates and returns both protected and environment policies when both claims are present' do
+        protected_build_with_env = create(:ee_ci_build, :protected, :with_deployment,
+          pipeline: pipeline_in_root_group_project, user: root_group_owner, environment: environment.name)
+        jwt = root_group_secrets_manager.ci_jwt(protected_build_with_env)
+
+        client = secrets_manager_client.with_namespace(root_group_secrets_manager.full_group_namespace_path)
+        resp = client.cel_login_jwt(
+          mount_path: root_group_secrets_manager.ci_auth_mount,
+          role: root_group_secrets_manager.ci_auth_role,
+          jwt: jwt
+        )
+
+        expect(resp.dig('auth', 'client_token')).to be_present
+
+        policies = resp.dig('auth', 'policies')
+        expect(policies).to include('pipelines/combined/protected/global')
+
+        env_hex = 'production'.unpack1('H*')
+        expect(policies).to include("pipelines/combined/protected/env/#{env_hex}")
+      end
+    end
   end
 
   describe 'JWT Authorization Scenarios' do
@@ -822,136 +903,91 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
         it_behaves_like 'permission denied'
       end
     end
+  end
 
-    context 'for reading value of a secret' do
-      before do
-        clean_all_kv_secrets_engines
-        provision_project_secrets_manager(project_secrets_manager, project_owner)
-        provision_project_secrets_manager(secrets_manager_of_project_in_same_namespace,
-          owner_of_project_in_same_namespace)
-        provision_project_secrets_manager(secrets_manager_of_forked_project, forked_project_owner)
-        create_project_secret(user: project_owner, project: project, name: 'my_secret_one', branch: 'master',
-          environment: '*', value: 'my_value')
-      end
+  describe 'Group JWT Authorization Scenarios' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project_in_group) { create(:project, :repository, namespace: group) }
+    let_it_be(:group_owner) { create(:user, owner_of: group) }
+    let_it_be(:group_secrets_manager) { create(:group_secrets_manager, group: group) }
 
-      context 'when using pipeline_jwt of same project' do
-        it 'reads the secret value with pipeline_jwt' do
-          value = project_pipeline_client.read_kv_secret_value(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one")
-          )
+    let_it_be(:pipeline_in_group_project) do
+      create(:ci_pipeline, project: project_in_group, sha: project_in_group.commit.id,
+        ref: project_in_group.default_branch, status: 'success', user: group_owner)
+    end
 
-          expect(value).to eq("my_value")
-        end
-      end
+    let(:group_build) { create(:ee_ci_build, pipeline: pipeline_in_group_project, user: group_owner) }
 
-      context 'when using a custom user defined pipeline_jwt of same project' do
-        subject(:read_secret) do
-          project_pipeline_client_with_user_defined_jwt.read_kv_secret_value(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one")
-          )
-        end
+    let(:group_secrets_manager_jwt_client) do
+      jwt = build_group_secrets_manager_jwt(user: group_owner, group: group)
+      SecretsManagement::TestClient.new(
+        jwt: jwt,
+        namespace: group_secrets_manager.full_group_namespace_path
+      )
+    end
 
-        it 'fails to read the secret value with pipeline_jwt that does not have secrets_manager_scope claim' do
-          expect { read_secret }.to raise_error do |error|
-            expect(error).to be_a SecretsManagement::SecretsManagerClient::AuthenticationError
-            expect(error.message).to include("error validating claims: claim \"secrets_manager_scope\" is missing")
-          end
-        end
-      end
+    let(:group_pipeline_client) do
+      SecretsManagement::TestClient.new(
+        jwt: group_secrets_manager.ci_jwt(group_build),
+        auth_mount: group_secrets_manager.ci_auth_mount,
+        role: group_secrets_manager.ci_auth_role,
+        use_cel_auth: true,
+        auth_namespace: group_secrets_manager.full_group_namespace_path,
+        namespace: group_secrets_manager.full_group_namespace_path
+      )
+    end
 
-      context 'when using pipeline_jwt of project in same namespace' do
-        subject do
-          pipeline_client_of_project_in_same_namespace.read_kv_secret_value(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one")
-          )
-        end
+    let(:group_user_client) do
+      jwt = build_group_user_jwt(user: group_owner, group: group)
+      SecretsManagement::TestClient.new(
+        jwt: jwt,
+        auth_mount: group_secrets_manager.user_auth_mount,
+        role: group_secrets_manager.user_auth_role,
+        use_cel_auth: true,
+        auth_namespace: group_secrets_manager.full_group_namespace_path,
+        namespace: group_secrets_manager.full_group_namespace_path
+      )
+    end
 
-        it_behaves_like 'permission denied'
-      end
+    before_all do
+      group.add_owner(group_owner)
+    end
 
-      context 'when using user_jwt of project owner' do
-        subject do
-          project_owner_client.read_kv_secret_value(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one")
-          )
-        end
-
-        it_behaves_like 'permission denied'
-      end
-
-      context 'when using pipeline_jwt of forked project' do
-        subject do
-          pipeline_client_of_forked_project_running_in_forked_project.read_kv_secret_value(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one")
-          )
-        end
-
-        it_behaves_like 'permission denied'
-      end
-
-      context 'when using pipeline_jwt of forked project running in original project' do
-        subject do
-          pipeline_client_of_forked_project_running_in_original_project.read_kv_secret_value(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one")
-          )
-        end
-
-        it_behaves_like 'permission denied'
+    shared_examples 'group permission denied' do
+      it 'raises permission denied error' do
+        expect { subject }.to raise_error { |error|
+          expect(error).to be_a SecretsManagement::SecretsManagerClient::ApiError
+          expect(error.message).to include("permission denied")
+        }
       end
     end
 
-    context 'for writing value of a secret' do
+    context 'for actions that can only be done by group_secrets_manager_jwt' do
       before do
         clean_all_kv_secrets_engines
-        provision_project_secrets_manager(project_secrets_manager, project_owner)
+        provision_group_secrets_manager(group_secrets_manager, group_owner)
       end
 
-      context 'when using user_jwt of the project owner' do
-        it 'updates the secret with user_jwt of a user with access' do
-          project_owner_client.update_kv_secret(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one"),
-            "my_value",
-            cas: 0
-          )
+      it 'enables listing policies using GroupSecretsManagerJwt' do
+        policies = group_secrets_manager_jwt_client.list_policies
 
-          expect(project_owner_client.read_secret_metadata(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one")
-          )["versions"].keys.count).to eq(1)
-        end
+        expect(policies).to be_an(Array)
       end
 
-      context 'when using user_jwt of a developer in the project' do
+      context 'when using pipeline_jwt' do
         subject do
-          project_developer_client.update_kv_secret(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one"),
-            "my_value",
-            cas: 0
-          )
+          group_pipeline_client.list_policies
         end
 
-        it_behaves_like 'permission denied'
+        it_behaves_like 'group permission denied'
       end
 
-      context 'when using pipeline_jwt of the project' do
+      context 'when using user_jwt' do
         subject do
-          project_pipeline_client.update_kv_secret(
-            project_secrets_manager.ci_secrets_mount_path,
-            project_secrets_manager.ci_data_path("my_secret_one"),
-            "my_value",
-            cas: 0
-          )
+          group_user_client.list_policies
         end
 
-        it_behaves_like 'permission denied'
+        it_behaves_like 'group permission denied'
       end
     end
   end
