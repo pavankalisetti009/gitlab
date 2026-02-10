@@ -1,11 +1,12 @@
 /* eslint-disable import/export */
-import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   getDefaultWorkItemTypes as getDefaultWorkItemTypesCE,
   getTypeTokenOptions as getTypeTokenOptionsCE,
   convertToApiParams as convertToApiParamsCE,
   convertToUrlParams as convertToUrlParamsCE,
   convertMultipleIsTypeTokensToOr,
+  getSavedViewFilterTokens as getSavedViewFilterTokensCE,
 } from '~/work_items/list/utils';
 import { filtersMap, URL_PARAM } from '~/work_items/list/constants';
 import { __, s__ } from '~/locale';
@@ -253,4 +254,38 @@ export const convertToUrlParams = (filterTokens, options = {}) => {
     ...convertToUrlParamsCE(filterTokensFoss),
     ...Object.fromEntries(params),
   };
+};
+
+const graphQLIdToTokenType = (graphQLId) => {
+  const id = getIdFromGraphQLId(graphQLId);
+  return `custom-field[${id}]`;
+};
+
+const extractCustomFieldTokens = (fieldList) => {
+  return fieldList.reduce((acc, field) => {
+    const type = graphQLIdToTokenType(field.customFieldId);
+    const data = field.selectedOptionIds.map((optionId) => getIdFromGraphQLId(optionId).toString());
+    acc.push(...data.map((d) => ({ type, data: d, operator: OPERATOR_IS })));
+    return acc;
+  }, []);
+};
+
+export const getSavedViewFilterTokens = (filterObject, options = {}) => {
+  const ceTokens = getSavedViewFilterTokensCE(filterObject, options);
+
+  const eeTokens = Object.entries(filterObject)
+    .reduce((acc, [key, value]) => {
+      if (key === 'customField') {
+        acc.push(...extractCustomFieldTokens(value));
+      }
+      return acc;
+    }, [])
+    .map(({ type, data, operator }) => {
+      return {
+        type,
+        value: { data, operator },
+      };
+    });
+
+  return [...ceTokens, ...eeTokens];
 };

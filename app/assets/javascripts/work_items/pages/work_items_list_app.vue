@@ -502,13 +502,7 @@ export default {
               `Unable to find saved view with id ${this.savedViewId} in ${this.rootPageFullPath}`,
             );
           }
-          const tokens = getSavedViewFilterTokens(savedView?.filters, {
-            includeStateToken: true,
-            hasCustomFieldsFeature: this.hasCustomFieldsFeature,
-            convertTypeTokens: true,
-          });
-          const availableTokenTypes = this.searchTokens.map((token) => token.type);
-
+          const tokens = this.getFilterTokensFromSavedView(savedView?.filters || {});
           this.initialViewTokens = tokens;
           this.initialViewSortKey = savedView?.sort;
           this.initialViewDisplaySettings = {
@@ -519,7 +513,7 @@ export default {
           if (draft) {
             this.restoreViewDraft();
           } else {
-            this.filterTokens = tokens.filter((token) => availableTokenTypes.includes(token.type));
+            this.filterTokens = tokens;
             this.sortKey = savedView?.sort;
             this.localDisplaySettings = {
               commonPreferences: { ...this.displaySettings.commonPreferences },
@@ -1151,6 +1145,18 @@ export default {
         });
       }
     },
+    eeSearchTokens() {
+      if (this.isSavedView && this.savedView !== null) {
+        const draft = localStorage.getItem(this.savedViewDraftStorageKey);
+        const tokens = this.getFilterTokensFromSavedView(this.savedView.filters);
+        this.initialViewTokens = tokens;
+        if (draft) {
+          this.restoreViewDraft();
+        } else {
+          this.filterTokens = tokens;
+        }
+      }
+    },
     displaySettings: {
       immediate: true,
       handler(value) {
@@ -1190,6 +1196,15 @@ export default {
     setPageDefaultWidth();
   },
   methods: {
+    getFilterTokensFromSavedView(savedViewFilters) {
+      const tokens = getSavedViewFilterTokens(savedViewFilters, {
+        includeStateToken: true,
+        hasCustomFieldsFeature: this.hasCustomFieldsFeature,
+        convertTypeTokens: true,
+      });
+      const availableTokenTypes = this.searchTokens.map((token) => token.type);
+      return tokens.filter((token) => availableTokenTypes.includes(token.type));
+    },
     async handleLocalDisplayPreferencesUpdate(newSettings) {
       this.localDisplaySettings = {
         ...this.localDisplaySettings,

@@ -6,6 +6,7 @@ import {
   convertToUrlParams,
   getCustomFieldTokenId,
   mergeDuplicatedCustomFieldTokens,
+  getSavedViewFilterTokens,
 } from 'ee/work_items/list/utils';
 import {
   TOKEN_TYPE_STATE,
@@ -21,6 +22,7 @@ import {
   WORK_ITEM_TYPE_ENUM_TEST_CASE,
   WORK_ITEM_TYPE_ENUM_TICKET,
 } from '~/work_items/constants';
+import { savedViewFiltersObject, savedViewFilterTokens } from '../mock_data';
 
 describe('getDefaultWorkItemTypes', () => {
   it('returns default work item types', () => {
@@ -260,5 +262,11 @@ describe('mergeDuplicatedCustomFieldTokens', () => {
         operator: OPERATOR_IS,
       },
     });
+  });
+});
+
+describe('getSavedViewFilterTokens', () => {
+  it('returns valid filter tokens given a saved view filters object', () => {
+    expect(getSavedViewFilterTokens(savedViewFiltersObject)).toEqual(savedViewFilterTokens);
   });
 });

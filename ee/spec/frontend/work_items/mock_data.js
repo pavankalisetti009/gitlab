@@ -662,3 +662,182 @@ export const paginatedVulnerabilitiesWidgetResponse = getVulnerabilitiesWidgetRe
   relatedVulnerabilitiesNodes,
   true,
 );
+
+export const savedViewFiltersObject = {
+  state: 'opened',
+  confidential: true,
+  subscribed: 'explicitly_subscribed',
+  in: ['title', 'description'],
+  search: 'ABC',
+  myReactionEmoji: 'smile',
+  closedBefore: '2025-01-01T00:00:00.000+00:00',
+  closedAfter: '2025-01-01T00:00:00.000+00:00',
+  iid: '123',
+  dueBefore: '2025-01-01T00:00:00.000+00:00',
+  dueAfter: '2025-01-01T00:00:00.000+00:00',
+  createdBefore: '2025-01-01T00:00:00.000+00:00',
+  createdAfter: '2025-01-01T00:00:00.000+00:00',
+  updatedBefore: '2025-01-01T00:00:00.000+00:00',
+  updatedAfter: '2025-01-01T00:00:00.000+00:00',
+  excludeProjects: true,
+  excludeGroupWorkItems: true,
+  includeDescendants: true,
+  healthStatusFilter: 'on_track',
+  weight: '1',
+  types: ['issue'],
+  not: {
+    myReactionEmoji: 'smile',
+    healthStatusFilter: ['on_track'],
+    weight: '1',
+    types: ['epic', 'issue'],
+    assigneeUsernames: ['root'],
+    authorUsername: ['root'],
+    iterationId: ['1'],
+  },
+  assigneeUsernames: ['root'],
+  or: {
+    assigneeUsernames: ['root'],
+    authorUsernames: ['root'],
+  },
+  authorUsername: 'root',
+  milestoneTitle: ['v0.0'],
+  hierarchyFilters: {
+    includeDescendantWorkItems: false,
+  },
+  fullPath: 'flightjs/Flight',
+  customField: [
+    {
+      customFieldId: 'gid://gitlab/Issuables::CustomField/4',
+      selectedOptionIds: ['gid://gitlab/Issuables::CustomFieldSelectOption/4'],
+    },
+    {
+      customFieldId: 'gid://gitlab/Issuables::CustomField/4',
+      selectedOptionIds: ['gid://gitlab/Issuables::CustomFieldSelectOption/6'],
+    },
+    {
+      customFieldId: 'gid://gitlab/Issuables::CustomField/10',
+      selectedOptionIds: [
+        'gid://gitlab/Issuables::CustomFieldSelectOption/12',
+        'gid://gitlab/Issuables::CustomFieldSelectOption/15',
+      ],
+    },
+  ],
+  iterationId: ['1'],
+  iterationCadenceId: ['gid://gitlab/Iterations::Cadence/1'],
+  status: {
+    name: "Won't do",
+  },
+};
+
+export const savedViewFilterTokens = [
+  { type: 'confidential', value: { data: 'yes', operator: '=' } },
+  { type: 'subscribed', value: { data: 'EXPLICITLY_SUBSCRIBED', operator: '=' } },
+  { type: 'filtered-search-term', value: { data: 'ABC', operator: undefined } },
+  { type: 'my-reaction', value: { data: 'smile', operator: '=' } },
+  {
+    type: 'closed',
+    value: {
+      data: '2025-01-01T00:00:00.000+00:00',
+      operator: '<',
+    },
+  },
+  {
+    type: 'closed',
+    value: {
+      data: '2025-01-01T00:00:00.000+00:00',
+      operator: '≥',
+    },
+  },
+  {
+    type: 'due-date',
+    value: {
+      data: '2025-01-01T00:00:00.000+00:00',
+      operator: '<',
+    },
+  },
+  {
+    type: 'due-date',
+    value: {
+      data: '2025-01-01T00:00:00.000+00:00',
+      operator: '≥',
+    },
+  },
+  {
+    type: 'created',
+    value: {
+      data: '2025-01-01T00:00:00.000+00:00',
+      operator: '<',
+    },
+  },
+  {
+    type: 'created',
+    value: {
+      data: '2025-01-01T00:00:00.000+00:00',
+      operator: '≥',
+    },
+  },
+  {
+    type: 'updated',
+    value: {
+      data: '2025-01-01T00:00:00.000+00:00',
+      operator: '<',
+    },
+  },
+  {
+    type: 'updated',
+    value: {
+      data: '2025-01-01T00:00:00.000+00:00',
+      operator: '≥',
+    },
+  },
+  { type: 'health', value: { data: 'onTrack', operator: '=' } },
+  { type: 'weight', value: { data: '1', operator: '=' } },
+  { type: 'type', value: { data: 'ISSUE', operator: '=' } },
+  { type: 'my-reaction', value: { data: 'smile', operator: '!=' } },
+  { type: 'health', value: { data: 'onTrack', operator: '!=' } },
+  { type: 'weight', value: { data: '1', operator: '!=' } },
+  { type: 'type', value: { data: ['EPIC', 'ISSUE'], operator: '!=' } },
+  { type: 'assignee', value: { data: ['root'], operator: '!=' } },
+  { type: 'author', value: { data: ['root'], operator: '!=' } },
+  { type: 'iteration', value: { data: ['1'], operator: '!=' } },
+  { type: 'assignee', value: { data: 'root', operator: '=' } },
+  { type: 'assignee', value: { data: ['root'], operator: '||' } },
+  { type: 'author', value: { data: ['root'], operator: '||' } },
+  { type: 'author', value: { data: 'root', operator: '=' } },
+  { type: 'milestone', value: { data: 'v0.0', operator: '=' } },
+  { type: 'group', value: { data: 'flightjs/Flight', operator: '=' } },
+  { type: 'iteration', value: { data: '1', operator: '=' } },
+  {
+    type: 'iteration',
+    value: { data: 'gid://gitlab/Iterations::Cadence/1', operator: '=' },
+  },
+  { type: 'status', value: { data: "Won't do", operator: '=' } },
+  {
+    type: 'custom-field[4]',
+    value: {
+      data: '4',
+      operator: '=',
+    },
+  },
+  {
+    type: 'custom-field[4]',
+    value: {
+      data: '6',
+      operator: '=',
+    },
+  },
+  {
+    type: 'custom-field[10]',
+    value: {
+      data: '12',
+      operator: '=',
+    },
+  },
+  {
+    type: 'custom-field[10]',
+    value: {
+      data: '15',
+      operator: '=',
+    },
+  },
+];
