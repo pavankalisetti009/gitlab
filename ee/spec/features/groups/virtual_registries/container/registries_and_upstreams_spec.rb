@@ -143,7 +143,7 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
             /#{group_virtual_registries_container_registry_path(group, registry)}/)
         end
 
-        it 'edits registry', :js do
+        it 'edits registry' do
           visit edit_group_virtual_registries_container_registry_path(group, registry)
 
           fill_in _('Name'), with: 'New Name'
@@ -155,6 +155,19 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
           expect(page).to have_current_path(
             "#{group_virtual_registries_container_registry_path(group, ::VirtualRegistries::Container::Registry.last)}/"
           )
+        end
+
+        it 'deletes virtual registy' do
+          visit edit_group_virtual_registries_container_registry_path(group, registry)
+
+          click_button 'Delete registry'
+
+          page.within('#destroy-registry-modal') do
+            click_button 'Delete'
+          end
+
+          expect(page).not_to have_text(registry.name)
+          expect(page).to have_current_path(/#{group_virtual_registries_container_registries_path(group)}/)
         end
       end
 
