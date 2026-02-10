@@ -5,7 +5,7 @@ import { nextTick } from 'vue';
 import IterationReportIssues from 'ee/iterations/components/iteration_report_issues.vue';
 import IterationReportTabs from 'ee/iterations/components/iteration_report_tabs.vue';
 import { GROUP_BY_LABEL } from 'ee/iterations/constants';
-import { WORKSPACE_GROUP } from '~/issues/constants';
+import { NAMESPACE_GROUP } from '~/issues/constants';
 import LabelsSelect from '~/sidebar/components/labels/labels_select_vue/labels_select_root.vue';
 
 describe('Iterations report tabs', () => {
@@ -15,7 +15,7 @@ describe('Iterations report tabs', () => {
   const defaultProps = {
     fullPath,
     iterationId: `gid://gitlab/Iteration/${id}`,
-    namespaceType: WORKSPACE_GROUP,
+    namespaceType: NAMESPACE_GROUP,
     totalIterationIssueCount: 100,
   };
 

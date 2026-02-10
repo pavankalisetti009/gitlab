@@ -14,7 +14,7 @@ import {
   STATUS_ALL,
   STATUS_CLOSED,
   STATUS_OPEN,
-  WORKSPACE_GROUP,
+  NAMESPACE_GROUP,
   NAMESPACE_PROJECT,
 } from '~/issues/constants';
 import { s__ } from '~/locale';
@@ -74,7 +74,7 @@ export default {
   },
   computed: {
     query() {
-      if (this.namespaceType === WORKSPACE_GROUP) {
+      if (this.namespaceType === NAMESPACE_GROUP) {
         return groupQuery;
       }
       if (this.namespaceType === NAMESPACE_PROJECT) {

@@ -11,7 +11,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { TEST_HOST } from 'helpers/test_constants';
 import { mountExtended as mount } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 
 const baseUrl = '/cadences/';
 const router = createRouter(baseUrl);
@@ -95,7 +95,7 @@ describe('Iteration cadences list', () => {
   function createComponent({
     canCreateCadence,
     canEditCadence,
-    namespaceType = WORKSPACE_GROUP,
+    namespaceType = NAMESPACE_GROUP,
     query = cadencesListQuery,
     resolverMock = jest.fn().mockResolvedValue(querySuccessResponse()),
     destroyMutationMock = jest

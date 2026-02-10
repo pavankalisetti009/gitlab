@@ -1,9 +1,9 @@
 import issueBoardFiltersCE from '~/boards/issue_board_filters';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import searchIterationQuery from '../work_items/list/graphql/search_iterations.query.graphql';
 
 export default function issueBoardFilters(apollo, fullPath, isGroupBoard) {
-  const boardType = isGroupBoard ? WORKSPACE_GROUP : NAMESPACE_PROJECT;
+  const boardType = isGroupBoard ? NAMESPACE_GROUP : NAMESPACE_PROJECT;
 
   const fetchIterations = (searchTerm) => {
     const id = Number(searchTerm);

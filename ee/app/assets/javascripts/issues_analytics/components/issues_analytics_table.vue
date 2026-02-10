@@ -12,7 +12,7 @@ import {
   GlLabel,
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { getDayDifference } from '~/lib/utils/datetime_utility';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { mergeUrlParams } from '~/lib/utils/url_utility';
@@ -140,7 +140,7 @@ export default {
 
         return {
           fullPath: this.fullPath,
-          isGroup: this.type === WORKSPACE_GROUP,
+          isGroup: this.type === NAMESPACE_GROUP,
           isProject: this.type === NAMESPACE_PROJECT,
           createdAfter: this.startDate,
           createdBefore: this.endDate,

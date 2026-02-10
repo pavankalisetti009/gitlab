@@ -12,7 +12,7 @@ import listIssuesQuery from '~/boards/graphql/lists_issues.query.graphql';
 import issueCreateMutation from '~/boards/graphql/issue_create.mutation.graphql';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
-import { TYPE_EPIC, TYPE_ISSUE, WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { TYPE_EPIC, TYPE_ISSUE, NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import issueMoveListMutation from 'ee/boards/graphql/issue_move_list.mutation.graphql';
 import epicMoveListMutation from 'ee/boards/graphql/epic_move_list.mutation.graphql';
 import epicCreateMutation from 'ee/boards/graphql/epic_create.mutation.graphql';
@@ -258,9 +258,9 @@ describe('BoardList Component', () => {
 
     it.each`
       boardType            | isEpicBoard | queryHandler                        | notCalledHandler
-      ${WORKSPACE_GROUP}   | ${false}    | ${groupIssuesQueryHandlerSuccess}   | ${projectIssuesQueryHandlerSuccess}
+      ${NAMESPACE_GROUP}   | ${false}    | ${groupIssuesQueryHandlerSuccess}   | ${projectIssuesQueryHandlerSuccess}
       ${NAMESPACE_PROJECT} | ${false}    | ${projectIssuesQueryHandlerSuccess} | ${groupIssuesQueryHandlerSuccess}
-      ${WORKSPACE_GROUP}   | ${true}     | ${groupEpicsQueryHandlerSuccess}    | ${groupIssuesQueryHandlerSuccess}
+      ${NAMESPACE_GROUP}   | ${true}     | ${groupEpicsQueryHandlerSuccess}    | ${groupIssuesQueryHandlerSuccess}
     `(
       'fetches $boardType items when isEpicBoard is $isEpicBoard',
       async ({ boardType, isEpicBoard, queryHandler, notCalledHandler }) => {
@@ -272,7 +272,7 @@ describe('BoardList Component', () => {
             boardType,
             issuableType: isEpicBoard ? 'epic' : 'issue',
             isProjectBoard: boardType === NAMESPACE_PROJECT,
-            isGroupBoard: boardType === WORKSPACE_GROUP,
+            isGroupBoard: boardType === NAMESPACE_GROUP,
             isEpicBoard,
           },
           apolloQueryHandlers: [
@@ -293,9 +293,9 @@ describe('BoardList Component', () => {
 
     it.each`
       boardType            | isEpicBoard
-      ${WORKSPACE_GROUP}   | ${false}
+      ${NAMESPACE_GROUP}   | ${false}
       ${NAMESPACE_PROJECT} | ${false}
-      ${WORKSPACE_GROUP}   | ${true}
+      ${NAMESPACE_GROUP}   | ${true}
     `(
       'set error when fetch $boardType items fails when isEpicBoard is $isEpicBoard',
       async ({ boardType, isEpicBoard }) => {
@@ -307,7 +307,7 @@ describe('BoardList Component', () => {
             boardType,
             issuableType: isEpicBoard ? 'epic' : 'issue',
             isProjectBoard: boardType === NAMESPACE_PROJECT,
-            isGroupBoard: boardType === WORKSPACE_GROUP,
+            isGroupBoard: boardType === NAMESPACE_GROUP,
             isEpicBoard,
           },
           apolloQueryHandlers: [
@@ -331,7 +331,7 @@ describe('BoardList Component', () => {
       async ({ issuableType, isEpicBoard, queryHandler, notCalledHandler, endDragVariables }) => {
         wrapper = createComponent({
           provide: {
-            boardType: WORKSPACE_GROUP,
+            boardType: NAMESPACE_GROUP,
             issuableType,
             isProjectBoard: false,
             isGroupBoard: true,
@@ -374,7 +374,7 @@ describe('BoardList Component', () => {
       async ({ issuableType, isEpicBoard, endDragVariables }) => {
         wrapper = createComponent({
           provide: {
-            boardType: WORKSPACE_GROUP,
+            boardType: NAMESPACE_GROUP,
             issuableType,
             isProjectBoard: false,
             isGroupBoard: true,
@@ -407,7 +407,7 @@ describe('BoardList Component', () => {
       async ({ issuableType, isEpicBoard, queryHandler, notCalledHandler, positionInList }) => {
         wrapper = createComponent({
           provide: {
-            boardType: WORKSPACE_GROUP,
+            boardType: NAMESPACE_GROUP,
             issuableType,
             isProjectBoard: false,
             isGroupBoard: true,
@@ -436,7 +436,7 @@ describe('BoardList Component', () => {
       async ({ issuableType, isEpicBoard, positionInList }) => {
         wrapper = createComponent({
           provide: {
-            boardType: WORKSPACE_GROUP,
+            boardType: NAMESPACE_GROUP,
             issuableType,
             isProjectBoard: false,
             isGroupBoard: true,
@@ -481,7 +481,7 @@ describe('BoardList Component', () => {
           },
           componentProps: { showNewForm: true },
           provide: {
-            boardType: WORKSPACE_GROUP,
+            boardType: NAMESPACE_GROUP,
             issuableType,
             isProjectBoard: false,
             isGroupBoard: true,
@@ -519,7 +519,7 @@ describe('BoardList Component', () => {
           },
           componentProps: { showNewForm: true },
           provide: {
-            boardType: WORKSPACE_GROUP,
+            boardType: NAMESPACE_GROUP,
             issuableType,
             isProjectBoard: false,
             isGroupBoard: true,
