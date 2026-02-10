@@ -88,7 +88,7 @@ RSpec.describe Gitlab::Ci::Reports::LicenseScanning::Dependency, feature_categor
 
       let(:project) { build_stubbed(:project) }
 
-      specify { expect(subject).to eql("/#{project.full_path}/-/blob/master/#{lockfile}") }
+      specify { expect(subject).to eql("/#{project.full_path}/-/blob/main/#{lockfile}") }
     end
   end
 
