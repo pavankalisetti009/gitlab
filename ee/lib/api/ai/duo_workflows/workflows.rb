@@ -76,11 +76,11 @@ module API
             forbidden!("Namespace does not match workflow context")
           end
 
-          def cloud_service_for_self_hosted_config(feature_setting)
+          def cloud_service_for_self_hosted_config(feature_setting, cloud_connector_headers)
             return unless ::Ai::SelfHostedDapBilling.should_bill?(feature_setting)
 
             {
-              Headers: ::Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
+              Headers: cloud_connector_headers.merge(
                 'authorization' => "Bearer #{::CloudConnector::Tokens.cloud_connector_token}"
               ),
               URI: Gitlab::DuoWorkflow::Client.cloud_connected_url(user: current_user),
@@ -479,12 +479,18 @@ module API
                 gitlab_token,
                 workflow_definition: params[:workflow_definition]
               )
-              grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(
+              cloud_connector_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(
                 user: current_user,
                 namespace_id: params[:namespace_id].presence&.to_i,
                 root_namespace_id: root_namespace&.id,
                 feature_setting: feature_setting
-              ).merge(
+              )
+
+              cloud_connector_headers['x-gitlab-project-id'] ||= params[:project_id].presence
+              # client type from browser is sent as a query param in websocket request
+              cloud_connector_headers['x-gitlab-client-type'] ||= params[:client_type].presence
+
+              grpc_headers = cloud_connector_headers.merge(
                 'x-gitlab-oauth-token' => gitlab_token,
                 'x-gitlab-unidirectional-streaming' => 'enabled',
                 'x-gitlab-enabled-mcp-server-tools' => mcp_config_service.gitlab_enabled_tools.join(','),
@@ -492,10 +498,6 @@ module API
                 'x-gitlab-self-hosted-dap-billing-enabled' =>
                   ::Ai::SelfHostedDapBilling.should_bill?(feature_setting).to_s
               ).merge(model_metadata_headers)
-
-              grpc_headers['x-gitlab-project-id'] ||= params[:project_id].presence
-              # client type from browser is sent as a query param in websocket request
-              grpc_headers['x-gitlab-client-type'] ||= params[:client_type].presence
 
               HEADERS_TO_FORWARD_AS_GRPC_METADATA.each do |header|
                 header_value = headers[header]
@@ -510,7 +512,8 @@ module API
                     URI: Gitlab::DuoWorkflow::Client.url_for(feature_setting: feature_setting, user: current_user),
                     Secure: Gitlab::DuoWorkflow::Client.secure?
                   },
-                  CloudServiceForSelfHosted: cloud_service_for_self_hosted_config(feature_setting),
+                  CloudServiceForSelfHosted: cloud_service_for_self_hosted_config(feature_setting,
+                    cloud_connector_headers),
                   McpServers: mcp_config_service.execute,
                   LockConcurrentFlow: true
                 }
