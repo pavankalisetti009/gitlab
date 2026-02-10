@@ -279,9 +279,12 @@ module ComplianceManagement
 
           begin
             yml_dump = project.ci_config_for(project.default_branch)
-            config = Gitlab::Ci::Config.new(yml_dump, project: project)
+            sha = project.repository.root_ref_sha
+            return false if sha.nil?
+
+            config = Gitlab::Ci::Config.new(yml_dump, project: project, sha: sha, ref: project.default_branch)
             config.valid?
-          rescue Gitlab::Ci::Config::ConfigError
+          rescue Gitlab::Ci::Config::ConfigError, Gitlab::Ci::Config::External::Context::TimeoutError
             false
           end
         end
