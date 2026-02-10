@@ -71,8 +71,6 @@ export default {
       const startDate = newDate(this.monthStartDate);
       const endDate = newDate(this.monthEndDate);
 
-      // NOTE: getDatesInRange or the way we call it might have issues
-      // Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/583673
       return getDatesInRange(startDate, endDate, toISODateFormat);
     },
     monthlyCommitmentData() {
