@@ -2206,4 +2206,95 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       create(:vulnerabilities_finding, :with_dependency_scanning_metadata, project: project, file: 'src/main.c')
     end
   end
+
+  describe '#sha' do
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:pipeline) { create(:ci_pipeline, project: project, sha: 'abc123def456') }
+    let_it_be_with_refind(:finding) do
+      create(
+        :vulnerabilities_finding,
+        :secret_detection,
+        project: project,
+        latest_pipeline_id: pipeline.id
+      )
+    end
+
+    context 'when secret_detection_sha is available' do
+      before do
+        finding.location['commit'] = { 'sha' => '93b5e5e8f0149dc2ed22386ea2048e6e3f77d320' }
+        finding.save!
+      end
+
+      it 'returns secret_detection_sha' do
+        expect(finding.sha).to eq('93b5e5e8f0149dc2ed22386ea2048e6e3f77d320')
+      end
+
+      it 'takes precedence over @sha' do
+        finding.sha = 'sha attribute'
+
+        expect(finding.sha).to eq('93b5e5e8f0149dc2ed22386ea2048e6e3f77d320')
+      end
+
+      context 'when commit sha is the default placeholder value' do
+        before do
+          finding.location['commit'] = { 'sha' => described_class::SECRET_DETECTION_DEFAULT_COMMIT_SHA }
+          finding.save!
+        end
+
+        it 'ignores the placeholder and falls back to @sha or pipeline_branch' do
+          expect(finding.sha).to eq(pipeline.sha)
+        end
+      end
+
+      context 'when finding is sast and location is malformed' do
+        before do
+          finding.update!(
+            report_type: :sast,
+            location: { 'commit' => 'string' }
+          )
+        end
+
+        it 'does not try to read from location' do
+          expect(finding.sha).to eq(pipeline.sha)
+        end
+      end
+    end
+
+    context 'when secret_detection_sha is not available but @sha is set' do
+      before do
+        finding.sha = 'instance_sha_value'
+      end
+
+      it 'returns @sha' do
+        expect(finding.sha).to eq('instance_sha_value')
+      end
+    end
+
+    context 'when neither secret_detection_sha nor @sha are available' do
+      let(:finding) do
+        create(
+          :vulnerabilities_finding,
+          project: project,
+          latest_pipeline_id: pipeline.id
+        )
+      end
+
+      it 'returns pipeline_branch (pipeline sha)' do
+        expect(finding.sha).to eq(pipeline.sha)
+      end
+    end
+
+    context 'when no pipeline is associated' do
+      let_it_be(:finding) do
+        create(
+          :vulnerabilities_finding,
+          project: project
+        )
+      end
+
+      it 'returns project default_branch' do
+        expect(finding.sha).to eq(project.default_branch)
+      end
+    end
+  end
 end
