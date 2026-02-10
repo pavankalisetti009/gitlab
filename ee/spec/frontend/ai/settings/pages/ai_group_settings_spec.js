@@ -215,7 +215,6 @@ describe('AiGroupSettings', () => {
         promptCacheEnabled: true,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
-        duoSastFpDetectionAvailability: false,
         foundationalAgentsEnabled: true,
         foundationalAgentsStatuses: mockAgentStatuses,
         selectedFoundationalFlowIds: [],
@@ -232,7 +231,6 @@ describe('AiGroupSettings', () => {
         model_prompt_cache_enabled: true,
         duo_remote_flows_availability: false,
         duo_foundational_flows_availability: false,
-        duo_sast_fp_detection_availability: false,
         foundational_agents_statuses: expectedFilteredAgentStatuses,
         enabled_foundational_flows: [],
         ai_settings_attributes: {
@@ -299,7 +297,6 @@ describe('AiGroupSettings', () => {
           promptCacheEnabled: true,
           duoRemoteFlowsAvailability: false,
           duoFoundationalFlowsAvailability: false,
-          duoSastFpDetectionAvailability: false,
           selectedFoundationalFlowIds: [],
         });
         expect(updateGroupSettings).toHaveBeenCalledWith(
@@ -331,7 +328,6 @@ describe('AiGroupSettings', () => {
           promptCacheEnabled: true,
           duoRemoteFlowsAvailability: false,
           duoFoundationalFlowsAvailability: false,
-          duoSastFpDetectionAvailability: false,
           selectedFoundationalFlowIds: [],
         });
         expect(updateGroupSettings).toHaveBeenCalledWith(
@@ -358,7 +354,6 @@ describe('AiGroupSettings', () => {
           promptCacheEnabled: false,
           duoRemoteFlowsAvailability: false,
           duoFoundationalFlowsAvailability: false,
-          duoSastFpDetectionAvailability: false,
           selectedFoundationalFlowIds: [],
         });
         await waitForPromises();
@@ -390,7 +385,6 @@ describe('AiGroupSettings', () => {
           promptCacheEnabled: true,
           duoRemoteFlowsAvailability: false,
           duoFoundationalFlowsAvailability: false,
-          duoSastFpDetectionAvailability: false,
           selectedFoundationalFlowIds: [],
         });
         await waitForPromises();
@@ -419,7 +413,6 @@ describe('AiGroupSettings', () => {
           promptCacheEnabled: true,
           duoRemoteFlowsAvailability: false,
           duoFoundationalFlowsAvailability: false,
-          duoSastFpDetectionAvailability: false,
           selectedFoundationalFlowIds: [],
         });
       });
@@ -432,7 +425,6 @@ describe('AiGroupSettings', () => {
           model_prompt_cache_enabled: true,
           duo_remote_flows_availability: false,
           duo_foundational_flows_availability: false,
-          duo_sast_fp_detection_availability: false,
           enabled_foundational_flows: [],
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: false,
@@ -460,7 +452,6 @@ describe('AiGroupSettings', () => {
             promptCacheEnabled: false,
             duoRemoteFlowsAvailability: false,
             duoFoundationalFlowsAvailability: false,
-            duoSastFpDetectionAvailability: false,
             selectedFoundationalFlowIds: [1, 2, 3],
           });
         });

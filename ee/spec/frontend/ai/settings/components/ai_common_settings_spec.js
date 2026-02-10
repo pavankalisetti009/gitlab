@@ -102,7 +102,6 @@ describe('AiCommonSettings', () => {
       promptCacheEnabled: true,
       duoRemoteFlowsAvailability: true,
       duoFoundationalFlowsAvailability: true,
-      duoSastFpDetectionAvailability: false,
       foundationalAgentsEnabled: true,
       selectedFoundationalFlowIds: [1, 2],
       foundationalAgentsStatuses: mockAgentStatuses,

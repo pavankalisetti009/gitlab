@@ -175,11 +175,6 @@ RSpec.describe ProjectSetting, feature_category: :groups_and_projects do
       settings_attribute_name: :duo_foundational_flows_enabled
   end
 
-  describe '#duo_sast_fp_detection_enabled' do
-    it_behaves_like 'a cascading project setting boolean attribute',
-      settings_attribute_name: :duo_sast_fp_detection_enabled
-  end
-
   describe '#enabled_foundational_flows' do
     let(:setting) { build(:project_setting) }
 

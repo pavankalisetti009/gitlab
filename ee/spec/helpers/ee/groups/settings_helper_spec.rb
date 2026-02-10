@@ -179,9 +179,6 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_foundational_flows_cascading_settings:
             "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
           duo_foundational_flows_availability: group.namespace_settings.duo_foundational_flows_availability.to_s,
-          duo_sast_fp_detection_cascading_settings: "{\"locked_by_application_setting\":false," \
-            "\"locked_by_ancestor\":false}",
-          duo_sast_fp_detection_availability: group.namespace_settings.duo_sast_fp_detection_availability.to_s,
           duo_core_features_enabled: group.namespace_settings.duo_core_features_enabled.to_s,
           prompt_injection_protection_available: "true",
           prompt_injection_protection_level: "log_only",
