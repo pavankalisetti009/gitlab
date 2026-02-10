@@ -1,12 +1,17 @@
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlButton, GlSprintf } from '@gitlab/ui';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import CodeFlowFileViewer from 'ee/vue_shared/components/code_flow/code_flow_file_viewer.vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import VulnerabilityFileContentViewer from 'ee/vue_shared/vulnerabilities/components/vulnerability_file_content_viewer.vue';
 import BlobFilepath from '~/blob/components/blob_header_filepath.vue';
+import { highlightContent } from '~/highlight_js';
 
 Vue.use(VueApollo);
+
+jest.mock('~/highlight_js', () => ({
+  highlightContent: jest.fn().mockResolvedValue('highlighted content'),
+}));
 
 describe('Vulnerability Code Flow File Viewer component', () => {
   let wrapper;
@@ -162,6 +167,45 @@ describe('Vulnerability Code Flow File Viewer component', () => {
       expect(findVulFileContentViewer().exists()).toBe(false);
       await findCollapseExpandButton().vm.$emit('click');
       expect(findVulFileContentViewer().exists()).toBe(true);
+    });
+  });
+
+  describe('escapes content when syntax highlighting fails', () => {
+    beforeEach(() => {
+      highlightContent.mockResolvedValue(undefined);
+    });
+
+    it('escapes html input correctly', async () => {
+      const maliciousContent = '<script>alert("xss")</script>';
+      createWrapper({
+        blobInfo: {
+          ...defaultProps.blobInfo,
+          rawTextBlob: maliciousContent,
+        },
+        hlInfo,
+      });
+
+      await nextTick();
+
+      expect(wrapper.vm.highlightedContent).not.toContain('<script>');
+      expect(wrapper.vm.highlightedContent).toContain('&lt;script&gt;');
+      expect(wrapper.vm.highlightedContent).toContain('&lt;/script&gt;');
+    });
+
+    it('renders correctly without html tags', async () => {
+      const safeContent = 'const x = 1;\nconst y = 2;';
+      createWrapper({
+        blobInfo: {
+          ...defaultProps.blobInfo,
+          rawTextBlob: safeContent,
+        },
+        hlInfo,
+      });
+
+      await nextTick();
+
+      expect(wrapper.vm.highlightedContent).toContain('const x = 1;');
+      expect(wrapper.vm.highlightedContent).toContain('const y = 2;');
     });
   });
 });

@@ -60,7 +60,9 @@ class IterationsFinder
   def by_groups(items)
     return Iteration.none unless skip_authorization || Ability.allowed?(current_user, :read_iteration, params[:parent])
 
-    items.of_groups(groups)
+    user_accessible_groups = skip_authorization ? groups : groups.accessible_to_user(current_user)
+
+    items.of_groups(user_accessible_groups)
   end
 
   def by_id(items)
@@ -121,7 +123,6 @@ class IterationsFinder
       items.reorder(:due_date).order(:title, { id: :asc })
     end
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 
   def groups
     parent = params[:parent]
@@ -130,9 +131,9 @@ class IterationsFinder
 
     group = case parent
             when Group
-              parent
+              Group.where(id: parent)
             when Project, Namespaces::ProjectNamespace
-              parent.parent
+              Group.where(id: parent.parent)
             else
               raise ArgumentError, 'Invalid parent class. Only Project and Group are supported.'
             end
@@ -147,4 +148,5 @@ class IterationsFinder
       group.self_and_descendants
     end
   end
+  # rubocop: enable CodeReuse/ActiveRecord
 end

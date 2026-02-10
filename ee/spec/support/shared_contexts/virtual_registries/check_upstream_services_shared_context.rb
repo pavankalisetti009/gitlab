@@ -10,6 +10,37 @@ RSpec.shared_context 'for check upstream service for maven packages' do
       request.to_return(status: status, body: 'test')
     end
   end
+
+  def stub_upstream_redirect(upstream, redirect_to:, final_status: 200, redirect_status: 302)
+    # Initial request returns redirect
+    stub_request(:head, upstream.url_for(path))
+      .with(headers: upstream.headers)
+      .to_return(status: redirect_status, headers: { 'Location' => redirect_to })
+
+    # Follow-up request to redirect target
+    stub_request(:head, redirect_to)
+      .with(headers: upstream.headers)
+      .to_return(status: final_status, body: 'test')
+  end
+
+  def stub_upstream_chained_redirects(upstream, redirect_chain:, final_status: 200)
+    # First request
+    stub_request(:head, upstream.url_for(path))
+      .with(headers: upstream.headers)
+      .to_return(status: 302, headers: { 'Location' => redirect_chain.first })
+
+    # Intermediate redirects
+    redirect_chain.each_cons(2) do |current_url, next_url|
+      stub_request(:head, current_url)
+        .with(headers: upstream.headers)
+        .to_return(status: 302, headers: { 'Location' => next_url })
+    end
+
+    # Final request
+    stub_request(:head, redirect_chain.last)
+      .with(headers: upstream.headers)
+      .to_return(status: final_status, body: 'test')
+  end
 end
 
 RSpec.shared_context 'for check upstream service for container images' do

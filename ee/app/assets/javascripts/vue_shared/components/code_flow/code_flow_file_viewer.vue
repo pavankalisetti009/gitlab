@@ -1,6 +1,6 @@
 <script>
 import { GlAlert, GlButton, GlSprintf } from '@gitlab/ui';
-import { isEmpty } from 'lodash';
+import { isEmpty, escape } from 'lodash';
 import VulnerabilityFileContentViewer from 'ee/vue_shared/vulnerabilities/components/vulnerability_file_content_viewer.vue';
 import BlobFilepath from '~/blob/components/blob_header_filepath.vue';
 import { __, s__ } from '~/locale';
@@ -92,7 +92,7 @@ export default {
           // res is undefined when the file language is not recognized.
           // we need to mark the step in the viewer even if the language is not recognized.
           if (!res) {
-            const markResult = { value: rawTextBlob };
+            const markResult = { value: escape(rawTextBlob) };
             markMultipleLines(markResult, this.linesToMarker);
             this.highlightedContent = markResult.value;
           } else {
