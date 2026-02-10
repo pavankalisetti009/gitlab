@@ -43,6 +43,7 @@ export default {
       @dismiss="dismissBanner"
       @secondaryAction="dismissBanner"
     >
+      <!-- eslint-enable vue/v-on-event-hyphenation -->
       <gl-sprintf :message="$options.i18n.bannerContent">
         <template #bold="{ content }">
           <strong>{{ content }}</strong>
