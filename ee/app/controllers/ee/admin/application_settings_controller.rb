@@ -239,6 +239,7 @@ module EE
         end
 
         attrs << :auto_duo_code_review_enabled if ::ApplicationSetting.current.auto_duo_code_review_settings_available?
+        attrs << :duo_workflows_default_image_registry
 
         attrs
       end

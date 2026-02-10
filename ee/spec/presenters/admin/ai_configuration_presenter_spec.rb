@@ -19,6 +19,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         duo_availability: 'default_off',
         duo_remote_flows_availability: true,
         duo_foundational_flows_availability: false,
+        duo_workflows_default_image_registry: nil,
         duo_chat_expiration_column: 'last_updated_at',
         duo_chat_expiration_days: '30',
         enabled_expanded_logging: true,
@@ -129,6 +130,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         duo_availability: 'default_off',
         duo_remote_flows_availability: 'true',
         duo_foundational_flows_availability: 'false',
+        duo_workflows_default_image_registry: '',
         duo_chat_expiration_column: 'last_updated_at',
         duo_chat_expiration_days: '30',
         duo_core_features_enabled: 'true',
@@ -270,6 +272,14 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
 
       it { expect(settings).to include(ai_minimum_access_level_to_execute: Gitlab::Access::MAINTAINER.to_s) }
       it { expect(settings).to include(ai_minimum_access_level_to_execute_async: Gitlab::Access::OWNER.to_s) }
+    end
+
+    context 'with duo_workflows_default_image_registry set' do
+      let(:application_setting_attributes) do
+        super().merge(duo_workflows_default_image_registry: 'registry.example.com')
+      end
+
+      it { expect(settings).to include(duo_workflows_default_image_registry: 'registry.example.com') }
     end
 
     describe 'foundational_agent_statuses' do

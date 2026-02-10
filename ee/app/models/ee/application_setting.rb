@@ -70,6 +70,16 @@ module EE
         message: "must be one of: #{Ai::Conversation::Thread::EXPIRATION_COLUMNS.join(', ')}"
       }
 
+      validates :duo_workflows_default_image_registry,
+        allow_blank: true,
+        length: { maximum: 512 },
+        format: {
+          with: /\A[a-z0-9]([a-z0-9.\-]*[a-z0-9])?(:[0-9]{1,5})?\z/i,
+          message: 'must be a valid hostname with optional port (e.g., registry.example.com:5000)'
+        }
+
+      before_validation :normalize_duo_workflows_default_image_registry
+
       jsonb_accessor :usage_billing,
         display_gitlab_credits_user_data: [:boolean, { default: true }]
 
@@ -742,6 +752,10 @@ module EE
       personal_access_tokens_disabled? || read_attribute(:disable_feed_token)
     end
     alias_method :disable_feed_token?, :disable_feed_token
+
+    def normalize_duo_workflows_default_image_registry
+      self.duo_workflows_default_image_registry = nil if duo_workflows_default_image_registry.blank?
+    end
 
     def git_rate_limit_users_alertlist
       (self[:git_rate_limit_users_alertlist].presence || ::User.admins.active.pluck_primary_key).sort
