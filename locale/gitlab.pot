@@ -55995,9 +55995,6 @@ msgstr ""
 msgid "RegistrationFeatures|Want to %{feature_title} for free?"
 msgstr ""
 
-msgid "RegistrationFeatures|send emails to users"
-msgstr ""
-
 msgid "RegistrationFeatures|use this feature"
 msgstr ""
 
