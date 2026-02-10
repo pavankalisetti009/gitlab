@@ -12900,6 +12900,9 @@ msgstr ""
 msgid "BranchRules|This setting is blocked by a security policy. To make changes, go to the %{linkStart}security policies%{linkEnd}. %{learnMoreStart}Learn more.%{learnMoreEnd}"
 msgstr ""
 
+msgid "BranchRules|This setting is blocked by a security policy. To make changes, go to the %{security_policies_link_start}security policies%{security_policies_link_end}. %{learn_more_link_start}Learn more.%{learn_more_link_end}"
+msgstr ""
+
 msgid "BranchRules|This setting is blocked by a security policy. To make changes, go to the security policies."
 msgstr ""
 
