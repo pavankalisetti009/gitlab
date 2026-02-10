@@ -30,7 +30,7 @@ module API
         end
 
         helpers do
-          def find_root_namespace
+          def find_root_namespace!
             # The IDE sends namespace data via the header, while the web agentic chat UI
             # sends it as a query param.
             # The IDE only sends the namespace_id of the project's
@@ -278,6 +278,20 @@ module API
             )
           end
 
+          def get_server_capabilities
+            [].tap do |capabilities|
+              capabilities << "advanced_search" if advanced_search_enabled?
+            end
+          end
+
+          def advanced_search_enabled?
+            project = find_project(params[:project_id].presence)
+            namespace_id = params[:namespace_id].presence || headers['X-Gitlab-Namespace-Id'].presence
+            namespace = find_namespace(namespace_id)
+
+            ::Gitlab::CurrentSettings.search_using_elasticsearch?(scope: project || namespace)
+          end
+
           params :workflow_params do
             optional :project_id, type: String, desc: 'The ID or path of the workflow project',
               documentation: { example: '1' }
@@ -369,7 +383,7 @@ module API
                 check_rate_limit!(:duo_workflow_direct_access, scope: current_user)
 
                 if Feature.enabled?(:usage_quota_check_in_direct_access, current_user)
-                  root_namespace = find_root_namespace
+                  root_namespace = find_root_namespace!
 
                   ai_feature = if params[:workflow_definition] == "chat"
                                  :duo_chat
@@ -454,7 +468,7 @@ module API
               content_type Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE
 
               push_feature_flags
-              root_namespace = find_root_namespace
+              root_namespace = find_root_namespace!
               feature_setting_name = find_feature_setting_name
 
               model_metadata_headers = ::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService.new(
@@ -512,7 +526,8 @@ module API
                   },
                   CloudServiceForSelfHosted: cloud_service_for_self_hosted_config(feature_setting),
                   McpServers: mcp_config_service.execute,
-                  LockConcurrentFlow: true
+                  LockConcurrentFlow: true,
+                  ServerCapabilities: get_server_capabilities
                 }
               }
             end
