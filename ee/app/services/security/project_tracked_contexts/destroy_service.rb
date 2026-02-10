@@ -26,7 +26,7 @@ module Security
       def can_manage_contexts?
         return true unless current_user
 
-        Ability.allowed?(current_user, :read_security_project_tracked_refs, tracked_context.project)
+        Ability.allowed?(current_user, :delete_security_project_tracked_ref, tracked_context.project)
       end
 
       def permission_error
