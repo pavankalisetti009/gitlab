@@ -111,9 +111,11 @@ module EE
               attrs = attrs.except(:enforce_pipl_compliance)
             end
 
-            # Prevent updating duo_features_enabled and duo_remote_flows_enabled on GitLab.com
+            # Prevent updating duo_features_enabled, duo_remote_flows_enabled, and duo_workflows_default_image_registry
+            # on GitLab.com
             if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
-              attrs = attrs.except(:duo_features_enabled, :duo_remote_flows_enabled)
+              attrs = attrs.except(:duo_features_enabled, :duo_remote_flows_enabled,
+                :duo_workflows_default_image_registry)
             end
 
             attrs

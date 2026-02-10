@@ -408,6 +408,22 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :settings
       expect(assigns(:application_setting).errors[:repository_size_limit]).to be_present
     end
 
+    it 'updates duo_workflows_default_image_registry' do
+      put :update, params: { application_setting: { duo_workflows_default_image_registry: 'registry.example.com' } }
+
+      expect(response).to redirect_to(general_admin_application_settings_path)
+      expect(ApplicationSetting.current.duo_workflows_default_image_registry).to eq('registry.example.com')
+    end
+
+    it 'accepts blank duo_workflows_default_image_registry' do
+      ApplicationSetting.current.update!(duo_workflows_default_image_registry: 'registry.example.com')
+
+      put :update, params: { application_setting: { duo_workflows_default_image_registry: '' } }
+
+      expect(response).to redirect_to(general_admin_application_settings_path)
+      expect(ApplicationSetting.current.duo_workflows_default_image_registry).to be_nil
+    end
+
     describe 'verify panel actions' do
       Admin::ApplicationSettingsController::EE_VALID_SETTING_PANELS
         .excluding('namespace_storage').each do |valid_action|

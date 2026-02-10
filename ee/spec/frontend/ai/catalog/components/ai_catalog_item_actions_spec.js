@@ -11,6 +11,7 @@ import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/
 import {
   AI_CATALOG_TYPE_FLOW,
   AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DELETE_AI_CATALOG_ITEM,
@@ -62,6 +63,8 @@ describe('AiCatalogItemActions', () => {
     props = {},
     provide = {},
     projectUserPermissionsHandler = mockProjectUserPermissionsQueryHandler,
+    glAbilities = {},
+    glFeatures = {},
   } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogProjectUserPermissionsQuery, projectUserPermissionsHandler],
@@ -81,6 +84,8 @@ describe('AiCatalogItemActions', () => {
         $router: {
           push: jest.fn(),
         },
+        glAbilities,
+        glFeatures,
       },
       stubs: { GlModal },
     });
@@ -676,6 +681,55 @@ describe('AiCatalogItemActions', () => {
             },
             undefined,
           );
+        });
+      },
+    );
+  });
+
+  describe('third-party flow duplicate button visibility', () => {
+    describe.each`
+      scenario                                                 | itemType                            | glAbility | aiCatalogThirdPartyFlows | aiCatalogCreateThirdPartyFlows | shouldRender
+      ${'THIRD_PARTY_FLOW with ability enabled'}               | ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${true}   | ${false}                 | ${false}                       | ${true}
+      ${'THIRD_PARTY_FLOW with feature flags enabled'}         | ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${null}   | ${true}                  | ${true}                        | ${true}
+      ${'THIRD_PARTY_FLOW with feature not available'}         | ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${false}  | ${false}                 | ${false}                       | ${false}
+      ${'THIRD_PARTY_FLOW with only one feature flag enabled'} | ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${null}   | ${true}                  | ${false}                       | ${false}
+      ${'non-THIRD_PARTY_FLOW with feature not available'}     | ${AI_CATALOG_TYPE_AGENT}            | ${false}  | ${false}                 | ${false}                       | ${true}
+    `(
+      'when $scenario',
+      ({
+        itemType,
+        glAbility,
+        aiCatalogThirdPartyFlows,
+        aiCatalogCreateThirdPartyFlows,
+        shouldRender,
+      }) => {
+        beforeEach(() => {
+          isLoggedIn.mockReturnValue(true);
+          createComponent({
+            props: {
+              item: {
+                ...mockAgent,
+                itemType,
+                userPermissions: {
+                  adminAiCatalogItem: true,
+                },
+              },
+            },
+            provide: {
+              isGlobal: true,
+              glAbilities: {
+                createAiCatalogThirdPartyFlow: glAbility,
+              },
+              glFeatures: {
+                aiCatalogThirdPartyFlows,
+                aiCatalogCreateThirdPartyFlows,
+              },
+            },
+          });
+        });
+
+        it(`${shouldRender ? 'renders' : 'does not render'} Duplicate button`, () => {
+          expect(findDuplicateButton().exists()).toBe(shouldRender);
         });
       },
     );

@@ -170,7 +170,7 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     end
 
     context 'GitLab.com restrictions for duo settings' do
-      let(:params) { { duo_features_enabled: false, duo_remote_flows_enabled: false } }
+      let(:params) { { duo_features_enabled: false, duo_remote_flows_enabled: false, duo_workflows_default_image_registry: 'registry.example.com' } }
 
       it_behaves_like 'PUT request permissions for admin mode'
 
@@ -183,9 +183,13 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
           stub_licensed_features(ai_features: true)
         end
 
-        it 'prevents updating duo_features_enabled and duo_remote_flows_enabled' do
-          # Set initial values
-          ApplicationSetting.find_or_create_without_cache.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+        it 'prevents updating duo_features_enabled, duo_remote_flows_enabled, and duo_workflows_default_image_registry' do
+          # Set initial values using update_columns to bypass SaaS validation
+          ApplicationSetting.find_or_create_without_cache.update_columns(
+            duo_features_enabled: true,
+            duo_remote_flows_enabled: true,
+            duo_workflows_default_image_registry: 'registry.gitlab.com'
+          )
 
           api_request
 
@@ -193,16 +197,22 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
           # Values should remain unchanged
           expect(json_response['duo_features_enabled']).to eq(true)
           expect(json_response['duo_remote_flows_enabled']).to eq(true)
+          expect(json_response['duo_workflows_default_image_registry']).to eq('registry.gitlab.com')
         end
 
         it 'still allows reading the settings' do
-          ApplicationSetting.find_or_create_without_cache.update_columns(duo_features_enabled: false, duo_remote_flows_enabled: false)
+          ApplicationSetting.find_or_create_without_cache.update_columns(
+            duo_features_enabled: false,
+            duo_remote_flows_enabled: false,
+            duo_workflows_default_image_registry: 'registry.gitlab.com'
+          )
 
           get api(path, admin, admin_mode: true)
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['duo_features_enabled']).to eq(false)
           expect(json_response['duo_remote_flows_enabled']).to eq(false)
+          expect(json_response['duo_workflows_default_image_registry']).to eq('registry.gitlab.com')
         end
       end
 
@@ -211,9 +221,13 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
           stub_licensed_features(ai_features: true)
         end
 
-        it 'allows updating duo_features_enabled and duo_remote_flows_enabled' do
+        it 'allows updating duo_features_enabled, duo_remote_flows_enabled, and duo_workflows_default_image_registry' do
           # Set initial values
-          ApplicationSetting.find_or_create_without_cache.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+          ApplicationSetting.find_or_create_without_cache.update_columns(
+            duo_features_enabled: true,
+            duo_remote_flows_enabled: true,
+            duo_workflows_default_image_registry: nil
+          )
 
           api_request
 
@@ -221,6 +235,7 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
           # Values should be updated
           expect(json_response['duo_features_enabled']).to eq(false)
           expect(json_response['duo_remote_flows_enabled']).to eq(false)
+          expect(json_response['duo_workflows_default_image_registry']).to eq('registry.example.com')
         end
       end
     end

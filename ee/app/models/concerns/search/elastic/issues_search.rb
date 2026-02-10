@@ -30,15 +30,9 @@ module Search
 
         private
 
-        # rubocop: disable Gitlab/FeatureFlagWithoutActor -- global flags
         def track_embedding?
-          project&.public? &&
-            Feature.enabled?(:ai_global_switch, type: :ops) &&
-            Feature.enabled?(:elasticsearch_work_item_embedding, project, type: :ops) &&
-            Gitlab::Saas.feature_available?(:ai_vertex_embeddings) &&
-            (work_item_embeddings_elastic? || work_item_embeddings_opensearch?)
+          false
         end
-        # rubocop: enable Gitlab/FeatureFlagWithoutActor
 
         def track_embedding!
           ::Search::Elastic::ProcessEmbeddingBookkeepingService.track_embedding!(WorkItem.find(id))

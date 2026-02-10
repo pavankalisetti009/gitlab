@@ -25,7 +25,7 @@ module Security
 
         Namespace.group_namespaces.each_batch(of: BATCH_SIZE) do |relation|
           # rubocop:disable CodeReuse/ActiveRecord -- Specific order and use case
-          namespace_values = relation.without_deleted.pluck(:id, :traversal_ids)
+          namespace_values = relation.not_deletion_in_progress.pluck(:id, :traversal_ids)
           # rubocop:enable CodeReuse/ActiveRecord
 
           namespace_ids = FindNamespacesWithAnalyzerStatusesService.execute(namespace_values)

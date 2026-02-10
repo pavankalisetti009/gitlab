@@ -16,10 +16,13 @@ import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import {
   AI_CATALOG_ITEM_LABELS,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
   TRACK_EVENT_DELETE_AI_CATALOG_ITEM,
@@ -55,7 +58,7 @@ export default {
     GlModal: GlModalDirective,
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin(), glAbilitiesMixin(), glFeatureFlagsMixin()],
   inject: {
     isGlobal: {
       default: false,
@@ -150,7 +153,19 @@ export default {
     showEnable() {
       return this.canAdminConsumer && !this.isGlobal && !this.isEnabled;
     },
+    isCreateThirdPartyFlowsAvailable() {
+      return (
+        this.glAbilities.createAiCatalogThirdPartyFlow ??
+        (this.glFeatures.aiCatalogThirdPartyFlows && this.glFeatures.aiCatalogCreateThirdPartyFlows)
+      );
+    },
     showDuplicate() {
+      if (
+        this.item.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW &&
+        !this.isCreateThirdPartyFlowsAvailable
+      ) {
+        return false;
+      }
       return this.canUse && (this.isGlobal || this.canAdmin);
     },
     showDropdown() {

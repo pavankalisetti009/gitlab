@@ -10,11 +10,10 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::ScheduleWorker, feature_cat
   let_it_be(:group3) { create(:group) }
   let_it_be(:group4) { create(:group) }
   let_it_be(:group5) { create(:group) }
-  let_it_be(:deleted_group) { create(:group) }
+  let_it_be(:deleted_group) { create(:group, state: Namespaces::Stateful::STATES[:deletion_in_progress]) }
   let_it_be(:user_namespace) { create(:user_namespace) }
 
   before do
-    deleted_group.namespace_details.update!(deleted_at: Time.current)
     allow(Vulnerabilities::NamespaceStatistics::AdjustmentWorker).to receive(:perform_in)
     stub_const("Vulnerabilities::NamespaceStatistics::ScheduleWorker::BATCH_SIZE", 3)
   end

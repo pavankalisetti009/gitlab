@@ -646,6 +646,70 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe 'when validating duo_workflows_default_image_registry' do
+      it 'allows valid hostnames' do
+        setting.duo_workflows_default_image_registry = 'registry.example.com'
+        expect(setting).to be_valid
+      end
+
+      it 'allows hostnames with port numbers' do
+        setting.duo_workflows_default_image_registry = 'registry.example.com:5000'
+        expect(setting).to be_valid
+      end
+
+      it 'allows blank values' do
+        setting.duo_workflows_default_image_registry = ''
+        expect(setting).to be_valid
+      end
+
+      it 'allows nil values' do
+        setting.duo_workflows_default_image_registry = nil
+        expect(setting).to be_valid
+      end
+
+      it 'disallows invalid hostnames' do
+        setting.duo_workflows_default_image_registry = 'https://registry.example.com'
+        expect(setting).not_to be_valid
+        expect(setting.errors[:duo_workflows_default_image_registry]).to be_present
+      end
+
+      it 'disallows values exceeding maximum length' do
+        setting.duo_workflows_default_image_registry = 'a' * 513
+        expect(setting).not_to be_valid
+        expect(setting.errors[:duo_workflows_default_image_registry]).to be_present
+      end
+    end
+
+    describe '#normalize_duo_workflows_default_image_registry' do
+      it 'normalizes blank string to nil' do
+        setting.duo_workflows_default_image_registry = ''
+        setting.valid?
+
+        expect(setting.duo_workflows_default_image_registry).to be_nil
+      end
+
+      it 'normalizes whitespace-only string to nil' do
+        setting.duo_workflows_default_image_registry = '   '
+        setting.valid?
+
+        expect(setting.duo_workflows_default_image_registry).to be_nil
+      end
+
+      it 'does not change valid values' do
+        setting.duo_workflows_default_image_registry = 'registry.example.com'
+        setting.valid?
+
+        expect(setting.duo_workflows_default_image_registry).to eq('registry.example.com')
+      end
+
+      it 'does not change nil values' do
+        setting.duo_workflows_default_image_registry = nil
+        setting.valid?
+
+        expect(setting.duo_workflows_default_image_registry).to be_nil
+      end
+    end
+
     describe '#duo_availability' do
       using RSpec::Parameterized::TableSyntax
 

@@ -3,7 +3,7 @@
 module Ai
   module DuoWorkflows
     class StartWorkflowService
-      IMAGE = "registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.6"
+      IMAGE_PATH = "gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.6"
       DUO_CLI_VERSION = "8.61.1"
       DWS_STANDARD_CONTEXT_CATEGORY = "agent_platform_standard_context"
 
@@ -93,7 +93,11 @@ module Ai
       end
 
       def instance_image
-        IMAGE
+        "#{ci_template_registry_host}/#{IMAGE_PATH}"
+      end
+
+      def ci_template_registry_host
+        Gitlab::CurrentSettings.duo_workflows_default_image_registry.presence || 'registry.gitlab.com'
       end
 
       def sandbox
