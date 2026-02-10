@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.count_distinct_user_id_from_react_thumbs_down_on_duo_code_review_comment
 description: Count of unique users with thumbs-down reaction given to Duo Code Review comments
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_review_workflow
 performance_indicator_type: []

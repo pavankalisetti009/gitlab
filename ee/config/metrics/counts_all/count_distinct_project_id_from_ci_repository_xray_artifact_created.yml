@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.count_distinct_project_id_from_ci_repository_xray_artifact_created
 description: Count of unique projects where Repository X-Ray CI Job Artifacts are created
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_suggestions
 performance_indicator_type: []

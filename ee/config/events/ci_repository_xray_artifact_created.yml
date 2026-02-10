@@ -6,7 +6,7 @@ classification: duo
 identifiers:
 - project
 - user
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_suggestions
 milestone: '17.11'

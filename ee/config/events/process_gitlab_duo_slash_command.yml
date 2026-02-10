@@ -7,7 +7,7 @@ extra_properties:
 identifiers:
 - user
 - namespace
-product_group: code_creation
+product_group: ai_coding
 milestone: "16.7"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/138457
 tiers:

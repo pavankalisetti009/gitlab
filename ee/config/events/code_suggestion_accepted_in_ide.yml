@@ -35,7 +35,7 @@ additional_properties:
 identifiers:
 - user
 - project
-product_group: code_creation
+product_group: ai_coding
 milestone: '17.1'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153881
 tiers:

@@ -7,7 +7,7 @@ identifiers:
 - project
 - namespace
 - user
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_review_workflow
 milestone: '18.3'

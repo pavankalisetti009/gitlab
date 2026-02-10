@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_mention_gitlabduo_in_mr_comment
 description: Count of total mentions of @GitLabDuo in MR comments
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_review_workflow
 performance_indicator_type: []

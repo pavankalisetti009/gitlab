@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_encounter_duo_code_review_error_during_review
 description: Count of all occurences of Duo Code Review error during review
-product_group: code_creation
+product_group: ai_coding
 product_categories:
 - code_review_workflow
 performance_indicator_type: []
