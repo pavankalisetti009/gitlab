@@ -16,12 +16,8 @@ describe('WorkItemLinkChildMetadataEE', () => {
   const createComponent = ({
     metadataWidgets = workItemObjectiveMetadataWidgetsEE,
     isChildItemOpen = true,
-    hasIterationsFeature = false,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemLinkChildMetadata, {
-      provide: {
-        hasIterationsFeature,
-      },
       propsData: {
         iid: '1',
         reference: 'test-project-path#1',
@@ -205,9 +201,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
     const findIteration = () => wrapper.findComponent(WorkItemIterationAttribute);
 
     it('renders iteration', () => {
-      createComponent({
-        hasIterationsFeature: true,
-      });
+      createComponent();
 
       expect(findIteration().exists()).toBe(true);
     });
@@ -218,16 +212,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
           ...ITERATION,
           iteration: null,
         },
-        hasIterationsFeature: false,
       });
-      expect(findIteration().exists()).toBe(false);
-    });
-
-    it('does not render when iteration feature is disabled', () => {
-      createComponent({
-        hasIterationsFeature: false,
-      });
-
       expect(findIteration().exists()).toBe(false);
     });
   });

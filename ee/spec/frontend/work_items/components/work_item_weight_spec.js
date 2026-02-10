@@ -27,7 +27,6 @@ describe('WorkItemWeight component', () => {
 
   const createComponent = ({
     canUpdate = true,
-    hasIssueWeightsFeature = true,
     isEditing = false,
     weight = null,
     editable = true,
@@ -44,9 +43,6 @@ describe('WorkItemWeight component', () => {
         workItemId,
         workItemType: 'Task',
       },
-      provide: {
-        hasIssueWeightsFeature,
-      },
       stubs: {
         WorkItemSidebarWidget,
       },
@@ -58,13 +54,6 @@ describe('WorkItemWeight component', () => {
   };
 
   describe('rendering widget', () => {
-    it('renders nothing if license not available', async () => {
-      createComponent({ hasIssueWeightsFeature: false });
-      await nextTick();
-
-      expect(findHeader().exists()).toBe(false);
-    });
-
     // 'editable' property means if it's available for that work item type
     it('renders nothing if not editable', async () => {
       createComponent({ editable: false });

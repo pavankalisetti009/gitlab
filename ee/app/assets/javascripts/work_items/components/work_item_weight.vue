@@ -26,7 +26,6 @@ export default {
     WorkItemWeightConflictWarning,
   },
   mixins: [Tracking.mixin()],
-  inject: ['hasIssueWeightsFeature'],
   props: {
     canUpdate: {
       type: Boolean,
@@ -79,9 +78,6 @@ export default {
     isWorkItemWidgetAvailable() {
       // `editable` means if it is available for that work item type (not related to user permission)
       return this.widget?.widgetDefinition?.editable;
-    },
-    displayWeightWidget() {
-      return this.hasIssueWeightsFeature && this.isWorkItemWidgetAvailable;
     },
   },
   methods: {
@@ -156,7 +152,7 @@ export default {
 
 <template>
   <work-item-sidebar-widget
-    v-if="displayWeightWidget"
+    v-if="isWorkItemWidgetAvailable"
     :can-update="canUpdate"
     :is-updating="isUpdating"
     data-testid="work-item-weight"

@@ -32,7 +32,6 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [timeagoMixin, glFeatureFlagsMixin()],
-  inject: ['hasIterationsFeature'],
   props: {
     reference: {
       type: String,
@@ -78,7 +77,7 @@ export default {
       return this.rolledUpWeight || this.weight;
     },
     iteration() {
-      return this.hasIterationsFeature && this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration;
+      return this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration;
     },
     startDate() {
       return this.metadataWidgets[WIDGET_TYPE_START_AND_DUE_DATE]?.startDate;
