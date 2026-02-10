@@ -36236,6 +36236,9 @@ msgstr ""
 msgid "InProductMarketing|Get Started with GitLab"
 msgstr ""
 
+msgid "InProductMarketing|GitLab Duo Agent Platform: AI across the software development lifecycle"
+msgstr ""
+
 msgid "InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle"
 msgstr ""
 
