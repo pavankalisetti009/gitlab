@@ -50,9 +50,9 @@
   .gl-col-md-4.gl-flex-col.gl-mb-6.gl-items-center.gl-pr-8{ class: "@lg/panel:gl-flex" }
     %div
       - if Feature.enabled?(:ultimate_trial_with_dap, :instance)
-        = step_text = s_('InProductMarketing|GitLab Duo Agent Platform: AI across the software development lifecycle')
+        - step_text = s_('InProductMarketing|GitLab Duo Agent Platform: AI across the software development lifecycle')
       - else
-        = step_text = s_('InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle')
+        - step_text = s_('InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle')
       - experiment(:premium_trial_positioning, actor: current_user) do |e|
         - e.control do
           - ultimate_trial_value_props = [s_('InProductMarketing|One platform for Dev, Sec, and Ops teams'),
