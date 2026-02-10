@@ -91,27 +91,7 @@ module Onboarding
             enabled: user.can?(:admin_namespace, namespace)
           }
         ],
-        trialActions: [
-          {
-            title: s_('LearnGitLab|Assign a GitLab Duo seat to your colleagues'),
-            trackLabel: 'duo_seat_assigned',
-            url: url_helpers.group_settings_gitlab_duo_seat_utilization_index_path(namespace),
-            enabled: user.can?(:read_usage_quotas, namespace) &&
-              GitlabSubscriptions::Duo.any_active_add_on_purchase_for_namespace?(namespace)
-          },
-          {
-            title: s_('LearnGitLab|Add code owners'),
-            trackLabel: 'add_code_owners',
-            url: url_helpers.help_page_path('user/project/codeowners/_index.md', anchor: 'set-up-code-owners')
-          },
-          {
-            title: s_('LearnGitLab|Enable require merge approvals'),
-            trackLabel: 'enable_require_merge_approvals',
-            url: url_helpers.help_page_path(
-              'ci/testing/code_coverage/_index.md', anchor: 'add-a-coverage-check-approval-rule'
-            )
-          }
-        ]
+        trialActions: trial_actions
       }
     end
 
@@ -166,6 +146,33 @@ module Onboarding
 
     def namespace
       project.namespace
+    end
+
+    def trial_actions
+      [
+        (duo_seat_action unless GitlabSubscriptions::Trials.dap_type?(namespace)),
+        {
+          title: s_('LearnGitLab|Add code owners'),
+          trackLabel: 'add_code_owners',
+          url: url_helpers.help_page_path('user/project/codeowners/_index.md', anchor: 'set-up-code-owners')
+        },
+        {
+          title: s_('LearnGitLab|Enable require merge approvals'),
+          trackLabel: 'enable_require_merge_approvals',
+          url: url_helpers.help_page_path(
+            'ci/testing/code_coverage/_index.md', anchor: 'add-a-coverage-check-approval-rule'
+          )
+        }
+      ].compact
+    end
+
+    def duo_seat_action
+      {
+        title: s_('LearnGitLab|Assign a GitLab Duo seat to your colleagues'),
+        trackLabel: 'duo_seat_assigned',
+        url: url_helpers.group_settings_gitlab_duo_seat_utilization_index_path(namespace),
+        enabled: user.can?(:read_usage_quotas, namespace)
+      }
     end
 
     def url_helpers

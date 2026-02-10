@@ -24,7 +24,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
   end
 
   shared_examples 'has the body text' do
-    context 'when #show_dap_copy? is true' do
+    context 'when it is a dap trial' do
       it 'has the new text' do
         is_expected.to have_content(new_title)
 
@@ -34,7 +34,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
       end
     end
 
-    context 'when #show_dap_copy? is false' do
+    context 'when it is not a dap trial' do
       before do
         stub_feature_flags(ultimate_trial_with_dap: false)
       end
@@ -53,7 +53,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
   end
 
   shared_examples 'has the primary action' do
-    context 'when #show_dap_copy? is true' do
+    context 'when it is a dap trial' do
       it 'has the action' do
         expected_link = new_trial_path(namespace_id: namespace.id)
 
@@ -68,7 +68,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_
       end
     end
 
-    context 'when #show_dap_copy? is false' do
+    context 'when it is not a dap trial' do
       before do
         stub_feature_flags(ultimate_trial_with_dap: false)
       end
