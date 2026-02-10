@@ -3,4 +3,9 @@
   alert_options: { data: { testid: 'all-seats-used-alert' }},
   title: _('No more seats in subscription')) do |c|
   - c.with_body do
-    = alert_body
+    %p= s_('SeatsManagement|Your namespace has used all the seats in your subscription. To avoid overages from adding new users, purchase more seats or turn on restricted access.')
+  - c.with_actions do
+    = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/manage_users_and_seats.md', anchor: 'buy-more-seats'), button_options: { class: 'gl-mr-3' }) do
+      = s_('Purchase more seats')
+    = render Pajamas::ButtonComponent.new(variant: :default, href: help_page_path('user/group/manage.md', anchor: 'turn-on-restricted-access')) do
+      = s_('SeatsManagement|Turn on restricted access')

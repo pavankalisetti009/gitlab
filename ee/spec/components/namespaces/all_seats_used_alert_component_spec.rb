@@ -39,14 +39,14 @@ RSpec.describe Namespaces::AllSeatsUsedAlertComponent, :saas, feature_category: 
 
     it 'shows an info text' do
       expect(element).to have_text "Your namespace has used all the seats in your subscription. " \
-        "To avoid overages from adding new users, consider turning on restricted access, or purchase more seats."
+        "To avoid overages from adding new users, purchase more seats or turn on restricted access."
     end
 
     it 'contains the correct links' do
-      expect(element).to have_link 'turning on restricted access', href:
-        help_page_path('user/group/manage.md', anchor: 'turn-on-restricted-access')
-      expect(element).to have_link 'purchase more seats', href:
+      expect(element).to have_link 'Purchase more seats', href:
         help_page_path('subscriptions/manage_users_and_seats.md', anchor: 'buy-more-seats')
+      expect(element).to have_link 'Turn on restricted access', href:
+        help_page_path('user/group/manage.md', anchor: 'turn-on-restricted-access')
     end
   end
 

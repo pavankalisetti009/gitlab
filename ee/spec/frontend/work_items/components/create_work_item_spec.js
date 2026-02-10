@@ -108,10 +108,6 @@ describe('EE Create work item component', () => {
       },
       provide: {
         groupPath: 'group-path',
-        hasIssuableHealthStatusFeature: false,
-        hasIterationsFeature: true,
-        hasIssueWeightsFeature: true,
-        hasStatusFeature: true,
         issuesSettings: '/groups/twitter/-/settings/issues',
       },
       stubs: {

@@ -79,7 +79,6 @@ describe('WorkItemStatus component', () => {
     workItemTypesHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesQueryResponse),
     mutationHandler = successUpdateWorkItemMutationHandler,
     workItemId = 'gid://gitlab/WorkItem/1',
-    hasStatusFeature = true,
     workspacePermissionsResponse = mockGroupPermissionsQueryResponse(),
   } = {}) => {
     const workItemResponse = workItemByIidResponseFactory({
@@ -105,7 +104,6 @@ describe('WorkItemStatus component', () => {
         workItemId,
       },
       provide: {
-        hasStatusFeature,
         issuesSettings: '/groups/test-project-path/-/settings/issues',
       },
     });
@@ -148,15 +146,6 @@ describe('WorkItemStatus component', () => {
       expect(wrapper.text()).toContain('In progress');
       expect(findSidebarDropdownWidget().props('canUpdate')).toBe(false);
     });
-  });
-
-  it('does not render the dropdown when the license is not available', async () => {
-    createComponent({
-      hasStatusFeature: false,
-    });
-    await waitForPromises();
-
-    expect(findSidebarDropdownWidget().exists()).toBe(false);
   });
 
   describe('Dropdown options', () => {

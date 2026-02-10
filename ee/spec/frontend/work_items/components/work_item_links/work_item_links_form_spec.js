@@ -61,7 +61,6 @@ describe('WorkItemLinksForm', () => {
 
   const createComponent = async ({
     parentConfidential = false,
-    hasIterationsFeature = false,
     parentIteration = null,
     parentMilestone = null,
     formType = FORM_TYPES.create,
@@ -94,9 +93,6 @@ describe('WorkItemLinksForm', () => {
           createGroupLevelWorkItems,
         },
       },
-      provide: {
-        hasIterationsFeature,
-      },
       stubs: {
         GlFormGroup: stubComponent(GlFormGroup, {
           props: ['state', 'invalidFeedback'],
@@ -122,7 +118,6 @@ describe('WorkItemLinksForm', () => {
   describe('associate iteration with child item', () => {
     it('updates when parent has an iteration associated', async () => {
       await createComponent({
-        hasIterationsFeature: true,
         parentIteration: mockParentIteration,
       });
       findInput().vm.$emit('input', 'Create task test');
@@ -141,9 +136,7 @@ describe('WorkItemLinksForm', () => {
     });
 
     it('does not send the iteration widget to mutation when parent has no iteration associated', async () => {
-      await createComponent({
-        hasIterationsFeature: true,
-      });
+      await createComponent();
       findInput().vm.$emit('input', 'Create task test');
 
       findForm().vm.$emit('submit', {
@@ -161,7 +154,6 @@ describe('WorkItemLinksForm', () => {
 
     it('does not send the iteration widget to mutation when iteration is not supported in child type', async () => {
       await createComponent({
-        hasIterationsFeature: true,
         parentIteration: mockParentIteration,
         childrenType: WORK_ITEM_TYPE_NAME_KEY_RESULT,
       });
