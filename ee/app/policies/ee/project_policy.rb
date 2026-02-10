@@ -723,7 +723,7 @@ module EE
         enable :admin_vulnerability_issue_link
         enable :admin_vulnerability_merge_request_link
         enable :admin_vulnerability_external_issue_link
-        enable :read_security_project_tracked_refs
+        enable :read_security_project_tracked_ref
       end
 
       rule { can?(:admin_vulnerability) }.policy do

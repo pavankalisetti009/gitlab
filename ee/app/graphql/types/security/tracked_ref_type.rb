@@ -8,7 +8,7 @@ module Types
 
       connection_type_class Types::CountableConnectionType
 
-      authorize :read_security_project_tracked_refs
+      authorize :read_security_project_tracked_ref
 
       field :id, GraphQL::Types::ID, null: false,
         description: 'Global ID of the tracked ref.'
