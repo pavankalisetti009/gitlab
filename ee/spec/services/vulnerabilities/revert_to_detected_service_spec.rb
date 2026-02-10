@@ -36,7 +36,6 @@ RSpec.describe Vulnerabilities::RevertToDetectedService, feature_category: :vuln
       revert_vulnerability_to_detected
     end
 
-
     it_behaves_like 'calls vulnerability statistics utility services in order'
 
     it_behaves_like 'calls Vulnerabilities::Findings::RiskScoreCalculationService'

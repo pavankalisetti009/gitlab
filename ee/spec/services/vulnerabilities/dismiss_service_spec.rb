@@ -49,7 +49,6 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
         expect { dismiss_vulnerability }.not_to change { Vulnerabilities::Read.count }
       end
     end
-
   end
 
   context 'when vulnerability state is different from the requested state' do
