@@ -37,13 +37,8 @@ module Security
       end
 
       def policy_in_warn_mode?(policy)
-        warn_mode_feature_enabled? && policy[:enforcement_type] == Security::Policy::ENFORCEMENT_TYPE_WARN
+        policy[:enforcement_type] == Security::Policy::ENFORCEMENT_TYPE_WARN
       end
-
-      def warn_mode_feature_enabled?
-        Feature.enabled?(:security_policy_approval_warn_mode, project)
-      end
-      strong_memoize_attr :warn_mode_feature_enabled?
     end
   end
 end

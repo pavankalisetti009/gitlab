@@ -92,11 +92,7 @@ module Security
 
         [
           summary,
-          (violations_overview if warn_mode_enabled?),
-          (newly_introduced_violations unless warn_mode_enabled?),
-          (previously_existing_violations unless warn_mode_enabled?),
-          (any_merge_request_commits(details.any_merge_request_violations) unless warn_mode_enabled?),
-          (license_scanning_violations unless warn_mode_enabled?),
+          violations_overview,
           error_messages,
           comparison_pipelines,
           warn_mode_approval_setting_conflicts
@@ -130,14 +126,6 @@ module Security
           if details.fail_open_policies.any?
             "\nThe following policies enforced on your project were skipped because they are configured to fail open: " \
               "#{details.fail_open_policies.join(', ')}.\n\n#{array_to_list(details.fail_open_messages)}"
-          end
-        }
-
-        #{
-          if !warn_mode_enabled? && [newly_introduced_violations, previously_existing_violations, any_merge_request_commits(details.any_merge_request_violations)].any?(&:present?)
-            blocking_violations? ? VIOLATIONS_BLOCKING_TITLE : VIOLATIONS_DETECTED_TITLE
-          else
-            ''
           end
         }
         MARKDOWN
@@ -327,17 +315,13 @@ module Security
       end
       strong_memoize_attr :previously_existing_violations
 
-      def scan_finding_violations(violations, title = nil)
+      def scan_finding_violations(violations)
         list = violations.map do |violation|
           build_scan_finding_violation_line(violation)
         end
         return if list.empty?
 
         <<~MARKDOWN
-        #{'---' unless warn_mode_enabled?}
-
-        #{title if !warn_mode_enabled? && title}
-
         #{violations_list(list)}
         MARKDOWN
       end
@@ -350,13 +334,6 @@ module Security
 
         #{violations_list(license_scanning_violations_list)}
         MARKDOWN
-      end
-
-      # TODO: Remove with `security_policy_approval_warn_mode` feature flag
-      def license_scanning_violations_list
-        details.license_scanning_violations.map do |violation|
-          build_license_scanning_violation_line(violation)
-        end
       end
 
       def enforced_license_scanning_violations_list
@@ -444,8 +421,6 @@ module Security
         return if list.empty?
 
         <<~MARKDOWN
-          #{'---' unless warn_mode_enabled?}
-
           Unsigned commits:
 
           #{violations_list(list)}
@@ -471,7 +446,7 @@ module Security
       end
 
       def warn_mode_approval_setting_conflicts
-        return unless Feature.enabled?(:security_policy_approval_warn_mode, project) && details.warn_mode_policies.any?
+        return unless details.warn_mode_policies.any?
 
         overrides = ::Security::ScanResultPolicies::ApprovalSettingsOverrides.new(
           project: merge_request.target_project,
@@ -530,7 +505,7 @@ module Security
       end
 
       def warn_mode_summary
-        return unless warn_mode_enabled? && details.warn_mode_policies.any?
+        return unless details.warn_mode_policies.any?
 
         warn_mode_policy_names = details.warn_mode_policies.map(&:name).sort
 
@@ -541,11 +516,6 @@ module Security
       def array_to_list(array)
         array.map { |item| "- #{item}" }.join("\n")
       end
-
-      def warn_mode_enabled?
-        Feature.enabled?(:security_policy_approval_warn_mode, project)
-      end
-      strong_memoize_attr :warn_mode_enabled?
     end
   end
 end

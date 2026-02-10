@@ -33,7 +33,7 @@ module EE
             .prevent_pushing_and_force_pushing
             .including_approval_policy_rules
 
-          blocking_policies = blocking_policies.without_warn_mode if warn_mode_enabled?
+          blocking_policies = blocking_policies.without_warn_mode
 
           blocking_policies.any? { |policy| policy_rules_apply?(policy) }
         end

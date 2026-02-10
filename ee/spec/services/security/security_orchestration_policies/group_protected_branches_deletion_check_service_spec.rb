@@ -93,14 +93,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDe
       let(:params) { {} }
 
       it { is_expected.to be(false) }
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policy_approval_warn_mode: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
     end
 
     context 'with warn mode policies only' do
@@ -108,10 +100,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDe
 
       it { is_expected.to be(true) }
 
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policy_approval_warn_mode: false)
-        end
+      context 'when ignore_warn_mode is true' do
+        let(:service) { described_class.new(group: group, params: params, ignore_warn_mode: true) }
 
         it { is_expected.to be(false) }
       end

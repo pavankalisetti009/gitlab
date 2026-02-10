@@ -123,17 +123,21 @@ RSpec.describe Projects::Security::VulnerabilitiesController, feature_category: 
             expect(assigns(:policy_dismissals)).not_to include(open_policy_dismissal)
           end
         end
+      end
 
-        context 'when feature is disabled' do
-          before do
-            stub_feature_flags(security_policy_approval_warn_mode: false)
+      context 'when finding_uuid is nil' do
+        let_it_be(:finding) { create(:vulnerabilities_finding, vulnerability: vulnerability, project: vulnerability.project) }
+
+        before do
+          allow_next_found_instance_of(Vulnerability) do |vuln|
+            allow(vuln).to receive(:vulnerability_finding).and_return(nil)
           end
+        end
 
-          it 'assigns an empty array for policy dismissals' do
-            show_vulnerability
+        it 'returns an empty array for policy dismissals' do
+          show_vulnerability
 
-            expect(assigns(:policy_dismissals)).to eq([])
-          end
+          expect(assigns(:policy_dismissals)).to eq([])
         end
       end
     end

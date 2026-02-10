@@ -40,14 +40,6 @@ RSpec.describe Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventsWo
 
         it { is_expected.to be(false) }
       end
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policy_approval_warn_mode: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
     end
 
     context 'with invalid merge request ID' do
@@ -92,14 +84,6 @@ RSpec.describe Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventsWo
       context 'when merge request is not open' do
         before do
           merge_request.close!
-        end
-
-        include_examples 'does not call service'
-      end
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policy_approval_warn_mode: false)
         end
 
         include_examples 'does not call service'

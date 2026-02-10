@@ -310,18 +310,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
 
       it('is excluded') { is_expected.to contain_exactly 'Other', 'Warn mode' }
     end
-
-    context 'when security_policy_approval_warn_mode feature flag is disabled' do
-      before do
-        stub_feature_flags(security_policy_approval_warn_mode: false)
-      end
-
-      it 'includes warn mode policies' do
-        expect(fail_closed_policies).to include('Warn mode')
-      end
-
-      it { is_expected.to contain_exactly 'Policy', 'Other', 'Warn mode' }
-    end
   end
 
   describe '#fail_open_policies' do
@@ -343,16 +331,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
     end
 
     it { is_expected.to contain_exactly 'Other', 'Warn mode' }
-
-    context 'when security_policy_approval_warn_mode feature flag is disabled' do
-      before do
-        stub_feature_flags(security_policy_approval_warn_mode: false)
-      end
-
-      it 'includes warn mode policies' do
-        expect(fail_open_policies).to contain_exactly 'Other', 'Warn mode'
-      end
-    end
   end
 
   describe '#warn_mode_policies' do

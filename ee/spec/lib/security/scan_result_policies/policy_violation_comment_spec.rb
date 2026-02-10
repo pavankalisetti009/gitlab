@@ -261,24 +261,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           it { is_expected.to include('Previously found `scan_finding` violations that users can bypass') }
         end
 
-        context 'with feature disabled' do
-          before do
-            stub_feature_flags(security_policy_approval_warn_mode: false)
-
-            build_violation_details(:scan_finding,
-              {
-                context: { pipeline_ids: [pipeline.id] },
-                violations: { scan_finding: { uuids: { newly_detected: [uuid_new] } } }
-              },
-              policy_rule: warn_mode_policy_rule)
-          end
-
-          it { is_expected.to exclude('Newly detected enforced `scan_finding` violations') }
-          it { is_expected.to exclude('Newly detected `scan_finding` violations that users can bypass') }
-          it { is_expected.to exclude(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
-          it { is_expected.to include('This merge request introduces the following violations') }
-        end
-
         # rubocop:disable RSpec/MultipleMemoizedHelpers -- required for test setup
         context 'with any_merge_request violations' do
           let_it_be(:any_mr_policy) do
@@ -620,33 +602,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
               end
             end
           end
-
-          context 'with feature disabled' do
-            let_it_be(:policy3) do
-              create(:scan_result_policy_read, project: project,
-                security_orchestration_policy_configuration: security_orchestration_policy_configuration)
-            end
-
-            before do
-              stub_feature_flags(security_policy_approval_warn_mode: false)
-
-              comment.add_report_type('license_scanning', true)
-
-              build_violation_details(:license_scanning,
-                {
-                  violations: { license_scanning: { 'Apache-2.0' => %w[package-c] } }
-                },
-                policy_read: policy3,
-                policy_rule: license_warn_policy_rule,
-                name: 'Warn License Policy')
-            end
-
-            it { is_expected.to exclude('Enforced `license_finding` violations') }
-            it { is_expected.to exclude('`license_finding` violations that users can bypass') }
-            it { is_expected.to exclude(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
-            it { is_expected.to include('Out-of-policy licenses:') }
-            it { is_expected.to include('Apache-2.0') }
-          end
           # rubocop:enable RSpec/MultipleMemoizedHelpers
         end
       end
@@ -776,22 +731,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
             end
           end
 
-          context 'when the feature flag is disabled' do
-            before do
-              stub_feature_flags(security_policy_approval_warn_mode: false)
-
-              allow_next_instance_of(::Security::ScanResultPolicies::PolicyViolationDetails) do |details|
-                allow(details).to receive(:warn_mode_policies).and_return([warn_mode_policy])
-              end
-            end
-
-            it 'does not include warn-mode summary' do
-              expect(body).not_to include(
-                '**Note:** The following policies are in warn-mode and can be bypassed to make approvals optional:'
-              )
-            end
-          end
-
           context 'without warn-mode policy approval settings overrides' do
             let_it_be(:enforced_policy) do
               create(:security_policy,
@@ -897,18 +836,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
               expect(body).to include("`#{warn_mode_policy_3.name}`")
               expect(body).to include("`#{warn_mode_policy_4.name}`")
             end
-
-            context 'with feature disabled' do
-              before do
-                stub_feature_flags(security_policy_approval_warn_mode: false)
-              end
-
-              it 'excludes overrides segment' do
-                expect(body).to exclude(
-                  ':lock: **Warn-mode policies set more restrictive approval settings**'
-                )
-              end
-            end
           end
         end
       end
@@ -947,19 +874,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
         shared_examples_for 'title for detected violations' do
           it { is_expected.to include described_class::VIOLATIONS_BLOCKING_TITLE }
           it { is_expected.not_to include described_class::VIOLATIONS_DETECTED_TITLE }
-
-          context 'when approvals are optional' do
-            let(:report_requires_approval) { false }
-
-            context 'with warn mode disabled' do
-              before do
-                stub_feature_flags(security_policy_approval_warn_mode: false)
-              end
-
-              it { is_expected.not_to include described_class::VIOLATIONS_BLOCKING_TITLE }
-              it { is_expected.to include described_class::VIOLATIONS_DETECTED_TITLE }
-            end
-          end
         end
 
         shared_examples 'with CVE enrichment data' do

@@ -60,14 +60,6 @@ RSpec.describe Security::ScanResultPolicies::AuditWarnModeMergeRequestApprovalSe
       include_examples 'does not call service'
     end
 
-    context 'with feature disabled' do
-      before do
-        stub_feature_flags(security_policy_approval_warn_mode: false)
-      end
-
-      include_examples 'does not call service'
-    end
-
     context 'when merge request is not open' do
       before do
         merge_request.close

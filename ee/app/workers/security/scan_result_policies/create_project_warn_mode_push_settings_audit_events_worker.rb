@@ -17,8 +17,6 @@ module Security
       def perform(project_id, policy_id)
         project = Project.find_by_id(project_id) || return
 
-        return if Feature.disabled?(:security_policy_approval_warn_mode, project)
-
         policy = Security::Policy.find_by_id(policy_id) || return
 
         Security::ScanResultPolicies::CreateProjectWarnModePushSettingsAuditEventService
