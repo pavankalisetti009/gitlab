@@ -5,12 +5,14 @@ require 'spec_helper'
 RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :duo_agent_platform do
   let_it_be(:project) { create(:project, :in_group) }
   let_it_be(:different_group) { create(:group) }
-  let_it_be(:human_user) { create(:user, owner_of: [project.group, different_group]) }
+  let_it_be(:human_user) { create(:user, maintainer_of: project) }
   let_it_be(:composite_identity_enforced) { false }
   let_it_be(:service_account_provisioned_by_group) do
     create(:service_account, developer_of: project, provisioned_by_group: project.group,
       composite_identity_enforced: composite_identity_enforced)
   end
+
+  let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, :self_managed) }
 
   let(:current_user) { human_user }
   let(:service_account) { service_account_provisioned_by_group }
@@ -21,8 +23,9 @@ RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :duo_agent_pla
   let(:service) { described_class.new(project: project, current_user: current_user, trigger: trigger) }
 
   before do
-    stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
-    stub_licensed_features(service_accounts: true)
+    stub_ee_application_setting(duo_features_enabled: true)
+    allow(Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+    ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
   end
 
   describe '#execute' do
@@ -63,8 +66,8 @@ RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :duo_agent_pla
       end
     end
 
-    context 'when the current_user is not an owner of the provisioning group of the service account' do
-      let(:current_user) { create(:user) }
+    context 'when the current_user is not a maintainer of the project' do
+      let(:current_user) { create(:user, developer_of: project) }
 
       it 'returns an error and does not create the flow trigger' do
         response = service.execute(params)

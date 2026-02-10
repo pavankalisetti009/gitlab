@@ -33,7 +33,7 @@ module Ai
         return false unless group
         return false unless group.root_ancestor.id == project.root_ancestor.id
 
-        Ability.allowed?(current_user, :admin_service_accounts, group)
+        Ability.allowed?(current_user, :manage_ai_flow_triggers, project)
       end
 
       def enforce_composite_identity!(service_account)
