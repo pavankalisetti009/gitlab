@@ -85,7 +85,8 @@ module API
             params do
               use :id_and_path
             end
-            route_setting :authorization, permissions: :download_maven_package_file, boundary: -> { registry.group }
+            route_setting :authorization, permissions: :download_maven_package_file, boundary: -> { registry.group },
+              boundary_type: :group
             get format: false do
               service_response = ::VirtualRegistries::Packages::Maven::HandleFileRequestService.new(
                 registry: registry,
@@ -120,7 +121,8 @@ module API
                 desc: 'The file being uploaded',
                 documentation: { type: 'file' }
             end
-            route_setting :authorization, permissions: :upload_maven_package_file, boundary: -> { registry.group }
+            route_setting :authorization, permissions: :upload_maven_package_file, boundary: -> { registry.group },
+              boundary_type: :group
             post 'upload' do
               require_gitlab_workhorse!
               authorize!(:read_virtual_registry, registry)

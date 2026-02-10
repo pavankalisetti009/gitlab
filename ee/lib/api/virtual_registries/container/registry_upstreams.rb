@@ -52,7 +52,7 @@ module API
             end
 
             route_setting :authorization, permissions: :associate_container_virtual_registry_upstream,
-              boundary: -> { registry.group }
+              boundary: -> { registry.group }, boundary_type: :group
             post do
               authorize! :create_virtual_registry, registry
 
@@ -88,7 +88,7 @@ module API
               end
 
               route_setting :authorization, permissions: :update_container_virtual_registry_upstream,
-                boundary: -> { registry_upstream.group }
+                boundary: -> { registry_upstream.group }, boundary_type: :group
               patch do
                 authorize! :update_virtual_registry, upstream
 
@@ -113,7 +113,7 @@ module API
               end
 
               route_setting :authorization, permissions: :disassociate_container_virtual_registry_upstream,
-                boundary: -> { registry_upstream.group }
+                boundary: -> { registry_upstream.group }, boundary_type: :group
               delete do
                 authorize! :destroy_virtual_registry, upstream
 
