@@ -1,4 +1,4 @@
-import { GlTabs, GlTab, GlExperimentBadge } from '@gitlab/ui';
+import { GlTabs, GlTab } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import Api from '~/api';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
@@ -230,7 +230,6 @@ describe('~/security_configuration/components/app', () => {
 
         it('renders the tab when correctly licensed', () => {
           expect(wrapper.findComponent(ProjectSecurityAttributesList).exists()).toBe(result);
-          expect(wrapper.findComponent(GlExperimentBadge).exists()).toBe(result);
         });
       },
     );

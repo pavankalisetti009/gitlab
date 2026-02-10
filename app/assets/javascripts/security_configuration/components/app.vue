@@ -1,5 +1,5 @@
 <script>
-import { GlTab, GlTabs, GlSprintf, GlLink, GlAlert, GlButton, GlExperimentBadge } from '@gitlab/ui';
+import { GlTab, GlTabs, GlSprintf, GlLink, GlAlert, GlButton } from '@gitlab/ui';
 import { sprintf, __ } from '~/locale';
 import Api from '~/api';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
@@ -48,7 +48,6 @@ export default {
     LocalStorageSync,
     SectionLayout,
     GlButton,
-    GlExperimentBadge,
     UserCalloutDismisser,
     TrainingSection,
     RefTrackingList,
@@ -340,7 +339,6 @@ export default {
       <gl-tab v-if="shouldShowSecurityAttributes" query-param-value="security-attributes">
         <template #title>
           {{ s__('SecurityAttributes|Security attributes') }}
-          <gl-experiment-badge type="beta" class="gl-ml-2" />
         </template>
         <project-security-attributes-list />
       </gl-tab>
