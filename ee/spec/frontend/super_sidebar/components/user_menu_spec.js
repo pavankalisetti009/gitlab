@@ -22,7 +22,6 @@ describe('UserMenu component', () => {
       },
       provide: {
         isImpersonating: false,
-        projectStudioEnabled: false,
       },
     });
   };

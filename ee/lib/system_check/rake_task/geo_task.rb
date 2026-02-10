@@ -24,7 +24,6 @@ module SystemCheck
           Geo::SystemCheck::EnabledCheck,
           Geo::SystemCheck::CurrentNodeCheck,
           Geo::SystemCheck::GeoDatabasePromotedCheck,
-          Geo::SystemCheck::HTTPCloneEnabledCheck,
           Geo::SystemCheck::ClocksSynchronizationCheck,
           SystemCheck::App::GitUserDefaultSSHConfigCheck,
           Geo::SystemCheck::AuthorizedKeysCheck,
