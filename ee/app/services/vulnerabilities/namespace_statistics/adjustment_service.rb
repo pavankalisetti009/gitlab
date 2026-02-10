@@ -226,7 +226,7 @@ module Vulnerabilities
         return unless namespace_ids_batch.present?
 
         # rubocop:disable CodeReuse/ActiveRecord -- Specific order and use case
-        namespace_values = Namespace.without_deleted.without_project_namespaces
+        namespace_values = Namespace.not_deletion_in_progress.without_project_namespaces
           .id_in(namespace_ids_batch)
           .limit(namespace_ids_batch.length)
           .pluck(:id, :traversal_ids)
