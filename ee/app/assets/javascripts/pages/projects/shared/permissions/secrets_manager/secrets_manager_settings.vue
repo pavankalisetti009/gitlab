@@ -64,11 +64,6 @@ export default {
       type: String,
       required: true,
     },
-    projectId: {
-      type: Number,
-      required: false,
-      default: null,
-    },
   },
   data() {
     return {
@@ -266,7 +261,6 @@ export default {
       v-if="isActive"
       :can-manage-secrets-manager="canManageSecretsManager"
       :full-path="fullPath"
-      :project-id="projectId"
       :context="context"
     />
   </div>
