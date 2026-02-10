@@ -5,7 +5,7 @@ import CustomStatusSettings from 'ee/groups/settings/work_items/custom_status/cu
 import ConfigurableTypesSettings from 'ee/groups/settings/work_items/configurable_types/configurable_types_settings.vue';
 import SearchSettings from '~/search_settings/components/search_settings.vue';
 import WorkItemSettingsHome from 'ee/groups/settings/work_items/work_item_settings_home.vue';
-import { DEFAULT_SETTINGS_CONFIG } from '~/work_items/constants';
+import { DEFAULT_SETTINGS_CONFIG } from 'ee/work_items/constants';
 
 describe('WorkItemSettingsHome', () => {
   let wrapper;

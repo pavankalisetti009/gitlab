@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS_CONFIG } from '~/work_items/constants';
+import { DEFAULT_SETTINGS_CONFIG } from 'ee/work_items/constants';
 import ChangeLifecycleSteps from './custom_status/change_lifecycle/change_lifecycle_steps.vue';
 import WorkItemSettingsHome from './work_item_settings_home.vue';
 
