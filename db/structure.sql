@@ -42628,6 +42628,8 @@ CREATE UNIQUE INDEX i_organization_cluster_agent_mappings_unique_cluster_agent_i
 
 CREATE UNIQUE INDEX i_packages_unique_project_id_package_type_package_name_pattern ON packages_protection_rules USING btree (project_id, package_type, package_name_pattern);
 
+CREATE UNIQUE INDEX i_packages_unique_project_package_type_target_pattern ON packages_protection_rules USING btree (project_id, package_type, target_field, pattern_type, pattern);
+
 CREATE INDEX i_pkgs_deb_file_meta_on_updated_at_package_file_id_when_unknown ON packages_debian_file_metadata USING btree (updated_at, package_file_id) WHERE (file_type = 1);
 
 CREATE UNIQUE INDEX i_pm_licenses_on_spdx_identifier ON pm_licenses USING btree (spdx_identifier);
