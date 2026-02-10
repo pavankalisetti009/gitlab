@@ -958,7 +958,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         where(
           :is_licensed, :is_active_duo_add_on, :is_active_dap_add_on, :is_duo_enterprise, :is_saas,
           :dedicated_instance, :allow_dedicated_self_hosted, :amazon_q_enabled, :is_offline_license,
-          :testing_terms_accepted, :can_manage_self_hosted_settings
+          :self_hosted_dap_per_request_billing_enabled, :can_manage_self_hosted_settings
         ) do
           # Both add-on types available
           true  | true  | true  | true  | false | false | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
@@ -1001,7 +1001,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             allow(::GitlabSubscriptions::AddOnPurchase)
               .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
               .and_return(is_duo_enterprise)
-            allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(testing_terms_accepted)
+            stub_feature_flags(self_hosted_dap_per_request_billing: self_hosted_dap_per_request_billing_enabled)
 
             stub_saas_features(gitlab_com_subscriptions: is_saas)
 
@@ -1028,11 +1028,11 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       context 'when admin', :enable_admin_mode do # -- Table syntax requires long lines for readability
         where(
           :amazon_q_enabled, :is_licensed, :is_active_duo_add_on, :is_active_dap_add_on, :is_offline_license,
-          :is_duo_enterprise, :testing_terms_accepted, :can_manage_instance_model_selection
+          :is_duo_enterprise, :self_hosted_dap_per_request_billing_enabled, :can_manage_instance_model_selection
         ) do
           # Standard cases with Duo add-ons
           false | true  | true  | false | false | true  | false | be_allowed(:manage_instance_model_selection)
-          # With DAP add-on and online license with Duo Enterprise + accepted terms
+          # With DAP add-on and online license with Duo Enterprise and feature flag enabled
           false | true  | false | true  | false | true  | true  | be_allowed(:manage_instance_model_selection)
           # Both add-ons
           false | true  | true  | true  | false | true  | false | be_allowed(:manage_instance_model_selection)
@@ -1065,7 +1065,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             allow(::GitlabSubscriptions::AddOnPurchase)
               .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
               .and_return(is_duo_enterprise)
-            allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(testing_terms_accepted)
+            stub_feature_flags(self_hosted_dap_per_request_billing: self_hosted_dap_per_request_billing_enabled)
           end
 
           it { is_expected.to can_manage_instance_model_selection }
@@ -1087,20 +1087,20 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         # rubocop:disable Layout/LineLength -- Table syntax requires long lines for readability
         where(
           :is_offline_license, :is_dap_add_on_available, :is_duo_enterprise_available,
-          :testing_terms_accepted, :can_read_dap_models, :can_update_dap_models
+          :self_hosted_dap_per_request_billing_enabled, :testing_terms_accepted, :can_read_dap_models, :can_update_dap_models
         ) do
           # Offline cloud license with DAP add-on
-          true  | true  | false | false | be_allowed(:read_dap_self_hosted_model)    | be_allowed(:update_dap_self_hosted_model)
+          true  | true  | false | false | false | be_allowed(:read_dap_self_hosted_model) | be_allowed(:update_dap_self_hosted_model)
+          # Online license without feature flag enabled: no Duo Enterprise + testing terms not accepted
+          false | false | false | true  | false | be_allowed(:read_dap_self_hosted_model) | be_allowed(:update_dap_self_hosted_model)
+          # Online license with feature flag disabled: Duo Enterprise + testing terms accepted
+          false | false | true  | false | true  | be_allowed(:read_dap_self_hosted_model)    | be_allowed(:update_dap_self_hosted_model)
           # Offline cloud license without DAP add-on
-          true  | false | false | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
-          # Online license with Duo Enterprise and accepted terms
-          false | false | true  | true  | be_allowed(:read_dap_self_hosted_model)    | be_allowed(:update_dap_self_hosted_model)
-          # Online license with Duo Enterprise but not accepted terms
-          false | false | true  | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
-          # Online license without Duo Enterprise
-          false | false | false | true  | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
-          # Online license without Duo Enterprise and not accepted terms
-          false | false | false | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
+          true  | false | false | false | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
+          # Online license with Duo Enterprise and feature flag disabled, testing terms not accepted
+          false | false | true  | false | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
+          # Online license without Duo Enterprise and feature flag disabled
+          false | false | false | false | false | be_disallowed(:read_dap_self_hosted_model) | be_disallowed(:update_dap_self_hosted_model)
         end
         # rubocop:enable Layout/LineLength
 
@@ -1118,6 +1118,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
               .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
               .and_return(is_duo_enterprise_available)
             allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(testing_terms_accepted)
+            stub_feature_flags(self_hosted_dap_per_request_billing: self_hosted_dap_per_request_billing_enabled)
           end
 
           it { is_expected.to can_read_dap_models }

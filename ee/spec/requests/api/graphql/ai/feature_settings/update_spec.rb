@@ -64,6 +64,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
       before do
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(current_user, :manage_self_hosted_models_settings).and_return(false)
+        stub_feature_flags(self_hosted_dap_per_request_billing: false)
       end
 
       context 'when attempting to update gitlab managed model feature settings' do

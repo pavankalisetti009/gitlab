@@ -38,6 +38,10 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
       end
     end
 
+    before do
+      stub_feature_flags(self_hosted_dap_per_request_billing: false)
+    end
+
     context 'when the user does not have write access' do
       let(:current_user) { create(:user) }
 

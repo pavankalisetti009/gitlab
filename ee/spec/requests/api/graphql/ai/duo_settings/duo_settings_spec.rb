@@ -21,6 +21,10 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
 
   let(:duo_settings_data) { graphql_data_at(:duoSettings) }
 
+  before do
+    stub_feature_flags(self_hosted_dap_per_request_billing: false)
+  end
+
   context 'when the user is authorized' do
     let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
 
