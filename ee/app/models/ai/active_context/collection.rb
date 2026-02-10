@@ -9,6 +9,7 @@ module Ai
         include_ref_fields: :boolean,
         indexing_embedding_versions: [:integer, { array: true }],
         search_embedding_version: :integer,
+        previous_embedding_field: :string,
         collection_class: :string
 
       jsonb_accessor :options,
@@ -46,6 +47,24 @@ module Ai
 
       def name_without_prefix
         connection.adapter.collection_name_without_prefix(name)
+      end
+
+      def current_indexing_embedding_model
+        metadata_with_indifferent_access(:current_indexing_embedding_model)
+      end
+
+      def next_indexing_embedding_model
+        metadata_with_indifferent_access(:next_indexing_embedding_model)
+      end
+
+      def search_embedding_model
+        metadata_with_indifferent_access(:search_embedding_model)
+      end
+
+      private
+
+      def metadata_with_indifferent_access(key)
+        metadata.with_indifferent_access[key]&.with_indifferent_access
       end
     end
   end
