@@ -16,6 +16,38 @@ RSpec.describe UserDetail, feature_category: :system_access do
         expect(user_detail).to be_valid
       end
     end
+
+    describe 'provisioning source mutual exclusivity' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project) }
+
+      context 'when both provisioned_by_group_id and provisioned_by_project_id are set' do
+        subject(:user_detail) { build(:user_detail, provisioned_by_group: group, provisioned_by_project: project) }
+
+        it 'is invalid' do
+          expect(user_detail).not_to be_valid
+          expect(user_detail.errors[:base]).to include('User cannot be provisioned by both group and project')
+        end
+      end
+
+      context 'when only provisioned_by_group_id is set' do
+        subject(:user_detail) { build(:user_detail, provisioned_by_group: group) }
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'when only provisioned_by_project_id is set' do
+        subject(:user_detail) { build(:user_detail, provisioned_by_project: project) }
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'when neither is set' do
+        subject(:user_detail) { build(:user_detail) }
+
+        it { is_expected.to be_valid }
+      end
+    end
   end
 
   describe 'scopes' do
