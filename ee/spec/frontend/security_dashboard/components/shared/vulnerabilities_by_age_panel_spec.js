@@ -160,6 +160,9 @@ describe('VulnerabilitiesByAgePanel', () => {
         fullPath: mockGroupFullPath,
         projectId: mockFilters.projectId,
         severity: [],
+        includeBySeverity: true,
+        includeByReportType: false,
+        date: '2020-07-06', // TODO: Remove in 18.10 – https://gitlab.com/gitlab-org/gitlab/-/work_items/588152
       });
     });
 
@@ -208,11 +211,36 @@ describe('VulnerabilitiesByAgePanel', () => {
         fullPath: mockGroupFullPath,
         projectId: mockFilters.projectId,
         severity: ['CRITICAL', 'MEDIUM'],
+        includeBySeverity: true,
+        includeByReportType: false,
+        date: '2020-07-06', // TODO: Remove in 18.10 – https://gitlab.com/gitlab-org/gitlab/-/work_items/588152
       });
     });
   });
 
   describe('group by functionality', () => {
+    describe('when report type button is clicked', () => {
+      beforeEach(() => {
+        clickToggleButtonBy('reportType');
+      });
+      it('switches to report type grouping', () => {
+        expect(findPanelGroupBy().props('value')).toBe('reportType');
+      });
+
+      it('sets `includeByReportType` to true and `includeBySeverity` to false', async () => {
+        await waitForPromises();
+
+        expect(vulnerabilitiesByAgeHandler).toHaveBeenCalledWith({
+          fullPath: mockGroupFullPath,
+          projectId: mockFilters.projectId,
+          severity: [],
+          includeBySeverity: false,
+          includeByReportType: true,
+          date: '2020-07-06', // TODO: Remove in 18.10 – https://gitlab.com/gitlab-org/gitlab/-/work_items/588152
+        });
+      });
+    });
+
     it('switches to report type grouping when report type button is clicked', async () => {
       await clickToggleButtonBy('reportType');
 

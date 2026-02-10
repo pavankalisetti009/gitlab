@@ -1,6 +1,7 @@
 <script>
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import { s__ } from '~/locale';
+import { formatDate } from '~/lib/utils/datetime_utility';
 import { readFromUrl, writeToUrl } from 'ee/security_dashboard/utils/panel_state_url_sync';
 import groupVulnerabilityByAge from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_by_age.query.graphql';
 import { formatVulnerabilitiesBySeries } from 'ee/security_dashboard/utils/chart_utils';
@@ -51,10 +52,14 @@ export default {
     vulnerabilitiesByAge: {
       query: groupVulnerabilityByAge,
       variables() {
+        const today = formatDate(new Date(), 'isoDate');
         return {
           ...this.filters,
           fullPath: this.fullPath,
           severity: this.severity,
+          includeBySeverity: this.groupedBy === 'severity',
+          includeByReportType: this.groupedBy === 'reportType',
+          date: today, // TODO: remove in 18.10 - https://gitlab.com/gitlab-org/gitlab/-/work_items/588152
         };
       },
       update(data) {
@@ -89,9 +94,6 @@ export default {
       });
     },
     groupedBy(value) {
-      // TODO: remove once we're using actual data. This is to mimic switching between
-      // severity and reportType which triggers a new call
-      this.$apollo.queries.vulnerabilitiesByAge.refetch();
       writeToUrl({
         panelId: PANEL_ID,
         paramName: 'groupBy',
