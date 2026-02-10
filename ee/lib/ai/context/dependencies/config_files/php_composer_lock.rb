@@ -31,7 +31,7 @@ module Ai
           # ]
           #
           def extract_libs
-            parsed = ::Gitlab::Json.parse(content)
+            parsed = ::Gitlab::Json.safe_parse(content)
 
             dig_in(parsed, 'packages').try(:map) do |dep|
               Lib.new(name: dig_in(dep, 'name'), version: dig_in(dep, 'version'))
