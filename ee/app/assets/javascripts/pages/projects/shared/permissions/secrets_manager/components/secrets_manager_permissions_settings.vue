@@ -11,8 +11,7 @@ import {
   PERMISSION_CATEGORY_ROLE,
   PERMISSION_CATEGORY_USER,
 } from '../constants';
-import deleteSecretsPermission from '../graphql/delete_secrets_permission.mutation.graphql';
-import secretsPermissionsQuery from '../graphql/secrets_permission.query.graphql';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from '../context_config';
 import PermissionsModal from './secrets_manager_permissions_modal.vue';
 import PermissionsTable from './secrets_manager_permissions_table.vue';
 
@@ -36,10 +35,9 @@ export default {
       type: String,
       required: true,
     },
-    projectId: {
-      type: Number,
-      required: false,
-      default: null,
+    context: {
+      type: String,
+      required: true,
     },
   },
   data() {
@@ -52,14 +50,16 @@ export default {
   },
   apollo: {
     permissions: {
-      query: secretsPermissionsQuery,
+      query() {
+        return this.contextConfig.queries.permissions;
+      },
       variables() {
         return {
-          projectPath: this.fullPath,
+          fullPath: this.fullPath,
         };
       },
       update(data) {
-        return data.projectSecretsPermissions.nodes || [];
+        return data?.secretsPermissions.nodes || [];
       },
       error(error) {
         createAlert({
@@ -76,6 +76,9 @@ export default {
     },
   },
   computed: {
+    contextConfig() {
+      return SECRETS_MANAGER_CONTEXT_CONFIG[this.context];
+    },
     deleteModalDescription() {
       if (!this.permissionToBeDeleted) {
         return '';
@@ -149,9 +152,9 @@ export default {
 
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: deleteSecretsPermission,
+          mutation: this.contextConfig.mutations.deletePermission,
           variables: {
-            projectPath: this.fullPath,
+            fullPath: this.fullPath,
             principal: {
               id: Number(this.permissionToBeDeleted.id),
               groupPath: this.permissionToBeDeleted.groupPath,
@@ -160,7 +163,7 @@ export default {
           },
         });
 
-        const error = data.projectSecretsPermissionDelete.errors[0];
+        const error = data?.secretsPermissionDelete.errors[0];
         if (error) {
           createAlert({ message: error });
           return;
@@ -222,7 +225,7 @@ export default {
     <permissions-modal
       :permission-category="selectedPermissionCategory"
       :full-path="fullPath"
-      :project-id="projectId"
+      :context="context"
       @hide="resetSelectedPermissionCategory"
       @refetch="refetchPermissions"
     />

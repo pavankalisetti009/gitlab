@@ -3247,6 +3247,8 @@ paths:
           description: Created
         '401':
           description: Unauthorized
+        '403':
+          description: Forbidden
         '404':
           description: Not found
         '429':
@@ -3262,6 +3264,10 @@ paths:
                   type: string
                   description: workflow type based on its capability
                   example: software_developer
+                root_namespace_id:
+                  type: string
+                  description: the ID of the root namespace
+                  example: '1'
   "/api/v4/ai/duo_workflows/list_tools":
     get:
       operationId: getApiV4AiDuoWorkflowsListTools

@@ -117,7 +117,7 @@ export const MOCK_GROUPS_API = [
 
 export const mockCreatePermissionResponse = {
   data: {
-    projectSecretsPermissionUpdate: {
+    secretsPermissionUpdate: {
       secretsPermission: {
         principal: {
           id: 1,
@@ -135,7 +135,7 @@ export const mockCreatePermissionResponse = {
 
 export const mockCreatePermissionErrorResponse = (errorMessage) => ({
   data: {
-    projectSecretsPermissionUpdate: {
+    secretsPermissionUpdate: {
       secretsPermission: null,
       errors: [errorMessage],
       __typename: TYPENAME_SECRET_PERMISSION_UPDATE_PAYLOAD,
@@ -145,8 +145,44 @@ export const mockCreatePermissionErrorResponse = (errorMessage) => ({
 
 export const mockDeletePermissionResponse = (errorMessage) => ({
   data: {
-    projectSecretsPermissionDelete: {
+    secretsPermissionDelete: {
+      errors: errorMessage ? [errorMessage] : [],
+    },
+  },
+});
+
+export const mockCreateGroupPermissionResponse = {
+  data: {
+    secretsPermissionUpdate: {
+      secretsPermission: {
+        principal: {
+          id: 1,
+          type: 'Role',
+          __typename: 'Principal',
+        },
+        actions: ['read', 'write'],
+        __typename: TYPENAME_SECRET_PERMISSION,
+      },
+      errors: [],
+      __typename: TYPENAME_SECRET_PERMISSION_UPDATE_PAYLOAD,
+    },
+  },
+};
+
+export const mockCreateGroupPermissionErrorResponse = (errorMessage) => ({
+  data: {
+    secretsPermissionUpdate: {
+      secretsPermission: null,
       errors: [errorMessage],
+      __typename: TYPENAME_SECRET_PERMISSION_UPDATE_PAYLOAD,
+    },
+  },
+});
+
+export const mockDeleteGroupPermissionResponse = (errorMessage) => ({
+  data: {
+    secretsPermissionDelete: {
+      errors: errorMessage ? [errorMessage] : [],
     },
   },
 });
@@ -160,17 +196,64 @@ export const ROOT_USER_DETAILS = {
   webUrl: 'http://gdk.test:3000/root',
 };
 
+const SECONDARY_USER_DETAILS = {
+  id: 'gid://gitlab/User/4',
+  username: 'lonnie',
+  name: 'Lon Lonnie',
+  avatarUrl:
+    'https://www.gravatar.com/avatar/1e8e3e4b8471a36396bee959a2c31f6fd03ae08a2560bab45205fa795f79f4cf?s=80&d=identicon',
+  webUrl: 'http://gdk.test:3000/lonnie',
+};
+
+const OWNER_PRINCIPAL = {
+  id: 50,
+  type: 'ROLE',
+  userRoleId: null,
+  user: null,
+  group: null,
+};
+
+const ROLE_PRINCIPAL = {
+  id: 20,
+  type: 'ROLE',
+  userRoleId: null,
+  user: null,
+  group: null,
+};
+
+const GROUP_PRINCIPAL = {
+  id: 22,
+  type: 'GROUP',
+  userRoleId: null,
+  user: null,
+  group: {
+    id: 'gid://gitlab/Group/22',
+    name: 'Toolbox',
+    avatarUrl: null,
+    webUrl: 'http://gdk.test:3000/groups/toolbox',
+  },
+};
+
+const USER_PRINCIPAL = {
+  id: 49,
+  type: 'USER',
+  userRoleId: 40,
+  user: {
+    id: 'gid://gitlab/User/49',
+    username: 'kristina.moen',
+    name: 'Ginny McGlynn',
+    avatarUrl:
+      'https://www.gravatar.com/avatar/c491e205f3fc6673ee13fe84efdcad77301b884bdaa5274deb72dafd9c03108e?s=80&d=identicon',
+    webUrl: 'http://gdk.test:3000/kristina.moen',
+  },
+  group: null,
+};
+
 export const OWNER_PERMISSION_NODE = {
   expiredAt: null,
   grantedBy: null,
   actions: ['read', 'write', 'delete'],
-  principal: {
-    id: 50,
-    type: 'ROLE',
-    userRoleId: null,
-    user: null,
-    group: null,
-  },
+  principal: OWNER_PRINCIPAL,
   project: {
     id: 'gid://gitlab/Project/24',
   },
@@ -178,15 +261,9 @@ export const OWNER_PERMISSION_NODE = {
 
 export const ROLE_PERMISSION_NODE = {
   expiredAt: '2035-01-01',
-  grantedBy: { ...ROOT_USER_DETAILS },
+  grantedBy: ROOT_USER_DETAILS,
   actions: ['read', 'write'],
-  principal: {
-    id: 20,
-    type: 'ROLE',
-    userRoleId: null,
-    user: null,
-    group: null,
-  },
+  principal: ROLE_PRINCIPAL,
   project: {
     id: 'gid://gitlab/Project/24',
   },
@@ -194,27 +271,9 @@ export const ROLE_PERMISSION_NODE = {
 
 export const GROUP_PERMISSION_NODE = {
   expiredAt: '2035-01-01',
-  grantedBy: {
-    id: 'gid://gitlab/User/4',
-    username: 'lonnie',
-    name: 'Lon Lonnie',
-    avatarUrl:
-      'https://www.gravatar.com/avatar/1e8e3e4b8471a36396bee959a2c31f6fd03ae08a2560bab45205fa795f79f4cf?s=80&d=identicon',
-    webUrl: 'http://gdk.test:3000/lonnie',
-  },
+  grantedBy: SECONDARY_USER_DETAILS,
   actions: ['read', 'write', 'delete'],
-  principal: {
-    id: 22,
-    type: 'GROUP',
-    userRoleId: null,
-    user: null,
-    group: {
-      id: 'gid://gitlab/Group/22',
-      name: 'Toolbox',
-      avatarUrl: null,
-      webUrl: 'http://gdk.test:3000/groups/toolbox',
-    },
-  },
+  principal: GROUP_PRINCIPAL,
   project: {
     id: 'gid://gitlab/Project/24',
   },
@@ -222,36 +281,77 @@ export const GROUP_PERMISSION_NODE = {
 
 export const USER_PERMISSION_NODE = {
   expiredAt: null,
-  grantedBy: { ...ROOT_USER_DETAILS },
+  grantedBy: ROOT_USER_DETAILS,
   actions: ['read', 'delete'],
-  principal: {
-    id: 49,
-    type: 'USER',
-    userRoleId: 40,
-    user: {
-      id: 'gid://gitlab/User/49',
-      username: 'kristina.moen',
-      name: 'Ginny McGlynn',
-      avatarUrl:
-        'https://www.gravatar.com/avatar/c491e205f3fc6673ee13fe84efdcad77301b884bdaa5274deb72dafd9c03108e?s=80&d=identicon',
-      webUrl: 'http://gdk.test:3000/kristina.moen',
-    },
-    group: null,
-  },
+  principal: USER_PRINCIPAL,
   project: {
     id: 'gid://gitlab/Project/24',
+  },
+};
+
+export const GROUP_OWNER_PERMISSION_NODE = {
+  expiredAt: null,
+  grantedBy: null,
+  actions: ['read', 'write', 'delete'],
+  principal: OWNER_PRINCIPAL,
+  group: {
+    id: 'gid://gitlab/Group/24',
+  },
+};
+
+export const GROUP_ROLE_PERMISSION_NODE = {
+  expiredAt: '2035-01-01',
+  grantedBy: ROOT_USER_DETAILS,
+  actions: ['read', 'write'],
+  principal: ROLE_PRINCIPAL,
+  group: {
+    id: 'gid://gitlab/Group/24',
+  },
+};
+
+export const GROUP_SUBGROUP_PERMISSION_NODE = {
+  expiredAt: '2035-01-01',
+  grantedBy: SECONDARY_USER_DETAILS,
+  actions: ['read', 'write', 'delete'],
+  principal: GROUP_PRINCIPAL,
+  group: {
+    id: 'gid://gitlab/Group/24',
+  },
+};
+
+export const GROUP_USER_PERMISSION_NODE = {
+  expiredAt: null,
+  grantedBy: ROOT_USER_DETAILS,
+  actions: ['read', 'delete'],
+  principal: USER_PRINCIPAL,
+  group: {
+    id: 'gid://gitlab/Group/24',
   },
 };
 
 export const mockPermissionsQueryResponse = (errors = undefined) => ({
   data: {
     errors,
-    projectSecretsPermissions: {
+    secretsPermissions: {
       nodes: [
         OWNER_PERMISSION_NODE,
         ROLE_PERMISSION_NODE,
         GROUP_PERMISSION_NODE,
         USER_PERMISSION_NODE,
+      ],
+    },
+  },
+});
+
+export const mockGroupPermissionsQueryResponse = (errors = undefined) => ({
+  data: {
+    errors,
+    secretsPermissions: {
+      nodes: [
+        GROUP_OWNER_PERMISSION_NODE,
+        GROUP_ROLE_PERMISSION_NODE,
+        GROUP_SUBGROUP_PERMISSION_NODE,
+        GROUP_USER_PERMISSION_NODE,
       ],
     },
   },

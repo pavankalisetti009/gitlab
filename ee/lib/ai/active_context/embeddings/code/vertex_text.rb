@@ -14,30 +14,30 @@ module Ai
           DEFAULT_UNIT_PRIMITIVE = 'generate_embeddings_codebase'
 
           def self.generate_embeddings(contents, unit_primitive: nil, model: nil, user: nil, batch_size: nil)
-            # The caller might explicitly send in `nil` values for these parameters
-            # so we need to override here instead of the method signature
-            batch_size ||= DEFAULT_BATCH_SIZE
-            unit_primitive ||= DEFAULT_UNIT_PRIMITIVE
-
             new(
               contents,
               unit_primitive: unit_primitive,
               model: model,
               user: user,
               batch_size: batch_size
-            ).generate
+            ).execute
           end
 
-          def initialize(contents, unit_primitive:, model:, user:, batch_size:)
+          def initialize(contents, unit_primitive: nil, model: nil, user: nil, batch_size: nil)
             @contents = contents
-            @unit_primitive = unit_primitive
+
+            # The caller might explicitly send in `nil` values for these parameters
+            # so we need to override here instead of the method signature
+            @unit_primitive = unit_primitive || DEFAULT_UNIT_PRIMITIVE
+            @batch_size = batch_size || DEFAULT_BATCH_SIZE
+
             @model = model
             @user = user
-            @batch_size = batch_size
+
             @tracking_context = { action: 'embedding' }
           end
 
-          def generate
+          def execute
             embeddings = []
             contents.each_slice(batch_size) do |batch_contents|
               embeddings += generate_with_recursive_batch_splitting(batch_contents)

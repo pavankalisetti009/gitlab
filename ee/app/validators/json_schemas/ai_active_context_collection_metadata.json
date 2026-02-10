@@ -29,6 +29,108 @@
       "uniqueItems": true,
       "description": "Versions of the embedding models being used for indexing"
     },
+    "current_indexing_embedding_model": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "model_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "required": [
+        "field",
+        "model_ref"
+      ]
+    },
+    "next_indexing_embedding_model": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "model_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "required": [
+        "field",
+        "model_ref"
+      ]
+    },
+    "search_embedding_model": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "model_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "required": [
+        "field",
+        "model_ref"
+      ]
+    },
+    "previous_embedding_field": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "collection_class": {
       "type": [
         "string",

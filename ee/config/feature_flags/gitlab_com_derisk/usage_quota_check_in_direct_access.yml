@@ -1,0 +1,10 @@
+---
+name: usage_quota_check_in_direct_access
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/585865
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/221502
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/589086
+milestone: '18.9'
+group: group::duo chat
+type: gitlab_com_derisk
+default_enabled: false

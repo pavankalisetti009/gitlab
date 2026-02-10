@@ -1205,8 +1205,13 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
     let(:post_without_params) { post api(path, user) }
     let(:post_with_definition) { post api(path, user), params: { workflow_definition: workflow_definition } }
 
+    let(:post_with_params) do
+      post api(path, user), params: { workflow_definition: workflow_definition, root_namespace_id: namespace_id }
+    end
+
     before do
       allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
+
       stub_config(duo_workflow: {
         executor_binary_url: 'https://example.com/executor',
         executor_binary_urls: {
@@ -1219,47 +1224,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
       })
     end
 
-    context 'when rate limited' do
-      it 'returns api error' do
-        allow(Gitlab::ApplicationRateLimiter).to receive(:throttled_request?).and_return(true)
-
-        post_without_params
-
-        expect(response).to have_gitlab_http_status(:too_many_requests)
-        expect(response.headers)
-          .to include('Retry-After' => Gitlab::ApplicationRateLimiter.interval(:duo_workflow_direct_access))
-      end
-    end
-
-    context 'when CreateOauthAccessTokenService returns error' do
-      it 'returns api error' do
-        expect_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
-          expect(service).to receive(:execute).and_return(
-            ServiceResponse.error(message: 'Duo workflow is not enabled for user', http_status: :forbidden) # rubocop:disable Gitlab/ServiceResponse -- Preserve the actual behavior of the service response.
-          )
-        end
-
-        post_without_params
-
-        expect(response).to have_gitlab_http_status(:forbidden)
-      end
-    end
-
-    context 'when DuoWorkflowService returns error' do
-      it 'returns api error' do
-        expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
-          expect(client).to receive(:generate_token).and_return(
-            ServiceResponse.error(message: "could not generate token")
-          )
-        end
-
-        post_without_params
-
-        expect(response).to have_gitlab_http_status(:bad_request)
-      end
-    end
-
-    context 'when success' do
+    shared_context 'when tokens are generated' do
       let(:gitlab_rails_token_expires_at) { 2.hours.from_now.to_i }
       let(:duo_workflow_service_token_expires_at) { 1.hour.from_now.to_i }
 
@@ -1283,10 +1248,160 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
                                                expires_at: duo_workflow_service_token_expires_at })
           )
         end
+
+        allow(::Gitlab::SubscriptionPortal::Client).to receive(:verify_usage_quota).and_return({ success: true })
+      end
+    end
+
+    shared_context 'when usage quota check passes' do
+      before do
+        allow_next_instance_of(::Ai::UsageQuotaService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.success)
+        end
+      end
+    end
+
+    context 'when rate limited' do
+      it 'returns api error' do
+        allow(Gitlab::ApplicationRateLimiter).to receive(:throttled_request?).and_return(true)
+
+        post_without_params
+
+        expect(response).to have_gitlab_http_status(:too_many_requests)
+        expect(response.headers)
+          .to include('Retry-After' => Gitlab::ApplicationRateLimiter.interval(:duo_workflow_direct_access))
+      end
+    end
+
+    context 'when root_namespace_id params is not passed' do
+      context 'when on SaaS' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+
+          allow_next_instance_of(::Ai::UsageQuotaService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'Namespace is required'))
+          end
+        end
+
+        it 'returns error that root_namespace_id is required' do
+          post_with_definition
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(json_response['message']).to include('Namespace is required')
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(usage_quota_check_in_direct_access: false)
+          end
+
+          include_context 'when tokens are generated'
+
+          it 'generates token if feature flag is disabled' do
+            stub_feature_flags(usage_quota_check_in_direct_access: false)
+
+            post_with_definition
+
+            expect(response).to have_gitlab_http_status(:created)
+          end
+        end
       end
 
-      it 'returns access payload' do
+      context 'when on Self-managed instance' do
+        include_context 'when tokens are generated'
+
+        it 'successfully generates a direct access token' do
+          post_with_definition
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+    end
+
+    context 'when CreateOauthAccessTokenService returns error' do
+      include_context 'when usage quota check passes'
+
+      it 'returns api error' do
+        expect_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
+          expect(service).to receive(:execute).and_return(
+            ServiceResponse.error(message: 'Duo workflow is not enabled for user', http_status: :forbidden) # rubocop:disable Gitlab/ServiceResponse -- Preserve the actual behavior of the service response.
+          )
+        end
+
         post_without_params
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'when DuoWorkflowService returns error' do
+      include_context 'when usage quota check passes'
+
+      it 'returns api error' do
+        expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+          expect(client).to receive(:generate_token).and_return(
+            ServiceResponse.error(message: "could not generate token")
+          )
+        end
+
+        post_without_params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+      end
+    end
+
+    context 'when usage quota check fails' do
+      before do
+        allow_next_instance_of(::Ai::UsageQuotaService) do |service|
+          allow(service).to receive(:execute).and_return(
+            ServiceResponse.error(message: 'Usage quota exceeded', reason: :usage_quota_exceeded)
+          )
+        end
+      end
+
+      it 'returns error that root_namespace_id is required' do
+        post_with_definition
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(json_response['message']).to include('USAGE_QUOTA_EXCEEDED: Usage quota exceeded')
+      end
+    end
+
+    context 'when workflow_definition param is passed' do
+      context 'when it is chat' do
+        let(:workflow_definition) { "chat" }
+
+        it 'calls usage quota service for chat feature' do
+          expect(::Ai::UsageQuotaService).to receive(:new)
+            .with(ai_feature: :duo_chat, user: user, namespace: nil)
+
+          post_with_definition
+        end
+      end
+
+      context 'when it is not chat' do
+        let(:workflow_definition) { "software_development" }
+
+        it 'calls usage quota service for duo_agent_platform feature' do
+          expect(::Ai::UsageQuotaService).to receive(:new)
+            .with(ai_feature: :duo_agent_platform, user: user, namespace: nil)
+
+          post_with_definition
+        end
+      end
+    end
+
+    context 'when success' do
+      let(:namespace_id) { group.id }
+
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      include_context 'when tokens are generated'
+
+      it 'returns access payload' do
+        post_with_params
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['gitlab_rails']['base_url']).to eq(Gitlab.config.gitlab.url)
