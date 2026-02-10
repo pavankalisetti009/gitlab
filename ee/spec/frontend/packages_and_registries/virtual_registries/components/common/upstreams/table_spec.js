@@ -1,3 +1,5 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import {
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
@@ -7,9 +9,11 @@ import {
 } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import MavenUpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/table.vue';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
 import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/delete_modal.vue';
+import deleteUpstreamCacheMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/delete_container_upstream_cache.mutation.graphql';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import { deleteMavenUpstreamCache } from 'ee/api/virtual_registries_api';
 import { groupMavenUpstreams } from '../../../mock_data';
@@ -21,7 +25,9 @@ jest.mock('ee/api/virtual_registries_api', () => ({
   deleteMavenUpstreamCache: jest.fn(),
 }));
 
-describe('MavenUpstreamsTable', () => {
+Vue.use(VueApollo);
+
+describe('Virtual registries upstreams table', () => {
   let wrapper;
 
   const defaultProps = {
@@ -52,7 +58,9 @@ describe('MavenUpstreamsTable', () => {
 
   const showToastSpy = jest.fn();
 
-  const createComponent = ({ props = {}, provide = {} } = {}) => {
+  const createComponent = ({ props = {}, provide = {}, deleteCacheHandler = null } = {}) => {
+    const apolloProvider = createMockApollo([[deleteUpstreamCacheMutation, deleteCacheHandler]]);
+
     wrapper = mountExtended(MavenUpstreamsTable, {
       propsData: {
         ...defaultProps,
@@ -70,6 +78,7 @@ describe('MavenUpstreamsTable', () => {
           show: showToastSpy,
         },
       },
+      apolloProvider,
     });
   };
 
@@ -254,71 +263,149 @@ describe('MavenUpstreamsTable', () => {
   });
 
   describe('clear upstream cache action', () => {
-    beforeEach(() => {
-      deleteMavenUpstreamCache.mockReset();
-      showToastSpy.mockReset();
-    });
-
-    it('shows modal when clear cache button is clicked', async () => {
-      createComponent();
-
-      await findClearCacheButtons().at(0).vm.$emit('click');
-
-      expect(findUpstreamClearCacheModal().props()).toStrictEqual({
-        visible: true,
-        upstreamName: 'Maven Central',
-      });
-    });
-
-    it('hides modal when canceled', async () => {
-      createComponent();
-
-      await findClearCacheButtons().at(0).vm.$emit('click');
-      await findUpstreamClearCacheModal().vm.$emit('canceled');
-
-      expect(findUpstreamClearCacheModal().props()).toStrictEqual({
-        visible: false,
-        upstreamName: '',
-      });
-    });
-
-    describe('when API succeeds', () => {
+    describe('with REST API', () => {
       beforeEach(() => {
-        deleteMavenUpstreamCache.mockResolvedValue();
-        createComponent();
+        deleteMavenUpstreamCache.mockReset();
+        showToastSpy.mockReset();
       });
 
-      it('calls API with correct parameters and shows success toast', async () => {
+      it('shows modal when clear cache button is clicked', async () => {
+        createComponent();
+
         await findClearCacheButtons().at(0).vm.$emit('click');
-        await findUpstreamClearCacheModal().vm.$emit('primary');
 
-        expect(deleteMavenUpstreamCache).toHaveBeenCalledWith({ id: 1 });
+        expect(findUpstreamClearCacheModal().props()).toStrictEqual({
+          visible: true,
+          upstreamName: 'Maven Central',
+        });
+      });
 
-        await waitForPromises();
+      it('hides modal when canceled', async () => {
+        createComponent();
 
-        expect(showToastSpy).toHaveBeenCalledWith('Upstream cache cleared successfully.');
-        expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
-        expect(captureException).not.toHaveBeenCalled();
+        await findClearCacheButtons().at(0).vm.$emit('click');
+        await findUpstreamClearCacheModal().vm.$emit('canceled');
+
+        expect(findUpstreamClearCacheModal().props()).toStrictEqual({
+          visible: false,
+          upstreamName: '',
+        });
+      });
+
+      describe('when API succeeds', () => {
+        beforeEach(() => {
+          deleteMavenUpstreamCache.mockResolvedValue();
+          createComponent();
+        });
+
+        it('calls API with correct parameters and shows success toast', async () => {
+          await findClearCacheButtons().at(0).vm.$emit('click');
+          await findUpstreamClearCacheModal().vm.$emit('primary');
+
+          expect(deleteMavenUpstreamCache).toHaveBeenCalledWith({ id: 1 });
+
+          await waitForPromises();
+
+          expect(showToastSpy).toHaveBeenCalledWith('Upstream cache cleared successfully.');
+          expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
+          expect(captureException).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('when API fails', () => {
+        it('shows error message', async () => {
+          const mockError = new Error('API Error');
+          deleteMavenUpstreamCache.mockRejectedValue(mockError);
+
+          createComponent();
+
+          await findClearCacheButtons().at(0).vm.$emit('click');
+          await findUpstreamClearCacheModal().vm.$emit('primary');
+
+          await waitForPromises();
+
+          expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
+          expect(showToastSpy).toHaveBeenCalledWith('Failed to clear upstream cache. Try again.');
+          expect(captureException).toHaveBeenCalledWith({
+            error: mockError,
+            component: 'UpstreamsTable',
+          });
+        });
       });
     });
 
-    describe('when API fails', () => {
-      it('shows error message', async () => {
-        const mockError = new Error('API Error');
-        deleteMavenUpstreamCache.mockRejectedValue(mockError);
+    describe('with GraphQL mutation', () => {
+      let deleteCacheHandler;
 
-        createComponent();
+      beforeEach(() => {
+        deleteCacheHandler = jest.fn().mockResolvedValue({ data: { cacheDelete: { errors: [] } } });
+        showToastSpy.mockReset();
+      });
+
+      it('shows modal when clear cache button is clicked', async () => {
+        createComponent({ provide: { deleteUpstreamCacheMutation }, deleteCacheHandler });
 
         await findClearCacheButtons().at(0).vm.$emit('click');
-        await findUpstreamClearCacheModal().vm.$emit('primary');
 
-        await waitForPromises();
+        expect(findUpstreamClearCacheModal().props()).toStrictEqual({
+          visible: true,
+          upstreamName: 'Maven Central',
+        });
+      });
 
-        expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
-        expect(showToastSpy).toHaveBeenCalledWith('Failed to clear upstream cache. Try again.');
-        expect(captureException).toHaveBeenCalledWith({
-          error: mockError,
-          component: 'UpstreamsTable',
+      it('hides modal when canceled', async () => {
+        createComponent({ provide: { deleteUpstreamCacheMutation }, deleteCacheHandler });
+
+        await findClearCacheButtons().at(0).vm.$emit('click');
+        await findUpstreamClearCacheModal().vm.$emit('canceled');
+
+        expect(findUpstreamClearCacheModal().props()).toStrictEqual({
+          visible: false,
+          upstreamName: '',
+        });
+      });
+
+      describe('when API succeeds', () => {
+        beforeEach(() => {
+          createComponent({ provide: { deleteUpstreamCacheMutation }, deleteCacheHandler });
+        });
+
+        it('calls API with correct parameters and shows success toast', async () => {
+          await findClearCacheButtons().at(0).vm.$emit('click');
+          await findUpstreamClearCacheModal().vm.$emit('primary');
+
+          expect(deleteCacheHandler).toHaveBeenCalledWith({
+            id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/1',
+          });
+
+          await waitForPromises();
+
+          expect(showToastSpy).toHaveBeenCalledWith('Upstream cache cleared successfully.');
+          expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
+          expect(captureException).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('when API fails', () => {
+        it('shows error message', async () => {
+          const mockError = new Error('API Error');
+
+          createComponent({
+            provide: { deleteUpstreamCacheMutation },
+            deleteCacheHandler: jest.fn().mockRejectedValue(mockError),
+          });
+
+          await findClearCacheButtons().at(0).vm.$emit('click');
+          await findUpstreamClearCacheModal().vm.$emit('primary');
+
+          await waitForPromises();
+
+          expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
+          expect(showToastSpy).toHaveBeenCalledWith('Failed to clear upstream cache. Try again.');
+          expect(captureException).toHaveBeenCalledWith({
+            error: mockError,
+            component: 'UpstreamsTable',
+          });
         });
       });
     });
