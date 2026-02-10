@@ -1,5 +1,5 @@
 <script>
-import { GlTabs, GlTab, GlExperimentBadge } from '@gitlab/ui';
+import { GlTabs, GlTab } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ConfigureAttributes from './security_attributes/configure_attributes.vue';
 
@@ -9,7 +9,6 @@ export default {
     GlTab,
     PageHeading,
     ConfigureAttributes,
-    GlExperimentBadge,
   },
 };
 </script>
@@ -20,7 +19,6 @@ export default {
       <gl-tab>
         <template #title>
           {{ s__('SecurityAttributes|Security attributes') }}
-          <gl-experiment-badge type="beta" class="gl-ml-2" />
         </template>
         <p class="gl-my-5">
           {{
