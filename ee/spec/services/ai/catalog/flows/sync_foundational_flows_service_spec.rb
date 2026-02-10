@@ -173,7 +173,7 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
             allow(create_service).to receive(:execute).and_return(
               ServiceResponse.success(payload: { item_consumer: project_consumer })
             )
-            allow(Ability).to receive(:allowed?).with(user, :admin_service_accounts, group).and_return(true)
+            allow(Ability).to receive(:allowed?).with(user, :manage_ai_flow_triggers, container).and_return(true)
             allow(group).to receive(:configured_ai_catalog_items).and_return([parent_consumer])
           end
 
