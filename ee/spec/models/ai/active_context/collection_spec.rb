@@ -91,6 +91,61 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
       expect(collection).to be_valid
     end
 
+    it 'is valid with previous_embedding_field is null' do
+      collection.metadata = { previous_embedding_field: nil }
+      expect(collection).to be_valid
+    end
+
+    it 'is valid with previous_embedding_field as a string' do
+      collection.metadata = { previous_embedding_field: 'prev_embedding' }
+      expect(collection).to be_valid
+    end
+
+    describe 'embedding model properties' do
+      where(:embedding_model) do
+        [:current_indexing_embedding_model, :next_indexing_embedding_model, :search_embedding_model]
+      end
+
+      with_them do
+        it 'is valid with string model_ref and field' do
+          collection.metadata = { embedding_model => { model_ref: 'model_1', field: 'field_1' } }
+          expect(collection).to be_valid
+        end
+
+        it 'is invalid without model_ref' do
+          collection.metadata = { embedding_model => { field: 'field_1' } }
+          expect(collection).not_to be_valid
+        end
+
+        it 'is invalid without field' do
+          collection.metadata = { embedding_model => { model_ref: 'model_1' } }
+          expect(collection).not_to be_valid
+        end
+
+        it 'is valid with model_type as a string' do
+          collection.metadata = {
+            embedding_model => { model_ref: 'model_1', field: 'field_1', model_type: 'self_hosted' }
+          }
+          expect(collection).to be_valid
+        end
+
+        it 'is valid with dimensions as a positive integer' do
+          collection.metadata = { embedding_model => { model_ref: 'model_1', field: 'field_1', dimensions: 768 } }
+          expect(collection).to be_valid
+        end
+
+        it 'is invalid with dimensions as 0' do
+          collection.metadata = { embedding_model => { model_ref: 'model_1', field: 'field_1', dimensions: 0 } }
+          expect(collection).not_to be_valid
+        end
+
+        it 'is invalid with dimensions as a negative integer' do
+          collection.metadata = { embedding_model => { model_ref: 'model_1', field: 'field_1', dimensions: -1 } }
+          expect(collection).not_to be_valid
+        end
+      end
+    end
+
     it 'is invalid with arbitrary properties' do
       collection.metadata = { key: 'value' }
       expect(collection).not_to be_valid
@@ -255,6 +310,7 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
       expect(collection).to respond_to(:indexing_embedding_versions)
       expect(collection).to respond_to(:search_embedding_version)
       expect(collection).to respond_to(:collection_class)
+      expect(collection).to respond_to(:previous_embedding_field)
     end
 
     it 'persists all accessor values to the metadata column' do
@@ -262,6 +318,7 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
       collection.indexing_embedding_versions = [1, 2]
       collection.search_embedding_version = 3
       collection.collection_class = 'MyClass'
+      collection.previous_embedding_field = 'prev_embedding'
 
       collection.save!
 
@@ -269,8 +326,42 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
         'include_ref_fields' => true,
         'indexing_embedding_versions' => [1, 2],
         'search_embedding_version' => 3,
-        'collection_class' => 'MyClass'
+        'collection_class' => 'MyClass',
+        'previous_embedding_field' => 'prev_embedding'
       )
+    end
+  end
+
+  describe 'embedding model accessor methods' do
+    where(:embedding_model) do
+      [:current_indexing_embedding_model, :next_indexing_embedding_model, :search_embedding_model]
+    end
+
+    with_them do
+      context 'with embedding model metadata' do
+        before do
+          collection.update_metadata!({
+            embedding_model => { model_ref: 'model_123', field: 'embeddings_v123' }
+          })
+        end
+
+        it 'returns the embedding model metadata' do
+          model_metadata = collection.public_send(embedding_model)
+
+          expect(model_metadata[:model_ref]).to eq('model_123')
+          expect(model_metadata[:field]).to eq('embeddings_v123')
+        end
+      end
+
+      context 'without embedding model metadata' do
+        before do
+          collection.update!(metadata: {})
+        end
+
+        it 'returns nil' do
+          expect(collection.public_send(embedding_model)).to be_nil
+        end
+      end
     end
   end
 

@@ -59,6 +59,12 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
     end
   end
 
+  describe '.embedding_model_selector' do
+    it 'returns the expected model selector class' do
+      expect(described_class.embedding_model_selector).to eq(::Ai::ActiveContext::Embeddings::ModelSelector)
+    end
+  end
+
   describe '.track_refs!' do
     it 'tracks each hash with the routing' do
       routing = '123'
@@ -224,6 +230,89 @@ RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_sug
       expect(collection).to receive(:partition_for).with('something')
 
       described_class.partition_number('something')
+    end
+  end
+
+  describe 'embedding models' do
+    where(:embedding_model_key) do
+      [:current_indexing_embedding_model, :next_indexing_embedding_model, :search_embedding_model]
+    end
+
+    with_them do
+      subject(:embedding_model) do
+        described_class.public_send(embedding_model_key)
+      end
+
+      context 'when collection_record is nil' do
+        let(:collection) { nil }
+
+        it { is_expected.to be_nil }
+      end
+
+      context "when collection_record's model metadata is nil" do
+        before do
+          allow(collection).to receive(embedding_model_key).and_return(nil)
+        end
+
+        it { is_expected.to be_nil }
+      end
+
+      context "when collection_record's model metadata is set" do
+        before do
+          allow(collection).to receive(embedding_model_key).and_return(model_metadata)
+          allow(Ai::ActiveContext::Embeddings::ModelSelector).to receive(:for).and_call_original
+        end
+
+        let(:model_metadata) do
+          {
+            model_ref: 'text_embedding_005_vertex',
+            field: 'some_field_1'
+          }
+        end
+
+        it 'builds an embedding model through the embedding_model_selector' do
+          expect(Ai::ActiveContext::Embeddings::ModelSelector)
+            .to receive(:for).with(model_metadata)
+
+          model_definition = described_class.embedding_model_selector::MODELS_LOOKUP['text_embedding_005_vertex']
+
+          expect(embedding_model).to be_a(::ActiveContext::EmbeddingModel)
+          expect(embedding_model.model_name).to eq(model_definition[:model])
+          expect(embedding_model.field).to eq('some_field_1')
+          expect(embedding_model.llm_class).to eq(model_definition[:llm_class])
+          expect(embedding_model.llm_params).to eq({
+            model: model_definition[:model],
+            batch_size: model_definition[:batch_size]
+          })
+        end
+
+        context "when model_metadata is an empty hash" do
+          let(:model_metadata) { {} }
+
+          it 'raises an error' do
+            expect { embedding_model }.to raise_error(
+              Ai::ActiveContext::Embeddings::ModelSelector::UnexpectedModelConfiguration,
+              "`model_metadata` must have a `model_ref` and `field`"
+            )
+          end
+        end
+
+        context 'when model_metadata[:model_ref] is not in the MODELS_LOOKUP' do
+          let(:model_metadata) do
+            {
+              model_ref: 'some_mock_model_ref',
+              field: 'some_field_1'
+            }
+          end
+
+          it 'raises an error' do
+            expect { embedding_model }.to raise_error(
+              Ai::ActiveContext::Embeddings::ModelSelector::MissingModelDefinition,
+              "Missing definitions for Gitlab-managed model: some_mock_model_ref"
+            )
+          end
+        end
+      end
     end
   end
 end
