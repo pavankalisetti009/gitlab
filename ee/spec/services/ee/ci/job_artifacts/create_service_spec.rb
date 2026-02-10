@@ -5,8 +5,9 @@ require 'spec_helper'
 RSpec.describe Ci::JobArtifacts::CreateService, :clean_gitlab_redis_shared_state, feature_category: :job_artifacts do
   let_it_be(:project) { create(:project, :repository) }
 
+  let(:pipeline) { create(:ci_pipeline, project: project, ref: project.default_branch) }
   let(:service) { described_class.new(job) }
-  let(:job) { create(:ci_build, project: project) }
+  let(:job) { create(:ci_build, project: project, pipeline: pipeline, ref: project.default_branch) }
   let(:artifacts_sha256) { '0' * 64 }
   let(:metadata_file) { nil }
 

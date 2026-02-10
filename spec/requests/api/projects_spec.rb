@@ -130,7 +130,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(response).to have_gitlab_http_status(:created)
 
         project = Project.find(json_response['id'])
-        expect(project.default_branch).to eq('master')
+        expect(project.default_branch).to eq('main')
       end
     end
 
@@ -1666,7 +1666,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
       post api(path, user), params: project
 
-      expect(json_response['readme_url']).to eql("#{Gitlab.config.gitlab.url}/#{json_response['namespace']['full_path']}/#{json_response['path']}/-/blob/master/README.md")
+      expect(json_response['readme_url']).to eql("#{Gitlab.config.gitlab.url}/#{json_response['namespace']['full_path']}/#{json_response['path']}/-/blob/main/README.md")
     end
 
     it 'sets tag list to a project (deprecated)' do

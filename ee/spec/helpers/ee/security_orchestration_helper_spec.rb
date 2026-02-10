@@ -73,7 +73,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
               full_path: policy_management_project.full_path,
               branch: policy_management_project.default_branch_or_main,
               policy_yaml_has_syntax_errors: 'true',
-              policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
+              policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/main/#{policy_file_path}"
             )
           end
         end
@@ -90,7 +90,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
               full_path: policy_management_project.full_path,
               branch: policy_management_project.default_branch_or_main,
               policy_yaml_has_syntax_errors: 'false',
-              policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
+              policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/main/#{policy_file_path}"
             )
           end
         end
@@ -124,7 +124,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
             full_path: policy_management_project.full_path,
             branch: policy_management_project.default_branch_or_main,
             policy_yaml_has_syntax_errors: 'true',
-            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
+            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/main/#{policy_file_path}"
           })
         end
       end
@@ -268,7 +268,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
             full_path: policy_management_project.full_path,
             branch: policy_management_project.default_branch_or_main,
             policy_yaml_has_syntax_errors: 'true',
-            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
+            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/main/#{policy_file_path}"
           }.to_json))
         end
       end
@@ -378,7 +378,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
             full_path: policy_management_project.full_path,
             branch: policy_management_project.default_branch_or_main,
             policy_yaml_has_syntax_errors: 'true',
-            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
+            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/main/#{policy_file_path}"
           }.to_json))
         end
       end

@@ -314,7 +314,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
       let_it_be_with_reload(:project) { create(:project, :wiki_repo, :public) }
 
       let(:indexer) { described_class.new(project, wiki: true) }
-      let(:to_sha) { project.wiki.repository.commit('master').sha }
+      let(:to_sha) { project.wiki.repository.commit(project.wiki.default_branch).sha }
 
       before do
         project.wiki.create_page('test.md', '# term')
@@ -351,10 +351,13 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
       context 'when IndexStatus#last_wiki_commit is no longer in repository' do
         it 'reindexes from scratch' do
           sha_for_reset = nil
+          default_branch = project.wiki.default_branch
 
           change_wiki_and_index(project) do
-            sha_for_reset = project.wiki.repository.create_file(user, '12.md', '', message: '12', branch_name: 'master')
-            project.wiki.repository.create_file(user, '23.md', '', message: '23', branch_name: 'master')
+            sha_for_reset = project.wiki.repository.create_file(user, '12.md', '', message: '12',
+              branch_name: default_branch)
+            project.wiki.repository.create_file(user, '23.md', '', message: '23',
+              branch_name: default_branch)
           end
           expect(indexed_wiki_paths_for('12')).to include('12.md')
           expect(indexed_wiki_paths_for('23')).to include('23.md')
@@ -362,7 +365,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
           project.index_status.update!(last_wiki_commit: '____________')
 
           change_wiki_and_index(project) do
-            project.wiki.repository.write_ref('master', sha_for_reset)
+            project.wiki.repository.write_ref(default_branch, sha_for_reset)
           end
 
           expect(indexed_wiki_paths_for('12')).to include('12.md')
@@ -377,7 +380,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
     let(:group) { wiki.container }
 
     let(:indexer) { described_class.new(group, wiki: true) }
-    let(:to_sha) { group.wiki.repository.commit('master').sha }
+    let(:to_sha) { group.wiki.repository.commit(group.wiki.default_branch).sha }
 
     before do
       wiki.create_page('test.md', '# Test')
@@ -718,7 +721,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
   def change_wiki_and_index(project, &blk)
     yield blk if blk
 
-    current_commit = project.wiki.repository.commit('master').sha
+    current_commit = project.wiki.repository.commit(project.wiki.default_branch).sha
 
     described_class.new(project, wiki: true).run(current_commit)
     ensure_elasticsearch_index!

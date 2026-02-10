@@ -294,7 +294,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
           expect(project_1_result.success?).to be(true)
 
-          base_file_url = "http://localhost/#{project.full_path}/-/blob/master/"
+          base_file_url = "http://localhost/#{project.full_path}/-/blob/main/"
           expect(project_1_result).to match_array([
             {
               'project_id' => project.id,

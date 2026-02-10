@@ -9,8 +9,6 @@ FactoryBot.modify do
 
     trait :wiki_repo do
       after(:create) do |group|
-        stub_feature_flags(main_branch_over_master: false)
-
         raise 'Failed to create wiki repository!' unless group.create_wiki
       end
     end
