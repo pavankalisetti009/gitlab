@@ -8842,6 +8842,9 @@ msgstr ""
 msgid "An error occurred while loading the notification settings. Please try again."
 msgstr ""
 
+msgid "An error occurred while loading the settings."
+msgstr ""
+
 msgid "An error occurred while making the request."
 msgstr ""
 
@@ -77005,6 +77008,12 @@ msgid "Web IDE"
 msgstr ""
 
 msgid "Web terminal"
+msgstr ""
+
+msgid "Web-based commit signing disabled"
+msgstr ""
+
+msgid "Web-based commit signing enabled"
 msgstr ""
 
 msgid "WebAuthn device deleted"

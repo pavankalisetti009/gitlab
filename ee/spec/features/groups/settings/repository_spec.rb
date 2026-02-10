@@ -13,10 +13,13 @@ RSpec.describe 'EE Group Repository settings', :js, feature_category: :source_co
   end
 
   context 'in General subsection' do
-    context 'when feature `web_based_commit_signing_ui` is enabled' do
+    context 'when feature `web_based_commit_signing_ui` is enabled', :saas_repositories_web_based_commit_signing do
       before do
-        group.namespace_settings.update!(web_based_commit_signing_enabled: true)
-        stub_feature_flags(web_based_commit_signing_ui: true)
+        stub_feature_flags(
+          web_based_commit_signing_ui: true,
+          configure_web_based_commit_signing: true,
+          use_web_based_commit_signing_enabled: true
+        )
         visit group_settings_repository_path(group)
         wait_for_requests
       end
@@ -27,6 +30,18 @@ RSpec.describe 'EE Group Repository settings', :js, feature_category: :source_co
 
       it 'shows web-based commit signing section' do
         expect(page).to have_css('[data-testid="web-based-commit-signing-checkbox"]')
+        expect(page).to have_unchecked_field('Sign web-based commits')
+      end
+
+      it 'persists the checkbox value after checking and reloading' do
+        expect(page).to have_unchecked_field('Sign web-based commits')
+
+        check 'Sign web-based commits'
+        wait_for_requests
+
+        visit group_settings_repository_path(group)
+        wait_for_requests
+
         expect(page).to have_checked_field('Sign web-based commits')
       end
     end
@@ -35,6 +50,42 @@ RSpec.describe 'EE Group Repository settings', :js, feature_category: :source_co
       before do
         stub_feature_flags(web_based_commit_signing_ui: false)
         visit group_settings_repository_path(group)
+      end
+
+      it 'does not show the setting section' do
+        expect(page).not_to have_selector('#js-general-settings')
+      end
+    end
+
+    context 'when SaaS feature is not available' do
+      before do
+        stub_saas_features(repositories_web_based_commit_signing: false)
+        stub_feature_flags(
+          web_based_commit_signing_ui: true,
+          configure_web_based_commit_signing: true,
+          use_web_based_commit_signing_enabled: true
+        )
+        visit group_settings_repository_path(group)
+        wait_for_requests
+      end
+
+      it 'does not show the setting section' do
+        expect(page).not_to have_selector('#js-general-settings')
+      end
+    end
+
+    context 'when group is a subgroup', :saas_repositories_web_based_commit_signing do
+      let_it_be(:parent_group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: parent_group, owners: user) }
+
+      before do
+        stub_feature_flags(
+          web_based_commit_signing_ui: true,
+          configure_web_based_commit_signing: true,
+          use_web_based_commit_signing_enabled: true
+        )
+        visit group_settings_repository_path(subgroup)
+        wait_for_requests
       end
 
       it 'does not show the setting section' do
