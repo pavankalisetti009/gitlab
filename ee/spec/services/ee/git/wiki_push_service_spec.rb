@@ -22,8 +22,8 @@ RSpec.describe Git::WikiPushService, feature_category: :source_code_management d
         allow(wiki.container).to receive(:use_elasticsearch?).and_return(true)
       end
 
-      describe 'when changes include master ref' do
-        let_it_be(:changes) { +"123456 789012 refs/heads/tést\n654321 210987 refs/tags/tag\n423423 797823 refs/heads/master" }
+      describe 'when changes include main ref' do
+        let_it_be(:changes) { +"123456 789012 refs/heads/tést\n654321 210987 refs/tags/tag\n423423 797823 refs/heads/main" }
 
         before do
           allow(wiki.repository.raw).to receive(:raw_changes_between).once.with('423423', '797823').and_return([])
@@ -47,7 +47,7 @@ RSpec.describe Git::WikiPushService, feature_category: :source_code_management d
         end
       end
 
-      describe 'when changes do not include master ref' do
+      describe 'when changes do not include main ref' do
         let_it_be(:changes) { +"123456 789012 refs/heads/tést\n654321 210987 refs/tags/tag" }
 
         it 'does not trigger a wiki update' do
@@ -64,10 +64,10 @@ RSpec.describe Git::WikiPushService, feature_category: :source_code_management d
         allow(wiki.repository.raw).to receive(:raw_changes_between).once.with('423423', '797823').and_return([])
       end
 
-      describe 'when changes include master ref' do
-        let_it_be(:changes) { +"123456 789012 refs/heads/tést\n654321 210987 refs/tags/tag\n423423 797823 refs/heads/master" }
+      describe 'when changes include main ref' do
+        let_it_be(:changes) { +"123456 789012 refs/heads/tést\n654321 210987 refs/tags/tag\n423423 797823 refs/heads/main" }
 
-        it 'does nothing even if changes include master ref' do
+        it 'does nothing even if changes include main ref' do
           expect(wiki).not_to receive(:index_wiki_blobs)
 
           described_class.new(wiki, current_user, changes: post_received.changes).execute
