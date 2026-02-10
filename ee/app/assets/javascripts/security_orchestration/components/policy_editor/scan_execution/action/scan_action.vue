@@ -14,12 +14,13 @@ import {
   POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY,
 } from '../constants';
 import { buildScannerAction } from '../lib';
-import { CI_VARIABLE, FILTERS, TEMPLATE } from './scan_filters/constants';
+import { CI_VARIABLE, FILTERS, TEMPLATE, SCAN_SETTINGS } from './scan_filters/constants';
 import CiVariablesSelectors from './scan_filters/ci_variables_selectors.vue';
 import TemplateSelector from './scan_filters/template_selector.vue';
 import GroupDastProfileSelector from './scan_filters/group_dast_profile_selector.vue';
 import ProjectDastProfileSelector from './scan_filters/project_dast_profile_selector.vue';
 import RunnerTagsFilter from './scan_filters/runner_tags_filter.vue';
+import ScanSettingsToggle from './scan_filters/scan_settings_toggle.vue';
 
 export default {
   ACTION_AND_LABEL,
@@ -28,6 +29,7 @@ export default {
   VARIABLE_FILTER: FILTERS[0].value,
   SCANNERS: RULE_MODE_SCANNERS,
   TEMPLATE,
+  SCAN_SETTINGS,
   POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY,
   POLICY_ACTION_BUILDER_TAGS_ERROR_KEY,
   components: {
@@ -39,6 +41,7 @@ export default {
     ProjectDastProfileSelector,
     GroupDastProfileSelector,
     RunnerTagsFilter,
+    ScanSettingsToggle,
     TemplateSelector,
   },
   inject: ['namespacePath', 'namespaceType'],
@@ -110,6 +113,9 @@ export default {
     tags() {
       return this.initAction.tags || [];
     },
+    ignoreDefaultBeforeAfterScript() {
+      return Boolean(this.initAction.scan_settings?.ignore_default_before_after_script);
+    },
     scannerHumanizedMessage() {
       return isScanningReport(this.selectedScanner)
         ? SCANNER_HUMANIZED_TEMPLATE_ALT
@@ -145,6 +151,9 @@ export default {
       const updatedAction = { ...this.initAction };
       delete updatedAction[property];
       this.$emit('changed', updatedAction);
+    },
+    removeScanSettings() {
+      this.removeYamlProperty('scan_settings');
     },
     selectFilter(filter) {
       this.filters = {
@@ -279,6 +288,12 @@ export default {
             >
               {{ $options.i18n.addVariableButtonText }}
             </gl-button>
+
+            <scan-settings-toggle
+              :selected="ignoreDefaultBeforeAfterScript"
+              @input="triggerChanged"
+              @remove="removeScanSettings"
+            />
           </template>
         </section-layout>
       </div>

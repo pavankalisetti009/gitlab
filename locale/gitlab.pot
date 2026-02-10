@@ -59158,6 +59158,9 @@ msgstr ""
 msgid "ScanExecutionPolicy|File reference (Optional) %{refSelector}"
 msgstr ""
 
+msgid "ScanExecutionPolicy|Ignore default CI configuration for before/after script"
+msgstr ""
+
 msgid "ScanExecutionPolicy|Inject"
 msgstr ""
 
@@ -59183,6 +59186,9 @@ msgid "ScanExecutionPolicy|Override"
 msgstr ""
 
 msgid "ScanExecutionPolicy|Potential overload for infrastructure"
+msgstr ""
+
+msgid "ScanExecutionPolicy|Prevents project before script and after script from interfering with scan execution."
 msgstr ""
 
 msgid "ScanExecutionPolicy|Run %{scan} with the following options:"
