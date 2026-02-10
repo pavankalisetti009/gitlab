@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require Rails.root.join('spec/support/helpers/ci/job_factory_helpers')
+require_relative '../../../../spec/support/helpers/ci/job_factory_helpers'
 
 FactoryBot.define do
   factory(
