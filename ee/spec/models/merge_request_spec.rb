@@ -278,16 +278,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             it 'returns true' do
               expect(merge_request.merge_requests_author_approval?).to be(true)
             end
-
-            context 'with feature disabled' do
-              before do
-                stub_feature_flags(security_policy_approval_warn_mode: false)
-              end
-
-              it 'returns false' do
-                expect(merge_request.merge_requests_author_approval?).to be(false)
-              end
-            end
           end
         end
       end
@@ -351,16 +341,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             it 'returns false' do
               expect(merge_request.merge_requests_disable_committers_approval?).to be(false)
             end
-
-            context 'with feature disabled' do
-              before do
-                stub_feature_flags(security_policy_approval_warn_mode: false)
-              end
-
-              it 'returns true' do
-                expect(merge_request.merge_requests_disable_committers_approval?).to be(true)
-              end
-            end
           end
         end
       end
@@ -419,14 +399,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             end
 
             it { is_expected.to be(false) }
-
-            context 'with feature disabled' do
-              before do
-                stub_feature_flags(security_policy_approval_warn_mode: false)
-              end
-
-              it { is_expected.to be(true) }
-            end
           end
         end
       end
@@ -485,14 +457,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
               end
 
               it { is_expected.to be_empty }
-
-              context 'with feature disabled' do
-                before do
-                  stub_feature_flags(security_policy_approval_warn_mode: false)
-                end
-
-                it { is_expected.to eq(overrides) }
-              end
             end
           end
 

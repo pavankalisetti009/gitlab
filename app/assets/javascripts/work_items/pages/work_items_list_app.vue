@@ -37,7 +37,7 @@ import {
   STATUS_CLOSED,
   STATUS_OPEN,
   WORKSPACE_GROUP,
-  WORKSPACE_PROJECT,
+  NAMESPACE_PROJECT,
 } from '~/issues/constants';
 import { AutocompleteCache } from '~/issues/dashboard/utils';
 import EmptyStateWithAnyTickets from '~/issues/service_desk/components/empty_state_with_any_issues.vue';
@@ -627,7 +627,7 @@ export default {
       return this.state === STATUS_OPEN;
     },
     namespace() {
-      return this.isGroup ? WORKSPACE_GROUP : WORKSPACE_PROJECT;
+      return this.isGroup ? WORKSPACE_GROUP : NAMESPACE_PROJECT;
     },
     queryVariables() {
       const hasGroupFilter = Boolean(this.urlFilterParams.group_path);

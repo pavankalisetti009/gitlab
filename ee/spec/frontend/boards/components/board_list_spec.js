@@ -12,7 +12,7 @@ import listIssuesQuery from '~/boards/graphql/lists_issues.query.graphql';
 import issueCreateMutation from '~/boards/graphql/issue_create.mutation.graphql';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
-import { TYPE_EPIC, TYPE_ISSUE, WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
+import { TYPE_EPIC, TYPE_ISSUE, WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import issueMoveListMutation from 'ee/boards/graphql/issue_move_list.mutation.graphql';
 import epicMoveListMutation from 'ee/boards/graphql/epic_move_list.mutation.graphql';
 import epicCreateMutation from 'ee/boards/graphql/epic_create.mutation.graphql';
@@ -259,7 +259,7 @@ describe('BoardList Component', () => {
     it.each`
       boardType            | isEpicBoard | queryHandler                        | notCalledHandler
       ${WORKSPACE_GROUP}   | ${false}    | ${groupIssuesQueryHandlerSuccess}   | ${projectIssuesQueryHandlerSuccess}
-      ${WORKSPACE_PROJECT} | ${false}    | ${projectIssuesQueryHandlerSuccess} | ${groupIssuesQueryHandlerSuccess}
+      ${NAMESPACE_PROJECT} | ${false}    | ${projectIssuesQueryHandlerSuccess} | ${groupIssuesQueryHandlerSuccess}
       ${WORKSPACE_GROUP}   | ${true}     | ${groupEpicsQueryHandlerSuccess}    | ${groupIssuesQueryHandlerSuccess}
     `(
       'fetches $boardType items when isEpicBoard is $isEpicBoard',
@@ -271,7 +271,7 @@ describe('BoardList Component', () => {
           provide: {
             boardType,
             issuableType: isEpicBoard ? 'epic' : 'issue',
-            isProjectBoard: boardType === WORKSPACE_PROJECT,
+            isProjectBoard: boardType === NAMESPACE_PROJECT,
             isGroupBoard: boardType === WORKSPACE_GROUP,
             isEpicBoard,
           },
@@ -294,7 +294,7 @@ describe('BoardList Component', () => {
     it.each`
       boardType            | isEpicBoard
       ${WORKSPACE_GROUP}   | ${false}
-      ${WORKSPACE_PROJECT} | ${false}
+      ${NAMESPACE_PROJECT} | ${false}
       ${WORKSPACE_GROUP}   | ${true}
     `(
       'set error when fetch $boardType items fails when isEpicBoard is $isEpicBoard',
@@ -306,7 +306,7 @@ describe('BoardList Component', () => {
           provide: {
             boardType,
             issuableType: isEpicBoard ? 'epic' : 'issue',
-            isProjectBoard: boardType === WORKSPACE_PROJECT,
+            isProjectBoard: boardType === NAMESPACE_PROJECT,
             isGroupBoard: boardType === WORKSPACE_GROUP,
             isEpicBoard,
           },
@@ -558,7 +558,7 @@ describe('BoardList Component', () => {
             draggedType: 'ISSUE',
           },
           provide: {
-            boardType: WORKSPACE_PROJECT,
+            boardType: NAMESPACE_PROJECT,
             isProjectBoard: true,
             isGroupBoard: false,
           },
@@ -593,7 +593,7 @@ describe('BoardList Component', () => {
             draggedType: 'EPIC',
           },
           provide: {
-            boardType: WORKSPACE_PROJECT,
+            boardType: NAMESPACE_PROJECT,
             isProjectBoard: true,
             isGroupBoard: false,
           },

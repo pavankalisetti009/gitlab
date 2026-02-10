@@ -13,7 +13,6 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:security_policies_split_view, project.group)
-        push_frontend_feature_flag(:security_policy_approval_warn_mode, project.group)
         push_frontend_feature_flag(:security_policies_kev_filter, project.group)
         push_frontend_feature_flag(:auto_dismiss_vulnerability_policies, project.group)
         push_frontend_feature_flag(:security_policies_severity_customize, project.group)

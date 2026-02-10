@@ -4,7 +4,7 @@ import { groupByIterationCadences, getIterationPeriod } from 'ee/iterations/util
 import { createAlert } from '~/alert';
 import { TYPENAME_ITERATIONS_CADENCE } from '~/graphql_shared/constants';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
+import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { __ } from '~/locale';
 import { OPERATOR_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
@@ -50,7 +50,7 @@ export default {
         : [];
     },
     namespace() {
-      return this.config.isProject ? WORKSPACE_PROJECT : WORKSPACE_GROUP;
+      return this.config.isProject ? NAMESPACE_PROJECT : WORKSPACE_GROUP;
     },
   },
   methods: {

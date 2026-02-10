@@ -10,7 +10,7 @@ import {
   GlDisclosureDropdownItem,
 } from '@gitlab/ui';
 
-import { STATUS_OPEN, WORKSPACE_PROJECT } from '~/issues/constants';
+import { STATUS_OPEN, NAMESPACE_PROJECT } from '~/issues/constants';
 import IssuableShow from '~/vue_shared/issuable/show/components/issuable_show_root.vue';
 import IssuableEventHub from '~/vue_shared/issuable/show/event_hub';
 import { s__, __ } from '~/locale';
@@ -26,7 +26,7 @@ const stateEvent = {
 
 export default {
   name: 'TestCaseShowRoot',
-  WORKSPACE_PROJECT,
+  NAMESPACE_PROJECT,
   components: {
     GlLoadingIcon,
     GlButton,
@@ -179,7 +179,7 @@ export default {
       :task-completion-status="taskCompletionStatus"
       :task-list-update-path="updatePath"
       :task-list-lock-version="lockVersion"
-      :workspace-type="$options.WORKSPACE_PROJECT"
+      :workspace-type="$options.NAMESPACE_PROJECT"
       show-work-item-type-icon
       @task-list-update-success="handleTaskListUpdateSuccess"
       @task-list-update-failure="handleTaskListUpdateFailure"

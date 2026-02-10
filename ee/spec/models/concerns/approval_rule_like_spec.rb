@@ -385,16 +385,6 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
           specify do
             expect(subject.warn_mode_policy?).to eq(true)
           end
-
-          context 'when security_policy_approval_warn_mode feature is disabled' do
-            before do
-              stub_feature_flags(security_policy_approval_warn_mode: false)
-            end
-
-            specify do
-              expect(subject.warn_mode_policy?).to eq(false)
-            end
-          end
         end
       end
     end

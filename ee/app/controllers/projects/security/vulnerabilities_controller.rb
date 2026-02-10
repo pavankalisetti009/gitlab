@@ -13,7 +13,6 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:hide_vulnerability_severity_override, project)
-        push_frontend_feature_flag(:security_policy_approval_warn_mode, project)
         push_frontend_feature_flag(:auto_dismiss_vulnerability_policies, project.group)
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, project)
         push_frontend_feature_flag(:agentic_sast_vr_ui, project.root_ancestor, type: :wip)
@@ -49,7 +48,7 @@ module Projects
       def policy_dismissals
         finding_uuid = vulnerability.vulnerability_finding&.uuid
 
-        return [] if finding_uuid.nil? || Feature.disabled?(:security_policy_approval_warn_mode, project)
+        return [] if finding_uuid.nil?
 
         project
           .policy_dismissals

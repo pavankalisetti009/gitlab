@@ -66,16 +66,6 @@ RSpec.describe ProtectedBranches::UpdateService, feature_category: :compliance_m
           expect { service.execute(protected_branch) }.not_to raise_error
         end
 
-        context 'with feature disabled' do
-          before do
-            stub_feature_flags(security_policy_approval_warn_mode: false)
-          end
-
-          it 'raises' do
-            expect { service.execute(protected_branch) }.to raise_error(::Gitlab::Access::AccessDeniedError)
-          end
-        end
-
         context 'when attempting to toggle force-pushing' do
           let(:params) { { name: branch_name, allow_force_push: true } }
 
@@ -93,16 +83,6 @@ RSpec.describe ProtectedBranches::UpdateService, feature_category: :compliance_m
 
           it 'does not raise' do
             expect { service.execute(protected_branch) }.not_to raise_error
-          end
-
-          context 'with feature disabled' do
-            before do
-              stub_feature_flags(security_policy_approval_warn_mode: false)
-            end
-
-            it 'raises' do
-              expect { service.execute(protected_branch) }.to raise_error(::Gitlab::Access::AccessDeniedError)
-            end
           end
         end
       end

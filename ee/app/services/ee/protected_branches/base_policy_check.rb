@@ -53,10 +53,6 @@ module EE
         @policy_branches_service ||= Security::SecurityOrchestrationPolicies::PolicyBranchesService
                                        .new(project: protected_branch.project)
       end
-
-      def warn_mode_enabled?
-        ::Feature.enabled?(:security_policy_approval_warn_mode, protected_branch.project)
-      end
     end
   end
 end
