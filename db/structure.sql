@@ -23284,6 +23284,7 @@ CREATE TABLE namespace_ai_settings (
     minimum_access_level_execute_async smallint,
     feature_settings jsonb DEFAULT '{}'::jsonb NOT NULL,
     prompt_injection_protection_level smallint DEFAULT 0 NOT NULL,
+    ai_usage_data_collection_enabled boolean DEFAULT false NOT NULL,
     CONSTRAINT check_namespace_ai_settings_feature_settings_is_hash CHECK ((jsonb_typeof(feature_settings) = 'object'::text))
 );
 
