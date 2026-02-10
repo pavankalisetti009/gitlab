@@ -4993,8 +4993,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'read_security_project_tracked_refs' do
-      let(:policy) { :read_security_project_tracked_refs }
+    describe 'read_security_project_tracked_ref' do
+      let(:policy) { :read_security_project_tracked_ref }
 
       before do
         stub_licensed_features(security_dashboard: true)

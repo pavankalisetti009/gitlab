@@ -32,7 +32,7 @@ module Security
     end
 
     def can_read_security_refs?
-      Ability.allowed?(current_user, :read_security_project_tracked_refs, project)
+      Ability.allowed?(current_user, :read_security_project_tracked_ref, project)
     end
   end
 end

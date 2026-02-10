@@ -11,7 +11,7 @@ RSpec.describe Types::Security::TrackedRefType, feature_category: :vulnerability
 
   before_all { project.add_developer(user) }
 
-  specify { expect(described_class).to require_graphql_authorizations(:read_security_project_tracked_refs) }
+  specify { expect(described_class).to require_graphql_authorizations(:read_security_project_tracked_ref) }
 
   describe 'custom field resolvers' do
     let_it_be(:tracked_ref) { create(:security_project_tracked_context, :tracked, project: project) }
