@@ -30,13 +30,16 @@ RSpec.describe Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent, :saas,
   end
 
   it 'shows an info text' do
-    expect(element).to have_text "Your namespace has used all the seats in your subscription " \
-      "and users can no longer be invited or added to the namespace."
+    expect(element).to have_text "Your namespace has used all the seats in your subscription, " \
+      "so users can no longer be invited or added to the namespace. To add new users, " \
+      "purchase more seats or turn off restricted access."
   end
 
   it 'contains the correct links' do
     expect(element).to have_link 'Purchase more seats', href:
       help_page_path('subscriptions/manage_users_and_seats.md', anchor: 'buy-more-seats')
+    expect(element).to have_link 'Turn off restricted access', href:
+      help_page_path('user/group/manage.md', anchor: 'turn-on-restricted-access')
   end
 
   context 'when user has dismissed alert' do

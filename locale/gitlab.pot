@@ -60122,7 +60122,16 @@ msgstr ""
 msgid "Seats owed"
 msgstr ""
 
-msgid "SeatsManagement|Your namespace has used all the seats in your subscription. To avoid overages from adding new users, consider %{settings_link_start}turning on restricted access%{settings_link_end}, or %{more_seats_link_start}purchase more seats%{more_seats_link_end}."
+msgid "SeatsManagement|Turn off restricted access"
+msgstr ""
+
+msgid "SeatsManagement|Turn on restricted access"
+msgstr ""
+
+msgid "SeatsManagement|Your namespace has used all the seats in your subscription, so users can no longer be invited or added to the namespace. To add new users, purchase more seats or turn off restricted access."
+msgstr ""
+
+msgid "SeatsManagement|Your namespace has used all the seats in your subscription. To avoid overages from adding new users, purchase more seats or turn on restricted access."
 msgstr ""
 
 msgid "Secondary email:"
@@ -80879,9 +80888,6 @@ msgid "Your merge requests with approvals by all assigned reviewers."
 msgstr ""
 
 msgid "Your name"
-msgstr ""
-
-msgid "Your namespace has used all the seats in your subscription and users can no longer be invited or added to the namespace."
 msgstr ""
 
 msgid "Your namespace storage is full"
