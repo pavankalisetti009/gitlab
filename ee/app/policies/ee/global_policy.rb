@@ -357,6 +357,8 @@ module EE
     def dap_self_hosted?
       if ::License.current&.offline_cloud_license?
         ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_self_hosted_dap.active.exists?
+      elsif ::Feature.enabled?(:self_hosted_dap_per_request_billing, :instance)
+        true
       else
         ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists? &&
           ::Ai::TestingTermsAcceptance.has_accepted?

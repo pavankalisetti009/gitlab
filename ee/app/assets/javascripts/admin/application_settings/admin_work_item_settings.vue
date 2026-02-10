@@ -1,6 +1,6 @@
 <script>
 import WorkItemSettings from 'ee/groups/settings/work_items/work_item_settings_home.vue';
-import { DEFAULT_SETTINGS_CONFIG } from '~/work_items/constants';
+import { DEFAULT_SETTINGS_CONFIG } from 'ee/work_items/constants';
 
 export default {
   name: 'AdminWorkItemSettings',

@@ -1,12 +1,13 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTable, GlButton, GlAlert, GlLink, GlLoadingIcon } from '@gitlab/ui';
+import { GlTableLite, GlButton, GlAlert, GlLink, GlLoadingIcon } from '@gitlab/ui';
 import { PROMO_URL } from '~/constants';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
 import ScanProfileConfiguration from 'ee/security_configuration/components/scan_profiles/scan_profile_configuration.vue';
+import ScanProfileTable from '~/security_configuration/components/scan_profiles/scan_profile_table.vue';
 import DisableScanProfileConfirmationModal from 'ee/security_configuration/components/scan_profiles/disable_scan_profile_confirmation_modal.vue';
 import ScanProfileDetailsModal from 'ee/security_configuration/components/scan_profiles/scan_profile_details_modal.vue';
 import InsufficientPermissionsPopover from 'ee/security_configuration/components/scan_profiles/insufficient_permissions_popover.vue';
@@ -125,7 +126,8 @@ describe('ScanProfileConfiguration', () => {
     return wrapper;
   };
 
-  const findTable = () => wrapper.findComponent(GlTable);
+  const findTable = () => wrapper.findComponent(ScanProfileTable);
+  const findGlTable = () => wrapper.findComponent(GlTableLite);
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findLink = () => wrapper.findComponent(GlLink);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
@@ -171,7 +173,7 @@ describe('ScanProfileConfiguration', () => {
       createComponent();
       await waitForPromises();
 
-      const table = findTable();
+      const table = findGlTable();
       expect(table.exists()).toBe(true);
       expect(table.props('fields')).toEqual(
         expect.arrayContaining([
@@ -228,7 +230,7 @@ describe('ScanProfileConfiguration', () => {
     });
 
     it('renders table with correct fields', () => {
-      const table = findTable();
+      const table = findGlTable();
       expect(table.exists()).toBe(true);
       expect(table.props('fields')).toEqual(
         expect.arrayContaining([

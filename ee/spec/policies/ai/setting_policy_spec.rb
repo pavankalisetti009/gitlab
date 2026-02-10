@@ -14,6 +14,10 @@ RSpec.describe Ai::SettingPolicy, :enable_admin_mode, feature_category: :"self-h
   end
 
   describe 'read_self_hosted_models_settings' do
+    before do
+      stub_feature_flags(self_hosted_dap_per_request_billing: false)
+    end
+
     context 'when user is not authorized to manage Duo self-hosted settings' do
       before do
         add_on_purchase.update!(expires_on: Date.yesterday)
@@ -23,6 +27,14 @@ RSpec.describe Ai::SettingPolicy, :enable_admin_mode, feature_category: :"self-h
     end
 
     context 'when user is authorized to manage Duo self-hosted settings' do
+      it { is_expected.to be_allowed(:read_self_hosted_models_settings) }
+    end
+
+    context 'when self_hosted_dap_per_request_billing flag is enabled' do
+      before do
+        stub_feature_flags(self_hosted_dap_per_request_billing: true)
+      end
+
       it { is_expected.to be_allowed(:read_self_hosted_models_settings) }
     end
   end

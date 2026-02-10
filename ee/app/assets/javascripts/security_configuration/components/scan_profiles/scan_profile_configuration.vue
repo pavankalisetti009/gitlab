@@ -1,6 +1,5 @@
 <script>
 import {
-  GlTable,
   GlButtonGroup,
   GlButton,
   GlIcon,
@@ -11,13 +10,13 @@ import {
   GlLoadingIcon,
 } from '@gitlab/ui';
 import Vue from 'vue';
-import { __ } from '~/locale';
 import {
   SCAN_PROFILE_TYPE_SECRET_DETECTION,
   SCAN_PROFILE_CATEGORIES,
   SCAN_PROFILE_PROMO_ITEMS,
   SCAN_PROFILE_I18N,
 } from '~/security_configuration/constants';
+import ScanProfileTable from '~/security_configuration/components/scan_profiles/scan_profile_table.vue';
 import availableProfilesQuery from 'ee/security_configuration/graphql/scan_profiles/group_available_security_scan_profiles.query.graphql';
 import projectProfilesQuery from 'ee/security_configuration/graphql/scan_profiles/project_security_scan_profiles.query.graphql';
 import attachMutation from 'ee/security_configuration/graphql/scan_profiles/security_scan_profile_attach.mutation.graphql';
@@ -32,13 +31,13 @@ Vue.use(GlToast);
 export default {
   name: 'ScanProfileConfiguration',
   components: {
-    GlTable,
     GlButtonGroup,
     GlButton,
     GlIcon,
     GlAlert,
     GlLink,
     GlLoadingIcon,
+    ScanProfileTable,
     DisableScanProfileConfirmationModal,
     ScanProfileDetailsModal,
     InsufficientPermissionsPopover,
@@ -140,15 +139,6 @@ export default {
           lastScan: null,
         };
       });
-    },
-    tableFields() {
-      return [
-        { key: 'scanType', label: __('Scanner') },
-        { key: 'name', label: __('Profile'), tdClass: '!gl-align-middle' },
-        { key: 'status', label: __('Status'), tdClass: '!gl-align-middle' },
-        { key: 'lastScan', label: __('Last scan'), tdClass: '!gl-align-middle' },
-        { key: 'actions', label: '' },
-      ];
     },
   },
   methods: {
@@ -272,45 +262,7 @@ export default {
       <gl-loading-icon size="lg" />
     </div>
 
-    <gl-table v-else :items="tableItems" :fields="tableFields" stacked="sm">
-      <template #head(name)="data">
-        <div class="gl-flex gl-items-center">
-          <span>{{ data.label }}</span>
-          <gl-icon
-            v-gl-tooltip
-            name="information-o"
-            :title="$options.SCAN_PROFILE_I18N.profilesDefine"
-            class="gl-ml-2 gl-text-secondary"
-          />
-        </div>
-      </template>
-
-      <template #cell(scanType)="{ item }">
-        <div class="gl-flex gl-items-center">
-          <div
-            class="gl-border gl-mr-3 gl-flex gl-items-center gl-justify-center gl-rounded-base gl-p-2"
-            :class="
-              item.isConfigured
-                ? 'gl-border-feedback-success gl-bg-feedback-success gl-text-feedback-success'
-                : 'gl-border-dashed gl-bg-white gl-text-feedback-neutral'
-            "
-            style="width: 32px; height: 32px"
-          >
-            <span class="gl-font-weight-bold gl-font-sm">{{
-              getScannerMetadata(item.scanType).label
-            }}</span>
-          </div>
-          <span class="gl-font-bold">{{ getScannerMetadata(item.scanType).name }}</span>
-          <gl-icon
-            v-gl-tooltip
-            name="information-o"
-            variant="info"
-            :title="getScannerMetadata(item.scanType).tooltip"
-            class="gl-ml-2"
-          />
-        </div>
-      </template>
-
+    <scan-profile-table v-else :table-items="tableItems">
       <template #cell(name)="{ item }">
         <div class="gl-flex gl-items-center">
           <template v-if="item.isConfigured">
@@ -333,7 +285,6 @@ export default {
             <gl-link
               href="https://about.gitlab.com/solutions/application-security-testing/"
               target="_blank"
-              rel="noopener noreferrer"
             >
               {{ __('Learn more about the Ultimate security suite') }}
               <gl-icon name="external-link" :aria-label="__('(external link)')" />
@@ -359,10 +310,6 @@ export default {
             </span>
           </div>
         </div>
-      </template>
-
-      <template #cell(lastScan)="{ item }">
-        <span>{{ item.lastScan || '—' }}</span>
       </template>
 
       <template #cell(actions)="{ item }">
@@ -418,7 +365,7 @@ export default {
           />
         </div>
       </template>
-    </gl-table>
+    </scan-profile-table>
 
     <scan-profile-details-modal
       :profile-id="previewProfileId"
