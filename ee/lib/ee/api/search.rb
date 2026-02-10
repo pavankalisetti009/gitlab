@@ -35,17 +35,21 @@ module EE
             super.merge(blobs: :with_api_blob_entity_associations).freeze
           end
 
+          # do not use this method for project search API
+          # all search scopes allowed for project level search
           override :verify_search_scope_for_ee!
           def verify_search_scope_for_ee!(search_type)
-            if search_scope == 'blobs'
-              return if BLOB_SEARCH_TYPES.include?(search_type)
+            scope = user_requested_search_scope
+            return if scope == 'blobs' && BLOB_SEARCH_TYPES.include?(search_type)
+            return if ADVANCED_SEARCH_SCOPES.exclude?(scope) || search_type == ADVANCED_SEARCH_SEARCH_TYPE
 
-              return render_api_error!({ error: 'Scope supported only with advanced search or exact code search' }, 400)
-            end
+            render_api_error!({ error: scope_error_message(scope) }, 400)
+          end
 
-            return if ADVANCED_SEARCH_SCOPES.exclude?(search_scope) || search_type == ADVANCED_SEARCH_SEARCH_TYPE
+          def scope_error_message(scope)
+            return 'Scope supported only with advanced search or exact code search' if scope == 'blobs'
 
-            render_api_error!({ error: 'Scope supported only with advanced search' }, 400)
+            'Scope supported only with advanced search'
           end
 
           override :verify_ee_param_regex!
@@ -68,7 +72,7 @@ module EE
           def verify_ee_param_fields!(search_type)
             return unless params.key?(:fields)
 
-            if FIELDS_SUPPORTED_SCOPES.exclude?(search_scope)
+            if FIELDS_SUPPORTED_SCOPES.exclude?(user_requested_search_scope)
               render_api_error!({ error: "fields is supported only for #{FIELDS_SUPPORTED_SCOPES.join(', ')}" }, 400)
             end
 
