@@ -352,6 +352,7 @@ module API
                 success code: 201
                 failure [
                   { code: 401, message: 'Unauthorized' },
+                  { code: 403, message: 'Forbidden' },
                   { code: 404, message: 'Not found' },
                   { code: 429, message: 'Too many requests' }
                 ]
@@ -360,10 +361,38 @@ module API
               params do
                 optional :workflow_definition, type: String, desc: 'workflow type based on its capability',
                   documentation: { example: 'software_developer' }
+                optional :root_namespace_id, type: String, desc: 'the ID of the root namespace',
+                  documentation: { example: '1' }
               end
 
               post do
                 check_rate_limit!(:duo_workflow_direct_access, scope: current_user)
+
+                if Feature.enabled?(:usage_quota_check_in_direct_access, current_user)
+                  root_namespace = find_root_namespace
+
+                  ai_feature = if params[:workflow_definition] == "chat"
+                                 :duo_chat
+                               else
+                                 :duo_agent_platform
+                               end
+
+                  quota_check_response = ::Ai::UsageQuotaService.new(
+                    ai_feature: ai_feature,
+                    user: current_user,
+                    namespace: root_namespace
+                  ).execute
+
+                  if quota_check_response.error?
+                    message = if quota_check_response.reason == :usage_quota_exceeded
+                                "USAGE_QUOTA_EXCEEDED: #{quota_check_response.message}"
+                              else
+                                quota_check_response.message
+                              end
+
+                    forbidden!(message)
+                  end
+                end
 
                 oauth_token = gitlab_oauth_token
                 workflow_token = duo_workflow_token
