@@ -10,13 +10,12 @@ RSpec.describe Security::AnalyzerNamespaceStatuses::ScheduleWorker, feature_cate
   let_it_be(:group3) { create(:group) }
   let_it_be(:group4) { create(:group) }
   let_it_be(:group5) { create(:group) }
-  let_it_be(:deleted_group) { create(:group) }
+  let_it_be(:deleted_group) { create(:group, state: Namespaces::Stateful::STATES[:deletion_in_progress]) }
   let_it_be(:user_namespace) { create(:user_namespace) }
   let(:finder_service) { Security::AnalyzerNamespaceStatuses::FindNamespacesWithAnalyzerStatusesService }
   let(:adjustment_worker) { Security::AnalyzerNamespaceStatuses::AdjustmentWorker }
 
   before do
-    deleted_group.namespace_details.update!(deleted_at: Time.current)
     allow(adjustment_worker).to receive(:perform_in)
     stub_const("Security::AnalyzerNamespaceStatuses::ScheduleWorker::BATCH_SIZE", 3)
   end

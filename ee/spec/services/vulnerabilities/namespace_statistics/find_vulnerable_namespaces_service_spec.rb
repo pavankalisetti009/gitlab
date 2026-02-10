@@ -7,7 +7,7 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesSer
   let_it_be(:group) { create(:group) }
   let_it_be(:another_group) { create(:group) }
   let_it_be(:group_without_vulnerabilities) { create(:group) }
-  let_it_be(:deleted_group) { create(:group) }
+  let_it_be(:deleted_group) { create(:group, state: Namespaces::Stateful::STATES[:deletion_in_progress]) }
   let_it_be(:nested_group) { create(:group, parent: group) }
 
   let_it_be(:user_project) { create(:project, namespace: user_namespace) }
@@ -15,10 +15,6 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesSer
   let_it_be(:another_project) { create(:project, group: another_group) }
   let_it_be(:nested_group_project) { create(:project, group: nested_group) }
   let_it_be(:deleted_group_project) { create(:project, group: deleted_group) }
-
-  before do
-    deleted_group.namespace_details.update!(deleted_at: Time.current)
-  end
 
   describe '.execute' do
     let(:namespace_ids) { described_class.execute(namespace_values) }
