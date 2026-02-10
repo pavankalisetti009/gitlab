@@ -28,7 +28,6 @@ describe('WorkItemLinkChildContentsEE', () => {
       },
       provide: {
         isGroup,
-        hasIterationsFeature: true,
       },
     });
   };

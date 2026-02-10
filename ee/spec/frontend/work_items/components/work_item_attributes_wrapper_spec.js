@@ -72,7 +72,6 @@ describe('EE WorkItemAttributesWrapper component', () => {
     confidentialityMock = [updateWorkItemMutation, jest.fn()],
     featureFlags = {},
     hasSubepicsFeature = true,
-    hasStatusFeature = true,
     workItemParticipantsQueryHandler = workItemParticipantsQuerySuccessHandler,
     groupPath = 'flightjs',
   } = {}) => {
@@ -91,11 +90,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
         groupPath,
       },
       provide: {
-        hasIssueWeightsFeature: true,
-        hasIterationsFeature: true,
         hasSubepicsFeature,
-        hasIssuableHealthStatusFeature: true,
-        hasStatusFeature,
         issuesSettings: '/groups/test-project-path/-/settings/issues',
         newTrialPath: 'https://gitlab.com/-/trials/new?glm_content=epics&glm_source=gitlab.com',
         glFeatures: featureFlags,
@@ -340,16 +335,6 @@ describe('EE WorkItemAttributesWrapper component', () => {
 
     it('does not render when widget is not present', async () => {
       createComponent();
-      await waitForPromises();
-
-      expect(findWorkItemCustomStatus().exists()).toBe(false);
-    });
-
-    it('does not render when license feature is not available', async () => {
-      createComponent({
-        hasStatusFeature: false,
-      });
-
       await waitForPromises();
 
       expect(findWorkItemCustomStatus().exists()).toBe(false);

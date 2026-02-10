@@ -31,7 +31,6 @@ export default {
     GlLink,
   },
   mixins: [Tracking.mixin()],
-  inject: ['hasIterationsFeature'],
   props: {
     fullPath: {
       type: String,
@@ -214,7 +213,6 @@ export default {
 
 <template>
   <work-item-sidebar-dropdown-widget
-    v-if="hasIterationsFeature"
     :dropdown-label="$options.i18n.iteration"
     :can-update="canUpdate"
     dropdown-name="iteration"

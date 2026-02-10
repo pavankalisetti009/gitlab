@@ -27,7 +27,6 @@ describe('WorkItemHealthStatus component', () => {
   const workItemId = 'gid://gitlab/WorkItem/1';
   const workItemType = 'Task';
 
-  const findHeader = () => wrapper.find('h3');
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
 
   const showDropdown = () => {
@@ -36,7 +35,6 @@ describe('WorkItemHealthStatus component', () => {
 
   const createComponent = async ({
     canUpdate = true,
-    hasIssuableHealthStatusFeature = true,
     healthStatus,
     mutationHandler = jest.fn().mockResolvedValue(updateWorkItemMutationResponse),
   } = {}) => {
@@ -59,9 +57,6 @@ describe('WorkItemHealthStatus component', () => {
         fullPath: 'gitlab-org/gitlab',
         isWorkItemClosed: false,
       },
-      provide: {
-        hasIssuableHealthStatusFeature,
-      },
     });
 
     await waitForPromises();
@@ -77,20 +72,6 @@ describe('WorkItemHealthStatus component', () => {
     createComponent();
 
     expect(findSidebarDropdownWidget().props('searchable')).toBe(false);
-  });
-
-  describe('`hasIssuableHealthStatusFeature` licensed feature', () => {
-    describe.each`
-      description             | hasIssuableHealthStatusFeature | exists
-      ${'when available'}     | ${true}                        | ${true}
-      ${'when not available'} | ${false}                       | ${false}
-    `('$description', ({ hasIssuableHealthStatusFeature, exists }) => {
-      it(`${hasIssuableHealthStatusFeature ? 'renders' : 'does not render'} component`, () => {
-        createComponent({ hasIssuableHealthStatusFeature });
-
-        expect(findHeader().exists()).toBe(exists);
-      });
-    });
   });
 
   describe('Dropdown options', () => {

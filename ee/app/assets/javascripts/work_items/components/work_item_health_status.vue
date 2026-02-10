@@ -28,7 +28,6 @@ export default {
     WorkItemSidebarDropdownWidget,
   },
   mixins: [Tracking.mixin()],
-  inject: ['hasIssuableHealthStatusFeature'],
   props: {
     fullPath: {
       type: String,
@@ -153,29 +152,27 @@ export default {
 </script>
 
 <template>
-  <div v-if="hasIssuableHealthStatusFeature">
-    <work-item-sidebar-dropdown-widget
-      :dropdown-label="$options.HEALTH_STATUS_I18N_HEALTH_STATUS"
-      :can-update="canUpdateMetadata"
-      dropdown-name="health-status"
-      :list-items="$options.healthStatusDropdownOptions"
-      :item-value="selectedHealthStatus"
-      :header-text="$options.HEALTH_STATUS_I18N_SELECT_HEALTH_STATUS"
-      :update-in-progress="updateInProgress"
-      :reset-button-label="__('Clear')"
-      :searchable="false"
-      data-testid="work-item-health-status"
-      @updateValue="updateHealthStatus"
-    >
-      <template #readonly>
-        <issue-health-status
-          v-if="selectedHealthStatus"
-          data-testid="work-item-health-status-value"
-          display-as-text
-          disable-tooltip
-          :health-status="selectedHealthStatus"
-        />
-      </template>
-    </work-item-sidebar-dropdown-widget>
-  </div>
+  <work-item-sidebar-dropdown-widget
+    :dropdown-label="$options.HEALTH_STATUS_I18N_HEALTH_STATUS"
+    :can-update="canUpdateMetadata"
+    dropdown-name="health-status"
+    :list-items="$options.healthStatusDropdownOptions"
+    :item-value="selectedHealthStatus"
+    :header-text="$options.HEALTH_STATUS_I18N_SELECT_HEALTH_STATUS"
+    :update-in-progress="updateInProgress"
+    :reset-button-label="__('Clear')"
+    :searchable="false"
+    data-testid="work-item-health-status"
+    @updateValue="updateHealthStatus"
+  >
+    <template #readonly>
+      <issue-health-status
+        v-if="selectedHealthStatus"
+        data-testid="work-item-health-status-value"
+        display-as-text
+        disable-tooltip
+        :health-status="selectedHealthStatus"
+      />
+    </template>
+  </work-item-sidebar-dropdown-widget>
 </template>

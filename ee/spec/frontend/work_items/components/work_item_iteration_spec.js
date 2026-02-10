@@ -62,9 +62,6 @@ describe('WorkItemIteration component', () => {
         workItemType,
         isGroup,
       },
-      provide: {
-        hasIterationsFeature: true,
-      },
     });
   };
 
