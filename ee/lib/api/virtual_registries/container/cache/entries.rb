@@ -69,7 +69,7 @@ module API
                     use :pagination
                   end
                   route_setting :authorization, permissions: :read_container_virtual_registry_upstream_cache_entry,
-                    boundary: -> { upstream.group }
+                    boundary: -> { upstream.group }, boundary_type: :group
                   get do
                     authorize! :read_virtual_registry, upstream
 
@@ -102,7 +102,7 @@ module API
               end
 
               route_setting :authorization, permissions: :delete_container_virtual_registry_upstream_cache_entry,
-                boundary: -> { cache_entry.group }
+                boundary: -> { cache_entry.group }, boundary_type: :group
               delete '*id' do
                 authorize! :destroy_virtual_registry, cache_entry.upstream
 

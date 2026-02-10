@@ -133,7 +133,7 @@ module API
                     hidden true
                   end
                   route_setting :authorization, permissions: :read_maven_virtual_registry_upstream,
-                    boundary: -> { registry.group }
+                    boundary: -> { registry.group }, boundary_type: :group
                   get do
                     authorize! :read_virtual_registry, registry
 
@@ -171,7 +171,7 @@ module API
                     all_or_none_of :username, :password
                   end
                   route_setting :authorization, permissions: :create_maven_virtual_registry_upstream,
-                    boundary: -> { registry.group }
+                    boundary: -> { registry.group }, boundary_type: :group
                   post do
                     authorize! :create_virtual_registry, registry
 
@@ -205,7 +205,7 @@ module API
                   hidden true
                 end
                 route_setting :authorization, permissions: :read_maven_virtual_registry_upstream,
-                  boundary: -> { upstream.group }
+                  boundary: -> { upstream.group }, boundary_type: :group
                 get do
                   authorize! :read_virtual_registry, upstream
 
@@ -243,7 +243,7 @@ module API
                     :metadata_cache_validity_hours
                 end
                 route_setting :authorization, permissions: :update_maven_virtual_registry_upstream,
-                  boundary: -> { upstream.group }
+                  boundary: -> { upstream.group }, boundary_type: :group
                 patch do
                   authorize! :update_virtual_registry, upstream
 
@@ -267,7 +267,7 @@ module API
                   hidden true
                 end
                 route_setting :authorization, permissions: :delete_maven_virtual_registry_upstream,
-                  boundary: -> { upstream.group }
+                  boundary: -> { upstream.group }, boundary_type: :group
                 delete do
                   authorize! :destroy_virtual_registry, upstream
 
@@ -289,7 +289,7 @@ module API
                   hidden true
                 end
                 route_setting :authorization, permissions: :purge_maven_virtual_registry_upstream_cache,
-                  boundary: -> { upstream.group }
+                  boundary: -> { upstream.group }, boundary_type: :group
                 delete :cache do
                   authorize! :destroy_virtual_registry, upstream
 
@@ -311,7 +311,7 @@ module API
                   hidden true
                 end
                 route_setting :authorization, permissions: :test_maven_virtual_registry_upstream,
-                  boundary: -> { upstream.group }
+                  boundary: -> { upstream.group }, boundary_type: :group
                 get :test do
                   authorize! :read_virtual_registry, upstream
 
@@ -339,7 +339,7 @@ module API
                   optional :password, type: String, desc: 'The password of the Maven virtual registry upstream'
                 end
                 route_setting :authorization, permissions: :test_maven_virtual_registry_upstream,
-                  boundary: -> { upstream.group }
+                  boundary: -> { upstream.group }, boundary_type: :group
                 post :test do
                   authorize! :read_virtual_registry, upstream
 

@@ -134,7 +134,7 @@ module API
                   hidden true
                 end
                 route_setting :authorization, permissions: :read_container_virtual_registry_upstream,
-                  boundary: -> { registry.group }
+                  boundary: -> { registry.group }, boundary_type: :group
                 get do
                   authorize! :read_virtual_registry, registry
 
@@ -173,7 +173,7 @@ module API
                 end
 
                 route_setting :authorization, permissions: :create_container_virtual_registry_upstream,
-                  boundary: -> { registry.group }
+                  boundary: -> { registry.group }, boundary_type: :group
                 post do
                   authorize! :create_virtual_registry, registry
 
@@ -207,7 +207,7 @@ module API
                 hidden true
               end
               route_setting :authorization, permissions: :read_container_virtual_registry_upstream,
-                boundary: -> { upstream.group }
+                boundary: -> { upstream.group }, boundary_type: :group
               get do
                 authorize! :read_virtual_registry, upstream
 
@@ -242,7 +242,7 @@ module API
                 at_least_one_of :name, :description, :url, :username, :password, :cache_validity_hours
               end
               route_setting :authorization, permissions: :update_container_virtual_registry_upstream,
-                boundary: -> { upstream.group }
+                boundary: -> { upstream.group }, boundary_type: :group
               patch do
                 authorize! :update_virtual_registry, upstream
 
@@ -266,7 +266,7 @@ module API
                 hidden true
               end
               route_setting :authorization, permissions: :delete_container_virtual_registry_upstream,
-                boundary: -> { upstream.group }
+                boundary: -> { upstream.group }, boundary_type: :group
               delete do
                 authorize! :destroy_virtual_registry, upstream
 
@@ -294,7 +294,7 @@ module API
                 hidden true
               end
               route_setting :authorization, permissions: :purge_container_virtual_registry_upstream_cache,
-                boundary: -> { upstream.group }
+                boundary: -> { upstream.group }, boundary_type: :group
               delete :cache do
                 authorize! :destroy_virtual_registry, upstream
 
@@ -322,7 +322,7 @@ module API
                 optional :password, type: String, desc: 'The password of the container virtual registry upstream'
               end
               route_setting :authorization, permissions: :test_container_virtual_registry_upstream,
-                boundary: -> { upstream.group }
+                boundary: -> { upstream.group }, boundary_type: :group
               post :test do
                 authorize! :read_virtual_registry, upstream
 
