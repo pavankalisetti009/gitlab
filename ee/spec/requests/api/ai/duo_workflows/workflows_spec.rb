@@ -1438,6 +1438,20 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
           expect(cloud_service['Headers']).to include('authorization' => "Bearer cloud_connector_token")
           expect(cloud_service['Secure']).to be(true)
         end
+
+        it 'includes project and client type context in CloudServiceForSelfHosted headers' do
+          get api(path, user),
+            headers: workhorse_headers,
+            params: { workflow_definition: 'chat', project_id: project.id, client_type: 'web' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          cloud_service = json_response['DuoWorkflow']['CloudServiceForSelfHosted']
+          expect(cloud_service['Headers']).to include(
+            'x-gitlab-project-id' => project.id.to_s,
+            'x-gitlab-client-type' => 'web'
+          )
+        end
       end
 
       context 'when self-hosted DAP billing is disabled for the feature' do
