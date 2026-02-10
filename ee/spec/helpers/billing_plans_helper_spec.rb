@@ -6,46 +6,6 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
   include Devise::Test::ControllerHelpers
   include FreeUserCapHelpers
 
-  describe '#new_trial_type?' do
-    let(:namespace) { build(:group, gitlab_subscription: gitlab_subscription) }
-
-    context 'when feature flag is enabled' do
-      let(:gitlab_subscription) { build(:gitlab_subscription, :active_trial) }
-
-      it 'returns true' do
-        expect(helper.new_trial_type?(namespace)).to be true
-      end
-    end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(ultimate_with_dap_trial_uat: false)
-      end
-
-      context 'when trial started on or after DAP start date' do
-        let(:gitlab_subscription) do
-          build(:gitlab_subscription, :active_trial,
-            trial_starts_on: BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE)
-        end
-
-        it 'returns true' do
-          expect(helper.new_trial_type?(namespace)).to be true
-        end
-      end
-
-      context 'when trial started before DAP start date' do
-        let(:gitlab_subscription) do
-          build(:gitlab_subscription, :active_trial,
-            trial_starts_on: BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE - 1.day)
-        end
-
-        it 'returns false' do
-          expect(helper.new_trial_type?(namespace)).to be false
-        end
-      end
-    end
-  end
-
   describe '#subscription_plan_data_attributes' do
     let(:group) { build(:group) }
     let(:customer_portal_url) { ::Gitlab::Routing.url_helpers.subscription_portal_manage_url }
@@ -750,7 +710,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       before do
         stub_feature_flags(ultimate_trial_with_dap: false, ultimate_with_dap_trial_uat: false)
         trial_group.gitlab_subscription.update!(
-          trial_starts_on: BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE - 1.day
+          trial_starts_on: GitlabSubscriptions::Trials::ULTIMATE_WITH_DAP_TRIAL_START_DATE - 1.day
         )
       end
 

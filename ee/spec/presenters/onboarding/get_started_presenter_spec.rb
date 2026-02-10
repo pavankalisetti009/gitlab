@@ -70,10 +70,6 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
         expect(actions.size).to eq(3)
       end
 
-      it 'includes the correct number of trial actions' do
-        expect(trial_actions.size).to eq(3)
-      end
-
       context 'when invite is enabled' do
         before do
           allow(user).to receive(:can?)
@@ -92,27 +88,43 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
       end
 
       context 'for duo seat assignment' do
-        using RSpec::Parameterized::TableSyntax
-
-        where(:active_duo_addon?, :can_read_usage_quotas?, :expected_enabled) do
-          true  | true  | true
-          true  | false | false
-          false | true  | false
-          false | false | false
+        before do
+          allow(user).to receive(:can?)
+          allow(GitlabSubscriptions::Trials).to receive(:dap_type?).with(namespace).and_return(false)
         end
 
-        with_them do
-          before do
-            allow(GitlabSubscriptions::Duo)
-              .to receive(:any_active_add_on_purchase_for_namespace?).with(namespace).and_return(active_duo_addon?)
-            allow(user).to receive(:can?)
-            allow(user)
-              .to receive(:can?).with(:read_usage_quotas, namespace).and_return(can_read_usage_quotas?)
-          end
+        it 'enables action when user can read usage quotas' do
+          allow(user).to receive(:can?).with(:read_usage_quotas, namespace).and_return(true)
 
-          it 'marks action as enabled based on both conditions' do
-            expect(duo_seat_action['enabled']).to be(expected_enabled)
-          end
+          expect(duo_seat_action['enabled']).to be(true)
+        end
+
+        it 'disables action when user cannot read usage quotas' do
+          allow(user).to receive(:can?).with(:read_usage_quotas, namespace).and_return(false)
+
+          expect(duo_seat_action['enabled']).to be(false)
+        end
+      end
+
+      context 'when it is a dap trial' do
+        before do
+          allow(GitlabSubscriptions::Trials).to receive(:dap_type?).with(namespace).and_return(true)
+        end
+
+        it 'excludes duo_seat_assigned action from trial_actions' do
+          expect(trial_actions.size).to eq(2)
+          expect(find_action_by_label(trial_actions, 'duo_seat_assigned')).to be_nil
+        end
+      end
+
+      context 'when it is not a dap trial' do
+        before do
+          allow(GitlabSubscriptions::Trials).to receive(:dap_type?).with(namespace).and_return(false)
+        end
+
+        it 'includes duo_seat_assigned action in trial_actions' do
+          expect(trial_actions.size).to eq(3)
+          expect(find_action_by_label(trial_actions, 'duo_seat_assigned')).not_to be_nil
         end
       end
 

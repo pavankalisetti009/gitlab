@@ -29,7 +29,7 @@ module GitlabSubscriptions
       end
 
       def primary_body_text
-        if helpers.show_dap_copy?(namespace)
+        if GitlabSubscriptions::Trials.dap_type?(namespace)
           s_('BillingPlans|Start an Ultimate trial to try the complete set of features from GitLab.')
         else
           s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to ' \

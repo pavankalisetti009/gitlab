@@ -48,7 +48,7 @@ RSpec.describe GitlabSubscriptions::EndOfTrialModalComponent, :aggregate_failure
             end
 
             context 'when feature flag is disabled and trial started after DAP date' do
-              let(:trial_start_date) { BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE + 1.day }
+              let(:trial_start_date) { GitlabSubscriptions::Trials::ULTIMATE_WITH_DAP_TRIAL_START_DATE + 1.day }
               let(:gitlab_subscription) do
                 build_stubbed(:gitlab_subscription, :expired_trial, :free, trial_starts_on: trial_start_date)
               end
@@ -63,7 +63,7 @@ RSpec.describe GitlabSubscriptions::EndOfTrialModalComponent, :aggregate_failure
             end
 
             context 'when feature flag is disabled and trial started before DAP date' do
-              let(:trial_start_date) { BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE - 1.day }
+              let(:trial_start_date) { GitlabSubscriptions::Trials::ULTIMATE_WITH_DAP_TRIAL_START_DATE - 1.day }
               let(:gitlab_subscription) do
                 build_stubbed(:gitlab_subscription, :expired_trial, :free, trial_starts_on: trial_start_date)
               end

@@ -45,7 +45,7 @@ module GitlabSubscriptions
       return true if Feature.enabled?(:ultimate_with_dap_trial_uat, namespace)
 
       trial_starts_on = namespace.gitlab_subscription&.trial_starts_on
-      trial_starts_on.present? && trial_starts_on >= BillingPlansHelper::ULTIMATE_WITH_DAP_TRIAL_START_DATE
+      trial_starts_on.present? && trial_starts_on >= GitlabSubscriptions::Trials::ULTIMATE_WITH_DAP_TRIAL_START_DATE
     end
 
     def view_model

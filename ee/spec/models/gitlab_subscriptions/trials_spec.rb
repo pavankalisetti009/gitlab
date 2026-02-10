@@ -312,4 +312,88 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       it { is_expected.to be(false) }
     end
   end
+
+  describe '.dap_type?', :saas_subscriptions_trials do
+    let(:ultimate_with_dap_trial_uat_enabled) { false }
+
+    before do
+      stub_feature_flags(ultimate_with_dap_trial_uat: ultimate_with_dap_trial_uat_enabled)
+    end
+
+    subject { described_class.dap_type?(namespace) }
+
+    context 'when trial is active' do
+      context 'when ultimate_with_dap_trial_uat feature flag is enabled' do
+        let(:ultimate_with_dap_trial_uat_enabled) { true }
+
+        let(:namespace) do
+          create(:group_with_plan, trial_ends_on: 15.days.from_now) do |group|
+            group.gitlab_subscription.update!(
+              trial: true,
+              trial_starts_on: Date.new(2026, 2, 1)
+            )
+          end
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when trial started on or after ULTIMATE_WITH_DAP_TRIAL_START_DATE' do
+        let(:namespace) do
+          create(:group_with_plan, trial_ends_on: 15.days.from_now) do |group|
+            group.gitlab_subscription.update!(
+              trial: true,
+              trial_starts_on: Date.new(2026, 2, 10)
+            )
+          end
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when trial started after ULTIMATE_WITH_DAP_TRIAL_START_DATE' do
+        let(:namespace) do
+          create(:group_with_plan, trial_ends_on: 15.days.from_now) do |group|
+            group.gitlab_subscription.update!(
+              trial: true,
+              trial_starts_on: Date.new(2026, 2, 15)
+            )
+          end
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when trial started before ULTIMATE_WITH_DAP_TRIAL_START_DATE' do
+        let(:namespace) do
+          create(:group_with_plan, trial_ends_on: 15.days.from_now) do |group|
+            group.gitlab_subscription.update!(
+              trial: true,
+              trial_starts_on: Date.new(2026, 2, 9)
+            )
+          end
+        end
+
+        before do
+          stub_feature_flags(ultimate_with_dap_trial_uat: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'when trial is not active' do
+      let(:namespace) { create(:group) }
+
+      it { is_expected.to be(true) }
+
+      context 'when ultimate_trial_with_dap instance feature flag is disabled' do
+        before do
+          stub_feature_flags(ultimate_trial_with_dap: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+  end
 end
