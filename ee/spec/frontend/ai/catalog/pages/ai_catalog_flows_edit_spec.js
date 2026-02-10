@@ -265,4 +265,32 @@ describe('AiCatalogFlowsEdit', () => {
       });
     });
   });
+
+  describe('created hook - redirect behavior', () => {
+    it.each([
+      {
+        name: 'redirects when adminAiCatalogItem is false',
+        adminAiCatalogItem: false,
+        shouldRedirect: true,
+      },
+      {
+        name: 'does not redirect when adminAiCatalogItem is true',
+        adminAiCatalogItem: true,
+        shouldRedirect: false,
+      },
+    ])('$name', ({ adminAiCatalogItem, shouldRedirect }) => {
+      createComponent({
+        props: { aiCatalogFlow: { ...mockFlow, userPermissions: { adminAiCatalogItem } } },
+      });
+
+      if (shouldRedirect) {
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+          params: { id: flowId },
+        });
+      } else {
+        expect(mockRouter.push).not.toHaveBeenCalled();
+      }
+    });
+  });
 });

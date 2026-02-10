@@ -41,15 +41,6 @@ export default {
     shouldShowEditingLatestAlert() {
       return this.version.isUpdateAvailable;
     },
-    systemPrompt() {
-      return this.aiCatalogAgent.latestVersion.systemPrompt;
-    },
-    toolIds() {
-      return (this.aiCatalogAgent.latestVersion.tools?.nodes ?? []).map((t) => t.id);
-    },
-    definition() {
-      return this.aiCatalogAgent.latestVersion.definition;
-    },
     duplicateLink() {
       return {
         name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
@@ -61,13 +52,24 @@ export default {
         projectId: this.aiCatalogAgent.project?.id,
         name: this.aiCatalogAgent.name,
         description: this.aiCatalogAgent.description,
-        systemPrompt: this.systemPrompt,
-        tools: this.toolIds,
-        definition: this.definition,
+        systemPrompt: this.aiCatalogAgent.latestVersion.systemPrompt,
+        tools: (this.aiCatalogAgent.latestVersion.tools?.nodes ?? []).map((t) => t.id),
+        definition: this.aiCatalogAgent.latestVersion.definition,
         public: this.aiCatalogAgent.public,
         itemType: this.aiCatalogAgent.itemType,
       };
     },
+    canAdmin() {
+      return Boolean(this.aiCatalogAgent.userPermissions?.adminAiCatalogItem);
+    },
+  },
+  created() {
+    if (!this.canAdmin) {
+      this.$router.push({
+        name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+        params: { id: this.$route.params.id },
+      });
+    }
   },
   methods: {
     async handleSubmit({ itemType, ...input }) {

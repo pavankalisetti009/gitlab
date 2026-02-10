@@ -37,20 +37,28 @@ export default {
     activeVersion() {
       return resolveVersion(this.aiCatalogFlow, this.isGlobal);
     },
-    flowName() {
-      return this.aiCatalogFlow.name;
-    },
-    definition() {
-      return this.activeVersion.definition;
-    },
     initialValues() {
       return {
-        name: `${s__('AICatalog|Copy of')} ${this.flowName}`,
+        name: `${s__('AICatalog|Copy of')} ${this.aiCatalogFlow.name}`,
         public: false,
         description: this.aiCatalogFlow.description,
-        definition: this.definition,
+        definition: this.activeVersion.definition,
       };
     },
+    canAdmin() {
+      return Boolean(this.aiCatalogFlow.userPermissions?.adminAiCatalogItem);
+    },
+    canDuplicate() {
+      return this.isGlobal || this.canAdmin;
+    },
+  },
+  created() {
+    if (!this.canDuplicate) {
+      this.$router.push({
+        name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+        params: { id: this.$route.params.id },
+      });
+    }
   },
   methods: {
     async handleSubmit(input) {

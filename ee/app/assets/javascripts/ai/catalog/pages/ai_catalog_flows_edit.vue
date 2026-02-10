@@ -37,9 +37,6 @@ export default {
     shouldShowEditingLatestAlert() {
       return this.version.isUpdateAvailable;
     },
-    definition() {
-      return this.aiCatalogFlow.latestVersion.definition;
-    },
     duplicateLink() {
       return {
         name: AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
@@ -52,9 +49,20 @@ export default {
         name: this.aiCatalogFlow.name,
         description: this.aiCatalogFlow.description,
         public: this.aiCatalogFlow.public,
-        definition: this.definition,
+        definition: this.aiCatalogFlow.latestVersion.definition,
       };
     },
+    canAdmin() {
+      return Boolean(this.aiCatalogFlow.userPermissions?.adminAiCatalogItem);
+    },
+  },
+  created() {
+    if (!this.canAdmin) {
+      this.$router.push({
+        name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+        params: { id: this.$route.params.id },
+      });
+    }
   },
   methods: {
     async handleSubmit(input) {
