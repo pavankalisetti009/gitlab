@@ -2246,11 +2246,15 @@ describe('when workItemsSavedViewsEnabled flag is enabled', () => {
     });
 
     describe('when "Save changes" is clicked', () => {
-      it('prompts for confirmation', async () => {
+      beforeEach(async () => {
         findIssuableList().vm.$emit('filter', [
           { type: TOKEN_TYPE_AUTHOR, value: { data: 'homer', operator: OPERATOR_IS } },
         ]);
 
+        await nextTick();
+      });
+
+      it('prompts for confirmation', async () => {
         await findUpdateViewButton().vm.$emit('click');
 
         expect(confirmAction).toHaveBeenCalledWith(
