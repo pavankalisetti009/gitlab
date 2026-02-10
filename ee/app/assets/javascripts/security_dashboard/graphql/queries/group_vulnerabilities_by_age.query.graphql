@@ -3,21 +3,47 @@ query groupVulnerabilitiesByAge(
   $fullPath: ID!
   $projectId: [ID!]
   $reportType: [VulnerabilityReportType!]
+  $includeBySeverity: Boolean!
+  $includeByReportType: Boolean!
   $severity: [VulnerabilitySeverity!]
+  $date: ISO8601Date!
 ) {
   group(fullPath: $fullPath) {
     id
     securityMetrics(projectId: $projectId, reportType: $reportType) {
+      # Ensures securityMetrics always has a valid selection, even if vulnerabilitiesByAge
+      # is not available on older backends (18.8) during Self-Managed upgrades.
       __typename
-      vulnerabilitiesByAge(severity: $severity) @client {
-        name
-        bySeverity {
-          count
-          severity
+      # This field consumes all query variables for validation purposes.
+      # @skip(if: true) prevents execution, avoiding unnecessary server load.
+      # See: https://docs.gitlab.com/development/api_graphql_styleguide/#mitigation
+      # Can be removed after 18.10 when all SM instances have vulnerabilitiesByAge.
+      # See: https://gitlab.com/gitlab-org/gitlab/-/work_items/588152 for removal
+      vulnerabilitiesOverTime(severity: $severity, startDate: $date, endDate: $date)
+        @skip(if: true) {
+        nodes {
+          __typename
+          bySeverity @include(if: $includeBySeverity) {
+            __typename
+          }
+          byReportType @include(if: $includeByReportType) {
+            __typename
+          }
         }
-        byReportType {
-          count
-          reportType
+      }
+      vulnerabilitiesByAge(severity: $severity) @gl_introduced(version: "18.9.0") {
+        name
+        ... @include(if: $includeBySeverity) {
+          bySeverity {
+            count
+            severity
+          }
+        }
+        ... @include(if: $includeByReportType) {
+          byReportType {
+            count
+            reportType
+          }
         }
       }
     }
