@@ -7,43 +7,65 @@ import {
   GlFormCheckbox,
   GlModal,
 } from '@gitlab/ui';
-import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createAlert } from '~/alert';
 import Api from '~/api';
-import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
-import axios from '~/lib/utils/axios_utils';
+import * as RestApi from '~/rest_api';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PermissionsModal from 'ee/pages/projects/shared/permissions/secrets_manager/components/secrets_manager_permissions_modal.vue';
 import createSecretsPermissionMutation from 'ee/pages/projects/shared/permissions/secrets_manager/graphql/create_secrets_permission.mutation.graphql';
+import createGroupSecretsPermissionMutation from 'ee/pages/projects/shared/permissions/secrets_manager/graphql/create_group_secrets_permission.mutation.graphql';
 import {
   MOCK_USERS_API,
-  MOCK_GROUPS_API,
   mockCreatePermissionResponse,
   mockCreatePermissionErrorResponse,
+  mockCreateGroupPermissionResponse,
+  mockCreateGroupPermissionErrorResponse,
 } from '../mock_data';
 
 jest.mock('~/alert');
-jest.mock('~/api');
+jest.mock('~/rest_api');
+
 const mockToastShow = jest.fn();
 Vue.use(VueApollo);
 
 describe('SecretsManagerPermissionsModal', () => {
   let wrapper;
-  let axiosMock;
   let mockApollo;
   let mockCreatePermission;
 
-  const createComponent = ({ permissionCategory = null } = {}) => {
-    mockApollo = createMockApollo([[createSecretsPermissionMutation, mockCreatePermission]]);
+  const contextConfigs = [
+    {
+      context: 'project',
+      fullPath: '/path/to/project',
+      mutation: createSecretsPermissionMutation,
+      mockSuccessResponse: mockCreatePermissionResponse,
+      mockErrorResponse: mockCreatePermissionErrorResponse,
+      mockApiCall: () => jest.spyOn(Api, 'projectUsers'),
+    },
+    {
+      context: 'group',
+      fullPath: '/path/to/group',
+      mutation: createGroupSecretsPermissionMutation,
+      mockSuccessResponse: mockCreateGroupPermissionResponse,
+      mockErrorResponse: mockCreateGroupPermissionErrorResponse,
+      mockApiCall: () => jest.spyOn(RestApi, 'getGroupMembers'),
+    },
+  ];
+
+  const createComponent = ({ permissionCategory = null, context = 'project' } = {}) => {
+    const config = contextConfigs.find((c) => c.context === context);
+
+    mockApollo = createMockApollo([[config.mutation, mockCreatePermission]]);
 
     wrapper = shallowMountExtended(PermissionsModal, {
       apolloProvider: mockApollo,
       propsData: {
         permissionCategory,
-        fullPath: '/path/to/project',
+        fullPath: config.fullPath,
         projectId: 123,
+        context,
       },
       mocks: {
         $toast: { show: mockToastShow },
@@ -91,15 +113,8 @@ describe('SecretsManagerPermissionsModal', () => {
   };
 
   beforeEach(() => {
-    // mock users API
-    axiosMock = new MockAdapter(axios);
     jest.spyOn(Api, 'projectUsers').mockResolvedValue(MOCK_USERS_API);
-
-    // mock groups API
-    const mockUrl = '/-/autocomplete/project_groups.json';
-    axiosMock.onGet(mockUrl).replyOnce(HTTP_STATUS_OK, MOCK_GROUPS_API);
-
-    // mock mutation response
+    jest.spyOn(RestApi, 'getGroupMembers').mockResolvedValue({ data: MOCK_USERS_API });
     mockCreatePermission = jest.fn().mockResolvedValue(mockCreatePermissionResponse);
   });
 
@@ -152,97 +167,183 @@ describe('SecretsManagerPermissionsModal', () => {
   const USER_ITEMS = ['Administrator', 'John Doe'];
   const ROLE_ITEMS = ['Reporter', 'Developer', 'Maintainer'];
 
-  describe.each`
-    category  | title         | fieldItems    | selectedItem    | principalId
-    ${'USER'} | ${'Add user'} | ${USER_ITEMS} | ${'john.doe'}   | ${2}
-    ${'ROLE'} | ${'Add role'} | ${ROLE_ITEMS} | ${'MAINTAINER'} | ${40}
-  `('$category permissions form', ({ category, title, fieldItems, selectedItem, principalId }) => {
-    beforeEach(async () => {
-      createComponent({ permissionCategory: category });
-      findPrincipalField().vm.$emit('shown');
-      await waitForPromises();
-    });
+  describe.each([
+    {
+      contextName: 'project',
+      contextConfig: contextConfigs[0],
+    },
+    {
+      contextName: 'group',
+      contextConfig: contextConfigs[1],
+    },
+  ])('$contextName context', ({ contextName, contextConfig }) => {
+    describe.each`
+      category  | title         | fieldItems    | selectedItem    | principalId
+      ${'USER'} | ${'Add user'} | ${USER_ITEMS} | ${'john.doe'}   | ${2}
+      ${'ROLE'} | ${'Add role'} | ${ROLE_ITEMS} | ${'MAINTAINER'} | ${40}
+    `(
+      '$category permissions form',
+      ({ category, title, fieldItems, selectedItem, principalId }) => {
+        beforeEach(async () => {
+          mockCreatePermission = jest.fn().mockResolvedValue(contextConfig.mockSuccessResponse);
+          createComponent({ permissionCategory: category, context: contextName });
+          findPrincipalField().vm.$emit('shown');
+          await waitForPromises();
+        });
 
-    it('renders modal', () => {
-      expect(findModal().props('visible')).toBe(true);
-    });
+        it('renders modal', () => {
+          expect(findModal().props('visible')).toBe(true);
+        });
 
-    it('renders template correctly', () => {
-      expect(findModal().props('title')).toBe(title);
-      expect(findDatepicker().exists()).toBe(true);
-      expect(findCheckbox(0).text()).toContain('Read');
-      expect(findCheckbox(1).text()).toContain('Write');
-      expect(findCheckbox(2).text()).toContain('Delete');
-    });
+        it('renders template correctly', () => {
+          expect(findModal().props('title')).toBe(title);
+          expect(findDatepicker().exists()).toBe(true);
+          expect(findCheckbox(0).text()).toContain('Read');
+          expect(findCheckbox(1).text()).toContain('Write');
+          expect(findCheckbox(2).text()).toContain('Delete');
+        });
 
-    it('sets expiration date in the future', () => {
-      const today = new Date();
-      const expirationMinDate = findDatepicker().props('minDate').getTime();
-      expect(expirationMinDate).toBeGreaterThan(today.getTime());
-    });
+        it('sets expiration date in the future', () => {
+          const today = new Date();
+          const expirationMinDate = findDatepicker().props('minDate').getTime();
+          expect(expirationMinDate).toBeGreaterThan(today.getTime());
+        });
 
-    it('fills listbox with correct items', () => {
-      const actualFieldItems = findPrincipalField()
-        .props('items')
-        .map((item) => item.text);
+        it('fills listbox with correct items', () => {
+          const actualFieldItems = findPrincipalField()
+            .props('items')
+            .map((item) => item.text);
 
-      expect(actualFieldItems).toEqual(fieldItems);
-    });
+          expect(actualFieldItems).toEqual(fieldItems);
+        });
 
-    it('calls the create mutation with the correct variables', async () => {
-      await submitPermission({ includeOptionalFields: true, selectedItem });
+        it('calls the create mutation with the correct variables', async () => {
+          await submitPermission({ includeOptionalFields: true, selectedItem });
 
-      expect(mockCreatePermission).toHaveBeenCalledWith({
-        projectPath: '/path/to/project',
-        principal: {
-          id: principalId,
-          type: category,
-        },
-        actions: ['READ', 'WRITE'],
-        expiredAt: '2055-08-12',
+          expect(mockCreatePermission).toHaveBeenCalledWith({
+            fullPath: contextConfig.fullPath,
+            principal: {
+              id: principalId,
+              type: category,
+            },
+            actions: ['READ', 'WRITE'],
+            expiredAt: '2055-08-12',
+          });
+        });
+      },
+    );
+
+    describe('GROUP permissions form', () => {
+      beforeEach(() => {
+        mockCreatePermission = jest.fn().mockResolvedValue(contextConfig.mockSuccessResponse);
+        createComponent({ permissionCategory: 'GROUP', context: contextName });
+      });
+
+      it('renders modal', () => {
+        expect(findModal().props('visible')).toBe(true);
+      });
+
+      it('renders group path input instead of listbox', () => {
+        expect(findGroupPathInput().exists()).toBe(true);
+        expect(findPrincipalField().exists()).toBe(false);
+      });
+
+      it('renders template correctly', () => {
+        expect(findModal().props('title')).toBe('Add group');
+        expect(findDatepicker().exists()).toBe(true);
+        expect(findCheckbox(0).text()).toContain('Read');
+        expect(findCheckbox(1).text()).toContain('Write');
+        expect(findCheckbox(2).text()).toContain('Delete');
+      });
+
+      it('calls the create mutation with the correct variables', async () => {
+        await submitPermission({ includeOptionalFields: true, isGroup: true });
+
+        expect(mockCreatePermission).toHaveBeenCalledWith({
+          fullPath: contextConfig.fullPath,
+          principal: {
+            groupPath: 'my-org/sub-group',
+            type: 'GROUP',
+          },
+          actions: ['READ', 'WRITE'],
+          expiredAt: '2055-08-12',
+        });
       });
     });
-  });
 
-  describe('GROUP permissions form', () => {
-    beforeEach(() => {
-      createComponent({ permissionCategory: 'GROUP' });
+    describe('when submission is successful', () => {
+      beforeEach(() => {
+        mockCreatePermission = jest.fn().mockResolvedValue(contextConfig.mockSuccessResponse);
+        createComponent({ permissionCategory: 'ROLE', context: contextName });
+      });
+
+      it('disables submission button by default', () => {
+        expect(findModal().props('actionPrimary').attributes.disabled).toBe(true);
+      });
+
+      it('enables submission button when required fields are provided', async () => {
+        await inputRequiredFields();
+
+        expect(findModal().props('actionPrimary').attributes.disabled).toBe(false);
+      });
+
+      it('emits the refetch event', async () => {
+        expect(wrapper.emitted('refetch')).toBeUndefined();
+
+        await submitPermission();
+
+        expect(wrapper.emitted('refetch')).toHaveLength(1);
+      });
+
+      it('hides modal and shows toast message on successful submission', async () => {
+        expect(mockCreatePermission).toHaveBeenCalledTimes(0);
+
+        await submitPermission();
+
+        expect(mockCreatePermission).toHaveBeenCalledTimes(1);
+        expect(wrapper.emitted('hide')).toHaveLength(1);
+        expect(mockToastShow).toHaveBeenCalledWith(
+          'Secrets manager permissions were successfully updated.',
+        );
+      });
     });
 
-    it('renders modal', () => {
-      expect(findModal().props('visible')).toBe(true);
+    describe('when submission returns errors', () => {
+      beforeEach(() => {
+        mockCreatePermission = jest
+          .fn()
+          .mockResolvedValue(contextConfig.mockErrorResponse('This permission is invalid.'));
+        createComponent({ permissionCategory: 'ROLE', context: contextName });
+      });
+
+      it('renders error message from API', async () => {
+        await submitPermission();
+
+        expect(createAlert).toHaveBeenCalledWith({ message: 'This permission is invalid.' });
+      });
     });
 
-    it('renders group path input instead of listbox', () => {
-      expect(findGroupPathInput().exists()).toBe(true);
-      expect(findPrincipalField().exists()).toBe(false);
-    });
+    describe('when submission fails', () => {
+      const error = new Error('GraphQL error: API error');
+      beforeEach(() => {
+        mockCreatePermission = jest.fn().mockRejectedValue(error);
+        createComponent({ permissionCategory: 'ROLE', context: contextName });
+      });
 
-    it('renders template correctly', () => {
-      expect(findModal().props('title')).toBe('Add group');
-      expect(findDatepicker().exists()).toBe(true);
-      expect(findCheckbox(0).text()).toContain('Read');
-      expect(findCheckbox(1).text()).toContain('Write');
-      expect(findCheckbox(2).text()).toContain('Delete');
-    });
+      it('renders error message with GraphQL prefix stripped', async () => {
+        await submitPermission();
 
-    it('calls the create mutation with the correct variables', async () => {
-      await submitPermission({ includeOptionalFields: true, isGroup: true });
-
-      expect(mockCreatePermission).toHaveBeenCalledWith({
-        projectPath: '/path/to/project',
-        principal: {
-          groupPath: 'my-org/sub-group',
-          type: 'GROUP',
-        },
-        actions: ['READ', 'WRITE'],
-        expiredAt: '2055-08-12',
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'API error',
+          captureError: true,
+          error,
+        });
       });
     });
   });
 
   describe('debounced search', () => {
-    it('uses debounced search for user listbox', async () => {
+    it('uses debounced search for user listbox in project context', async () => {
       createComponent({ permissionCategory: 'USER' });
       findPrincipalField().vm.$emit('shown');
       await waitForPromises();
@@ -255,73 +356,23 @@ describe('SecretsManagerPermissionsModal', () => {
       expect(Api.projectUsers).toHaveBeenCalledTimes(2);
       expect(Api.projectUsers).toHaveBeenCalledWith('/path/to/project', 'Foo', undefined);
     });
-  });
 
-  describe('when submission is successful', () => {
-    beforeEach(() => {
-      createComponent({ permissionCategory: 'ROLE' });
-    });
+    it('uses debounced search for user listbox in group context', async () => {
+      createComponent({ permissionCategory: 'USER', context: 'group' });
+      findPrincipalField().vm.$emit('shown');
+      await waitForPromises();
 
-    it('disables submission button by default', () => {
-      expect(findModal().props('actionPrimary').attributes.disabled).toBe(true);
-    });
+      expect(RestApi.getGroupMembers).toHaveBeenCalledTimes(1);
+      expect(RestApi.getGroupMembers).toHaveBeenCalledWith('/path/to/group', false, {
+        query: undefined,
+      });
 
-    it('enables submission button when required fields are provided', async () => {
-      await inputRequiredFields();
+      findPrincipalField().vm.$emit('search', 'Foo');
+      await waitForDebounce();
 
-      expect(findModal().props('actionPrimary').attributes.disabled).toBe(false);
-    });
-
-    it('emits the refetch event', async () => {
-      expect(wrapper.emitted('refetch')).toBeUndefined();
-
-      await submitPermission();
-
-      expect(wrapper.emitted('refetch')).toHaveLength(1);
-    });
-
-    it('hides modal and shows toast message on successful submission', async () => {
-      expect(mockCreatePermission).toHaveBeenCalledTimes(0);
-
-      await submitPermission();
-
-      expect(mockCreatePermission).toHaveBeenCalledTimes(1);
-      expect(wrapper.emitted('hide')).toHaveLength(1);
-      expect(mockToastShow).toHaveBeenCalledWith(
-        'Secrets manager permissions were successfully updated.',
-      );
-    });
-  });
-
-  describe('when submission returns errors', () => {
-    beforeEach(() => {
-      mockCreatePermission = jest
-        .fn()
-        .mockResolvedValue(mockCreatePermissionErrorResponse('This permission is invalid.'));
-      createComponent({ permissionCategory: 'ROLE' });
-    });
-
-    it('renders error message from API', async () => {
-      await submitPermission();
-
-      expect(createAlert).toHaveBeenCalledWith({ message: 'This permission is invalid.' });
-    });
-  });
-
-  describe('when submission fails', () => {
-    const error = new Error('GraphQL error: API error');
-    beforeEach(() => {
-      mockCreatePermission.mockRejectedValue(error);
-      createComponent({ permissionCategory: 'ROLE' });
-    });
-
-    it('renders error message with GraphQL prefix stripped', async () => {
-      await submitPermission();
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'API error',
-        captureError: true,
-        error,
+      expect(RestApi.getGroupMembers).toHaveBeenCalledTimes(2);
+      expect(RestApi.getGroupMembers).toHaveBeenCalledWith('/path/to/group', false, {
+        query: 'Foo',
       });
     });
   });

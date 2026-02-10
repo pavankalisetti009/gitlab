@@ -14,10 +14,7 @@ import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { createAlert } from '~/alert';
 import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import { getDateInFuture, toISODateFormat } from '~/lib/utils/datetime_utility';
-import {
-  fetchGroupsWithProjectAccess,
-  fetchUsers,
-} from '~/vue_shared/components/list_selector/api';
+import { fetchGroupMembers, fetchUsers } from '~/vue_shared/components/list_selector/api';
 import {
   ACCESS_LEVEL_NO_ACCESS_INTEGER,
   ACCESS_LEVEL_MINIMAL_ACCESS_INTEGER,
@@ -28,7 +25,8 @@ import {
 } from '~/access_level/constants';
 import { __, s__ } from '~/locale';
 import { CONFIG, GROUPS_TYPE, USERS_TYPE } from '~/vue_shared/components/list_selector/constants';
-import createSecretsPermission from '../graphql/create_secrets_permission.mutation.graphql';
+import { ENTITY_GROUP, ENTITY_PROJECT } from 'ee/ci/secrets/constants';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from '../context_config';
 import {
   PERMISSION_CATEGORY_GROUP,
   PERMISSION_CATEGORY_ROLE,
@@ -57,10 +55,9 @@ export default {
       type: String,
       required: true,
     },
-    projectId: {
-      type: Number,
-      required: false,
-      default: null,
+    context: {
+      type: String,
+      required: true,
     },
   },
   data() {
@@ -80,6 +77,9 @@ export default {
     };
   },
   computed: {
+    contextConfig() {
+      return SECRETS_MANAGER_CONTEXT_CONFIG[this.context];
+    },
     isCategoryUser() {
       return this.permissionCategory === PERMISSION_CATEGORY_USER;
     },
@@ -178,16 +178,16 @@ export default {
         }
 
         const { data } = await this.$apollo.mutate({
-          mutation: createSecretsPermission,
+          mutation: this.contextConfig.mutations.createPermission,
           variables: {
-            projectPath: this.fullPath,
+            fullPath: this.fullPath,
             principal,
             actions: this.selectedActions,
             expiredAt: this.expiration ? toISODateFormat(this.expiration) : null,
           },
         });
 
-        const error = data.projectSecretsPermissionUpdate.errors[0];
+        const error = data?.secretsPermissionUpdate?.errors[0];
         if (error) {
           createAlert({ message: error });
           return;
@@ -220,11 +220,11 @@ export default {
       try {
         this.isListboxLoading = true;
         if (this.isCategoryUser) {
-          this.listboxItems = await fetchUsers(this.fullPath, search);
-        }
-
-        if (this.isCategoryGroup) {
-          this.listboxItems = await fetchGroupsWithProjectAccess(this.projectId, search);
+          if (this.context === ENTITY_PROJECT) {
+            this.listboxItems = await fetchUsers(this.fullPath, search);
+          } else if (this.context === ENTITY_GROUP) {
+            this.listboxItems = await fetchGroupMembers(this.fullPath, false, search);
+          }
         }
       } catch (e) {
         createAlert({
