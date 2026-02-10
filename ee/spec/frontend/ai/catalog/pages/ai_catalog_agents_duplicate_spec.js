@@ -45,7 +45,7 @@ describe('AiCatalogAgentsDuplicate', () => {
     aiCatalogAgent: mockAgent,
   };
 
-  const createComponent = (props = {}, provide = {}) => {
+  const createComponent = (props = {}, provide = {}, mocks = {}) => {
     createAiCatalogAgentMock = jest.fn().mockResolvedValue(mockCreateAiCatalogAgentSuccessMutation);
     createAiCatalogThirdPartyFlowMock = jest
       .fn()
@@ -71,6 +71,7 @@ describe('AiCatalogAgentsDuplicate', () => {
         },
         $router: mockRouter,
         $toast: mockToast,
+        ...mocks,
       },
     });
   };
@@ -396,5 +397,89 @@ describe('AiCatalogAgentsDuplicate', () => {
         });
       });
     });
+  });
+
+  describe('created hook - redirect behavior', () => {
+    it.each([
+      {
+        name: 'allows duplication in global area with admin permissions',
+        isGlobal: true,
+        isThirdPartyFlow: false,
+        isCreateThirdPartyFlowsAvailable: true,
+        userPermissions: { adminAiCatalogItem: true },
+        shouldRedirect: false,
+      },
+      {
+        name: 'allows duplication in global area without admin permissions',
+        isGlobal: true,
+        isThirdPartyFlow: false,
+        isCreateThirdPartyFlowsAvailable: true,
+        userPermissions: { adminAiCatalogItem: false },
+        shouldRedirect: false,
+      },
+      {
+        name: 'allows duplication in non-global area with admin permissions',
+        isGlobal: false,
+        isThirdPartyFlow: false,
+        isCreateThirdPartyFlowsAvailable: true,
+        userPermissions: { adminAiCatalogItem: true },
+        shouldRedirect: false,
+      },
+      {
+        name: 'redirects in non-global area without admin permissions',
+        isGlobal: false,
+        isThirdPartyFlow: false,
+        isCreateThirdPartyFlowsAvailable: true,
+        userPermissions: { adminAiCatalogItem: false },
+        shouldRedirect: true,
+      },
+      {
+        name: 'redirects when duplicating an external agent with create feature disabled',
+        isGlobal: true,
+        isThirdPartyFlow: true,
+        isCreateThirdPartyFlowsAvailable: false,
+        userPermissions: { adminAiCatalogItem: true },
+        shouldRedirect: true,
+      },
+    ])(
+      '$name',
+      ({
+        isGlobal,
+        isThirdPartyFlow,
+        isCreateThirdPartyFlowsAvailable,
+        userPermissions,
+        shouldRedirect,
+      }) => {
+        const itemType = isThirdPartyFlow ? 'THIRD_PARTY_FLOW' : 'AGENT';
+        const agent = {
+          ...mockAgent,
+          itemType,
+          userPermissions,
+        };
+
+        createComponent(
+          { aiCatalogAgent: agent },
+          { isGlobal },
+          {
+            glAbilities: {
+              createAiCatalogThirdPartyFlow: isCreateThirdPartyFlowsAvailable,
+            },
+            glFeatures: {
+              aiCatalogThirdPartyFlows: isCreateThirdPartyFlowsAvailable,
+              aiCatalogCreateThirdPartyFlows: isCreateThirdPartyFlowsAvailable,
+            },
+          },
+        );
+
+        if (shouldRedirect) {
+          expect(mockRouter.push).toHaveBeenCalledWith({
+            name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+            params: { id: agentId },
+          });
+        } else {
+          expect(mockRouter.push).not.toHaveBeenCalled();
+        }
+      },
+    );
   });
 });

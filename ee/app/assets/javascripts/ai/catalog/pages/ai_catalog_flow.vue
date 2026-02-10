@@ -8,6 +8,8 @@ import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import { resolveVersion } from '../utils';
 import { AI_CATALOG_TYPE_FLOW } from '../constants';
@@ -19,6 +21,7 @@ export default {
     GlEmptyState,
     GlLoadingIcon,
   },
+  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   inject: {
     isGlobal: {
       default: false,

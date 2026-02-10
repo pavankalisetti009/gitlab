@@ -2,8 +2,10 @@
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import AiCatalogAgentHeader from '../components/ai_catalog_agent_header.vue';
-import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG } from '../constants';
+import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 import { prerequisitesError, resolveVersion } from '../utils';
@@ -14,6 +16,7 @@ export default {
     AiCatalogAgentForm,
     AiCatalogAgentHeader,
   },
+  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   inject: {
     isGlobal: {
       default: false,
@@ -33,32 +36,46 @@ export default {
     };
   },
   computed: {
-    agentName() {
-      return this.aiCatalogAgent.name;
-    },
     activeVersion() {
       return resolveVersion(this.aiCatalogAgent, this.isGlobal);
     },
-    systemPrompt() {
-      return this.activeVersion.systemPrompt;
-    },
-    toolIds() {
-      return (this.activeVersion.tools?.nodes ?? []).map((t) => t.id);
-    },
-    definition() {
-      return this.activeVersion.definition;
-    },
     initialValues() {
       return {
-        name: `${s__('AICatalog|Copy of')} ${this.agentName}`,
+        name: `${s__('AICatalog|Copy of')} ${this.aiCatalogAgent.name}`,
         description: this.aiCatalogAgent.description,
-        systemPrompt: this.systemPrompt,
-        tools: this.toolIds,
-        definition: this.definition,
+        systemPrompt: this.activeVersion.systemPrompt,
+        tools: (this.activeVersion.tools?.nodes ?? []).map((t) => t.id),
+        definition: this.activeVersion.definition,
         public: false,
         type: this.aiCatalogAgent.itemType,
       };
     },
+    isThirdPartyFlow() {
+      return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+    },
+    isCreateThirdPartyFlowsAvailable() {
+      return (
+        this.glAbilities.createAiCatalogThirdPartyFlow ??
+        (this.glFeatures.aiCatalogThirdPartyFlows && this.glFeatures.aiCatalogCreateThirdPartyFlows)
+      );
+    },
+    canAdmin() {
+      return Boolean(this.aiCatalogAgent.userPermissions?.adminAiCatalogItem);
+    },
+    canDuplicate() {
+      if (this.isThirdPartyFlow && !this.isCreateThirdPartyFlowsAvailable) {
+        return false;
+      }
+      return this.isGlobal || this.canAdmin;
+    },
+  },
+  created() {
+    if (!this.canDuplicate) {
+      this.$router.push({
+        name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+        params: { id: this.$route.params.id },
+      });
+    }
   },
   methods: {
     async handleSubmit({ type, ...input }) {

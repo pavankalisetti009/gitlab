@@ -261,4 +261,32 @@ describe('AiCatalogAgentsEdit', () => {
       });
     });
   });
+
+  describe('created hook - redirect behavior', () => {
+    it.each([
+      {
+        name: 'redirects when adminAiCatalogItem is false',
+        adminAiCatalogItem: false,
+        shouldRedirect: true,
+      },
+      {
+        name: 'does not redirect when adminAiCatalogItem is true',
+        adminAiCatalogItem: true,
+        shouldRedirect: false,
+      },
+    ])('$name', ({ adminAiCatalogItem, shouldRedirect }) => {
+      createComponent({
+        aiCatalogAgent: { ...mockAgent, userPermissions: { adminAiCatalogItem } },
+      });
+
+      if (shouldRedirect) {
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+          params: { id: agentId },
+        });
+      } else {
+        expect(mockRouter.push).not.toHaveBeenCalled();
+      }
+    });
+  });
 });

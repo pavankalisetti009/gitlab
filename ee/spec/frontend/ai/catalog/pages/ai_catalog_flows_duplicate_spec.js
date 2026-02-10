@@ -374,4 +374,51 @@ describe('AiCatalogFlowsDuplicate', () => {
       });
     });
   });
+
+  describe('created hook - redirect behavior', () => {
+    it.each([
+      {
+        name: 'redirects in non-global area without admin permissions',
+        isGlobal: false,
+        adminAiCatalogItem: false,
+        shouldRedirect: true,
+      },
+      {
+        name: 'does not redirect in non-global area with admin permissions',
+        isGlobal: false,
+        adminAiCatalogItem: true,
+        shouldRedirect: false,
+      },
+      {
+        name: 'does not redirect in global area without admin permissions',
+        isGlobal: true,
+        adminAiCatalogItem: false,
+        shouldRedirect: false,
+      },
+      {
+        name: 'does not redirect in global area with admin permissions',
+        isGlobal: true,
+        adminAiCatalogItem: true,
+        shouldRedirect: false,
+      },
+    ])('$name', ({ isGlobal, adminAiCatalogItem, shouldRedirect }) => {
+      createComponent({
+        props: {
+          aiCatalogFlow: { ...mockFlow, userPermissions: { adminAiCatalogItem } },
+        },
+        provide: {
+          isGlobal,
+        },
+      });
+
+      if (shouldRedirect) {
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+          params: { id: 1 },
+        });
+      } else {
+        expect(mockRouter.push).not.toHaveBeenCalled();
+      }
+    });
+  });
 });
