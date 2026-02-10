@@ -78565,6 +78565,9 @@ msgstr ""
 msgid "WorkItem|Epic will be moved to parent group %{groupName}."
 msgstr ""
 
+msgid "WorkItem|Epics and issues are now work items."
+msgstr ""
+
 msgid "WorkItem|Error loading work item types"
 msgstr ""
 
@@ -78677,6 +78680,9 @@ msgid "WorkItem|Issue has 1 related vulnerability"
 msgid_plural "WorkItem|Issue has %{itemCount} related vulnerabilities"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "WorkItem|Issues are now work items."
+msgstr ""
 
 msgid "WorkItem|Issues created from Service Desk are now Tickets. Filter by type \"Ticket\" to see only these items."
 msgstr ""
