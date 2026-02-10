@@ -118,11 +118,13 @@ export default {
       key: 'accessLevel.humanAccess',
       label: s__('AICatalog|Access level'),
       isRowHeader: true,
+      class: 'gl-whitespace-nowrap',
     },
     {
       key: 'createdAt',
       label: __('Activity'),
       isRowHeader: true,
+      thAlignRight: true,
     },
   ],
   DRAWER_Z_INDEX,
@@ -165,6 +167,7 @@ export default {
           :fields="$options.fields"
           :items="projectMemberships"
           :busy="isLoading"
+          stacked="md"
           show-empty
         >
           <template #empty>
@@ -175,28 +178,28 @@ export default {
             }}
           </template>
           <template #cell(project)="{ item: { project } }">
-            <gl-link :href="project.webUrl" class="gl-line-clamp-1">
+            <gl-link :href="project.webUrl">
               {{ project.nameWithNamespace }}
             </gl-link>
           </template>
           <template #cell(createdAt)="{ item: { createdAt } }">
-            <div class="gl-flex gl-gap-3">
+            <div class="gl-flex gl-justify-end gl-gap-3">
               <gl-icon
                 v-gl-tooltip
                 class="-gl-mr-2 gl-ml-2 gl-shrink-0 gl-text-subtle"
                 name="assignee"
                 :title="s__('AICatalog|Service account created')"
               />
-              <user-date :date="serviceAccount.createdAt" />
+              <user-date :date="serviceAccount.createdAt" class="gl-whitespace-nowrap" />
             </div>
-            <div class="gl-flex gl-gap-3">
+            <div class="gl-flex gl-justify-end gl-gap-3">
               <gl-icon
                 v-gl-tooltip
                 class="gl-shrink-0 gl-text-subtle"
                 name="check"
                 :title="s__('AICatalog|Access granted')"
               />
-              <user-date :date="createdAt" />
+              <user-date :date="createdAt" class="gl-whitespace-nowrap" />
             </div>
           </template>
           <template #table-busy>
