@@ -25,6 +25,7 @@ RSpec.describe Types::Ai::Catalog::ItemInterface, feature_category: :workflow_ca
       user_permissions
       versions
       foundational_flow_reference
+      verification_level
     ]
 
     expect(described_class).to have_graphql_fields(*expected_fields)
