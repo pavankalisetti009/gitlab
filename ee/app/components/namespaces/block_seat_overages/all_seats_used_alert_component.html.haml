@@ -7,7 +7,9 @@
                                                         title: _('No more seats in subscription'),
                                                         variant: :warning) do |c|
     - c.with_body do
-      %p= _('Your namespace has used all the seats in your subscription and users can no longer be invited or added to the namespace.')
+      %p= s_('SeatsManagement|Your namespace has used all the seats in your subscription, so users can no longer be invited or added to the namespace. To add new users, purchase more seats or turn off restricted access.')
     - c.with_actions do
-      = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/manage_users_and_seats.md', anchor: 'buy-more-seats')) do
+      = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/manage_users_and_seats.md', anchor: 'buy-more-seats'), button_options: { class: 'gl-mr-3' }) do
         = s_('Purchase more seats')
+      = render Pajamas::ButtonComponent.new(variant: :default, href: help_page_path('user/group/manage.md', anchor: 'turn-on-restricted-access')) do
+        = s_('SeatsManagement|Turn off restricted access')

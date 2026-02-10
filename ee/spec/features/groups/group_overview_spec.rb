@@ -114,10 +114,13 @@ RSpec.describe 'Group information', :with_trial_types, :js, :aggregate_failures,
           within_testid('bso-all-seats-used-alert') do
             expect(page).to have_css('[data-testid="close-icon"]')
             expect(page).to have_text "No more seats in subscription"
-            expect(page).to have_text "Your namespace has used all the seats in your subscription and users can " \
-                                        "no longer be invited or added to the namespace."
+            expect(page).to have_text "Your namespace has used all the seats in your subscription, so users can " \
+                                        "no longer be invited or added to the namespace. To add new users, " \
+                                        "purchase more seats or turn off restricted access."
             expect(page).to have_link 'Purchase more seats', href:
               help_page_path('subscriptions/manage_users_and_seats.md', anchor: 'buy-more-seats')
+            expect(page).to have_link 'Turn off restricted access', href:
+              help_page_path('user/group/manage.md', anchor: 'turn-on-restricted-access')
           end
         end
       end
