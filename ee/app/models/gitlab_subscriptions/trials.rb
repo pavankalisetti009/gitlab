@@ -8,6 +8,7 @@ module GitlabSubscriptions
     PREMIUM_TRIAL_TYPE_V2 = 'ultimate_on_premium_with_dap'
     DUO_ENTERPRISE_TRIAL_TYPE = 'gitlab_duo_enterprise'
     TRIAL_TYPES = [FREE_TRIAL_TYPE, FREE_TRIAL_TYPE_V2, PREMIUM_TRIAL_TYPE, PREMIUM_TRIAL_TYPE_V2].freeze
+    ULTIMATE_WITH_DAP_TRIAL_START_DATE = Date.new(2026, 2, 10)
 
     TIME_FRAME_AFTER_EXPIRATION = 10.days
     private_constant :TIME_FRAME_AFTER_EXPIRATION
@@ -68,6 +69,16 @@ module GitlabSubscriptions
 
     def self.self_managed_non_dedicated_active_ultimate_trial?(license)
       self_managed_non_dedicated_ultimate_trial?(license) && license.active?
+    end
+
+    def self.dap_type?(namespace)
+      if namespace.trial_active?
+        return true if Feature.enabled?(:ultimate_with_dap_trial_uat, namespace)
+
+        namespace.trial_starts_on >= ULTIMATE_WITH_DAP_TRIAL_START_DATE
+      else
+        Feature.enabled?(:ultimate_trial_with_dap, :instance)
+      end
     end
   end
 end

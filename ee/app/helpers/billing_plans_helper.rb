@@ -4,20 +4,6 @@ module BillingPlansHelper
   include Gitlab::Utils::StrongMemoize
   include Gitlab::Allowable
 
-  ULTIMATE_WITH_DAP_TRIAL_START_DATE = Date.new(2026, 2, 10)
-
-  def new_trial_type?(namespace)
-    return true if Feature.enabled?(:ultimate_with_dap_trial_uat, namespace)
-
-    namespace.trial_starts_on >= ULTIMATE_WITH_DAP_TRIAL_START_DATE
-  end
-
-  def show_dap_copy?(namespace)
-    return new_trial_type?(namespace) if namespace.trial_active?
-
-    Feature.enabled?(:ultimate_trial_with_dap, :instance)
-  end
-
   def subscription_plan_info(plans_data, current_plan_code)
     current_plan = plans_data.find { |plan| plan.code == current_plan_code && plan.current_subscription_plan? }
     current_plan || plans_data.find { |plan| plan.code == current_plan_code }
@@ -80,7 +66,7 @@ module BillingPlansHelper
       trialActive: namespace.trial_active?,
       trialExpired: namespace.trial_expired?,
       trialEndsOn: namespace.trial_ends_on&.strftime('%B %-d, %Y'),
-      isNewTrialType: show_dap_copy?(namespace),
+      isNewTrialType: GitlabSubscriptions::Trials.dap_type?(namespace),
       manageSeatsPath: group_usage_quotas_path(namespace, anchor: 'seats-quota-tab'),
       startTrialPath: new_trial_path(namespace_id: namespace.id),
       upgradeToPremiumUrl: plan_purchase_url(namespace, premium_plan),
@@ -112,7 +98,7 @@ module BillingPlansHelper
           id: group.id,
           name: group.name,
           trial_active: group.trial_active?,
-          is_new_trial_type: show_dap_copy?(group),
+          is_new_trial_type: GitlabSubscriptions::Trials.dap_type?(group),
           group_billings_href: group_billings_path(group),
           upgrade_to_premium_href: plan_purchase_url(group, premium_plan),
           can_access_duo_chat: current_user.can?(:access_duo_entry_point, group),

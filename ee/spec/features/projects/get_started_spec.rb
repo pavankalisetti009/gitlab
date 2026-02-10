@@ -54,6 +54,36 @@ RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_
           expect(page).to have_content('Your team is growing')
         end
       end
+
+      context 'with seat assignment' do
+        it 'has the seat assignment link' do
+          stub_feature_flags(ultimate_trial_with_dap: false)
+
+          sign_in(user)
+
+          visit namespace_project_get_started_path(namespace, project)
+
+          find_by_testid('section-header-1').click
+
+          within_testid('get-started-sections') do
+            expect(page).to have_content('Assign a GitLab Duo seat')
+          end
+        end
+      end
+
+      context 'without seat assignment' do
+        it 'does not have the seat assignment link' do
+          sign_in(user)
+
+          visit namespace_project_get_started_path(namespace, project)
+
+          find_by_testid('section-header-1').click
+
+          within_testid('get-started-sections') do
+            expect(page).not_to have_content('Assign a GitLab Duo seat')
+          end
+        end
+      end
     end
   end
 end

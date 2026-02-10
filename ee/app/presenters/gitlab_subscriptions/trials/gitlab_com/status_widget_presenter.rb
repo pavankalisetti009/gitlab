@@ -10,8 +10,6 @@ module GitlabSubscriptions
         presents ::Namespace, as: :namespace
 
         EXPIRED_TRIAL_WIDGET = 'expired_trial_status_widget'
-        ULTIMATE_WITH_DAP_TRIAL_START_DATE = Date.new(2026, 2, 10)
-        private_constant :ULTIMATE_WITH_DAP_TRIAL_START_DATE
 
         def eligible_for_widget?
           eligible_trial_active? || eligible_expired_trial?
@@ -66,7 +64,7 @@ module GitlabSubscriptions
         end
 
         def trial_type
-          return 'ultimate_with_dap' if show_dap_copy?
+          return 'ultimate_with_dap' if GitlabSubscriptions::Trials.dap_type?(namespace)
 
           # rubocop:disable Cop/ExperimentsTestCoverage -- covered in ee/spec/presenters/gitlab_subscriptions/trials/gitlab_com/status_widget_presenter_spec.rb
           experiment(:premium_message_during_trial, namespace: namespace, only_assigned: true) do |e|
@@ -74,18 +72,6 @@ module GitlabSubscriptions
             e.candidate { 'ultimate_with_premium_title' }
           end.run
           # rubocop:enable Cop/ExperimentsTestCoverage
-        end
-
-        def new_trial_type?
-          return true if Feature.enabled?(:ultimate_with_dap_trial_uat, namespace)
-
-          namespace.trial_starts_on >= ULTIMATE_WITH_DAP_TRIAL_START_DATE
-        end
-
-        def show_dap_copy?
-          return new_trial_type? if namespace.trial_active?
-
-          Feature.enabled?(:ultimate_trial_with_dap, :instance)
         end
       end
     end
