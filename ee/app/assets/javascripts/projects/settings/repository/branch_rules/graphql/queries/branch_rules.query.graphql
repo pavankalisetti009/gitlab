@@ -13,6 +13,8 @@ query getBranchRulesEE($projectPath: ID!, $after: String, $first: Int) {
           isGroupLevel
           allowForcePush
           codeOwnerApprovalRequired
+          protectedFromPushBySecurityPolicy @gl_introduced(version: "18.7.0")
+          warnProtectedFromPushBySecurityPolicy @gl_introduced(version: "18.8.0")
           mergeAccessLevels {
             edges {
               node {
