@@ -124,6 +124,7 @@ export default {
         v-if="!hasFetchError && hasChartData"
         :bars="bars"
         :labels="labels"
+        class="gl-isolate"
       />
       <p
         v-else
