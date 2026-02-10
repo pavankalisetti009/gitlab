@@ -373,14 +373,14 @@ module EE
         mount_mutation ::Mutations::WorkItems::Lifecycles::Create, experiment: { milestone: '18.4' }
         mount_mutation ::Mutations::WorkItems::Lifecycles::AttachWorkItemType, experiment: { milestone: '18.4' }
         mount_mutation ::Mutations::WorkItems::Lifecycles::Delete, experiment: { milestone: '18.4' }
-        mount_mutation ::Mutations::VirtualRegistries::Container::ContainerUpstreamCreateMutation,
+        mount_mutation ::Mutations::VirtualRegistries::Container::Upstream::Create,
           experiment: { milestone: '18.8' }
         mount_mutation ::Mutations::VirtualRegistries::Container::Registry::Destroy, experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::VirtualRegistries::Container::Registry::Create, experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::VirtualRegistries::Container::Registry::Update, experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::VirtualRegistries::Container::Upstream::Destroy,
           experiment: { milestone: '18.9' }
-        mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreateMutation,
+        mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Upstream::Create,
           experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Registry::Destroy,
           experiment: { milestone: '18.9' }
@@ -395,7 +395,7 @@ module EE
           experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::VirtualRegistries::Setting::Update, experiment: { milestone: '18.5' }
         mount_mutation ::Mutations::VirtualRegistries::Cleanup::Policy::Upsert, experiment: { milestone: '18.7' }
-        mount_mutation ::Mutations::VirtualRegistries::Container::ContainerUpstreamUpdateMutation,
+        mount_mutation ::Mutations::VirtualRegistries::Container::Upstream::Update,
           experiment: { milestone: '18.8' }
 
         prepend(Types::DeprecatedMutations)

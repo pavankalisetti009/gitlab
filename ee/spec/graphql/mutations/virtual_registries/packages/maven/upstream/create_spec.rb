@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreateMutation, feature_category: :virtual_registry do
+RSpec.describe Mutations::VirtualRegistries::Packages::Maven::Upstream::Create, feature_category: :virtual_registry do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
@@ -21,8 +21,7 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
 
   let(:mutation_params) do
     {
-      id: ::Gitlab::GlobalId.as_global_id(registry.id,
-        model_name: 'VirtualRegistries::Packages::Maven::Registry'),
+      id: ::Gitlab::GlobalId.as_global_id(registry.id, model_name: 'VirtualRegistries::Packages::Maven::Registry'),
       name: 'Maven Central',
       url: 'https://repo.maven.apache.org/maven2',
       cache_validity_hours: 24,
@@ -81,6 +80,18 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
           expect { resolver }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
         end
       end
+
+      context 'when the registry does not exist' do
+        let(:mutation_params) do
+          super().merge(
+            id: ::Gitlab::GlobalId.as_global_id('999999', model_name: 'VirtualRegistries::Packages::Maven::Registry')
+          )
+        end
+
+        it 'raises an exception' do
+          expect { resolver }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+        end
+      end
     end
 
     context 'with maven_virtual_registry feature flag turned off' do
@@ -90,6 +101,19 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
 
       it 'raises an exception' do
         expect { resolver }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+      end
+    end
+
+    context 'when the service call fails', :aggregate_failures do
+      let(:mutation_params) { super().merge(cache_validity_hours: nil) }
+
+      before_all do
+        group.add_owner(current_user)
+      end
+
+      it 'returns nil upstream and errors' do
+        expect(mutated_upstream).to be_nil
+        expect(resolver[:errors]).to eq(['Cache validity hours is not a number'])
       end
     end
   end

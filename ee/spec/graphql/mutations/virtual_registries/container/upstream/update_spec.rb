@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::VirtualRegistries::Container::ContainerUpstreamUpdateMutation, feature_category: :virtual_registry do
+RSpec.describe Mutations::VirtualRegistries::Container::Upstream::Update, feature_category: :virtual_registry do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
