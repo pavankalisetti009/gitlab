@@ -18,9 +18,7 @@ module Security
 
         project = merge_request.project
 
-        return false unless project.licensed_feature_available?(:security_orchestration_policies)
-
-        Feature.enabled?(:security_policy_approval_warn_mode, project)
+        project.licensed_feature_available?(:security_orchestration_policies)
       end
 
       def handle_event(event)
@@ -29,7 +27,7 @@ module Security
         project = merge_request.project
 
         return unless project.licensed_feature_available?(:security_orchestration_policies)
-        return unless merge_request.open? && Feature.enabled?(:security_policy_approval_warn_mode, project)
+        return unless merge_request.open?
 
         user = User.find_by_id(user_id) || return
 

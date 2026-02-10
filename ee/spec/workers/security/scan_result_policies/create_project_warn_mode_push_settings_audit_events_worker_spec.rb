@@ -32,14 +32,6 @@ RSpec.describe Security::ScanResultPolicies::CreateProjectWarnModePushSettingsAu
 
   context 'with project and policy' do
     include_examples 'calls service'
-
-    context 'with feature disabled' do
-      before do
-        stub_feature_flags(security_policy_approval_warn_mode: false)
-      end
-
-      include_examples 'does not call service'
-    end
   end
 
   context 'with non-existent project ID' do

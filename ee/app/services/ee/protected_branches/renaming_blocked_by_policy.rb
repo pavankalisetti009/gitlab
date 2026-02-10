@@ -31,7 +31,7 @@ module EE
             .block_branch_modification
             .including_approval_policy_rules
 
-          blocking_policies = blocking_policies.without_warn_mode if warn_mode_enabled?
+          blocking_policies = blocking_policies.without_warn_mode
 
           blocking_policies.any? { |policy| policy_rules_apply?(policy) }
         end

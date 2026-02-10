@@ -25,8 +25,7 @@ module Security
       private
 
       def feature_enabled?(project)
-        project.licensed_feature_available?(:security_orchestration_policies) &&
-          Feature.enabled?(:security_policy_approval_warn_mode, project)
+        project.licensed_feature_available?(:security_orchestration_policies)
       end
 
       def eligible_to_run?(merge_request)

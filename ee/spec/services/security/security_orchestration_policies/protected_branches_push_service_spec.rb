@@ -53,16 +53,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesPushSer
       end
 
       it { is_expected.to be_empty }
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policy_approval_warn_mode: false)
-        end
-
-        it 'includes the protected branch' do
-          expect(result).to include(branch_name)
-        end
-      end
     end
 
     context 'with ignore_warn_mode' do

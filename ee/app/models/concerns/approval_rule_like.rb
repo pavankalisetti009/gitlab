@@ -184,10 +184,6 @@ module ApprovalRuleLike
   end
 
   def warn_mode_policy?
-    if Feature.disabled?(:security_policy_approval_warn_mode, approval_policy_rule&.security_policy&.security_policy_management_project)
-      return false
-    end
-
     approval_policy_rule&.security_policy&.warn_mode? || false
   end
 
