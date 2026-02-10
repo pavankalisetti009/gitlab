@@ -1534,6 +1534,64 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
             "Tools" => enabled_mcp_tools
           }
         })
+        expect(json_response['DuoWorkflow']['ServerCapabilities']).to eq([])
+      end
+
+      context 'for ServerCapabilities' do
+        context 'when advanced search is enabled for the project' do
+          before do
+            allow(::Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?)
+              .with(scope: project).and_return(true)
+          end
+
+          it 'returns advanced_search capability' do
+            get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['ServerCapabilities']).to eq(['advanced_search'])
+          end
+        end
+
+        context 'when advanced search is disabled' do
+          before do
+            allow(::Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?).and_return(false)
+          end
+
+          it 'returns empty capabilities' do
+            get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['ServerCapabilities']).to eq([])
+          end
+        end
+
+        context 'when namespace_id is provided instead of project_id' do
+          before do
+            allow(::Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?)
+                                                  .with(scope: group).and_return(true)
+          end
+
+          it 'checks advanced search for the namespace' do
+            get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['ServerCapabilities']).to eq(['advanced_search'])
+          end
+        end
+
+        context 'when namespace is provided via header' do
+          before do
+            allow(::Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?)
+                                                  .with(scope: group).and_return(true)
+          end
+
+          it 'checks advanced search for the namespace from header' do
+            get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['ServerCapabilities']).to eq(['advanced_search'])
+          end
+        end
       end
 
       context 'when self-hosted DAP billing is enabled for the feature' do
@@ -2197,7 +2255,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         end
 
         before do
-          stub_feature_flags(duo_agent_platform_model_selection: false)
           stub_saas_features(gitlab_com_subscriptions: false)
         end
 
