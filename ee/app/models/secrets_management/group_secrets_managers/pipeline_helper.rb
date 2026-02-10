@@ -58,7 +58,7 @@ module SecretsManagement
             { name: "protection_level",
               expression: %q(ref_protected == "true" ? "protected" : "unprotected") },
             { name: "env_hex",
-              expression: %q(environment != "" ? hex(environment) : "") },
+              expression: %q(environment != "" ? "%x".format([environment]) : "") },
             { name: "global_policy",
               expression: %q("pipelines/combined/" + protection_level + "/global") },
             { name: "env_policy",
