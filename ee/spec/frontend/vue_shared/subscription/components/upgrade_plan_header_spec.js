@@ -55,12 +55,6 @@ describe('UpgradePlanHeader', () => {
 
   describe('when Saas trial is active', () => {
     beforeEach(() => {
-      global.window.gon = {
-        features: {
-          projectStudioEnabled: false,
-        },
-      };
-
       duoChatGlobalState.isShown = false;
       duoChatGlobalState.activeTab = null;
 
@@ -195,8 +189,6 @@ describe('UpgradePlanHeader', () => {
       });
 
       it('shows duo chat panel if user can access', () => {
-        window.gon.features.projectStudioEnabled = true;
-
         createComponent({
           trialActive: true,
           exploreLinks: {

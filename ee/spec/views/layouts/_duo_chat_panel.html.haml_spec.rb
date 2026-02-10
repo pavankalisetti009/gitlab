@@ -8,8 +8,7 @@ RSpec.describe 'layouts/_duo_chat_panel', feature_category: :duo_chat do
 
   before do
     allow(view).to receive_messages(
-      current_user: user,
-      project_studio_enabled?: true
+      current_user: user
     )
     assign(:group, group)
 
