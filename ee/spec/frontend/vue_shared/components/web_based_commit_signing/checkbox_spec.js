@@ -8,6 +8,7 @@ import { captureException } from '~/sentry/sentry_browser_wrapper';
 import WebBasedCommitSigningCheckbox from 'ee/vue_shared/components/web_based_commit_signing/checkbox.vue';
 import GroupInheritancePopover from '~/vue_shared/components/settings/group_inheritance_popover.vue';
 import getWebBasedCommitSigningQuery from 'ee/graphql_shared/queries/web_based_commit_signing.query.graphql';
+import updateGroupWebBasedCommitSigningMutation from 'ee/graphql_shared/mutations/update_group_web_based_commit_signing.mutation.graphql';
 
 jest.mock('~/sentry/sentry_browser_wrapper', () => ({
   captureException: jest.fn(),
@@ -54,7 +55,7 @@ describe('WebBasedCommitSigningCheckbox', () => {
     };
   };
 
-  const createComponent = (props = {}, queryHandler) => {
+  const createComponent = (props = {}, queryHandler, mutationHandler) => {
     const defaultQueryHandler =
       queryHandler ||
       jest
@@ -62,7 +63,23 @@ describe('WebBasedCommitSigningCheckbox', () => {
         .mockResolvedValue(
           webBasedCommitSigningSuccessResponse(props.isGroupLevel || false, false),
         );
-    fakeApollo = createMockApollo([[getWebBasedCommitSigningQuery, defaultQueryHandler]]);
+    const defaultMutationHandler =
+      mutationHandler ||
+      jest.fn().mockResolvedValue({
+        data: {
+          groupUpdate: {
+            group: {
+              id: 'gid://gitlab/Group/1',
+              webBasedCommitSigningEnabled: true,
+            },
+            errors: [],
+          },
+        },
+      });
+    fakeApollo = createMockApollo([
+      [getWebBasedCommitSigningQuery, defaultQueryHandler],
+      [updateGroupWebBasedCommitSigningMutation, defaultMutationHandler],
+    ]);
 
     wrapper = shallowMount(WebBasedCommitSigningCheckbox, {
       apolloProvider: fakeApollo,
@@ -73,6 +90,11 @@ describe('WebBasedCommitSigningCheckbox', () => {
       stubs: {
         GlFormCheckbox,
       },
+      mocks: {
+        $toast: {
+          show: jest.fn(),
+        },
+      },
     });
   };
 
@@ -80,8 +102,9 @@ describe('WebBasedCommitSigningCheckbox', () => {
   const findPopover = () => wrapper.findComponent(GroupInheritancePopover);
   const findAlert = () => wrapper.findComponent(GlAlert);
 
-  beforeEach(() => {
+  beforeEach(async () => {
     createComponent();
+    await waitForPromises();
   });
 
   afterEach(() => {
@@ -134,6 +157,21 @@ describe('WebBasedCommitSigningCheckbox', () => {
   });
 
   describe('when used on group level', () => {
+    describe('loading state', () => {
+      it('is disabled while query is loading', async () => {
+        createComponent(
+          { isGroupLevel: true },
+          jest.fn().mockResolvedValue(webBasedCommitSigningSuccessResponse(true, false)),
+        );
+
+        expect(findCheckbox().props('disabled')).toBe(true);
+
+        await waitForPromises();
+
+        expect(findCheckbox().props('disabled')).toBe(false);
+      });
+    });
+
     describe('when group setting is false', () => {
       beforeEach(async () => {
         createComponent(
@@ -151,33 +189,78 @@ describe('WebBasedCommitSigningCheckbox', () => {
         await findCheckbox().vm.$emit('change', true);
         expect(findCheckbox().props('checked')).toBe(true);
       });
-    });
-
-    describe('when group setting is true', () => {
-      beforeEach(async () => {
-        createComponent(
-          { isGroupLevel: true },
-          jest.fn().mockResolvedValue(webBasedCommitSigningSuccessResponse(true, true)),
-        );
-        await waitForPromises();
-      });
-
-      it('is checked', () => {
-        expect(findCheckbox().props('checked')).toBe(true);
-      });
-    });
-
-    describe('GroupInheritancePopover', () => {
-      beforeEach(async () => {
-        createComponent(
-          { isGroupLevel: true },
-          jest.fn().mockResolvedValue(webBasedCommitSigningSuccessResponse(true, false)),
-        );
-        await waitForPromises();
-      });
 
       it('does not render popover', () => {
         expect(findPopover().exists()).toBe(false);
+      });
+
+      describe('mutation', () => {
+        it('updates the checkbox value when succeeds', async () => {
+          expect(findCheckbox().props('checked')).toBe(false);
+
+          await findCheckbox().vm.$emit('change', true);
+          await waitForPromises();
+
+          expect(findCheckbox().props('checked')).toBe(true);
+        });
+
+        it('shows "enabled" toast when enabling', async () => {
+          await findCheckbox().vm.$emit('change', true);
+          await waitForPromises();
+
+          expect(wrapper.vm.$toast.show).toHaveBeenCalledWith('Web-based commit signing enabled');
+        });
+
+        it('shows "disabled" toast when disabling', async () => {
+          // First enable it
+          await findCheckbox().vm.$emit('change', true);
+          await waitForPromises();
+          wrapper.vm.$toast.show.mockClear();
+
+          // Then disable it
+          await findCheckbox().vm.$emit('change', false);
+          await waitForPromises();
+
+          expect(wrapper.vm.$toast.show).toHaveBeenCalledWith('Web-based commit signing disabled');
+        });
+      });
+    });
+
+    describe('mutation failures', () => {
+      describe('when mutation fails', () => {
+        beforeEach(async () => {
+          const mutationHandler = jest.fn().mockRejectedValue('error');
+
+          createComponent(
+            { isGroupLevel: true, fullPath: 'flightjs' },
+            jest.fn().mockResolvedValue(webBasedCommitSigningSuccessResponse(true, false)),
+            mutationHandler,
+          );
+          await waitForPromises();
+        });
+
+        it('reverts the checkbox value and shows error', async () => {
+          expect(findCheckbox().props('checked')).toBe(false);
+
+          await findCheckbox().vm.$emit('change', true);
+          await waitForPromises();
+
+          expect(findCheckbox().props('checked')).toBe(false);
+          expect(findAlert().exists()).toBe(true);
+          expect(findAlert().text()).toBe('An error occurred while updating the settings.');
+        });
+
+        it('calls Sentry for mutation failures', async () => {
+          captureException.mockClear();
+
+          await findCheckbox().vm.$emit('change', true);
+          await waitForPromises();
+
+          expect(captureException).toHaveBeenCalledWith({
+            error: expect.any(Error),
+            component: 'WebBasedCommitSigningCheckbox',
+          });
+        });
       });
     });
   });
@@ -191,7 +274,7 @@ describe('WebBasedCommitSigningCheckbox', () => {
     it('renders alert with error message', () => {
       expect(findAlert().exists()).toBe(true);
       expect(findAlert().props('variant')).toBe('danger');
-      expect(findAlert().text()).toBe('An error occurred while updating the settings.');
+      expect(findAlert().text()).toBe('An error occurred while loading the settings.');
     });
 
     it('should capture exceptions in Sentry', () => {

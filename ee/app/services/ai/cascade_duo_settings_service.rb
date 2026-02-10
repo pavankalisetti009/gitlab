@@ -8,7 +8,6 @@ module Ai
       duo_remote_flows_enabled
       auto_duo_code_review_enabled
       duo_foundational_flows_enabled
-      duo_sast_fp_detection_enabled
       enabled_foundational_flows
     ].freeze
 

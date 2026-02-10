@@ -93,8 +93,6 @@ module EE
         :duo_remote_flows_availability,
         :duo_foundational_flows_enabled,
         :duo_foundational_flows_availability,
-        :duo_sast_fp_detection_enabled,
-        :duo_sast_fp_detection_availability,
         :enabled_expanded_logging,
         :foundational_agents_default_enabled,
         :foundational_agents_statuses,

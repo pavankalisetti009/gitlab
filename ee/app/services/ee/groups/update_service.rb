@@ -188,7 +188,7 @@ module EE
         return unless previous_changes.present? || submitted_flow_refs
 
         cascading_ai_settings = [:duo_features_enabled, :duo_remote_flows_enabled, :auto_duo_code_review_enabled,
-          :duo_foundational_flows_enabled, :duo_sast_fp_detection_enabled]
+          :duo_foundational_flows_enabled]
         # Collect all changed AI settings and their values
         changed_ai_settings = cascading_ai_settings.filter_map do |setting|
           if previous_changes.include?(setting)

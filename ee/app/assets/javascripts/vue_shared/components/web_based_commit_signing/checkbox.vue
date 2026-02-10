@@ -1,9 +1,13 @@
 <script>
-import { GlFormCheckbox, GlAlert } from '@gitlab/ui';
+import Vue from 'vue';
+import { GlFormCheckbox, GlAlert, GlToast } from '@gitlab/ui';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import GroupInheritancePopover from '~/vue_shared/components/settings/group_inheritance_popover.vue';
 import getWebBasedCommitSigningQuery from 'ee/graphql_shared/queries/web_based_commit_signing.query.graphql';
+import updateGroupWebBasedCommitSigningMutation from 'ee/graphql_shared/mutations/update_group_web_based_commit_signing.mutation.graphql';
 import { __ } from '~/locale';
+
+Vue.use(GlToast);
 
 export default {
   name: 'WebBasedCommitSigningCheckbox',
@@ -34,7 +38,7 @@ export default {
         return !this.fullPath;
       },
       error(error) {
-        this.errorMessage = __('An error occurred while updating the settings.');
+        this.errorMessage = __('An error occurred while loading the settings.');
         captureException({ error, component: this.$options.name });
       },
     },
@@ -68,35 +72,46 @@ export default {
   computed: {
     isDisabled() {
       // temporarily read-only inherited value for the project-level
-      return this.isSaving || !this.isGroupLevel;
+      return (
+        this.isSaving ||
+        !this.isGroupLevel ||
+        this.$apollo.queries.webBasedCommitSigningEnabled.loading
+      );
     },
   },
   methods: {
     async handleChange(value) {
-      // const previousValue = this.webBasedCommitSigningEnabled;
+      const previousValue = this.webBasedCommitSigningEnabled;
       this.webBasedCommitSigningEnabled = value;
       this.errorMessage = '';
       this.isSaving = true;
 
-      //   TODO: Implement GraphQL mutation and side effects
-      // try {
-      //   const mutation = this.isGroupLevel
-      //     ? updateGroupWebBasedCommitSigningMutation
-      //     : updateProjectWebBasedCommitSigningMutation;
+      try {
+        const response = await this.$apollo.mutate({
+          mutation: updateGroupWebBasedCommitSigningMutation,
+          variables: {
+            input: {
+              fullPath: this.fullPath,
+              webBasedCommitSigningEnabled: value,
+            },
+          },
+        });
 
-      //   const response = await this.$apollo.mutate({
-      //     mutation,
-      //     variables: {
-      //       fullPath: this.fullPath,
-      //       webBasedCommitSigningEnabled: value,
-      //     },
-      //   });
-      // } catch (error) {
-      //   this.errorMessage = error.message || __('An error occurred while updating the setting.');
-      //   this.webBasedCommitSigningEnabled = previousValue;
-      // } finally {
-      //   this.isSaving = false;
-      // }
+        if (response.data?.groupUpdate?.errors?.length) {
+          throw new Error(response.data.groupUpdate.errors.join(', '));
+        }
+
+        const message = value
+          ? __('Web-based commit signing enabled')
+          : __('Web-based commit signing disabled');
+        this.$toast.show(message);
+      } catch (error) {
+        captureException({ error, component: this.$options.name });
+        this.errorMessage = __('An error occurred while updating the settings.');
+        this.webBasedCommitSigningEnabled = previousValue;
+      } finally {
+        this.isSaving = false;
+      }
     },
     dismissError() {
       this.errorMessage = '';
