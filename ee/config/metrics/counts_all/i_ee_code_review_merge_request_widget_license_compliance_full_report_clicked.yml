@@ -2,6 +2,9 @@
 key_path: redis_hll_counters.code_review.i_ee_code_review_merge_request_widget_license_compliance_full_report_clicked
 description: The count of unique users who clicked the Full Report button on the License Compliance widget extension
 product_group: code_review
+product_categories:
+- code_review_workflow
+- compliance_management
 value_type: number
 status: active
 milestone: "15.9"
