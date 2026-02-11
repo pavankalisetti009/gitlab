@@ -23,6 +23,16 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
   end
 
   shared_examples_for 'adds an error note' do
+    let(:expected_error) do
+      if defined?(expected_exception)
+        expected_exception
+      else
+        ::Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService::CouldNotStartWorkflowError.new(
+          expected_error_reason.to_s
+        )
+      end
+    end
+
     it 'posts an error comment to the merge request' do
       expect_next_instance_of(::Notes::CreateService) do |notes_service|
         expect(notes_service).to receive(:execute).and_call_original
@@ -34,6 +44,22 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
       error_note = merge_request.notes.non_diff_notes.last
       expect(error_note.note).to eq(expected_error_message)
       expect(error_note.author).to eq(duo_code_review_bot)
+    end
+
+    it 'tracks failure as an error with reason' do
+      expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+        expected_error,
+        {
+          reason: expected_error_reason.to_s,
+          unit_primitive: 'duo_agent_platform',
+          merge_request_id: merge_request.id,
+          merge_request_iid: merge_request.iid,
+          project_id: merge_request.project_id,
+          user_id: user.id
+        }
+      )
+
+      service.execute
     end
   end
 
@@ -115,6 +141,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'adds an error note' do
           let(:expected_error_message) { ::Ai::CodeReviewMessages.foundational_flow_not_enabled_error }
+          let(:expected_error_reason) { create_and_start_service_result.reason }
         end
       end
 
@@ -130,6 +157,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'adds an error note' do
           let(:expected_error_message) { ::Ai::CodeReviewMessages.missing_service_account_error }
+          let(:expected_error_reason) { create_and_start_service_result.reason }
         end
       end
 
@@ -145,6 +173,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'adds an error note' do
           let(:expected_error_message) { ::Ai::CodeReviewMessages.usage_quota_exceeded_error }
+          let(:expected_error_reason) { create_and_start_service_result.reason }
         end
       end
 
@@ -160,6 +189,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'adds an error note' do
           let(:expected_error_message) { ::Ai::CodeReviewMessages.namespace_missing_error(user) }
+          let(:expected_error_reason) { create_and_start_service_result.reason }
         end
       end
 
@@ -175,17 +205,18 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
         include_examples 'adds an error note' do
           let(:expected_error_message) { ::Ai::CodeReviewMessages.could_not_start_workflow_error }
+          let(:expected_error_reason) { create_and_start_service_result.reason }
         end
       end
     end
 
     context 'when start workflow raises an exception' do
       let(:create_and_start_service_result) { -> { raise StandardError, 'Unexpected error' } }
-      let(:error) { StandardError.new('Unexpected error') }
+      let(:exception) { StandardError.new('Unexpected error') }
 
       before do
         allow_next_instance_of(::Ai::DuoWorkflows::CreateAndStartWorkflowService) do |start_workflow|
-          allow(start_workflow).to receive(:execute).and_raise(error)
+          allow(start_workflow).to receive(:execute).and_raise(exception)
         end
       end
 
@@ -193,15 +224,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
 
       include_examples 'adds an error note' do
         let(:expected_error_message) { ::Ai::CodeReviewMessages.exception_when_starting_workflow_error }
-      end
-
-      it 'tracks the exception with correct unit primitive' do
-        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-          error,
-          unit_primitive: 'duo_agent_platform'
-        )
-
-        service.execute
+        let(:expected_error_reason) { :exception }
+        let(:expected_exception) { exception }
       end
 
       it 'returns error response' do
@@ -230,16 +254,20 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService, feature_
         ServiceResponse.success(payload: { workflow: workflow, workload_id: double })
       end
 
+      let(:exception) { StandardError.new('Something went wrong') }
+
       before do
         allow(::Ai::DuoWorkflows::CodeReview::TimeoutWorker)
           .to receive(:perform_in)
-          .and_raise(StandardError, 'Something went wrong')
+          .and_raise(exception)
       end
 
       include_examples 'updates merge request status', 'reviewed'
 
       include_examples 'adds an error note' do
         let(:expected_error_message) { ::Ai::CodeReviewMessages.exception_when_starting_workflow_error }
+        let(:expected_error_reason) { :exception }
+        let(:expected_exception) { exception }
       end
 
       it 'cleans up the progress note' do

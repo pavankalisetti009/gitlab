@@ -32,7 +32,7 @@ module Ai
         if create_result.error?
           return error(
             create_result.message,
-            create_result.payload[:reason] || :create_workflow
+            create_result.payload[:reason] || create_result.reason || :create_workflow
           )
         end
 
@@ -43,7 +43,12 @@ module Ai
           params: start_workflow_params(workflow)
         ).execute
 
-        return error(start_result.message, :start_workflow) if start_result.error?
+        if start_result.error?
+          return error(
+            start_result.message,
+            start_result.payload[:reason] || start_result.reason || :start_workflow
+          )
+        end
 
         workload_id = start_result.payload[:workload_id]
         message = start_result.message
