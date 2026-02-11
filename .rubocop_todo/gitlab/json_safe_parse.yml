@@ -5,7 +5,6 @@ Gitlab/JsonSafeParse:
   Exclude:
     - 'app/models/blob_viewer/dependency_manager.rb'
     - 'app/models/clusters/platforms/kubernetes.rb'
-    - 'app/models/concerns/diff_positionable_note.rb'
     - 'app/models/concerns/redis_cacheable.rb'
     - 'app/presenters/ci/pipeline_artifacts/code_coverage_presenter.rb'
     - 'app/presenters/ci/pipeline_artifacts/code_quality_mr_diff_presenter.rb'
