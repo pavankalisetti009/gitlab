@@ -44,12 +44,12 @@ module WorkItems
           process_status_mappings if status_mappings.present?
 
           if lifecycle && lifecycle != target_lifecycle
-            lifecycle.work_item_types.delete(work_item_type)
+            lifecycle.work_item_type_ids -= [work_item_type.id]
             lifecycle.updated_by = current_user
             lifecycle.save!
           end
 
-          target_lifecycle.work_item_types << work_item_type
+          target_lifecycle.work_item_type_ids |= [work_item_type.id]
           target_lifecycle.updated_by = current_user
           target_lifecycle.save!
 
@@ -146,7 +146,7 @@ module WorkItems
       end
 
       def work_item_type_already_attached?
-        target_lifecycle.work_item_types.include?(work_item_type)
+        target_lifecycle.work_item_type_ids.include?(work_item_type.id)
       end
 
       def track_attach_work_item_type_event
