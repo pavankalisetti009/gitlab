@@ -82,5 +82,41 @@ RSpec.describe 'layouts/_duo_chat_panel', feature_category: :duo_chat do
         expect { render }.to raise_error(TypeError)
       end
     end
+
+    context 'when duo is disabled at instance level (always off)' do
+      let(:amazon_q_enabled) { false }
+      let(:duo_enabled) { false }
+
+      before do
+        stub_feature_flags(dap_onboarding_empty_states: true)
+        stub_application_setting(duo_features_enabled: false, lock_duo_features_enabled: true)
+      end
+
+      it 'does not render anything' do
+        expect { render }.to raise_error(TypeError)
+      end
+    end
+
+    context 'when duo is disabled by default but not locked (default_off)' do
+      let(:amazon_q_enabled) { false }
+      let(:duo_enabled) { false }
+
+      before do
+        stub_feature_flags(dap_onboarding_empty_states: true)
+        stub_application_setting(duo_features_enabled: false, lock_duo_features_enabled: false)
+      end
+
+      it 'does not render the ai panel' do
+        render
+
+        expect(rendered).not_to have_css('#duo-chat-panel')
+      end
+
+      it 'renders the empty state mountpoint to allow trial signup' do
+        render
+
+        expect(rendered).to have_css('#duo-chat-panel-empty-state')
+      end
+    end
   end
 end
