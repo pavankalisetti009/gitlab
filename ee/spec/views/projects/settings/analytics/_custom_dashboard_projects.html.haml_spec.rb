@@ -30,7 +30,7 @@ RSpec.describe 'projects/settings/analytics/_custom_dashboard_projects.html.haml
       render
 
       expect(rendered).to have_link('Change the location of dashboards?',
-        href: help_page_path('user/analytics/analytics_dashboards.md', anchor: 'change-the-location-of-dashboards'))
+        href: help_page_path('user/analytics/analytics_dashboards.md'))
     end
 
     it 'renders a link to the project analytics dashboards' do

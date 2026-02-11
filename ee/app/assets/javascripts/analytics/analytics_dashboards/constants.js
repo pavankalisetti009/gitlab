@@ -11,11 +11,9 @@ export const RETURNING_USERS_TABLE_NAME = 'ReturningUsers';
 export const TRACKED_EVENTS_KEY = 'trackedevents';
 
 export const DEFAULT_DASHBOARD_LOADING_ERROR = s__(
-  'Analytics|Something went wrong while loading the dashboard. Refresh the page to try again or see %{linkStart}troubleshooting documentation%{linkEnd}.',
+  'Analytics|Something went wrong while loading the dashboard. Refresh the page to try again.',
 );
-export const DASHBOARD_REFRESH_MESSAGE = s__(
-  'Analytics|Refresh the page to try again or see %{linkStart}troubleshooting documentation%{linkEnd}.',
-);
+export const DASHBOARD_REFRESH_MESSAGE = s__('Analytics|Refresh the page to try again.');
 
 export const EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD = 'user_viewed_custom_dashboard';
 export const EVENT_LABEL_VIEWED_BUILTIN_DASHBOARD = 'user_viewed_builtin_dashboard';
@@ -27,9 +25,7 @@ export const VSD_COMPARISON_TABLE_TRACKING_PROPERTY = 'vsd_comparison_table';
 
 export const EVENT_LABEL_EXCLUDE_ANONYMISED_USERS = 'exclude_anonymised_users';
 
-export const PANEL_TROUBLESHOOTING_URL = helpPagePath(
-  '/user/analytics/analytics_dashboards#troubleshooting',
-);
+export const PANEL_TROUBLESHOOTING_URL = helpPagePath('/user/analytics/analytics_dashboards.md');
 
 export const AI_IMPACT_DASHBOARD_LEGACY = 'ai_impact';
 export const AI_IMPACT_DASHBOARD = 'duo_and_sdlc_trends';

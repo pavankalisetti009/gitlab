@@ -321,9 +321,7 @@ export default {
       };
     },
   },
-  troubleshootingUrl: helpPagePath('user/analytics/analytics_dashboards', {
-    anchor: '#troubleshooting',
-  }),
+  troubleshootingUrl: helpPagePath('user/analytics/analytics_dashboards'),
   i18n: {
     aiImpactDescriptionLink: s__(
       'Analytics|Learn more about %{docsLinkStart}Duo and SDLC trends%{docsLinkEnd} and %{subscriptionLinkStart}Duo seats%{subscriptionLinkEnd}.',

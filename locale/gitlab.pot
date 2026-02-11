@@ -9127,7 +9127,7 @@ msgstr ""
 msgid "Analytics|No results match your query or filter."
 msgstr ""
 
-msgid "Analytics|Refresh the page to try again or see %{linkStart}troubleshooting documentation%{linkEnd}."
+msgid "Analytics|Refresh the page to try again."
 msgstr ""
 
 msgid "Analytics|Something is wrong with your panel visualization configuration. See %{linkStart}troubleshooting documentation%{linkEnd}."
@@ -9136,7 +9136,7 @@ msgstr ""
 msgid "Analytics|Something went wrong while connecting to your data source. See %{linkStart}troubleshooting documentation%{linkEnd}."
 msgstr ""
 
-msgid "Analytics|Something went wrong while loading the dashboard. Refresh the page to try again or see %{linkStart}troubleshooting documentation%{linkEnd}."
+msgid "Analytics|Something went wrong while loading the dashboard. Refresh the page to try again."
 msgstr ""
 
 msgid "Analytics|Something went wrong."
