@@ -19,15 +19,6 @@ module Analytics
       }.freeze
 
       FIELDS = FIELDS_SUBQUERIES.keys
-
-      private
-
-      # Overridden from CommonUsageService to be false.
-      # The filter for troubleshoot usage does not use contributions
-      # table.
-      def fetch_contributions_from_new_table?
-        false
-      end
     end
   end
 end

@@ -169,8 +169,6 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
         }
       end
 
-      # When use_ai_events_namespace_path_filter is enabled we do not need to
-      # run this shared behavior with 'true' parameter because contributors filter won't be used
       it_behaves_like 'common chat usage service', false
     end
 
@@ -184,8 +182,6 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
         }
       end
 
-      # When use_ai_events_namespace_path_filter is enabled we do not need to
-      # run this shared behavior with 'true' parameter because contributors filter won't be used
       it_behaves_like 'common chat usage service', false
     end
   end

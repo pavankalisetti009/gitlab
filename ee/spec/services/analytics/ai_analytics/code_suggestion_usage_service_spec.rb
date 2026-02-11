@@ -33,14 +33,10 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
   end
 
-  shared_examples 'common ai usage rate service' do |flag_enabled|
+  shared_examples 'common ai usage rate service' do
     # This shared examples requires the following variables
     # :expected_results
     # :expected_language_filtered_results
-
-    before do
-      stub_feature_flags(fetch_contributions_data_from_new_tables: flag_enabled)
-    end
 
     context 'when the clickhouse is not available for analytics' do
       before do
@@ -123,11 +119,9 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 2,
               extras: { language: 'rust', suggestion_size: 50 }, timestamp: to - 2.days },
             # shown
-            # these are taken into account when fetch_contributions_data_from_new_tables is enabled
             { user_id: not_member.id, namespace_path: group.traversal_path, event: 2,
               extras: { language: 'c++', suggestion_size: 60 }, timestamp: to - 2.days },
             # accepted
-            # these are taken into account when fetch_contributions_data_from_new_tables is enabled
             { user_id: not_member.id, namespace_path: group.traversal_path, event: 3,
               extras: { language: 'c', suggestion_size: 70 }, timestamp: to - 2.days + 1.second },
             # shown
@@ -175,32 +169,31 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
     end
   end
 
-  context 'when use_ai_events_namespace_path_filter feature flag is disabled' do
+  context 'for group' do
+    let_it_be(:container) { group }
+
     let(:expected_results) do
       {
+        contributors_count: 3,
         code_contributors_count: 3,
-        code_suggestions_contributors_count: 2,
-        code_suggestions_accepted_count: 1,
-        code_suggestions_shown_count: 4,
-        # New fields
-        contributors_count: 2,
-        shown_count: 4,
-        accepted_count: 1,
+        code_suggestions_contributors_count: 3,
+        code_suggestions_accepted_count: 2,
+        code_suggestions_shown_count: 5,
+        shown_count: 5,
+        accepted_count: 2,
         ide_names: contain_exactly("", "ide_3", "ide_2", "ide_1"),
-        languages: contain_exactly("js", "rust", "ruby"),
-        shown_lines_of_code: 130,
-        accepted_lines_of_code: 20
+        languages: contain_exactly("c", "js", "c++", "rust", "ruby"),
+        shown_lines_of_code: 190,
+        accepted_lines_of_code: 90
       }
     end
 
     let(:expected_language_filtered_results) do
       {
-        # Legacy fields do not support languages filter
         code_contributors_count: 3,
-        code_suggestions_contributors_count: 2,
-        code_suggestions_accepted_count: 1,
-        code_suggestions_shown_count: 4,
-        # Fields filtered by languages
+        code_suggestions_contributors_count: 3,
+        code_suggestions_accepted_count: 2,
+        code_suggestions_shown_count: 5,
         contributors_count: 1,
         shown_count: 2,
         accepted_count: 0,
@@ -213,12 +206,10 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
 
     let(:expected_ide_filtered_results) do
       {
-        # Legacy fields do not support languages filter
         code_contributors_count: 3,
-        code_suggestions_contributors_count: 2,
-        code_suggestions_accepted_count: 1,
-        code_suggestions_shown_count: 4,
-        # Fields filtered by ide name
+        code_suggestions_contributors_count: 3,
+        code_suggestions_accepted_count: 2,
+        code_suggestions_shown_count: 5,
         contributors_count: 2,
         shown_count: 2,
         accepted_count: 1,
@@ -229,154 +220,60 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
       }
     end
 
-    before do
-      stub_feature_flags(use_ai_events_namespace_path_filter: false)
-    end
-
-    context 'for group' do
-      let_it_be(:container) { group }
-
-      it_behaves_like 'common ai usage rate service', true
-
-      context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
-        it_behaves_like 'common ai usage rate service', false
-      end
-    end
-
-    context 'for project' do
-      let_it_be(:container) { project.project_namespace.reload }
-
-      it_behaves_like 'common ai usage rate service', true
-
-      context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
-        it_behaves_like 'common ai usage rate service', false
-      end
-    end
+    it_behaves_like 'common ai usage rate service'
   end
 
-  context 'when use_ai_events_namespace_path_filter feature flag is enabled' do
-    context 'for group' do
-      let_it_be(:container) { group }
+  context 'for project' do
+    let_it_be(:container) { project.project_namespace.reload }
 
-      let(:expected_results) do
-        {
-          # Legacy fields
-          contributors_count: 3,
-          code_contributors_count: 3,
-          code_suggestions_contributors_count: 3,
-          code_suggestions_accepted_count: 2,
-          code_suggestions_shown_count: 5,
-          # New fields
-          shown_count: 5,
-          accepted_count: 2,
-          ide_names: contain_exactly("", "ide_3", "ide_2", "ide_1"),
-          languages: contain_exactly("c", "js", "c++", "rust", "ruby"),
-          shown_lines_of_code: 190,
-          accepted_lines_of_code: 90
-        }
-      end
-
-      let(:expected_language_filtered_results) do
-        {
-          # Legacy fields do not support languages filter,
-          code_contributors_count: 3,
-          code_suggestions_contributors_count: 3,
-          code_suggestions_accepted_count: 2,
-          code_suggestions_shown_count: 5,
-          # Fields filtered by languages
-          contributors_count: 1,
-          shown_count: 2,
-          accepted_count: 0,
-          ide_names: contain_exactly("", "ide_3"),
-          languages: contain_exactly("js", "rust"),
-          shown_lines_of_code: 90,
-          accepted_lines_of_code: 0
-        }
-      end
-
-      let(:expected_ide_filtered_results) do
-        {
-          # Legacy fields do not support languages filter
-          code_contributors_count: 3,
-          code_suggestions_contributors_count: 3,
-          code_suggestions_accepted_count: 2,
-          code_suggestions_shown_count: 5,
-          # Fields filtered by ide names
-          contributors_count: 2,
-          shown_count: 2,
-          accepted_count: 1,
-          ide_names: contain_exactly("ide_3", "ide_2"),
-          languages: contain_exactly("js", "ruby"),
-          shown_lines_of_code: 70,
-          accepted_lines_of_code: 20
-        }
-      end
-
-      # When use_ai_events_namespace_path_filter is enabled we do not need to
-      # run this shared behavior with 'true' parameter because contributors filter won't be used
-      it_behaves_like 'common ai usage rate service', false
+    let(:expected_results) do
+      {
+        code_contributors_count: 3,
+        code_suggestions_contributors_count: 2,
+        code_suggestions_accepted_count: 1,
+        code_suggestions_shown_count: 2,
+        contributors_count: 2,
+        shown_count: 2,
+        accepted_count: 1,
+        ide_names: contain_exactly("", "ide_3", "ide_2"),
+        languages: contain_exactly("rust", "ruby"),
+        shown_lines_of_code: 80,
+        accepted_lines_of_code: 20
+      }
     end
 
-    context 'for project' do
-      let_it_be(:container) { project.project_namespace.reload }
-
-      let(:expected_results) do
-        {
-          # Legacy fields
-          code_contributors_count: 3,
-          code_suggestions_contributors_count: 2,
-          code_suggestions_accepted_count: 1,
-          code_suggestions_shown_count: 2,
-          # New fields
-          contributors_count: 2,
-          shown_count: 2,
-          accepted_count: 1,
-          ide_names: contain_exactly("", "ide_3", "ide_2"),
-          languages: contain_exactly("rust", "ruby"),
-          shown_lines_of_code: 80,
-          accepted_lines_of_code: 20
-        }
-      end
-
-      let(:expected_language_filtered_results) do
-        {
-          # Legacy fields do not support languages filter
-          code_contributors_count: 3,
-          code_suggestions_contributors_count: 2,
-          code_suggestions_accepted_count: 1,
-          code_suggestions_shown_count: 2,
-          # Fields filtered by languages
-          contributors_count: 1,
-          shown_count: 1,
-          accepted_count: 0,
-          ide_names: [""],
-          languages: %w[rust],
-          shown_lines_of_code: 50,
-          accepted_lines_of_code: 0
-        }
-      end
-
-      let(:expected_ide_filtered_results) do
-        {
-          # Legacy fields do not support languages filter
-          code_contributors_count: 3,
-          code_suggestions_contributors_count: 2,
-          code_suggestions_accepted_count: 1,
-          code_suggestions_shown_count: 2,
-          # Fields filtered by ide names
-          contributors_count: 1,
-          shown_count: 1,
-          accepted_count: 1,
-          ide_names: contain_exactly("ide_3", "ide_2"),
-          languages: %w[ruby],
-          shown_lines_of_code: 30,
-          accepted_lines_of_code: 20
-        }
-      end
-
-      # When use_ai_events_namespace_path_filter is enabled we do not need to
-      # run this shared behavior with 'true' parameter because contributors filter won't be used
-      it_behaves_like 'common ai usage rate service', false
+    let(:expected_language_filtered_results) do
+      {
+        code_contributors_count: 3,
+        code_suggestions_contributors_count: 2,
+        code_suggestions_accepted_count: 1,
+        code_suggestions_shown_count: 2,
+        contributors_count: 1,
+        shown_count: 1,
+        accepted_count: 0,
+        ide_names: [""],
+        languages: %w[rust],
+        shown_lines_of_code: 50,
+        accepted_lines_of_code: 0
+      }
     end
+
+    let(:expected_ide_filtered_results) do
+      {
+        code_contributors_count: 3,
+        code_suggestions_contributors_count: 2,
+        code_suggestions_accepted_count: 1,
+        code_suggestions_shown_count: 2,
+        contributors_count: 1,
+        shown_count: 1,
+        accepted_count: 1,
+        ide_names: contain_exactly("ide_3", "ide_2"),
+        languages: %w[ruby],
+        shown_lines_of_code: 30,
+        accepted_lines_of_code: 20
+      }
+    end
+
+    it_behaves_like 'common ai usage rate service'
   end
 end
