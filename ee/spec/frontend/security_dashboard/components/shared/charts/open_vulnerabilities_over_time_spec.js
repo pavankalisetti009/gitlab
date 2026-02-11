@@ -109,9 +109,10 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
           seriesId: 'CRITICAL',
         };
 
-        const createComponentWithStubbedTooltip = ({ props = {} } = {}) => {
+        const createComponentWithStubbedTooltip = ({ props = {}, provide = {} } = {}) => {
           createComponent({
             props,
+            provide,
             stubs: {
               GlLineChart: stubComponent(GlLineChart, {
                 data() {
@@ -151,6 +152,16 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
             expect(wrapper.findComponent(GlLink).text()).toBe(`${mockTooltipParams.value[1]}`);
             expect(findLinkToVulnerabilitiesReport()).toBe(
               `${defaultProvide.securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&${defaultProps.groupedBy}=${mockTooltipParams.seriesId}`,
+            );
+          });
+
+          it('does not include activity=ALL when newSecurityDashboardOverTimeChartUndetectedSince feature flag is enabled', () => {
+            createComponentWithStubbedTooltip({
+              provide: { glFeatures: { newSecurityDashboardOverTimeChartUndetectedSince: true } },
+            });
+
+            expect(findLinkToVulnerabilitiesReport()).toBe(
+              `${defaultProvide.securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&${defaultProps.groupedBy}=${mockTooltipParams.seriesId}`,
             );
           });
 
