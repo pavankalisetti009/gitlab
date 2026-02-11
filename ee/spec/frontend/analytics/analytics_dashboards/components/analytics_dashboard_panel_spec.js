@@ -208,7 +208,7 @@ describe('AnalyticsDashboardPanel', () => {
 
     it('renders a link to the help docs', () => {
       expect(findAlertDescriptionLink().attributes('href')).toBe(
-        '/help/user/analytics/analytics_dashboards#troubleshooting',
+        '/help/user/analytics/analytics_dashboards.md',
       );
     });
   });
@@ -401,7 +401,7 @@ describe('AnalyticsDashboardPanel', () => {
             await nextTick();
 
             expect(findAlertDescriptionLink().attributes('href')).toBe(
-              '/help/user/analytics/analytics_dashboards#troubleshooting',
+              '/help/user/analytics/analytics_dashboards.md',
             );
           });
 

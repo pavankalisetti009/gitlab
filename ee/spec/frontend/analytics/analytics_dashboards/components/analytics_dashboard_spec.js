@@ -389,11 +389,9 @@ describe('AnalyticsDashboard', () => {
 
     it('creates an alert', () => {
       expect(createAlert).toHaveBeenCalledWith({
-        message: expect.stringContaining(
-          'ruh roh some error. Refresh the page to try again or see %{linkStart}troubleshooting documentation%{linkEnd}',
-        ),
+        message: expect.stringContaining('ruh roh some error. Refresh the page to try again.'),
         messageLinks: {
-          link: '/help/user/analytics/analytics_dashboards#troubleshooting',
+          link: '/help/user/analytics/analytics_dashboards',
         },
         captureError: true,
         error,
@@ -413,11 +411,9 @@ describe('AnalyticsDashboard', () => {
 
       it('creates an alert with the error message and a troubleshooting link', () => {
         expect(createAlert).toHaveBeenCalledWith({
-          message: expect.stringContaining(
-            'ruh roh some error. Refresh the page to try again or see %{linkStart}troubleshooting documentation%{linkEnd}',
-          ),
+          message: expect.stringContaining('ruh roh some error. Refresh the page to try again.'),
           messageLinks: {
-            link: '/help/user/analytics/analytics_dashboards#troubleshooting',
+            link: '/help/user/analytics/analytics_dashboards',
           },
           captureError: true,
           error,
@@ -474,7 +470,7 @@ describe('AnalyticsDashboard', () => {
       expect(findInvalidDashboardAlert().props()).toMatchObject({
         title: 'Invalid dashboard configuration',
         primaryButtonText: 'Learn more',
-        primaryButtonLink: '/help/user/analytics/analytics_dashboards#troubleshooting',
+        primaryButtonLink: '/help/user/analytics/analytics_dashboards',
         dismissible: false,
       });
 
