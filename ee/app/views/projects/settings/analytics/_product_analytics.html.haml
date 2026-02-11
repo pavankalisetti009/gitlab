@@ -16,7 +16,7 @@
 %p
   = s_('ProjectSettings|Override the instance analytics configuration for this project.')
   - link = link_to('', help_page_path('development/internal_analytics/product_analytics.md', anchor: 'product-analytics-provider'), target: '_blank', rel: 'noopener noreferrer')
-  = safe_format(s_('ProjectSettings|If GitLab manages your cluster, then GitLab retains your analytics data for 1 year. %{link_start}Learn more about data retention policy%{link_end}.'), tag_pair(link, :link_start, :link_end))
+  = safe_format(s_('AdminSettings|If GitLab manages your cluster, then your analytics data is %{link_start}retained for 1 year%{link_end}.'), tag_pair(link, :link_start, :link_end))
 
 = gitlab_ui_form_for @project, url: project_settings_analytics_path(@project, anchor: 'js-analytics-instance-settings'), html: { class: 'fieldset-form', id: 'product-analytics-settings', autocomplete: 'off' } do |f|
   = f.fields_for :project_setting do |settings|
