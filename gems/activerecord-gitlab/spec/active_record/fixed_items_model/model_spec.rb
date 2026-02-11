@@ -718,76 +718,6 @@ RSpec.describe ActiveRecord::FixedItemsModel::Model, feature_category: :shared d
           expect(result).to eq({ 'id' => 1 })
         end
       end
-
-      context 'with :include option' do
-        before do
-          stub_const('AssociatedModel', Class.new do
-            include ActiveRecord::FixedItemsModel::Model
-
-            attribute :title, :string
-
-            def self.fixed_items
-              [
-                { id: 1, title: 'Associated 1' }
-              ]
-            end
-          end)
-
-          TestStaticModel.class_eval do
-            def association
-              AssociatedModel.find(1)
-            end
-
-            def associations
-              [AssociatedModel.find(1)]
-            end
-          end
-        end
-
-        it 'includes single association' do
-          result = item.as_json(include: :association)
-
-          expect(result).to include({
-            'id' => 1,
-            'name' => 'Item 1',
-            'category' => :a,
-            'association' => { 'id' => 1, 'title' => 'Associated 1' }
-          })
-        end
-
-        it 'includes array associations' do
-          result = item.as_json(include: :associations)
-
-          expect(result['associations']).to eq([
-            { 'id' => 1, 'title' => 'Associated 1' }
-          ])
-        end
-
-        it 'handles nil associations' do
-          TestStaticModel.class_eval do
-            def nil_association
-              nil
-            end
-          end
-
-          result = item.as_json(include: :nil_association)
-
-          expect(result).to include('nil_association' => nil)
-        end
-
-        it 'handles nested options for associations' do
-          result = item.as_json(include: { association: { only: :id } })
-
-          expect(result['association']).to eq({ 'id' => 1 })
-        end
-
-        it 'handles multiple includes' do
-          result = item.as_json(include: [:association, :associations])
-
-          expect(result).to have_key('association')
-          expect(result).to have_key('associations')
-        end
-      end
     end
 
     describe '#serializable_hash' do
@@ -796,30 +726,15 @@ RSpec.describe ActiveRecord::FixedItemsModel::Model, feature_category: :shared d
       end
 
       it 'accepts same options as as_json' do
-        options = { only: [:id, :name] }
-
-        expect(item.serializable_hash(options)).to eq(item.as_json(options))
-      end
-
-      it 'handles :except option' do
-        result = item.serializable_hash(except: :category)
-
-        expect(result).to eq({
-          'id' => 1,
-          'name' => 'Item 1'
-        })
-      end
-
-      it 'handles :methods option' do
         TestStaticModel.class_eval do
           def custom_value
             'custom'
           end
         end
 
-        result = item.serializable_hash(methods: :custom_value)
+        options = { only: [:id, :name], except: :category, methods: :custom_value }
 
-        expect(result).to include('custom_value' => 'custom')
+        expect(item.serializable_hash(options)).to eq(item.as_json(options))
       end
     end
 
@@ -836,17 +751,7 @@ RSpec.describe ActiveRecord::FixedItemsModel::Model, feature_category: :shared d
       end
 
       it 'accepts options like as_json' do
-        result = item.to_json(only: [:id, :name])
-        parsed = JSON.parse(result)
-
-        expect(parsed).to eq({
-          'id' => 1,
-          'name' => 'Item 1'
-        })
-      end
-
-      it 'handles :except option' do
-        result = item.to_json(except: :category)
+        result = item.to_json(only: [:id, :name], except: :category)
         parsed = JSON.parse(result)
 
         expect(parsed).to eq({
@@ -872,22 +777,6 @@ RSpec.describe ActiveRecord::FixedItemsModel::Model, feature_category: :shared d
         json_string = item.to_json
 
         expect { JSON.parse(json_string) }.not_to raise_error
-      end
-
-      it 'handles complex nested structures' do
-        TestStaticModel.class_eval do
-          def nested_data
-            { key: 'value', array: [1, 2, 3] }
-          end
-        end
-
-        result = item.to_json(methods: :nested_data)
-        parsed = JSON.parse(result)
-
-        expect(parsed['nested_data']).to eq({
-          'key' => 'value',
-          'array' => [1, 2, 3]
-        })
       end
     end
   end

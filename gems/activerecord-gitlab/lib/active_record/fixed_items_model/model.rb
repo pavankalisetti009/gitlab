@@ -173,15 +173,10 @@ module ActiveRecord
           end
         end
 
-        # Handle :include option - include associations (if using HasOne/HasMany)
-        handle_includes(attrs, options[:include]) if options[:include]
-
         attrs
       end
 
-      def serializable_hash(options = {})
-        as_json(options)
-      end
+      alias_method :serializable_hash, :as_json
 
       def to_json(options = {})
         as_json(options).to_json
@@ -227,31 +222,6 @@ module ActiveRecord
           [self.class, id].hash
         else
           super # Falls back to Object#hash for unsaved records
-        end
-      end
-
-      def handle_includes(attrs, includes)
-        includes_hash = includes.is_a?(Hash) ? includes : Array(includes).index_with({})
-
-        includes_hash.each do |association_name, nested_options|
-          next unless respond_to?(association_name)
-
-          # rubocop:disable GitlabSecurity/PublicSend -- Association names come from controlled options, not user input
-          association_value = public_send(association_name)
-          # rubocop:enable GitlabSecurity/PublicSend
-
-          attrs[association_name.to_s] = serialize_association(association_value, nested_options)
-        end
-      end
-
-      def serialize_association(value, options = {})
-        case value
-        when Array
-          value.map { |item| item.respond_to?(:as_json) ? item.as_json(options) : item }
-        when nil
-          nil
-        else
-          value.respond_to?(:as_json) ? value.as_json(options) : value
         end
       end
 
