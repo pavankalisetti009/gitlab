@@ -323,6 +323,7 @@ export default {
                 category="secondary"
                 :loading="isSubmitting"
                 :disabled="!canApplyProfiles || !securityScanProfilesLicensed"
+                class="!gl-rounded-r-none"
                 @click="applyProfile(item.id)"
               >
                 {{ $options.SCAN_PROFILE_I18N.applyDefault }}
