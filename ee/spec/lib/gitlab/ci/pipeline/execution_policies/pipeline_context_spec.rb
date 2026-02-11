@@ -18,9 +18,11 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
   let(:source) { 'push' }
   let(:pipeline) { build(:ci_pipeline, source: source, project: project, ref: 'master', user: user) }
   let(:bridge) { build_stubbed(:ci_bridge) }
+  let(:trigger) { build_stubbed(:ci_trigger) }
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
-      project: project, source: pipeline.source, current_user: user, origin_ref: pipeline.ref, bridge: bridge
+      project: project, source: pipeline.source, current_user: user, origin_ref: pipeline.ref, bridge: bridge,
+      trigger: trigger
     )
   end
 
@@ -35,6 +37,7 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
       chat_data: command.chat_data,
       merge_request: command.merge_request,
       schedule: command.schedule,
+      trigger: trigger,
       bridge: command.bridge
     )
   end
@@ -63,6 +66,7 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
           chat_data: command.chat_data,
           merge_request: command.merge_request,
           schedule: command.schedule,
+          trigger: command.trigger,
           is_parent_pipeline_policy: false
         )
 

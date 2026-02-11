@@ -24,7 +24,7 @@ module Gitlab
           # rubocop:disable Metrics/ParameterLists -- Explicit parameters needed to replace command object delegation
           def initialize(
             context:, project:, source:, current_user:, ref:, sha_context:,
-            variables_attributes:, chat_data:, merge_request:, schedule:, is_parent_pipeline_policy:)
+            variables_attributes:, chat_data:, merge_request:, schedule:, trigger:, is_parent_pipeline_policy:)
             # rubocop:enable Metrics/ParameterLists
             @context = context
             @project = project
@@ -36,6 +36,7 @@ module Gitlab
             @chat_data = chat_data
             @merge_request = merge_request
             @schedule = schedule
+            @trigger = trigger
             @is_parent_pipeline_policy = is_parent_pipeline_policy
             @policy_pipelines = []
             @override_policy_stages = []
@@ -212,7 +213,7 @@ module Gitlab
           private
 
           attr_reader :project, :current_policy, :source, :current_user, :ref, :sha_context,
-            :variables_attributes, :chat_data, :merge_request, :schedule, :is_parent_pipeline_policy
+            :variables_attributes, :chat_data, :merge_request, :schedule, :trigger, :is_parent_pipeline_policy
 
           def policies
             return [] if Enums::Ci::Pipeline.gitlab_controlled_sources.key?(source)
@@ -246,12 +247,14 @@ module Gitlab
                     target_sha: sha_context.target,
                     partition_id: partition_id,
                     variables_attributes: variables_attributes,
-                    chat_data: chat_data)
+                    chat_data: chat_data
+                  )
                   .execute(source,
                     content: policy.content,
                     pipeline_policy_context: @context, # propagates parent context inside the policy pipeline creation
                     merge_request: merge_request, # This is for supporting merge request pipelines,
                     schedule: schedule,
+                    trigger: trigger,
                     ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
                     # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
                   )

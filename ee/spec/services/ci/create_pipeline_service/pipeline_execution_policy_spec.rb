@@ -1810,6 +1810,61 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       end
     end
   end
+
+  context 'when pipeline is triggered via trigger token' do
+    let_it_be(:trigger) { create(:ci_trigger, project: project, owner: user) }
+
+    let(:source) { :trigger }
+    let(:opts) { { trigger: trigger } }
+
+    let(:namespace_policy_content) do
+      {
+        triggered_job: {
+          stage: 'build',
+          script: 'echo "triggered"',
+          rules: [{ if: '$CI_PIPELINE_TRIGGERED' }]
+        },
+        triggered_true_job: {
+          stage: 'build',
+          script: 'echo "triggered true"',
+          rules: [{ if: '$CI_PIPELINE_TRIGGERED == "true"' }]
+        },
+        always_job: {
+          stage: 'build',
+          script: 'echo "always runs"'
+        }
+      }
+    end
+
+    shared_examples 'propagates trigger to policy pipelines' do
+      it 'makes CI_PIPELINE_TRIGGERED available in rules', :aggregate_failures do
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+        expect(execute.payload.trigger).to eq(trigger)
+
+        builds = execute.payload.builds
+        expect(builds.map(&:name)).to include('triggered_job', 'triggered_true_job', 'always_job')
+
+        triggered_job = builds.find { |b| b.name == 'triggered_job' }
+        expect(get_job_variable(triggered_job, 'CI_PIPELINE_TRIGGERED')).to eq('true')
+      end
+    end
+
+    it_behaves_like 'propagates trigger to policy pipelines'
+
+    context 'with override_project_ci strategy' do
+      let(:namespace_policy) do
+        build(:pipeline_execution_policy, :override_project_ci,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: namespace_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      it_behaves_like 'propagates trigger to policy pipelines'
+    end
+  end
   # rubocop:enable RSpec/MultipleMemoizedHelpers
 
   private

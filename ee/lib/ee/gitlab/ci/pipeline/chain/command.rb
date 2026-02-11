@@ -32,7 +32,8 @@ module EE
                 chat_data: chat_data,
                 merge_request: merge_request,
                 schedule: schedule,
-                bridge: bridge
+                bridge: bridge,
+                trigger: trigger
               )
             end
 
