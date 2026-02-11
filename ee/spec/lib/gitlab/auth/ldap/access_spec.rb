@@ -424,9 +424,18 @@ RSpec.describe Gitlab::Auth::Ldap::Access, feature_category: :system_access do
         expect { access.update_user }.not_to change(user.keys, :count)
       end
 
+      it 'sets organization_id from the user on the new SSH key' do
+        stub_ldap_person_find_by_dn(entry, provider)
+
+        access.update_user
+
+        new_key = user.keys.last
+        expect(new_key.organization_id).to eq(user.organization_id)
+      end
+
       context 'user has at least one LDAPKey' do
         before do
-          user.keys.ldap.create! key: ssh_key, title: 'to be removed'
+          user.keys.ldap.create! key: ssh_key, title: 'to be removed', organization_id: user.organization_id
         end
 
         it 'removes a SSH key if it is no longer in LDAP' do

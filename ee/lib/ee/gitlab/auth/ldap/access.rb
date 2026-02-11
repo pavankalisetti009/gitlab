@@ -46,6 +46,7 @@ module EE
               ::Gitlab::AppLogger.info "#{self.class.name}: adding LDAP SSH key #{key.inspect} to #{user.name} (#{user.id})"
               new_key = ::LDAPKey.new(title: "LDAP - #{ldap_config.sync_ssh_keys}", key: key)
               new_key.user = user
+              new_key.organization_id = user.organization_id
 
               unless new_key.save
                 ::Gitlab::AppLogger.error "#{self.class.name}: failed to add LDAP SSH key #{key.inspect} to #{user.name} (#{user.id})\n"\
