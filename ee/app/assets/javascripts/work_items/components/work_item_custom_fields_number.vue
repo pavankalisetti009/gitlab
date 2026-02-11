@@ -9,7 +9,7 @@ import {
   NAME_TO_TEXT_LOWERCASE_MAP,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
-import { isPositiveInteger } from '~/lib/utils/number_utils';
+import { isNumeric } from '~/lib/utils/number_utils';
 import { sprintf } from '~/locale';
 
 export default {
@@ -89,7 +89,7 @@ export default {
     async updateNumber() {
       if (!this.canUpdate) return;
 
-      const numberValue = isPositiveInteger(this.value) ? Number(this.value) : null;
+      const numberValue = isNumeric(this.value) ? Number(this.value) : null;
 
       if (numberValue === this.customField.value) {
         return;
