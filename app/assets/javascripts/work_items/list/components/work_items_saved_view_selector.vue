@@ -75,10 +75,6 @@ export default {
     editView() {
       this.isNewViewModalVisible = true;
     },
-    duplicateView() {
-      // TODO: replace this with logic to duplicate a view
-      return '';
-    },
     async copyViewLink() {
       try {
         await copyToClipboard(window.location.href);
@@ -133,13 +129,6 @@ export default {
         <template #list-item>
           <gl-icon name="pencil" class="gl-mr-2" variant="subtle" />
           {{ s__('WorkItem|Edit') }}
-        </template>
-      </gl-disclosure-dropdown-item>
-
-      <gl-disclosure-dropdown-item data-testid="duplicate-action" @action="duplicateView">
-        <template #list-item>
-          <gl-icon name="copy-to-clipboard" class="gl-mr-2" variant="subtle" />
-          {{ s__('WorkItem|Duplicate') }}
         </template>
       </gl-disclosure-dropdown-item>
 
