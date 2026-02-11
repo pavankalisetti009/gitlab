@@ -73,6 +73,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:duo_workflow_mcp_enabled=).to(:ai_settings).with_arguments(:args) }
   it { is_expected.to delegate_method(:duo_agent_platform_enabled).to(:ai_settings) }
   it { is_expected.to delegate_method(:duo_agent_platform_enabled=).to(:ai_settings).with_arguments(:args) }
+  it { is_expected.to delegate_method(:ai_usage_data_collection_enabled).to(:ai_settings) }
+  it { is_expected.to delegate_method(:ai_usage_data_collection_enabled=).to(:ai_settings).with_arguments(:args) }
   it { is_expected.to delegate_method(:duo_remote_flows_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:lock_duo_remote_flows_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:duo_foundational_flows_enabled).to(:namespace_settings) }

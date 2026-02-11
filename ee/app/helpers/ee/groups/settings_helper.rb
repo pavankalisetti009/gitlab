@@ -91,18 +91,36 @@ module EE
           are_experiment_settings_allowed: (@group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
           are_prompt_cache_settings_allowed: (@group.prompt_cache_settings_allowed? && gitlab_com_subscription?).to_s,
           update_id: @group.id,
+          is_saas: saas?.to_s
+        }.merge(
+          duo_workflow_settings_data,
+          ai_access_level_settings_data,
+          foundational_flows_settings_data,
+          foundational_agents_data,
+          namespace_access_rules_data
+        )
+      end
+
+      def duo_workflow_settings_data
+        {
           duo_agent_platform_enabled: @group.duo_agent_platform_enabled.to_s,
           duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
           duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
+          ai_usage_data_collection_available: @group.root?.to_s,
+          ai_usage_data_collection_enabled: @group.ai_usage_data_collection_enabled.to_s,
           prompt_injection_protection_level: @group.prompt_injection_protection_level.to_s,
           prompt_injection_protection_available: (::Feature.enabled?(:ai_prompt_scanning, current_user) && current_user.can?(:admin_duo_workflow, @group)).to_s,
-          is_saas: saas?.to_s,
-          show_duo_agent_platform_enablement_setting: show_duo_agent_platform_enablement_setting?.to_s,
+          show_duo_agent_platform_enablement_setting: show_duo_agent_platform_enablement_setting?.to_s
+        }
+      end
+
+      def ai_access_level_settings_data
+        {
           ai_minimum_access_level_to_execute: @group.ai_minimum_access_level_execute_with_fallback,
           ai_minimum_access_level_to_execute_async: @group.ai_minimum_access_level_execute_async_with_fallback,
           ai_settings_minimum_access_level_manage: @group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: @group.ai_minimum_access_level_enable_on_projects
-        }.merge(foundational_flows_settings_data).merge(foundational_agents_data).merge(namespace_access_rules_data)
+        }
       end
 
       def foundational_agents_data

@@ -70,6 +70,7 @@ module EE
               duo_availability duo_remote_flows_availability prompt_cache_enabled duo_remote_flows_enabled
               lock_duo_remote_flows_enabled duo_foundational_flows_enabled lock_duo_foundational_flows_enabled
               enabled_foundational_flows])
+            params_ee << { ai_settings_attributes: %i[ai_usage_data_collection_enabled] }
           end
 
           params_ee << :disable_personal_access_tokens if current_group&.disable_personal_access_tokens_available?
