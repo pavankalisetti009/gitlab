@@ -13,6 +13,7 @@ module Types
         field :foundational,
           GraphQL::Types::Boolean,
           null: false,
+          method: :foundational?,
           description: 'Whether the item is a foundational flow (only on GitLab SaaS).'
       end
     end
