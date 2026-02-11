@@ -14,6 +14,7 @@ class Groups::Security::DashboardController < Groups::ApplicationController
   before_action only: :show do
     push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: group, user: current_user)
     push_frontend_feature_flag(:new_security_dashboard_vulnerabilities_by_age, group)
+    push_frontend_feature_flag(:new_security_dashboard_over_time_chart_undetected_since, group)
   end
 
   def show

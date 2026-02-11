@@ -6,6 +6,7 @@ import {
   listenSystemColorSchemeChange,
   removeListenerSystemColorSchemeChange,
 } from '~/lib/utils/css_utils';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   constructVulnerabilitiesReportWithFiltersPath,
   getSeverityColors,
@@ -18,6 +19,7 @@ export default {
     GlChartSeriesLabel,
     GlLink,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['securityVulnerabilitiesPath'],
   props: {
     chartSeries: {
@@ -128,7 +130,7 @@ export default {
         securityVulnerabilitiesPath: this.securityVulnerabilitiesPath,
         seriesId,
         filterKey: this.groupedBy,
-        includeAllActivity: true,
+        includeAllActivity: !this.glFeatures.newSecurityDashboardOverTimeChartUndetectedSince,
         additionalFilters: this.filters,
       });
     },
