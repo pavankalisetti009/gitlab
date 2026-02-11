@@ -148,6 +148,43 @@ module ActiveRecord
         validates :id, numericality: { greater_than: 0, only_integer: true }
       end
 
+      def as_json(options = {})
+        # Start with all attributes
+        attrs = attributes.transform_keys(&:to_s)
+
+        # Handle :only option - include only specified attributes
+        if options[:only]
+          only_attrs = Array(options[:only]).map(&:to_s)
+          attrs = attrs.slice(*only_attrs)
+        end
+
+        # Handle :except option - exclude specified attributes
+        if options[:except]
+          except_attrs = Array(options[:except]).map(&:to_s)
+          attrs = attrs.except(*except_attrs)
+        end
+
+        # Handle :methods option - include additional methods
+        if options[:methods]
+          Array(options[:methods]).each do |method|
+            attrs[method.to_s] = public_send(method) if respond_to?(method)
+          end
+        end
+
+        # Handle :include option - include associations (if using HasOne/HasMany)
+        handle_includes(attrs, options[:include]) if options[:include]
+
+        attrs
+      end
+
+      def serializable_hash(options = {})
+        as_json(options)
+      end
+
+      def to_json(options = {})
+        as_json(options).to_json
+      end
+
       def matches?(conditions)
         conditions.all? do |attribute, value|
           if value.is_a?(Array)
@@ -188,6 +225,28 @@ module ActiveRecord
           [self.class, id].hash
         else
           super # Falls back to Object#hash for unsaved records
+        end
+      end
+
+      def handle_includes(attrs, includes)
+        includes_hash = includes.is_a?(Hash) ? includes : Array(includes).index_with({})
+
+        includes_hash.each do |association_name, nested_options|
+          next unless respond_to?(association_name)
+
+          association_value = public_send(association_name)
+          attrs[association_name.to_s] = serialize_association(association_value, nested_options)
+        end
+      end
+
+      def serialize_association(value, options = {})
+        case value
+        when Array
+          value.map { |item| item.respond_to?(:as_json) ? item.as_json(options) : item }
+        when nil
+          nil
+        else
+          value.respond_to?(:as_json) ? value.as_json(options) : value
         end
       end
 

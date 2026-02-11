@@ -552,4 +552,343 @@ RSpec.describe ActiveRecord::FixedItemsModel::Model, feature_category: :shared d
       end
     end
   end
+
+  describe "serialization methods" do
+    before do
+      stub_const('TestStaticModel', Class.new do
+        include ActiveRecord::FixedItemsModel::Model
+
+        def self.fixed_items
+          [
+            { id: 1, name: 'Item 1', category: :a },
+            { id: 2, name: 'Item 2', category: :b },
+            { id: 3, name: 'Item 3', category: :a }
+          ]
+        end
+
+        attribute :name, :string
+        attribute :category
+      end)
+    end
+
+    let(:item) { TestStaticModel.find(1) }
+
+    describe '#as_json' do
+      it 'returns a hash with all attributes' do
+        result = item.as_json
+
+        expect(result).to eq({
+          'id' => 1,
+          'name' => 'Item 1',
+          'category' => :a
+        })
+      end
+
+      context 'with :only option' do
+        it 'includes only specified attributes' do
+          result = item.as_json(only: [:id, :name])
+
+          expect(result).to eq({
+            'id' => 1,
+            'name' => 'Item 1'
+          })
+        end
+
+        it 'handles single attribute' do
+          result = item.as_json(only: :id)
+
+          expect(result).to eq({ 'id' => 1 })
+        end
+
+        it 'handles string attribute names' do
+          result = item.as_json(only: %w[id name])
+
+          expect(result).to eq({
+            'id' => 1,
+            'name' => 'Item 1'
+          })
+        end
+      end
+
+      context 'with :except option' do
+        it 'excludes specified attributes' do
+          result = item.as_json(except: [:category])
+
+          expect(result).to eq({
+            'id' => 1,
+            'name' => 'Item 1'
+          })
+        end
+
+        it 'handles multiple excluded attributes' do
+          result = item.as_json(except: [:name, :category])
+
+          expect(result).to eq({ 'id' => 1 })
+        end
+
+        it 'handles string attribute names' do
+          result = item.as_json(except: ['category'])
+
+          expect(result).to eq({
+            'id' => 1,
+            'name' => 'Item 1'
+          })
+        end
+      end
+
+      context 'with :methods option' do
+        before do
+          TestStaticModel.class_eval do
+            def custom_method
+              "custom_#{name}"
+            end
+
+            def another_method
+              id * 10
+            end
+          end
+        end
+
+        it 'includes specified method results' do
+          result = item.as_json(methods: :custom_method)
+
+          expect(result).to include({
+            'id' => 1,
+            'name' => 'Item 1',
+            'category' => :a,
+            'custom_method' => 'custom_Item 1'
+          })
+        end
+
+        it 'handles multiple methods' do
+          result = item.as_json(methods: [:custom_method, :another_method])
+
+          expect(result).to include({
+            'custom_method' => 'custom_Item 1',
+            'another_method' => 10
+          })
+        end
+
+        it 'ignores non-existent methods' do
+          result = item.as_json(methods: [:custom_method, :non_existent])
+
+          expect(result).to include('custom_method' => 'custom_Item 1')
+          expect(result).not_to have_key('non_existent')
+        end
+
+        it 'handles string method names' do
+          result = item.as_json(methods: ['custom_method'])
+
+          expect(result).to include('custom_method' => 'custom_Item 1')
+        end
+      end
+
+      context 'with combined options' do
+        before do
+          TestStaticModel.class_eval do
+            def display_name
+              "Display: #{name}"
+            end
+          end
+        end
+
+        it 'handles :only and :methods together' do
+          result = item.as_json(only: [:id, :name], methods: :display_name)
+
+          expect(result).to eq({
+            'id' => 1,
+            'name' => 'Item 1',
+            'display_name' => 'Display: Item 1'
+          })
+        end
+
+        it 'handles :except and :methods together' do
+          result = item.as_json(except: :category, methods: :display_name)
+
+          expect(result).to eq({
+            'id' => 1,
+            'name' => 'Item 1',
+            'display_name' => 'Display: Item 1'
+          })
+        end
+
+        it ':only takes precedence over :except' do
+          result = item.as_json(only: [:id], except: [:name])
+
+          expect(result).to eq({ 'id' => 1 })
+        end
+      end
+
+      context 'with :include option' do
+        before do
+          stub_const('AssociatedModel', Class.new do
+            include ActiveRecord::FixedItemsModel::Model
+
+            attribute :title, :string
+
+            def self.fixed_items
+              [
+                { id: 1, title: 'Associated 1' }
+              ]
+            end
+          end)
+
+          TestStaticModel.class_eval do
+            def association
+              AssociatedModel.find(1)
+            end
+
+            def associations
+              [AssociatedModel.find(1)]
+            end
+          end
+        end
+
+        it 'includes single association' do
+          result = item.as_json(include: :association)
+
+          expect(result).to include({
+            'id' => 1,
+            'name' => 'Item 1',
+            'category' => :a,
+            'association' => { 'id' => 1, 'title' => 'Associated 1' }
+          })
+        end
+
+        it 'includes array associations' do
+          result = item.as_json(include: :associations)
+
+          expect(result['associations']).to eq([
+            { 'id' => 1, 'title' => 'Associated 1' }
+          ])
+        end
+
+        it 'handles nil associations' do
+          TestStaticModel.class_eval do
+            def nil_association
+              nil
+            end
+          end
+
+          result = item.as_json(include: :nil_association)
+
+          expect(result).to include('nil_association' => nil)
+        end
+
+        it 'handles nested options for associations' do
+          result = item.as_json(include: { association: { only: :id } })
+
+          expect(result['association']).to eq({ 'id' => 1 })
+        end
+
+        it 'handles multiple includes' do
+          result = item.as_json(include: [:association, :associations])
+
+          expect(result).to have_key('association')
+          expect(result).to have_key('associations')
+        end
+      end
+    end
+
+    describe '#serializable_hash' do
+      it 'returns same result as as_json' do
+        expect(item.serializable_hash).to eq(item.as_json)
+      end
+
+      it 'accepts same options as as_json' do
+        options = { only: [:id, :name] }
+
+        expect(item.serializable_hash(options)).to eq(item.as_json(options))
+      end
+
+      it 'handles :except option' do
+        result = item.serializable_hash(except: :category)
+
+        expect(result).to eq({
+          'id' => 1,
+          'name' => 'Item 1'
+        })
+      end
+
+      it 'handles :methods option' do
+        TestStaticModel.class_eval do
+          def custom_value
+            'custom'
+          end
+        end
+
+        result = item.serializable_hash(methods: :custom_value)
+
+        expect(result).to include('custom_value' => 'custom')
+      end
+    end
+
+    describe '#to_json' do
+      it 'returns a JSON string' do
+        result = item.to_json
+
+        expect(result).to be_a(String)
+        expect(JSON.parse(result)).to eq({
+          'id' => 1,
+          'name' => 'Item 1',
+          'category' => 'a' # Note: symbols become strings in JSON
+        })
+      end
+
+      it 'accepts options like as_json' do
+        result = item.to_json(only: [:id, :name])
+        parsed = JSON.parse(result)
+
+        expect(parsed).to eq({
+          'id' => 1,
+          'name' => 'Item 1'
+        })
+      end
+
+      it 'handles :except option' do
+        result = item.to_json(except: :category)
+        parsed = JSON.parse(result)
+
+        expect(parsed).to eq({
+          'id' => 1,
+          'name' => 'Item 1'
+        })
+      end
+
+      it 'handles :methods option' do
+        TestStaticModel.class_eval do
+          def computed_value
+            id + 100
+          end
+        end
+
+        result = item.to_json(methods: :computed_value)
+        parsed = JSON.parse(result)
+
+        expect(parsed).to include('computed_value' => 101)
+      end
+
+      it 'produces valid JSON that can be parsed' do
+        json_string = item.to_json
+
+        expect { JSON.parse(json_string) }.not_to raise_error
+      end
+
+      it 'handles complex nested structures' do
+        TestStaticModel.class_eval do
+          def nested_data
+            { key: 'value', array: [1, 2, 3] }
+          end
+        end
+
+        result = item.to_json(methods: :nested_data)
+        parsed = JSON.parse(result)
+
+        expect(parsed['nested_data']).to eq({
+          'key' => 'value',
+          'array' => [1, 2, 3]
+        })
+      end
+    end
+  end
 end
