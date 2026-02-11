@@ -65,7 +65,7 @@ import {
   extractGraphqlContributorCountData,
   extractAggregatedPipelineMetricsData,
 } from '../../api';
-import { extractGraphqlAiData } from '../api';
+import { extractGraphqlAiData, skippedFlowMetrics, skippedDoraMetrics } from '../api';
 
 export default {
   name: 'MetricTable',
@@ -215,6 +215,7 @@ export default {
       const result = await this.$apollo.query({
         query: DoraMetricsQuery,
         variables: {
+          ...skippedDoraMetrics(this.skippedMetrics),
           fullPath: this.namespace,
           interval: BUCKETING_INTERVAL_ALL,
           startDate,
@@ -236,6 +237,7 @@ export default {
       const result = await this.$apollo.query({
         query: FlowMetricsQuery,
         variables: {
+          ...skippedFlowMetrics(this.skippedMetrics),
           fullPath: this.namespace,
           startDate,
           endDate,

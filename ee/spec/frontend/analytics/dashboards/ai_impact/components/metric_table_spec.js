@@ -646,6 +646,64 @@ describe('Metric table', () => {
     });
   });
 
+  describe('skip requests for unused metrics', () => {
+    it.each`
+      identifier                              | skipParam
+      ${DORA_METRICS.DEPLOYMENT_FREQUENCY}    | ${'skipDeploymentFrequency'}
+      ${DORA_METRICS.LEAD_TIME_FOR_CHANGES}   | ${'skipLeadTimeForChanges'}
+      ${DORA_METRICS.CHANGE_FAILURE_RATE}     | ${'skipChangeFailureRate'}
+      ${DORA_METRICS.TIME_TO_RESTORE_SERVICE} | ${'skipTimeToRestoreService'}
+    `('for $identifier', async ({ identifier, skipParam }) => {
+      const doraMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+      const apolloProvider = createMockApolloProvider({ doraMetricsRequest });
+
+      await createWrapper([], {
+        apolloProvider,
+        props: { includeMetrics: SUPPORTED_DORA_METRICS.filter((metric) => metric !== identifier) },
+      });
+
+      expect(doraMetricsRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skipDeploymentFrequency: false,
+          skipLeadTimeForChanges: false,
+          skipChangeFailureRate: false,
+          skipTimeToRestoreService: false,
+          [skipParam]: true,
+        }),
+      );
+    });
+
+    it.each`
+      identifier                           | skipParam
+      ${FLOW_METRICS.CYCLE_TIME}           | ${'skipCycleTime'}
+      ${FLOW_METRICS.LEAD_TIME}            | ${'skipLeadTime'}
+      ${FLOW_METRICS.ISSUES}               | ${'skipIssueCount'}
+      ${FLOW_METRICS.ISSUES_COMPLETED}     | ${'skipIssuesCompletedCount'}
+      ${FLOW_METRICS.DEPLOYS}              | ${'skipDeploymentCount'}
+      ${FLOW_METRICS.MEDIAN_TIME_TO_MERGE} | ${'skipTimeToMerge'}
+    `('for $identifier', async ({ identifier, skipParam }) => {
+      const flowMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+      const apolloProvider = createMockApolloProvider({ flowMetricsRequest });
+
+      await createWrapper([], {
+        apolloProvider,
+        props: { includeMetrics: SUPPORTED_FLOW_METRICS.filter((metric) => metric !== identifier) },
+      });
+
+      expect(flowMetricsRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skipCycleTime: false,
+          skipLeadTime: false,
+          skipIssueCount: false,
+          skipIssuesCompletedCount: false,
+          skipDeploymentCount: false,
+          skipTimeToMerge: false,
+          [skipParam]: true,
+        }),
+      );
+    });
+  });
+
   describe('i18n', () => {
     describe.each`
       language   | formattedValue

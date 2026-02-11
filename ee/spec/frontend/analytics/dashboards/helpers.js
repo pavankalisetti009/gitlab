@@ -17,6 +17,10 @@ export const doraMetricsParamsHelper = ({
   fullPath,
   startDate: toYmd(start),
   endDate: toYmd(end),
+  skipChangeFailureRate: false,
+  skipDeploymentFrequency: false,
+  skipLeadTimeForChanges: false,
+  skipTimeToRestoreService: false,
 });
 
 export const flowMetricsParamsHelper = ({ start, end, fullPath = '', labelNames = [] }) => ({
@@ -24,6 +28,12 @@ export const flowMetricsParamsHelper = ({ start, end, fullPath = '', labelNames 
   startDate: toYmd(start),
   endDate: toYmd(end),
   labelNames,
+  skipCycleTime: false,
+  skipDeploymentCount: false,
+  skipIssueCount: false,
+  skipIssuesCompletedCount: false,
+  skipLeadTime: false,
+  skipTimeToMerge: false,
 });
 
 // For the vulnerabilities request we just query for the last date in the time period
