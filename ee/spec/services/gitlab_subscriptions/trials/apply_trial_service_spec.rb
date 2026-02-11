@@ -69,6 +69,17 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean
 
           expect(execute).to be_success
         end
+
+        it 'clears the dap access cache for the user' do
+          allow_trial_creation(
+            namespace,
+            trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::FREE_TRIAL_TYPE_V2)
+          )
+
+          expect(User).to receive(:clear_group_with_ai_available_cache).with(user.id)
+
+          expect(execute).to be_success
+        end
       end
 
       context 'when namespace has a premium plan' do

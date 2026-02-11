@@ -654,7 +654,7 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
 
           it 'returns the correct data' do
             is_expected.to eq({
-              new_trial_path: new_trial_path(source.root_ancestor, glm_source: 'gitlab.com',
+              new_trial_path: new_trial_path(namespace_id: source.root_ancestor.id, glm_source: 'gitlab.com',
                 glm_content: 'chat panel'),
               trial_duration: 30
             })
@@ -666,7 +666,7 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
 
           it 'returns the correct data' do
             is_expected.to eq({
-              new_trial_path: new_trial_path(source.root_ancestor, glm_source: 'gitlab.com',
+              new_trial_path: new_trial_path(namespace_id: source.root_ancestor.id, glm_source: 'gitlab.com',
                 glm_content: 'chat panel'),
               trial_duration: 30,
               namespace_type: 'Group'
