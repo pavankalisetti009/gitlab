@@ -8,8 +8,8 @@ module API
 
       CI_MINUTES_TAGS = %w[ci_minutes].freeze
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
-        desc '[DEPRECATED] Create a compute minutes purchase record for the namespace' do
-          detail 'Creates an additional pack'
+        desc 'Create a compute minutes purchase record for the namespace' do
+          detail 'Deprecated in GitLab 17.7'
           success ::API::Entities::Ci::Minutes::AdditionalPack
           failure [
             { code: 400, message: 'Bad request' },
@@ -18,6 +18,7 @@ module API
           ]
           is_array true
           tags CI_MINUTES_TAGS
+          deprecated true
         end
         params do
           requires :id, type: String, desc: 'The ID of a namespace'
@@ -40,8 +41,8 @@ module API
           end
         end
 
-        desc '[DEPRECATED] Transfer purchased compute minutes packs to another namespace' do
-          detail 'Moves additional packs from one namespace to another'
+        desc 'Transfer purchased compute minutes packs to another namespace' do
+          detail 'Deprecated in GitLab 17.7'
           success code: 202
           failure [
             { code: 400, message: 'Bad request' },
@@ -49,6 +50,7 @@ module API
             { code: 404, message: 'Not found' }
           ]
           tags CI_MINUTES_TAGS
+          deprecated true
         end
         params do
           requires :id, type: String, desc: 'The ID of the namespace to transfer from'
