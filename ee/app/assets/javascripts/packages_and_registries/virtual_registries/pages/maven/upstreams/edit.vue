@@ -5,7 +5,7 @@ import { s__ } from '~/locale';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { updateMavenUpstream } from 'ee/api/virtual_registries_api';
-import DeleteUpstreamWithModal from '../../../components/maven/shared/delete_upstream_with_modal.vue';
+import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/delete_modal.vue';
 import RegistryUpstreamForm from '../../../components/maven/shared/registry_upstream_form.vue';
 import { captureException } from '../../../sentry_utils';
 

@@ -7,12 +7,14 @@ import getRegistriesQuery from 'ee/packages_and_registries/virtual_registries/gr
 import getRegistryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_registry.query.graphql';
 import getUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstreams.query.graphql';
 import getUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstreams_count.query.graphql';
+import getUpstreamRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_registries.query.graphql';
 import createRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_container_registry.mutation.graphql';
 import updateRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/update_container_registry.mutation.graphql';
 import getUpstreamSummaryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_summary.query.graphql';
 import getUpstreamCacheEntriesCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_cache_entries_count.query.graphql';
 import getUpstreamCacheEntriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_cache_entries.query.graphql';
 import deleteRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/delete_container_registry.mutation.graphql';
+import deleteUpstreamMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/delete_container_upstream.mutation.graphql';
 import ContainerVirtualRegistryBreadcrumbs from './breadcrumbs.vue';
 import i18n from './i18n';
 import createRouter from './router';
@@ -53,17 +55,19 @@ export default () => {
         baseRegistry: 'VirtualRegistries::Container::Registry',
       },
       i18n,
+      routes,
       getRegistriesQuery,
       getRegistryQuery,
       getUpstreamsQuery,
       getUpstreamsCountQuery,
-      routes,
+      getUpstreamRegistriesQuery,
       createRegistryMutation,
       updateRegistryMutation,
       getUpstreamSummaryQuery,
       getUpstreamCacheEntriesQuery,
       getUpstreamCacheEntriesCountQuery,
       deleteRegistryMutation,
+      deleteUpstreamMutation,
       maxRegistriesCount: Number(maxRegistriesCount),
     },
     render(createElement) {

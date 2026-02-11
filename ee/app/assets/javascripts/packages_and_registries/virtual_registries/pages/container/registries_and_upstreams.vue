@@ -119,6 +119,7 @@ export default {
           :search-term="upstreamsSearchTerm"
           @submit="handleUpstreamsSearch"
           @page-change="handleUpstreamsPagination"
+          @upstream-deleted="handleUpstreamsDeleted"
         />
       </gl-tab>
     </gl-tabs>

@@ -5,8 +5,8 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { deleteMavenUpstream } from 'ee/api/virtual_registries_api';
-import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
-import getMavenUpstreamRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_registries.query.graphql';
+import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/delete_modal.vue';
+import getUpstreamRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_registries.query.graphql';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import { mavenUpstreamRegistry } from '../../../mock_data';
 
@@ -37,7 +37,7 @@ describe('DeleteUpstreamWithModal', () => {
 
   const mockUpstreamRegistries = {
     data: {
-      virtualRegistriesPackagesMavenUpstream: {
+      upstream: {
         ...mavenUpstreamRegistry,
         registryUpstreams: mockRegistries.map((registry) => ({
           __typename: 'MavenRegistryUpstream',
@@ -58,10 +58,16 @@ describe('DeleteUpstreamWithModal', () => {
 
   const createComponent = ({
     props,
-    handlers = [[getMavenUpstreamRegistriesQuery, mavenUpstreamRegistriesHandler]],
+    handlers = [[getUpstreamRegistriesQuery, mavenUpstreamRegistriesHandler]],
   } = {}) => {
     wrapper = shallowMountExtended(DeleteUpstreamWithModal, {
       apolloProvider: createMockApollo(handlers),
+      provide: {
+        getUpstreamRegistriesQuery,
+        ids: {
+          baseUpstream: 'VirtualRegistries::Packages::Maven::Upstream',
+        },
+      },
       propsData: {
         ...defaultProps,
         ...props,
@@ -149,13 +155,13 @@ describe('DeleteUpstreamWithModal', () => {
         it('calls captureException with the error', async () => {
           createComponent({
             props: { visible: true },
-            handlers: [[getMavenUpstreamRegistriesQuery, errorHandler]],
+            handlers: [[getUpstreamRegistriesQuery, errorHandler]],
           });
 
           await waitForPromises();
           expect(captureException).toHaveBeenCalledWith({
             error: mockError,
-            component: 'DeleteMavenUpstreamWithModal',
+            component: 'DeleteUpstreamWithModal',
           });
         });
       });
@@ -164,7 +170,7 @@ describe('DeleteUpstreamWithModal', () => {
         describe('when upstream has no associated registries', () => {
           const handler = jest.fn().mockResolvedValue({
             data: {
-              virtualRegistriesPackagesMavenUpstream: {
+              upstream: {
                 ...mavenUpstreamRegistry,
                 registryUpstreams: [],
               },
@@ -173,7 +179,7 @@ describe('DeleteUpstreamWithModal', () => {
           beforeEach(async () => {
             createComponent({
               props: { visible: true },
-              handlers: [[getMavenUpstreamRegistriesQuery, handler]],
+              handlers: [[getUpstreamRegistriesQuery, handler]],
             });
             await waitForPromises();
           });

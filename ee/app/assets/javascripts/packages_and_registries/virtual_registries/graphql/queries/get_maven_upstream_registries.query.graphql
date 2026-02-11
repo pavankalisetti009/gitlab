@@ -1,5 +1,5 @@
 query getUpstreamRegistries($id: VirtualRegistriesPackagesMavenUpstreamID!) {
-  virtualRegistriesPackagesMavenUpstream(id: $id) {
+  upstream: virtualRegistriesPackagesMavenUpstream(id: $id) {
     id
     registryUpstreams {
       id

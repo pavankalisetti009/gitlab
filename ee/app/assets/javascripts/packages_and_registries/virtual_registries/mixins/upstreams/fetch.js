@@ -75,5 +75,9 @@ export default {
     handleUpstreamsPagination(params) {
       this.upstreamsPageParams = getPageParams(params, PAGE_SIZE);
     },
+    handleUpstreamsDeleted() {
+      this.$apollo.queries.upstreams.refetch();
+      this.$apollo.queries.upstreamsCount.refetch();
+    },
   },
 };
