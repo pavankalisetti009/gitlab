@@ -7,7 +7,7 @@ describe('BranchPatternItem', () => {
 
   const defaultBranchPattern = {
     source: { pattern: 'feature/*' },
-    target: { name: 'main' },
+    target: { pattern: 'main' },
   };
 
   const createComponent = ({ props = {} } = {}) => {
@@ -65,7 +65,7 @@ describe('BranchPatternItem', () => {
         props: {
           branch: {
             source: null,
-            target: { name: 'main' },
+            target: { pattern: 'main' },
           },
         },
       });
@@ -74,18 +74,32 @@ describe('BranchPatternItem', () => {
       expect(findTargetInput().props('value')).toBe('main');
     });
 
-    it('handles branch with empty source pattern or target name', () => {
+    it('handles branch with empty source pattern or target pattern', () => {
       createComponent({
         props: {
           branch: {
             source: { pattern: '' },
-            target: { name: '' },
+            target: { pattern: '' },
           },
         },
       });
 
       expect(findSourceInput().props('value')).toBe('');
       expect(findTargetInput().props('value')).toBe('');
+    });
+
+    it('handles backward compatibility with target.name', () => {
+      createComponent({
+        props: {
+          branch: {
+            source: { pattern: 'feature/*' },
+            target: { name: 'main' },
+          },
+        },
+      });
+
+      expect(findSourceInput().props('value')).toBe('feature/*');
+      expect(findTargetInput().props('value')).toBe('main');
     });
 
     it('emits branch patterns', async () => {
@@ -97,7 +111,7 @@ describe('BranchPatternItem', () => {
 
       await findTargetInput().vm.$emit('input', 'target');
 
-      expect(wrapper.emitted('set-branch')[1]).toEqual([{ target: { name: 'target' } }]);
+      expect(wrapper.emitted('set-branch')[1]).toEqual([{ target: { pattern: 'target' } }]);
     });
   });
 

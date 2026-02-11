@@ -1,6 +1,6 @@
 export const mockBranchPatterns = [
-  { id: 'pattern_1', source: 'main-*', target: 'target-1' },
-  { id: 'pattern_2', source: 'feature-.*', target: 'target-2' },
+  { id: 'pattern_1', source: { pattern: 'main-*' }, target: { pattern: 'target-1' } },
+  { id: 'pattern_2', source: { pattern: 'feature-.*' }, target: { pattern: 'target-2' } },
 ];
 
 export const mockTokens = [

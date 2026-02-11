@@ -94,7 +94,7 @@ describe('BranchPatternSelector', () => {
       await findBranchPatternItems().at(0).vm.$emit('set-branch', mockBranchPatterns[0]);
 
       expect(wrapper.emitted('set-branches')).toEqual([
-        [[{ source: 'main-*', target: 'target-1' }]],
+        [[{ source: { pattern: 'main-*' }, target: { pattern: 'target-1' } }]],
       ]);
     });
 
@@ -104,7 +104,7 @@ describe('BranchPatternSelector', () => {
       await findBranchPatternItems().at(0).vm.$emit('remove');
 
       expect(wrapper.emitted('set-branches')).toEqual([
-        [[{ source: 'feature-.*', target: 'target-2' }]],
+        [[{ source: { pattern: 'feature-.*' }, target: { pattern: 'target-2' } }]],
       ]);
     });
   });
@@ -114,17 +114,17 @@ describe('BranchPatternSelector', () => {
       {
         id: 'pattern_1',
         source: { pattern: 'feature/*' },
-        target: { name: 'main' },
+        target: { pattern: 'main' },
       },
       {
         id: 'pattern_2',
         source: { pattern: 'feature/*' },
-        target: { name: 'main' },
+        target: { pattern: 'main' },
       },
       {
         id: 'pattern_3',
         source: { pattern: 'hotfix/*' },
-        target: { name: 'develop' },
+        target: { pattern: 'develop' },
       },
     ];
 
@@ -154,12 +154,12 @@ describe('BranchPatternSelector', () => {
         {
           id: 'pattern_1',
           source: { pattern: 'feature/*' },
-          target: { name: 'main' },
+          target: { pattern: 'main' },
         },
         {
           id: 'pattern_2',
           source: { pattern: 'hotfix/*' },
-          target: { name: 'develop' },
+          target: { pattern: 'develop' },
         },
       ];
 
@@ -175,17 +175,17 @@ describe('BranchPatternSelector', () => {
         {
           id: 'pattern_1',
           source: { pattern: 'feature/*' },
-          target: { name: 'main' },
+          target: { pattern: 'main' },
         },
         {
           id: 'pattern_2',
           source: { pattern: 'feature/*' },
-          target: { name: 'develop' }, // Different target
+          target: { pattern: 'develop' }, // Different target
         },
         {
           id: 'pattern_3',
           source: { pattern: 'hotfix/*' }, // Different source
-          target: { name: 'main' },
+          target: { pattern: 'main' },
         },
       ];
 
@@ -203,12 +203,12 @@ describe('BranchPatternSelector', () => {
         {
           id: 'pattern_1',
           source: { pattern: '' },
-          target: { name: '' },
+          target: { pattern: '' },
         },
         {
           id: 'pattern_2',
           source: { pattern: '' },
-          target: { name: '' },
+          target: { pattern: '' },
         },
         {
           id: 'pattern_3',
@@ -224,6 +224,27 @@ describe('BranchPatternSelector', () => {
       expect(branchPatternItems.at(0).props('hasValidationError')).toBe(false);
       expect(branchPatternItems.at(1).props('hasValidationError')).toBe(false);
       expect(branchPatternItems.at(2).props('hasValidationError')).toBe(false);
+    });
+
+    it('handles backward compatibility with target.name for duplicate detection', () => {
+      const mixedBranchPatterns = [
+        {
+          id: 'pattern_1',
+          source: { pattern: 'feature/*' },
+          target: { name: 'main' },
+        },
+        {
+          id: 'pattern_2',
+          source: { pattern: 'feature/*' },
+          target: { pattern: 'main' },
+        },
+      ];
+
+      createComponent({ branches: mixedBranchPatterns });
+      const branchPatternItems = findBranchPatternItems();
+
+      expect(branchPatternItems.at(0).props('hasValidationError')).toBe(true);
+      expect(branchPatternItems.at(1).props('hasValidationError')).toBe(true);
     });
   });
 });
