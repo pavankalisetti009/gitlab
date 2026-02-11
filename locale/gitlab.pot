@@ -78313,6 +78313,9 @@ msgstr ""
 msgid "WorkItem|Archived custom fields"
 msgstr ""
 
+msgid "WorkItem|Archived types"
+msgstr ""
+
 msgid "WorkItem|Are you sure you want to cancel creating this %{workItemType}?"
 msgstr ""
 
@@ -78545,6 +78548,9 @@ msgid "WorkItem|Development"
 msgstr ""
 
 msgid "WorkItem|Disable list item"
+msgstr ""
+
+msgid "WorkItem|Disabled in all groups and projects. Items created prior to archiving may remain in this type."
 msgstr ""
 
 msgid "WorkItem|Discard changes"
