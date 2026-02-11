@@ -75,7 +75,7 @@ module Ai
         end
 
         def foundational_flow_with_user_triggers?
-          item.flow? && item.foundational_flow && params[:trigger_types].present?
+          item.foundational_flow? && params[:trigger_types].present?
         end
 
         def create_item_consumer(service_account)
@@ -150,7 +150,7 @@ module Ai
         def prepare_trigger_params
           return if project.nil?
 
-          if item.foundational_flow
+          if item.foundational_flow?
             flow_definition = ::Ai::Catalog::FoundationalFlow[item.foundational_flow_reference]
             return unless flow_definition&.triggers&.any?
 
@@ -215,7 +215,7 @@ module Ai
 
         def allowed?
           if item.flow?
-            if item.foundational_flow
+            if item.foundational_flow?
               return false unless Ability.allowed?(current_user, :create_ai_foundational_flow_item_consumer, container)
             else
               return false unless Ability.allowed?(current_user, :create_ai_catalog_flow_item_consumer, container)

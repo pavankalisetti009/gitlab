@@ -7,7 +7,7 @@ module Ai
       delegate { @subject.group }
 
       condition(:custom_flow, scope: :subject) do
-        @subject.item.flow? && !@subject.item.foundational_flow
+        @subject.item.flow? && !@subject.item.foundational_flow?
       end
 
       condition(:third_party_flow, scope: :subject) do
@@ -23,7 +23,7 @@ module Ai
       end
 
       condition(:foundational_flow, scope: :subject) do
-        @subject.item.foundational_flow
+        @subject.item.foundational_flow?
       end
 
       condition(:foundational_flows_available, scope: :subject) do
@@ -31,7 +31,7 @@ module Ai
       end
 
       condition(:beta_foundational_flow, scope: :subject) do
-        @subject.item.foundational_flow &&
+        @subject.item.foundational_flow? &&
           ::Ai::Catalog::FoundationalFlow.beta?(@subject.item.foundational_flow_reference)
       end
 

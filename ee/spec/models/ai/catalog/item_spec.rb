@@ -695,7 +695,9 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     end
   end
 
-  describe '#foundational' do
+  describe '#foundational?' do
+    subject(:foundational) { item.foundational? }
+
     let(:is_saas) { false }
     let(:item_id) { 100 }
     let(:item) { build(:ai_catalog_item, :agent, id: item_id) }
@@ -704,13 +706,11 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       stub_saas_features(gitlab_duo_saas_only: is_saas)
     end
 
-    subject(:is_foundational) { item.foundational }
-
     context 'when item is agent' do
       context 'when not on GitLab SaaS' do
         let(:is_saas) { false }
 
-        it { is_expected.to be_falsey }
+        it { is_expected.to be(false) }
       end
 
       context 'when on GitLab SaaS' do
@@ -719,7 +719,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         context 'when item is a foundational agent' do
           let(:item_id) { 348 }
 
-          it { is_expected.to be_truthy }
+          it { is_expected.to be(true) }
         end
 
         context 'when item is not a foundational agent' do
@@ -732,10 +732,10 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       let(:item) { create(:ai_catalog_item, :flow, foundational_flow_reference: foundational_flow_reference) }
       let(:foundational_flow_reference) { nil }
 
-      context 'when item is a foundational flow' do
-        let(:foundational_flow_reference) { 723 }
+      context 'when item has foundational flow reference' do
+        let(:foundational_flow_reference) { 'code_review/v1' }
 
-        it { is_expected.to be_truthy }
+        it { is_expected.to be(true) }
       end
 
       context 'when item is not a foundational flow' do
@@ -747,6 +747,90 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       let(:item) { build(:ai_catalog_third_party_flow) }
 
       it { is_expected.to be(false) }
+    end
+  end
+
+  describe '#foundational_chat_agent?' do
+    subject(:foundational_chat_agent) { item.foundational_chat_agent? }
+
+    let(:is_saas) { false }
+    let(:item_id) { 42 }
+    let(:item) { build(:ai_catalog_item, :agent, id: item_id) }
+
+    before do
+      stub_saas_features(gitlab_duo_saas_only: is_saas)
+    end
+
+    context 'when not on GitLab SaaS' do
+      it { is_expected.to be(false) }
+    end
+
+    context 'when on GitLab SaaS' do
+      let(:is_saas) { true }
+
+      context 'when item is a foundational agent' do
+        # 348 is the global_catalog_id for the duo_planner foundational agent
+        # https://gitlab.com/gitlab-org/gitlab/-/blob/745f1ec2c6622fdfb14f17f8bc932ede44413adb/ee/lib/ai/foundational_chat_agents_definitions.rb#L23
+        let(:item_id) { 348 }
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when item is not a foundational agent' do
+        it { is_expected.to be(false) }
+      end
+    end
+  end
+
+  describe '#foundational_flow?' do
+    subject(:foundational_flow) { item.foundational_flow? }
+
+    context 'when item is not a flow' do
+      let(:item) { build_stubbed(:ai_catalog_item, :agent) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when item is a non-foundational flow' do
+      let(:item) { build_stubbed(:ai_catalog_item, :flow, foundational_flow_reference: nil) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when item is a foundational flow' do
+      let(:item) { build_stubbed(:ai_catalog_item, :flow, foundational_flow_reference: 'code_review/v1') }
+
+      it { is_expected.to be(true) }
+    end
+  end
+
+  describe '#foundational_flow' do
+    subject(:foundational_flow) { item.foundational_flow }
+
+    let(:item) { build_stubbed(:ai_catalog_item, foundational_flow_reference: foundational_flow_reference) }
+
+    context 'when item does not have a foundational flow reference' do
+      let(:foundational_flow_reference) { nil }
+
+      it 'returns nil' do
+        expect(foundational_flow).to be_nil
+      end
+    end
+
+    context 'when item has an invalid foundational flow reference' do
+      let(:foundational_flow_reference) { 'foo' }
+
+      it 'returns nil' do
+        expect(foundational_flow).to be_nil
+      end
+    end
+
+    context 'when item has a valid foundational flow reference' do
+      let(:foundational_flow_reference) { 'code_review/v1' }
+
+      it 'returns the foundational flow associated with that reference' do
+        expect(foundational_flow).to eq(::Ai::Catalog::FoundationalFlow[foundational_flow_reference])
+      end
     end
   end
 end

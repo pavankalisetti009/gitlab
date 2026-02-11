@@ -104,8 +104,7 @@ module Ai
 
         def build_flow_triggers_map(catalog_items)
           catalog_items.transform_values do |item|
-            flow_definition = ::Ai::Catalog::FoundationalFlow[item.foundational_flow_reference]
-            flow_definition&.triggers
+            item.foundational_flow&.triggers
           end.compact
         end
 

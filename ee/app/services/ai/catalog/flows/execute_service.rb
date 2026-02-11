@@ -85,7 +85,7 @@ module Ai
         end
 
         def foundational_flow?
-          @item_consumer.item&.foundational
+          @item_consumer.item&.foundational?
         end
 
         def generate_flow_config
