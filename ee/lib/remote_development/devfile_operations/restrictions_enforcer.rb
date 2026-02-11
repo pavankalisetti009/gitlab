@@ -100,7 +100,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Hash]
       def self.validate_schema_version(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
 
         devfile_schema_version_string = devfile.fetch(:schemaVersion, "")
 
@@ -134,7 +134,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Hash]
       def self.validate_parent(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
         append_err(_("Inheriting from 'parent' is not yet supported"), context) if devfile.has_key?(:parent)
 
         context
@@ -143,7 +143,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Hash]
       def self.validate_projects(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
         append_err(_("'starterProjects' is not yet supported"), context) if devfile.has_key?(:starterProjects)
         append_err(_("'projects' is not yet supported"), context) if devfile.has_key?(:projects)
 
@@ -153,7 +153,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Hash]
       def self.validate_root_attributes(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
         root_attributes = devfile.fetch(:attributes, {})
 
         return append_err(_("'Attributes' must be a Hash"), context) unless root_attributes.is_a?(Hash)
@@ -168,7 +168,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Hash]
       def self.validate_components(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
 
         components = devfile.fetch(:components, [])
         return append_err(_("'Components' must be an Array"), context) unless components.is_a?(Array)
@@ -209,12 +209,9 @@ module RemoteDevelopment
 
       # @param [Hash] context
       # @return [Hash]
-      # rubocop:disable Metrics/CyclomaticComplexity -- TODO: Refactor this method to reduce its complexity, extract out some helper methods.
+
       def self.validate_containers(context)
-        context => {
-          devfile: Hash => devfile,
-          is_processed_devfile: is_processed_devfile
-        }
+        devfile = context[:devfile]
 
         components = devfile.fetch(:components, [])
 
@@ -234,61 +231,71 @@ module RemoteDevelopment
               format(_("'container' in component '%{component}' must be a Hash"), component: component_name), context)
           end
 
-          if container[:dedicatedPod]
-            append_err(format(_("Property 'dedicatedPod' of component '%{component}' is not yet supported"),
-              component: component_name), context)
-          end
-
-          if container[:sourceMapping]
-            append_err(format(_("Property 'sourceMapping' of component '%{component}' is not yet supported"),
-              component: component_name), context)
-          end
-
-          if container[:mountSources] && !is_processed_devfile
-            append_err(format(_("Property 'mountSources' of component '%{component}' is not yet supported"),
-              component: component_name), context)
-          end
-
-          attributes = component.fetch(:attributes, {})
-          unless attributes.is_a?(Hash)
-            return append_err(
-              format(_("'attributes' in component '%{component}' must be a Hash"), component: component_name), context)
-          end
-
-          override_command = attributes.fetch(:overrideCommand, true)
-          unless SUPPORTED_OVERRIDE_COMMAND_VALUE.include?(override_command)
-            return append_err(
-              format(
-                _("Property 'overrideCommand' of component '%{name}' must be a boolean (true or false)"),
-                name: component.fetch(:name)
-              ),
-              context
-            )
-          end
-
-          if override_command == true && (container[:command].present? || container[:args].present?)
-            return append_err(
-              format(
-                _("Properties 'command', 'args' for component '%{name}' can only be specified " \
-                  "when the 'overrideCommand' attribute is set to false"),
-                name: component.fetch(:name)
-              ),
-              context
-            )
-          end
+          validate_container_properties(context, container, component)
         end
 
         context
       end
 
-      # rubocop:enable Metrics/CyclomaticComplexity
+      # @param [Hash] context
+      # @param [Hash] container
+      # @param [Hash] component
+      # @return [Hash]
+      def self.validate_container_properties(context, container, component)
+        is_processed_devfile = context[:is_processed_devfile]
+
+        component_name = component.fetch(:name, "")
+
+        if container[:dedicatedPod]
+          append_err(format(_("Property 'dedicatedPod' of component '%{component}' is not yet supported"),
+            component: component_name), context)
+        end
+
+        if container[:sourceMapping]
+          append_err(format(_("Property 'sourceMapping' of component '%{component}' is not yet supported"),
+            component: component_name), context)
+        end
+
+        if container[:mountSources] && !is_processed_devfile
+          append_err(format(_("Property 'mountSources' of component '%{component}' is not yet supported"),
+            component: component_name), context)
+        end
+
+        attributes = component.fetch(:attributes, {})
+        unless attributes.is_a?(Hash)
+          return append_err(
+            format(_("'attributes' in component '%{component}' must be a Hash"), component: component_name), context)
+        end
+
+        override_command = attributes.fetch(:overrideCommand, true)
+        unless SUPPORTED_OVERRIDE_COMMAND_VALUE.include?(override_command)
+          return append_err(
+            format(
+              _("Property 'overrideCommand' of component '%{name}' must be a boolean (true or false)"),
+              name: component.fetch(:name)
+            ),
+            context
+          )
+        end
+
+        return unless override_command == true && (container[:command].present? || container[:args].present?)
+
+        append_err(
+          format(
+            _("Properties 'command', 'args' for component '%{name}' can only be specified " \
+              "when the 'overrideCommand' attribute is set to false"),
+            name: component.fetch(:name)
+          ),
+          context
+        )
+      end
 
       # If we support endpoints in `components` other than `container`, make changes accordingly in
       # ee/lib/remote_development/workspaces_server_operations/authorize_user_access/authorizer.rb
       # @param [Hash] context
       # @return [Hash]
       def self.validate_endpoints(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
 
         components = devfile.fetch(:components, [])
         # There is no need to append an error here since it has already been done before this code is executed.
@@ -326,7 +333,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Hash]
       def self.validate_commands(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
 
         commands = devfile.fetch(:commands, [])
         return append_err(_("'Commands' must be an Array"), context) unless commands.is_a?(Array)
@@ -355,7 +362,6 @@ module RemoteDevelopment
         }
 
         message_template = error_messages[type]
-        return unless message_template
 
         params = { prefix: RESTRICTED_PREFIX }.merge(additional_params)
 
@@ -374,7 +380,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Hash]
       def self.validate_events(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
         commands = devfile.fetch(:commands, [])
         events = devfile.fetch(:events, {})
 
@@ -437,7 +443,7 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Hash]
       def self.validate_variables(context)
-        context => { devfile: Hash => devfile }
+        devfile = context[:devfile]
 
         restricted_prefix_underscore = RESTRICTED_PREFIX.tr("-", "_")
 
@@ -620,8 +626,9 @@ module RemoteDevelopment
 
       private_class_method :validate_devfile_size, :validate_schema_version, :validate_parent,
         :validate_projects, :validate_root_attributes, :validate_components, :validate_containers,
-        :validate_endpoints, :validate_commands, :validate_command_restricted_prefix, :validate_events,
-        :validate_variables, :validate_component, :validate_command, :append_err, :validate_volume_component_name
+        :validate_container_properties, :validate_endpoints, :validate_commands, :validate_command_restricted_prefix,
+        :validate_events, :validate_variables, :validate_component, :validate_command, :append_err,
+        :validate_volume_component_name
     end
   end
 end
