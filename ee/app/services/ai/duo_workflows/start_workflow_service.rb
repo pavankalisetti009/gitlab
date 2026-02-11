@@ -225,7 +225,7 @@ module Ai
         # it will be cleaned up by
         # https://gitlab.com/gitlab-org/editor-extensions/gitlab-lsp/-/issues/1630
         ::Gitlab::Json.dump(
-          ::Gitlab::Json.parse(@params[:workflow_metadata]).merge(
+          ::Gitlab::Json.safe_parse(@params[:workflow_metadata]).merge(
             'modelMetadata' => agent_platform_model_metadata_json
           )
         )
