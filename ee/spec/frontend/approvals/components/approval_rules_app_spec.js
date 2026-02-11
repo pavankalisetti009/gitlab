@@ -25,18 +25,13 @@ describe('EE Approvals App', () => {
   let slots;
 
   const targetBranchName = 'development';
-  const factory = (propsData = {}, editBranchRules = true) => {
+  const factory = (propsData = {}) => {
     wrapper = shallowMountExtended(ApprovalRulesApp, {
       slots,
       store: new Vuex.Store(store),
       propsData,
       stubs: {
         CrudComponent,
-      },
-      provide: {
-        glFeatures: {
-          editBranchRules,
-        },
       },
     });
   };

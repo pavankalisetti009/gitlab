@@ -4,7 +4,6 @@ import { debounce } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
 import { n__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { RULE_TYPE_ANY_APPROVER } from '../../constants';
 
 const ANY_RULE_NAME = 'All Members';
@@ -18,16 +17,10 @@ export default {
       return n__('Approval required', 'Approvals required', approvalsCount);
     },
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     rule: {
       type: Object,
       required: true,
-    },
-    isBranchRulesEdit: {
-      type: Boolean,
-      default: false,
-      required: false,
     },
   },
   computed: {
@@ -39,9 +32,7 @@ export default {
       return this.rule.minApprovalsRequired || 0;
     },
     isEnabled() {
-      return this.isBranchRulesEdit
-        ? this.glFeatures.editBranchRules && this.settings.canEdit
-        : this.settings.canEdit;
+      return this.settings.canEdit;
     },
   },
   created() {

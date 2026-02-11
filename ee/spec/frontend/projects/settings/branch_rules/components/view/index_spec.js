@@ -63,7 +63,6 @@ describe('View branch rules in enterprise edition', () => {
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = async (
-    glFeatures = { editBranchRules: true },
     { showApprovers, showStatusChecks, showCodeOwners } = {},
     mockResponse,
     mutationMockResponse,
@@ -95,7 +94,6 @@ describe('View branch rules in enterprise edition', () => {
         showApprovers,
         showStatusChecks,
         showCodeOwners,
-        glFeatures,
       },
       stubs: {
         CrudComponent,
@@ -166,7 +164,7 @@ describe('View branch rules in enterprise edition', () => {
         const mockResponse = branchProtectionsMockResponse;
         mockResponse.data.project.branchRules.nodes[0].branchProtection.codeOwnerApprovalRequired =
           codeOwnerApprovalRequired;
-        await createComponent({ editBranchRules: true }, { showCodeOwners: true }, mockResponse);
+        await createComponent({ showCodeOwners: true }, mockResponse);
 
         expect(findCodeOwnersToggle().props('iconTitle')).toEqual(iconTitle);
         expect(findCodeOwnersToggle().props('description')).toEqual(description);
@@ -174,7 +172,7 @@ describe('View branch rules in enterprise edition', () => {
     );
 
     it('emits a tracking event, when Code Owner Approval toggle is switched', async () => {
-      await createComponent({ editBranchRules: true }, { showCodeOwners: true });
+      await createComponent({ showCodeOwners: true });
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
       findCodeOwnersToggle().vm.$emit('toggle', false);
@@ -192,7 +190,7 @@ describe('View branch rules in enterprise edition', () => {
   });
 
   describe('if "showApprovers" is true', () => {
-    beforeEach(() => createComponent({}, { showApprovers: true }));
+    beforeEach(() => createComponent({ showApprovers: true }));
 
     it('sets an approval rules filter', () => {
       expect(store.modules.approvals.actions.setRulesFilter).toHaveBeenCalledWith(
@@ -225,18 +223,14 @@ describe('View branch rules in enterprise edition', () => {
   describe('if "showStatusChecks" is true', () => {
     it('does not render status check section for all protected branches', () => {
       jest.spyOn(urlUtility, 'getParameterByName').mockReturnValue('All protected branches');
-      createComponent({ editBranchRules: true }, { showStatusChecks: true });
+      createComponent({ showStatusChecks: true });
       expect(findStatusChecksTitle().exists()).toBe(false);
       expect(findStatusChecksDrawer().exists()).toBe(false);
     });
 
     it('renders status check section for all branches', async () => {
       jest.spyOn(urlUtility, 'getParameterByName').mockReturnValue('All branches');
-      createComponent(
-        { editBranchRules: true },
-        { showStatusChecks: true },
-        predefinedBranchRulesMockResponse,
-      );
+      createComponent({ showStatusChecks: true }, predefinedBranchRulesMockResponse);
       await waitForPromises();
       expect(findCrudComponent().props('title')).toBe('Rule target');
       expect(findStatusChecksDrawer().exists()).toBe(true);
@@ -244,11 +238,7 @@ describe('View branch rules in enterprise edition', () => {
 
     it('renders status check section for non-predefined branch', async () => {
       jest.spyOn(urlUtility, 'getParameterByName').mockReturnValue('main');
-      createComponent(
-        { editBranchRules: true },
-        { showStatusChecks: true },
-        branchProtectionsMockResponse,
-      );
+      createComponent({ showStatusChecks: true }, branchProtectionsMockResponse);
       await waitForPromises();
       expect(findCrudComponent().props('title')).toBe('Rule target');
       expect(findStatusChecksDrawer().exists()).toBe(true);
@@ -261,7 +251,7 @@ describe('View branch rules in enterprise edition', () => {
         beforeEach(async () => {
           const mockResponse = structuredClone(branchProtectionsMockResponse);
           mockResponse.data.project.branchRules.nodes[0].branchProtection.modificationBlockedByPolicy = true;
-          await createComponent({ editBranchRules: true }, {}, mockResponse);
+          await createComponent({}, mockResponse);
         });
 
         it('renders disabled delete rule button', () => {
@@ -283,7 +273,7 @@ describe('View branch rules in enterprise edition', () => {
         beforeEach(async () => {
           const mockResponse = structuredClone(branchProtectionsMockResponse);
           mockResponse.data.project.branchRules.nodes[0].branchProtection.warnModificationBlockedByPolicy = true;
-          await createComponent({ editBranchRules: true }, {}, mockResponse);
+          await createComponent({}, mockResponse);
         });
 
         it('renders enabled delete rule button', () => {
@@ -321,7 +311,7 @@ describe('View branch rules in enterprise edition', () => {
         beforeEach(async () => {
           const mockResponse = structuredClone(branchProtectionsMockResponse);
           mockResponse.data.project.branchRules.nodes[0].branchProtection.protectedFromPushBySecurityPolicy = true;
-          await createComponent({ editBranchRules: true }, {}, mockResponse);
+          await createComponent({}, mockResponse);
         });
 
         it('renders the allowed to push button with the correct props', () => {
@@ -337,7 +327,7 @@ describe('View branch rules in enterprise edition', () => {
         beforeEach(async () => {
           const mockResponse = structuredClone(branchProtectionsMockResponse);
           mockResponse.data.project.branchRules.nodes[0].branchProtection.warnProtectedFromPushBySecurityPolicy = true;
-          await createComponent({ editBranchRules: true }, {}, mockResponse);
+          await createComponent({}, mockResponse);
         });
 
         it('renders the allowed to push button with warn mode props', () => {
@@ -387,7 +377,7 @@ describe('View branch rules in enterprise edition', () => {
         },
       };
 
-      await createComponent({ editBranchRules: true }, { showCodeOwners: true }, mockResponse);
+      await createComponent({ showCodeOwners: true }, mockResponse);
     });
 
     it('filters out a group level rule from display and renders empty state', () => {
