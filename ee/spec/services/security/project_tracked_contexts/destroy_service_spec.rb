@@ -38,6 +38,18 @@ RSpec.describe Security::ProjectTrackedContexts::DestroyService, feature_categor
         expect(result.message).to eq('Tracked context removed')
       end
 
+      context 'when destroy fails' do
+        it 'handles ActiveRecord::RecordNotDestroyed exception' do
+          allow(tracked_context).to receive(:destroy!).and_raise(
+            ActiveRecord::RecordNotDestroyed.new("Validation failed")
+          )
+
+          expect { result }.not_to change { Security::ProjectTrackedContext.count }
+          expect(result).to be_error
+          expect(result.message).to eq('Failed to remove tracked context: Validation failed')
+        end
+      end
+
       context 'when tracked context has vulnerability reads' do
         let!(:vulnerability_read) do
           create(:vulnerability_read, project: project, security_project_tracked_context_id: tracked_context.id)
