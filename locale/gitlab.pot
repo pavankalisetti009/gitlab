@@ -40746,9 +40746,6 @@ msgstr ""
 msgid "Linked epics"
 msgstr ""
 
-msgid "Linked incidents or issues"
-msgstr ""
-
 msgid "Linked items"
 msgstr ""
 
@@ -40779,10 +40776,10 @@ msgstr ""
 msgid "LinkedResources|Link"
 msgstr ""
 
-msgid "LinkedResources|Linked resources"
+msgid "LinkedResources|Remove"
 msgstr ""
 
-msgid "LinkedResources|Remove"
+msgid "LinkedResources|Resources"
 msgstr ""
 
 msgid "LinkedResources|Something went wrong while creating the resource link for the incident."
