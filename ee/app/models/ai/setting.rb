@@ -88,6 +88,10 @@ module Ai
       end
     end
 
+    def resolve_ai_settings
+      self
+    end
+
     def allow_localhost
       return true if Gitlab.dev_or_test_env?
 

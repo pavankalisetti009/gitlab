@@ -7343,9 +7343,6 @@ msgstr ""
 msgid "AiPowered|By turning on these features, you accept the %{linkStart}GitLab Testing Agreement%{linkEnd}."
 msgstr ""
 
-msgid "AiPowered|Capture detailed information about AI-related activities and requests."
-msgstr ""
-
 msgid "AiPowered|Change configuration"
 msgstr ""
 
@@ -7401,9 +7398,6 @@ msgid "AiPowered|Data collection"
 msgstr ""
 
 msgid "AiPowered|Direct connections"
-msgstr ""
-
-msgid "AiPowered|Enable AI logs"
 msgstr ""
 
 msgid "AiPowered|Enabled"

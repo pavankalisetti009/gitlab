@@ -30,12 +30,16 @@ describe('DuoExpandedLoggingForm', () => {
   const findCheckbox = () => wrapper.findComponent(GlFormCheckbox);
 
   it('has the correct title', () => {
-    expect(findTitle()).toBe('Enable AI logs');
+    expect(findTitle()).toBe('Data collection');
   });
 
   it('has the correct label', () => {
-    expect(findCheckbox().text()).toBe(
-      'Capture detailed information about AI-related activities and requests.',
+    expect(findCheckbox().find('span').text()).toBe('Collect usage data');
+  });
+
+  it('has the correct help text', () => {
+    expect(findCheckbox().text()).toContain(
+      'Allow GitLab to collect prompts, AI responses, and metadata from user interactions with GitLab Duo. This data helps to improve service quality and is not used to train models.',
     );
   });
 

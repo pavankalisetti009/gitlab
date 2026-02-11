@@ -38,6 +38,7 @@ export default {
     'betaSelfHostedModelsEnabled',
     'toggleBetaModelsPath',
     'canManageSelfHostedModels',
+    'canConfigureAiLogging',
     'aiGatewayUrl',
     'aiGatewayTimeoutSeconds',
     'duoAgentPlatformServiceUrl',
@@ -277,10 +278,10 @@ export default {
         @change-expiration-days="onDuoChatHistoryExpirationDaysChange"
         @change-expiration-column="onDuoChatHistoryExpirationColumnChange"
       />
+      <duo-expanded-logging-form v-if="canConfigureAiLogging" @change="onExpandedLoggingChange" />
       <code-suggestions-connection-form v-if="duoProVisible" @change="onConnectionFormChange" />
       <template v-if="canManageSelfHostedModels">
         <ai-models-form @change="onAiModelsFormChange" />
-        <duo-expanded-logging-form @change="onExpandedLoggingChange" />
         <ai-gateway-timeout-input-form
           :value="aiGatewayTimeoutSecondsInput"
           @change="onAiGatewayTimeoutChange"
