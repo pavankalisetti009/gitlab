@@ -20,7 +20,7 @@ export default {
   data() {
     return {
       scanProfilesDocPath: helpPagePath(
-        '/user/application_security/vulnerabilities/validity_check',
+        '/user/application_security/configuration/security_configuration_profiles',
       ),
     };
   },

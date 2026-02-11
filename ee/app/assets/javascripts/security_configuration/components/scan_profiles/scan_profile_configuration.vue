@@ -10,6 +10,7 @@ import {
   GlLoadingIcon,
 } from '@gitlab/ui';
 import Vue from 'vue';
+import { PROMO_URL } from '~/constants';
 import {
   SCAN_PROFILE_TYPE_SECRET_DETECTION,
   SCAN_PROFILE_CATEGORIES,
@@ -27,6 +28,8 @@ import InsufficientPermissionsPopover from './insufficient_permissions_popover.v
 import ScanProfileLaunchModal from './scan_profile_launch_modal.vue';
 
 Vue.use(GlToast);
+
+const APPLICATION_SECURITY_TESTING_PROMO_URL = `${PROMO_URL}/solutions/application-security-testing/`;
 
 export default {
   name: 'ScanProfileConfiguration',
@@ -48,6 +51,7 @@ export default {
   },
   inject: ['projectFullPath', 'groupFullPath', 'canApplyProfiles', 'securityScanProfilesLicensed'],
   SCAN_PROFILE_I18N,
+  APPLICATION_SECURITY_TESTING_PROMO_URL,
   apollo: {
     availableProfiles: {
       skip() {
@@ -282,10 +286,7 @@ export default {
             {{ __('Available with Ultimate') }}
           </span>
           <span class="gl-mt-1 gl-text-sm gl-text-secondary">
-            <gl-link
-              href="https://about.gitlab.com/solutions/application-security-testing/"
-              target="_blank"
-            >
+            <gl-link :href="$options.APPLICATION_SECURITY_TESTING_PROMO_URL" target="_blank">
               {{ __('Learn more about the Ultimate security suite') }}
               <gl-icon name="external-link" :aria-label="__('(external link)')" />
             </gl-link>
