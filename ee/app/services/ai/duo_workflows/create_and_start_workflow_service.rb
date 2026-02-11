@@ -98,7 +98,8 @@ module Ai
           agent_privileges: workflow_definition.agent_privileges,
           pre_approved_agent_privileges: workflow_definition.pre_approved_agent_privileges,
           allow_agent_to_request_user: workflow_definition.allow_agent_to_request_user,
-          environment: workflow_definition.environment
+          environment: workflow_definition.environment,
+          service_account: service_account
         }
       end
 

@@ -212,5 +212,13 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
 
   context 'with a configured foundational flow' do
     include_examples 'success'
+
+    it 'creates the workflow with the resolved service_account' do
+      expect(result).to be_success
+
+      workflow = result.payload[:workflow]
+      expect(workflow.service_account).to eq(group_level_service_account)
+      expect(workflow.service_account_id).to eq(group_level_service_account.id)
+    end
   end
 end

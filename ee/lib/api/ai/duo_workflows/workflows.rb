@@ -292,6 +292,22 @@ module API
             ::Gitlab::CurrentSettings.search_using_elasticsearch?(scope: project || namespace)
           end
 
+          def resolve_foundational_flow_service_account!(workflow_params, container)
+            return unless workflow_params[:workflow_definition]
+
+            workflow_definition = ::Ai::Catalog::FoundationalFlow[workflow_params[:workflow_definition]]
+            return unless workflow_definition&.catalog_item
+
+            service_account_result = ::Ai::Catalog::ItemConsumers::ResolveServiceAccountService.new(
+              container: container,
+              item: workflow_definition.catalog_item
+            ).execute
+
+            forbidden!(service_account_result.message) if service_account_result.error?
+
+            workflow_params[:service_account] = service_account_result.payload.fetch(:service_account)
+          end
+
           params :workflow_params do
             optional :project_id, type: String, desc: 'The ID or path of the workflow project',
               documentation: { example: '1' }
@@ -606,8 +622,12 @@ module API
                   present workflow, with: ::API::Entities::Ai::DuoWorkflows::Workflow,
                     workload: { id: workload_id, message: result.message }
                 else
+                  workflow_params = create_workflow_params
+
+                  resolve_foundational_flow_service_account!(workflow_params, container)
+
                   service = ::Ai::DuoWorkflows::CreateWorkflowService.new(
-                    container: container, current_user: current_user, params: create_workflow_params)
+                    container: container, current_user: current_user, params: workflow_params)
 
                   result = service.execute
 

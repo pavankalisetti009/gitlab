@@ -40,6 +40,31 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
       expect(execute[:workflow].project).to eq(project)
     end
 
+    context 'when service_account is provided' do
+      let_it_be(:service_account) { create(:service_account) }
+      let(:params) { { environment: "ide", service_account: service_account } }
+
+      it 'creates a workflow with the service_account' do
+        expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+
+        workflow = execute[:workflow]
+        expect(workflow.service_account).to eq(service_account)
+        expect(workflow.service_account_id).to eq(service_account.id)
+      end
+    end
+
+    context 'when service_account is not provided' do
+      let(:params) { { environment: "ide" } }
+
+      it 'creates a workflow without service_account' do
+        expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+
+        workflow = execute[:workflow]
+        expect(workflow.service_account).to be_nil
+        expect(workflow.service_account_id).to be_nil
+      end
+    end
+
     it 'sends session create event' do
       expect { execute }.to trigger_internal_events("agent_platform_session_created")
                               .with(category: "Ai::DuoWorkflows::CreateWorkflowService",

@@ -937,6 +937,135 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
         end
       end
 
+      context 'when workflow_definition is a foundational flow' do
+        let_it_be(:foundational_flow_group) { create(:group) }
+        let_it_be(:foundational_flow_service_account) do
+          create(:user, :service_account,
+            composite_identity_enforced: true,
+            provisioned_by_group: foundational_flow_group
+          )
+        end
+
+        let_it_be(:foundational_flow_item) do
+          create(:ai_catalog_item, :flow, foundational_flow_reference: 'fix_pipeline/v1')
+        end
+
+        let_it_be(:foundational_flow_consumer) do
+          create(:ai_catalog_item_consumer,
+            item: foundational_flow_item,
+            group: foundational_flow_group,
+            service_account: foundational_flow_service_account
+          )
+        end
+
+        let_it_be(:foundational_flow_project) do
+          create(:project, :repository, group: foundational_flow_group, developers: user)
+        end
+
+        before_all do
+          foundational_flow_group.add_developer(user)
+          foundational_flow_project.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+        end
+
+        before do
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                                                .with(foundational_flow_project, :duo_workflow).and_return(true)
+        end
+
+        context 'when service account is resolved from catalog item consumer' do
+          let(:params) do
+            {
+              project_id: foundational_flow_project.id,
+              workflow_definition: 'fix_pipeline/v1',
+              goal: 'Fix the pipeline',
+              start_workflow: true
+            }
+          end
+
+          it 'creates a workflow with the resolved service_account_id' do
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:created)
+            created_workflow = Ai::DuoWorkflows::Workflow.last
+            expect(created_workflow.service_account_id).to eq(foundational_flow_service_account.id)
+          end
+
+          it 'passes the resolved service_account to CreateWorkflowService' do
+            expect(::Ai::DuoWorkflows::CreateWorkflowService).to receive(:new).with(
+              hash_including(
+                params: hash_including(service_account: foundational_flow_service_account)
+              )
+            ).and_call_original
+
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:created)
+          end
+        end
+      end
+
+      context 'when workflow_definition is not a foundational flow' do
+        let(:params) do
+          {
+            project_id: project.id,
+            workflow_definition: 'custom_flow',
+            goal: 'Implement a cool feature',
+            start_workflow: true
+          }
+        end
+
+        it 'creates a workflow without resolving service_account_id from catalog item consumer' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.service_account_id).to be_nil
+        end
+
+        it 'does not pass service_account to CreateWorkflowService' do
+          expect(::Ai::DuoWorkflows::CreateWorkflowService).to receive(:new).with(
+            hash_including(
+              params: hash_not_including(:service_account)
+            )
+          ).and_call_original
+
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'when foundational flow has no consumer configured' do
+        let_it_be(:no_consumer_project) { create(:project, :repository, developers: user) }
+        let_it_be(:no_consumer_catalog_item) do
+          create(:ai_catalog_item, :flow, foundational_flow_reference: 'fix_pipeline/v1')
+        end
+
+        let(:params) do
+          {
+            project_id: no_consumer_project.id,
+            workflow_definition: 'fix_pipeline/v1',
+            goal: 'Fix the pipeline',
+            start_workflow: true
+          }
+        end
+
+        before do
+          no_consumer_project.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                                                .with(no_consumer_project, :duo_workflow).and_return(true)
+        end
+
+        it 'returns an error when service account cannot be resolved' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(json_response['message']).to match(/No item consumer found|service account/)
+        end
+      end
+
       context 'when ai_catalog_item_consumer_id is provided' do
         let_it_be(:consumer_group) { create(:group) }
         let_it_be(:flow_project) { create(:project, group: consumer_group) }
