@@ -202,6 +202,27 @@ describe('WorkItemCustomFieldsNumber', () => {
       });
     });
 
+    it('allows setting of decimal values', async () => {
+      createComponent();
+
+      findEditButton().vm.$emit('click');
+      await nextTick();
+      findInput().vm.$emit('input', '-500.5');
+      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ENTER_KEY }));
+
+      expect(mutationSuccessHandler).toHaveBeenCalledWith({
+        input: {
+          id: defaultWorkItemId,
+          customFieldsWidget: [
+            {
+              customFieldId: defaultField.customField.id,
+              numberValue: -500.5,
+            },
+          ],
+        },
+      });
+    });
+
     it('does not call mutation when the input value is the same', async () => {
       createComponent();
 
