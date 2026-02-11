@@ -114,6 +114,15 @@ module Gitlab
                 e.changed_paths_count,
                 e.changed_paths_threshold
               ).add_message
+          rescue TooManyLinesError => e
+            audit_logger.track_spp_too_many_lines_error(e.message, e.lines_count)
+            Gitlab::Checks::SecretPushProtection::PostPushWarning
+              .new(project.repository,
+                changes_access.user_access.user,
+                changes_access.protocol,
+                e.lines_count,
+                e.lines_threshold
+              ).add_message
           rescue StandardError => e
             audit_logger.track_spp_standard_error_exception(e.class.name)
             Gitlab::Checks::SecretPushProtection::PostPushWarning

@@ -382,6 +382,30 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::AuditLogger, feature_catego
     end
   end
 
+  describe '#track_spp_too_many_lines_error' do
+    let(:lines_count) { 400_000 }
+    let(:lines_threshold) { 350_000 }
+    let(:error) do
+      Gitlab::Checks::SecretPushProtection::TooManyLinesError.new(
+        lines_count,
+        lines_threshold
+      )
+    end
+
+    let(:properties) do
+      {
+        label: error.message,
+        value: lines_count
+      }
+    end
+
+    it 'triggers the internal event' do
+      expect { audit_logger.track_spp_too_many_lines_error(error.message, lines_count) }
+        .to trigger_internal_events('spp_too_many_lines_error_encountered')
+        .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
+    end
+  end
+
   describe '#track_spp_ruleset_error' do
     it 'triggers the internal event' do
       expect { audit_logger.track_spp_ruleset_error }

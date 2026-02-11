@@ -419,6 +419,20 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         )
       end
     end
+
+    context 'when total lines exceeds maximum threshold' do
+      before do
+        stub_const('Gitlab::Checks::SecretPushProtection::PayloadProcessor::MAX_LINES_PER_REQUEST', 5)
+      end
+
+      it 'raises TooManyLinesError with correct attributes' do
+        expect { payload_processor.standardize_payloads }.to raise_error do |error|
+          expect(error).to be_a(Gitlab::Checks::SecretPushProtection::TooManyLinesError)
+          expect(error.lines_count).to eq(8)
+          expect(error.lines_threshold).to eq(5)
+        end
+      end
+    end
   end
 
   describe '#parse_diffs' do

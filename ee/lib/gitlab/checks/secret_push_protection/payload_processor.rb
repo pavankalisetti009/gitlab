@@ -20,6 +20,10 @@ module Gitlab
 
         # https://gitlab.com/gitlab-org/gitlab/-/issues/584980#note_2993374102
         MAX_CHANGED_PATHS = 3150
+        # Conservative threshold to prevent timeouts. Dark launch testing showed requests
+        # with 400k+ lines consistently timeout. Set to 350k as a safe margin.
+        # See: https://gitlab.com/gitlab-org/gitlab/-/work_items/588986
+        MAX_LINES_PER_REQUEST = 350_000
 
         LOG_MESSAGES = {
           invalid_encoding: "Could not convert data to UTF-8 from %{encoding}",
@@ -50,6 +54,8 @@ module Gitlab
               total_payload_bytes: total_payload_bytes
             )
           )
+
+          raise TooManyLinesError.new(total_lines, MAX_LINES_PER_REQUEST) if total_lines > MAX_LINES_PER_REQUEST
 
           payloads = payloads.flat_map do |payload|
             p_ary = parse_diffs(payload)

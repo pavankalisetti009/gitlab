@@ -170,6 +170,19 @@ module Gitlab
           )
         end
 
+        def track_spp_too_many_lines_error(message, lines_count)
+          track_internal_event(
+            'spp_too_many_lines_error_encountered',
+            user: @user,
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: message,
+              value: lines_count
+            }
+          )
+        end
+
         def track_spp_ruleset_error
           track_internal_event(
             'spp_ruleset_error_encountered',
