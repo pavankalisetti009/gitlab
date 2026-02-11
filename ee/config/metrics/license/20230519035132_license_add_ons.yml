@@ -2,6 +2,8 @@
 key_path: license_add_ons
 description: List of add-ons in the license
 product_group: provision
+product_categories:
+- add-on_provisioning
 value_type: object
 value_json_schema: 'ee/config/metrics/object_schemas/license_add_ons.json'
 status: active

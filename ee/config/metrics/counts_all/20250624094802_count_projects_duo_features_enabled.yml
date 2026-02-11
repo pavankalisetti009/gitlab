@@ -2,6 +2,8 @@
 key_path: settings.count_projects_duo_features_enabled
 description: Count how many projects have their Duo enabled
 product_group: provision
+product_categories:
+- duo_setting
 value_type: number
 status: active
 milestone: "18.2"

@@ -2,6 +2,8 @@
 key_path: settings.duo_availability
 description: Tracks the state of the Duo features setting on a Self-Managed instance
 product_group: provision
+product_categories:
+- duo_setting
 value_type: string
 status: active
 milestone: "18.2"
