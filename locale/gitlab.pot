@@ -7302,6 +7302,9 @@ msgstr ""
 msgid "AiPowered|Allow GitLab Duo agents to execute foundational flows in this group and its subgroups and projects."
 msgstr ""
 
+msgid "AiPowered|Allow GitLab to collect prompts, AI responses, and metadata from user interactions with GitLab Duo. This data helps to improve service quality and is not used to train models."
+msgstr ""
+
 msgid "AiPowered|Allow GitLab to process your code and project data for AI-powered features throughout this namespace. Your data will be sent to GitLab Duo for processing. Groups, subgroups, and projects can individually opt out if needed."
 msgstr ""
 
@@ -7347,6 +7350,9 @@ msgstr ""
 msgid "AiPowered|Chat conversations expire:"
 msgstr ""
 
+msgid "AiPowered|Collect usage data"
+msgstr ""
+
 msgid "AiPowered|Composite identity for GitLab Duo Agent Platform has successfully been turned off."
 msgstr ""
 
@@ -7387,6 +7393,9 @@ msgid "AiPowered|Control whether GitLab can process your code and project data t
 msgstr ""
 
 msgid "AiPowered|Control who can access AI-native features executed with or without CI/CD pipelines."
+msgstr ""
+
+msgid "AiPowered|Data collection"
 msgstr ""
 
 msgid "AiPowered|Direct connections"

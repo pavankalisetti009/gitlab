@@ -21,6 +21,7 @@ RSpec.describe Ai::NamespaceSetting, feature_category: :ai_abstraction_layer do
 
   describe 'validations' do
     it { is_expected.to validate_inclusion_of(:duo_workflow_mcp_enabled).in_array([true, false]) }
+    it { is_expected.to validate_inclusion_of(:ai_usage_data_collection_enabled).in_array([true, false]) }
     it { is_expected.to validate_presence_of(:prompt_injection_protection_level) }
   end
 

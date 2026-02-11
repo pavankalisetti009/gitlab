@@ -5,12 +5,14 @@ import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import DuoWorkflowSettingsForm from '../components/duo_workflow_settings_form.vue';
+import AiUsageDataCollectionForm from '../components/ai_usage_data_collection_form.vue';
 
 export default {
   name: 'AiGroupSettings',
   components: {
     AiCommonSettings,
     DuoWorkflowSettingsForm,
+    AiUsageDataCollectionForm,
   },
   i18n: {
     successMessage: __('Group was successfully updated.'),
@@ -22,6 +24,8 @@ export default {
     'onGeneralSettingsPage',
     'duoWorkflowAvailable',
     'duoWorkflowMcpEnabled',
+    'aiUsageDataCollectionAvailable',
+    'aiUsageDataCollectionEnabled',
     'promptInjectionProtectionLevel',
     'promptInjectionProtectionAvailable',
     'availableFoundationalFlows',
@@ -42,6 +46,7 @@ export default {
   data() {
     return {
       duoWorkflowMcp: this.duoWorkflowMcpEnabled,
+      aiUsageDataCollection: this.aiUsageDataCollectionEnabled,
       promptInjectionProtection: this.promptInjectionProtectionLevel,
       minimumAccessLevelExecuteAsync: this.initialMinimumAccessLevelExecuteAsync,
       minimumAccessLevelExecuteSync: this.initialMinimumAccessLevelExecuteSync,
@@ -51,6 +56,7 @@ export default {
     hasFormChanged() {
       return (
         this.duoWorkflowMcpEnabled !== this.duoWorkflowMcp ||
+        this.aiUsageDataCollectionEnabled !== this.aiUsageDataCollection ||
         this.promptInjectionProtectionLevel !== this.promptInjectionProtection
       );
     },
@@ -103,6 +109,7 @@ export default {
             ...(this.duoWorkflowAvailable && {
               duo_workflow_mcp_enabled: this.duoWorkflowMcp,
             }),
+            ai_usage_data_collection_enabled: this.aiUsageDataCollection,
             ...(this.promptInjectionProtectionAvailable && {
               prompt_injection_protection_level: this.promptInjectionProtection,
             }),
@@ -145,6 +152,9 @@ export default {
     onDuoWorkflowMcpChanged(value) {
       this.duoWorkflowMcp = value;
     },
+    onAiUsageDataCollectionChanged(value) {
+      this.aiUsageDataCollection = value;
+    },
     onPromptInjectionProtectionChanged(value) {
       this.promptInjectionProtection = value;
     },
@@ -164,6 +174,10 @@ export default {
 <template>
   <ai-common-settings :has-parent-form-changed="hasFormChanged" @submit="updateSettings">
     <template #ai-common-settings-bottom>
+      <ai-usage-data-collection-form
+        v-if="aiUsageDataCollectionAvailable"
+        @change="onAiUsageDataCollectionChanged"
+      />
       <duo-workflow-settings-form
         v-if="showWorkflowSettingsForm"
         :is-mcp-enabled="duoWorkflowMcp"

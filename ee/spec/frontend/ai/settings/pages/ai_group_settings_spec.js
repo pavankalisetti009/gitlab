@@ -6,6 +6,7 @@ import { createAlert, VARIANT_INFO } from '~/alert';
 import AiCommonSettings from 'ee/ai/settings/components/ai_common_settings.vue';
 import AiGroupSettings from 'ee/ai/settings/pages/ai_group_settings.vue';
 import DuoWorkflowSettingsForm from 'ee/ai/settings/components/duo_workflow_settings_form.vue';
+import AiUsageDataCollectionForm from 'ee/ai/settings/components/ai_usage_data_collection_form.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import { mockAgentStatuses, expectedFilteredAgentStatuses } from '../../mocks';
@@ -27,6 +28,8 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
       onGeneralSettingsPage: false,
       duoWorkflowAvailable: true,
       duoWorkflowMcpEnabled: false,
+      aiUsageDataCollectionAvailable: true,
+      aiUsageDataCollectionEnabled: false,
       promptInjectionProtectionLevel: 'interrupt',
       promptInjectionProtectionAvailable: true,
       availableFoundationalFlows: [],
@@ -39,6 +42,7 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
 
 const findAiCommonSettings = () => wrapper.findComponent(AiCommonSettings);
 const findDuoWorkflowSettingsForm = () => wrapper.findComponent(DuoWorkflowSettingsForm);
+const findAiUsageDataCollectionForm = () => wrapper.findComponent(AiUsageDataCollectionForm);
 const emitSubmitNamespaceAccessRules = async (namespaceAccessRules) => {
   updateGroupSettings.mockResolvedValueOnce({});
   await findAiCommonSettings().vm.$emit('submit', {
@@ -53,6 +57,19 @@ describe('AiGroupSettings', () => {
       createComponent();
       expect(wrapper.exists()).toBe(true);
     });
+
+    it.each`
+      aiUsageDataCollectionAvailable | shouldRender
+      ${true}                        | ${true}
+      ${false}                       | ${false}
+    `(
+      'renders AiUsageDataCollectionForm component as $shouldRender when aiUsageDataCollectionAvailable is $aiUsageDataCollectionAvailable',
+      ({ aiUsageDataCollectionAvailable, shouldRender }) => {
+        createComponent({ provide: { aiUsageDataCollectionAvailable } });
+
+        expect(findAiUsageDataCollectionForm().exists()).toBe(shouldRender);
+      },
+    );
 
     it('renders DuoWorkflowSettingsForm component when duoWorkflowAvailable is true', () => {
       createComponent({ provide: { duoWorkflowAvailable: true } });
@@ -100,6 +117,11 @@ describe('AiGroupSettings', () => {
       expect(findDuoWorkflowSettingsForm().props('isMcpEnabled')).toBe(true);
     });
 
+    it('initializes aiUsageDataCollection from injected value', () => {
+      createComponent({ provide: { aiUsageDataCollectionEnabled: true } });
+      expect(wrapper.vm.aiUsageDataCollection).toBe(true);
+    });
+
     it('initializes promptInjectionProtection from injected value', () => {
       createComponent({ provide: { promptInjectionProtectionLevel: 'log_only' } });
       expect(findDuoWorkflowSettingsForm().props('promptInjectionProtectionLevel')).toBe(
@@ -110,10 +132,11 @@ describe('AiGroupSettings', () => {
 
   describe('computed properties', () => {
     describe('hasFormChanged', () => {
-      it('returns false when duoWorkflowMcp and promptInjectionProtection match injected values', () => {
+      it('returns false when duoWorkflowMcp, aiUsageDataCollection, and promptInjectionProtection match injected values', () => {
         createComponent({
           provide: {
             duoWorkflowMcpEnabled: false,
+            aiUsageDataCollectionEnabled: false,
             promptInjectionProtectionLevel: 'interrupt',
           },
         });
@@ -123,6 +146,15 @@ describe('AiGroupSettings', () => {
       it('returns true when duoWorkflowMcp differs from injected value', async () => {
         createComponent({ provide: { duoWorkflowMcpEnabled: false } });
         findDuoWorkflowSettingsForm().vm.$emit('mcp-change', true);
+
+        await nextTick();
+
+        expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+      });
+
+      it('returns true when aiUsageDataCollection differs from injected value', async () => {
+        createComponent({ provide: { aiUsageDataCollectionEnabled: false } });
+        findAiUsageDataCollectionForm().vm.$emit('change', true);
 
         await nextTick();
 
@@ -183,6 +215,21 @@ describe('AiGroupSettings', () => {
       });
     });
 
+    describe('onAiUsageDataCollectionChanged', () => {
+      describe('when change event is emitted', () => {
+        it('updates aiUsageDataCollection value and marks form as changed', async () => {
+          expect(wrapper.vm.aiUsageDataCollection).toBe(false);
+          expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(false);
+
+          findAiUsageDataCollectionForm().vm.$emit('change', true);
+          await nextTick();
+
+          expect(wrapper.vm.aiUsageDataCollection).toBe(true);
+          expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+        });
+      });
+    });
+
     describe('onPromptInjectionProtectionChanged', () => {
       describe('when protection-level-change event is emitted', () => {
         it('updates promptInjectionProtection value and marks form as changed', async () => {
@@ -236,6 +283,7 @@ describe('AiGroupSettings', () => {
         ai_settings_attributes: {
           duo_agent_platform_enabled: true,
           duo_workflow_mcp_enabled: false,
+          ai_usage_data_collection_enabled: false,
           prompt_injection_protection_level: 'interrupt',
           foundational_agents_default_enabled: true,
         },
@@ -305,6 +353,7 @@ describe('AiGroupSettings', () => {
             enabled_foundational_flows: [],
             ai_settings_attributes: {
               duo_workflow_mcp_enabled: true,
+              ai_usage_data_collection_enabled: false,
               prompt_injection_protection_level: 'interrupt',
             },
           }),
@@ -336,7 +385,41 @@ describe('AiGroupSettings', () => {
             enabled_foundational_flows: [],
             ai_settings_attributes: {
               duo_workflow_mcp_enabled: false,
+              ai_usage_data_collection_enabled: false,
               prompt_injection_protection_level: 'log_only',
+            },
+          }),
+        );
+      });
+    });
+
+    describe('when aiUsageDataCollection is changed', () => {
+      beforeEach(async () => {
+        createComponent();
+        updateGroupSettings.mockResolvedValue({});
+        findAiUsageDataCollectionForm().vm.$emit('change', true);
+        await nextTick();
+      });
+
+      it('includes updated aiUsageDataCollection value in API call', async () => {
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+          experimentFeaturesEnabled: true,
+          duoCoreFeaturesEnabled: true,
+          promptCacheEnabled: true,
+          duoRemoteFlowsAvailability: false,
+          duoFoundationalFlowsAvailability: false,
+          duoSastFpDetectionAvailability: false,
+          selectedFoundationalFlowIds: [],
+        });
+        expect(updateGroupSettings).toHaveBeenCalledWith(
+          '100',
+          expect.objectContaining({
+            enabled_foundational_flows: [],
+            ai_settings_attributes: {
+              duo_workflow_mcp_enabled: false,
+              ai_usage_data_collection_enabled: true,
+              prompt_injection_protection_level: 'interrupt',
             },
           }),
         );
@@ -428,6 +511,7 @@ describe('AiGroupSettings', () => {
           enabled_foundational_flows: [],
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: false,
+            ai_usage_data_collection_enabled: false,
             prompt_injection_protection_level: 'interrupt',
           },
         });

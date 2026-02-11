@@ -20,6 +20,7 @@ module Ai
 
     validates :duo_workflow_mcp_enabled, inclusion: { in: [true, false] }
     validates :prompt_injection_protection_level, presence: true
+    validates :ai_usage_data_collection_enabled, inclusion: { in: [true, false] }
 
     belongs_to :namespace, inverse_of: :ai_settings
   end

@@ -210,6 +210,7 @@ module EE
         :prompt_injection_protection_level, :prompt_injection_protection_level=,
         :duo_workflow_mcp_enabled, :duo_workflow_mcp_enabled=,
         :duo_agent_platform_enabled, :duo_agent_platform_enabled=,
+        :ai_usage_data_collection_enabled, :ai_usage_data_collection_enabled=,
         to: :ai_settings
 
       delegate :minimum_access_level_execute, :minimum_access_level_execute_async,

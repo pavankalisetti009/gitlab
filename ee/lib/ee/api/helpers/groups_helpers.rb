@@ -42,6 +42,7 @@ module EE
             optional :ai_settings_attributes, type: Hash, desc: 'AI-related settings' do
               optional :duo_agent_platform_enabled, type: ::Grape::API::Boolean, desc: 'Whether Duo Agent Platform features are enabled'
               optional :duo_workflow_mcp_enabled, type: ::Grape::API::Boolean, desc: 'Enable MCP support for Duo Agent Platform'
+              optional :ai_usage_data_collection_enabled, type: ::Grape::API::Boolean, desc: 'Enable AI usage data collection for this namespace'
               optional :foundational_agents_default_enabled, type: ::Grape::API::Boolean, desc: 'Whether new foundational agents are enabled by default'
               optional :prompt_injection_protection_level, type: String, values: %w[no_checks log_only interrupt], desc: 'Prompt injection protection level. One of `no_checks`, `log_only` or `interrupt`'
               optional :minimum_access_level_execute, type: Integer, values: AI_MINIMUM_ACCESS_LEVEL_EXECUTE_ALLOWED_VALUES, desc: 'The minimum access level required to execute Duo Agent Platform. This field is behind a feature flag.'

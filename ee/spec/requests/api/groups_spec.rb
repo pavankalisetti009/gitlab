@@ -1095,6 +1095,15 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
       end
     end
 
+    context 'ai_usage_data_collection_enabled' do
+      it_behaves_like 'updates a group setting correctly' do
+        let(:params) { { ai_settings_attributes: { ai_usage_data_collection_enabled: true } } }
+        let(:from) { false }
+        let(:to) { true }
+        let(:changed_property) { :ai_usage_data_collection_enabled }
+      end
+    end
+
     context 'foundational_agents_statuses' do
       include_context 'with mocked Foundational Chat Agents'
 

@@ -191,6 +191,8 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_workflow_available: "true",
           duo_agent_platform_enabled: "true",
           duo_workflow_mcp_enabled: "true",
+          ai_usage_data_collection_available: "true",
+          ai_usage_data_collection_enabled: "false",
           foundational_agents_default_enabled: "true",
           foundational_agents_statuses: Gitlab::Json.generate([
             { reference: 'agent_1', name: 'Agent 1', description: 'First agent', enabled: true },
@@ -276,6 +278,8 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
         is_expected.to include(
           is_saas: 'true',
           duo_workflow_mcp_enabled: 'false',
+          ai_usage_data_collection_available: 'true',
+          ai_usage_data_collection_enabled: 'false',
           foundational_agents_default_enabled: 'true',
           duo_agent_platform_enabled: 'true',
           ai_minimum_access_level_to_execute: nil,
@@ -316,6 +320,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           {
             duo_workflow_available: "false",
             duo_workflow_mcp_enabled: "false",
+            ai_usage_data_collection_available: "false",
             available_foundational_flows: '[]',
             selected_foundational_flow_references: '[]'
           }
