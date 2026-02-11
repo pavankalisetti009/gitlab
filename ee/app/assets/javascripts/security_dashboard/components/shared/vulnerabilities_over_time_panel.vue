@@ -218,10 +218,9 @@ export default {
       <panel-group-by v-model="groupedBy" />
     </template>
     <template #body>
-      <!-- resetting the z-index to 0 to make sure the chart's tooltip is below any filter dropdowns, etc. -->
       <vulnerabilities-over-time-chart
         v-if="!fetchError && hasChartData"
-        class="gl-z-0 gl-h-full gl-overflow-hidden gl-p-2"
+        class="gl-isolate gl-h-full gl-overflow-hidden gl-p-2"
         :chart-series="selectedChartData"
         :grouped-by="groupedBy"
         :filters="combinedFilters"
