@@ -77,7 +77,7 @@ export default {
     GlModal: GlModalDirective,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
-  inject: ['experimentFeaturesEnabled'],
+  inject: ['experimentFeaturesEnabled', 'duoAgentPlatformAvailable'],
   props: {
     vulnerability: {
       type: Object,
@@ -112,11 +112,21 @@ export default {
     canCreateMergeRequest() {
       return !this.mergeRequest && this.vulnerability.createMrUrl && this.hasRemediation;
     },
-    canResolveWithAi() {
+    canResolveWithSingleShotAi() {
       return (
         this.glAbilities.resolveVulnerabilityWithAi &&
         this.vulnerability.aiResolutionAvailable &&
         !this.detectedAsFalsePositive
+      );
+    },
+    canResolveWithAgenticAi() {
+      return (
+        this.vulnerability.aiResolutionAvailable &&
+        !this.detectedAsFalsePositive &&
+        this.vulnerability.duoSastVrWorkflowEnabled &&
+        this.duoAgentPlatformAvailable &&
+        this.experimentFeaturesEnabled &&
+        this.glFeatures.agenticSastVrUi
       );
     },
     showSeverityModal() {
@@ -585,7 +595,8 @@ export default {
           :loading="isProcessingAction"
           :show-download-patch="canDownloadPatch"
           :show-create-merge-request="canCreateMergeRequest"
-          :show-resolve-with-ai="canResolveWithAi"
+          :show-resolve-with-single-shot-ai="canResolveWithSingleShotAi"
+          :show-resolve-with-agentic-ai="canResolveWithAgenticAi"
           :show-explain-with-ai="canExplainWithAi"
           :can-run-ai-false-positive-detection="canRunAiFalsePositiveDetection"
           :ai-resolution-enabled="vulnerability.aiResolutionEnabled"

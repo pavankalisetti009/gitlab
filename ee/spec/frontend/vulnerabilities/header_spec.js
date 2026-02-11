@@ -102,12 +102,13 @@ describe('Vulnerability Header', () => {
   const getVulnerability = ({
     canCreateMergeRequest,
     canDownloadPatch,
-    canResolveWithAi,
+    canResolveWithSingleShotAi,
     canExplainWithAi,
     aiResolutionEnabled,
     canAdmin = true,
     latestFlag = null,
     reportType = 'dast',
+    duoSastVrWorkflowEnabled = false,
     project = { id: 123 },
     ...otherProperties
   } = {}) => ({
@@ -115,12 +116,13 @@ describe('Vulnerability Header', () => {
     state: canDownloadPatch ? 'detected' : 'resolved',
     mergeRequestLinks: canCreateMergeRequest || canDownloadPatch ? [] : [{}],
     mergeRequestFeedback: canCreateMergeRequest ? null : {},
-    aiResolutionAvailable: canResolveWithAi,
+    aiResolutionAvailable: canResolveWithSingleShotAi,
     aiExplanationAvailable: canExplainWithAi,
     aiResolutionEnabled,
     canAdmin,
     latestFlag,
     reportType,
+    duoSastVrWorkflowEnabled,
     project,
     ...(canDownloadPatch && canCreateMergeRequest === undefined ? { createMrUrl: '' } : {}),
     ...otherProperties,
@@ -178,6 +180,7 @@ describe('Vulnerability Header', () => {
     hideVulnerabilitySeverityOverride = false,
     glFeatures = {},
     experimentFeaturesEnabled = true,
+    duoAgentPlatformAvailable = true,
   }) => {
     wrapper = shallowMount(Header, {
       apolloProvider,
@@ -194,6 +197,7 @@ describe('Vulnerability Header', () => {
       provide: {
         dismissalDescriptions,
         experimentFeaturesEnabled,
+        duoAgentPlatformAvailable,
         glAbilities: {
           explainVulnerabilityWithAi: true,
           resolveVulnerabilityWithAi: true,
@@ -580,14 +584,18 @@ describe('Vulnerability Header', () => {
         vulnerability: getVulnerability({
           canCreateMergeRequest: actionsEnabled,
           canDownloadPatch: actionsEnabled,
-          canResolveWithAi: actionsEnabled,
+          canResolveWithSingleShotAi: actionsEnabled,
           canExplainWithAi: actionsEnabled,
           aiResolutionEnabled: actionsEnabled,
+          duoSastVrWorkflowEnabled: actionsEnabled,
           latestFlag: actionsEnabled ? null : { confidenceScore: 0.95 },
         }),
         glAbilities: {
           resolveVulnerabilityWithAi: actionsEnabled,
           explainVulnerabilityWithAi: actionsEnabled,
+        },
+        glFeatures: {
+          agenticSastVrUi: actionsEnabled,
         },
       });
 
@@ -595,7 +603,8 @@ describe('Vulnerability Header', () => {
         loading: false,
         showDownloadPatch: actionsEnabled,
         showCreateMergeRequest: actionsEnabled,
-        showResolveWithAi: actionsEnabled,
+        showResolveWithSingleShotAi: actionsEnabled,
+        showResolveWithAgenticAi: actionsEnabled,
         showExplainWithAi: actionsEnabled,
         aiResolutionEnabled: actionsEnabled,
       });
@@ -896,7 +905,7 @@ describe('Vulnerability Header', () => {
         });
 
         it('does not render resolve vulnerability button', () => {
-          expect(findActionsDropdown().props('showResolveWithAi')).toBe(false);
+          expect(findActionsDropdown().props('showResolveWithSingleShotAi')).toBe(false);
         });
       });
     });

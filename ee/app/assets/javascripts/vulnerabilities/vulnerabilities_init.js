@@ -15,6 +15,7 @@ export default (el) => {
     defaultBranch,
     customizeJiraIssueEnabled,
     experimentFeaturesEnabled,
+    duoAgentPlatformAvailable,
   } = el.dataset;
 
   const vulnerabilityJson = JSON.parse(el.dataset.vulnerability);
@@ -46,6 +47,7 @@ export default (el) => {
       canViewFalsePositive: parseBoolean(canViewFalsePositive),
       customizeJiraIssueEnabled: parseBoolean(customizeJiraIssueEnabled),
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
+      duoAgentPlatformAvailable: parseBoolean(duoAgentPlatformAvailable),
       projectFullPath,
       defaultBranch,
       dismissalDescriptions,

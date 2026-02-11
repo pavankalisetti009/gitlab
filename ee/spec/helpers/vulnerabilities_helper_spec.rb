@@ -124,7 +124,8 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
           commit_path_template: %r{\/namespace\d+\/project-\d+\/\-\/commit\/\$COMMIT_SHA},
           can_view_false_positive: 'false',
           customize_jira_issue_enabled: 'false',
-          experiment_features_enabled: 'false'
+          experiment_features_enabled: 'false',
+          duo_agent_platform_available: be_in(%w[true false])
         )
       )
       expect(Gitlab::Json.parse(subject[:vulnerability])['severity']).to eq('high')
@@ -157,6 +158,28 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
 
       it 'sets experiment_features_enabled to true' do
         expect(subject[:experiment_features_enabled]).to eq('true')
+      end
+    end
+
+    context 'duo_agent_platform_available' do
+      context 'when duo_agent_platform is not available' do
+        before do
+          allow(::Ai::DuoWorkflow).to receive(:duo_agent_platform_available?).with(project).and_return(false)
+        end
+
+        it 'sets duo_agent_platform_available to false' do
+          expect(subject[:duo_agent_platform_available]).to eq('false')
+        end
+      end
+
+      context 'when duo_agent_platform is available' do
+        before do
+          allow(::Ai::DuoWorkflow).to receive(:duo_agent_platform_available?).with(project).and_return(true)
+        end
+
+        it 'sets duo_agent_platform_available to true' do
+          expect(subject[:duo_agent_platform_available]).to eq('true')
+        end
       end
     end
   end

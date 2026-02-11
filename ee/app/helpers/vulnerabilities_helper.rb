@@ -13,7 +13,8 @@ module VulnerabilitiesHelper
       project_full_path: project.full_path,
       default_branch: project.default_branch,
       customize_jira_issue_enabled: project.jira_integration&.customize_jira_issue_enabled.to_s,
-      experiment_features_enabled: (project.root_ancestor&.experiment_features_enabled || false).to_s
+      experiment_features_enabled: (project.root_ancestor&.experiment_features_enabled || false).to_s,
+      duo_agent_platform_available: ::Ai::DuoWorkflow.duo_agent_platform_available?(project).to_s
     }
   end
 
