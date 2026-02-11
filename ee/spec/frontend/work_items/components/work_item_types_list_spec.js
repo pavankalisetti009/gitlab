@@ -6,6 +6,7 @@ import {
   GlDisclosureDropdown,
   GlLoadingIcon,
   GlDisclosureDropdownItem,
+  GlButtonGroup,
 } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -29,17 +30,20 @@ describe('WorkItemTypesList', () => {
   let wrapper;
   let mockApollo;
 
-  const mockEmptyResponse = {
+  const buildNamespaceResponse = (nodes) => ({
     data: {
       namespace: {
+        id: 'gid://gitlab/Group/1',
         workItemTypes: {
-          nodes: [],
+          nodes,
           __typename: 'WorkItemTypeConnection',
         },
         __typename: 'Namespace',
       },
     },
-  };
+  });
+
+  const mockEmptyResponse = buildNamespaceResponse([]);
 
   const getMockWorkItemTypes = () =>
     mockWorkItemTypesConfigurationResponse.data.namespace.workItemTypes.nodes;
@@ -84,6 +88,7 @@ describe('WorkItemTypesList', () => {
       },
       stubs: {
         CrudComponent,
+        GlButton,
       },
     });
   };
@@ -94,10 +99,14 @@ describe('WorkItemTypesList', () => {
   const findWorkItemTypeRows = () => wrapper.findAll('[data-testid^="work-item-type-row"]');
   const findWorkItemTypeRow = (id) => wrapper.findByTestId(`work-item-type-row-${id}`);
   const findLockedIconByRow = (id) => wrapper.findByTestId(`locked-icon-${id}`);
-  const findNewTypeButton = () => wrapper.findComponent(GlButton);
+  const findNewTypeButton = () => wrapper.findByTestId('new-type-button');
   const findDropdownForType = (id) => findWorkItemTypeRow(id).findComponent(GlDisclosureDropdown);
   const findErrorAlert = () => wrapper.findComponent(GlAlert);
   const findCreateEditForm = () => wrapper.findComponent(CreateEditWorkItemTypeForm);
+  const findButtonGroup = () => wrapper.findComponent(GlButtonGroup);
+  const findArchiveButtons = () => findButtonGroup().findAllComponents(GlButton);
+  const findActiveButton = () => findArchiveButtons().at(0);
+  const findArchivedButton = () => findArchiveButtons().at(1);
 
   const findLockIconTooltip = (typeId) => {
     const icon = findLockedIconByRow(typeId);
@@ -415,18 +424,7 @@ describe('WorkItemTypesList', () => {
         isConfigurable: false,
       };
 
-      const queryHandler = jest.fn().mockResolvedValue({
-        data: {
-          namespace: {
-            id: 'gid://gitlab/Group/1',
-            workItemTypes: {
-              nodes: [serviceDeskType],
-              __typename: 'WorkItemTypeConnection',
-            },
-            __typename: 'Namespace',
-          },
-        },
-      });
+      const queryHandler = jest.fn().mockResolvedValue(buildNamespaceResponse([serviceDeskType]));
 
       createWrapper({ queryHandler });
       await waitForPromises();
@@ -442,18 +440,7 @@ describe('WorkItemTypesList', () => {
         isConfigurable: false,
       };
 
-      const queryHandler = jest.fn().mockResolvedValue({
-        data: {
-          namespace: {
-            id: 'gid://gitlab/Group/1',
-            workItemTypes: {
-              nodes: [groupType],
-              __typename: 'WorkItemTypeConnection',
-            },
-            __typename: 'Namespace',
-          },
-        },
-      });
+      const queryHandler = jest.fn().mockResolvedValue(buildNamespaceResponse([groupType]));
 
       createWrapper({ queryHandler });
       await waitForPromises();
@@ -469,18 +456,7 @@ describe('WorkItemTypesList', () => {
         isConfigurable: false,
       };
 
-      const queryHandler = jest.fn().mockResolvedValue({
-        data: {
-          namespace: {
-            id: 'gid://gitlab/Group/1',
-            workItemTypes: {
-              nodes: [incidentType],
-              __typename: 'WorkItemTypeConnection',
-            },
-            __typename: 'Namespace',
-          },
-        },
-      });
+      const queryHandler = jest.fn().mockResolvedValue(buildNamespaceResponse([incidentType]));
 
       createWrapper({ queryHandler });
       await waitForPromises();
@@ -495,24 +471,293 @@ describe('WorkItemTypesList', () => {
         isConfigurable: true,
       };
 
-      const queryHandler = jest.fn().mockResolvedValue({
-        data: {
-          namespace: {
-            id: 'gid://gitlab/Group/1',
-            workItemTypes: {
-              nodes: [nonConfigurableType],
-              __typename: 'WorkItemTypeConnection',
-            },
-            __typename: 'Namespace',
-          },
-        },
-      });
+      const queryHandler = jest
+        .fn()
+        .mockResolvedValue(buildNamespaceResponse([nonConfigurableType]));
 
       createWrapper({ queryHandler });
       await waitForPromises();
 
       const lockIcon = findLockedIconByRow(nonConfigurableType.id);
       expect(lockIcon.exists()).toBe(false);
+    });
+  });
+
+  describe('archive/unarchive button group', () => {
+    describe('visibility', () => {
+      it('does not render button group when no archived types exist', async () => {
+        createWrapper();
+        await waitForPromises();
+
+        expect(findButtonGroup().exists()).toBe(false);
+      });
+
+      it('renders button group when archived types exist', async () => {
+        const archivedType = {
+          ...mockWorkItemTypes[0],
+          archived: true,
+        };
+        const activeType = {
+          ...mockWorkItemTypes[1],
+          archived: false,
+        };
+
+        const queryHandler = jest
+          .fn()
+          .mockResolvedValue(buildNamespaceResponse([archivedType, activeType]));
+
+        createWrapper({ queryHandler });
+        await waitForPromises();
+
+        expect(findButtonGroup().exists()).toBe(true);
+      });
+    });
+
+    describe('button labels and state', () => {
+      beforeEach(async () => {
+        const archivedType = {
+          ...mockWorkItemTypes[0],
+          archived: true,
+        };
+        const activeType = {
+          ...mockWorkItemTypes[1],
+          archived: false,
+        };
+
+        const queryHandler = jest
+          .fn()
+          .mockResolvedValue(buildNamespaceResponse([archivedType, activeType]));
+
+        createWrapper({ queryHandler });
+        await waitForPromises();
+      });
+
+      it('renders Active and Archived buttons and Active button is selected by default', () => {
+        expect(findActiveButton().text()).toContain('Active');
+        expect(findArchivedButton().text()).toContain('Archived');
+
+        expect(findActiveButton().props('selected')).toBe(true);
+        expect(findArchivedButton().props('selected')).toBe(false);
+      });
+    });
+
+    describe('filtering functionality', () => {
+      beforeEach(async () => {
+        const archivedType = {
+          ...mockWorkItemTypes[0],
+          id: 'gid://gitlab/WorkItemType/1',
+          archived: true,
+        };
+        const activeType = {
+          ...mockWorkItemTypes[1],
+          id: 'gid://gitlab/WorkItemType/2',
+          archived: false,
+        };
+
+        const queryHandler = jest
+          .fn()
+          .mockResolvedValue(buildNamespaceResponse([archivedType, activeType]));
+
+        createWrapper({ queryHandler });
+        await waitForPromises();
+      });
+
+      it('displays only active types when Active button is selected', () => {
+        expect(findWorkItemTypeRows()).toHaveLength(1);
+        expect(findWorkItemTypeRow('gid://gitlab/WorkItemType/2').exists()).toBe(true);
+      });
+
+      it('displays only archived types when Archived button is clicked', async () => {
+        await findArchivedButton().vm.$emit('click');
+
+        expect(findWorkItemTypeRows()).toHaveLength(1);
+        expect(findWorkItemTypeRow('gid://gitlab/WorkItemType/1').exists()).toBe(true);
+      });
+
+      it('toggles between active and archived types', async () => {
+        // Initially showing active types
+        expect(findWorkItemTypeRows()).toHaveLength(1);
+        expect(findWorkItemTypeRow('gid://gitlab/WorkItemType/2').exists()).toBe(true);
+
+        // Click Archived button
+        await findArchivedButton().vm.$emit('click');
+        expect(findWorkItemTypeRows()).toHaveLength(1);
+        expect(findWorkItemTypeRow('gid://gitlab/WorkItemType/1').exists()).toBe(true);
+
+        // Click Active button again
+        await findActiveButton().vm.$emit('click');
+        expect(findWorkItemTypeRows()).toHaveLength(1);
+        expect(findWorkItemTypeRow('gid://gitlab/WorkItemType/2').exists()).toBe(true);
+      });
+    });
+
+    describe('title and description changes', () => {
+      beforeEach(async () => {
+        const archivedType = {
+          ...mockWorkItemTypes[0],
+          archived: true,
+        };
+        const activeType = {
+          ...mockWorkItemTypes[1],
+          archived: false,
+        };
+
+        const queryHandler = jest
+          .fn()
+          .mockResolvedValue(buildNamespaceResponse([archivedType, activeType]));
+
+        createWrapper({ queryHandler });
+        await waitForPromises();
+      });
+
+      it('displays "Types" title when showing active types', () => {
+        expect(findCrudComponent().props('title')).toBe('Types');
+      });
+
+      it('displays "Archived types" title when showing archived types', async () => {
+        await findArchivedButton().vm.$emit('click');
+
+        expect(findCrudComponent().props('title')).toBe('Archived types');
+      });
+
+      it('displays description only when showing archived types', async () => {
+        expect(findCrudComponent().props('description')).toBe('');
+
+        await findArchivedButton().vm.$emit('click');
+
+        expect(findCrudComponent().props('description')).toContain(
+          'Disabled in all groups and projects',
+        );
+      });
+
+      it('clears description when switching back to active types', async () => {
+        await findArchivedButton().vm.$emit('click');
+        expect(findCrudComponent().props('description')).not.toBe('');
+
+        await findActiveButton().vm.$emit('click');
+        expect(findCrudComponent().props('description')).toBe('');
+      });
+    });
+
+    describe('button selection state', () => {
+      beforeEach(async () => {
+        const archivedType = {
+          ...mockWorkItemTypes[0],
+          archived: true,
+        };
+        const activeType = {
+          ...mockWorkItemTypes[1],
+          archived: false,
+        };
+
+        const queryHandler = jest
+          .fn()
+          .mockResolvedValue(buildNamespaceResponse([archivedType, activeType]));
+
+        createWrapper({ queryHandler });
+        await waitForPromises();
+      });
+
+      it('updates selected state when Active button is clicked', async () => {
+        await findArchivedButton().vm.$emit('click');
+        expect(findActiveButton().props('selected')).toBe(false);
+        expect(findArchivedButton().props('selected')).toBe(true);
+
+        await findActiveButton().vm.$emit('click');
+        expect(findActiveButton().props('selected')).toBe(true);
+        expect(findArchivedButton().props('selected')).toBe(false);
+      });
+
+      it('updates selected state when Archived button is clicked', async () => {
+        expect(findActiveButton().props('selected')).toBe(true);
+        expect(findArchivedButton().props('selected')).toBe(false);
+
+        await findArchivedButton().vm.$emit('click');
+        expect(findActiveButton().props('selected')).toBe(false);
+        expect(findArchivedButton().props('selected')).toBe(true);
+      });
+    });
+
+    describe('New type button visibility', () => {
+      beforeEach(async () => {
+        const archivedType = {
+          ...mockWorkItemTypes[0],
+          archived: true,
+        };
+        const activeType = {
+          ...mockWorkItemTypes[1],
+          archived: false,
+        };
+
+        const queryHandler = jest
+          .fn()
+          .mockResolvedValue(buildNamespaceResponse([archivedType, activeType]));
+
+        createWrapper({ queryHandler });
+        await waitForPromises();
+      });
+
+      it('shows New type button when viewing active types', () => {
+        expect(findNewTypeButton().exists()).toBe(true);
+      });
+
+      it('hides New type button when viewing archived types', async () => {
+        await findArchivedButton().trigger('click');
+
+        expect(findNewTypeButton().exists()).toBe(false);
+      });
+
+      it('shows New type button again when switching back to active types', async () => {
+        await findArchivedButton().trigger('click');
+        expect(findNewTypeButton().exists()).toBe(false);
+
+        await findActiveButton().vm.$emit('click');
+        expect(findNewTypeButton().exists()).toBe(true);
+      });
+    });
+
+    describe('count updates', () => {
+      beforeEach(async () => {
+        const archivedType = {
+          ...mockWorkItemTypes[0],
+          archived: true,
+        };
+        const activeType1 = {
+          ...mockWorkItemTypes[1],
+          archived: false,
+        };
+        const activeType2 = {
+          ...mockWorkItemTypes[2],
+          archived: false,
+        };
+
+        const queryHandler = jest
+          .fn()
+          .mockResolvedValue(buildNamespaceResponse([archivedType, activeType1, activeType2]));
+
+        createWrapper({ queryHandler });
+        await waitForPromises();
+      });
+
+      it('displays correct count for active types', () => {
+        expect(findCrudComponent().props('count')).toBe(2);
+      });
+
+      it('displays correct count for archived types', async () => {
+        await findArchivedButton().vm.$emit('click');
+
+        expect(findCrudComponent().props('count')).toBe(1);
+      });
+
+      it('updates count when switching between tabs', async () => {
+        expect(findCrudComponent().props('count')).toBe(2);
+
+        await findArchivedButton().vm.$emit('click');
+        expect(findCrudComponent().props('count')).toBe(1);
+
+        await findActiveButton().vm.$emit('click');
+        expect(findCrudComponent().props('count')).toBe(2);
+      });
     });
   });
 });

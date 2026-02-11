@@ -7,6 +7,7 @@ import {
   GlDisclosureDropdownItem,
   GlBadge,
   GlTooltipDirective,
+  GlButtonGroup,
 } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
@@ -28,6 +29,7 @@ export default {
     CreateEditWorkItemTypeForm,
     GlDisclosureDropdownItem,
     GlBadge,
+    GlButtonGroup,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -49,6 +51,7 @@ export default {
       errorMessage: '',
       createEditWorkItemTypeFormVisible: false,
       selectedWorkItemType: null,
+      showArchived: false,
     };
   },
   apollo: {
@@ -77,7 +80,7 @@ export default {
   },
   computed: {
     count() {
-      return this.workItemTypes?.length;
+      return this.filteredWorkItemTypes?.length;
     },
     isLoading() {
       return this.$apollo.queries.workItemTypes.loading;
@@ -90,6 +93,30 @@ export default {
     },
     canArchive() {
       return this.config?.workItemTypeSettingsPermissions?.includes('archive');
+    },
+    hasArchivedTypes() {
+      return this.workItemTypes?.some((type) => type.archived);
+    },
+    filteredWorkItemTypes() {
+      return (this.workItemTypes || []).filter(
+        (type) => Boolean(type.archived) === this.showArchived,
+      );
+    },
+    listTitle() {
+      if (this.showArchived) {
+        return s__('WorkItem|Archived types');
+      }
+
+      return s__('WorkItem|Types');
+    },
+    listDescription() {
+      if (this.showArchived) {
+        return s__(
+          'WorkItem|Disabled in all groups and projects. Items created prior to archiving may remain in this type.',
+        );
+      }
+
+      return '';
     },
   },
   methods: {
@@ -143,9 +170,24 @@ export default {
       enabled and disabled types as two separate tables which will be utilising the same query response , we will require that setting here. Either we read it
       from context/ or we just add another permission or the work item settings
     -->
-    <crud-component :title="s__('WorkItem|Types')" :count="count">
-      <template #actions>
-        <gl-button v-if="canCreate" size="small" @click="createEditWorkItemTypeFormVisible = true">
+    <div v-if="hasArchivedTypes" class="gl-mb-3">
+      <gl-button-group>
+        <gl-button :selected="!showArchived" size="small" @click="showArchived = false">
+          {{ s__('WorkItem|Active') }}
+        </gl-button>
+        <gl-button :selected="showArchived" size="small" @click="showArchived = true">
+          {{ s__('WorkItem|Archived') }}
+        </gl-button>
+      </gl-button-group>
+    </div>
+    <crud-component :title="listTitle" :description="listDescription" :count="count">
+      <template v-if="!showArchived" #actions>
+        <gl-button
+          v-if="canCreate"
+          size="small"
+          data-testid="new-type-button"
+          @click="createEditWorkItemTypeFormVisible = true"
+        >
           {{ s__('WorkItem|New type') }}
         </gl-button>
       </template>
@@ -154,7 +196,7 @@ export default {
       <div v-else class="-gl-my-4" data-testid="work-item-types-table">
         <!-- Table Rows -->
         <div
-          v-for="item in workItemTypes"
+          v-for="item in filteredWorkItemTypes"
           :key="item.id"
           class="gl-border-b gl-flex gl-justify-between gl-gap-4 gl-border-b-subtle gl-py-4 last:gl-border-b-0"
           :data-testid="`work-item-type-row-${item.id}`"
@@ -162,6 +204,7 @@ export default {
           <!-- Type Column -->
           <div class="gl-flex gl-items-center gl-gap-2">
             <work-item-type-icon
+              v-if="item.name"
               :work-item-type="item.name"
               class="gl-font-semibold gl-text-default"
               icon-class="gl-flex-shrink-0 gl-mr-2"
