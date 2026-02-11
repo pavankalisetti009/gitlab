@@ -85,7 +85,7 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
 
     context 'if matching agent exists' do
       it 'returns true' do
-        expect(described_class.foundational_workflow_definition?('duo_planner/experimental')).to be(true)
+        expect(described_class.foundational_workflow_definition?('duo_planner/v1')).to be(true)
       end
     end
 
@@ -179,11 +179,11 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
       end
 
       it 'returns the agent for workflow definition with version' do
-        agent = described_class.with_workflow_definition('duo_planner/experimental')
+        agent = described_class.with_workflow_definition('duo_planner/v1')
 
         expect(agent).not_to be_nil
         expect(agent.reference).to eq('duo_planner')
-        expect(agent.version).to eq('experimental')
+        expect(agent.version).to eq('v1')
         expect(agent.name).to eq('Planner')
       end
 
