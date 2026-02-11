@@ -34,6 +34,111 @@ RSpec.describe Mcp::Tools::SearchService, feature_category: :mcp_server do
     end
   end
 
+  describe '#input_schema' do
+    let(:schema) { service.input_schema }
+
+    context 'when exact code search is disabled' do
+      before do
+        allow(::Search::Zoekt).to receive(:enabled?).and_return(false)
+      end
+
+      it 'does not include regex parameter' do
+        properties = schema[:properties]
+
+        expect(properties).to have_key(:scope)
+        expect(properties).to have_key(:search)
+        expect(properties).to have_key(:group_id)
+        expect(properties).to have_key(:project_id)
+        expect(properties).to have_key(:state)
+        expect(properties).to have_key(:confidential)
+        expect(properties).to have_key(:order_by)
+        expect(properties).to have_key(:sort)
+        expect(properties).to have_key(:per_page)
+        expect(properties).to have_key(:page)
+        expect(properties).not_to have_key(:regex)
+      end
+    end
+
+    context 'when exact code search is enabled' do
+      before do
+        allow(::Search::Zoekt).to receive(:enabled?).and_return(true)
+      end
+
+      it 'has correct regex property type and description' do
+        properties = schema[:properties]
+
+        expect(properties).to have_key(:scope)
+        expect(properties).to have_key(:search)
+        expect(properties).to have_key(:group_id)
+        expect(properties).to have_key(:project_id)
+        expect(properties).to have_key(:state)
+        expect(properties).to have_key(:confidential)
+        expect(properties).to have_key(:order_by)
+        expect(properties).to have_key(:sort)
+        expect(properties).to have_key(:per_page)
+        expect(properties).to have_key(:page)
+        expect(properties).to have_key(:regex)
+
+        expect(properties[:regex][:type]).to eq('boolean')
+        desc = 'Performs a regex code search. Available for blobs scope; other scopes are ignored.'
+        expect(properties[:regex][:description]).to eq desc
+      end
+    end
+
+    context 'when advanced search is disabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_search: false)
+      end
+
+      it 'does not have fields property' do
+        properties = schema[:properties]
+
+        expect(properties).to have_key(:scope)
+        expect(properties).to have_key(:search)
+        expect(properties).to have_key(:group_id)
+        expect(properties).to have_key(:project_id)
+        expect(properties).to have_key(:state)
+        expect(properties).to have_key(:confidential)
+        expect(properties).to have_key(:order_by)
+        expect(properties).to have_key(:sort)
+        expect(properties).to have_key(:per_page)
+        expect(properties).to have_key(:page)
+        expect(properties).not_to have_key(:fields)
+      end
+    end
+
+    context 'when advanced search is enabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_search: true)
+      end
+
+      it 'includes fields parameter' do
+        properties = schema[:properties]
+
+        expect(properties).to have_key(:scope)
+        expect(properties).to have_key(:search)
+        expect(properties).to have_key(:group_id)
+        expect(properties).to have_key(:project_id)
+        expect(properties).to have_key(:state)
+        expect(properties).to have_key(:confidential)
+        expect(properties).to have_key(:order_by)
+        expect(properties).to have_key(:sort)
+        expect(properties).to have_key(:per_page)
+        expect(properties).to have_key(:page)
+        expect(properties).to have_key(:fields)
+        expect(properties[:fields][:type]).to eq('array')
+        expect(properties[:fields][:items][:type]).to eq('string')
+
+        fields_description = <<~DESC.strip
+                                   Specify which fields to search within. Currently supported:
+                                   - Allowed values: title only
+                                   - Applicable scopes: issues, merge_requests
+        DESC
+        expect(properties[:fields][:description]).to eq(fields_description)
+      end
+    end
+  end
+
   describe '#transform_arguments' do
     let_it_be_with_reload(:project) { create(:project) }
 
