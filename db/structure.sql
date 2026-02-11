@@ -5162,6 +5162,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_web_hook_logs_daily_assign_sharding_keys() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF num_nonnulls(NEW.organization_id, NEW.project_id, NEW.group_id) <> 1 THEN
+  SELECT organization_id, project_id, group_id
+  INTO NEW.organization_id, NEW.project_id, NEW.group_id
+  FROM web_hooks
+  WHERE web_hooks.id = NEW.web_hook_id;
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION unset_has_issues_on_vulnerability_reads() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -37439,6 +37455,9 @@ ALTER TABLE spam_logs
 ALTER TABLE bulk_import_batch_trackers
     ADD CONSTRAINT check_13004cd9a8 CHECK ((num_nonnulls(namespace_id, organization_id, project_id) = 1)) NOT VALID;
 
+ALTER TABLE web_hook_logs_daily
+    ADD CONSTRAINT check_19dc80d658 CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1)) NOT VALID;
+
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
 
@@ -48305,6 +48324,12 @@ CREATE UNIQUE INDEX index_vulns_user_mentions_on_vulnerability_id ON vulnerabili
 
 CREATE UNIQUE INDEX index_vulns_user_mentions_on_vulnerability_id_and_note_id ON vulnerability_user_mentions USING btree (vulnerability_id, note_id);
 
+CREATE INDEX index_web_hook_logs_daily_on_group_id ON ONLY web_hook_logs_daily USING btree (group_id);
+
+CREATE INDEX index_web_hook_logs_daily_on_organization_id ON ONLY web_hook_logs_daily USING btree (organization_id);
+
+CREATE INDEX index_web_hook_logs_daily_on_project_id ON ONLY web_hook_logs_daily USING btree (project_id);
+
 CREATE INDEX index_web_hook_logs_daily_on_web_hook_id_and_created_at ON ONLY web_hook_logs_daily USING btree (web_hook_id, created_at);
 
 CREATE INDEX index_web_hook_logs_daily_part_on_created_at_and_web_hook_id ON ONLY web_hook_logs_daily USING btree (created_at, web_hook_id);
@@ -53574,6 +53599,8 @@ CREATE TRIGGER trigger_update_has_merge_request_on_vulnerability_mr_links_upda A
 CREATE TRIGGER trigger_update_location_on_vulnerability_occurrences_update AFTER UPDATE ON vulnerability_occurrences FOR EACH ROW WHEN (((new.report_type = ANY (ARRAY[2, 7])) AND (((old.location ->> 'image'::text) IS DISTINCT FROM (new.location ->> 'image'::text)) OR (((old.location -> 'kubernetes_resource'::text) ->> 'agent_id'::text) IS DISTINCT FROM ((new.location -> 'kubernetes_resource'::text) ->> 'agent_id'::text))))) EXECUTE FUNCTION update_location_from_vulnerability_occurrences();
 
 CREATE TRIGGER trigger_update_vulnerability_reads_on_vulnerability_update AFTER UPDATE ON vulnerabilities FOR EACH ROW WHEN (((old.present_on_default_branch IS TRUE) AND ((old.severity IS DISTINCT FROM new.severity) OR (old.state IS DISTINCT FROM new.state) OR (old.resolved_on_default_branch IS DISTINCT FROM new.resolved_on_default_branch)))) EXECUTE FUNCTION update_vulnerability_reads_from_vulnerability();
+
+CREATE TRIGGER trigger_web_hook_logs_daily_assign_sharding_keys BEFORE INSERT OR UPDATE ON web_hook_logs_daily FOR EACH ROW EXECUTE FUNCTION trigger_web_hook_logs_daily_assign_sharding_keys();
 
 CREATE TRIGGER users_loose_fk_trigger AFTER DELETE ON users REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
