@@ -296,7 +296,6 @@ module Geo
     # synchronous checksum calculation.
     #
     # @yieldreturn [String] calculated checksum value
-    # @return [ServiceResponse] (or nil on secondary sites) result of the EventPublicationService
     def track_checksum_attempt!
       # "Geo::VerificationBatchWorker" sets the whole batch to "verification_started"
       # so this check is redundant. This check and update minimizes race conditions

@@ -69,43 +69,6 @@ RSpec.describe Gitlab::Geo::Replicator, feature_category: :geo_replication do
         expect(subject.publish(:test)).to be_nil
       end
     end
-
-    context 'when on a secondary' do
-      before do
-        stub_current_geo_node(secondary_node)
-      end
-
-      it 'does not publish an event' do
-        expect { subject.publish(:test) }.not_to change { ::Geo::EventLog.count }
-      end
-
-      it 'returns a service response error' do
-        result = subject.publish(:test)
-
-        expect(result).to be_a(ServiceResponse)
-        expect(result).to be_error
-        expect(result.message).to include('::Geo::Event cannot be created')
-      end
-    end
-
-    context 'when there are no secondaries' do
-      before do
-        stub_current_geo_node(primary_node)
-        allow(Gitlab::Geo).to receive(:secondary_nodes).and_return([])
-      end
-
-      it 'does not publish an event' do
-        expect { subject.publish(:test) }.not_to change { ::Geo::EventLog.count }
-      end
-
-      it 'returns a service response error' do
-        result = subject.publish(:test)
-
-        expect(result).to be_a(ServiceResponse)
-        expect(result).to be_error
-        expect(result.message).to include('there are no secondary sites')
-      end
-    end
   end
 
   describe '#consume' do
@@ -119,6 +82,153 @@ RSpec.describe Gitlab::Geo::Replicator, feature_category: :geo_replication do
       expect(subject).to receive(:consume_event_test).with(user: 'something', other: 'something else')
 
       subject.consume(:test, user: 'something', other: 'something else')
+    end
+  end
+
+  describe '#create_event_with' do
+    let(:replicator) { Geo::DummyReplicator.new }
+    let(:params) { { replicable_name: 'dummy', event_name: :created, payload: { id: 1 } } }
+
+    subject { replicator.send(:create_event_with, **params) }
+
+    before do
+      stub_current_geo_node(primary_node)
+    end
+
+    context 'when on primary with secondary nodes' do
+      before do
+        allow(Gitlab::Geo).to receive(:secondary_nodes).and_return([secondary_node])
+      end
+
+      context 'when event creation succeeds' do
+        it 'creates a Geo::Event with provided parameters' do
+          # Use a double to test that the first created event is used for the EventLog creation
+          double = instance_double(Geo::Event)
+          # Stub that the event was persisted
+          allow(double).to receive(:persisted?).and_return(true)
+
+          expect(Geo::Event).to receive(:create!).with(**params).and_return(double)
+          expect(Geo::EventLog).to receive(:create!).with(geo_event: double)
+
+          subject
+        end
+
+        it 'returns an event' do
+          expect(subject).to be_a(Geo::Event)
+        end
+
+        it 'creates one geo event' do
+          expect { subject }.to change { ::Geo::Event.count }.from(0).to(1)
+        end
+
+        it 'creates one geo event log' do
+          expect { subject }.to change { ::Geo::EventLog.count }.from(0).to(1)
+        end
+      end
+
+      context 'when event creation fails with ActiveRecord::RecordInvalid' do
+        let(:error) { ActiveRecord::RecordInvalid.new }
+
+        before do
+          allow(Geo::Event).to receive(:create!).and_raise(error)
+        end
+
+        it 'logs the error with correct parameters' do
+          expect(replicator).to receive(:log_error).with("::Geo::Event could not be created", error, params)
+
+          subject
+        end
+
+        it 'does not raise the error' do
+          expect { subject }.not_to raise_error
+        end
+      end
+
+      context 'when event creation fails with NoMethodError' do
+        let(:error) { NoMethodError.new }
+
+        before do
+          allow(Geo::Event).to receive(:create!).and_raise(error)
+        end
+
+        it 'handles NoMethodError and logs it' do
+          expect(replicator).to receive(:log_error).with("::Geo::Event could not be created", error, params)
+
+          subject
+        end
+
+        it 'does not raise the error' do
+          expect { subject }.not_to raise_error
+        end
+      end
+
+      context 'when event creation fails with unexpected error' do
+        let(:error) { StandardError.new }
+
+        before do
+          allow(Geo::Event).to receive(:create!).and_raise(error)
+        end
+
+        it 'does raise the error' do
+          expect { subject }.to raise_error(error)
+        end
+      end
+
+      context 'when Geo::EventLog creation fails inside transaction' do
+        before do
+          allow(Geo::EventLog).to receive(:create!).and_raise(ActiveRecord::RecordInvalid.new)
+        end
+
+        it 'does not create a Geo::Event' do
+          expect { subject }.not_to change { ::Geo::Event.count }
+        end
+      end
+
+      context 'when transaction is rolled back' do
+        before do
+          allow(Geo::EventLog).to receive(:create!).and_raise(ActiveRecord::Rollback.new)
+        end
+
+        it 'does not create a Geo::Event' do
+          expect { subject }.not_to change { ::Geo::Event.count }
+        end
+
+        it 'returns nil' do
+          expect(subject).to be_nil
+        end
+      end
+
+      context 'when event is nil' do
+        it 'returns nil' do
+          allow(Geo::Event).to receive(:create!).with(**params).and_return(nil)
+
+          expect(subject).to be_nil
+        end
+      end
+    end
+
+    context 'when not on primary site' do
+      before do
+        allow(Gitlab::Geo).to receive(:primary?).and_return(false)
+      end
+
+      it 'returns nil without creating events' do
+        expect(Geo::Event).not_to receive(:create!)
+        expect(Geo::EventLog).not_to receive(:create!)
+        expect(subject).to be_nil
+      end
+    end
+
+    context 'when no secondary nodes exist' do
+      before do
+        allow(Gitlab::Geo).to receive(:secondary_nodes).and_return([])
+      end
+
+      it 'returns nil without creating events' do
+        expect(Geo::Event).not_to receive(:create!)
+        expect(Geo::EventLog).not_to receive(:create!)
+        expect(subject).to be_nil
+      end
     end
   end
 

@@ -271,8 +271,6 @@ module Geo
 
     # Calculates checksum and asks the model/registry to manage verification
     # state.
-    # @return [ServiceResponse] result of the EventPublicationService for this verification, or nil if the replicator
-    # should not publish events
     def verify
       verification_state_tracker.track_checksum_attempt! do
         calculate_checksum
