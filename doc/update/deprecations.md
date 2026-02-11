@@ -143,6 +143,27 @@ Workflows requiring access to more data must use keyset-based pagination paramet
 
 This limit ensures consistent service quality and performance across GitLab.com by managing resource utilization effectively.
 
+### Linux package support for SUSE distributions
+
+- Announced in GitLab 18.9
+- Removal in GitLab 19.0 ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-com/Product/-/work_items/14411).
+
+We are ending support for SUSE distributions in GitLab 19.0. This affects:
+
+- openSUSE Leap 15.6
+- SUSE Linux Enterprise Server 12.5
+- SUSE Linux Enterprise Server 15.6
+
+openSUSE Leap 15.6 is approaching end-of-life. While SUSE Linux Enterprise Server remains supported by SUSE via
+long-term service, adoption among GitLab customers is too low to make continued support commercially viable.
+
+Customers on SUSE distributions that use the Linux package will not be able to upgrade GitLab past version `18.11.x`.
+
+For customers on one of these distributions, we recommend migrating to a
+[Docker deployment of GitLab](https://docs.gitlab.com/install/docker/installation/) on your existing distribution.
+This avoids having to migrate to a different Linux distribution to continue to receive GitLab upgrades.
+
 ### Mattermost bundled with Linux package
 
 - Announced in GitLab 18.9
