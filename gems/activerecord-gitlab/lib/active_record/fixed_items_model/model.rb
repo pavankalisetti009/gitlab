@@ -167,7 +167,9 @@ module ActiveRecord
         # Handle :methods option - include additional methods
         if options[:methods]
           Array(options[:methods]).each do |method|
+            # rubocop:disable GitlabSecurity/PublicSend -- Method names come from controlled options, not user input
             attrs[method.to_s] = public_send(method) if respond_to?(method)
+            # rubocop:enable GitlabSecurity/PublicSend
           end
         end
 
@@ -234,7 +236,10 @@ module ActiveRecord
         includes_hash.each do |association_name, nested_options|
           next unless respond_to?(association_name)
 
+          # rubocop:disable GitlabSecurity/PublicSend -- Association names come from controlled options, not user input
           association_value = public_send(association_name)
+          # rubocop:enable GitlabSecurity/PublicSend
+
           attrs[association_name.to_s] = serialize_association(association_value, nested_options)
         end
       end
