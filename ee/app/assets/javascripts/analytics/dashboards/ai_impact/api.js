@@ -1,5 +1,7 @@
 import {
   AI_METRICS,
+  FLOW_METRICS,
+  DORA_METRICS,
   SUPPORTED_CODE_SUGGESTIONS_DIMENSION_KEYS,
 } from '~/analytics/shared/constants';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
@@ -209,3 +211,19 @@ export const fetchCodeSuggestionsMetricsByDimension = async (variables, dimensio
 
   return { successful, failed };
 };
+
+export const skippedDoraMetrics = (skipMetrics) => ({
+  skipDeploymentFrequency: skipMetrics.includes(DORA_METRICS.DEPLOYMENT_FREQUENCY),
+  skipLeadTimeForChanges: skipMetrics.includes(DORA_METRICS.LEAD_TIME_FOR_CHANGES),
+  skipTimeToRestoreService: skipMetrics.includes(DORA_METRICS.TIME_TO_RESTORE_SERVICE),
+  skipChangeFailureRate: skipMetrics.includes(DORA_METRICS.CHANGE_FAILURE_RATE),
+});
+
+export const skippedFlowMetrics = (skipMetrics) => ({
+  skipIssueCount: skipMetrics.includes(FLOW_METRICS.ISSUES),
+  skipIssuesCompletedCount: skipMetrics.includes(FLOW_METRICS.ISSUES_COMPLETED),
+  skipCycleTime: skipMetrics.includes(FLOW_METRICS.CYCLE_TIME),
+  skipLeadTime: skipMetrics.includes(FLOW_METRICS.LEAD_TIME),
+  skipDeploymentCount: skipMetrics.includes(FLOW_METRICS.DEPLOYS),
+  skipTimeToMerge: skipMetrics.includes(FLOW_METRICS.MEDIAN_TIME_TO_MERGE),
+});
