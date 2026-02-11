@@ -71,7 +71,7 @@ module Mutations
           else
             {
               group_secret: nil,
-              errors: error_messages(result, [:group_secret])
+              errors: error_messages(result, [:secret])
             }
           end
         end

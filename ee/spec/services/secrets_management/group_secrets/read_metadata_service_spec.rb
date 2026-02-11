@@ -35,7 +35,7 @@ RSpec.describe SecretsManagement::GroupSecrets::ReadMetadataService, :gitlab_sec
 
         it 'returns the group secret' do
           expect(result).to be_success
-          secret = result.payload[:group_secret]
+          secret = result.payload[:secret]
           expect(secret).to be_present
           expect(secret.name).to eq(name)
           expect(secret.description).to eq('test description')
@@ -45,7 +45,7 @@ RSpec.describe SecretsManagement::GroupSecrets::ReadMetadataService, :gitlab_sec
         end
 
         it 'converts protected string to boolean' do
-          secret = result.payload[:group_secret]
+          secret = result.payload[:secret]
           expect(secret.protected).to be_a(TrueClass)
         end
 
@@ -59,7 +59,7 @@ RSpec.describe SecretsManagement::GroupSecrets::ReadMetadataService, :gitlab_sec
           end
 
           it 'returns false for protected' do
-            secret = result.payload[:group_secret]
+            secret = result.payload[:secret]
             expect(secret.protected).to be false
           end
         end

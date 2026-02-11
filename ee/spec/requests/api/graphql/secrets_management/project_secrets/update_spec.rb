@@ -308,24 +308,20 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
     end
 
     context 'and service results to a failure' do
-      before do
-        allow_next_instance_of(SecretsManagement::ProjectSecrets::UpdateService) do |service|
-          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
-        end
+      let(:params) do
+        {
+          project_path: project.full_path,
+          name: project_secret_attributes[:name],
+          description: 'updated description',
+          metadata_cas: 999
+        }
       end
 
       it 'returns the service error' do
-        expect_next_instance_of(SecretsManagement::ProjectSecrets::UpdateService) do |service|
-          project_secret = SecretsManagement::ProjectSecret.new
-          project_secret.errors.add(:base, 'some error')
-
-          result = ServiceResponse.error(message: 'some error', payload: { project_secret: project_secret })
-          expect(service).to receive(:execute).and_return(result)
-        end
-
         post_mutation
 
-        expect(mutation_response['errors']).to include('some error')
+        error_message = 'This secret has been modified recently. Please refresh the page and try again.'
+        expect(mutation_response['errors']).to contain_exactly(error_message, error_message)
       end
     end
 

@@ -45,7 +45,7 @@ module SecretsManagement
             SecretRotationInfo.for_project_secret(project, project_secret.name, current_version - 1)
         end
 
-        ServiceResponse.success(payload: { project_secret: project_secret })
+        ServiceResponse.success(payload: { secret: project_secret })
       end
 
       def not_found_response

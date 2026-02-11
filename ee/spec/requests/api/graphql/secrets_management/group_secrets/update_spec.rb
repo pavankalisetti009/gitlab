@@ -220,16 +220,20 @@ RSpec.describe 'Update group secret', :gitlab_secrets_manager, :freeze_time, fea
     end
 
     context 'and service results to a failure' do
-      before do
-        allow_next_instance_of(SecretsManagement::GroupSecrets::UpdateService) do |service|
-          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
-        end
+      let(:params) do
+        {
+          group_path: group.full_path,
+          name: group_secret_attributes[:name],
+          description: 'updated description',
+          metadata_cas: 999
+        }
       end
 
       it 'returns the service error' do
         post_mutation
 
-        expect(mutation_response['errors']).to include('some error')
+        error_message = 'This secret has been modified recently. Please refresh the page and try again.'
+        expect(mutation_response['errors']).to contain_exactly(error_message, error_message)
       end
 
       it_behaves_like 'internal event not tracked'

@@ -32,7 +32,7 @@ module Mutations
 
           if result.success?
             {
-              project_secret: result.payload[:project_secret],
+              project_secret: result.payload[:secret],
               errors: []
             }
           elsif result.reason == :not_found

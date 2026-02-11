@@ -38,11 +38,11 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
       context 'when the secret exists' do
         it 'deletes a project secret and cleans up everything' do
           expect(result).to be_success
-          expect(result.payload[:project_secret]).to be_present
-          expect(result.payload[:project_secret].name).to eq(name)
-          expect(result.payload[:project_secret].description).to eq(description)
-          expect(result.payload[:project_secret].branch).to eq(branch)
-          expect(result.payload[:project_secret].environment).to eq(environment)
+          expect(result.payload[:secret]).to be_present
+          expect(result.payload[:secret].name).to eq(name)
+          expect(result.payload[:secret].description).to eq(description)
+          expect(result.payload[:secret].branch).to eq(branch)
+          expect(result.payload[:secret].environment).to eq(environment)
 
           expect_kv_secret_not_to_exist(
             project.secrets_manager.full_project_namespace_path,
@@ -192,7 +192,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
               read_service = SecretsManagement::ProjectSecrets::ReadMetadataService.new(project, user)
               read_result = read_service.execute(second_secret_name)
               expect(read_result).to be_success
-              expect(read_result.payload[:project_secret].name).to eq(second_secret_name)
+              expect(read_result.payload[:secret].name).to eq(second_secret_name)
 
               # Delete the second wildcard secret
               second_delete_result = described_class.new(project, user).execute(second_secret_name)

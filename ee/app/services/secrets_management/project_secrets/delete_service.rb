@@ -3,37 +3,19 @@
 module SecretsManagement
   module ProjectSecrets
     class DeleteService < ProjectBaseService
+      include Secrets::DeleteServiceHelpers
       include ProjectSecrets::SecretRefresherHelper
 
       def execute(name)
-        with_exclusive_lease_for(project) do
-          execute_secret_deletion(name)
-        end
+        execute_secret_deletion(resource: project, name: name)
       end
 
       private
 
       delegate :secrets_manager, to: :project
 
-      def execute_secret_deletion(name)
-        return secrets_manager_inactive_response unless secrets_manager&.active?
-
-        read_service = ProjectSecrets::ReadMetadataService.new(project, current_user)
-        read_result = read_service.execute(name)
-
-        return read_result unless read_result.success?
-
-        project_secret = read_result.payload[:project_secret]
-
-        # Delete the secret
-        user_client.delete_kv_secret(
-          secrets_manager.ci_secrets_mount_path,
-          secrets_manager.ci_data_path(name)
-        )
-
-        refresh_secret_ci_policies(project_secret, delete_operation: true)
-
-        ServiceResponse.success(payload: { project_secret: project_secret })
+      def read_secret(name)
+        ProjectSecrets::ReadMetadataService.new(project, current_user).execute(name)
       end
     end
   end

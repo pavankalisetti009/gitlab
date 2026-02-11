@@ -42,7 +42,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadMetadataService, :gitlab_s
         context 'with right permissions' do
           it 'returns success with the secret metadata' do
             expect(result).to be_success
-            project_secret = result.payload[:project_secret]
+            project_secret = result.payload[:secret]
             expect(project_secret).to be_a(SecretsManagement::ProjectSecret)
             expect(project_secret.name).to eq(name)
             expect(project_secret.description).to eq(description)
@@ -70,7 +70,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadMetadataService, :gitlab_s
               read_result = described_class.new(project, user).execute(name, include_rotation_info: true)
               expect(read_result).to be_success
 
-              project_secret = read_result.payload[:project_secret]
+              project_secret = read_result.payload[:secret]
               expect(project_secret).to be_a(SecretsManagement::ProjectSecret)
 
               # Timestamps should remain as raw strings from OpenBao (or nil), not parsed Time objects.
@@ -86,7 +86,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadMetadataService, :gitlab_s
 
             it 'does not include the rotation info in the result' do
               expect(result).to be_success
-              project_secret = result.payload[:project_secret]
+              project_secret = result.payload[:secret]
               expect(project_secret.rotation_info).to be_nil
             end
           end
@@ -114,7 +114,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadMetadataService, :gitlab_s
                 }.merge(stringified_timestamps)
 
                 client.update_kv_secret_metadata(mount, path, metadata, metadata_cas: cas)
-                project_secret = service.execute(name, include_rotation_info: true).payload[:project_secret]
+                project_secret = service.execute(name, include_rotation_info: true).payload[:secret]
                 expect(project_secret.status).to eq(expected)
               end
             end

@@ -8087,6 +8087,26 @@ Input type: `GroupSecretCreateInput`
 | <a id="mutationgroupsecretcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationgroupsecretcreategroupsecret"></a>`groupSecret` | [`GroupSecret`](#groupsecret) | Group secret. |
 
+### `Mutation.groupSecretDelete`
+
+Input type: `GroupSecretDeleteInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupsecretdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupsecretdeletegrouppath"></a>`groupPath` | [`ID!`](#id) | Group of the secret. |
+| <a id="mutationgroupsecretdeletename"></a>`name` | [`String!`](#string) | Name of the group secret to delete. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupsecretdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupsecretdeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationgroupsecretdeletegroupsecret"></a>`groupSecret` | [`GroupSecret`](#groupsecret) | Deleted group secret. |
+
 ### `Mutation.groupSecretUpdate`
 
 Input type: `GroupSecretUpdateInput`
