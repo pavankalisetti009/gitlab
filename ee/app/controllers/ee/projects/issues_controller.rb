@@ -22,10 +22,6 @@ module EE
           end
         end
 
-        before_action only: [:new, :create] do
-          populate_vulnerability_id
-        end
-
         before_action only: :new do
           if can?(current_user, :read_observability, project)
             @observability_values = gather_observability_values(params)
@@ -61,15 +57,6 @@ module EE
         super + EE_ISSUES_EXCEPT_ACTIONS
       end
 
-      def issue_params_attributes
-        attrs = super
-        attrs.unshift(:weight) if project.feature_available?(:issue_weights)
-        attrs.unshift(:epic_id) if project.group&.feature_available?(:epics)
-        attrs.unshift(:sprint_id) if project.group&.feature_available?(:iterations)
-
-        attrs
-      end
-
       override :finder_options
       def finder_options
         options = super
@@ -99,14 +86,6 @@ module EE
         ::Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/438295', new_threshold: 220)
       end
 
-      def issue_params
-        super.tap do |params|
-          if vulnerability_id
-            params.merge!(vulnerability_issue_build_parameters)
-          end
-        end
-      end
-
       def create_vulnerability_issue_feedback(issue)
         return unless issue.persisted? && vulnerability
 
@@ -118,20 +97,6 @@ module EE
         show_error = result[:message].errors.any?
 
         flash[:raw] = render_vulnerability_link_alert.html_safe if show_error
-      end
-
-      def vulnerability
-        project.vulnerabilities.find(vulnerability_id) if vulnerability_id
-      end
-
-      def vulnerability_issue_build_parameters
-        issue = params[:issue]
-
-        {
-          title: issue.fetch(:title, _("Investigate vulnerability: %{title}") % { title: vulnerability.title }),
-          description: issue.fetch(:description, render_vulnerability_description),
-          confidential: issue.fetch(:confidential, true)
-        }
       end
 
       def vulnerability_issue_feedback_params(issue, vulnerability)
@@ -164,10 +129,6 @@ module EE
             vulnerability_link: vulnerability_path(vulnerability)
           }
         )
-      end
-
-      def populate_vulnerability_id
-        self.vulnerability_id = params[:vulnerability_id] if can?(current_user, :read_security_resource, project)
       end
 
       def redirect_if_test_case
