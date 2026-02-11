@@ -107,6 +107,8 @@ module EE
       before_save :set_prevent_sharing_groups_outside_hierarchy
 
       after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_core_features_enabled?
+      after_commit :track_restricted_access_disabled, on: :update, if: :restricted_access_disabled?
+      after_commit :track_restricted_access_enabled, on: :update, if: :restricted_access_enabled?
 
       delegate :root_ancestor, to: :namespace
 
@@ -220,7 +222,38 @@ module EE
         end
       end
 
+      def restricted_access_disabled?
+        saved_change_to_seat_control? && seat_control_off?
+      end
+
+      def restricted_access_enabled?
+        saved_change_to_seat_control? && seat_control_block_overages?
+      end
+
       private
+
+      def track_restricted_access_disabled
+        ::Gitlab::InternalEvents.track_event(
+          'restricted_access_disabled',
+          namespace: namespace,
+          additional_properties: restricted_access_context_properties
+        )
+      end
+
+      def track_restricted_access_enabled
+        ::Gitlab::InternalEvents.track_event(
+          'restricted_access_enabled',
+          namespace: namespace,
+          additional_properties: restricted_access_context_properties
+        )
+      end
+
+      def restricted_access_context_properties
+        {
+          subscription_tier: namespace.gitlab_subscription&.plan_name,
+          seat_count: namespace.gitlab_subscription&.seats
+        }
+      end
 
       def trigger_todo_creation
         return unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)

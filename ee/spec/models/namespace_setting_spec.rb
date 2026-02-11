@@ -373,6 +373,72 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         end
       end
     end
+
+    context 'for track_restricted_access_disabled' do
+      let_it_be(:setting, reload: true) { create(:namespace_settings, namespace: build(:group), seat_control: :block_overages) }
+
+      context 'on update' do
+        it 'tracks restricted_access_disabled event when seat_control changes to off' do
+          expect(Gitlab::InternalEvents).to receive(:track_event).with(
+            'restricted_access_disabled',
+            namespace: setting.namespace,
+            additional_properties: hash_including(
+              subscription_tier: nil,
+              seat_count: nil
+            )
+          )
+
+          setting.update!(seat_control: :off)
+        end
+
+        it 'does not track event when other attributes change' do
+          expect(Gitlab::InternalEvents).not_to receive(:track_event)
+
+          setting.update!(default_branch_name: 'foo')
+        end
+      end
+
+      context 'on create' do
+        it 'does not track event' do
+          expect(Gitlab::InternalEvents).not_to receive(:track_event)
+
+          create(:namespace_settings, namespace: build(:group), seat_control: :off)
+        end
+      end
+    end
+
+    context 'for track_restricted_access_enabled' do
+      let_it_be(:setting, reload: true) { create(:namespace_settings, namespace: build(:group), seat_control: :off) }
+
+      context 'on update' do
+        it 'tracks restricted_access_enabled event when seat_control changes to block_overages' do
+          expect(Gitlab::InternalEvents).to receive(:track_event).with(
+            'restricted_access_enabled',
+            namespace: setting.namespace,
+            additional_properties: hash_including(
+              subscription_tier: nil,
+              seat_count: nil
+            )
+          )
+
+          setting.update!(seat_control: :block_overages)
+        end
+
+        it 'does not track event when other attributes change' do
+          expect(Gitlab::InternalEvents).not_to receive(:track_event)
+
+          setting.update!(default_branch_name: 'foo')
+        end
+      end
+
+      context 'on create' do
+        it 'does not track event' do
+          expect(Gitlab::InternalEvents).not_to receive(:track_event)
+
+          create(:namespace_settings, namespace: build(:group), seat_control: :block_overages)
+        end
+      end
+    end
   end
 
   describe '.duo_features_set' do

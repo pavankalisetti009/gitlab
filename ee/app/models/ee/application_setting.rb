@@ -419,6 +419,10 @@ module EE
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :trigger_clickhouse_for_analytics_enabled_event
       after_commit :remove_code_data_from_elasticsearch, if: :elasticsearch_code_scope_opted_out?
+      after_commit :track_restricted_access_disabled_self_managed, on: :update,
+        if: :restricted_access_disabled_self_managed?
+      after_commit :track_restricted_access_enabled_self_managed, on: :update,
+        if: :restricted_access_enabled_self_managed?
     end
 
     class_methods do
@@ -988,6 +992,34 @@ module EE
 
     def elasticsearch_code_scope_opted_out?
       elasticsearch_code_scope_previously_changed?(from: true, to: false)
+    end
+
+    def restricted_access_disabled_self_managed?
+      saved_change_to_seat_control? && seat_control == SEAT_CONTROL_OFF
+    end
+
+    def restricted_access_enabled_self_managed?
+      saved_change_to_seat_control? && seat_control == SEAT_CONTROL_BLOCK_OVERAGES
+    end
+
+    def track_restricted_access_disabled_self_managed
+      ::Gitlab::InternalEvents.track_event(
+        'restricted_access_disabled',
+        additional_properties: restricted_access_self_managed_properties
+      )
+    end
+
+    def track_restricted_access_enabled_self_managed
+      ::Gitlab::InternalEvents.track_event(
+        'restricted_access_enabled',
+        additional_properties: restricted_access_self_managed_properties
+      )
+    end
+
+    def restricted_access_self_managed_properties
+      {
+        seat_count: License.current.seats
+      }
     end
   end
 end
