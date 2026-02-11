@@ -83,6 +83,21 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do |destination_fa
             expect(destination1).to be_valid
             expect(destination1.secret_token).to eq('random_aws_token')
           end
+
+          context 'when secret_token exceeds maximum length' do
+            it 'is invalid when secret_token is over 4096 characters' do
+              destination = build(model_factory_name, :gcp, secret_token: 'a' * 8193)
+
+              expect(destination).not_to be_valid
+              expect(destination.errors[:secret_token]).to include('is too long (maximum is 4096 characters)')
+            end
+
+            it 'is valid when secret_token is exactly 4096 characters' do
+              destination = build(model_factory_name, :aws, secret_token: 'a' * 4096)
+
+              expect(destination).to be_valid
+            end
+          end
         end
 
         context 'when category is nil' do
