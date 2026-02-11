@@ -78301,6 +78301,9 @@ msgstr ""
 msgid "WorkItem|An error occurred while saving the status."
 msgstr ""
 
+msgid "WorkItem|An error occurred while subscribing to the view. Please try again."
+msgstr ""
+
 msgid "WorkItem|An error occurred while updating the status."
 msgstr ""
 
