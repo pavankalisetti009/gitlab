@@ -1,4 +1,9 @@
 import { s__ } from '~/locale';
+import {
+  ACCESS_LEVEL_ADMIN_INTEGER,
+  ACCESS_LEVELS_INTEGER_TO_STRING,
+  ACCESS_LEVEL_ADMIN_STRING,
+} from '~/access_level/constants';
 
 export const AVAILABILITY_OPTIONS = {
   DEFAULT_ON: 'default_on',
@@ -31,3 +36,10 @@ export const AI_CATALOG_SEED_EXTERNAL_AGENTS_PATH = '/api/v4/admin/ai_catalog/se
 // Exact error message from backend:
 // https://gitlab.com/gitlab-org/gitlab/-/blob/8217d2663f0ee08de2829d59b9530c0688585b50/ee/lib/gitlab/ai/catalog/third_party_flows/seeder.rb#L188
 export const AI_CATALOG_ALREADY_SEEDED_ERROR = 'Error: External agents already seeded';
+
+export const ACCESS_LEVEL_EVERYONE_INTEGER = -1;
+export const ACCESS_LEVELS_WITH_EVERYONE_AND_ADMIN = {
+  [ACCESS_LEVEL_EVERYONE_INTEGER]: null,
+  ...ACCESS_LEVELS_INTEGER_TO_STRING,
+  [ACCESS_LEVEL_ADMIN_INTEGER]: ACCESS_LEVEL_ADMIN_STRING,
+};

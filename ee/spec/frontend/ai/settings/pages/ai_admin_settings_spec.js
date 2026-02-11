@@ -609,14 +609,14 @@ describe('AiAdminSettings', () => {
 
         // Change to Everyone
         await findAiCommonSettings().vm.$emit('submit', {
-          minimumAccessLevelExecuteAsync: -1,
+          minimumAccessLevelExecuteAsync: 40,
           minimumAccessLevelExecuteSync: -1,
         });
 
         expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
           input: expect.objectContaining({
             minimumAccessLevelExecute: null,
-            minimumAccessLevelExecuteAsync: null,
+            minimumAccessLevelExecuteAsync: 'MAINTAINER',
           }),
         });
       });
@@ -653,14 +653,14 @@ describe('AiAdminSettings', () => {
         await createComponent();
 
         await findAiCommonSettings().vm.$emit('submit', {
-          minimumAccessLevelExecuteAsync: 50,
-          minimumAccessLevelExecuteSync: 10,
+          minimumAccessLevelExecuteAsync: 60,
+          minimumAccessLevelExecuteSync: 50,
         });
 
         expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
           input: expect.objectContaining({
-            minimumAccessLevelExecute: 'GUEST',
-            minimumAccessLevelExecuteAsync: 'OWNER',
+            minimumAccessLevelExecute: 'OWNER',
+            minimumAccessLevelExecuteAsync: 'ADMIN',
           }),
         });
       });
