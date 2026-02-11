@@ -24,15 +24,15 @@ module EE
 
       def identity_verification_exemption
         if @user.add_identity_verification_exemption("set by #{current_user.username}")
-          redirect_to [:admin, @user], notice: _('Identity verification exemption has been created.')
+          redirect_to [:admin, @user], notice: _('Added identity verification exemption.')
         else
-          redirect_to [:admin, @user], alert: _('Something went wrong. Unable to create identity verification exemption.')
+          redirect_to [:admin, @user], alert: _('Something went wrong. Unable to add identity verification exemption.')
         end
       end
 
       def destroy_identity_verification_exemption
         if @user.remove_identity_verification_exemption
-          redirect_to [:admin, @user], notice: _('Identity verification exemption has been removed.')
+          redirect_to [:admin, @user], notice: _('Removed identity verification exemption.')
         else
           redirect_to [:admin, @user], alert: _('Something went wrong. Unable to remove identity verification exemption.')
         end

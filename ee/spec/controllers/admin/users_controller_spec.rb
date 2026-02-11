@@ -179,7 +179,7 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
 
         subject
 
-        expect(controller).to set_flash[:notice].to(_('Identity verification exemption has been created.'))
+        expect(controller).to set_flash[:notice].to(_('Added identity verification exemption.'))
         expect(response).to redirect_to(admin_user_path(user))
       end
     end
@@ -190,7 +190,7 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
 
         subject
 
-        expect(controller).to set_flash[:alert].to(_('Something went wrong. Unable to create identity verification exemption.'))
+        expect(controller).to set_flash[:alert].to(_('Something went wrong. Unable to add identity verification exemption.'))
         expect(response).to redirect_to(admin_user_path(user))
       end
     end
@@ -209,7 +209,7 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
 
         subject
 
-        expect(controller).to set_flash[:notice].to(_('Identity verification exemption has been removed.'))
+        expect(controller).to set_flash[:notice].to(_('Removed identity verification exemption.'))
         expect(response).to redirect_to(admin_user_path(user))
       end
     end
