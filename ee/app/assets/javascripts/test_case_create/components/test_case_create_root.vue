@@ -89,7 +89,7 @@ export default {
     <template #title>
       <h1 class="page-title gl-text-size-h-display">{{ s__('TestCases|New test case') }}</h1>
     </template>
-    <template #actions="issuableMeta">
+    <template #actions="{ issuableMeta }">
       <gl-button
         data-testid="submit-test-case"
         category="primary"
