@@ -53,25 +53,27 @@ describe('AiCatalogItemConsumerModal', () => {
   const findProjectName = () => wrapper.findByTestId('project-name');
   const findGroupName = () => wrapper.findByTestId('group-name');
 
-  beforeEach(() => {
-    createWrapper();
-  });
-
   describe('component rendering', () => {
-    it('renders modal and item name', () => {
-      expect(findModal().props('title')).toBe('Enable flow in a project');
-      expect(findModal().find('dt').text()).toBe('Selected flow');
-      expect(findModal().find('dd').text()).toBe(mockFlow.name);
-    });
+    describe('default', () => {
+      beforeEach(() => {
+        createWrapper();
+      });
 
-    it('does not render group/project radio group', () => {
-      expect(findFormRadioGroup().exists()).toBe(false);
-    });
+      it('renders modal and item name', () => {
+        expect(findModal().props('title')).toBe('Enable flow in a project');
+        expect(findModal().find('dt').text()).toBe('Selected flow');
+        expect(findModal().find('dd').text()).toBe(mockFlow.name);
+      });
 
-    it('renders the label description of the project field', () => {
-      expect(findFormGroup().props('labelDescription')).toBe(
-        'Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
-      );
+      it('does not render group/project radio group', () => {
+        expect(findFormRadioGroup().exists()).toBe(false);
+      });
+
+      it('renders the label description of the project field', () => {
+        expect(findFormGroup().props('labelDescription')).toBe(
+          'Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
+        );
+      });
     });
 
     describe('when the item is private', () => {
@@ -114,6 +116,10 @@ describe('AiCatalogItemConsumerModal', () => {
     });
 
     describe('when the item is public', () => {
+      beforeEach(() => {
+        createWrapper();
+      });
+
       it('renders project dropdown without a selected project', () => {
         expect(findProjectDropdown().props('value')).toBe(null);
       });
@@ -153,6 +159,8 @@ describe('AiCatalogItemConsumerModal', () => {
 
   describe('when submitting the form', () => {
     it('emits the submit event', async () => {
+      createWrapper();
+
       const projectId = 'gid://gitlab/Project/1000000';
       await findProjectDropdown().vm.$emit('input', projectId);
       findForm().vm.$emit('submit', { preventDefault: noop });
@@ -183,6 +191,8 @@ describe('AiCatalogItemConsumerModal', () => {
 
   describe('when the modal emits the hidden event', () => {
     it('emits the hide event', () => {
+      createWrapper();
+
       findModal().vm.$emit('hidden');
 
       expect(wrapper.emitted('hide')).toHaveLength(1);
@@ -190,54 +200,56 @@ describe('AiCatalogItemConsumerModal', () => {
   });
 
   describe('when showAddToGroup is true', () => {
-    beforeEach(() => {
-      createWrapper({ props: { showAddToGroup: true } });
-    });
-
-    it('renders modal title for group', () => {
-      expect(findModal().props('title')).toBe('Enable flow in a group');
-    });
-
-    describe('when item is public', () => {
-      it('renders group label description', () => {
-        const groupFormGroup = findFormGroups().at(0);
-        expect(groupFormGroup.props('labelDescription')).toBe(
-          'You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
-        );
+    describe('default', () => {
+      beforeEach(() => {
+        createWrapper({ props: { showAddToGroup: true } });
       });
 
-      it('renders group dropdown', () => {
-        expect(findGroupDropdown().exists()).toBe(true);
-        expect(findProjectDropdown().exists()).toBe(false);
+      it('renders modal title for group', () => {
+        expect(findModal().props('title')).toBe('Enable flow in a group');
       });
 
-      it('renders alert when there was a problem fetching groups', async () => {
-        const error = 'Failed to load groups.';
-
-        await findGroupDropdown().vm.$emit('error', error);
-
-        expect(findErrorAlert().text()).toBe(error);
-      });
-
-      describe('form submission with group target', () => {
-        it('emits submit event with groupId', async () => {
-          const groupId = 'gid://gitlab/Group/2';
-          await findGroupDropdown().vm.$emit('input', groupId);
-          findForm().vm.$emit('submit', { preventDefault: noop });
-
-          expect(wrapper.emitted('submit')[0][0]).toStrictEqual({
-            target: { groupId },
-          });
+      describe('when item is public', () => {
+        it('renders group label description', () => {
+          const groupFormGroup = findFormGroups().at(0);
+          expect(groupFormGroup.props('labelDescription')).toBe(
+            'You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
+          );
         });
 
-        describe('when no group is selected', () => {
-          it('does not submit and shows validation error', async () => {
-            findForm().vm.$emit('submit', { preventDefault: noop });
-            await nextTick();
+        it('renders group dropdown', () => {
+          expect(findGroupDropdown().exists()).toBe(true);
+          expect(findProjectDropdown().exists()).toBe(false);
+        });
 
-            expect(wrapper.emitted('submit')).toBeUndefined();
-            const groupFormGroup = findFormGroups().at(0);
-            expect(groupFormGroup.props('state')).toBe(false);
+        it('renders alert when there was a problem fetching groups', async () => {
+          const error = 'Failed to load groups.';
+
+          await findGroupDropdown().vm.$emit('error', error);
+
+          expect(findErrorAlert().text()).toBe(error);
+        });
+
+        describe('form submission with group target', () => {
+          it('emits submit event with groupId', async () => {
+            const groupId = 'gid://gitlab/Group/2';
+            await findGroupDropdown().vm.$emit('input', groupId);
+            findForm().vm.$emit('submit', { preventDefault: noop });
+
+            expect(wrapper.emitted('submit')[0][0]).toStrictEqual({
+              target: { groupId },
+            });
+          });
+
+          describe('when no group is selected', () => {
+            it('does not submit and shows validation error', async () => {
+              findForm().vm.$emit('submit', { preventDefault: noop });
+              await nextTick();
+
+              expect(wrapper.emitted('submit')).toBeUndefined();
+              const groupFormGroup = findFormGroups().at(0);
+              expect(groupFormGroup.props('state')).toBe(false);
+            });
           });
         });
       });
@@ -262,6 +274,7 @@ describe('AiCatalogItemConsumerModal', () => {
         expect(findPrivateAlert().exists()).toBe(true);
       });
     });
+
     describe.each`
       itemType                            | warningComponent
       ${AI_CATALOG_TYPE_AGENT}            | ${AddGroupAgentWarning}
