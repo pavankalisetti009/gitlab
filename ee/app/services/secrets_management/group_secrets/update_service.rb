@@ -18,7 +18,7 @@ module SecretsManagement
           read_result = read_secret(name)
           break read_result unless read_result.success?
 
-          group_secret = read_result.payload[:group_secret]
+          group_secret = read_result.payload[:secret]
           group_secret.description = description unless description.nil?
           group_secret.environment = environment unless environment.nil?
           group_secret.protected = protected unless protected.nil?

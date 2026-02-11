@@ -27,7 +27,7 @@ module Resolvers
           .execute(name, include_rotation_info: lookahead.selects?(:rotation_info))
 
         if result.success?
-          result.payload[:project_secret]
+          result.payload[:secret]
         else
           raise_resource_not_available_error!(result.message)
         end

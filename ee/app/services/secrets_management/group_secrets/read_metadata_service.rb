@@ -40,7 +40,7 @@ module SecretsManagement
         # Mark attributes as not changed so that subsequent changes are properly tracked
         group_secret.changes_applied
 
-        ServiceResponse.success(payload: { group_secret: group_secret })
+        ServiceResponse.success(payload: { secret: group_secret })
       end
 
       def not_found_response

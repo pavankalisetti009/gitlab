@@ -19,7 +19,7 @@ module SecretsManagement
           read_result = read_secret(name)
           break read_result unless read_result.success?
 
-          project_secret = read_result.payload[:project_secret]
+          project_secret = read_result.payload[:secret]
           project_secret.description = description unless description.nil?
           project_secret.environment = environment unless environment.nil?
           project_secret.branch = branch unless branch.nil?
