@@ -295,11 +295,14 @@ module Vulnerabilities
       # We also need to ensure we _don't_ use the commit SHA from the report if it's the default placeholder value,
       # which is defined in the `secrets` analyzer:
       # https://gitlab.com/gitlab-org/security-products/analyzers/secrets/-/blob/7e1e03209495a209308f3e9e96c5a4a0d32e1d55/secret.go#L13-13
+      secret_detection_sha || @sha || pipeline_branch
+    end
+
+    def secret_detection_sha
+      return unless secret_detection?
+
       commit_sha = location.dig("commit", "sha")
-      if !commit_sha || commit_sha == SECRET_DETECTION_DEFAULT_COMMIT_SHA
-        # Two layers of fallbacks.
-        commit_sha = @sha || pipeline_branch
-      end
+      return if commit_sha == SECRET_DETECTION_DEFAULT_COMMIT_SHA
 
       commit_sha
     end
