@@ -17406,6 +17406,9 @@ msgstr ""
 msgid "CompareRevisions|Only incoming changes from source"
 msgstr ""
 
+msgid "CompareRevisions|Select %{boldStart}Compare%{boldEnd} to check for an existing merge request"
+msgstr ""
+
 msgid "CompareRevisions|Select Git revision"
 msgstr ""
 
