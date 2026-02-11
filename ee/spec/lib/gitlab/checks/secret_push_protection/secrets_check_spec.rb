@@ -218,6 +218,46 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
               end
             end
 
+            context 'when TooManyLinesError is raised during scanning' do
+              let(:lines_count) { 400_000 }
+              let(:threshold) { 350_000 }
+              let(:too_many_lines_error) do
+                Gitlab::Checks::SecretPushProtection::TooManyLinesError.new(lines_count, threshold)
+              end
+
+              before do
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
+                  allow(instance).to receive(:standardize_payloads).and_raise(too_many_lines_error)
+                end
+              end
+
+              it 'adds a warning message to be displayed to the user' do
+                warning_instance = instance_double(Gitlab::Checks::SecretPushProtection::PostPushWarning)
+
+                expect(Gitlab::Checks::SecretPushProtection::PostPushWarning)
+                  .to receive(:new)
+                  .with(project.repository, user, changes_access.protocol, lines_count, threshold)
+                  .and_return(warning_instance)
+
+                expect(warning_instance).to receive(:add_message)
+
+                expect { secrets_check.validate! }.not_to raise_error
+              end
+
+              it 'tracks the exception in telemetry' do
+                expect_next_instance_of(Gitlab::Checks::SecretPushProtection::AuditLogger) do |logger|
+                  expect(logger).to receive(:track_spp_too_many_lines_error)
+                    .with(too_many_lines_error.message, lines_count)
+                end
+
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PostPushWarning) do |instance|
+                  allow(instance).to receive(:add_message)
+                end
+
+                expect { secrets_check.validate! }.not_to raise_error
+              end
+            end
+
             context 'when SDS should be called (on SaaS)' do
               before do
                 stub_saas_features(secret_detection_service: true)
