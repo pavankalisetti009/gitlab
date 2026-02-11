@@ -365,6 +365,8 @@ module EE
         mount_mutation ::Mutations::Ai::DuoWorkflows::DeleteWorkflow, experiment: { milestone: '18.1' }
         mount_mutation ::Mutations::Ai::DuoWorkflows::Create, experiment: { milestone: '18.1' },
           scopes: [:api, :ai_features]
+        mount_mutation ::Mutations::Ai::DuoWorkflows::UpdateToolCallApprovals, experiment: { milestone: '18.9' },
+          scopes: [:api, :ai_features]
         mount_mutation ::Mutations::Authz::LdapAdminRoleLinks::Create, experiment: { milestone: '17.11' }
         mount_mutation ::Mutations::Authz::LdapAdminRoleLinks::Destroy, experiment: { milestone: '18.0' }
         mount_mutation ::Mutations::Authz::AdminRoles::LdapSync, experiment: { milestone: '18.0' }

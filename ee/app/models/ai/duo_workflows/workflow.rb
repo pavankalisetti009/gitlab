@@ -36,6 +36,9 @@ module Ai
       validate :pre_approved_privileges_included_in_agent_privileges, on: :create
       validate :valid_service_account_user
 
+      validates :tool_call_approvals,
+        json_schema: { filename: 'duo_tool_call_approvals', size_limit: 64.kilobytes }
+
       # `ide` is deprecated in favor of `chat`
       # `web` is deprecated in favor of `ambient`
       enum :environment, { ide: 1, web: 2, chat_partial: 3, chat: 4, ambient: 5 }
@@ -167,6 +170,57 @@ module Ai
         ].freeze
       end
 
+      # Value object for managing tool call approvals stored in JSONB
+      class ToolCallApprovals
+        CALL_ARGS_KEY = 'call_args'
+
+        def initialize(data = {})
+          @approvals = data.dup
+        end
+
+        def add_approval(tool_name:, call_args:)
+          call_args_hash = hash_call_args(call_args)
+          @approvals[tool_name] ||= { CALL_ARGS_KEY => [] }
+
+          # Handle both Set (in-memory) and Array (from JSONB) cases
+          call_args_set = Set.new(@approvals[tool_name][CALL_ARGS_KEY])
+          call_args_set.add(call_args_hash)
+          @approvals[tool_name][CALL_ARGS_KEY] = call_args_set.to_a
+        end
+
+        def to_h
+          @approvals
+        end
+
+        def [](key)
+          @approvals[key]
+        end
+
+        def []=(key, value)
+          @approvals[key] = value
+        end
+
+        def each
+          @approvals.each { |tool_name, approval| yield tool_name, approval }
+        end
+
+        def empty?
+          @approvals.empty?
+        end
+
+        def keys
+          @approvals.keys
+        end
+
+        private
+
+        # Returns SHA256 hash of tool call args for storage
+        # This ensures predictable payload size and allows equality comparison between different call args
+        def hash_call_args(call_args)
+          ::Digest::SHA256.hexdigest(call_args)
+        end
+      end
+
       def self.target_status_for_event(status_event)
         TARGET_STATUSES[status_event]
       end
@@ -249,6 +303,12 @@ module Ai
         return unless project_level?
 
         "#{Gitlab::Routing.url_helpers.project_automate_agent_sessions_url(project)}/#{id}"
+      end
+
+      def add_tool_call_approval(tool_name:, call_args:)
+        approvals = ToolCallApprovals.new(tool_call_approvals || {})
+        approvals.add_approval(tool_name: tool_name, call_args: call_args)
+        self.tool_call_approvals = approvals.to_h
       end
 
       private

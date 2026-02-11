@@ -71,6 +71,12 @@ module Types
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: 'Privileges pre-approved for the agent during execution.'
 
+        # rubocop:disable Graphql/JSONType -- There is infinite number of possible keys representing tool names in this object
+        field :tool_call_approvals, GraphQL::Types::JSON,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          description: 'Tools approval per session policy.'
+        # rubocop:enable Graphql/JSONType
+
         field :mcp_enabled, GraphQL::Types::Boolean,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: 'Has MCP been enabled for the namespace.'
