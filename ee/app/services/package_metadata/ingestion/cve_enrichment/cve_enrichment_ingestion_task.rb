@@ -15,16 +15,43 @@ module PackageMetadata
         end
 
         def execute
-          PackageMetadata::CveEnrichment.bulk_upsert!(
-            valid_cve_enrichment_entries,
-            unique_by: %w[cve],
-            returns: %w[id cve epss_score is_known_exploit created_at updated_at]
-          )
+          entries = valid_cve_enrichment_entries
+          return if entries.empty?
+
+          sql = build_upsert_sql(entries)
+          ApplicationRecord.connection.execute(sql)
         end
 
         private
 
         attr_reader :import_data
+
+        def build_upsert_sql(entries)
+          # We use raw SQL instead of Rails' upsert_all because we need conditional
+          # updates: only update updated_at when epss_score or is_known_exploit changes.
+          # This prevents unnecessary writes and allows querying recently modified records.
+          values = entries.map { |entry| quote_entry_values(entry) }.join(', ')
+
+          <<~SQL
+            INSERT INTO pm_cve_enrichment (epss_score, created_at, updated_at, cve, is_known_exploit)
+            VALUES #{values}
+            ON CONFLICT (cve) DO UPDATE SET
+              epss_score = excluded.epss_score,
+              updated_at = excluded.updated_at,
+              is_known_exploit = excluded.is_known_exploit
+            WHERE pm_cve_enrichment.epss_score IS DISTINCT FROM excluded.epss_score
+               OR pm_cve_enrichment.is_known_exploit IS DISTINCT FROM excluded.is_known_exploit
+          SQL
+        end
+
+        def quote_entry_values(entry)
+          conn = ApplicationRecord.connection
+          "(#{conn.quote(entry.epss_score)}, " \
+            "#{conn.quote(entry.created_at)}, " \
+            "#{conn.quote(entry.updated_at)}, " \
+            "#{conn.quote(entry.cve)}, " \
+            "#{conn.quote(entry.is_known_exploit)})"
+        end
 
         # validates the list of provided cve_enrichment models and returns
         # only those which are valid and logs the invalid packages as an error
