@@ -1107,23 +1107,6 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         it_behaves_like 'sandbox is disabled'
       end
     end
-
-    context 'when feature flag use_internal_refs_for_workload_pipelines is disabled' do
-      before do
-        stub_feature_flags(use_internal_refs_for_workload_pipelines: false)
-        allow(duo_config).to receive(:setup_script).and_return([])
-      end
-
-      it 'prepends the checkout command' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
-          commands = workload_definition.commands
-          expect(commands).to include('git checkout $CI_WORKLOAD_REF')
-          expect(commands.size).to eq(8)
-        end.and_call_original
-
-        expect(execute).to be_success
-      end
-    end
   end
 
   context 'with cache configuration' do

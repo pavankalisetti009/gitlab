@@ -188,13 +188,7 @@ module Ai
           %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
           %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
           %(echo Starting Workflow #{@workflow.id})
-        ] + branch_checkout_commands + set_up_executor_commands
-      end
-
-      def branch_checkout_commands
-        return [] if Feature.enabled?(:use_internal_refs_for_workload_pipelines, project)
-
-        [%(git checkout $CI_WORKLOAD_REF)]
+        ] + set_up_executor_commands
       end
 
       def set_up_executor_commands
