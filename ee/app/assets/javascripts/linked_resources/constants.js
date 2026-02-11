@@ -1,7 +1,7 @@
 import { s__ } from '~/locale';
 
 export const resourceLinksI18n = Object.freeze({
-  headerText: s__('LinkedResources|Linked resources'),
+  headerText: s__('LinkedResources|Resources'),
   helpText: s__(
     'LinkedResources|Use this space to add links to the resources your team needs as they work to resolve the incident.',
   ),
