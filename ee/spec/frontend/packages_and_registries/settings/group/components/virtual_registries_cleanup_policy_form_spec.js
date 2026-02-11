@@ -13,10 +13,14 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { visitUrl } from '~/lib/utils/url_utility';
+import { visitUrl, visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import VirtualRegistriesCleanupPolicyForm from 'ee/packages_and_registries/settings/group/components/virtual_registries_cleanup_policy_form.vue';
 import getVirtualRegistriesCleanupPolicyDetails from 'ee/packages_and_registries/settings/group/graphql/queries/get_virtual_registries_cleanup_policy_details.query.graphql';
-import { groupVirtualRegistriesCleanupPolicyMock } from '../mock_data';
+import upsertVirtualRegistriesCleanupPolicy from 'ee/packages_and_registries/settings/group/graphql/mutations/upsert_virtual_registries_cleanup_policy.mutation.graphql';
+import {
+  groupVirtualRegistriesCleanupPolicyMock,
+  virtualRegistriesCleanupPolicyMutationMock,
+} from '../mock_data';
 
 jest.mock('~/lib/utils/url_utility');
 
@@ -26,6 +30,7 @@ describe('VirtualRegistriesCleanupPolicyForm', () => {
   let wrapper;
   let apolloProvider;
   let queryHandler;
+  let mutationHandler;
 
   const defaultProvide = {
     groupPath: 'test-group',
@@ -48,10 +53,22 @@ describe('VirtualRegistriesCleanupPolicyForm', () => {
 
   const submitForm = () => findForm().vm.$emit('submit', { preventDefault: jest.fn() });
 
+  const fillApolloCache = () => {
+    apolloProvider.defaultClient.cache.writeQuery({
+      query: getVirtualRegistriesCleanupPolicyDetails,
+      variables: {
+        fullPath: defaultProvide.groupPath,
+      },
+      ...groupVirtualRegistriesCleanupPolicyMock(),
+    });
+  };
+
   const createComponent = ({
     provide = defaultProvide,
     queryResponse = groupVirtualRegistriesCleanupPolicyMock(),
+    mutationResponse = virtualRegistriesCleanupPolicyMutationMock(),
     queryError = null,
+    mutationError = null,
   } = {}) => {
     if (queryError) {
       queryHandler = jest.fn().mockRejectedValue(queryError);
@@ -59,7 +76,16 @@ describe('VirtualRegistriesCleanupPolicyForm', () => {
       queryHandler = jest.fn().mockResolvedValue(queryResponse);
     }
 
-    apolloProvider = createMockApollo([[getVirtualRegistriesCleanupPolicyDetails, queryHandler]]);
+    if (mutationError) {
+      mutationHandler = jest.fn().mockRejectedValue(mutationError);
+    } else {
+      mutationHandler = jest.fn().mockResolvedValue(mutationResponse);
+    }
+
+    apolloProvider = createMockApollo([
+      [getVirtualRegistriesCleanupPolicyDetails, queryHandler],
+      [upsertVirtualRegistriesCleanupPolicy, mutationHandler],
+    ]);
 
     wrapper = shallowMountExtended(VirtualRegistriesCleanupPolicyForm, {
       apolloProvider,
@@ -269,6 +295,125 @@ describe('VirtualRegistriesCleanupPolicyForm', () => {
       await findCadenceSelect().vm.$emit('change', 30);
 
       expect(findNextRunText().text()).toContain('February 14, 2025');
+    });
+  });
+
+  describe('form submission', () => {
+    describe('success state', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+        fillApolloCache();
+      });
+
+      it('calls mutation with correct variables', async () => {
+        submitForm();
+        await waitForPromises();
+
+        expect(mutationHandler).toHaveBeenCalledWith({
+          input: {
+            fullPath: defaultProvide.groupPath,
+            enabled: true,
+            cadence: 7,
+            keepNDaysAfterDownload: 30,
+            notifyOnSuccess: false,
+            notifyOnFailure: true,
+          },
+        });
+      });
+
+      it('redirects to settings page with success alert on success', async () => {
+        submitForm();
+        await waitForPromises();
+
+        expect(visitUrlWithAlerts).toHaveBeenCalledWith(defaultProvide.settingsPath, [
+          {
+            id: 'virtual-registries-cleanup-policy-saved',
+            message: 'Cleanup policy has been successfully saved.',
+            variant: 'success',
+          },
+        ]);
+      });
+    });
+
+    describe('error handling', () => {
+      it('shows error alert when mutation returns errors', async () => {
+        createComponent({
+          mutationResponse: virtualRegistriesCleanupPolicyMutationMock({
+            errors: ['Something went wrong'],
+          }),
+        });
+        await waitForPromises();
+        fillApolloCache();
+
+        submitForm();
+        await waitForPromises();
+
+        expect(findAlert().text()).toContain('Something went wrong');
+      });
+
+      it('shows error alert when mutation fails with network error', async () => {
+        createComponent({
+          mutationError: new Error('Network error'),
+        });
+        await waitForPromises();
+        fillApolloCache();
+
+        submitForm();
+        await waitForPromises();
+
+        expect(findAlert().text()).toContain('Failed to save cleanup policy');
+      });
+
+      it('does not redirect when mutation fails', async () => {
+        createComponent({
+          mutationError: new Error('Network error'),
+        });
+        await waitForPromises();
+        fillApolloCache();
+
+        submitForm();
+        await waitForPromises();
+
+        expect(visitUrlWithAlerts).not.toHaveBeenCalled();
+      });
+
+      it('does not call mutation when form is invalid', async () => {
+        createComponent();
+        await waitForPromises();
+        fillApolloCache();
+
+        await findKeepNDaysInput().vm.$emit('input', 0);
+        submitForm();
+        await waitForPromises();
+
+        expect(mutationHandler).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('with updated form values', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+        fillApolloCache();
+      });
+
+      it('sends updated values when form fields are changed', async () => {
+        await findEnableToggle().vm.$emit('change', false);
+        await findCadenceSelect().vm.$emit('input', 14);
+        await findKeepNDaysInput().vm.$emit('input', 60);
+
+        submitForm();
+        await waitForPromises();
+
+        expect(mutationHandler).toHaveBeenCalledWith({
+          input: expect.objectContaining({
+            enabled: false,
+            cadence: 14,
+            keepNDaysAfterDownload: 60,
+          }),
+        });
+      });
     });
   });
 });

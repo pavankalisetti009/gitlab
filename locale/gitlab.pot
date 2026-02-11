@@ -75401,6 +75401,9 @@ msgstr ""
 msgid "VirtualRegistryCleanupPolicyForm|Cancel"
 msgstr ""
 
+msgid "VirtualRegistryCleanupPolicyForm|Cleanup policy has been successfully saved."
+msgstr ""
+
 msgid "VirtualRegistryCleanupPolicyForm|Delete caches not accessed in the last (days)"
 msgstr ""
 
@@ -75429,6 +75432,9 @@ msgid "VirtualRegistryCleanupPolicyForm|Every week"
 msgstr ""
 
 msgid "VirtualRegistryCleanupPolicyForm|Failed to load cleanup policy. Please try again."
+msgstr ""
+
+msgid "VirtualRegistryCleanupPolicyForm|Failed to save cleanup policy. Please try again."
 msgstr ""
 
 msgid "VirtualRegistryCleanupPolicyForm|Loading cleanup policy"
