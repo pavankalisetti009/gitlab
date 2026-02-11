@@ -22,6 +22,10 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
     create(:iteration, :with_due_date, iterations_cadence: cadence, start_date: 2.days.ago)
   end
 
+  before_all do
+    create(:callout, user: user, feature_name: :work_items_onboarding_modal)
+  end
+
   shared_examples 'updates weight of a work item on the list' do
     it 'updates weight of a work item on the list', :aggregate_failures do
       within_testid('work-item-drawer') do

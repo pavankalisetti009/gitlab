@@ -35,6 +35,9 @@ RSpec.describe 'Filter issues by custom status', :js, feature_category: :team_pl
     create(:work_item_current_status, work_item_id: done_2_issue.id, system_defined_status_id: done_status_id)
   end
 
+  before_all do
+    create(:callout, user: user, feature_name: :work_items_onboarding_modal)
+  end
   shared_examples 'filtering by custom status' do
     context 'when custom status feature is enabled' do
       before do
