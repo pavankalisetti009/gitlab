@@ -13,6 +13,7 @@ RSpec.describe Types::Ai::Catalog::ItemInterface, feature_category: :workflow_ca
       configuration_for_group
       configuration_for_project
       description
+      foundational
       id
       item_type
       name

@@ -60,6 +60,11 @@ module Types
           argument :group_id, ::Types::GlobalIDType[::Group], required: true,
             description: 'Global ID of the group to return the item configuration of.'
         end
+        field :foundational,
+          GraphQL::Types::Boolean,
+          null: false,
+          method: :foundational?,
+          description: 'Whether the item is a foundational item.'
         field :foundational_flow_reference, GraphQL::Types::String,
           null: true,
           description: 'Foundational flow reference.'
