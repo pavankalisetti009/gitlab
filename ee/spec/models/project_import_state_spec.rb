@@ -14,6 +14,34 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
   describe 'transitions' do
     let(:import_state) { create(:import_state, :started, import_type: :github, project: project) }
 
+    context 'on state transition: canceled => failed for mirrors' do
+      context 'when project is a mirror' do
+        let(:mirror_project) { create(:project, :mirror, :import_canceled) }
+        let(:import_state) { mirror_project.import_state }
+
+        it 'allows transition from canceled to failed' do
+          expect(import_state).to be_canceled
+
+          import_state.fail_op
+
+          expect(import_state).to be_failed
+        end
+      end
+
+      context 'when project is not a mirror' do
+        let(:regular_project) { create(:project, :import_canceled) }
+        let(:import_state) { regular_project.import_state }
+
+        it 'does not allow transition from canceled to failed' do
+          expect(import_state).to be_canceled
+
+          import_state.fail_op
+
+          expect(import_state).to be_canceled
+        end
+      end
+    end
+
     context 'on state transition: [:none, :finished, :failed] => :scheduled' do
       let(:import_state) { create(:import_state, :failed, import_type: :github, project: project) }
       let(:jid) { '551d3ceac5f67a116719ce41' }

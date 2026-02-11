@@ -26,6 +26,22 @@ class ProjectImportScheduleWorker
         next
       end
 
+      # Recover mirrors from canceled state by transitioning through failed.
+      # This handles the case where a GitHub import was canceled on a project
+      # that later became a mirror. Mirrors preserve import_data (unlike regular
+      # imports), so they can be recovered by transitioning canceled to failed to scheduled.
+      # See: https://gitlab.com/gitlab-org/gitlab/-/issues/539236
+      if project.import_state.canceled?
+        if project.mirror?
+          project.import_state.mark_as_failed('Mirror recovering from canceled state')
+          log_extra_metadata_on_done(:import_state_recovered, 'Recovered mirror from canceled state')
+        else
+          # Non-mirrors stay in canceled state (import_data was destroyed)
+          log_extra_metadata_on_done(:mirroring_skipped, 'Import was canceled and cannot recover')
+          next
+        end
+      end
+
       project.import_state.schedule
 
       unless project.mirror?

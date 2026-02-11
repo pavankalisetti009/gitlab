@@ -113,4 +113,47 @@ RSpec.describe ProjectImportScheduleWorker, feature_category: :source_code_manag
       subject.perform(project.id)
     end
   end
+
+  context 'when import_state is canceled' do
+    context 'when project is a mirror' do
+      let!(:mirror_project) { create(:project, :public) }
+      let!(:import_state) { create(:import_state, :canceled, :mirror, project: mirror_project) }
+
+      before do
+        stub_licensed_features(repository_mirrors: true)
+      end
+
+      it 'recovers from canceled state and schedules with all expected side effects' do
+        expect(subject).to receive(:log_extra_metadata_on_done)
+          .with(:import_state_recovered, 'Recovered mirror from canceled state')
+
+        subject.perform(mirror_project.id)
+        import_state.reload
+
+        expect(import_state).to be_scheduled
+        expect(import_state.last_error).to eq('Mirror recovering from canceled state')
+        expect(import_state.jid).to be_present
+      end
+    end
+
+    context 'when project is not a mirror' do
+      let!(:non_mirror_project) { project }
+      let!(:import_state) { create(:import_state, :canceled, project: project) }
+
+      before do
+        allow(non_mirror_project.import_state).to receive(:schedule)
+      end
+
+      it 'does not recover and skips with logging' do
+        expect(subject).to receive(:log_extra_metadata_on_done)
+          .with(:mirroring_skipped, 'Import was canceled and cannot recover')
+
+        subject.perform(non_mirror_project.id)
+        import_state.reload
+
+        expect(import_state).to be_canceled
+        expect(non_mirror_project.import_state).not_to have_received(:schedule)
+      end
+    end
+  end
 end

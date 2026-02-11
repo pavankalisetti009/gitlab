@@ -15,6 +15,12 @@ module EE
       before_validation :set_next_execution_to_now, on: :create
 
       state_machine :status, initial: :none do
+        # Allow mirrors to recover from canceled state by transitioning to failed.
+        # Regular imports cannot recover - their import_data is destroyed on cancel.
+        event :fail_op do
+          transition canceled: :failed, if: ->(state) { state.mirror? }
+        end
+
         before_transition [:none, :finished, :failed] => :scheduled do |state, _|
           state.last_update_scheduled_at = Time.current
         end
