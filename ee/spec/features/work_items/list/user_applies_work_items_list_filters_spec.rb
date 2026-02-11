@@ -46,6 +46,10 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
     expect(page).to have_css('.issue', count: count)
   end
 
+  before_all do
+    create(:callout, user: user, feature_name: :work_items_onboarding_modal)
+  end
+
   context 'for signed in user' do
     before do
       stub_licensed_features(epics: true, quality_management: true, subepics: true, issue_weights: true,
