@@ -23,8 +23,8 @@ export default {
   },
   inject: ['basePath'],
   props: {
-    modelName: {
-      type: String,
+    activeModelType: {
+      type: Object,
       required: true,
     },
     initialItem: {
@@ -88,10 +88,14 @@ export default {
       return message ? [{ label: s__('Geo|Verification failure'), message }] : [];
     },
     name() {
-      return `${this.item.modelClass}/${this.item.recordIdentifier}`;
+      return `${this.activeModelType.modelClass}/${this.item.recordIdentifier}`;
     },
     detailsPath() {
-      return joinPaths(this.basePath, this.modelName, this.item.recordIdentifier.toString());
+      return joinPaths(
+        this.basePath,
+        this.activeModelType.namePlural,
+        this.item.recordIdentifier.toString(),
+      );
     },
     size() {
       const { fileSize } = this.item;
@@ -110,7 +114,11 @@ export default {
       this.setActionLoading(value, true);
 
       try {
-        const { data } = await putModelAction(this.modelName, this.item.recordIdentifier, value);
+        const { data } = await putModelAction(
+          this.activeModelType.namePlural,
+          this.item.recordIdentifier,
+          value,
+        );
 
         this.item = convertObjectPropsToCamelCase(data, { deep: true });
 

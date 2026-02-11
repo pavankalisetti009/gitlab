@@ -7,6 +7,7 @@ import AdminDataManagementItemApp from 'ee/admin/data_management_item/components
 import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
 import ModelInfo from 'ee/admin/data_management_item/components/model_info.vue';
 import { getModel, putModelAction } from 'ee/api/data_management_api';
+import { MOCK_MODEL_TYPES } from 'ee_jest/admin/data_management/mock_data';
 import waitForPromises from 'helpers/wait_for_promises';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { createAlert } from '~/alert';
@@ -21,17 +22,19 @@ describe('AdminDataManagementItemApp', () => {
 
   const [rawModel] = models;
   const model = convertObjectPropsToCamelCase(rawModel, { deep: true });
-  const modelDisplayName = `${model.modelClass}/${model.recordIdentifier}`;
+  const modelDisplayName = `${MOCK_MODEL_TYPES[0].modelClass}/${model.recordIdentifier}`;
 
   const defaultProps = {
-    modelClass: model.modelClass,
+    modelTypeData: MOCK_MODEL_TYPES[0],
     modelId: model.recordIdentifier.toString(),
-    modelName: model.modelClass,
   };
 
-  const createComponent = () => {
+  const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMount(AdminDataManagementItemApp, {
-      propsData: defaultProps,
+      propsData: {
+        ...defaultProps,
+        ...props,
+      },
     });
   };
 
@@ -55,7 +58,7 @@ describe('AdminDataManagementItemApp', () => {
   it('loads model', () => {
     createComponent();
 
-    expect(getModel).toHaveBeenCalledWith(defaultProps.modelName, defaultProps.modelId);
+    expect(getModel).toHaveBeenCalledWith(MOCK_MODEL_TYPES[0].namePlural, defaultProps.modelId);
   });
 
   describe('when loading model succeeds', () => {
@@ -65,15 +68,15 @@ describe('AdminDataManagementItemApp', () => {
       await waitForPromises();
     });
 
-    it('renders model details', () => {
+    it('renders model info', () => {
+      expect(findModelInfo().props('model')).toEqual(model);
+    });
+
+    it('renders checksum info', () => {
       expect(findChecksumInfo().props()).toMatchObject({
         details: model.checksumInformation,
         checksumLoading: false,
       });
-    });
-
-    it('renders checksum info', () => {
-      expect(findModelInfo().props('model')).toEqual(model);
     });
 
     it('does not create alert', () => {
@@ -143,7 +146,7 @@ describe('AdminDataManagementItemApp', () => {
       findChecksumInfo().vm.$emit('recalculate-checksum');
 
       expect(putModelAction).toHaveBeenCalledWith(
-        model.modelClass,
+        MOCK_MODEL_TYPES[0].namePlural,
         model.recordIdentifier.toString(),
         'checksum',
       );

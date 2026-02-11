@@ -5,7 +5,6 @@ export const MOCK_MODEL_TYPES = [
     name: 'upload',
     namePlural: 'uploads',
     modelClass: 'Upload',
-    restEndpoint: '/api/v4/admin/data_management/upload',
     checksumEnabled: true,
   },
   {
@@ -14,7 +13,6 @@ export const MOCK_MODEL_TYPES = [
     name: 'terraform_state_version',
     namePlural: 'terraform_state_versions',
     modelClass: 'Terraform::StateVersion',
-    restEndpoint: '/api/v4/admin/data_management/terraform_state_version',
     checksumEnabled: true,
   },
   {
@@ -23,7 +21,6 @@ export const MOCK_MODEL_TYPES = [
     name: 'snippet_repository',
     namePlural: 'snippet_repositories',
     modelClass: 'SnippetRepository',
-    restEndpoint: '/api/v4/admin/data_management/snippet_repositories',
     checksumEnabled: true,
   },
 ];
