@@ -107,6 +107,142 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     end
   end
 
+  describe 'callbacks' do
+    describe 'record_create_action', :clean_gitlab_redis_shared_state do
+      context 'when work item is of type epic' do
+        it "triggers an internal event" do
+          expect { create(:work_item, :epic, project: reusable_project, author: user) }
+            .to trigger_internal_events('users_creating_work_items').with(
+              project: reusable_project,
+              user: user,
+              additional_properties: {
+                label: 'epic'
+              }
+            ).and increment_usage_metrics(
+              'redis_hll_counters.count_distinct_user_id_from_create_work_type_epic_monthly',
+              'redis_hll_counters.count_distinct_user_id_from_create_work_type_epic_weekly',
+              'counts_weekly.aggregated_metrics.users_work_items',
+              'counts_monthly.aggregated_metrics.users_work_items'
+            )
+        end
+      end
+    end
+  end
+
+  context 'with hierarchy' do
+    let_it_be(:epic1) { create(:work_item, :epic, project: reusable_project) }
+    let_it_be(:epic2) { create(:work_item, :epic, project: reusable_project) }
+    let_it_be(:epic3) { create(:work_item, :epic, project: reusable_project) }
+    let_it_be(:issue1) { create(:work_item, :issue, project: reusable_project) }
+    let_it_be(:issue2) { create(:work_item, :issue, project: reusable_project) }
+    let_it_be(:task1) { create(:work_item, :task, project: reusable_project) }
+    let_it_be(:task2) { create(:work_item, :task, project: reusable_project) }
+
+    let_it_be(:ignored_ancestor) { create(:work_item, :epic, project: reusable_project) }
+    let_it_be(:ignored_descendant) { create(:work_item, :task, project: reusable_project) }
+
+    # Create the hierarchy:
+    # epic1 -> epic2 -> epic3 -> issue1 -> task1
+    #                         \-> issue2 -> task2
+    let_it_be(:link1) { create(:parent_link, work_item_parent: epic1, work_item: epic2) }
+    let_it_be(:link2) { create(:parent_link, work_item_parent: epic2, work_item: epic3) }
+    let_it_be(:link3) { create(:parent_link, work_item_parent: epic3, work_item: issue1) }
+    let_it_be(:link4) { create(:parent_link, work_item_parent: epic3, work_item: issue2) }
+    let_it_be(:link5) { create(:parent_link, work_item_parent: issue1, work_item: task1) }
+    let_it_be(:link6) { create(:parent_link, work_item_parent: issue2, work_item: task2) }
+
+    describe '#ancestors' do
+      it 'returns all ancestors in ascending order' do
+        expect(task1.ancestors).to eq([issue1, epic3, epic2, epic1])
+      end
+
+      it 'returns an empty array if there are no ancestors' do
+        expect(epic1.ancestors).to be_empty
+      end
+    end
+
+    describe '#descendants' do
+      it 'returns all descendants' do
+        expect(epic1.descendants).to match_array([epic2, epic3, issue1, issue2, task1, task2])
+      end
+    end
+
+    describe '#same_type_base_and_ancestors' do
+      it 'returns self and all ancestors of the same type in ascending order' do
+        expect(epic3.same_type_base_and_ancestors).to eq([epic3, epic2, epic1])
+      end
+
+      it 'returns self if there are no ancestors of the same type' do
+        expect(issue1.same_type_base_and_ancestors).to match_array([issue1])
+      end
+    end
+
+    describe '#same_type_descendants_depth' do
+      it 'returns max descendants depth including self' do
+        # epic1 has epic2 and epic3 as same-type descendants, so depth is 3
+        expect(epic1.same_type_descendants_depth).to eq(3)
+      end
+
+      it 'returns 1 if there are no descendants' do
+        expect(task1.same_type_descendants_depth).to eq(1)
+      end
+    end
+  end
+
+  describe '#max_depth_reached?' do
+    let_it_be(:work_item) { create(:work_item) }
+    let_it_be(:child_type) { create(:work_item_type) }
+
+    context 'when there is no hierarchy restriction' do
+      it 'returns false' do
+        expect(work_item.max_depth_reached?(child_type)).to be false
+      end
+    end
+
+    context 'when there is a hierarchy restriction with maximum depth' do
+      context 'when work item type is the same as child type' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:work_item_base_type, :max_depth) do
+          :epic      | 7
+          :objective | 9
+        end
+
+        with_them do
+          let(:work_item) { create(:work_item, work_item_base_type, project: reusable_project) }
+          let(:child_type) { work_item.work_item_type }
+
+          it 'returns true when depth is reached' do
+            allow(work_item).to receive_message_chain(:same_type_base_and_ancestors, :count).and_return(max_depth)
+            expect(work_item.max_depth_reached?(child_type)).to be true
+          end
+
+          it 'returns false when depth is not reached' do
+            allow(work_item).to receive_message_chain(:same_type_base_and_ancestors, :count).and_return(max_depth - 1)
+            expect(work_item.max_depth_reached?(child_type)).to be false
+          end
+        end
+      end
+
+      context 'when work item type is different from child type' do
+        # Epic can have Issue children with max depth 1
+        let(:work_item) { create(:work_item, :epic, project: reusable_project) }
+        let(:child_type) { build(:work_item_system_defined_type, :issue) }
+        let(:max_depth) { 1 } # Epic->Issue has max depth 1
+
+        it 'returns true when depth is reached' do
+          allow(work_item).to receive_message_chain(:hierarchy, :base_and_ancestors, :count).and_return(max_depth)
+          expect(work_item.max_depth_reached?(child_type)).to be true
+        end
+
+        it 'returns false when depth is not reached' do
+          allow(work_item).to receive_message_chain(:hierarchy, :base_and_ancestors, :count).and_return(max_depth - 1)
+          expect(work_item.max_depth_reached?(child_type)).to be false
+        end
+      end
+    end
+  end
+
   describe '#widgets' do
     subject(:widgets) { build(:work_item).widgets }
 
