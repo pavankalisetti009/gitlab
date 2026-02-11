@@ -74024,6 +74024,9 @@ msgstr ""
 msgid "User and IP rate limits"
 msgstr ""
 
+msgid "User cannot be provisioned by both group and project"
+msgstr ""
+
 msgid "User caps is enabled for this group. You can manage members on the %{pending_members_link_start}pending members%{pending_members_link_end} page."
 msgstr ""
 

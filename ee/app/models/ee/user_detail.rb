@@ -13,6 +13,8 @@ module EE
       scope :with_enterprise_group, -> { where.not(enterprise_group_id: nil) }
       scope :project_provisioned, -> { where.not(provisioned_by_project_id: nil) }
 
+      validate :provisioning_source_mutually_exclusive
+
       attribute :onboarding_status, ::Gitlab::Database::Type::IndifferentJsonb.new
       store_accessor(
         :onboarding_status, :step_url, :email_opt_in, :initial_registration_type,
@@ -79,6 +81,14 @@ module EE
 
       def onboarding_status_setup_for_company=(value)
         super(::Gitlab::Utils.to_boolean(value, default: false))
+      end
+
+      private
+
+      def provisioning_source_mutually_exclusive
+        return unless provisioned_by_group_id.present? && provisioned_by_project_id.present?
+
+        errors.add(:base, _('User cannot be provisioned by both group and project'))
       end
     end
   end
