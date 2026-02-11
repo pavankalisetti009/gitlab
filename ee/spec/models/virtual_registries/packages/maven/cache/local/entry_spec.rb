@@ -57,9 +57,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Local::Entry, feature_
   end
 
   describe 'scopes' do
-    let_it_be(:cache_entry1, freeze: true) { create(:virtual_registries_packages_maven_cache_local_entry) }
-    let_it_be(:cache_entry2, freeze: true) { create(:virtual_registries_packages_maven_cache_local_entry) }
-    let_it_be(:cache_entry3, freeze: true) { create(:virtual_registries_packages_maven_cache_local_entry) }
+    let_it_be(:cache_entry1) { create(:virtual_registries_packages_maven_cache_local_entry) }
+    let_it_be(:cache_entry2) { create(:virtual_registries_packages_maven_cache_local_entry) }
+    let_it_be(:cache_entry3) { create(:virtual_registries_packages_maven_cache_local_entry) }
 
     describe '.for_group' do
       let(:groups) { [cache_entry1.group, cache_entry2.group] }

@@ -23,8 +23,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
         api_request
 
         expect(response).to have_gitlab_http_status(:created)
+        # TODO: Remove local_upstream_id from except once the local upstream API endpoints are available - https://gitlab.com/gitlab-org/gitlab/-/work_items/585985
         expect(Gitlab::Json.parse(response.body)).to eq(
-          upstream2.registry_upstreams.last.as_json.except('group_id', 'created_at', 'updated_at')
+          upstream2.registry_upstreams.last.as_json.except('group_id', 'created_at', 'updated_at', 'local_upstream_id')
         )
       end
 

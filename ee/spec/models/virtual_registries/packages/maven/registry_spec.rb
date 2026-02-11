@@ -19,6 +19,12 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
         .through(:registry_upstreams)
         .class_name('VirtualRegistries::Packages::Maven::Upstream')
     end
+
+    it 'has many local_upstreams' do
+      is_expected.to have_many(:local_upstreams)
+        .through(:registry_upstreams)
+        .class_name('VirtualRegistries::Packages::Maven::Local::Upstream')
+    end
   end
 
   describe 'validations' do

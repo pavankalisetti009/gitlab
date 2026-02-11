@@ -14,5 +14,17 @@ FactoryBot.define do
       )
     end
     sequence(:position) { |n| (n % 20) + 1 }
+
+    trait :with_local_upstream do
+      upstream { nil }
+      local_upstream do
+        association(
+          :virtual_registries_packages_maven_local_upstream,
+          group: group,
+          registries: [],
+          registry_upstreams: []
+        )
+      end
+    end
   end
 end

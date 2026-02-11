@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :model, feature_category: :virtual_registry do
+  using RSpec::Parameterized::TableSyntax
+
   subject(:registry_upstream) { build(:virtual_registries_packages_maven_registry_upstream) }
 
   describe 'associations' do
@@ -18,6 +20,14 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
       is_expected.to belong_to(:upstream)
         .class_name('VirtualRegistries::Packages::Maven::Upstream')
         .inverse_of(:registry_upstreams)
+        .optional(true)
+    end
+
+    it 'belongs to a local upstream' do
+      is_expected.to belong_to(:local_upstream)
+        .class_name('VirtualRegistries::Packages::Maven::Local::Upstream')
+        .inverse_of(:registry_upstreams)
+        .optional(true)
     end
   end
 
@@ -27,6 +37,12 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
     it { is_expected.to validate_presence_of(:group) }
     it { is_expected.to validate_presence_of(:position) }
     it { is_expected.to validate_uniqueness_of(:upstream_id).scoped_to(:registry_id) }
+
+    context 'when targeting a local upstream' do
+      subject(:registry_upstream) { create(:virtual_registries_packages_maven_registry_upstream, :with_local_upstream) }
+
+      it { is_expected.to validate_uniqueness_of(:local_upstream_id).scoped_to(:registry_id) }
+    end
 
     it 'validates position' do
       is_expected.to validate_numericality_of(:position)
@@ -45,6 +61,34 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
 
         expect(other_registry_upstream.valid?).to be_falsey
         expect(other_registry_upstream.errors[:registry_id].first).to eq('has already been taken')
+      end
+    end
+
+    describe '#ensure_upstream_or_local_upstream' do
+      let_it_be(:other_upstream) { create(:virtual_registries_packages_maven_upstream) }
+      let_it_be(:other_local_upstream) { create(:virtual_registries_packages_maven_local_upstream) }
+
+      where(:remote_upstream, :local_upstream, :expected_error_messages) do
+        nil                  | ref(:other_local_upstream) | []
+        ref(:other_upstream) | nil                        | []
+        ref(:other_upstream) | ref(:other_local_upstream) | [described_class::UPSTREAMS_MUTUALLY_EXCLUSIVE_ERROR]
+        nil                  | nil                        | [described_class::UPSTREAMS_MUTUALLY_EXCLUSIVE_ERROR]
+      end
+
+      with_them do
+        subject(:upstream) do
+          build(
+            :virtual_registries_packages_maven_registry_upstream,
+            upstream: remote_upstream,
+            local_upstream: local_upstream
+          )
+        end
+
+        if params[:expected_error_messages].any?
+          it { is_expected.to be_invalid.and have_attributes(errors: match_array(expected_error_messages)) }
+        else
+          it { is_expected.to be_valid }
+        end
       end
     end
   end
