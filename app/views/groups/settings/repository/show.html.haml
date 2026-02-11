@@ -1,6 +1,5 @@
 - breadcrumb_title s_('Navigation|Repository settings')
 - page_title _('Repository')
-- @force_desktop_expanded_sidebar = true
 
 - if Feature.enabled?(:web_based_commit_signing_ui, @group)
   - if can?(current_user, :admin_group, @group)
