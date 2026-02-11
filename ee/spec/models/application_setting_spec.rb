@@ -1671,6 +1671,68 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         end
       end
     end
+
+    describe '#track_restricted_access_disabled_self_managed', feature_category: :seat_cost_management do
+      context 'on update' do
+        before do
+          setting.update!(seat_control: described_class::SEAT_CONTROL_BLOCK_OVERAGES)
+        end
+
+        it 'tracks restricted_access_disabled event when seat_control changes to off' do
+          expect(Gitlab::InternalEvents).to receive(:track_event).with(
+            'restricted_access_disabled',
+            additional_properties: hash_including(seat_count: nil)
+          )
+
+          setting.update!(seat_control: described_class::SEAT_CONTROL_OFF)
+        end
+
+        it 'does not track event when other attributes change' do
+          expect(Gitlab::InternalEvents).not_to receive(:track_event)
+
+          setting.update!(elasticsearch_retry_on_failure: 5)
+        end
+      end
+
+      context 'on create' do
+        it 'does not track event' do
+          expect(Gitlab::InternalEvents).not_to receive(:track_event)
+
+          described_class.create_from_defaults
+        end
+      end
+    end
+
+    describe '#track_restricted_access_enabled_self_managed', feature_category: :seat_cost_management do
+      context 'on update' do
+        before do
+          setting.update!(seat_control: described_class::SEAT_CONTROL_OFF)
+        end
+
+        it 'tracks restricted_access_enabled event when seat_control changes to block_overages' do
+          expect(Gitlab::InternalEvents).to receive(:track_event).with(
+            'restricted_access_enabled',
+            additional_properties: hash_including(seat_count: nil)
+          )
+
+          setting.update!(seat_control: described_class::SEAT_CONTROL_BLOCK_OVERAGES)
+        end
+
+        it 'does not track event when other attributes change' do
+          expect(Gitlab::InternalEvents).not_to receive(:track_event)
+
+          setting.update!(elasticsearch_retry_on_failure: 5)
+        end
+      end
+
+      context 'on create' do
+        it 'does not track event' do
+          expect(Gitlab::InternalEvents).not_to receive(:track_event)
+
+          described_class.create_from_defaults
+        end
+      end
+    end
   end
 
   describe 'search curation settings after .create_from_defaults', feature_category: :global_search do

@@ -634,9 +634,9 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
 
       context 'when block seat overages is enabled and there are no seats left in the group' do
         before do
-          group.namespace_settings.update!(seat_control: :block_overages)
-
           create(:gitlab_subscription, :premium, namespace: group, seats: 1)
+
+          group.namespace_settings.update!(seat_control: :block_overages)
         end
 
         it 'rejects the request' do
