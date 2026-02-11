@@ -5044,6 +5044,31 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    describe 'delete_security_project_tracked_ref' do
+      let(:policy) { :delete_security_project_tracked_ref }
+
+      before do
+        stub_licensed_features(security_dashboard: true)
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      where(:role, :allowed) do
+        :guest      | false
+        :planner    | false
+        :reporter   | false
+        :developer  | false
+        :maintainer | true
+        :auditor    | false
+        :owner      | true
+        :admin      | true
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
+
     describe 'read_vulnerability_statistics' do
       let(:policy) { :read_vulnerability_statistics }
 

@@ -733,6 +733,7 @@ module EE
         enable :update_vulnerability_feedback
         enable :create_vulnerability_state_transition
         enable :create_security_project_tracked_ref
+        enable :delete_security_project_tracked_ref
       end
 
       rule { can?(:read_vulnerability) }.policy do
