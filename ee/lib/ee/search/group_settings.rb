@@ -56,6 +56,14 @@ module EE
       def repository_settings
         settings = super
 
+        if ::Feature.enabled?(:configure_web_based_commit_signing, group) &&
+            ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
+            group.root?
+          settings.push(
+            { text: _('General'), href: group_settings_repository_path(group, anchor: 'js-general-settings') }
+          )
+        end
+
         if group.licensed_feature_available?(:push_rules)
           settings.push(
             { text: _('Pre-defined push rules'), href: group_settings_repository_path(group, anchor: 'js-push-rules') }

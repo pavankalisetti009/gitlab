@@ -12,9 +12,14 @@ module EE
           before_action :authorize_view_repository_settings!, only: :show
           before_action :authorize_create_deploy_token!, only: :create_deploy_token
           before_action :push_rule, only: :show
+          before_action :push_web_based_commit_signing_feature_flag
         end
 
         private
+
+        def push_web_based_commit_signing_feature_flag
+          push_frontend_feature_flag(:configure_web_based_commit_signing, project)
+        end
 
         def push_rule
           return unless project.feature_available?(:push_rules)

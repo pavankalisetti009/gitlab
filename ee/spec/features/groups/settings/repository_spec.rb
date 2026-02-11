@@ -13,10 +13,10 @@ RSpec.describe 'EE Group Repository settings', :js, feature_category: :source_co
   end
 
   context 'in General subsection' do
-    context 'when feature `web_based_commit_signing_ui` is enabled', :saas_repositories_web_based_commit_signing do
+    context 'when feature `configure_web_based_commit_signing` is enabled',
+      :saas_repositories_web_based_commit_signing do
       before do
         stub_feature_flags(
-          web_based_commit_signing_ui: true,
           configure_web_based_commit_signing: true,
           use_web_based_commit_signing_enabled: true
         )
@@ -46,9 +46,9 @@ RSpec.describe 'EE Group Repository settings', :js, feature_category: :source_co
       end
     end
 
-    context 'when feature `web_based_commit_signing_ui` is not enabled' do
+    context 'when feature `configure_web_based_commit_signing` is not enabled' do
       before do
-        stub_feature_flags(web_based_commit_signing_ui: false)
+        stub_feature_flags(configure_web_based_commit_signing: false)
         visit group_settings_repository_path(group)
       end
 
@@ -61,7 +61,6 @@ RSpec.describe 'EE Group Repository settings', :js, feature_category: :source_co
       before do
         stub_saas_features(repositories_web_based_commit_signing: false)
         stub_feature_flags(
-          web_based_commit_signing_ui: true,
           configure_web_based_commit_signing: true,
           use_web_based_commit_signing_enabled: true
         )
@@ -80,7 +79,6 @@ RSpec.describe 'EE Group Repository settings', :js, feature_category: :source_co
 
       before do
         stub_feature_flags(
-          web_based_commit_signing_ui: true,
           configure_web_based_commit_signing: true,
           use_web_based_commit_signing_enabled: true
         )

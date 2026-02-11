@@ -6,6 +6,8 @@ RSpec.describe "Search results for settings", :js, feature_category: :global_sea
   before do
     allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
     allow(Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+    allow(Gitlab::Saas).to receive(:feature_available?).and_call_original
+    allow(Gitlab::Saas).to receive(:feature_available?).with(:repositories_web_based_commit_signing).and_return(true)
 
     stub_licensed_features(
       group_level_merge_checks_setting: true,
@@ -18,6 +20,7 @@ RSpec.describe "Search results for settings", :js, feature_category: :global_sea
     )
 
     stub_config(dependency_proxy: { enabled: true })
+    stub_feature_flags(configure_web_based_commit_signing: true)
   end
 
   it_behaves_like 'all group settings sections exist and have correct anchor links'
