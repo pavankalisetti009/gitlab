@@ -29,30 +29,63 @@ RSpec.describe PackageMetadata::Ingestion::CveEnrichment::CveEnrichmentIngestion
         expect { execute }.to change { PackageMetadata::CveEnrichment.count }.from(1).to(2)
       end
 
-      it 'updates existing CVE enrichments' do
-        expect { execute }.to change { existing_cve_enrichment.reload.epss_score }
-                                .from(old_epss_score)
-                                .to(new_epss_score)
-                                .and change { existing_cve_enrichment.reload.is_known_exploit }
-                                       .from(default_is_known_exploit)
-                                       .to(new_is_known_exploit)
+      context 'when both epss_score and is_known_exploit change' do
+        it 'updates existing CVE enrichments' do
+          expect { execute }.to change { existing_cve_enrichment.reload.epss_score }
+            .from(old_epss_score)
+            .to(new_epss_score)
+            .and change { existing_cve_enrichment.reload.is_known_exploit }
+            .from(default_is_known_exploit)
+            .to(new_is_known_exploit)
+        end
       end
 
-      it 'correctly stores the data for new and updated CVE enrichments' do
-        result = execute
+      context 'when neither epss_score nor is_known_exploit changes' do
+        before do
+          existing_cve_enrichment.update!(epss_score: new_epss_score, is_known_exploit: new_is_known_exploit)
+        end
 
-        expect(result).to contain_exactly(
-          a_collection_including(
-            cve_id,
-            new_epss_score,
-            new_is_known_exploit
-          ),
-          a_collection_including(
-            import_data.last.cve_id,
-            import_data.last.epss_score,
-            import_data.last.is_known_exploit
-          )
-        )
+        it 'does not update existing CVE enrichments', :aggregate_failures do
+          original_updated_at = existing_cve_enrichment.updated_at
+          original_epss_score = existing_cve_enrichment.epss_score
+          original_is_known_exploit = existing_cve_enrichment.is_known_exploit
+
+          execute
+
+          existing_cve_enrichment.reload
+          expect(existing_cve_enrichment.epss_score).to eq(original_epss_score)
+          expect(existing_cve_enrichment.is_known_exploit).to eq(original_is_known_exploit)
+          # Ruby has nanosecond precision on timestamps, while PostgreSQL has microsecond precision.
+          # This causes the timestamp to be rounded down to the nearest microsecond when the record is reloaded.
+          # We need to make the comparison in microseconds to avoid a false-negative.
+          expect(existing_cve_enrichment.updated_at.floor(6)).to eq(original_updated_at.floor(6))
+        end
+      end
+
+      context 'when only epss score changes' do
+        before do
+          existing_cve_enrichment.update!(is_known_exploit: new_is_known_exploit)
+        end
+
+        it 'updates existing CVE enrichments' do
+          expect { execute }.to change { existing_cve_enrichment.reload.epss_score }
+                                  .from(old_epss_score)
+                                  .to(new_epss_score)
+                                  .and change { existing_cve_enrichment.reload.updated_at.floor(6) }
+        end
+      end
+
+      context 'when only is_known_exploit changes' do
+        before do
+          existing_cve_enrichment.update!(epss_score: new_epss_score)
+        end
+
+        it 'updates existing CVE enrichments' do
+          expect { execute }.to change { existing_cve_enrichment.reload.is_known_exploit }
+                                  .from(default_is_known_exploit)
+                                  .to(new_is_known_exploit)
+                                  .and change { existing_cve_enrichment.reload.updated_at.floor(6) }
+        end
       end
     end
 
@@ -78,6 +111,16 @@ RSpec.describe PackageMetadata::Ingestion::CveEnrichment::CveEnrichmentIngestion
                   )
                 )
         execute
+      end
+
+      context 'when all the records are invalid' do
+        let(:import_data) { [invalid_cve_enrichment] }
+
+        it 'does not execute the upsert' do
+          expect(ApplicationRecord).not_to receive(:connection)
+
+          execute
+        end
       end
     end
   end
