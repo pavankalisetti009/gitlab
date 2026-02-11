@@ -267,7 +267,7 @@ export default {
       @keydown-description.meta.enter="handleSave(arguments[1])"
       @keydown-description.ctrl.enter="handleSave(arguments[1])"
     >
-      <template #edit-form-actions="issuableMeta">
+      <template #edit-form-actions="{ issuableMeta }">
         <gl-form-checkbox v-if="!isCreate" v-model="satisfied">{{
           __('Satisfied')
         }}</gl-form-checkbox>

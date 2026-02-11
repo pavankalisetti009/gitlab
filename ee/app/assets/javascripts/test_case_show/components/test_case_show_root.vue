@@ -243,7 +243,7 @@ export default {
           >{{ __('New test case') }}</gl-button
         >
       </template>
-      <template #edit-form-actions="issuableMeta">
+      <template #edit-form-actions="{ issuableMeta }">
         <gl-button
           data-testid="save-test-case"
           :disable="testCaseSaveInProgress || !issuableMeta.issuableTitle.length"
