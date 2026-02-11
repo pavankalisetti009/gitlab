@@ -7,7 +7,7 @@ RSpec.describe 'EE Project Repository settings', :js, feature_category: :source_
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group, reload: true) { create(:group, owners: user) }
-  let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be(:project, reload: true) { create(:project, namespace: group) }
 
   before do
     sign_in(user)
@@ -20,10 +20,10 @@ RSpec.describe 'EE Project Repository settings', :js, feature_category: :source_
   end
 
   context 'in General subsection' do
-    context 'when feature `web_based_commit_signing_ui` is enabled', :saas_repositories_web_based_commit_signing do
+    context 'when feature `configure_web_based_commit_signing` is enabled',
+      :saas_repositories_web_based_commit_signing do
       before do
         stub_feature_flags(
-          web_based_commit_signing_ui: true,
           configure_web_based_commit_signing: true,
           use_web_based_commit_signing_enabled: true
         )
@@ -40,9 +40,34 @@ RSpec.describe 'EE Project Repository settings', :js, feature_category: :source_
           expect(page).to have_selector('#js-general-settings')
         end
 
-        it 'shows web-based commit signing section as unchecked and disabled (inherited from group)' do
+        it 'shows web-based commit signing section as unchecked and enabled' do
           expect(page).to have_css('[data-testid="web-based-commit-signing-checkbox"]')
-          expect(page).to have_unchecked_field('Sign web-based commits', disabled: true)
+          expect(page).to have_unchecked_field('Sign web-based commits', disabled: false)
+        end
+
+        it 'persists the checkbox value after checking and reloading' do
+          expect(page).to have_unchecked_field('Sign web-based commits')
+
+          check 'Sign web-based commits'
+          wait_for_requests
+          expect(page).to have_checked_field('Sign web-based commits')
+
+          visit project_settings_repository_path(project)
+          wait_for_requests
+          expect(page).to have_checked_field('Sign web-based commits')
+        end
+
+        context 'when project has web-based commit signing enabled' do
+          before do
+            project.project_setting.update!(web_based_commit_signing_enabled: true)
+            visit project_settings_repository_path(project)
+            wait_for_requests
+          end
+
+          it 'shows web-based commit signing section as checked and enabled' do
+            expect(page).to have_css('[data-testid="web-based-commit-signing-checkbox"]')
+            expect(page).to have_checked_field('Sign web-based commits', disabled: false)
+          end
         end
       end
 
@@ -61,9 +86,9 @@ RSpec.describe 'EE Project Repository settings', :js, feature_category: :source_
       end
     end
 
-    context 'when feature `web_based_commit_signing_ui` is not enabled' do
+    context 'when feature `configure_web_based_commit_signing` is not enabled' do
       before do
-        stub_feature_flags(web_based_commit_signing_ui: false)
+        stub_feature_flags(configure_web_based_commit_signing: false)
         visit project_settings_repository_path(project)
       end
 
@@ -74,7 +99,6 @@ RSpec.describe 'EE Project Repository settings', :js, feature_category: :source_
       before do
         stub_saas_features(repositories_web_based_commit_signing: false)
         stub_feature_flags(
-          web_based_commit_signing_ui: true,
           configure_web_based_commit_signing: true,
           use_web_based_commit_signing_enabled: true
         )

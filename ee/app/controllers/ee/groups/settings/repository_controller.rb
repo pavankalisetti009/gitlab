@@ -10,9 +10,14 @@ module EE
         prepended do
           before_action :define_push_rule_variable, if: -> { can?(current_user, :change_push_rules, group) }
           before_action :define_protected_branches, only: [:show]
+          before_action :push_web_based_commit_signing_feature_flag
         end
 
         private
+
+        def push_web_based_commit_signing_feature_flag
+          push_frontend_feature_flag(:configure_web_based_commit_signing, group)
+        end
 
         override :authorize_access!
         def authorize_access!

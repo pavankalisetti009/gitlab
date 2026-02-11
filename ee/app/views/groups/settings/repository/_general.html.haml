@@ -1,4 +1,4 @@
-- if Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) && group.root?
+- if Feature.enabled?(:configure_web_based_commit_signing, group) && Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) && group.root?
   = render ::Layouts::SettingsBlockComponent.new(_('General'),
     id: 'js-general-settings',
     expanded: expanded_by_default?) do |c|

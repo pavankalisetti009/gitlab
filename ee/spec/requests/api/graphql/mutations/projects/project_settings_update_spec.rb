@@ -81,6 +81,39 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
       end
     end
 
+    context 'when updating only web_based_commit_signing_enabled' do
+      let(:duo_features_enabled) { nil }
+      let(:web_based_commit_signing_mutation) do
+        graphql_mutation(:project_settings_update, {
+          full_path: project.full_path,
+          web_based_commit_signing_enabled: web_based_commit_signing_enabled
+        }) do
+          <<-QL.strip_heredoc
+            projectSettings {
+              webBasedCommitSigningEnabled
+            }
+            errors
+          QL
+        end
+      end
+
+      before do
+        stub_saas_features(repositories_web_based_commit_signing: true)
+      end
+
+      it 'updates web_based_commit_signing_enabled without duo_chat_on_saas feature' do
+        expect { post_graphql_mutation(web_based_commit_signing_mutation, current_user: user) }
+          .to change { project.reload.web_based_commit_signing_enabled }
+          .from(!web_based_commit_signing_enabled)
+          .to(web_based_commit_signing_enabled)
+
+        expect(graphql_mutation_response('projectSettingsUpdate')['projectSettings'])
+          .to include({
+            'webBasedCommitSigningEnabled' => web_based_commit_signing_enabled
+          })
+      end
+    end
+
     context 'when no arguments are provided' do
       let(:duo_features_enabled) { nil }
       let(:empty_mutation) do

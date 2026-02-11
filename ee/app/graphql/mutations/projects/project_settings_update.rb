@@ -62,6 +62,7 @@ module Mutations
 
       def allowed?
         return true if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
+        return true if ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing)
         return false unless ::License.feature_available?(:code_suggestions)
 
         ::GitlabSubscriptions::AddOnPurchase.active_duo_add_ons_exist?(:instance)

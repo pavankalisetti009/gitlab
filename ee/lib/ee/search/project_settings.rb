@@ -27,6 +27,13 @@ module EE
       def repository_settings
         settings = super
 
+        if ::Feature.enabled?(:configure_web_based_commit_signing, project) &&
+            ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing)
+          settings.push(
+            { text: _('General'), href: project_settings_repository_path(project, anchor: 'js-general-settings') }
+          )
+        end
+
         if project.licensed_feature_available?(:target_branch_rules)
           settings.push(
             { text: _("Protected branches"),
