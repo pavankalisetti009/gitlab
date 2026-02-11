@@ -24,9 +24,11 @@ module API
             status :ok
           end
 
-          desc 'Get a list of features (deprecated, v2 client support)' do
+          desc 'Get a list of features (v2 client support)' do
+            detail 'Deprecated in GitLab 15.6'
             is_array true
             tags unleash_tags
+            deprecated true
           end
           get 'features', urgency: :low do
             present_feature_flags

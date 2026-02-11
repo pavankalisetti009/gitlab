@@ -15,15 +15,16 @@ module API
       end
 
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
-        desc '[DEPRECATED] Create an add-on purchase for the namespace' do
+        desc 'Create an add-on purchase for the namespace' do
           tags ['add_on_purchases']
-          detail 'Creates a subscription add-on record for the given namespaces and add-on'
+          detail 'Deprecated in GitLab 17.7'
           success ::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [
             { code: 400, message: 'Bad request' },
             { code: 401, message: 'Unauthorized' },
             { code: 404, message: 'Not found' }
           ]
+          deprecated true
         end
         params do
           requires :quantity, type: Integer, desc: 'The quantity of the purchase'
@@ -48,15 +49,16 @@ module API
           end
         end
 
-        desc '[DEPRECATED] Returns an add-on purchase for the namespace' do
+        desc 'Returns an add-on purchase for the namespace' do
           tags ['add_on_purchases']
-          detail 'Gets the add-on purchase record for the given namespace and add-on'
+          detail 'Deprecated in GitLab 17.7'
           success ::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [
             { code: 400, message: 'Bad request' },
             { code: 401, message: 'Unauthorized' },
             { code: 404, message: 'Not found' }
           ]
+          deprecated true
         end
         get ":id/subscription_add_on_purchase/:add_on_name" do
           add_on_purchase = find_subscription_add_on_purchase!(@namespace, @add_on)
@@ -64,15 +66,16 @@ module API
           present add_on_purchase, with: ::API::Entities::GitlabSubscriptions::AddOnPurchase
         end
 
-        desc '[DEPRECATED] Update the add-on purchase for the namespace' do
+        desc 'Update the add-on purchase for the namespace' do
           tags ['add_on_purchases']
-          detail 'Updates a subscription add-on record for the given namespaces and add-on'
+          detail 'Deprecated in GitLab 17.7'
           success ::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [
             { code: 400, message: 'Bad request' },
             { code: 401, message: 'Unauthorized' },
             { code: 404, message: 'Not found' }
           ]
+          deprecated true
         end
         params do
           requires :started_on, type: Date, desc: 'The date when purchase takes effect'
