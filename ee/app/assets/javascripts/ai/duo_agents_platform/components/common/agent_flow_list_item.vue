@@ -1,7 +1,7 @@
 <script>
 import { GlLink } from '@gitlab/ui';
 import { last } from 'lodash';
-import { s__ } from '~/locale';
+import { __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { getTimeago } from '~/lib/utils/datetime/timeago_utility';
 import { joinPaths } from '~/lib/utils/url_utility';
@@ -29,6 +29,9 @@ export default {
   computed: {
     lastMessage() {
       return last(this.item.latestCheckpoint?.duoMessages)?.content;
+    },
+    lastMessageOrStatus() {
+      return this.lastMessage ? this.lastMessage : __('Last updated');
     },
     linkHoverStyles() {
       return [
@@ -63,7 +66,7 @@ export default {
       return formatAgentStatus(status);
     },
     formatCreatedAt({ createdAt }) {
-      return `${s__('DuoAgentsPlatform|Created')} ${this.formatTimestamp(createdAt)}`;
+      return `${__('Created')} ${this.formatTimestamp(createdAt)}`;
     },
     formatTimestamp(timestamp) {
       try {
@@ -71,9 +74,6 @@ export default {
       } catch {
         return timestamp || '';
       }
-    },
-    getLastMessageOrStatus({ humanStatus }) {
-      return this.lastMessage ? this.lastMessage : this.formatStatus(humanStatus);
     },
     handleItemSelected(event) {
       if (event.metaKey || event.ctrlKey) return;
@@ -114,9 +114,8 @@ export default {
         <span
           :class="{ 'gl-max-w-80 gl-truncate': lastMessage }"
           data-testid="item-last-updated-message"
-          >{{ getLastMessageOrStatus(item) }}</span
+          >{{ lastMessageOrStatus }}</span
         >
-        <span v-if="lastMessage" class="gl-text-subtle" aria-hidden="true">-</span>
         <span :class="{ 'gl-min-w-20': lastMessage }" data-testid="item-updated-date">{{
           formatTimestamp(item.updatedAt)
         }}</span>
