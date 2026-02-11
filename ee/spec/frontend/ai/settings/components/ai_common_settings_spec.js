@@ -25,6 +25,7 @@ describe('AiCommonSettings', () => {
         foundationalAgentsDefaultEnabled: true,
         initialFoundationalAgentsStatuses: mockAgentStatuses,
         initialDuoFoundationalFlowsAvailability: false,
+        initialDuoWorkflowsDefaultImageRegistry: '',
         initialSelectedFoundationalFlowIds: [],
         initialDuoAgentPlatformEnabled: true,
         initialNamespaceAccessRules: [],
@@ -91,6 +92,7 @@ describe('AiCommonSettings', () => {
     ]);
     await findForm().vm.$emit('minimum-access-level-execute-async-changed', 40);
     await findForm().vm.$emit('minimum-access-level-execute-sync-changed', 20);
+    await findForm().vm.$emit('change-default-image-registry', 'registry.example.com');
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
@@ -111,6 +113,7 @@ describe('AiCommonSettings', () => {
       ],
       minimumAccessLevelExecuteAsync: 40,
       minimumAccessLevelExecuteSync: 20,
+      duoWorkflowsDefaultImageRegistry: 'registry.example.com',
     });
   });
 
@@ -256,6 +259,28 @@ describe('AiCommonSettings', () => {
       expect(emittedData).toMatchObject({
         minimumAccessLevelExecuteAsync: 40,
         minimumAccessLevelExecuteSync: 20,
+      });
+    });
+  });
+
+  describe('duo workflows default image registry', () => {
+    it('updates internal state when form emits change-default-image-registry', async () => {
+      expect(wrapper.vm.duoWorkflowsDefaultImageRegistry).toBe('');
+
+      await findForm().vm.$emit('change-default-image-registry', 'registry.example.com');
+
+      expect(wrapper.vm.duoWorkflowsDefaultImageRegistry).toBe('registry.example.com');
+    });
+
+    it('includes duo workflows default image registry in submit event', async () => {
+      await findForm().vm.$emit('change-default-image-registry', 'registry.example.com');
+      findForm().vm.$emit('submit', {
+        preventDefault: jest.fn(),
+      });
+
+      const emittedData = wrapper.emitted('submit')[0][0];
+      expect(emittedData).toMatchObject({
+        duoWorkflowsDefaultImageRegistry: 'registry.example.com',
       });
     });
   });

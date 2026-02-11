@@ -1,12 +1,12 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlFormCheckbox, GlFormGroup, GlIcon, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlFormCheckbox, GlFormGroup, GlFormInput, GlIcon, GlLink, GlSprintf } from '@gitlab/ui';
 import DuoFlowSettings from 'ee/ai/settings/components/duo_flow_settings.vue';
 import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascading_lock_icon.vue';
 
 describe('DuoFlowSettings', () => {
   let wrapper;
   const defaultProvide = {
-    isSaaS: true,
+    isSaaS: false,
     isGroupSettings: false,
     glFeatures: {
       duoFoundationalFlows: true,
@@ -32,6 +32,8 @@ describe('DuoFlowSettings', () => {
   const findAllCascadingLocks = () => wrapper.findAllComponents(CascadingLockIcon);
   const findFoundationalFlowSelector = () =>
     wrapper.findComponent({ name: 'FoundationalFlowSelector' });
+  const findDefaultImageRegistryInput = () =>
+    wrapper.find('[data-testid="duo-workflows-default-image-registry-input"]');
 
   const createWrapper = (props = {}, provide = {}) => {
     return shallowMount(DuoFlowSettings, {
@@ -49,6 +51,7 @@ describe('DuoFlowSettings', () => {
       stubs: {
         GlFormCheckbox,
         GlFormGroup,
+        GlFormInput,
         GlIcon,
         GlLink,
         GlSprintf,
@@ -462,6 +465,134 @@ describe('DuoFlowSettings', () => {
 
       it('passes disabled state to the selector', () => {
         expect(findFoundationalFlowSelector().props('disabled')).toBe(true);
+      });
+    });
+  });
+
+  describe('default image registry input', () => {
+    describe('when isGroupSettings is false and foundational flows are enabled', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {
+            duoRemoteFlowsAvailability: true,
+            duoFoundationalFlowsAvailability: true,
+            duoWorkflowsDefaultImageRegistry: 'registry.example.com',
+          },
+          { isGroupSettings: false },
+        );
+      });
+
+      it('renders the image registry input', () => {
+        expect(findDefaultImageRegistryInput().exists()).toBe(true);
+      });
+
+      it('sets the input value from prop', () => {
+        expect(findDefaultImageRegistryInput().props('value')).toBe('registry.example.com');
+      });
+
+      it('has the correct label', () => {
+        expect(wrapper.text()).toContain('Image registry');
+      });
+
+      it('has the correct help text', () => {
+        expect(wrapper.text()).toContain(
+          'Container registry for foundational flow images. Leave blank to use registry.gitlab.com',
+        );
+      });
+
+      it('has the correct placeholder', () => {
+        expect(findDefaultImageRegistryInput().attributes('placeholder')).toBe(
+          'registry.gitlab.com',
+        );
+      });
+
+      it('emits change-default-image-registry event when input value changes', async () => {
+        wrapper.vm.defaultImageRegistry = 'custom.registry.io';
+        await wrapper.vm.onDefaultImageRegistryChanged();
+
+        expect(wrapper.emitted('change-default-image-registry')).toBeDefined();
+        expect(wrapper.emitted('change-default-image-registry')[0]).toEqual(['custom.registry.io']);
+      });
+    });
+
+    describe('when isGroupSettings is true', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {
+            duoRemoteFlowsAvailability: true,
+            duoFoundationalFlowsAvailability: true,
+          },
+          { isGroupSettings: true },
+        );
+      });
+
+      it('does not render the image registry input for group settings', () => {
+        expect(findDefaultImageRegistryInput().exists()).toBe(false);
+      });
+    });
+
+    describe('when isSaaS is true', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {
+            duoRemoteFlowsAvailability: true,
+            duoFoundationalFlowsAvailability: true,
+          },
+          { isSaaS: true, isGroupSettings: false },
+        );
+      });
+
+      it('does not render the image registry input on SaaS', () => {
+        expect(findDefaultImageRegistryInput().exists()).toBe(false);
+      });
+    });
+
+    describe('when foundational flows are disabled', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {
+            duoRemoteFlowsAvailability: true,
+            duoFoundationalFlowsAvailability: false,
+          },
+          { isGroupSettings: false },
+        );
+      });
+
+      it('does not render the image registry input', () => {
+        expect(findDefaultImageRegistryInput().exists()).toBe(false);
+      });
+    });
+
+    describe('when checkbox is disabled', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {
+            duoRemoteFlowsAvailability: true,
+            duoFoundationalFlowsAvailability: true,
+            disabledCheckbox: true,
+          },
+          { isGroupSettings: false },
+        );
+      });
+
+      it('disables the image registry input', () => {
+        expect(findDefaultImageRegistryInput().attributes('disabled')).toBe('disabled');
+      });
+    });
+
+    describe('when remote flows are disabled', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {
+            duoRemoteFlowsAvailability: false,
+            duoFoundationalFlowsAvailability: true,
+          },
+          { isGroupSettings: false },
+        );
+      });
+
+      it('disables the image registry input', () => {
+        expect(findDefaultImageRegistryInput().attributes('disabled')).toBe('disabled');
       });
     });
   });

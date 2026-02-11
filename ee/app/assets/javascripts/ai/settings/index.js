@@ -35,6 +35,7 @@ export const initAiSettings = (id, component, options = {}) => {
     duoCoreFeaturesEnabled,
     duoRemoteFlowsAvailability,
     duoFoundationalFlowsAvailability,
+    duoWorkflowsDefaultImageRegistry,
     promptCacheEnabled,
     redirectPath,
     updateId,
@@ -165,6 +166,7 @@ export const initAiSettings = (id, component, options = {}) => {
       aiUsageDataCollectionEnabled: parseBoolean(aiUsageDataCollectionEnabled),
       initialDuoRemoteFlowsAvailability: parseBoolean(duoRemoteFlowsAvailability),
       initialDuoFoundationalFlowsAvailability: parseBoolean(duoFoundationalFlowsAvailability),
+      initialDuoWorkflowsDefaultImageRegistry: duoWorkflowsDefaultImageRegistry || '',
       isSaaS: parseBoolean(isSaas),
       isGroupSettings: options?.isGroupSettings || false,
       availableFoundationalFlows: (() => {
