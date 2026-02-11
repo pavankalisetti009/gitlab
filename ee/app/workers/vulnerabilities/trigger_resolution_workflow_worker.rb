@@ -13,6 +13,7 @@ module Vulnerabilities
     idempotent!
     concurrency_limit -> { 100 }
     sidekiq_options retry: 10
+    skip_composite_identity_passthrough!
 
     CONFIDENCE_THRESHOLD = 0.6
     WORKFLOW_DEFINITION = 'resolve_sast_vulnerability/v1'
