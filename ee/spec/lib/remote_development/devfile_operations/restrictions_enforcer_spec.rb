@@ -211,4 +211,12 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
       expect { described_class.enforce(context) }.to raise_error(Gitlab::Fp::UnmatchedResultError)
     end
   end
+
+  context "when devfile is not a hash" do
+    let(:context) { { devfile: "" } }
+
+    it "raises a NoMatchingPatternError" do
+      expect { described_class.enforce(context) }.to raise_error(NoMatchingPatternError)
+    end
+  end
 end
