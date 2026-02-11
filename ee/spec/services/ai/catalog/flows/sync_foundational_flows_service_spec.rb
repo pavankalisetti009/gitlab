@@ -117,6 +117,7 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
           allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([flow.id])
           allow(Ability).to receive(:allowed?).with(user, :admin_ai_catalog_item_consumer, container).and_return(true)
           allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_item, flow).and_return(true)
+          allow(Ability).to receive(:allowed?).with(user, :manage_ai_flow_triggers, container).and_return(true)
           allow(Ai::Catalog::ItemConsumers::CreateService).to receive(:new).and_return(create_service)
         end
 
@@ -173,7 +174,6 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
             allow(create_service).to receive(:execute).and_return(
               ServiceResponse.success(payload: { item_consumer: project_consumer })
             )
-            allow(Ability).to receive(:allowed?).with(user, :manage_ai_flow_triggers, container).and_return(true)
             allow(group).to receive(:configured_ai_catalog_items).and_return([parent_consumer])
           end
 
@@ -200,6 +200,125 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
 
               described_class.new(container, current_user: user).execute
             end
+          end
+        end
+
+        context 'when flow definition does not have triggers' do
+          let(:service_account) do
+            create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: group)
+          end
+
+          before do
+            parent_consumer = create(:ai_catalog_item_consumer, group: group, item: flow)
+            allow(parent_consumer).to receive(:service_account).and_return(service_account)
+
+            project_consumer = build(:ai_catalog_item_consumer,
+              project: container,
+              item: flow,
+              parent_item_consumer: parent_consumer
+            )
+
+            allow(create_service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: { item_consumer: project_consumer })
+            )
+            allow(group).to receive(:configured_ai_catalog_items).and_return([parent_consumer])
+          end
+
+          it 'does not create triggers when flow definition is missing' do
+            allow(Ai::Catalog::FoundationalFlow).to receive(:[]).and_return(nil)
+
+            expect(Ai::FlowTriggers::CreateService).not_to receive(:new)
+
+            described_class.new(container, current_user: user).execute
+          end
+
+          it 'does not create triggers when flow definition has no triggers' do
+            flow_def = instance_double(Ai::Catalog::FoundationalFlow, triggers: [])
+            allow(Ai::Catalog::FoundationalFlow).to receive(:[]).and_return(flow_def)
+
+            expect(Ai::FlowTriggers::CreateService).not_to receive(:new)
+
+            described_class.new(container, current_user: user).execute
+          end
+        end
+
+        context 'when flow has triggers but some of the triggers already exist' do
+          let(:service_account) do
+            create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: group)
+          end
+
+          before do
+            parent_consumer = create(:ai_catalog_item_consumer, group: group, item: flow)
+            allow(parent_consumer).to receive(:service_account).and_return(service_account)
+
+            project_consumer = build(:ai_catalog_item_consumer,
+              project: container,
+              item: flow,
+              parent_item_consumer: parent_consumer
+            )
+
+            allow(create_service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: { item_consumer: project_consumer })
+            )
+            allow(group).to receive(:configured_ai_catalog_items).and_return([parent_consumer])
+
+            # Create existing trigger for 'assign' event
+            create(:ai_flow_trigger,
+              project: container,
+              user: service_account,
+              event_types: [::Ai::FlowTrigger::EVENT_TYPES[:assign]]
+            )
+          end
+
+          it 'only creates triggers for new events' do
+            flow_def = instance_double(Ai::Catalog::FoundationalFlow, triggers: [
+              ::Ai::FlowTrigger::EVENT_TYPES[:assign], ::Ai::FlowTrigger::EVENT_TYPES[:mention]
+            ])
+            allow(Ai::Catalog::FoundationalFlow).to receive(:[]).and_return(flow_def)
+
+            expect_next_instance_of(::Ai::FlowTriggers::CreateService) do |instance|
+              expect(instance).to receive(:execute).with(
+                hash_including(event_types: [::Ai::FlowTrigger::EVENT_TYPES[:mention]])
+              ).and_call_original
+            end
+
+            described_class.new(container, current_user: user).execute
+          end
+        end
+
+        context 'when event type mapping is invalid' do
+          let(:service_account) do
+            create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: group)
+          end
+
+          before do
+            parent_consumer = create(:ai_catalog_item_consumer, group: group, item: flow)
+            allow(parent_consumer).to receive(:service_account).and_return(service_account)
+
+            project_consumer = build(:ai_catalog_item_consumer,
+              project: container,
+              item: flow,
+              parent_item_consumer: parent_consumer
+            )
+
+            allow(create_service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: { item_consumer: project_consumer })
+            )
+            allow(group).to receive(:configured_ai_catalog_items).and_return([parent_consumer])
+          end
+
+          it 'skips invalid event types' do
+            flow_def = instance_double(Ai::Catalog::FoundationalFlow,
+              triggers: [::Ai::FlowTrigger::EVENT_TYPES[:assign], 'Invalid trigger'])
+            allow(Ai::Catalog::FoundationalFlow).to receive(:[]).and_return(flow_def)
+
+            expect_next_instance_of(::Ai::FlowTriggers::CreateService) do |instance|
+              expect(instance).to receive(:execute).with(
+                hash_including(event_types: [::Ai::FlowTrigger::EVENT_TYPES[:assign]])
+              ).and_call_original
+            end
+
+            described_class.new(container, current_user: user).execute
           end
         end
       end
