@@ -1,7 +1,6 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { mount } from '@vue/test-utils';
-import { GlBreadcrumb } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
@@ -16,7 +15,6 @@ jest.mock('~/lib/logger');
 describe('Experimental new project creation app', () => {
   let wrapper;
 
-  const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
   const findActivePanelTemplate = () => wrapper.findByTestId('active-panel-template');
   const findWelcomePage = () => wrapper.findComponent(WelcomePage);
 
@@ -52,19 +50,24 @@ describe('Experimental new project creation app', () => {
     );
   };
 
-  it('shows breadcrumbs', () => {
-    createComponent();
+  beforeEach(() => {
+    setHTMLFixture('<div class="panel-header"></div>');
+  });
 
-    expect(findBreadcrumbs().exists()).toBe(true);
+  afterEach(() => {
+    resetHTMLFixture();
+  });
+
+  it('shows breadcrumbs', async () => {
+    createComponent();
+    await nextTick();
+
+    expect(document.querySelector('.panel-header [data-testid="breadcrumb-links"]')).toBeDefined();
   });
 
   describe('active panel', () => {
     beforeEach(() => {
-      setHTMLFixture(`<div id="some-selector1"></div>`);
-    });
-
-    afterEach(() => {
-      resetHTMLFixture();
+      setHTMLFixture('<div class="panel-header"></div><div id="some-selector1"></div>');
     });
 
     it('shows active panel', () => {
