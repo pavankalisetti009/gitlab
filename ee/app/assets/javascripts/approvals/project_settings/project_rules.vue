@@ -5,7 +5,6 @@ import { mapState, mapActions } from 'vuex';
 import RuleName from 'ee/approvals/components/rules/rule_name.vue';
 import { s__ } from '~/locale';
 import UserAvatarList from '~/vue_shared/components/user_avatar/user_avatar_list.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { RULE_TYPE_ANY_APPROVER, RULE_TYPE_REGULAR } from 'ee/approvals/constants';
 
 import EmptyRule from 'ee/approvals/components/rules/empty_rule.vue';
@@ -30,8 +29,6 @@ export default {
     RuleName,
     UnconfiguredSecurityRules,
   },
-  // TODO: Remove feature flag in https://gitlab.com/gitlab-org/gitlab/-/issues/235114
-  mixins: [glFeatureFlagsMixin()],
   props: {
     isBranchRulesEdit: {
       type: Boolean,
@@ -79,9 +76,7 @@ export default {
       const { canEdit, allowMultiRule } = this.settings;
       const canEditRuleCounter = canEdit && (!allowMultiRule || !rule.hasSource);
 
-      return this.isBranchRulesEdit
-        ? this.glFeatures.editBranchRules && canEditRuleCounter
-        : canEditRuleCounter;
+      return canEditRuleCounter;
     },
   },
 };

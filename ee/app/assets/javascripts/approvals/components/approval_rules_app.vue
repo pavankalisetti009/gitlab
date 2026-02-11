@@ -2,7 +2,6 @@
 import { GlButton, GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { __ } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import showToast from '~/vue_shared/plugins/global_toast';
@@ -18,7 +17,6 @@ export default {
     GlButton,
     GlLoadingIcon,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     isMrEdit: {
       type: Boolean,
@@ -53,9 +51,7 @@ export default {
     canAddApprovalRule() {
       const canEditAndAllowMultiRule = this.settings.canEdit && this.settings.allowMultiRule;
 
-      return this.isBranchRulesEdit
-        ? this.glFeatures.editBranchRules && canEditAndAllowMultiRule
-        : canEditAndAllowMultiRule;
+      return canEditAndAllowMultiRule;
     },
   },
   mounted() {

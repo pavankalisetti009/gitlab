@@ -40,11 +40,6 @@ describe('Approvals ProjectRules', () => {
   const factory = (props = {}, options = {}) => {
     vuexStore = new Vuex.Store(store);
     wrapper = mountExtended(ProjectRules, {
-      provide: {
-        glFeatures: {
-          editBranchRules: true,
-        },
-      },
       propsData: props,
       store: vuexStore,
       ...options,

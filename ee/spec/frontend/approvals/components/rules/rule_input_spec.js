@@ -12,7 +12,7 @@ describe('Rule Input', () => {
   let wrapper;
   let store;
 
-  const createComponent = (props = {}, editBranchRules = true) => {
+  const createComponent = (props = {}) => {
     wrapper = mount(RuleInput, {
       propsData: {
         rule: {
@@ -22,11 +22,6 @@ describe('Rule Input', () => {
         ...props,
       },
       store: new Vuex.Store(store),
-      provide: {
-        glFeatures: {
-          editBranchRules,
-        },
-      },
     });
   };
 
@@ -93,23 +88,15 @@ describe('Rule Input', () => {
   describe('on Branch rule details page', () => {
     it('is disabled when can edit settings is false', () => {
       store.state.settings.canEdit = false;
-      createComponent({ isBranchRulesEdit: true }, true);
+      createComponent({ isBranchRulesEdit: true });
 
       expect(findInput().attributes().disabled).toBeDefined();
     });
 
     it('is not disabled when can edit settings is true', () => {
-      createComponent({ isBranchRulesEdit: true }, true);
+      createComponent({ isBranchRulesEdit: true });
 
       expect(findInput().attributes().disabled).not.toBeDefined();
-    });
-
-    describe('when editBranchRules feature flag is disabled', () => {
-      it('is disabled despite can edit settings', () => {
-        createComponent({ isBranchRulesEdit: true }, false);
-
-        expect(findInput().attributes().disabled).toBeDefined();
-      });
     });
   });
 });
