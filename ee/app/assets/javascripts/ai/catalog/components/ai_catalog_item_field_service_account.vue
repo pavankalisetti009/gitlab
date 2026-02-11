@@ -49,7 +49,7 @@ export default {
 </script>
 
 <template>
-  <ai-catalog-item-field :title="s__('AICatalog|Service account')">
+  <ai-catalog-item-field>
     <p class="gl-mb-0 gl-text-subtle">
       <gl-sprintf
         :message="

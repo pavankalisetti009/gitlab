@@ -126,15 +126,16 @@ export default {
           :description-texts="$options.AGENT_VISIBILITY_LEVEL_DESCRIPTIONS"
         />
       </form-section>
+      <form-section v-if="serviceAccount" :title="s__('AICatalog|Service account')" is-display>
+        <ai-catalog-item-field-service-account
+          :service-account="serviceAccount"
+          :item-type="item.itemType"
+          data-testid="service-account-field"
+        />
+      </form-section>
       <form-section :title="s__('AICatalog|Configuration')" is-display>
         <ai-catalog-item-field :title="s__('AICatalog|Type')" :value="typeField" />
         <template v-if="isThirdPartyFlow">
-          <ai-catalog-item-field-service-account
-            v-if="serviceAccount"
-            :service-account="serviceAccount"
-            :item-type="item.itemType"
-            data-testid="service-account-field"
-          />
           <trigger-field v-if="hasProjectConfiguration" :item="item" />
           <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
             <form-flow-definition :value="definition" read-only class="gl-mt-3" />
