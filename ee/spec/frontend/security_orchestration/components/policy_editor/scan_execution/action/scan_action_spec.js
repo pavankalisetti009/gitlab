@@ -9,6 +9,7 @@ import GroupDastProfileSelector from 'ee/security_orchestration/components/polic
 import RunnerTagsFilter from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/runner_tags_filter.vue';
 import CiVariablesSelectors from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/ci_variables_selectors.vue';
 import TemplateSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/template_selector.vue';
+import ScanSettingsToggle from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/scan_settings_toggle.vue';
 import { buildScannerAction } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
@@ -95,6 +96,7 @@ describe('PolicyActionBuilder', () => {
   const findGroupDastSelector = () => wrapper.findComponent(GroupDastProfileSelector);
   const findAddVariableButton = () => wrapper.findByTestId('add-variable-button');
   const findRemoveButton = () => wrapper.findByTestId('remove-action');
+  const findScanSettingsToggle = () => wrapper.findComponent(ScanSettingsToggle);
 
   it('renders default scanner', () => {
     factory();
@@ -273,6 +275,53 @@ describe('PolicyActionBuilder', () => {
       it('hides the ci variable filter if action has variables', () => {
         factory({ propsData: { initAction: { ...DEFAULT_ACTION, variables: { key: 'value' } } } });
         expect(findAddVariableButton().exists()).toBe(false);
+      });
+    });
+
+    describe('scan settings toggle', () => {
+      it('renders the scan settings toggle', () => {
+        factory();
+        expect(findScanSettingsToggle().exists()).toBe(true);
+      });
+
+      it('passes selected=false when scan_settings is not defined', () => {
+        factory();
+        expect(findScanSettingsToggle().props('selected')).toBe(false);
+      });
+
+      it('passes selected=true when scan_settings.ignore_default_before_after_script is true', () => {
+        factory({
+          propsData: {
+            initAction: {
+              ...DEFAULT_ACTION,
+              scan_settings: { ignore_default_before_after_script: true },
+            },
+          },
+        });
+        expect(findScanSettingsToggle().props('selected')).toBe(true);
+      });
+
+      it('emits "changed" with scan_settings when toggle is enabled', () => {
+        factory();
+        findScanSettingsToggle().vm.$emit('input', {
+          scan_settings: { ignore_default_before_after_script: true },
+        });
+        expect(wrapper.emitted('changed')).toEqual([
+          [{ ...DEFAULT_ACTION, scan_settings: { ignore_default_before_after_script: true } }],
+        ]);
+      });
+
+      it('emits "changed" without scan_settings when toggle is disabled', () => {
+        factory({
+          propsData: {
+            initAction: {
+              ...DEFAULT_ACTION,
+              scan_settings: { ignore_default_before_after_script: true },
+            },
+          },
+        });
+        findScanSettingsToggle().vm.$emit('remove');
+        expect(wrapper.emitted('changed')).toEqual([[DEFAULT_ACTION]]);
       });
     });
   });

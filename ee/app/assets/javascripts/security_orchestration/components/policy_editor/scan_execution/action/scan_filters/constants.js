@@ -5,6 +5,8 @@ export const CI_VARIABLE = 'ci_variable';
 
 export const TEMPLATE = 'template';
 
+export const SCAN_SETTINGS = 'scan_settings';
+
 export const DEFAULT_TEMPLATE = 'default';
 
 export const LATEST_TEMPLATE = 'latest';
