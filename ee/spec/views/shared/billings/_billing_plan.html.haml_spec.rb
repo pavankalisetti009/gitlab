@@ -6,11 +6,11 @@ RSpec.describe 'shared/billings/_billing_plan.html.haml', :saas do
   include SubscriptionPortalHelpers
 
   let(:plan) { Hashie::Mash.new(billing_plans_data.find { |plan_data| plan_data[:code] == 'free' }) }
+  let(:namespace) { build(:namespace) }
 
   before do
-    allow(view).to receive(:plan).and_return(plan)
     allow(view).to receive(:is_current)
-    allow(view).to receive(:namespace)
+    allow(view).to receive_messages(plan: plan, namespace: namespace)
   end
 
   shared_examples 'contains the default page features' do

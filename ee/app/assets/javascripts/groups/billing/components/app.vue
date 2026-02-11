@@ -1,6 +1,7 @@
 <script>
 import { GlTabs, GlTab } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { PROMO_URL } from '~/constants';
 import CurrentPlanHeader from 'ee/vue_shared/subscription/components/current_plan_header.vue';
 import UpgradePlanHeader from 'ee/vue_shared/subscription/components/upgrade_plan_header.vue';
 import FreePlanBillingHeader from './free_plan_billing_header.vue';
@@ -110,6 +111,14 @@ export default {
       };
     },
   },
+  i18n: {
+    creditsPopover: {
+      text: s__(
+        'InviteMember|Limited time offer. Additional GitLab Credits can be purchased as part of an annual commitment, or on a pay-as-you-go basis at the on-demand rate of $1/credit. %{linkStart}See details and promo terms%{linkEnd}.',
+      ),
+      url: `${PROMO_URL}/pricing/#how-can-i-purchase-gitlab-credits`,
+    },
+  },
 };
 </script>
 <template>
@@ -176,8 +185,17 @@ export default {
         </div>
 
         <div class="gl-border gl-flex gl-basis-2/3 gl-rounded-br-lg">
-          <premium-plan-billing :is-new-trial-type="isNewTrialType" />
-          <ultimate-plan-billing :is-new-trial-type="isNewTrialType" />
+          <premium-plan-billing
+            :trial-active="trialActive"
+            :is-new-trial-type="isNewTrialType"
+            :credits-popover="$options.i18n.creditsPopover"
+          />
+
+          <ultimate-plan-billing
+            :trial-active="trialActive"
+            :is-new-trial-type="isNewTrialType"
+            :credits-popover="$options.i18n.creditsPopover"
+          />
         </div>
       </div>
     </div>
@@ -204,7 +222,11 @@ export default {
         </div>
 
         <div class="gl-border gl-rounded-b-lg gl-border-t-0">
-          <premium-plan-billing :is-new-trial-type="isNewTrialType" />
+          <premium-plan-billing
+            :trial-active="trialActive"
+            :is-new-trial-type="isNewTrialType"
+            :credits-popover="$options.i18n.creditsPopover"
+          />
         </div>
       </gl-tab>
 
@@ -219,7 +241,11 @@ export default {
         </div>
 
         <div class="gl-border gl-rounded-b-lg gl-border-t-0">
-          <ultimate-plan-billing :is-new-trial-type="isNewTrialType" />
+          <ultimate-plan-billing
+            :trial-active="trialActive"
+            :is-new-trial-type="isNewTrialType"
+            :credits-popover="$options.i18n.creditsPopover"
+          />
         </div>
       </gl-tab>
     </gl-tabs>

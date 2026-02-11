@@ -11282,10 +11282,10 @@ msgstr ""
 msgid "Billing"
 msgstr ""
 
-msgid "BillingPlans|$12 in GitLab Credits/User/Month"
+msgid "BillingPlans|$12 in GitLab Credits per user per month"
 msgstr ""
 
-msgid "BillingPlans|$24 in GitLab Credits/User/Month"
+msgid "BillingPlans|$24 in GitLab Credits per user per month"
 msgstr ""
 
 msgid "BillingPlans|%{group_name} is currently using the %{plan_name}"
@@ -11580,6 +11580,12 @@ msgid "BillingPlans|If you would like to downgrade your plan please contact %{su
 msgstr ""
 
 msgid "BillingPlans|Includes"
+msgstr ""
+
+msgid "BillingPlans|Includes $12 in GitLab Credits per user per month"
+msgstr ""
+
+msgid "BillingPlans|Includes $24 in GitLab Credits per user per month"
 msgstr ""
 
 msgid "BillingPlans|Introducing GitLab Duo Enterprise"
@@ -37582,6 +37588,9 @@ msgid "InviteMember|Invite your team"
 msgstr ""
 
 msgid "InviteMember|Invited users will be added with developer level permissions. %{linkStart}View the documentation%{linkEnd} to see how to change this later."
+msgstr ""
+
+msgid "InviteMember|Limited time offer. Additional GitLab Credits can be purchased as part of an annual commitment, or on a pay-as-you-go basis at the on-demand rate of $1/credit. %{linkStart}See details and promo terms%{linkEnd}."
 msgstr ""
 
 msgid "InviteReminderEmail|%{inviter} is still waiting for you to join GitLab"
