@@ -222,7 +222,7 @@ export default {
     ),
   },
   diffBasedScansLearnMorePath: helpPagePath('user/application_security/sast/gitlab_advanced_sast', {
-    anchor: 'use-diff-based-scanning-to-improve-performance',
+    anchor: 'turn-on-diff-based-scanning',
   }),
   tabs: [
     { title: i18n.partialScan, scanType: 'partial' },
