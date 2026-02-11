@@ -190,7 +190,7 @@ module Ai
 
         def trigger_exists?(service_account, event)
           event_type = ::Ai::FlowTrigger::EVENT_TYPES.key(event)
-          return false unless event_type
+          return true unless event_type
 
           container.ai_flow_triggers.triggered_on(event_type).by_users([service_account]).exists?
         end
