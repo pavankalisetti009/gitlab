@@ -15,10 +15,11 @@ import {
 import { formValidators } from '@gitlab/ui/src/utils';
 import { s__, sprintf } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { visitUrl } from '~/lib/utils/url_utility';
+import { visitUrlWithAlerts, visitUrl } from '~/lib/utils/url_utility';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import getVirtualRegistriesCleanupPolicyDetails from 'ee_component/packages_and_registries/settings/group/graphql/queries/get_virtual_registries_cleanup_policy_details.query.graphql';
+import upsertVirtualRegistriesCleanupPolicy from 'ee_component/packages_and_registries/settings/group/graphql/mutations/upsert_virtual_registries_cleanup_policy.mutation.graphql';
 
 const CADENCE_OPTIONS = [
   { value: 1, text: s__('VirtualRegistryCleanupPolicyForm|Every day') },
@@ -96,6 +97,9 @@ export default {
             notifyOnSuccess: policy.notifyOnSuccess,
             notifyOnFailure: policy.notifyOnFailure,
           };
+          if (policy.nextRunAt && !this.initialNextRunAt) {
+            this.initialNextRunAt = policy.nextRunAt;
+          }
         }
       },
       error() {
@@ -107,11 +111,13 @@ export default {
   },
   data() {
     return {
-      group: null,
+      group: {},
       formData: { ...DEFAULT_FORM_DATA },
       error: null,
       cadenceChanged: false,
       keepNDaysBlurred: false,
+      initialNextRunAt: null,
+      mutationLoading: false,
     };
   },
   computed: {
@@ -140,20 +146,24 @@ export default {
         return s__('VirtualRegistryCleanupPolicyForm|Not yet scheduled');
       }
 
-      if (this.cleanupPolicy?.nextRunAt && !this.cadenceChanged) {
-        return localeDateFormat.asDateTimeFull.format(new Date(this.cleanupPolicy.nextRunAt));
+      if (this.initialNextRunAt && !this.cadenceChanged) {
+        return localeDateFormat.asDateTimeFull.format(new Date(this.initialNextRunAt));
       }
 
-      const now = new Date();
-      const nextRun = new Date(now.getTime() + this.formData.cadence * 24 * 60 * 60 * 1000);
+      if (!this.cleanupPolicy || this.cadenceChanged) {
+        const now = new Date();
+        const nextRun = new Date(now.getTime() + this.formData.cadence * 24 * 60 * 60 * 1000);
 
-      const nextRunAt = localeDateFormat.asDateTimeFull.format(nextRun);
-      return sprintf(
-        s__('VirtualRegistryCleanupPolicyForm|%{nextRunAt} (estimated cleanup time)'),
-        {
-          nextRunAt,
-        },
-      );
+        const nextRunAt = localeDateFormat.asDateTimeFull.format(nextRun);
+        return sprintf(
+          s__('VirtualRegistryCleanupPolicyForm|%{nextRunAt} (estimated cleanup time)'),
+          {
+            nextRunAt,
+          },
+        );
+      }
+
+      return s__('VirtualRegistryCleanupPolicyForm|Not yet scheduled');
     },
     keepNDaysAfterDownloadInvalid() {
       if (!this.keepNDaysBlurred) {
@@ -173,13 +183,52 @@ export default {
     keepNDaysAfterDownloadState() {
       return this.keepNDaysAfterDownloadInvalid ? false : null;
     },
+    mutationVariables() {
+      return {
+        fullPath: this.groupPath,
+        ...this.formData,
+      };
+    },
   },
   methods: {
-    handleSubmit() {
+    async handleSubmit() {
       this.keepNDaysBlurred = true;
+      this.error = null;
 
-      if (this.isFormValid) {
-        // TODO: Implement mutation in follow-up MR https://gitlab.com/gitlab-org/gitlab/-/merge_requests/220748
+      if (!this.isFormValid) {
+        return;
+      }
+
+      this.mutationLoading = true;
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: upsertVirtualRegistriesCleanupPolicy,
+          variables: {
+            input: this.mutationVariables,
+          },
+        });
+
+        const errors = data?.virtualRegistriesCleanupPolicyUpsert?.errors;
+        if (errors?.length > 0) {
+          this.error = errors.join(', ');
+        } else {
+          visitUrlWithAlerts(this.settingsPath, [
+            {
+              id: 'virtual-registries-cleanup-policy-saved',
+              message: s__(
+                'VirtualRegistryCleanupPolicyForm|Cleanup policy has been successfully saved.',
+              ),
+              variant: 'success',
+            },
+          ]);
+        }
+      } catch (e) {
+        this.error = s__(
+          'VirtualRegistryCleanupPolicyForm|Failed to save cleanup policy. Please try again.',
+        );
+      } finally {
+        this.mutationLoading = false;
       }
     },
     handleCancel() {
@@ -319,7 +368,7 @@ export default {
             class="js-no-auto-disable"
             type="submit"
             variant="confirm"
-            :loading="isLoading"
+            :loading="isLoading || mutationLoading"
           >
             {{ s__('VirtualRegistryCleanupPolicyForm|Save changes') }}
           </gl-button>

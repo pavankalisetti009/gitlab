@@ -37,8 +37,6 @@ export const virtualRegistriesCleanupPolicyMock = (options) => ({
   enabled: true,
   status: 'SCHEDULED',
   cadence: 7,
-  createdAt: '2025-11-01T10:00:00Z',
-  updatedAt: '2025-12-01T10:00:00Z',
   keepNDaysAfterDownload: 30,
   lastRunAt: '2025-12-01T10:00:00Z',
   lastRunDeletedSize: 1024,
@@ -60,6 +58,20 @@ export const groupVirtualRegistriesCleanupPolicyMock = (cleanupPolicyOverride) =
           ? null
           : virtualRegistriesCleanupPolicyMock(cleanupPolicyOverride),
       __typename: 'Group',
+    },
+  },
+});
+
+export const virtualRegistriesCleanupPolicyMutationMock = (override) => ({
+  data: {
+    virtualRegistriesCleanupPolicyUpsert: {
+      __typename: 'VirtualRegistriesCleanupPolicyUpsertPayload',
+      virtualRegistriesCleanupPolicy: {
+        __typename: 'VirtualRegistryCleanupPolicy',
+        ...virtualRegistriesCleanupPolicyMock(),
+      },
+      errors: [],
+      ...override,
     },
   },
 });
