@@ -113,19 +113,21 @@ RSpec.describe Mutations::Security::Finding::RevertToDetected, feature_category:
 
             context 'when vulnerability is in dismissed state' do
               before do
-                vulnerability.update_column(:state, :dismissed)
+                vulnerability.update_columns(state: :dismissed, finding_id: vulnerability_finding.id)
               end
 
               it 'creates state transition entry to `detected`' do
-                expect(::Vulnerabilities::StateTransition).to receive(:create!).with(
-                  vulnerability: vulnerability,
-                  from_state: vulnerability.state,
-                  to_state: :detected,
-                  author: current_user,
-                  comment: "Revert to detected"
-                )
-
-                post_graphql_mutation(mutation, current_user: current_user)
+                expect do
+                  post_graphql_mutation(mutation, current_user: current_user)
+                end.to change {
+                  Vulnerabilities::StateTransition.where(
+                    vulnerability: vulnerability,
+                    from_state: :dismissed,
+                    to_state: :detected,
+                    author: current_user,
+                    comment: "Revert to detected"
+                  ).count
+                }.by(1)
               end
             end
 
