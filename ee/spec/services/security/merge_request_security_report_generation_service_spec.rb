@@ -246,28 +246,6 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
 
                 expect(report).to eq({ status: :parsing })
               end
-
-              context 'when feature flag low_urgency_reactive_caching_worker is disabled' do
-                before do
-                  stub_feature_flags(low_urgency_reactive_caching_worker: false)
-                end
-
-                it 'uses high urgency worker when queuing reactive cache calculation' do
-                  expect_reactive_cache_calculation_queued(report_generation_service, params.stringify_keys)
-
-                  expect(report).to eq({ status: :parsing })
-                end
-
-                it 'queues reactive cache update with high urgency and returns parsing' do
-                  expect_reactive_cache_update_queued(
-                    report_generation_service,
-                    params.stringify_keys,
-                    worker_klass: ReactiveCachingWorker
-                  )
-
-                  expect(report).to eq({ status: :parsing })
-                end
-              end
             end
 
             it 'returns all the fields along with the calculated state of the findings' do
