@@ -24,13 +24,9 @@ RSpec.describe Analytics::AiAnalytics::DuoUsageService, feature_category: :value
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
   end
 
-  shared_examples 'common duo usage service' do |flag_enabled|
+  shared_examples 'common duo usage service' do
     # This shared examples requires the following variables
     # :expected_results
-
-    before do
-      stub_feature_flags(fetch_contributions_data_from_new_tables: flag_enabled)
-    end
 
     context 'when the clickhouse is not available for analytics' do
       before do
@@ -78,7 +74,6 @@ RSpec.describe Analytics::AiAnalytics::DuoUsageService, feature_category: :value
             { user_id: user1.id, namespace_path: subgroup.traversal_path, event: 6, timestamp: to - 4.days },
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to - 2.days },
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to - 2.days },
-            # Included only when use_ai_events_namespace_path_filter is enabled
             { user_id: stranger_user.id, namespace_path: group.traversal_path, event: 6, timestamp: to - 2.days },
             # out of timeframe
             { user_id: user3.id, namespace_path: group.traversal_path, event: 6, timestamp: to + 2.days },
@@ -112,53 +107,19 @@ RSpec.describe Analytics::AiAnalytics::DuoUsageService, feature_category: :value
     end
   end
 
-  context 'when use_ai_events_namespace_path_filter feature flag is disabled' do
+  context 'for group' do
+    let_it_be(:container) { group }
+
     let(:expected_results) { { duo_used_count: 3 } }
 
-    before do
-      stub_feature_flags(use_ai_events_namespace_path_filter: false)
-    end
-
-    context 'for group' do
-      let_it_be(:container) { group }
-
-      it_behaves_like 'common duo usage service', true
-
-      context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
-        it_behaves_like 'common duo usage service', false
-      end
-    end
-
-    context 'for project' do
-      let_it_be(:container) { project.project_namespace.reload }
-
-      it_behaves_like 'common duo usage service', true
-
-      context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
-        it_behaves_like 'common duo usage service', false
-      end
-    end
+    it_behaves_like 'common duo usage service'
   end
 
-  context 'when use_ai_events_namespace_path_filter feature flag is enabled' do
-    context 'for group' do
-      let_it_be(:container) { group }
+  context 'for project' do
+    let_it_be(:container) { project.project_namespace.reload }
 
-      let(:expected_results) { { duo_used_count: 3 } }
+    let(:expected_results) { { duo_used_count: 1 } }
 
-      # When use_ai_events_namespace_path_filter is enabled we do not need to
-      # run this shared behavior with 'true' parameter because contributors filter won't be used
-      it_behaves_like 'common duo usage service', false
-    end
-
-    context 'for project' do
-      let_it_be(:container) { project.project_namespace.reload }
-
-      let(:expected_results) { { duo_used_count: 1 } }
-
-      # When use_ai_events_namespace_path_filter is enabled we do not need to
-      # run this shared behavior with 'true' parameter because contributors filter won't be used
-      it_behaves_like 'common duo usage service', false
-    end
+    it_behaves_like 'common duo usage service'
   end
 end

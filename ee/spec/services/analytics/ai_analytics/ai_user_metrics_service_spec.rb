@@ -147,60 +147,34 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           ])
         end
 
-        context 'when namespace filtering is disabled' do
-          before do
-            stub_feature_flags(use_ai_events_namespace_path_filter: false)
-          end
-
-          it 'returns all events for specified users across all namespaces' do
-            expect(service_response).to be_success
-            expect(service_response.payload).to match({
-              user1.id => a_hash_including(
-                total_events_count: 4,
-                code_suggestion_accepted_in_ide_event_count: 3,
-                code_suggestion_shown_in_ide_event_count: 1,
-                last_duo_activity_on: (to - 3.days).to_date
-              ),
-              user2.id => a_hash_including(
-                total_events_count: 2,
-                code_suggestion_accepted_in_ide_event_count: 1,
-                code_suggestion_shown_in_ide_event_count: 1,
-                last_duo_activity_on: (to - 2.days).to_date
-              )
-            })
-          end
+        it 'returns only events within the specified namespace' do
+          expect(service_response).to be_success
+          expect(service_response.payload).to match({
+            user1.id => {
+              total_events_count: 3,
+              code_suggestion_accepted_in_ide_event_count: 2,
+              code_suggestion_direct_access_token_refresh_event_count: 0,
+              code_suggestion_rejected_in_ide_event_count: 0,
+              code_suggestion_shown_in_ide_event_count: 1,
+              code_suggestions_requested_event_count: 0,
+              last_duo_activity_on: (to - 3.days).to_date
+            },
+            user2.id => {
+              total_events_count: 1,
+              code_suggestion_accepted_in_ide_event_count: 0,
+              code_suggestion_direct_access_token_refresh_event_count: 0,
+              code_suggestion_rejected_in_ide_event_count: 0,
+              code_suggestion_shown_in_ide_event_count: 1,
+              code_suggestions_requested_event_count: 0,
+              last_duo_activity_on: (to - 2.days).to_date
+            }
+          })
         end
 
-        context 'when namespace filtering is enabled' do
-          it 'returns only events within the specified namespace' do
-            expect(service_response).to be_success
-            expect(service_response.payload).to match({
-              user1.id => {
-                total_events_count: 3,
-                code_suggestion_accepted_in_ide_event_count: 2,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
-                code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0,
-                last_duo_activity_on: (to - 3.days).to_date
-              },
-              user2.id => {
-                total_events_count: 1,
-                code_suggestion_accepted_in_ide_event_count: 0,
-                code_suggestion_direct_access_token_refresh_event_count: 0,
-                code_suggestion_rejected_in_ide_event_count: 0,
-                code_suggestion_shown_in_ide_event_count: 1,
-                code_suggestions_requested_event_count: 0,
-                last_duo_activity_on: (to - 2.days).to_date
-              }
-            })
-          end
-
-          it 'includes last_duo_activity_on with the most recent activity date' do
-            expect(service_response).to be_success
-            expect(service_response.payload[user1.id][:last_duo_activity_on]).to eq((to - 3.days).to_date)
-            expect(service_response.payload[user2.id][:last_duo_activity_on]).to eq((to - 2.days).to_date)
-          end
+        it 'includes last_duo_activity_on with the most recent activity date' do
+          expect(service_response).to be_success
+          expect(service_response.payload[user1.id][:last_duo_activity_on]).to eq((to - 3.days).to_date)
+          expect(service_response.payload[user2.id][:last_duo_activity_on]).to eq((to - 2.days).to_date)
         end
 
         context 'when user_ids is empty' do
@@ -343,41 +317,18 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           ])
         end
 
-        context 'when namespace filtering is disabled' do
-          before do
-            stub_feature_flags(use_ai_events_namespace_path_filter: false)
-          end
-
-          it 'returns code review metrics across all namespaces' do
-            expect(service_response).to be_success
-            expect(service_response.payload).to match({
-              user1.id => a_hash_including(
-                total_events_count: 3,
-                encounter_duo_code_review_error_during_review_event_count: 2,
-                find_no_issues_duo_code_review_after_review_event_count: 1
-              ),
-              user2.id => a_hash_including(
-                total_events_count: 1,
-                find_nothing_to_review_duo_code_review_on_mr_event_count: 1
-              )
-            })
-          end
-        end
-
-        context 'when namespace filtering is enabled' do
-          it 'returns code review metrics only within the specified namespace' do
-            expect(service_response).to be_success
-            expect(service_response.payload).to match({
-              user1.id => a_hash_including(
-                total_events_count: 2,
-                encounter_duo_code_review_error_during_review_event_count: 2
-              ),
-              user2.id => a_hash_including(
-                total_events_count: 1,
-                find_nothing_to_review_duo_code_review_on_mr_event_count: 1
-              )
-            })
-          end
+        it 'returns code review metrics only within the specified namespace' do
+          expect(service_response).to be_success
+          expect(service_response.payload).to match({
+            user1.id => a_hash_including(
+              total_events_count: 2,
+              encounter_duo_code_review_error_during_review_event_count: 2
+            ),
+            user2.id => a_hash_including(
+              total_events_count: 1,
+              find_nothing_to_review_duo_code_review_on_mr_event_count: 1
+            )
+          })
         end
       end
 

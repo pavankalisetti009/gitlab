@@ -5,42 +5,18 @@ module Analytics
     class CodeSuggestionUsageService
       include CommonUsageService
 
-      # TODO - Replace with namespace_traversal_path filter
-      # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491.
       QUERY = <<~SQL
-        -- cte to load code contributors
-        WITH contributors AS (
-          SELECT DISTINCT author_id
-          FROM "contributions"
-          WHERE startsWith(path, {traversal_path:String})
-          AND "contributions"."created_at" >= {from:Date}
-          AND "contributions"."created_at" <= {to:Date}
-          AND "contributions"."action" = 5
-        )
         SELECT %{fields}
       SQL
 
-      NEW_QUERY = <<~SQL
-        -- cte to load contributors
-        WITH contributors AS (
-          SELECT DISTINCT author_id
-          FROM (
-            SELECT
-              argMax(author_id, "contributions_new".version) AS author_id,
-              argMax(deleted, "contributions_new".version) AS deleted
-            FROM contributions_new
-            WHERE startsWith(path, {traversal_path:String})
-            AND "contributions_new"."created_at" >= {from:Date}
-            AND "contributions_new"."created_at" <= {to:Date}
-            AND "contributions_new"."action" = 5
-            GROUP BY id
-          ) contributions_new
-          WHERE deleted = false
-        )
-        SELECT %{fields}
+      CODE_CONTRIBUTORS_COUNT_QUERY = <<~SQL
+        SELECT COUNT(DISTINCT author_id)
+        FROM "contributions"
+        WHERE startsWith(path, {traversal_path:String})
+        AND "contributions"."created_at" >= {from:Date}
+        AND "contributions"."created_at" <= {to:Date}
+        AND "contributions"."action" = 5
       SQL
-
-      CODE_CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM contributors"
       private_constant :CODE_CONTRIBUTORS_COUNT_QUERY
 
       code_suggestion_usage_events = ::Ai::UsageEvent.events.values_at(
@@ -54,7 +30,7 @@ module Analytics
       CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY = <<~SQL.freeze
         SELECT COUNT(DISTINCT user_id)
           FROM code_suggestion_events_daily
-          WHERE user_id IN (SELECT author_id FROM contributors)
+          WHERE startsWith(namespace_path, {traversal_path:String})
           AND date >= {from:Date}
           AND date <= {to:Date}
           AND event IN (#{code_suggestion_usage_events})
@@ -66,7 +42,7 @@ module Analytics
       CODE_SUGGESTIONS_SHOWN_COUNT_QUERY = <<~SQL.freeze
         SELECT SUM(occurrences)
         FROM code_suggestion_events_daily
-        WHERE user_id IN (SELECT author_id FROM contributors)
+        WHERE startsWith(namespace_path, {traversal_path:String})
         AND date >= {from:Date}
         AND date <= {to:Date}
         AND event = #{::Ai::UsageEvent.events['code_suggestion_shown_in_ide']}
@@ -78,7 +54,7 @@ module Analytics
       CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY = <<~SQL.freeze
         SELECT SUM(occurrences)
         FROM code_suggestion_events_daily
-        WHERE user_id IN (SELECT author_id FROM contributors)
+        WHERE startsWith(namespace_path, {traversal_path:String})
         AND date >= {from:Date}
         AND date <= {to:Date}
         AND event = #{::Ai::UsageEvent.events['code_suggestion_accepted_in_ide']}
@@ -89,7 +65,7 @@ module Analytics
         <<~SQL.freeze
           SELECT #{field_select_sql}
           FROM code_suggestion_events_daily_new
-          WHERE user_id IN (SELECT author_id FROM contributors)
+          WHERE startsWith(namespace_path, {traversal_path:String})
           AND date >= {from:Date}
           AND date <= {to:Date}
           AND event IN (#{event_types_filter})

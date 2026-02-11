@@ -174,7 +174,7 @@ module Analytics
       def namespace_filtering_enabled?
         return Feature.enabled?(:use_duo_chat_namespace_path_filter, namespace) if feature.to_sym == :chat
 
-        Feature.enabled?(:use_ai_events_namespace_path_filter, namespace)
+        true
       end
 
       def clickhouse_unavailable_error

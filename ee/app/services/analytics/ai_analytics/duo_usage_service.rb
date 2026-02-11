@@ -5,60 +5,14 @@ module Analytics
     class DuoUsageService
       include CommonUsageService
 
-      # TODO: - Replace with namespace_traversal_path filter
-      # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491.
-      # Can be removed with use_ai_events_namespace_path_filter feature flag.
-      QUERY = <<~SQL
-        -- cte to load contributors
-        WITH contributors AS (
-          SELECT DISTINCT author_id
-          FROM "contributions"
-          WHERE startsWith(path, {traversal_path:String})
-          AND "contributions"."created_at" >= {from:Date}
-          AND "contributions"."created_at" <= {to:Date}
-        )
-        SELECT %{fields}
-      SQL
-
-      # Can be removed with use_ai_events_namespace_path_filter feature flag.
-      NEW_QUERY = <<~SQL
-        -- cte to load contributors
-        WITH contributors AS (
-          SELECT DISTINCT author_id
-          FROM (
-            SELECT
-              argMax(author_id, "contributions_new".version) AS author_id,
-              argMax(deleted, "contributions_new".version) AS deleted
-            FROM contributions_new
-            WHERE startsWith(path, {traversal_path:String})
-            AND "contributions_new"."created_at" >= {from:Date}
-            AND "contributions_new"."created_at" <= {to:Date}
-            GROUP BY id
-          ) contributions_new
-          WHERE deleted = false
-        )
-        SELECT %{fields}
-      SQL
-
       DUO_USED_COUNT_QUERY = <<~SQL
-        SELECT COUNT(user_id) FROM (
-          SELECT DISTINCT user_id
-          FROM ai_usage_events
-          WHERE user_id IN (SELECT author_id FROM contributors)
-          AND timestamp >= {from:Date}
-          AND timestamp <= {to:Date}
-        )
-      SQL
-      private_constant :DUO_USED_COUNT_QUERY
-
-      NEW_DUO_USED_COUNT_QUERY = <<~SQL
         SELECT COUNT(DISTINCT user_id) as duo_used_count
         FROM ai_usage_events
         WHERE startsWith(namespace_path, {traversal_path:String})
           AND timestamp >= {from:Date}
           AND timestamp <= {to:Date}
       SQL
-      private_constant :NEW_DUO_USED_COUNT_QUERY
+      private_constant :DUO_USED_COUNT_QUERY
 
       FIELDS_SUBQUERIES = {
         duo_used_count: DUO_USED_COUNT_QUERY
@@ -69,15 +23,13 @@ module Analytics
       private
 
       def usage_data
-        return super unless filter_by_namespace_path_enabled?
-
         params = {
           traversal_path: namespace.traversal_path,
           from: from.to_date.iso8601,
           to: to.to_date.iso8601
         }
 
-        query = ClickHouse::Client::Query.new(raw_query: NEW_DUO_USED_COUNT_QUERY, placeholders: params)
+        query = ClickHouse::Client::Query.new(raw_query: DUO_USED_COUNT_QUERY, placeholders: params)
 
         ClickHouse::Client.select(query, :main).first
       end

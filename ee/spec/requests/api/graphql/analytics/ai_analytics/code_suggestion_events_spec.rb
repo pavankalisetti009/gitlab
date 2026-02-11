@@ -124,34 +124,6 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
         [1, 2, 4].map(&:to_s)
       end
     end
-
-    context 'when use_ai_events_namespace_path_filter is not enabled' do
-      before do
-        stub_feature_flags(use_ai_events_namespace_path_filter: false)
-      end
-
-      it_behaves_like 'code suggestion events' do
-        let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
-        let(:code_suggestion_events) { graphql_data.dig('group', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
-        let(:expected_event_ids) do
-          [1, 2, 3].map(&:to_s)
-        end
-      end
-
-      context 'when group is not a root group' do
-        let(:query) { graphql_query_for(:group, { fullPath: subgroup.full_path }, ai_usage_data_fields) }
-
-        before_all do
-          group.add_reporter(current_user)
-        end
-
-        it 'raises error' do
-          post_graphql(query, current_user: current_user)
-
-          expect(graphql_errors).to include(a_hash_including('message' => 'Not available for this resource.'))
-        end
-      end
-    end
   end
 
   context 'for project' do
@@ -161,25 +133,6 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
 
       let(:expected_event_ids) do
         [2, 4].map(&:to_s)
-      end
-    end
-
-    context 'when use_ai_events_namespace_path_filter is not enabled' do
-      let(:query) { graphql_query_for(:project, { fullPath: subgroup_project.full_path }, ai_usage_data_fields) }
-      let(:code_suggestion_events) { graphql_data.dig('project', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
-
-      before_all do
-        group.add_reporter(current_user)
-      end
-
-      before do
-        stub_feature_flags(use_ai_events_namespace_path_filter: false)
-      end
-
-      it 'raises an exception' do
-        post_graphql(query, current_user: current_user)
-
-        expect(graphql_errors).to include(a_hash_including('message' => 'Not available for this resource.'))
       end
     end
   end
