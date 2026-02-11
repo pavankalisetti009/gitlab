@@ -153,10 +153,6 @@ export default {
       return draft.position?.head_sha === this.getNoteableData.diff_head_sha;
     },
     async onClickDraft(draft) {
-      if (this.viewDiffsFileByFile) {
-        await this.goToFile({ path: draft.file_path });
-      }
-
       if (draft.position && !this.isOnLatestDiff(draft)) {
         const url = new URL(
           setUrlParams({ commit_id: draft.position.head_sha }, { url: this.diffsPath }),
@@ -164,6 +160,9 @@ export default {
         url.hash = `draft_${draft.id}`;
         visitUrl(url.toString());
       } else {
+        if (this.viewDiffsFileByFile) {
+          await this.goToFile({ path: draft.file_path });
+        }
         await this.scrollToDraft(draft);
       }
     },
