@@ -64,10 +64,12 @@ describe('TestCaseCreateRoot', () => {
             <div>
               <slot
                 name="actions"
-                issuable-title="${title}"
-                issuable-description="Test description"
-                :issuable-confidential="true"
-                :selected-labels="[]"
+                :issuable-meta="{
+                  issuableTitle: '${title}',
+                  issuableDescription: 'Test description',
+                  issuableConfidential: true,
+                  selectedLabels: []
+                }"
               ></slot>
             </div>
           `,
