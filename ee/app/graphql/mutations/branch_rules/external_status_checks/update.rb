@@ -26,6 +26,10 @@ module Mutations
           required: true,
           description: 'External URL of the external status check.'
 
+        argument :shared_secret, GraphQL::Types::String,
+          required: false,
+          description: 'HMAC shared secret for authenticating external status check requests.'
+
         field :external_status_check,
           type: ::Types::BranchRules::ExternalStatusCheckType,
           null: true,

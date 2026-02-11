@@ -83,6 +83,35 @@ RSpec.describe 'Create an external status check', feature_category: :source_code
         expect(graphql_errors).to be_nil
       end
 
+      context 'when shared_secret is provided' do
+        let(:params) do
+          { branch_rule_id: branch_rule_gid, name: status_check_name, external_url: external_url,
+            shared_secret: 'test_secret_123' }
+        end
+
+        it 'creates the external status check with HMAC enabled' do
+          expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(1)
+
+          created_check = MergeRequests::ExternalStatusCheck.last
+          expect(created_check).to have_attributes(name: status_check_name, external_url: external_url)
+          expect(mutation_response['externalStatusCheck']['hmac']).to be(true)
+          expect(graphql_errors).to be_nil
+        end
+
+        context 'when shared_secret exceeds maximum length' do
+          let(:params) do
+            { branch_rule_id: branch_rule_gid, name: status_check_name, external_url: external_url,
+              shared_secret: 'a' * 256 }
+          end
+
+          it 'returns an error' do
+            expect { mutation_request }.not_to change { MergeRequests::ExternalStatusCheck.count }
+
+            expect(mutation_response['errors']).to include('Shared secret is too long (maximum is 255 characters)')
+          end
+        end
+      end
+
       context 'when the service to create external checks fails' do
         before do
           allow_next_instance_of(MergeRequests::ExternalStatusCheck) do |instance|

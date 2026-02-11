@@ -4378,6 +4378,7 @@ Input type: `BranchRuleExternalStatusCheckCreateInput`
 | <a id="mutationbranchruleexternalstatuscheckcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationbranchruleexternalstatuscheckcreateexternalurl"></a>`externalUrl` | [`String!`](#string) | URL of external status check resource. |
 | <a id="mutationbranchruleexternalstatuscheckcreatename"></a>`name` | [`String!`](#string) | Name of the external status check. |
+| <a id="mutationbranchruleexternalstatuscheckcreatesharedsecret"></a>`sharedSecret` | [`String`](#string) | HMAC shared secret for authenticating external status check requests. |
 
 #### Fields
 
@@ -4433,6 +4434,7 @@ Input type: `BranchRuleExternalStatusCheckUpdateInput`
 | <a id="mutationbranchruleexternalstatuscheckupdateexternalurl"></a>`externalUrl` | [`String!`](#string) | External URL of the external status check. |
 | <a id="mutationbranchruleexternalstatuscheckupdateid"></a>`id` | [`MergeRequestsExternalStatusCheckID!`](#mergerequestsexternalstatuscheckid) | Global ID of the external status check to update. |
 | <a id="mutationbranchruleexternalstatuscheckupdatename"></a>`name` | [`String!`](#string) | Name of the external status check. |
+| <a id="mutationbranchruleexternalstatuscheckupdatesharedsecret"></a>`sharedSecret` | [`String`](#string) | HMAC shared secret for authenticating external status check requests. |
 
 #### Fields
 
