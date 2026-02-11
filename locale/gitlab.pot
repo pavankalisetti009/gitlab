@@ -17515,9 +17515,6 @@ msgstr ""
 msgid "Compliance center"
 msgstr ""
 
-msgid "Compliance framework settings have moved."
-msgstr ""
-
 msgid "Compliance frameworks"
 msgstr ""
 
@@ -47170,9 +47167,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "On the confirmation dialog, choose a deletion method."
-msgstr ""
-
-msgid "On the left sidebar, select %{compliance_center_link} to view them."
 msgstr ""
 
 msgid "On the upper right, select the overflow menu, then select %{strongStart}Delete%{strongEnd}."
