@@ -1,10 +1,12 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlButton, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import SmartInterval from '~/smart_interval';
 import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
+import HelpPopover from '~/vue_shared/components/help_popover.vue';
 import SecurityFindingsPage from 'ee/merge_requests/reports/pages/security_findings_page.vue';
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
@@ -31,6 +33,7 @@ describe('Security findings page component', () => {
     isPipelineActive: false,
     pipeline: {
       iid: 123,
+      path: '/root/project/-/pipelines/123',
     },
   };
 
@@ -52,12 +55,17 @@ describe('Security findings page component', () => {
       propsData: {
         mr: { ...DEFAULT_MR_PROPS, ...mr },
       },
+      stubs: {
+        GlButton,
+      },
     });
   };
 
   const findSecurityFindingsPage = () => wrapper.findByTestId('security-findings-page');
   const findSummaryText = () => wrapper.findComponent(SummaryText);
   const findSummaryHighlights = () => wrapper.findComponent(SummaryHighlights);
+  const findHelpPopover = () => wrapper.findComponent(HelpPopover);
+  const findLearnMoreLink = () => findHelpPopover().findComponent(GlLink);
 
   describe('rendering', () => {
     it('does not render when enabledScans is loading', async () => {
@@ -318,6 +326,57 @@ describe('Security findings page component', () => {
         high: 1,
         other: 0,
       });
+    });
+  });
+
+  describe('HelpPopover', () => {
+    it('passes correct options prop', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+      });
+
+      await waitForPromises();
+
+      expect(findHelpPopover().props('options')).toEqual({
+        title: 'Security scan results',
+      });
+    });
+
+    it('contains learn more link with correct href', async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+      });
+
+      await waitForPromises();
+
+      expect(findLearnMoreLink().attributes('href')).toBe(
+        '/help/user/application_security/detect/security_scanning_results#merge-request-security-widget',
+      );
+    });
+  });
+
+  describe('Action Button', () => {
+    const findActionButton = () => wrapper.findComponent(GlButton);
+
+    beforeEach(async () => {
+      createComponent({
+        enabledScansHandler: jest
+          .fn()
+          .mockResolvedValue(createEnabledScansQueryResponse({ full: { sast: true } })),
+      });
+      await waitForPromises();
+    });
+
+    it('renders button with correct text', () => {
+      expect(findActionButton().text()).toBe('View all pipeline findings');
+    });
+
+    it('links to pipeline security page', () => {
+      expect(findActionButton().attributes('href')).toBe('/root/project/-/pipelines/123/security');
     });
   });
 

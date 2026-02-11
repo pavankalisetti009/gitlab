@@ -1,4 +1,5 @@
 <script>
+import { GlButton, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import SmartInterval from '~/smart_interval';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
@@ -8,9 +9,11 @@ import {
   transformToEnabledScans,
   highlightsFromReport,
 } from 'ee/vue_merge_request_widget/widgets/security_reports/utils';
-import { reportTypes } from 'ee/vue_merge_request_widget/widgets/security_reports/i18n';
+import { reportTypes, i18n } from 'ee/vue_merge_request_widget/widgets/security_reports/i18n';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
+import HelpPopover from '~/vue_shared/components/help_popover.vue';
 import SummaryText, {
   MAX_NEW_VULNERABILITIES,
 } from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
@@ -25,6 +28,9 @@ export default {
     StatusIcon,
     SummaryText,
     SummaryHighlights,
+    HelpPopover,
+    GlButton,
+    GlLink,
   },
   props: {
     mr: {
@@ -168,6 +174,12 @@ export default {
 
       return EXTENSION_ICONS.success;
     },
+    pipelineSecurityPath() {
+      // Pipeline is loaded asynchronously via the MRWidgetService,
+      // not available at initial page render, so we append the route segment here.
+      // eslint-disable-next-line @gitlab/no-hardcoded-urls
+      return `${this.mr.pipeline.path}/security`;
+    },
   },
   beforeDestroy() {
     if (this.$options.pollingInterval) {
@@ -266,6 +278,15 @@ export default {
     },
   },
   pollingInterval: undefined,
+  helpPopover: {
+    options: { title: i18n.helpPopoverTitle },
+    content: {
+      text: i18n.helpPopoverContent,
+      learnMorePath: helpPagePath('user/application_security/detect/security_scanning_results', {
+        anchor: 'merge-request-security-widget',
+      }),
+    },
+  },
 };
 </script>
 
@@ -273,7 +294,7 @@ export default {
   <div v-if="shouldRenderMrWidget" data-testid="security-findings-page">
     <div class="gl-flex">
       <status-icon :name="$options.name" :is-loading="isLoading" :icon-name="statusIconName" />
-      <div class="gl-flex gl-grow">
+      <div class="gl-flex gl-grow gl-justify-between">
         <div>
           <summary-text
             :total-new-vulnerabilities="totalNewFindings"
@@ -281,6 +302,25 @@ export default {
             :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
           />
           <summary-highlights v-if="!isLoading && totalNewFindings > 0" :highlights="highlights" />
+        </div>
+        <div class="gl-flex gl-items-center">
+          <help-popover
+            icon="information-o"
+            :options="$options.helpPopover.options"
+            class="gl-mr-3"
+          >
+            <p class="gl-mb-0">{{ $options.helpPopover.content.text }}</p>
+            <gl-link
+              :href="$options.helpPopover.content.learnMorePath"
+              target="_blank"
+              class="gl-text-sm"
+            >
+              {{ __('Learn more') }}
+            </gl-link>
+          </help-popover>
+          <gl-button :href="pipelineSecurityPath">
+            {{ s__('ciReport|View all pipeline findings') }}
+          </gl-button>
         </div>
       </div>
     </div>
