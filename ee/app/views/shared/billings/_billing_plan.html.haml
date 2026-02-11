@@ -1,6 +1,8 @@
 - purchase_link = plan.purchase_link
 - plan_name = plan.name
 - show_deprecated_plan = plan.deprecated?
+- is_new_trial_type = GitlabSubscriptions::Trials.dap_type?(namespace)
+
 - if show_deprecated_plan
   - plan_name      += ' (Legacy)'
   - faq_link_url   = promo_pricing_url(path: '/faq-new-product-subscription-tiers')
@@ -28,7 +30,7 @@
         %hr.gl-my-3
 
         %ul.unstyled-list
-          - plan_feature_list(plan).each do |feature|
+          - plan_feature_list(is_new_trial_type, plan).each do |feature|
             - feature_class = "!gl-p-0"
             - if feature.highlight
               - feature_class += " gl-font-bold"

@@ -1,16 +1,27 @@
 <script>
-import { GlIcon } from '@gitlab/ui';
+import { GlIcon, GlPopover, GlSprintf, GlLink } from '@gitlab/ui';
 
 export default {
   name: 'PremiumPlanBilling',
   components: {
     GlIcon,
+    GlPopover,
+    GlSprintf,
+    GlLink,
   },
   props: {
+    trialActive: {
+      type: Boolean,
+      required: true,
+    },
     isNewTrialType: {
       type: Boolean,
       required: false,
       default: false,
+    },
+    creditsPopover: {
+      type: Object,
+      required: true,
     },
   },
 };
@@ -73,9 +84,35 @@ export default {
         {{ s__('BillingPlans|GitLab Duo Agent Platform:') }}
       </div>
 
-      <div class="gl-mt-6 md:gl-mt-4">
-        <gl-icon name="check" class="gl-mr-2 gl-mt-1 gl-text-feedback-info" />
-        <span class="gl-text-lg">{{ s__('BillingPlans|$12 in GitLab Credits/User/Month') }}</span>
+      <div class="gl-mt-6 gl-flex md:gl-mt-4">
+        <div>
+          <gl-icon name="check" class="gl-mr-3 gl-mt-1 gl-text-feedback-info" />
+        </div>
+
+        <div data-testid="premium-gitlab-credits">
+          <span v-if="trialActive" id="premium-gitlab-credits" class="gl-text-lg gl-underline">{{
+            s__('BillingPlans|Includes $12 in GitLab Credits per user per month')
+          }}</span>
+
+          <span v-else id="premium-gitlab-credits" class="gl-text-lg gl-underline">{{
+            s__('BillingPlans|$12 in GitLab Credits per user per month')
+          }}</span>
+
+          <gl-popover target="premium-gitlab-credits">
+            <span>
+              <gl-sprintf :message="creditsPopover.text">
+                <template #link="{ content }">
+                  <gl-link
+                    class="!gl-text-default gl-underline"
+                    target="_blank"
+                    :href="creditsPopover.url"
+                    >{{ content }}</gl-link
+                  >
+                </template>
+              </gl-sprintf>
+            </span>
+          </gl-popover>
+        </div>
       </div>
     </template>
 

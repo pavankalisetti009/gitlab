@@ -348,25 +348,86 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
   end
 
   describe '#plan_feature_list' do
-    let(:plan_code) { 'ultimate' }
+    let(:is_new_trial_type) { false }
     let(:plan) { Hashie::Mash.new(code: plan_code) }
 
-    let(:features_list) do
-      Hashie::Mash.new({
-        plan_code => [
-          { title: s_('BillingPlans|All the benefits of Premium +'), highlight: true },
-          { title: s_('BillingPlans|Company wide portfolio management') },
-          { title: s_('BillingPlans|Advanced application security') },
-          { title: s_('BillingPlans|Executive level insights') },
-          { title: s_('BillingPlans|Compliance automation') },
-          { title: s_('BillingPlans|Free guest users') },
-          { title: s_('BillingPlans|50000 compute minutes') }
+    context 'when premium' do
+      let(:plan_code) { 'premium' }
+
+      let(:expected_features_list) do
+        [
+          s_('BillingPlans|All the benefits of Free +'),
+          s_('BillingPlans|AI Chat in the IDE'),
+          s_('BillingPlans|AI Code Suggestions in the IDE'),
+          s_('BillingPlans|Cross-team project management'),
+          s_('BillingPlans|Multiple approval rules'),
+          s_('BillingPlans|Multi-region support'),
+          s_('BillingPlans|Priority support'),
+          s_('BillingPlans|10000 compute minutes')
         ]
-      })
+      end
+
+      it 'returns features list' do
+        features_list = helper.plan_feature_list(is_new_trial_type, plan).map(&:title)
+
+        expect(features_list).to eq(expected_features_list)
+      end
+
+      context 'when new DAP trial' do
+        let(:is_new_trial_type) { true }
+
+        let(:expected_features_list) do
+          super().concat([
+            s_('BillingPlans|GitLab Duo Agent Platform'),
+            s_('BillingPlans|Includes $12 in GitLab Credits per user per month')
+          ])
+        end
+
+        it 'returns features list' do
+          features_list = helper.plan_feature_list(is_new_trial_type, plan).map(&:title)
+
+          expect(features_list).to eq(expected_features_list)
+        end
+      end
     end
 
-    it 'returns features list' do
-      expect(helper.plan_feature_list(plan)).to eq(features_list[plan.code])
+    context 'when ultimate' do
+      let(:plan_code) { 'ultimate' }
+
+      let(:expected_features_list) do
+        [
+          s_('BillingPlans|All the benefits of Premium +'),
+          s_('BillingPlans|Company wide portfolio management'),
+          s_('BillingPlans|Advanced application security'),
+          s_('BillingPlans|Executive level insights'),
+          s_('BillingPlans|Compliance automation'),
+          s_('BillingPlans|Free guest users'),
+          s_('BillingPlans|50000 compute minutes')
+        ]
+      end
+
+      it 'returns features list' do
+        features_list = helper.plan_feature_list(is_new_trial_type, plan).map(&:title)
+
+        expect(features_list).to eq(expected_features_list)
+      end
+
+      context 'when new DAP trial' do
+        let(:is_new_trial_type) { true }
+
+        let(:expected_features_list) do
+          super().concat([
+            s_('BillingPlans|GitLab Duo Agent Platform'),
+            s_('BillingPlans|Includes $24 in GitLab Credits per user per month')
+          ])
+        end
+
+        it 'returns features list' do
+          features_list = helper.plan_feature_list(is_new_trial_type, plan).map(&:title)
+
+          expect(features_list).to eq(expected_features_list)
+        end
+      end
     end
   end
 
