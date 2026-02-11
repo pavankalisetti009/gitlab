@@ -724,4 +724,114 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
       end
     end
   end
+
+  describe 'ToolCallApprovals' do
+    describe '#add_approval' do
+      let(:approvals) { described_class::ToolCallApprovals.new }
+
+      it 'adds a new tool approval with hashed call args' do
+        approvals.add_approval(tool_name: 'run_command', call_args: '{"command": "ls"}')
+
+        expect(approvals.to_h).to have_key('run_command')
+        expect(approvals.to_h['run_command']).to have_key('call_args')
+        expect(approvals.to_h['run_command']['call_args']).to be_an(Array)
+      end
+
+      it 'deduplicates identical call args' do
+        call_args = '{"command": "ls"}'
+        approvals.add_approval(tool_name: 'run_command', call_args: call_args)
+        approvals.add_approval(tool_name: 'run_command', call_args: call_args)
+
+        expect(approvals.to_h['run_command']['call_args'].size).to eq(1)
+      end
+
+      it 'stores different call args for the same tool' do
+        approvals.add_approval(tool_name: 'run_command', call_args: '{"command": "ls"}')
+        approvals.add_approval(tool_name: 'run_command', call_args: '{"command": "pwd"}')
+
+        expect(approvals.to_h['run_command']['call_args'].size).to eq(2)
+      end
+
+      it 'stores hashes of call args' do
+        call_args = '{"command": "ls"}'
+        approvals.add_approval(tool_name: 'run_command', call_args: call_args)
+
+        expected_hash = Digest::SHA256.hexdigest(call_args)
+        expect(approvals.to_h['run_command']['call_args']).to include(expected_hash)
+      end
+    end
+
+    describe '#to_h' do
+      it 'returns the approvals as a hash' do
+        approvals = described_class::ToolCallApprovals.new(
+          'run_command' => { 'call_args' => %w[hash1 hash2] }
+        )
+
+        result = approvals.to_h
+        expect(result).to eq('run_command' => { 'call_args' => %w[hash1 hash2] })
+      end
+    end
+
+    describe 'hash-like interface' do
+      let(:approvals) { described_class::ToolCallApprovals.new }
+
+      it 'supports [] access' do
+        approvals['run_command'] = { 'call_args' => %w[hash1] }
+        expect(approvals['run_command']).to eq({ 'call_args' => %w[hash1] })
+      end
+
+      it 'supports keys method' do
+        approvals['run_command'] = { 'call_args' => [] }
+        approvals['git_clone'] = { 'call_args' => [] }
+
+        expect(approvals.keys).to contain_exactly('run_command', 'git_clone')
+      end
+
+      it 'supports empty? method' do
+        expect(approvals.empty?).to be true
+        approvals['run_command'] = { 'call_args' => [] }
+        expect(approvals.empty?).to be false
+      end
+
+      it 'supports each method' do
+        approvals.add_approval(tool_name: 'run_command', call_args: '{"command": "ls"}')
+        approvals.add_approval(tool_name: 'git_clone', call_args: '{"repo": "url"}')
+
+        yielded = {}
+        approvals.each { |tool_name, approval| yielded[tool_name] = approval }
+
+        expect(yielded.keys).to contain_exactly('run_command', 'git_clone')
+        expect(yielded['run_command']).to have_key('call_args')
+        expect(yielded['git_clone']).to have_key('call_args')
+      end
+    end
+  end
+
+  describe '#add_tool_call_approval' do
+    let(:workflow) { create(:duo_workflows_workflow) }
+
+    it 'adds a tool call approval and persists it' do
+      workflow.add_tool_call_approval(tool_name: 'run_command', call_args: '{"command": "ls"}')
+
+      expect(workflow.tool_call_approvals).to have_key('run_command')
+      expect(workflow.tool_call_approvals['run_command']).to have_key('call_args')
+    end
+
+    it 'appends to existing approvals' do
+      workflow.add_tool_call_approval(tool_name: 'run_command', call_args: '{"command": "ls"}')
+      workflow.add_tool_call_approval(tool_name: 'git_clone', call_args: '{"repo": "url"}')
+
+      expect(workflow.tool_call_approvals).to have_key('run_command')
+      expect(workflow.tool_call_approvals).to have_key('git_clone')
+    end
+
+    it 'deduplicates identical call args for the same tool' do
+      call_args = '{"command": "ls"}'
+      workflow.add_tool_call_approval(tool_name: 'run_command', call_args: call_args)
+      workflow.add_tool_call_approval(tool_name: 'run_command', call_args: call_args)
+
+      # call_args is consistently stored as an array
+      expect(workflow.tool_call_approvals['run_command']['call_args'].size).to eq(1)
+    end
+  end
 end
