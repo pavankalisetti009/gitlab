@@ -73,6 +73,41 @@ RSpec.describe 'Updates an external status check', feature_category: :source_cod
         expect(graphql_errors).to be_nil
       end
 
+      context 'when shared_secret is provided' do
+        let(:params) do
+          {
+            id: external_status_check_gid,
+            branch_rule_id: branch_rule_gid,
+            name: external_status_check_name,
+            external_url: external_status_check_external_url,
+            shared_secret: 'updated_secret_456'
+          }
+        end
+
+        it 'updates the external status check with HMAC enabled' do
+          expect { mutation_request }.to change { external_status_check.reload.hmac? }.to(true)
+          expect(graphql_errors).to be_nil
+        end
+
+        context 'when shared_secret exceeds maximum length' do
+          let(:params) do
+            {
+              id: external_status_check_gid,
+              branch_rule_id: branch_rule_gid,
+              name: external_status_check_name,
+              external_url: external_status_check_external_url,
+              shared_secret: 'a' * 256
+            }
+          end
+
+          it 'returns an error' do
+            expect { mutation_request }.not_to change { external_status_check.reload.hmac? }
+
+            expect(mutation_response['errors']).to include('Shared secret is too long (maximum is 255 characters)')
+          end
+        end
+      end
+
       context 'when the branch rule is an Projects::AllBranchesRule' do
         let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
         let(:external_status_check) do
