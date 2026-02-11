@@ -42,16 +42,11 @@ module Resolvers
 
       private
 
-      def nested_preloads
-        {
-          add_on_purchase: {
-            assigned_quantity: [{ add_on_purchase: :assigned_users }]
-          }
-        }
-      end
-
       def preloads
-        { add_on_purchase: [add_on_purchase: [:add_on]] }
+        {
+          add_on_purchase: [add_on_purchase: [:add_on]],
+          [:add_on_purchase, :assigned_quantity] => [{ add_on_purchase: :assigned_users }]
+        }
       end
     end
   end

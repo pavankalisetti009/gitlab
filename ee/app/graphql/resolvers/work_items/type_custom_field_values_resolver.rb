@@ -69,8 +69,10 @@ module Resolvers
         super + [:work_item_types]
       end
 
-      def nested_preloads
-        { custom_field: custom_field_preloads }
+      def preloads
+        custom_field_preloads.transform_keys do |field|
+          [:custom_field, field]
+        end
       end
     end
   end

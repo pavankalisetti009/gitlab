@@ -36,21 +36,11 @@ module EE
           super.merge(
             approval_rules: { approval_project_rules_with_unique_policies: [:users, :group_users] },
             external_status_checks: :external_status_checks,
-            squash_option: :squash_option
+            squash_option: :squash_option,
+            [:branch_protection, :merge_access_levels] => access_levels_preloads_for(:merge),
+            [:branch_protection, :push_access_levels] => access_levels_preloads_for(:push),
+            [:branch_protection, :unprotect_access_levels] => access_levels_preloads_for(:unprotect)
           )
-        end
-
-        override :nested_preloads
-        def nested_preloads
-          super.deep_merge(branch_protection: branch_protection_preloads)
-        end
-
-        def branch_protection_preloads
-          {
-            merge_access_levels: access_levels_preloads_for(:merge),
-            push_access_levels: access_levels_preloads_for(:push),
-            unprotect_access_levels: access_levels_preloads_for(:unprotect)
-          }
         end
 
         def access_levels_preloads_for(access_type)
