@@ -13,22 +13,6 @@ import {
 export default {
   component: SubscriptionSeatsApp,
   title: 'ee/usage_quotas/seats/subscription_seats',
-  parameters: {
-    a11y: {
-      config: {
-        rules: [
-          {
-            id: 'empty-table-header',
-            enabled: false,
-          },
-          {
-            id: 'link-name',
-            enabled: false,
-          },
-        ],
-      },
-    },
-  },
 };
 
 const defaultProvide = {

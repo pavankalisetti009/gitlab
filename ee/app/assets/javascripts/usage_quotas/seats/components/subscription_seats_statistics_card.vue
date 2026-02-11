@@ -89,19 +89,32 @@ export default {
 
       return this.totalSeatsInSubscription ? String(this.totalSeatsInSubscription) : unlimited;
     },
-    tooltipLink() {
-      if (this.communityPlan) return `${PROMO_URL}/solutions/open-source/`;
+    helpLinkConfig() {
+      if (this.communityPlan) {
+        return {
+          href: `${PROMO_URL}/solutions/open-source/`,
+          tooltipText: s__('Billings|Learn more about billing and seat usage.'),
+        };
+      }
 
-      return seatsInUseLink;
-    },
-    tooltipText() {
-      if (this.communityPlan) return null;
-      if (!this.hasLimitedFreePlan) return null;
-      if (this.activeTrial)
-        return s__(
-          'Billings|Free tier and trial groups can invite a maximum of 20 members per day.',
-        );
-      return this.freeNamespaceSeatsLimitText;
+      if (!this.hasLimitedFreePlan) {
+        return {
+          href: seatsInUseLink,
+          tooltipText: s__('Billings|Learn more about billing and seat usage.'),
+        };
+      }
+
+      if (this.activeTrial) {
+        return {
+          href: seatsInUseLink,
+          tooltipText: s__('Billings|Learn more about billing and seat usage.'),
+        };
+      }
+
+      return {
+        href: seatsInUseLink,
+        tooltipText: this.freeNamespaceSeatsLimitText,
+      };
     },
     additionalInfo() {
       if (this.maxFreeNamespaceSeats && (this.hasLimitedFreePlan || this.activeTrial)) {
@@ -140,13 +153,13 @@ export default {
           <p v-if="seatsStatisticsText" class="gl-mb-0 gl-font-bold" data-testid="seats-info">
             {{ seatsStatisticsText }}
             <gl-link
-              v-if="tooltipLink"
+              v-if="helpLinkConfig.href"
               v-gl-tooltip
-              :href="tooltipLink"
+              :href="helpLinkConfig.href"
               target="_blank"
               class="gl-ml-2"
-              :title="tooltipText"
-              :aria-label="tooltipText"
+              :title="helpLinkConfig.tooltipText"
+              :aria-label="helpLinkConfig.tooltipText"
             >
               <help-icon />
             </gl-link>

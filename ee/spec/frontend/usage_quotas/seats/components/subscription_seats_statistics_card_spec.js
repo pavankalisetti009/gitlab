@@ -97,8 +97,10 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       );
     });
 
-    it('has no tooltip text', () => {
-      expect(findTooltipLink().attributes('title')).toBeUndefined();
+    it('has tooltip text', () => {
+      expect(findTooltipLink().attributes('title')).toBe(
+        'Learn more about billing and seat usage.',
+      );
     });
   });
 
@@ -133,7 +135,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       );
     });
 
-    it('has a tooltip text', () => {
+    it('has tooltip text', () => {
       expect(findTooltipLink().attributes('title')).toBe('Free groups are limited to 5 seats.');
     });
   });
@@ -168,9 +170,9 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       );
     });
 
-    it('has a tooltip text', () => {
+    it('has tooltip text', () => {
       expect(findTooltipLink().attributes('title')).toBe(
-        'Free tier and trial groups can invite a maximum of 20 members per day.',
+        'Learn more about billing and seat usage.',
       );
     });
   });
@@ -203,8 +205,10 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       expect(findTooltipLink().attributes('href')).toBe(`${PROMO_URL}/solutions/open-source/`);
     });
 
-    it('has no tooltip text', () => {
-      expect(findTooltipLink().attributes('title')).toBeUndefined();
+    it('has tooltip text', () => {
+      expect(findTooltipLink().attributes('title')).toBe(
+        'Learn more about billing and seat usage.',
+      );
     });
   });
 
@@ -238,8 +242,10 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       );
     });
 
-    it('has no tooltip text', () => {
-      expect(findTooltipLink().attributes('title')).toBeUndefined();
+    it('has tooltip text', () => {
+      expect(findTooltipLink().attributes('title')).toBe(
+        'Learn more about billing and seat usage.',
+      );
     });
   });
 });

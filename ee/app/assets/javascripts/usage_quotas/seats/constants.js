@@ -10,8 +10,8 @@ export const PLAN_CODE_FREE = 'free';
 export const FIELDS = [
   {
     key: 'disclosure',
-    label: '',
-    thClass: '!gl-p-0',
+    label: __('Disclosure'),
+    thClass: '!gl-p-0 gl-sr-only',
     tdClass: '!gl-p-0 !gl-align-middle',
   },
   {
@@ -40,7 +40,7 @@ export const FIELDS = [
   },
   {
     key: 'actions',
-    label: '',
+    label: __('Actions'),
     thClass: 'gl-w-2/20',
     tdClass: '!gl-align-middle gl-text-right',
   },

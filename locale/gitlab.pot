@@ -11903,9 +11903,6 @@ msgstr ""
 msgid "Billings|Free seats used"
 msgstr ""
 
-msgid "Billings|Free tier and trial groups can invite a maximum of 20 members per day."
-msgstr ""
-
 msgid "Billings|GitLab Duo Agent Platform"
 msgstr ""
 
@@ -11918,6 +11915,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "Billings|In a seat"
+msgstr ""
+
+msgid "Billings|Learn more about billing and seat usage."
 msgstr ""
 
 msgid "Billings|Manage billing"
@@ -25507,6 +25507,9 @@ msgid "Discard pending review?"
 msgstr ""
 
 msgid "Discard review"
+msgstr ""
+
+msgid "Disclosure"
 msgstr ""
 
 msgid "Discord webhook (for example, `https://discord.com/api/webhooks/…`)."
