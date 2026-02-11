@@ -4,10 +4,7 @@ import axios from '~/lib/utils/axios_utils';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
-import {
-  ACCESS_LEVELS_INTEGER_TO_STRING,
-  ACCESS_LEVEL_EVERYONE_INTEGER,
-} from '~/access_level/constants';
+import { ACCESS_LEVELS_WITH_EVERYONE_AND_ADMIN } from '../constants';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import CodeSuggestionsConnectionForm from '../components/code_suggestions_connection_form.vue';
 import DuoExpandedLoggingForm from '../components/duo_expanded_logging_form.vue';
@@ -17,11 +14,6 @@ import AiGatewayUrlInputForm from '../components/ai_gateway_url_input_form.vue';
 import AiGatewayTimeoutInputForm from '../components/ai_gateway_timeout_input_form.vue';
 import DuoAgentPlatformServiceUrlInputForm from '../components/duo_agent_platform_service_url_input_form.vue';
 import updateAiSettingsMutation from '../../graphql/update_ai_settings.mutation.graphql';
-
-const ACCESS_LEVELS_WITH_EVERYONE = {
-  [ACCESS_LEVEL_EVERYONE_INTEGER]: null,
-  ...ACCESS_LEVELS_INTEGER_TO_STRING,
-};
 
 export default {
   name: 'AiAdminSettings',
@@ -208,11 +200,11 @@ export default {
 
       if (this.hasMinimumAccessLevelExecuteAsyncChanged) {
         input.minimumAccessLevelExecuteAsync =
-          ACCESS_LEVELS_WITH_EVERYONE[this.minimumAccessLevelExecuteAsync];
+          ACCESS_LEVELS_WITH_EVERYONE_AND_ADMIN[this.minimumAccessLevelExecuteAsync];
       }
       if (this.hasMinimumAccessLevelExecuteSyncChanged) {
         input.minimumAccessLevelExecute =
-          ACCESS_LEVELS_WITH_EVERYONE[this.minimumAccessLevelExecuteSync];
+          ACCESS_LEVELS_WITH_EVERYONE_AND_ADMIN[this.minimumAccessLevelExecuteSync];
       }
 
       if (this.canManageSelfHostedModels) {

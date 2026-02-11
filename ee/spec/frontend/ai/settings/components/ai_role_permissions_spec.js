@@ -2,6 +2,7 @@ import { nextTick } from 'vue';
 import { GlFormGroup, GlFormSelect } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiRolePermissions from 'ee/ai/settings/components/ai_role_permissions.vue';
+import { ACCESS_LEVEL_EVERYONE_INTEGER } from 'ee/ai/settings/constants';
 import {
   ACCESS_LEVEL_DEVELOPER_INTEGER,
   ACCESS_LEVEL_MAINTAINER_INTEGER,
@@ -10,7 +11,6 @@ import {
   ACCESS_LEVEL_GUEST_INTEGER,
   ACCESS_LEVEL_REPORTER_INTEGER,
   ACCESS_LEVEL_PLANNER_INTEGER,
-  ACCESS_LEVEL_EVERYONE_INTEGER,
 } from '~/access_level/constants';
 
 describe('AiRolePermissions', () => {
@@ -136,6 +136,7 @@ describe('AiRolePermissions', () => {
       createWrapper();
 
       expect(findMinimumAccessLevelExecuteSyncSelect().props('options')).toEqual([
+        { text: 'Everyone', value: ACCESS_LEVEL_EVERYONE_INTEGER },
         { text: 'Guest', value: ACCESS_LEVEL_GUEST_INTEGER },
         { text: 'Planner', value: ACCESS_LEVEL_PLANNER_INTEGER },
         { text: 'Reporter', value: ACCESS_LEVEL_REPORTER_INTEGER },
@@ -180,50 +181,44 @@ describe('AiRolePermissions', () => {
       ]);
     });
 
-    describe('Everyone support', () => {
-      it('renders "Everyone" option in sync selector', () => {
-        createWrapper({ provide: { isSaaS: false } });
+    it('renders "Everyone" option in sync selector', () => {
+      createWrapper();
 
-        const options = findMinimumAccessLevelExecuteSyncSelect().props('options');
-        const everyoneOption = options[0];
+      const options = findMinimumAccessLevelExecuteSyncSelect().props('options');
+      const everyoneOption = options[0];
 
-        expect(everyoneOption.text).toBe('Everyone');
-        expect(everyoneOption.value).toBe(ACCESS_LEVEL_EVERYONE_INTEGER);
+      expect(everyoneOption.text).toBe('Everyone');
+      expect(everyoneOption.value).toBe(ACCESS_LEVEL_EVERYONE_INTEGER);
+    });
+
+    it('selects "Everyone" option correctly', async () => {
+      createWrapper({
+        props: { initialMinimumAccessLevelExecuteSync: -1 },
       });
 
-      it('selects "Everyone" option correctly', async () => {
-        createWrapper({
-          props: { initialMinimumAccessLevelExecuteSync: -1 },
-          provide: { isSaaS: false },
-        });
+      await nextTick();
 
-        await nextTick();
+      expect(findMinimumAccessLevelExecuteSyncSelect().attributes('value')).toBe('-1');
+    });
 
-        expect(findMinimumAccessLevelExecuteSyncSelect().attributes('value')).toBe('-1');
+    it('emits -1 when Everyone is selected', () => {
+      createWrapper({
+        props: { initialMinimumAccessLevelExecuteSync: ACCESS_LEVEL_DEVELOPER_INTEGER },
       });
 
-      it('emits -1 when Everyone is selected', () => {
-        createWrapper({
-          props: { initialMinimumAccessLevelExecuteSync: ACCESS_LEVEL_DEVELOPER_INTEGER },
-        });
+      findMinimumAccessLevelExecuteSyncSelect().vm.$emit('change', -1);
 
-        findMinimumAccessLevelExecuteSyncSelect().vm.$emit('change', -1);
+      expect(wrapper.emitted('minimum-access-level-execute-sync-change')).toEqual([[-1]]);
+    });
 
-        expect(wrapper.emitted('minimum-access-level-execute-sync-change')).toEqual([[-1]]);
-      });
+    it('emits number when role is selected', () => {
+      createWrapper({ props: { initialMinimumAccessLevelExecuteSync: -1 } });
 
-      it('emits number when role is selected', () => {
-        createWrapper({ props: { initialMinimumAccessLevelExecuteSync: -1 } });
+      findMinimumAccessLevelExecuteSyncSelect().vm.$emit('change', ACCESS_LEVEL_DEVELOPER_INTEGER);
 
-        findMinimumAccessLevelExecuteSyncSelect().vm.$emit(
-          'change',
-          ACCESS_LEVEL_DEVELOPER_INTEGER,
-        );
-
-        expect(wrapper.emitted('minimum-access-level-execute-sync-change')).toEqual([
-          [ACCESS_LEVEL_DEVELOPER_INTEGER],
-        ]);
-      });
+      expect(wrapper.emitted('minimum-access-level-execute-sync-change')).toEqual([
+        [ACCESS_LEVEL_DEVELOPER_INTEGER],
+      ]);
     });
   });
 });

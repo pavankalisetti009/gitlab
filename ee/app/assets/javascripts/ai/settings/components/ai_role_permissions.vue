@@ -2,7 +2,6 @@
 import { GlFormGroup, GlFormSelect } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import {
-  ACCESS_LEVEL_EVERYONE_INTEGER,
   ACCESS_LEVEL_DEVELOPER_INTEGER,
   ACCESS_LEVEL_MAINTAINER_INTEGER,
   ACCESS_LEVEL_ADMIN_INTEGER,
@@ -13,6 +12,14 @@ import {
   ACCESS_LEVEL_REPORTER_INTEGER,
   ACCESS_LEVEL_PLANNER_INTEGER,
 } from '~/access_level/constants';
+
+import { ACCESS_LEVEL_EVERYONE_INTEGER } from '../constants';
+
+const ALL_ACCESS_LEVELS_LABELS = {
+  [ACCESS_LEVEL_EVERYONE_INTEGER]: s__('AiPowered|Everyone'),
+  ...ACCESS_LEVEL_LABELS,
+  [ACCESS_LEVEL_ADMIN_INTEGER]: ACCESS_LEVEL_ADMIN,
+};
 
 export default {
   name: 'AiRolePermissions',
@@ -52,6 +59,7 @@ export default {
     },
     minimumAccessLevelExecuteSyncOptions() {
       const roles = [
+        ACCESS_LEVEL_EVERYONE_INTEGER,
         ACCESS_LEVEL_GUEST_INTEGER,
         ACCESS_LEVEL_PLANNER_INTEGER,
         ACCESS_LEVEL_REPORTER_INTEGER,
@@ -61,7 +69,6 @@ export default {
       ];
 
       if (!this.isSaaS) {
-        roles.unshift(ACCESS_LEVEL_EVERYONE_INTEGER);
         roles.push(ACCESS_LEVEL_ADMIN_INTEGER);
       }
 
@@ -71,7 +78,7 @@ export default {
   methods: {
     generateSelectOptions(roles) {
       return roles.map((role) => ({
-        text: this.$options.ALL_ACCESS_LEVELS_LABELS[role],
+        text: ALL_ACCESS_LEVELS_LABELS[role],
         value: role,
       }));
     },
@@ -91,11 +98,6 @@ export default {
       'AiPowered|Control who can access AI-native features executed with or without CI/CD pipelines.',
     ),
     sectionTitle: s__('AiPowered|Access to GitLab Duo Agent Platform'),
-  },
-  ALL_ACCESS_LEVELS_LABELS: {
-    [ACCESS_LEVEL_EVERYONE_INTEGER]: s__('AiPowered|Everyone'),
-    ...ACCESS_LEVEL_LABELS,
-    [ACCESS_LEVEL_ADMIN_INTEGER]: ACCESS_LEVEL_ADMIN,
   },
 };
 </script>

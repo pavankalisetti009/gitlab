@@ -3,6 +3,7 @@ import { updateGroupSettings } from 'ee/api/groups_api';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
+import { ACCESS_LEVEL_EVERYONE_INTEGER } from '../constants';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import DuoWorkflowSettingsForm from '../components/duo_workflow_settings_form.vue';
 
@@ -113,10 +114,13 @@ export default {
         };
 
         if (this.hasMinimumAccessLevelExecuteSyncChanged) {
-          input.minimum_access_level_execute = minimumAccessLevelExecuteSync;
+          input.ai_settings_attributes.minimum_access_level_execute =
+            this.convertMinimumAccessLevelExecuteSync(minimumAccessLevelExecuteSync);
         }
+
         if (this.hasMinimumAccessLevelExecuteAsyncChanged) {
-          input.minimum_access_level_execute_async = minimumAccessLevelExecuteAsync;
+          input.ai_settings_attributes.minimum_access_level_execute_async =
+            minimumAccessLevelExecuteAsync;
         }
 
         if (!this.onGeneralSettingsPage) {
@@ -159,6 +163,13 @@ export default {
         },
         features: rule.features,
       }));
+    },
+    convertMinimumAccessLevelExecuteSync(value) {
+      if (value === ACCESS_LEVEL_EVERYONE_INTEGER) {
+        return null;
+      }
+
+      return value;
     },
   },
 };

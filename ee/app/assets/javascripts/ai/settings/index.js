@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { parseBoolean, convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import createDefaultClient from '~/lib/graphql';
+import { ACCESS_LEVEL_EVERYONE_INTEGER } from './constants';
 
 Vue.use(VueApollo);
 
@@ -9,7 +10,7 @@ const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),
 });
 
-const sanitizedInt = (value) => parseInt(value, 10) || -1;
+const sanitizedInt = (value) => parseInt(value, 10) || ACCESS_LEVEL_EVERYONE_INTEGER;
 
 export const initAiSettings = (id, component, options = {}) => {
   const el = document.getElementById(id);

@@ -347,6 +347,46 @@ describe('AiGroupSettings', () => {
       });
     });
 
+    describe('with minimum access levels', () => {
+      it('maps minimum access levels in ai_settings_attributes correctly', async () => {
+        createComponent();
+
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {
+          minimumAccessLevelExecuteSync: 40,
+          minimumAccessLevelExecuteAsync: 40,
+        });
+
+        expect(updateGroupSettings).toHaveBeenCalledWith(
+          '100',
+          expect.objectContaining({
+            ai_settings_attributes: expect.objectContaining({
+              minimum_access_level_execute: 40,
+              minimum_access_level_execute_async: 40,
+            }),
+          }),
+        );
+      });
+
+      it('converts "Everyone" option for minimum access levels execute sync correctly', async () => {
+        createComponent();
+
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {
+          minimumAccessLevelExecuteSync: -1,
+        });
+
+        expect(updateGroupSettings).toHaveBeenCalledWith(
+          '100',
+          expect.objectContaining({
+            ai_settings_attributes: expect.objectContaining({
+              minimum_access_level_execute: null,
+            }),
+          }),
+        );
+      });
+    });
+
     describe('when update succeeds', () => {
       beforeEach(async () => {
         createComponent();
@@ -497,8 +537,10 @@ describe('AiGroupSettings', () => {
           });
 
           const callArgs = updateGroupSettings.mock.calls[0][1];
-          expect(callArgs.minimum_access_level_execute).toBe(10);
-          expect(callArgs.minimum_access_level_execute_async).toBeUndefined();
+          expect(callArgs.ai_settings_attributes.minimum_access_level_execute).toBe(10);
+          expect(
+            callArgs.ai_settings_attributes.minimum_access_level_execute_async,
+          ).toBeUndefined();
         });
 
         it('excludes minimum_access_level_execute when unchanged', async () => {
@@ -516,8 +558,8 @@ describe('AiGroupSettings', () => {
           });
 
           const callArgs = updateGroupSettings.mock.calls[0][1];
-          expect(callArgs.minimum_access_level_execute_async).toBe(50);
-          expect(callArgs.minimum_access_level_execute).toBeUndefined();
+          expect(callArgs.ai_settings_attributes.minimum_access_level_execute_async).toBe(50);
+          expect(callArgs.ai_settings_attributes.minimum_access_level_execute).toBeUndefined();
         });
 
         it('excludes both fields when neither has changed', async () => {
@@ -527,8 +569,10 @@ describe('AiGroupSettings', () => {
           await findAiCommonSettings().vm.$emit('submit', {});
 
           const callArgs = updateGroupSettings.mock.calls[0][1];
-          expect(callArgs.minimum_access_level_execute).toBeUndefined();
-          expect(callArgs.minimum_access_level_execute_async).toBeUndefined();
+          expect(callArgs.ai_settings_attributes.minimum_access_level_execute).toBeUndefined();
+          expect(
+            callArgs.ai_settings_attributes.minimum_access_level_execute_async,
+          ).toBeUndefined();
         });
       });
     });
