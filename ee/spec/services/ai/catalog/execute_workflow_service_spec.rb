@@ -266,9 +266,23 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
       end
 
       context 'when service_account is passed' do
-        let(:service_account) { build(:user, :service_account) }
+        let(:service_account) { create(:user, :service_account) }
 
-        let(:params) { super().merge(service_account:) }
+        let(:params) { super().merge(service_account: service_account) }
+
+        it 'creates the workflow with the service_account' do
+          allow(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new).and_return(start_workflow_service)
+          allow(start_workflow_service).to receive(:execute)
+            .and_return(ServiceResponse.success(payload: { workload_id: 123 }))
+
+          response = service.execute
+
+          expect(response).to be_success
+
+          workflow = response.payload[:workflow]
+          expect(workflow.service_account).to eq(service_account)
+          expect(workflow.service_account_id).to eq(service_account.id)
+        end
 
         it 'passes the service_account to the StartWorkflowService' do
           expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new) do |args|

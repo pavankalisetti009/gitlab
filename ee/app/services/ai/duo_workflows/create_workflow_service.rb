@@ -63,14 +63,21 @@ module Ai
         base_params.merge(
           user: @current_user,
           **container_attributes,
-          **noteable_attributes
+          **noteable_attributes,
+          **service_account_attributes
         )
       end
 
       private
 
       def base_params
-        @params.except(:issue_id, :merge_request_id)
+        @params.except(:issue_id, :merge_request_id, :service_account)
+      end
+
+      def service_account_attributes
+        return {} unless @params[:service_account]
+
+        { service_account: @params[:service_account] }
       end
 
       def create_workflow_system_note(workflow)

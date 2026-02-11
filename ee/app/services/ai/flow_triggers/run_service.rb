@@ -57,26 +57,34 @@ module Ai
       attr_reader :project, :current_user, :resource, :flow_trigger, :flow_trigger_user,
         :catalog_item, :catalog_consumer, :catalog_item_pinned_version
 
-      def run_workload(params)
-        flow_definition = fetch_flow_definition
-        return ServiceResponse.error(message: 'invalid or missing flow definition') unless flow_definition
-
+      def create_workflow(params)
         workflow_params = {
           workflow_definition: "Trigger - #{flow_trigger.description}",
           status: :running,
           goal: params[:input],
-          environment: :web
+          environment: :web,
+          service_account: resolve_service_account(flow_trigger_user)
         }
 
-        wf_create_result = ::Ai::DuoWorkflows::CreateWorkflowService.new(
+        result = ::Ai::DuoWorkflows::CreateWorkflowService.new(
           container: project,
           current_user: current_user,
           params: workflow_params
         ).execute
 
-        return ServiceResponse.error(message: wf_create_result[:message]) if wf_create_result.error?
+        return ServiceResponse.error(message: result[:message]) if result.error?
 
-        workflow = wf_create_result[:workflow]
+        ServiceResponse.success(payload: { workflow: result[:workflow] })
+      end
+
+      def run_workload(params)
+        flow_definition = fetch_flow_definition
+        return ServiceResponse.error(message: 'invalid or missing flow definition') unless flow_definition
+
+        wf_create_result = create_workflow(params)
+        return wf_create_result unless wf_create_result.success?
+
+        workflow = wf_create_result.payload[:workflow]
 
         if flow_definition['injectGatewayToken'] == true
           token_response = ::Ai::ThirdPartyAgents::TokenService.new(
@@ -270,6 +278,12 @@ module Ai
 
       def log_external_agent_execution
         ai_catalog_logger.info(message: 'External agent executed') if catalog_item
+      end
+
+      def resolve_service_account(flow_trigger_user)
+        return unless flow_trigger_user.service_account?
+
+        flow_trigger_user
       end
     end
   end

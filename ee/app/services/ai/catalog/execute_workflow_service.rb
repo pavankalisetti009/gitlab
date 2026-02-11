@@ -70,7 +70,8 @@ module Ai
           workflow_definition: @flow_definition,
           environment: WORKFLOW_ENVIRONMENT,
           agent_privileges: AGENT_PRIVILEGES,
-          pre_approved_agent_privileges: AGENT_PRIVILEGES
+          pre_approved_agent_privileges: AGENT_PRIVILEGES,
+          service_account: service_account
         }
 
         ::Ai::DuoWorkflows::CreateWorkflowService.new(

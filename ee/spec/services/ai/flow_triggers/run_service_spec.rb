@@ -257,6 +257,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       expect(workflow.environment).to eq('web')
       expect(workflow.project).to eq(project)
       expect(workflow.user).to eq(current_user)
+      expect(workflow.service_account_id).to eq(service_account.id)
+      expect(workflow.service_account).to eq(service_account)
     end
 
     it 'creates workflow_workload association' do
@@ -1115,6 +1117,26 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
         result = service.send(:catalog_item_user_prompt, input, :mention)
         expect(service.send(:fetch_goal_input)).to be_nil
         expect(result).not_to be_nil
+      end
+    end
+  end
+
+  describe '#resolve_service_account' do
+    subject(:result) { service.send(:resolve_service_account, flow_trigger_user) }
+
+    context 'when user is a service account' do
+      let(:flow_trigger_user) { service_account }
+
+      it 'returns the service account' do
+        expect(result).to eq(service_account)
+      end
+    end
+
+    context 'when user is a regular user' do
+      let(:flow_trigger_user) { current_user }
+
+      it 'returns nil' do
+        expect(result).to be_nil
       end
     end
   end
