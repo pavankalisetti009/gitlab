@@ -2,6 +2,8 @@
 
 module VirtualRegistries
   class Upstream < ApplicationRecord
+    include VirtualRegistries::Remote
+
     self.abstract_class = true
 
     belongs_to :group
@@ -59,14 +61,6 @@ module VirtualRegistries
 
       self.username = nil
       self.password = nil
-    end
-
-    def local?
-      false
-    end
-
-    def remote?
-      true
     end
 
     def purge_cache!

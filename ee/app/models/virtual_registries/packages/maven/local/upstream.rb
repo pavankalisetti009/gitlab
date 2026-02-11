@@ -12,6 +12,11 @@ module VirtualRegistries
           belongs_to :local_group, class_name: 'Group'
           belongs_to :local_project, class_name: 'Project'
 
+          has_many :registry_upstreams,
+            class_name: 'VirtualRegistries::Packages::Maven::RegistryUpstream',
+            inverse_of: :local_upstream,
+            autosave: true
+          has_many :registries, class_name: 'VirtualRegistries::Packages::Maven::Registry', through: :registry_upstreams
           has_many :cache_entries,
             class_name: 'VirtualRegistries::Packages::Maven::Cache::Local::Entry',
             inverse_of: :upstream
@@ -28,6 +33,13 @@ module VirtualRegistries
           scope :for_group, ->(group) { where(group:) }
           scope :for_id_and_group, ->(id:, group:) { where(id:, group:) }
           scope :search_by_name, ->(query) { fuzzy_search(query, [:name], use_minimum_char_limit: false) }
+
+          def destroy_and_sync_positions
+            transaction do
+              ::VirtualRegistries::Packages::Maven::RegistryUpstream.sync_higher_positions(registry_upstreams)
+              destroy
+            end
+          end
 
           private
 

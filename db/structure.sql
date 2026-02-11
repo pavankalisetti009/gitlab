@@ -31212,10 +31212,12 @@ CREATE TABLE virtual_registries_packages_maven_registry_upstreams (
     id bigint NOT NULL,
     group_id bigint NOT NULL,
     registry_id bigint NOT NULL,
-    upstream_id bigint NOT NULL,
+    upstream_id bigint,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     "position" smallint DEFAULT 1 NOT NULL,
+    local_upstream_id bigint,
+    CONSTRAINT check_817340e2d6 CHECK ((num_nonnulls(upstream_id, local_upstream_id) = 1)),
     CONSTRAINT check_8e8de60b63 CHECK (((1 <= "position") AND ("position" <= 20)))
 );
 
@@ -42636,8 +42638,6 @@ CREATE UNIQUE INDEX i_duo_workflows_events_on_correlation_id_project_id ON duo_w
 
 CREATE INDEX i_gitlab_subscription_histories_on_namespace_change_type_plan ON gitlab_subscription_histories USING btree (namespace_id, change_type, hosted_plan_id);
 
-CREATE UNIQUE INDEX i_maven_reg_upstreams_on_upstream_and_registry_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (upstream_id, registry_id);
-
 CREATE INDEX i_namespace_cluster_agent_mappings_on_cluster_agent_id ON namespace_cluster_agent_mappings USING btree (cluster_agent_id);
 
 CREATE INDEX i_namespace_cluster_agent_mappings_on_creator_id ON namespace_cluster_agent_mappings USING btree (creator_id);
@@ -42999,6 +42999,10 @@ CREATE INDEX idx_mr_cc_diff_files_on_mr_cc_id_and_sha ON merge_request_context_c
 CREATE INDEX idx_mr_metrics_on_project_closed_at_with_mr_id ON merge_request_metrics USING btree (target_project_id, latest_closed_at, merge_request_id) WHERE (latest_closed_at IS NOT NULL);
 
 CREATE INDEX idx_mrs_on_target_id_and_created_at_and_state_id ON merge_requests USING btree (target_project_id, state_id, created_at, id);
+
+CREATE UNIQUE INDEX idx_mvn_reg_upstreams_on_local_upstream_and_registry_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (local_upstream_id, registry_id) WHERE (local_upstream_id IS NOT NULL);
+
+CREATE UNIQUE INDEX idx_mvn_reg_upstreams_on_upstream_and_registry_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (upstream_id, registry_id) WHERE (upstream_id IS NOT NULL);
 
 CREATE INDEX idx_namespace_ai_settings_on_prompt_injection_protection_level ON namespace_ai_settings USING btree (prompt_injection_protection_level);
 
@@ -57982,6 +57986,9 @@ ALTER TABLE batched_background_migration_job_transition_logs
 
 ALTER TABLE ONLY approval_project_rules_protected_branches
     ADD CONSTRAINT fk_rails_b7567b031b FOREIGN KEY (protected_branch_id) REFERENCES protected_branches(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY virtual_registries_packages_maven_registry_upstreams
+    ADD CONSTRAINT fk_rails_b8744c7031 FOREIGN KEY (local_upstream_id) REFERENCES virtual_registries_packages_maven_local_upstreams(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY project_authorizations_for_migration
     ADD CONSTRAINT fk_rails_b91fc9995e FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
