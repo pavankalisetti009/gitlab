@@ -141,8 +141,7 @@ const MOCK_CONTEXT_PRESETS_RESPONSE = {
   },
 };
 const MOCK_APOLLO_UTILS_CREATE_WORKFLOW_RESPONSE = {
-  workflowId: '456',
-  threadId: null,
+  workflowId: MOCK_WORKFLOW_ID,
 };
 
 const MOCK_USER_WORKFLOWS_RESPONSE = {
@@ -432,7 +431,7 @@ describe('Duo Agentic Chat', () => {
   });
 
   beforeEach(() => {
-    // In the default state, there isn't activeThread registered in local storage
+    // In the default state, there isn't workflowId registered in local storage
     getStorageValue.mockReturnValue({ exists: false, value: null });
   });
 
@@ -443,7 +442,7 @@ describe('Duo Agentic Chat', () => {
     }
   });
 
-  describe('clearActiveThread', () => {
+  describe('clearActiveWorkflow', () => {
     it('clears the thread and resets lastProcessedMessageId', async () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent({
@@ -453,7 +452,7 @@ describe('Duo Agentic Chat', () => {
       });
       await waitForPromises();
 
-      wrapper.vm.clearActiveThread();
+      wrapper.vm.clearActiveWorkflow();
       expect(findDuoChat().props('messages')).toEqual([]);
       expect(wrapper.vm.lastProcessedMessageId).toBe(null);
     });
@@ -464,11 +463,11 @@ describe('Duo Agentic Chat', () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
 
-      const clearActiveThreadSpy = jest.spyOn(wrapper.vm, 'clearActiveThread');
+      const clearActiveWorkflowSpy = jest.spyOn(wrapper.vm, 'clearActiveWorkflow');
       wrapper.destroy();
 
-      // Verify clearActiveThread was called (which resets lastProcessedMessageId)
-      expect(clearActiveThreadSpy).toHaveBeenCalled();
+      // Verify clearActiveWorkflow was called (which resets lastProcessedMessageId)
+      expect(clearActiveWorkflowSpy).toHaveBeenCalled();
     });
   });
 
@@ -535,7 +534,7 @@ describe('Duo Agentic Chat', () => {
 
         expect(findDuoChat().props('isMultithreaded')).toBe(true);
         expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
-        expect(findDuoChat().props('activeThreadId')).toBe('');
+        expect(findDuoChat().props('activeThreadId')).toBe(null);
         expect(findDuoChat().props('threadList')).toEqual([
           {
             id: 'gid://gitlab/Ai::DuoWorkflows::Workflow/456',
@@ -579,11 +578,11 @@ describe('Duo Agentic Chat', () => {
   });
 
   describe('chat mode on mount', () => {
-    let hydrateActiveThreadSpy;
+    let hydrateActiveWorkflowSpy;
     let onNewChatSpy;
 
     beforeEach(() => {
-      hydrateActiveThreadSpy = jest.spyOn(DuoAgenticChatApp.methods, 'hydrateActiveThread');
+      hydrateActiveWorkflowSpy = jest.spyOn(DuoAgenticChatApp.methods, 'hydrateActiveWorkflow');
       onNewChatSpy = jest.spyOn(DuoAgenticChatApp.methods, 'onNewChat');
     });
 
@@ -604,7 +603,7 @@ describe('Duo Agentic Chat', () => {
       });
 
       it('does not hydrate the active thread', () => {
-        expect(hydrateActiveThreadSpy).not.toHaveBeenCalled();
+        expect(hydrateActiveWorkflowSpy).not.toHaveBeenCalled();
       });
     });
 
@@ -614,14 +613,13 @@ describe('Duo Agentic Chat', () => {
         createComponent({
           data: {
             workflowId: MOCK_WORKFLOW_ID,
-            activeThread: MOCK_WORKFLOW_ID,
           },
         });
         await waitForPromises();
       });
 
       it('hydrates the active thread', () => {
-        expect(hydrateActiveThreadSpy).toHaveBeenCalled();
+        expect(hydrateActiveWorkflowSpy).toHaveBeenCalled();
       });
 
       it('does not load a new chat', () => {
@@ -651,7 +649,7 @@ describe('Duo Agentic Chat', () => {
       findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
       await waitForPromises();
 
-      expect(wrapper.vm.workflowId).toBe('456');
+      expect(wrapper.vm.workflowId).toBe(MOCK_WORKFLOW_ID);
 
       ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
         graphQLErrors: [
@@ -668,7 +666,7 @@ describe('Duo Agentic Chat', () => {
     it('starts new chat when loading with deleted workflow after page reload', async () => {
       getStorageValue.mockReturnValueOnce({
         exists: true,
-        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+        value: { workflowId: MOCK_WORKFLOW_ID },
       });
 
       ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
@@ -681,7 +679,7 @@ describe('Duo Agentic Chat', () => {
       await waitForPromises();
 
       expect(findDuoChat().props('messages')).toHaveLength(0);
-      expect(findDuoChat().props('activeThreadId')).toBe('');
+      expect(findDuoChat().props('activeThreadId')).toBe(null);
     });
 
     it('shows error when navigating to deleted workflow from history in same instance', async () => {
@@ -698,13 +696,13 @@ describe('Duo Agentic Chat', () => {
       await waitForPromises();
 
       expect(findDuoChat().props('messages')).toHaveLength(0);
-      expect(findDuoChat().props('activeThreadId')).toBe('');
+      expect(findDuoChat().props('activeThreadId')).toBe(null);
     });
 
     it('displays generic error for non-deletion errors', async () => {
       getStorageValue.mockReturnValueOnce({
         exists: true,
-        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+        value: { workflowId: MOCK_WORKFLOW_ID },
       });
 
       const errorText = 'Network timeout occurred';
@@ -724,7 +722,7 @@ describe('Duo Agentic Chat', () => {
     it('clears the workflow thread snapshot when workflow is deleted', async () => {
       getStorageValue.mockReturnValueOnce({
         exists: true,
-        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+        value: { workflowId: MOCK_WORKFLOW_ID },
       });
 
       ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
@@ -736,7 +734,7 @@ describe('Duo Agentic Chat', () => {
       createComponent();
       await waitForPromises();
 
-      expect(clearThreadSnapshot).toHaveBeenCalledWith('456');
+      expect(clearThreadSnapshot).toHaveBeenCalledWith(MOCK_WORKFLOW_ID);
     });
   });
 
@@ -783,7 +781,6 @@ describe('Duo Agentic Chat', () => {
           projectId: MOCK_PROJECT_ID,
           namespaceId: null,
           goal: MOCK_USER_MESSAGE.content,
-          activeThread: undefined,
           aiCatalogItemVersionId: '',
         });
 
@@ -834,7 +831,6 @@ describe('Duo Agentic Chat', () => {
           projectId: null,
           namespaceId: MOCK_NAMESPACE_ID,
           goal: MOCK_USER_MESSAGE.content,
-          activeThread: undefined,
           aiCatalogItemVersionId: '',
         });
 
@@ -879,7 +875,6 @@ describe('Duo Agentic Chat', () => {
           projectId: MOCK_PROJECT_ID,
           namespaceId: MOCK_NAMESPACE_ID,
           goal: MOCK_USER_MESSAGE.content,
-          activeThread: undefined,
           aiCatalogItemVersionId: '',
         });
       });
@@ -897,7 +892,6 @@ describe('Duo Agentic Chat', () => {
           projectId: null,
           namespaceId: null,
           goal: MOCK_USER_MESSAGE.content,
-          activeThread: undefined,
           aiCatalogItemVersionId: '',
         });
       });
@@ -910,7 +904,7 @@ describe('Duo Agentic Chat', () => {
       });
 
       it('does not create a new workflow if one already exists', async () => {
-        wrapper.vm.workflowId = '456';
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
 
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
@@ -947,7 +941,7 @@ describe('Duo Agentic Chat', () => {
       beforeEach(async () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
-        wrapper.vm.workflowId = '456';
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
         socketCall = getLastSocketCall();
         actionSpies.addDuoChatMessage.mockReset();
       });
@@ -987,7 +981,7 @@ describe('Duo Agentic Chat', () => {
           expect.any(Object),
           MOCK_TRANSFORMED_MESSAGES.at(-1),
         );
-        expect(findDuoChat().props('activeThreadId')).toBe('Test goal for activeThread');
+        expect(findDuoChat().props('activeThreadId')).toBe(MOCK_WORKFLOW_ID);
       });
 
       it('handles tool approval flow', async () => {
@@ -1067,7 +1061,7 @@ describe('Duo Agentic Chat', () => {
       beforeEach(async () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
-        wrapper.vm.workflowId = '456';
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
         socketCall = getLastSocketCall();
         actionSpies.addDuoChatMessage.mockReset();
       });
@@ -1282,7 +1276,7 @@ describe('Duo Agentic Chat', () => {
 
     describe('@new-chat', () => {
       it('resets chat state for new conversation', async () => {
-        wrapper.vm.workflowId = '456';
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
         wrapper.vm.socketManager = mockSocketManager;
 
         findDuoChat().vm.$emit('new-chat');
@@ -1295,12 +1289,12 @@ describe('Duo Agentic Chat', () => {
         expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
       });
       it('clears the active thread', async () => {
-        const clearActiveThreadSpy = jest.spyOn(wrapper.vm, 'clearActiveThread');
+        const clearActiveWorkflowSpy = jest.spyOn(wrapper.vm, 'clearActiveWorkflow');
 
         findDuoChat().vm.$emit('new-chat');
         await nextTick();
 
-        expect(clearActiveThreadSpy).toHaveBeenCalled();
+        expect(clearActiveWorkflowSpy).toHaveBeenCalled();
       });
     });
 
@@ -1312,7 +1306,7 @@ describe('Duo Agentic Chat', () => {
       it('handles tool approval via chat component event and updates processing state through workflow', async () => {
         duoChatGlobalState.isAgenticChatShown = true;
         await waitForPromises();
-        wrapper.vm.workflowId = '456';
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
 
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
 
@@ -1400,7 +1394,7 @@ describe('Duo Agentic Chat', () => {
       it('handles tool denial via chat component event with message and updates processing state', async () => {
         duoChatGlobalState.isAgenticChatShown = true;
         await waitForPromises();
-        wrapper.vm.workflowId = '456';
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
         const denyMessage = 'I do not approve this action';
 
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
@@ -1486,7 +1480,7 @@ describe('Duo Agentic Chat', () => {
       it('handles tool denial via chat component event with event object and updates processing state', async () => {
         duoChatGlobalState.isAgenticChatShown = true;
         await waitForPromises();
-        wrapper.vm.workflowId = '456';
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
         const eventObject = { message: 'I do not approve this action' };
 
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
@@ -1585,8 +1579,7 @@ describe('Duo Agentic Chat', () => {
       await nextTick();
 
       expect(saveStorageValue).toHaveBeenCalledWith(DUO_CURRENT_WORKFLOW_STORAGE_KEY, {
-        workflowId: '456',
-        activeThread: MOCK_WORKFLOW_ID,
+        workflowId: MOCK_WORKFLOW_ID,
       });
     });
 
@@ -1603,7 +1596,7 @@ describe('Duo Agentic Chat', () => {
       getStorageValue.mockReset();
       getStorageValue.mockReturnValueOnce({
         exists: true,
-        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+        value: { workflowId: MOCK_WORKFLOW_ID },
       });
       duoChatGlobalState.isAgenticChatShown = false;
 
@@ -1618,18 +1611,18 @@ describe('Duo Agentic Chat', () => {
 
   describe('mode watcher', () => {
     let onNewChatSpy;
-    let hydrateActiveThreadSpy;
+    let hydrateActiveWorkflowSpy;
     let onBackToListSpy;
 
     const bootstrapWithProps = async (props = {}) => {
-      hydrateActiveThreadSpy = jest.spyOn(DuoAgenticChatApp.methods, 'hydrateActiveThread');
+      hydrateActiveWorkflowSpy = jest.spyOn(DuoAgenticChatApp.methods, 'hydrateActiveWorkflow');
       onNewChatSpy = jest.spyOn(DuoAgenticChatApp.methods, 'onNewChat');
       onBackToListSpy = jest.spyOn(DuoAgenticChatApp.methods, 'onBackToList');
 
       createComponent(props);
       duoChatGlobalState.isAgenticChatShown = true;
       await waitForPromises();
-      hydrateActiveThreadSpy.mockClear();
+      hydrateActiveWorkflowSpy.mockClear();
       onNewChatSpy.mockClear();
       onBackToListSpy.mockClear();
     };
@@ -1671,7 +1664,6 @@ describe('Duo Agentic Chat', () => {
           },
           data: {
             workflowId: MOCK_WORKFLOW_ID,
-            activeThread: MOCK_WORKFLOW_ID,
           },
         });
         await nextTick();
@@ -1694,7 +1686,7 @@ describe('Duo Agentic Chat', () => {
           await nextTick();
 
           expect(onNewChatSpy).toHaveBeenCalledTimes(1);
-          expect(hydrateActiveThreadSpy).not.toHaveBeenCalled();
+          expect(hydrateActiveWorkflowSpy).not.toHaveBeenCalled();
         });
       });
       describe('active thread is set', () => {
@@ -1702,7 +1694,6 @@ describe('Duo Agentic Chat', () => {
           await bootstrapWithProps({
             data: {
               workflowId: MOCK_WORKFLOW_ID,
-              activeThread: MOCK_WORKFLOW_ID,
             },
             propsData: { mode: 'history' },
           });
@@ -1713,7 +1704,7 @@ describe('Duo Agentic Chat', () => {
           await nextTick();
 
           expect(onNewChatSpy).not.toHaveBeenCalled();
-          expect(hydrateActiveThreadSpy).toHaveBeenCalledTimes(1);
+          expect(hydrateActiveWorkflowSpy).toHaveBeenCalledTimes(1);
         });
       });
       describe('when isLoading is true', () => {
@@ -1726,12 +1717,11 @@ describe('Duo Agentic Chat', () => {
           ApolloUtils.fetchWorkflowEvents = jest.fn().mockReturnValue(pendingPromise);
 
           onNewChatSpy = jest.spyOn(DuoAgenticChatApp.methods, 'onNewChat');
-          hydrateActiveThreadSpy = jest.spyOn(DuoAgenticChatApp.methods, 'hydrateActiveThread');
+          hydrateActiveWorkflowSpy = jest.spyOn(DuoAgenticChatApp.methods, 'hydrateActiveWorkflow');
 
           createComponent({
             data: {
               workflowId: MOCK_WORKFLOW_ID,
-              activeThread: MOCK_WORKFLOW_ID,
             },
             propsData: { mode: 'history' },
           });
@@ -1739,14 +1729,14 @@ describe('Duo Agentic Chat', () => {
           duoChatGlobalState.isAgenticChatShown = true;
           await nextTick();
 
-          hydrateActiveThreadSpy.mockClear();
+          hydrateActiveWorkflowSpy.mockClear();
           onNewChatSpy.mockClear();
 
           wrapper.setProps({ mode: 'active' });
           await nextTick();
 
           expect(onNewChatSpy).not.toHaveBeenCalled();
-          expect(hydrateActiveThreadSpy).not.toHaveBeenCalled();
+          expect(hydrateActiveWorkflowSpy).not.toHaveBeenCalled();
 
           resolvePromise(MOCK_WORKFLOW_EVENTS_RESPONSE);
         });
@@ -1845,7 +1835,7 @@ describe('Duo Agentic Chat', () => {
           getStorageValue.mockReset();
           getStorageValue.mockReturnValueOnce({
             exists: true,
-            value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+            value: { workflowId: MOCK_WORKFLOW_ID },
           });
           duoChatGlobalState.isAgenticChatShown = false;
         });
@@ -1895,39 +1885,6 @@ describe('Duo Agentic Chat', () => {
         });
       });
 
-      describe('when there is a workflowId but no activeThread', () => {
-        beforeEach(() => {
-          getStorageValue.mockReset();
-          getStorageValue.mockReturnValueOnce({
-            exists: true,
-            value: { workflowId: '456', activeThread: undefined },
-          });
-          duoChatGlobalState.isAgenticChatShown = false;
-        });
-
-        it('does not load messages for active thread', async () => {
-          createComponent();
-          duoChatGlobalState.isAgenticChatShown = true;
-          await waitForPromises();
-
-          expect(ApolloUtils.fetchWorkflowEvents).not.toHaveBeenCalled();
-          expect(findDuoChat().props().messages).toHaveLength(0);
-        });
-
-        it('emits change-title when hydrateActiveThread is triggered', async () => {
-          // Assert baseline - no emissions yet
-          expect(wrapper?.emitted('change-title')).toBeUndefined();
-          createComponent();
-          duoChatGlobalState.isAgenticChatShown = true;
-          await waitForPromises();
-
-          const emissions = wrapper.emitted('change-title');
-          expect(emissions).toHaveLength(2);
-          expect(emissions[0]).toEqual([undefined]);
-          expect(emissions[1]).toEqual([undefined]);
-        });
-      });
-
       describe('when there is no workflowId or activeThread registered in localStorage', () => {
         beforeEach(() => {
           getStorageValue.mockReset();
@@ -1946,7 +1903,7 @@ describe('Duo Agentic Chat', () => {
           expect(findDuoChat().props().messages).toHaveLength(0);
         });
 
-        it('emits change-title when hydrateActiveThread is triggered', async () => {
+        it('emits change-title when hydrateActiveWorkflow is triggered', async () => {
           // Assert baseline - no emissions yet
           expect(wrapper?.emitted('change-title')).toBeUndefined();
 
@@ -1988,7 +1945,6 @@ describe('Duo Agentic Chat', () => {
             projectId: MOCK_PROJECT_ID,
             namespaceId: null,
             goal: testQuestion,
-            activeThread: undefined,
             aiCatalogItemVersionId: '',
           });
           expect(mockSocketManager.connect).toHaveBeenCalled();
@@ -2034,7 +1990,7 @@ describe('Duo Agentic Chat', () => {
         },
       });
       createComponent();
-      wrapper.vm.workflowId = '456';
+      wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
       wrapper.vm.workflowStatus = 'running';
 
       // Trigger a workflow to create the WebSocket connection
@@ -2158,7 +2114,7 @@ describe('Duo Agentic Chat', () => {
 
       wrapper.vm.isProcessingToolApproval = true;
       wrapper.vm.workflowStatus = 'completed';
-      wrapper.vm.workflowId = '456';
+      wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
 
       wrapper.vm.startWorkflow('test question', {}, wrapper.vm.additionalContext);
 
@@ -2310,7 +2266,7 @@ describe('Duo Agentic Chat', () => {
         findDuoChat().vm.$emit('thread-selected', mockThread);
         await waitForPromises();
 
-        // Component emits change-title multiple times: on mount (via hydrateActiveThread),
+        // Component emits change-title multiple times: on mount (via hydrateActiveWorkflow),
         // and when thread is selected. Check that the last emission has undefined.
         const emissions = wrapper.emitted('change-title');
         expect(emissions[emissions.length - 1]).toEqual([undefined]);
@@ -2339,14 +2295,14 @@ describe('Duo Agentic Chat', () => {
       });
 
       it('resets the current thread before hydration', async () => {
-        const clearActiveThreadSpy = jest.spyOn(wrapper.vm, 'clearActiveThread');
+        const clearActiveWorkflowSpy = jest.spyOn(wrapper.vm, 'clearActiveWorkflow');
 
         WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
 
         findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
         await waitForPromises();
 
-        expect(clearActiveThreadSpy).toHaveBeenCalled();
+        expect(clearActiveWorkflowSpy).toHaveBeenCalled();
         expect(findDuoChat().props('messages')).toEqual(MOCK_TRANSFORMED_MESSAGES);
       });
 
@@ -2371,16 +2327,16 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.LIST);
-        expect(findDuoChat().props('activeThreadId')).toBe('');
+        expect(findDuoChat().props('activeThreadId')).toBe(null);
         expect(mockRefetch).toHaveBeenCalled();
       });
       it('clears the active thread', async () => {
-        const clearActiveThreadSpy = jest.spyOn(wrapper.vm, 'clearActiveThread');
+        const clearActiveWorkflowSpy = jest.spyOn(wrapper.vm, 'clearActiveWorkflow');
 
         findDuoChat().vm.$emit('back-to-list');
         await nextTick();
 
-        expect(clearActiveThreadSpy).toHaveBeenCalled();
+        expect(clearActiveWorkflowSpy).toHaveBeenCalled();
       });
     });
 
@@ -2405,7 +2361,9 @@ describe('Duo Agentic Chat', () => {
         findDuoChat().vm.$emit('delete-thread', mockThreadId);
         await waitForPromises();
 
-        expect(clearThreadSnapshot).toHaveBeenCalledWith('456');
+        expect(clearThreadSnapshot).toHaveBeenCalledWith(
+          'gid://gitlab/Ai::DuoWorkflows::Workflow/456',
+        );
       });
     });
   });
@@ -3700,21 +3658,21 @@ describe('Duo Agentic Chat', () => {
       jest.clearAllMocks();
     });
 
-    describe('hydrateActiveThread', () => {
+    describe('hydrateActiveWorkflow', () => {
       describe('when cached messages exist', () => {
         beforeEach(() => {
           loadThreadSnapshot.mockReturnValue(threadSnapshotWithMessages);
 
           getStorageValue.mockReturnValue({
             exists: true,
-            value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+            value: { workflowId: MOCK_WORKFLOW_ID },
           });
           duoChatGlobalState.isAgenticChatShown = true;
           createComponent();
         });
 
         it('loads cached messages immediately before API fetch', () => {
-          expect(loadThreadSnapshot).toHaveBeenCalledWith('456');
+          expect(loadThreadSnapshot).toHaveBeenCalledWith(MOCK_WORKFLOW_ID);
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), snapshotMessages);
         });
 
@@ -3743,7 +3701,7 @@ describe('Duo Agentic Chat', () => {
 
           getStorageValue.mockReturnValue({
             exists: true,
-            value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+            value: { workflowId: MOCK_WORKFLOW_ID },
           });
 
           duoChatGlobalState.isAgenticChatShown = true;
@@ -3752,7 +3710,7 @@ describe('Duo Agentic Chat', () => {
         });
 
         it('does not set messages from cache', async () => {
-          expect(loadThreadSnapshot).toHaveBeenCalledWith('456');
+          expect(loadThreadSnapshot).toHaveBeenCalledWith(MOCK_WORKFLOW_ID);
 
           // Only called once with API data, not with cache
           await waitForPromises();
@@ -3811,7 +3769,7 @@ describe('Duo Agentic Chat', () => {
 
         getStorageValue.mockReturnValue({
           exists: true,
-          value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+          value: { workflowId: MOCK_WORKFLOW_ID },
         });
 
         duoChatGlobalState.isAgenticChatShown = true;
@@ -3843,7 +3801,7 @@ describe('Duo Agentic Chat', () => {
 
         getStorageValue.mockReturnValue({
           exists: true,
-          value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+          value: { workflowId: MOCK_WORKFLOW_ID },
         });
 
         duoChatGlobalState.isAgenticChatShown = true;
@@ -3889,7 +3847,7 @@ describe('Duo Agentic Chat', () => {
 
         getStorageValue.mockReturnValue({
           exists: true,
-          value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+          value: { workflowId: MOCK_WORKFLOW_ID },
         });
 
         duoChatGlobalState.isAgenticChatShown = true;
@@ -3919,7 +3877,7 @@ describe('Duo Agentic Chat', () => {
 
         getStorageValue.mockReturnValue({
           exists: true,
-          value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+          value: { workflowId: MOCK_WORKFLOW_ID },
         });
 
         createComponent();
@@ -3927,14 +3885,14 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         // Cache was loaded
-        expect(loadThreadSnapshot).toHaveBeenCalledWith('456');
+        expect(loadThreadSnapshot).toHaveBeenCalledWith(MOCK_WORKFLOW_ID);
         // Messages were set from cache
         expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), snapshotMessages);
       });
 
       it('does not clear cache when starting new conversation', () => {
         createComponent();
-        wrapper.vm.workflowId = '456';
+        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
 
         findDuoChat().vm.$emit('new-chat');
 
@@ -4078,7 +4036,7 @@ describe('Duo Agentic Chat', () => {
     it('calls trackEvent with correct parameters when track-feedback is emitted', async () => {
       getStorageValue.mockReturnValueOnce({
         exists: true,
-        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+        value: { workflowId: MOCK_WORKFLOW_ID },
       });
       createComponent();
       await waitForPromises();

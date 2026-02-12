@@ -17,7 +17,7 @@ import { computeTrustedUrls } from 'ee/ai/shared/trusted_urls/utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId, parseGid } from '~/graphql_shared/utils';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { InternalEvents } from '~/tracking';
@@ -57,11 +57,7 @@ import {
 } from '../utils/workflow_socket_utils';
 import { getInitialDimensions, calculateDimensions } from '../utils/resize_utils';
 import { validateAgentExists as validateAgent, prepareAgentSelection } from '../utils/agent_utils';
-import {
-  getWorkflowIdFromThreadId,
-  parseThreadForSelection,
-  resetThreadContent,
-} from '../utils/thread_utils';
+import { resetThreadContent } from '../utils/thread_utils';
 import { formatErrorMessage } from '../utils/error_handler';
 import { WORKFLOW_NOT_FOUND_CODE, FEEDBACK_TRACKING_EVENT } from '../constants';
 import {
@@ -334,8 +330,8 @@ export default {
   },
   data() {
     const currentWorkflowRecord = getStorageValue(DUO_CURRENT_WORKFLOW_STORAGE_KEY);
-    const currentWorkflowDefaultRecord = { activeThread: undefined, workflowId: null };
-    const { activeThread, workflowId } = currentWorkflowRecord.exists
+    const currentWorkflowDefaultRecord = { workflowId: null };
+    const { workflowId } = currentWorkflowRecord.exists
       ? currentWorkflowRecord.value
       : currentWorkflowDefaultRecord;
 
@@ -350,11 +346,12 @@ export default {
       availableModels: [],
       pinnedModel: null,
       socketManager: null,
-      workflowId,
+
+      workflowId: workflowId ? convertToGraphQLId(TYPENAME_AI_DUO_WORKFLOW, workflowId) : null,
       workflowStatus: null,
+
       isProcessingToolApproval: false,
       agenticWorkflows: [],
-      activeThread,
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
       selectedModel: null,
       catalogAgents: [],
@@ -380,6 +377,9 @@ export default {
   },
   computed: {
     ...mapState(['messages', 'currentAgent']),
+    workflowIid() {
+      return this.workflowId ? parseGid(this.workflowId)?.id : null;
+    },
     dimensions() {
       if (!this.isEmbedded) {
         return {};
@@ -482,8 +482,8 @@ export default {
     window() {
       return window;
     },
-    hasActiveThread() {
-      return this.workflowId && this.activeThread;
+    hasActiveWorkflow() {
+      return this.workflowId;
     },
     showErrorBannerMessage() {
       if (this.multithreadedView === DUO_CHAT_VIEWS.CHAT) {
@@ -522,8 +522,8 @@ export default {
     'duoChatGlobalState.isAgenticChatShown': {
       handler(newVal) {
         if (newVal) {
-          if (this.hasActiveThread) {
-            this.hydrateActiveThread();
+          if (this.hasActiveWorkflow) {
+            this.hydrateActiveWorkflow();
           } else {
             this.onNewChat();
           }
@@ -562,7 +562,7 @@ export default {
           this.setChatState({
             isEnabled: true,
           });
-          this.hydrateActiveThread();
+          this.hydrateActiveWorkflow();
         }
       },
     },
@@ -570,11 +570,8 @@ export default {
       if (newWorkflowId !== oldWorkflowId) {
         saveStorageValue(DUO_CURRENT_WORKFLOW_STORAGE_KEY, {
           workflowId: newWorkflowId,
-          activeThread: newWorkflowId
-            ? convertToGraphQLId(TYPENAME_AI_DUO_WORKFLOW, parseInt(newWorkflowId, 10))
-            : '',
         });
-        this.$emit('session-id-changed', newWorkflowId);
+        this.emitSessionIdChanged();
       }
     },
     mode(newMode) {
@@ -596,9 +593,7 @@ export default {
 
     this.switchMode(this.mode);
     this.loadDuoNextIfNeeded();
-    if (this.workflowId) {
-      this.$emit('session-id-changed', this.workflowId);
-    }
+    this.emitSessionIdChanged();
   },
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
@@ -608,16 +603,21 @@ export default {
     this.cleanupSocket();
     // Clear messages when component is destroyed to prevent state leaking
     // between mode switches (classic <-> agentic)
-    this.clearActiveThread();
+    this.clearActiveWorkflow();
     this.isLoading = false;
     this.isWaitingOnPrompt = false;
     this.$emit('change-title');
   },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages', 'setCurrentAgent']),
-    clearActiveThread() {
+    clearActiveWorkflow() {
       this.setMessages([]);
       this.lastProcessedMessageId = null;
+    },
+    emitSessionIdChanged() {
+      if (this.workflowIid) {
+        this.$emit('session-id-changed', this.workflowIid);
+      }
     },
     async loadDuoNextIfNeeded() {
       if (this.glFeatures.duoUiNext) {
@@ -690,8 +690,8 @@ export default {
           return;
         }
 
-        if (this.hasActiveThread) {
-          this.hydrateActiveThread();
+        if (this.hasActiveWorkflow) {
+          this.hydrateActiveWorkflow();
         } else {
           this.onNewChat();
         }
@@ -759,7 +759,7 @@ export default {
       this.cleanupSocket();
 
       const startRequest = buildStartRequest({
-        workflowId: this.workflowId,
+        workflowId: this.workflowIid,
         workflowDefinition: this.selectedFoundationalAgent?.referenceWithVersion,
         goal,
         approval,
@@ -847,10 +847,6 @@ export default {
 
           this.workflowStatus = workflowData.status;
 
-          if (workflowData.goal && !this.activeThread) {
-            this.activeThread = workflowData.goal;
-          }
-
           if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
             this.isWaitingOnPrompt = false;
           }
@@ -880,19 +876,15 @@ export default {
 
       if (!this.workflowId) {
         try {
-          const { workflowId, threadId } = await ApolloUtils.createWorkflow(this.$apollo, {
+          const { workflowId } = await ApolloUtils.createWorkflow(this.$apollo, {
             projectId: this.projectId,
             namespaceId: this.namespaceId,
             goal: question,
-            activeThread: this.activeThread,
             workflowDefinition: this.selectedFoundationalAgent?.referenceWithVersion,
             aiCatalogItemVersionId: this.aiCatalogItemVersionId,
           });
 
           this.workflowId = workflowId;
-          if (threadId) {
-            this.activeThread = threadId;
-          }
         } catch (err) {
           this.onError(err);
           this.isWaitingOnPrompt = false;
@@ -937,18 +929,15 @@ export default {
       );
     },
     async onThreadSelected(thread) {
-      const { activeThread, workflowId } = parseThreadForSelection(thread);
-
-      this.activeThread = activeThread;
-      this.workflowId = workflowId;
-      this.clearActiveThread();
+      this.workflowId = thread.id;
+      this.clearActiveWorkflow();
       this.cleanupState(false);
 
       if (!this.isEmbedded) {
         // We should not hydrate when in embedded mode - the SSOT for
         // when to hydrate the thread is on the `mode` and is managed in
         // `switchMode()`
-        await this.hydrateActiveThread();
+        await this.hydrateActiveWorkflow();
         // Check if the thread's agent still exists after hydration
         this.validateAgentExists();
       } else {
@@ -959,9 +948,9 @@ export default {
         this.$router.push(`/chat`);
       }
     },
-    async hydrateActiveThread() {
+    async hydrateActiveWorkflow() {
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
-      if (this.workflowId && this.activeThread) {
+      if (this.workflowId) {
         // Load cached messages immediately to prevent flickering
         const snapshot = loadThreadSnapshot(this.workflowId);
         if (snapshot?.messages?.length) {
@@ -986,7 +975,7 @@ export default {
         }
 
         // Fetch fresh data from API
-        await this.loadActiveThread();
+        await this.loadActiveWorkflow();
         this.validateAgentExists();
 
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_RUNNING) {
@@ -1004,9 +993,9 @@ export default {
         }
       }
     },
-    async loadActiveThread() {
+    async loadActiveWorkflow() {
       try {
-        const data = await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.activeThread);
+        const data = await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.workflowId);
 
         const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
         const uiChatLog = parsedWorkflowData?.checkpoint?.channel_values?.ui_chat_log || [];
@@ -1034,7 +1023,7 @@ export default {
     },
     onBackToList() {
       this.multithreadedView = DUO_CHAT_VIEWS.LIST;
-      this.clearActiveThread();
+      this.clearActiveWorkflow();
       try {
         if (this.$apollo?.queries?.agenticWorkflows) {
           this.$apollo.queries.agenticWorkflows.refetch();
@@ -1048,7 +1037,7 @@ export default {
         const success = await ApolloUtils.deleteWorkflow(this.$apollo, threadId);
         if (success) {
           this.$apollo.queries.agenticWorkflows?.refetch();
-          clearThreadSnapshot(getWorkflowIdFromThreadId(threadId));
+          clearThreadSnapshot(threadId);
         }
       } catch (err) {
         this.onError(err);
@@ -1056,7 +1045,7 @@ export default {
     },
     async onNewChat(reuseAgent) {
       clearDuoChatCommands();
-      this.clearActiveThread();
+      this.clearActiveWorkflow();
 
       const threadContent = resetThreadContent();
       Object.assign(this, threadContent);
@@ -1108,26 +1097,16 @@ export default {
     focusInput() {
       this.$refs.chat.focusChatInput();
     },
-    ensureActiveThreadId() {
-      if (this.workflowId) {
-        this.activeThread = convertToGraphQLId(
-          TYPENAME_AI_DUO_WORKFLOW,
-          parseInt(this.workflowId, 10),
-        );
-      }
-    },
     hasActiveMessagesButWorkflowDeleted(hasWorkflowNotFoundError) {
       return hasWorkflowNotFoundError && !this.isInitialLoad && this.messages.length > 0;
     },
     async validateWorkflowExists() {
-      this.ensureActiveThreadId();
-
-      if (!this.activeThread) {
+      if (!this.workflowId) {
         return false;
       }
 
       try {
-        await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.activeThread);
+        await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.workflowId);
         return true;
       } catch (errorData) {
         const workflowNotFoundChecker = (e) => e?.extensions?.code === WORKFLOW_NOT_FOUND_CODE;
@@ -1148,7 +1127,7 @@ export default {
     trackBinaryFeedbackEvent(event) {
       this.trackEvent(FEEDBACK_TRACKING_EVENT, {
         label: event.feedbackType,
-        property: this.workflowId,
+        property: this.workflowIid,
       });
     },
 
@@ -1191,14 +1170,14 @@ export default {
       :predefined-prompts="predefinedPrompts"
       :thread-list="agenticWorkflows"
       :multi-threaded-view="multithreadedView"
-      :active-thread-id="activeThread"
+      :active-thread-id="workflowId"
       :is-multithreaded="true"
       :enable-code-insertion="false"
       :should-render-resizable="!isEmbedded"
       :with-feedback="glFeatures.duoChatBinaryFeedback"
       :show-header="true"
       :show-studio-header="isEmbedded"
-      :session-id="workflowId"
+      :session-id="workflowIid"
       badge-type="beta"
       :dimensions="dimensions"
       :is-tool-approval-processing="isProcessingToolApproval"
