@@ -16,6 +16,9 @@ import CreateCommentForm from 'ee/compliance_violations/components/create_commen
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import complianceViolationQuery from 'ee/compliance_violations/graphql/compliance_violation.query.graphql';
 import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
+import complianceViolationNoteCreatedSubscription from 'ee/compliance_violations/graphql/subscriptions/compliance_violation_note_created.subscription.graphql';
+import complianceViolationNoteUpdatedSubscription from 'ee/compliance_violations/graphql/subscriptions/compliance_violation_note_updated.subscription.graphql';
+import complianceViolationNoteDeletedSubscription from 'ee/compliance_violations/graphql/subscriptions/compliance_violation_note_deleted.subscription.graphql';
 import {
   violationId,
   complianceCenterPath,
@@ -40,10 +43,15 @@ describe('ComplianceViolationDetailsApp', () => {
   let queryHandler;
   let mutationHandler;
 
+  const neverResolvingPromise = () => new Promise(() => {});
+
   const createComponent = ({
     props = {},
     mockQueryHandler = jest.fn().mockResolvedValue(mockComplianceViolationData),
     mockMutationHandler = jest.fn().mockResolvedValue(mockUpdateResponseData),
+    mockNoteCreatedHandler = jest.fn().mockImplementation(neverResolvingPromise),
+    mockNoteUpdatedHandler = jest.fn().mockImplementation(neverResolvingPromise),
+    mockNoteDeletedHandler = jest.fn().mockImplementation(neverResolvingPromise),
   } = {}) => {
     queryHandler = mockQueryHandler;
     mutationHandler = mockMutationHandler;
@@ -51,6 +59,9 @@ describe('ComplianceViolationDetailsApp', () => {
     mockApollo = createMockApollo([
       [complianceViolationQuery, queryHandler],
       [updateProjectComplianceViolation, mutationHandler],
+      [complianceViolationNoteCreatedSubscription, mockNoteCreatedHandler],
+      [complianceViolationNoteUpdatedSubscription, mockNoteUpdatedHandler],
+      [complianceViolationNoteDeletedSubscription, mockNoteDeletedHandler],
     ]);
 
     wrapper = shallowMountExtended(ComplianceViolationDetailsApp, {

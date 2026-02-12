@@ -8,6 +8,10 @@ import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import SystemNote from '~/work_items/components/notes/system_note.vue';
 import updateProjectComplianceViolation from '../graphql/mutations/update_project_compliance_violation.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
+import complianceViolationNoteCreatedSubscription from '../graphql/subscriptions/compliance_violation_note_created.subscription.graphql';
+import complianceViolationNoteUpdatedSubscription from '../graphql/subscriptions/compliance_violation_note_updated.subscription.graphql';
+import complianceViolationNoteDeletedSubscription from '../graphql/subscriptions/compliance_violation_note_deleted.subscription.graphql';
+import { updateCacheAfterCreatingNote, updateCacheAfterDeletingNote } from '../graphql/cache_utils';
 import AuditEvent from './audit_event.vue';
 import CreateCommentForm from './create_comment_form.vue';
 import ComplianceViolationDiscussion from './compliance_violation_discussion.vue';
@@ -64,6 +68,53 @@ export default {
         Sentry.captureException(e);
         this.queryError = true;
       },
+      subscribeToMore: [
+        {
+          document: complianceViolationNoteCreatedSubscription,
+          variables() {
+            return {
+              noteableId: this.graphqlViolationId,
+            };
+          },
+          updateQuery(previousResult, { subscriptionData: { data } }) {
+            if (!data?.workItemNoteCreated) {
+              return previousResult;
+            }
+            return updateCacheAfterCreatingNote(previousResult, data.workItemNoteCreated);
+          },
+          skip() {
+            return !this.graphqlViolationId;
+          },
+        },
+        {
+          document: complianceViolationNoteDeletedSubscription,
+          variables() {
+            return {
+              noteableId: this.graphqlViolationId,
+            };
+          },
+          updateQuery(previousResult, { subscriptionData }) {
+            if (!subscriptionData?.data?.workItemNoteDeleted) {
+              return previousResult;
+            }
+            return updateCacheAfterDeletingNote(previousResult, subscriptionData);
+          },
+          skip() {
+            return !this.graphqlViolationId;
+          },
+        },
+        {
+          document: complianceViolationNoteUpdatedSubscription,
+          variables() {
+            return {
+              noteableId: this.graphqlViolationId,
+            };
+          },
+          skip() {
+            return !this.graphqlViolationId;
+          },
+        },
+      ],
     },
   },
   computed: {

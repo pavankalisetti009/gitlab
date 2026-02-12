@@ -487,6 +487,56 @@ RSpec.describe Note, feature_category: :team_planning do
     end
   end
 
+  describe 'compliance violation note subscriptions' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:violation) { create(:project_compliance_violation, project: project, namespace: project.namespace) }
+
+    describe '#trigger_note_subscription?' do
+      it 'returns true for compliance violation notes' do
+        note = build(:note, noteable: violation, project: project)
+
+        expect(note.send(:trigger_note_subscription?)).to be(true)
+      end
+    end
+
+    describe '#trigger_note_subscription_create' do
+      it 'triggers work_item_note_created subscription for compliance violation notes' do
+        note = build(:note, noteable: violation, project: project)
+
+        expect(GraphqlTriggers).to receive(:work_item_note_created).with(violation.to_global_id, note)
+
+        note.send(:trigger_note_subscription_create)
+      end
+    end
+
+    describe '#trigger_note_subscription_update' do
+      it 'triggers work_item_note_updated subscription for compliance violation notes' do
+        note = create(:note, noteable: violation, project: project)
+
+        expect(GraphqlTriggers).to receive(:work_item_note_updated).with(violation.to_global_id, note)
+
+        note.send(:trigger_note_subscription_update)
+      end
+    end
+
+    describe '#trigger_note_subscription_destroy' do
+      it 'triggers work_item_note_deleted subscription for compliance violation notes' do
+        note = create(:note, noteable: violation, project: project)
+        expected_data = {
+          id: note.id,
+          model_name: 'Note',
+          discussion_id: note.discussion_id,
+          last_discussion_note: true
+        }
+
+        expect(GraphqlTriggers).to receive(:work_item_note_deleted).with(violation.to_global_id, expected_data)
+
+        note.send(:trigger_note_subscription_destroy)
+      end
+    end
+  end
+
   describe '.with_noteable_type' do
     let_it_be(:issue) { create(:issue, project: create(:project)) }
     let_it_be(:epic) { create(:epic) }

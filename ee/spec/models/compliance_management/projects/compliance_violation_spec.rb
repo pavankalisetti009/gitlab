@@ -732,5 +732,22 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
         expect(violation.framework).to eq(compliance_control.compliance_requirement.framework)
       end
     end
+
+    describe '#to_global_id' do
+      it 'returns a global id for the violation' do
+        expected_gid = Gitlab::GlobalId.as_global_id(
+          violation.id,
+          model_name: 'ComplianceManagement::Projects::ComplianceViolation'
+        )
+
+        expect(violation.to_global_id).to eq(expected_gid)
+      end
+    end
+
+    describe '#to_ability_name' do
+      it 'returns compliance_violations_report for subscription authorization' do
+        expect(violation.to_ability_name).to eq('compliance_violations_report')
+      end
+    end
   end
 end

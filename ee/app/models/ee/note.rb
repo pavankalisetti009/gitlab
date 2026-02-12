@@ -80,6 +80,39 @@ module EE
       noteable_type != 'ComplianceManagement::Projects::ComplianceViolation'
     end
 
+    override :trigger_note_subscription?
+    def trigger_note_subscription?
+      super || for_compliance_violation?
+    end
+
+    override :trigger_note_subscription_create
+    def trigger_note_subscription_create
+      return super unless for_compliance_violation?
+
+      ::GraphqlTriggers.work_item_note_created(noteable.to_global_id, self)
+    end
+
+    override :trigger_note_subscription_update
+    def trigger_note_subscription_update
+      return super unless for_compliance_violation?
+
+      ::GraphqlTriggers.work_item_note_updated(noteable.to_global_id, self)
+    end
+
+    override :trigger_note_subscription_destroy
+    def trigger_note_subscription_destroy
+      return super unless for_compliance_violation?
+
+      deleted_note_data = {
+        id: id,
+        model_name: self.class.name,
+        discussion_id: discussion_id,
+        last_discussion_note: discussion.notes.count == 1
+      }
+
+      ::GraphqlTriggers.work_item_note_deleted(noteable.to_global_id, deleted_note_data)
+    end
+
     override :store_mentions_after_commit?
     def store_mentions_after_commit?
       user_mention_class == VulnerabilityUserMention
