@@ -19,7 +19,7 @@ import MonthlyWaiverCard from './monthly_waiver_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
 import UsageOverviewChart from './usage_overview_chart.vue';
 import OverageOptInCard from './overage_opt_in_card.vue';
-import PaidTierTrialDisclaimer from './paid_tier_trial_period_view.vue';
+import PaidTierTrialPeriodView from './paid_tier_trial_period_view.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -40,7 +40,7 @@ export default {
     UsageTrendsChart,
     UsageOverviewChart,
     OverageOptInCard,
-    PaidTierTrialDisclaimer,
+    PaidTierTrialPeriodView,
   },
   mixins: [InternalEvents.mixin()],
   apollo: {
@@ -249,11 +249,23 @@ export default {
       {{ s__('UsageBilling|Usage Billing is disabled') }}
     </gl-alert>
 
-    <paid-tier-trial-disclaimer
+    <paid-tier-trial-period-view
       v-else-if="isOnPaidTierTrial"
       :customers-usage-dashboard-url="customersUsageDashboardUrl"
       :purchase-credits-url="purchaseCreditsUrl"
-    />
+    >
+      <template #chart>
+        <usage-overview-chart
+          :month-start-date="subscriptionUsage.startDate"
+          :month-end-date="subscriptionUsage.endDate"
+          :commitment-daily-usage="poolDailyUsage"
+          :waiver-daily-usage="monthlyWaiverDailyUsage"
+          :overage-daily-usage="overageDailyUsage"
+          :paid-tier-trial-daily-usage="paidTierTrialDailyUsage"
+          :users-usage-daily-usage="usersUsageDailyUsage"
+        />
+      </template>
+    </paid-tier-trial-period-view>
 
     <template v-else>
       <section

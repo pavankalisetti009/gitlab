@@ -25,9 +25,9 @@ export default {
 };
 </script>
 <template>
-  <section>
+  <section class="gl-flex gl-flex-col gl-gap-5">
     <gl-card
-      class="gl-mb-5 gl-w-full gl-bg-transparent"
+      class="gl-w-full gl-bg-transparent"
       body-class="gl-p-6 gl-flex gl-flex-col gl-items-start gl-justify-between gl-gap-4"
       data-testid="paid-tier-trial-header-card"
     >
@@ -68,6 +68,8 @@ export default {
         </gl-button>
       </div>
     </gl-card>
+
+    <slot name="chart"></slot>
 
     <section
       class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row"
