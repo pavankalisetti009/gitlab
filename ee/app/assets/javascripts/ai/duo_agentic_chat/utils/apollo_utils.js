@@ -10,20 +10,18 @@ import {
   DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
 } from 'ee/ai/constants';
 import { fetchPolicies } from '~/lib/graphql';
-import { parseGid } from '~/graphql_shared/utils';
 import { MULTI_THREADED_CONVERSATION_TYPE } from '../../tanuki_bot/constants';
 
 export const ApolloUtils = {
   async createWorkflow(
     apollo,
-    { projectId, workflowDefinition, namespaceId, goal, activeThread, aiCatalogItemVersionId },
+    { projectId, workflowDefinition, namespaceId, goal, aiCatalogItemVersionId },
   ) {
     const variables = {
       goal,
       workflowDefinition: workflowDefinition || DUO_WORKFLOW_CHAT_DEFINITION,
       agentPrivileges: DUO_WORKFLOW_AGENT_PRIVILEGES,
       preApprovedAgentPrivileges: DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
-      threadId: activeThread,
       conversationType: MULTI_THREADED_CONVERSATION_TYPE,
     };
 
@@ -50,8 +48,7 @@ export const ApolloUtils = {
     const workflow = result?.data?.aiDuoWorkflowCreate?.workflow || {};
 
     return {
-      workflowId: workflow.id ? parseGid(workflow.id).id : null,
-      threadId: workflow.threadId || null,
+      workflowId: workflow.id ?? null,
     };
   },
 

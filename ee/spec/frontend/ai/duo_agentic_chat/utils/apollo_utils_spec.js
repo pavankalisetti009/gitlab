@@ -15,7 +15,6 @@ import {
   DUO_WORKFLOW_AGENT_PRIVILEGES,
   DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
 } from 'ee/ai/constants';
-import { parseGid } from '~/graphql_shared/utils';
 import { MULTI_THREADED_CONVERSATION_TYPE } from 'ee/ai/tanuki_bot/constants';
 import {
   MOCK_PROJECT_ID,
@@ -31,10 +30,6 @@ import {
   MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE,
 } from './mock_data';
 
-jest.mock('~/graphql_shared/utils', () => ({
-  parseGid: jest.fn(),
-}));
-
 describe('ApolloUtils', () => {
   let apolloProvider;
   let duoWorkflowMutationHandlerMock;
@@ -43,7 +38,6 @@ describe('ApolloUtils', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    parseGid.mockReturnValue({ id: '789' });
 
     duoWorkflowMutationHandlerMock = jest.fn().mockResolvedValue(MOCK_WORKFLOW_MUTATION_RESPONSE);
     deleteWorkflowMutationHandlerMock = jest.fn().mockResolvedValue(MOCK_DELETE_WORKFLOW_RESPONSE);
@@ -71,7 +65,6 @@ describe('ApolloUtils', () => {
       async ({ projectId, namespaceId, workflowDefinition }) => {
         const params = {
           goal: MOCK_GOAL,
-          activeThread: MOCK_ACTIVE_THREAD,
           aiCatalogItemVersionId: 5,
         };
 
@@ -86,7 +79,6 @@ describe('ApolloUtils', () => {
           workflowDefinition: workflowDefinition || DUO_WORKFLOW_CHAT_DEFINITION,
           agentPrivileges: DUO_WORKFLOW_AGENT_PRIVILEGES,
           preApprovedAgentPrivileges: DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
-          threadId: MOCK_ACTIVE_THREAD,
           conversationType: MULTI_THREADED_CONVERSATION_TYPE,
           aiCatalogItemVersionId: 5,
         };
@@ -95,7 +87,6 @@ describe('ApolloUtils', () => {
         if (namespaceId) expectedCallVariables.namespaceId = namespaceId;
 
         expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith(expectedCallVariables);
-        expect(parseGid).toHaveBeenCalledWith(MOCK_WORKFLOW_ID);
       },
     );
 
