@@ -21,6 +21,7 @@ module Vulnerabilities
         begin
           Vulnerabilities::StateTransition.create!(
             vulnerability: @vulnerability,
+            vulnerability_occurrence_id: @vulnerability.finding_id,
             from_state: @vulnerability.state,
             to_state: :dismissed,
             comment: @comment,
