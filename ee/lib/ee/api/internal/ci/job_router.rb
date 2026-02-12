@@ -81,7 +81,7 @@ module EE
                       ensure_job_router_enabled_for_runner!(current_runner_from_header)
                       ensure_admission_control_enabled_for_runner!(current_runner_from_header)
 
-                      controllers = ::Ci::RunnerController.active.select(:id, :state)
+                      controllers = ::Ci::RunnerController.active.with_instance_scope.select(:id, :state)
 
                       status 200
                       {

@@ -7,6 +7,19 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
   let_it_be(:enabled_runner_controllers) { create_list(:ci_runner_controller, 2, :enabled) }
   let_it_be(:dry_run_runner_controllers) { create_list(:ci_runner_controller, 2, :dry_run) }
   let_it_be(:disabled_runner_controllers) { create_list(:ci_runner_controller, 2) }
+  let_it_be(:enabled_scoped_controllers) do
+    enabled_runner_controllers.each do |controller|
+      create(:ci_runner_controller_instance_level_scoping, runner_controller: controller)
+    end
+    enabled_runner_controllers
+  end
+
+  let_it_be(:dry_run_scoped_controllers) do
+    dry_run_runner_controllers.each do |controller|
+      create(:ci_runner_controller_instance_level_scoping, runner_controller: controller)
+    end
+    dry_run_runner_controllers
+  end
 
   let(:jwt_secret) { SecureRandom.random_bytes(Gitlab::Kas::SECRET_LENGTH) }
   let(:jwt_token) do
@@ -109,11 +122,14 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
       end
 
       context 'when only enabled controllers exist' do
-        before do
+        let!(:enabled_only) do
           Ci::RunnerController.delete_all
+          create_list(:ci_runner_controller, 2, :enabled).tap do |controllers|
+            controllers.each do |controller|
+              create(:ci_runner_controller_instance_level_scoping, runner_controller: controller)
+            end
+          end
         end
-
-        let!(:enabled_only) { create_list(:ci_runner_controller, 2, :enabled) }
 
         it 'returns only enabled controllers' do
           perform_request
@@ -126,11 +142,14 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
       end
 
       context 'when only dry_run controllers exist' do
-        before do
+        let!(:dry_run_only) do
           Ci::RunnerController.delete_all
+          create_list(:ci_runner_controller, 2, :dry_run).tap do |controllers|
+            controllers.each do |controller|
+              create(:ci_runner_controller_instance_level_scoping, runner_controller: controller)
+            end
+          end
         end
-
-        let!(:dry_run_only) { create_list(:ci_runner_controller, 2, :dry_run) }
 
         it 'returns only dry_run controllers' do
           perform_request
@@ -139,6 +158,70 @@ RSpec.describe API::Internal::Ci::JobRouter, feature_category: :continuous_integ
           expect(json_response['runner_controllers']).to match_array(
             dry_run_only.map { |c| { 'id' => c.id, 'state' => 'dry_run' } }
           )
+        end
+      end
+
+      context 'with instance-level scoping filtering' do
+        before do
+          Ci::RunnerController.delete_all
+        end
+
+        context 'when some active controllers have instance-level scope and some do not' do
+          let!(:scoped_enabled) { create(:ci_runner_controller, :enabled) }
+          let!(:scoped_dry_run) { create(:ci_runner_controller, :dry_run) }
+          let!(:unscoped_enabled) { create(:ci_runner_controller, :enabled) }
+          let!(:unscoped_dry_run) { create(:ci_runner_controller, :dry_run) }
+
+          before do
+            create(:ci_runner_controller_instance_level_scoping, runner_controller: scoped_enabled)
+            create(:ci_runner_controller_instance_level_scoping, runner_controller: scoped_dry_run)
+          end
+
+          it 'returns only controllers with instance-level scope' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['runner_controllers']).to match_array([
+              { 'id' => scoped_enabled.id, 'state' => 'enabled' },
+              { 'id' => scoped_dry_run.id, 'state' => 'dry_run' }
+            ])
+          end
+
+          it 'does not return controllers without instance-level scope' do
+            perform_request
+
+            returned_ids = json_response['runner_controllers'].pluck('id')
+            expect(returned_ids).not_to include(unscoped_enabled.id)
+            expect(returned_ids).not_to include(unscoped_dry_run.id)
+          end
+        end
+
+        context 'when no active controllers have instance-level scope' do
+          let!(:unscoped_enabled) { create(:ci_runner_controller, :enabled) }
+          let!(:unscoped_dry_run) { create(:ci_runner_controller, :dry_run) }
+
+          it 'returns empty array' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['runner_controllers']).to eq([])
+          end
+        end
+
+        context 'when disabled controllers have instance-level scope' do
+          let!(:scoped_disabled) { create(:ci_runner_controller, :disabled) }
+          let!(:unscoped_enabled) { create(:ci_runner_controller, :enabled) }
+
+          before do
+            create(:ci_runner_controller_instance_level_scoping, runner_controller: scoped_disabled)
+          end
+
+          it 'does not return disabled controllers even with scope' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['runner_controllers']).to eq([])
+          end
         end
       end
     end

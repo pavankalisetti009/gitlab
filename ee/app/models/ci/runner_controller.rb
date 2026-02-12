@@ -22,5 +22,8 @@ module Ci
 
     # Scope for controllers that are active (enabled or dry_run)
     scope :active, -> { where(state: [:enabled, :dry_run]) }
+
+    # Scope for controllers with instance-level scoping
+    scope :with_instance_scope, -> { joins(:instance_level_scoping) }
   end
 end

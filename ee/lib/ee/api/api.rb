@@ -18,6 +18,7 @@ module EE
         mount ::API::Admin::DataManagement
         mount ::API::AuditEvents
         mount ::API::Ci::RunnerControllers
+        mount ::API::Ci::RunnerControllerScopes
         mount ::API::Ci::RunnerControllerTokens
         mount ::API::Clusters::AgentUrlConfigurations
         mount ::API::ProjectApprovalRules
