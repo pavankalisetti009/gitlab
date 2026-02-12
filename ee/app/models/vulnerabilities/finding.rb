@@ -670,10 +670,18 @@ module Vulnerabilities
       detection_transitions.last
     end
 
+    def eligible_for_resolution_workflow?
+      vulnerability&.high_or_critical_severity? && sast_fp_detection_workflow_exists?
+    end
+
     protected
 
     def primary_identifier_fingerprint
       identifiers.first&.fingerprint
+    end
+
+    def sast_fp_detection_workflow_exists?
+      triggered_workflows.exists?(workflow_name: ::Vulnerabilities::TriggeredWorkflow::WORKFLOW_NAMES[:sast_fp_detection])
     end
   end
 end

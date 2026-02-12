@@ -33,7 +33,8 @@ module Vulnerabilities
       result = trigger_workflow(vulnerability, user, consumer)
 
       if result.success?
-        track_event(vulnerability) if create_triggered_workflow_record(vulnerability, result)
+        create_triggered_workflow_record(vulnerability, result)
+        track_event(vulnerability)
       else
         handle_error(result, vulnerability)
       end
@@ -112,7 +113,7 @@ module Vulnerabilities
     def create_triggered_workflow_record(vulnerability, response)
       ::Vulnerabilities::TriggeredWorkflow.create!(
         vulnerability_occurrence_id: vulnerability.finding&.id,
-        workflow_id: response.payload[:workflow_id],
+        workflow: response.payload[:workflow],
         workflow_name: :sast_fp_detection
       )
     rescue ActiveRecord::RecordInvalid => error
@@ -121,8 +122,6 @@ module Vulnerabilities
         vulnerability_id: vulnerability.id,
         workflow_id: response.payload[:workflow_id]
       )
-
-      nil
     end
 
     def track_event(vulnerability)
