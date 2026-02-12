@@ -704,8 +704,8 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
   end
 
   describe 'PUT /admin/data_management/:model_name/:record_identifier/checksum' do
-    let_it_be(:expected_model) { create(:snippet_repository) }
-    let_it_be(:api_path) { "/admin/data_management/snippet_repositories/#{expected_model.id}/checksum" }
+    let(:expected_model) { create(:upload, :with_file) }
+    let(:api_path) { "/admin/data_management/uploads/#{expected_model.id}/checksum" }
     let_it_be(:node) { create(:geo_node) }
 
     before do
@@ -792,17 +792,14 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           end
 
           context 'when verification fails' do
-            before do
-              allow_next_instance_of(expected_model.replicator.class) do |replicator|
-                allow(replicator).to receive(:verify).and_return(nil)
-              end
-            end
+            # An upload without file won't be able to get successfully checksummed
+            let(:expected_model) { create(:upload) }
 
             it 'returns 400 bad request' do
               put api(api_path, admin, admin_mode: true)
 
               expect(response).to have_gitlab_http_status(:bad_request)
-              expect(json_response['message']).to include("Verifying snippet_repositories/#{expected_model.id} failed")
+              expect(json_response['message']).to include("Verifying uploads/#{expected_model.id} failed")
             end
           end
         end
@@ -826,6 +823,13 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
         end
 
         describe 'PUT /admin/data_management/:model_name/:record_identifier/checksum' do
+          # We stub a successful verification, because default factories might not include verifiable data
+          before do
+            allow_next_found_instance_of(model_classes.verification_state_table_class) do |instance|
+              allow(instance).to receive(:verification_failed?).and_return(false)
+            end
+          end
+
           it 'handles all known replicable model names' do
             put api("#{api_path}/#{expected_record.id}/checksum", admin, admin_mode: true)
 
