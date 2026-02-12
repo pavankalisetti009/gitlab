@@ -42677,9 +42677,6 @@ msgstr ""
 msgid "Merge request status"
 msgstr ""
 
-msgid "Merge request title must match expected format."
-msgstr ""
-
 msgid "Merge request was set to auto-merge"
 msgstr ""
 
@@ -83021,7 +83018,7 @@ msgstr ""
 msgid "mrWidget|Did not close"
 msgstr ""
 
-msgid "mrWidget|Edit merge request"
+msgid "mrWidget|Edit title"
 msgstr ""
 
 msgid "mrWidget|GitLab %{linkStart}CI/CD can automatically build, test, and deploy your application.%{linkEnd} It only takes a few minutes to get started, and we can help you create a pipeline configuration file."
@@ -83066,6 +83063,9 @@ msgid "mrWidget|Merging immediately is not recommended. The merged changes could
 msgstr ""
 
 msgid "mrWidget|Migrate to GitLab CI/CD from Jenkins"
+msgstr ""
+
+msgid "mrWidget|Naming convention"
 msgstr ""
 
 msgid "mrWidget|Please restore it or use a different %{type} branch."
@@ -83132,6 +83132,9 @@ msgid "mrWidget|This merge request is #%{mergeTrainPosition} of %{total} in queu
 msgstr ""
 
 msgid "mrWidget|This merge request was removed from the merge train."
+msgstr ""
+
+msgid "mrWidget|Title must match required pattern"
 msgstr ""
 
 msgid "mrWidget|To approve this merge request, please enter your password. This project requires all approvals to be authenticated."
