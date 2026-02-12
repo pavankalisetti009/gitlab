@@ -28,7 +28,8 @@ RSpec.describe Security::ProjectTrackedContexts::DestroyService, feature_categor
 
     let(:service) do
       described_class.new(
-        tracked_context: tracked_context,
+        project: project,
+        tracked_context_id: tracked_context.id,
         current_user: current_user,
         archive_vulnerabilities: archive_vulnerabilities
       )
@@ -40,15 +41,23 @@ RSpec.describe Security::ProjectTrackedContexts::DestroyService, feature_categor
       expect { result }.to change { Security::ProjectTrackedContext.count }.by(-1)
       expect(result).to be_success
       expect(result.message).to eq('Tracked context removed')
-      expect(result.payload[:destroyed_context]).to be_present
-      expect(result.payload[:destroyed_context].context_name).to eq('feature-branch')
     end
 
     context 'when destroy fails' do
       it 'handles ActiveRecord::RecordNotDestroyed exception' do
-        allow(tracked_context).to receive(:destroy!).and_raise(
+        mock_vulnerability_reads = instance_double(ActiveRecord::Associations::CollectionProxy)
+        allow(mock_vulnerability_reads).to receive(:update_all).with(archived: true)
+
+        mock_context = instance_double(Security::ProjectTrackedContext)
+        allow(mock_context).to receive_messages(project_id: project.id, is_default?: false,
+          vulnerability_reads: mock_vulnerability_reads)
+        allow(mock_context).to receive(:destroy!).and_raise(
           ActiveRecord::RecordNotDestroyed.new("Validation failed")
         )
+
+        allow_next_instance_of(described_class) do |service|
+          allow(service).to receive(:find_tracked_context).and_return(mock_context)
+        end
 
         expect { result }.not_to change { Security::ProjectTrackedContext.count }
         expect(result).to be_error
@@ -109,22 +118,46 @@ RSpec.describe Security::ProjectTrackedContexts::DestroyService, feature_categor
       end
     end
 
-    context 'when tracked context is nil' do
-      let(:tracked_context) { nil }
+    context 'when tracked context does not exist' do
+      let(:service) do
+        described_class.new(
+          project: project,
+          tracked_context_id: non_existing_record_id,
+          current_user: current_user,
+          archive_vulnerabilities: archive_vulnerabilities
+        )
+      end
 
       it 'returns not found error' do
         expect { result }.not_to change { Security::ProjectTrackedContext.count }
         expect(result).to be_error
-        expect(result.message).to eq('Ref not found')
+        expect(result.message).to eq('Tracked context not found')
       end
     end
 
-    context 'when tracked context is already destroyed' do
-      it 'returns not found error' do
-        tracked_context.destroy!
+    context 'when tracked context belongs to different project' do
+      let!(:other_project) { create(:project, :repository) }
+      let!(:other_tracked_context) do
+        create(:security_project_tracked_context, :tracked,
+          project: other_project,
+          context_name: 'other-branch',
+          context_type: :branch,
+          is_default: false)
+      end
 
+      let(:service) do
+        described_class.new(
+          project: project,
+          tracked_context_id: other_tracked_context.id,
+          current_user: current_user,
+          archive_vulnerabilities: archive_vulnerabilities
+        )
+      end
+
+      it 'returns project mismatch error' do
+        expect { result }.not_to change { Security::ProjectTrackedContext.count }
         expect(result).to be_error
-        expect(result.message).to eq('Ref not found')
+        expect(result.message).to eq('Tracked ref does not belong to specified project')
       end
     end
   end
