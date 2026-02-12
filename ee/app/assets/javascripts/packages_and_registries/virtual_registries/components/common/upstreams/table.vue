@@ -37,6 +37,7 @@ export default {
   inject: {
     editUpstreamPathTemplate: { default: '' },
     showUpstreamPathTemplate: { default: '' },
+    deleteUpstreamCacheMutation: { default: null },
   },
   props: {
     upstreams: {
@@ -127,7 +128,17 @@ export default {
       const { id } = this.selectedUpstream;
       this.hideUpstreamClearCacheModal();
       try {
-        await deleteMavenUpstreamCache({ id: getIdFromGraphQLId(id) });
+        if (this.deleteUpstreamCacheMutation) {
+          await this.$apollo.mutate({
+            mutation: this.deleteUpstreamCacheMutation,
+            variables: {
+              id,
+            },
+          });
+        } else {
+          await deleteMavenUpstreamCache({ id: getIdFromGraphQLId(id) });
+        }
+
         this.$toast.show(s__('VirtualRegistry|Upstream cache cleared successfully.'));
       } catch (error) {
         this.$toast.show(s__('VirtualRegistry|Failed to clear upstream cache. Try again.'));

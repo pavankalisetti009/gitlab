@@ -15,6 +15,7 @@ import getUpstreamCacheEntriesCountQuery from 'ee/packages_and_registries/virtua
 import getUpstreamCacheEntriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_cache_entries.query.graphql';
 import deleteRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/delete_container_registry.mutation.graphql';
 import deleteUpstreamMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/delete_container_upstream.mutation.graphql';
+import deleteUpstreamCacheMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/delete_container_upstream_cache.mutation.graphql';
 import ContainerVirtualRegistryBreadcrumbs from './breadcrumbs.vue';
 import i18n from './i18n';
 import createRouter from './router';
@@ -68,6 +69,7 @@ export default () => {
       getUpstreamCacheEntriesCountQuery,
       deleteRegistryMutation,
       deleteUpstreamMutation,
+      deleteUpstreamCacheMutation,
       maxRegistriesCount: Number(maxRegistriesCount),
     },
     render(createElement) {
