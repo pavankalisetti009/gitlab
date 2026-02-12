@@ -60545,6 +60545,9 @@ msgstr ""
 msgid "SecretsManager|Enter a value for the secret"
 msgstr ""
 
+msgid "SecretsManager|Export secret to pipelines running on protected branches only."
+msgstr ""
+
 msgid "SecretsManager|GitLab Secrets Manager"
 msgstr ""
 
@@ -60555,6 +60558,9 @@ msgid "SecretsManager|New secret"
 msgstr ""
 
 msgid "SecretsManager|Please wait while the secrets manager is provisioned. You can refresh at any time."
+msgstr ""
+
+msgid "SecretsManager|Protected Branches"
 msgstr ""
 
 msgid "SecretsManager|Provisioning in progress"

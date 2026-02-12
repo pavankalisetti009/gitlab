@@ -2,6 +2,7 @@
 import {
   GlButton,
   GlForm,
+  GlFormCheckbox,
   GlFormGroup,
   GlFormInput,
   GlFormTextarea,
@@ -15,6 +16,7 @@ import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import {
   DETAILS_ROUTE_NAME,
+  ENTITY_PROJECT,
   INDEX_ROUTE_NAME,
   SECRET_DESCRIPTION_MAX_LENGTH,
 } from 'ee/ci/secrets/constants';
@@ -26,6 +28,7 @@ export default {
     CiEnvironmentsDropdown,
     GlButton,
     GlForm,
+    GlFormCheckbox,
     GlFormGroup,
     GlFormInput,
     GlFormTextarea,
@@ -62,6 +65,7 @@ export default {
         description: undefined,
         environment: '',
         name: undefined,
+        protected: false,
         rotationIntervalDays: this.secretData?.rotationInfo?.rotationIntervalDays || null,
         secret: undefined, // shown as "value" in the UI
         ...this.secretData,
@@ -71,14 +75,26 @@ export default {
   },
   computed: {
     canSubmit() {
+      if (this.isProjectContext) {
+        return (
+          this.isBranchValid &&
+          this.isNameValid &&
+          this.isValueValid &&
+          this.isDescriptionValid &&
+          this.isEnvironmentScopeValid &&
+          this.isRotationValid
+        );
+      }
+
       return (
-        this.isBranchValid &&
         this.isNameValid &&
         this.isValueValid &&
         this.isDescriptionValid &&
-        this.isEnvironmentScopeValid &&
-        this.isRotationValid
+        this.isEnvironmentScopeValid
       );
+    },
+    isProjectContext() {
+      return this.contextConfig.type === ENTITY_PROJECT;
     },
     isBranchValid() {
       return this.secret.branch.length > 0;
@@ -125,13 +141,13 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: this.contextConfig.createSecret.mutation,
           variables: {
-            projectPath: this.fullPath,
+            fullPath: this.fullPath,
             rotationIntervalDays: this.secret.rotationIntervalDays,
             ...this.secret,
           },
         });
 
-        const error = this.contextConfig.createSecret.lookup(data)?.errors[0];
+        const error = data.secretCreate?.errors[0];
         if (error) {
           createAlert({
             message: error,
@@ -163,13 +179,13 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: this.contextConfig.updateSecret.mutation,
           variables: {
-            projectPath: this.fullPath,
+            fullPath: this.fullPath,
             rotationIntervalDays: this.secret.rotationIntervalDays,
             ...this.secret,
           },
         });
 
-        const error = this.contextConfig.updateSecret.lookup(data)?.errors[0];
+        const error = data.secretUpdate?.errors[0];
         if (error) {
           createAlert({
             message: error,
@@ -313,7 +329,12 @@ export default {
             @search-environment-scope="$emit('search-environment', $event)"
           />
         </gl-form-group>
-        <gl-form-group :label="__('Branches')" label-for="secret-branches" class="gl-w-1/2 gl-pr-2">
+        <gl-form-group
+          v-if="isProjectContext"
+          :label="__('Branches')"
+          label-for="secret-branches"
+          class="gl-w-1/2 gl-pr-2"
+        >
           <secret-branches-field
             label-for="secret-branches"
             :full-path="fullPath"
@@ -322,9 +343,19 @@ export default {
           />
         </gl-form-group>
       </div>
-      <div class="gl-flex gl-gap-4">
+      <div v-if="!isProjectContext" class="gl-flex gl-gap-4">
+        <gl-form-checkbox v-model="secret.protected">
+          {{ s__('SecretsManager|Protected Branches') }}
+          <p class="gl-text-subtle">
+            {{
+              s__('SecretsManager|Export secret to pipelines running on protected branches only.')
+            }}
+          </p>
+        </gl-form-checkbox>
+      </div>
+      <div v-if="isProjectContext" class="gl-flex gl-gap-4">
         <gl-form-group
-          class="gl-w-half"
+          class="gl-w-1/2 gl-pr-2"
           :label="s__('SecretRotation|Rotation reminder period')"
           data-testid="secret-rotation-field-group"
           :description="

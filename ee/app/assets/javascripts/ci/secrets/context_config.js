@@ -19,12 +19,15 @@ import createProjectSecret from 'ee/ci/secrets/graphql/mutations/create_project_
 import updateProjectSecret from 'ee/ci/secrets/graphql/mutations/update_project_secret.mutation.graphql';
 import deleteProjectSecret from 'ee/ci/secrets/graphql/mutations/delete_project_secret.mutation.graphql';
 
+// group
+import createGroupSecret from 'ee/ci/secrets/graphql/mutations/create_group_secret.mutation.graphql';
+import updateGroupSecret from 'ee/ci/secrets/graphql/mutations/update_group_secret.mutation.graphql';
+
 export const SECRETS_MANAGER_CONTEXT_CONFIG = {
   [ENTITY_PROJECT]: {
     eventTracking: PROJECT_EVENTS,
     type: ENTITY_PROJECT,
     createSecret: {
-      lookup: (data) => data?.projectSecretCreate,
       mutation: createProjectSecret,
     },
     deleteSecret: {
@@ -52,7 +55,6 @@ export const SECRETS_MANAGER_CONTEXT_CONFIG = {
       query: getProjectSecretManagerStatusQuery,
     },
     updateSecret: {
-      lookup: (data) => data?.projectSecretUpdate,
       mutation: updateProjectSecret,
     },
   },
@@ -62,6 +64,12 @@ export const SECRETS_MANAGER_CONTEXT_CONFIG = {
     environments: {
       lookup: (data) => data?.group?.environmentScopes,
       query: getGroupEnvironments,
+    },
+    createSecret: {
+      mutation: createGroupSecret,
+    },
+    updateSecret: {
+      mutation: updateGroupSecret,
     },
   },
 };
