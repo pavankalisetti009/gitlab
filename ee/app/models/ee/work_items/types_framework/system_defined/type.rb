@@ -70,6 +70,8 @@ module EE
 
           override :supported_conversion_base_types
           def supported_conversion_base_types(resource_parent, user)
+            return [] unless supports_conversion?
+
             all_types = super - BASE_TYPES.pluck(:base_type) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- It's an array of hashed not active record relations
 
             ee_base_types = self.class.all.filter_map do |type|
@@ -103,6 +105,11 @@ module EE
 
               resource_parent&.licensed_feature_available?(license_name)
             end
+          end
+
+          def supports_conversion?
+            value = configuration_class.try(:supports_conversion?)
+            value.nil? ? true : value
           end
         end
       end

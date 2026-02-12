@@ -79,6 +79,8 @@ module EE
 
       override :supported_conversion_base_types
       def supported_conversion_base_types(resource_parent, user)
+        return [] if epic?
+
         ee_base_types = LICENSED_TYPES.flat_map do |type, licensed_feature|
           type.to_s if resource_parent.licensed_feature_available?(licensed_feature.to_sym)
         end.compact

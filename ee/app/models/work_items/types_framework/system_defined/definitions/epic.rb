@@ -77,6 +77,10 @@ module WorkItems
             def only_for_group?
               true
             end
+
+            def supports_conversion?
+              false
+            end
           end
         end
       end
