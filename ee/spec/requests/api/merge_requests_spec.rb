@@ -423,7 +423,7 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
         expect(response).to have_gitlab_http_status(:created)
 
         mr = MergeRequest.find(json_response['id'])
-        expect(mr.author.id).to eq(service_account.id)
+        expect(mr.author.id).to eq(user.id)
       end
     end
 

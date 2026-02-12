@@ -4,7 +4,7 @@ module Ai
   module DuoWorkflows
     class StartWorkflowService
       IMAGE_PATH = "gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.6"
-      DUO_CLI_VERSION = "8.61.1"
+      DUO_CLI_VERSION = "8.64.0"
       DWS_STANDARD_CONTEXT_CATEGORY = "agent_platform_standard_context"
 
       def initialize(workflow:, params:)
@@ -159,8 +159,10 @@ module Ai
           DUO_WORKFLOW_GIT_HTTP_PASSWORD: @params[:workflow_oauth_token],
           GITLAB_TOKEN: @params[:workflow_oauth_token],
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
-          DUO_WORKFLOW_GIT_USER_EMAIL: git_user_email(@workload_user),
-          DUO_WORKFLOW_GIT_USER_NAME: git_user_name(@workload_user),
+          DUO_WORKFLOW_GIT_USER_EMAIL: git_user_email(@current_user),
+          DUO_WORKFLOW_GIT_USER_NAME: git_user_name(@current_user),
+          DUO_WORKFLOW_GIT_AUTHOR_EMAIL: git_user_email(@workload_user),
+          DUO_WORKFLOW_GIT_AUTHOR_USER_NAME: git_user_name(@workload_user),
           DUO_WORKFLOW_METADATA: workflow_metadata,
           DUO_WORKFLOW_PROJECT_ID: project.id,
           DUO_WORKFLOW_NAMESPACE_ID: project.root_namespace.id,
