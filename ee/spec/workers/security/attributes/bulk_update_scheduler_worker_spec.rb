@@ -33,29 +33,37 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
       namespace.add_maintainer(user)
     end
 
-    before do
-      stub_feature_flags(security_bulk_operations_notifications: false)
-    end
-
     context 'when user exists' do
-      it 'processes project IDs and schedules batch workers' do
-        expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-          .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id)
+      let(:operation_id) { 'test_op_id' }
+
+      it 'creates a background operation and schedules BackgroundOperationBulkUpdateWorker' do
+        expect(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation)
+          .with(
+            operation_type: 'attribute_update',
+            user_id: user.id,
+            total_items: 2,
+            parameters: { attribute_uids: attribute_ids, mode: 'ADD' }
+          )
+          .and_return(operation_id)
+
+        expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+          .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id, operation_id)
 
         worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
       end
 
       it 'batches projects correctly' do
         stub_const("#{described_class}::BATCH_SIZE", 1)
-        allow(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
+        allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return(operation_id)
+        allow(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
 
         worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
 
-        expect(Security::Attributes::BulkUpdateWorker).to have_received(:perform_in).twice
-        expect(Security::Attributes::BulkUpdateWorker).to have_received(:perform_in)
-          .with(anything, [project1.id], attribute_ids, mode, user_id).once
-        expect(Security::Attributes::BulkUpdateWorker).to have_received(:perform_in)
-          .with(anything, [project2.id], attribute_ids, mode, user_id).once
+        expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to have_received(:perform_in).twice
+        expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to have_received(:perform_in)
+          .with(anything, [project1.id], attribute_ids, mode, user_id, operation_id).once
+        expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to have_received(:perform_in)
+          .with(anything, [project2.id], attribute_ids, mode, user_id, operation_id).once
       end
 
       context 'with groups in items' do
@@ -63,8 +71,11 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         let(:project_ids) { [] }
 
         it 'expands groups to include all projects' do
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0.seconds, match_array([project1.id, project2.id, subproject.id]), attribute_ids, mode, user_id)
+          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return(operation_id)
+
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(0.seconds, match_array([project1.id, project2.id,
+              subproject.id]), attribute_ids, mode, user_id, operation_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -76,8 +87,11 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
 
         it 'expands groups and deduplicates projects' do
           # project1 appears both directly and through group expansion
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0.seconds, match_array([project1.id, project2.id, subproject.id]), attribute_ids, mode, user_id)
+          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return(operation_id)
+
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(0.seconds, match_array([project1.id, project2.id,
+              subproject.id]), attribute_ids, mode, user_id, operation_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -87,8 +101,11 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         let(:mode) { 'remove' }
 
         it 'passes correct mode to batch workers' do
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id)
+          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return(operation_id)
+
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id,
+              operation_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -98,8 +115,11 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         let(:mode) { 'replace' }
 
         it 'passes correct mode to batch workers' do
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id)
+          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return(operation_id)
+
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id,
+              operation_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -111,7 +131,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         let(:project_ids) { [inaccessible_project.id] }
 
         it 'does not schedule any workers' do
-          expect(Security::Attributes::BulkUpdateWorker).not_to receive(:perform_in)
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).not_to receive(:perform_in)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -122,7 +142,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         let(:project_ids) { [non_existing_record_id] }
 
         it 'handles non-existent items gracefully' do
-          expect(Security::Attributes::BulkUpdateWorker).not_to receive(:perform_in)
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).not_to receive(:perform_in)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -133,8 +153,10 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         let(:project_ids) { [project1.id, non_existing_record_id] }
 
         it 'processes only valid items' do
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0.seconds, [project1.id], attribute_ids, mode, user_id)
+          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return(operation_id)
+
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(0.seconds, [project1.id], attribute_ids, mode, user_id, operation_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -147,8 +169,10 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         let(:project_ids) { [project1.id, other_project.id] }
 
         it 'processes only accessible items' do
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0.seconds, [project1.id], attribute_ids, mode, user_id)
+          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return(operation_id)
+
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(0.seconds, [project1.id], attribute_ids, mode, user_id, operation_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -164,42 +188,33 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         end
 
         it 'creates multiple worker jobs with delays' do
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(0, anything, attribute_ids, mode, user_id)
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(1.second, anything, attribute_ids, mode, user_id)
-          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-            .with(2.seconds, anything, attribute_ids, mode, user_id)
+          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return(operation_id)
+
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(0, anything, attribute_ids, mode, user_id, operation_id)
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(1.second, anything, attribute_ids, mode, user_id, operation_id)
+          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
+            .with(2.seconds, anything, attribute_ids, mode, user_id, operation_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
       end
 
-      context 'when security_bulk_operations_notifications feature flag is enabled' do
+      context 'when security_bulk_operations_notifications feature flag is disabled' do
         before do
-          stub_feature_flags(security_bulk_operations_notifications: true)
+          stub_feature_flags(security_bulk_operations_notifications: false)
         end
 
-        it 'creates a background operation and schedules BackgroundOperationBulkUpdateWorker' do
-          expect(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation)
-            .with(
-              operation_type: 'attribute_update',
-              user_id: user.id,
-              total_items: 2,
-              parameters: { attribute_uids: attribute_ids, mode: 'ADD' }
-            )
-            .and_return('test_operation_id')
-
-          expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
-            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id, 'test_operation_id')
+        it 'schedules the legacy BulkUpdateWorker instead' do
+          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
+            .with(0.seconds, match_array([project1.id, project2.id]), attribute_ids, mode, user_id)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
 
-        it 'does not schedule the legacy BulkUpdateWorker' do
-          allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return('test_op_id')
-
-          expect(Security::Attributes::BulkUpdateWorker).not_to receive(:perform_in)
+        it 'does not create a background operation' do
+          expect(Gitlab::BackgroundOperations::RedisStore).not_to receive(:create_operation)
 
           worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
         end
@@ -212,13 +227,11 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
             stub_const("#{described_class}::BATCH_SIZE", 2)
           end
 
-          it 'schedules multiple BackgroundOperationBulkUpdateWorker jobs with delays' do
-            allow(Gitlab::BackgroundOperations::RedisStore).to receive(:create_operation).and_return('test_op_id')
-
-            expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
-              .with(0, anything, attribute_ids, mode, user_id, 'test_op_id')
-            expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).to receive(:perform_in)
-              .with(1.second, anything, attribute_ids, mode, user_id, 'test_op_id')
+          it 'schedules multiple BulkUpdateWorker jobs with delays' do
+            expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
+              .with(0, anything, attribute_ids, mode, user_id)
+            expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
+              .with(1.second, anything, attribute_ids, mode, user_id)
 
             worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
           end
@@ -230,7 +243,7 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
       let(:user_id) { non_existing_record_id }
 
       it 'returns early without processing' do
-        expect(Security::Attributes::BulkUpdateWorker).not_to receive(:perform_in)
+        expect(Security::Attributes::BackgroundOperationBulkUpdateWorker).not_to receive(:perform_in)
 
         worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
       end
