@@ -1,10 +1,10 @@
 ---
 name: dap_onboarding_empty_states
-description:
+description: Controls the visibility of DAP empty states for free users.
 feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/585915
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219592
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/587848
 milestone: '18.9'
 group: group::engagement
-type: wip
-default_enabled: false
+type: beta
+default_enabled: true
