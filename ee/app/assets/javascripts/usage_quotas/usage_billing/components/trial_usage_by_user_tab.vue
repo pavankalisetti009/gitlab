@@ -18,7 +18,6 @@ export default {
     GlKeysetPagination,
   },
   inject: {
-    userUsagePath: 'userUsagePath',
     namespacePath: {
       default: null,
     },
@@ -78,9 +77,6 @@ export default {
       const used = formatNumber(creditsUsed);
       const total = formatNumber(totalCredits);
       return `${used} / ${total}`;
-    },
-    getUserUsagePath(username) {
-      return this.userUsagePath.replace('__USERNAME__', username);
     },
     getProgressBarValue(usage) {
       if (usage.totalCredits === 0) {
@@ -168,7 +164,6 @@ export default {
         <div class="gl-flex gl-items-center">
           <user-avatar-link
             :username="user.name"
-            :link-href="getUserUsagePath(user.username)"
             :img-alt="user.name"
             :img-src="user.avatarUrl"
             :img-size="32"
