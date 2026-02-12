@@ -81,7 +81,11 @@ RSpec.describe Vulnerabilities::TriggeredWorkflow, feature_category: :vulnerabil
 
   describe 'enums' do
     it 'validates enum values' do
-      is_expected.to define_enum_for(:workflow_name).with_values(sast_fp_detection: 0, resolve_sast_vulnerability: 1)
+      is_expected.to define_enum_for(:workflow_name).with_values(
+        sast_fp_detection: 0,
+        resolve_sast_vulnerability: 1,
+        secrets_fp_detection: 2
+      )
     end
   end
 

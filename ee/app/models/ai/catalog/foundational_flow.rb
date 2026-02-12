@@ -112,6 +112,23 @@ module Ai
           ],
           environment: "web",
           triggers: []
+        },
+        {
+          id: 7,
+          name: "secrets_fp_detection/v1",
+          display_name: "Secret Detection False Positive Detection",
+          description: "Analyze critical Secret Detection vulnerabilities.",
+          avatar: "security-flow.png",
+          foundational_flow_reference: "secrets_fp_detection/v1",
+          pre_approved_agent_privileges: [
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+          ],
+          environment: "web",
+          triggers: []
         }
       ].freeze
 
