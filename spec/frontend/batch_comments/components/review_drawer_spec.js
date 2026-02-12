@@ -11,6 +11,7 @@ import ReviewDrawer from '~/batch_comments/components/review_drawer.vue';
 import PreviewItem from '~/batch_comments/components/preview_item.vue';
 import { globalAccessorPlugin } from '~/pinia/plugins';
 import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+import diffsEventHub from '~/diffs/event_hub';
 import { useNotes } from '~/notes/store/legacy_notes';
 import { useBatchComments } from '~/batch_comments/store';
 import markdownEditorEventHub from '~/vue_shared/components/markdown/eventhub';
@@ -266,6 +267,29 @@ describe('ReviewDrawer', () => {
         reviewer_state: value,
       }),
     );
+  });
+
+  it('emits approval event when submitting with approved state', async () => {
+    jest.spyOn(diffsEventHub, '$emit');
+
+    useBatchComments().drawerOpened = true;
+    useBatchComments().drafts = [{ id: 1 }];
+
+    createComponent();
+
+    await waitForPromises();
+    await findPlaceholderField().vm.$emit('focus');
+    await wrapper.find('.custom-control-input[value="approved"]').trigger('change');
+
+    findCommentTextarea().setValue('Looks good');
+    findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+
+    await waitForPromises();
+
+    expect(diffsEventHub.$emit).toHaveBeenCalledWith('mr:reviewDrawer:submit:approval', {
+      summary: true,
+      comments: 1,
+    });
   });
 
   it.each`
