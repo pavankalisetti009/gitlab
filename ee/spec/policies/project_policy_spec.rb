@@ -5680,6 +5680,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         context 'when user is an org owner' do
           let(:current_user) { create(:organization_owner, organization: group.organization).user }
 
+          before do
+            group.ai_settings.update!(minimum_access_level_execute: ::Gitlab::Access::GUEST)
+          end
+
           it { is_expected.to be_allowed(policy) }
         end
 
@@ -5735,13 +5739,85 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
         end
 
-        it { is_expected.to be_allowed(policy) }
+        context 'when user is a member' do
+          where(:role, :allowed) do
+            :guest      | false
+            :planner    | false
+            :reporter   | false
+            :developer  | false
+            :maintainer | true
+            :owner      | true
+          end
+
+          with_them do
+            before do
+              project.add_member(current_user, role)
+              ::Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+            end
+
+            it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+          end
+        end
+
+        context 'when minimum_access_level_execute is enabled for all users' do
+          before do
+            project.add_guest(current_user)
+            ::Ai::Setting.instance.update!(minimum_access_level_execute: nil)
+          end
+
+          it { is_expected.to be_allowed(policy) }
+        end
+
+        context 'when the user is an org owner' do
+          let(:current_user) { create(:organization_owner, organization: group.organization).user }
+
+          before do
+            ::Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::GUEST)
+          end
+
+          it { is_expected.to be_allowed(policy) }
+        end
+
+        context 'when minimum access level is ADMIN' do
+          before do
+            ::Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::ADMIN)
+          end
+
+          context 'with an instance admin', :enable_admin_mode do
+            let(:current_user) { admin }
+
+            it { is_expected.to be_allowed(policy) }
+          end
+
+          it 'is disabled for members' do
+            project.add_owner(current_user)
+
+            is_expected.to be_disallowed(policy)
+          end
+        end
+
+        context 'when the user is not a member of the public project' do
+          context 'when minimum_access_level_execute is enabled for all users' do
+            before do
+              ::Ai::Setting.instance.update!(minimum_access_level_execute: nil)
+            end
+
+            it { is_expected.to be_allowed(policy) }
+          end
+
+          context 'when minimum_access_level_execute requires membership' do
+            before do
+              ::Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::GUEST)
+            end
+
+            it { is_expected.to be_disallowed(policy) }
+          end
+        end
 
         context 'when dap_instance_customizable_permissions feature flag is disabled' do
           before do
             stub_feature_flags(dap_instance_customizable_permissions: false)
-            project.add_guest(current_user)
-            ::Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+            ::Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::GUEST)
           end
 
           it { is_expected.to be_allowed(policy) }
