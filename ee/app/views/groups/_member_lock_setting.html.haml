@@ -1,6 +1,8 @@
 - return unless can?(current_user, :admin_group, group) && License.feature_available?(:member_lock)
 
 .form-group
+  - dap_help_link = link_to(_('Learn more'), help_page_path('user/duo_agent_platform/troubleshooting.md', anchor: 'allow-members-to-be-added-to-projects'))
   = f.gitlab_ui_checkbox_component :membership_lock,
       _('Users cannot be added to projects in this group'),
+      help_text: '%{help_text} %{help_link}'.html_safe % { help_text: _('If enabled, Duo Agent Platform flows cannot add service accounts to projects and will not run.'), help_link: dap_help_link },
       checkbox_options: { data: { testid: 'membership-lock-checkbox' } }
