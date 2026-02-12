@@ -26,7 +26,7 @@ RSpec.describe Git::WikiPushService, feature_category: :source_code_management d
         let_it_be(:changes) { +"123456 789012 refs/heads/tést\n654321 210987 refs/tags/tag\n423423 797823 refs/heads/main" }
 
         before do
-          allow(wiki.repository.raw).to receive(:raw_changes_between).once.with('423423', '797823').and_return([])
+          allow(wiki.repository).to receive(:raw_changes_between).once.with('423423', '797823').and_return([])
         end
 
         it 'triggers a wiki update for project' do
@@ -61,7 +61,7 @@ RSpec.describe Git::WikiPushService, feature_category: :source_code_management d
     context 'when elasticsearch is disabled' do
       before do
         allow(wiki.container).to receive(:use_elasticsearch?).and_return(false)
-        allow(wiki.repository.raw).to receive(:raw_changes_between).once.with('423423', '797823').and_return([])
+        allow(wiki.repository).to receive(:raw_changes_between).once.with('423423', '797823').and_return([])
       end
 
       describe 'when changes include main ref' do
