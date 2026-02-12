@@ -127,8 +127,11 @@ module API
                 model = find_model_from_record_identifier(params[:record_identifier], model_class)
                 not_found!(params[:record_identifier]) unless model
 
-                event = model.replicator.verify
-                bad_request!("Verifying #{params[:model_name]}/#{params[:record_identifier]} failed.") unless event
+                model.replicator.verify
+
+                if model.verification_state_object.verification_failed?
+                  bad_request!("Verifying #{params[:model_name]}/#{params[:record_identifier]} failed.")
+                end
 
                 present model, with: Entities::Admin::Model
               end
