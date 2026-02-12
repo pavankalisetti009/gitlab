@@ -25,7 +25,6 @@ module Projects
       track_govern_activity 'security_vulnerabilities', :show
 
       def show
-        push_frontend_ability(ability: :explain_vulnerability_with_ai, resource: vulnerability, user: current_user)
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: vulnerability, user: current_user)
         push_frontend_feature_flag(:dependency_paths, project)
 
