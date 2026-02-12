@@ -35,14 +35,12 @@ module EE
 
     def lag_message
       if !db_lag.nil? && db_lag > DB_LAG_SHOW_THRESHOLD
-        return (s_('Geo|The database is currently %{db_lag} behind the primary site.') %
-          { db_lag: time_ago_in_words(db_lag.seconds.ago) }).html_safe
+        return format(s_('Geo|The database is currently %{db_lag} behind the primary site.'), db_lag: time_ago_in_words(db_lag.seconds.ago)).html_safe
       end
 
       if unprocessed_too_old?
         minutes_behind = time_ago_in_words(next_unprocessed_event.created_at)
-        (s_('Geo|The site is currently %{minutes_behind} behind the primary site.') %
-          { minutes_behind: minutes_behind }).html_safe
+        format(s_('Geo|The site is currently %{minutes_behind} behind the primary site.'), minutes_behind: minutes_behind).html_safe
       end
     end
 

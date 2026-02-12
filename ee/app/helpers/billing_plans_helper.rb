@@ -171,28 +171,20 @@ module BillingPlansHelper
     link_end = '</a>'.html_safe
     move_link_url = help_page_path 'user/project/working_with_projects.md', anchor: "transfer-a-project"
     data_property = current_user.free_or_trial_owned_group_ids
-    move_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer" data-event-tracking="click_link_move_any_projects" data-event-property="%{data_property}">'.html_safe % { url: move_link_url, data_property: data_property }
+    move_link_start = format('<a href="%{url}" target="_blank" rel="noopener noreferrer" data-event-tracking="click_link_move_any_projects" data-event-property="%{data_property}">'.html_safe, url: move_link_url, data_property: data_property)
 
     if current_user.owned_or_maintainers_groups.any?
-      ERB::Util.html_escape_once(
+      format(ERB::Util.html_escape_once(
         s_("BillingPlans|Then %{move_link_start}move any projects%{move_link_end} you wish to use with your subscription to that group.")
-      ).html_safe % {
-        move_link_start: move_link_start,
-        move_link_end: link_end
-      }
+      ).html_safe, move_link_start: move_link_start, move_link_end: link_end)
     else
       create_group_link_url = new_group_path anchor: "create-group-pane"
-      create_group_link_start = '<a href="%{url}">'.html_safe % { url: create_group_link_url }
-      move_link_start_without_tracking = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: move_link_url }
+      create_group_link_start = format('<a href="%{url}">'.html_safe, url: create_group_link_url)
+      move_link_start_without_tracking = format('<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe, url: move_link_url)
 
-      ERB::Util.html_escape_once(
+      format(ERB::Util.html_escape_once(
         s_("BillingPlans|You don't have any groups. You'll need to %{create_group_link_start}create one%{create_group_link_end} and %{move_link_start}move your projects to it%{move_link_end}.")
-      ).html_safe % {
-        create_group_link_start: create_group_link_start,
-        create_group_link_end: link_end,
-        move_link_start: move_link_start_without_tracking,
-        move_link_end: link_end
-      }
+      ).html_safe, create_group_link_start: create_group_link_start, create_group_link_end: link_end, move_link_start: move_link_start_without_tracking, move_link_end: link_end)
     end
   end
 

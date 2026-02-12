@@ -8,7 +8,7 @@ module EE
     def ssh_key_expires_field_description
       return super unless ssh_key_expiration_policy_enabled?
 
-      s_('Profiles|Key becomes invalid on this date. Maximum lifetime for SSH keys is %{max_ssh_key_lifetime} days') % { max_ssh_key_lifetime: ::Gitlab::CurrentSettings.max_ssh_key_lifetime }
+      format(s_('Profiles|Key becomes invalid on this date. Maximum lifetime for SSH keys is %{max_ssh_key_lifetime} days'), max_ssh_key_lifetime: ::Gitlab::CurrentSettings.max_ssh_key_lifetime)
     end
 
     def ssh_key_expiration_policy_licensed?

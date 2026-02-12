@@ -28,7 +28,7 @@ module EE
       if weight == 0
         _("Weight")
       else
-        _("Weight %{weight}") % { weight: weight }
+        format(_("Weight %{weight}"), weight: weight)
       end
     end
 
