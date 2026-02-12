@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import VueRouter from 'vue-router';
-import { GlFormInput, GlFormTextarea, GlModal, GlSprintf } from '@gitlab/ui';
+import { GlFormCheckbox, GlFormInput, GlFormTextarea, GlModal, GlSprintf } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -10,13 +10,17 @@ import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
 import createRouter from 'ee/ci/secrets/router';
 import SecretBranchesField from 'ee/ci/secrets/components/secret_form/secret_branches_field.vue';
-import createProjectSecretMutation from 'ee/ci/secrets/graphql/mutations/create_project_secret.mutation.graphql';
-import updateProjectSecretMutation from 'ee/ci/secrets/graphql/mutations/update_project_secret.mutation.graphql';
 import getProjectBranches from 'ee/ci/secrets/graphql/queries/get_project_branches.query.graphql';
-import { DETAILS_ROUTE_NAME, ENTITY_PROJECT } from 'ee/ci/secrets/constants';
+import { DETAILS_ROUTE_NAME, ENTITY_PROJECT, ENTITY_GROUP } from 'ee/ci/secrets/constants';
 import { SECRETS_MANAGER_CONTEXT_CONFIG } from 'ee/ci/secrets/context_config';
 import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
-import { mockProjectBranches, mockProjectSecret, mockProjectUpdateSecret } from '../../mock_data';
+import {
+  mockProjectBranches,
+  mockProjectCreateSecret,
+  mockGroupCreateSecret,
+  mockProjectUpdateSecret,
+  mockGroupUpdateSecret,
+} from '../../mock_data';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
@@ -44,16 +48,23 @@ describe('SecretForm component', () => {
   const findEnvironmentsDropdown = () => wrapper.findComponent(CiEnvironmentsDropdown);
   const findNameFieldGroup = () => wrapper.findByTestId('secret-name-field-group');
   const findNameField = () => findNameFieldGroup().findComponent(GlFormInput);
+  const findProtectedBranchesCheckbox = () => wrapper.findComponent(GlFormCheckbox);
   const findRotationFieldGroup = () => wrapper.findByTestId('secret-rotation-field-group');
   const findRotationField = () => findRotationFieldGroup().findComponent(GlFormInput);
   const findValueFieldGroup = () => wrapper.findByTestId('secret-value-field-group');
   const findValueField = () => findValueFieldGroup().findComponent(GlFormTextarea);
   const findSubmitButton = () => wrapper.findByTestId('submit-form-button');
 
-  const createComponent = ({ props, mountFn = shallowMountExtended, stubs } = {}) => {
+  const createComponent = ({
+    context = ENTITY_PROJECT,
+    props,
+    mountFn = shallowMountExtended,
+    stubs,
+  } = {}) => {
+    const contextConfig = SECRETS_MANAGER_CONTEXT_CONFIG[context];
     const handlers = [
-      [createProjectSecretMutation, mockCreateSecretResponse],
-      [updateProjectSecretMutation, mockUpdateSecretResponse],
+      [contextConfig.createSecret.mutation, mockCreateSecretResponse],
+      [contextConfig.updateSecret.mutation, mockUpdateSecretResponse],
       [getProjectBranches, mockProjectBranchesResponse],
     ];
 
@@ -63,8 +74,8 @@ describe('SecretForm component', () => {
       router,
       apolloProvider: mockApollo,
       provide: {
-        contextConfig: SECRETS_MANAGER_CONTEXT_CONFIG[ENTITY_PROJECT],
-        fullPath: 'path/to/project',
+        contextConfig,
+        fullPath: 'path/to/entity',
       },
       propsData: {
         ...defaultProps,
@@ -80,12 +91,17 @@ describe('SecretForm component', () => {
     });
   };
 
-  const inputRequiredFields = async () => {
+  const inputRequiredFields = async (context = ENTITY_PROJECT) => {
     findNameField().vm.$emit('input', 'SECRET_KEY');
     findValueField().vm.$emit('input', 'SECRET_VALUE');
     findDescriptionField().vm.$emit('input', 'This is a secret');
-    findBranchField().vm.$emit('select-branch', 'main');
     findEnvironmentsDropdown().vm.$emit('select-environment', '*');
+
+    if (context === ENTITY_PROJECT) {
+      findBranchField().vm.$emit('select-branch', 'main');
+    } else {
+      findProtectedBranchesCheckbox().vm.$emit('input', true);
+    }
 
     await nextTick();
   };
@@ -101,23 +117,23 @@ describe('SecretForm component', () => {
   });
 
   describe('template', () => {
-    beforeEach(() => {
-      createComponent();
+    it('renders branch field but not protected branches checkbox for project context', () => {
+      createComponent({ context: ENTITY_PROJECT });
+
+      expect(findBranchField().exists()).toBe(true);
+      expect(findProtectedBranchesCheckbox().exists()).toBe(false);
     });
 
-    it('renders all fields', () => {
-      expect(findBranchField().exists()).toBe(true);
-      expect(findDescriptionField().exists()).toBe(true);
-      expect(findEnvironmentsDropdown().exists()).toBe(true);
-      expect(findNameField().exists()).toBe(true);
-      expect(findRotationField().exists()).toBe(true);
+    it('renders protected branches checkbox but not branch field for group context', () => {
+      createComponent({ context: ENTITY_GROUP });
 
-      expect(findValueField().exists()).toBe(true);
-      expect(findValueField().attributes('placeholder')).toBe('Enter a value for the secret');
-      expect(findValueField().attributes('disabled')).toBeUndefined();
+      expect(findProtectedBranchesCheckbox().exists()).toBe(true);
+      expect(findBranchField().exists()).toBe(false);
     });
 
     it('does not show the confirmation modal', () => {
+      createComponent();
+
       expect(findConfirmEditModal().props('visible')).toBe(false);
     });
   });
@@ -262,15 +278,22 @@ describe('SecretForm component', () => {
     });
   });
 
-  describe('creating a new secret', () => {
-    const createSecret = async () => {
-      await inputRequiredFields();
+  const createSecret = async (context) => {
+    await inputRequiredFields(context);
 
-      findSubmitButton().vm.$emit('click');
-    };
+    findSubmitButton().vm.$emit('click');
+  };
 
+  const projectCreateMutationVars = { branch: 'main' };
+  const groupCreateMutationVars = { protected: true };
+
+  describe.each`
+    context           | mutationVariables            | mockResponse
+    ${ENTITY_PROJECT} | ${projectCreateMutationVars} | ${mockProjectCreateSecret}
+    ${ENTITY_GROUP}   | ${groupCreateMutationVars}   | ${mockGroupCreateSecret}
+  `('creating a secret in $context context', ({ context, mutationVariables, mockResponse }) => {
     beforeEach(() => {
-      createComponent({ mountFn: mountExtended });
+      createComponent({ mountFn: mountExtended, context });
     });
 
     it('renders the correct text for submit button', () => {
@@ -280,7 +303,7 @@ describe('SecretForm component', () => {
     it('renders loading icon while submitting', async () => {
       expect(findSubmitButton().props('loading')).toBe(false);
 
-      await createSecret();
+      await createSecret(context);
       await nextTick();
 
       expect(findSubmitButton().props('loading')).toBe(true);
@@ -288,72 +311,33 @@ describe('SecretForm component', () => {
 
     describe('when submission is successful', () => {
       beforeEach(() => {
-        mockCreateSecretResponse.mockResolvedValue(mockProjectSecret());
-        createComponent({ mountFn: mountExtended });
+        mockCreateSecretResponse.mockResolvedValue(mockResponse());
+        createComponent({ mountFn: mountExtended, context });
       });
 
       it('calls the create mutation with the correct variables', async () => {
-        await createSecret();
+        await createSecret(context);
         await waitForPromises();
 
         expect(mockCreateSecretResponse).toHaveBeenCalledTimes(1);
         expect(mockCreateSecretResponse).toHaveBeenCalledWith({
-          branch: 'main',
+          branch: '',
           description: 'This is a secret',
           environment: '*',
           name: 'SECRET_KEY',
-          projectPath: 'path/to/project',
-          rotationIntervalDays: null,
+          fullPath: 'path/to/entity',
+          protected: false,
           secret: 'SECRET_VALUE',
+          rotationIntervalDays: null,
+          ...mutationVariables,
         });
-      });
-
-      it('calls the create mutation with null rotation when no rotation period is set', async () => {
-        await createSecret();
-        await waitForPromises();
-
-        expect(mockCreateSecretResponse).toHaveBeenCalledWith(
-          expect.objectContaining({
-            rotationIntervalDays: null,
-          }),
-        );
-      });
-
-      it('calls the create mutation with correct rotation period when set to typical value', async () => {
-        await inputRequiredFields();
-        findRotationField().vm.$emit('input', '30');
-        await nextTick();
-
-        findSubmitButton().vm.$emit('click');
-        await waitForPromises();
-
-        expect(mockCreateSecretResponse).toHaveBeenCalledWith(
-          expect.objectContaining({
-            rotationIntervalDays: 30,
-          }),
-        );
-      });
-
-      it('calls the create mutation with trimmed rotation period', async () => {
-        await inputRequiredFields();
-        findRotationField().vm.$emit('input', '   30    ');
-        await nextTick();
-
-        findSubmitButton().vm.$emit('click');
-        await waitForPromises();
-
-        expect(mockCreateSecretResponse).toHaveBeenCalledWith(
-          expect.objectContaining({
-            rotationIntervalDays: 30,
-          }),
-        );
       });
 
       it('redirects to the secret details page', async () => {
         const routerPushSpy = jest
           .spyOn(router, 'push')
           .mockImplementation(() => Promise.resolve());
-        await createSecret();
+        await createSecret(context);
         await waitForPromises();
 
         expect(routerPushSpy).toHaveBeenCalledWith({
@@ -366,13 +350,13 @@ describe('SecretForm component', () => {
     describe('when submission returns errors', () => {
       beforeEach(() => {
         mockCreateSecretResponse.mockResolvedValue(
-          mockProjectSecret({ errors: ['This secret is invalid.'] }),
+          mockResponse({ errors: ['This secret is invalid.'] }),
         );
-        createComponent({ mountFn: mountExtended });
+        createComponent({ mountFn: mountExtended, context });
       });
 
       it('renders error message from API', async () => {
-        await createSecret();
+        await createSecret(context);
         await waitForPromises();
 
         expect(findSubmitButton().props('loading')).toBe(false);
@@ -389,11 +373,11 @@ describe('SecretForm component', () => {
 
       beforeEach(() => {
         mockCreateSecretResponse.mockRejectedValue(error);
-        createComponent({ mountFn: mountExtended });
+        createComponent({ mountFn: mountExtended, context });
       });
 
       it('renders error message from API', async () => {
-        await createSecret();
+        await createSecret(context);
         await waitForPromises();
 
         expect(findSubmitButton().props('loading')).toBe(false);
@@ -406,18 +390,102 @@ describe('SecretForm component', () => {
     });
   });
 
-  describe('editing a secret', () => {
+  // not implemented yet for group secrets
+  describe('creating a new project secret with rotation', () => {
+    beforeEach(() => {
+      mockCreateSecretResponse.mockResolvedValue(mockProjectCreateSecret());
+      createComponent({ mountFn: mountExtended, context: ENTITY_PROJECT });
+    });
+
+    it('calls the create mutation with null rotation when no rotation period is set', async () => {
+      await createSecret();
+      await waitForPromises();
+
+      expect(mockCreateSecretResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rotationIntervalDays: null,
+        }),
+      );
+    });
+
+    it('calls the create mutation with correct rotation period when set to typical value', async () => {
+      await inputRequiredFields();
+      findRotationField().vm.$emit('input', '30');
+      await nextTick();
+
+      findSubmitButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(mockCreateSecretResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rotationIntervalDays: 30,
+        }),
+      );
+    });
+
+    it('calls the create mutation with trimmed rotation period', async () => {
+      await inputRequiredFields();
+      findRotationField().vm.$emit('input', '   30    ');
+      await nextTick();
+
+      findSubmitButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(mockCreateSecretResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rotationIntervalDays: 30,
+        }),
+      );
+    });
+  });
+
+  const projectUpdateMutationVars = { branch: 'edit-branch' };
+  const groupUpdateMutationVars = { protected: false };
+
+  const editSecret = async ({ context, finishRequest = true, editValue = true } = {}) => {
+    if (editValue) {
+      findValueField().vm.$emit('input', 'EDITED_SECRET_VALUE');
+    }
+
+    findDescriptionField().vm.$emit('input', 'This is an edited secret');
+    findEnvironmentsDropdown().vm.$emit('select-environment', 'edit-env');
+
+    if (context === ENTITY_PROJECT) {
+      findBranchField().vm.$emit('select-branch', 'edit-branch');
+    } else {
+      findProtectedBranchesCheckbox().vm.$emit('input', false);
+    }
+
+    await nextTick();
+
+    findSubmitButton().vm.$emit('click');
+    await nextTick();
+
+    findConfirmEditModal().vm.$emit('primary', { preventDefault: jest.fn() });
+
+    if (finishRequest) {
+      await waitForPromises();
+    }
+    await nextTick();
+  };
+
+  describe.each`
+    context           | mutationVariables            | mockResponse
+    ${ENTITY_PROJECT} | ${projectUpdateMutationVars} | ${mockProjectUpdateSecret}
+    ${ENTITY_GROUP}   | ${groupUpdateMutationVars}   | ${mockGroupUpdateSecret}
+  `('editing a secret in $context context', ({ context, mutationVariables, mockResponse }) => {
     beforeEach(async () => {
       createComponent({
+        context,
         mountFn: mountExtended,
         props: {
           isEditing: true,
           secretData: {
-            branch: 'feat-1',
             description: 'This is a secret',
             environment: 'production',
             name: 'PROD_PWD',
             metadataVersion: 1,
+            ...mutationVariables,
           },
         },
       });
@@ -430,9 +498,14 @@ describe('SecretForm component', () => {
     });
 
     it('loads fetched secret data', () => {
-      expect(findBranchField().props('selectedBranch')).toBe('feat-1');
       expect(findDescriptionField().props('value')).toBe('This is a secret');
       expect(findEnvironmentsDropdown().props('selectedEnvironmentScope')).toBe('production');
+
+      if (context === ENTITY_PROJECT) {
+        expect(findBranchField().props('selectedBranch')).toBe('edit-branch');
+      } else {
+        expect(findProtectedBranchesCheckbox().props('checked')).toBe(false);
+      }
     });
 
     it('allows value field to be empty', async () => {
@@ -484,36 +557,15 @@ describe('SecretForm component', () => {
       expect(findConfirmEditModal().props('visible')).toBe(false);
     });
 
-    const editSecret = async ({ finishRequest = true, editValue = true } = {}) => {
-      if (editValue) {
-        findValueField().vm.$emit('input', 'EDITED_SECRET_VALUE');
-      }
-
-      findDescriptionField().vm.$emit('input', 'This is an edited secret');
-      findBranchField().vm.$emit('select-branch', 'edit-branch');
-      findEnvironmentsDropdown().vm.$emit('select-environment', 'edit-env');
-      await nextTick();
-
-      findSubmitButton().vm.$emit('click');
-      await nextTick();
-
-      findConfirmEditModal().vm.$emit('primary', { preventDefault: jest.fn() });
-
-      if (finishRequest) {
-        await waitForPromises();
-      }
-      await nextTick();
-    };
-
     describe('when submitting form', () => {
       it('hides confirmation modal', async () => {
-        await editSecret();
+        await editSecret({ context });
 
         expect(findConfirmEditModal().props('visible')).toBe(false);
       });
 
       it('renders loading icon while submitting', async () => {
-        await editSecret({ finishRequest: false });
+        await editSecret({ context, finishRequest: false });
 
         expect(findSubmitButton().props('loading')).toBe(true);
       });
@@ -522,34 +574,36 @@ describe('SecretForm component', () => {
     describe('when update is successful', () => {
       beforeEach(() => {
         mockUpdateSecretResponse.mockResolvedValue(
-          mockProjectUpdateSecret({
-            branch: 'edit-branch',
+          mockResponse({
             description: 'This is an edited secret',
             environment: 'edit-env',
             name: 'PROD_PWD',
             secret: 'EDITED_SECRET_VALUE',
+            ...mutationVariables,
           }),
         );
       });
 
-      it('calls the create mutation with the correct variables', async () => {
-        await editSecret();
+      it('calls the update mutation with the correct variables', async () => {
+        await editSecret({ context });
 
         expect(mockUpdateSecretResponse).toHaveBeenCalledTimes(1);
         expect(mockUpdateSecretResponse).toHaveBeenCalledWith({
-          branch: 'edit-branch',
+          branch: '',
           description: 'This is an edited secret',
           environment: 'edit-env',
           metadataVersion: 1,
           name: 'PROD_PWD',
-          projectPath: 'path/to/project',
+          fullPath: 'path/to/entity',
           rotationIntervalDays: null,
+          protected: false,
           secret: 'EDITED_SECRET_VALUE',
+          ...mutationVariables,
         });
       });
 
       it('leaves value blank when it is not edited', async () => {
-        await editSecret({ editValue: false });
+        await editSecret({ context, editValue: false });
 
         expect(mockUpdateSecretResponse).toHaveBeenCalledTimes(1);
         expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
@@ -557,31 +611,8 @@ describe('SecretForm component', () => {
         );
       });
 
-      it('calls the update mutation with rotation period when set', async () => {
-        findRotationField().vm.$emit('input', '14');
-        await nextTick();
-
-        await editSecret();
-
-        expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
-          expect.objectContaining({
-            rotationIntervalDays: 14,
-          }),
-        );
-      });
-
-      it('calls the update mutation with null rotation when no rotation period is set', async () => {
-        await editSecret();
-
-        expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
-          expect.objectContaining({
-            rotationIntervalDays: null,
-          }),
-        );
-      });
-
       it('triggers toast message', async () => {
-        await editSecret();
+        await editSecret({ context });
 
         expect(wrapper.emitted('show-secrets-toast')).toEqual([
           ['Secret PROD_PWD was successfully updated.'],
@@ -592,7 +623,7 @@ describe('SecretForm component', () => {
         const routerPushSpy = jest
           .spyOn(router, 'push')
           .mockImplementation(() => Promise.resolve());
-        await editSecret();
+        await editSecret({ context });
 
         expect(routerPushSpy).toHaveBeenCalledWith({
           name: DETAILS_ROUTE_NAME,
@@ -604,12 +635,12 @@ describe('SecretForm component', () => {
     describe('when update returns errors', () => {
       beforeEach(() => {
         mockUpdateSecretResponse.mockResolvedValue(
-          mockProjectUpdateSecret({ errors: ['Cannot update secret.'] }),
+          mockResponse({ errors: ['Cannot update secret.'] }),
         );
       });
 
       it('renders error message from API', async () => {
-        await editSecret();
+        await editSecret({ context });
 
         expect(findSubmitButton().props('loading')).toBe(false);
         expect(createAlert).toHaveBeenCalledWith({
@@ -628,7 +659,7 @@ describe('SecretForm component', () => {
       });
 
       it('renders error message', async () => {
-        await editSecret();
+        await editSecret({ context });
 
         expect(findSubmitButton().props('loading')).toBe(false);
         expect(createAlert).toHaveBeenCalledWith({
@@ -637,6 +668,59 @@ describe('SecretForm component', () => {
           error,
         });
       });
+    });
+  });
+
+  // not implemented yet for group secrets
+  describe('editing a project secret with rotation', () => {
+    beforeEach(() => {
+      mockUpdateSecretResponse.mockResolvedValue(
+        mockProjectUpdateSecret({
+          branch: 'edit-branch',
+          description: 'This is an edited secret',
+          environment: 'edit-env',
+          name: 'PROD_PWD',
+          secret: 'EDITED_SECRET_VALUE',
+        }),
+      );
+
+      createComponent({
+        context: ENTITY_PROJECT,
+        mountFn: mountExtended,
+        props: {
+          isEditing: true,
+          secretData: {
+            description: 'This is a secret',
+            environment: 'production',
+            name: 'PROD_PWD',
+            metadataVersion: 1,
+            ...projectCreateMutationVars,
+          },
+        },
+      });
+    });
+
+    it('calls the update mutation with rotation period when set', async () => {
+      findRotationField().vm.$emit('input', '14');
+      await nextTick();
+
+      await editSecret({ context: ENTITY_PROJECT });
+
+      expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rotationIntervalDays: 14,
+        }),
+      );
+    });
+
+    it('calls the update mutation with null rotation when no rotation period is set', async () => {
+      await editSecret({ context: ENTITY_PROJECT });
+
+      expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rotationIntervalDays: null,
+        }),
+      );
     });
   });
 });

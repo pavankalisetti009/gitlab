@@ -198,9 +198,9 @@ export const mockEmptySecrets = {
   },
 };
 
-export const mockProjectSecret = ({ customSecret, errors = [] } = {}) => ({
+export const mockProjectCreateSecret = ({ customSecret, errors = [] } = {}) => ({
   data: {
-    projectSecretCreate: {
+    secretCreate: {
       errors,
       __typename: 'ProjectSecretCreatePayload',
       projectSecret: {
@@ -213,9 +213,24 @@ export const mockProjectSecret = ({ customSecret, errors = [] } = {}) => ({
   },
 });
 
+export const mockGroupCreateSecret = ({ customSecret, errors = [] } = {}) => ({
+  data: {
+    secretCreate: {
+      errors,
+      __typename: 'GroupSecretCreatePayload',
+      groupSecret: {
+        name: 'APP_PWD',
+        description: 'This is a secret',
+        ...customSecret,
+        __typename: 'GroupSecret',
+      },
+    },
+  },
+});
+
 export const mockProjectUpdateSecret = ({ customSecret, errors = [] } = {}) => ({
   data: {
-    projectSecretUpdate: {
+    secretUpdate: {
       errors,
       __typename: 'ProjectSecretUpdatePayload',
       projectSecret: {
@@ -223,6 +238,21 @@ export const mockProjectUpdateSecret = ({ customSecret, errors = [] } = {}) => (
         description: 'This is an edited secret',
         ...customSecret,
         __typename: 'ProjectSecret',
+      },
+    },
+  },
+});
+
+export const mockGroupUpdateSecret = ({ customSecret, errors = [] } = {}) => ({
+  data: {
+    secretUpdate: {
+      errors,
+      __typename: 'GroupSecretUpdatePayload',
+      groupSecret: {
+        name: 'APP_PWD',
+        description: 'This is an edited secret',
+        ...customSecret,
+        __typename: 'GroupSecret',
       },
     },
   },
