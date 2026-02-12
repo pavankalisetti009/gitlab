@@ -42,14 +42,6 @@ RSpec.describe Search::ProjectService, '#visibility', feature_category: :global_
           end
 
           it_behaves_like 'search respects visibility'
-
-          context 'when search_advanced_wiki_new_auth_filter FF is false' do
-            before do
-              stub_feature_flags(search_advanced_wiki_new_auth_filter: false)
-            end
-
-            it_behaves_like 'search respects visibility'
-          end
         end
       end
 

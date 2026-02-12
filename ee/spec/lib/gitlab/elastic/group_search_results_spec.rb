@@ -82,7 +82,8 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
 
     include_examples 'search results filtered by state'
 
-    context 'archived filter', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/19278' do
+    context 'for archived filter',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/19278' do
       include_examples 'search results filtered by archived'
     end
 
@@ -173,10 +174,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     let(:scope) { 'wiki_blobs' }
 
     before do
-      # Due to a bug https://gitlab.com/gitlab-org/gitlab/-/issues/423525
-      # anonymous users can not search for group wikis in the public group
-      # TODO: add_member code can be removed after fixing the bug.
-      group.add_member(user, :owner)
       [unarchived_project, archived_project].each { |p| p.update!(group: group) }
       [unarchived_project.wiki, archived_project.wiki, group_wiki].each do |wiki|
         wiki.create_page('test.md', 'foo bar')
@@ -451,12 +448,12 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       end
 
       it 'includes the archived notes in the search results' do
-        expect(subject.objects('notes')).to match_array([note, note_on_archived_project])
+        expect(results.objects('notes')).to match_array([note, note_on_archived_project])
       end
     end
 
     it 'does not includes the archived notes in the search results' do
-      expect(subject.objects('notes')).to match_array([note])
+      expect(results.objects('notes')).to match_array([note])
     end
   end
 
@@ -498,27 +495,27 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
   end
 
   describe '#scope_options' do
-    context ':user' do
+    context 'for user' do
       it 'has not group_ids' do
-        expect(subject.scope_options(:users)).not_to include :group_ids
+        expect(results.scope_options(:users)).not_to include :group_ids
       end
     end
 
-    context ':work_items' do
+    context 'for work_items' do
       it 'has root_ancestor_ids' do
-        expect(subject.scope_options(:work_items)).to include :root_ancestor_ids
+        expect(results.scope_options(:work_items)).to include :root_ancestor_ids
       end
     end
 
-    context ':epics' do
+    context 'for epics' do
       it 'has root_ancestor_ids' do
-        expect(subject.scope_options(:epics)).to include :root_ancestor_ids
+        expect(results.scope_options(:epics)).to include :root_ancestor_ids
       end
     end
 
-    context ':wiki_blobs' do
+    context 'for wiki_blobs' do
       it 'has root_ancestor_ids' do
-        expect(subject.scope_options(:wiki_blobs)).to include :root_ancestor_ids
+        expect(results.scope_options(:wiki_blobs)).to include :root_ancestor_ids
       end
     end
   end
