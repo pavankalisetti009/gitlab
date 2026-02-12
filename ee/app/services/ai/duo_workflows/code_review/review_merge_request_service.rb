@@ -7,6 +7,8 @@ module Ai
         include Gitlab::Utils::StrongMemoize
         include Gitlab::InternalEventsTracking
 
+        CouldNotStartWorkflowError = Class.new(StandardError)
+
         TIMEOUT_DURATION = 30.minutes
         # We use :duo_agent_platform as the unit primitive because this Duo Code Review feature
         # is now part of the Duo Agent Platform offering. All customers with Duo Agent Platform
@@ -30,6 +32,7 @@ module Ai
           result = start_workflow
 
           if result.error?
+            track_exception(CouldNotStartWorkflowError.new(result.reason.to_s), result.reason)
             cleanup_failed_review(failure_message_for_result(result))
           else
             workflow = result.payload[:workflow]
@@ -41,7 +44,7 @@ module Ai
 
           result
         rescue StandardError => error
-          Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE.to_s)
+          track_exception(error, :exception)
           cleanup_failed_review(::Ai::CodeReviewMessages.exception_when_starting_workflow_error)
           progress_note&.destroy
           ServiceResponse.error(message: error.message)
@@ -119,6 +122,20 @@ module Ai
           ::MergeRequests::UpdateReviewerStateService
             .new(project: merge_request.project, current_user: review_bot)
             .execute(merge_request, state)
+        end
+
+        def track_exception(error, reason, context = {})
+          Gitlab::ErrorTracking.track_exception(
+            error,
+            {
+              reason: reason.to_s,
+              unit_primitive: UNIT_PRIMITIVE.to_s,
+              merge_request_id: merge_request.id,
+              merge_request_iid: merge_request.iid,
+              project_id: merge_request.project_id,
+              user_id: user.id
+            }.merge(context)
+          )
         end
 
         def review_bot

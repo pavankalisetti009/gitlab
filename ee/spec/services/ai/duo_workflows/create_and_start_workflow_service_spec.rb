@@ -210,6 +210,18 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     include_examples 'failure', :usage_quota_exceeded, 'Usage quota exceeded'
   end
 
+  context 'when workflow fails to start' do
+    before do
+      allow_next_instance_of(Ai::DuoWorkflows::StartWorkflowService) do |instance|
+        allow(instance).to receive(:execute).and_return(
+          ServiceResponse.error(message: 'Random failure', reason: :random_reason)
+        )
+      end
+    end
+
+    include_examples 'failure', :random_reason, 'Random failure'
+  end
+
   context 'with a configured foundational flow' do
     include_examples 'success'
 
