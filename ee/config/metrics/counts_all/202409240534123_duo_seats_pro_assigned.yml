@@ -3,6 +3,9 @@ data_category: standard
 key_path: duo_seats.pro_assigned
 description: The number of Duo Pro seats assigned to users
 product_group: provision
+product_categories:
+- add-on_provisioning
+- seat_cost_management
 value_type: number
 status: active
 milestone: "17.5"

@@ -3,6 +3,9 @@ data_category: standard
 key_path: duo_seats.amazon_q_purchased
 description: The number of Duo Amazon Q seats purchased
 product_group: provision
+product_categories:
+- add-on_provisioning
+- seat_cost_management
 value_type: number
 status: active
 milestone: "17.11"
