@@ -107,7 +107,7 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Definitions::Epic, feat
     end
   end
 
-  describe '.filterable??' do
+  describe '.filterable?' do
     it 'returns true' do
       expect(described_class.filterable?).to be true
     end

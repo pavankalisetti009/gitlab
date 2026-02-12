@@ -7,9 +7,5 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Definitions::Task, feat
     it 'returns true' do
       expect(described_class.filterable?).to be(true)
     end
-
-    it 'returns a boolean value' do
-      expect(described_class.filterable?).to be_in([true, false])
-    end
   end
 end
