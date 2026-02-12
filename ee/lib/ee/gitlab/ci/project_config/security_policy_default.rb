@@ -75,26 +75,40 @@ module EE
           end
 
           def active_scan_execution_policies?
-            service = ::Security::SecurityOrchestrationPolicies::PolicyBranchesService.new(project: project)
-            applicable_policies.any? { |policy| applicable_for_branch?(service, policy) }
+            applicable_policies.any?
           end
 
           def applicable_policies
+            branch_service = ::Security::SecurityOrchestrationPolicies::PolicyBranchesService.new(project: project)
+
             ::Gitlab::Security::Orchestration::ProjectPolicyConfigurations
               .new(project).all
               .to_a
               .flat_map(&:active_scan_execution_policies_for_pipelines)
-              .select { |policy| policy_applicable?(policy) }
+              .select do |policy|
+                policy_applicable_for_scope?(policy) &&
+                  policy_applicable_for_pipeline_source?(policy) &&
+                  policy_applicable_for_branch?(branch_service, policy)
+              end
           end
           strong_memoize_attr :applicable_policies
 
-          def policy_applicable?(policy)
+          def policy_applicable_for_scope?(policy)
             ::Security::SecurityOrchestrationPolicies::PolicyScopeChecker
               .new(project: project)
               .policy_applicable?(policy)
           end
 
-          def applicable_for_branch?(service, policy)
+          def policy_applicable_for_pipeline_source?(policy)
+            return true if pipeline_source.blank?
+
+            policy[:rules].any? do |rule|
+              rule_pipeline_sources = rule.dig(:pipeline_sources, :including)
+              rule_pipeline_sources.blank? || rule_pipeline_sources.include?(pipeline_source.to_s)
+            end
+          end
+
+          def policy_applicable_for_branch?(service, policy)
             applicable_branches = service.scan_execution_branches(policy[:rules], source_branch)
 
             source_branch.in?(applicable_branches)

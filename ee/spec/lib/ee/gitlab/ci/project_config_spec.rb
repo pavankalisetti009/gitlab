@@ -280,6 +280,118 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
                 end
               end
             end
+
+            context 'when policy has pipeline_sources restrictions' do
+              let(:rule) do
+                {
+                  type: 'pipeline',
+                  branches: branches,
+                  pipeline_sources: { including: policy_pipeline_sources }
+                }
+              end
+
+              context 'when pipeline_sources includes the current source' do
+                let(:policy_pipeline_sources) { %w[push] }
+                let(:source) { :push }
+
+                it_behaves_like 'includes security policies default pipeline configuration content'
+              end
+
+              context 'when pipeline_sources does not include the current source' do
+                let(:policy_pipeline_sources) { %w[web] }
+                let(:source) { :push }
+
+                it 'does not include security policies default pipeline configuration content' do
+                  expect(config.source).to eq(nil)
+                end
+              end
+
+              context 'when pipeline_sources includes multiple sources' do
+                let(:policy_pipeline_sources) { %w[push web merge_request_event] }
+
+                context 'when source matches one of the allowed sources' do
+                  let(:source) { :merge_request_event }
+
+                  it_behaves_like 'includes security policies default pipeline configuration content'
+                end
+
+                context 'when source does not match any allowed source' do
+                  let(:source) { :schedule }
+
+                  it 'does not include security policies default pipeline configuration content' do
+                    expect(config.source).to eq(nil)
+                  end
+                end
+              end
+
+              context 'when policy has multiple rules with different pipeline_sources' do
+                let(:policy) do
+                  build(:scan_execution_policy, enabled: true, rules: [
+                    { type: 'pipeline', branches: branches, pipeline_sources: { including: %w[web] } },
+                    { type: 'pipeline', branches: branches, pipeline_sources: { including: %w[push] } }
+                  ])
+                end
+
+                context 'when source matches one of the rules' do
+                  let(:source) { :push }
+
+                  it_behaves_like 'includes security policies default pipeline configuration content'
+                end
+
+                context 'when source does not match any rule' do
+                  let(:source) { :schedule }
+
+                  it 'does not include security policies default pipeline configuration content' do
+                    expect(config.source).to eq(nil)
+                  end
+                end
+              end
+
+              context 'when source is passed as string' do
+                let(:policy_pipeline_sources) { %w[push] }
+                let(:source) { 'push' }
+
+                it_behaves_like 'includes security policies default pipeline configuration content'
+              end
+            end
+
+            describe '#policy_applicable_for_pipeline_source?' do
+              let(:rule) do
+                {
+                  type: 'pipeline',
+                  branches: branches,
+                  pipeline_sources: { including: %w[push] }
+                }
+              end
+
+              let(:fallback_config) do
+                Gitlab::Ci::ProjectConfig::SecurityPolicyDefault.new(
+                  project: project,
+                  pipeline_source: pipeline_source_value,
+                  triggered_for_branch: true,
+                  source_branch: source_branch,
+                  pipeline_policy_context: pipeline_policy_context
+                )
+              end
+
+              context 'when pipeline_source is blank' do
+                let(:pipeline_source_value) { nil }
+
+                it 'returns true for the policy' do
+                  result = fallback_config.send(:policy_applicable_for_pipeline_source?, policy)
+                  expect(result).to eq(true)
+                end
+              end
+
+              context 'when pipeline_source is present' do
+                let(:pipeline_source_value) { :push }
+
+                it 'checks against policy rules' do
+                  result = fallback_config.send(:policy_applicable_for_pipeline_source?, policy)
+                  expect(result).to eq(true)
+                end
+              end
+            end
           end
         end
       end
