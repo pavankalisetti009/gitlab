@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: :global_search do
+RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, :sidekiq_inline, feature_category: :global_search do
   let_it_be_with_reload(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:guest) { create(:user, guest_of: group) }
@@ -54,38 +54,34 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
   end
 
   context 'for merge_requests' do
-    let!(:project) { create(:project, :public, group: group) }
-    let!(:note_merge_request) do
+    let_it_be(:project) { create(:project, :public, group: group) }
+    let_it_be(:note_merge_request) do
       create(:merge_request, source_project: project, source_branch: 'open-1', title: 'Hello world, here I am!')
     end
 
-    let!(:note) do
-      create(:note_on_merge_request,
-        note: 'Goodbye foo',
-        noteable: note_merge_request,
-        project: note_merge_request.project)
+    let_it_be(:note) do
+      create(:note_on_merge_request, note: 'Goodbye foo', noteable: note_merge_request, project: project)
     end
 
     let_it_be(:unarchived_project) { create(:project, :public, group: group) }
     let_it_be(:archived_project) { create(:project, :public, :archived, group: group) }
-    let!(:opened_result) { create(:merge_request, :opened, source_project: project, title: 'foo opened') }
-    let!(:closed_result) { create(:merge_request, :closed, source_project: project, title: 'foo closed') }
-    let!(:unarchived_result) { create(:merge_request, source_project: unarchived_project, title: 'foo unarchived') }
-    let!(:archived_result) { create(:merge_request, source_project: archived_project, title: 'foo archived') }
+    let_it_be(:opened_result) { create(:merge_request, :opened, source_project: project, title: 'foo opened') }
+    let_it_be(:closed_result) { create(:merge_request, :closed, source_project: project, title: 'foo closed') }
+    let_it_be(:unarchived_result) { create(:merge_request, source_project: unarchived_project, title: 'foo unarchive') }
+    let_it_be(:archived_result) { create(:merge_request, source_project: archived_project, title: 'foo archived') }
 
     let(:query) { 'foo' }
     let(:scope) { 'merge_requests' }
 
     before do
+      [project, unarchived_project, archived_project].each do |project|
+        ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
+      end
       ensure_elasticsearch_index!
     end
 
     include_examples 'search results filtered by state'
-
-    context 'for archived filter',
-      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/19278' do
-      include_examples 'search results filtered by archived'
-    end
+    include_examples 'search results filtered by archived'
 
     context 'on self hosted' do
       include_examples 'searching notable entries in merge requests'
@@ -96,7 +92,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
   end
 
-  context 'for blobs', :sidekiq_inline do
+  context 'for blobs' do
     let(:scope) { 'blobs' }
 
     context 'when filtering by language' do
@@ -138,7 +134,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
   end
 
-  context 'for commits', :sidekiq_inline do
+  context 'for commits' do
     let_it_be(:owner) { create(:user) }
     let_it_be(:unarchived_project) { create(:project, :public, :repository, group: group, creator: owner) }
     let_it_be(:archived_project) { create(:project, :archived, :repository, :public, group: group, creator: owner) }
@@ -166,7 +162,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     include_examples 'search results filtered by archived', nil, nil
   end
 
-  context 'for wiki_blobs', :sidekiq_inline do
+  context 'for wiki_blobs' do
     let_it_be_with_reload(:owner) { create(:user) }
     let_it_be_with_reload(:group_wiki) { create(:group_wiki, group: group) }
     let_it_be_with_reload(:unarchived_project) { create(:project, :wiki_repo, :public, creator: owner) }
