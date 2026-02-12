@@ -559,6 +559,27 @@ describe('UsageBillingApp', () => {
         });
       });
 
+      it('renders UsageOverviewChart within trial view slot', () => {
+        expect(findUsageOverviewChart().exists()).toBe(true);
+        expect(findUsageOverviewChart().props()).toMatchObject({
+          monthStartDate: '2025-10-01',
+          monthEndDate: '2025-10-31',
+          paidTierTrialDailyUsage: [
+            { creditsUsed: 15, date: '2025-10-05' },
+            { creditsUsed: 18, date: '2025-10-06' },
+            { creditsUsed: 20, date: '2025-10-07' },
+            { creditsUsed: 17, date: '2025-10-08' },
+          ],
+          usersUsageDailyUsage: [
+            { creditsUsed: 5, date: '2025-10-01' },
+            { creditsUsed: 4, date: '2025-10-02' },
+            { creditsUsed: 6, date: '2025-10-03' },
+            { creditsUsed: 5.5, date: '2025-10-04' },
+            { creditsUsed: 4.5, date: '2025-10-05' },
+          ],
+        });
+      });
+
       it('wont render other cards', () => {
         const usageBillingSection = wrapper.findByTestId('usage-billing-cards-row');
 

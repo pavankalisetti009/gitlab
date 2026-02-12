@@ -11,12 +11,13 @@ describe('PaidTierTrialPeriodView', () => {
     purchaseCreditsUrl: 'https://customers.gitlab.com/purchase/credits',
   };
 
-  const createComponent = ({ propsData = {} } = {}) => {
+  const createComponent = ({ propsData = {}, slots = {} } = {}) => {
     wrapper = shallowMountExtended(PaidTierTrialPeriodView, {
       propsData: {
         ...defaultProps,
         ...propsData,
       },
+      slots,
       stubs: {
         GlSprintf,
       },
@@ -45,6 +46,18 @@ describe('PaidTierTrialPeriodView', () => {
         expect(headerCardPrimaryButton.props('href')).toBe(
           'https://customers.gitlab.com/dashboard',
         );
+      });
+    });
+
+    describe('chart slot', () => {
+      it('renders content passed to the chart slot', () => {
+        createComponent({
+          slots: {
+            chart: '<div data-testid="chart-content">Chart Content</div>',
+          },
+        });
+
+        expect(wrapper.findByTestId('chart-content').text()).toBe('Chart Content');
       });
     });
 
