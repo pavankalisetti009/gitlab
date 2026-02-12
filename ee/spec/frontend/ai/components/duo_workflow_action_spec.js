@@ -6,7 +6,7 @@ import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
 import getConfiguredFlows from 'ee/ai/graphql/get_configured_flows.query.graphql';
-import { setAiPanelTab } from 'ee/ai/graphql';
+import { eventHub, SHOW_SESSION } from 'ee/ai/events/panel';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -19,7 +19,7 @@ import {
 } from '../mocks';
 
 jest.mock('~/alert');
-jest.mock('ee/ai/graphql', () => ({ setAiPanelTab: jest.fn() }));
+jest.mock('ee/ai/events/panel');
 
 Vue.use(VueApollo);
 
@@ -508,8 +508,8 @@ describe('DuoWorkflowAction component', () => {
           await waitForPromises();
         });
 
-        it('sets the open AI panel to the sessions', () => {
-          expect(setAiPanelTab).toHaveBeenCalledWith('sessions');
+        it('sets the open AI panel to the newly created session', () => {
+          expect(eventHub.$emit).toHaveBeenCalledWith(SHOW_SESSION, mockCreateFlowResponse);
         });
       });
     });

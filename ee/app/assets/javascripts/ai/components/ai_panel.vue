@@ -216,7 +216,12 @@ export default {
         this.currentTabComponent?.initialRoute ||
         '/';
 
-      this.$router.push(targetRoute).catch(() => {});
+      // sometimes the router is already set to the route of the tab before the tab is opened.
+      // if that is the case, do not navigate to the last route per tab or initial route.
+
+      if (targetRoute === '/' || !this.$route.path.includes(targetRoute)) {
+        await this.$router.push(targetRoute).catch(() => {});
+      }
     },
     closePanel() {
       this.setActiveTab(undefined);
