@@ -14,6 +14,7 @@ import { __, s__ } from '~/locale';
 import countryStateMixin from 'ee/vue_shared/mixins/country_state_mixin';
 import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
 import { PROMO_URL } from '~/constants';
+import { InternalEvents } from '~/tracking';
 
 export default {
   name: 'CreateTrialForm',
@@ -28,7 +29,7 @@ export default {
     GlFormInput,
     ListboxInput,
   },
-  mixins: [countryStateMixin],
+  mixins: [countryStateMixin, InternalEvents.mixin()],
   props: {
     userData: {
       type: Object,
@@ -99,9 +100,19 @@ export default {
       return fields;
     },
   },
+  mounted() {
+    this.trackEvent('sm_trial_create_form_render');
+  },
   methods: {
     onSubmit() {
+      this.trackEvent('sm_trial_create_form_submit_click');
       this.$refs.form.$el.submit();
+    },
+    onConsentChange(checked) {
+      if (checked === '0') {
+        this.trackEvent('sm_trial_create_form_uncheck_consent');
+      }
+      this.consentToMarketingValue = checked;
     },
   },
   i18n: {
@@ -217,10 +228,11 @@ export default {
     <div class="gl-mt-3">
       <input type="hidden" name="consent_to_marketing" :value="consentToMarketingValue" />
       <gl-form-checkbox
-        v-model="consentToMarketingValue"
+        :checked="consentToMarketingValue"
         value="1"
         unchecked-value="0"
         data-testid="consent-checkbox"
+        @change="onConsentChange"
       >
         {{ $options.i18n.consentToMarketingLabel }}
       </gl-form-checkbox>
