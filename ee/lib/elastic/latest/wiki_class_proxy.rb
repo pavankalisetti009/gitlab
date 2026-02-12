@@ -47,8 +47,11 @@ module Elastic
 
         query = build_search_query(query)
         query_hash = build_base_query_hash(query, options)
-        query_hash = apply_search_level_filters(query_hash, search_level, options)
-        apply_permission_filters(query_hash, options)
+        query_hash = ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash,
+          options: options.merge({ features: 'wiki' }))
+        query_hash = archived_filter(query_hash) if archived_filter_applicable_on_wiki?(options)
+
+        query_hash
       end
 
       def build_search_query(query)
@@ -84,138 +87,8 @@ module Elastic
         query_hash
       end
 
-      def apply_search_level_filters(query_hash, search_level, options)
-        if search_level == 'project' && options[:repository_id].present?
-          query_hash = add_filter(query_hash, :query, :bool, :filter) do
-            { term: { rid: options[:repository_id] } }
-          end
-        end
-
-        query_hash = archived_filter(query_hash) if archived_filter_applicable_on_wiki?(options)
-        user = options[:current_user]
-        query_hash = add_namespace_ancestry_filter(query_hash, options[:group_id], user) if search_level == 'group'
-
-        query_hash
-      end
-
-      def apply_permission_filters(query_hash, options)
-        if Feature.enabled?(:search_advanced_wiki_new_auth_filter, options[:current_user])
-          return ::Search::Elastic::Filters.by_search_level_and_membership(
-            query_hash: query_hash,
-            options: options.merge({ features: 'wiki' })
-          )
-        end
-
-        legacy_authorization(query_hash, options)
-      end
-
-      def legacy_authorization(query_hash, options)
-        return query_hash unless options.key?(:current_user)
-
-        user = options[:current_user]
-        return query_hash if user&.can_read_all_resources?
-
-        query_hash[:query][:bool][:should] = wiki_permission_filter(user, options)
-        query_hash[:query][:bool][:minimum_should_match] = 1
-
-        query_hash
-      end
-
-      def wiki_permission_filter(user, options)
-        should_collection = []
-        should_collection = add_should_query_for_public_documents(should_collection)
-        should_collection = add_should_query_for_internal_documents(should_collection, user)
-        should_collection = add_should_query_for_private_group_documents(should_collection, user, options)
-        add_should_query_for_private_project_documents(should_collection, user, options)
-      end
-
-      def add_should_query_for_private_group_documents(should_collection, user, options)
-        return should_collection if options[:search_level] == 'project' || user.nil?
-
-        finder_params = { min_access_level: ::Gitlab::Access::GUEST }
-        if options[:search_level] == 'group'
-          searched_group = searched_group(options[:group_id], user)
-          finder_params[:filter_group_ids] = searched_group.self_and_descendants.pluck_primary_key if searched_group
-        end
-
-        group_ids = GroupsFinder.new(options[:current_user], finder_params).execute.pluck("#{Group.table_name}.#{Group.primary_key}") # rubocop: disable CodeReuse/ActiveRecord -- We need to get only ids
-        return should_collection if group_ids.empty?
-
-        query_hash = add_private_visibility_filters
-        query_hash[:bool][:_name] = :private_group_documents_filter
-        query_hash[:bool][:must_not] = { exists: { field: 'project_id' } }
-        should_collection << add_filter(query_hash, :bool, :filter) do
-          { terms: { group_id: group_ids } }
-        end
-      end
-
-      def add_should_query_for_private_project_documents(should_collection, user, options)
-        return should_collection if options[:project_ids].blank? || user.nil?
-
-        ids = options[:project_ids]
-        # Don't trust on supplied project_ids. Filter out non accessible project_ids
-        project_ids = Project.id_in(ids).visible_to_user_and_access_level(user, Gitlab::Access::GUEST).pluck_primary_key
-        return should_collection if project_ids.empty?
-
-        query_hash = add_private_visibility_filters
-        query_hash[:bool][:_name] = :private_project_documents_filter
-        should_collection << add_filter(query_hash, :bool, :filter) do
-          { terms: { project_id: project_ids } }
-        end
-      end
-
-      def add_should_query_for_public_documents(should_collection)
-        query = add_filter({ bool: { filter: [] } }, :bool, :filter) do
-          { term: { visibility_level: Gitlab::VisibilityLevel::PUBLIC } }
-        end
-        query[:bool][:_name] = :public_documents_filter
-        should_collection << add_filter(query, :bool, :filter) do
-          { term: { wiki_access_level: Featurable::ENABLED } }
-        end
-      end
-
-      def add_should_query_for_internal_documents(should_collection, user)
-        return should_collection if user.nil? || user&.external?
-
-        query = add_filter({ bool: { filter: [] } }, :bool, :filter) do
-          { term: { visibility_level: Gitlab::VisibilityLevel::INTERNAL } }
-        end
-        query[:bool][:_name] = :internal_documents_filter
-        should_collection << add_filter(query, :bool, :filter) do
-          { term: { wiki_access_level: Featurable::ENABLED } }
-        end
-      end
-
-      def add_private_visibility_filters
-        add_filter({ bool: { filter: [] } }, :bool, :filter) do
-          { terms: { wiki_access_level: [Featurable::PRIVATE, Featurable::ENABLED] } }
-        end
-      end
-
-      def add_namespace_ancestry_filter(query_hash, group_id, user)
-        group = searched_group(group_id, user)
-        return query_hash unless group
-
-        add_filter(query_hash, :query, :bool, :filter) do
-          context.name(:ancestry_filter) do
-            {
-              prefix: { traversal_ids: { _name: context.name(:descendants), value: group.elastic_namespace_ancestry } }
-            }
-          end
-        end
-      end
-
       def archived_filter_applicable_on_wiki?(options)
         !options[:include_archived] && options[:search_level] != 'project'
-      end
-
-      def searched_group(group_id, user)
-        group = Group.find_by_id(group_id)
-        return unless group
-
-        return if (group.internal? && (user.nil? || user.external?)) || (group.private? && !group.member?(user))
-
-        group
       end
     end
   end

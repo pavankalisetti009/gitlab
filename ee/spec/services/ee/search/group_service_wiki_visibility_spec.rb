@@ -79,15 +79,6 @@ RSpec.describe Search::GroupService, '#visibility', feature_category: :global_se
           # project access does not grant group wiki visibility
           # see https://docs.gitlab.com/user/project/wiki/group/#configure-group-wiki-visibility
           it_behaves_like 'search respects visibility', project_access: false, project_access_shared_group: false
-
-          context 'when search_advanced_wiki_new_auth_filter FF is false' do
-            before do
-              stub_feature_flags(search_advanced_wiki_new_auth_filter: false)
-            end
-
-            it_behaves_like 'search respects visibility', project_access: false,
-              project_access_shared_group: false, group_access_shared_group: false
-          end
         end
       end
     end
