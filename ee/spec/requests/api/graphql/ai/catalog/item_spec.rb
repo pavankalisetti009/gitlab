@@ -62,6 +62,7 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
           project { id }
           softDeleted
           softDeletedAt
+          verificationLevel
           latestVersion {
             ...VersionFragment
           }
@@ -94,6 +95,7 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
           'public' => catalog_item.public,
           'softDeleted' => catalog_item.deleted?,
           'softDeletedAt' => catalog_item.deleted_at&.iso8601,
+          'verificationLevel' => catalog_item.verification_level.upcase,
           'latestVersion' => a_graphql_entity_for(latest_version),
           'versions' => hash_including(
             'count' => 1,

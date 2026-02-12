@@ -63,6 +63,8 @@ module Types
         field :foundational_flow_reference, GraphQL::Types::String,
           null: true,
           description: 'Foundational flow reference.'
+        field :verification_level, Types::Ai::Catalog::ItemVerificationLevelEnum, null: false,
+          description: 'Verification level of the item.'
 
         orphan_types ::Types::Ai::Catalog::AgentType
         orphan_types ::Types::Ai::Catalog::FlowType
