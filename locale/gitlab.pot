@@ -36193,9 +36193,6 @@ msgstr ""
 msgid "Import|already assigned to another placeholder"
 msgstr ""
 
-msgid "Improve customer support with Service Desk"
-msgstr ""
-
 msgid "Improve indexing performance by increasing Sidekiq load. Values greater than the current shard limit (%{limit}) are not allowed."
 msgstr ""
 
@@ -54814,9 +54811,6 @@ msgstr ""
 msgid "Promotions|Buy GitLab Enterprise Edition"
 msgstr ""
 
-msgid "Promotions|Configure Service Desk"
-msgstr ""
-
 msgid "Promotions|Contact an owner of group %{namespace_name} to upgrade the plan."
 msgstr ""
 
@@ -54824,9 +54818,6 @@ msgid "Promotions|Contact owner %{link_start}%{owner_name}%{link_end} to upgrade
 msgstr ""
 
 msgid "Promotions|Contact your Administrator to upgrade your license."
-msgstr ""
-
-msgid "Promotions|Dismiss Service Desk promotion"
 msgstr ""
 
 msgid "Promotions|Don't show me this again"
@@ -64574,9 +64565,6 @@ msgid "Service Desk"
 msgstr ""
 
 msgid "Service Desk Ticket"
-msgstr ""
-
-msgid "Service Desk allows people to create issues in your GitLab instance without their own user account. It provides a unique email address for end users to create issues in a project. Replies can be sent either through the GitLab interface or by email. End users only see threads through email."
 msgstr ""
 
 msgid "Service account"
