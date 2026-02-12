@@ -77,7 +77,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     stub_feature_flags(incident_fail_over_completion_provider: false)
     stub_feature_flags(use_claude_code_completion: false)
     stub_feature_flags(code_completion_opt_out_fireworks: false)
-    stub_feature_flags(usage_quota_left_check: false)
   end
 
   shared_examples 'a response' do |case_name|

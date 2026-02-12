@@ -258,16 +258,6 @@ RSpec.describe Ai::UsageQuotaService, feature_category: :duo_chat do
       end
     end
 
-    context 'when feature flag is disabled' do
-      subject(:service_call) { described_class.new(ai_feature: ai_feature, user: nil).execute }
-
-      before do
-        stub_feature_flags(usage_quota_left_check: false)
-      end
-
-      it { is_expected.to be_success }
-    end
-
     context 'when subscription portal call results in error' do
       subject(:service_call) { described_class.new(ai_feature: ai_feature, user: create(:project)).execute }
 

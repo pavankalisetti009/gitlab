@@ -12,7 +12,6 @@ module Ai
     end
 
     def execute
-      return ServiceResponse.success unless Feature.enabled?(:usage_quota_left_check, user)
       return ServiceResponse.error(message: "User is required", reason: :user_missing) unless user
 
       params = { user_id: user.id }

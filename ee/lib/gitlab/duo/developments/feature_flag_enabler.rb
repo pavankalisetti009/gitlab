@@ -11,7 +11,6 @@ module Gitlab
           incident_fail_over_completion_provider
           incident_fail_over_generation_provider
           duo_ui_next # Breaks Chat UI still WIP
-          usage_quota_left_check
 
           # Model-specific feature flags disabled by default as they require specific configuration
           duo_agentic_chat_openai_gpt_5 # Ref: https://gitlab.com/gitlab-org/gitlab/-/issues/560561
