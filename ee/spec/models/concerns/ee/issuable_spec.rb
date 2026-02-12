@@ -281,9 +281,10 @@ RSpec.describe EE::Issuable, feature_category: :team_planning do
 
         let(:issue) { create(:work_item, :task, project: project) }
         let!(:custom_lifecycle) do
-          create(:work_item_custom_lifecycle, namespace: group) do |lifecycle|
-            lifecycle.work_item_types << issue.work_item_type
-          end
+          lifecycle = create(:work_item_custom_lifecycle, namespace: group)
+          lifecycle.work_item_types |= [issue.work_item_type]
+          lifecycle.save!
+          lifecycle
         end
 
         let(:old_status) { custom_lifecycle.default_open_status }

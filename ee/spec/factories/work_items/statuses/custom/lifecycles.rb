@@ -11,14 +11,18 @@ FactoryBot.define do
     # The `work_item_status` license should be enabled in order to use this trait
     trait :for_issues do
       after(:create) do |lifecycle|
-        lifecycle.work_item_types << WorkItems::Type.default_by_type(:issue)
+        type = WorkItems::TypesFramework::Provider.new(lifecycle.namespace).find_by_base_type(:issue)
+        lifecycle.work_item_types |= [type]
+        lifecycle.save!
       end
     end
 
     # The `work_item_status` license should be enabled in order to use this trait
     trait :for_tasks do
       after(:create) do |lifecycle|
-        lifecycle.work_item_types << WorkItems::Type.default_by_type(:task)
+        type = WorkItems::TypesFramework::Provider.new(lifecycle.namespace).find_by_base_type(:task)
+        lifecycle.work_item_types |= [type]
+        lifecycle.save!
       end
     end
   end

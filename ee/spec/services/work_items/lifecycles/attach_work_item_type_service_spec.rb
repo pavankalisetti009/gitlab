@@ -42,15 +42,15 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
       end
 
       it 'attaches work item type to target lifecycle' do
-        expect { result }.to change { target_lifecycle.work_item_types.count }.by(1)
+        expect { result }.to change { target_lifecycle.reload.work_item_types.count }.by(1)
 
         target_lifecycle.reset
         current_lifecycle.reset
 
-        expect(target_lifecycle.work_item_types).to include(work_item_type)
+        expect(target_lifecycle.work_item_type_ids).to include(work_item_type.id)
         expect(target_lifecycle.updated_by).to eq(user)
 
-        expect(current_lifecycle.work_item_types).not_to include(work_item_type)
+        expect(current_lifecycle.work_item_type_ids).not_to include(work_item_type.id)
         expect(current_lifecycle.reset.updated_by).to eq(user)
       end
 
