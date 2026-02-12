@@ -144,7 +144,7 @@ export default {
 
 <template>
   <div class="gl-bg-subtle gl-p-4">
-    <div class="gl-flex gl-flex-wrap gl-content-start gl-items-start gl-gap-4">
+    <div class="gl-flex gl-flex-wrap gl-content-start gl-items-start gl-gap-4 gl-gap-y-0">
       <div class="gl-flex gl-grow gl-items-start gl-gap-4">
         <div class="gl-flex gl-items-end gl-gap-2">
           <gl-disclosure-dropdown
@@ -223,7 +223,6 @@ export default {
             <gl-form-combobox
               ref="title"
               autofocus
-              class="-gl-mt-3"
               label-text=""
               :value="formData.name"
               :placeholder="s__('WorkItemStatus|Name')"
