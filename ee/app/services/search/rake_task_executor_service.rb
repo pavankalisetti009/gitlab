@@ -94,7 +94,6 @@ module Search
     def clear_tracking_queues
       ::Elastic::ProcessBookkeepingService.clear_tracking!
       ::Elastic::ProcessInitialBookkeepingService.clear_tracking!
-      ::Search::Elastic::ProcessEmbeddingBookkeepingService.clear_tracking!
 
       logger.info(Rainbow('All indexing queues have been cleared').green)
     end

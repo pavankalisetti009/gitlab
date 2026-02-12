@@ -7,17 +7,10 @@ module Search
 
     urgency :low
     data_consistency :sticky
+    defer_on_database_health_signal :gitlab_main
 
     def perform(shard_number = nil)
-      return if embeddings_throttled?
-
-      super
-    end
-
-    private
-
-    def service
-      Search::Elastic::ProcessEmbeddingBookkeepingService.new
+      # No-op: This worker has been deprecated and no longer performs any work
     end
   end
 end

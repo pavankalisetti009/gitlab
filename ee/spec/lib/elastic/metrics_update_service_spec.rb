@@ -10,12 +10,10 @@ RSpec.describe Elastic::MetricsUpdateService, feature_category: :global_search d
 
       expect(::Elastic::ProcessBookkeepingService).to receive(:queue_size).and_return(10)
       expect(::Elastic::ProcessInitialBookkeepingService).to receive(:queue_size).and_return(5)
-      expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:queue_size).and_return(3)
       expect(::Search::Elastic::DeadQueue).to receive(:queue_size).and_return(42)
 
       expect(gauge_mock).to receive(:set).with({}, 10).ordered
       expect(gauge_mock).to receive(:set).with({}, 5).ordered
-      expect(gauge_mock).to receive(:set).with({}, 3).ordered
       expect(gauge_mock).to receive(:set).with({}, 42).ordered
 
       described_class.new.execute
@@ -24,7 +22,6 @@ RSpec.describe Elastic::MetricsUpdateService, feature_category: :global_search d
     it 'does not raise an error when queue size is zero' do
       allow(::Elastic::ProcessBookkeepingService).to receive(:queue_size).and_return(0)
       allow(::Elastic::ProcessInitialBookkeepingService).to receive(:queue_size).and_return(0)
-      allow(::Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:queue_size).and_return(0)
       allow(::Search::Elastic::DeadQueue).to receive(:queue_size).and_return(0)
 
       expect { described_class.new.execute }.not_to raise_error

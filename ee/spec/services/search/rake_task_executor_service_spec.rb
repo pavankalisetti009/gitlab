@@ -1553,7 +1553,6 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     it 'clears all tracking queues' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:clear_tracking!)
       expect(::Elastic::ProcessInitialBookkeepingService).to receive(:clear_tracking!)
-      expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:clear_tracking!)
       expect(logger).to receive(:info).with(/All indexing queues have been cleared/)
 
       clear_tracking_queues

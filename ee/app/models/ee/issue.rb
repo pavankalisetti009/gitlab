@@ -12,7 +12,7 @@ module EE
       WEIGHT_NONE = 'None'
       ELASTICSEARCH_PERMISSION_TRACKED_FIELDS = %w[assignee_ids author_id confidential].freeze
 
-      include ::Search::Elastic::IssuesSearch
+      include ::Elastic::ApplicationVersionedSearch
       include UsageStatistics
       include IterationEventable
       include HealthStatus
@@ -216,6 +216,10 @@ module EE
 
     def es_parent
       "group_#{namespace.root_ancestor.id}"
+    end
+
+    def es_id
+      ::Gitlab::Elastic::Helper.build_es_id(es_type: es_type, target_id: id)
     end
 
     override :elastic_reference

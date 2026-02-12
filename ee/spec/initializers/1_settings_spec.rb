@@ -85,7 +85,6 @@ RSpec.describe '1_settings', feature_category: :settings do
         deploy_tokens_expiring_worker
         elastic_cluster_reindexing_cron_worker
         elastic_index_bulk_cron_worker
-        elastic_index_embedding_bulk_cron_worker
         elastic_index_initial_bulk_cron_worker
         elastic_migration_worker
         elastic_remove_expired_namespace_subscriptions_from_index_cron_worker
