@@ -8,7 +8,7 @@ module GitlabSubscriptions
     MonthlyCommitment = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     Overage = Struct.new(:is_allowed, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
-    PaidTierTrial = Struct.new(:is_active, :declarative_policy_subject)
+    PaidTierTrial = Struct.new(:is_active, :daily_usage, :declarative_policy_subject)
 
     def initialize(
       subscription_target:,
@@ -136,8 +136,11 @@ module GitlabSubscriptions
     strong_memoize_attr :subscription_portal_usage_dashboard_url
 
     def paid_tier_trial
+      paid_tier_trial_response = subscription_usage_client.get_paid_tier_trial
+
       PaidTierTrial.new(
-        is_active: !!usage_metadata.dig(:paidTierTrial, :isActive),
+        is_active: !!paid_tier_trial_response.dig(:paidTierTrial, :isActive),
+        daily_usage: build_daily_usage(paid_tier_trial_response.dig(:paidTierTrial, :dailyUsage)),
         declarative_policy_subject: self
       )
     end

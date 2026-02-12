@@ -13,6 +13,11 @@ module Types
           type: GraphQL::Types::Boolean,
           null: false,
           description: 'Indicates whether the subscription is currently in a paid tier trial for GitLab Credits.'
+
+        field :daily_usage,
+          [DailyUsageType],
+          null: true,
+          description: "Array of daily usage of the subscription's paid tier trial."
       end
     end
   end
