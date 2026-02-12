@@ -15,7 +15,8 @@ module Vulnerabilities
 
     WORKFLOW_NAMES = {
       sast_fp_detection: 0,
-      resolve_sast_vulnerability: 1
+      resolve_sast_vulnerability: 1,
+      secrets_fp_detection: 2
     }.freeze
 
     enum :workflow_name, WORKFLOW_NAMES

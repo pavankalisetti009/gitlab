@@ -182,11 +182,11 @@ RSpec.describe Ai::Catalog::Flows::SeedFoundationalFlowsService, feature_categor
         )
       end
 
-      it 'seeds exactly 6 foundational workflows' do
+      it 'seeds exactly 7 foundational workflows' do
         service.execute
 
-        # We have 6 foundational workflows
-        expect(Ai::Catalog::Item.foundational_flows.count).to eq(6)
+        # We have 7 foundational workflows
+        expect(Ai::Catalog::Item.foundational_flows.count).to eq(7)
       end
 
       it 'ensures all seeded items have descriptions' do

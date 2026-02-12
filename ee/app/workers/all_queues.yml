@@ -4948,6 +4948,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: vulnerabilities_trigger_secret_detection_false_positive_detection_workflow
+  :worker_name: Vulnerabilities::TriggerSecretDetectionFalsePositiveDetectionWorkflowWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :throttled
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: vulnerabilities_update_archived_attribute_of_vulnerability_reads
   :worker_name: Vulnerabilities::UpdateArchivedAttributeOfVulnerabilityReadsWorker
   :feature_category: :vulnerability_management
