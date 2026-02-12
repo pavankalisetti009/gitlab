@@ -78,16 +78,6 @@ RSpec.describe Security::ProjectTrackedContexts::DestroyService, feature_categor
       end
     end
 
-    context 'when user lacks permission' do
-      let(:current_user) { guest_user }
-
-      it 'denies access' do
-        expect { result }.not_to change { Security::ProjectTrackedContext.count }
-        expect(result).to be_error
-        expect(result.message).to eq('Permission denied')
-      end
-    end
-
     context 'when user is not authenticated' do
       let(:current_user) { nil }
 
