@@ -71,7 +71,8 @@ module EE
         'MergeRequestDiff' => :external_merge_request_diff,
         'Packages::PackageFile' => :package_file,
         'Projects::WikiRepository' => :project_wiki_repository,
-        'Packages::Nuget::Symbol' => :nuget_symbol
+        'Packages::Nuget::Symbol' => :nuget_symbol,
+        'Packages::Helm::MetadataCache' => :helm_metadata_cache
       }
 
       custom_mapping.fetch(klass_name, default_factory_name)

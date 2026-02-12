@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class CreatePackagesHelmMetadataCacheRegistry < Gitlab::Database::Migration[2.3]
-  milestone '18.8'
+  milestone '18.9'
 
   def change
     create_table :packages_helm_metadata_cache_registry, id: :bigserial, force: :cascade do |t|

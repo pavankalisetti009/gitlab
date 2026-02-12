@@ -95,6 +95,7 @@ RSpec.describe Geo::Secondary::RegistryConsistencyWorker, :geo, feature_category
       design_management_repository = create(:design_management_repository, project: project)
       nuget_symbol = create(:nuget_symbol)
       supply_chain_attestation = create(:supply_chain_attestation)
+      helm_metadata_cache = create(:helm_metadata_cache)
 
       expect(Geo::ContainerRepositoryRegistry.where(container_repository_id: container_repository.id).count).to eq(0)
       expect(Geo::DesignManagementRepositoryRegistry.where(design_management_repository_id: design_management_repository.id).count).to eq(0)
@@ -114,6 +115,7 @@ RSpec.describe Geo::Secondary::RegistryConsistencyWorker, :geo, feature_category
       expect(Geo::ProjectRepositoryRegistry.where(project_id: project.id).count).to eq(0)
       expect(Geo::PackagesNugetSymbolRegistry.where(packages_nuget_symbol_id: nuget_symbol.id).count).to eq(0)
       expect(Geo::SupplyChainAttestationRegistry.where(supply_chain_attestation_id: supply_chain_attestation.id).count).to eq(0)
+      expect(Geo::PackagesHelmMetadataCacheRegistry.where(packages_helm_metadata_cache_id: helm_metadata_cache.id).count).to eq(0)
 
       subject.perform
 
@@ -134,6 +136,7 @@ RSpec.describe Geo::Secondary::RegistryConsistencyWorker, :geo, feature_category
       expect(Geo::ProjectRepositoryRegistry.where(project_id: project.id).count).to eq(1)
       expect(Geo::PackagesNugetSymbolRegistry.where(packages_nuget_symbol_id: nuget_symbol.id).count).to eq(1)
       expect(Geo::SupplyChainAttestationRegistry.where(supply_chain_attestation_id: supply_chain_attestation.id).count).to eq(1)
+      expect(Geo::PackagesHelmMetadataCacheRegistry.where(packages_helm_metadata_cache_id: helm_metadata_cache.id).count).to eq(1)
     end
 
     context 'when the current Geo node is disabled or primary' do

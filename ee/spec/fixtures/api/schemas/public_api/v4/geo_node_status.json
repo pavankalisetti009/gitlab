@@ -116,6 +116,18 @@
     "package_files_verification_total_count",
     "package_files_verified_count",
     "package_files_verified_in_percentage",
+    "packages_helm_metadata_caches_count",
+    "packages_helm_metadata_caches_checksum_failed_count",
+    "packages_helm_metadata_caches_checksum_total_count",
+    "packages_helm_metadata_caches_checksummed_count",
+    "packages_helm_metadata_caches_registry_count",
+    "packages_helm_metadata_caches_failed_count",
+    "packages_helm_metadata_caches_synced_count",
+    "packages_helm_metadata_caches_synced_in_percentage",
+    "packages_helm_metadata_caches_verification_failed_count",
+    "packages_helm_metadata_caches_verification_total_count",
+    "packages_helm_metadata_caches_verified_count",
+    "packages_helm_metadata_caches_verified_in_percentage",
     "packages_nuget_symbols_count",
     "packages_nuget_symbols_checksum_total_count",
     "packages_nuget_symbols_checksummed_count",
@@ -875,6 +887,72 @@
       ]
     },
     "package_files_verified_in_percentage": {
+      "type": "string"
+    },
+    "packages_helm_metadata_caches_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_checksummed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_checksum_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_checksum_total_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_registry_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_synced_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_synced_in_percentage": {
+      "type": "string"
+    },
+    "packages_helm_metadata_caches_verification_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_verification_total_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_verified_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_helm_metadata_caches_verified_in_percentage": {
       "type": "string"
     },
     "packages_nuget_symbols_count": {

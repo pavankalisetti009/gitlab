@@ -24,6 +24,7 @@ RSpec.describe GitlabSchema.types['GeoRegistryClass'], feature_category: :geo_re
       GROUP_WIKI_REPOSITORY_REGISTRY
       PACKAGES_NUGET_SYMBOL_REGISTRY
       SUPPLY_CHAIN_ATTESTATION_REGISTRY
+      PACKAGES_HELM_METADATA_CACHE_REGISTRY
     ]
   end
 
