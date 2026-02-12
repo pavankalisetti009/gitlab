@@ -83790,14 +83790,6 @@ paths:
                     developer_can_initial_push:
                       type: boolean
                       description: Allow developers to initial push
-                shared_runners_setting:
-                  type: string
-                  enum:
-                  - disabled_and_unoverridable
-                  - disabled_and_overridable
-                  - enabled
-                  description: Enable/disable shared runners for the group and its
-                    subgroups and projects
                 enabled_git_access_protocol:
                   type: string
                   enum:
@@ -83968,6 +83960,14 @@ paths:
                 path:
                   type: string
                   description: The path of the group
+                shared_runners_setting:
+                  type: string
+                  enum:
+                  - disabled_and_unoverridable
+                  - disabled_and_overridable
+                  - enabled
+                  description: Enable/disable shared runners for the group and its
+                    subgroups and projects
                 description:
                   type: string
                   description: The description of the group
@@ -84090,14 +84090,6 @@ paths:
                     developer_can_initial_push:
                       type: boolean
                       description: Allow developers to initial push
-                shared_runners_setting:
-                  type: string
-                  enum:
-                  - disabled_and_unoverridable
-                  - disabled_and_overridable
-                  - enabled
-                  description: Enable/disable shared runners for the group and its
-                    subgroups and projects
                 enabled_git_access_protocol:
                   type: string
                   enum:
