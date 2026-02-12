@@ -415,6 +415,46 @@
         "description": "Package files verified count",
         "type": "number"
       },
+      "packages_helm_metadata_caches_checksum_failed_count": {
+        "description": "Packages helm metadata caches checksum failed count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_checksum_total_count": {
+        "description": "Packages helm metadata caches checksum total count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_checksummed_count": {
+        "description": "Packages helm metadata caches checksummed count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_count": {
+        "description": "Packages helm metadata caches count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_failed_count": {
+        "description": "Packages helm metadata caches failed count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_registry_count": {
+        "description": "Packages helm metadata caches registry count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_synced_count": {
+        "description": "Packages helm metadata caches synced count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_verification_failed_count": {
+        "description": "Packages helm metadata caches verification failed count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_verification_total_count": {
+        "description": "Packages helm metadata caches verification total count",
+        "type": "number"
+      },
+      "packages_helm_metadata_caches_verified_count": {
+        "description": "Packages helm metadata caches verified count",
+        "type": "number"
+      },
       "packages_nuget_symbols_checksum_failed_count": {
         "description": "Packages nuget symbols checksum failed count",
         "type": "number"

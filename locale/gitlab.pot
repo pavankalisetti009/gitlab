@@ -31063,6 +31063,12 @@ msgstr ""
 msgid "Geo|Healthy"
 msgstr ""
 
+msgid "Geo|Helm Metadata Cache"
+msgstr ""
+
+msgid "Geo|Helm Metadata Caches"
+msgstr ""
+
 msgid "Geo|If enabled, GitLab will handle Object Storage replication using Geo."
 msgstr ""
 
