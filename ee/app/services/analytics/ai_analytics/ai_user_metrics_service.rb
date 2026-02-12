@@ -78,9 +78,12 @@ module Analytics
           query = query.select(count_expression)
         end
 
-        last_activity_expression = Arel::Nodes::NamedFunction.new('maxIf', [
-          builder.table[:date],
-          builder.table[:event].in(feature_event_ids)
+        last_activity_expression = Arel::Nodes::NamedFunction.new('nullIf', [
+          Arel::Nodes::NamedFunction.new('maxIf', [
+            builder.table[:date],
+            builder.table[:event].in(feature_event_ids)
+          ]),
+          Arel.sql("toDate32('1970-01-01')")
         ]).as('last_duo_activity_on')
 
         query.select(last_activity_expression)

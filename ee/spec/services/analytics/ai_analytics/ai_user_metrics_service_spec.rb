@@ -363,6 +363,35 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
         end
       end
 
+      context 'when user has events but none match the feature filter' do
+        let_it_be(:user3) { create(:user, developer_of: group) }
+        let(:user_ids) { [user1.id, user2.id, user3.id] }
+
+        before do
+          clickhouse_fixture(:ai_usage_events_daily, [
+            { user_id: user1.id, namespace_path: container.traversal_path, event: 3,
+              date: (to - 3.days).to_date, occurrences: 2 },
+            { user_id: user2.id, namespace_path: container.traversal_path, event: 2,
+              date: (to - 2.days).to_date, occurrences: 1 },
+            { user_id: user3.id, namespace_path: container.traversal_path, event: 6,
+              date: (to - 1.day).to_date, occurrences: 1 }
+          ])
+        end
+
+        it 'returns nil for last_duo_activity_on when nullIf matches epoch date' do
+          expect(service_response).to be_success
+          payload = service_response.payload
+
+          expect(payload[user1.id]).to include(last_duo_activity_on: (to - 3.days).to_date)
+          expect(payload[user2.id]).to include(last_duo_activity_on: (to - 2.days).to_date)
+
+          expect(payload[user3.id]).to include(
+            total_events_count: 0,
+            last_duo_activity_on: nil
+          )
+        end
+      end
+
       context 'with sorting' do
         let_it_be(:user3) { create(:user, developer_of: group) }
         let_it_be(:user4) { create(:user, developer_of: group) }
