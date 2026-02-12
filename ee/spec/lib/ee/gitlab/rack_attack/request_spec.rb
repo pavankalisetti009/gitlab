@@ -71,18 +71,35 @@ RSpec.describe Gitlab::RackAttack::Request, feature_category: :rate_limiting do
       end
     end
 
-    where(:path, :expected) do
-      '/api/v4/virtual_registries/packages/invalid/555/' | false
-      '/api/v4/virtual_registries/packages/maven/test/'  | false
-      '/api/v4/virtual_registries/containers/maven/555/' | false
+    [
+      '/v2/virtual_registries/container/123/',
+      '/v2/virtual_registries/container/456/image/manifests/tag',
+      '/v2/virtual_registries/container/789/image/blobs/sha256'
+    ].each do |path|
+      context "for path #{path}" do
+        before do
+          allow(request).to receive(:logical_path).and_return(path)
+        end
+
+        it { is_expected.to be(true) }
+      end
     end
 
-    with_them do
-      before do
-        allow(request).to receive(:logical_path).and_return(path)
-      end
+    [
+      '/api/v4/virtual_registries/packages/invalid/555/',
+      '/api/v4/virtual_registries/packages/maven/test/',
+      '/api/v4/virtual_registries/containers/registries/123/',
+      '/v2/virtual_registries/container',
+      '/v2/virtual_registries/container/abc/',
+      '/virtual_registries/container/123/'
+    ].each do |path|
+      context "for path #{path}" do
+        before do
+          allow(request).to receive(:logical_path).and_return(path)
+        end
 
-      it { is_expected.to be(expected) }
+        it { is_expected.to be(false) }
+      end
     end
   end
 end
