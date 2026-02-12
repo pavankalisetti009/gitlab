@@ -8,9 +8,10 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
   let_it_be(:access_token) { create(:oauth_access_token, user: user, scopes: [:mcp]) }
 
   before do
-    stub_application_setting(instance_level_ai_beta_features_enabled: true, duo_features_enabled: true)
-    stub_ee_application_setting(elasticsearch_search: true)
-    allow(::Search::Zoekt).to receive(:enabled?).and_return(true)
+    stub_application_setting(
+      instance_level_ai_beta_features_enabled: true,
+      duo_features_enabled: true
+    )
 
     # Stub semantic code search availability to avoid ActiveContext infrastructure dependency
     # We have to use `allow_any_instance_of` since this tool is initialized
@@ -290,17 +291,15 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           "icons" => expected_icons,
           "description" => "" \
             "Search across GitLab with automatic selection of the best available search method.\n\n" \
-            "**Capabilities:** basic (keywords, file filters), advanced (boolean operators), exact code (exact match, regex, symbols)\n\n**Syntax Examples:**\n" \
-            "- Basic: \"bug fix\", \"filename:*.rb\", \"extension:js\"\n" \
-            "- Advanced: \"bug AND critical\", \"display | banner\", \"#23456\"\n" \
-            "- Exact code: \"class User\", \"foo lang:ruby\", \"sym:initialize\"",
+            "**Capabilities:** basic (keywords, file filters)\n\n**Syntax Examples:**\n" \
+            "- Basic: \"bug fix\", \"filename:*.rb\", \"extension:js\"",
           "inputSchema" => {
             "type" => "object",
             "properties" => {
               "scope" => {
                 "type" => "string",
                 "description" =>
-                  "Specify the type of content to search for. Available content types vary by search context:\n\n- GitLab instance: projects, milestones, issues, merge_requests, snippet_titles, users, blobs, commits, epics, notes, wiki_blobs\n- Group: projects, milestones, issues, merge_requests, snippet_titles, users, blobs, commits, epics, notes, wiki_blobs\n- Project: projects, milestones, issues, merge_requests, snippet_titles, users, blobs, wiki_blobs, commits, notes\n\nExamples:\n- Use \"issues\" to search for issues\n- Use \"merge_requests\" to search for merge requests\n- Use \"blobs\" to search code files\n- Use \"notes\" to search comments across different content\n- Use \"commits\" to search commit messages"
+                  "Specify the type of content to search for. Available content types vary by search context:\n\n- GitLab instance: projects, milestones, issues, merge_requests, snippet_titles, users\n- Group: projects, milestones, issues, merge_requests, snippet_titles, users\n- Project: projects, milestones, issues, merge_requests, snippet_titles, users, projects, milestones, issues, merge_requests, snippet_titles, users, blobs, wiki_blobs, commits, notes\n\nExamples:\n- Use \"issues\" to search for issues\n- Use \"merge_requests\" to search for merge requests\n- Use \"blobs\" to search code files\n- Use \"notes\" to search comments across different content\n- Use \"commits\" to search commit messages"
               },
               "search" => {
                 "type" => "string",
@@ -321,10 +320,6 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
               "confidential" => {
                 "type" => "boolean",
                 "description" => "Filter results by confidentiality. Available for issues scope; other scopes are ignored."
-              },
-              "regex" => {
-                "type" => "boolean",
-                "description" => "Performs a regex code search. Available for blobs scope; other scopes are ignored."
               },
               "fields" => {
                 "type" => "array", "items" => { "type" => "string" },
