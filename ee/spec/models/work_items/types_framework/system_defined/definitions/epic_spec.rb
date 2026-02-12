@@ -106,4 +106,10 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Definitions::Epic, feat
       expect(described_class.supports_conversion?).to be false
     end
   end
+
+  describe '.filterable??' do
+    it 'returns true' do
+      expect(described_class.filterable?).to be true
+    end
+  end
 end

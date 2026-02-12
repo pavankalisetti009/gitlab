@@ -81,6 +81,10 @@ module WorkItems
             def supports_conversion?
               false
             end
+
+            def filterable?
+              true
+            end
           end
         end
       end
