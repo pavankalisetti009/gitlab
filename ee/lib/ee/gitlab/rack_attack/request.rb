@@ -9,6 +9,8 @@ module EE
         VIRTUAL_REGISTRIES_API_PACKAGE_TYPES = ::VirtualRegistries::PACKAGE_TYPES.map(&:to_s).join('|')
         VIRTUAL_REGISTRIES_API_PACKAGES_ENDPOINTS_REGEX =
           %r{^/api/v\d+/virtual_registries/packages/(?:#{VIRTUAL_REGISTRIES_API_PACKAGE_TYPES})/\d+/}
+        VIRTUAL_REGISTRIES_API_CONTAINER_ENDPOINTS_REGEX =
+          %r{^/v2/virtual_registries/container/\d+/}
 
         override :should_be_skipped?
         def should_be_skipped?
@@ -28,7 +30,8 @@ module EE
         end
 
         def virtual_registries_api_endpoints?
-          matches?(VIRTUAL_REGISTRIES_API_PACKAGES_ENDPOINTS_REGEX)
+          matches?(VIRTUAL_REGISTRIES_API_PACKAGES_ENDPOINTS_REGEX) ||
+            matches?(VIRTUAL_REGISTRIES_API_CONTAINER_ENDPOINTS_REGEX)
         end
       end
     end
