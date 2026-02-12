@@ -1,12 +1,6 @@
 import merge from 'lodash/merge';
 
 const EMPTY_POOL = { totalCredits: 0, creditsUsed: 0 };
-const NO_POOLS = {
-  usersUsage: undefined,
-  monthlyCommitment: null,
-  monthlyWaiver: null,
-  overage: null,
-};
 const USER_NULL_USAGE = {
   creditsUsed: null,
   monthlyCommitmentCreditsUsed: null,
@@ -24,6 +18,12 @@ export const mockUsersUsageDataWithoutPool = {
         totalUsersUsingMonthlyCommitment: null, // or 0
         totalUsersBlocked: 10,
         avgCreditsPerUser: 150,
+        dailyUsage: [
+          { creditsUsed: 25, date: '2025-10-01' },
+          { creditsUsed: 30, date: '2025-10-02' },
+          { creditsUsed: 28, date: '2025-10-03' },
+          { creditsUsed: 35, date: '2025-10-04' },
+        ],
 
         // per-user details
         users: {
@@ -588,23 +588,59 @@ export const mockUsageDataBase = {
       isOutdatedClient: false,
       startDate: '2025-10-01',
       endDate: '2025-10-31',
-      lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: '/subscriptions/A-S042/usage',
+      lastEventTransactionAt: null,
+      canAcceptOverageTerms: true,
+      subscriptionPortalUsageDashboardUrl:
+        'https://customers.gitlab.com/subscriptions/A-S042/usage',
       purchaseCreditsPath: '/purchase-credits-path',
-
       paidTierTrial: {
         isActive: false,
+        dailyUsage: [],
       },
-
-      ...NO_POOLS,
+      monthlyCommitment: {
+        totalCredits: 0,
+        creditsUsed: 0,
+        dailyUsage: [],
+      },
+      monthlyWaiver: {
+        totalCredits: null,
+        creditsUsed: null,
+        dailyUsage: [],
+      },
+      overage: {
+        isAllowed: false,
+        creditsUsed: 0,
+        dailyUsage: [],
+      },
+      usersUsage: {
+        dailyUsage: [],
+      },
     },
   },
 };
 
-export const usageDataWithCommitment = merge({}, mockUsageDataBase, {
+export const mockUsageDataWithIncludedCredits = merge({}, mockUsageDataBase, {
   data: {
     subscriptionUsage: {
+      lastEventTransactionAt: '2025-10-05T03:00:00Z',
+      usersUsage: {
+        dailyUsage: [
+          { creditsUsed: 5, date: '2025-10-01' },
+          { creditsUsed: 4, date: '2025-10-02' },
+          { creditsUsed: 6, date: '2025-10-03' },
+          { creditsUsed: 5.5, date: '2025-10-04' },
+          { creditsUsed: 4.5, date: '2025-10-05' },
+        ],
+      },
+    },
+  },
+});
+
+export const usageDataWithCommitment = merge({}, mockUsageDataWithIncludedCredits, {
+  data: {
+    subscriptionUsage: {
+      canAcceptOverageTerms: false,
+      lastEventTransactionAt: '2025-10-11T03:00:00Z',
       monthlyCommitment: {
         creditsUsed: 50.333,
         totalCredits: 100,
@@ -616,78 +652,58 @@ export const usageDataWithCommitment = merge({}, mockUsageDataBase, {
         ],
       },
       overage: {
-        dailyUsage: [],
-        ...EMPTY_POOL,
         isAllowed: true,
-      },
-
-      monthlyWaiver: {
-        dailyUsage: [],
-        ...EMPTY_POOL,
       },
     },
   },
 });
 
-export const usageDataWithoutLastEventTransactionAt = {
+const usageDataWithCommitmentUsedUp = merge({}, mockUsageDataWithIncludedCredits, {
   data: {
     subscriptionUsage: {
-      enabled: true,
-      isOutdatedClient: false,
-      lastEventTransactionAt: null,
       canAcceptOverageTerms: false,
-      subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
-      purchaseCreditsPath: '/purchase-credits-path',
-      ...NO_POOLS,
-    },
-  },
-};
-
-export const usageDataWithCommitmentWithMonthlyWaiver = merge({}, mockUsageDataBase, {
-  data: {
-    subscriptionUsage: {
+      lastEventTransactionAt: '2025-10-11T03:00:00Z',
       monthlyCommitment: {
         creditsUsed: 50,
         totalCredits: 50,
         dailyUsage: [
-          { creditsUsed: 5, date: '2025-10-06' },
-          { creditsUsed: 12, date: '2025-10-07' },
-          { creditsUsed: 18, date: '2025-10-10' },
-          { creditsUsed: 15, date: '2025-10-11' },
-        ],
-      },
-      monthlyWaiver: {
-        creditsUsed: 50.125,
-        totalCredits: 100,
-        dailyUsage: [
-          { creditsUsed: 8.5, date: '2025-10-11' },
-          { creditsUsed: 12.25, date: '2025-10-12' },
-          { creditsUsed: 15.375, date: '2025-10-13' },
-          { creditsUsed: 14, date: '2025-10-14' },
+          { creditsUsed: 8, date: '2025-10-01' },
+          { creditsUsed: 12, date: '2025-10-02' },
+          { creditsUsed: 10, date: '2025-10-03' },
+          { creditsUsed: 15, date: '2025-10-04' },
+          { creditsUsed: 5, date: '2025-10-05' },
         ],
       },
       overage: {
-        isAllowed: false,
-        dailyUsage: [],
-        ...EMPTY_POOL,
+        isAllowed: true,
       },
     },
   },
 });
 
-export const usageDataWithCommitmentWithOverage = merge({}, mockUsageDataBase, {
+export const usageDataWithCommitmentWithMonthlyWaiver = merge({}, usageDataWithCommitmentUsedUp, {
   data: {
     subscriptionUsage: {
-      monthlyCommitment: {
-        creditsUsed: 50,
-        totalCredits: 50,
+      lastEventTransactionAt: '2025-10-14T03:00:00Z',
+      monthlyWaiver: {
+        totalCredits: 100,
+        creditsUsed: 75,
         dailyUsage: [
-          { creditsUsed: 5, date: '2025-10-06' },
-          { creditsUsed: 12, date: '2025-10-07' },
-          { creditsUsed: 18, date: '2025-10-10' },
-          { creditsUsed: 15, date: '2025-10-11' },
+          { creditsUsed: 12.5, date: '2025-10-10' },
+          { creditsUsed: 15.25, date: '2025-10-11' },
+          { creditsUsed: 18.75, date: '2025-10-12' },
+          { creditsUsed: 14.5, date: '2025-10-13' },
+          { creditsUsed: 14, date: '2025-10-14' },
         ],
       },
+    },
+  },
+});
+
+export const usageDataWithCommitmentWithOverage = merge({}, usageDataWithCommitmentUsedUp, {
+  data: {
+    subscriptionUsage: {
+      lastEventTransactionAt: '2025-10-14T03:00:00Z',
       overage: {
         isAllowed: true,
         creditsUsed: 50,
@@ -698,30 +714,6 @@ export const usageDataWithCommitmentWithOverage = merge({}, mockUsageDataBase, {
           { creditsUsed: 13.5, date: '2025-10-14' },
         ],
       },
-
-      monthlyWaiver: {
-        dailyUsage: [],
-        ...EMPTY_POOL,
-      },
-    },
-  },
-});
-
-export const usageDataNoCommitmentNoMonthlyWaiverNoOverage = merge({}, mockUsageDataBase, {
-  data: {
-    subscriptionUsage: {
-      canAcceptOverageTerms: true,
-      monthlyCommitment: null,
-      overage: {
-        isAllowed: false,
-        dailyUsage: [],
-        ...EMPTY_POOL,
-      },
-
-      monthlyWaiver: {
-        dailyUsage: [],
-        ...EMPTY_POOL,
-      },
     },
   },
 });
@@ -729,6 +721,8 @@ export const usageDataNoCommitmentNoMonthlyWaiverNoOverage = merge({}, mockUsage
 export const usageDataNoCommitmentWithOverage = merge({}, mockUsageDataBase, {
   data: {
     subscriptionUsage: {
+      canAcceptOverageTerms: false,
+      lastEventTransactionAt: '2025-10-05T03:00:00Z',
       monthlyCommitment: null,
       overage: {
         isAllowed: true,
@@ -740,11 +734,6 @@ export const usageDataNoCommitmentWithOverage = merge({}, mockUsageDataBase, {
           { creditsUsed: 9.5, date: '2025-10-04' },
           { creditsUsed: 9, date: '2025-10-05' },
         ],
-      },
-
-      monthlyWaiver: {
-        dailyUsage: [],
-        ...EMPTY_POOL,
       },
     },
   },
@@ -765,88 +754,44 @@ export const usageDataNoCommitmentWithOverageWithOverageNotAllowed = merge(
   },
 );
 
-export const usageDataCommitmentWithMonthlyWaiver = merge({}, mockUsageDataBase, {
-  data: {
-    subscriptionUsage: {
-      monthlyCommitment: {
-        creditsUsed: 50,
-        totalCredits: 50,
-        dailyUsage: [
-          { creditsUsed: 8, date: '2025-10-01' },
-          { creditsUsed: 12, date: '2025-10-02' },
-          { creditsUsed: 10, date: '2025-10-03' },
-          { creditsUsed: 15, date: '2025-10-04' },
-          { creditsUsed: 5, date: '2025-10-05' },
-        ],
-      },
+export const usageDataCommitmentWithMonthlyWaiverWithOverage = merge(
+  {},
+  usageDataWithCommitmentUsedUp,
+  {
+    data: {
+      subscriptionUsage: {
+        lastEventTransactionAt: '2025-10-14T03:00:00Z',
+        monthlyWaiver: {
+          totalCredits: 100,
+          creditsUsed: 100,
+          dailyUsage: [
+            { creditsUsed: 16.5, date: '2025-10-06' },
+            { creditsUsed: 22.25, date: '2025-10-07' },
+            { creditsUsed: 28.125, date: '2025-10-08' },
+            { creditsUsed: 21.125, date: '2025-10-09' },
+            { creditsUsed: 12, date: '2025-10-10' },
+          ],
+        },
 
-      overage: {
-        isAllowed: true,
-        dailyUsage: [],
-        ...EMPTY_POOL,
-      },
-
-      monthlyWaiver: {
-        totalCredits: 100,
-        creditsUsed: 75,
-        dailyUsage: [
-          { creditsUsed: 12.5, date: '2025-10-06' },
-          { creditsUsed: 15.25, date: '2025-10-07' },
-          { creditsUsed: 18.75, date: '2025-10-08' },
-          { creditsUsed: 14.5, date: '2025-10-09' },
-          { creditsUsed: 14, date: '2025-10-10' },
-        ],
+        overage: {
+          isAllowed: true,
+          creditsUsed: 24,
+          dailyUsage: [
+            { creditsUsed: 4.5, date: '2025-10-11' },
+            { creditsUsed: 6.25, date: '2025-10-12' },
+            { creditsUsed: 7.75, date: '2025-10-13' },
+            { creditsUsed: 5.5, date: '2025-10-14' },
+          ],
+        },
       },
     },
   },
-});
-
-export const usageDataCommitmentWithMonthlyWaiverWithOverage = merge({}, mockUsageDataBase, {
-  data: {
-    subscriptionUsage: {
-      monthlyCommitment: {
-        creditsUsed: 100,
-        totalCredits: 100,
-        dailyUsage: [
-          { creditsUsed: 18, date: '2025-10-01' },
-          { creditsUsed: 22, date: '2025-10-02' },
-          { creditsUsed: 20, date: '2025-10-03' },
-          { creditsUsed: 25, date: '2025-10-04' },
-          { creditsUsed: 15, date: '2025-10-05' },
-        ],
-      },
-
-      overage: {
-        isAllowed: true,
-        creditsUsed: 24,
-        dailyUsage: [
-          { creditsUsed: 4.5, date: '2025-10-11' },
-          { creditsUsed: 6.25, date: '2025-10-12' },
-          { creditsUsed: 7.75, date: '2025-10-13' },
-          { creditsUsed: 5.5, date: '2025-10-14' },
-        ],
-      },
-
-      monthlyWaiver: {
-        totalCredits: 100,
-        creditsUsed: 100,
-        dailyUsage: [
-          { creditsUsed: 16.5, date: '2025-10-06' },
-          { creditsUsed: 22.25, date: '2025-10-07' },
-          { creditsUsed: 28.125, date: '2025-10-08' },
-          { creditsUsed: 21.125, date: '2025-10-09' },
-          { creditsUsed: 12, date: '2025-10-10' },
-        ],
-      },
-    },
-  },
-});
+);
 
 export const usageDataWithOutdatedClient = merge({}, mockUsageDataBase, {
   data: {
     subscriptionUsage: {
       isOutdatedClient: true,
-      ...NO_POOLS,
     },
   },
 });
@@ -860,7 +805,6 @@ export const usageDataWithDisabledState = merge({}, mockUsageDataBase, {
       startDate: null,
       endDate: null,
       purchaseCreditsPath: null,
-      ...NO_POOLS,
     },
   },
 });
@@ -869,16 +813,22 @@ export const usageDataWithoutPurchaseCreditsPath = merge({}, mockUsageDataBase, 
   data: {
     subscriptionUsage: {
       purchaseCreditsPath: null,
-      ...NO_POOLS,
     },
   },
 });
 
-export const usageDataOnPaidTierTrial = merge({}, mockUsageDataBase, {
+export const usageDataOnPaidTierTrial = merge({}, mockUsageDataWithIncludedCredits, {
   data: {
     subscriptionUsage: {
+      lastEventTransactionAt: '2025-10-08T03:00:00Z',
       paidTierTrial: {
         isActive: true,
+        dailyUsage: [
+          { creditsUsed: 15, date: '2025-10-05' },
+          { creditsUsed: 18, date: '2025-10-06' },
+          { creditsUsed: 20, date: '2025-10-07' },
+          { creditsUsed: 17, date: '2025-10-08' },
+        ],
       },
     },
   },

@@ -12,6 +12,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
 import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
+import UsageOverviewChart from 'ee/usage_quotas/usage_billing/components/usage_overview_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -21,11 +22,10 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
 import {
-  usageDataNoCommitmentNoMonthlyWaiverNoOverage,
   usageDataNoCommitmentWithOverage,
   usageDataWithCommitment,
-  usageDataWithoutLastEventTransactionAt,
-  usageDataCommitmentWithMonthlyWaiver,
+  mockUsageDataBase,
+  usageDataWithCommitmentWithMonthlyWaiver,
   usageDataCommitmentWithMonthlyWaiverWithOverage,
   usageDataWithOutdatedClient,
   usageDataWithoutPurchaseCreditsPath,
@@ -65,6 +65,7 @@ describe('UsageBillingApp', () => {
   const findSkeletonLoaders = () => wrapper.findByTestId('skeleton-loaders');
   const findUsageByUserTab = () => wrapper.findComponent(UsageByUserTab);
   const findUsageTrendsChart = () => wrapper.findComponent(UsageTrendsChart);
+  const findUsageOverviewChart = () => wrapper.findComponent(UsageOverviewChart);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findOutdatedClientAlert = () => wrapper.findByTestId('outdated-client-alert');
   const findDisabledStateAlert = () => wrapper.findByTestId('usage-billing-disabled-alert');
@@ -121,7 +122,7 @@ describe('UsageBillingApp', () => {
         expect(findPageHeading().text()).toContain('Last event transaction at:');
         expect(findPageHeading().findComponent(UserDate).exists()).toBe(true);
         expect(findPageHeading().findComponent(UserDate).props('date')).toBe(
-          '2025-10-14T07:41:59Z',
+          '2025-10-11T03:00:00Z',
         );
       });
 
@@ -196,7 +197,7 @@ describe('UsageBillingApp', () => {
           mockQueryHandler: jest.fn().mockResolvedValue({
             data: {
               subscriptionUsage: {
-                ...usageDataNoCommitmentNoMonthlyWaiverNoOverage.data.subscriptionUsage,
+                ...mockUsageDataBase.data.subscriptionUsage,
                 canAcceptOverageTerms,
               },
             },
@@ -217,7 +218,7 @@ describe('UsageBillingApp', () => {
     describe('without lastEventTransactionAt', () => {
       beforeEach(async () => {
         createComponent({
-          mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutLastEventTransactionAt),
+          mockQueryHandler: jest.fn().mockResolvedValue(mockUsageDataBase),
         });
         await waitForPromises();
       });
@@ -272,7 +273,7 @@ describe('UsageBillingApp', () => {
             mockQueryHandler: jest.fn().mockResolvedValue({
               data: {
                 subscriptionUsage: {
-                  ...usageDataNoCommitmentNoMonthlyWaiverNoOverage.data.subscriptionUsage,
+                  ...mockUsageDataBase.data.subscriptionUsage,
                   monthlyCommitment,
                   monthlyWaiver,
                   overage,
@@ -323,7 +324,9 @@ describe('UsageBillingApp', () => {
 
   describe('monthly commitment with monthly waiver credits', () => {
     beforeEach(async () => {
-      const mockQueryHandler = jest.fn().mockResolvedValue(usageDataCommitmentWithMonthlyWaiver);
+      const mockQueryHandler = jest
+        .fn()
+        .mockResolvedValue(usageDataWithCommitmentWithMonthlyWaiver);
 
       createComponent({ mockQueryHandler });
       await waitForPromises();
@@ -384,9 +387,7 @@ describe('UsageBillingApp', () => {
   describe('no monthly commitment no monthly waiver no overage', () => {
     beforeEach(async () => {
       createComponent({
-        mockQueryHandler: jest
-          .fn()
-          .mockResolvedValue(usageDataNoCommitmentNoMonthlyWaiverNoOverage),
+        mockQueryHandler: jest.fn().mockResolvedValue(mockUsageDataBase),
       });
       await waitForPromises();
     });
@@ -408,6 +409,32 @@ describe('UsageBillingApp', () => {
     beforeEach(async () => {
       createComponent();
       await waitForPromises();
+    });
+
+    describe('UsageOverviewChart', () => {
+      it('passes daily usage data to UsageOverviewChart', () => {
+        expect(findUsageOverviewChart().exists()).toBe(true);
+        expect(findUsageOverviewChart().props()).toMatchObject({
+          monthStartDate: '2025-10-01',
+          monthEndDate: '2025-10-31',
+          commitmentDailyUsage: [
+            { creditsUsed: 5, date: '2025-10-06' },
+            { creditsUsed: 12, date: '2025-10-07' },
+            { creditsUsed: 18, date: '2025-10-10' },
+            { creditsUsed: 15.333, date: '2025-10-11' },
+          ],
+          waiverDailyUsage: [],
+          overageDailyUsage: [],
+          paidTierTrialDailyUsage: [],
+          usersUsageDailyUsage: [
+            { creditsUsed: 5, date: '2025-10-01' },
+            { creditsUsed: 4, date: '2025-10-02' },
+            { creditsUsed: 6, date: '2025-10-03' },
+            { creditsUsed: 5.5, date: '2025-10-04' },
+            { creditsUsed: 4.5, date: '2025-10-05' },
+          ],
+        });
+      });
     });
 
     describe('UsageTrendsChart', () => {

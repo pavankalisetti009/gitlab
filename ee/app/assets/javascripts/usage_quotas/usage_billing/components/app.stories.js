@@ -5,11 +5,11 @@ import {
   mockUsersUsageDataWithNullUsage,
   usageDataCommitmentWithMonthlyWaiverWithOverage,
   usageDataWithCommitment,
-  usageDataNoCommitmentNoMonthlyWaiverNoOverage,
+  mockUsageDataBase,
   usageDataNoCommitmentWithOverage,
   usageDataNoCommitmentWithOverageWithOverageNotAllowed,
   usageDataWithCommitmentWithOverage,
-  usageDataCommitmentWithMonthlyWaiver,
+  usageDataWithCommitmentWithMonthlyWaiver,
   usageDataWithOutdatedClient,
   usageDataWithDisabledState,
   usageDataOnPaidTierTrial,
@@ -80,7 +80,7 @@ export const Default = {
 export const CommitmentWithMonthlyWaiverCredits = {
   render: (...args) => {
     const getSubscriptionUsageQueryHandler = () =>
-      Promise.resolve(usageDataCommitmentWithMonthlyWaiver);
+      Promise.resolve(usageDataWithCommitmentWithMonthlyWaiver);
 
     return createTemplate({
       getSubscriptionUsageQueryHandler,
@@ -145,8 +145,7 @@ export const NoCommitmentNoMonthlyWaiverNoOverage = {
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.resolve(mockUsersUsageDataWithoutPool);
 
-    const getSubscriptionUsageQueryHandler = () =>
-      Promise.resolve(usageDataNoCommitmentNoMonthlyWaiverNoOverage);
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(mockUsageDataBase);
 
     return createTemplate({
       getSubscriptionUsersUsageQueryHandler,
@@ -250,7 +249,7 @@ export const ErrorUsersUsageState = {
 export const CommitmentWithDisabledUserDetails = {
   render: (...args) => {
     const getSubscriptionUsageQueryHandler = () =>
-      Promise.resolve(usageDataCommitmentWithMonthlyWaiver);
+      Promise.resolve(usageDataWithCommitmentWithMonthlyWaiver);
 
     return createTemplate({
       getSubscriptionUsageQueryHandler,

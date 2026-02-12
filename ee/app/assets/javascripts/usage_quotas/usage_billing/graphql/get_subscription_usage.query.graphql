@@ -12,6 +12,10 @@ query getSubscriptionUsage($namespacePath: ID) {
 
     paidTierTrial {
       isActive
+      dailyUsage @gl_introduced(version: "18.9.0") {
+        creditsUsed
+        date
+      }
     }
 
     purchaseCreditsPath
@@ -34,6 +38,13 @@ query getSubscriptionUsage($namespacePath: ID) {
     overage {
       isAllowed
       creditsUsed
+      dailyUsage {
+        creditsUsed
+        date
+      }
+    }
+
+    usersUsage {
       dailyUsage {
         creditsUsed
         date

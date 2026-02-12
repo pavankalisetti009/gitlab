@@ -73189,6 +73189,9 @@ msgstr ""
 msgid "UsageBilling|Credits used after all included user credits and monthly commitment pool have been exhausted. Learn about %{linkStart}GitLab Credit pricing%{linkEnd}."
 msgstr ""
 
+msgid "UsageBilling|Daily GitLab Credits usage"
+msgstr ""
+
 msgid "UsageBilling|Date"
 msgstr ""
 
@@ -73303,6 +73306,9 @@ msgstr ""
 msgid "UsageBilling|Total credits used"
 msgstr ""
 
+msgid "UsageBilling|Trial"
+msgstr ""
+
 msgid "UsageBilling|Trial period:"
 msgstr ""
 
@@ -73319,6 +73325,9 @@ msgid "UsageBilling|Usage Billing is disabled"
 msgstr ""
 
 msgid "UsageBilling|Usage by user"
+msgstr ""
+
+msgid "UsageBilling|Usage overview"
 msgstr ""
 
 msgid "UsageBilling|Usage period:"
