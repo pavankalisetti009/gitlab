@@ -40,6 +40,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         workload_definition = kwargs[:workload_definition]
         expect(project).to eq(shadowed_project)
         expect(workload_definition.tags).to eq([::Ai::DuoWorkflows::Workflow::WORKLOAD_TAG])
+        expect(kwargs[:duo_workflow_definition]).to eq(workflow.workflow_definition)
         method.call(**kwargs)
       end
 

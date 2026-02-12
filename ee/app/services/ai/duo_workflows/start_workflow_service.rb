@@ -52,7 +52,8 @@ module Ai
           current_user: @workload_user,
           source: :duo_workflow,
           workload_definition: workload_definition,
-          ref: @ref
+          ref: @ref,
+          duo_workflow_definition: @workflow.workflow_definition
         )
         response = service.execute
 
