@@ -509,6 +509,9 @@ export default {
         this.shouldShowActiveTrialOrSubscriptionEmptyState
       );
     },
+    shouldDisplayLoadingIndicator() {
+      return this.isLoading && !this.messages?.length;
+    },
   },
   watch: {
     messages: {
@@ -531,12 +534,9 @@ export default {
       },
     },
     'duoChatGlobalState.commands': {
-      handler(newVal) {
-        const [firstCommand] = newVal;
-        if (firstCommand) {
-          this.selectAgentFromCommand(firstCommand);
-          this.onNewChat();
-          this.onSendChatPrompt(firstCommand.question);
+      handler() {
+        if (!this.isLoading) {
+          this.processPendingCommands();
         }
       },
     },
@@ -950,16 +950,15 @@ export default {
     },
     async hydrateActiveWorkflow() {
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+
+      this.isLoading = true;
+
       if (this.workflowId) {
         // Load cached messages immediately to prevent flickering
         const snapshot = loadThreadSnapshot(this.workflowId);
         if (snapshot?.messages?.length) {
           this.setMessages(snapshot.messages);
-        } else {
-          this.isLoading = true;
         }
-      } else {
-        this.isLoading = true;
       }
 
       // We need the snapshot copy of the workflowId to avoid race conditions
@@ -969,6 +968,7 @@ export default {
 
       try {
         const workflowExists = await this.validateWorkflowExists();
+
         if (!workflowExists) {
           clearThreadSnapshot(id);
           return;
@@ -982,7 +982,6 @@ export default {
           this.startWorkflow('');
         }
       } finally {
-        this.isLoading = false;
         if (this.aiCatalogItemVersionId) {
           const activeAgent = this.catalogAgents.find(
             (agent) => agent.pinnedItemVersionId === this.aiCatalogItemVersionId,
@@ -991,6 +990,8 @@ export default {
         } else if (this.selectedFoundationalAgent) {
           this.setCurrentAgent(this.selectedFoundationalAgent);
         }
+        this.isLoading = false;
+        this.processPendingCommands();
       }
     },
     async loadActiveWorkflow() {
@@ -1017,8 +1018,16 @@ export default {
       } catch (err) {
         this.onError(err);
       } finally {
-        this.isLoading = false;
         this.isInitialLoad = false;
+      }
+    },
+    processPendingCommands() {
+      const [firstCommand] = duoChatGlobalState.commands;
+
+      if (firstCommand) {
+        this.selectAgentFromCommand(firstCommand);
+        this.onNewChat();
+        this.onSendChatPrompt(firstCommand.question);
       }
     },
     onBackToList() {
@@ -1157,7 +1166,7 @@ export default {
         @change-model="({ detail: models }) => window.alert(models[0])"
       />
     </div>
-    <chat-loading-state v-else-if="isLoading" />
+    <chat-loading-state v-else-if="shouldDisplayLoadingIndicator" />
     <web-agentic-duo-chat
       v-else
       id="duo-chat"

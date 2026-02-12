@@ -519,6 +519,29 @@ describe('Duo Agentic Chat', () => {
         resolvePromise('');
       });
 
+      it('does not render the loading state when isLoading is true but messages exist', async () => {
+        // Set up initial messages
+        const existingMessages = [
+          { role: 'user', content: 'Hello', requestId: '1' },
+          { role: 'assistant', content: 'Hi there!', requestId: '2' },
+        ];
+
+        createComponent({
+          initialState: {
+            messages: existingMessages,
+          },
+          data: {
+            isLoading: true,
+          },
+        });
+
+        await nextTick();
+
+        // Loading state should not be shown because messages exist
+        expect(findChatLoadingState().exists()).toBe(false);
+        expect(findDuoChat().exists()).toBe(true);
+      });
+
       it('passes isToolApprovalProcessing prop to AgenticDuoChat component', () => {
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
       });
@@ -4161,6 +4184,48 @@ describe('Duo Agentic Chat', () => {
 
       expect(trustedUrls).toContain('gitlab.com');
       expect(trustedUrls).toContain(docsUrlHost);
+    });
+  });
+
+  describe('processPendingCommands integration', () => {
+    it('does not process commands when isLoading is true', async () => {
+      let resolvePromise = null;
+      const pendingPromise = new Promise((resolve) => {
+        resolvePromise = resolve;
+      });
+      ApolloUtils.fetchWorkflowEvents.mockReturnValue(pendingPromise);
+
+      getStorageValue.mockReturnValue({
+        exists: true,
+        value: { workflowId: MOCK_WORKFLOW_ID },
+      });
+      createComponent({
+        propsData: { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
+      });
+
+      await nextTick();
+
+      const testQuestion = 'What is GitLab CI/CD?';
+
+      duoChatGlobalState.commands = [{ question: testQuestion }];
+
+      await nextTick();
+
+      expect(ApolloUtils.createWorkflow).not.toHaveBeenCalled();
+
+      resolvePromise(MOCK_WORKFLOW_EVENTS_RESPONSE);
+
+      await waitForPromises();
+
+      await nextTick();
+
+      // Commands should be processed after hydration completes
+      expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          goal: testQuestion,
+        }),
+      );
     });
   });
 });
