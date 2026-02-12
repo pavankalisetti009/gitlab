@@ -17,9 +17,7 @@ additional_properties:
   label:
     description: The outcome enum. Either 'allowed', 'blocked-license', 'blocked-vulnerability', 'blocked-malicious', 'warn-license', 'warn-vulnerability', or 'warn-malicious'
   property:
-    description: The auth type. Either 'guest', 'user' or 'deploy_token'
-  deploy_token_id:
-    description: The hashed deploy token id
+    description: The cache status (1 for hit, 0 for miss)
   value:
     description: The runtime in milliseconds
   purl:
