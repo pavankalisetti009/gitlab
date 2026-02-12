@@ -30,12 +30,13 @@ describe('AdminDataManagementApp', () => {
   const defaultModelTitle = defaultModelType.titlePlural.toLowerCase();
   const defaultBasePath = 'admin/data_management';
 
-  const createComponent = () => {
+  const createComponent = ({ props } = {}) => {
     wrapper = shallowMount(AdminDataManagementApp, {
       router,
       propsData: {
         modelTypes: MOCK_MODEL_TYPES,
         initialModelTypeName: defaultModelType.namePlural,
+        ...props,
       },
     });
   };
@@ -51,17 +52,39 @@ describe('AdminDataManagementApp', () => {
     router = createRouter(defaultBasePath);
   });
 
-  it('renders GeoListTopBar', () => {
-    createComponent();
+  describe('when checksumEnabled is true', () => {
+    beforeEach(() => {
+      createComponent();
+    });
 
-    expect(findGeoListTopBar().props()).toMatchObject({
-      pageHeadingTitle: 'Data management',
-      pageHeadingDescription: 'Review stored data and data health within your instance.',
-      filteredSearchOptionLabel: 'Search by ID',
-      activeListboxItem: defaultModelType.namePlural,
-      activeSort: { value: 'id', direction: 'asc' },
-      bulkActions: BULK_ACTIONS,
-      showActions: false,
+    it('renders GeoListTopBar with bulk actions', () => {
+      expect(findGeoListTopBar().props()).toMatchObject({
+        pageHeadingTitle: 'Data management',
+        pageHeadingDescription: 'Review stored data and data health within your instance.',
+        filteredSearchOptionLabel: 'Search by ID',
+        activeListboxItem: defaultModelType.namePlural,
+        activeSort: { value: 'id', direction: 'asc' },
+        bulkActions: BULK_ACTIONS,
+        showActions: false,
+      });
+    });
+  });
+
+  describe('when checksumEnabled is false', () => {
+    beforeEach(() => {
+      createComponent({ props: { modelTypes: [{ ...defaultModelType, checksumEnabled: false }] } });
+    });
+
+    it('renders GeoListTopBar without bulk actions', () => {
+      expect(findGeoListTopBar().props()).toMatchObject({
+        pageHeadingTitle: 'Data management',
+        pageHeadingDescription: 'Review stored data and data health within your instance.',
+        filteredSearchOptionLabel: 'Search by ID',
+        activeListboxItem: defaultModelType.namePlural,
+        activeSort: { value: 'id', direction: 'asc' },
+        bulkActions: [],
+        showActions: false,
+      });
     });
   });
 

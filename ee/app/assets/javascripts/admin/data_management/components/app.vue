@@ -68,6 +68,13 @@ export default {
     hasPrevPage() {
       return Boolean(this.pageInfo.prevCursor);
     },
+    bulkActions() {
+      if (!this.activeModelType.checksumEnabled) {
+        return [];
+      }
+
+      return BULK_ACTIONS;
+    },
     emptyState() {
       return {
         title: sprintf(s__('Geo|No %{itemTitle} exist'), {
@@ -190,7 +197,6 @@ export default {
       this.$router.push({ params: this.$route.params, query: this.queryWithPagination });
     },
   },
-  BULK_ACTIONS,
 };
 </script>
 
@@ -205,7 +211,7 @@ export default {
       :filtered-search-option-label="__('Search by ID')"
       :active-listbox-item="activeModelType.namePlural"
       :active-sort="pageInfo.sort"
-      :bulk-actions="$options.BULK_ACTIONS"
+      :bulk-actions="bulkActions"
       :show-actions="hasItems"
       @listboxChange="handleListboxChange"
       @search="handleSearch"

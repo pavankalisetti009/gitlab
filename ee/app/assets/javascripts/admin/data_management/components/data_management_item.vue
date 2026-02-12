@@ -40,20 +40,29 @@ export default {
   },
   computed: {
     timeAgoArray() {
-      return [
+      const items = [
         {
           label: this.$options.i18n.created,
           dateString: this.item.createdAt,
           defaultText: this.$options.i18n.unknown,
         },
-        {
+      ];
+
+      if (this.activeModelType.checksumEnabled) {
+        items.push({
           label: this.$options.i18n.lastChecksum,
           dateString: this.item.checksumInformation?.lastChecksum,
           defaultText: this.$options.i18n.unknown,
-        },
-      ];
+        });
+      }
+
+      return items;
     },
     statusArray() {
+      if (!this.activeModelType.checksumEnabled) {
+        return [];
+      }
+
       const state = this.item.checksumInformation?.checksumState?.toUpperCase();
       const status = VERIFICATION_STATUS_STATES[state] || VERIFICATION_STATUS_STATES.UNKNOWN;
       const label = VERIFICATION_STATUS_LABELS[state] || VERIFICATION_STATUS_LABELS.UNKNOWN;
@@ -68,6 +77,10 @@ export default {
       ];
     },
     actionsArray() {
+      if (!this.activeModelType.checksumEnabled) {
+        return [];
+      }
+
       return [
         {
           id: 'geo-checksum-item',
