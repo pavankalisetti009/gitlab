@@ -19,6 +19,12 @@ import MarkdownField from '~/vue_shared/components/markdown/field.vue';
 import { CLEAR_AUTOSAVE_ENTRY_EVENT } from '~/vue_shared/constants';
 import userCanApproveQuery from '~/batch_comments/queries/can_approve.query.graphql';
 import toast from '~/vue_shared/plugins/global_toast';
+import { visitUrl } from '~/lib/utils/url_utility';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn(),
+}));
 
 jest.mock('~/vue_shared/plugins/global_toast');
 
@@ -51,7 +57,7 @@ describe('ReviewDrawer', () => {
     await findForm().vm.$emit('submit', { preventDefault: jest.fn() });
   };
 
-  const createComponent = ({ canApprove = true } = {}) => {
+  const createComponent = ({ canApprove = true, diffsPath = '' } = {}) => {
     const requestHandlers = [
       [
         userCanApproveQuery,
@@ -77,6 +83,9 @@ describe('ReviewDrawer', () => {
     wrapper = mountExtended(ReviewDrawer, {
       pinia,
       apolloProvider,
+      provide: {
+        diffsPath,
+      },
     });
   };
 
@@ -131,17 +140,45 @@ describe('ReviewDrawer', () => {
     expect(previewItems.at(1).props()).toMatchObject(expect.objectContaining({ draft: { id: 2 } }));
   });
 
-  it('goes to a selected draft in file by file mode', async () => {
-    const draft = { id: 1, file_path: 'foo' };
-    useLegacyDiffs().viewDiffsFileByFile = true;
-    useBatchComments().drafts = [draft];
-    useBatchComments().drawerOpened = true;
-    createComponent();
+  describe.each`
+    fileByFileMode | description   | goToFileCalls
+    ${true}        | ${'enabled'}  | ${1}
+    ${false}       | ${'disabled'} | ${0}
+  `(
+    'when clicking a draft with file by file mode $description',
+    ({ fileByFileMode, goToFileCalls }) => {
+      const diffsPath = 'http://gitlab.com/project/-/merge_requests/1/diffs';
 
-    await wrapper.findComponent(PreviewItem).vm.$emit('click', draft);
+      beforeEach(() => {
+        useLegacyDiffs().viewDiffsFileByFile = fileByFileMode;
+        useBatchComments().drawerOpened = true;
+      });
 
-    expect(useLegacyDiffs().goToFile).toHaveBeenCalledWith({ path: draft.file_path });
-  });
+      it('scrolls to draft when draft is on latest diff', async () => {
+        const draft = { id: 1, file_path: 'foo' };
+        useBatchComments().drafts = [draft];
+        createComponent({ diffsPath });
+
+        await wrapper.findComponent(PreviewItem).vm.$emit('click', draft);
+
+        expect(useLegacyDiffs().goToFile).toHaveBeenCalledTimes(goToFileCalls);
+        expect(useBatchComments().scrollToDraft).toHaveBeenCalledWith(draft);
+      });
+
+      it('navigates to commit URL when draft is not on latest diff', async () => {
+        const draft = { id: 1, file_path: 'foo', position: { head_sha: 'old-sha' } };
+        useNotes().noteableData.diff_head_sha = 'current-sha';
+        useBatchComments().drafts = [draft];
+        createComponent({ diffsPath });
+
+        await wrapper.findComponent(PreviewItem).vm.$emit('click', draft);
+
+        expect(useLegacyDiffs().goToFile).not.toHaveBeenCalled();
+        expect(visitUrl).toHaveBeenCalledWith(expect.stringContaining('commit_id=old-sha'));
+        expect(visitUrl).toHaveBeenCalledWith(expect.stringContaining('#draft_1'));
+      });
+    },
+  );
 
   it('calls publishReview with note data', async () => {
     useBatchComments().drawerOpened = true;
