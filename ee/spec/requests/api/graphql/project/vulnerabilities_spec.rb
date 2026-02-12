@@ -115,7 +115,7 @@ RSpec.describe 'Query.project(fullPath).vulnerabilities', feature_category: :vul
         expect(latest_flag['updatedAt']).not_to be_nil
       end
 
-      describe 'tracked refs filter', :elastic do
+      describe 'trackedRefIds filter', :elastic do
         let_it_be(:tracked_ref) { create(:security_project_tracked_context, project: project) }
         let_it_be(:vulnerability_read) do
           create(:vulnerability_read, project: project, tracked_context: tracked_ref)
@@ -160,28 +160,28 @@ RSpec.describe 'Query.project(fullPath).vulnerabilities', feature_category: :vul
           expect(vulnerabilities.pluck('id')).to contain_exactly(vulnerability_read.vulnerability.to_global_id.to_s)
         end
 
-        context 'when elasticsearch settings are not enabled' do
-          before do
-            stub_ee_application_setting(elasticsearch_search: false, elasticsearch_indexing: false)
-          end
+        it_behaves_like 'validates tracked ref filters' do
+          let(:actor) { project }
+        end
+      end
 
-          it 'returns an error' do
-            req
-
-            expect_graphql_errors_to_include("Require advanced vulnerability management to be enabled!")
-          end
+      describe 'trackedRefsScope filter', :elastic do
+        let(:query) do
+          %(
+            query {
+              project(fullPath: "#{project.full_path}") {
+                vulnerabilities(trackedRefsScope: DEFAULT_BRANCHES) {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          )
         end
 
-        context 'when vulnerabilities_across_contexts feature flag is diabled' do
-          before do
-            stub_feature_flags(vulnerabilities_across_contexts: false)
-          end
-
-          it 'returns an error' do
-            req
-
-            expect_graphql_errors_to_include('The vulnerabilities_across_contexts feature flag is not enabled.')
-          end
+        it_behaves_like 'validates tracked ref filters' do
+          let(:actor) { project }
         end
       end
     end
