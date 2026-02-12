@@ -4,17 +4,7 @@ import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_tre
 import { useFakeDate } from 'helpers/fake_date';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
-
-// Vue 2 / 3 test helper to extract text from a Vue slot's content
-const getSlotText = (slotContent) => {
-  const node = slotContent[0];
-  // Vue 3: text is nested in children
-  if (node.children && Array.isArray(node.children)) {
-    return node.children[0]?.text || '';
-  }
-  // Vue 2: text is directly on the node
-  return node.text || '';
-};
+import { getSlotText } from './__helpers__/get_slot_text';
 
 describe('UsageTrendsChart', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

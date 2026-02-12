@@ -17,6 +17,7 @@ import CurrentUsageCard from './current_usage_card.vue';
 import CurrentOverageUsageCard from './current_overage_usage_card.vue';
 import MonthlyWaiverCard from './monthly_waiver_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
+import UsageOverviewChart from './usage_overview_chart.vue';
 import OverageOptInCard from './overage_opt_in_card.vue';
 import PaidTierTrialDisclaimer from './paid_tier_trial_period_view.vue';
 
@@ -37,6 +38,7 @@ export default {
     UserDate,
     HumanTimeframe,
     UsageTrendsChart,
+    UsageOverviewChart,
     OverageOptInCard,
     PaidTierTrialDisclaimer,
   },
@@ -125,6 +127,12 @@ export default {
     },
     isMonthlyWaiverAvailable() {
       return Boolean(this.monthlyWaiverTotalCredits);
+    },
+    paidTierTrialDailyUsage() {
+      return this.subscriptionUsage?.paidTierTrial?.dailyUsage ?? [];
+    },
+    usersUsageDailyUsage() {
+      return this.subscriptionUsage?.usersUsage?.dailyUsage ?? [];
     },
     usageTrendsTabIsAvailable() {
       return this.poolIsAvailable || this.isMonthlyWaiverAvailable || this.overageIsAllowed;
@@ -246,6 +254,7 @@ export default {
       :customers-usage-dashboard-url="customersUsageDashboardUrl"
       :purchase-credits-url="purchaseCreditsUrl"
     />
+
     <template v-else>
       <section
         class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row"
@@ -295,6 +304,17 @@ export default {
             :monthly-waiver-is-available="isMonthlyWaiverAvailable"
             :overage-daily-usage="overageDailyUsage"
             :overage-is-allowed="overageIsAllowed"
+          />
+        </gl-tab>
+        <gl-tab :title="s__('UsageBilling|Usage overview')">
+          <usage-overview-chart
+            :month-start-date="subscriptionUsage.startDate"
+            :month-end-date="subscriptionUsage.endDate"
+            :commitment-daily-usage="poolDailyUsage"
+            :waiver-daily-usage="monthlyWaiverDailyUsage"
+            :overage-daily-usage="overageDailyUsage"
+            :paid-tier-trial-daily-usage="paidTierTrialDailyUsage"
+            :users-usage-daily-usage="usersUsageDailyUsage"
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
