@@ -82,13 +82,37 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
 
   describe '#supported_conversion_types' do
     let(:issue_type) { build(:work_item_system_defined_type, :issue) }
-    let(:epic_type) { build(:work_item_system_defined_type, :epic) }
-    let(:objective_type) { build(:work_item_system_defined_type, :objective) }
-    let(:key_result_type) { build(:work_item_system_defined_type, :key_result) }
-    let(:requirement_type) { build(:work_item_system_defined_type, :requirement) }
 
     context 'with group as resource_parent' do
       let(:resource_parent) { group }
+
+      it 'includes all types except the current type' do
+        result = issue_type.supported_conversion_types(resource_parent, user)
+        included_types = %w[incident task ticket]
+
+        expect(result.map(&:base_type)).to match_array(included_types)
+      end
+
+      context "when supports_conversion? defaults to true" do
+        let(:task_type) { build(:work_item_system_defined_type, :task) }
+
+        it 'allows conversion when configuration does not define supports_conversion?' do
+          result = task_type.supported_conversion_types(resource_parent, user)
+
+          # Task type should support conversion by default
+          expect(result).not_to be_empty
+        end
+      end
+
+      context "when the type does not supports_conversion (epic)" do
+        let(:epic_type) { build(:work_item_system_defined_type, :epic) }
+
+        it 'retutns an empty array' do
+          result = epic_type.supported_conversion_types(resource_parent, user)
+
+          expect(result).to eq([])
+        end
+      end
 
       context 'when all licensed features are available' do
         before do

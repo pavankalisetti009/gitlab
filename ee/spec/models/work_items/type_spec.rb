@@ -189,6 +189,14 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
         expect(work_item_type.supported_conversion_types(resource_parent, guest_user)).not_to include(epic)
       end
     end
+
+    context "when work_item_type is an epic" do
+      let_it_be(:work_item_type) { create(:work_item_type, :epic) }
+
+      it "returns an empty array" do
+        expect(work_item_type.supported_conversion_types(resource_parent, developer_user)).to eq([])
+      end
+    end
   end
 
   describe '#allowed_child_types' do
