@@ -14,7 +14,7 @@ RSpec.describe VirtualRegistries::Container::Cache::Entries::CreateOrUpdateServi
   let(:params) { { path: path, file: file, etag: etag, content_type: content_type } }
   let(:file) do
     UploadedFile.new(
-      Tempfile.new(etag).path,
+      Tempfile.new('cache_entry').path,
       sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83'
     )
   end
@@ -28,6 +28,8 @@ RSpec.describe VirtualRegistries::Container::Cache::Entries::CreateOrUpdateServi
 
     shared_examples 'returning a service response success response' do
       shared_examples 'creating a new cache entry' do
+        let_it_be(:path) { "my/image/blobs/sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd" }
+
         it 'returns a success service response', :freeze_time do
           expect_next_instance_of(::VirtualRegistries::Container::Cache::Remote::Entry) do |expected_cache_entry|
             expect(expected_cache_entry).to receive(:bump_downloads_count)
@@ -45,6 +47,7 @@ RSpec.describe VirtualRegistries::Container::Cache::Entries::CreateOrUpdateServi
             relative_path: "/#{path}",
             upstream_etag: etag,
             content_type: content_type,
+            digest: 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd',
             file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83'
           )
         end
@@ -103,6 +106,123 @@ RSpec.describe VirtualRegistries::Container::Cache::Entries::CreateOrUpdateServi
               class: described_class.name
             )
           expect { execute }.not_to change { upstream.cache_remote_entries.count }
+        end
+      end
+
+      context 'with a manifest requested by tag' do
+        let_it_be(:path) { "my/image/manifests/3.23" }
+        let(:etag) { 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd' }
+
+        it 'extracts digest from etag when path does not contain digest' do
+          expect_next_instance_of(::VirtualRegistries::Container::Cache::Remote::Entry) do |expected_cache_entry|
+            expect(expected_cache_entry).to receive(:bump_downloads_count)
+          end
+
+          expect { execute }.to change { upstream.cache_remote_entries.count }.by(1)
+          expect(execute).to be_success
+
+          last_cache_entry = upstream.cache_remote_entries.last
+          expect(last_cache_entry).to have_attributes(
+            relative_path: "/#{path}",
+            upstream_etag: etag,
+            digest: 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd'
+          )
+        end
+      end
+
+      context 'with blob deduplication' do
+        let_it_be(:blob_digest) { 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd' }
+        let_it_be(:existing_blob_entry) do
+          create(
+            :virtual_registries_container_cache_remote_entry,
+            group: upstream.group,
+            upstream: upstream,
+            relative_path: "/library/alpine/blobs/#{blob_digest}",
+            digest: blob_digest
+          )
+        end
+
+        let(:path) { "library/nginx/blobs/#{blob_digest}" }
+
+        it 'reuses existing blob entry with same digest instead of creating a new one', :sidekiq_inline do
+          expect { execute }.to not_change { upstream.cache_remote_entries.count }
+            .and change { existing_blob_entry.reload.downloads_count }.by(1)
+
+          expect(execute).to be_success
+          expect(execute.payload[:cache_entry]).to eq(existing_blob_entry)
+        end
+      end
+
+      context 'with manifest deduplication by digest' do
+        let_it_be(:manifest_digest) { 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd' }
+        let_it_be(:existing_manifest_entry) do
+          create(
+            :virtual_registries_container_cache_remote_entry,
+            group: upstream.group,
+            upstream: upstream,
+            relative_path: "/library/alpine/manifests/#{manifest_digest}",
+            digest: manifest_digest
+          )
+        end
+
+        let(:path) { "library/nginx/manifests/#{manifest_digest}" }
+
+        it 'reuses existing manifest entry with same digest instead of creating a new one', :sidekiq_inline do
+          expect { execute }.to not_change { upstream.cache_remote_entries.count }
+            .and change { existing_manifest_entry.reload.downloads_count }.by(1)
+
+          expect(execute).to be_success
+          expect(execute.payload[:cache_entry]).to eq(existing_manifest_entry)
+        end
+      end
+
+      context 'with manifest by tag (no deduplication)' do
+        let_it_be(:tag_path) { "library/alpine/manifests/latest" }
+        let_it_be(:existing_tag_entry) do
+          create(
+            :virtual_registries_container_cache_remote_entry,
+            group: upstream.group,
+            upstream: upstream,
+            relative_path: "/#{tag_path}"
+          )
+        end
+
+        let(:path) { "library/nginx/manifests/latest" }
+
+        it 'creates a new entry for tag-based manifest requests' do
+          expect { execute }.to change { upstream.cache_remote_entries.count }.by(1)
+
+          expect(execute).to be_success
+          expect(execute.payload[:cache_entry]).not_to eq(existing_tag_entry)
+        end
+      end
+
+      context 'with a blank etag' do
+        let_it_be(:path) { "my/image/manifests/3.23" }
+        let(:etag) { nil }
+
+        it 'skips digest extraction from etag and creates entry without digest' do
+          expect { execute }.to change { upstream.cache_remote_entries.count }.by(1)
+          expect(execute).to be_success
+
+          expect(upstream.cache_remote_entries.last).to have_attributes(
+            relative_path: "/#{path}",
+            digest: nil
+          )
+        end
+      end
+
+      context 'with a blob path without a valid digest' do
+        let(:path) { "library/nginx/blobs/not-a-digest" }
+
+        it 'skips deduplication and creates a new entry' do
+          expect { execute }.to change { upstream.cache_remote_entries.count }.by(1)
+          expect(execute).to be_success
+
+          expect(upstream.cache_remote_entries.last).to have_attributes(
+            relative_path: "/#{path}",
+            digest: nil
+          )
         end
       end
     end

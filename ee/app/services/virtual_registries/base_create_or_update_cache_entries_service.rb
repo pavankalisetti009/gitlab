@@ -19,6 +19,9 @@ module VirtualRegistries
       return ERRORS[:file_not_present] unless file.present?
       return ERRORS[:unauthorized] unless allowed?
 
+      response = existing_entry_response
+      return response if response
+
       updates = {
         upstream_etag: etag,
         upstream_checked_at: Time.zone.now,
@@ -29,6 +32,8 @@ module VirtualRegistries
       }.compact_blank
 
       updates[:file_md5] = file.md5 if !skip_md5? && !Gitlab::FIPS.enabled?
+
+      customize_updates(updates)
 
       cache_remote_entry = entry_class.create_or_update_by!(
         group_id: upstream.group_id,
@@ -59,6 +64,12 @@ module VirtualRegistries
     def skip_md5?
       false
     end
+
+    def existing_entry_response
+      nil
+    end
+
+    def customize_updates(updates); end
 
     def allowed?
       return true if skip_permission_check

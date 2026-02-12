@@ -147,4 +147,40 @@ RSpec.describe VirtualRegistries::Container, feature_category: :virtual_registry
       end
     end
   end
+
+  describe '.extract_digest_from_path' do
+    subject { described_class.extract_digest_from_path(path) }
+
+    let(:digest) { 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' }
+
+    context 'with a manifest path containing a digest' do
+      let(:path) { "v2/library/alpine/manifests/#{digest}" }
+
+      it { is_expected.to eq(digest) }
+    end
+
+    context 'with a blob path containing a digest' do
+      let(:path) { "v2/library/alpine/blobs/#{digest}" }
+
+      it { is_expected.to eq(digest) }
+    end
+
+    context 'with a manifest path containing a tag' do
+      let(:path) { 'v2/library/alpine/manifests/latest' }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with an unrelated path' do
+      let(:path) { 'v2/library/alpine/tags/list' }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with a nil path' do
+      let(:path) { nil }
+
+      it { is_expected.to be_nil }
+    end
+  end
 end

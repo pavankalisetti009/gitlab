@@ -76,7 +76,8 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
           :upstream_checked,
           upstream: upstream,
           relative_path: '/my/image/manifests/latest',
-          upstream_etag: upstream_etag
+          upstream_etag: upstream_etag,
+          digest: upstream_etag
         )
       end
 
@@ -88,6 +89,84 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
         let_it_be(:path) { "my/image/blobs/#{upstream_etag}" }
 
         it_behaves_like 'returning a service response success response', action: :download_file
+      end
+    end
+
+    context 'with cross-image deduplication' do
+      let_it_be(:shared_digest) { 'sha256:aabbccdd11223344aabbccdd11223344aabbccdd11223344aabbccdd11223344' }
+      let_it_be(:cache_entry) do
+        create(:virtual_registries_container_cache_remote_entry,
+          :upstream_checked,
+          upstream: upstream,
+          relative_path: "/library/alpine/blobs/#{shared_digest}",
+          upstream_etag: shared_digest,
+          digest: shared_digest
+        )
+      end
+
+      let(:path) { "library/python/blobs/#{shared_digest}" }
+      let(:upstream_resource_url) { upstream.url_for(path) }
+
+      before do
+        stub_external_registry_request
+      end
+
+      it 'finds the cache entry by digest regardless of image path' do
+        expect_next_found_instance_of(::VirtualRegistries::Container::Cache::Remote::Entry) do |expected_cache_entry|
+          expect(expected_cache_entry).to receive(:bump_downloads_count)
+        end
+
+        expect(execute).to be_success.and have_attributes(payload: a_hash_including(action: :download_file))
+      end
+    end
+
+    context 'with digest-addressed request skipping etag revalidation' do
+      let_it_be(:digest) { 'sha256:aabbccdd11223344aabbccdd11223344aabbccdd11223344aabbccdd11223344' }
+      let(:path) { "my/image/manifests/#{digest}" }
+      let(:upstream_resource_url) { upstream.url_for(path) }
+
+      context 'with a stale cache entry' do
+        let!(:cache_entry) do
+          create(:virtual_registries_container_cache_remote_entry,
+            upstream: upstream,
+            relative_path: "/library/alpine/manifests/#{digest}",
+            upstream_etag: 'some-etag',
+            digest: digest,
+            upstream_checked_at: 1.year.ago
+          )
+        end
+
+        it 'does not make a HEAD request and re-fetches from upstream' do
+          stub_external_registry_request
+
+          expect(execute).to be_success.and have_attributes(
+            payload: a_hash_including(action: :workhorse_upload_url)
+          )
+        end
+      end
+
+      context 'with a fresh cache entry' do
+        let!(:cache_entry) do
+          create(:virtual_registries_container_cache_remote_entry,
+            :upstream_checked,
+            upstream: upstream,
+            relative_path: "/library/alpine/manifests/#{digest}",
+            upstream_etag: 'some-etag',
+            digest: digest
+          )
+        end
+
+        it 'serves from cache without making a HEAD request to upstream' do
+          expect(::Gitlab::HTTP).not_to receive(:head)
+
+          expect_next_found_instance_of(::VirtualRegistries::Container::Cache::Remote::Entry) do |entry|
+            expect(entry).to receive(:bump_downloads_count)
+          end
+
+          expect(execute).to be_success.and have_attributes(
+            payload: a_hash_including(action: :download_file)
+          )
+        end
       end
     end
 

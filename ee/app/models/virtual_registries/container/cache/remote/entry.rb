@@ -19,7 +19,14 @@ module VirtualRegistries
           validates :relative_path,
             uniqueness: { scope: [:upstream_id, :status, :group_id] },
             if: :default?
+          validates :digest,
+            format: {
+              with: VirtualRegistries::Container::OCI_DIGEST_VALIDATION_REGEX,
+              message: 'must be a valid OCI digest'
+            },
+            allow_nil: true
 
+          scope :for_digest, ->(digest) { where(digest:) }
           attribute :file_store, default: -> { VirtualRegistries::Cache::EntryUploader.default_store }
 
           scope :order_iid_desc, -> { reorder(iid: :desc) }
