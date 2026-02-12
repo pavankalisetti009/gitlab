@@ -1418,22 +1418,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
           expect(response).to have_gitlab_http_status(:forbidden)
           expect(json_response['message']).to include('Namespace is required')
         end
-
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(usage_quota_check_in_direct_access: false)
-          end
-
-          include_context 'when tokens are generated'
-
-          it 'generates token if feature flag is disabled' do
-            stub_feature_flags(usage_quota_check_in_direct_access: false)
-
-            post_with_definition
-
-            expect(response).to have_gitlab_http_status(:created)
-          end
-        end
       end
 
       context 'when on Self-managed instance' do
