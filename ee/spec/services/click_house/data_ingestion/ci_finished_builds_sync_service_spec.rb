@@ -92,6 +92,334 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
         include(id: build3.id, runner_owner_namespace_id: group_runner.groups.first.id)
       )
     end
+
+    context 'with build attributes syncing' do
+      let_it_be(:nested_group) { create(:group, parent: group) }
+      let_it_be(:nested_group_lev_3) { create(:group, parent: nested_group) }
+      let_it_be(:nested_project) { create(:project, group: nested_group_lev_3) }
+
+      describe 'namespace_path' do
+        context 'when project is deeply nested' do
+          let(:pipeline) { create(:ci_pipeline, project: nested_project) }
+          let(:build) { create(:ci_build, :success, pipeline: pipeline, project: nested_project) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it 'syncs correct namespace_path' do
+            expect(record[:namespace_path]).to eq("#{nested_project.namespace.traversal_ids.join('/')}/")
+          end
+        end
+
+        context 'when ci_namespace_mirror is missing' do
+          let(:group2) { create(:group) }
+          let(:project2) { create(:project, group: group2) }
+          let(:pipeline) { create(:ci_pipeline, project: project2) }
+          let(:build) { create(:ci_build, :success, pipeline: pipeline, project: project2) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            group2.ci_namespace_mirror.destroy!
+            create_sync_events(build)
+            execute
+          end
+
+          it 'syncs empty namespace_path' do
+            expect(record[:namespace_path]).to eq('/')
+          end
+        end
+      end
+
+      describe 'failure_reason' do
+        context 'when build has failed with script_failure' do
+          let(:build) { create(:ci_build, :script_failure) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it { expect(record[:failure_reason]).to eq('script_failure') }
+        end
+
+        context 'when build is successful' do
+          let(:record) { find_synced_build_record(build1) }
+
+          before do
+            execute
+          end
+
+          it { expect(record[:failure_reason]).to eq('unknown_failure') }
+        end
+      end
+
+      describe 'manual and when columns' do
+        context 'when build is manual' do
+          let(:build) { create(:ci_build, :success, :manual) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it 'syncs manual=true and when=manual' do
+            expect(record[:manual]).to be_truthy
+            expect(record[:when]).to eq('manual')
+          end
+        end
+
+        context 'when build is not manual' do
+          let(:record) { find_synced_build_record(build1) }
+
+          before do
+            execute
+          end
+
+          it 'syncs manual=false and when=on_success' do
+            expect(record[:manual]).to be_falsey
+            expect(record[:when]).to eq('on_success')
+          end
+        end
+      end
+
+      describe 'allow_failure' do
+        context 'when build is allowed to fail' do
+          let(:build) { create(:ci_build, :success, :allowed_to_fail) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it { expect(record[:allow_failure]).to be_truthy }
+        end
+
+        context 'when build is not allowed to fail' do
+          let(:record) { find_synced_build_record(build1) }
+
+          before do
+            execute
+          end
+
+          it { expect(record[:allow_failure]).to be_falsey }
+        end
+      end
+
+      describe 'user_id' do
+        context 'when build has a user' do
+          let(:user) { create(:user) }
+          let(:build) { create(:ci_build, :success, user: user) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it { expect(record[:user_id]).to eq(user.id) }
+        end
+
+        context 'when build has no user' do
+          let(:build) { create(:ci_build, :success, user: nil) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it { expect(record[:user_id]).to eq(0) }
+        end
+      end
+
+      describe 'artifacts_filename and artifacts_size' do
+        context 'when build has artifacts' do
+          let(:build) { create(:ci_build, :success, :artifacts) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it 'syncs artifact attributes' do
+            expect(record[:artifacts_filename]).to eq(build.artifacts_file&.filename)
+            expect(record[:artifacts_size]).to eq(build.artifacts_size)
+          end
+        end
+
+        context 'when build has no artifacts' do
+          let(:record) { find_synced_build_record(build1) }
+
+          before do
+            execute
+          end
+
+          it 'syncs empty values' do
+            expect(record[:artifacts_filename]).to eq('')
+            expect(record[:artifacts_size]).to eq(0)
+          end
+        end
+      end
+
+      describe 'retries_count' do
+        context 'when build has no retries' do
+          let(:record) { find_synced_build_record(build1) }
+
+          before do
+            execute
+          end
+
+          it { expect(record[:retries_count]).to eq(0) }
+        end
+
+        context 'when build has been retried' do
+          let(:pipeline) { create(:ci_pipeline) }
+          let(:final_build) { create(:ci_build, :success, pipeline: pipeline, name: 'test-job') }
+          let(:record) { find_synced_build_record(final_build) }
+
+          before do
+            create(:ci_build, :success, :retried, pipeline: pipeline, name: 'test-job')
+            create(:ci_build, :success, :retried, pipeline: pipeline, name: 'test-job')
+            create_sync_events(final_build)
+            execute
+          end
+
+          it { expect(record[:retries_count]).to eq(2) }
+        end
+
+        context 'with multiple builds and different retry counts' do
+          let(:pipeline_1) { create(:ci_pipeline) }
+          let(:pipeline_2) { create(:ci_pipeline) }
+          let(:final_build_1) { create(:ci_build, :success, pipeline: pipeline_1, name: 'job-1') }
+          let(:final_build_2) { create(:ci_build, :success, pipeline: pipeline_2, name: 'job-2') }
+
+          let(:record_1) { find_synced_build_record(final_build_1) }
+          let(:record_2) { find_synced_build_record(final_build_2) }
+
+          before do
+            # Pipeline 1: 1 retry (2 total builds)
+            create(:ci_build, :success, :retried, pipeline: pipeline_1, name: 'job-1')
+            # Pipeline 2: 3 retries (4 total builds)
+            create(:ci_build, :success, :retried, pipeline: pipeline_2, name: 'job-2')
+            create(:ci_build, :success, :retried, pipeline: pipeline_2, name: 'job-2')
+            create(:ci_build, :success, :retried, pipeline: pipeline_2, name: 'job-2')
+            create_sync_events(final_build_1, final_build_2)
+            execute
+          end
+
+          it 'syncs correct retries_count for each build' do
+            expect(record_1[:retries_count]).to eq(1)
+            expect(record_2[:retries_count]).to eq(3)
+          end
+        end
+      end
+
+      describe 'runner_tags' do
+        context 'when runner has tags' do
+          let(:tagged_runner) { create(:ci_runner, tag_list: %w[docker linux production]) }
+          let(:build) { create(:ci_build, :success, runner: tagged_runner) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it { expect(record[:runner_tags]).to match_array(%w[docker linux production]) }
+        end
+
+        context 'when runner has no tags' do
+          let(:untagged_runner) { create(:ci_runner, tag_list: []) }
+          let(:build) { create(:ci_build, :success, runner: untagged_runner) }
+          let(:record) { find_synced_build_record(build) }
+
+          before do
+            create_sync_events(build)
+            execute
+          end
+
+          it { expect(record[:runner_tags]).to eq([]) }
+        end
+
+        context 'when build has no runner' do
+          let(:record) { find_synced_build_record(build2) }
+
+          before do
+            execute
+          end
+
+          it { expect(record[:runner_tags]).to eq([]) }
+        end
+
+        context 'with multiple builds and different runner tags' do
+          let(:runner_with_tags_1) { create(:ci_runner, tag_list: %w[docker linux]) }
+          let(:runner_with_tags_2) { create(:ci_runner, tag_list: %w[kubernetes windows]) }
+          let(:build_with_tags_1) { create(:ci_build, :success, runner: runner_with_tags_1) }
+          let(:build_with_tags_2) { create(:ci_build, :success, runner: runner_with_tags_2) }
+
+          let(:record_1) { find_synced_build_record(build_with_tags_1) }
+          let(:record_2) { find_synced_build_record(build_with_tags_2) }
+
+          before do
+            create_sync_events(build_with_tags_1, build_with_tags_2)
+            execute
+          end
+
+          it 'syncs correct runner_tags for each build' do
+            expect(record_1[:runner_tags]).to match_array(%w[docker linux])
+            expect(record_2[:runner_tags]).to match_array(%w[kubernetes windows])
+          end
+        end
+      end
+
+      describe 'job_definition_id' do
+        subject { record[:job_definition_id] }
+
+        context 'when build has no job_definition' do
+          let(:build_without_job_definition) { create(:ci_build, :success, :without_job_definition) }
+          let(:record) { find_synced_build_record(build_without_job_definition) }
+
+          before do
+            create_sync_events(build_without_job_definition)
+            execute
+          end
+
+          it { is_expected.to eq(0) }
+        end
+      end
+    end
+
+    describe 'N+1 query prevention', :use_sql_query_cache do
+      let(:pipeline) { create(:ci_pipeline) }
+      let(:tagged_runner) { create(:ci_runner, tag_list: %w[docker linux]) }
+
+      let(:control) do
+        ActiveRecord::QueryRecorder.new(skip_cached: false) { described_class.new.execute }
+      end
+
+      def create_build_with_retries
+        build = create(:ci_build, :success, :artifacts, pipeline: pipeline, runner: tagged_runner)
+        create(:ci_build, :success, :retried, pipeline: pipeline, name: build.name)
+        create_sync_events(build)
+      end
+
+      before do
+        create_build_with_retries
+        control
+        2.times { create_build_with_retries }
+      end
+
+      it 'avoids N+1 queries when syncing builds with artifacts, runner_tags, and retries' do
+        expect { described_class.new.execute }.to issue_same_number_of_queries_as(control)
+      end
+    end
   end
 
   context 'when multiple batches are required' do
@@ -259,11 +587,24 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
   def expected_build_attributes(build)
     {
       **build.slice(:id, :status, :project_id, :pipeline_id).symbolize_keys,
+      **build_timing_attributes(build),
+      **build_basic_attributes(build),
+      **runner_attributes(build.runner, build.runner_manager)
+    }
+  end
+
+  def build_timing_attributes(build)
+    {
       created_at: a_value_within(1.second).of(build.created_at),
       started_at: a_value_within(1.second).of(build.started_at),
       queued_at: a_value_within(1.second).of(build.queued_at),
       finished_at: a_value_within(1.second).of(build.finished_at),
-      date: build.finished_at.beginning_of_month,
+      date: build.finished_at.beginning_of_month
+    }
+  end
+
+  def build_basic_attributes(build)
+    {
       name: build.name || '',
       stage_id: build.stage_id || 0,
       stage_name: build.stage_name || '',
@@ -271,7 +612,16 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
       root_namespace_id: build.project.root_namespace.id,
       version: be_a(Time),
       deleted: false,
-      **runner_attributes(build.runner, build.runner_manager)
+      namespace_path: "#{build.project.namespace.traversal_ids.join('/')}/",
+      failure_reason: build.failure_reason || '',
+      when: build.when || '',
+      manual: build.action?,
+      allow_failure: build.allow_failure || false,
+      user_id: build.user_id || 0,
+      artifacts_filename: build.artifacts_file&.filename || '',
+      artifacts_size: build.artifacts_size || 0,
+      retries_count: build.retries_count,
+      job_definition_id: build.job_definition.id || 0
     }
   end
 
@@ -281,6 +631,13 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
       runner_type: Ci::Runner.runner_types.fetch(runner&.runner_type, 0),
       runner_owner_namespace_id: runner&.owner_runner_namespace&.namespace_id || 0,
       runner_run_untagged: runner&.run_untagged || false,
+      runner_tags: runner&.tag_list.to_a,
+      **runner_manager_attributes(runner_manager)
+    }
+  end
+
+  def runner_manager_attributes(runner_manager)
+    {
       runner_manager_system_xid: runner_manager&.system_xid || '',
       runner_manager_version: runner_manager&.version || '',
       runner_manager_revision: runner_manager&.revision || '',
@@ -304,5 +661,9 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
 
   def create_ci_build_sync_event(build)
     build_ci_build_sync_event(build).tap(&:save!)
+  end
+
+  def find_synced_build_record(build)
+    ci_finished_builds.find { |r| r[:id] == build.id }
   end
 end

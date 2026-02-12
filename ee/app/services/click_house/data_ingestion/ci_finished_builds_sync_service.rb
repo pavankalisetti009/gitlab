@@ -117,11 +117,14 @@ module ClickHouse
         # doesn't mess it up and cause duplicates (see https://gitlab.com/gitlab-org/gitlab/-/merge_requests/138066)
         build_ids = events_batch.to_a.pluck(:build_id) # rubocop: disable CodeReuse/ActiveRecord
 
+        # rubocop: disable CodeReuse/ActiveRecord -- as it's tightly coupled with the select/joins specific to this sync
         Ci::Build.id_in(build_ids)
-          .left_outer_joins(:runner_manager, :ci_stage, runner: :owner_runner_namespace,
+          .left_outer_joins(:runner_manager, :ci_stage, :job_definition_instance, runner: :owner_runner_namespace,
             project_mirror: :namespace_mirror)
-          .select(:finished_at, *finished_build_projections)
+          .preload(:job_artifacts_archive, runner: :tags)
+          .select(*finished_build_projections)
           .each { |build| records_yielder << build }
+        # rubocop: enable CodeReuse/ActiveRecord
 
         @processed_record_ids += build_ids
       end
@@ -130,17 +133,33 @@ module ClickHouse
         [
           *BUILD_FIELD_NAMES.map { |n| "#{::Ci::Build.table_name}.#{n}" },
           *BUILD_EPOCH_FIELD_NAMES.map { |n| "EXTRACT(epoch FROM #{::Ci::Build.table_name}.#{n}) AS casted_#{n}" },
+          "#{::Ci::Build.table_name}.partition_id", # needed for partitioned preloads (job_artifacts_archive)
           "#{::Ci::NamespaceMirror.table_name}.traversal_ids[1] AS root_namespace_id",
+          "#{::Ci::NamespaceMirror.table_name}.traversal_ids AS namespace_traversal_ids",
           "#{::Ci::Runner.table_name}.run_untagged AS runner_run_untagged",
           "#{::Ci::Runner.table_name}.runner_type AS runner_type",
           "#{::Ci::RunnerNamespace.table_name}.namespace_id AS runner_owner_namespace_id",
           *RUNNER_MANAGER_FIELD_NAMES.map { |n| "#{::Ci::RunnerManager.table_name}.#{n} AS runner_manager_#{n}" },
-          *CI_STAGE_NAMES.map { |n| "#{::Ci::Stage.table_name}.#{n} AS ci_stage_#{n}" }
+          *CI_STAGE_NAMES.map { |n| "#{::Ci::Stage.table_name}.#{n} AS ci_stage_#{n}" },
+          "#{::Ci::JobDefinitionInstance.table_name}.job_definition_id AS job_definition_id",
+          retries_count_sql
         ]
       end
       strong_memoize_attr :finished_build_projections
 
-      BUILD_FIELD_NAMES = %i[id project_id pipeline_id stage_id status name runner_id].freeze
+      def retries_count_sql
+        <<~SQL.squish
+          (SELECT COUNT(*)
+           FROM #{::Ci::Build.table_name} AS retried_builds
+           WHERE retried_builds.commit_id = #{::Ci::Build.table_name}.commit_id
+             AND retried_builds.partition_id = #{::Ci::Build.table_name}.partition_id
+             AND retried_builds.name = #{::Ci::Build.table_name}.name
+             AND retried_builds.retried = TRUE) AS retries_count
+        SQL
+      end
+
+      BUILD_FIELD_NAMES = %i[id project_id pipeline_id stage_id status name runner_id allow_failure user_id
+        failure_reason when].freeze
       BUILD_EPOCH_FIELD_NAMES = %i[created_at queued_at started_at finished_at].freeze
       BUILD_COMPUTED_FIELD_NAMES = %i[root_namespace_id runner_owner_namespace_id group_name].freeze
       RUNNER_FIELD_NAMES = %i[run_untagged type].freeze
@@ -153,8 +172,19 @@ module ClickHouse
         **RUNNER_FIELD_NAMES.map { |n| :"runner_#{n}" }.index_with { |n| n },
         **BUILD_COMPUTED_FIELD_NAMES.index_with { |n| n },
         **RUNNER_MANAGER_FIELD_NAMES.map { |n| :"runner_manager_#{n}" }.index_with { |n| n },
-        **CI_STAGE_NAMES.map { |n| :"stage_#{n}" }.index_with { |n| :"ci_#{n}" }
+        **CI_STAGE_NAMES.map { |n| :"stage_#{n}" }.index_with { |n| :"ci_#{n}" },
+        namespace_path: ->(build) { "#{build.namespace_traversal_ids&.join('/')}/" },
+        manual: ->(build) { build.action? },
+        retries_count: ->(build) { build[:retries_count] },
+        job_definition_id: ->(build) { build[:job_definition_id] },
+        runner_tags: ->(build) { format_array_for_clickhouse(build.runner&.tag_list.to_a) },
+        artifacts_filename: ->(build) { build.job_artifacts_archive&.file&.filename || "" },
+        artifacts_size: ->(build) { build.job_artifacts_archive&.size || 0 }
       }.freeze
+
+      def self.format_array_for_clickhouse(array)
+        "[#{array.map { |s| "'#{s.to_s.gsub("'", "\\\\'")}'" }.join(',')}]"
+      end
 
       INSERT_FINISHED_BUILDS_QUERY = <<~SQL.squish
         INSERT INTO ci_finished_builds (#{CSV_MAPPING.keys.join(',')})
