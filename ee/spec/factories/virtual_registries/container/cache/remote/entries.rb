@@ -9,6 +9,7 @@ FactoryBot.define do
     size { 1.kilobyte }
     upstream_etag { OpenSSL::Digest.hexdigest('SHA256', 'test') }
     content_type { 'application/octet-stream' }
+    digest { VirtualRegistries::Container.extract_digest_from_path(relative_path) }
     file_sha1 { '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83' }
     status { :default }
 

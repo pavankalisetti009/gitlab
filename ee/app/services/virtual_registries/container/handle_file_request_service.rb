@@ -7,9 +7,6 @@ module VirtualRegistries
 
       PERMISSIONS_CACHE_TTL = 5.minutes
 
-      MANIFEST_DIGEST_REGEX = %r{.*/manifests/(#{Gitlab::PathRegex::OCI_DIGEST_REGEX})\z}o
-      BLOB_DIGEST_REGEX = %r{.*/blobs/(#{Gitlab::PathRegex::OCI_DIGEST_REGEX})\z}o
-
       ERRORS = BASE_ERRORS.merge(
         unauthorized: ServiceResponse.error(message: 'Unauthorized', reason: :unauthorized),
         no_upstreams: ServiceResponse.error(message: 'No upstreams set', reason: :no_upstreams),
@@ -40,6 +37,7 @@ module VirtualRegistries
 
       def cache_response_still_valid?
         return false unless cache_entry
+        return true if digest_addressed_request? && !cache_entry.stale?
         return true unless cache_entry.stale?
 
         return false if cache_entry.upstream_etag.blank?
@@ -52,17 +50,15 @@ module VirtualRegistries
         true
       end
 
-      def extract_digest_from_path(path)
-        path[MANIFEST_DIGEST_REGEX, 1] || path[BLOB_DIGEST_REGEX, 1]
-      end
-
       def cache_entry
         base_query = build_base_query
+        digest = VirtualRegistries::Container.extract_digest_from_path(path)
 
-        upstream_etag = extract_digest_from_path(path)
-
-        (upstream_etag && base_query.find_by_upstream_etag(upstream_etag)) ||
+        if digest
+          base_query.for_digest(digest).first
+        else
           base_query.find_by_relative_path(relative_path)
+        end
       end
       strong_memoize_attr :cache_entry
 
@@ -111,6 +107,10 @@ module VirtualRegistries
           'container',
           registry.id
         ]
+      end
+
+      def digest_addressed_request?
+        VirtualRegistries::Container.extract_digest_from_path(path).present?
       end
 
       def path

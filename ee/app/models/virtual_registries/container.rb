@@ -2,8 +2,18 @@
 
 module VirtualRegistries
   module Container
+    MANIFEST_DIGEST_REGEX = %r{.*/manifests/(#{Gitlab::PathRegex::OCI_DIGEST_REGEX})\z}o
+    BLOB_DIGEST_REGEX = %r{.*/blobs/(#{Gitlab::PathRegex::OCI_DIGEST_REGEX})\z}o
+    OCI_DIGEST_VALIDATION_REGEX = /\A#{Gitlab::PathRegex::OCI_DIGEST_REGEX}\z/o
+
     def self.table_name_prefix
       'virtual_registries_container_'
+    end
+
+    def self.extract_digest_from_path(path)
+      return unless path
+
+      path[MANIFEST_DIGEST_REGEX, 1] || path[BLOB_DIGEST_REGEX, 1]
     end
 
     def self.feature_enabled?(group)
