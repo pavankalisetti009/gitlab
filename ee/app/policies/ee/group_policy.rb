@@ -1106,7 +1106,6 @@ module EE
 
       condition(:check_customizable_ai_settings) do
         customizable_permissions_enabled? &&
-          is_gitlab_com? &&
           !can?(:admin_organization, @subject.organization)
       end
 
