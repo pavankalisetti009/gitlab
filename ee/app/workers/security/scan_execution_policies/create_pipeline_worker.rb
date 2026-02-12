@@ -36,8 +36,6 @@ module Security
 
         log_error(current_user, schedule, service_result[:message])
 
-        return if ::Feature.disabled?(:collect_scheduled_security_policy_not_enforced_audit_events, project)
-
         track_scan_not_enforced_event(project_id, current_user_id, schedule_id, branch)
       end
 
