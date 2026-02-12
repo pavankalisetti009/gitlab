@@ -66,7 +66,7 @@ module Preloaders
 
       grouped_by_group.transform_values do |values|
         group_permissions = values.map do |value|
-          Gitlab::Json.parse(value['permissions']).select { |_, v| v }
+          Gitlab::Json.safe_parse(value['permissions']).select { |_, v| v }
         end
 
         group_permissions.inject(&:merge).keys.map(&:to_sym) & enabled_group_permissions
