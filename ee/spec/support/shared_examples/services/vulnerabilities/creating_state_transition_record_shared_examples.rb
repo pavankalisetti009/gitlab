@@ -15,12 +15,7 @@ RSpec.shared_examples 'creating state transition record' do |state|
 
   it 'creates state transition record with correct attributes' do
     expect { subject }.to change { expected_state_transition_relation.count }.by(1)
-  end
 
-  it 'sets vulnerability_occurrence_id on state transition record' do
-    subject
-
-    state_transition = Vulnerabilities::StateTransition.last
-    expect(state_transition.vulnerability_occurrence_id).to eq(vulnerability.finding_id)
+    expect(expected_state_transition_relation.sole.vulnerability_occurrence_id).to eq(vulnerability.finding_id)
   end
 end
