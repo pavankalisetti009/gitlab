@@ -1505,6 +1505,15 @@ RSpec.describe Issue, feature_category: :team_planning do
     end
   end
 
+  describe '#es_id' do
+    let_it_be(:issue) { create(:issue) }
+
+    it 'returns a string containing the work_item type and issue id' do
+      expect(issue.es_id).to include('work_item')
+      expect(issue.es_id).to include(issue.id.to_s)
+    end
+  end
+
   describe '#ensure_namespace_traversal_ids' do
     let_it_be(:root_group) { create(:group) }
     let_it_be(:group) { create(:group, parent: root_group) }
