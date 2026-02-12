@@ -881,6 +881,62 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it_behaves_like 'correct access to security and compliance'
     end
 
+    describe 'read_compliance_framework' do
+      before do
+        project.project_feature.update!(security_and_compliance_access_level: access_level)
+      end
+
+      context 'when "Security and compliance" is disabled' do
+        let(:access_level) { Featurable::DISABLED }
+
+        context 'when the user is a reporter' do
+          let(:current_user) { reporter }
+
+          it { expect_disallowed(:read_compliance_framework) }
+        end
+
+        context 'when the user is auditor' do
+          let(:current_user) { create(:user, :auditor) }
+
+          it { expect_disallowed(:read_compliance_framework) }
+        end
+
+        context 'when the user is a developer' do
+          let(:current_user) { developer }
+
+          it { expect_disallowed(:read_compliance_framework) }
+        end
+      end
+
+      context 'when "Security and compliance" is enabled' do
+        let(:access_level) { Featurable::PRIVATE }
+
+        context 'when the user is a guest' do
+          let(:current_user) { guest }
+
+          it { expect_disallowed(:read_compliance_framework) }
+        end
+
+        context 'when the user is a reporter' do
+          let(:current_user) { reporter }
+
+          it { expect_allowed(:read_compliance_framework) }
+        end
+
+        context 'when the user is auditor' do
+          let(:current_user) { create(:user, :auditor) }
+
+          it { expect_allowed(:read_compliance_framework) }
+        end
+
+        context 'when the user is a developer' do
+          let(:current_user) { developer }
+
+          it { expect_allowed(:read_compliance_framework) }
+        end
+      end
+    end
+
     describe 'vulnerability feedback permissions' do
       before do
         stub_licensed_features(security_dashboard: true)
