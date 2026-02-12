@@ -1,7 +1,7 @@
 <script>
 import { GlAlert, GlBadge, GlEmptyState, GlFormSelect, GlLabel, GlTab, GlTabs } from '@gitlab/ui';
 import { differenceBy, unionBy } from 'lodash';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { isScopedLabel } from '~/lib/utils/common_utils';
 import { __ } from '~/locale';
 import LabelsSelect from '~/sidebar/components/labels/labels_select_vue/labels_select_root.vue';
@@ -58,8 +58,8 @@ export default {
     namespaceType: {
       type: String,
       required: false,
-      default: WORKSPACE_GROUP,
-      validator: (value) => [WORKSPACE_GROUP, NAMESPACE_PROJECT].includes(value),
+      default: NAMESPACE_GROUP,
+      validator: (value) => [NAMESPACE_GROUP, NAMESPACE_PROJECT].includes(value),
     },
     svgPath: {
       type: String,

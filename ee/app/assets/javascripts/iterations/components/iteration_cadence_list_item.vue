@@ -8,7 +8,7 @@ import {
   GlModal,
 } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { STATUS_CLOSED, WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { STATUS_CLOSED, NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { fetchPolicies } from '~/lib/graphql';
 import { __, s__ } from '~/locale';
 import { DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
@@ -142,7 +142,7 @@ export default {
       return items;
     },
     query() {
-      if (this.namespaceType === WORKSPACE_GROUP) {
+      if (this.namespaceType === NAMESPACE_GROUP) {
         return groupQuery;
       }
       if (this.namespaceType === NAMESPACE_PROJECT) {

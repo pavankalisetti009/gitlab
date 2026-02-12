@@ -9,7 +9,7 @@ import projectBoardsQuery from '~/boards/graphql/project_boards.query.graphql';
 import groupRecentBoardsQuery from '~/boards/graphql/group_recent_boards.query.graphql';
 import projectRecentBoardsQuery from '~/boards/graphql/project_recent_boards.query.graphql';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { TEST_HOST } from 'spec/test_constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -79,7 +79,7 @@ describe('BoardsSelector', () => {
         scopedIssueBoardFeatureEnabled: true,
         weights: [],
         isEpicBoard,
-        boardType: isGroupBoard ? WORKSPACE_GROUP : NAMESPACE_PROJECT,
+        boardType: isGroupBoard ? NAMESPACE_GROUP : NAMESPACE_PROJECT,
         isGroupBoard,
         isProjectBoard,
       },
@@ -97,16 +97,16 @@ describe('BoardsSelector', () => {
   describe('fetching all boards', () => {
     it.each`
       boardType            | isEpicBoard | queryHandler                        | notCalledHandler
-      ${WORKSPACE_GROUP}   | ${false}    | ${groupBoardsQueryHandlerSuccess}   | ${projectBoardsQueryHandlerSuccess}
+      ${NAMESPACE_GROUP}   | ${false}    | ${groupBoardsQueryHandlerSuccess}   | ${projectBoardsQueryHandlerSuccess}
       ${NAMESPACE_PROJECT} | ${false}    | ${projectBoardsQueryHandlerSuccess} | ${groupBoardsQueryHandlerSuccess}
-      ${WORKSPACE_GROUP}   | ${true}     | ${epicBoardsQueryHandlerSuccess}    | ${groupBoardsQueryHandlerSuccess}
+      ${NAMESPACE_GROUP}   | ${true}     | ${epicBoardsQueryHandlerSuccess}    | ${groupBoardsQueryHandlerSuccess}
     `(
       'fetches $boardType boards when isEpicBoard is $isEpicBoard',
       async ({ boardType, isEpicBoard, queryHandler, notCalledHandler }) => {
         createComponent({
           isEpicBoard,
           isProjectBoard: boardType === NAMESPACE_PROJECT,
-          isGroupBoard: boardType === WORKSPACE_GROUP,
+          isGroupBoard: boardType === NAMESPACE_GROUP,
         });
 
         await nextTick();
@@ -123,16 +123,16 @@ describe('BoardsSelector', () => {
 
     it.each`
       boardType            | isEpicBoard
-      ${WORKSPACE_GROUP}   | ${false}
+      ${NAMESPACE_GROUP}   | ${false}
       ${NAMESPACE_PROJECT} | ${false}
-      ${WORKSPACE_GROUP}   | ${true}
+      ${NAMESPACE_GROUP}   | ${true}
     `(
       'sets error when fetching $boardType boards when isEpicBoard is $isEpicBoard fails',
       async ({ boardType, isEpicBoard }) => {
         createComponent({
           isEpicBoard,
           isProjectBoard: boardType === NAMESPACE_PROJECT,
-          isGroupBoard: boardType === WORKSPACE_GROUP,
+          isGroupBoard: boardType === NAMESPACE_GROUP,
           projectBoardsQueryHandler: boardsHandlerFailure,
           groupBoardsQueryHandler: boardsHandlerFailure,
           epicBoardsQueryHandler: boardsHandlerFailure,

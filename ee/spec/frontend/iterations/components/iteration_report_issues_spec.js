@@ -11,7 +11,7 @@ import {
 import { mount, shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import IterationReportIssues from 'ee/iterations/components/iteration_report_issues.vue';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import WorkItemTypeIcon from '~/work_items/components/work_item_type_icon.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 
@@ -305,7 +305,7 @@ describe('Iterations report issues', () => {
         mountComponent({
           props: {
             ...defaultProps,
-            namespaceType: WORKSPACE_GROUP,
+            namespaceType: NAMESPACE_GROUP,
           },
         });
 

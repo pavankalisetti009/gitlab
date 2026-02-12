@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash';
 import BurnupQueryIteration from 'shared_queries/burndown_chart/burnup.iteration.query.graphql';
 import BurnupQueryMilestone from 'shared_queries/burndown_chart/burnup.milestone.query.graphql';
 import { createAlert } from '~/alert';
-import { STATUS_CLOSED, WORKSPACE_GROUP } from '~/issues/constants';
+import { STATUS_CLOSED, NAMESPACE_GROUP } from '~/issues/constants';
 import dateFormat from '~/lib/dateformat';
 import axios from '~/lib/utils/axios_utils';
 import { getDayDifference, nDaysAfter, newDate } from '~/lib/utils/datetime_utility';
@@ -63,7 +63,7 @@ export default {
     namespaceType: {
       type: String,
       required: false,
-      default: WORKSPACE_GROUP,
+      default: NAMESPACE_GROUP,
     },
     burndownEventsPath: {
       type: String,

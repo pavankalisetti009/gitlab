@@ -10,7 +10,7 @@ import query from 'ee/iterations/queries/iteration.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import IterationTitle from 'ee/iterations/components/iteration_title.vue';
 import { getIterationPeriod } from 'ee/iterations/utils';
 import { formatDate } from '~/lib/utils/datetime_utility';
@@ -42,7 +42,7 @@ describe('Iterations report', () => {
 
   const defaultProps = {
     fullPath: 'gitlab-org',
-    namespaceType: WORKSPACE_GROUP,
+    namespaceType: NAMESPACE_GROUP,
   };
   const labelsFetchPath = '/labels.json';
 
@@ -101,13 +101,13 @@ describe('Iterations report', () => {
   describe('with mock apollo', () => {
     describe.each([
       [
-        WORKSPACE_GROUP,
+        NAMESPACE_GROUP,
         'group-name',
         mockIterationNodeWithoutTitle,
         createMockGroupIterations(mockIterationNodeWithoutTitle),
       ],
       [
-        WORKSPACE_GROUP,
+        NAMESPACE_GROUP,
         'group-name',
         mockIterationNode,
         createMockGroupIterations(mockIterationNode),
@@ -136,7 +136,7 @@ describe('Iterations report', () => {
           expect(iterationQueryHandler).toHaveBeenNthCalledWith(1, {
             fullPath,
             id: mockIteration.id,
-            isGroup: namespaceType === WORKSPACE_GROUP,
+            isGroup: namespaceType === NAMESPACE_GROUP,
           });
         });
 
@@ -304,7 +304,7 @@ describe('Iterations report', () => {
           fullPath: defaultProps.fullPath,
           iterationId: mockIterationNode.id,
           labelsFetchPath,
-          namespaceType: WORKSPACE_GROUP,
+          namespaceType: NAMESPACE_GROUP,
         });
       });
     });
@@ -312,16 +312,16 @@ describe('Iterations report', () => {
     describe('actions dropdown to edit iteration', () => {
       describe.each`
         description                    | canEditIteration | namespaceType        | canEdit
-        ${'has permissions'}           | ${true}          | ${WORKSPACE_GROUP}   | ${true}
+        ${'has permissions'}           | ${true}          | ${NAMESPACE_GROUP}   | ${true}
         ${'has permissions'}           | ${true}          | ${NAMESPACE_PROJECT} | ${false}
-        ${'does not have permissions'} | ${false}         | ${WORKSPACE_GROUP}   | ${false}
+        ${'does not have permissions'} | ${false}         | ${NAMESPACE_GROUP}   | ${false}
         ${'does not have permissions'} | ${false}         | ${NAMESPACE_PROJECT} | ${false}
       `(
         'when user $description and they are viewing an iteration within a $namespaceType',
         ({ canEdit, namespaceType, canEditIteration }) => {
           beforeEach(async () => {
             const mockQueryResponse = {
-              [WORKSPACE_GROUP]: createMockGroupIterations(mockIterationNode),
+              [NAMESPACE_GROUP]: createMockGroupIterations(mockIterationNode),
               [NAMESPACE_PROJECT]: mockProjectIterations,
             }[namespaceType];
 

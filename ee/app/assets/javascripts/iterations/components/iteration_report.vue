@@ -4,7 +4,7 @@ import SafeHtml from '~/vue_shared/directives/safe_html';
 import BurnCharts from 'ee/burndown_chart/components/burn_charts.vue';
 import { TYPENAME_ITERATION } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { WORKSPACE_GROUP } from '~/issues/constants';
+import { NAMESPACE_GROUP } from '~/issues/constants';
 import { s__, __ } from '~/locale';
 import deleteIteration from '../queries/destroy_iteration.mutation.graphql';
 import query from '../queries/iteration.query.graphql';
@@ -40,7 +40,7 @@ export default {
         return {
           fullPath: this.fullPath,
           id: convertToGraphQLId(TYPENAME_ITERATION, this.iterationId),
-          isGroup: this.namespaceType === WORKSPACE_GROUP,
+          isGroup: this.namespaceType === NAMESPACE_GROUP,
         };
       },
       update(data) {
@@ -84,7 +84,7 @@ export default {
   },
   computed: {
     canEdit() {
-      return this.canEditIteration && this.namespaceType === WORKSPACE_GROUP;
+      return this.canEditIteration && this.namespaceType === NAMESPACE_GROUP;
     },
     loading() {
       return this.$apollo.queries.iteration.loading;

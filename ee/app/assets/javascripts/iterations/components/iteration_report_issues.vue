@@ -14,7 +14,7 @@ import {
 import { kebabCase } from 'lodash';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { STATUS_OPEN, WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { STATUS_OPEN, NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { isScopedLabel } from '~/lib/utils/common_utils';
 import { __, n__, sprintf } from '~/locale';
 import { DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
@@ -125,8 +125,8 @@ export default {
     namespaceType: {
       type: String,
       required: false,
-      default: WORKSPACE_GROUP,
-      validator: (value) => [WORKSPACE_GROUP, NAMESPACE_PROJECT].includes(value),
+      default: NAMESPACE_GROUP,
+      validator: (value) => [NAMESPACE_GROUP, NAMESPACE_PROJECT].includes(value),
     },
     hasInaccessibleIssues: {
       type: Boolean,
@@ -166,7 +166,7 @@ export default {
       const vars = {
         fullPath: this.fullPath,
         id: getIdFromGraphQLId(this.iterationId),
-        isGroup: this.namespaceType === WORKSPACE_GROUP,
+        isGroup: this.namespaceType === NAMESPACE_GROUP,
         labelName: this.label.title,
       };
 

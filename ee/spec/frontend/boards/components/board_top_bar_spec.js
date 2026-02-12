@@ -11,7 +11,7 @@ import BoardOptions from '~/boards/components/board_options.vue';
 import BoardsSelector from '~/boards/components/boards_selector.vue';
 import ConfigToggle from '~/boards/components/config_toggle.vue';
 import ToggleFocus from '~/boards/components/toggle_focus.vue';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 
 import groupBoardQuery from '~/boards/graphql/group_board.query.graphql';
 import projectBoardQuery from '~/boards/graphql/project_board.query.graphql';
@@ -123,9 +123,9 @@ describe('BoardTopBar', () => {
 
   it.each`
     boardType            | isEpicBoard | queryHandler                       | notCalledHandler
-    ${WORKSPACE_GROUP}   | ${false}    | ${groupBoardQueryHandlerSuccess}   | ${projectBoardQueryHandlerSuccess}
+    ${NAMESPACE_GROUP}   | ${false}    | ${groupBoardQueryHandlerSuccess}   | ${projectBoardQueryHandlerSuccess}
     ${NAMESPACE_PROJECT} | ${false}    | ${projectBoardQueryHandlerSuccess} | ${groupBoardQueryHandlerSuccess}
-    ${WORKSPACE_GROUP}   | ${true}     | ${epicBoardQueryHandlerSuccess}    | ${groupBoardQueryHandlerSuccess}
+    ${NAMESPACE_GROUP}   | ${true}     | ${epicBoardQueryHandlerSuccess}    | ${groupBoardQueryHandlerSuccess}
   `(
     'fetches $boardType boards when isEpicBoard is $isEpicBoard',
     async ({ boardType, isEpicBoard, queryHandler, notCalledHandler }) => {
@@ -133,7 +133,7 @@ describe('BoardTopBar', () => {
         provide: {
           boardType,
           isProjectBoard: boardType === NAMESPACE_PROJECT,
-          isGroupBoard: boardType === WORKSPACE_GROUP,
+          isGroupBoard: boardType === NAMESPACE_GROUP,
           isEpicBoard,
         },
       });

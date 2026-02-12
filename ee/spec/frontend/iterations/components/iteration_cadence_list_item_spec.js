@@ -14,7 +14,7 @@ import { stubComponent } from 'helpers/stub_component';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { automaticIterationCadence, nonEmptyGroupIterationsSuccess } from '../mock_data';
 
 describe('IterationCadenceListItem component', () => {
@@ -89,7 +89,7 @@ describe('IterationCadenceListItem component', () => {
     canCreateIteration,
     canEditCadence,
     currentRoute,
-    namespaceType = WORKSPACE_GROUP,
+    namespaceType = NAMESPACE_GROUP,
     query = groupIterationsInCadenceQuery,
     queryHandler = querySuccessHandler,
   } = {}) {
@@ -144,7 +144,7 @@ describe('IterationCadenceListItem component', () => {
 
   it.each([
     {
-      namespaceType: WORKSPACE_GROUP,
+      namespaceType: NAMESPACE_GROUP,
       query: groupIterationsInCadenceQuery,
     },
     {

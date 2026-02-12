@@ -14,7 +14,7 @@ import { boardObj } from 'jest/boards/mock_data';
 import searchIterationQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
 import { ANY_ITERATION, CURRENT_ITERATION, IterationFilterType } from 'ee/boards/constants';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
-import { WORKSPACE_GROUP } from '~/issues/constants';
+import { NAMESPACE_GROUP } from '~/issues/constants';
 import DropdownWidget from '~/vue_shared/components/dropdown/dropdown_widget/dropdown_widget.vue';
 import { mockIterationsResponse, mockIterations, mockIterationCadence } from './mock_data';
 
@@ -60,7 +60,7 @@ describe('Iteration select component', () => {
       },
       provide: {
         fullPath: 'gitlab-org',
-        boardType: WORKSPACE_GROUP,
+        boardType: NAMESPACE_GROUP,
         isGroupBoard: true,
         isProjectBoard: false,
       },

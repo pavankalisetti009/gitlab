@@ -13,7 +13,7 @@ import {
   convertObjectPropsToCamelCase,
 } from '~/lib/utils/common_utils';
 import { defaultClient } from '~/graphql_shared/issuable_client';
-import { TYPE_EPIC, WORKSPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
+import { TYPE_EPIC, NAMESPACE_GROUP, NAMESPACE_PROJECT } from '~/issues/constants';
 import { queryToObject } from '~/lib/utils/url_utility';
 import { BOARDS_ROUTE_NAME } from '~/boards/constants';
 
@@ -105,7 +105,7 @@ function mountBoardApp(el) {
       initialFilterParams,
       boardBaseUrl: el.dataset.boardBaseUrl,
       boardType,
-      isGroupBoard: boardType === WORKSPACE_GROUP,
+      isGroupBoard: boardType === NAMESPACE_GROUP,
       isProjectBoard: boardType === NAMESPACE_PROJECT,
       currentUserId: gon.current_user_id || null,
       labelsFetchPath: el.dataset.labelsFetchPath,
