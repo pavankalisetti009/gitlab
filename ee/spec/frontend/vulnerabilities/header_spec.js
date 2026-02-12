@@ -199,7 +199,6 @@ describe('Vulnerability Header', () => {
         experimentFeaturesEnabled,
         duoAgentPlatformAvailable,
         glAbilities: {
-          explainVulnerabilityWithAi: true,
           resolveVulnerabilityWithAi: true,
           aiExperimentSastFpDetection: true,
           ...glAbilities,
@@ -592,8 +591,8 @@ describe('Vulnerability Header', () => {
         }),
         glAbilities: {
           resolveVulnerabilityWithAi: actionsEnabled,
-          explainVulnerabilityWithAi: actionsEnabled,
         },
+        duoAgentPlatformAvailable: actionsEnabled,
         glFeatures: {
           agenticSastVrUi: actionsEnabled,
         },

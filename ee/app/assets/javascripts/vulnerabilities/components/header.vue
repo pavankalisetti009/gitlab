@@ -133,14 +133,12 @@ export default {
       return !this.glFeatures.hideVulnerabilitySeverityOverride;
     },
     canExplainWithAi() {
-      return (
-        this.glAbilities.explainVulnerabilityWithAi && this.vulnerability.aiExplanationAvailable
-      );
+      return this.duoAgentPlatformAvailable && this.vulnerability.aiExplanationAvailable;
     },
     canRunAiFalsePositiveDetection() {
       return (
         this.canAdminVulnerability &&
-        this.glAbilities.explainVulnerabilityWithAi &&
+        this.duoAgentPlatformAvailable &&
         this.glFeatures.aiExperimentSastFpDetection &&
         this.experimentFeaturesEnabled &&
         this.vulnerability.reportType === 'sast' &&
