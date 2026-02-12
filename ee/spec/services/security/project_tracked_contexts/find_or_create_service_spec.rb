@@ -4,6 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_category: :vulnerability_management do
   let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:guest_user) { create(:user) }
 
   let(:context_name) { 'main' }
   let(:context_type) { :branch }
@@ -21,6 +23,17 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
   end
 
   subject(:service) { described_class.new(**params) }
+
+  before_all do
+    project.add_maintainer(user)
+    project.add_guest(guest_user)
+  end
+
+  before do
+    stub_licensed_features(security_dashboard: true)
+    allow(project).to receive(:repository_exists?).and_return(true)
+    allow(project.repository).to receive_messages(branch_exists?: true, tag_exists?: true)
+  end
 
   RSpec.shared_examples 'context creation' do
     it 'creates a new tracked context' do
@@ -49,7 +62,7 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
 
       it 'returns an error' do
         expect(result).to be_error
-        expect(result.message).to include("Context name can't be blank")
+        expect(result.message).to eq('Invalid ref name or type specified')
       end
 
       it 'does not create a tracked context' do
@@ -118,8 +131,167 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
     end
   end
 
+  describe '.for_graphql_api' do
+    subject(:service) do
+      described_class.for_graphql_api(
+        project: project,
+        context_name: 'feature-branch',
+        context_type: :branch,
+        current_user: user
+      )
+    end
+
+    it 'initializes service with GraphQL API parameters' do
+      expect(service.project).to eq(project)
+      expect(service.context_name).to eq('feature-branch')
+      expect(service.context_type).to eq(:branch)
+      expect(service.is_default).to be false
+      expect(service.allow_untracked).to be false
+      expect(service.current_user).to eq(user)
+    end
+  end
+
   describe '#execute' do
     subject(:result) { service.execute }
+
+    context 'when current_user is present (GraphQL API usage)' do
+      let(:params) do
+        {
+          project: project,
+          context_name: 'feature-branch',
+          context_type: :branch,
+          is_default: false,
+          allow_untracked: false,
+          current_user: user
+        }
+      end
+
+      before do
+        allow(project.repository).to receive(:branch_exists?).with('feature-branch').and_return(true)
+      end
+
+      context 'when user has permission' do
+        it 'allows the operation' do
+          expect(result).to be_error
+          expect(result.message).to eq('Expected context to already exist for non-default branches')
+        end
+      end
+
+      context 'when user lacks permission' do
+        let(:params) do
+          {
+            project: project,
+            context_name: 'feature-branch',
+            context_type: :branch,
+            is_default: false,
+            allow_untracked: false,
+            current_user: guest_user
+          }
+        end
+
+        it 'returns permission error' do
+          expect(result).to be_error
+          expect(result.message).to eq('Permission denied')
+        end
+
+        it 'does not create a tracked context' do
+          expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
+        end
+      end
+
+      context 'when ref validation fails' do
+        before do
+          allow(project.repository).to receive(:branch_exists?).with('feature-branch').and_return(false)
+        end
+
+        it 'returns ref not found error' do
+          expect(result).to be_error
+          expect(result.message).to eq('Ref does not exist in repository')
+        end
+
+        it 'does not create a tracked context' do
+          expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
+        end
+      end
+
+      context 'when repository does not exist' do
+        before do
+          allow(project).to receive(:repository_exists?).and_return(false)
+        end
+
+        it 'returns ref not found error' do
+          expect(result).to be_error
+          expect(result.message).to eq('Ref does not exist in repository')
+        end
+
+        it 'does not create a tracked context' do
+          expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
+        end
+      end
+
+      context 'when parameters are invalid' do
+        let(:params) do
+          {
+            project: project,
+            context_name: '',
+            context_type: 'invalid',
+            is_default: false,
+            allow_untracked: false,
+            current_user: user
+          }
+        end
+
+        it 'returns validation error' do
+          expect(result).to be_error
+          expect(result.message).to eq('Invalid ref name or type specified')
+        end
+
+        it 'does not create a tracked context' do
+          expect { service.execute }.not_to change { Security::ProjectTrackedContext.count }
+        end
+      end
+
+      context 'when ref_type is tag' do
+        let(:params) do
+          {
+            project: project,
+            context_name: 'v1.0.0',
+            context_type: :tag,
+            is_default: false,
+            allow_untracked: false,
+            current_user: user
+          }
+        end
+
+        before do
+          allow(project.repository).to receive(:tag_exists?).with('v1.0.0').and_return(true)
+          allow(project.repository).to receive(:branch_exists?).with('v1.0.0').and_return(false)
+        end
+
+        it 'validates tag existence' do
+          expect(result).to be_error
+          expect(result.message).to eq('Expected context to already exist for non-default branches')
+        end
+
+        context 'when tag does not exist' do
+          before do
+            allow(project.repository).to receive(:tag_exists?).with('v1.0.0').and_return(false)
+          end
+
+          it 'returns ref not found error' do
+            expect(result).to be_error
+            expect(result.message).to eq('Ref does not exist in repository')
+          end
+        end
+      end
+    end
+
+    context 'when current_user is nil (internal usage)' do
+      it 'bypasses permission checks and ref validation' do
+        # This tests the existing behavior for internal usage
+        expect(result).to be_success
+      end
+    end
 
     context 'when tracked context already exists' do
       let_it_be(:existing_context) do
@@ -268,6 +440,52 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
         expect(tracked_context).to be_persisted
         expect(tracked_context.project).to eq(project)
         expect(tracked_context).not_to eq(other_project_context)
+      end
+    end
+  end
+
+  describe '#ref_exists_in_repository?' do
+    subject(:ref_exists) { service.send(:ref_exists_in_repository?) }
+
+    context 'when repository does not exist' do
+      before do
+        allow(project).to receive(:repository_exists?).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(ref_exists).to be false
+      end
+    end
+
+    context 'when repository exists' do
+      before do
+        allow(project).to receive(:repository_exists?).and_return(true)
+      end
+
+      context 'when context_type is branch' do
+        let(:context_type) { :branch }
+
+        it 'checks branch existence' do
+          expect(project.repository).to receive(:branch_exists?).with(context_name)
+          ref_exists
+        end
+      end
+
+      context 'when context_type is tag' do
+        let(:context_type) { :tag }
+
+        it 'checks tag existence' do
+          expect(project.repository).to receive(:tag_exists?).with(context_name)
+          ref_exists
+        end
+      end
+
+      context 'when context_type is invalid' do
+        let(:context_type) { :invalid_type }
+
+        it 'returns false for unknown context types' do
+          expect(ref_exists).to be false
+        end
       end
     end
   end

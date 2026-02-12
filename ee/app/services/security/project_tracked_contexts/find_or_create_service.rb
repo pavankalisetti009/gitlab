@@ -27,17 +27,34 @@ module Security
         )
       end
 
+      def self.for_graphql_api(project:, context_name:, context_type:, current_user:)
+        new(
+          project: project,
+          context_name: context_name,
+          context_type: context_type,
+          is_default: false,
+          allow_untracked: false,
+          current_user: current_user
+        )
+      end
+
       def initialize(**params)
         @project = params[:project]
         @context_name = params[:context_name]
         @context_type = params[:context_type]
         @is_default = params[:is_default]
         @allow_untracked = params[:allow_untracked] || false
+        @current_user = params[:current_user]
       end
 
-      attr_reader :project, :context_name, :context_type, :is_default, :allow_untracked
+      attr_reader :project, :context_name, :context_type, :is_default, :allow_untracked, :current_user
 
       def execute
+        return permission_error unless can_manage_contexts?
+        return validation_error unless valid_params?
+
+        return ref_not_found_error if current_user && !ref_exists_in_repository?
+
         if existing_context.present?
           return success(existing_context) if existing_context.tracked? || allow_untracked
 
@@ -51,10 +68,45 @@ module Security
 
       private
 
+      def can_manage_contexts?
+        return true unless current_user
+
+        Ability.allowed?(current_user, :create_security_project_tracked_ref, project)
+      end
+
+      def valid_params?
+        context_name.present? &&
+          context_type.present? &&
+          %w[branch tag].include?(context_type.to_s)
+      end
+
+      def ref_exists_in_repository?
+        return false unless project.repository_exists?
+
+        case context_type.to_s
+        when 'branch'
+          project.repository.branch_exists?(context_name)
+        when 'tag'
+          project.repository.tag_exists?(context_name)
+        else
+          false
+        end
+      end
+
+      def permission_error
+        ServiceResponse.error(message: 'Permission denied')
+      end
+
+      def validation_error
+        ServiceResponse.error(message: 'Invalid ref name or type specified')
+      end
+
+      def ref_not_found_error
+        ServiceResponse.error(message: 'Ref does not exist in repository')
+      end
+
       def existing_context
-        # rubocop:disable CodeReuse/ActiveRecord -- This service is a reusable unit
-        Security::ProjectTrackedContext.find_by(project:, context_name:, context_type:)
-        # rubocop:enable CodeReuse/ActiveRecord
+        Security::ProjectTrackedContext.for_project_and_ref(project, context_name, context_type).first
       end
       strong_memoize_attr :existing_context
 

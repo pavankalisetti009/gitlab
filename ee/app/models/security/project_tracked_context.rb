@@ -64,6 +64,10 @@ module Security
     scope :default_refs, -> { where(is_default: true) }
     scope :default_branch, -> { where(context_type: :branch, is_default: true) }
     scope :for_ref, ->(ref_name) { where(context_name: ref_name, context_type: [:branch, :tag]) }
+    scope :with_vulnerability_reads, -> { includes(:vulnerability_reads) }
+    scope :for_project_and_ref, ->(project, context_name, context_type) {
+      where(project: project, context_name: context_name, context_type: context_type)
+    }
     scope :for_pipeline, ->(pipeline) do
       context_type = pipeline.tag? ? :tag : :branch
 
