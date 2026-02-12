@@ -155,7 +155,7 @@ describe('AgentFlowListItem', () => {
           },
         });
 
-        expect(wrapper.text()).toContain('Finished');
+        expect(wrapper.text()).toContain('Last updated');
       });
     });
 
