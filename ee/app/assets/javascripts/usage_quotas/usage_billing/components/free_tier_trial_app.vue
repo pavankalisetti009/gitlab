@@ -141,7 +141,7 @@ export default {
       <gl-tabs v-if="!isLoading" class="gl-mt-5" lazy>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
           <trial-usage-by-user-tab v-if="shouldDisplayUserData" />
-          <gl-alert v-else data-testid="user-data-disabled-alert">
+          <div v-else data-testid="user-data-disabled-alert" class="gl-mt-4 gl-text-secondary">
             <gl-sprintf
               :message="
                 s__(
@@ -153,7 +153,7 @@ export default {
                 <gl-link :href="$options.displayUserDataHelpPath">{{ content }}</gl-link>
               </template>
             </gl-sprintf>
-          </gl-alert>
+          </div>
         </gl-tab>
       </gl-tabs>
     </template>
