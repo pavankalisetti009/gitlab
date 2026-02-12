@@ -19,20 +19,46 @@ RSpec.describe 'Duo Chat > User opens Duo Chat', :js, :saas, feature_category: :
     sign_in(user)
   end
 
-  describe 'opening Duo Chat' do
-    before do
-      visit project_path(project)
+  describe 'Duo Chat' do
+    context 'with the drawer closed' do
+      before do
+        visit project_path(project)
+        find('button.js-tanuki-bot-chat-toggle').click
+        wait_for_requests
+      end
+
+      it 'shows the Duo Chat button' do
+        expect(page).to have_selector('button.js-tanuki-bot-chat-toggle')
+      end
+
+      it 'opens Duo Chat drawer when button is clicked' do
+        expect(page).to have_css('.ai-panel')
+      end
+
+      it 'focuses the duo chat input' do
+        expect(page).to have_css('[data-testid="chat-prompt-input"]', focused: true)
+      end
     end
 
-    it 'shows the Duo Chat button' do
-      expect(page).to have_selector('button.js-tanuki-bot-chat-toggle')
-    end
+    context 'with the drawer open' do
+      before do
+        visit project_path(project)
+        find('button.js-tanuki-bot-chat-toggle').click
+        wait_for_requests
 
-    it 'opens Duo Chat drawer when button is clicked' do
-      find('button.js-tanuki-bot-chat-toggle').click
-      wait_for_requests
+        page.refresh
+        sign_in(user)
+        visit project_path(project)
+        wait_for_requests
+      end
 
-      expect(page).to have_css('.ai-panel')
+      it 'keeps the drawer open' do
+        expect(page).to have_css('.ai-panel')
+      end
+
+      it 'does not focus the duo chat input' do
+        expect(page).to have_css('[data-testid="chat-prompt-input"]', focused: false)
+      end
     end
   end
 

@@ -172,12 +172,6 @@ export default {
       },
       immediate: true,
     },
-    async activeTab(newTab) {
-      if (['chat', 'new'].includes(newTab)) {
-        await this.$nextTick();
-        this.focusInput();
-      }
-    },
   },
   mounted() {
     window.addEventListener('resize', this.handleWindowResize);
@@ -197,6 +191,15 @@ export default {
     },
     setActiveTab(value) {
       setAiPanelTab(value);
+
+      const unwatchTabChanges = this.$watch('activeTab', async (tab) => {
+        if (['chat', 'new'].includes(tab)) {
+          await this.$nextTick();
+          this.focusInput();
+        }
+
+        unwatchTabChanges();
+      });
     },
     async handleNewChat() {
       this.setActiveTab('new');
