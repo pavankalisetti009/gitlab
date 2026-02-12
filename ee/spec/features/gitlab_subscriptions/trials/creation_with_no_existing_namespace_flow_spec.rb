@@ -44,7 +44,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       submit_new_group_trial_form(extra_params: new_group_attrs)
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
 
     context 'when part of the discover security flow' do
@@ -82,7 +82,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       stub_cdot_namespace_eligible_trials
       resubmit_full_request
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
   end
 
@@ -106,7 +106,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       # success
       resubmit_trial_request(extra_params: new_group_attrs)
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
   end
 
