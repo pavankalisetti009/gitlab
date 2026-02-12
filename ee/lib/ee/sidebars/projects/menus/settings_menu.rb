@@ -43,6 +43,10 @@ module EE
             insert_item_after(:monitor, analytics_menu_item)
             insert_item_after(:ci_cd, work_item_settings_menu_item)
 
+            if can?(context.current_user, :admin_project, context.project)
+              insert_item_after(:general, service_accounts_menu_item)
+            end
+
             true
           end
 
@@ -73,7 +77,26 @@ module EE
             )
           end
 
+          def service_accounts_menu_item
+            return ::Sidebars::NilMenuItem.new(item_id: :service_accounts) unless service_accounts_available?
+
+            ::Sidebars::MenuItem.new(
+              title: _('Service accounts'),
+              link: project_settings_service_accounts_path(context.project),
+              active_routes: { path: %w[projects/settings/service_accounts#index] },
+              item_id: :service_accounts
+            )
+          end
+
           private
+
+          def service_accounts_available?
+            unless ::Feature.enabled?(:allow_projects_to_create_service_accounts, context.project.root_ancestor)
+              return false
+            end
+
+            can?(context.current_user, :read_service_account, context.project)
+          end
 
           override :enabled_menu_items
           def enabled_menu_items

@@ -168,5 +168,35 @@ module EE
         }
       }
     end
+
+    def projects_service_accounts_data(project, user = current_user)
+      sources = scope_description(:personal_access_token)
+      scopes = ::Gitlab::Auth.available_scopes_for(user)
+
+      {
+        base_path: project_settings_service_accounts_path(project),
+        is_group: 'false',
+        service_accounts: {
+          enabled: can?(current_user, :create_service_account, project).to_s,
+          path: expose_path(api_v4_projects_service_accounts_path(id: project.id)),
+          edit_path: expose_path(api_v4_projects_service_accounts_path(id: project.id)),
+          docs_path: help_page_path('user/profile/service_accounts.md'),
+          delete_path: expose_path(api_v4_projects_service_accounts_path(id: project.id))
+        },
+        access_token: {
+          **expires_at_for_service_access_tokens(
+            project.root_namespace.namespace_settings.service_access_tokens_expiration_enforced),
+          available_scopes: filter_sort_scopes(scopes, sources).to_json,
+          create: expose_path(api_v4_projects_service_accounts_personal_access_tokens_path(id: project.id,
+            user_id: ':id')),
+          revoke: expose_path(api_v4_projects_service_accounts_personal_access_tokens_path(id: project.id,
+            user_id: ':id')),
+          rotate: expose_path(api_v4_projects_service_accounts_personal_access_tokens_path(id: project.id,
+            user_id: ':id')),
+          show: expose_path(
+            api_v4_projects_service_accounts_personal_access_tokens_path(id: project.id, user_id: ':id'))
+        }
+      }
+    end
   end
 end

@@ -69,6 +69,68 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
         end
       end
     end
+
+    describe 'Service accounts' do
+      let(:item_id) { :service_accounts }
+
+      before do
+        stub_licensed_features(service_accounts: true)
+      end
+
+      context 'when user is project owner' do
+        before do
+          menu.configure_menu_items
+        end
+
+        it 'includes the service accounts menu item' do
+          expect(subject.title).to eql('Service accounts')
+        end
+      end
+
+      context 'when user is project maintainer' do
+        let_it_be(:maintainer_user) { create(:user) }
+        let(:user) { maintainer_user }
+        let(:menu) { described_class.new(context) }
+
+        before_all do
+          project.add_maintainer(maintainer_user)
+        end
+        before do
+          menu.configure_menu_items
+        end
+
+        it 'includes the service accounts menu item' do
+          expect(subject.title).to eql('Service accounts')
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        let(:menu) { described_class.new(context) }
+
+        before do
+          stub_feature_flags(allow_projects_to_create_service_accounts: false)
+          menu.configure_menu_items
+        end
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when user does not have permission' do
+        let_it_be(:non_owner_user) { create(:user) }
+        let(:user) { non_owner_user }
+        let(:menu) { described_class.new(context) }
+
+        before_all do
+          project.add_developer(non_owner_user)
+        end
+
+        before do
+          menu.configure_menu_items
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
   end
 
   describe 'Custom Roles' do
