@@ -22,6 +22,13 @@ module Features
       end
     end
 
+    def expect_to_be_on_group_page(path: 'gitlab', name: 'gitlab')
+      expect(page).to have_current_path("/#{path}")
+      within_testid('super-sidebar') do
+        expect(page).to have_link(name)
+      end
+    end
+
     def expect_to_be_on_trial_form_with_name_fields
       within_testid('trial-form') do
         expect(find_by_testid('first-name-field').value).to have_content(user.first_name)

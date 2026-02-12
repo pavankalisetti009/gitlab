@@ -25,7 +25,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       submit_trial_form
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
 
     context 'when new trial is selected from within an existing namespace' do
@@ -42,7 +42,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
         submit_trial_form(glm: glm_params)
 
-        expect_to_be_on_gitlab_duo_page
+        expect_to_be_on_group_page
       end
 
       it 'fills out form, has the existing namespace preselected, and creates a new group instead' do
@@ -62,7 +62,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
         submit_new_group_trial_form(glm: glm_params, extra_params: new_group_attrs(path: group_path))
 
-        expect_to_be_on_gitlab_duo_page(path: group_path)
+        expect_to_be_on_group_page(path: group_path)
       end
     end
 
@@ -100,7 +100,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       submit_new_group_trial_form(extra_params: new_group_attrs(path: group_name))
 
-      expect_to_be_on_gitlab_duo_page(path: group_name)
+      expect_to_be_on_group_page(path: group_name)
     end
   end
 
@@ -129,7 +129,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       submit_new_group_trial_form(extra_params: new_group_attrs(path: group_name, name: group_name))
 
-      expect_to_be_on_gitlab_duo_page(path: group_name, name: group_name)
+      expect_to_be_on_group_page(path: group_name, name: group_name)
     end
   end
 
@@ -152,7 +152,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       # success
       resubmit_full_request
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
   end
 
@@ -175,7 +175,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       # success
       resubmit_trial_request
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
   end
 

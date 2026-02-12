@@ -22,7 +22,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       submit_single_namespace_trial_form
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
 
     context 'when last name is blank' do
@@ -40,7 +40,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         submit_single_namespace_trial_form(last_name: 'Smith')
 
-        expect_to_be_on_gitlab_duo_page
+        expect_to_be_on_group_page
       end
     end
 
@@ -57,7 +57,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         submit_single_namespace_trial_form
 
-        expect_to_be_on_gitlab_duo_page(path: group.name)
+        expect_to_be_on_group_page(path: group.name)
       end
     end
 
@@ -78,7 +78,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         submit_single_namespace_trial_form
 
-        expect_to_be_on_gitlab_duo_page(path: group.name)
+        expect_to_be_on_group_page(path: group.name)
       end
     end
 
@@ -101,7 +101,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         submit_single_namespace_trial_form
 
-        expect_to_be_on_gitlab_duo_page(path: group.name)
+        expect_to_be_on_group_page(path: group.name)
       end
     end
 
@@ -139,7 +139,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       # success
       resubmit_full_request
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
   end
 
@@ -162,7 +162,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       # success
       resubmit_trial_request
 
-      expect_to_be_on_gitlab_duo_page
+      expect_to_be_on_group_page
     end
   end
 
