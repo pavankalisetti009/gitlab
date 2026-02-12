@@ -3,14 +3,9 @@
 module WorkItems
   module TypesFramework
     module HasType
-      include ActiveRecord::FixedItemsModel::HasOne
       include Gitlab::Utils::StrongMemoize
 
       extend ActiveSupport::Concern
-
-      belongs_to_fixed_items :work_item_system_defined_type,
-        fixed_items_class: WorkItems::TypesFramework::SystemDefined::Type,
-        foreign_key: 'work_item_type_id'
 
       def work_item_type
         if use_system_defined_types?

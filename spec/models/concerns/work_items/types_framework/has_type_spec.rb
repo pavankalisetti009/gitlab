@@ -27,7 +27,6 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
   subject(:work_item) { TestWorkItem.new(namespace: namespace) }
 
   describe 'included modules' do
-    it { expect(described_class).to include(ActiveRecord::FixedItemsModel::HasOne) }
     it { expect(described_class).to include(Gitlab::Utils::StrongMemoize) }
   end
 
@@ -37,6 +36,9 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
     end
 
     it 'returns the system_defined_type from the provider' do
+      # TODO change that to expect work_item.work_item_type to eq system_defined_type once we
+      # integrate the system defined types into the types provider
+      # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219133
       expect(work_item.work_item_type_id).to eq(system_defined_type.id)
     end
 
@@ -68,23 +70,8 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
   end
 
   describe '#work_item_type=' do
-    let(:provider) { instance_double(WorkItems::TypesFramework::Provider) }
-
-    before do
-      allow(work_item).to receive(:work_items_types_provider).and_return(provider)
-    end
-
     context 'when we set a db work_item_type' do
-      it 'fetches the work_item_type from the provider' do
-        expect(provider).to receive(:fetch_work_item_type).with(work_item_type)
-          .and_return(system_defined_type)
-
-        work_item.work_item_type = work_item_type
-      end
-
       it 'sets the work_item_type_id' do
-        allow(provider).to receive(:fetch_work_item_type).and_return(system_defined_type)
-
         expect { work_item.work_item_type = work_item_type }
           .to change { work_item.work_item_type_id }
           .from(nil)
@@ -92,8 +79,6 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
       end
 
       it 'does not use the belongs_to setter' do
-        allow(provider).to receive(:fetch_work_item_type).and_return(system_defined_type)
-
         work_item.work_item_type = work_item_type
 
         expect(work_item.association(:work_item_type).loaded?).to be false
@@ -101,17 +86,11 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
     end
 
     context 'when we set a system_defined_type' do
-      it 'fetches the system_defined_type from the provider' do
-        expect(provider).to receive(:fetch_work_item_type).with(system_defined_type)
-          .and_return(system_defined_type)
-
-        work_item.work_item_type = system_defined_type
-      end
-
       it 'sets the work_item_type_id' do
-        allow(provider).to receive(:fetch_work_item_type).and_return(system_defined_type)
-
-        expect { work_item.work_item_type = system_defined_type }
+        # TODO change that to  work_item.work_item_type = system_defined_type once we
+        # integrate the system defined types into the types provider
+        # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219133
+        expect { work_item.work_item_type_id = system_defined_type.id }
           .to change { work_item.work_item_type_id }
           .from(nil)
           .to(system_defined_type.id)
@@ -124,8 +103,6 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
       end
 
       it 'sets the work_item_type_id to nil' do
-        allow(provider).to receive(:fetch_work_item_type).and_return(nil)
-
         expect { work_item.work_item_type = nil }
           .to change { work_item.work_item_type_id }
           .from(work_item_type.id)
@@ -134,37 +111,15 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
     end
 
     context 'when we set with an id' do
-      it 'fetches the work_item_type from the provider using the id' do
-        expect(provider).to receive(:fetch_work_item_type).with(work_item_type.id)
-          .and_return(work_item_type)
-
-        work_item.work_item_type = work_item_type.id
-      end
-
       it 'sets the work_item_type_id' do
-        allow(provider).to receive(:fetch_work_item_type).and_return(work_item_type)
-
         expect { work_item.work_item_type = work_item_type.id }
           .to change { work_item.work_item_type_id }
           .from(nil)
           .to(work_item_type.id)
       end
 
-      it 'uses the id from the fetched work_item_type' do
-        fetched_type = create(:work_item_type, namespace: namespace)
-        allow(provider).to receive(:fetch_work_item_type).with(work_item_type.id)
-          .and_return(fetched_type)
-
-        work_item.work_item_type = work_item_type.id
-
-        expect(work_item.work_item_type_id).to eq(fetched_type.id)
-      end
-
       context 'when id corresponds to a system_defined_type' do
         it 'fetches and sets the system_defined_type' do
-          allow(provider).to receive(:fetch_work_item_type).with(system_defined_type.id)
-            .and_return(system_defined_type)
-
           expect { work_item.work_item_type = system_defined_type.id }
             .to change { work_item.work_item_type_id }
             .from(nil)
@@ -179,8 +134,6 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
       end
 
       it 'uses the belongs_to setter' do
-        expect(provider).not_to receive(:fetch_work_item_type)
-
         work_item.work_item_type = work_item_type
 
         expect(work_item.association(:work_item_type).loaded?).to be true
@@ -190,6 +143,13 @@ RSpec.describe WorkItems::TypesFramework::HasType, feature_category: :team_plann
         expect(work_item).to receive(:work_item_type=).and_call_original
 
         work_item.work_item_type = work_item_type
+      end
+
+      it 'sets the work_item_type_id' do
+        expect { work_item.work_item_type = work_item_type }
+          .to change { work_item.work_item_type_id }
+          .from(nil)
+          .to(work_item_type.id)
       end
     end
   end
