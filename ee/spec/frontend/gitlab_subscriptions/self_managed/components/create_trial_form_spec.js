@@ -1,4 +1,4 @@
-import { GlForm, GlFormFields, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlForm, GlFormFields, GlSprintf, GlLink, GlFormCheckbox } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import CreateTrialForm from 'ee/pages/gitlab_subscriptions/self_managed/trials/components/create_trial_form.vue';
@@ -7,6 +7,7 @@ import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vu
 import { COUNTRIES, STATES } from 'ee_jest/hand_raise_leads/components/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { PROMO_URL } from '~/constants';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 Vue.use(VueApollo);
 
@@ -63,6 +64,7 @@ describe('CreateTrialForm', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const findSubmitButton = () => wrapper.findByTestId('submit-button');
+  const findConsentCheckbox = () => wrapper.findComponent(GlFormCheckbox);
   const fieldsProps = () => findFormFields().props('fields');
   const formValues = () => wrapper.vm.formValues;
 
@@ -222,6 +224,56 @@ describe('CreateTrialForm', () => {
       await nextTick();
 
       expect(findFormFields().props('values')).toEqual(updatedValues);
+    });
+  });
+
+  describe('internal events tracking', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+    let trackEventSpy;
+
+    beforeEach(async () => {
+      wrapper = await createComponent();
+      ({ trackEventSpy } = bindInternalEventDocument(wrapper.element));
+    });
+
+    it('tracks sm_trial_create_form_render on mount', () => {
+      expect(trackEventSpy).toHaveBeenCalledWith('sm_trial_create_form_render', {}, undefined);
+    });
+
+    it('tracks sm_trial_create_form_submit_click when form is submitted', async () => {
+      const submitSpy = jest.fn();
+      wrapper.vm.$refs.form.$el.submit = submitSpy;
+
+      findFormFields().vm.$emit('submit');
+      await nextTick();
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'sm_trial_create_form_submit_click',
+        {},
+        undefined,
+      );
+    });
+
+    it('tracks sm_trial_create_form_uncheck_consent when consent checkbox is unchecked', async () => {
+      findConsentCheckbox().vm.$emit('change', '0');
+      await nextTick();
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'sm_trial_create_form_uncheck_consent',
+        {},
+        undefined,
+      );
+    });
+
+    it('does not track consent event when checkbox is checked', async () => {
+      findConsentCheckbox().vm.$emit('change', '1');
+      await nextTick();
+
+      expect(trackEventSpy).not.toHaveBeenCalledWith(
+        'sm_trial_create_form_uncheck_consent',
+        {},
+        undefined,
+      );
     });
   });
 });
