@@ -151,10 +151,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
               overageTermsAccepted: true,
               canAcceptOverageTerms: true,
               dapPromoEnabled: false,
-              usageDashboardPath: "/subscriptions/A-S00012345/usage",
-              paidTierTrial: {
-                isActive: true
-              }
+              usageDashboardPath: "/subscriptions/A-S00012345/usage"
             }
           }
         }
@@ -173,10 +170,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           overageTermsAccepted: true,
           canAcceptOverageTerms: true,
           dapPromoEnabled: false,
-          usageDashboardPath: "/subscriptions/A-S00012345/usage",
-          paidTierTrial: {
-            isActive: true
-          }
+          usageDashboardPath: "/subscriptions/A-S00012345/usage"
         }
       }
     end
@@ -298,6 +292,48 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
       {
         success: true,
         overage: overage
+      }
+    end
+
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key } }
+    end
+
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id } }
+    end
+  end
+
+  describe '#get_paid_tier_trial' do
+    let(:request) { client.get_paid_tier_trial }
+    let(:query) { described_class::GET_PAID_TIER_TRIAL_QUERY }
+    let(:paid_tier_trial) do
+      {
+        isActive: true,
+        dailyUsage: [
+          { date: '2025-10-01', creditsUsed: 10.5 },
+          { date: '2025-10-02', creditsUsed: 15.25 }
+        ]
+      }
+    end
+
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          subscription: {
+            gitlabCreditsUsage: {
+              paidTierTrial: paid_tier_trial
+            }
+          }
+        }
+      }
+    end
+
+    let(:expected_response) do
+      {
+        success: true,
+        paidTierTrial: paid_tier_trial
       }
     end
 

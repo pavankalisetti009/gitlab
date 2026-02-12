@@ -25,8 +25,25 @@ module Gitlab
               canAcceptOverageTerms
               dapPromoEnabled
               usageDashboardPath
+            }
+          }
+        }
+      GQL
+
+      GET_PAID_TIER_TRIAL_QUERY = <<~GQL
+        query subscriptionUsagePaidTierTrial(
+          $instanceId: String,
+          $namespaceId: ID,
+          $licenseKey: String
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabCreditsUsage(instanceId: $instanceId) {
               paidTierTrial {
                 isActive
+                dailyUsage {
+                  date
+                  creditsUsed
+                }
               }
             }
           }
@@ -284,6 +301,20 @@ module Gitlab
         end
       end
       strong_memoize_attr :get_overage
+
+      def get_paid_tier_trial
+        response = execute_graphql_query(query: GET_PAID_TIER_TRIAL_QUERY)
+
+        if unsuccessful_response?(response)
+          error(GET_PAID_TIER_TRIAL_QUERY, response)
+        else
+          {
+            success: true,
+            paidTierTrial: response.dig(:data, :subscription, :gitlabCreditsUsage, :paidTierTrial)
+          }
+        end
+      end
+      strong_memoize_attr :get_paid_tier_trial
 
       def get_events_for_user_id(user_id, args)
         strong_memoize_with(:get_events_for_user_id, user_id, args) do

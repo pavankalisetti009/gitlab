@@ -893,61 +893,130 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
   end
 
   describe '#paid_tier_trial' do
-    where(:cdot_value, :return_value) do
-      true  | true
-      false | false
-      nil   | false
+    let(:subscription_usage) do
+      described_class.new(
+        subscription_target: :instance,
+        subscription_usage_client: subscription_usage_client
+      )
     end
 
-    with_them do
-      let(:subscription_usage) do
-        described_class.new(
-          subscription_target: :instance,
-          subscription_usage_client: subscription_usage_client
-        )
+    context 'when get_paid_tier_trial returns successful response with daily usage' do
+      where(:is_active_value) do
+        [true, false]
       end
 
-      let(:client_response) do
-        { success: true, subscriptionUsage: { paidTierTrial: { isActive: cdot_value } } }
+      with_them do
+        let(:paid_tier_trial_response) do
+          {
+            success: true,
+            paidTierTrial: {
+              isActive: is_active_value,
+              dailyUsage: [
+                { date: '2025-10-01', creditsUsed: 10.5 },
+                { date: '2025-10-02', creditsUsed: 15.25 }
+              ]
+            }
+          }
+        end
+
+        before do
+          allow(subscription_usage_client).to receive(:get_paid_tier_trial).and_return(paid_tier_trial_response)
+        end
+
+        it "returns a PaidTierTrial struct with is_active=#{params[:is_active_value]} and daily usage data" do
+          paid_tier_trial = subscription_usage.paid_tier_trial
+
+          expect(paid_tier_trial).to be_a(GitlabSubscriptions::SubscriptionUsage::PaidTierTrial)
+          expect(paid_tier_trial).to have_attributes(
+            is_active: is_active_value,
+            declarative_policy_subject: subscription_usage
+          )
+          expect(paid_tier_trial.daily_usage).to be_an(Array)
+          expect(paid_tier_trial.daily_usage.size).to eq(2)
+          expect(paid_tier_trial.daily_usage.first).to have_attributes(
+            date: '2025-10-01',
+            credits_used: 10.5,
+            declarative_policy_subject: subscription_usage
+          )
+          expect(paid_tier_trial.daily_usage.second).to have_attributes(
+            date: '2025-10-02',
+            credits_used: 15.25,
+            declarative_policy_subject: subscription_usage
+          )
+        end
+      end
+    end
+
+    context 'when get_paid_tier_trial returns unsuccessful response' do
+      let(:paid_tier_trial_response) do
+        { success: false }
       end
 
       before do
-        allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+        allow(subscription_usage_client).to receive(:get_paid_tier_trial).and_return(paid_tier_trial_response)
       end
 
-      it "returns a struct with is_active=#{params[:return_value]} when CDot returns #{params[:cdot_value].inspect}" do
-        paid_tier_trial = subscription_usage.paid_tier_trial
-
-        expect(paid_tier_trial).to be_a(GitlabSubscriptions::SubscriptionUsage::PaidTierTrial)
-        expect(paid_tier_trial).to have_attributes(
-          is_active: return_value,
-          declarative_policy_subject: subscription_usage
-        )
-      end
-    end
-
-    context 'when paidTierTrial is missing from metadata' do
-      let(:subscription_usage) do
-        described_class.new(
-          subscription_target: :instance,
-          subscription_usage_client: subscription_usage_client
-        )
-      end
-
-      let(:client_response) do
-        { success: true, subscriptionUsage: {} }
-      end
-
-      before do
-        allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
-      end
-
-      it 'returns a PaidTierTrial struct with is_active=false' do
+      it 'returns a PaidTierTrial struct with is_active=false and empty daily_usage' do
         paid_tier_trial = subscription_usage.paid_tier_trial
 
         expect(paid_tier_trial).to be_a(GitlabSubscriptions::SubscriptionUsage::PaidTierTrial)
         expect(paid_tier_trial).to have_attributes(
           is_active: false,
+          daily_usage: [],
+          declarative_policy_subject: subscription_usage
+        )
+      end
+    end
+
+    context 'when get_paid_tier_trial returns empty daily usage' do
+      let(:paid_tier_trial_response) do
+        {
+          success: true,
+          paidTierTrial: {
+            isActive: true,
+            dailyUsage: []
+          }
+        }
+      end
+
+      before do
+        allow(subscription_usage_client).to receive(:get_paid_tier_trial).and_return(paid_tier_trial_response)
+      end
+
+      it 'returns a PaidTierTrial struct with is_active=true and empty daily_usage' do
+        paid_tier_trial = subscription_usage.paid_tier_trial
+
+        expect(paid_tier_trial).to be_a(GitlabSubscriptions::SubscriptionUsage::PaidTierTrial)
+        expect(paid_tier_trial).to have_attributes(
+          is_active: true,
+          daily_usage: [],
+          declarative_policy_subject: subscription_usage
+        )
+      end
+    end
+
+    context 'when get_paid_tier_trial returns nil daily usage' do
+      let(:paid_tier_trial_response) do
+        {
+          success: true,
+          paidTierTrial: {
+            isActive: false,
+            dailyUsage: nil
+          }
+        }
+      end
+
+      before do
+        allow(subscription_usage_client).to receive(:get_paid_tier_trial).and_return(paid_tier_trial_response)
+      end
+
+      it 'returns a PaidTierTrial struct with is_active=false and nil daily_usage' do
+        paid_tier_trial = subscription_usage.paid_tier_trial
+
+        expect(paid_tier_trial).to be_a(GitlabSubscriptions::SubscriptionUsage::PaidTierTrial)
+        expect(paid_tier_trial).to have_attributes(
+          is_active: false,
+          daily_usage: [],
           declarative_policy_subject: subscription_usage
         )
       end
