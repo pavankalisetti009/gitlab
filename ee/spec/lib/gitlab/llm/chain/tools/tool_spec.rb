@@ -51,7 +51,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Tool, feature_category: :duo_chat do
         true  | 'troubleshoot_job'      | :not_in_current_plan
         true  | 'explain_vulnerability' | :not_in_current_plan
         true  | 'summarize_comments'    | :not_in_current_plan
-        true  | 'explain_code'          | :not_in_current_plan
       end
 
       with_them do
