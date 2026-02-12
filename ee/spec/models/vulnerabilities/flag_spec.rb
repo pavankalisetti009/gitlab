@@ -114,12 +114,31 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
           end
 
           context 'when confidence score is below threshold' do
-            it 'triggers resolution workflow' do
-              expect(::Vulnerabilities::TriggerResolutionWorkflowWorker)
-                .to receive(:perform_async)
-                      .with(anything)
+            context 'when finding is eligible for resolution workflow' do
+              before do
+                allow(finding).to receive(:eligible_for_resolution_workflow?).and_return(true)
+              end
 
-              create(:vulnerabilities_flag, finding: finding, confidence_score: 0.5, origin: described_class::AI_SAST_FP_DETECTION_ORIGIN)
+              it 'triggers resolution workflow' do
+                expect(::Vulnerabilities::TriggerResolutionWorkflowWorker)
+                  .to receive(:perform_async)
+                        .with(anything)
+
+                create(:vulnerabilities_flag, finding: finding, confidence_score: 0.5, origin: described_class::AI_SAST_FP_DETECTION_ORIGIN)
+              end
+            end
+
+            context 'when finding is not eligible for resolution workflow' do
+              before do
+                allow(finding).to receive(:eligible_for_resolution_workflow?).and_return(false)
+              end
+
+              it 'does not trigger resolution workflow' do
+                expect(::Vulnerabilities::TriggerResolutionWorkflowWorker)
+                  .not_to receive(:perform_async)
+
+                create(:vulnerabilities_flag, finding: finding, confidence_score: 0.5, origin: described_class::AI_SAST_FP_DETECTION_ORIGIN)
+              end
             end
           end
 
@@ -170,6 +189,10 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
       end
 
       context 'when confidence_score is updated' do
+        before do
+          allow(finding).to receive(:eligible_for_resolution_workflow?).and_return(true)
+        end
+
         it 'triggers resolution workflow' do
           expect(::Vulnerabilities::TriggerResolutionWorkflowWorker)
             .to receive(:perform_async)
@@ -180,6 +203,10 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
       end
 
       context 'when origin is updated to AI_SAST_FP_DETECTION_ORIGIN' do
+        before do
+          allow(finding).to receive(:eligible_for_resolution_workflow?).and_return(true)
+        end
+
         it 'triggers resolution workflow' do
           existing_flag.update!(origin: 'some_other_origin')
 

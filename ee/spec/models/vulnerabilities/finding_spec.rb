@@ -1926,14 +1926,14 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
   describe "#vulnerable_code" do
     let_it_be(:source_code) do
       <<~SOURCE
-      #include <stdio.h>
+        #include <stdio.h>
 
-      int main(int argc, char *argv[])
-      {
-        char buf[8];
-        memcpy(&buf, "123456789");
-        printf("hello, world!");
-      }
+        int main(int argc, char *argv[])
+        {
+          char buf[8];
+          memcpy(&buf, "123456789");
+          printf("hello, world!");
+        }
       SOURCE
     end
 
@@ -2294,6 +2294,71 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
       it 'returns project default_branch' do
         expect(finding.sha).to eq(project.default_branch)
+      end
+    end
+  end
+
+  describe '#eligible_for_resolution_workflow?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:vulnerability) { create(:vulnerability, project: project, author: user) }
+    let_it_be(:finding) { create(:vulnerabilities_finding, project: project, vulnerability: vulnerability) }
+
+    context 'when sast_fp_detection workflow exists' do
+      let_it_be(:workflow) { create(:duo_workflows_workflow, project: project) }
+      let_it_be(:triggered_workflow) do
+        create(:vulnerability_triggered_workflow,
+          vulnerability_occurrence: finding,
+          workflow: workflow,
+          workflow_name: :sast_fp_detection)
+      end
+
+      context 'when vulnerability has high severity' do
+        before do
+          vulnerability.update!(severity: :high)
+        end
+
+        it 'returns true' do
+          expect(finding.eligible_for_resolution_workflow?).to be true
+        end
+      end
+
+      context 'when vulnerability has medium severity' do
+        before do
+          vulnerability.update!(severity: :medium)
+        end
+
+        it 'returns false' do
+          expect(finding.eligible_for_resolution_workflow?).to be false
+        end
+      end
+    end
+
+    context 'when vulnerability has high severity but no sast_fp_detection workflow exists' do
+      before do
+        vulnerability.update!(severity: :high)
+      end
+
+      it 'returns false' do
+        expect(finding.eligible_for_resolution_workflow?).to be false
+      end
+    end
+
+    context 'when only resolve_sast_vulnerability workflow exists' do
+      let_it_be(:workflow) { create(:duo_workflows_workflow, project: project) }
+      let_it_be(:triggered_workflow) do
+        create(:vulnerability_triggered_workflow,
+          vulnerability_occurrence: finding,
+          workflow: workflow,
+          workflow_name: :resolve_sast_vulnerability)
+      end
+
+      before do
+        vulnerability.update!(severity: :high)
+      end
+
+      it 'returns false' do
+        expect(finding.eligible_for_resolution_workflow?).to be false
       end
     end
   end

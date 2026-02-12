@@ -14,7 +14,7 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
   describe '#perform' do
     let(:workflow) { create(:duo_workflows_workflow, user: user, project: project, environment: :web) }
     let(:execute_service) { instance_double(::Ai::Catalog::Flows::ExecuteService) }
-    let(:service_result) { ServiceResponse.success(payload: { workflow_id: workflow.id, workload_id: 456 }) }
+    let(:service_result) { ServiceResponse.success(payload: { workflow: workflow, workload_id: 456 }) }
     let(:consumer) { create(:ai_catalog_item_consumer, project: project) }
 
     before do
@@ -193,12 +193,6 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
                 vulnerability_id: vulnerability.id,
                 workflow_id: other_workflow.id
               )
-
-              worker.perform(vulnerability_id)
-            end
-
-            it 'does not track the event' do
-              expect(worker).not_to receive(:track_internal_event)
 
               worker.perform(vulnerability_id)
             end

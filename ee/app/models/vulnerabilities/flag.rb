@@ -58,6 +58,7 @@ module Vulnerabilities
       return false unless confidence_score < ::Vulnerabilities::TriggerResolutionWorkflowWorker::CONFIDENCE_THRESHOLD
       return false unless ::Feature.enabled?(:enable_vulnerability_resolution, finding.project.root_ancestor)
       return false unless finding.project.duo_sast_vr_workflow_enabled
+      return false unless finding.eligible_for_resolution_workflow?
 
       # On create, always trigger if conditions above are met
       return true if saved_change_to_id?
