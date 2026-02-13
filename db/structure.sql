@@ -26153,7 +26153,8 @@ CREATE TABLE pool_repositories (
     disk_path character varying,
     state character varying,
     source_project_id bigint,
-    organization_id bigint
+    organization_id bigint,
+    CONSTRAINT check_96233d37c0 CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE SEQUENCE pool_repositories_id_seq
