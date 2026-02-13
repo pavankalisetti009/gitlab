@@ -39,6 +39,7 @@ module EE
 
         def insert_gitlab_duo_menu
           return unless License.current&.paid?
+          return if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
           insert_menu_after(
             ::Sidebars::Admin::Menus::SubscriptionMenu,

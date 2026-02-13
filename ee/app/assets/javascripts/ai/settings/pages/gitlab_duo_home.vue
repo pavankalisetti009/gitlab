@@ -8,8 +8,8 @@ import DuoAgentPlatformBuyCreditsCard from 'ee/ai/settings/components/duo_agent_
 import DuoSeatUtilizationInfoCard from '../components/duo_seat_utilization_info_card.vue';
 import DuoConfigurationSettingsInfoCard from '../components/duo_configuration_settings_info_card.vue';
 import DuoModelsConfigurationInfoCard from '../components/duo_models_configuration_info_card.vue';
-import DuoWorkflowSettings from '../components/duo_workflow_settings.vue';
 import DuoUsageAnalyticsCard from '../components/duo_usage_analytics_card.vue';
+import DuoAgentSettings from '../components/duo_agent_settings.vue';
 
 export default {
   name: 'GitlabDuoHome',
@@ -21,8 +21,8 @@ export default {
     DuoAgentPlatformBuyCreditsCard,
     DuoSeatUtilizationInfoCard,
     DuoModelsConfigurationInfoCard,
-    DuoWorkflowSettings,
     DuoUsageAnalyticsCard,
+    DuoAgentSettings,
   },
   inject: {
     canManageSelfHostedModels: { default: false },
@@ -103,9 +103,6 @@ export default {
        */
       return this.isSaaS && !this.isAdminInstanceDuoHome;
     },
-    shouldShowDuoAgentPlatformSettings() {
-      return this.isAdminInstanceDuoHome;
-    },
     shouldShowBuyCreditsCard() {
       if (!this.isSaaS) {
         return true;
@@ -165,14 +162,11 @@ export default {
               :dashboard-path="gitlabCreditsDashboardPath"
             />
           </section>
+          <section class="gl-flex gl-flex-col gl-gap-5">
+            <duo-agent-settings />
+          </section>
         </div>
       </template>
     </code-suggestions-usage>
-    <duo-workflow-settings
-      v-if="shouldShowDuoAgentPlatformSettings"
-      :title="$options.i18n.gitlabDuoHomeTitle"
-      :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
-      :display-page-heading="!shouldShowCodeSuggestionsUsage"
-    />
   </div>
 </template>

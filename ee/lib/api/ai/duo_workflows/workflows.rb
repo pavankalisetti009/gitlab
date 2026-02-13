@@ -129,10 +129,7 @@ module API
 
             unless ::Ai::DuoWorkflow.available?
               render_api_error!(
-                'GitLab Duo Agent Platform onboarding is incomplete, composite identity must be enabled. ' \
-                  '<a href="https://docs.gitlab.com/administration/gitlab_duo/configure/' \
-                  'gitlab_self_managed/#turn-on-composite-identity">' \
-                  'Learn more</a>',
+                'GitLab Duo Agent Platform onboarding is incomplete, composite identity must be enabled.',
                 :forbidden
               )
             end

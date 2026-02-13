@@ -1318,10 +1318,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_agent_pl
 
           expect(response).to have_gitlab_http_status(:forbidden)
           expect(json_response['message']).to eq(
-            'GitLab Duo Agent Platform onboarding is incomplete, composite identity must be enabled. ' \
-              '<a href="https://docs.gitlab.com/administration/gitlab_duo/configure/' \
-              'gitlab_self_managed/#turn-on-composite-identity">' \
-              'Learn more</a>'
+            'GitLab Duo Agent Platform onboarding is incomplete, composite identity must be enabled.'
           )
         end
       end

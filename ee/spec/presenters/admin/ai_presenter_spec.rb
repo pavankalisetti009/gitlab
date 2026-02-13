@@ -57,7 +57,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     let(:can_manage_instance_model_selection) { true }
     let(:can_manage_self_hosted_settings) { true }
     let(:beta_self_hosted_models_enabled) { true }
-    let(:duo_workflow_enabled) { true }
     let(:is_saas) { true }
     let(:self_hosted_models) { true }
     let(:subscription_name) { 'A-S0000001' }
@@ -106,8 +105,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
         active_self_managed_duo_pro_or_enterprise: active_self_managed_duo_pro_or_enterprise
       )
 
-      allow(Ai::DuoWorkflow).to receive(:available?).and_return duo_workflow_enabled
-
       stub_saas_features(gitlab_com_subscriptions: is_saas)
 
       allow(Ai::AmazonQ).to receive(:feature_available?).and_return amazon_q_available?
@@ -145,9 +142,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
         duo_configuration_path: '/admin/gitlab_duo/configuration',
         duo_seat_utilization_path: '/admin/gitlab_duo/seat_utilization',
         duo_self_hosted_path: '/admin/gitlab_duo/self_hosted',
-        duo_workflow_disable_path: '/admin/ai/duo_workflow_settings/disconnect',
-        duo_workflow_enabled: 'true',
-        duo_workflow_settings_path: '/admin/ai/duo_workflow_settings',
         enabled_expanded_logging: 'true',
         experiment_features_enabled: 'true',
         is_bulk_add_on_assignment_enabled: 'true',
@@ -249,12 +243,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
       let(:application_setting_attributes) { super().merge(duo_availability: 'always_off') }
 
       it { expect(settings).to include(duo_availability: 'always_off') }
-    end
-
-    context 'without Duo workflow' do
-      let(:duo_workflow_enabled) { false }
-
-      it { expect(settings).to include(duo_workflow_enabled: 'false') }
     end
 
     context 'without expanded logging' do

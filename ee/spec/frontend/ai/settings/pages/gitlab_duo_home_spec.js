@@ -6,7 +6,6 @@ import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utili
 import DuoModelsConfigurationInfoCard from 'ee/ai/settings/components/duo_models_configuration_info_card.vue';
 import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
 import DuoAgentPlatformBuyCreditsCard from 'ee/ai/settings/components/duo_agent_platform_buy_credits_card.vue';
-import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
 import DuoUsageAnalyticsCard from 'ee/ai/settings/components/duo_usage_analytics_card.vue';
 import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE } from 'ee/constants/duo';
@@ -70,7 +69,6 @@ describe('GitLab Duo Home', () => {
   const findDuoCoreUpgradeCard = () => wrapper.findComponent(DuoCoreUpgradeCard);
   const findDuoAgentPlatformBuyCreditsCard = () =>
     wrapper.findComponent(DuoAgentPlatformBuyCreditsCard);
-  const findDuoWorkflowSettings = () => wrapper.findComponent(DuoWorkflowSettings);
 
   describe('when SaaS', () => {
     describe('when its the admin instance Duo page', () => {
@@ -83,7 +81,6 @@ describe('GitLab Duo Home', () => {
         expect(findDuoAgentPlatformBuyCreditsCard().exists()).toBe(false);
         expect(findDuoModelsConfigurationCard().exists()).toBe(false);
         expect(findHealthCheckList().exists()).toBe(false);
-        expect(findDuoWorkflowSettings().exists()).toBe(true);
       });
     });
 
@@ -95,7 +92,6 @@ describe('GitLab Duo Home', () => {
       it('renders the correct base components', () => {
         expect(findCodeSuggestionsUsage().exists()).toBe(true);
         expect(findHealthCheckList().exists()).toBe(false);
-        expect(findDuoWorkflowSettings().exists()).toBe(false);
       });
 
       it('passes the correct props to `CodeSuggestionsUsage`', () => {
@@ -147,7 +143,6 @@ describe('GitLab Duo Home', () => {
       it('renders the correct base components', () => {
         expect(findCodeSuggestionsUsage().exists()).toBe(true);
         expect(findHealthCheckList().exists()).toBe(true);
-        expect(findDuoWorkflowSettings().exists()).toBe(true);
       });
 
       it('passes the correct props to `CodeSuggestionsUsage`', () => {
