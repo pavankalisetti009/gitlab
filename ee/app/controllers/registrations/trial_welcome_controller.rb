@@ -15,7 +15,7 @@ module Registrations
 
     layout 'minimal'
 
-    def new
+    def show
       experiment(:lightweight_trial_registration_redesign,
         actor: current_user).track(:render_welcome)
 
@@ -24,8 +24,11 @@ module Registrations
         params: params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS))
     end
 
-    def create
-      result = GitlabSubscriptions::Trials::WelcomeCreateService.new(params: create_params,
+    # Note: alias and old methods to be cleaned up in https://gitlab.com/gitlab-org/gitlab/-/issues/584780
+    alias_method :new, :show
+
+    def update
+      result = GitlabSubscriptions::Trials::WelcomeCreateService.new(params: update_params,
         user: current_user, **progress_params).execute
 
       if result.success?
@@ -43,10 +46,12 @@ module Registrations
       else
         render GitlabSubscriptions::Trials::Welcome::ResubmitComponent.new(
           hidden_fields: result.payload.merge(lead_params),
-          submit_path: users_sign_up_trial_welcome_path(**glm_params)
+          submit_path: users_sign_up_welcome_path(**glm_params)
         ).with_content(result.message)
       end
     end
+
+    alias_method :create, :update
 
     private
 
@@ -56,10 +61,10 @@ module Registrations
 
     def resubmit_params(result)
       { namespace_id: result.payload[:namespace_id],
-        errors: result.payload[:model_errors] }.merge(create_params).to_h.symbolize_keys
+        errors: result.payload[:model_errors] }.merge(update_params).to_h.symbolize_keys
     end
 
-    def create_params
+    def update_params
       params.permit(
         *::Onboarding::StatusPresenter::GLM_PARAMS,
         :group_name, :project_name, :company_name, :country, :state,

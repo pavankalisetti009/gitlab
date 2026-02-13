@@ -29,6 +29,10 @@ module Onboarding
         plan_name_from_invited_source&.then { |plan| { existing_plan: plan } }) || {}
     end
 
+    def trial_registration?
+      user&.onboarding_status_registration_type == registration_type_trial
+    end
+
     private
 
     attr_reader :user
@@ -45,10 +49,6 @@ module Onboarding
 
     def automatic_trial?
       trial_registration? && !initial_trial?
-    end
-
-    def trial_registration?
-      user&.onboarding_status_registration_type == registration_type_trial
     end
 
     def initial_trial?

@@ -136,8 +136,9 @@ module EE
       end
 
       store_duration(:ee_onboarding_status_create_service_instantiate) do
-        ::Onboarding::StatusCreateService
-        .new(onboarding_status_params, session['user_return_to'], resource, onboarding_first_step_path(user)).execute
+        ::Onboarding::StatusCreateService.new(
+          onboarding_status_params, session['user_return_to'], resource, onboarding_first_step_path, request
+        ).execute
         clear_memoization(:onboarding_status_presenter) # clear since registration_type is now set
       end
 

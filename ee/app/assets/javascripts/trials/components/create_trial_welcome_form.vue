@@ -232,6 +232,7 @@ export default {
     data-testid="trial-form"
   >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
+    <input type="hidden" name="_method" value="put" />
     <gl-form-fields
       v-model="formValues"
       :form-id="$options.formId"

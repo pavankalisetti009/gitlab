@@ -77,7 +77,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
     context 'when experiment `lightweight_trial_registration_redesign` is candidate', :js, experiment_tracking: 2 do
       include IdentityVerificationHelpers
 
-      let_it_be(:user) { create(:user) }
+      let_it_be(:user) { create(:user, onboarding_status_registration_type: 'trial') }
       let(:user_email) { new_user.email }
 
       before do
@@ -154,7 +154,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         # Step 4
         expect(page).to have_content('Welcome to GitLab')
         expect(page).to have_content('Help us personalize your GitLab experience by answering a few questions')
-        expect(page).to have_current_path(new_users_sign_up_trial_welcome_path)
+        expect(page).to have_current_path(users_sign_up_welcome_path)
 
         wait_for_all_requests
 
@@ -188,7 +188,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
       it 'when model errors occur form can be resubmitted' do
         sign_in(user)
 
-        visit new_users_sign_up_trial_welcome_path
+        visit users_sign_up_welcome_path
 
         select_from_listbox 'Software Developer', from: 'Select a role'
         select_from_listbox 'My team', from: 'Please select'
@@ -215,9 +215,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         expect(group_count).to eq(Group.count)
       end
 
-      context 'when trial submission fails', :js do
-        let_it_be(:user) { create(:user) }
-
+      context 'when trial submission fails' do
         before do
           allow_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
             allow(service).to receive(:execute)
@@ -228,7 +226,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         it 'can be retried successfully' do
           sign_in(user)
 
-          visit new_users_sign_up_trial_welcome_path
+          visit users_sign_up_welcome_path
 
           select_from_listbox 'Software Developer', from: 'Select a role'
           select_from_listbox 'My team', from: 'Please select'

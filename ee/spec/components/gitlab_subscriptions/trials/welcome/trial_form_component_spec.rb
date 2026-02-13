@@ -44,7 +44,7 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
           country: '',
           state: ''
         },
-        submitPath: users_sign_up_trial_welcome_path(glm_source: 'some-source', glm_content: 'some-content'),
+        submitPath: users_sign_up_welcome_path(glm_source: 'some-source', glm_content: 'some-content'),
         gtmSubmitEventLabel: 'saasTrialSubmit'
       }.with_indifferent_access
     end
@@ -90,7 +90,7 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
 
     it 'includes submit path with all parameters' do
       view_model = parsed_view_model
-      expected_path = users_sign_up_trial_welcome_path(glm_source: 'some-source', glm_content: 'some-content')
+      expected_path = users_sign_up_welcome_path(glm_source: 'some-source', glm_content: 'some-content')
 
       expect(view_model['submitPath']).to eq(expected_path)
     end
@@ -115,7 +115,7 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
           country: '',
           state: ''
         },
-        submitPath: users_sign_up_trial_welcome_path,
+        submitPath: users_sign_up_welcome_path,
         gtmSubmitEventLabel: 'saasTrialSubmit'
       }.with_indifferent_access
     end

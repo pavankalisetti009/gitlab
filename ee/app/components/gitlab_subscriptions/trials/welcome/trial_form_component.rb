@@ -57,7 +57,7 @@ module GitlabSubscriptions
         end
 
         def submit_path
-          users_sign_up_trial_welcome_path(**params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS))
+          users_sign_up_welcome_path(**params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS))
         end
       end
     end
