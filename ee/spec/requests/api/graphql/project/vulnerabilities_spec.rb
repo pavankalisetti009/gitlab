@@ -114,6 +114,76 @@ RSpec.describe 'Query.project(fullPath).vulnerabilities', feature_category: :vul
         expect(latest_flag['createdAt']).not_to be_nil
         expect(latest_flag['updatedAt']).not_to be_nil
       end
+
+      describe 'tracked refs filter', :elastic do
+        let_it_be(:tracked_ref) { create(:security_project_tracked_context, project: project) }
+        let_it_be(:vulnerability_read) do
+          create(:vulnerability_read, project: project, tracked_context: tracked_ref)
+        end
+
+        let_it_be(:other_tracked_ref) { create(:security_project_tracked_context, project: project) }
+        let_it_be(:other_vulnerability_read) do
+          create(:vulnerability_read, project: project, tracked_context: other_tracked_ref)
+        end
+
+        let(:query) do
+          %(
+            query {
+              project(fullPath: "#{project.full_path}") {
+                vulnerabilities(trackedRefIds: ["#{tracked_ref.to_global_id}"]) {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          )
+        end
+
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+          Elastic::ProcessBookkeepingService.track!(
+            vulnerability_read,
+            other_vulnerability_read
+          )
+
+          ensure_elasticsearch_index!
+
+          allow(user)
+            .to receive(:can?)
+                  .with(:access_advanced_vulnerability_management, project)
+                  .and_return(true)
+        end
+
+        it 'returns vulnerabilities from the tracked ref' do
+          expect(vulnerabilities.pluck('id')).to contain_exactly(vulnerability_read.vulnerability.to_global_id.to_s)
+        end
+
+        context 'when elasticsearch settings are not enabled' do
+          before do
+            stub_ee_application_setting(elasticsearch_search: false, elasticsearch_indexing: false)
+          end
+
+          it 'returns an error' do
+            req
+
+            expect_graphql_errors_to_include("Require advanced vulnerability management to be enabled!")
+          end
+        end
+
+        context 'when vulnerabilities_across_contexts feature flag is diabled' do
+          before do
+            stub_feature_flags(vulnerabilities_across_contexts: false)
+          end
+
+          it 'returns an error' do
+            req
+
+            expect_graphql_errors_to_include('The vulnerabilities_across_contexts feature flag is not enabled.')
+          end
+        end
+      end
     end
 
     context 'when user is not a member of the project' do

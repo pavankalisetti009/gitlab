@@ -64,27 +64,114 @@ RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerab
         top_level_group.add_maintainer(current_user)
       end
 
-      around do |example|
-        travel_to('2025-04-02') { example.run }
+      describe 'archival' do
+        around do |example|
+          travel_to('2025-04-02') { example.run }
+        end
+
+        it 'returns the `aboutToBeArchived` information' do
+          execute_graphql_query
+
+          expect(vulnerabilities_returned).to match_array([
+            {
+              'id' => vulnerability_1.to_global_id.to_s,
+              'archivalInformation' => { 'aboutToBeArchived' => false, 'expectedToBeArchivedOn' => '2026-05-01' }
+            },
+            {
+              'id' => vulnerability_2.to_global_id.to_s,
+              'archivalInformation' => { 'aboutToBeArchived' => true, 'expectedToBeArchivedOn' => '2025-05-01' }
+            },
+            {
+              'id' => vulnerability_3.to_global_id.to_s,
+              'archivalInformation' => { 'aboutToBeArchived' => false, 'expectedToBeArchivedOn' => '2026-05-01' }
+            }
+          ])
+        end
       end
 
-      it 'returns the `aboutToBeArchived` information' do
-        execute_graphql_query
+      describe 'tracked refs filter', :elastic do
+        let_it_be(:tracked_ref) { create(:security_project_tracked_context, project: project_1) }
+        let_it_be(:vulnerability_read) do
+          create(:vulnerability_read, project: project_1, tracked_context: tracked_ref)
+        end
 
-        expect(vulnerabilities_returned).to match_array([
-          {
-            'id' => vulnerability_1.to_global_id.to_s,
-            'archivalInformation' => { 'aboutToBeArchived' => false, 'expectedToBeArchivedOn' => '2026-05-01' }
-          },
-          {
-            'id' => vulnerability_2.to_global_id.to_s,
-            'archivalInformation' => { 'aboutToBeArchived' => true, 'expectedToBeArchivedOn' => '2025-05-01' }
-          },
-          {
-            'id' => vulnerability_3.to_global_id.to_s,
-            'archivalInformation' => { 'aboutToBeArchived' => false, 'expectedToBeArchivedOn' => '2026-05-01' }
-          }
-        ])
+        let_it_be(:tracked_ref_on_different_project) { create(:security_project_tracked_context, project: project_2) }
+        let_it_be(:vulnerability_read_on_different_project) do
+          create(:vulnerability_read, project: project_2, tracked_context: tracked_ref_on_different_project)
+        end
+
+        let_it_be(:out_of_scope_ref) { create(:security_project_tracked_context, project: project_1) }
+        let_it_be(:out_of_scope_read) do
+          create(:vulnerability_read, project: project_1, tracked_context: out_of_scope_ref)
+        end
+
+        let(:query) do
+          %(
+            query {
+              group(fullPath: "#{top_level_group.full_path}") {
+                vulnerabilities(trackedRefIds: [
+                  "#{tracked_ref.to_global_id}",
+                  "#{tracked_ref_on_different_project.to_global_id}"
+                ]) {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          )
+        end
+
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+          Elastic::ProcessBookkeepingService.track!(
+            vulnerability_read,
+            vulnerability_read_on_different_project,
+            out_of_scope_read
+          )
+
+          ensure_elasticsearch_index!
+
+          allow(current_user)
+            .to receive(:can?)
+                  .with(:access_advanced_vulnerability_management, top_level_group)
+                  .and_return(true)
+        end
+
+        it 'returns vulnerabilities from the tracked ref' do
+          execute_graphql_query
+
+          expected_gids = [vulnerability_read, vulnerability_read_on_different_project].map do |read|
+            read.vulnerability.to_global_id.to_s
+          end
+
+          expect(vulnerabilities_returned.pluck('id')).to match_array(expected_gids)
+        end
+
+        context 'when elasticsearch settings are not enabled' do
+          before do
+            stub_ee_application_setting(elasticsearch_search: false, elasticsearch_indexing: false)
+          end
+
+          it 'returns an error' do
+            execute_graphql_query
+
+            expect_graphql_errors_to_include("Require advanced vulnerability management to be enabled!")
+          end
+        end
+
+        context 'when vulnerabilities_across_contexts feature flag is diabled' do
+          before do
+            stub_feature_flags(vulnerabilities_across_contexts: false)
+          end
+
+          it 'returns an error' do
+            execute_graphql_query
+
+            expect_graphql_errors_to_include('The vulnerabilities_across_contexts feature flag is not enabled.')
+          end
+        end
       end
 
       it 'does not cause N+1 query issue' do
