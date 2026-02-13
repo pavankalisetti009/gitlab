@@ -74,8 +74,8 @@ RSpec.describe Issuables::CustomFields::CreateService, feature_category: :team_p
     end
 
     context 'when setting work item types' do
-      let_it_be(:issue_type) { create(:work_item_type, :issue) }
-      let_it_be(:task_type) { create(:work_item_type, :task) }
+      let_it_be(:issue_type) { build(:work_item_system_defined_type, :issue) }
+      let_it_be(:task_type) { build(:work_item_system_defined_type, :task) }
 
       let(:params) do
         {
