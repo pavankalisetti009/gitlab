@@ -21,6 +21,7 @@ module Gitlab
           %(  echo "Testing SRT sandbox capabilities..."),
           %(  if srt --settings /tmp/srt-settings.json true 2>/dev/null; then),
           %(    echo "SRT sandbox test successful, running command: #{command}"),
+          %(    export GITLAB_WORKFLOW_SANDBOX=true),
           %(    srt --settings /tmp/srt-settings.json #{command}),
           %(  else),
           %(    echo "Warning: SRT found but can't create sandbox (insufficient privileges), running command directly"),
