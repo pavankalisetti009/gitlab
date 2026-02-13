@@ -11,6 +11,10 @@ end
 
 # Sign up
 scope path: '/users/sign_up', module: :registrations, as: :users_sign_up do
+  scope constraints: ::Onboarding::TrialUserConstraint.new do
+    resource :welcome, only: [:show, :update], controller: 'trial_welcome'
+  end
+
   resource :welcome, only: [:show, :update], controller: 'welcome'
   resource :trial_welcome, only: [:new, :create], controller: 'trial_welcome'
   resource :company, only: [:new, :create], controller: 'company'

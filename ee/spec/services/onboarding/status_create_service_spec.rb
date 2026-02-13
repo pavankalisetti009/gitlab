@@ -12,6 +12,7 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
     let(:step_url) { 'foobar' }
     let(:params) { { glm_content: 'glm_content', glm_source: 'glm_source' } }
     let(:user_return_to) { nil }
+    let(:request) { {} }
     let(:onboarding_status) do
       {
         step_url: step_url,
@@ -22,7 +23,9 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
       }
     end
 
-    subject(:execute) { described_class.new(params, user_return_to, current_user, step_url).execute }
+    let(:service) { described_class.new(params, user_return_to, current_user, step_url, request) }
+
+    subject(:execute) { service.execute }
 
     context 'when onboarding is enabled' do
       before do
@@ -108,6 +111,18 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
 
             it 'does not enter the user into onboarding' do
               expect(execute[:user]).not_to be_onboarding_in_progress
+            end
+
+            it 'passes request param to experiment' do
+              allow(service).to receive(:experiment).and_call_original
+
+              execute
+
+              expect(service).to have_received(:experiment).with(
+                :lightweight_trial_registration_redesign,
+                actor: current_user,
+                request: request
+              )
             end
           end
         end

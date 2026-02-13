@@ -8,6 +8,11 @@ module GitlabSubscriptions
 
         private
 
+        override :submit_method
+        def submit_method
+          :put
+        end
+
         override :top_page_component
         def top_page_component
           GitlabSubscriptions::Trials::Ultimate::TopPageComponent

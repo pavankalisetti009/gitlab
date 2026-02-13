@@ -2,8 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :onboarding do
-  let_it_be(:user, reload: true) { create(:user, organizations: [current_organization]) }
+RSpec.describe Registrations::TrialWelcomeController, :saas_onboarding, :saas_subscriptions_trials, feature_category: :onboarding do
+  let_it_be(:user, reload: true) do
+    create(:user, organizations: [current_organization], onboarding_status_registration_type: 'trial')
+  end
+
   let_it_be(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
   let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
 
@@ -11,13 +14,14 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
 
   before do
     stub_saas_features(subscriptions_trials: subscriptions_trials_enabled, marketing_google_tag_manager: false)
+    stub_experiments(lightweight_trial_registration_redesign: :candidate)
   end
 
-  describe 'GET #new' do
+  describe 'GET #show' do
     let(:base_params) { glm_params }
 
     subject(:get_new) do
-      get new_users_sign_up_trial_welcome_path, params: base_params
+      get users_sign_up_welcome_path, params: base_params
       response
     end
 
@@ -51,7 +55,7 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
     end
   end
 
-  describe 'POST create' do
+  describe 'PUT update' do
     let_it_be(:namespace, reload: true) { create(:group_with_plan, plan: :free_plan, owners: user) }
     let_it_be(:project) { create(:project, namespace: namespace) }
 
@@ -71,8 +75,8 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
 
     let(:params) { default_params }
 
-    subject(:post_create) do
-      post users_sign_up_trial_welcome_path, params: params
+    subject(:put_update) do
+      put users_sign_up_welcome_path, params: params
       response
     end
 
@@ -94,7 +98,7 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
           instance
         end
 
-        expect(post_create).to redirect_to(namespace_project_get_started_path(namespace, project))
+        expect(put_update).to redirect_to(namespace_project_get_started_path(namespace, project))
       end
 
       context 'with experiment lightweight_trial_registration_redesign' do
@@ -119,7 +123,7 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
 
           expect(experiment).to receive(:track).with(:completed_group_project_creation, namespace: namespace)
 
-          post_create
+          put_update
         end
       end
 
@@ -137,7 +141,7 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
           instance
         end
 
-        post_create
+        put_update
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(response.body).to include(_('group creation failed'))
@@ -156,7 +160,7 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
           instance
         end
 
-        expect(post_create).to have_gitlab_http_status(:not_found)
+        expect(put_update).to have_gitlab_http_status(:not_found)
       end
 
       it "when project creation fails" do
@@ -173,7 +177,7 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
           instance
         end
 
-        expect(post_create).to have_gitlab_http_status(:ok)
+        expect(put_update).to have_gitlab_http_status(:ok)
         expect(response.body).to include(_('project creation failed'))
       end
 
@@ -193,7 +197,7 @@ RSpec.describe Registrations::TrialWelcomeController, :saas, feature_category: :
             instance
           end
 
-          expect(post_create).to redirect_to(namespace_project_get_started_path(namespace, project))
+          expect(put_update).to redirect_to(namespace_project_get_started_path(namespace, project))
         end
       end
     end

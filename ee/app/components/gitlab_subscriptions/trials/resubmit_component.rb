@@ -12,6 +12,10 @@ module GitlabSubscriptions
 
       attr_reader :hidden_fields, :submit_path
 
+      def submit_method
+        :post
+      end
+
       def before_render
         content_for :body_class, '!gl-bg-default'
       end

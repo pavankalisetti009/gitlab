@@ -8,11 +8,12 @@ module Onboarding
     CURRENT_VERSION = 1
     LIGHTWEIGHT_REGISTRATION_EXPERIMENT_VERSION = 2
 
-    def initialize(params, user_return_to, user, step_url)
+    def initialize(params, user_return_to, user, step_url, request)
       @params = params
       @user_return_to = user_return_to
       @user = user
       @step_url = step_url
+      @request = request
     end
 
     def execute
@@ -31,7 +32,7 @@ module Onboarding
 
     private
 
-    attr_reader :params, :user_return_to, :user, :step_url
+    attr_reader :params, :user_return_to, :user, :step_url, :request
 
     def payload
       # Need to reset here since onboarding_status doesn't live on the user record, but in user_details.
@@ -53,7 +54,9 @@ module Onboarding
     def onboarding_in_progress
       return true unless trial_registration_type?
 
-      experiment(:lightweight_trial_registration_redesign, actor: user) do |e|
+      # The cookie migration happens during this call.
+      # See https://gitlab.com/gitlab-org/ruby/gems/gitlab-experiment#cookies-and-the-actor-keyword
+      experiment(:lightweight_trial_registration_redesign, actor: user, request: request) do |e|
         e.control { true }
         e.candidate { false }
       end.run

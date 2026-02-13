@@ -50,4 +50,33 @@ RSpec.describe 'EE-specific user routing' do
       it_behaves_like 'routes session paths', :geo
     end
   end
+
+  describe 'sign up routes', feature_category: :acquisition do
+    let(:trial_user_match?) { false }
+
+    before do
+      allow_any_instance_of(Onboarding::TrialUserConstraint).to receive(:matches?).and_return(trial_user_match?) # rubocop:disable RSpec/AnyInstanceOf -- Needed as it is not the next instance
+    end
+
+    it 'routes to welcome controller' do
+      expect(get: '/users/sign_up/welcome').to route_to(controller: 'registrations/welcome', action: 'show')
+      expect(patch: '/users/sign_up/welcome').to route_to(controller: 'registrations/welcome', action: 'update')
+    end
+
+    it 'routes to trial_welcome controller for new and create' do
+      expect(get: '/users/sign_up/trial_welcome/new')
+        .to route_to(controller: 'registrations/trial_welcome', action: 'new')
+      expect(post: '/users/sign_up/trial_welcome')
+        .to route_to(controller: 'registrations/trial_welcome', action: 'create')
+    end
+
+    context 'when trial user constraint is satisfied' do
+      let(:trial_user_match?) { true }
+
+      it 'routes to trial_welcome controller for show and update' do
+        expect(get: '/users/sign_up/welcome').to route_to(controller: 'registrations/trial_welcome', action: 'show')
+        expect(patch: '/users/sign_up/welcome').to route_to(controller: 'registrations/trial_welcome', action: 'update')
+      end
+    end
+  end
 end
