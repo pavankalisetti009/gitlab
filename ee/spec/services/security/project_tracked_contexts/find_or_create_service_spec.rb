@@ -7,7 +7,7 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
   let_it_be(:user) { create(:user) }
   let_it_be(:guest_user) { create(:user) }
 
-  let(:context_name) { 'main' }
+  let(:context_name) { project.default_branch }
   let(:context_type) { :branch }
   let(:is_default) { true }
   let(:allow_untracked) { false }
@@ -298,7 +298,7 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
         create(:security_project_tracked_context,
           :tracked,
           project: project,
-          context_name: 'main',
+          context_name: project.default_branch,
           context_type: :branch)
       end
 
@@ -440,6 +440,42 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
         expect(tracked_context).to be_persisted
         expect(tracked_context.project).to eq(project)
         expect(tracked_context).not_to eq(other_project_context)
+      end
+    end
+
+    context 'when ingesting for a default branch' do
+      context 'when default context exists but the context_name differs' do
+        let_it_be(:existing_context) do
+          create(:security_project_tracked_context,
+            :tracked,
+            project: project,
+            context_name: 'old_default',
+            context_type: :branch,
+            is_default: true
+          )
+        end
+
+        let_it_be(:existing_context_2) do
+          create(:security_project_tracked_context,
+            :tracked,
+            project: project,
+            context_name: 'old_default_2',
+            context_type: :branch,
+            is_default: true
+          )
+        end
+
+        it 'updates the latest default existing context', :aggregate_failures do
+          expect { service.execute }
+          .to not_change { Security::ProjectTrackedContext.count }
+          .and not_change { existing_context.reload.context_name }
+
+          existing_context_2.reload
+          expect(existing_context_2.context_name).to eq(project.default_branch)
+          expect(existing_context_2.context_type).to eq('branch')
+          expect(existing_context_2.is_default).to be(true)
+          expect(existing_context_2.project).to eq(project)
+        end
       end
     end
   end

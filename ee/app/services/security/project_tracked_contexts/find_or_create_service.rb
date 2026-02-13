@@ -21,7 +21,7 @@ module Security
       def self.project_default_branch(project)
         new(
           project: project,
-          context_name: project.default_branch,
+          context_name: project.default_branch_or_main,
           context_type: :branch,
           is_default: true
         )
@@ -52,7 +52,6 @@ module Security
       def execute
         return permission_error unless can_manage_contexts?
         return validation_error unless valid_params?
-
         return ref_not_found_error if current_user && !ref_exists_in_repository?
 
         if existing_context.present?
@@ -60,6 +59,8 @@ module Security
 
           return ServiceResponse.error(message: 'Context is not tracked')
         end
+
+        return success(updated_default_branch_context) if update_default_branch_context?
 
         return cant_create_non_default_error unless is_default || allow_untracked
 
@@ -140,6 +141,25 @@ module Security
 
       def cant_create_non_default_error
         ServiceResponse.error(message: 'Expected context to already exist for non-default branches')
+      end
+
+      def branch_context?
+        context_type == :branch
+      end
+
+      def update_default_branch_context?
+        branch_context? && is_default && existing_default_branch_context.present?
+      end
+
+      def existing_default_branch_context
+        project.security_project_tracked_contexts
+          .default_branch
+          .last
+      end
+      strong_memoize_attr :existing_default_branch_context
+
+      def updated_default_branch_context
+        existing_default_branch_context.tap { |context| context.update!(context_name: project.default_branch) }
       end
     end
   end
