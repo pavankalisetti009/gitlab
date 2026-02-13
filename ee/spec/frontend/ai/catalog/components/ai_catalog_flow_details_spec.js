@@ -56,7 +56,7 @@ describe('AiCatalogFlowDetails', () => {
       createComponent();
     });
 
-    it('renders sections', () => {
+    it('renders 2 sections', () => {
       expect(findAllSections()).toHaveLength(2);
       expect(findSection(0).attributes('title')).toBe('Visibility & access');
       expect(findSection(1).attributes('title')).toBe('Configuration');
@@ -142,6 +142,13 @@ describe('AiCatalogFlowDetails', () => {
             },
           },
         });
+      });
+
+      it('renders 3 sections', () => {
+        expect(findAllSections()).toHaveLength(3);
+        expect(findSection(0).attributes('title')).toBe('Visibility & access');
+        expect(findSection(1).attributes('title')).toBe('Service account');
+        expect(findSection(2).attributes('title')).toBe('Configuration');
       });
 
       it('renders service account field', () => {

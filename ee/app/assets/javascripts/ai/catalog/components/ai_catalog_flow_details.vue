@@ -49,9 +49,7 @@ export default {
       return this.item.configurationForGroup?.serviceAccount;
     },
     hasConfigurationContent() {
-      return Boolean(
-        this.serviceAccount || this.hasProjectConfiguration || !this.item.foundational,
-      );
+      return Boolean(this.hasProjectConfiguration || !this.item.foundational);
     },
     helpTextSettingsLink() {
       return (
@@ -95,17 +93,18 @@ export default {
           :description-texts="$options.FLOW_VISIBILITY_LEVEL_DESCRIPTIONS"
         />
       </form-section>
+      <form-section v-if="serviceAccount" :title="s__('AICatalog|Service account')" is-display>
+        <ai-catalog-item-field-service-account
+          :service-account="serviceAccount"
+          :item-type="item.itemType"
+          data-testid="service-account-field"
+        />
+      </form-section>
       <form-section
         v-if="hasConfigurationContent"
         :title="s__('AICatalog|Configuration')"
         is-display
       >
-        <ai-catalog-item-field-service-account
-          v-if="serviceAccount"
-          :service-account="serviceAccount"
-          :item-type="item.itemType"
-          data-testid="service-account-field"
-        />
         <trigger-field v-if="hasProjectConfiguration" :item="item" />
         <ai-catalog-item-field
           v-if="!item.foundational"
