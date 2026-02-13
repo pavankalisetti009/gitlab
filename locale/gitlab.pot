@@ -41733,6 +41733,9 @@ msgstr ""
 msgid "Maximum number of protection rules have been reached."
 msgstr ""
 
+msgid "Maximum number of push mirrors (%{max_mirrors}) exceeded for this project."
+msgstr ""
+
 msgid "Maximum number of requests for a user. Resets after 1 minute."
 msgstr ""
 
