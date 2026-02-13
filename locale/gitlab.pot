@@ -14584,6 +14584,12 @@ msgstr ""
 msgid "Check feature availability on namespace plan"
 msgstr ""
 
+msgid "Check option"
+msgstr ""
+
+msgid "Check option in column \"%{column}\""
+msgstr ""
+
 msgid "Check option: %{option}"
 msgstr ""
 
@@ -67921,7 +67927,7 @@ msgstr ""
 msgid "Table size"
 msgstr ""
 
-msgid "Tables containing block elements (like multiple paragraphs, lists or blockquotes) are not supported in Markdown and will be converted to HTML."
+msgid "Tables containing block elements (like multiple paragraphs, lists or blockquotes, or task lists with text or multiple items) are not supported in Markdown and will be converted to HTML."
 msgstr ""
 
 msgid "Tag"
