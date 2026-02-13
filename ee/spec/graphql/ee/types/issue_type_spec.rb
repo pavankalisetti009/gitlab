@@ -45,8 +45,7 @@ RSpec.describe GitlabSchema.types['Issue'], feature_category: :team_planning do
         project2 = create(:project, :public, group: group)
         create(:issue, project: project2)
 
-        expect { GitlabSchema.execute(query, context: { current_user: user }) }
-          .not_to exceed_query_limit(control).with_threshold(3)
+        expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control)
       end
     end
 

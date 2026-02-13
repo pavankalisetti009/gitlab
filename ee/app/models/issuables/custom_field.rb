@@ -18,7 +18,7 @@ module Issuables
     has_many :select_options, -> { order(:position, :id) }, dependent: :delete_all, autosave: true,
       # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
       class_name: 'Issuables::CustomFieldSelectOption', inverse_of: :custom_field
-    has_many :work_item_type_custom_fields, class_name: 'WorkItems::TypeCustomField', autosave: true
+    has_many :work_item_type_custom_fields, class_name: 'WorkItems::TypeCustomField'
     has_many :work_item_types, -> { order(:name) },
       class_name: 'WorkItems::Type', through: :work_item_type_custom_fields
 
@@ -72,38 +72,6 @@ module Issuables
       end
     end
 
-    def work_item_types
-      if use_system_defined_types?
-        work_item_type_custom_fields.map(&:work_item_type).sort_by { |type| type.name.downcase }
-      else
-        super
-      end
-    end
-
-    def work_item_types=(types)
-      if use_system_defined_types?
-        # Convert types to an array of IDs for comparison
-        new_type_ids = Array(types).compact.filter_map { |t| t.is_a?(Integer) ? t : t.id }.uniq
-
-        unless new_record?
-          # Remove associations that are no longer in the list
-          work_item_type_custom_fields.each do |wt_cf|
-            wt_cf.mark_for_destruction unless new_type_ids.include?(wt_cf.work_item_type_id)
-          end
-        end
-
-        # Add new associations
-        existing_type_ids = work_item_type_custom_fields.reject(&:marked_for_destruction?).map(&:work_item_type_id)
-        new_type_ids.each do |type_id|
-          next if existing_type_ids.include?(type_id)
-
-          work_item_type_custom_fields.build(work_item_type_id: type_id, namespace: namespace)
-        end
-      else
-        super
-      end
-    end
-
     def active?
       archived_at.nil?
     end
@@ -116,14 +84,10 @@ module Issuables
     # so that the cache is cleared and they are fetched again in the correct order.
     def reset_ordered_associations
       select_options.reset
-      work_item_types.reset unless use_system_defined_types?
+      work_item_types.reset
     end
 
     private
-
-    def use_system_defined_types?
-      Feature.enabled?(:work_item_system_defined_type, :instance)
-    end
 
     def namespace_is_root_group
       return if namespace.nil?
@@ -155,16 +119,9 @@ module Issuables
     def number_of_active_fields_per_namespace_per_type
       return if namespace.nil? || !active?
 
-      # Get the type IDs we're actually checking (including unsaved changes)
-      type_ids = work_item_type_custom_fields
-        .reject(&:marked_for_destruction?)
-        .filter_map(&:work_item_type_id)
-
-      return if type_ids.empty?
-
       invalid_types = self.class.active.of_namespace(namespace)
                         .joins(:work_item_types)
-                        .where(work_item_type_custom_fields: { work_item_type_id: type_ids })
+                        .where(work_item_type_custom_fields: { work_item_type_id: work_item_type_ids })
                         .where.not(work_item_type_custom_fields: { custom_field_id: id })
                         .group('work_item_types.id, work_item_types.name')
                         .having('COUNT(*) >= ?', MAX_ACTIVE_FIELDS_PER_TYPE)

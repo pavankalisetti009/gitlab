@@ -34,7 +34,7 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
       end
 
       context 'when params are valid' do
-        let(:type) { build(:work_item_system_defined_type, :task) }
+        let(:type) { WorkItems::Type.default_by_type(:task) }
         let(:opts) { { title: 'Awesome work_item', description: 'please fix', work_item_type: type } }
 
         it 'created instance is a WorkItem' do
@@ -110,7 +110,7 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
             end
 
             context 'when type supports color widget' do
-              let(:type) { build(:work_item_system_defined_type, :epic) }
+              let(:type) { WorkItems::Type.default_by_type(:epic) }
 
               it 'creates new work item and sets color' do
                 expect { service_result }.to change { WorkItem.count }.by(1).and(
@@ -214,7 +214,7 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
           end
 
           context 'when work item type supports weight' do
-            let(:work_item_type) { build(:work_item_system_defined_type, :issue) }
+            let(:work_item_type) { WorkItems::Type.default_by_type(:issue) }
 
             before do
               skip "these examples don't apply to a group container" if container.is_a?(Group)
@@ -280,7 +280,7 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
     end
 
     let(:epic) { Epic.last }
-    let(:type) { build(:work_item_system_defined_type, :epic) }
+    let(:type) { WorkItems::Type.default_by_type(:epic) }
 
     let(:start_date) { (Time.current + 1.day).to_date }
     let(:due_date) { (Time.current + 2.days).to_date }
@@ -333,7 +333,7 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
     end
 
     context 'when creating an issue with a synced epic as parent' do
-      let(:type) { build(:work_item_system_defined_type, :issue) }
+      let(:type) { WorkItems::Type.default_by_type(:issue) }
 
       it 'creates the work item and the EpicIssue with the correct relative_position' do
         expect { service_result }
@@ -347,7 +347,7 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
     end
 
     context 'when not creating an epic work item' do
-      let(:type) { build(:work_item_system_defined_type, :task) }
+      let(:type) { WorkItems::Type.default_by_type(:task) }
 
       let_it_be(:parent) { nil }
 

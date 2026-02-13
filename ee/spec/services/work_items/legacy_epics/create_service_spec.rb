@@ -180,7 +180,7 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
             closed_by_id: other_user.id,
             closed_at: closed_date,
             state_id: 2,
-            work_item_type: build(:work_item_system_defined_type, :epic)
+            work_item_type: ::WorkItems::Type.default_by_type(:epic)
           },
           widget_params: a_hash_including(
             description_widget: { description: "epic description" },

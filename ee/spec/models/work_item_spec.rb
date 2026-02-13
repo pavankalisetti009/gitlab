@@ -246,21 +246,8 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
   describe '#widgets' do
     subject(:widgets) { build(:work_item).widgets }
 
-    context "for widget definition" do
-      it 'instantiates widgets with their widget definition' do
-        expect(widgets.map(&:widget_definition))
-          .to all(be_instance_of(WorkItems::TypesFramework::SystemDefined::WidgetDefinition))
-      end
-
-      context "when the FF for system defiend types is disabled" do
-        before do
-          stub_feature_flags(work_item_system_defined_type: false)
-        end
-
-        it 'instantiates widgets with their widget definition' do
-          expect(widgets.map(&:widget_definition)).to all(be_instance_of(WorkItems::WidgetDefinition))
-        end
-      end
+    it 'instantiates widgets with their widget definition' do
+      expect(widgets.map(&:widget_definition)).to all(be_instance_of(WorkItems::WidgetDefinition))
     end
 
     context 'for weight widget' do
@@ -1619,7 +1606,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       subject(:create_work_item) { create(:work_item, project: reusable_project, work_item_type: type) }
 
       context 'when it is not a work item of type epic' do
-        let(:type) { build(:work_item_system_defined_type, :issue) }
+        let(:type) { WorkItems::Type.default_by_type(:issue) }
 
         it 'creates metrics after saving' do
           expect(create_work_item).to be_persisted
@@ -1629,7 +1616,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       end
 
       context 'when it is a project work item of type epic' do
-        let(:type) { build(:work_item_system_defined_type, :epic) }
+        let(:type) { WorkItems::Type.default_by_type(:epic) }
 
         it 'creates metrics after saving' do
           expect(create_work_item).to be_persisted
@@ -1641,7 +1628,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
     context 'with grup-level work item' do
       subject(:create_work_item) do
-        create(:work_item, namespace: reusable_group, work_item_type: build(:work_item_system_defined_type, :epic))
+        create(:work_item, namespace: reusable_group, work_item_type: WorkItems::Type.default_by_type(:epic))
       end
 
       it 'does not create metrics after saving work item with type epic' do
@@ -1653,13 +1640,11 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
   end
 
   describe '#allowed_work_item_type_change' do
-    let(:issue_type) { build(:work_item_system_defined_type, :issue) }
-
     context 'when epic work item does not have a synced legacy epic' do
       let(:work_item) { create(:work_item, :epic) }
 
       it 'is does change work item type from epic to issue' do
-        work_item.assign_attributes(work_item_type_id: issue_type.id)
+        work_item.assign_attributes(work_item_type: WorkItems::Type.default_by_type(:issue))
 
         expect(work_item).to be_valid
         expect(work_item.errors[:work_item_type_id]).to be_empty
@@ -1671,7 +1656,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       let(:work_item) { epic.work_item }
 
       it 'is does not change work item type from epic to issue' do
-        work_item.assign_attributes(work_item_type_id: issue_type.id)
+        work_item.assign_attributes(work_item_type: WorkItems::Type.default_by_type(:issue))
 
         expect(work_item).not_to be_valid
         expect(work_item.errors[:work_item_type_id])

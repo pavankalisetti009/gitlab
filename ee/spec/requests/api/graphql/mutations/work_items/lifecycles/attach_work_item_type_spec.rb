@@ -8,8 +8,8 @@ RSpec.describe 'Attaching a work item type to a custom lifecycle', feature_categ
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:user) { create(:user, maintainer_of: group) }
 
-  let(:work_item_type) { build(:work_item_system_defined_type, :issue) }
-  let(:requirement_work_item_type) { build(:work_item_system_defined_type, :requirement) }
+  let(:work_item_type) { create(:work_item_type, :issue) }
+  let(:requirement_work_item_type) { create(:work_item_type, :requirement) }
   let(:target_lifecycle) { create(:work_item_custom_lifecycle, namespace: group) }
   let(:work_item_type_id) { work_item_type.to_gid }
   let(:lifecycle_id) { target_lifecycle.to_gid }
