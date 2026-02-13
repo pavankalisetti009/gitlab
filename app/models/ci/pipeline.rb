@@ -708,6 +708,31 @@ module Ci
       :ci_pipelines
     end
 
+    def self.projects_with_variables(project_ids, limit)
+      if Feature.disabled?(:query_projects_with_variables_from_ci_pipeline_artifacts, Feature.current_request)
+        return Ci::PipelineVariable.projects_with_variables(project_ids, limit)
+      end
+
+      project_ids_from_pipeline_variables =
+        Ci::PipelineVariable
+          .select(:project_id)
+          .where(project_id: project_ids)
+
+      project_ids_from_pipeline_artifacts =
+        Ci::PipelineArtifact
+          .select(:project_id)
+          .where(project_id: project_ids, file_type: :pipeline_variables)
+
+      project_ids_sql = <<~SQL.squish
+        (#{project_ids_from_pipeline_variables.to_sql})
+        UNION
+        (#{project_ids_from_pipeline_artifacts.to_sql})
+        LIMIT ?
+      SQL
+
+      connection.select_values(sanitize_sql_array([project_ids_sql, limit]))
+    end
+
     def ci_pipeline_statuses_rate_limited?
       Gitlab::ApplicationRateLimiter.throttled?(
         :ci_pipeline_statuses_subscription,
