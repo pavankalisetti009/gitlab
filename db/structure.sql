@@ -16615,7 +16615,8 @@ CREATE TABLE ci_job_artifact_states (
     verification_failure text,
     partition_id bigint NOT NULL,
     project_id bigint,
-    CONSTRAINT check_df832b66ea CHECK ((char_length(verification_failure) <= 255))
+    CONSTRAINT check_df832b66ea CHECK ((char_length(verification_failure) <= 255)),
+    CONSTRAINT check_fe0ce03ded CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_job_artifacts_id_seq
