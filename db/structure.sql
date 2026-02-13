@@ -18893,6 +18893,7 @@ CREATE TABLE dependency_proxy_manifest_states (
     verification_checksum bytea,
     verification_failure text,
     group_id bigint,
+    CONSTRAINT check_48a15459cd CHECK ((group_id IS NOT NULL)),
     CONSTRAINT check_fdd5d9791b CHECK ((char_length(verification_failure) <= 255))
 );
 
