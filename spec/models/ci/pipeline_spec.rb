@@ -2080,6 +2080,102 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
     end
   end
 
+  describe '#variables' do
+    let(:variables_attributes) do
+      [
+        { key: 'ENV_VAR', value: 'env var value', variable_type: 'env_var', raw: false },
+        { key: 'FILE_VAR', value: 'file var value', variable_type: 'file', raw: true }
+      ]
+    end
+
+    shared_examples 'when pipeline has pipeline variables' do
+      it 'returns an array of Ci::PipelineVariableItem objects' do
+        expect(pipeline.variables).to match_array([
+          have_attributes(class: Ci::PipelineVariableItem, **variables_attributes.first),
+          have_attributes(class: Ci::PipelineVariableItem, **variables_attributes.last)
+        ])
+      end
+
+      context 'when pipeline does not have a pipeline variables artifact' do
+        before do
+          pipeline.pipeline_artifacts_pipeline_variables&.destroy!
+          pipeline.association(:pipeline_artifacts_pipeline_variables).reset
+        end
+
+        it 'returns an array of Ci::PipelineVariable objects' do
+          expect(pipeline.variables).to match_array([
+            have_attributes(class: Ci::PipelineVariable, **variables_attributes.first),
+            have_attributes(class: Ci::PipelineVariable, **variables_attributes.last)
+          ])
+        end
+      end
+
+      context 'when the FF `ci_read_pipeline_variables_from_artifact` is disabled' do
+        before do
+          stub_feature_flags(ci_read_pipeline_variables_from_artifact: false)
+        end
+
+        it 'returns an array of Ci::PipelineVariable objects' do
+          expect(pipeline.variables).to match_array([
+            have_attributes(class: Ci::PipelineVariable, **variables_attributes.first),
+            have_attributes(class: Ci::PipelineVariable, **variables_attributes.last)
+          ])
+        end
+      end
+    end
+
+    shared_examples 'when pipeline does not have pipeline variables' do
+      it 'returns an empty result' do
+        expect(pipeline.variables).to be_empty
+      end
+
+      context 'when the FF `ci_read_pipeline_variables_from_artifact` is disabled' do
+        before do
+          stub_feature_flags(ci_read_pipeline_variables_from_artifact: false)
+        end
+
+        it 'returns an empty result' do
+          expect(pipeline.variables).to be_empty
+        end
+      end
+    end
+
+    context 'when pipeline variables are not persisted' do
+      let(:pipeline) { build(:ci_pipeline, project: project) }
+
+      it_behaves_like 'when pipeline has pipeline variables' do
+        before do
+          variables_attributes.each do |var_attrs|
+            pipeline.association(:variables).target <<
+              FactoryBot.build(:ci_pipeline_variable, pipeline: pipeline, **var_attrs)
+          end
+
+          Gitlab::Ci::Pipeline::Build::PipelineVariablesArtifactBuilder.new(pipeline, variables_attributes).run
+        end
+      end
+
+      it_behaves_like 'when pipeline does not have pipeline variables'
+    end
+
+    context 'when pipeline variables are persisted' do
+      let(:pipeline) { create(:ci_pipeline, project: project) }
+
+      it_behaves_like 'when pipeline has pipeline variables' do
+        before do
+          variables_attributes.each do |var_attrs|
+            pipeline.association(:variables).target <<
+              FactoryBot.create(:ci_pipeline_variable, pipeline: pipeline, **var_attrs)
+          end
+
+          Gitlab::Ci::Pipeline::Build::PipelineVariablesArtifactBuilder.new(pipeline, variables_attributes).run
+          pipeline.pipeline_artifacts_pipeline_variables.save!
+        end
+      end
+
+      it_behaves_like 'when pipeline does not have pipeline variables'
+    end
+  end
+
   describe '#auto_canceled?' do
     subject { pipeline.auto_canceled? }
 
