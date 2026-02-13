@@ -32,6 +32,15 @@ The following foundational flows are available:
 - [Agentic SAST Vulnerability Resolution](agentic_sast_vulnerability_resolution.md): Automatically generate merge requests to resolve SAST vulnerabilities.
 - [SAST false positive detection](sast_false_positive_detection.md): Automatically identify and filter false positives in SAST findings.
 
+## Configure flow execution CI/CD details
+
+You can configure the environment where flows use CI/CD to execute.
+
+For example, on GitLab Self-Managed, administrators can configure a custom container registry
+for foundational flow images.
+
+For more information, see [Configure flow execution](../execution.md).
+
 ## Security for foundational flows
 
 In the GitLab UI, foundational flows have access to the following GitLab APIs:
