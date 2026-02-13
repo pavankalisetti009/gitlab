@@ -45,6 +45,25 @@ For deprecation reviewers (Technical Writers only):
   https://handbook.gitlab.com/handbook/marketing/blog/release-posts/#update-the-deprecations-doc
 -->
 
+## GitLab 19.1
+
+### Linux package support for Amazon Linux 2
+
+- Announced in GitLab 18.9
+- Removal in GitLab 19.1 ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-com/Product/-/work_items/14395).
+
+In GitLab 19.1, we are removing Amazon Linux 2 (AL2) package builds for the Linux package.
+
+Amazon Linux 2 reaches end of life in June 2026 and will no longer receive security updates after that date.
+In accordance with our [Linux package supported platforms policy](https://docs.gitlab.com/install/package/#supported-platforms),
+we drop package builds once a vendor stops supporting the operating system, with at least a six-month announcement period.
+
+If you currently run GitLab on Amazon Linux 2, you must migrate to Amazon Linux 2023 (AL2023) or another
+[supported operating system](https://docs.gitlab.com/install/package/#supported-platforms) before upgrading to GitLab 19.1.
+Amazon provides [migration documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.migration-al.generic.from-al2.html)
+to help you move from AL2 to AL2023.
+
 ## GitLab 19.0
 
 ### Azure storage driver for the container registry
