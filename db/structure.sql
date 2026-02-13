@@ -29840,6 +29840,7 @@ CREATE TABLE subscription_add_on_purchases (
     trial boolean DEFAULT false NOT NULL,
     started_at date,
     organization_id bigint NOT NULL,
+    subscription_add_on_uid smallint,
     CONSTRAINT check_3313c4d200 CHECK ((char_length(purchase_xid) <= 255)),
     CONSTRAINT check_d79ce199b3 CHECK ((started_at IS NOT NULL))
 );
@@ -47838,6 +47839,8 @@ CREATE INDEX index_status_page_published_incidents_on_namespace_id ON status_pag
 CREATE INDEX index_status_page_settings_on_project_id ON status_page_settings USING btree (project_id);
 
 CREATE INDEX index_subscription_add_on_purchases_on_namespace_id_add_on_id ON subscription_add_on_purchases USING btree (namespace_id, subscription_add_on_id);
+
+CREATE INDEX index_subscription_add_on_purchases_on_subscription_add_on_uid ON subscription_add_on_purchases USING btree (subscription_add_on_uid);
 
 CREATE UNIQUE INDEX index_subscription_add_ons_on_name ON subscription_add_ons USING btree (name);
 
