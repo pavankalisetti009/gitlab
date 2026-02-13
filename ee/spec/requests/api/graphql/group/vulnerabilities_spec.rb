@@ -45,6 +45,8 @@ RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerab
       post_graphql(query, current_user: current_user)
     end
 
+    subject(:execute) { execute_graphql_query }
+
     before do
       stub_licensed_features(security_dashboard: true)
 
@@ -89,7 +91,7 @@ RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerab
         end
       end
 
-      describe 'tracked refs filter', :elastic do
+      describe 'trackedRefIds filter', :elastic do
         let_it_be(:tracked_ref) { create(:security_project_tracked_context, project: project_1) }
         let_it_be(:vulnerability_read) do
           create(:vulnerability_read, project: project_1, tracked_context: tracked_ref)
@@ -149,28 +151,30 @@ RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerab
           expect(vulnerabilities_returned.pluck('id')).to match_array(expected_gids)
         end
 
-        context 'when elasticsearch settings are not enabled' do
-          before do
-            stub_ee_application_setting(elasticsearch_search: false, elasticsearch_indexing: false)
-          end
+        it_behaves_like 'validates tracked ref filters' do
+          let(:user) { current_user }
+          let(:actor) { top_level_group }
+        end
+      end
 
-          it 'returns an error' do
-            execute_graphql_query
-
-            expect_graphql_errors_to_include("Require advanced vulnerability management to be enabled!")
-          end
+      describe 'trackedRefsScope filter', :elastic do
+        let(:query) do
+          %(
+            query {
+              group(fullPath: "#{top_level_group.full_path}") {
+                vulnerabilities(trackedRefsScope: DEFAULT_BRANCHES) {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          )
         end
 
-        context 'when vulnerabilities_across_contexts feature flag is diabled' do
-          before do
-            stub_feature_flags(vulnerabilities_across_contexts: false)
-          end
-
-          it 'returns an error' do
-            execute_graphql_query
-
-            expect_graphql_errors_to_include('The vulnerabilities_across_contexts feature flag is not enabled.')
-          end
+        it_behaves_like 'validates tracked ref filters' do
+          let(:user) { current_user }
+          let(:actor) { top_level_group }
         end
       end
 

@@ -2298,6 +2298,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryvulnerabilitiessort"></a>`sort` | [`VulnerabilitySort`](#vulnerabilitysort) | List vulnerabilities by sort order. |
 | <a id="queryvulnerabilitiesstate"></a>`state` | [`[VulnerabilityState!]`](#vulnerabilitystate) | Filter vulnerabilities by state. |
 | <a id="queryvulnerabilitiestrackedrefids"></a>`trackedRefIds` {{< icon name="warning-solid" >}} | [`[SecurityProjectTrackedContextID!]`](#securityprojecttrackedcontextid) | **Introduced** in GitLab 18.10. **Status**: Experiment. Filter vulnerabilities by tracked ref IDs. To use this argument, you must have Elasticsearch configured and the `advanced_vulnerability_management` feature flag enabled. |
+| <a id="queryvulnerabilitiestrackedrefsscope"></a>`trackedRefsScope` {{< icon name="warning-solid" >}} | [`SecurityTrackedRefScope`](#securitytrackedrefscope) | **Introduced** in GitLab 18.9. **Status**: Experiment. Filter by tracked ref scopeTo use this argument, you must have Elasticsearch configured and the `advanced_vulnerability_management` + `vulnerabilities_across_contexts` feature flags enabled. |
 | <a id="queryvulnerabilitiesvaliditycheck"></a>`validityCheck` {{< icon name="warning-solid" >}} | [`[VulnerabilityFindingTokenStatusState!]`](#vulnerabilityfindingtokenstatusstate) | **Introduced** in GitLab 18.5. **Status**: Experiment. Filter vulnerabilities by validity check. |
 
 ### `Query.vulnerabilitiesCountByDay`
@@ -36475,6 +36476,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupvulnerabilitiessort"></a>`sort` | [`VulnerabilitySort`](#vulnerabilitysort) | List vulnerabilities by sort order. |
 | <a id="groupvulnerabilitiesstate"></a>`state` | [`[VulnerabilityState!]`](#vulnerabilitystate) | Filter vulnerabilities by state. |
 | <a id="groupvulnerabilitiestrackedrefids"></a>`trackedRefIds` {{< icon name="warning-solid" >}} | [`[SecurityProjectTrackedContextID!]`](#securityprojecttrackedcontextid) | **Introduced** in GitLab 18.10. **Status**: Experiment. Filter vulnerabilities by tracked ref IDs. To use this argument, you must have Elasticsearch configured and the `advanced_vulnerability_management` feature flag enabled. |
+| <a id="groupvulnerabilitiestrackedrefsscope"></a>`trackedRefsScope` {{< icon name="warning-solid" >}} | [`SecurityTrackedRefScope`](#securitytrackedrefscope) | **Introduced** in GitLab 18.9. **Status**: Experiment. Filter by tracked ref scopeTo use this argument, you must have Elasticsearch configured and the `advanced_vulnerability_management` + `vulnerabilities_across_contexts` feature flags enabled. |
 | <a id="groupvulnerabilitiesvaliditycheck"></a>`validityCheck` {{< icon name="warning-solid" >}} | [`[VulnerabilityFindingTokenStatusState!]`](#vulnerabilityfindingtokenstatusstate) | **Introduced** in GitLab 18.5. **Status**: Experiment. Filter vulnerabilities by validity check. |
 
 ##### `Group.vulnerabilitiesCountByDay`
@@ -45820,6 +45822,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectvulnerabilitiessort"></a>`sort` | [`VulnerabilitySort`](#vulnerabilitysort) | List vulnerabilities by sort order. |
 | <a id="projectvulnerabilitiesstate"></a>`state` | [`[VulnerabilityState!]`](#vulnerabilitystate) | Filter vulnerabilities by state. |
 | <a id="projectvulnerabilitiestrackedrefids"></a>`trackedRefIds` {{< icon name="warning-solid" >}} | [`[SecurityProjectTrackedContextID!]`](#securityprojecttrackedcontextid) | **Introduced** in GitLab 18.10. **Status**: Experiment. Filter vulnerabilities by tracked ref IDs. To use this argument, you must have Elasticsearch configured and the `advanced_vulnerability_management` feature flag enabled. |
+| <a id="projectvulnerabilitiestrackedrefsscope"></a>`trackedRefsScope` {{< icon name="warning-solid" >}} | [`SecurityTrackedRefScope`](#securitytrackedrefscope) | **Introduced** in GitLab 18.9. **Status**: Experiment. Filter by tracked ref scopeTo use this argument, you must have Elasticsearch configured and the `advanced_vulnerability_management` + `vulnerabilities_across_contexts` feature flags enabled. |
 | <a id="projectvulnerabilitiesvaliditycheck"></a>`validityCheck` {{< icon name="warning-solid" >}} | [`[VulnerabilityFindingTokenStatusState!]`](#vulnerabilityfindingtokenstatusstate) | **Introduced** in GitLab 18.5. **Status**: Experiment. Filter vulnerabilities by validity check. |
 
 ##### `Project.vulnerabilitiesCountByDay`
@@ -56082,6 +56085,15 @@ The type of the security scanner.
 | <a id="securityscannertypesast_advanced"></a>`SAST_ADVANCED` | SAST advanced scanner. |
 | <a id="securityscannertypesast_iac"></a>`SAST_IAC` | SAST IaC scanner. |
 | <a id="securityscannertypesecret_detection"></a>`SECRET_DETECTION` | Secret detection scanner. |
+
+### `SecurityTrackedRefScope`
+
+Return vulnerabilities scoped to certain types of refs.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="securitytrackedrefscopeall_refs"></a>`ALL_REFS` | Returns all tracked refs. This is the same as omitting the filter. |
+| <a id="securitytrackedrefscopedefault_branches"></a>`DEFAULT_BRANCHES` | Returns vulnerabilities that are on a default branch. |
 
 ### `SecurityTrackedRefState`
 

@@ -143,6 +143,13 @@ module Resolvers
                'To use this argument, you must have Elasticsearch configured and the ' \
                '`advanced_vulnerability_management` feature flag enabled.'
 
+    argument :tracked_refs_scope, ::Types::Security::TrackedRefScopeEnum,
+      required: false,
+      experiment: { milestone: '18.9' },
+      description: 'Filter by tracked ref scope' \
+        'To use this argument, you must have Elasticsearch configured and the ' \
+        '`advanced_vulnerability_management` + `vulnerabilities_across_contexts` feature flags enabled.'
+
     def resolve_with_lookahead(**args)
       return Vulnerability.none unless vulnerable&.feature_available?(:security_dashboard)
 
