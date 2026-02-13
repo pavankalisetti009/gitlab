@@ -286,7 +286,11 @@ export default {
             {{ __('Available with Ultimate') }}
           </span>
           <span class="gl-mt-1 gl-text-sm gl-text-secondary">
-            <gl-link :href="$options.APPLICATION_SECURITY_TESTING_PROMO_URL" target="_blank">
+            <gl-link
+              :href="$options.APPLICATION_SECURITY_TESTING_PROMO_URL"
+              target="_blank"
+              data-testid="learn-more-ultimate-link"
+            >
               {{ __('Learn more about the Ultimate security suite') }}
               <gl-icon name="external-link" :aria-label="__('(external link)')" />
             </gl-link>

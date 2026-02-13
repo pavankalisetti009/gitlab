@@ -129,7 +129,7 @@ describe('ScanProfileConfiguration', () => {
   const findTable = () => wrapper.findComponent(ScanProfileTable);
   const findGlTable = () => wrapper.findComponent(GlTableLite);
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findLink = () => wrapper.findComponent(GlLink);
+  const findLink = () => wrapper.findByTestId('learn-more-ultimate-link');
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findDisableModal = () => wrapper.findComponent(DisableScanProfileConfirmationModal);
   const findDetailsModal = () => wrapper.findComponent(ScanProfileDetailsModal);
