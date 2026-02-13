@@ -18,7 +18,10 @@ RSpec.describe Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker, featur
   describe '#handle_event', :clean_gitlab_redis_shared_state do
     context 'when indexing is enabled' do
       before do
-        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
+        allow(::Ai::ActiveContext::Collections::Code).to receive_messages(
+          indexing?: true,
+          current_embedding_fields: ['embeddings_v1']
+        )
       end
 
       context 'when there are multiple repositories with embedding indexing in progress' do
@@ -149,6 +152,52 @@ RSpec.describe Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker, featur
           expect(::ActiveContext).not_to receive(:adapter)
 
           execute
+        end
+      end
+
+      describe 'collection `current_embedding_fields`' do
+        let(:ref_id) { 'hash123' }
+
+        let!(:active_context_repository) do
+          create(:ai_active_context_code_repository,
+            enabled_namespace: enabled_namespace,
+            state: :embedding_indexing_in_progress,
+            connection_id: connection.id,
+            initial_indexing_last_queued_item: ref_id
+          )
+        end
+
+        before do
+          allow(Ai::ActiveContext::Collections::Code).to receive(:search).and_return(
+            [
+              { 'id' => ref_id, 'embeddings_v1' => [1, 2, 3] }
+            ]
+          )
+        end
+
+        context 'when the collection has empty `current_embedding_fields`' do
+          before do
+            allow(::Ai::ActiveContext::Collections::Code).to receive(:current_embedding_fields).and_return([])
+          end
+
+          it 'changes repository status to ready' do
+            expect { execute }.to change {
+              active_context_repository.reload.state
+            }.from('embedding_indexing_in_progress').to('ready')
+          end
+        end
+
+        context 'when the collection has different `current_embedding_fields`' do
+          before do
+            allow(::Ai::ActiveContext::Collections::Code).to receive(:current_embedding_fields)
+              .and_return(['other_embedding_field'])
+          end
+
+          it 'does not change the repository status' do
+            expect { execute }.not_to change {
+              active_context_repository.reload.state
+            }.from('embedding_indexing_in_progress')
+          end
         end
       end
     end
